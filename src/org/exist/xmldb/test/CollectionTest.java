@@ -32,11 +32,11 @@ public class CollectionTest extends TestCase {
 	public void testRead() {
 		try {
 			// this will fail!!!
-//			Collection test = 
-//				DatabaseManager.getCollection(URI + DBBroker.ROOT_COLLECTION + '/' + ESC_COLL, "admin", null);
-//			assertNotNull(test);
+			Collection test = 
+			DatabaseManager.getCollection(URI + DBBroker.ROOT_COLLECTION + '/' + ESC_COLL, "admin", null);
+			assertNotNull(test);
 			Collection root = DatabaseManager.getCollection(URI + DBBroker.ROOT_COLLECTION, "admin", null);
-			Collection test = root.getChildCollection(ESC_COLL);
+			test = root.getChildCollection(ESC_COLL);
 			assertNotNull(test);
             CollectionManagementService service = (CollectionManagementService) root
                     .getService("CollectionManagementService", "1.0");

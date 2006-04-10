@@ -135,7 +135,7 @@ public class XmldbURI {
             }
             host = truncatedURI.getHost();
 			port = truncatedURI.getPort();
-			path = truncatedURI.getPath();
+			path = truncatedURI.getRawPath();
             //Eventually rewrite wrappedURI *without* user info
             if (userInfo != null) {
                 StringBuffer recomputed = new StringBuffer(XMLDB_URI_PREFIX);                
@@ -382,6 +382,15 @@ public class XmldbURI {
 	public int getPort() {		
 		return port; 
 	}
+	/**
+	 * Method to return the collection path with reserved characters 
+	 * percent encoded
+	 * 
+	 * @return Returns the encoded collection path
+	 */
+	public String getRawCollectionPath() {
+		return escapedCollectionPath;
+	}
 	public String getCollectionPath() {
 		if (escapedCollectionPath == null)
 			return null;
@@ -390,7 +399,7 @@ public class XmldbURI {
 		} catch (UnsupportedEncodingException e) {
 			//Should never happen
 			throw new IllegalArgumentException(escapedCollectionPath + " can not be properly escaped");
-		}		
+		}
 	}
 	
 	public String getApiName() {		

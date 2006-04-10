@@ -105,5 +105,14 @@ public class URIUtils {
 		result = result.replaceAll("%25", "%");		
 		return result;
 	}
+	
+	public static String urlEncodeUtf8(String url) {
+		try {
+			return URLEncoder.encode(url, "UTF-8");
+		} catch(UnsupportedEncodingException e) {
+			//wrap with a runtime Exception
+			throw new RuntimeException(e);
+		}
+	}
 
 }
