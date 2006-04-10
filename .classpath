@@ -11,7 +11,7 @@
 	<classpathentry kind="lib" path="lib/core/excalibur-cli-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/core/javax.servlet.jar"/>
 	<classpathentry kind="lib" path="lib/core/jgroups-all.jar"/>
-	<classpathentry kind="lib" path="lib/core/log4j-1.2.9.jar"/>
+	<classpathentry kind="lib" path="lib/core/log4j-1.2.13.jar"/>
 	<classpathentry kind="lib" path="lib/core/resolver.jar"/>
 	<classpathentry kind="lib" path="lib/core/sunxacml.jar"/>
 	<classpathentry kind="lib" path="lib/core/xmldb.jar"/>
