@@ -1299,7 +1299,7 @@ public class ElementImpl extends NamedNode implements Element {
 					GeneralRangeIndexSpec spec = idxSpec.getIndexByPath(currentPath);
 					RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
 					if (spec != null || qnIdx != null) {
-						content = getBroker().getNodeValue(node.getProxy(), false);
+						content = getBroker().getNodeValue(node, false);
 					}
 				}
                 NodeList children = node.getChildNodes();                

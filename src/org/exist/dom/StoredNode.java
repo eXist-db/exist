@@ -55,7 +55,12 @@ public class StoredNode extends NodeImpl {
     public StoredNode(NodeProxy other) {
     	this.proxy = new NodeProxy(other);
     	this.internalAddress = other.getInternalAddress();           
-    }    
+    } 
+    
+    public StoredNode(DocumentImpl doc, long gid, short nodeType, long address) {
+    	this.proxy = new NodeProxy(doc, gid, nodeType, address);
+		this.internalAddress = address;
+	}    
 
     /**
      * Copy constructor: creates a copy of the other node.

@@ -1728,11 +1728,11 @@ public class DOMFile extends BTree implements Lockable {
 	 * @param proxy
 	 * @return
 	 */
-	public String getNodeValue(NodeProxy proxy, boolean addWhitespace) {
+	public String getNodeValue(StoredNode node, boolean addWhitespace) {
 		try {
-			long address = proxy.getInternalAddress();
-			if (address < 0)
-				address = findValue(this, proxy);
+			long address = node.getInternalAddress();
+			if (address == StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
+				address = findValue(this, node.getProxy());
 			if (address == BTree.KEY_NOT_FOUND)
 				return null;
 			final RecordPos rec = findRecord(address);
