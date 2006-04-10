@@ -51,6 +51,12 @@ public class StoredNode extends NodeImpl {
     	this.proxy = new NodeProxy(null, gid, nodeType);
     }
 
+    //TODO : this is a temporary crazy constructor
+    public StoredNode(NodeProxy other) {
+    	this.proxy = new NodeProxy(other);
+    	this.internalAddress = other.getInternalAddress();           
+    }    
+
     /**
      * Copy constructor: creates a copy of the other node.
      * 
@@ -304,10 +310,8 @@ public class StoredNode extends NodeImpl {
 		return null;
 	}
     
-    protected StoredNode getLastNode(StoredNode node) {        
-        final NodeProxy p = new NodeProxy(getDocument(), node.getGID(), 
-        		node.getNodeType(), node.getInternalAddress());
-        final Iterator iterator = getBroker().getNodeIterator(p);
+    protected StoredNode getLastNode(StoredNode node) { 
+        final Iterator iterator = getBroker().getNodeIterator(node);
         //TODO : hasNext() test ? -pb
         iterator.next();
         return getLastNode(iterator, node);

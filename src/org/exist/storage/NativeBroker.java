@@ -541,9 +541,9 @@ public class NativeBroker extends DBBroker {
         return textEngine;
     }
     
-    public Iterator getDOMIterator(NodeProxy proxy) {
+    public Iterator getDOMIterator(StoredNode node) {
         try {
-            return new DOMFileIterator(this, domDb, proxy);
+            return new DOMFileIterator(this, domDb, node);
         } catch (BTreeException e) {
             LOG.debug("failed to create DOM iterator", e);
         } catch (IOException e) {
@@ -552,10 +552,10 @@ public class NativeBroker extends DBBroker {
         return null;
     }
 
-    public Iterator getNodeIterator(NodeProxy proxy) {
+    public Iterator getNodeIterator(StoredNode node) {
 //      domDb.setOwnerObject(this);
         try {
-            return new NodeIterator(this, domDb, proxy, false);
+            return new NodeIterator(this, domDb, node, false);
         } catch (BTreeException e) {
             LOG.debug("failed to create node iterator", e);
         } catch (IOException e) {
@@ -1666,7 +1666,7 @@ public class NativeBroker extends DBBroker {
         NodeList nodes = oldDoc.getChildNodes();
         for (int i = 0; i < nodes.getLength(); i++) {
         	StoredNode node = (StoredNode) nodes.item(i);
-        	Iterator iterator = getNodeIterator(node.getProxy());
+        	Iterator iterator = getNodeIterator(node);
             iterator.next();
             copyNodes(transaction, iterator, node, new NodePath(), newDoc, true);
         }
@@ -2010,12 +2010,12 @@ public class NativeBroker extends DBBroker {
                 NodeList nodes = doc.getChildNodes();                
                 for (int i = 0; i < nodes.getLength(); i++) {
                     StoredNode n = (StoredNode) nodes.item(i);
-                    iterator = getNodeIterator(n.getProxy());
+                    iterator = getNodeIterator(n);
                     iterator.next();
                     scanNodes(transaction, iterator, n, new NodePath(), false, false);
                 }
             } else {
-                iterator = getNodeIterator(node.getProxy());
+                iterator = getNodeIterator(node);
                 iterator.next();
                 scanNodes(transaction, iterator, node, node.getPath(), false, false);
             }
@@ -2039,7 +2039,7 @@ public class NativeBroker extends DBBroker {
         NodeList nodes = doc.getChildNodes();
         for (int i = 0; i < nodes.getLength(); i++) {
         	StoredNode node = (StoredNode) nodes.item(i);
-        	Iterator iterator = getNodeIterator(node.getProxy());
+        	Iterator iterator = getNodeIterator(node);
             iterator.next();
             scanNodes(transaction, iterator, node, new NodePath(), true, repairMode);
         }
@@ -2113,7 +2113,7 @@ public class NativeBroker extends DBBroker {
             NodeList nodes = doc.getChildNodes();
             for (int i = 0; i < nodes.getLength(); i++) {
             	StoredNode node = (StoredNode) nodes.item(i);
-            	Iterator iterator = getNodeIterator(node.getProxy());
+            	Iterator iterator = getNodeIterator(node);
                 iterator.next();
                 copyNodes(transaction, iterator, node, new NodePath(), tempDoc, false);
             }
@@ -2181,7 +2181,7 @@ public class NativeBroker extends DBBroker {
             NodeList nodes = doc.getChildNodes();            
             for (int i = 0; i < nodes.getLength(); i++) {
             	StoredNode node = (StoredNode) nodes.item(i);
-                Iterator iterator = getNodeIterator(node.getProxy());
+                Iterator iterator = getNodeIterator(node);
                 iterator.next();
                 checkNodeTree(iterator, node);
             }
@@ -2453,7 +2453,7 @@ public class NativeBroker extends DBBroker {
     }    
 
     public void removeAllNodes(Txn transaction, StoredNode node, NodePath currentPath) {
-        Iterator iterator = getNodeIterator(node.getProxy());
+        Iterator iterator = getNodeIterator(node);
         iterator.next();
         Stack stack = new Stack();
         collectNodesForRemoval(stack, iterator, node, currentPath);

@@ -31,7 +31,7 @@ public final class DOMFileIterator implements Iterator {
 		private final static Logger LOG = Logger.getLogger(DOMFileIterator.class);
 		
 		DOMFile db = null;
-		NodeProxy node = null;
+		StoredNode node = null;
 		int offset;
 		int lastOffset = 0 ;
 		short lastTID = -1;
@@ -40,7 +40,7 @@ public final class DOMFileIterator implements Iterator {
 		long startAddress = StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;
 		Object lockKey;
 
-		public DOMFileIterator(Object lock, DOMFile db, NodeProxy node)
+		public DOMFileIterator(Object lock, DOMFile db, StoredNode node)
 			throws BTreeException, IOException {
 			this.db = db;
 			if (node.getInternalAddress() != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
@@ -181,7 +181,7 @@ public final class DOMFileIterator implements Iterator {
 		private boolean gotoNextPosition() throws BTreeException, IOException {
 		    if (node != null) {
 				db.setOwnerObject(lockKey);
-				long addr = db.findValue(lockKey, node);
+				long addr = db.findValue(lockKey, node.getProxy());
 				if (addr == BTree.KEY_NOT_FOUND)
 					return false;
 				DOMFile.RecordPos rec = db.findRecord(addr);
@@ -214,7 +214,7 @@ public final class DOMFileIterator implements Iterator {
 		 *
 		 *@param  node  The new to value
 		 */
-		public void setTo(NodeProxy node) {
+		public void setTo(StoredNode node) {
 			if (node.getInternalAddress() != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS) {
 				startAddress = node.getInternalAddress();
 			} else {

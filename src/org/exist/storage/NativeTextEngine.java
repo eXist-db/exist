@@ -314,8 +314,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         final NodeList children = document.getChildNodes();        
         for (int i = 0; i < children.getLength(); i++) {
             StoredNode node = (StoredNode) children.item(i);
-            Iterator j = broker.getDOMIterator(new NodeProxy(document, node.getGID(), 
-            		node.getNodeType(), node.getInternalAddress()));
+            Iterator j = broker.getDOMIterator(node);
             collect(tokens, j);
         }
         final short collectionId = document.getCollection().getId();        

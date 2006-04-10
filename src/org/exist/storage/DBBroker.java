@@ -308,7 +308,7 @@ public abstract class DBBroker extends Observable {
 	 * at the specified node.
 	 *
 	 */
-	public Iterator getDOMIterator(NodeProxy proxy) {
+	public Iterator getDOMIterator(StoredNode node) {
 		throw new RuntimeException("not implemented for this storage backend");
 	}
 
@@ -319,7 +319,7 @@ public abstract class DBBroker extends Observable {
 	 * @param proxy
 	 * @return
 	 */
-	public Iterator getNodeIterator(NodeProxy proxy) {
+	public Iterator getNodeIterator(StoredNode node) {
 		throw new RuntimeException("not implemented for this storage backend");
 	}
 
