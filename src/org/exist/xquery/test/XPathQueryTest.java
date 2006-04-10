@@ -447,6 +447,22 @@ public class XPathQueryTest extends XMLTestCase {
         }
     } 
     
+    public void testName() {
+        try {
+            XQueryService service = 
+                storeXMLStringAndGetQueryService("nested2.xml", nested2);
+            
+            String query = "(<a/>,<b/>)/name()";
+            ResourceSet result = service.queryResource("numbers.xml", query);
+            assertEquals("XPath: " + query, 2, result.getSize());            
+            assertEquals( "a", result.getResource(0).getContent() );
+            assertEquals( "b", result.getResource(1).getContent() );
+
+        } catch (XMLDBException e) {
+            fail(e.getMessage());
+        }
+    }    
+        
     public void testParentAxis() {
         try {
             XQueryService service = 
