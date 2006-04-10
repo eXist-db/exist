@@ -64,8 +64,10 @@ public abstract class LogicalOp extends BinaryOp {
 		super.analyze(contextInfo);
 		if(Type.subTypeOf(getLeft().returnsType(), Type.NODE) &&
 				Type.subTypeOf(getRight().returnsType(), Type.NODE) &&
-				(getLeft().getDependencies() & Dependency.CONTEXT_ITEM) == 0 &&
-				(getRight().getDependencies() & Dependency.CONTEXT_ITEM) == 0
+				!Dependency.dependsOn(getLeft().getDependencies(), Dependency.CONTEXT_ITEM) &&
+				!Dependency.dependsOn(getLeft().getDependencies(), Dependency.LOCAL_VARS) &&
+				!Dependency.dependsOn(getRight().getDependencies(), Dependency.CONTEXT_ITEM) &&
+				!Dependency.dependsOn(getLeft().getDependencies(), Dependency.LOCAL_VARS)
 				//TODO: is this accurate ? -pb
 				/*&& contextInfo.getContextId() != -1*/)
 			optimize = true;

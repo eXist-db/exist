@@ -804,8 +804,14 @@ public class XPathQueryTest extends XMLTestCase {
             	"return $doc//rec[fn:not(b = 'second') and (./a = 'first')]";
             result = queryResource(service, "numbers.xml", query, 1);
             assertXMLEqual("<rec n=\"2\"><a>first</a><b>third</b></rec>", result.getResource(0)
-                    .getContent().toString());                 
+                    .getContent().toString());  
             
+            query = "let $doc := <doc><a b='c' d='e'/></doc> " +
+            	"return $doc/a[$doc/a/@b or $doc/a/@d]";
+            result = queryResource(service, "numbers.xml", query, 1);
+            assertXMLEqual("<a b=\"c\" d=\"e\"/>", result.getResource(0)
+            .getContent().toString());     
+
         } catch (XMLDBException e) {
             fail(e.getMessage());
         }
