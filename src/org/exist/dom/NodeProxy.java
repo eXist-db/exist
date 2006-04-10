@@ -577,15 +577,14 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
     public String getNodeValue() {
         if (isDocument()) {         
             NodeProxy root = (NodeProxy) doc.getDocumentElement();
-            return doc.getBroker().getNodeValue(new NodeProxy(doc, root.getGID(), 
-            	root.getNodeType(), root.getInternalAddress()), false);
+            return doc.getBroker().getNodeValue(new StoredNode(root), false);
         } else {
-            return doc.getBroker().getNodeValue(this, false);
+            return doc.getBroker().getNodeValue(new StoredNode(this), false);
         }
     }     
 
     public String getNodeValueSeparated() {
-        return doc.getBroker().getNodeValue(this, true);
+        return doc.getBroker().getNodeValue(new StoredNode(this), true);
     }    
 
 	/* (non-Javadoc)

@@ -346,7 +346,7 @@ public abstract class DBBroker extends Observable {
      * If addWhitespace is set to true, an extra space character will be
      * added between adjacent elements in mixed content nodes.
 	 */
-	public String getNodeValue(NodeProxy proxy, boolean addWhitespace) {
+	public String getNodeValue(StoredNode node, boolean addWhitespace) {
 		throw new RuntimeException("not implemented for this storage backend");
 	}
 

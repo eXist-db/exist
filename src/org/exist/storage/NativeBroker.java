@@ -440,7 +440,8 @@ public class NativeBroker extends DBBroker {
             if (content == null) {
                 if (oldAddress != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
                     node.setInternalAddress(oldAddress);
-                content = getNodeValue(node.getProxy(), false);
+                content = getNodeValue(node, false);
+                //TODO : investigate
                 node.setInternalAddress(node.getInternalAddress());
             }
             valueIndex.setDocument(doc);
@@ -453,7 +454,8 @@ public class NativeBroker extends DBBroker {
             if (content == null) {
                 if (oldAddress != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
                     node.setInternalAddress(oldAddress);
-                content = getNodeValue(node.getProxy(), false);
+                content = getNodeValue(node, false);
+                //TODO : investigate
                 node.setInternalAddress(node.getInternalAddress());
             }
             
@@ -2321,7 +2323,7 @@ public class NativeBroker extends DBBroker {
         if (node.getNodeType() == Node.ELEMENT_NODE)
             endElement(node, currentPath, null, oldAddress);
         if (node.getGID() == NodeProxy.DOCUMENT_ELEMENT_GID) {
-            newDoc.appendChild((StoredNode) node);
+            newDoc.appendChild(node);
         }
         node.setOwnerDocument(doc);
         
@@ -2363,8 +2365,7 @@ public class NativeBroker extends DBBroker {
      */
     public void removeNode(final Txn transaction, final StoredNode node, NodePath currentPath, String content) {
         final DocumentImpl doc = node.getDocument();
-        final IndexSpec idxSpec = 
-            doc.getCollection().getIdxConf(this);
+        final IndexSpec idxSpec = doc.getCollection().getIdxConf(this);
         final FulltextIndexSpec ftIdx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null;
 
         new DOMTransaction(this, domDb, Lock.WRITE_LOCK, doc) {
@@ -2475,7 +2476,7 @@ public class NativeBroker extends DBBroker {
                     GeneralRangeIndexSpec spec = idxSpec.getIndexByPath(currentPath);
                     RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
                     if (spec != null || qnIdx != null) {
-                        content = getNodeValue(node.getProxy(), false);
+                        content = getNodeValue(node, false);
                     }
                 }
                 removed = new RemovedNode(node, new NodePath(currentPath), content);
@@ -2647,8 +2648,8 @@ public class NativeBroker extends DBBroker {
             String content;
             try {
                 domDb.getLock().acquire(Lock.READ_LOCK);
-                domDb.setOwnerObject(this);
-                content = domDb.getNodeValue(p, false);
+                domDb.setOwnerObject(this);                
+                content = domDb.getNodeValue(new StoredNode(p), false);
             } catch (LockException e) {
                 LOG.warn("Failed to acquire read lock on " + domDb.getFile().getName());
                 continue;
@@ -2716,10 +2717,10 @@ public class NativeBroker extends DBBroker {
         return resultNodeSet;
     } 
 	
-	public String getNodeValue(final NodeProxy proxy, final boolean addWhitespace) {
+	public String getNodeValue(final StoredNode node, final boolean addWhitespace) {
 		return (String) new DOMTransaction(this, domDb, Lock.READ_LOCK) {
 			public Object start() {
-				return domDb.getNodeValue(proxy, addWhitespace);
+				return domDb.getNodeValue(node, addWhitespace);
 			}
 		}
 		.run();
