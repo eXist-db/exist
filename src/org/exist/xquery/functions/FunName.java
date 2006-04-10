@@ -92,7 +92,7 @@ public class FunName extends Function {
 				
         result = new ValueSequence();
 		int j = 0;
-		for (SequenceIterator i = seq.toNodeSet().iterate(); i.hasNext(); j++) {
+		for (SequenceIterator i = seq.iterate(); i.hasNext(); j++) {
 			item = i.nextItem();
             if (!Type.subTypeOf(item.getType(), Type.NODE))
             	throw new XPathException("FOTY0011: item is not a node; got '" + item + "'");
