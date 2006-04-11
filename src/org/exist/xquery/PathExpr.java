@@ -184,7 +184,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 expr.setContextDocSet(contextDocs);
           
                 //DESIGN : first test the dependency then the result
-                if (Dependency.dependsOn(expr.getDependencies(), Dependency.CONTEXT_POSITION) && 
+                if (Dependency.dependsOn(expr, Dependency.CONTEXT_POSITION) && 
                 		!result.isEmpty()) {
                       
                     Sequence exprResult = Sequence.EMPTY_SEQUENCE;

@@ -93,7 +93,7 @@ public class Predicate extends PathExpr {
         // and return all nodes from the context, for which the
 		// predicate expression returns a non-empty sequence.
         if (Type.subTypeOf(inner.returnsType(), Type.NODE)) {
-            if(!Dependency.dependsOn(inner.getDependencies(), Dependency.CONTEXT_ITEM))
+            if(!Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM))
                 executionMode = NODE;
             else
                 executionMode = BOOLEAN;

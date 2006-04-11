@@ -95,7 +95,7 @@ public class FunNot extends Function {
 		// subtract the set from the context node set and return
 		// the remaining set
 		if (Type.subTypeOf(arg.returnsType(), Type.NODE) &&
-			(arg.getDependencies() & Dependency.CONTEXT_ITEM) == 0) {
+			!Dependency.dependsOn(arg, Dependency.CONTEXT_ITEM)) {
 			if (contextSequence == null || contextSequence.isEmpty()) {
 				// TODO: special treatment if the context sequence is empty:
 				// within a predicate, we just return the empty sequence
@@ -106,17 +106,16 @@ public class FunNot extends Function {
                     result = evalBoolean(contextSequence, contextItem, arg);
 			} else {            
     			result = new ExtArrayNodeSet();
+    			
     			if(!contextSequence.isEmpty())
     				result.addAll(contextSequence);
-    			
-    			NodeProxy current;
+
     			if (inPredicate) {
     				for (SequenceIterator i = result.iterate(); i.hasNext();) {
-    					current = (NodeProxy) i.nextItem();
+    					NodeProxy item = (NodeProxy) i.nextItem();
     					if (contextId != Expression.NO_CONTEXT_ID)
-                            current.addContextNode(contextId, current);
-    					current.addContextNode(getExpressionId(), current);
-//    					LOG.debug("Context: " + current.debugContext());
+                            item.addContextNode(contextId, item);
+    					item.addContextNode(getExpressionId(), item);
     				}
     			}
 
