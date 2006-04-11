@@ -158,6 +158,7 @@ public class ModuleImpl extends AbstractInternalModule {
 		new FunctionDef(FunSum.signatures[1], FunSum.class),
 		new FunctionDef(FunTokenize.signatures[0], FunTokenize.class),
 		new FunctionDef(FunTokenize.signatures[1], FunTokenize.class),
+                new FunctionDef(FunTrace.signature, FunTrace.class),
 		new FunctionDef(FunTranslate.signature, FunTranslate.class),
 		new FunctionDef(FunTrueOrFalse.fnTrue, FunTrueOrFalse.class),
 		new FunctionDef(FunTrueOrFalse.fnFalse, FunTrueOrFalse.class),
