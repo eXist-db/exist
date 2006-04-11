@@ -219,12 +219,15 @@ declare function xqts:print-group($group as element(), $path as xs:string) {
     let $result := collection($collection)//test-result
     let $failed := count($result/test-case[@result = 'fail'])
     let $passed := count($result/test-case[@result = 'pass'])
+    let $errors := count($result/error)
+    let $total  := $failed + $passed + $errors
     return
     <group
         collection="{$collection}"
         name="{$group/@name}" title="{$group/catalog:GroupInfo/catalog:title}"
         passed="{$passed}"
-        failed="{$failed}">
+        failed="{$failed}"
+        total="{$total}">
     {
         for $child in $group/catalog:test-group
         return
