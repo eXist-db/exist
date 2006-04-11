@@ -87,14 +87,18 @@ public class LogFunction extends BasicFunction {
 			} else
 				buf.append(next.getStringValue());
 		}
+                
 		if(priority.equalsIgnoreCase("error"))
 			LOG.error(buf);
 		else if(priority.equalsIgnoreCase("warn"))
 			LOG.warn(buf);
 		else if(priority.equalsIgnoreCase("info"))
 			LOG.info(buf);
+		else if(priority.equalsIgnoreCase("trace"))
+			LOG.trace(buf);
 		else
 			LOG.debug(buf);
+                
 		return Sequence.EMPTY_SEQUENCE;
 	}
 }
