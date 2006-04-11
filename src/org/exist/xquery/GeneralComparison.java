@@ -145,7 +145,7 @@ public class GeneralComparison extends BinaryOp {
 	 * @see org.exist.xquery.BinaryOp#returnsType()
 	 */
 	public int returnsType() {
-		if (inPredicate && !invalidNodeEvaluation && (!Dependency.dependsOn(getDependencies(), Dependency.CONTEXT_ITEM))) {
+		if (inPredicate && !invalidNodeEvaluation && (!Dependency.dependsOn(this, Dependency.CONTEXT_ITEM))) {
 			/* If one argument is a node set we directly
 			 * return the matching nodes from the context set. This works
 			 * only inside predicates.
@@ -159,13 +159,12 @@ public class GeneralComparison extends BinaryOp {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.AbstractExpression#getDependencies()
 	 */
-	public int getDependencies() {        
-		final int leftDeps = getLeft().getDependencies();		
+	public int getDependencies() {
 		// left expression returns node set
 		if (Type.subTypeOf(getLeft().returnsType(), Type.NODE) &&
 			//	and does not depend on the context item
-			!Dependency.dependsOn(leftDeps, Dependency.CONTEXT_ITEM) &&
-			(!inWhereClause || !Dependency.dependsOn(leftDeps, Dependency.CONTEXT_VARS)))
+			!Dependency.dependsOn(getLeft(), Dependency.CONTEXT_ITEM) &&
+			(!inWhereClause || !Dependency.dependsOn(getLeft(), Dependency.CONTEXT_VARS)))
 		{
 			return Dependency.CONTEXT_SET;
 		} else { 
@@ -199,14 +198,14 @@ public class GeneralComparison extends BinaryOp {
 		 */     
 		if (inPredicate && !invalidNodeEvaluation) {
 			
-			if (!(Dependency.dependsOn(getDependencies(), Dependency.CONTEXT_ITEM)) &&
+			if (!(Dependency.dependsOn(this, Dependency.CONTEXT_ITEM)) &&
 					Type.subTypeOf(getLeft().returnsType(), Type.NODE)) {
                 
                 if(contextItem != null)
                     contextSequence = contextItem.toSequence();                                
                 
                 
-                if (!Dependency.dependsOn(getRight().getDependencies(), Dependency.CONTEXT_ITEM) &&
+                if (!Dependency.dependsOn(getRight(), Dependency.CONTEXT_ITEM) &&
                         Type.subTypeOf(getRight().returnsType(), Type.NODE))
 				{
 					if (context.getProfiler().isEnabled())
@@ -515,7 +514,9 @@ public class GeneralComparison extends BinaryOp {
 		}
 		
 		// can this result be cached? Don't cache if the result depends on local variables.
-	    boolean canCache = contextSequence instanceof NodeSet && (getRight().getDependencies() & Dependency.VARS) == 0 && (getLeft().getDependencies() & Dependency.VARS) == 0;
+	    boolean canCache = contextSequence instanceof NodeSet && 
+	    	!Dependency.dependsOn(getLeft(), Dependency.VARS) && 
+	    	!Dependency.dependsOn(getRight(), Dependency.VARS);
 		if(canCache)
 		{
 			cached = new CachedResult((NodeSet)contextSequence, result);

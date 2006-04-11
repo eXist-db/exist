@@ -77,8 +77,8 @@ public class Dependency {
 		return result.toString();
 	}	
     
-    public final static boolean dependsOn(int dependencies, int dependency) {
-        return ((dependencies & dependency) == dependency);
+    public final static boolean dependsOn(Expression expr, int dependency) {
+        return ((expr.getDependencies()& dependency) == dependency);
     }
 
 }

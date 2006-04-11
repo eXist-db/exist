@@ -105,7 +105,7 @@ public class ExtRegexp extends Function {
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
 		Expression path = getArgument(0);
-		if ((path.getDependencies() & Dependency.CONTEXT_ITEM) == Dependency.NO_DEPENDENCY) {
+		if (!Dependency.dependsOn(path, Dependency.CONTEXT_ITEM)) {
 			boolean canCache = (getTermDependencies() & Dependency.CONTEXT_ITEM)
 				== Dependency.NO_DEPENDENCY;
 			if(	canCache && cached != null && cached.isValid(contextSequence)) {

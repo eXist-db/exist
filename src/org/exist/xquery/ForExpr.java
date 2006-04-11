@@ -172,10 +172,10 @@ public class ForExpr extends BindingExpression {
 		// calling the where expression for each item in the input sequence)
 		// This is possible if the input sequence is a node set and has no
 		// dependencies on the current context item.
-		boolean fastExec = whereExpr != null &&
-			( whereExpr.getDependencies() & Dependency.CONTEXT_ITEM ) == 0 &&
-			at == null &&
-			Type.subTypeOf( in.getItemType() , Type.NODE);
+		boolean fastExec = 
+			whereExpr != null && at == null &&
+			!Dependency.dependsOn(whereExpr, Dependency.CONTEXT_ITEM) &&
+			Type.subTypeOf(in.getItemType(), Type.NODE);
 		
 		// If possible, apply the where expression ahead of the iteration
 		if(fastExec) {

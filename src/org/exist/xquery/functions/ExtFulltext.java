@@ -128,12 +128,10 @@ public class ExtFulltext extends Function {
 		NodeSet result = null;
 		// if the expression does not depend on the current context item,
 		// we can evaluate it in one single step
-		if (path == null || (path.getDependencies() & Dependency.CONTEXT_ITEM)
-			== Dependency.NO_DEPENDENCY) {
-            int deps = searchTerm.getDependencies();
+		if (path == null || !Dependency.dependsOn(path, Dependency.CONTEXT_ITEM)) {          
 			boolean canCache = 
-                (deps & Dependency.CONTEXT_ITEM) == Dependency.NO_DEPENDENCY &&
-                (deps & Dependency.VARS) == Dependency.NO_DEPENDENCY;
+                !Dependency.dependsOn(searchTerm, Dependency.CONTEXT_ITEM) &&
+                !Dependency.dependsOn(searchTerm, Dependency.VARS);
 			if(	canCache && cached != null && cached.isValid(contextSequence)) {
 				return cached.getResult();
 			}

@@ -134,9 +134,9 @@ public class FunMatches extends Function {
     public int getDependencies() {
         final Expression stringArg = getArgument(0);
         final Expression patternArg = getArgument(1);
-        if(Type.subTypeOf(stringArg.returnsType(), Type.NODE) &&
-            (stringArg.getDependencies() & Dependency.CONTEXT_ITEM) == 0 &&
-            (patternArg.getDependencies() & Dependency.CONTEXT_ITEM) == 0) {
+        if (Type.subTypeOf(stringArg.returnsType(), Type.NODE) &&
+            !Dependency.dependsOn(stringArg, Dependency.CONTEXT_ITEM) &&
+            !Dependency.dependsOn(patternArg, Dependency.CONTEXT_ITEM)) {
             return Dependency.CONTEXT_SET;
         } else {
             return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
@@ -187,7 +187,7 @@ public class FunMatches extends Function {
 		Sequence input = getArgument(0).eval(contextSequence, contextItem);
 		if (input.isEmpty())
             result = Sequence.EMPTY_SEQUENCE;        
-        else if (inPredicate && !Dependency.dependsOn(getDependencies(), Dependency.CONTEXT_ITEM)) {
+        else if (inPredicate && !Dependency.dependsOn(this, Dependency.CONTEXT_ITEM)) {
             if (context.isProfilingEnabled())
                 context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "", "Index evaluation");            
             result = evalWithIndex(contextSequence, contextItem, input);
