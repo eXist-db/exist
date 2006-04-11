@@ -33,7 +33,6 @@ import org.exist.dom.StoredNode;
 import org.exist.dom.VirtualNodeSet;
 import org.exist.storage.ElementIndex;
 import org.exist.storage.ElementValue;
-import org.exist.storage.NotificationService;
 import org.exist.storage.UpdateListener;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
