@@ -27,7 +27,6 @@ import java.util.Map;
 import org.exist.EXistException;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeImpl;
 import org.exist.dom.StoredNode;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
