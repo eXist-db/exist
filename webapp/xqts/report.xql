@@ -181,7 +181,7 @@ declare function xqts:details($testName as xs:string) {
                                 let $citation := /catalog:test-suite//catalog:citation-spec[@name = $spec/@spec]
                                 let $url := $citation/catalog:spec-URI/text()
                                 return 
-                                    <a href="{$url}#{$spec/@section-pointer}">
+                                    <a href="{$url}#{$spec/@section-pointer}" target="_blank">
                                     {
                                         concat($spec/@spec, ': ', $spec/@section-title, ' (', $spec/@section-number, ')')
                                     }
