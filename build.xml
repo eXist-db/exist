@@ -793,6 +793,7 @@
                 <include name="*.bat"/>
                 <include name="*.sh"/>
                 <include name="conf.xml"/>
+                <include name="descriptor.xml"/>
                 <include name="build.xml"/>
                 <include name="log4j.xml"/>
                 <include name="examples-setup.xml"/>
