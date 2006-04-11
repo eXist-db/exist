@@ -195,7 +195,7 @@ function resize() {
     panel.style.height = tree.style.height;
     
     var details = $('details');
-    details.style.height = (panel.offsetHeight - details.offsetTop) + 'px';
+    details.style.height = ( panel.offsetHeight - 160 ) + 'px';
 }
 
 function displayMessage(message) {
