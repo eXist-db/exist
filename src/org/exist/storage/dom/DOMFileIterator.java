@@ -181,7 +181,7 @@ public final class DOMFileIterator implements Iterator {
 		private boolean gotoNextPosition() throws BTreeException, IOException {
 		    if (node != null) {
 				db.setOwnerObject(lockKey);
-				long addr = db.findValue(lockKey, node.getProxy());
+				long addr = db.findValue(lockKey, new NodeProxy(node));
 				if (addr == BTree.KEY_NOT_FOUND)
 					return false;
 				DOMFile.RecordPos rec = db.findRecord(addr);

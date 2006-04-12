@@ -89,7 +89,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
      * @param qname The node's identity
      * @param proxy The node's proxy
      */
-    public void addNode(QName qname, StoredNode node) {       
+    public void addNode(QName qname, NodeProxy p) {       
         //Is this qname already pending ?
         ArrayList buf = (ArrayList) pending.get(qname);
         if (buf == null) {
@@ -98,7 +98,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             pending.put(qname, buf);
         }
         //Add node's proxy to the list
-        buf.add(node.getProxy());
+        buf.add(p);
     }
     
     public void storeAttribute(AttrImpl node, NodePath currentPath, boolean fullTextIndexSwitch) {
@@ -578,7 +578,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                         	StoredNode storedNode = new StoredNode(nodeType, storedGID);
                         	storedNode.setOwnerDocument(storedDocument);
                         	storedNode.setInternalAddress(address);
-                            result.add(storedNode.getProxy(), gidsCount);                        
+                            result.add(new NodeProxy(storedNode), gidsCount);                        
                         } else {
                             //Filter out the node if requested to do so
                             NodeProxy storedNode = selector.match(storedDocument, storedGID);

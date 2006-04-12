@@ -133,7 +133,7 @@ public class Replace extends Modification {
             DocumentSet modifiedDocs = new DocumentSet();
             for (int i = 0; i < ql.length; i++) {
                 StoredNode node = ql[i];
-                DocumentImpl doc = node.getDocument();
+                DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
                 doc.getMetadata().setIndexListener(listener);
                 modifiedDocs.add(doc);
                 if (!doc.getPermissions().validate(context.getUser(),

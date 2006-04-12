@@ -235,12 +235,13 @@ public class VirtualNodeSet extends AbstractNodeSet {
 				NodeList cl = proxy.getDocument().getChildNodes();
                 for (int j = 0; j < cl.getLength(); j++) {
                     StoredNode node = (StoredNode) cl.item(j);
-    				if (test.matches(node.getProxy())) {
-    					node.getProxy().deepCopyContext(proxy);
+                    NodeProxy p = new NodeProxy(node);
+    				if (test.matches(p)) {
+    					p.deepCopyContext(proxy);
 						if (useSelfAsContext && inPredicate) {
-							node.getProxy().addContextNode(contextId, node.getProxy());
+							p.addContextNode(contextId, p);
 						}
-                        result.add(node.getProxy());
+                        result.add(p);
     				}
     				if (node.getNodeType() == Node.ELEMENT_NODE &&
                         (axis == Constants.DESCENDANT_AXIS
@@ -248,7 +249,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
     					|| axis == Constants.DESCENDANT_ATTRIBUTE_AXIS)) {
                         // note: we create a copy of the docElemProxy here to be used
                         // as context when traversing the tree.
-                        NodeProxy contextNode = new NodeProxy(node.getProxy());
+                        NodeProxy contextNode = new NodeProxy(p);
                         contextNode.deepCopyContext(proxy);
                         //TODO : is this StoredNode construction necessary ?
                         Iterator domIter = contextNode.getDocument().getBroker().getNodeIterator(new StoredNode(contextNode));
@@ -288,12 +289,13 @@ public class VirtualNodeSet extends AbstractNodeSet {
 				StoredNode child = (StoredNode) iter.next();
 				if(child == null)
 					LOG.debug("CHILD == NULL; doc = " + 
-							node.getDocument().getName());
+							((DocumentImpl)node.getOwnerDocument()).getName());
 				if(node.getOwnerDocument() == null)
 					LOG.debug("DOC == NULL");
-				child.setOwnerDocument(node.getOwnerDocument());
+				child.setOwnerDocument((DocumentImpl)node.getOwnerDocument());
 				child.setGID(node.firstChildID() + i);
-				child.getProxy().setMatches(contextNode.getMatches());
+				NodeProxy p = new NodeProxy(child);
+				p.setMatches(contextNode.getMatches());
 				if (test.matches(child)) {
 					if (((axis == Constants.CHILD_AXIS
 						|| axis == Constants.ATTRIBUTE_AXIS)
@@ -301,12 +303,12 @@ public class VirtualNodeSet extends AbstractNodeSet {
 						(axis == Constants.DESCENDANT_AXIS
 						|| axis == Constants.DESCENDANT_SELF_AXIS
 						|| axis == Constants.DESCENDANT_ATTRIBUTE_AXIS)) {
-						child.getProxy().deepCopyContext(contextNode);
+						p.deepCopyContext(contextNode);
 						if (useSelfAsContext && inPredicate) {
-							child.getProxy().addContextNode(contextId, child.getProxy());
+							p.addContextNode(contextId, p);
 						} else if (inPredicate)
-							child.getProxy().addContextNode(contextId, contextNode);
-                        result.add(child.getProxy());
+							p.addContextNode(contextId, contextNode);
+                        result.add(p);
 					}
 				}
 				addChildren(contextNode, result, child, iter, recursions + 1);

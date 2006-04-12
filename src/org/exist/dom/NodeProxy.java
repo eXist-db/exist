@@ -140,6 +140,10 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
         //TODO : what about node's context ?		
 	}
 
+	public NodeProxy(StoredNode n) {
+        this((DocumentImpl)n.getOwnerDocument(), n.getGID(), n.getNodeType(), n.getInternalAddress());
+	}
+	
 	/** create a proxy to a document node */
 	public NodeProxy(DocumentImpl doc) {
         this(doc, DOCUMENT_NODE_GID, Node.DOCUMENT_NODE, StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);

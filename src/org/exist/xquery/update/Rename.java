@@ -141,7 +141,7 @@ public class Rename extends Modification {
                 NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
                 for (int i = 0; i < ql.length; i++) {
                     StoredNode node = ql[i];
-                    DocumentImpl doc = node.getDocument();
+                    DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
                     if (!doc.getPermissions().validate(context.getUser(),
                             Permission.UPDATE))
                             throw new XPathException(getASTNode(),

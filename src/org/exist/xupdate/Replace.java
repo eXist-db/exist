@@ -68,7 +68,7 @@ public class Replace extends Modification {
                     LOG.warn("select " + selectStmt + " returned empty node set");
                     continue;
                 }
-                DocumentImpl doc = node.getDocument();
+                DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
                 doc.getMetadata().setIndexListener(listener);
                 modifiedDocs.add(doc);
                 if (!doc.getPermissions().validate(broker.getUser(),
