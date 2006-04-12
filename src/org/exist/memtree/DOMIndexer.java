@@ -100,6 +100,7 @@ public class DOMIndexer {
     public void store() {
     	// create a wrapper element as root node
     	ElementImpl elem = new ElementImpl(1, ROOT_QNAME);
+        elem.setNodeId(broker.getBrokerPool().getNodeFactory().createInstance());
     	elem.setOwnerDocument(targetDoc);
         elem.setChildCount(doc.getChildCount());
         elem.addNamespaceMapping("exist", Serializer.EXIST_NS);
@@ -107,6 +108,7 @@ public class DOMIndexer {
         path.addComponent(ROOT_QNAME);
         
         stack.push(elem);
+        System.out.println("ID: " + elem.getNodeId());
         broker.storeNode(transaction, elem, path);
         targetDoc.appendChild(elem);
         elem.setChildCount(0);
@@ -154,6 +156,7 @@ public class DOMIndexer {
         if (doc.nodeKind[nodeNr] == Node.ELEMENT_NODE) {
             ElementImpl elem = new ElementImpl(1);
             if(stack.empty()) {
+                elem.setNodeId(broker.getBrokerPool().getNodeFactory().createInstance());
                 initElement(nodeNr, elem);
                 stack.push(elem);
                 broker.storeNode(transaction, elem, currentPath);
