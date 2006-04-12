@@ -427,8 +427,7 @@ public class NativeBroker extends DBBroker {
     public void endElement(final StoredNode node, NodePath currentPath, String content, long oldAddress) {
         final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
 //      tempProxy.reset(doc, node.getGID(), node.getInternalAddress());
-        final NodeProxy tempProxy = new NodeProxy(doc, node.getGID(), node.getInternalAddress());
-        tempProxy.setNodeId(node.getNodeId());
+        final NodeProxy tempProxy = new NodeProxy(doc, node.getNodeId(), node.getInternalAddress());
 //      final IndexSpec idxSpec = 
 //          doc.getCollection().getIdxConf(this);
         
@@ -1317,6 +1316,7 @@ public class NativeBroker extends DBBroker {
             transact.commit(transaction);
             return targetDoc;
         } catch (Exception e) {
+            LOG.warn("Failed to store temporary fragment: " + e.getMessage(), e);
             transact.abort(transaction);
         }
         return null;
@@ -3068,8 +3068,7 @@ public class NativeBroker extends DBBroker {
 //                  --move to-- NativeElementIndex
                     // TODO : elementIndex.storeAttribute(node, currentPath, index);
                     elementIndex.setDocument(doc);
-                    final NodeProxy tempProxy = new NodeProxy(doc, gid, address);
-                    tempProxy.setNodeId(node.getNodeId());
+                    final NodeProxy tempProxy = new NodeProxy(doc, node.getNodeId(), address);
                     tempProxy.setIndexType(indexType);
                     qname.setNameType(ElementValue.ATTRIBUTE);
                     elementIndex.addNode(qname, tempProxy);

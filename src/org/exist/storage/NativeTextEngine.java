@@ -449,15 +449,14 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                         NodeProxy storedNode;
                         switch (storedSection) {
                             case ATTRIBUTE_SECTION :
-                                storedNode = new NodeProxy(storedDocument, 1, Node.ATTRIBUTE_NODE);
+                                storedNode = new NodeProxy(storedDocument, nodeId, Node.ATTRIBUTE_NODE);
                                 break;
                             case TEXT_SECTION :
-                                storedNode = new NodeProxy(storedDocument, 1, Node.TEXT_NODE);
+                                storedNode = new NodeProxy(storedDocument, nodeId, Node.TEXT_NODE);
                                 break;
                             default :
                                 throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() + "'");
                         }
-                        storedNode.setNodeId(nodeId);
                         // if a context set is specified, we can directly check if the
 						// matching text node is a descendant of one of the nodes
 						// in the context set.
@@ -1213,15 +1212,14 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                             NodeProxy storedNode;
                             switch (storedSection) {
                                 case TEXT_SECTION :
-                                    storedNode = new NodeProxy(storedDocument, 1, Node.TEXT_NODE);
+                                    storedNode = new NodeProxy(storedDocument, nodeId, Node.TEXT_NODE);
                                     break;
                                 case ATTRIBUTE_SECTION :
-                                    storedNode = new NodeProxy(storedDocument, 1, Node.ATTRIBUTE_NODE);
+                                    storedNode = new NodeProxy(storedDocument, nodeId, Node.ATTRIBUTE_NODE);
                                     break;
                                 default :
                                     throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() + "'");
                             } 
-                            storedNode.setNodeId(nodeId);
 							if (contextSet != null) {
                                 NodeProxy parentNode;  
                                 switch (storedSection) {
