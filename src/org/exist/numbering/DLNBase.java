@@ -380,6 +380,17 @@ public class DLNBase implements Comparable {
         return compareTo(other);
     }
 
+    public int compareBits(DLNBase other, int bitCount) {
+        int bytes = bitCount / 8;
+        int remaining = bitCount % 8;
+        for (int i = 0; i < bytes; i++) {
+            if (bits[i] != other.bits[i])
+                return (bits[i] & 0xFF) - (other.bits[i] & 0xFF);
+        }
+        return (bits[bytes] & BIT_MASK[remaining]) - 
+            (other.bits[bytes] & BIT_MASK[remaining]);
+    }
+    
     /**
      * Checks if the current DLN starts with the
      * same bit sequence as other. This is used

@@ -114,6 +114,15 @@ public class DLN extends DLNBase implements NodeId {
     	int levels = getLevelCount(other.bitIndex + 1);
     	return levels == 1;
     }
+
+    public int isSiblingOf(NodeId sibling) {
+        DLN other = (DLN) sibling;
+        int last = lastLevelOffset();
+        if (last == other.lastLevelOffset())
+            return compareBits(other, last);
+        else
+            return super.compareTo(other);
+    }
     
     /**
      * Returns the level within the document tree at which
@@ -145,23 +154,16 @@ public class DLN extends DLNBase implements NodeId {
     }
 
     public static void main(String[] args) {
-        DLN id = new DLN();
-        id.setLevelId(0, 8);
-        System.out.println("ID: " + id.toBitString() + " = " + id.getLevelId(0));
-        id.setLevelId(0, 0);
-        for (int i = 0; i < 100; i++) {
-            id.incrementLevelId();
-            System.out.println("ID: " + id.toBitString() + " = " + id.getLevelId(0));
-        }
-        id.addLevelId(0);
-        System.out.println("ID: " + id.toBitString() + " = " + id.toString());
-
-        id = new DLN(new int[] {5, 87, 453});
-        System.out.println("ID: " + id.toString() + " = " + id.toBitString());
-
-        while (id != null) {
-            System.out.println(id.debug());
-            id = (DLN) id.getParentId();
-        }
+        DLN id0 = new DLN(new int[] { 1, 2, 3 });
+        DLN id1 = new DLN(new int[] { 1, 2, 4 });
+        DLN id2 = new DLN(new int[] { 1, 3, 1 });
+        DLN id3 = new DLN(new int[] { 1, 1, 1 });
+        DLN id4 = new DLN(new int[] { 1, 2, 4, 1 });
+        DLN id5 = new DLN(new int[] { 1, 1, 4, 1 });
+        System.out.println(id0.toString() + " sibling of " + id1.toString() + ": " + id0.isSiblingOf(id1));
+        System.out.println(id0.toString() + " sibling of " + id2.toString() + ": " + id0.isSiblingOf(id2));
+        System.out.println(id2.toString() + " sibling of " + id3.toString() + ": " + id2.isSiblingOf(id3));
+        System.out.println(id4.toString() + " sibling of " + id1.toString() + ": " + id4.isSiblingOf(id1));
+        System.out.println(id5.toString() + " sibling of " + id1.toString() + ": " + id5.isSiblingOf(id1));
     }
 }

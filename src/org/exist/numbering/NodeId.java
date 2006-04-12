@@ -89,6 +89,8 @@ public interface NodeId extends Comparable {
      * @return
      */
     boolean isChildOf(NodeId parent);
+
+    public int isSiblingOf(NodeId sibling);
     
     /**
      * Returns the level within the document tree at which
