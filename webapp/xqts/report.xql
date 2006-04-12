@@ -227,6 +227,7 @@ declare function xqts:print-group($group as element(), $path as xs:string) {
         name="{$group/@name}" title="{$group/catalog:GroupInfo/catalog:title}"
         passed="{$passed}"
         failed="{$failed}"
+        errors="{$errors}"
         total="{$total}">
     {
         for $child in $group/catalog:test-group

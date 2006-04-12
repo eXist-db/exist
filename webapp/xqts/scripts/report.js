@@ -80,10 +80,11 @@ function displayGroup(node, treeNode, oldTree) {
 			var name = child.getAttribute('name');
 			var passed = child.getAttribute('passed');
 			var failed = child.getAttribute('failed');
+            var errors = child.getAttribute('errors');
 			var total = child.getAttribute('total');
 			var path = child.getAttribute('collection');
 			var display = child.getAttribute('title') + ' [' + passed +
-					'/' + failed + "/" + total +']';
+					'/' + failed + "/" + errors +']';
 			var obj = { 
 				label: display, 
 				href: "javascript:loadTests('" + path + "', '" + name + "')",
