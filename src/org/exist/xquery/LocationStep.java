@@ -31,6 +31,7 @@ import org.exist.dom.NodeSet;
 import org.exist.dom.NodeSetHelper;
 import org.exist.dom.StoredNode;
 import org.exist.dom.VirtualNodeSet;
+import org.exist.numbering.NodeId;
 import org.exist.storage.ElementIndex;
 import org.exist.storage.ElementValue;
 import org.exist.storage.NotificationService;
@@ -512,9 +513,8 @@ public class LocationStep extends Step {
                         NodeProxy sibling = result.get((DocumentImpl) currentNode.getOwnerDocument(), currentNode.getNodeId());
                         if (sibling == null) {
                             sibling = new NodeProxy((DocumentImpl) currentNode
-                                    .getOwnerDocument(), currentNode.getGID(),
+                                    .getOwnerDocument(), currentNode.getNodeId(),
                                     currentNode.getInternalAddress());
-                            sibling.setNodeId(currentNode.getNodeId());
                             if (Expression.NO_CONTEXT_ID != contextId) {
                                 sibling.addContextNode(contextId, current);
                             } else
@@ -617,8 +617,8 @@ public class LocationStep extends Step {
                 NodeProxy ancestor;
                 if (axis == Constants.ANCESTOR_SELF_AXIS
                         && test.matches(current)) {
-                    ancestor = new NodeProxy(current.getDocument(), current
-                            .getGID(), current.getInternalAddress());
+                    ancestor = new NodeProxy(current.getDocument(), current.getNodeId(), 
+                            Node.ELEMENT_NODE, current.getInternalAddress());
                     NodeProxy t = result.get(ancestor);
                     if (t == null) {
                         if (Expression.NO_CONTEXT_ID != contextId)
@@ -629,16 +629,12 @@ public class LocationStep extends Step {
                     } else
                         t.addContextNode(contextId, current);
                 }
-                long parentID = NodeSetHelper.getParentId(
-                        current.getDocument(), current.getGID());
-                while (parentID > 0) {
-                    ancestor = new NodeProxy(current.getDocument(), parentID,
-                            Node.ELEMENT_NODE);
+                NodeId parentID = current.getNodeId().getParentId();
+                while (parentID != null) {
+                    ancestor = new NodeProxy(current.getDocument(), parentID, Node.ELEMENT_NODE);
                     // Filter out the temporary nodes wrapper element
-                    if (parentID != NodeProxy.DOCUMENT_NODE_GID
-                            && !(parentID == NodeProxy.DOCUMENT_ELEMENT_GID && current
-                                    .getDocument().getCollection()
-                                    .isTempCollection())) {
+                    if (parentID != NodeId.DOCUMENT_NODE && 
+                            !(parentID.getTreeLevel() == 1  && current.getDocument().getCollection().isTempCollection())) {
                         if (test.matches(ancestor)) {
                             NodeProxy t = result.get(ancestor);
                             if (t == null) {
@@ -651,7 +647,7 @@ public class LocationStep extends Step {
                                 t.addContextNode(contextId, current);
                         }
                     }
-                    parentID = NodeSetHelper.getParentId(ancestor);
+                    parentID = parentID.getParentId();
                 }
             }
             return result;
