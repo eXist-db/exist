@@ -222,6 +222,19 @@ public class BasicNodeSetTest extends TestCase {
             
             result = speakers.selectParentChild(proxy, NodeSet.DESCENDANT, -1);
             assertEquals(1, result.getLength());
+            
+            largeSet = executeQuery(broker, "//SPEECH[LINE &= 'love']/SPEAKER", 160, null);
+            test = new NameTest(Type.ELEMENT, new QName("LINE", ""));
+            NodeSet lines = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT,
+                    docs, test.getName(), null);
+            System.out.println("LINE: " + lines.getLength());
+            System.out.println("SPEAKER: " + largeSet.getLength());
+            result = ((AbstractNodeSet) lines).selectFollowingSiblings(largeSet.toNodeSet(), -1);
+            assertEquals(1451, result.getLength());
+            
+            largeSet = executeQuery(broker, "//SPEECH[LINE &= 'love']/LINE[1]", 160, null);
+            result = ((AbstractNodeSet) speakers).selectPrecedingSiblings(largeSet.toNodeSet(), -1);
+            assertEquals(160, result.getLength());
         } catch (Exception e) {
         	e.printStackTrace();
 	        fail(e.getMessage());
@@ -249,7 +262,7 @@ public class BasicNodeSetTest extends TestCase {
             executeQuery(broker, "//SCENE/*/LINE[. &= 'the']", 2167, null);
             executeQuery(broker, "//SPEECH[* &= 'the']", 1008, null);
             executeQuery(broker, "//*[. &= 'me']", 584, null);
-            
+            executeQuery(broker, "//SPEECH[LINE &= 'spirit']/ancestor::*", 30, null);
             executeQuery(broker, "for $s in //SCENE/*[LINE &= 'the'] return node-name($s)", 1005, null);
         } catch (Exception e) {
         	e.printStackTrace();

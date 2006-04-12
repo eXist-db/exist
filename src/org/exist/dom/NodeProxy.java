@@ -114,50 +114,44 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	private ContextItem context = null;
 
 	public NodeProxy(DocumentImpl doc, long gid) {
-        this(doc, gid, UNKNOWN_NODE_TYPE, UNKNOWN_NODE_ADDRESS);		
-	}
-
-	public NodeProxy(DocumentImpl doc, long gid, short nodeType) {
-        this(doc, gid, nodeType, UNKNOWN_NODE_ADDRESS);
+        this(doc, null, UNKNOWN_NODE_TYPE, UNKNOWN_NODE_ADDRESS);
+        this.gid = gid;
 	}
     
     public NodeProxy(DocumentImpl doc, long gid, long address) {
-        this(doc, gid, UNKNOWN_NODE_TYPE, address);
+        this(doc, null, UNKNOWN_NODE_TYPE, address);
+        this.gid = gid;
     }    
-    
-	public NodeProxy(DocumentImpl doc, long gid, short nodeType, long address) {
-		this.doc = doc;
-		this.gid = gid;
-		this.nodeType = nodeType;
-		this.internalAddress = address;
-	}
 
     public NodeProxy(DocumentImpl doc, NodeId nodeId, long address) {
-        this(doc, 1, address);
-        this.nodeId = nodeId;
+        this(doc, nodeId, UNKNOWN_NODE_TYPE, address);
+    }
+    
+    public NodeProxy(DocumentImpl doc, NodeId nodeId, short nodeType) {
+        this(doc, nodeId, nodeType, UNKNOWN_NODE_ADDRESS);
     }
     
     public NodeProxy(DocumentImpl doc, NodeId nodeId, short nodeType, long address) {
-        this(doc, 1, nodeType, address);
+        this.doc = doc;
+        this.gid = 1;
+        this.nodeType = nodeType;
+        this.internalAddress = address;
         this.nodeId = nodeId;
     }
     
 	public NodeProxy(NodeProxy p) {
-        this(p.doc, p.gid, p.nodeType, p.internalAddress);
+        this(p.doc, p.nodeId, p.nodeType, p.internalAddress);
 		match = p.match;
-		nodeId = p.nodeId;
         //TODO : what about node's context ?		
 	}
 
 	/** create a proxy to a document node */
 	public NodeProxy(DocumentImpl doc) {
-        this(doc, DOCUMENT_NODE_GID, Node.DOCUMENT_NODE, UNKNOWN_NODE_ADDRESS);
-        this.nodeId = doc.getBroker().getBrokerPool().getNodeFactory().documentNodeId();
+        this(doc, NodeId.DOCUMENT_NODE, Node.DOCUMENT_NODE, UNKNOWN_NODE_ADDRESS);
     }
 
     public NodeProxy(DocumentImpl doc, NodeId nodeId) {
-        this(doc, 1, UNKNOWN_NODE_TYPE, UNKNOWN_NODE_ADDRESS);
-        this.nodeId = nodeId;
+        this(doc, nodeId, UNKNOWN_NODE_TYPE, UNKNOWN_NODE_ADDRESS);
     }
 
     public void setNodeId(NodeId id) {

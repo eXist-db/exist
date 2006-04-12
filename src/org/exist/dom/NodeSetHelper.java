@@ -310,19 +310,15 @@ public class NodeSetHelper {
                     break;
             } else {
                 // same document: check if the nodes have the same parent
-                long pa = getParentId(reference.getDocument(), reference
-                        .getGID());
-                long pb = getParentId(candidate.getDocument(), candidate
-                        .getGID());
-
-                if (pa < pb) {
+                int cmp = candidate.getNodeId().getParentId().compareTo(reference.getNodeId().getParentId());
+                if (cmp > 0) {
                     // wrong parent: proceed
                     firstCandidate = null;
                     if (iReferences.hasNext())
                         reference = (NodeProxy) iReferences.next();
                     else
                         break;
-                } else if (pa > pb) {
+                } else if (cmp < 0) {
                     // wrong parent: proceed
                     firstCandidate = null;
                     if (iCandidates.hasNext())
@@ -336,7 +332,8 @@ public class NodeSetHelper {
                     // found two nodes with the same parent
                     // now, compare the ids: a node is a following sibling
                     // if its id is greater than the id of the other node
-                    if (candidate.getGID() < reference.getGID()) {
+                    cmp = candidate.getNodeId().compareTo(reference.getNodeId());
+                    if (cmp < 0) {
                         // found a preceding sibling
                         NodeProxy t = result.get(candidate);
                         if (t == null) {
@@ -356,7 +353,7 @@ public class NodeSetHelper {
                             candidate = (NodeProxy) iCandidates.next();
                         else
                             break;
-                    } else if (candidate.getGID() > reference.getGID()) {
+                    } else if (cmp > 0) {
                         // found a following sibling
                         if (iCandidates.hasNext())
                             // TODO : break ?
@@ -422,18 +419,15 @@ public class NodeSetHelper {
                     break;
             } else {
                 // same document: check if the nodes have the same parent
-                long pa = getParentId(reference.getDocument(), reference
-                        .getGID());
-                long pb = getParentId(candidate.getDocument(), candidate
-                        .getGID());
-                if (pa < pb) {
+                int cmp = candidate.getNodeId().getParentId().compareTo(reference.getNodeId().getParentId());
+                if (cmp > 0) {
                     // wrong parent: proceed
                     firstCandidate = null;
                     if (iReferences.hasNext())
                         reference = (NodeProxy) iReferences.next();
                     else
                         break;
-                } else if (pa > pb) {
+                } else if (cmp < 0) {
                     // wrong parent: proceed
                     firstCandidate = null;
                     if (iCandidates.hasNext())
@@ -444,16 +438,18 @@ public class NodeSetHelper {
                     if (firstCandidate == null)
                         firstCandidate = candidate;
                     
+                    cmp = candidate.getNodeId().compareTo(reference.getNodeId());
+                    
                     // found two nodes with the same parent
                     // now, compare the ids: a node is a following sibling
                     // if its id is greater than the id of the other node
-                    if (candidate.getGID() < reference.getGID()) {
+                    if (cmp < 0) {
                         // found a preceding sibling
                         if (iCandidates.hasNext())
                             candidate = (NodeProxy) iCandidates.next();
                         else
                             break;
-                    } else if (candidate.getGID() > reference.getGID()) {
+                    } else if (cmp > 0) {
                         // found a following sibling
                         NodeProxy t = result.get(candidate);
                         if (t == null) {
