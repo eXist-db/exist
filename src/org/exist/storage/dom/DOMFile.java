@@ -1042,7 +1042,7 @@ public class DOMFile extends BTree implements Lockable {
 	private long findNode(StoredNode node, long target, Iterator iter) {
 		if (node.hasChildNodes()) {
 			final long firstChildId = NodeSetHelper.getFirstChildId(
-                    node.getDocument(), node.getGID());
+					(DocumentImpl)node.getOwnerDocument(), node.getGID());
 			if (firstChildId < 0) {
 				LOG.error("First child not found for node : " + node.getGID());
 				return 0;
@@ -1732,7 +1732,7 @@ public class DOMFile extends BTree implements Lockable {
 		try {
 			long address = node.getInternalAddress();
 			if (address == StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
-				address = findValue(this, node.getProxy());
+				address = findValue(this, new NodeProxy(node));
 			if (address == BTree.KEY_NOT_FOUND)
 				return null;
 			final RecordPos rec = findRecord(address);

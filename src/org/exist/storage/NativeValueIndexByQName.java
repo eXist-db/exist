@@ -97,7 +97,7 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
     
     public void storeAttribute(AttrImpl node, NodePath currentPath, boolean index) {
         if (qnameValueIndexation) {
-            DocumentImpl docu = node.getDocument();
+            DocumentImpl docu = (DocumentImpl)node.getOwnerDocument();
             IndexSpec idxSpec = docu.getCollection().getIdxConf(broker);
             if (idxSpec != null) {
                 RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
@@ -123,7 +123,7 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
     /** updates the index type of given node according to the Index By QName config. */
     public void startElement(ElementImpl node, NodePath currentPath, boolean index) {
         if (qnameValueIndexation) {
-            DocumentImpl docu = node.getDocument();
+            DocumentImpl docu = (DocumentImpl)node.getOwnerDocument();
             IndexSpec idxSpec = docu.getCollection().getIdxConf(broker);
             if (idxSpec != null) {
                 RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
@@ -296,7 +296,7 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
 
 	private void localMarkElement(ElementImpl node, NodePath currentPath, String content) {
 		if (qnameValueIndexation) {
-			DocumentImpl docu = node.getDocument();
+			DocumentImpl docu = (DocumentImpl)node.getOwnerDocument();
 			IndexSpec idxSpec = docu.getCollection().getIdxConf(broker);
 			if (idxSpec != null) {
 				RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());

@@ -113,8 +113,7 @@ public class FunRoot extends Function {
             //WARNING : currently, we assume that *all* the nodes are wrapped in the same document
             if (doc.getCollection().isTempCollection()) {                        
                 StoredNode trueRoot = (StoredNode)doc.getDocumentElement().getChildNodes().item(j);
-                result.add(new NodeProxy(doc, trueRoot.getGID(), 
-                		trueRoot.getNodeType(), trueRoot.getInternalAddress()));
+                result.add(new NodeProxy(trueRoot));
             } else
             	result.add(new NodeProxy(((NodeProxy) item).getDocument()));
 		}

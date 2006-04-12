@@ -243,7 +243,7 @@ public abstract class Modification {
 		    StoredNode ql[] = new StoredNode[nl.getLength()];		    
 			for (int i = 0; i < ql.length; i++) {
 				ql[i] = (StoredNode)nl.item(i);
-				DocumentImpl doc = ql[i].getDocument();
+				DocumentImpl doc = (DocumentImpl)ql[i].getOwnerDocument();
 				doc.setBroker(broker);
 				
 				// call the eventual triggers

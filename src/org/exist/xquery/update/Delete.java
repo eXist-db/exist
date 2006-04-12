@@ -124,7 +124,7 @@ public class Delete extends Modification {
                 DocumentSet modifiedDocs = new DocumentSet();
                 for (int i = 0; i < ql.length; i++) {
                     StoredNode node = ql[i];
-                    DocumentImpl doc = node.getDocument();
+                    DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
                     if (!doc.getPermissions().validate(context.getUser(),
                             Permission.UPDATE)) {
                         transact.abort(transaction);    

@@ -70,7 +70,7 @@ public class Remove extends Modification {
 			DocumentSet modifiedDocs = new DocumentSet();
 			for (int i = 0; i < ql.length; i++) {
 				StoredNode node = ql[i];
-				DocumentImpl doc = node.getDocument();
+				DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
 				if (!doc.getPermissions().validate(broker.getUser(),
 						Permission.UPDATE))
 					throw new PermissionDeniedException(

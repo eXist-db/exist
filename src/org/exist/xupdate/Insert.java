@@ -86,7 +86,7 @@ public class Insert extends Modification {
                 LOG.debug("found " + len + " nodes to insert");
             for (int i = 0; i < ql.length; i++) {
                 StoredNode node = ql[i];
-                DocumentImpl doc = node.getDocument();
+                DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
                 doc.getMetadata().setIndexListener(listener);
                 if (!doc.getPermissions().validate(broker.getUser(),
                         Permission.UPDATE))

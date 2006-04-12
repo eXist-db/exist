@@ -162,7 +162,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
      */
     //TODO : unify functionalities with storeText -pb
     public void storeAttribute(FulltextIndexSpec indexSpec, AttrImpl attr) {
-        final DocumentImpl doc = attr.getDocument();
+        final DocumentImpl doc = (DocumentImpl)attr.getOwnerDocument();
         final long gid = attr.getGID();        
         //TODO : case conversion should be handled by the tokenizer -pb
         tokenizer.setText(attr.getValue().toLowerCase());   
@@ -196,7 +196,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
      */
     //TODO : use an indexSpec member in order to get rid of <code>noTokenizing</code>
     public void storeText(FulltextIndexSpec indexSpec, TextImpl text, boolean noTokenizing) {
-        final DocumentImpl doc = text.getDocument();
+        final DocumentImpl doc = (DocumentImpl)text.getOwnerDocument();
         final long gid = text.getGID();
         //TODO : case conversion should be handled by the tokenizer -pb
         final XMLString t = text.getXMLString().transformToLower();        

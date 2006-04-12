@@ -135,7 +135,7 @@ public abstract class Modification extends AbstractExpression {
 		    StoredNode ql[] = new StoredNode[nodes.getLength()];
 			for (int i = 0; i < ql.length; i++) {
 				ql[i] = (StoredNode)nodes.item(i);
-				DocumentImpl doc = ql[i].getDocument();
+				DocumentImpl doc = (DocumentImpl)ql[i].getOwnerDocument();
 				doc.setBroker(context.getBroker());
 			}
 			return ql;

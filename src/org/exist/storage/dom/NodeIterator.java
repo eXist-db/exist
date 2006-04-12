@@ -42,7 +42,7 @@ public final class NodeIterator implements Iterator {
 	public NodeIterator(Object lock, DOMFile db, StoredNode node, boolean poolable)
 		throws BTreeException, IOException {
 		this.db = db;
-		this.doc = node.getDocument();
+		this.doc = (DocumentImpl)node.getOwnerDocument();
 		this.useNodePool = poolable;
 		if (-1 < node.getInternalAddress())
 			startAddress = node.getInternalAddress();
@@ -214,7 +214,7 @@ public final class NodeIterator implements Iterator {
 	private boolean gotoNextPosition() throws BTreeException, IOException {
 		//	position the iterator at the start of the first value
 		if (node != null) {
-			final long addr = db.findValue(lockKey, node.getProxy());
+			final long addr = db.findValue(lockKey, new NodeProxy(node));
 			if (addr == BTree.KEY_NOT_FOUND)
 				return false;
 			DOMFile.RecordPos rec = db.findRecord(addr);

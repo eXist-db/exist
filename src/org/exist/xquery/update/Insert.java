@@ -145,7 +145,7 @@ public class Insert extends Modification {
                 NodeList contentList = seq2nodeList(contentSeq);
                 for (int i = 0; i < ql.length; i++) {
                     StoredNode node = ql[i];
-                    DocumentImpl  doc = node.getDocument();
+                    DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
                     doc.getMetadata().setIndexListener(listener);
                     if (!doc.getPermissions().validate(context.getUser(), Permission.UPDATE))
                         throw new XPathException(getASTNode(), "permission to remove document denied");
