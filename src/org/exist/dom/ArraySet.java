@@ -167,21 +167,16 @@ public class ArraySet extends AbstractNodeSet {
 	}
 	
 	public boolean isEmpty() {
-		return isEmpty;
+		return (getLength() == 0);
 	}
 	
     public boolean hasOne() {
-    	return hasOne;
+    	return (getLength() == 1);
     }	
 
 	public void add(NodeProxy proxy) {
 		if (proxy == null)
 			return;
-		if (hasOne)
-			hasOne = false;
-		if (isEmpty)
-			hasOne = true;
-        isEmpty = false;
 		if (counter < length)
 			nodes[counter++] = proxy;
 		else {
