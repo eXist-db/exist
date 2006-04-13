@@ -81,22 +81,17 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 		return null;
 	}
 	
-	public boolean isEmpty() {
-		return isEmpty;
-	}
-	
-    public boolean hasOne() {
-    	return hasOne;
+    public boolean isEmpty() {		
+		return (size == 0);
     }
+    
+    public boolean hasOne() {
+    	return (size == 1);
+    }   
 
 	public final void add(NodeProxy proxy) {
 		if(proxy == null)
 			return;
-		if (hasOne)
-			hasOne = false;
-		if (isEmpty)
-			hasOne = true;
-        isEmpty = false;
 		if (root == null) {
 			root = new Node(proxy);
 			++size;

@@ -150,11 +150,11 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
     }
     
     public boolean isEmpty() {
-    	return isEmpty;
+    	return (size == 0);
     }
     
     public boolean hasOne() {
-    	return hasOne;
+    	return (size == 1);
     }   
     
     public void add(NodeProxy proxy) {
@@ -197,8 +197,6 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
     }
     
     private void setHasChanged() {
-		hasOne = (size == 1);
-		isEmpty = (size == 0);	
         state = (state == Integer.MAX_VALUE ? state = 0 : state + 1);
         cachedDocuments = null;
     }
