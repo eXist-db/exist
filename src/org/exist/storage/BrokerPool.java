@@ -1215,8 +1215,10 @@ public class BrokerPool {
 			broker = (DBBroker)inactiveBrokers.peek();
 		//TOUNDERSTAND (pb) : shutdown() is called on only *one* broker ?
         // WM: yes, the database files are shared, so only one broker is needed to close them for all
-        if (broker != null)
+        if (broker != null) {
+            broker.setUser(SecurityManager.SYSTEM_USER);
             broker.shutdown();
+        }
         
         transactionManager.shutdown();
 		
