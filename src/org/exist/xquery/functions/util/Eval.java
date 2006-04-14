@@ -178,6 +178,8 @@ public class Eval extends BasicFunction {
 				compiled.setContext(innerContext);
 			}
 			sequence = xquery.execute(compiled, exprContext, false);
+            if (innerContext != this.context)
+                innerContext.reset();
 			return sequence;
 		} catch (IOException e) {
 			throw new XPathException(getASTNode(), e.getMessage(), e);
