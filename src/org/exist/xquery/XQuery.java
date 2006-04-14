@@ -195,13 +195,13 @@ public class XQuery {
         broker.getBrokerPool().getXQueryMonitor().queryStarted(context.getWatchDog());
         try {
         	Sequence result = expression.eval(contextSequence);
-        	expression.reset();
-        	if (resetContext) {
-        		context.reset();
-        		HTTPUtils.addLastModifiedHeader( result, context );
-        	}
+            if (resetContext)
+                HTTPUtils.addLastModifiedHeader( result, context );
         	return result;
         } finally {
+            expression.reset();
+            if (resetContext)
+                context.reset();
         	broker.getBrokerPool().getXQueryMonitor().queryCompleted(context.getWatchDog());
         }
     }
