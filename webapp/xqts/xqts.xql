@@ -192,6 +192,15 @@ declare function xqts:check-output($query as xs:string, $result as item()*, $cas
                    <query>{$query}</query>
                 </test-case>
             )
+        (: Comparison method: "Inspect" :)
+        (: A text compare is sufficient in many test cases :)
+        else if ($output/@compare eq "Inspect") then
+            let $text := util:file-read(concat($xqts:XQTS_HOME, "ExpectedTestResults/", $case/@FilePath,
+                "/", $output/text()))
+            let $test := xqts:normalize-text($text) eq xqts:normalize-text($result)
+            return
+                xqts:print-result($case/@name, $test, $query, $result, $text, $case)
+            
         (: Don't know how to compare :)
         else
             <error test="{$case/@name}">Unknown comparison method: {$output/@compare}.</error>
