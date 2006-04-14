@@ -930,10 +930,14 @@ public class RESTServer {
         XQueryPool pool = xquery.getXQueryPool();
         XQueryContext context;
         CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
-        if(compiled == null)
+        if(compiled == null) {
+        	// special header to indicate that the query is not returned from cache
+        	response.setHeader("X-XQuery-Cached", "false");
             context = xquery.newContext(AccessContext.REST);
-        else
+    	} else {
+        	response.setHeader("X-XQuery-Cached", "true");
             context = compiled.getContext();
+        }
         context.setModuleLoadPath("xmldb:exist://" + resource.getCollection().getName());
         context.setStaticallyKnownDocuments(
                 new String[] { resource.getCollection().getName() }

@@ -31,6 +31,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Iterator;
+import java.util.Map;
 
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
@@ -76,6 +77,19 @@ public class RESTServiceTest extends TestCase {
             + "(::pragma exist:serialize indent=no ::)"
             + "//para[. = '\u00E4\u00E4\u00FC\u00FC\u00F6\u00F6\u00C4\u00C4\u00D6\u00D6\u00DC\u00DC']/text()"
             + "</text>" + "</query>";
+    
+    private final static String TEST_MODULE =
+    	"module namespace t=\"http://test.foo\";\n" +
+    	"declare variable $t:VAR { 'World!' };";
+    
+    private final static String TEST_XQUERY =
+    	"xquery version \"1.0\";\n" +
+    	"declare option exist:serialize \"method=text media-type=text/text\";\n" +
+    	"import module namespace req=\"http://exist-db.org/xquery/request\";\n" +
+    	"import module namespace t=\"http://test.foo\" at \"module.xq\";\n" +
+    	"let $param := req:get-parameter('p', ())\n" +
+    	"return\n" +
+    	"	($param, ' ', $t:VAR)";
     
     private String credentials;
     
@@ -242,6 +256,68 @@ public class RESTServiceTest extends TestCase {
         }
     }
 
+    public void testStoredQuery() {
+        try {
+            System.out.println("--- Storing query ---");
+            doPut(TEST_MODULE, "module.xq");
+            doPut(TEST_XQUERY, "test.xq");
+
+            doStoredQuery(false);
+            doStoredQuery(true);
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+    }
+    
+    protected void doPut(String data, String path) {
+    	try {
+    		HttpURLConnection connect = getConnection(COLLECTION_URI + '/' + path);
+    		connect.setRequestProperty("Authorization", "Basic " + credentials);
+    		connect.setRequestMethod("PUT");
+    		connect.setDoOutput(true);
+    		connect.setRequestProperty("ContentType", "application/xquery");
+    		Writer writer = new OutputStreamWriter(connect.getOutputStream(), "UTF-8");
+    		writer.write(data);
+    		writer.close();
+    		
+    		connect.connect();
+    		int r = connect.getResponseCode();
+    		assertEquals("Server returned response code " + r, 200, r);
+    	} catch (Exception e) {
+            fail(e.getMessage());
+        }
+    }
+    
+    protected void doStoredQuery(boolean cacheHeader) {
+    	try {
+            System.out.println("--- Calling query: " + COLLECTION_URI + "/test.xq?p=Hello");
+            HttpURLConnection connect = getConnection(COLLECTION_URI + "/test.xq?p=Hello");
+            connect.setRequestMethod("GET");
+            connect.connect();
+
+            int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, 200, r);
+            
+            dumpHeaders(connect);
+            String cached = connect.getHeaderField("X-XQuery-Cached");
+            System.out.println("X-XQuery-Cached: " + cached);
+            assertNotNull(cached);
+            assertEquals(cacheHeader, Boolean.parseBoolean(cached));
+            
+            String contentType = connect.getContentType();
+            int semicolon = contentType.indexOf(';');
+            if (semicolon > 0) {
+                contentType = contentType.substring(0, semicolon).trim();
+            }
+            assertEquals("Server returned content type " + contentType, "text/text", contentType);
+
+            System.out.println('"' + readResponse(connect.getInputStream()) + '"');
+            
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+    }
+    
     protected void doGet() {
         try {
             System.out.println("--- Retrieving document ---");
@@ -309,6 +385,14 @@ public class RESTServiceTest extends TestCase {
         return null;
     }
 
+    protected void dumpHeaders(HttpURLConnection connect) {
+    	Map headers = connect.getHeaderFields();
+    	for (Iterator i = headers.entrySet().iterator(); i.hasNext(); ) {
+    		Map.Entry entry = (Map.Entry) i.next();
+    		System.out.println(entry.getKey() + ": " + entry.getValue());
+    	}
+    }
+    
     public static void main(String[] args) {
         TestRunner.run(RESTServiceTest.class);
         //Explicit shutdown for the shutdown hook
