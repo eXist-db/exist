@@ -42,13 +42,9 @@ public class Main {
     // the runtime classpath.
     private String startConfigFileName = "";
 
-    // Pattern that can be used in start.config file to indicate that the
-    // latest version of a particular file should be added to the classpath.
-    // E.g., commons-fileupload-%latest%.jar would resolve to something like
-    // commons-fileupload-1.1.jar.
-    private final static Pattern latestVersionPattern = Pattern.compile(
-        "(%latest%)"
-    );
+    // Used to find latest version of jar files that should be added to the
+    // classpath.
+    private final LatestFileResolver jarFileResolver = new LatestFileResolver();
 
     public static void main(String[] args) {
         try {
@@ -247,7 +243,7 @@ public class Main {
                             _classname = subject.substring(0, subject.length() - 6);
                         } else {
                             // single JAR file
-                            String resolvedFile = getResolvedFileName(file);
+                            String resolvedFile = jarFileResolver.getResolvedFileName(file);
 
                             File f = new File(resolvedFile);
                             if (include_subject) {
@@ -333,7 +329,7 @@ public class Main {
         File _home_dir = detectHome();
 
         //TODO: more attempts here...
-
+        
         if (_home_dir != null) {
             // if we managed to detect exist.home, store it in system property
             if (_debug)
@@ -535,6 +531,11 @@ public class Main {
                     + configFilePath2 + ", Bailing out."
                 );
             }
+            if (_debug) {
+            	System.err.println(
+            		"Configuring classpath from: " + startConfigFileName
+            	);
+            }
             configureClasspath(homeDir.getPath(), _classpath, cpcfg, args, _mode);
             cpcfg.close();
         } catch (IOException e) {
@@ -579,57 +580,4 @@ public class Main {
     public void shutdown() {
         BrokerPool.stopAll(false);
     }
-
-    // If the passed file name contains the %latest% token
-    // find the latest version of that file, otherwise return
-    // the passed file name unmodified.
-    private String getResolvedFileName(String filename) {
-        Matcher matches = latestVersionPattern.matcher(filename);
-        if (!matches.find()) {
-            return filename;
-        }
-        String[] fileinfo = filename.split("%latest%");
-        // Path of file up to the beginning of the %latest% token.
-        String uptoToken = fileinfo[0];
-
-        // Dir that should contain our jar.
-        String containerDirName = uptoToken.substring(
-            0, uptoToken.lastIndexOf(File.separatorChar)
-        );
-
-        File containerDir = new File(containerDirName);
-
-        // 0-9 . - and _ are valid chars that can occur where the %latest% token
-        // was (maybe allow letters too?).
-        String patternString = uptoToken.substring(
-            uptoToken.lastIndexOf(File.separatorChar) + 1
-        ) + "([\\d\\.\\-_]+)" + fileinfo[1];
-        final Pattern pattern = Pattern.compile(patternString);
-
-        File[] jars = containerDir.listFiles(new FilenameFilter() {
-            public boolean accept(File dir, String name) {
-                Matcher matches = pattern.matcher(name);
-                return matches.find();
-            }
-        });
-        if (jars.length > 0) {
-            String actualFileName = jars[0].getAbsolutePath();
-            if (_debug) {
-                System.err.println(
-                    "Found match: " + actualFileName
-                    + " for start.config entry: " + filename
-                );
-            }
-            return actualFileName;
-        } else {
-            if (_debug) {
-                System.err.println(
-                    "WARN: No latest version found for JAR file: '"
-                    + filename + "'"
-                );
-            }
-        }
-        return filename;
-    }
-
 }

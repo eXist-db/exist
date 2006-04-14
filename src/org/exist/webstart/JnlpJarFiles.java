@@ -25,6 +25,7 @@ import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.log4j.Logger;
+import org.exist.start.LatestFileResolver;
 
 /**
  *  Class for managing webstart jar files.
@@ -39,51 +40,48 @@ public class JnlpJarFiles {
     private File[] _coreJars;
     private File _mainJar;
     
-    // regexp patterns to be more robust for version changes
+    // Names of core jar files sans ".jar" extension.
+    // Use %latest% token in place of a version string.
     private String jars[] = new String[]{
-                "antlr\\.jar", 
-                "commons-pool-.*\\.jar",
-                "excalibur-cli-.*\\.jar", 
-                "jEdit-syntax\\.jar",
-                "jgroups-all\\.jar", 
-                "libreadline-java\\.jar", 
-                "log4j-.*\\.jar",
-                "resolver.*\\.jar",
-                "xmldb\\.jar", 
-                "xmlrpc-.*-patched\\.jar"
-    }; // TODO tricky, needs te be reviewed on a regular basis.
-    
-    
+                "antlr", 
+                "commons-pool-%latest%",
+                "excalibur-cli-%latest%", 
+                "jEdit-syntax",
+                "jgroups-all", 
+                "jline-%latest%", 
+                "log4j-%latest%",
+                "resolver",
+                "xmldb", 
+                "xmlrpc-%latest%-patched"
+    };
+
+    // Resolves jar file patterns from jars[].
+    private LatestFileResolver jarFileResolver = new LatestFileResolver();
     
     /**
-     *  Get jar file specified by regular expression.
+     * Get jar file specified by file pattern.
      * @param folder  Directory containing the jars.
-     * @param regExp  Regexp pattern
-     * @return        File object to jar file, null if not found.
+     * @param jarFileBaseName  Name of jar file, including %latest% token if
+     * necessary sans .jar file extension.
+     * @return File object of jar file, null if not found.
      */
-    public File getJar(File folder, String regExp){
-      
-        File jarFile=null;
-        boolean found=false;
-        int index=0;
-        
-        File allFiles[]= folder.listFiles();
-        if(allFiles==null){
-            logger.error("No files found in "+folder.getAbsolutePath());
-            allFiles = new File[0];
-        }
-        
-        Pattern p = Pattern.compile(regExp);
-        while(!found && index<allFiles.length){
-            Matcher m = p.matcher(allFiles[index].getName());
-            if( m.matches() ){
-                jarFile=allFiles[index];
-                found=true;
-            }
-            index++;
-        }
-        
-        return jarFile;
+    public File getJar(File folder, String jarFileBaseName){
+    	String fileToFind = folder.getAbsolutePath() + File.separatorChar
+			+ jarFileBaseName + ".jar";
+    	String resolvedFile = jarFileResolver.getResolvedFileName(
+    		fileToFind
+    	);
+    	File jar = new File(resolvedFile);
+    	if (jar.exists()) {
+    		logger.debug(
+    			"Found match: " + resolvedFile
+    			+ " for file pattern: " + fileToFind
+    		);
+    		return jar;
+    	} else {
+    		logger.warn("Could not resolve file pattern: " + fileToFind);
+    		return null;
+    	}
     }
     
     /**
