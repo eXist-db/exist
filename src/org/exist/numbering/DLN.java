@@ -142,6 +142,26 @@ public class DLN extends DLNBase implements NodeId {
         return super.compareTo(other);
     }
 
+    public boolean after(NodeId other, boolean isFollowing) {
+        if (compareTo(other) > 0) {
+            if (isFollowing)
+                return !isDescendantOf(other);
+            else
+                return true;
+        }
+        return false;
+    }
+    
+    public boolean before(NodeId other, boolean isPreceding) {
+        if (compareTo(other) < 0) {
+            if (isPreceding)
+                return !other.isDescendantOf(this);
+            else
+                return true;
+        }
+        return false;
+    }
+    
     /**
      * Write the node id to a {@link VariableByteOutputStream}.
      *

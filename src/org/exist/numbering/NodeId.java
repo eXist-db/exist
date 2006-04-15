@@ -73,6 +73,30 @@ public interface NodeId extends Comparable {
     NodeId getParentId();
 
     /**
+     * Returns true if the node represented by this node id comes
+     * after the argument node in document order. If isFollowing is set to true, the method
+     * behaves as if called to evaluate a following::* XPath select, i.e. it
+     * returns false for descendants of the current node. 
+     *  
+     * @param other
+     * @param isFollowing
+     * @return
+     */
+    boolean after(NodeId other, boolean isFollowing);
+    
+    /**
+     * Returns true if the node represented by this node id comes
+     * before the argument node in document order. If isPreceding is set to true, the method
+     * behaves as if called to evaluate a preceding::* XPath select, i.e. it
+     * returns false for ancestors of the current node. 
+     *  
+     * @param other
+     * @param isFollowing
+     * @return
+     */
+    boolean before(NodeId other, boolean isPreceding);
+    
+    /**
      * Is the current node id a descendant of the specified node?
      *
      * @param ancestor node id of the potential ancestor
