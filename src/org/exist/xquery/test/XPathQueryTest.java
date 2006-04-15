@@ -928,9 +928,16 @@ public class XPathQueryTest extends XMLTestCase {
 			assertEquals("boolean value of 5.6 should be true", "true", 
 					result.getResource(0).getContent());
 			
-			result = queryResource(service, "numbers.xml", "boolean(current-time())", 1);
-			assertEquals("boolean value of current-time() should be true", "true", 
-					result.getResource(0).getContent());
+            boolean exceptionThrown = false;
+            String message = "";
+            try {                
+    			result = queryResource(service, "numbers.xml", "boolean(current-time())", 1);             
+            } catch (XMLDBException e) {
+                exceptionThrown = true;
+                message = e.getMessage();
+            }
+            assertTrue(message.indexOf("FORG0006") > -1); 
+            
 		} catch (XMLDBException e) {
 			System.out.println("testBoolean(): XMLDBException: "+e);
 			fail(e.getMessage());

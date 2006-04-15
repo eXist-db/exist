@@ -215,9 +215,9 @@ public abstract class AtomicValue implements Item, Sequence {
 	 * @see org.exist.xquery.value.Item#effectiveBooleanValue()
 	 */
 	public boolean effectiveBooleanValue() throws XPathException {
-		return getStringValue().length() > 0;
+		return false;
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Sequence#toNodeSet()
 	 */
@@ -319,7 +319,7 @@ public abstract class AtomicValue implements Item, Sequence {
 		public String getStringValue() {
 			return "";
 		}
-
+		
 		/* (non-Javadoc)
 		 * @see org.exist.xquery.value.AtomicValue#convertTo(int)
 		 */

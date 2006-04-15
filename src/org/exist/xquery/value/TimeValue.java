@@ -69,6 +69,10 @@ public class TimeValue extends AbstractDateTimeValue {
 		return DatatypeConstants.TIME;
 	}
 
+	public boolean effectiveBooleanValue() throws XPathException {
+		throw new XPathException("FORG0006: effective boolean value invalid operand type: " + Type.getTypeName(getType()));
+	}
+	
 	public int getType() {
 		return Type.TIME;
 	}
