@@ -108,7 +108,6 @@ public class DOMIndexer {
         path.addComponent(ROOT_QNAME);
         
         stack.push(elem);
-        System.out.println("ID: " + elem.getNodeId());
         broker.storeNode(transaction, elem, path);
         targetDoc.appendChild(elem);
         elem.setChildCount(0);
