@@ -36,7 +36,7 @@ import java.util.Iterator;
  *
  *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
  */
-public class StoredNode extends NodeImpl {
+public class StoredNode extends NodeImpl implements Visitable {
     
     public final static int NODE_IMPL_UNKNOWN_GID = -1; 
     public final static int NODE_IMPL_ROOT_NODE_GID = 1;      
@@ -271,9 +271,11 @@ public class StoredNode extends NodeImpl {
 	 * @see org.w3c.dom.Node#getPreviousSibling()
 	 */
 	public Node getPreviousSibling() {
-        StoredNode parent = (StoredNode) getParentNode();
+        Node parent = getParentNode();
+        if (parent.getNodeType() == Node.DOCUMENT_NODE)
+            return null;
         PreviousSiblingVisitor visitor = new PreviousSiblingVisitor(this);
-        parent.accept(visitor);
+        ((StoredNode) parent).accept(visitor);
         return visitor.last;
 	}
     

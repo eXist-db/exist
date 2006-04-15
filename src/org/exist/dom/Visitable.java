@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Project
+ *  Copyright (C) 2001-06 The eXist Project
  *  http://exist-db.org
  *  
  *  This program is free software; you can redistribute it and/or
@@ -21,14 +21,22 @@
  */
 package org.exist.dom;
 
+import java.util.Iterator;
+
 /**
- * Visitor pattern: used for traversing the DOM tree
- * implement to get notified of the current node.
- * 
- * @author wolf
+ * Visitor pattern: interface to be implemented by a visitable node.
  *
  */
-public interface NodeVisitor {
-
-    public boolean visit(StoredNode node);
+public interface Visitable {
+    
+    /**
+     * Visit the current node. For element nodes,
+     * the method recursively traverses through the child nodes and
+     * calls accept on each of them.
+     * 
+     * @param iterator an iterator positioned at the current node
+     * @param visitor the visitor to call.
+     * @return the value returned by the NodeVisitor.visit method.
+     */
+    public boolean accept(Iterator iterator, NodeVisitor visitor);  
 }
