@@ -102,10 +102,12 @@ public class FunDistinctValues extends Function {
 		for (SequenceIterator i = values.iterate(); i.hasNext();) {
 			item = i.nextItem();
 			value = item.atomize();
+			//TODO : use a real comparison. Nothing should be filtered in :
+			//fn:distinct-values((xs:float('NaN'), 'NaN'))
 			if (!set.contains(value)) {
 				set.add(value);
 				result.add(value);
-			}
+			}			
 		}
 
         if (context.getProfiler().isEnabled()) 
