@@ -32,8 +32,10 @@ import org.exist.xquery.XPathException;
 
 public class DoubleValue extends NumericValue implements Indexable {
 
-	public final static DoubleValue NaN = new DoubleValue(Double.NaN);
 	public final static DoubleValue ZERO = new DoubleValue(0.0E0);
+	public final static DoubleValue POSITIVE_INFINITY = new DoubleValue(Double.POSITIVE_INFINITY);
+	public final static DoubleValue NEGATIVE_INFINITY = new DoubleValue(Double.NEGATIVE_INFINITY);
+	public final static DoubleValue NaN = new DoubleValue(Double.NaN);
 
 	private double value;
 
@@ -231,6 +233,10 @@ public class DoubleValue extends NumericValue implements Indexable {
 		return Double.isNaN(value);
 	}
 
+	public boolean isInfinite() {
+		return Double.isInfinite(value);
+	}
+
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AtomicValue#convertTo(int)
 	 */
@@ -333,6 +339,12 @@ public class DoubleValue extends NumericValue implements Indexable {
 	 * @see org.exist.xquery.value.NumericValue#round()
 	 */
 	public NumericValue round() throws XPathException {
+		if (isNaN())
+			return DoubleValue.NaN;
+		if (isInfinite() && value > 0)
+			return DoubleValue.POSITIVE_INFINITY;
+		if (isInfinite() && value < 0)
+			return DoubleValue.POSITIVE_INFINITY;		
 		return new DoubleValue(Math.round(value));
 	}
 	

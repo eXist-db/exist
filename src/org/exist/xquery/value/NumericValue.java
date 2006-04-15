@@ -26,6 +26,10 @@ public abstract class NumericValue extends ComputableValue {
 	public boolean isNaN() {
 		return false;
 	}
+
+	public boolean isInfinite() {
+		return false;
+	}
 	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AtomicValue#compareTo(int, org.exist.xquery.value.AtomicValue)
