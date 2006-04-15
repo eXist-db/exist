@@ -96,7 +96,7 @@ public class FunNodeName extends Function {
                     break;
                 //TODO : what kind of default do we expect here ? -pb
                 default:
-                    result = Sequence.EMPTY_SEQUENCE;
+                    result = new QNameValue(context, "");
             }
         }
         
