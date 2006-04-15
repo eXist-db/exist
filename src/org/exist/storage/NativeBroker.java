@@ -1324,28 +1324,31 @@ public class NativeBroker extends DBBroker {
         Collection temp = getCollection(TEMP_COLLECTION);
         if(temp == null)
             return;
-        TransactionManager transact = pool.getTransactionManager();
-        Txn txn = transact.beginTransaction();
-        try {
-            long now = System.currentTimeMillis();
-            for(Iterator i = temp.iterator(this); i.hasNext(); ) {
-                DocumentImpl next = (DocumentImpl) i.next();
-                long modified = next.getMetadata().getLastModified();
-                if(now - modified > TEMP_FRAGMENT_TIMEOUT)
-                    try {
-                        temp.removeXMLResource(txn, this, next.getFileName());
-                    } catch (PermissionDeniedException e) {
-                        LOG.warn("Failed to remove temporary fragment: " + e.getMessage(), e);
-                    } catch (TriggerException e) {
-                        LOG.warn("Failed to remove temporary fragment: " + e.getMessage(), e);
-                    } catch (LockException e) {
-                        LOG.warn("Failed to remove temporary fragment: " + e.getMessage(), e);
-                    }
+        // remove the entire collection if all temp data has timed out
+        boolean removeCollection = true;
+        long now = System.currentTimeMillis();
+        for(Iterator i = temp.iterator(this); i.hasNext(); ) {
+            DocumentImpl next = (DocumentImpl) i.next();
+            long modified = next.getMetadata().getLastModified();
+            if(now - modified < TEMP_FRAGMENT_TIMEOUT) {
+                removeCollection = false;
+                break;
             }
-            transact.commit(txn);
-        } catch (TransactionException e) {
-            transact.abort(txn);
-            LOG.warn("Transaction aborted: " + e.getMessage(), e);
+        }
+        
+        if (removeCollection) {
+            TransactionManager transact = pool.getTransactionManager();
+            Txn txn = transact.beginTransaction();
+            try {
+                removeCollection(txn, temp);
+                transact.commit(txn);
+            } catch (TransactionException e) {
+                transact.abort(txn);
+                LOG.warn("Transaction aborted: " + e.getMessage(), e);
+            } catch (PermissionDeniedException e) {
+                transact.abort(txn);
+                LOG.warn("Failed to remove temp collection: " + e.getMessage(), e);
+            }
         }
     }
     
