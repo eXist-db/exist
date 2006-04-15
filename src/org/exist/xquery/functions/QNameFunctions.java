@@ -111,6 +111,8 @@ public class QNameFunctions extends BasicFunction {
     			String uri = qname.getNamespaceURI();
     			if (uri == null)
     				uri = "";
+    			if ("".equals(uri))
+    				return Sequence.EMPTY_SEQUENCE;    			
                 result = new AnyURIValue(uri);
     		}
         }
