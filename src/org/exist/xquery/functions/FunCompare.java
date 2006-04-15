@@ -75,23 +75,28 @@ public class FunCompare extends CollatingFunction {
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
 
-		String s1 = getArgument(0).eval(contextSequence).getStringValue();
-		String s2 = getArgument(1).eval(contextSequence).getStringValue();
+		Sequence seq1 = getArgument(0).eval(contextSequence);
+		Sequence seq2 =	getArgument(1).eval(contextSequence);
 		
-        Sequence result;        
-        if (s1.length() == 0 || s2.length() == 0)
+		Sequence result;
+		
+		if (seq1.isEmpty() || seq2.isEmpty())
 			result = Sequence.EMPTY_SEQUENCE;
-        else {
-    		Collator collator = getCollator(contextSequence, contextItem, 3);		
-    		int comparison = Collations.compare(collator, s1, s2);
-    		if (comparison == Constants.EQUAL) 
-    			return new IntegerValue(Constants.EQUAL);
-            //TODO : 
-    		else if (comparison < 0)
-    			return new IntegerValue(Constants.INFERIOR);
-    		else 
-    			return new IntegerValue(Constants.SUPERIOR);
-        }
+		else {
+		
+			String s1 = seq1.getStringValue();
+			String s2 = seq2.getStringValue();
+	                
+			Collator collator = getCollator(contextSequence, contextItem, 3);		
+			int comparison = Collations.compare(collator, s1, s2);
+			if (comparison == Constants.EQUAL) 
+				result = new IntegerValue(Constants.EQUAL);
+	        //TODO : 
+			else if (comparison < 0)
+				result = new IntegerValue(Constants.INFERIOR);
+			else 
+				result = new IntegerValue(Constants.SUPERIOR);
+		}
         
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result);        
