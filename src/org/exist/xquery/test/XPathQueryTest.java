@@ -596,6 +596,7 @@ public class XPathQueryTest extends XMLTestCase {
             service.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
             service.setProperty(OutputKeys.INDENT, "no");
             queryResource(service, "siblings.xml", "//a/s[. = 'B']/following::s", 3);
+            queryResource(service, "siblings.xml", "//a/s[. = 'B']/following::n", 4);
             ResourceSet result = queryResource(service, "siblings.xml", "//a/s[. = 'B']/following::s[1]", 1);
             assertXMLEqual("<s>Z</s>", result.getResource(0).getContent().toString());
             result = queryResource(service, "siblings.xml", "//a/s[. = 'B']/following::s[2]", 1);
@@ -604,6 +605,20 @@ public class XPathQueryTest extends XMLTestCase {
             fail(e.getMessage());
         }
     }    
+    
+    public void testPrecedingAxis() {
+        try {
+            XQueryService service = 
+                storeXMLStringAndGetQueryService("siblings.xml", siblings);
+            service.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            service.setProperty(OutputKeys.INDENT, "no");
+            queryResource(service, "siblings.xml", "//a/s[. = 'B']/preceding::s", 2);
+            queryResource(service, "siblings.xml", "//a/s[. = 'C']/preceding::s", 4);
+            queryResource(service, "siblings.xml", "//a/n[. = '3']/preceding::s", 3);
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+    }
     
     public void testPosition() {
         try {
@@ -773,6 +788,7 @@ public class XPathQueryTest extends XMLTestCase {
                     .getContent().toString());        
             
         } catch (XMLDBException e) {
+            e.printStackTrace();
             fail(e.getMessage());
         }
     }    

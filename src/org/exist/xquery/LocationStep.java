@@ -512,8 +512,7 @@ public class LocationStep extends Step {
                     if (test.matches(currentNode)) {
                         NodeProxy sibling = result.get((DocumentImpl) currentNode.getOwnerDocument(), currentNode.getNodeId());
                         if (sibling == null) {
-                            sibling = new NodeProxy((DocumentImpl) currentNode
-                                    .getOwnerDocument(), currentNode.getNodeId(),
+                            sibling = new NodeProxy((DocumentImpl) currentNode.getOwnerDocument(), currentNode.getNodeId(),
                                     currentNode.getInternalAddress());
                             if (Expression.NO_CONTEXT_ID != contextId) {
                                 sibling.addContextNode(contextId, current);
