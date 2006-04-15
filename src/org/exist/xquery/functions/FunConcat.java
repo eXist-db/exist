@@ -115,13 +115,11 @@ public class FunConcat extends Function {
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
 		
-        Sequence result = Sequence.EMPTY_SEQUENCE;
-        StringBuffer concat = new StringBuffer();
-		for (int i = 0; i < getArgumentCount(); i++) {
+		StringBuffer concat = new StringBuffer();        
+		for (int i = 0; i < getArgumentCount(); i++) {			
             concat.append(getArgument(i).eval(contextSequence).getStringValue());
-		}		
-        if (concat.length() > 0)     
-            result = new StringValue(concat.toString());
+		}
+		Sequence result = new StringValue(concat.toString());
 
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result);        
