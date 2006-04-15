@@ -80,7 +80,7 @@ public class FunUpperOrLowerCase extends Function {
         Sequence result;
 		Sequence seq = getArgument(0).eval(contextSequence);
 		if (seq.isEmpty())
-            result = Sequence.EMPTY_SEQUENCE;
+            result = StringValue.EMPTY_STRING;
         else {
     		String value = seq.getStringValue();
     		if(isCalledAs("upper-case"))
