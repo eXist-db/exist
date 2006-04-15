@@ -264,6 +264,9 @@ public class BasicNodeSetTest extends TestCase {
             executeQuery(broker, "//*[. &= 'me']", 584, null);
             executeQuery(broker, "//SPEECH[LINE &= 'spirit']/ancestor::*", 30, null);
             executeQuery(broker, "for $s in //SCENE/*[LINE &= 'the'] return node-name($s)", 1005, null);
+            
+            executeQuery(broker, "//SPEECH[LINE &= 'perturbed spirit']/preceding-sibling::*", 65, null);
+            executeQuery(broker, "//SPEECH[LINE &= 'perturbed spirit']/following-sibling::*", 1, null);
         } catch (Exception e) {
         	e.printStackTrace();
 	        fail(e.getMessage());

@@ -265,53 +265,33 @@ public class StoredNode extends NodeImpl {
 		if (parentId.getTreeLevel() == 2 && ((DocumentImpl)getOwnerDocument()).getCollection().isTempCollection())
 			return ownerDocument;
         return ownerDocument.getNode(parentId);
-	}      
+	}
 
 	/**
 	 * @see org.w3c.dom.Node#getPreviousSibling()
 	 */
 	public Node getPreviousSibling() {
-        int level = ownerDocument.getTreeLevel(getGID());
-		if (level == 0)
-			return ownerDocument.getPreviousSibling(this);
-        
-        long parentID = NodeSetHelper.getParentId(ownerDocument, getGID(), level);
-        
-        //Filter out the temporary nodes wrapper element         
-        //TODO : use level == 1 ?
-        if (parentID == NodeProxy.DOCUMENT_NODE_GID || 
-                parentID == NodeProxy.DOCUMENT_ELEMENT_GID && ((DocumentImpl)getOwnerDocument()).getCollection().isTempCollection())
-            return null;       
-        
-        long firstChildId = NodeSetHelper.getFirstChildId(ownerDocument, parentID, level - 1);
-		if (getGID() > firstChildId)
-			return ownerDocument.getNode(getGID() - 1);
-		return null;
+        StoredNode parent = (StoredNode) getParentNode();
+        PreviousSiblingVisitor visitor = new PreviousSiblingVisitor(this);
+        parent.accept(visitor);
+        return visitor.last;
 	}
-
+    
 	/**
 	 * @see org.w3c.dom.Node#getNextSibling()
 	 */
 	public Node getNextSibling() {
-		int level = ownerDocument.getTreeLevel(getGID());
-		if (level == 0)
-			return ownerDocument.getFollowingSibling(this);
-        
-        long parentID = NodeSetHelper.getParentId(ownerDocument, getGID(), level);
-        
-        //Filter out the temporary nodes wrapper element 
-        //TODO : use level == 1 ?
-        if (parentID == NodeProxy.DOCUMENT_NODE_GID || 
-                (parentID == NodeProxy.DOCUMENT_ELEMENT_GID && 
-                 ((DocumentImpl)getOwnerDocument()).getCollection().isTempCollection()))
+        if (nodeId.getTreeLevel() == 2 && ((DocumentImpl)getOwnerDocument()).getCollection().isTempCollection())
             return null;
-
-        long firstChildId = NodeSetHelper.getFirstChildId(ownerDocument, parentID, level - 1);
-        
-        //TODO : avoid using getTreeLevelOrder
-		if (getGID() < firstChildId + ownerDocument.getTreeLevelOrder(level) - 1)
-			return ownerDocument.getNode(getGID() + 1);
-		return null;
+        NodeProxy p = new NodeProxy(ownerDocument, nodeId, internalAddress);
+        Iterator iterator = getBroker().getNodeIterator(p);
+        iterator.next();
+        getLastNode(iterator, this);
+        if (iterator.hasNext()) {
+            StoredNode sibling = (StoredNode) iterator.next();
+            return sibling.nodeId.isSiblingOf(nodeId) == 0 ? sibling : null;
+        }
+        return null;
 	}
     
     protected StoredNode getLastNode(StoredNode node) {        
@@ -325,17 +305,15 @@ public class StoredNode extends NodeImpl {
     protected StoredNode getLastNode(Iterator iterator, StoredNode node) {
         if (!node.hasChildNodes())
             return node;
-        final long firstChild = node.firstChildID();
-        final long lastChild = firstChild + node.getChildCount();
+        final int children = node.getChildCount();
         StoredNode next = null;
-        for (long gid = firstChild; gid < lastChild; gid++) {
-            next = (StoredNode) iterator.next();            
-            next.setGID(gid);
+        for (int i = 0; i < children; i++) {
+            next = (StoredNode) iterator.next();
             //Recursivity helps taversing...
             next = getLastNode(iterator, next);
         }
         return next;
-    }     
+    }
     
     public NodePath getPath() {
         NodePath path = new NodePath();
@@ -369,4 +347,33 @@ public class StoredNode extends NodeImpl {
 		NodeObjectPool.getInstance().returnNode(this);
 	}
     
+    public boolean accept(NodeVisitor visitor) {
+        final NodeProxy p = new NodeProxy((DocumentImpl)getOwnerDocument(), nodeId);
+        p.setInternalAddress(getInternalAddress());
+        final Iterator iterator = getBroker().getNodeIterator(p);
+        iterator.next();
+        return accept(iterator, visitor);
+    }
+    
+    public boolean accept(Iterator iterator, NodeVisitor visitor) {
+        return visitor.visit(this);
+    }
+    
+    private final static class PreviousSiblingVisitor implements NodeVisitor {
+        
+        private StoredNode current;
+        private StoredNode last = null;
+        
+        public PreviousSiblingVisitor(StoredNode current) {
+            this.current = current;
+        }
+        
+        public boolean visit(StoredNode node) {
+            if (node.nodeId.equals(current.nodeId))
+                return false;
+            if (node.nodeId.getTreeLevel() == current.nodeId.getTreeLevel())
+                last = node;
+            return true;
+        }
+    }
 }

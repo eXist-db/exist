@@ -4,6 +4,7 @@ import org.custommonkey.xmlunit.XMLTestCase;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.DocumentImpl;
+import org.exist.dom.NodeVisitor;
 import org.exist.dom.StoredNode;
 import org.exist.security.SecurityManager;
 import org.exist.storage.BrokerPool;
@@ -33,6 +34,8 @@ public class NodeTest extends XMLTestCase {
 		"<test xmlns:ns=\"http://foo.org\">" +
 		"	<a ns:a=\"1\" ns:b=\"m\">abc</a>" +
 		"	<b ns:a=\"2\">def</b>" +
+        "   <c>ghi</c>" +
+        "   <d>jkl</d>" +
 		"</test>";
 	
 	private BrokerPool pool = null;
@@ -52,7 +55,7 @@ public class NodeTest extends XMLTestCase {
             System.out.println("Testing getChildNodes() ...");
             NodeList cl = rootNode.getChildNodes();
             assertEquals(((StoredNode)rootNode).getChildCount(), cl.getLength());
-            assertEquals(2, cl.getLength());
+            assertEquals(4, cl.getLength());
         	assertEquals(cl.item(0).getNodeName(), "a");
         	assertEquals(cl.item(1).getNodeName(), "b");
         	
@@ -82,6 +85,54 @@ public class NodeTest extends XMLTestCase {
         }
 	}
 	
+    public void testSiblingAxis() {
+        DBBroker broker = null;
+        DocumentImpl doc = null;
+        try {
+            assertNotNull(pool);
+            broker = pool.get(SecurityManager.SYSTEM_USER);
+            assertNotNull(broker);
+            
+            System.out.println("testSiblingAxis() ...");
+            
+            doc = root.getDocumentWithLock(broker, "test.xml");
+            Element rootNode = doc.getDocumentElement();
+            Element child = (Element) rootNode.getFirstChild();
+            assertNotNull(child);
+            assertEquals(child.getNodeName(), "a");
+            Node sibling = child.getNextSibling();
+            assertNotNull(sibling);
+            assertEquals(sibling.getNodeName(), "b");
+            while (sibling != null) {
+                System.out.println(sibling);
+                sibling = sibling.getNextSibling();
+            }
+            
+            NodeList cl = rootNode.getChildNodes();
+            sibling = cl.item(2).getFirstChild();
+            System.out.println("Sibling = " + sibling);
+            sibling = sibling.getNextSibling();
+            // should be null - there's no following sibling
+            System.out.println("Sibling = " + sibling);
+            
+            int count = 0;
+            sibling = cl.item(3);
+            while (sibling != null) {
+                System.out.println(sibling);
+                sibling = sibling.getPreviousSibling();
+                count++;
+            }
+            assertEquals(count, 4);
+            System.out.println("testSiblingAxis(): PASS");
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            if (doc != null) doc.getUpdateLock().release();
+            if (pool != null) pool.release(broker);
+        }
+    }
+    
 	public void testAttributeAxis() {
 		DBBroker broker = null;
 		DocumentImpl doc = null;
@@ -136,6 +187,34 @@ public class NodeTest extends XMLTestCase {
         }
 	}
 	
+    public void testVisitor() {
+        DBBroker broker = null;
+        DocumentImpl doc = null;
+        try {
+            assertNotNull(pool);
+            broker = pool.get(SecurityManager.SYSTEM_USER);
+            assertNotNull(broker);
+            
+            System.out.println("testVisitor() ...");
+            
+            doc = root.getDocumentWithLock(broker, "test.xml");
+            StoredNode rootNode = (StoredNode) doc.getDocumentElement();
+            NodeVisitor visitor = new NodeVisitor() {
+                public boolean visit(StoredNode node) {
+                    System.out.println(node.getNodeId() + "\t" + node.getNodeName());
+                    return true;
+                };
+            };
+            rootNode.accept(visitor);
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            if (doc != null) doc.getUpdateLock().release();
+            if (pool != null) pool.release(broker);
+        }
+    }
+    
 	protected void setUp() throws Exception {        
         DBBroker broker = null;
         try {

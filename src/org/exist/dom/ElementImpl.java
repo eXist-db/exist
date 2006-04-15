@@ -842,29 +842,16 @@ public class ElementImpl extends NamedNode implements Element {
     }
 
     public NodeList getChildNodes() {
-    	final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
-        final NodeProxy p = new NodeProxy(owner, nodeId);
-        p.setInternalAddress(getInternalAddress());
-        NodeListImpl childList = new NodeListImpl(1);
-        final Iterator iterator = getBroker().getNodeIterator(p);
-        //TODO : hasNext() test ? -pb
-        iterator.next();
-        traverseChildren(nodeId, childList, iterator, this);
+        final NodeListImpl childList = new NodeListImpl(1);
+        accept(new NodeVisitor() {
+            public boolean visit(StoredNode node) {
+                if (node.getNodeType() != Node.ATTRIBUTE_NODE && 
+                        node.nodeId.isChildOf(nodeId))
+                    childList.add(node);
+                return true;
+            }
+        });
         return childList;
-    }
-
-    protected void traverseChildren(NodeId target, NodeListImpl nodeList, Iterator iterator, StoredNode current) {
-    	if (current.hasChildNodes()) {
-	    	final int ccount = current.getChildCount();
-	        StoredNode next;
-	        for (int i = 0; i < ccount; i++) {
-	            next = (StoredNode) iterator.next();            
-	            if (next.getNodeId().isChildOf(target) && next.getNodeType() != Node.ATTRIBUTE_NODE)
-	            	nodeList.add(next);
-	            //Recursivity helps taversing...
-	            traverseChildren(target, nodeList, iterator, next);
-	        }
-    	}
     }
     
     /**
@@ -889,7 +876,7 @@ public class ElementImpl extends NamedNode implements Element {
     public Node getFirstChild() {
         if (!hasChildNodes() || getChildCount() == getAttributesCount())
             return null;
-        final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
+        final DocumentImpl owner = (DocumentImpl) getOwnerDocument();
         final NodeProxy p = new NodeProxy(owner, nodeId);
         p.setInternalAddress(getInternalAddress());
         final Iterator iterator = getBroker().getNodeIterator(p);
@@ -1561,4 +1548,19 @@ public class ElementImpl extends NamedNode implements Element {
 	public Object getUserData(String key) {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getUserData(String key) not implemented on class " + getClass().getName());
 	}
+    
+    public boolean accept(Iterator iterator, NodeVisitor visitor) {
+        if (!visitor.visit(this))
+            return false;
+        if (hasChildNodes()) {
+            final int ccount = getChildCount();
+            StoredNode next;
+            for (int i = 0; i < ccount; i++) {
+                next = (StoredNode) iterator.next();            
+                if (!next.accept(iterator, visitor))
+                    return false;
+            }
+        }
+        return true;
+    }
 }

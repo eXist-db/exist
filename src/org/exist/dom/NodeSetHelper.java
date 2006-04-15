@@ -502,7 +502,7 @@ public class NodeSetHelper {
             for (Iterator iCandidates = candidates.iterator(); iCandidates
                     .hasNext();) {
                 NodeProxy candidate = (NodeProxy) iCandidates.next();
-                if (candidate.before(reference)) {
+                if (candidate.before(reference, true)) {
                     // TODO : add transverse context
                     candidate.addContextNode(Expression.NO_CONTEXT_ID,
                             reference);
@@ -527,7 +527,7 @@ public class NodeSetHelper {
             for (Iterator iCandidates = candidates.iterator(); iCandidates
                     .hasNext();) {
                 NodeProxy candidate = (NodeProxy) iCandidates.next();
-                if (candidate.after(reference)) {
+                if (candidate.after(reference, true)) {
                     // TODO : add transverse context
                     candidate.addContextNode(Expression.NO_CONTEXT_ID,
                             reference);

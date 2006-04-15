@@ -203,80 +203,23 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
             return false;
         return otherNode.nodeId.equals(nodeId);
 	}
-
-	public boolean before(NodeValue other) throws XPathException {
-		return before(other, true);
-	}
 	
-	protected boolean before(NodeValue other, boolean includeAncestors) throws XPathException {
+	public boolean before(NodeValue other, boolean isPreceding) throws XPathException {
 		if (other.getImplementationType() != NodeValue.PERSISTENT_NODE)
 			throw new XPathException("cannot compare persistent node with in-memory node");
 		NodeProxy otherNode = (NodeProxy) other;
 		if (doc.getDocId() != otherNode.doc.getDocId())
 			return false;		
-		int la = doc.getTreeLevel(gid);
-		int lb = doc.getTreeLevel(otherNode.gid);
-		long pa = gid;
-        long pb = otherNode.gid;
-		if (la > lb) {
-			while (la > lb) {
-				pa = NodeSetHelper.getParentId(doc, pa, la);
-				--la;
-			}
-			if (pa == pb)
-				// a is a descendant of b
-				return false;
-			else
-				return pa < pb;
-		} else if (lb > la) {
-			while (lb > la) {
-				pb = NodeSetHelper.getParentId(otherNode.doc, pb, lb);
-				--lb;
-			}
-			if (pb == pa)
-				// a is an ancestor of b
-				return includeAncestors ? true : false;
-			else
-				return pa < pb;
-		} else
-			return pa < pb;
-	}
-
-	public boolean after(NodeValue other) throws XPathException {
-		return after(other, true);
+		return nodeId.before(otherNode.nodeId, isPreceding);
 	}
 	
-	protected boolean after(NodeValue other, boolean includeDescendants) throws XPathException {
+	public boolean after(NodeValue other, boolean isFollowing) throws XPathException {
 		if (other.getImplementationType() != NodeValue.PERSISTENT_NODE)
 			throw new XPathException("cannot compare persistent node with in-memory node");
 		NodeProxy otherNode = (NodeProxy) other;
 		if (doc.getDocId() != otherNode.doc.getDocId())
 			return false;		
-		int la = doc.getTreeLevel(gid);
-		int lb = doc.getTreeLevel(otherNode.gid);
-		long pa = gid;
-        long pb = otherNode.gid;
-		if (la > lb) {
-			while (la > lb) {
-				pa = NodeSetHelper.getParentId(doc, pa, la);
-				--la;
-			}
-			// a is a descendant of b
-			if (pa == pb)
-				return includeDescendants ? true : false;
-			else
-				return pa > pb;
-		} else if (lb > la) {
-			while (lb > la) {
-				pb = NodeSetHelper.getParentId(otherNode.doc, pb, lb);
-				--lb;
-			}
-			if (pb == pa)
-				return false;
-			else
-				return pa > pb;
-		} else
-			return pa > pb;
+		return nodeId.after(otherNode.nodeId, isFollowing);
 	}
 
 	public Document getOwnerDocument() {
