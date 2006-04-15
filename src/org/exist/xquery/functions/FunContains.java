@@ -28,8 +28,10 @@ import org.exist.dom.QName;
 import org.exist.util.Collations;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
+import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
@@ -76,24 +78,41 @@ public class FunContains extends CollatingFunction {
 		return Type.BOOLEAN;
 	}
 
-	public Sequence eval(
-		Sequence contextSequence,
-		Item contextItem)
-		throws XPathException {
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        } 
+        
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
-		String s1 =
-			getArgument(0)
-				.eval(contextSequence)
-				.getStringValue();
-		String s2 =
-			getArgument(1)
-				.eval(contextSequence)
-				.getStringValue();
-		Collator collator = getCollator(contextSequence, contextItem, 3);
-		if (Collations.indexOf(collator, s1, s2) != Constants.STRING_NOT_FOUND)
-			return BooleanValue.TRUE;
-		else
-			return BooleanValue.FALSE;
+		
+		Sequence result;
+
+		//s2 takes precedence over s1
+		String s2 = getArgument(1).eval(contextSequence).getStringValue();
+		if ("".equals(s2))		
+			result = BooleanValue.TRUE;
+		else {
+			String s1 = getArgument(0).eval(contextSequence).getStringValue();
+			if ("".equals(s1))
+				result = BooleanValue.FALSE;
+			else {
+				Collator collator = getCollator(contextSequence, contextItem, 3);
+				if (Collations.indexOf(collator, s1, s2) != Constants.STRING_NOT_FOUND)
+					return BooleanValue.TRUE;
+				else
+					return BooleanValue.FALSE;
+			}
+		}
+
+		if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result);        
+        
+        return result;        
 	}
 }
