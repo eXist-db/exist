@@ -262,7 +262,7 @@ public class StoredNode extends NodeImpl implements Visitable {
 		if (parentId == NodeId.DOCUMENT_NODE)
             return null;
 		// Filter out the temporary nodes wrapper element
-		if (parentId.getTreeLevel() == 2 && ((DocumentImpl)getOwnerDocument()).getCollection().isTempCollection())
+		if (parentId.getTreeLevel() == 1 && ((DocumentImpl)getOwnerDocument()).getCollection().isTempCollection())
 			return ownerDocument;
         return ownerDocument.getNode(parentId);
 	}
