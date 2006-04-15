@@ -30,9 +30,8 @@ import org.exist.xquery.Expression;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.value.DoubleValue;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
@@ -96,25 +95,48 @@ public class FunSubstring extends Function {
         Sequence result;
 		Sequence seq = arg0.eval(contextSequence);
 		if(seq.isEmpty())
-			return Sequence.EMPTY_SEQUENCE;
+			//If the value of $sourceString is the empty sequence, the zero-length string is returned.
+			result = StringValue.EMPTY_STRING;
         else {
-    		int start = ((DoubleValue)arg1.eval(contextSequence).itemAt(0).convertTo(Type.DOUBLE)).getInt();
-            //TODO : does this make sense ? -pb
-    		if (start <= 0)
-    			start = 1;
-            
-    		int length = 0;
-    		if(arg2 != null)
-    			length = ((NumericValue)arg2.eval(contextSequence).
-    				itemAt(0).convertTo(Type.DOUBLE)).getInt(); 
-    		if(start <= 0 || length < 0)
-    			throw new IllegalArgumentException("Illegal start or length argument");
     		String string = seq.getStringValue();
-    		if(length > string.length())
-    			length = string.length() - start + 1;
-    		if(start < 0 || --start + length > string.length())
-    			return new StringValue("");
-    		result = new StringValue((length > 0) ? string.substring(start, start + length) : string.substring(start));
+    		NumericValue startValue = ((NumericValue)(arg1.eval(contextSequence).itemAt(0).convertTo(Type.NUMBER))).round();
+    		if (startValue.isNaN())
+    			result = StringValue.EMPTY_STRING;
+    		else if (startValue.isInfinite())
+    			result = StringValue.EMPTY_STRING;
+    		else {
+    			int start = startValue.getInt();    		
+	    		if (start >= string.length()) 
+	    			//The characters returned do not extend beyond $sourceString
+	    			result = StringValue.EMPTY_STRING;    			
+	    		else if (arg2 == null) {
+	    			//If $startingLoc is zero or negative, only those characters in positions greater than zero are returned.
+	    			//Because we will substract 1 ;-)
+	    			if (start < 1)
+	    				start = 1;
+	    			result = new StringValue(string.substring(start - 1));
+	    		} else {
+	    			NumericValue lengthValue =((NumericValue)(arg2.eval(contextSequence).itemAt(0).convertTo(Type.NUMBER))).round();
+	    			if (lengthValue.isNaN())
+	    				result = StringValue.EMPTY_STRING;
+	    			else if (((NumericValue)lengthValue.plus(startValue)).isInfinite() ||
+	    					((NumericValue)lengthValue.plus(startValue)).getInt() >= string.length()) {
+	        			if (start < 0)
+	        				start = 0;        				
+	        			result = new StringValue(string.substring(start));
+	    			} else {
+		    			int length = lengthValue.getInt();
+		    			//If $startingLoc is zero or negative, only those characters in positions greater than zero are returned.
+		    			if (start <= 0) {    				
+		    				//Because we will will add 1
+		    				length = length + start - 1;
+		    				//Because we will substract 1 ;-)
+		    				start = 1;
+		    			}
+		    			result = new StringValue(string.substring(start - 1, start + length - 1));
+	    			}
+	    		}
+    		}
         }
         
         if (context.getProfiler().isEnabled()) 
