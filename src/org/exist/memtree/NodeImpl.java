@@ -163,6 +163,9 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	 * @see org.w3c.dom.Node#getNodeType()
 	 */
 	public short getNodeType() {
+		//Workaround for fn:string-length(fn:node-name(document {""}))
+		if (this.document == null)
+			return Node.DOCUMENT_NODE;
 		return document.nodeKind[nodeNumber];
 	}
 
@@ -389,6 +392,9 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	 * @see org.exist.xquery.value.Item#getType()
 	 */
 	public int getType() {
+		//Workaround for fn:string-length(fn:node-name(document {""}))
+		if (this.document == null)
+			return Type.DOCUMENT;		
 		int type = getNodeType();
 		switch (type) {
 			case Node.DOCUMENT_NODE :
