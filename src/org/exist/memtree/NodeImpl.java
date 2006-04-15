@@ -195,16 +195,16 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.NodeValue#after(org.exist.xquery.value.NodeValue)
 	 */
-	public boolean after(NodeValue other) throws XPathException {
+	public boolean after(NodeValue other, boolean isFollowing) throws XPathException {
 		if (other.getImplementationType() != NodeValue.IN_MEMORY_NODE)
-			throw new XPathException("annot compare persistent node with in-memory node");
+			throw new XPathException("annot compare persistent node with in-memory node"); 
 		return nodeNumber < ((NodeImpl) other).nodeNumber;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.NodeValue#before(org.exist.xquery.value.NodeValue)
 	 */
-	public boolean before(NodeValue other) throws XPathException {
+	public boolean before(NodeValue other, boolean isPreceding) throws XPathException {
 		if (other.getImplementationType() != NodeValue.IN_MEMORY_NODE)
 			throw new XPathException("annot compare persistent node with in-memory node");
 		return nodeNumber > ((NodeImpl) other).nodeNumber;
