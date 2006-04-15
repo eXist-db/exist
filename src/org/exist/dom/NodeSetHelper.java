@@ -296,7 +296,6 @@ public class NodeSetHelper {
             // first, try to find nodes belonging to the same doc
             if (reference.getDocument().getDocId() < candidate.getDocument()
                     .getDocId()) {
-                System.out.println("Next doc");
                 firstCandidate = null;
                 if (iReferences.hasNext())
                     reference = (NodeProxy) iReferences.next();
