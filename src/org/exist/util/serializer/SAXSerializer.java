@@ -352,6 +352,7 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
 		try {
 			nsSupport.popContext();
 			receiver.endElement(qname);
+			receiver.setDefaultNamespace(nsSupport.getURI(""));
 		} catch (TransformerException e) {
 			throw new SAXException(e.getMessage(), e);
 		}
