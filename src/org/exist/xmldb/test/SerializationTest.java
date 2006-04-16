@@ -23,11 +23,24 @@ public class SerializationTest extends XMLTestCase {
 		"	<entry>2</entry>" +
 		"</root>";
 	
-	private static final String XML_EXPECTED =
+	private static final String XML_EXPECTED1 =
 		"<exist:result xmlns:exist=\"http://exist.sourceforge.net/NS/exist\" hitCount=\"2\">\n" + 
 		"    <entry xmlns=\"http://foo.com\">1</entry>\n" + 
 		"    <entry xmlns=\"http://foo.com\">2</entry>\n" + 
 		"</exist:result>";
+	
+	private static final String XML_EXPECTED2 =
+		"<exist:result xmlns:exist=\"http://exist.sourceforge.net/NS/exist\" hitCount=\"1\">\n" +
+		"    <c:Site xmlns:c=\"urn:content\" xmlns=\"urn:content\">\n"+
+		//BUG : we should have
+		//<config xmlns="urn:config">123</config>
+        "        <config>123</config>\n" +
+        //BUG : we should have 
+        //<serverconfig xmlns="urn:config">123</serverconfig>
+        "        <serverconfig>123</serverconfig>\n" +
+		"    </c:Site>\n" +
+		"</exist:result>";
+
 	
 	public static void main(String[] args) {
 		junit.textui.TestRunner.run(SerializationTest.class);
@@ -43,7 +56,21 @@ public class SerializationTest extends XMLTestCase {
 			Resource resource = result.getMembersAsResource();
 			String str = resource.getContent().toString();
 			System.out.println(str);
-			assertXMLEqual(XML_EXPECTED, str);
+			assertXMLEqual(XML_EXPECTED1, str);
+			
+			//TODO : THIS IS BUGGY !
+			result = service.query("declare namespace config='urn:config'; " +
+					"declare namespace c='urn:content'; "  +
+					"declare variable $config {<config xmlns='urn:config'>123</config>}; " +
+					"declare variable $serverConfig {<serverconfig xmlns='urn:config'>123</serverconfig>}; " +
+					"<c:Site xmlns='urn:content' xmlns:c='urn:content'> " +
+					"{($config,$serverConfig)} " +
+					"</c:Site>");
+			resource = result.getMembersAsResource();
+			str = resource.getContent().toString();
+			System.out.println(str);
+			assertXMLEqual(XML_EXPECTED2, str);
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail(e.getMessage());
