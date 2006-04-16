@@ -39,7 +39,7 @@ public class IntegerValue extends NumericValue implements Indexable {
 	public final static IntegerValue ZERO = new IntegerValue(0);
 	private static final BigInteger ZERO_BIGINTEGER = new BigInteger("0");
 	private static final BigInteger ONE_BIGINTEGER = new BigInteger("1");
-	private static final BigInteger MINUS_ONE_BIGINTEGER = new BigInteger("1");
+	private static final BigInteger MINUS_ONE_BIGINTEGER = new BigInteger("-1");
 	private static final BigInteger LARGEST_LONG  = new BigInteger("9223372036854775808" );
 	private static final BigInteger SMALLEST_LONG  = LARGEST_LONG.negate();
 	private static final BigInteger LARGEST_INT  = new BigInteger("4294967296");
@@ -80,12 +80,13 @@ public class IntegerValue extends NumericValue implements Indexable {
 		this.type = requiredType;
 		try {
 			value =  new BigInteger(stringValue); // Long.parseLong(stringValue);
+			if (!(checkType(value, type)))
+					throw new XPathException("FORG0001: can not convert '" + 
+							stringValue + "' to " + Type.getTypeName(type));
 		} catch (NumberFormatException e) {
-				throw new XPathException(
+			throw new XPathException(
 					"failed to convert '" + stringValue + "' to an integer: " + e.getMessage());
-//			}
 		}
-		checkType(value, type);
 	}
 
 	/**
@@ -125,7 +126,7 @@ public class IntegerValue extends NumericValue implements Indexable {
 			return value.compareTo(MINUS_ONE_BIGINTEGER) == 1; // > -1
 		
 		case Type.NEGATIVE_INTEGER :
-			return value.compareTo(ZERO_BIGINTEGER) == -1; // <0
+			return value.compareTo(ZERO_BIGINTEGER) == -1 ; // <0
 		case Type.NON_POSITIVE_INTEGER :
 			return value.compareTo(ONE_BIGINTEGER) == -1; // <1
 		
