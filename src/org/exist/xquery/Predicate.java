@@ -228,7 +228,7 @@ public class Predicate extends PathExpr {
             ContextItem contextItem = currentNode.getContext();
             if (contextItem == null) {
                 throw new XPathException("Internal evaluation error: context is missing for node " +
-                        currentNode.getGID() + " !");
+                        currentNode.getNodeId() + " !");
             }
             //TODO : review to consider transverse context
             while (contextItem != null) {
