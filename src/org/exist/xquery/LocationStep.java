@@ -29,6 +29,7 @@ import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.NodeSetHelper;
+import org.exist.dom.NodeVisitor;
 import org.exist.dom.StoredNode;
 import org.exist.dom.VirtualNodeSet;
 import org.exist.numbering.NodeId;
@@ -505,24 +506,13 @@ public class LocationStep extends Step {
     protected NodeSet getSiblings(XQueryContext context, NodeSet contextSet) {
         if (test.isWildcardTest()) {
             NodeSet result = new ExtArrayNodeSet(contextSet.getLength());
+            SiblingVisitor visitor = new SiblingVisitor(result);
             for (Iterator i = contextSet.iterator(); i.hasNext();) {
                 NodeProxy current = (NodeProxy) i.next();
-                StoredNode currentNode = (StoredNode) current.getNode();
-                while ((currentNode = getNextSibling(currentNode)) != null) {
-                    if (test.matches(currentNode)) {
-                        NodeProxy sibling = result.get((DocumentImpl) currentNode.getOwnerDocument(), currentNode.getNodeId());
-                        if (sibling == null) {
-                            sibling = new NodeProxy((DocumentImpl) currentNode.getOwnerDocument(), currentNode.getNodeId(),
-                                    currentNode.getInternalAddress());
-                            if (Expression.NO_CONTEXT_ID != contextId) {
-                                sibling.addContextNode(contextId, current);
-                            } else
-                                sibling.copyContext(current);
-                        } else if (Expression.NO_CONTEXT_ID != contextId)
-                            sibling.addContextNode(contextId, current);
-                        result.add(sibling);
-                    }
-                }
+                NodeId parentId = current.getNodeId().getParentId();
+                StoredNode parentNode = (StoredNode) context.getBroker().objectWith(current.getOwnerDocument(), parentId);
+            	visitor.setContext(current);
+            	parentNode.accept(visitor);
             }
             return result;
         } else {
@@ -550,16 +540,41 @@ public class LocationStep extends Step {
             }
         }
     }
-
-    protected StoredNode getNextSibling(NodeImpl node) {
-        switch (axis) {
-            case Constants.FOLLOWING_SIBLING_AXIS:
-                return (StoredNode) node.getNextSibling();
-            case Constants.PRECEDING_SIBLING_AXIS:
-                return (StoredNode) node.getPreviousSibling();
-            default:
-                throw new IllegalArgumentException("Unsupported axis specified");
-        }
+    
+    private class SiblingVisitor implements NodeVisitor {
+    	
+    	private NodeSet resultSet;
+    	private NodeProxy contextNode;
+    	
+    	public SiblingVisitor(NodeSet resultSet) {
+    		this.resultSet = resultSet;
+    	}
+    	
+    	public void setContext(NodeProxy contextNode) {
+    		this.contextNode = contextNode;
+    	}
+    	
+    	public boolean visit(StoredNode current) {
+    		if (contextNode.getNodeId().getTreeLevel() == current.getNodeId().getTreeLevel()) {
+    			int cmp = current.getNodeId().compareTo(contextNode.getNodeId());
+    			if (((axis == Constants.FOLLOWING_SIBLING_AXIS && cmp > 0) || 
+    					(axis == Constants.PRECEDING_SIBLING_AXIS && cmp < 0)) &&
+    					test.matches(current)) {
+                    NodeProxy sibling = resultSet.get((DocumentImpl) current.getOwnerDocument(), current.getNodeId());
+                    if (sibling == null) {
+                        sibling = new NodeProxy((DocumentImpl) current.getOwnerDocument(), current.getNodeId(),
+                                current.getInternalAddress());
+                        if (Expression.NO_CONTEXT_ID != contextId) {
+                            sibling.addContextNode(contextId, contextNode);
+                        } else
+                            sibling.copyContext(contextNode);
+                        resultSet.add(sibling);
+                    } else if (Expression.NO_CONTEXT_ID != contextId)
+                        sibling.addContextNode(contextId, contextNode);
+    			}
+    		}
+    		return true;
+    	}
     }
 
     protected NodeSet getPreceding(XQueryContext context, NodeSet contextSet)
