@@ -330,19 +330,6 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         return get(pos);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.exist.dom.NodeSet#remove(org.exist.dom.NodeProxy)
-     */
-    public void remove(NodeProxy node) {
-        final Part part = getPart(node.getDocument(), false, 0);
-        if (part == null)
-            return;
-        part.remove(node);
-        setHasChanged();
-    }
-
     public NodeSet hasChildrenInSet(NodeSet al, int mode, int contextId) {
     	NodeSet result = new ExtArrayNodeSet();
 		NodeProxy node;
@@ -552,24 +539,6 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
             return array[pos];
         }
 
-        NodeProxy get(long gid) {
-            int low = 0;
-            int high = length - 1;
-            int mid;
-            NodeProxy p;
-            while (low <= high) {
-                mid = (low + high) / 2;
-                p = array[mid];
-                if (p.getGID() == gid)
-                    return p;
-                if (p.getGID() > gid)
-                    high = mid - 1;
-                else
-                    low = mid + 1;
-            }
-            return null;
-        }
-
         NodeProxy get(NodeId nodeId) {
             int low = 0;
             int high = length - 1;
@@ -688,28 +657,6 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
                 }
             }
             return result;
-        }
-
-        void remove(NodeProxy node) {
-            int low = 0;
-            int high = length - 1;
-            int mid = -1;
-            NodeProxy p;
-            while (low <= high) {
-                mid = (low + high) / 2;
-                p = array[mid];
-                if (p.getGID() == node.getGID())
-                    break;
-                if (p.getGID() > node.getGID())
-                    high = mid - 1;
-                else
-                    low = mid + 1;
-            }
-            if (low > high)
-                return; // not found
-            if (mid < length - 1)
-                System.arraycopy(array, mid + 1, array, mid, length - mid - 1);
-            --length;
         }
 
         /**

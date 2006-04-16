@@ -156,17 +156,6 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	public abstract void addAll(NodeSet other);
 
 	/**
-	 * Remove a node. By default, this method throws a
-	 * RuntimeException.
-	 * 
-	 * @param node
-	 */
-	public void remove(NodeProxy node) {
-		throw new RuntimeException(
-			"remove not implemented for class " + getClass().getName());
-	}
-
-	/**
 	 * Return the number of nodes contained in this node set.
 	 */
 	public abstract int getLength();

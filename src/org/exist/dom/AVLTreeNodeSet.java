@@ -325,20 +325,6 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
         return searchData(proxy) != null;
     }
 
-    /* (non-Javadoc)
-      * @see org.exist.dom.NodeSet#remove(org.exist.dom.NodeProxy)
-      */
-    public void remove(NodeProxy node) {
-        Node n = searchData(node);
-        if(n == null) {
-            System.out.println(node.getGID() + " not found");
-            return;
-        }
-        //System.out.println("removing node " + n.data.gid);
-        removeNode(n);
-        //System.out.println(getLength());
-    }
-
     public void removeNode(Node node) {
         --size;
         Node tempNode = node;

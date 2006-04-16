@@ -247,7 +247,6 @@ public class VirtualNodeSet extends AbstractNodeSet {
 					domIter = proxy.getDocument().getBroker().getNodeIterator(proxy);
 					StoredNode node = (StoredNode) domIter.next();
 					node.setOwnerDocument(proxy.getDocument());
-					node.setGID(proxy.getGID());
 					node.setNodeId(proxy.getNodeId());
 					addChildren(proxy, result, node, domIter, 0);
 				}
