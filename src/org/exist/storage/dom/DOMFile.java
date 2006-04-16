@@ -1089,8 +1089,8 @@ public class DOMFile extends BTree implements Lockable {
 			do {
 				id = id.getParentId();
 				if (id == NodeId.DOCUMENT_NODE) {
-					SanityCheck.TRACE("Node " + node.getDocument().getDocId() + ":" + node.getGID() + " not found.");
-					throw new BTreeException("node " + node.getGID() + " not found.");
+					SanityCheck.TRACE("Node " + node.getDocument().getDocId() + ":" + node.getNodeId() + " not found.");
+					throw new BTreeException("node " + node.getNodeId() + " not found.");
 				}
 				NativeBroker.NodeRef parentRef = new NativeBroker.NodeRef(doc.getDocId(), id);
 				try {
