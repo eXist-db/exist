@@ -83,7 +83,8 @@ public class DatabaseResources {
             ="urn:oasis:names:tc:entity:xmlns:xml:catalog";
     
     public static final String FINDSCHEMA
-            ="for $schema in collection('COLLECTION')/xs:schema"
+            ="declare namespace xs=\"http://www.w3.org/2001/XMLSchema\";"
+            +"for $schema in collection('COLLECTION')//xs:schema"
             +"[@targetNamespace = 'TARGET'] return document-uri($schema)";
     
     public static final String FINDCATALOG
@@ -220,6 +221,7 @@ public class DatabaseResources {
         logger.debug("Find schema with namespace '"+namespace+"' in '"+collection+"'.");
         String path=null;
         
+        logger.info("collection path "+collection.getCollectionPath());
         // Fill parameters for query
         String xquery = FINDSCHEMA.replaceAll("COLLECTION",collection.getCollectionPath()).replaceAll("TARGET",namespace);
         
