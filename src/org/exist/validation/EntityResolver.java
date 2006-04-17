@@ -235,6 +235,7 @@ public class EntityResolver  implements XMLEntityResolver {
             
         } else {
             // Search for grammar, Might be 'somewhere' in database.
+            logger.debug("Search for grammar.");
             
             if( xrid.getNamespace() !=null ){
                 

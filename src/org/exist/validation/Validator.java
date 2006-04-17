@@ -273,4 +273,8 @@ public class Validator {
     public GrammarPool getGrammarPool(){
         return grammarPool;
     }
+    
+    public void setGrammarPool(GrammarPool gp){
+        grammarPool = gp;
+    }
 }
