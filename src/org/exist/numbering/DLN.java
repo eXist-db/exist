@@ -30,20 +30,32 @@ import java.io.IOException;
  * Represents a node id in the form of a dynamic level number (DLN). DLN's are
  * hierarchical ids, which borrow from Dewey's decimal classification. Examples for
  * node ids: 1, 1.1, 1.2, 1.2.1, 1.2.2, 1.3. In this case, 1 represents the root node, 1.1 is
- * the first node on the second level, 1.2 the second, and so on. 
+ * the first node on the second level, 1.2 the second, and so on.
+ * 
+ * To support efficient insertion of new nodes between existing nodes, we use the
+ * concept of sublevel ids. Between two nodes 1.1 and 1.2, a new node can be inserted
+ * as 1.1/1, where the / is the sublevel separator. The / does not start a new level. 1.1 and 
+ * 1.1/1 are thus on the same level of the tree.
+ * 
+ * In the binary encoding, the '.' is represented by a 0-bit while '/' is written as a 1-bit.
  */
 public class DLN extends DLNBase implements NodeId {
 
+	/**
+	 * Constructs a new DLN with a single id with value 1.
+	 *
+	 */
     public DLN() {
         this(1);
     }
 
-    public DLN(int[] id) {
-        this(id[0]);
-        for (int i = 1; i < id.length; i++)
-            addLevelId(id[i], false);
-    }
-
+    /**
+     * Constructs a new DLN by parsing the string argument.
+     * In the string, levels are separated by a '.', sublevels by
+     * a '/'. For example, '1.2/1' or '1.2/1.2' are valid ids.
+     * 
+     * @param s
+     */
     public DLN(String s) {
         bits = new byte[1];
         StringBuffer buf = new StringBuffer(16);
@@ -61,23 +73,56 @@ public class DLN extends DLNBase implements NodeId {
             addLevelId(Integer.parseInt(buf.toString()), subValue);
     }
     
+    /**
+     * Constructs a new DLN, using the passed id as its
+     * single level value.
+     * 
+     * @param id
+     */
     public DLN(int id) {
         bits = new byte[1];
         addLevelId(id, false);
     }
 
+    /**
+     * Constructs a new DLN by copying the data of the
+     * passed DLN.
+     * 
+     * @param other
+     */
     public DLN(DLN other) {
         super(other);
     }
 
+    /**
+     * Reads a DLN from the given byte[].
+     * 
+     * @param units number of bits to read
+     * @param data the byte[] to read from
+     * @param startOffset the start offset to start reading at
+     */
     public DLN(int units, byte[] data, int startOffset) {
         super(units, data, startOffset);
     }
 
+    /**
+     * Reads a DLN from the given {@link VariableByteInput} stream.
+     * 
+     * @see #write(VariableByteOutputStream)
+     * @param is
+     * @throws IOException
+     */
     public DLN(VariableByteInput is) throws IOException {
         super(is);
     }
 
+    /**
+     * Create a new DLN by copying nbits bits from the given 
+     * byte[].
+     * 
+     * @param data
+     * @param nbits
+     */
     protected DLN(byte[] data, int nbits) {
         super(data, nbits);
     }
@@ -106,6 +151,15 @@ public class DLN extends DLNBase implements NodeId {
         return sibling;
     }
 
+    /**
+     * Returns a new DLN representing the parent of the
+     * current node. If the current node is the root element
+     * of the document, the method returns 
+     * {@link NodeId#DOCUMENT_NODE}. If the current node
+     * is the document node, null is returned.
+     * 
+     * @see NodeId#getParentId()
+     */
     public NodeId getParentId() {
         if (this == DOCUMENT_NODE)
             return null;
@@ -126,9 +180,11 @@ public class DLN extends DLNBase implements NodeId {
 
     public boolean isChildOf(NodeId parent) {
     	DLN other = (DLN) parent;
-    	if(!startsWith(other))
+    	if(!startsWith(other)) {
+    		System.out.println(this + " does not start with " + other);
     		return false;
-    	int levels = getLevelCount(other.bitIndex + 1);
+    	}
+    	int levels = getLevelCount(other.bitIndex + 2);
     	return levels == 1;
     }
 
@@ -186,7 +242,7 @@ public class DLN extends DLNBase implements NodeId {
      * @throws IOException
      */
     public void write(VariableByteOutputStream os) throws IOException {
-        os.writeByte((byte) units());
+        os.writeShort((short) units());
         os.write(bits, 0, bits.length);
     }
 

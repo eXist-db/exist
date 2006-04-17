@@ -81,6 +81,15 @@ public class DLNBase implements Comparable {
 
     protected final static int UNIT_SHIFT = 3;
 
+    /** A 0-bit is used to mark the start of a new level */
+    protected final static int LEVEL_SEPARATOR = 0;
+    
+    /** 
+     * A 1-bit marks the start of a sub level, which is logically a part
+     * of the current level.
+     */
+    protected final static int SUBLEVEL_SEPARATOR = 1;
+    
     // the bits are stored in a byte[] 
     protected byte[] bits;
 
@@ -101,13 +110,12 @@ public class DLNBase implements Comparable {
     public DLNBase(int units, byte[] data, int startOffset) {
     	if (units < 0)
     		throw new IllegalArgumentException("Negative size for DLN: " + units);
-    	int bitCnt = units * BITS_PER_UNIT;
-        int blen = bitCnt / 8;
-        if (bitCnt % 8 > 0)
+        int blen = units / 8;
+        if (units % 8 > 0)
         	++blen;
         bits = new byte[blen];
         System.arraycopy(data, startOffset, bits, 0, blen);
-        bitIndex = units * BITS_PER_UNIT - 1;
+        bitIndex = units - 1;
     }
 
     protected DLNBase(byte[] data, int nbits) {
@@ -129,14 +137,13 @@ public class DLNBase implements Comparable {
     }
 
     public DLNBase(VariableByteInput is) throws IOException {
-        final int units = is.readByte();
-        final int bitCnt = units * BITS_PER_UNIT;
+        final int bitCnt = is.readShort();
         int blen = bitCnt / 8;
         if (bitCnt % 8 > 0)
         	++blen;
         bits = new byte[blen];
         is.read(bits);
-        bitIndex = units * BITS_PER_UNIT - 1;
+        bitIndex = bitCnt - 1;
     }
 
     /**
@@ -166,7 +173,7 @@ public class DLNBase implements Comparable {
      * Increments the last level id by one.
      */
     public void incrementLevelId() {
-        int last = lastLevelOffset();
+        int last = lastFieldPosition();
         bitIndex = last - 1;
         setCurrentLevelId(getLevelId(last) + 1);
     }
@@ -223,7 +230,7 @@ public class DLNBase implements Comparable {
      * @return the number of units
      */
     public int units() {
-        return (bitIndex + 1) / BITS_PER_UNIT;
+    	return bitIndex + 1;
     }
 
     /**
@@ -257,9 +264,11 @@ public class DLNBase implements Comparable {
             int units = unitsUsed(bit, bits);
             bit += units;
             bit += bitWidth(units);
-            if (bit < bitIndex)
-                bit++;
-            count++;
+            if (bit < bitIndex) {
+            	if ((bits[bit >> UNIT_SHIFT] & (1 << ((7 - bit++) & 7))) == LEVEL_SEPARATOR)
+            		++count;
+            } else
+            	++count;
         }
         return count;
     }
@@ -286,11 +295,28 @@ public class DLNBase implements Comparable {
      * @return start-offset of the last level id.
      */
     protected int lastLevelOffset() {
+    	int bit = 0;
+        int lastOffset = 0;
+        while (bit <= bitIndex) {
+        	// check if the next bit starts a new level or just a sub-level component
+            if (bit > 0) {
+            	if ((bits[bit >> UNIT_SHIFT] & (1 << ((7 - bit) & 7))) == LEVEL_SEPARATOR)
+            		lastOffset = bit;
+            	++bit;
+            }
+            int units = unitsUsed(bit, bits);
+            bit += units;
+            bit += bitWidth(units);
+        }
+        return lastOffset;
+    }
+    
+    protected int lastFieldPosition() {
         int bit = 0;
         int lastOffset = 0;
         while (bit <= bitIndex) {
-            if (bit > 0 && (bits[bit >> UNIT_SHIFT] & (1 << ((7 - bit) & 7))) == 0)
-                lastOffset = bit++;
+            if (bit > 0)
+                lastOffset = ++bit;
             int units = unitsUsed(bit, bits);
             bit += units;
             bit += bitWidth(units);
@@ -429,10 +455,10 @@ public class DLNBase implements Comparable {
         int offset = 0;
         while (offset <= bitIndex) {
             if (offset > 0) { 
-                    if ((bits[offset >> UNIT_SHIFT] & (1 << ((7 - offset++) & 7))) == 0)
-                        buf.append('.');
-                    else
-                        buf.append('/');
+            	if ((bits[offset >> UNIT_SHIFT] & (1 << ((7 - offset++) & 7))) == 0)
+            		buf.append('.');
+            	else
+            		buf.append('/');
             }
             int id = getLevelId(offset);
             buf.append(id);
