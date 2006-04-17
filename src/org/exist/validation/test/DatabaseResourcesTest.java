@@ -107,10 +107,15 @@ public class DatabaseResourcesTest extends TestCase {
         
         System.out.println(">>> testInsertXsdGrammar");
         System.out.println(eXistHome);
-        File schema = new File(eXistHome , ABOOKFILES+"/addressbook.xsd");
         
+        File schema = new File(eXistHome , ABOOKFILES+"/addressbook.xsd");
         byte grammar[] = dt.readFile(schema);
         assertTrue( dbResources.insertResource(DBGRAMMARS+"/schemas/addressbook.xsd",grammar) );
+        
+        File catalog = new File(eXistHome , ABOOKFILES+"/catalog_schema.xml");
+        grammar = dt.readFile(catalog);
+        assertTrue( dbResources.insertResource(DBGRAMMARS+"/schemas/catalog_schema.xml",grammar) );
+        
         
         System.out.println("<<<");
     }
@@ -190,18 +195,21 @@ public class DatabaseResourcesTest extends TestCase {
         try {
             System.out.println(">>> testXsdValidDocument");
             
+            validator.getGrammarPool().clear();
+            
             File file = new File(eXistHome , ABOOKFILES+"/addressbook_valid.xml");
             
             ValidationReport report = validator.validate(
                     new FileInputStream(file) );
             
-            assertTrue( report.isValid() );
-            
             System.out.println(report.toString() );
             
-            System.out.println("<<<");
+            assertTrue( report.isValid() );
+            
         } catch (Exception e) {
             fail(e.getMessage());
+        } finally {
+            System.out.println("<<<");
         }
     }
     
@@ -209,17 +217,20 @@ public class DatabaseResourcesTest extends TestCase {
         try {
             System.out.println(">>> testXsdInvalidDocument");
             
+            validator.getGrammarPool().clear();
+            
             File file = new File(eXistHome , ABOOKFILES+"/addressbook_invalid.xml");
             
             ValidationReport report = validator.validate( new FileInputStream(file) );
             
-            assertFalse( report.isValid() );
-            
             System.out.println(report.toString());
             
-            System.out.println("<<<");
+            assertFalse( report.isValid() );
+            
         } catch (Exception e) {
             fail(e.getMessage());
+        } finally {
+            System.out.println("<<<");
         }
     }
     
@@ -227,18 +238,21 @@ public class DatabaseResourcesTest extends TestCase {
         try {
             System.out.println(">>> testDtdValidDocument");
             
+            validator.getGrammarPool().clear();
+            
             File file = new File(eXistHome , DTDFILES+"/hamlet_valid.xml");
             
             ValidationReport report = validator.validate(
                     new FileInputStream(file), "/db/grammar/dtds/catalog.xml");
             
-            assertTrue( report.isValid() );
-            
             System.out.println(report.toString());
             
-            System.out.println("<<<");
+            assertTrue( report.isValid() );
+            
         } catch (Exception e) {
             fail(e.getMessage());
+        } finally {
+            System.out.println("<<<");
         }
     }
     
@@ -246,17 +260,69 @@ public class DatabaseResourcesTest extends TestCase {
         try {
             System.out.println(">>> testDtdInvalidDocument");
             
+            validator.getGrammarPool().clear();
+            
             File file = new File(eXistHome , DTDFILES+"/hamlet_invalid.xml");
             
             ValidationReport report = validator.validate( new FileInputStream( file ) );
             
+            System.out.println(report.toString());
             assertFalse( report.isValid() );
             
-            System.out.println(report.toString());
             
-            System.out.println("<<<");
         } catch (Exception e) {
             fail(e.getMessage());
+        } finally {
+            System.out.println("<<<");
+        }
+    }
+    
+    public void testCatalogValidXml(){
+        try {
+            System.out.println(">>> testCatalogValidXml");
+            
+            validator.getGrammarPool().clear();
+            
+            File file = new File(eXistHome , ABOOKFILES+"/addressbook_valid.xml");
+            
+            ValidationReport report = validator.validate(
+                    new FileInputStream(file) , DBGRAMMARS +"/schemas/catalog_schema.xml" );
+            
+            System.out.println(report.toString() );
+            
+            assertTrue( report.isValid() );
+            
+        } catch (Exception e) {
+            fail(e.getMessage());
+        } finally {
+            System.out.println("<<<");
+        }
+    }
+    
+    public void testCatalogInvalidXml(){
+        try {
+            System.out.println(">>> testCatalogInvalidXml");
+            
+            validator.getGrammarPool().clear();
+            
+            File file = new File(eXistHome , ABOOKFILES+"/addressbook_invalid.xml");
+            
+            ValidationReport report = validator.validate(
+                    new FileInputStream(file) , DBGRAMMARS +"/schemas/catalog_schema.xml" );
+            
+            System.out.println(report.toString() );
+            assertFalse( report.isValid() );
+            
+            assertFalse( "Error report indicates that grammar or catalog could not be found", 
+                    report.toString().contains( "Error (2,61) : cvc-elt.1: Cannot find the declaration of element 'addressBook'." ) );
+            
+            assertTrue( "Content error report is different then exptected", 
+                    report.toString().contains( "Error (12,15) : cvc-complex-type.2.4.a: Invalid content was found starting with element 'name'. One of '{\"http://jmvanel.free.fr/xsd/addressBook\":cname}' is expected."));
+            
+        } catch (Exception e) {
+            fail(e.getMessage());
+        } finally {
+            System.out.println("<<<");
         }
     }
     
