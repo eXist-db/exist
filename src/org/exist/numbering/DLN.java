@@ -41,12 +41,29 @@ public class DLN extends DLNBase implements NodeId {
     public DLN(int[] id) {
         this(id[0]);
         for (int i = 1; i < id.length; i++)
-            addLevelId(id[i]);
+            addLevelId(id[i], false);
     }
 
+    public DLN(String s) {
+        bits = new byte[1];
+        StringBuffer buf = new StringBuffer(16);
+        boolean subValue = false;
+        for (int p = 0; p < s.length(); p++) {
+            char ch = s.charAt(p);
+            if (ch == '.' || ch == '/') {
+                addLevelId(Integer.parseInt(buf.toString()), subValue);
+                subValue = ch == '/';
+                buf.setLength(0);
+            } else
+                buf.append(ch);
+        }
+        if (buf.length() > 0)
+            addLevelId(Integer.parseInt(buf.toString()), subValue);
+    }
+    
     public DLN(int id) {
         bits = new byte[1];
-        addLevelId(id);
+        addLevelId(id, false);
     }
 
     public DLN(DLN other) {
@@ -73,7 +90,7 @@ public class DLN extends DLNBase implements NodeId {
      */
     public NodeId newChild() {
         DLN child = new DLN(this);
-        child.addLevelId(1);
+        child.addLevelId(1, false);
         return child;
     }
 
@@ -174,16 +191,11 @@ public class DLN extends DLNBase implements NodeId {
     }
 
     public static void main(String[] args) {
-        DLN id0 = new DLN(new int[] { 1, 2, 3 });
-        DLN id1 = new DLN(new int[] { 1, 2, 4 });
-        DLN id2 = new DLN(new int[] { 1, 3, 1 });
-        DLN id3 = new DLN(new int[] { 1, 1, 1 });
-        DLN id4 = new DLN(new int[] { 1, 2, 4, 1 });
-        DLN id5 = new DLN(new int[] { 1, 1, 4, 1 });
-        System.out.println(id0.toString() + " sibling of " + id1.toString() + ": " + id0.isSiblingOf(id1));
-        System.out.println(id0.toString() + " sibling of " + id2.toString() + ": " + id0.isSiblingOf(id2));
-        System.out.println(id2.toString() + " sibling of " + id3.toString() + ": " + id2.isSiblingOf(id3));
-        System.out.println(id4.toString() + " sibling of " + id1.toString() + ": " + id4.isSiblingOf(id1));
-        System.out.println(id5.toString() + " sibling of " + id1.toString() + ": " + id5.isSiblingOf(id1));
+        DLN id0 = new DLN("1.13.2/1");
+        System.out.println(id0.debug());
+        int last = id0.lastLevelOffset();
+        System.out.println("Last: " + last);
+        DLN parent = (DLN) id0.getParentId();
+        System.out.println(parent.debug());
     }
 }

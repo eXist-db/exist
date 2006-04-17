@@ -21,10 +21,10 @@
  */
 package org.exist.numbering;
 
-import org.exist.storage.io.VariableByteInput;
-
 import java.io.IOException;
 import java.util.Arrays;
+
+import org.exist.storage.io.VariableByteInput;
 
 /**
  * Base class representing a node id in the form of a dynamic level number (DLN).
@@ -157,10 +157,11 @@ public class DLNBase implements Comparable {
      *
      * @param levelId initial value
      */
-    public void addLevelId(int levelId) {
+    public void addLevelId(int levelId, boolean isSubLevel) {
+        if (bitIndex > -1) setNextBit(isSubLevel);
         setCurrentLevelId(levelId);
     }
-
+    
     /**
      * Increments the last level id by one.
      */
@@ -256,6 +257,8 @@ public class DLNBase implements Comparable {
             int units = unitsUsed(bit, bits);
             bit += units;
             bit += bitWidth(units);
+            if (bit < bitIndex)
+                bit++;
             count++;
         }
         return count;
@@ -285,8 +288,9 @@ public class DLNBase implements Comparable {
     protected int lastLevelOffset() {
         int bit = 0;
         int lastOffset = 0;
-        while (bit > -1 && bit <= bitIndex) {
-            lastOffset = bit;
+        while (bit <= bitIndex) {
+            if (bit > 0 && (bits[bit >> UNIT_SHIFT] & (1 << ((7 - bit) & 7))) == 0)
+                lastOffset = bit++;
             int units = unitsUsed(bit, bits);
             bit += units;
             bit += bitWidth(units);
@@ -295,7 +299,7 @@ public class DLNBase implements Comparable {
     }
 
     /**
-     * Set (or unset) then next bit in the current sequence
+     * Set (or unset) the next bit in the current sequence
      * of bits. The current position is moved forward and the
      * bit set is resized if necessary.
      *
@@ -422,10 +426,17 @@ public class DLNBase implements Comparable {
 
     public String toString() {
         StringBuffer buf = new StringBuffer();
-        int[] ids = getLevelIds();
-        for (int i = 0; i < ids.length; i++) {
-            if (i > 0) buf.append('.');
-            buf.append(ids[i]);
+        int offset = 0;
+        while (offset <= bitIndex) {
+            if (offset > 0) { 
+                    if ((bits[offset >> UNIT_SHIFT] & (1 << ((7 - offset++) & 7))) == 0)
+                        buf.append('.');
+                    else
+                        buf.append('/');
+            }
+            int id = getLevelId(offset);
+            buf.append(id);
+            offset += getUnitsRequired(id) * BITS_PER_UNIT;
         }
         return buf.toString();
     }
