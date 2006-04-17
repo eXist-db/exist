@@ -23,9 +23,12 @@
 package org.exist.validation.internal;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
@@ -36,6 +39,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.xacml.AccessContext;
+import org.exist.source.ClassLoaderSource;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
@@ -45,8 +49,11 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQuery;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.xml.sax.InputSource;
@@ -60,104 +67,71 @@ import org.xml.sax.SAXException;
  */
 public class DatabaseResources {
     
+    public static String FIND_XSD 
+           = "org/exist/validation/internal/query/find_schema.xq";
+    
+    public static String FIND_PUBLICID_IN_CATALOGS
+           = "org/exist/validation/internal/query/find_publicid_in_catalogs.xq";
+    
+    public static String FIND_XSD_IN_CATALOG 
+           = "org/exist/validation/internal/query/find_xsd_in_catalog.xq";
+    
+    public static String FIND_DTD_IN_CATALOG 
+           = "org/exist/validation/internal/query/find_dtd_in_catalog.xq";
+    
+    public static String PUBLICID 
+            = "publicId";
+    
+    public static String TARGETNAMESPACE 
+            = "targetNamespace";
+    
+    public static String CATALOG 
+            = "catalog";
+    
     /** Local reference to database  */
     private BrokerPool brokerPool = null;
     
     /** Local logger */
     private final static Logger logger = Logger.getLogger(DatabaseResources.class);
     
-    /** Path to grammar in database  */
-    public String GRAMMARBASE = DBBroker.SYSTEM_COLLECTION +"/grammar";
-    public String XSDBASE = DBBroker.ROOT_COLLECTION; // TODO check is this ok
-    public String DTDBASE = GRAMMARBASE + "/dtd";
-    public String DTDCATALOG = DTDBASE + "/catalog.xml";
-    
-    public static String NOGRAMMAR = "NONE";
-    
-//    // TODO remove
-//    public static int GRAMMAR_UNKNOWN = 0;
-    public static int GRAMMAR_XSD = 1;
-    public static int GRAMMAR_DTD = 2;
-    
-    public static final String OASISCATALOGURN
-            ="urn:oasis:names:tc:entity:xmlns:xml:catalog";
-    
-    public static final String FINDSCHEMA
-            ="declare namespace xs=\"http://www.w3.org/2001/XMLSchema\";"
-            +"for $schema in collection('COLLECTION')//xs:schema"
-            +"[@targetNamespace = 'TARGET'] return document-uri($schema)";
-    
-    public static final String FINDCATALOG
-            ="declare namespace catalogns='"+OASISCATALOGURN+"';"
-            +"for $catalog in collection('COLLECTION')/catalogns:catalog "
-            +"return document-uri($catalog)";
-    
-    public static final String FINDDTD
-            ="let $docs := for $doc in collection($collection) "
-            +"return document-uri($doc) for $doc in $docs "
-            +"where ends-with($doc, '.dtd') return $doc";
-    
-    public static final String FINDXSDINCATALOG
-            ="declare namespace ctlg='"+OASISCATALOGURN+"';"
-            +"for $schema in fn:document('CATALOGFILE')/ctlg:catalog"
-            +"/ctlg:uri[@name = 'NAMESPACE']/@uri return $schema";
-    
-    public static final String FINDDTDINCATALOG
-            ="declare namespace ctlg='"+OASISCATALOGURN+"';"
-            +"for $dtd in fn:document('CATALOGFILE')/ctlg:catalog"
-            +"/ctlg:public[@publicId = 'PUBLICID']/@uri return $dtd";
-    
-    public static final String FINDPUBLICIDINCATALOGS
-            ="declare namespace ctlg='"+OASISCATALOGURN+"';"
-            +"for $dtd in collection('COLLECTION')/ctlg:catalog"
-            +"/ctlg:public[@publicId = 'PUBLICID']/@uri "
-            +"return document-uri($dtd)";
     
     /**
-     *  Execute xquery.
+     *  Convert sequence into list of strings. Java5 would make
+     * this method more safe to use.
      *
-     * @param query  The xQuery
-     * @return  Sequence when results are available, null when errors occur.
+     * @param   sequence  Result of query.
+     * @return  List containing String objects.
      */
-    private Sequence executeQuery(String query) {
-        
-        DBBroker broker = null;
-        Sequence result= null;
+    public List getAllResults(Sequence sequence){
+        List result = new ArrayList();
         
         try {
-            broker = brokerPool.get(SecurityManager.SYSTEM_USER);
-        } catch (EXistException ex){
-            logger.error("Error getting DBBroker", ex);
-        }
-        
-        try {
-            result = broker.getXQueryService().execute(query, null, AccessContext.VALIDATION_INTERNAL);
-        } catch (XPathException ex) {
-            logger.error("Problem executing xquery", ex);
-        } finally{
-            if(brokerPool!=null){
-                brokerPool.release(broker);
+            SequenceIterator i = sequence.iterate();
+            
+            while(i.hasNext()){
+                String path =  i.nextItem().getStringValue();
+                result.add(path);
             }
+            
+        } catch (XPathException ex) {
+            logger.error("xQuery issue.", ex);
+            result=null;
         }
         
         return result;
     }
     
-    
     /**
-     *  Execute xquery, return single result.
+     *  Get first entry of sequence as String. Java5 would make
+     * this method more safe to use.
      *
-     * @param   query  The xQuery
-     * @return  String When a result is available, null when an error occured.
+     * @param   sequence  Result of query.
+     * @return  String containing representation of 1st entry of sequence.
      */
-    private String executeQuerySingleResult(String xquery){
-        
+    public String getFirstResult(Sequence sequence){
         String result = null;
         
         try {
-            // execute query
-            Sequence sequence = executeQuery(xquery);
-            
             SequenceIterator i = sequence.iterate();
             if(i.hasNext()){
                 result= i.nextItem().getStringValue();
@@ -175,38 +149,75 @@ public class DatabaseResources {
         return result;
     }
     
+    
     /**
-     *  Execute xquery, return multiple result.
+     *  Execute query with supplied parameters.
      *
-     * @param   query  The xQuery
-     * @return  List of Strings when a result is available, null when an
-     *          error occured.
+     * namespace,  publicId,  catalogPath, 
+     *
+     * @param collection    Collection in which query is executed.
+     * @param params        Map of parameters used in cquery
+     * @param queryPath     Path to xquery in classpath
+     * @return              Result of xQuery
      */
-    private List executeQueryListResult(String xquery){
+    public Sequence executeQuery(XmldbURI collection, Map params, String queryPath){
         
-        List result = new ArrayList();
+        String namespace = (String) params.get(TARGETNAMESPACE);
+        String publicId = (String) params.get(PUBLICID);
+        String catalogPath = (String) params.get(CATALOG);
         
+        logger.debug("collection=" + collection + " namespace=" + namespace
+                + " publicId="+publicId);
+        
+        DBBroker broker = null;
+        Sequence result= null;
         try {
-            // execute query
-            Sequence sequence = executeQuery(xquery);
-            
-            SequenceIterator i = sequence.iterate();
-            
-            if (logger.isDebugEnabled())
-            	logger.debug("Query yielded "+sequence.getLength()+" hits.");
-            
-            while(i.hasNext()){
-                String path =  i.nextItem().getStringValue();
-                result.add(path);
-            }
-            
-        } catch (XPathException ex) {
-            logger.error("xQuery issue.", ex);
+            broker = brokerPool.get(SecurityManager.SYSTEM_USER);
+        } catch (EXistException ex){
+            logger.error("Error getting DBBroker", ex);
         }
         
+        CompiledXQuery compiled =null;
+        XQuery xquery = broker.getXQueryService();
+        XQueryContext context = xquery.newContext(AccessContext.INTERNAL_PREFIX_LOOKUP);
+        
+        
+        try {
+            if(collection!=null){
+                context.declareVariable("collection", collection.getCollectionPath());
+            }
+            
+            if(namespace!=null){
+                context.declareVariable(TARGETNAMESPACE, namespace);
+            }
+            
+            if(publicId!=null){
+                context.declareVariable(PUBLICID, publicId);
+            }
+            
+            if(catalogPath!=null){
+                context.declareVariable(CATALOG, catalogPath);
+            }
+            
+            compiled = xquery.compile(context, new ClassLoaderSource(queryPath) );
+            
+        } catch (IOException ex) {
+            logger.error(ex);
+        } catch (XPathException ex) {
+            logger.error(ex);
+        }
+        
+        try {
+            result = xquery.execute(compiled, null);
+        } catch (XPathException ex) {
+            logger.error("Problem executing xquery", ex);
+        } finally{
+            if(brokerPool!=null){
+                brokerPool.release(broker);
+            }
+        }
         return result;
     }
-    
     
     /**
      *  Find document path of XSD describing a namespace.
@@ -219,29 +230,13 @@ public class DatabaseResources {
     public String getSchemaPath(XmldbURI collection, String namespace){
         
         logger.debug("Find schema with namespace '"+namespace+"' in '"+collection+"'.");
-        String path=null;
         
-        logger.info("collection path "+collection.getCollectionPath());
-        // Fill parameters for query
-        String xquery = FINDSCHEMA.replaceAll("COLLECTION",collection.getCollectionPath()).replaceAll("TARGET",namespace);
+        Map params = new HashMap();
+        params.put(TARGETNAMESPACE, namespace);
         
-        return executeQuerySingleResult(xquery);
-    }
-    
-    /**
-     *  Find catalogs in database recursively.
-     *
-     * @param collection  Start point for search, e.g. /db
-     * @return  List of document paths (strings), e.g. /db/foo/bar/catalog.xml.
-     */
-    public List getCatalogs(String collection){
+        Sequence result = executeQuery(collection, params, FIND_XSD );
         
-        logger.debug("Find catalogs with namespace '"+OASISCATALOGURN+"' in '"+collection+"'.");
-        
-        // Fill parameters for query
-        String xquery = FINDCATALOG.replaceAll("COLLECTION",collection);
-        
-        return executeQueryListResult(xquery);
+        return getFirstResult(result);
     }
     
     /**
@@ -254,15 +249,17 @@ public class DatabaseResources {
      */
     public String getDtdPath(XmldbURI collection, String publicId){
         
-        logger.debug("Find DTD with publicID '"+publicId+"' in '"+collection.getCollectionPath()+"'.");
+        logger.debug("Find DTD with publicID '"+publicId+"' in '"
+                +collection.getCollectionPath()+"'.");
+        
+        Map params = new HashMap();
+        params.put(PUBLICID, publicId);
+        
+        Sequence result = executeQuery(collection, params, FIND_PUBLICID_IN_CATALOGS );
+        
         String dtdPath=null;
         
-        // Find all catalogs containing publicId
-        String xquery = FINDPUBLICIDINCATALOGS
-                .replaceAll("COLLECTION",collection.getCollectionPath())
-                .replaceAll("PUBLICID", publicId);
-        
-        String catalogPath = executeQuerySingleResult(xquery);
+        String catalogPath = getFirstResult(result);
         
         // Get from selected catalog file the publicId
         if(catalogPath !=null){
@@ -378,10 +375,8 @@ public class DatabaseResources {
                 
             } else {
                 // TODO : call mime-type stuff for good mimetypes
-                BinaryDocument doc =
-                        collection.addBinaryResource(transaction, broker,
+                collection.addBinaryResource(transaction, broker,
                         documentName, grammar, mime.getName() );
-                
             }
             transact.commit(transaction);
             
@@ -389,6 +384,7 @@ public class DatabaseResources {
             
         } catch (Exception ex){
             logger.error(ex);
+            
         } finally {
             if(brokerPool!=null){
                 brokerPool.release(broker);
@@ -462,10 +458,6 @@ public class DatabaseResources {
         
     }
     
-    
-    
-    
-    
     /**
      *  Get schema path information from catalog.
      *
@@ -477,11 +469,14 @@ public class DatabaseResources {
     public String getSchemaPathFromCatalog(XmldbURI collection, String docName,
             String namespace) {
         
-        String xquery = FINDXSDINCATALOG
-                .replaceAll("CATALOGFILE",collection.getCollectionPath()+"/"+docName)
-                .replaceAll("NAMESPACE", namespace);
+        Map params = new HashMap();
+        params.put(TARGETNAMESPACE, namespace);
+        params.put(CATALOG, collection.getCollectionPath()+"/"+docName);
         
-        String path = executeQuerySingleResult(xquery);
+        Sequence result = executeQuery(collection, params, FIND_XSD_IN_CATALOG);
+        
+        
+        String path = getFirstResult(result);
         
         if(path!= null && !path.startsWith("/")){
             path = collection.getCollectionPath()+"/"+ path;
@@ -501,11 +496,14 @@ public class DatabaseResources {
      */
     public String getDtdPathFromCatalog(XmldbURI collection, String docName,
             String publicId) {
-        String xquery = FINDDTDINCATALOG
-                .replaceAll("CATALOGFILE",collection.getCollectionPath()+"/"+docName)
-                .replaceAll("PUBLICID", publicId);
         
-        String path = executeQuerySingleResult(xquery);
+        Map params = new HashMap();
+        params.put(PUBLICID, publicId);
+        params.put(CATALOG, collection.getCollectionPath()+"/"+docName);
+        
+        Sequence result = executeQuery(collection, params, FIND_DTD_IN_CATALOG);
+        
+        String path = getFirstResult(result);
         
         if(path!= null && !path.startsWith("/")){
             path = collection.getCollectionPath()+"/"+ path;
