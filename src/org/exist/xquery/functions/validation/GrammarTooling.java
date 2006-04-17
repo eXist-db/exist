@@ -97,6 +97,9 @@ public class GrammarTooling extends BasicFunction  {
         if (isCalledAs("clear-grammar-cache")){
             
             grammarpool.clear();
+            // TODO check if this is safe enough
+            validator.setGrammarPool(null);
+            result = Sequence.EMPTY_SEQUENCE;
             
         } else if (isCalledAs("show-grammar-cache")){
             
@@ -116,6 +119,7 @@ public class GrammarTooling extends BasicFunction  {
             
         } else {
             // oh oh
+            result = Sequence.EMPTY_SEQUENCE;
         }
         
         return result;

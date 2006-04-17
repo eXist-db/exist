@@ -57,7 +57,8 @@ public class Validation extends BasicFunction  {
         new FunctionSignature(
                     new QName("validate", ValidationModule.NAMESPACE_URI, 
                                           ValidationModule.PREFIX),
-                    "Validate document specified by $a.",
+                    "Validate document specified by $a. The grammar files "
+                    +"are searched inside the database.",
                     new SequenceType[]{
                         new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
                     },
@@ -67,7 +68,9 @@ public class Validation extends BasicFunction  {
         new FunctionSignature(
                     new QName("validate", ValidationModule.NAMESPACE_URI, 
                                           ValidationModule.PREFIX),
-                    "Validate document specified by $a using grammar $b",
+                    "Validate document specified by $a using path $b. "
+                    +"$b can point a grammar, a collection containing "
+                    +"grammars (usefull for XSD) or a OASIS catalog file.",
                     new SequenceType[]{
                         new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
                         new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
@@ -78,7 +81,8 @@ public class Validation extends BasicFunction  {
         new FunctionSignature(
                     new QName("validate-report", ValidationModule.NAMESPACE_URI, 
                                                  ValidationModule.PREFIX),
-                    "Validate document specified by $a, return a simple report.",
+                    "Validate document specified by $a, return a simple report"
+                    +". The grammar files are searched inside the database.",
                     new SequenceType[]{
                         new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
                     },
@@ -88,7 +92,10 @@ public class Validation extends BasicFunction  {
         new FunctionSignature(
                     new QName("validate-report", ValidationModule.NAMESPACE_URI, 
                                                  ValidationModule.PREFIX),
-                    "Validate document specified by $a, using grammar $b, return a simple report.",
+                    "Validate document specified by $a using path $b, "
+                    +"return a simple report. "
+                    +"$b can point a grammar, a collection containing "
+                    +"grammars (usefull for XSD) or a OASIS catalog file.",
                     new SequenceType[]{
                         new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
                         new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
@@ -144,6 +151,7 @@ public class Validation extends BasicFunction  {
             }
         } else {
             // ohoh
+            result = Sequence.EMPTY_SEQUENCE;
         }
         
         return result;
