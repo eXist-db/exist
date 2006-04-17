@@ -180,10 +180,8 @@ public class DLN extends DLNBase implements NodeId {
 
     public boolean isChildOf(NodeId parent) {
     	DLN other = (DLN) parent;
-    	if(!startsWith(other)) {
-    		System.out.println(this + " does not start with " + other);
+    	if(!startsWith(other))
     		return false;
-    	}
     	int levels = getLevelCount(other.bitIndex + 2);
     	return levels == 1;
     }
