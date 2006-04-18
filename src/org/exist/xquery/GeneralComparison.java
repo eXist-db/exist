@@ -681,17 +681,33 @@ public class GeneralComparison extends BinaryOp {
 	/* (non-Javadoc)
      * @see org.exist.xquery.PathExpr#dump(org.exist.xquery.util.ExpressionDumper)
      */
-    public void dump(ExpressionDumper dumper) {
-        getLeft().dump(dumper);
-        dumper.display(' ').display(Constants.OPS[relation]).display(' ');
-        getRight().dump(dumper);
+    public void dump(ExpressionDumper dumper) {        
+        if (truncation == Constants.TRUNC_BOTH) {
+        	dumper.display("contains").display('(');
+        	getLeft().dump(dumper);
+        	dumper.display(", ");
+        	getRight().dump(dumper);
+        	dumper.display(")");
+        } else {
+        	getLeft().dump(dumper);        
+        	dumper.display(' ').display(Constants.OPS[relation]).display(' ');        	
+        	getRight().dump(dumper);
+        }
     }
     
     public String toString() {
-    	StringBuffer result = new StringBuffer();
-    	result.append(getLeft().toString());
-    	result.append(' ').append(Constants.OPS[relation]).append(' ');
-    	result.append(getRight().toString());
+    	StringBuffer result = new StringBuffer();    	
+    	if (truncation == Constants.TRUNC_BOTH) {    		
+    		result.append("contains").append('(');
+    		result.append(getLeft().toString());
+    		result.append(", ");
+    		result.append(getRight().toString());
+    		result.append(")");
+    	} else {
+    		result.append(getLeft().toString());
+    		result.append(' ').append(Constants.OPS[relation]).append(' ');
+    		result.append(getRight().toString());
+    	}    	
     	return result.toString();
     }    
     
