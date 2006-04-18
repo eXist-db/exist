@@ -264,6 +264,11 @@ public class DLNTest extends TestCase {
     	System.out.println("Testing isChildOf: " + descendant + " -> " + root);
     	assertTrue(descendant.isChildOf(root));
     	
+    	descendant = (DLN) root.newChild();
+    	assertEquals("1.3.1/1.1", descendant.toString());
+    	descendant.incrementLevelId();
+    	assertEquals("1.3.1/1.2", descendant.toString());
+    	
     	System.out.println("Parent of " + descendant + " -> " + descendant.getParentId());
     	assertTrue(root.equals(descendant.getParentId()));
     	
