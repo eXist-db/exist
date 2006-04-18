@@ -148,15 +148,6 @@ public class Predicate extends PathExpr {
                 recomputedExecutionMode = BOOLEAN;
             }
             
-            //Warning : ((1,2,3,4,5,6,7,8,9,10,11)[(2 to 4)])
-            //leads to a positional evaluation
-            //whereas we should have a boolean one (see above)
-            
-            //if (executionMode == POSITIONAL && Type.subTypeOf(contextSequence.getItemType(), Type.ATOMIC)
-            //&& !(contextSequence instanceof VirtualNodeSet)) {
-            //recomputedExecutionMode = BOOLEAN;
-            //}            
-            
     		switch(recomputedExecutionMode) {
     			case NODE: 
                     if (context.getProfiler().isEnabled())
@@ -218,6 +209,23 @@ public class Predicate extends PathExpr {
 		ExtArrayNodeSet result = new ExtArrayNodeSet();
 		NodeSet contextSet = contextSequence.toNodeSet();
 		boolean contextIsVirtual = contextSet instanceof VirtualNodeSet;
+		
+		/*
+		//Uncomment the lines below which are intended to work around a VirtualNodeSet bug
+		//No need to say that performance can suffer !
+		NodeSet nodes;
+		if (contextIsVirtual) {
+			ArraySet copy = new ArraySet(contextSet.getLength());
+			for (Iterator i = contextSet.iterator(); i.hasNext();) {
+				copy.add((Item)i.next());
+			}
+			nodes =	super.eval(copy, null).toNodeSet();
+		} else
+			nodes =	super.eval(contextSet, null).toNodeSet();			
+		//End of work-around
+		*/
+		
+		//Comment the line below if you have uncommented the lines above :-)
 		NodeSet nodes =	super.eval(contextSet, null).toNodeSet();
 		
 		/* if the predicate expression returns results from the cache
