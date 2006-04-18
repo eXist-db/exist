@@ -302,7 +302,7 @@ public class RESTServiceTest extends TestCase {
             String cached = connect.getHeaderField("X-XQuery-Cached");
             System.out.println("X-XQuery-Cached: " + cached);
             assertNotNull(cached);
-            assertEquals(cacheHeader, Boolean.parseBoolean(cached));
+            assertEquals(cacheHeader, Boolean.valueOf(cached).booleanValue());
             
             String contentType = connect.getContentType();
             int semicolon = contentType.indexOf(';');

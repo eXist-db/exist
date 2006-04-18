@@ -314,10 +314,10 @@ public class DatabaseResourcesTest extends TestCase {
             assertFalse( report.isValid() );
             
             assertFalse( "Error report indicates that grammar or catalog could not be found", 
-                    report.toString().contains( "Error (2,61) : cvc-elt.1: Cannot find the declaration of element 'addressBook'." ) );
+                    report.toString().indexOf( "Error (2,61) : cvc-elt.1: Cannot find the declaration of element 'addressBook'." )!=-1 );
             
             assertTrue( "Content error report is different then exptected", 
-                    report.toString().contains( "Error (12,15) : cvc-complex-type.2.4.a: Invalid content was found starting with element 'name'. One of '{\"http://jmvanel.free.fr/xsd/addressBook\":cname}' is expected."));
+                    report.toString().indexOf( "Error (12,15) : cvc-complex-type.2.4.a: Invalid content was found starting with element 'name'. One of '{\"http://jmvanel.free.fr/xsd/addressBook\":cname}' is expected.")!=-1);
             
         } catch (Exception e) {
             fail(e.getMessage());
