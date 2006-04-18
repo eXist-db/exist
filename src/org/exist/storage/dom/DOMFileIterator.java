@@ -78,6 +78,7 @@ public final class DOMFileIterator implements Iterator {
 				try {
 					lock.acquire();
 				} catch (LockException e) {
+					LOG.warn("Failed to acquire read lock on " + db.getFile().getName());
 					return false;
 				}
 				if(gotoNextPosition()) {
@@ -112,6 +113,7 @@ public final class DOMFileIterator implements Iterator {
 				try {
 					lock.acquire();
 				} catch (LockException e) {
+					LOG.warn("Failed to acquire read lock on " + db.getFile().getName());
 					return null;
 				}
 				Value nextVal = null;
