@@ -47,8 +47,7 @@ public abstract class DOMTransaction {
             try {
                 lock.acquire( mode );
             } catch( LockException e ) {
-                // timed out
-                e.printStackTrace();
+            	System.out.println("Failed to acquire read lock on " + file.getFile().getName());
                 return null;
             }
     	    file.setOwnerObject(ownerObject);

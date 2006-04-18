@@ -79,6 +79,7 @@ public final class NodeIterator implements Iterator {
 			try {
 				lock.acquire();
 			} catch (LockException e) {
+				LOG.warn("Failed to acquire read lock on " + db.getFile().getName());
 				return false;
 			}
 			db.setOwnerObject(lockKey);
@@ -112,6 +113,7 @@ public final class NodeIterator implements Iterator {
 			try {
 				lock.acquire(Lock.READ_LOCK);
 			} catch (LockException e) {
+				LOG.warn("Failed to acquire read lock on " + db.getFile().getName());
 				return null;
 			}
 			db.setOwnerObject(lockKey);
