@@ -429,6 +429,7 @@ public class InteractiveClient {
             argList.toArray(args);
         }
         String newPath = path;
+        if (args.length == 0) return true;
         try {
             if (args[0].equalsIgnoreCase("ls")) {
                 // list collection contents
