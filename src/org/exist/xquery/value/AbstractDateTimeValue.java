@@ -139,6 +139,10 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 		return r;
 	}
 
+	public boolean effectiveBooleanValue() throws XPathException {
+		throw new XPathException("FORG0006: effective boolean value invalid operand type: " + Type.getTypeName(getType()));
+	}
+	
 	public abstract AtomicValue convertTo(int requiredType) throws XPathException;
 
 	public int getPart(int part) {

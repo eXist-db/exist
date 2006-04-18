@@ -86,10 +86,6 @@ public class DateTimeValue extends AbstractDateTimeValue implements Indexable {
 		return DatatypeConstants.DATETIME;
 	}
 	
-	public boolean effectiveBooleanValue() throws XPathException {
-		throw new XPathException("FORG0006: effective boolean value invalid operand type: " + Type.getTypeName(getType()));
-	}
-
 	public int getType() {
 		return Type.DATE_TIME;
 	}
