@@ -106,9 +106,12 @@ public class FunName extends Function {
     			case Node.PROCESSING_INSTRUCTION_NODE:
     				result.add(new StringValue(((ProcessingInstruction)n).getTarget()));
                     break;
+    			case Node.DOCUMENT_NODE:
+    			case Node.TEXT_NODE:
+    				result.add(new StringValue(""));
                 //TODO : what kind of default do we expect here ? -pb
     			default:
-    				throw new XPathException("Unkhandled node type: '" + n.getNodeType() + "'");
+    				throw new XPathException("Unhandled node type: '" + n.getNodeType() + "'");
     		}
         }
         
