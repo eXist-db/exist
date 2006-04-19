@@ -2119,7 +2119,7 @@ public class NativeBroker extends DBBroker {
                 n = (StoredNode) nodes.item(i);
                 iterator =
                     getNodeIterator(
-                            new NodeProxy(doc, n.getGID(), n.getInternalAddress()));
+                            new NodeProxy(doc, n.getNodeId(), n.getInternalAddress()));
                 iterator.next();
                 copyNodes(transaction, iterator, n, new NodePath(), tempDoc, false);
             }
@@ -2192,7 +2192,7 @@ public class NativeBroker extends DBBroker {
                 n = (StoredNode) nodes.item(i);
                 Iterator iterator =
                     getNodeIterator(
-                            new NodeProxy(doc, n.getGID(), n.getInternalAddress()));
+                            new NodeProxy(doc, n.getNodeId(), n.getInternalAddress()));
                 iterator.next();
                 checkNodeTree(iterator, n);
             }
@@ -2331,33 +2331,15 @@ public class NativeBroker extends DBBroker {
         storeNode(transaction, node, currentPath, index);
         if (node.getNodeType() == Node.ELEMENT_NODE)
             endElement(node, currentPath, null, oldAddress);
-        if (node.getGID() == StoredNode.NODE_IMPL_ROOT_NODE_GID) {
+        if (node.getNodeId().getTreeLevel() == 1)
             newDoc.appendChild((StoredNode) node);
-        }
         node.setOwnerDocument(doc);
         
         if (node.hasChildNodes()) {
-            final long firstChildId = NodeSetHelper.getFirstChildId(doc, node.getGID());            
-            if (firstChildId < 0) {
-                LOG.fatal(
-                    "no child found: expected = "
-                        + node.getChildCount()
-                        + "; node = "
-                        + node.getNodeName()
-                        + "; gid = "
-                        + node.getGID());
-                throw new IllegalStateException("Wrong node id");
-            }
-            final long lastChildId = firstChildId + node.getChildCount();
+            int count = node.getChildCount();
             StoredNode child;
-            for (long gid = firstChildId; gid < lastChildId; gid++) {
+            for (int i = 0; i < count; i++) {
                 child = (StoredNode) iterator.next();
-                if(child == null) {
-                    LOG.fatal("child " + gid + " not found for node: " + node.getNodeName() +
-                            "; last = " + lastChildId + "; children = " + node.getChildCount());
-                    throw new IllegalStateException("Wrong node id");
-                }
-                child.setGID(gid);
                 copyNodes(transaction, iterator, child, currentPath, newDoc, index);
             }
         }
@@ -2563,28 +2545,15 @@ public class NativeBroker extends DBBroker {
     
     private void checkNodeTree(Iterator iterator, StoredNode node) {
         if (node.hasChildNodes()) {
-            final long firstChildId = NodeSetHelper.getFirstChildId(
-                    (DocumentImpl)node.getOwnerDocument(), node.getGID());          
-            if (firstChildId < 0) {
-                LOG.fatal(
-                    "no child found: expected = "
-                        + node.getChildCount()
-                        + "; node = "
-                        + node.getNodeName()
-                        + "; gid = "
-                        + node.getGID());
-                throw new IllegalStateException("Wrong node id");
-            }
-            final long lastChildId = firstChildId + node.getChildCount();
+            int count = node.getChildCount();
             StoredNode child;
-            for (long gid = firstChildId; gid < lastChildId; gid++) {
+            for (int i = 0; i < count; i++) {
                 child = (StoredNode) iterator.next();
                 if(child == null) {
-                    LOG.fatal("child " + gid + " not found for node: " + node.getNodeName() +
-                            "; last = " + lastChildId + "; children = " + node.getChildCount());
+                    LOG.fatal("child " + i + " not found for node: " + node.getNodeName() +
+                            "; children = " + node.getChildCount());
                     throw new IllegalStateException("Wrong node id");
                 }
-                child.setGID(gid);
                 checkNodeTree(iterator, child);
             }
         }
@@ -2741,8 +2710,10 @@ public class NativeBroker extends DBBroker {
 		return (Node) new DOMTransaction(this, domDb) {
 			public Object start() {
 				Value val = domDb.get(new NodeProxy((DocumentImpl) doc, nodeId));
-				if (val == null)
+				if (val == null) {
+                    LOG.warn("Node " + nodeId + " not found");
 					return null;
+                }
 				StoredNode node = StoredNode.deserialize(val.getData(),	0, val.getLength(),	(DocumentImpl) doc);
 				node.setOwnerDocument(doc);
 				node.setInternalAddress(val.getAddress());
@@ -2970,8 +2941,8 @@ public class NativeBroker extends DBBroker {
         }
 
         public void reset(Txn transaction, StoredNode node, NodePath currentPath) {            
-            if (node.getGID() < 0)
-                LOG.debug("illegal node: " + node.getGID() + "; " + node.getNodeName());
+            if (node.getNodeId() == null)
+                LOG.debug("illegal node: " + node.getNodeName());
                 //TODO : why continue processing ? return ? -pb
             this.transaction = transaction;
             this.node = node;
