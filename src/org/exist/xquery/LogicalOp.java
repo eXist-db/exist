@@ -42,6 +42,8 @@ public abstract class LogicalOp extends BinaryOp {
 	 */
 	protected boolean optimize = false;
 	
+	protected Expression parentExpr;
+	
 	/**
 	 * @param context
 	 */
@@ -61,7 +63,8 @@ public abstract class LogicalOp extends BinaryOp {
 	 * @see org.exist.xquery.BinaryOp#analyze(org.exist.xquery.Expression, int)
 	 */
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-		super.analyze(contextInfo);
+		parentExpr = contextInfo.getParent();
+		super.analyze(contextInfo);		
 		if(Type.subTypeOf(getLeft().returnsType(), Type.NODE) &&
 				Type.subTypeOf(getRight().returnsType(), Type.NODE) &&
 				!Dependency.dependsOn(getLeft(), Dependency.CONTEXT_ITEM) &&
@@ -69,7 +72,7 @@ public abstract class LogicalOp extends BinaryOp {
 				!Dependency.dependsOn(getLeft(), Dependency.LOCAL_VARS) &&
 				!Dependency.dependsOn(getRight(), Dependency.CONTEXT_ITEM) &&
 				//TODO : use Dependency.VARS ?
-				!Dependency.dependsOn(getRight(), Dependency.LOCAL_VARS)
+				!Dependency.dependsOn(getRight(), Dependency.LOCAL_VARS)				
 				//TODO: is this accurate ? -pb
 				/*&& contextInfo.getContextId() != -1*/)
 			optimize = true;
@@ -77,10 +80,13 @@ public abstract class LogicalOp extends BinaryOp {
 			optimize = false;
 	}
 	
-	public int returnsType() {		
-		return optimize ? Type.NODE : Type.BOOLEAN;
-		//TODO : should always be a boolean -pb
-		//return Type.BOOLEAN;
+	public int returnsType() {
+		if (!optimize)
+			return Type.BOOLEAN;
+		//An attempt to solve <return>  { () and () } </return> 
+		if (parentExpr instanceof EnclosedExpr) 
+			return Type.BOOLEAN;
+		return Type.NODE;
 	}
 	
 	/* (non-Javadoc)
