@@ -93,7 +93,7 @@ public class FunNamespaceURI extends Function {
             if(!Type.subTypeOf(item.getType(), Type.NODE))
                 throw new XPathException(getASTNode(), "context item is not a node; got: " +
                         Type.getTypeName(item.getType()));
-            
+            //TODO : how to improve performance ?
             Node n = ((NodeValue)item).getNode();
             switch(n.getNodeType()) {
                 case Node.ELEMENT_NODE:
@@ -102,6 +102,7 @@ public class FunNamespaceURI extends Function {
                     break;
                 //TODO : what kind of default do we expect here ? -pb
                 default:
+                	LOG.warn("Tried to obtain namespace URI for node type " + n.getNodeType());
                     result = new StringValue("");
             }
         }

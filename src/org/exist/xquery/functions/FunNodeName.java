@@ -86,7 +86,7 @@ public class FunNodeName extends Function {
             if(!Type.subTypeOf(item.getType(), Type.NODE))
                 throw new XPathException(getASTNode(), "argument is not a node; got: " +
                         Type.getTypeName(item.getType()));
-            
+            //TODO : how to improve performance ?
             Node n = ((NodeValue)item).getNode();
             switch(n.getNodeType()) {
                 case Node.ELEMENT_NODE:
@@ -96,6 +96,7 @@ public class FunNodeName extends Function {
                     break;
                 //TODO : what kind of default do we expect here ? -pb
                 default:
+                	LOG.warn("Tried to obtain node name for node type " + n.getNodeType());
                     result = new QNameValue(context, "");
             }
         }

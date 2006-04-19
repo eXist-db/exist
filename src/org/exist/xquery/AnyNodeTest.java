@@ -39,9 +39,10 @@ public class AnyNodeTest implements NodeTest {
 	 */
 	public boolean matches(NodeProxy proxy) {
 	    int type = proxy.getType();
-		if (type == Type.ITEM || type == Type.NODE) {
-			Node node = proxy.getNode();
-			return matches(node);
+		if (type == Type.ITEM || type == Type.NODE) {		
+			if (proxy.getNodeType() != NodeProxy.UNKNOWN_NODE_TYPE)
+				return matches(proxy.getNode());
+			return proxy.getNodeType() != Node.ATTRIBUTE_NODE;
 		} else
 			return type != Node.ATTRIBUTE_NODE;
 	}

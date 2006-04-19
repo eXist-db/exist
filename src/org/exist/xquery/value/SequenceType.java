@@ -119,13 +119,14 @@ public class SequenceType {
 		if(!Type.subTypeOf(item.getType(), primaryType))
 			return false;
 		if(nodeName != null) {
-			Node node = ((NodeValue)item).getNode();
+			//TODO : how to improve performance ?
+			Node n = ((NodeValue)item).getNode();
 			if (nodeName.getNamespaceURI() != null) {
-				if (!nodeName.getNamespaceURI().equals(node.getNamespaceURI()))
+				if (!nodeName.getNamespaceURI().equals(n.getNamespaceURI()))
 					return false;
 			}
 			if (nodeName.getLocalName() != null) {
-				return nodeName.getLocalName().equals(node.getLocalName());
+				return nodeName.getLocalName().equals(n.getLocalName());
 			}
 		}
 		return true;
