@@ -26,6 +26,7 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.Type;
 
 /**
  * Boolean operator "and".
@@ -65,9 +66,9 @@ public class OpAnd extends LogicalOp {
     			NodeSet rr = right.eval(contextSequence, null).toNodeSet();
     			rr = rr.getContextNodes(contextId);
     			result = rr.intersection(rl);
-    			//TODO : replace by the following ?
-                //TODO : what to do with virtual node sets ?
-                //result = (rr.intersection(rl).getLength() == 0) ? BooleanValue.FALSE : BooleanValue.TRUE;    			
+    			if (returnsType() == Type.BOOLEAN) {
+    				result = result.isEmpty() ? BooleanValue.FALSE : BooleanValue.TRUE;
+    			}
     		} else {
     			boolean ls = left.eval(contextSequence).effectiveBooleanValue();
     			// immediately return false if the left operand is false
@@ -103,12 +104,13 @@ public class OpAnd extends LogicalOp {
     public String toString() {        
     	if (getLength() == 0)
             return "";
-    	StringBuffer result = new StringBuffer();
+    	StringBuffer result = new StringBuffer("(");
     	result.append(getExpression(0).toString());
         for (int i = 1; i < getLength(); i++) {
         	result.append(") and (");
         	result.append(getExpression(i).toString());
         }
+        result.append(")");
         return result.toString();
     }    
 }

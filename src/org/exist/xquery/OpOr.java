@@ -25,6 +25,7 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.Type;
 
 /**
  * Boolean operator "or".
@@ -62,9 +63,9 @@ public class OpOr extends LogicalOp {
 			NodeSet rr = right.eval(contextSequence, null).toNodeSet();
 			rr = rr.getContextNodes(contextId);
 			result = rl.union(rr);
-			//TODO : replace by the following ?
-            //TODO : what to do with virtual node sets ?
-            //result = (rl.union(rr).getLength() == 0) ? BooleanValue.FALSE : BooleanValue.TRUE;			
+			if (returnsType() == Type.BOOLEAN) {
+				result = result.isEmpty() ? BooleanValue.FALSE : BooleanValue.TRUE;
+			}
         } else {
 			boolean ls = left.eval(contextSequence).effectiveBooleanValue();
 			if (ls)
@@ -87,22 +88,25 @@ public class OpOr extends LogicalOp {
     public void dump(ExpressionDumper dumper) {
         if (getLength() == 0)
             return;
+        dumper.display("(");
         getExpression(0).dump(dumper);
         for (int i = 1; i < getLength(); i++) {
             dumper.display(") or (");
             getExpression(i).dump(dumper);
         }
+        dumper.display(")");
     }
     
     public String toString() {
         if (getLength() == 0)
             return "";
-        StringBuffer result = new StringBuffer();
+        StringBuffer result = new StringBuffer("(");
         result.append(getExpression(0).toString());
         for (int i = 1; i < getLength(); i++) {
         	result.append(") or (");
         	result.append(getExpression(i).toString());
         }
+        result.append(")");
         return result.toString();
     }    
 }
