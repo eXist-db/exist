@@ -22,9 +22,9 @@
  */
 package org.exist.xquery;
 
-import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.w3c.dom.Node;
 
 /**
  * @author wolf
@@ -45,11 +45,31 @@ public class SelfSelector implements NodeSelector {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.NodeSelector#match(org.exist.dom.DocumentImpl, long)
 	 */
-	public NodeProxy match(DocumentImpl doc, long gid) {        
-        NodeProxy p = new NodeProxy(doc, gid);
+	public NodeProxy match(NodeProxy proxy) {    
+		//TODO : filtering out ?
+		switch (proxy.getNodeType()) {
+		case NodeProxy.UNKNOWN_NODE_TYPE:
+			break;
+		case Node.ELEMENT_NODE :
+			break;			
+		case Node.ATTRIBUTE_NODE :
+			break;
+		case Node.TEXT_NODE :
+			break;
+		case Node.PROCESSING_INSTRUCTION_NODE :
+			break;
+		case Node.COMMENT_NODE :
+			break;
+		case Node.DOCUMENT_NODE:	
+			break;
+		default:
+			throw new IllegalArgumentException("Unknown node type");			
+		}				
+        NodeProxy p = new NodeProxy(proxy.getDocument(), proxy.getGID(), 
+        		proxy.getNodeType(), proxy.getInternalAddress());
         if (p == null) 
             return null;
-        NodeProxy contextNode = context.get(doc, gid);
+        NodeProxy contextNode = context.get(proxy.getDocument(), proxy.getGID());
         if (contextNode != null) {
             if (Expression.NO_CONTEXT_ID != contextId) {
                 p.deepCopyContext(contextNode, contextId);

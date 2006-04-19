@@ -22,28 +22,53 @@
  */
 package org.exist.xquery;
 
-import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.w3c.dom.Node;
 
 /**
  * @author wolf
  */
 public class ParentSelector implements NodeSelector {
 
-	private NodeSet parents;	
+	private final NodeSet contextSet;
+	private final int contextId;
+	private NodeSet parents = null;	
 	
 	/**
 	 * 
 	 */
 	public ParentSelector(NodeSet contextSet, int contextId) {
-		this.parents = contextSet.getParents(contextId);		
+		this.contextSet = contextSet;
+		this.contextId = contextId;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.NodeSelector#match(org.exist.dom.DocumentImpl, long)
 	 */
-	public NodeProxy match(DocumentImpl doc, long gid) {		
-        return parents.get(doc, gid);			
+	public NodeProxy match(NodeProxy proxy) {	
+		switch (proxy.getNodeType()) {
+		case NodeProxy.UNKNOWN_NODE_TYPE:
+			break;
+		case Node.ELEMENT_NODE :
+			break;			
+		case Node.ATTRIBUTE_NODE :
+			break;
+		case Node.TEXT_NODE :
+			break;
+		case Node.PROCESSING_INSTRUCTION_NODE :
+			break;
+		case Node.COMMENT_NODE :
+			break;
+		case Node.DOCUMENT_NODE:	
+			//TODO : should we raise an error here ?
+			return null;
+		default:
+			throw new IllegalArgumentException("Unknown node type");			
+		}				
+		if (this.parents == null)
+			parents = contextSet.getParents(contextId);	
+		//TODO : help proxy by adding a node type ?
+        return parents.get(proxy.getDocument(), proxy.getGID());			
 	}
 }

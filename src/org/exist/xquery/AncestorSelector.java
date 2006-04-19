@@ -21,20 +21,46 @@
  */
 package org.exist.xquery;
 
-import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.w3c.dom.Node;
 
 public class AncestorSelector implements NodeSelector {
 
-    private final NodeSet ancestors;
+	private final NodeSet descendants;
+	private final int contextId;
+	private final boolean includeSelf;
+    private NodeSet ancestors = null;
     
     public AncestorSelector(NodeSet descendants, int contextId, boolean includeSelf) {
-        super();
-        ancestors = descendants.getAncestors(contextId, includeSelf);        
+    	this.descendants  = descendants;
+    	this.contextId = contextId;
+    	this.includeSelf = includeSelf;    
     }
 
-    public NodeProxy match(DocumentImpl doc, long gid) {            
-        return ancestors.get(doc, gid);          
+    public NodeProxy match(NodeProxy proxy) {  	
+		switch (proxy.getNodeType()) {
+		case NodeProxy.UNKNOWN_NODE_TYPE:
+			break;
+		case Node.ELEMENT_NODE :
+			break;			
+		case Node.ATTRIBUTE_NODE :
+			break;
+		case Node.TEXT_NODE :
+			break;
+		case Node.PROCESSING_INSTRUCTION_NODE :
+			break;
+		case Node.COMMENT_NODE :
+			break;
+		case Node.DOCUMENT_NODE:	
+			//TODO : Should we raise an error error ?
+			return null;
+		default:
+			throw new IllegalArgumentException("Unknown node type");			
+		}		    	
+    	if (ancestors == null)
+    		ancestors = descendants.getAncestors(contextId, includeSelf);  
+    	//TODO : help proxy by adding a node type ?
+        return ancestors.get(proxy.getDocument(), proxy.getGID());          
     }
 }

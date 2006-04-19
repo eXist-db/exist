@@ -22,9 +22,9 @@
  */
 package org.exist.xquery;
 
-import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.w3c.dom.Node;
 
 
 /**
@@ -39,11 +39,34 @@ public class DescendantOrSelfSelector extends DescendantSelector {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.NodeSelector#match(org.exist.dom.NodeProxy)
 	 */
-	public NodeProxy match(DocumentImpl doc, long gid) {
-        NodeProxy p = new NodeProxy(doc, gid);
+	public NodeProxy match(NodeProxy proxy) {
+		switch (proxy.getNodeType()) {
+		case NodeProxy.UNKNOWN_NODE_TYPE:
+			break;
+		case Node.ELEMENT_NODE :
+			break;			
+		case Node.ATTRIBUTE_NODE :
+			//TODO : delegate to a SelfSelector ?
+			break;
+		case Node.TEXT_NODE :
+			//TODO : delegate to a SelfSelector ?
+			break;
+		case Node.PROCESSING_INSTRUCTION_NODE :
+			//TODO : delegate to a SelfSelector ?
+			break;
+		case Node.COMMENT_NODE :
+			//TODO : delegate to a SelfSelector ?
+			break;
+		case Node.DOCUMENT_NODE:	
+			break;
+		default:
+			throw new IllegalArgumentException("Unknown node type");			
+		}			
+		//TODO : help proxy by adding a node type ?
+        NodeProxy p = new NodeProxy(proxy.getDocument(), proxy.getGID());
         if (p == null) 
             return null;    
-        NodeProxy contextNode = context.parentWithChild(doc, gid, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
+        NodeProxy contextNode = context.parentWithChild(proxy.getDocument(), proxy.getGID(), false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
         if(contextNode == null)
             return null;        
 		if (Expression.NO_CONTEXT_ID != contextId) {
