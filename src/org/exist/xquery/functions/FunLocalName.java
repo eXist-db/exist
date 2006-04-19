@@ -89,7 +89,7 @@ public class FunLocalName extends Function {
         
         Sequence result;
         if (item == null)
-            result = Sequence.EMPTY_SEQUENCE;
+            result = StringValue.EMPTY_STRING;
         else {
             if(!Type.subTypeOf(item.getType(), Type.NODE))
                 throw new XPathException(getASTNode(), "context item is not a node; got: " +
