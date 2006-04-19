@@ -97,6 +97,7 @@ public class FunMax extends CollatingFunction {
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
         
+		boolean computableProcessing = false;
         Sequence result;
 		Sequence arg = getArgument(0).eval(contextSequence, contextItem);
 		if(arg.isEmpty())
@@ -132,8 +133,11 @@ public class FunMax extends CollatingFunction {
 	                //Ugly test
 	                if (value instanceof ComputableValue) {		                	
 	                    max = (ComputableValue) max.max(collator, value);
-                	}
-	                else {
+	                    computableProcessing = true;
+                	} else {
+	                	if (computableProcessing)
+	                		throw new XPathException("FORG0006: Cannot compare " + Type.getTypeName(max.getType()) + 
+	                				" and " + Type.getTypeName(value.getType()));	                		
 	                	if (Collations.compare(collator, value.getStringValue(), max.getStringValue()) > 0)	               
 	                		max = value;	                	
 	                }

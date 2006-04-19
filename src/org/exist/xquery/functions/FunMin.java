@@ -93,6 +93,7 @@ public class FunMin extends CollatingFunction {
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
         
+		boolean computableProcessing = false;
         Sequence result;
 		Sequence arg = getArgument(0).eval(contextSequence, contextItem);
 		if (arg.isEmpty())
@@ -128,7 +129,11 @@ public class FunMin extends CollatingFunction {
 	                //Ugly test
 	                if (value instanceof ComputableValue) {		                	
 	                    min = (ComputableValue) min.min(collator, value);
+	                    computableProcessing = true;
                 	} else {
+	                	if (computableProcessing)
+	                		throw new XPathException("FORG0006: Cannot compare " + Type.getTypeName(min.getType()) + 
+	                				" and " + Type.getTypeName(value.getType()));	                		
 	                	if (Collations.compare(collator, value.getStringValue(), min.getStringValue()) < 0)	               
 	                		min = value;	                	
 	                }
