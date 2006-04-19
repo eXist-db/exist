@@ -64,17 +64,14 @@ public class DLN extends DLNBase implements NodeId {
             char ch = s.charAt(p);
             if (ch == '.' || ch == '/') {
                 addLevelId(Integer.parseInt(buf.toString()), subValue);
-                System.out.println(buf.toString() + " = " + bitIndex);
                 subValue = ch == '/';
                 buf.setLength(0);
             } else
                 buf.append(ch);
         }
         if (buf.length() > 0) {
-            System.out.println(buf.toString() + " = " + bitIndex);
             addLevelId(Integer.parseInt(buf.toString()), subValue);
         }
-        System.out.println(toBitString() + " index: " + bitIndex + "; size: " + units());
     }
     
     /**
@@ -179,13 +176,14 @@ public class DLN extends DLNBase implements NodeId {
     public NodeId insertBefore() {
         int lastPos = lastFieldPosition();
         int lastId = getLevelId(lastPos);
-//        System.out.println("insertBefore: " + toString() + " = " + bitIndex);
         DLN newNode = new DLN(this);
+//        System.out.println("insertBefore: " + newNode.toString() + " = " + newNode.bitIndex);
         if (lastId == 1) {
             newNode.setLevelId(lastPos, 0);
             newNode.addLevelId(35, true);
         } else {
             newNode.setLevelId(lastPos, lastId - 1);
+            newNode.compact();
 //            System.out.println("newNode: " + newNode.toString() + " = " + newNode.bitIndex + "; last = " + lastPos);
         }
         return newNode;

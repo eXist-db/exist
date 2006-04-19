@@ -399,6 +399,16 @@ public class DLNBase implements Comparable {
         throw new IllegalStateException("Number of nodes exceeds the internal limit");
     }
 
+    protected void compact() {
+    	int units = bitIndex + 1;
+    	int blen = units / 8;
+        if (units % 8 > 0)
+        	++blen;
+        byte[] nbits = new byte[blen];
+        System.arraycopy(bits, 0, nbits, 0, blen);
+        this.bits = nbits;
+    }
+    
     public void serialize(byte[] data, int offset) {
         System.arraycopy(bits, 0, data, offset, bits.length);
     }
