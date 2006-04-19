@@ -579,13 +579,13 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                         	storedNode.setOwnerDocument(storedDocument);
                         	storedNode.setInternalAddress(address);
                             result.add(new NodeProxy(storedNode), gidsCount);                        
-                        } else {
+                        } else {                        	
                             //Filter out the node if requested to do so
-                            NodeProxy storedNode = selector.match(storedDocument, storedGID);
-                            if (storedNode != null) {
-                                storedNode.setInternalAddress(address);
-                                storedNode.setNodeType(nodeType);
-                                result.add(storedNode, gidsCount);
+                            NodeProxy proxy = selector.match(new NodeProxy(storedDocument, storedGID, nodeType, address));
+                            if (proxy != null) {
+                            	proxy.setInternalAddress(address);
+                            	proxy.setNodeType(nodeType);
+                                result.add(proxy, gidsCount);
                             } else
                             	sameDocSet = false;
                         }
