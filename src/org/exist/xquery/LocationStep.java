@@ -505,6 +505,7 @@ public class LocationStep extends Step {
             NodeSet result = new ExtArrayNodeSet(contextSet.getLength());
             for (Iterator i = contextSet.iterator(); i.hasNext();) {
                 NodeProxy current = (NodeProxy) i.next();
+                //TODO : how to improve performance ?
                 StoredNode currentNode = (StoredNode) current.getNode();
                 while ((currentNode = getNextSibling(currentNode)) != null) {
                     if (test.matches(currentNode)) {

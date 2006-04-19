@@ -96,6 +96,7 @@ public class FunName extends Function {
 			item = i.nextItem();
             if (!Type.subTypeOf(item.getType(), Type.NODE))
             	throw new XPathException("FOTY0011: item is not a node; got '" + item + "'");
+            //TODO : how to improve performance ?
             Node n = ((NodeValue)item).getNode();
     		switch(n.getNodeType()) {
     			case Node.ELEMENT_NODE:

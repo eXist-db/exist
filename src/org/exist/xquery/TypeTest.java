@@ -65,11 +65,10 @@ public class TypeTest implements NodeTest {
 	public boolean matches(NodeProxy proxy) {
         short otherNodeType = proxy.getNodeType();
 		if(otherNodeType == Type.ITEM || otherNodeType == Type.NODE) {
+			//TODO : what are the semantics of Type.NODE ?
 			if (this.nodeType == Type.NODE)
 				return true;	
-            //TODO : why not directly call proxy.getNodeType() ? 
-            //Is it different from proxy.getNode().getNodeType() ? -pb
-			return matches(proxy.getNode());
+			return matches(proxy);
 		} else
 			return isOfType(otherNodeType);
 	}

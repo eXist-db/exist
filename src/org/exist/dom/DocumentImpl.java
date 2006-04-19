@@ -321,12 +321,22 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
         return broker.getSymbols();
     }
     
+    /** Gets the node from the broker, i.e. fom the underlying file system
+     * Call this method <strong>only</strong> <hen necessary
+     * @param gid The nodes identifier
+     * @return The actual node
+     */
     public Node getNode(long gid) {
         if (gid == NodeProxy.DOCUMENT_ELEMENT_GID)
             return getDocumentElement();
         return broker.objectWith(this, gid);
     }
 
+    /** Gets the node from the broker, i.e. fom the underlying file system
+     * Call this method <strong>only</strong> <hen necessary
+     * @param p A proxy to the node
+     * @return The actual node
+     */
     public Node getNode(NodeProxy p) {
         if(p.getGID() == NodeProxy.DOCUMENT_NODE_GID)
             return getDocumentElement();

@@ -93,8 +93,8 @@ public class FunLocalName extends Function {
         else {
             if(!Type.subTypeOf(item.getType(), Type.NODE))
                 throw new XPathException(getASTNode(), "context item is not a node; got: " +
-                        Type.getTypeName(item.getType()));
-            
+                        Type.getTypeName(item.getType()));          
+            //TODO : how to improve performance ?
             Node n = ((NodeValue)item).getNode();
             switch(n.getNodeType()) {
                 case Node.ELEMENT_NODE:
@@ -105,6 +105,7 @@ public class FunLocalName extends Function {
                     result = new StringValue(((ProcessingInstruction)n).getTarget());
                     break;
                 default:
+                	LOG.warn("Tried to obtain local name for node type " + n.getNodeType());
                     result = new StringValue("");
             }
         }

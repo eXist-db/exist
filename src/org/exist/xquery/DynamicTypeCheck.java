@@ -71,7 +71,10 @@ public class DynamicTypeCheck extends AbstractExpression {
 			type = item.getType();
 			if (type == Type.NODE &&
 					((NodeValue) item).getImplementationType() == NodeValue.PERSISTENT_NODE) {
-				type = ((NodeProxy) item).getNode().getNodeType();
+				type = ((NodeProxy) item).getNodeType();
+				if (type == NodeProxy.UNKNOWN_NODE_TYPE)
+					//Retrieve the actual node
+					type= ((NodeProxy) item).getNode().getNodeType();
 			}
 			if(!Type.subTypeOf(type, requiredType)) {
 				throw new XPathException(expression.getASTNode(), "Type error in expression" +

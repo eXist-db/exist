@@ -53,18 +53,22 @@ public class ReferenceNode extends NodeImpl {
     } 
     
     public String getNamespaceURI() {
+    	//TODO : improve performance ?
         return getReference().getNode().getNamespaceURI();
     }  
     
     public String getLocalName() {
+    	//TODO : improve performance ?
         return getReference().getNode().getLocalName();
     } 
     
     public NamedNodeMap getAttributes() {
+    	//TODO : improve performance ?
         return getReference().getNode().getAttributes();
     }
     
     public Node getFirstChild() {
+    	//TODO : improve performance ?
         //TODO : how to make this node a reference as well ?
         return getReference().getNode().getFirstChild();
     }    

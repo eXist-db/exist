@@ -300,6 +300,10 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 		this.gid = gid;
 	}
 
+	/* Gets the node from the broker, i.e. fom the underlying file system
+     * Call this method <string>only</strong> <hen necessary
+	 * @see org.exist.xquery.value.NodeValue#getNode()
+	 */
 	public Node getNode() {
 		if (isDocument())
 			return doc;
@@ -1149,6 +1153,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
     public NodeSet directSelectAttribute(QName qname, int contextId) {
         if (nodeType != UNKNOWN_NODE_TYPE && nodeType != Node.ELEMENT_NODE)
             return NodeSet.EMPTY_SET;
+        //TODO : maybe we could improve performance here
         NodeImpl node = (NodeImpl) getNode();
         if (node.getNodeType() != Node.ELEMENT_NODE)
             return NodeSet.EMPTY_SET;
