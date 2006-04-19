@@ -56,7 +56,7 @@ public class DLNTest extends TestCase {
         }
     }
     
-    private final static int ITEMS_TO_TEST = 100000;
+    private final static int ITEMS_TO_TEST = 10000;
     
     public void testSingleId() {
         long start = System.currentTimeMillis();
@@ -152,11 +152,14 @@ public class DLNTest extends TestCase {
         System.out.println("ID after increment: " + dln.debug());
         assertEquals("1.2", dln.toString());
         assertEquals(2, dln.getLevelCount(0));
+        System.out.println(((DLN)dln.getParentId()).toBitString());
+        assertEquals("1", dln.getParentId().toString());
         
         dln = new DLN("1");
         System.out.println("ID: " + dln.debug());
         assertEquals("1", dln.toString());
         assertEquals(1, dln.getLevelCount(0));
+        assertSame(NodeId.DOCUMENT_NODE, dln.getParentId());
         
         dln = new DLN("1.72");
         System.out.println("ID: " + dln.debug());
@@ -175,6 +178,12 @@ public class DLNTest extends TestCase {
         System.out.println("ID after increment: " + dln.debug());
         assertEquals("1.7.3.1/35", dln.toString());
         assertEquals(4, dln.getLevelCount(0));
+        
+        dln = new DLN("1.2.1/2/3");
+        assertEquals(3, dln.getSubLevelCount(dln.lastLevelOffset()));
+        
+        dln = new DLN("1/2/3");
+        assertEquals(3, dln.getSubLevelCount(dln.lastLevelOffset()));
         
         System.out.println("------- testing DLN.incrementLevelId --------");
         int[] id0 = new int[] { 1, 33, 56, 2, 98, 1, 27 };
@@ -290,5 +299,39 @@ public class DLNTest extends TestCase {
     	assertTrue(left.compareTo(right) < 0);
     	
     	System.out.println("------ testLevelRelations: PASSED ------");
+    }
+    
+    public void testInsertion() {
+        System.out.println("------ testInsertion ------");
+        DLN left = new DLN("1.1"); 
+        DLN right = (DLN) left.insertNode(null);
+        assertEquals("1.2", right.toString());
+        
+        DLN dln = (DLN) left.insertNode(right);
+        System.out.println(dln);
+        assertEquals("1.1/1", dln.toString());
+        
+        left = dln;
+        dln = (DLN) left.insertNode(right);
+        System.out.println(dln);
+        assertEquals("1.1/2", dln.toString());
+        
+        right = dln;
+        dln = (DLN) left.insertNode(right);
+        System.out.println(dln);
+        assertEquals("1.1/1/1", dln.toString());
+        
+        right = new DLN("1.1/1");
+        left = new DLN("1.1");
+        dln = (DLN) left.insertNode(right);
+        System.out.println(dln);
+        assertEquals("1.1/0/35", dln.toString());
+        
+        right = dln;
+        dln = (DLN) left.insertNode(right);
+        System.out.println(dln);
+        assertEquals("1.1/0/34", dln.toString());
+        
+        System.out.println("------ testInsertion: PASSED ------");
     }
 }

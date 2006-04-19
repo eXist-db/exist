@@ -64,13 +64,17 @@ public class DLN extends DLNBase implements NodeId {
             char ch = s.charAt(p);
             if (ch == '.' || ch == '/') {
                 addLevelId(Integer.parseInt(buf.toString()), subValue);
+                System.out.println(buf.toString() + " = " + bitIndex);
                 subValue = ch == '/';
                 buf.setLength(0);
             } else
                 buf.append(ch);
         }
-        if (buf.length() > 0)
+        if (buf.length() > 0) {
+            System.out.println(buf.toString() + " = " + bitIndex);
             addLevelId(Integer.parseInt(buf.toString()), subValue);
+        }
+        System.out.println(toBitString() + " index: " + bitIndex + "; size: " + units());
     }
     
     /**
@@ -150,7 +154,43 @@ public class DLN extends DLNBase implements NodeId {
         sibling.incrementLevelId();
         return sibling;
     }
-
+    
+    public NodeId insertNode(NodeId right) {
+        DLN rightNode = (DLN) right;
+        if (right == null)
+            return nextSibling();
+        int lastLeft = lastLevelOffset();
+        int lastRight = rightNode.lastLevelOffset();
+        int lenLeft = getSubLevelCount(lastLeft);
+        int lenRight = rightNode.getSubLevelCount(lastRight);
+        DLN newNode;
+        if (lenLeft > lenRight) {
+            newNode = new DLN(this);
+            newNode.incrementLevelId();
+        } else if (lenLeft < lenRight) {
+            newNode = (DLN) rightNode.insertBefore(); 
+        } else {
+            newNode = new DLN(this);
+            newNode.addLevelId(1, true);
+        }
+        return newNode;
+    }
+    
+    public NodeId insertBefore() {
+        int lastPos = lastFieldPosition();
+        int lastId = getLevelId(lastPos);
+//        System.out.println("insertBefore: " + toString() + " = " + bitIndex);
+        DLN newNode = new DLN(this);
+        if (lastId == 1) {
+            newNode.setLevelId(lastPos, 0);
+            newNode.addLevelId(35, true);
+        } else {
+            newNode.setLevelId(lastPos, lastId - 1);
+//            System.out.println("newNode: " + newNode.toString() + " = " + newNode.bitIndex + "; last = " + lastPos);
+        }
+        return newNode;
+    }
+    
     /**
      * Returns a new DLN representing the parent of the
      * current node. If the current node is the root element
@@ -166,7 +206,7 @@ public class DLN extends DLNBase implements NodeId {
         int last = lastLevelOffset();
         if (last == 0)
             return DOCUMENT_NODE;
-        return new DLN(bits, last);
+        return new DLN(bits, last - 1);
     }
 
     public boolean isDescendantOf(NodeId ancestor) {
@@ -245,11 +285,23 @@ public class DLN extends DLNBase implements NodeId {
     }
 
     public static void main(String[] args) {
-        DLN id0 = new DLN("1.13.2/1");
-        System.out.println(id0.debug());
-        int last = id0.lastLevelOffset();
-        System.out.println("Last: " + last);
-        DLN parent = (DLN) id0.getParentId();
-        System.out.println(parent.debug());
+        DLN id0 = new DLN("1.1/0/0/7");
+        System.out.println(id0.size());
+        
+        DLN id1 = new DLN("1.1");
+        DLN id = (DLN) id1.insertNode(id0);
+        System.out.println(id.debug());
+        System.out.println(id.size());
+        System.out.println(id.units());
+        
+        byte[] data = new byte[id.size() + 1];
+        data[0] = (byte) id.units();
+        id.serialize(data, 1);
+        
+        
+        DLN dln = new DLN(data[0], data, 1);
+        System.out.println(dln.debug());
+        System.out.println(dln.size());
+        System.out.println(dln.units());
     }
 }

@@ -61,6 +61,10 @@ public interface NodeId extends Comparable {
      */
     NodeId nextSibling();
 
+    NodeId insertNode(NodeId right);
+    
+    NodeId insertBefore();
+    
     /**
      * Returns a new NodeId representing the parent
      * of the current node. If the parent is the document,

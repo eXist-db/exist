@@ -274,6 +274,31 @@ public class DLNBase implements Comparable {
     }
 
     /**
+     * Returns the number of sub-levels in the id starting at
+     * startOffset. This is required to determine where a node
+     * can be inserted.
+     * 
+     * @param startOffset
+     * @return
+     */
+    public int getSubLevelCount(int startOffset) {
+        int bit = startOffset;
+        int count = 0;
+        while (bit > -1 && bit <= bitIndex) {
+            int units = unitsUsed(bit, bits);
+            bit += units;
+            bit += bitWidth(units);
+            if (bit < bitIndex) {
+                ++count;
+                if ((bits[bit >> UNIT_SHIFT] & (1 << ((7 - bit++) & 7))) == LEVEL_SEPARATOR)
+                    break;
+            } else
+                ++count;
+        }
+        return count;
+    }
+    
+    /**
      * Return all level ids converted to int.
      *
      * @return all level ids in this node id.
@@ -294,14 +319,14 @@ public class DLNBase implements Comparable {
      *
      * @return start-offset of the last level id.
      */
-    protected int lastLevelOffset() {
+    public int lastLevelOffset() {
     	int bit = 0;
         int lastOffset = 0;
         while (bit <= bitIndex) {
         	// check if the next bit starts a new level or just a sub-level component
             if (bit > 0) {
             	if ((bits[bit >> UNIT_SHIFT] & (1 << ((7 - bit) & 7))) == LEVEL_SEPARATOR)
-            		lastOffset = bit;
+            		lastOffset = bit + 1;
             	++bit;
             }
             int units = unitsUsed(bit, bits);
@@ -379,7 +404,7 @@ public class DLNBase implements Comparable {
     }
 
     public static int getLengthInBytes(int units, byte[] data, int startOffset) {
-        return (int) Math.ceil((units * BITS_PER_UNIT) / 8.0);
+        return (int) Math.ceil(units / 8.0);
     }
 
     public boolean equals(DLNBase other) {
