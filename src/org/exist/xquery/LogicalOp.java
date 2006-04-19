@@ -42,8 +42,6 @@ public abstract class LogicalOp extends BinaryOp {
 	 */
 	protected boolean optimize = false;
 	
-	protected Expression parentExpr;
-	
 	/**
 	 * @param context
 	 */
@@ -62,8 +60,7 @@ public abstract class LogicalOp extends BinaryOp {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.BinaryOp#analyze(org.exist.xquery.Expression, int)
 	 */
-	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-		parentExpr = contextInfo.getParent();
+	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {		
 		super.analyze(contextInfo);		
 		if(Type.subTypeOf(getLeft().returnsType(), Type.NODE) &&
 				Type.subTypeOf(getRight().returnsType(), Type.NODE) &&
@@ -81,12 +78,7 @@ public abstract class LogicalOp extends BinaryOp {
 	}
 	
 	public int returnsType() {
-		if (!optimize)
-			return Type.BOOLEAN;
-		//An attempt to solve <return>  { () and () } </return> 
-		if (parentExpr instanceof EnclosedExpr) 
-			return Type.BOOLEAN;
-		return Type.NODE;
+		return optimize ? Type.NODE : Type.BOOLEAN;		
 	}
 	
 	/* (non-Javadoc)

@@ -66,7 +66,7 @@ public class OpAnd extends LogicalOp {
     			NodeSet rr = right.eval(contextSequence, null).toNodeSet();
     			rr = rr.getContextNodes(contextId);
     			result = rr.intersection(rl);
-    			if (returnsType() == Type.BOOLEAN) {
+    			if (contextSequence == null) {
     				result = result.isEmpty() ? BooleanValue.FALSE : BooleanValue.TRUE;
     			}
     		} else {

@@ -63,7 +63,7 @@ public class OpOr extends LogicalOp {
 			NodeSet rr = right.eval(contextSequence, null).toNodeSet();
 			rr = rr.getContextNodes(contextId);
 			result = rl.union(rr);
-			if (returnsType() == Type.BOOLEAN) {
+			if (contextSequence == null) {
 				result = result.isEmpty() ? BooleanValue.FALSE : BooleanValue.TRUE;
 			}
         } else {
