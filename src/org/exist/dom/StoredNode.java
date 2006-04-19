@@ -258,7 +258,7 @@ public class StoredNode extends NodeImpl implements Visitable {
 	 * @see org.w3c.dom.Node#getParentNode()
 	 */
 	public Node getParentNode() {
-		NodeId parentId = nodeId.getParentId();       
+		NodeId parentId = nodeId.getParentId();
 		if (parentId == NodeId.DOCUMENT_NODE)
             return null;
 		// Filter out the temporary nodes wrapper element
@@ -297,7 +297,7 @@ public class StoredNode extends NodeImpl implements Visitable {
 	}
     
     protected StoredNode getLastNode(StoredNode node) {        
-        final NodeProxy p = new NodeProxy(ownerDocument, node.getGID(), node.getInternalAddress());
+        final NodeProxy p = new NodeProxy(ownerDocument, node.getNodeId(), node.getInternalAddress());
         final Iterator iterator = getBroker().getNodeIterator(p);
         //TODO : hasNext() test ? -pb
         iterator.next();
