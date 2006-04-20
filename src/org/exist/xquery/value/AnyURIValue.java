@@ -35,18 +35,25 @@ import org.exist.xquery.XPathException;
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
 public class AnyURIValue extends AtomicValue {
+	
+	public static AnyURIValue EMPTY_URI = new AnyURIValue();
 
 	private String uri;
 
 	public AnyURIValue(URI uri) {
 		this.uri = uri.toString();
 	}
+
+	AnyURIValue() {
+		this.uri = "";
+	}
+	
 	public AnyURIValue(String s) throws XPathException {
 		try {
-			URI uri = new URI(s);
+			new URI(s);
 		} catch (URISyntaxException e) {
 			throw new XPathException(
-				"Type error: the given string " + s + " cannot be cast to xs:anyURI");
+				"Type error: the given string '" + s + "' cannot be cast to " + Type.getTypeName(getType()));
 		}
 		this.uri = s;
 	}
