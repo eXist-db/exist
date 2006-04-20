@@ -58,11 +58,30 @@ public class DurationValue extends ComputableValue {
 	private static final Duration CANONICAL_ZERO_DURATION =
 		TimeUtils.getInstance().newDuration(true, null, null, null, null, null, ZERO_DECIMAL);
 	
-	public DurationValue(Duration duration) throws XPathException {
+	/**
+	 * Create a new duration value of the most specific type allowed by the fields set in the given
+	 * duration object.  If no fields are set, return a xs:dayTimeDuration.
+	 *
+	 * @param duration the duration to wrap
+	 * @return a new instance of the most specific subclass of <code>DurationValue</code>
+	 */
+	public static DurationValue wrap(Duration duration) {
+		try {
+			return new DayTimeDurationValue(duration);
+		} catch (XPathException e) {
+			try {
+				return new YearMonthDurationValue(duration);
+			} catch (XPathException e2) {
+				return new DurationValue(duration);
+			}
+		}
+	}
+	
+	public DurationValue(Duration duration) {
 		this.duration = duration;		
 	}
 	
-	public DurationValue(String str) throws XPathException {
+	public DurationValue(String str) {
 		this.duration = TimeUtils.getInstance().newDuration(str);
 	}
 	
