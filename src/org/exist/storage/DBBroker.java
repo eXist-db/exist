@@ -77,6 +77,8 @@ public abstract class DBBroker extends Observable {
     public final static String ROOT_COLLECTION = "/" + ROOT_COLLECTION_NAME;
     public final static String SYSTEM_COLLECTION = ROOT_COLLECTION + "/system";    
     public final static String TEMP_COLLECTION = SYSTEM_COLLECTION + "/temp";
+    public final static String CONFIG_COLLECTION = SYSTEM_COLLECTION + "/config";
+    public final static String COLLECTION_CONFIG_FILENAME = "collection.xconf";
     
 	protected final static Logger LOG = Logger.getLogger(DBBroker.class);
 	
@@ -205,6 +207,11 @@ public abstract class DBBroker extends Observable {
 	 */
 	public void setUser(User user) {
 		this.user = user;
+		
+		/*synchronized (this){
+			System.out.println("DBBroker.setUser(" + user.getName() + ")");
+			Thread.dumpStack();
+		}*/ //debugging user escalation permissions problem - deliriumsky.
 	}
 	
 	/**

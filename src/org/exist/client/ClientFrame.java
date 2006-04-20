@@ -266,7 +266,7 @@ public class ClientFrame extends JFrame
         button.setToolTipText("Manage users");
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                newUserAction(e);
+                editUsersAction(e);
             }
         });
         toolbar.add(button);
@@ -456,11 +456,20 @@ public class ClientFrame extends JFrame
         
         toolsMenu.addSeparator();
         
-        item = new JMenuItem("Edit users", KeyEvent.VK_U);
+        item = new JMenuItem("Edit Users", KeyEvent.VK_U);
         item.setAccelerator(KeyStroke.getKeyStroke("control U"));
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                newUserAction(e);
+                editUsersAction(e);
+            }
+        });
+        toolsMenu.add(item);
+        
+        item = new JMenuItem("Edit Indexes", KeyEvent.VK_U);
+        item.setAccelerator(KeyStroke.getKeyStroke("control I"));
+        item.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                editIndexesAction(e);
             }
         });
         toolsMenu.add(item);
@@ -1103,7 +1112,7 @@ public class ClientFrame extends JFrame
         }
     }
     
-    private void newUserAction(ActionEvent ev) {
+    private void editUsersAction(ActionEvent ev) {
         try {
             Collection collection = client.getCollection();
             UserManagementService service = (UserManagementService) collection
@@ -1114,6 +1123,11 @@ public class ClientFrame extends JFrame
             showErrorMessage("Failed to retrieve UserManagementService", e);
             e.printStackTrace();
         }
+    }
+    
+    private void editIndexesAction(ActionEvent ev) {
+            IndexDialog dialog = new IndexDialog("Edit Indexes", client);
+            dialog.setVisible(true);
     }
     
     private void editPolicies() {
