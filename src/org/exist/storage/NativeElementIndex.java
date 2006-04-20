@@ -89,7 +89,10 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
      * @param qname The node's identity
      * @param proxy The node's proxy
      */
-    public void addNode(QName qname, NodeProxy p) {       
+    public void addNode(QName qname, NodeProxy p) {      
+    	if (doc.getDocId() != p.getDocument().getDocId()) {
+    		throw new IllegalArgumentException("Document id and proxy id differ !");
+    	}
         //Is this qname already pending ?
         ArrayList buf = (ArrayList) pending.get(qname);
         if (buf == null) {
@@ -170,6 +173,9 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             long previousGID = 0;
             for (int j = 0; j < gidsCount; j++) {
                 NodeProxy proxy = (NodeProxy) proxies.get(j);
+            	if (doc.getDocId() != proxy.getDocument().getDocId()) {
+            		throw new IllegalArgumentException("Document id and proxy id differ !");
+            	}
                 long delta = proxy.getGID() - previousGID;                
                 os.writeLong(delta);
                 StorageAddress.write(proxy.getInternalAddress(), os);
@@ -217,8 +223,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         final Lock lock = dbNodes.getLock();
         for (Iterator i = pending.entrySet().iterator(); i.hasNext();) {
             final Map.Entry entry = (Map.Entry) i.next();
-            final List storedGIDList = (ArrayList) entry.getValue();
-            final List newGIDList = new ArrayList();
+            final List storedProxies = (ArrayList) entry.getValue();
+            final List newProxies = new ArrayList();
             final QName qname = (QName) entry.getKey();            
             final Value key = computeKey(collectionId, qname);     
             os.clear(); 
@@ -229,58 +235,56 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 if (value != null) {
                     //Add its data to the new list                    
                     VariableByteArrayInput is = new VariableByteArrayInput(value.getData());
-                    //try {
-                        while (is.available() > 0) {
-                            int storedDocId = is.readInt();
-                            int gidsCount = is.readInt();
-                            //TOUNDERSTAND -pb
-                            int size = is.readFixedInt();
-                            if (storedDocId != this.doc.getDocId()) {
-                                // data are related to another document:
-                                // append them to any existing data
-                                os.writeInt(storedDocId);
-                                os.writeInt(gidsCount);
-                                os.writeFixedInt(size);
-                                try {
-                                    is.copyRaw(os, size);
-                                } catch(EOFException e) {
-                                    //LOG.error(e.getMessage(), e);
-                                    //TODO : data will be saved although os is probably corrupted ! -pb
+                    while (is.available() > 0) {
+                        int storedDocId = is.readInt();
+                        int proxyCount = is.readInt();
+                        //TOUNDERSTAND -pb
+                        int size = is.readFixedInt();
+                        if (storedDocId != this.doc.getDocId()) {
+                            // data are related to another document:
+                            // append them to any existing data
+                            os.writeInt(storedDocId);
+                            os.writeInt(proxyCount);
+                            os.writeFixedInt(size);
+                            try {
+                                is.copyRaw(os, size);                                 
+                            } catch(EOFException e) {
+                            	//TODO : data will be saved although os is probably corrupted ! -pb                                	
+                                LOG.error(e.getMessage(), e);                                    
+                            }
+                        } else {
+                            // data are related to our document:
+                            // feed the new list with the GIDs
+                            long previousGID = 0;
+                            for (int j = 0; j < proxyCount; j++) {
+                                long delta = is.readLong();
+                                long storedGID = previousGID + delta;                                        
+                                long address = StorageAddress.read(is);
+                                // add the node to the new list if it is not 
+                                // in the list of removed nodes
+                                if (!containsNode(storedProxies, storedGID)) {
+                                	newProxies.add(new NodeProxy(doc, storedGID, address));
                                 }
-                            } else {
-                                // data are related to our document:
-                                // feed the new list with the GIDs
-                                long previousGID = 0;
-                                for (int j = 0; j < gidsCount; j++) {
-                                    long delta = is.readLong();
-                                    long storedGID = previousGID + delta;                                        
-                                    long address = StorageAddress.read(is);
-                                    // add the node to the new list if it is not 
-                                    // in the list of removed nodes
-                                    if (!containsNode(storedGIDList, storedGID)) {
-                                        newGIDList.add(new NodeProxy(doc, storedGID, address));
-                                    }
-                                    previousGID = storedGID;
-                                }
+                                previousGID = storedGID;
                             }
                         }
-                    //} catch (EOFException e) {
-                        //TODO : remove this block if unexpected -pb
-                        //LOG.warn("REPORT ME " + e.getMessage(), e);
-                    //}
+                    }
                     //append the data from the new list
-                    if (newGIDList.size() > 0 ) {                        
-                        int gidsCount = newGIDList.size();
+                    if (newProxies.size() > 0 ) {                        
+                        int proxyCount = newProxies.size();
                         //Don't forget this one
-                        FastQSort.sort(newGIDList, 0, gidsCount - 1);                
+                        FastQSort.sort(newProxies, 0, proxyCount - 1);                
                         os.writeInt(this.doc.getDocId());
-                        os.writeInt(gidsCount);
+                        os.writeInt(proxyCount);
                         //TOUNDERSTAND -pb
                         int lenOffset = os.position();
                         os.writeFixedInt(0);
                         long previousGID = 0;
-                        for (int j = 0; j < gidsCount; j++) {
-                            NodeProxy proxy = (NodeProxy) newGIDList.get(j);
+                        for (int j = 0; j < proxyCount; j++) {
+                            NodeProxy proxy = (NodeProxy) newProxies.get(j);
+                        	if (doc.getDocId() != proxy.getDocument().getDocId()) {
+                        		throw new IllegalArgumentException("Document id and proxy id differ !");
+                        	}
                             long delta = proxy.getGID() - previousGID;                        
                             os.writeLong(delta);
                             StorageAddress.write(proxy.getInternalAddress(), os);
@@ -351,29 +355,25 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 Value key = (Value) elements.get(i);                
                 VariableByteInput is = dbNodes.getAsStream(key);
                 os.clear();  
-                //try {              
-                    while (is.available() > 0) {
-                        int storedDocId = is.readInt();
-                        int gidsCount = is.readInt();
-                        //TOUNDERSTAND -pb
-                        int size = is.readFixedInt();
-                        if (storedDocId != document.getDocId()) {
-                            // data are related to another document:
-                            // copy them to any existing data
-                            os.writeInt(storedDocId);
-                            os.writeInt(gidsCount);
-                            os.writeFixedInt(size);
-                            is.copyRaw(os, size);
-                        } else {
-                            // data are related to our document:
-                            // skip them                           
-                            changed = true;                        
-                            is.skipBytes(size);
-                        }
+                while (is.available() > 0) {
+                    int storedDocId = is.readInt();
+                    int gidsCount = is.readInt();
+                    //TOUNDERSTAND -pb
+                    int size = is.readFixedInt();
+                    if (storedDocId != document.getDocId()) {
+                        // data are related to another document:
+                        // copy them to any existing data
+                        os.writeInt(storedDocId);
+                        os.writeInt(gidsCount);
+                        os.writeFixedInt(size);
+                        is.copyRaw(os, size);
+                    } else {
+                        // data are related to our document:
+                        // skip them                           
+                        changed = true;                        
+                        is.skipBytes(size);
                     }
-                //} catch (EOFException e) {
-                   //EOF is expected here 
-                //}                
+                }
                 if (changed) {  
                     //TODO : no call to dbNodes.remove if no data ? -pb
                     //TODO : why not use the same construct as above :
@@ -421,45 +421,41 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 //Does the node already exist in the index ?
                 if (is != null) {
                     //Add its data to the new list
-                    //try {
-                        while (is.available() > 0) {
-                            int storedDocId = is.readInt();
-                            int gidsCount = is.readInt();
-                            //TOUNDERSTAND -pb
-                            int size = is.readFixedInt();
-                            if (storedDocId != document.getDocId()) {
-                                // data are related to another document:
-                                // append them to any existing data                                
-                                os.writeInt(storedDocId);
-                                os.writeInt(gidsCount);
-                                os.writeFixedInt(size);
-                                is.copyTo(os, gidsCount * 4);
-                            } else {
-                                // data are related to our document:
-                                // feed the new list with the GIDs
-                                long previousGID = 0;
-                                for (int j = 0; j < gidsCount; j++) {
-                                    long delta = is.readLong();
-                                    long storedGID = previousGID + delta;                                        
-                                    long address = StorageAddress.read(is);
-                                    if (node == null) {
-                                        if (document.getTreeLevel(storedGID) < document.getMetadata().reindexRequired()) {
-                                            //TOUNDERSTAND : given what is below, why not use newGIDList ? -pb
-                                            proxies.add(new NodeProxy(document, storedGID, address));
-                                        }
-                                    } else {
-                                        if (!NodeSetHelper.isDescendant(document, node.getGID(), storedGID)) {
-                                            //TOUNDERSTAND : given what is below, why not use storedGIDList ? -pb
-                                            newGIDList.add(new NodeProxy(document, storedGID, address));
-                                        }
+                    while (is.available() > 0) {
+                        int storedDocId = is.readInt();
+                        int gidsCount = is.readInt();
+                        //TOUNDERSTAND -pb
+                        int size = is.readFixedInt();
+                        if (storedDocId != document.getDocId()) {
+                            // data are related to another document:
+                            // append them to any existing data                                
+                            os.writeInt(storedDocId);
+                            os.writeInt(gidsCount);
+                            os.writeFixedInt(size);
+                            is.copyTo(os, gidsCount * 4);
+                        } else {
+                            // data are related to our document:
+                            // feed the new list with the GIDs
+                            long previousGID = 0;
+                            for (int j = 0; j < gidsCount; j++) {
+                                long delta = is.readLong();
+                                long storedGID = previousGID + delta;                                        
+                                long address = StorageAddress.read(is);
+                                if (node == null) {
+                                    if (document.getTreeLevel(storedGID) < document.getMetadata().reindexRequired()) {
+                                        //TOUNDERSTAND : given what is below, why not use newGIDList ? -pb
+                                        proxies.add(new NodeProxy(document, storedGID, address));
                                     }
-                                    previousGID = storedGID;
+                                } else {
+                                    if (!NodeSetHelper.isDescendant(document, node.getGID(), storedGID)) {
+                                        //TOUNDERSTAND : given what is below, why not use storedGIDList ? -pb
+                                        newGIDList.add(new NodeProxy(document, storedGID, address));
+                                    }
                                 }
+                                previousGID = storedGID;
                             }
                         }
-                    //} catch (EOFException e) {
-                        //EOFExceptions expected there
-                    //}
+                    }
                 }  
                 // TOUNDERSTAND : given what is above :-), why not rationalize ? -pb
                 // append the new list to any existing data
@@ -478,6 +474,9 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                     long previousGID = 0;
                     for (int j = 0; j < gidsCount; j++) {
                         NodeProxy proxy = (NodeProxy) proxies.get(j);
+                    	if (doc.getDocId() != proxy.getDocument().getDocId()) {
+                    		throw new IllegalArgumentException("Document id and proxy id differ !");
+                    	}
                         long delta = proxy.getGID() - previousGID;                        
                         os.writeLong(delta);
                         StorageAddress.write(proxy.getInternalAddress(), os);
@@ -573,15 +572,12 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                         long delta = is.readLong();
                         long storedGID = previousGID + delta; 
                         long address = StorageAddress.read(is);
-                        if (selector == null) {
-                        	//TODO : use a dedicated constructor
-                        	StoredNode storedNode = new StoredNode(nodeType, storedGID);
-                        	storedNode.setOwnerDocument(storedDocument);
-                        	storedNode.setInternalAddress(address);
+                        StoredNode storedNode = new StoredNode(storedDocument, storedGID, nodeType, address);
+                        if (selector == null) {                        	
                             result.add(new NodeProxy(storedNode), gidsCount);                        
                         } else {                        	
                             //Filter out the node if requested to do so
-                            NodeProxy proxy = selector.match(new NodeProxy(storedDocument, storedGID, nodeType, address));
+                            NodeProxy proxy = selector.match(new NodeProxy(storedNode));
                             if (proxy != null) {
                             	proxy.setInternalAddress(address);
                             	proxy.setNodeType(nodeType);
@@ -592,8 +588,6 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                         previousGID = storedGID;                        
                     }
                 }
-            //} catch (EOFException e) {
-            //    //EOFExceptions are expected here
             } catch (LockException e) {
                 LOG.warn("Failed to acquire lock for '" + dbNodes.getFile().getName() + "'", e);
             } catch (IOException e) {
@@ -603,7 +597,6 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 lock.release();
             }
         }
-//        LOG.debug("Found: " + result.getLength() + " for " + qname);
         if (sameDocSet) {
         	result.setDocumentSet(docs);
         }
@@ -655,19 +648,14 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                         map.put(qname, oc);
                     }
                     VariableByteArrayInput is = new VariableByteArrayInput(val[1].data(), val[1].start(), val[1].getLength());
-                    //try {
-                        while (is.available() > 0) { 
-                            is.readInt();
-                            int gidsCount = is.readInt();
-                            //TOUNDERSTAND -pb
-                            int size = is.readFixedInt();                            
-                            is.skipBytes(size);
-                            oc.addOccurrences(gidsCount);
-                        }                    
-                    //} catch (EOFException e) {
-                        //TODO : remove this block if unexpected -pb
-                        //LOG.warn("REPORT ME " + e.getMessage(), e);                    
-                    //}
+                    while (is.available() > 0) { 
+                        is.readInt();
+                        int gidsCount = is.readInt();
+                        //TOUNDERSTAND -pb
+                        int size = is.readFixedInt();                            
+                        is.skipBytes(size);
+                        oc.addOccurrences(gidsCount);
+                    }                    
                 }
             } catch (LockException e) {
                 LOG.warn("Failed to acquire lock for '" + dbNodes.getFile().getName() + "'", e);                
@@ -707,47 +695,42 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 msg.setLength(0);
                 msg.append("Checking ").append(nodeName).append(": ");                
                 VariableByteArrayInput is = new VariableByteArrayInput(value.getData());
-                //try {
-                    while (is.available() > 0) {
-                        int storedDocId = is.readInt();
-                        int gidsCount = is.readInt();
-                        //TOUNDERSTAND -pb
-                        int size = is.readFixedInt(); //unused                       
-                        if (storedDocId != document.getDocId()) {
-                            // data are related to another document:
-                            // ignore them 
-                            is.skip(gidsCount * 4);
-                        } else {
-                            // data are related to our document:
-                            // check   
-                            long previousGID = 0;
-                            for (int j = 0; j < gidsCount; j++) {
-                                long delta = is.readLong();
-                                long storedGID = previousGID + delta;                                
-                                long address = StorageAddress.read(is);
-                                Node storedNode = broker.objectWith(new NodeProxy(doc, storedGID, address));
-                                if (storedNode == null) {
-                                    throw new EXistException("Node " + storedGID + " in document " + document.getFileName() + " not found.");
-                                }
-                                if (storedNode.getNodeType() != Node.ELEMENT_NODE && storedNode.getNodeType() != Node.ATTRIBUTE_NODE) {
-                                    LOG.error("Node " + storedGID + " in document " +  document.getFileName() + " is not an element or attribute node.");
-                                    LOG.error("Type = " + storedNode.getNodeType() + "; name = " + storedNode.getNodeName() + "; value = " + storedNode.getNodeValue());
-                                    throw new EXistException("Node " + storedGID + " in document " + document.getFileName() + " is not an element or attribute node.");
-                                }
-                                if(!storedNode.getLocalName().equals(nodeName)) {
-                                    LOG.error("Node name does not correspond to index entry. Expected " + nodeName + "; found " + storedNode.getLocalName());
-                                    //TODO : also throw an exception here ?
-                                }
-                                //TODO : better message (see above) -pb
-                                msg.append(StorageAddress.toString(address)).append(" ");
-                                previousGID = storedGID;
+                while (is.available() > 0) {
+                    int storedDocId = is.readInt();
+                    int gidsCount = is.readInt();
+                    //TOUNDERSTAND -pb
+                    /*int size = */is.readFixedInt(); //unused                       
+                    if (storedDocId != document.getDocId()) {
+                        // data are related to another document:
+                        // ignore them 
+                        is.skip(gidsCount * 4);
+                    } else {
+                        // data are related to our document:
+                        // check   
+                        long previousGID = 0;
+                        for (int j = 0; j < gidsCount; j++) {
+                            long delta = is.readLong();
+                            long storedGID = previousGID + delta;                                
+                            long address = StorageAddress.read(is);
+                            Node storedNode = broker.objectWith(new NodeProxy(doc, storedGID, address));
+                            if (storedNode == null) {
+                                throw new EXistException("Node " + storedGID + " in document " + document.getFileName() + " not found.");
                             }
-                        }                            
-                    }                
-                //} catch (EOFException e) {
-                    //TODO : remove this block if unexpected -pb
-                    //LOG.warn("REPORT ME " + e.getMessage(), e);
-                //}
+                            if (storedNode.getNodeType() != Node.ELEMENT_NODE && storedNode.getNodeType() != Node.ATTRIBUTE_NODE) {
+                                LOG.error("Node " + storedGID + " in document " +  document.getFileName() + " is not an element or attribute node.");
+                                LOG.error("Type = " + storedNode.getNodeType() + "; name = " + storedNode.getNodeName() + "; value = " + storedNode.getNodeValue());
+                                throw new EXistException("Node " + storedGID + " in document " + document.getFileName() + " is not an element or attribute node.");
+                            }
+                            if(!storedNode.getLocalName().equals(nodeName)) {
+                                LOG.error("Node name does not correspond to index entry. Expected " + nodeName + "; found " + storedNode.getLocalName());
+                                //TODO : also throw an exception here ?
+                            }
+                            //TODO : better message (see above) -pb
+                            msg.append(StorageAddress.toString(address)).append(" ");
+                            previousGID = storedGID;
+                        }
+                    }                            
+                }                
                 LOG.debug(msg.toString());
             }
         } catch (LockException e) {

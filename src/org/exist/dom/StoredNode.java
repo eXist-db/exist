@@ -44,16 +44,15 @@ public class StoredNode extends NodeImpl {
 	private long internalAddress = StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;
 	private short nodeType = NodeProxy.UNKNOWN_NODE_TYPE;
     
-	public StoredNode(short nodeType) {
+	protected StoredNode(short nodeType) {
 		this.nodeType = nodeType;
 	}
     
-    public StoredNode(short nodeType, long gid) {
+    protected StoredNode(short nodeType, long gid) {
     	this.nodeType = nodeType;
     	this.gid = gid;
     }
 
-    //TODO : this is a temporary crazy constructor
     public StoredNode(NodeProxy other) {
     	this.ownerDocument = other.getDocument();
     	this.nodeType = other.getNodeType();
