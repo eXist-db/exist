@@ -2654,7 +2654,7 @@ public class NativeBroker extends DBBroker {
                 domDb.setOwnerObject(this);                
                 content = domDb.getNodeValue(new StoredNode(p), false);
             } catch (LockException e) {
-                LOG.warn("Failed to acquire read lock on " + domDb.getFile().getName());
+            	LOG.warn("Failed to acquire read lock on " + domDb.getFile().getName());
                 continue;
             } finally {
                 domDb.getLock().release();
@@ -2744,8 +2744,8 @@ public class NativeBroker extends DBBroker {
 		return result;
 	}
     
-    public Node objectWith(final Document doc, final long gid) {    
-		return (Node) new DOMTransaction(this, domDb) {
+    public StoredNode objectWith(final Document doc, final long gid) {    
+		return (StoredNode) new DOMTransaction(this, domDb) {
 			public Object start() {
 				Value val = domDb.get(new NodeProxy((DocumentImpl) doc, gid));
 				if (val == null)
@@ -2760,10 +2760,10 @@ public class NativeBroker extends DBBroker {
 		.run();
 	}
 
-	public Node objectWith(final NodeProxy p) {       
+	public StoredNode objectWith(final NodeProxy p) {       
 		if (p.getInternalAddress() == StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
 			return objectWith(p.getOwnerDocument(), p.getGID());
-		return (Node) new DOMTransaction(this, domDb) {
+		return (StoredNode) new DOMTransaction(this, domDb) {
 			public Object start() {
 				Value val = domDb.get(p.getInternalAddress());
 				if (val == null) {
