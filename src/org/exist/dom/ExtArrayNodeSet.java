@@ -71,8 +71,11 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
     private boolean isSorted = false;
     private boolean isInDocumentOrder = false;
     
+    private boolean hasOne = false;
+    
     protected int lastDoc = -1;
     protected Part lastPart = null;
+    protected NodeProxy lastAdded = null;
     
     private int state = 0;
 
@@ -154,16 +157,24 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
     }
     
     public boolean hasOne() {
-    	return (size == 1);
+    	return hasOne;
     }   
     
     public void add(NodeProxy proxy) {
+    	if (hasOne) {
+    		if (isSorted || isInDocumentOrder)
+    			hasOne = get(proxy) != null;
+    		else
+    			hasOne = lastAdded == null || lastAdded.compareTo(proxy) == 0;
+    	}
         getPart(proxy.getDocument(), true, initalSize).add(proxy);
         ++size;
         isSorted = false;
         isInDocumentOrder = false;
         setHasChanged();
-        checkItemType(proxy.getType());        
+        checkItemType(proxy.getType());
+        
+        lastAdded = proxy;
     }
 
     /**
@@ -174,6 +185,12 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
      * If the size hint is correct, no further reallocations will be required.
      */
     public void add(NodeProxy proxy, int sizeHint) {
+    	if (hasOne) {
+    		if (isSorted || isInDocumentOrder)
+    			hasOne = get(proxy) != null;
+    		else
+    			hasOne = lastAdded == null || lastAdded.compareTo(proxy) == 0;
+    	}
         getPart(proxy.getDocument(), true, sizeHint != Constants.NO_SIZE_HINT ? sizeHint : initalSize).add(
                 proxy);
         ++size;
@@ -181,6 +198,8 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         isInDocumentOrder = false;
         setHasChanged();
         checkItemType(proxy.getType());
+
+        lastAdded = proxy;
     }
 
     private void checkItemType(int type) {
@@ -405,6 +424,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         }
         isSorted = true;
         isInDocumentOrder = false;
+        hasOne = (size == 1);
 //              System.out.println("sort took " + (System.currentTimeMillis() -
 //       start) + "ms.");
     }
@@ -422,6 +442,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         }
         isSorted = false;
         isInDocumentOrder = true;
+        hasOne = (size == 1);
         //      System.out.println("in-document-order sort took " +
         // (System.currentTimeMillis() - start) + "ms.");
     }
