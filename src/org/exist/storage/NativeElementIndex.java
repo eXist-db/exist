@@ -250,17 +250,15 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                             } else {
                                 // data are related to our document:
                                 // feed the new list with the GIDs
-                                long previousGID = 0;
                                 for (int j = 0; j < gidsCount; j++) {
-                                    long delta = is.readLong();
-                                    long storedGID = previousGID + delta;                                        
+                                	NodeId nodeId = 
+                                		broker.getBrokerPool().getNodeFactory().createFromStream(is);                                        
                                     long address = StorageAddress.read(is);
                                     // add the node to the new list if it is not 
                                     // in the list of removed nodes
-                                    if (!containsNode(storedGIDList, storedGID)) {
-                                        newGIDList.add(new NodeProxy(doc, storedGID, address));
+                                    if (!containsNode(storedGIDList, nodeId)) {
+                                        newGIDList.add(new NodeProxy(doc, nodeId, address));
                                     }
-                                    previousGID = storedGID;
                                 }
                             }
                         }
@@ -278,13 +276,14 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                         //TOUNDERSTAND -pb
                         int lenOffset = os.position();
                         os.writeFixedInt(0);
-                        long previousGID = 0;
                         for (int j = 0; j < gidsCount; j++) {
                             NodeProxy storedNode = (NodeProxy) newGIDList.get(j);
-                            long delta = storedNode.getGID() - previousGID;                        
-                            os.writeLong(delta);
+                            try {
+                                storedNode.getNodeId().write(os);
+                            } catch (IOException e) {
+                                LOG.warn("IO error while writing structural index: " + e.getMessage(), e);
+                            }
                             StorageAddress.write(storedNode.getInternalAddress(), os);
-                            previousGID = storedNode.getGID();
                         }                
                         os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);    
                     }
@@ -782,9 +781,9 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         }
     } 
     
-    private final static boolean containsNode(List list, long gid) {
+    private final static boolean containsNode(List list, NodeId nodeId) {
         for (int i = 0; i < list.size(); i++) {
-            if (((NodeProxy) list.get(i)).getGID() == gid) 
+            if (((NodeProxy) list.get(i)).getNodeId().equals(nodeId)) 
                 return true;
         }
         return false;

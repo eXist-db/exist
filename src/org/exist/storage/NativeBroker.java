@@ -2359,7 +2359,6 @@ public class NativeBroker extends DBBroker {
         final IndexSpec idxSpec = 
             doc.getCollection().getIdxConf(this);
         final FulltextIndexSpec ftIdx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null;
-        final long gid = node.getGID();
         final short nodeType = node.getNodeType();
 //      final String nodeName = node.getNodeName();
         new DOMTransaction(this, domDb, Lock.WRITE_LOCK, doc) {
@@ -2373,7 +2372,7 @@ public class NativeBroker extends DBBroker {
             }
         }
         .run();
-        NodeProxy tempProxy = new NodeProxy(doc, gid, node.getInternalAddress());
+        NodeProxy tempProxy = new NodeProxy(doc, node.getNodeId(), node.getInternalAddress());
         QName qname;
         switch (nodeType) {
             case Node.ELEMENT_NODE :
@@ -2449,7 +2448,7 @@ public class NativeBroker extends DBBroker {
 
     public void removeAllNodes(Txn transaction, StoredNode node, NodePath currentPath) {
         Iterator iterator = 
-            getNodeIterator(new NodeProxy((DocumentImpl)node.getOwnerDocument(), node.getGID(), node.getInternalAddress()));
+            getNodeIterator(new NodeProxy((DocumentImpl)node.getOwnerDocument(), node.getNodeId(), node.getInternalAddress()));
         iterator.next();
         Stack stack = new Stack();
         collectNodesForRemoval(stack, iterator, node, currentPath);
@@ -2472,7 +2471,7 @@ public class NativeBroker extends DBBroker {
                     GeneralRangeIndexSpec spec = idxSpec.getIndexByPath(currentPath);
                     RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
                     if (spec != null || qnIdx != null) {
-                        NodeProxy p = new NodeProxy(doc, node.getGID(), node.getInternalAddress());
+                        NodeProxy p = new NodeProxy(doc, node.getNodeId(), node.getInternalAddress());
                         content = getNodeValue(p, false);
                     }
                 }
@@ -2480,27 +2479,10 @@ public class NativeBroker extends DBBroker {
                 stack.push(removed);
 
                 if (node.hasChildNodes()) {
-                    final long firstChildId = NodeSetHelper.getFirstChildId(doc, node.getGID());                    
-                    if (firstChildId < 0) {
-                        LOG.fatal(
-                            "no child found: expected = "
-                                + node.getChildCount()
-                                + "; node = "
-                                + node.getNodeName()
-                                + "; gid = "
-                                + node.getGID());
-                        throw new IllegalStateException("Wrong node id");
-                    }
-                    final long lastChildId = firstChildId + node.getChildCount();
                     StoredNode child;
-                    for (long gid = firstChildId; gid < lastChildId; gid++) {
+                    int childCount = node.getChildCount();
+                    for (int i = 0; i < childCount; i++) {
                         child = (StoredNode) iterator.next();
-                        if(child == null) {
-                            LOG.fatal("child " + gid + " not found for node: " + node.getNodeName() +
-                                    "; last = " + lastChildId + "; children = " + node.getChildCount());
-                            throw new IllegalStateException("Wrong node id");
-                        }
-                        child.setGID(gid);
                         if (child.getNodeType() == Node.ELEMENT_NODE)
                             currentPath.addComponent(((ElementImpl) child).getQName());
                         collectNodesForRemoval(stack, iterator, child, currentPath);
