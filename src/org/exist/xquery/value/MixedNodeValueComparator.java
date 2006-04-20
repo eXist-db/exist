@@ -21,14 +21,15 @@
  */
 package org.exist.xquery.value;
 
-import org.exist.dom.DocumentOrderComparator;
+import java.util.Comparator;
+
 import org.exist.dom.NodeProxy;
 import org.exist.memtree.NodeImpl;
 
 /**
  * @author wolf
  */
-public class MixedNodeValueComparator {
+public class MixedNodeValueComparator implements Comparator {
 
     /* (non-Javadoc)
      * @see org.exist.dom.DocumentOrderComparator#compare(java.lang.Object, java.lang.Object)
