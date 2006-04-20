@@ -161,12 +161,15 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
     }   
     
     public void add(NodeProxy proxy) {
-    	if (hasOne) {
-    		if (isSorted || isInDocumentOrder)
-    			hasOne = get(proxy) != null;
-    		else
-    			hasOne = lastAdded == null || lastAdded.compareTo(proxy) == 0;
-    	}
+    	if (size > 0) {
+    		if (hasOne) {
+	    		if (isSorted || isInDocumentOrder)
+	    			hasOne = get(proxy) == null;
+	    		else
+	    			hasOne = lastAdded == null || lastAdded.compareTo(proxy) == 0;
+    		}
+    	} else
+    		hasOne = true;
         getPart(proxy.getDocument(), true, initalSize).add(proxy);
         ++size;
         isSorted = false;
@@ -185,12 +188,15 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
      * If the size hint is correct, no further reallocations will be required.
      */
     public void add(NodeProxy proxy, int sizeHint) {
-    	if (hasOne) {
-    		if (isSorted || isInDocumentOrder)
-    			hasOne = get(proxy) != null;
-    		else
-    			hasOne = lastAdded == null || lastAdded.compareTo(proxy) == 0;
-    	}
+    	if (size > 0) {
+    		if (hasOne) {
+	    		if (isSorted || isInDocumentOrder)
+	    			hasOne = get(proxy) == null;
+	    		else
+	    			hasOne = lastAdded == null || lastAdded.compareTo(proxy) == 0;
+    		}
+    	} else
+    		hasOne = true;
         getPart(proxy.getDocument(), true, sizeHint != Constants.NO_SIZE_HINT ? sizeHint : initalSize).add(
                 proxy);
         ++size;
