@@ -22,8 +22,10 @@
  */
 package org.exist.xquery;
 
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
+
+import javax.xml.datatype.Duration;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.exist.dom.AVLTreeNodeSet;
 import org.exist.dom.DocumentImpl;
@@ -36,16 +38,7 @@ import org.exist.util.serializer.DOMStreamer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.LocalXMLResource;
 import org.exist.xmldb.RemoteXMLResource;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.DoubleValue;
-import org.exist.xquery.value.FloatValue;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.JavaObjectValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -91,6 +84,14 @@ public class XPathUtil {
             return new IntegerValue(((Integer) obj).intValue(), Type.INT);
         else if (obj instanceof Long)
             return new IntegerValue(((Long) obj).longValue(), Type.LONG);
+        else if (obj instanceof Duration)
+      	  return DurationValue.wrap((Duration) obj);
+        else if (obj instanceof Date)
+      	  return new DateTimeValue((Date) obj);
+        else if (obj instanceof XMLGregorianCalendar)
+      	  return new DateTimeValue((XMLGregorianCalendar) obj);
+        else if (obj instanceof Calendar)
+      	  return new DateTimeValue(((Calendar) obj).getTime());
         else if (obj instanceof ResourceSet) {
             Sequence seq = new AVLTreeNodeSet();
             try {
