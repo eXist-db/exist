@@ -109,6 +109,7 @@ public class FunName extends Function {
     			case Node.DOCUMENT_NODE:
     			case Node.TEXT_NODE:
     				result.add(new StringValue(""));
+    				break;
                 //TODO : what kind of default do we expect here ? -pb
     			default:
     				throw new XPathException("Unhandled node type: '" + n.getNodeType() + "'");
