@@ -410,9 +410,9 @@ public abstract class DBBroker extends Observable {
 	 *@param  doc  the document the node belongs to
 	 *@param  gid  the node's unique identifier
 	 */
-	public abstract Node objectWith(Document doc, long gid);
+	public abstract StoredNode objectWith(Document doc, long gid);
     
-	public abstract Node objectWith(NodeProxy p);
+	public abstract StoredNode objectWith(NodeProxy p);
 
 	/**
 	 * Remove the collection and all its subcollections from
