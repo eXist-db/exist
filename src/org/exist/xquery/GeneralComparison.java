@@ -619,19 +619,15 @@ public class GeneralComparison extends BinaryOp {
 			} else
 				rv = rv.convertTo(lv.getType());
 		}
-		if (backwardsCompatible) {
-			if ("".equals(lv.getStringValue()) && !"".equals(rv.getStringValue()))
-				return false;
-			if (!"".equals(lv.getStringValue()) && "".equals(rv.getStringValue()))
-				return false;
-			if ("".equals(lv.getStringValue()) && "".equals(rv.getStringValue()))
-				return true;
-			// in XPath 1.0 compatible mode, if one of the operands is a number, cast
-			// both operands to xs:double
-			if (Type.subTypeOf(ltype, Type.NUMBER)
-				|| Type.subTypeOf(rtype, Type.NUMBER)) {
-					lv = lv.convertTo(Type.DOUBLE);
-					rv = rv.convertTo(Type.DOUBLE);
+		if (!"".equals(lv.getStringValue()) && !"".equals(rv.getStringValue())) {
+			if (backwardsCompatible) {
+				// in XPath 1.0 compatible mode, if one of the operands is a number, cast
+				// both operands to xs:double
+				if (Type.subTypeOf(ltype, Type.NUMBER)
+					|| Type.subTypeOf(rtype, Type.NUMBER)) {
+						lv = lv.convertTo(Type.DOUBLE);
+						rv = rv.convertTo(Type.DOUBLE);
+				}
 			}
 		}
 //			System.out.println(
