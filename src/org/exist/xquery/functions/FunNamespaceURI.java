@@ -26,8 +26,9 @@ import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -46,12 +47,12 @@ public class FunNamespaceURI extends Function {
 		new FunctionSignature(
 				new QName("namespace-uri", Function.BUILTIN_FUNCTION_NS),
 				new SequenceType[0],
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+				new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE),
 				true),
 		new FunctionSignature(
 			new QName("namespace-uri", Function.BUILTIN_FUNCTION_NS),
 			new SequenceType[] { new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE) },
-			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+			new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE),
 			true)
 	};
 
@@ -88,8 +89,8 @@ public class FunNamespaceURI extends Function {
         }
         
         if(item == null)
-            result = Sequence.EMPTY_SEQUENCE;
-        else {
+            result = AnyURIValue.EMPTY_URI;
+        else {        	
             if(!Type.subTypeOf(item.getType(), Type.NODE))
                 throw new XPathException(getASTNode(), "context item is not a node; got: " +
                         Type.getTypeName(item.getType()));
@@ -97,13 +98,14 @@ public class FunNamespaceURI extends Function {
             Node n = ((NodeValue)item).getNode();
             switch(n.getNodeType()) {
                 case Node.ELEMENT_NODE:
-                case Node.ATTRIBUTE_NODE:
-                    result = new StringValue(n.getNamespaceURI());
+                case Node.ATTRIBUTE_NODE:                	
+                    result = new AnyURIValue(n.getNamespaceURI());
                     break;
                 //TODO : what kind of default do we expect here ? -pb
                 default:
+                	//TODO : raise an exception ?
                 	LOG.warn("Tried to obtain namespace URI for node type " + n.getNodeType());
-                    result = new StringValue("");
+                    result = AnyURIValue.EMPTY_URI;
             }
         }
         
