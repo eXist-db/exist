@@ -26,6 +26,7 @@ import java.text.Collator;
 
 import org.exist.storage.Indexable;
 import org.exist.util.ByteConversion;
+import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 
 /** [Definition:]   integer is �derived� from decimal by fixing the value of �fractionDigits� to be 0. 
@@ -114,8 +115,8 @@ public class IntegerValue extends NumericValue implements Indexable {
 		switch (type) {
 		case Type.LONG :
 			// jmv: add test since now long is not the default implementation anymore:
-			return value.compareTo(SMALLEST_LONG) == 1 &&
-				value.compareTo(LARGEST_LONG ) == -1;
+			return value.compareTo(SMALLEST_LONG) != Constants.INFERIOR &&
+				value.compareTo(LARGEST_LONG ) != Constants.SUPERIOR;
 		case Type.INTEGER :
 		case Type.DECIMAL :
 			return true;
