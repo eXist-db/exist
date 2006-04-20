@@ -30,6 +30,7 @@ import org.exist.dom.AttrImpl;
 import org.exist.dom.CommentImpl;
 import org.exist.dom.DocumentTypeImpl;
 import org.exist.dom.ElementImpl;
+import org.exist.dom.NodeProxy;
 import org.exist.dom.ProcessingInstructionImpl;
 import org.exist.dom.QName;
 import org.exist.dom.TextImpl;
@@ -182,13 +183,14 @@ public class DOMIndexer {
                     doc.alphaLen[nodeNr]));
             comment.setOwnerDocument(targetDoc);
             if (stack.empty()) {
-                comment.setGID(1);
+                comment.setGID(NodeProxy.DOCUMENT_ELEMENT_GID);
                 broker.storeNode(transaction, comment, null);
                 targetDoc.appendChild(comment);
             } else {
                 ElementImpl last = (ElementImpl) stack.peek();
                 last.appendChildInternal(comment);
                 broker.storeNode(transaction, comment, null);
+                comment.clear();
             }
         } else if (doc.nodeKind[nodeNr] == Node.PROCESSING_INSTRUCTION_NODE) {
             ProcessingInstructionImpl pi = new ProcessingInstructionImpl();
@@ -197,13 +199,14 @@ public class DOMIndexer {
             pi.setTarget(qn.getLocalName());
             pi.setData(new String(doc.characters, doc.alpha[nodeNr], doc.alphaLen[nodeNr]));
             if (stack.empty()) {
-                pi.setGID(1);
+                pi.setGID(NodeProxy.DOCUMENT_ELEMENT_GID);
                 broker.storeNode(transaction, pi, null);
                 targetDoc.appendChild(pi);
             } else {
                 ElementImpl last = (ElementImpl) stack.peek();
                 last.appendChildInternal(pi);
                 broker.storeNode(transaction, pi, null);
+                pi.clear();
             }
         }
     }
