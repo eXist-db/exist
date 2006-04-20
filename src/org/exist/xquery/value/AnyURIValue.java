@@ -70,6 +70,10 @@ public class AnyURIValue extends AtomicValue {
 	public String getStringValue() throws XPathException {
 		return uri;
 	}
+	
+	public boolean effectiveBooleanValue() throws XPathException {
+		return !"".equals(uri);
+	}	
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Sequence#convertTo(int)
