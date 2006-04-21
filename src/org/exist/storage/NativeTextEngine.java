@@ -305,7 +305,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         final NodeList children = document.getChildNodes();        
         for (int i = 0; i < children.getLength(); i++) {
             StoredNode node = (StoredNode) children.item(i);
-            Iterator j = broker.getDOMIterator(new NodeProxy(document, node.getGID(), node.getInternalAddress()));
+            Iterator j = broker.getDOMIterator(new NodeProxy(document, node.getNodeId(), node.getInternalAddress()));
             collect(tokens, j);
         }
         final short collectionId = document.getCollection().getId();        
@@ -672,9 +672,12 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     collect(words, domIterator);
                 break;
             case Node.TEXT_NODE :
+            	int nodeIdLen = 
+            		broker.getBrokerPool().getNodeFactory().lengthInBytes(data[1], data, 2);
                 String s;
                 try {
-                    s = new String(data, 1, data.length - 1, "UTF-8");
+                    s = new String(data, nodeIdLen + 2, data.length - nodeIdLen - 2, "UTF-8");
+                    LOG.debug(s);
                     tokenizer.setText(s);
                     TextToken token;
                     while (null != (token = tokenizer.nextToken())) {
@@ -682,20 +685,28 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                         if (stoplist.contains(word))
                             continue;
                         words.add(word.toLowerCase());
-                    }                    
+                    }
                 } catch (UnsupportedEncodingException e) {
                     //s = new String(data, 1, data.length - 1);
                     LOG.error(e.getMessage(), e);
                     s = null;
-                }                
+                }
                 break;
             case Node.ATTRIBUTE_NODE :
                 byte idSizeType = (byte) (data[0] & 0x3);
+                boolean hasNamespace = (data[0] & 0x10) == 0x10;
+                nodeIdLen  =
+                    broker.getBrokerPool().getNodeFactory().lengthInBytes(data[1], data, 2);
+                int readOffset = Signatures.getLength(idSizeType) + nodeIdLen + 2;
+                if (hasNamespace) {
+					readOffset += 2; // skip namespace id
+					final short prefixLen = ByteConversion.byteToShort(data, readOffset);
+					readOffset += prefixLen + 2; // skip prefix
+				}
                 String val;
                 try {
                     val = new String(data,
-                        1 + Signatures.getLength(idSizeType), 
-                        data.length - 1 - Signatures.getLength(idSizeType),
+                        readOffset, data.length - readOffset, 
                         "UTF-8");
                     tokenizer.setText(val);
                     TextToken token;
