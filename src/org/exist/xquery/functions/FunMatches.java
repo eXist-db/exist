@@ -309,15 +309,14 @@ public class FunMatches extends Function {
         try {
 			if(pat == null || (!pattern.equals(pat.pattern())) || flags != pat.flags()) {
 				pat = Pattern.compile(pattern, flags);
+				//TODO : make matches('&#x212A;', '[A-Z]', 'i') work !
                 matcher = pat.matcher(string);
             } else {
                 matcher.reset(string);
             }
             
-			if(matcher.find())
-				return true;
-			else
-				return false;
+			return matcher.find();
+			
 		} catch (PatternSyntaxException e) {
 			throw new XPathException("Invalid regular expression: " + e.getMessage(), e);
 		}
