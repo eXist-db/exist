@@ -413,30 +413,30 @@ public class ElementImpl extends NamedNode implements Element {
 
     public void appendAttributes(Txn transaction, NodeList attribs) throws DOMException {
     	NodeList duplicateAttrs = findDupAttributes(attribs);
-    	if(duplicateAttrs != null) {
-    		removeAppendAttributes(transaction, duplicateAttrs, attribs);
-    	} else {
-    		NodeImplRef last = new NodeImplRef(this);
-            final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
-	        if (children == 0) {
-	            // no children: append a new child
-	            appendChildren(transaction, null, firstChildID(), last, getPath(), attribs, true);
-	        }
-	        else {
-	            final int level = owner.getTreeLevel(getGID());
-                owner.getMetadata().setReindexRequired(level + 1);
-                final StoredNode lastAttrib = getLastAttribute();
-	            if (lastAttrib == null || lastAttrib.getGID() != lastChildID()) {
-                    appendChildren(transaction, null, firstChildID() + 1, last, getPath(), attribs, true);
-	            } else {
-                   	last.setNode(lastAttrib);
-                    appendChildren(transaction, null, lastChildID() + 1, last, getPath(), attribs, true);
-	            }
-	        }
-	        attributes += attribs.getLength();
-            getBroker().updateNode(transaction, this);
-            getBroker().reindexXMLResource(transaction, owner, owner, null);
-    	}
+    	removeAppendAttributes(transaction, duplicateAttrs, attribs);
+//    	if(duplicateAttrs != null) {
+//    		removeAppendAttributes(transaction, duplicateAttrs, attribs);
+//    	} else {
+//    		NodeImplRef last = new NodeImplRef(this);
+//            final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
+//	        if (children == 0) {
+//	            // no children: append a new child
+//	            appendChildren(transaction, nodeId.newChild(), -1, last, getPath(), attribs, true);
+//	        }
+//	        else {
+//	        	NamedNodeMap attrs = getAttributes();
+//                final StoredNode lastAttrib = (StoredNode) attrs.item(attrs.getLength() - 1);
+//	            if (lastAttrib == null || attrs.getLength() == children) {
+//                    appendChildren(transaction, null, firstChildID() + 1, last, getPath(), attribs, true);
+//	            } else {
+//                   	last.setNode(lastAttrib);
+//                    appendChildren(transaction, null, lastChildID() + 1, last, getPath(), attribs, true);
+//	            }
+//	        }
+//	        attributes += attribs.getLength();
+//            getBroker().updateNode(transaction, this);
+//            getBroker().reindexXMLResource(transaction, owner, owner, null);
+//    	}
     }
 
     private NodeList checkForAttributes(Txn transaction, NodeList nodes) throws DOMException {
@@ -800,19 +800,16 @@ public class ElementImpl extends NamedNode implements Element {
      */
     private NodeList findDupAttributes(NodeList attrs) throws DOMException {
     	NodeListImpl dupList = null;
-    	long start = firstChildID();
-        for (long i = start; i < start + children; i++) {
-            Node child = ((DocumentImpl)getOwnerDocument()).getNode(i);
-            if (child.getNodeType() != Node.ATTRIBUTE_NODE)
-            	break;
-            Node duplicate = findAttribute(child, attrs);
-            if (duplicate != null) {
-            	LOG.debug("Found a duplicate attribute for '" + child + "':'" + duplicate + "'");
-            	if (dupList == null)
+    	NamedNodeMap map = getAttributes();
+    	for (int i = 0; i < attrs.getLength(); i++) {
+    		Node attr = attrs.item(i);
+    		Node duplicate = map.getNamedItemNS(attr.getNamespaceURI(), attr.getLocalName());
+    		if (duplicate != null) {
+    			if (dupList == null)
             		dupList = new NodeListImpl();
-            	dupList.add(child);
-            }
-        }
+            	dupList.add(duplicate);
+    		}
+    	}
         return dupList;
     }
 
@@ -1322,41 +1319,64 @@ public class ElementImpl extends NamedNode implements Element {
 	
 	public void removeAppendAttributes(Txn transaction, NodeList removeList, NodeList appendList) {
         final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
-		final int level = owner.getTreeLevel(getGID());		
-		final long lastChild = lastChildID();		
 		try {
-			try {
-				for (int i=0; i<removeList.getLength(); i++) {
-					Node oldChild = removeList.item(i);
-					if (!(oldChild instanceof StoredNode))
-						throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "wrong node type");
-					StoredNode old = (StoredNode) oldChild;
-					if (old.getParentGID() != getGID())
-						throw new DOMException(DOMException.NOT_FOUND_ERR, "node is not a child of this element");
-                    getBroker().removeNode(transaction, old, old.getPath(), null);
-					if(old.getGID() < lastChild) owner.getMetadata().setReindexRequired(level + 1);
-					children--;
-					attributes--;
+			if (removeList != null) {
+				try {
+					for (int i=0; i<removeList.getLength(); i++) {
+						Node oldChild = removeList.item(i);
+						if (!(oldChild instanceof StoredNode))
+							throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "wrong node type");
+						StoredNode old = (StoredNode) oldChild;
+						if (!old.nodeId.isChildOf(nodeId))
+							throw new DOMException(DOMException.NOT_FOUND_ERR, "node " + old.nodeId.getParentId() + 
+									" is not a child of element " + nodeId);
+						getBroker().removeNode(transaction, old, old.getPath(), null);
+						children--;
+						attributes--;
+					}
+				} finally {
+					getBroker().endRemove();
 				}
-			} finally {
-                getBroker().endRemove();
-			}			
+			}
 			if (children == 0) {
-			   appendChildren(transaction, null, firstChildID(), new NodeImplRef(this), getPath(), appendList, true);
+			   appendChildren(transaction, nodeId.newChild(), -1, 
+					   new NodeImplRef(this), getPath(), appendList, true);
 			} else {
-			    StoredNode lastAttrib = getLastAttribute();
-			    if (lastAttrib == null || lastAttrib.getGID() != lastChildID())
-                    appendChildren(transaction, null, firstChildID() + 1, new NodeImplRef(this), getPath(), appendList, true);                    
-			    else
-                    appendChildren(transaction, null, lastChildID() + 1, new NodeImplRef(lastAttrib), getPath(), appendList, true);			        
+		        if (attributes == 0) {
+		        	StoredNode firstChild = (StoredNode) getFirstChild();
+		        	NodeId newNodeId = firstChild.nodeId.insertBefore();
+                    appendChildren(transaction, newNodeId, -1, new NodeImplRef(this), getPath(), appendList, true);                    
+		        } else {
+		        	AttribVisitor visitor = new AttribVisitor();
+			        accept(visitor);
+			        NodeId firstChildId = visitor.firstChild == null ? null : visitor.firstChild.nodeId;
+			        NodeId newNodeId = visitor.lastAttrib.nodeId.insertNode(firstChildId);
+                    appendChildren(transaction, newNodeId, -1, new NodeImplRef(visitor.lastAttrib), 
+                    		getPath(), appendList, true);
+		        }
 			}
 			attributes += appendList.getLength();
 		} finally {
             getBroker().updateNode(transaction, this);
-            getBroker().reindexXMLResource(transaction, owner, owner, null);
+            getBroker().flush();
 		}
 	}
 
+	private class AttribVisitor implements NodeVisitor {
+		private StoredNode lastAttrib = null;
+		private StoredNode firstChild = null;
+		
+		public boolean visit(StoredNode node) {
+        	if (node.getNodeType() == Node.ATTRIBUTE_NODE) {
+        		lastAttrib = node;
+        	} else if (node.nodeId.isChildOf(ElementImpl.this.nodeId)) {
+                firstChild = node;
+                return false;
+        	}
+        	return true;
+        }
+	}
+	
     /* (non-Javadoc)
      * @see org.w3c.dom.Node#replaceChild(org.w3c.dom.Node, org.w3c.dom.Node)
      */
@@ -1364,7 +1384,7 @@ public class ElementImpl extends NamedNode implements Element {
         if (!(oldChild instanceof StoredNode))
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "wrong node type");
         StoredNode oldNode = (StoredNode) oldChild;
-        if (oldNode.getParentGID() != getGID())
+        if (!oldNode.nodeId.getParentId().equals(nodeId))
             throw new DOMException(DOMException.NOT_FOUND_ERR,
                     "node is not a child of this element");        
         StoredNode previous = (StoredNode) oldNode.getPreviousSibling();
@@ -1374,11 +1394,11 @@ public class ElementImpl extends NamedNode implements Element {
             previous = getLastNode(previous);
         getBroker().removeAllNodes(transaction, oldNode, oldNode.getPath());
         getBroker().endRemove();
-        appendChild(transaction, null, oldNode.getGID(), new NodeImplRef(previous), getPath(), newChild, true);
+        appendChild(transaction, oldNode.nodeId, -1, new NodeImplRef(previous), getPath(), newChild, true);
         // reindex if required
         final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
-        getBroker().reindexXMLResource(transaction, owner, owner, null);
         getBroker().storeXMLResource(transaction, owner);
+        getBroker().flush();
         return oldChild;	// method is spec'd to return the old child, even though that's probably useless in this case
     }
 
