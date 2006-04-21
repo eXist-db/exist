@@ -7,6 +7,7 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
+import org.exist.dom.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.xacml.AccessContext;
@@ -116,11 +117,13 @@ public class XQueryUpdateTest extends TestCase {
             seq = xquery.execute("//product[@name = 'n20']", null, AccessContext.TEST);
             assertEquals(1, seq.getLength());
             
-            store(broker, "<test attr1='a' attr2='b'>ccc</test>");
-            query = "update insert attribute attr1 { 'c' } into /test";
+            store(broker, "<test attr1='aaa' attr2='bbb'>ccc</test>");
+            query = "update insert attribute attr1 { 'eee' } into /test";
             
             System.out.println("testing duplicate attribute ...");
-            seq = xquery.execute("/test", null, AccessContext.TEST);
+            xquery.execute(query, null, AccessContext.TEST);
+            
+            seq = xquery.execute("/test[@attr1 = 'eee']", null, AccessContext.TEST);
             assertEquals(1, seq.getLength());
             System.out.println(serializer.serialize((NodeValue) seq.itemAt(0)));
             
@@ -433,9 +436,12 @@ public class XQueryUpdateTest extends TestCase {
 		broker.saveCollection(transaction, root);
 		
 		IndexInfo info = root.validateXMLResource(transaction, broker, "test.xml", data);
-		root.store(transaction, broker, info, TEST_XML, false);
+		root.store(transaction, broker, info, data, false);
    
 		mgr.commit(transaction);
+		
+		DocumentImpl doc = root.getDocument(broker, "test.xml");
+	    broker.getSerializer().serialize(doc);
 	}
     
     protected BrokerPool startDB() {
