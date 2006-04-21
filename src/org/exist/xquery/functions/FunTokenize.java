@@ -97,8 +97,13 @@ public class FunTokenize extends FunMatches {
             String string = stringArg.getStringValue();
             if (string.length() == 0 )
                 result = Sequence.EMPTY_SEQUENCE;
+
             else {
+            	//TODO : make fn:tokenize("Some unparsed <br> HTML <BR> text", "\s*<br>\s*", "") work  
                 String pattern = translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue());
+                if (Pattern.matches(pattern, "")) {
+                	throw new XPathException("FORX0003: regular expression could match empty string");
+                }
 		
         		int flags = 0;
         		if (getSignature().getArgumentCount() == 3)
