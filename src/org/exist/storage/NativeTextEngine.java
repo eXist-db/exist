@@ -677,7 +677,6 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 String s;
                 try {
                     s = new String(data, nodeIdLen + 2, data.length - nodeIdLen - 2, "UTF-8");
-                    LOG.debug(s);
                     tokenizer.setText(s);
                     TextToken token;
                     while (null != (token = tokenizer.nextToken())) {
