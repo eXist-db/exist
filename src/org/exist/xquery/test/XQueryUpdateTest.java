@@ -3,21 +3,27 @@ package org.exist.xquery.test;
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
 
+import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
+import org.exist.collections.triggers.TriggerException;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
+import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
+import org.exist.util.LockException;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
+import org.xml.sax.SAXException;
 
 public class XQueryUpdateTest extends TestCase {
 
@@ -26,11 +32,12 @@ public class XQueryUpdateTest extends TestCase {
     }
 
     protected static String TEST_COLLECTION = DBBroker.ROOT_COLLECTION + "/test";
+    
     protected static String TEST_XML = 
         "<?xml version=\"1.0\"?>" +
         "<products/>";
     
-    protected final static int ITEMS_TO_APPEND = 500;
+    protected final static int ITEMS_TO_APPEND = 100;
     
     private BrokerPool pool;
     
@@ -77,6 +84,55 @@ public class XQueryUpdateTest extends TestCase {
         }
 	}
     
+	public void testAppendAttributes() {
+		testAppend();
+        DBBroker broker = null;
+        try {
+        	System.out.println("testAppendAttributes() ...\n");
+            broker = pool.get(SecurityManager.SYSTEM_USER);
+            
+            XQuery xquery = broker.getXQueryService();
+            String query =
+            	"   declare variable $i external;\n" +
+            	"	update insert\n" +
+            	"		attribute name { concat('n', $i) }\n" +
+            	"	into //product[@num = $i]";
+            XQueryContext context = xquery.newContext(AccessContext.TEST);
+            CompiledXQuery compiled = xquery.compile(context, query);
+            for (int i = 0; i < ITEMS_TO_APPEND; i++) {
+                context.declareVariable("i", new Integer(i));
+                xquery.execute(compiled, null);
+            }
+            
+            Sequence seq = xquery.execute("/products", null, AccessContext.TEST);
+            assertEquals(seq.getLength(), 1);
+            
+            Serializer serializer = broker.getSerializer();
+            System.out.println(serializer.serialize((NodeValue) seq.itemAt(0)));
+            
+            seq = xquery.execute("//product", null, AccessContext.TEST);
+            assertEquals(ITEMS_TO_APPEND, seq.getLength());
+            
+            seq = xquery.execute("//product[@name = 'n20']", null, AccessContext.TEST);
+            assertEquals(1, seq.getLength());
+            
+            store(broker, "<test attr1='a' attr2='b'>ccc</test>");
+            query = "update insert attribute attr1 { 'c' } into /test";
+            
+            System.out.println("testing duplicate attribute ...");
+            seq = xquery.execute("/test", null, AccessContext.TEST);
+            assertEquals(1, seq.getLength());
+            System.out.println(serializer.serialize((NodeValue) seq.itemAt(0)));
+            
+            System.out.println("testAppendAttributes: PASS");
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            pool.release(broker);
+        }
+	}
+	
     public void testInsertBefore() {
         DBBroker broker = null;
         try {
@@ -231,6 +287,18 @@ public class XQueryUpdateTest extends TestCase {
             
             System.out.println(serializer.serialize((NodeValue) seq.itemAt(0)));
             
+            query =
+            	"for $prod in //product return\n" +
+                "	update value $prod/stock\n" +
+                "	with (<local>10</local>,<external>1</external>)";
+            seq = xquery.execute(query, null, AccessContext.TEST);
+            
+            seq = xquery.execute("/products", null, AccessContext.TEST);
+            assertEquals(seq.getLength(), 1);
+            
+            seq = xquery.execute("//product/stock/external[. = 1]", null, AccessContext.TEST);
+            assertEquals(seq.getLength(), ITEMS_TO_APPEND);
+            
             System.out.println("testUpdate: PASS");
         } catch (Exception e) {
             e.printStackTrace();
@@ -266,30 +334,109 @@ public class XQueryUpdateTest extends TestCase {
         }
 	}
     
+    public void testRename() {
+    	testAppend();
+        DBBroker broker = null;
+        try {
+            System.out.println("testUpdate() ...\n");
+            broker = pool.get(SecurityManager.SYSTEM_USER);
+            
+            XQuery xquery = broker.getXQueryService();
+            
+            String query =
+            	"for $prod in //product return\n" +
+            	"	update rename $prod/description as 'desc'\n";
+            Sequence seq = xquery.execute(query, null, AccessContext.TEST);
+            
+            seq = xquery.execute("//product/desc", null, AccessContext.TEST);
+            assertEquals(seq.getLength(), ITEMS_TO_APPEND);
+            
+            query =
+            	"for $prod in //product return\n" +
+            	"	update rename $prod/@num as 'count'\n";
+            seq = xquery.execute(query, null, AccessContext.TEST);
+            
+            seq = xquery.execute("//product/@count", null, AccessContext.TEST);
+            assertEquals(seq.getLength(), ITEMS_TO_APPEND);
+            
+            System.out.println("testUpdate: PASS");
+        } catch (Exception e) {
+        	e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            pool.release(broker);
+        }
+    }
+    
+    public void testReplace() {
+    	testAppend();
+        DBBroker broker = null;
+        try {
+            System.out.println("testReplace() ...\n");
+            broker = pool.get(SecurityManager.SYSTEM_USER);
+            
+            XQuery xquery = broker.getXQueryService();
+            
+            String query =
+            	"for $prod in //product return\n" +
+            	"	update replace $prod/description with <desc>An updated description.</desc>\n";
+            Sequence seq = xquery.execute(query, null, AccessContext.TEST);
+            
+            seq = xquery.execute("//product/desc", null, AccessContext.TEST);
+            assertEquals(seq.getLength(), ITEMS_TO_APPEND);
+            
+            query =
+            	"for $prod in //product return\n" +
+            	"	update replace $prod/@num with '1'\n";
+            seq = xquery.execute(query, null, AccessContext.TEST);
+            
+            seq = xquery.execute("//product/@num", null, AccessContext.TEST);
+            assertEquals(seq.getLength(), ITEMS_TO_APPEND);
+            
+            query =
+            	"for $prod in //product return\n" +
+            	"	update replace $prod/desc/text() with 'A new update'\n";
+            seq = xquery.execute(query, null, AccessContext.TEST);
+            
+            seq = xquery.execute("//product[starts-with(desc, 'A new')]", null, AccessContext.TEST);
+            assertEquals(seq.getLength(), ITEMS_TO_APPEND);
+            
+            System.out.println("testUpdate: PASS");
+        } catch (Exception e) {
+        	e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            pool.release(broker);
+        }
+    }
+    
     protected void setUp() throws Exception {
         this.pool = startDB();
         DBBroker broker = null;
         try {
-            TransactionManager mgr = pool.getTransactionManager();
             broker = pool.get(SecurityManager.SYSTEM_USER);
-            Txn transaction = mgr.beginTransaction();        
-            System.out.println("Transaction started ...");
-            
-            Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION);
-            broker.saveCollection(transaction, root);
-            
-            IndexInfo info = root.validateXMLResource(transaction, broker, "test.xml", TEST_XML);
-            root.store(transaction, broker, info, TEST_XML, false);
-    
-            mgr.commit(transaction);    
-            System.out.println("Transaction commited ...");
-            
+            store(broker, TEST_XML);
         } catch (Exception e) {
+        	e.printStackTrace();
             fail(e.getMessage());
         }  finally {
             pool.release(broker);
         }
     }
+
+	private void store(DBBroker broker, String data) throws PermissionDeniedException, EXistException, TriggerException, SAXException, LockException, TransactionException {
+		TransactionManager mgr = pool.getTransactionManager();
+		Txn transaction = mgr.beginTransaction();        
+		System.out.println("Transaction started ...");
+		
+		Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION);
+		broker.saveCollection(transaction, root);
+		
+		IndexInfo info = root.validateXMLResource(transaction, broker, "test.xml", data);
+		root.store(transaction, broker, info, TEST_XML, false);
+   
+		mgr.commit(transaction);
+	}
     
     protected BrokerPool startDB() {
         String home, file = "conf.xml";
