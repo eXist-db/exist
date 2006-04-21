@@ -133,7 +133,7 @@ public class FunReplace extends FunMatches {
         Sequence result;
 		Sequence stringArg = getArgument(0).eval(contextSequence, contextItem);
 		if (stringArg.isEmpty())
-            result = Sequence.EMPTY_SEQUENCE;
+            result = StringValue.EMPTY_STRING;
         else {        
     		String string = stringArg.getStringValue();
     		String pattern =
