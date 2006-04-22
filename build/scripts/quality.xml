@@ -9,7 +9,7 @@ Tested with eclipse Version: 3.2.0 Build id: I20060217-1115
 $Header$
 -->
 
-<project basedir="." default="pmd" name="quality-tests">
+<project basedir="../.." default="pmd" name="quality-tests">
 
     <!-- import default properties from file -->
     <property file="build.properties"/>
