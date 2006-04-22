@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!-- ======================================================================= -->
-<!-- eXist build file                                                        -->
+<!-- eXist build file : Axis SOAP                                            -->
 <!-- ======================================================================= -->
-<project basedir="../.." name="SOAP">
 
-    <description>Build SOAP interface</description>
-    
-    <!-- ============================================================ -->
-    <!-- Axis SOAP                                                    -->
-    <!-- ============================================================ -->
+<project basedir="../.." name="Axis SOAP">
+
+    <description>Build Axis SOAP interface</description>
+
     <target name="wsdl2java">
         <mkdir dir="${build.soap}"/>
         <delete failonerror="no" file="${build.soap}/org/exist/soap/AdminSoapBindingImpl.java"/>
