@@ -6,5 +6,6 @@
 <project basedir="." default="all" name="eXist">
 
 	<import file="build/scripts/build-impl.xml" />
-    <!--import file="build/scripts/build-quality.xml" /-->
+	<import file="build/scripts/jarsigner.xml" />
+  <import file="build/scripts/quality.xml" />
 </project>
