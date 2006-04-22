@@ -3,7 +3,7 @@
 <!-- ======================================================================= -->
 <!-- eXist build file                                                        -->
 <!-- ======================================================================= -->
-<project basedir="." default="all" name="exist">
+<project basedir="../.." default="all" name="exist">
 
     <!-- import default properties from file -->
     <property file="build.properties"/>
@@ -537,7 +537,7 @@
         <echo message="-------------------------"/>
         <echo message="Cleaning"/>
         <echo message="-------------------------"/>
-        <delete dir="${build}"/>
+        <delete dir="${build.classes}"/>
         <delete dir="${dist.dir}"/>
         <delete quiet="true">
             <fileset dir="log" includes="*"/>
@@ -1221,6 +1221,5 @@
         <!-- the jars are some how locked by ant (classpath.core)-->
 
     </target>
-	
-    <import file="build-quality.xml" />
+    
 </project>

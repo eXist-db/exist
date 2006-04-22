@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ======================================================================= -->
+<!-- eXist build file                                                        -->
+<!-- ======================================================================= -->
+<project basedir="." default="all" name="eXist">
+
+	<import file="build/scripts/build-impl.xml" />
+    <!--import file="build/scripts/build-quality.xml" /-->
+</project>
