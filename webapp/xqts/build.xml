@@ -53,10 +53,10 @@
             <fileset dir="${config.basedir}/TestSources">
                 <include name="*"/>
                 <!-- This list should be not very long -->
-                <exclude name="fsx.xml"/>
-                <exclude name="orders"/>
-                <exclude name="strong-queries-results-q2.xsd"/>
-                <exclude name="strong-queries-results-q3.xsd"/>
+                <exclude name="fsx.xml"/> <!-- Irregular file --> 
+                <exclude name="orders"/>  <!-- No Mime type   -->
+                <exclude name="strong-queries-results-q2.xsd"/> <!-- syntax eror -->
+                <exclude name="strong-queries-results-q3.xsd"/> <!-- syntax eror -->
             </fileset>
         </xmldb:store>
     </target>
