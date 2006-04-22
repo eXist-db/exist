@@ -5,12 +5,15 @@
 <!-- ======================================================================= -->
 <project basedir="." default="all" name="eXist 1.0">
 
-  <description>Ant build file for eXist</description>
-    
-	<import file="build/scripts/build-impl.xml" />
-	<import file="build/scripts/jarsigner.xml" />
-	<import file="build/scripts/junit.xml" />
+    <description>Ant build file for eXist</description>
 	
-  <import file="build/scripts/quality.xml" />
-  
+    <!-- Core build scripts -->
+    <import file="build/scripts/build-impl.xml" />
+    <import file="build/scripts/soap.xml" />
+    <import file="build/scripts/jarsigner.xml" />
+
+    <!-- Additional scripts -->
+    <import file="build/scripts/junit.xml" />
+    <import file="build/scripts/quality.xml" />
+
 </project>
