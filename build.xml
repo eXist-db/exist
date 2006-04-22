@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!-- ======================================================================= -->
-<!-- eXist build file                                                        -->
+<!-- eXist 1.0 build file                                                    -->
 <!-- ======================================================================= -->
+
+<!-- $Id$ -->
+
 <project basedir="." default="all" name="eXist 1.0">
 
+    
     <description>Ant build file for eXist</description>
 	
     <!-- Core build scripts -->
@@ -15,5 +19,6 @@
     <!-- Additional scripts -->
     <import file="build/scripts/junit.xml" />
     <import file="build/scripts/quality.xml" />
+    <import file="build/scripts/demoserver.xml" />
 
 </project>

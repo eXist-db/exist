@@ -3,6 +3,9 @@
 <!-- ======================================================================= -->
 <!-- eXist build file                                                        -->
 <!-- ======================================================================= -->
+
+<!-- $Id$ -->
+
 <project basedir="../.." default="all" name="exist">
 
     <!-- import default properties from file -->
@@ -694,147 +697,6 @@
         installerType="standard"/>
     </target>
 	
-    <!-- ================================================================== -->
-    <!-- Create HTML files for docs on http://exist-db.org                  -->
-    <!-- ================================================================== -->
-    <target depends="jar" name="prepare-docs">
-        <property name="demo.host" value="http://demo.exist-db.org"/>
-        <delete dir="${build.docs}" failonerror="false"/>
-        <mkdir dir="${build.docs}"/>
-        <mkdir dir="${build.docs.src}"/>
-
-        <echo message="Copying docs to temporary location ${build.docs.src}"/>
-        <copy todir="${build.docs.src}">
-            <fileset dir="${src.webapp}">
-                <include name="WEB-INF/**"/>
-                <include name="*.xml"/>
-                <include name="*.html"/>
-                <include name="sitemap.xmap"/>
-                <include name="styles/**"/>
-                <include name="stylesheets/**"/>
-                <exclude name="WEB-INF/data/*"/>
-            </fileset>
-        </copy>
-
-        <echo message="Adjusting links ..."/>
-        <replace dir="${build.docs.src}" summary="true"
-            includes="*.xml">
-            <replacefilter token="index.xml" value="index.html"/>
-            <replacefilter token="acknowledge.xml" value="acknowledge.html"/>
-            <replacefilter token="ant-tasks.xml" value="ant-tasks.html"/>
-            <replacefilter token="changes.xml" value="changes.html"/>
-            <replacefilter token="client.xml" value="client.html"/>
-            <replacefilter token="cluster.xml" value="cluster.html"/>
-            <replacefilter token="journal.xml" value="journal.html"/>
-            <replacefilter token="configuration.xml" value="configuration.html"/>
-            <replacefilter token="credits.xml" value="credits.html"/>
-            <replacefilter token="deployment.xml" value="deployment.html"/>
-            <replacefilter token="devguide.xml" value="devguide.html"/>
-            <replacefilter token="documentation.xml" value="documentation.html"/>
-            <replacefilter token="indexing.xml" value="indexing.html"/>
-            <replacefilter token="facts.xml" value="facts.html"/>
-            <replacefilter token="howtos.xml" value="howtos.html"/>
-            <replacefilter token="performance.xml" value="performance.html"/>
-            <replacefilter token="quickstart.xml" value="quickstart.html"/>
-            <replacefilter token="security.xml" value="security.html"/>
-            <replacefilter token="xquery.xml" value="xquery.html"/>
-            <replacefilter token="updating.xml" value="updating.html"/>
-            <replacefilter token="update_ext.xml" value="update_ext.html"/>
-            <replacefilter token='"xinclude.xml' value='"xinclude.html'/>
-            <replacefilter token="xacml.xml" value="xacml.html"/>
-            <replacefilter token="xacml-features.xml" value="xacml-features.html"/>
-            <replacefilter token="xacml-intro.xml" value="xacml-intro.html"/>
-            <replacefilter token="xacml-usage.xml" value="xacml-usage.html"/>
-            <replacefilter token="xacml-dev.xml" value="xacml-dev.html"/>
-            <replacefilter token="webdav.xml" value="webdav.html"/>
-            
-            <replacefilter token="examples.xml" value="${demo.host}/examples.xml"/>
-            <replacefilter token="xquery/acronyms.xq" value="${demo.host}/xquery/acronyms.xq"/>
-            <replacefilter token="mods/" value="${demo.host}/mods/"/>
-            <replacefilter token="xquery/xquery.xq" value="${demo.host}/xquery/xquery.xq"/>
-            <replacefilter token="sandbox/sandbox.xql" value="${demo.host}/sandbox/sandbox.xql"/>
-            <replacefilter token='url="xmldb/db/' value='url="${demo.host}/xmldb/db/'/>
-            <replacefilter token='href="xmldb/db/' value='href="${demo.host}/xmldb/db/'/>
-            <replacefilter token="admin/admin.xql" value="${demo.host}/admin/admin.xql"/>
-            <replacefilter token='href="status"' value='href="${demo.host}/status"'/>
-            <replacefilter token="xquery/functions.xq" value="${demo.host}/xquery/functions.xq"/>
-            <replacefilter token='url="xquery/guess.xql' value='url="${demo.host}/xquery/guess.xql'/>
-            <replacefilter token="xquery/login.xql" value="${demo.host}/xquery/login.xql"/>
-            <replacefilter token="apps/applications.xml" value="${demo.host}/apps/applications.xml"/>
-            <replacefilter token="webstart/exist.jnlp" value="${demo.host}/webstart/exist.jnlp"/>
-        </replace>
-    </target>
-
-    <target depends="prepare-docs" name="docs">
-        <mkdir dir="${build.docs.html}"/>
-
-        <delete dir="${build}/work"/>
-
-        <echo message="Calling Cocoon ..."/>
-
-        <cocoon verbose="true"
-            classpathref="classpath.core"
-            precompile-only="false"
-            confirm-extensions="false"
-            context-dir="${build.docs.src}"
-            config-file="${build.docs.src}/WEB-INF/cocoon.xconf"
-            work-dir="${build}/work"
-            dest-dir="${build.docs.html}"
-            extension=".html"
-            accept="*/*">
-            <logging log-kit="${build.docs.src}/WEB-INF/logkit.xconf" logger="cli" level="DEBUG" />
-            <uris name="site" follow-links="false">
-                <uri type="append" src="index.xml"/>
-                <uri type="append" src="acknowledge.xml"/>
-                <uri type="append" src="ant-tasks.xml"/>
-                <uri type="append" src="changes.xml"/>
-                <uri type="append" src="client.xml"/>
-                <uri type="append" src="cluster.xml"/>
-                <uri type="append" src="journal.xml"/>
-                <uri type="append" src="configuration.xml"/>
-                <uri type="append" src="credits.xml"/>
-                <uri type="append" src="deployment.xml"/>
-                <uri type="append" src="devguide.xml"/>
-                <uri type="append" src="documentation.xml"/>
-                <uri type="append" src="examples.xml"/>
-                <uri type="append" src="indexing.xml"/>
-                <uri type="append" src="facts.xml"/>
-                <uri type="append" src="howtos.xml"/>
-                <uri type="append" src="performance.xml"/>
-                <uri type="append" src="quickstart.xml"/>
-                <uri type="append" src="security.xml"/>
-                <uri type="append" src="xquery.xml"/>
-                <uri type="append" src="xinclude.xml"/>
-                <uri type="append" src="updating.xml"/>
-                <uri type="append" src="update_ext.xml"/>
-                <uri type="append" src="xacml.xml"/>
-                <uri type="append" src="xacml-features.xml"/>
-                <uri type="append" src="xacml-intro.xml"/>
-                <uri type="append" src="xacml-usage.xml"/>
-                <uri type="append" src="xacml-dev.xml"/>
-                <uri type="append" src="webdav.xml"/>
-                <uri type="append" src="developper.html"/>
-            </uris>
-        </cocoon>
-
-        <echo message="Renaming files ..."/>
-        <move todir="${build.docs.html}">
-            <fileset dir="${build.docs.html}">
-                <include name="*.xml"/>
-            </fileset>
-            <mapper type="glob" from="*.xml" to="*.html"/>
-        </move>
-
-        <copy todir="${build.docs.html}">
-            <fileset dir="webapp">
-                <include name="styles/**"/>
-                <include name="resources/**"/>
-                <include name="*.jpg"/>
-                <include name="*.png"/>
-                <include name="*.gif"/>
-            </fileset>
-        </copy>
-    </target>
 
     <!-- ============================================================================ -->
     <!-- Build thirdparty modules (JBoss integration)                                 -->
@@ -860,65 +722,6 @@
                 <include name="*.java"/>
             </fileset>
         </replaceregexp>
-    </target>
-
-    <target name="demoserver">
-        <echo message="Adjusting links ..."/>
-        <property name="host" value="http://exist-db.org"/>
-        <delete dir="${build.docs}" failonerror="false"/>
-        <mkdir dir="${build.docs}"/>
-        <mkdir dir="${build.docs.src}"/>
-
-        <echo message="Copying docs to temporary location ${build.docs.src}"/>
-        <copy todir="${build.docs.src}">
-            <fileset dir="${src.webapp}">
-                <include name="**/*"/>
-                <exclude name="WEB-INF/data/*"/>
-                <exclude name="WEB-INF/logs/*"/>
-            </fileset>
-        </copy>
-    	
-        <replace dir="${build.docs.src}" summary="true"
-            includes="sidebar.xml">
-            <replacefilter token="index.xml" value="${host}/index.html"/>
-            <replacefilter token="acknowledge.xml" value="${host}/acknowledge.html"/>
-            <replacefilter token="credits.xml" value="${host}/credits.html"/>
-            <replacefilter token="facts.xml" value="${host}/facts.html"/>
-            <replacefilter token="quickstart.xml" value="${host}/quickstart.html"/>
-            <replacefilter token="documentation.xml" value="${host}/documentation.html"/>
-            <!--replacefilter token="#mailing" value="${host}/index.html#mailing"/-->
-            <replacefilter token="api/index.html" value="${host}/api/index.html"/>
-        </replace>
-
-        <replace dir="${build.docs.src}" summary="true">
-            <include name="acronyms/sidebar.xml"/>
-            <include name="apps/sidebar.xml"/>
-            <include name="library/sidebar.xml"/>
-            <include name="xquery/sidebar.xml"/>
-            <replacefilter token="../index.xml" value="${host}/index.html"/>
-            <replacefilter token="../acknowledge.xml" value="${host}/acknowledge.html"/>
-            <replacefilter token="../credits.xml" value="${host}/credits.html"/>
-            <replacefilter token="../quickstart.xml" value="${host}/quickstart.html"/>
-            <replacefilter token="../documentation.xml" value="${host}/documentation.html"/>
-            <replacefilter token="../api/index.html" value="${host}/api/index.html"/>
-        </replace>
-
-        <replace dir="${build.docs.src}/admin" summary="true">
-            <include name="admin.xql"/>
-            <replacefilter token='&lt;a href="..">Home&lt;/a>' value='&lt;a href="${host}">Home&lt;/a>'/>
-        </replace>
-        <replace dir="${build.docs.src}/sandbox" summary="true">
-            <include name="sandbox.xql"/>
-            <replacefilter token='&lt;a href="../index.xml">Home&lt;/a>' value='&lt;a href="${host}">Home&lt;/a>'/>
-            <replacefilter token='&lt;a href="../index.xml#download">Download&lt;/a>' value='&lt;a href="${host}#download">Download&lt;/a>'/>
-        </replace>
-        <replace dir="${build.docs.src}/mods" summary="true">
-            <include name="config.xqm"/>
-            <include name="login.xhtml"/>
-            <include name="mods.xq"/>
-            <replacefilter token='&lt;a href=".."' value='&lt;a href="${host}"'/>
-            <replacefilter token="../index.xml" value="${host}"/>
-        </replace>
     </target>
     
     <!-- ============================================================================ -->

@@ -1,15 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!-- ======================================================================= -->
-<!-- eXist build file                                                        -->
+<!-- eXist build file : Run jUnit tests                                      -->
 <!-- ======================================================================= -->
-<project basedir="../.." default="test" name="JUnit tests">
+<project basedir="../.." default="test" name="jUnit tests">
 
     <description>jUnit tests for eXist</description>
-    
-    <!-- ================================================================== -->
-    <!-- Run JUnit tests                                                    -->
-    <!-- ================================================================== -->
+
     <target name="test"
             depends="test-prepare,test-recovery, test-local, test-jetty, test-concurrent, test-remote, test-wrapup"
             description="Run jUnit tests"/>
