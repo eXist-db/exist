@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ======================================================================= -->
+<!-- eXist build file : Build installer                                      -->
+<!-- ======================================================================= -->
+<project basedir="../.." default="snapshot-installer" name="Build installer">
+
+    <description>Build installer</description>
+
+    <target name="commandline-installer">
+        <ant antfile="build.xml" dir="tools/izpack"/>
+    </target>
+
+    <target depends="all,samples,javadocs" name="prepare-installer">
+        <taskdef name="izpack" classpath="${izpack.dir}/lib/compiler.jar"
+                classname="com.izforge.izpack.ant.IzPackTask"/>
+        <tstamp/>
+        <delete dir="${jetty.dir}/work/Jetty__8080__exist"/>
+        <touch file="webapp/WEB-INF/logs/exist.log"/>
+        <touch file="webapp/WEB-INF/logs/xmldb.log"/>
+        <copy file="installer/install.xml.tmpl" tofile="installer/install.xml" filtering="true"/>
+    </target>
+
+    <target depends="prepare-installer" name="installer" description="Create installer">
+        <echo message="Calling IzPack to create installer ..."/>
+        <izpack input="installer/install.xml"
+                output="installer/${project.name}-${project.version}.jar"
+                basedir="." izPackDir="${izpack.dir}"
+                installerType="standard"/>
+    </target>
+
+    <target depends="prepare-installer,commandline-installer"
+            name="snapshot-installer" description="Create snapshot installer">
+        <echo message="Calling IzPack to create installer ..."/>
+        <property name="inst-jar" value="installer/${project.name}-snapshot-${DSTAMP}.jar"/>
+        <izpack input="installer/install.xml"
+                output="installer/${project.name}-snapshot-${DSTAMP}.jar"
+                basedir="." izPackDir="${izpack.dir}"
+                installerType="standard"/>
+
+        <mkdir dir="installer/temp"/>
+        <tstamp/>
+        <unjar src="installer/${project.name}-snapshot-${DSTAMP}.jar"
+                dest="installer/temp"/>
+        <delete>
+            <fileset dir="installer/temp">
+                <include name="META-INF/EXIST.*"/>
+            </fileset>
+        </delete>
+        <delete file="installer/${project.name}-snapshot-${DSTAMP}.jar"/>
+        <jar destfile="installer/${project.name}-snapshot-${DSTAMP}.jar"
+                basedir="installer/temp" compress="yes" update="yes">
+            <manifest>
+                <attribute name="Main-Class" value="org.exist.izpack.CommandLineInstaller"/>
+            </manifest>
+        </jar>
+        <delete dir="installer/temp"/>
+    </target>
+
+    <target depends="prepare-installer" name="cvs-build">
+        <echo message="Calling IzPack to create installer ..."/>
+        <izpack input="installer/install.xml"
+                output="installer/${project.name}-cvs-${DSTAMP}.jar"
+                basedir="." izPackDir="${izpack.dir}"
+                installerType="standard"/>
+    </target>
+
+</project>
