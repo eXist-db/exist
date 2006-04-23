@@ -271,6 +271,11 @@
                 <include name="**.xq"/>
             </fileset>
         </copy>
+        <copy todir="${build.classes}/org/exist/validation/internal/query">
+            <fileset dir="${src}/org/exist/validation/internal/query">
+                <include name="**.xq"/>
+            </fileset>
+        </copy>
         <echo message="Creating exist.jar ..."/>
         <jar basedir="${build.classes}" compress="true" jarfile="exist.jar">
             <exclude name="org/exist/start/**"/>
