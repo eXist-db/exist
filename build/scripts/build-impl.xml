@@ -101,7 +101,7 @@
         <echo message="eXist ${project.version} build"/>
         <echo message="-------------------------"/>
         <echo message="basedir=${basedir}"/>
-        <mkdir dir="${build}"/>
+        
         <mkdir dir="${build.classes}"/>
         <mkdir dir="${jetty.dir}/logs"/>
         <mkdir dir="${jetty.dir}/work"/>
@@ -122,7 +122,7 @@
     <!-- Compiles the source code                                            -->
     <!-- =================================================================== -->
     <target depends="prepare" name="compile" description="Compiles the source code">
-        <mkdir dir="${build}"/>
+        
         <echo message="Compiling with Java ${ant.java.version} from ${build.compiler.source} source to ${build.compiler.target} target, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
         <javac debug="${build.debug}" deprecation="${build.deprecation}"
             destdir="${build.classes}" encoding="UTF-8"
@@ -226,7 +226,7 @@
     <!-- ================================================================== -->
     <!-- Create jar files                    							   	-->
     <!-- ================================================================== -->
-    <target name="jar" depends="compile, compile-tomcat-realm" description="Create eXist unisgned jar files">
+    <target name="jar" depends="compile, compile-tomcat-realm" description="Create eXist unsigned jar files">
         <filter token="version" value="${project.version}"/>
         <filter token="build" value="${DSTAMP}"/>
         <copy file="${src}/CatalogManager.properties" todir="${build.classes}"/>
