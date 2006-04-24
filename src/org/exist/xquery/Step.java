@@ -124,6 +124,10 @@ public abstract class Step extends AbstractExpression {
     public int returnsType() {
         return Type.NODE;
     }
+    
+    public int getCardinality() {
+   	return Cardinality.ZERO_OR_MORE;
+   }
 
     public void setAxis( int axis ) {
         this.axis = axis;
