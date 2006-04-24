@@ -510,6 +510,8 @@ public class LocationStep extends Step {
             for (Iterator i = contextSet.iterator(); i.hasNext();) {
                 NodeProxy current = (NodeProxy) i.next();
                 NodeId parentId = current.getNodeId().getParentId();
+                if(parentId.getTreeLevel() == 1 && current.getDocument().getCollection().isTempCollection())
+                    continue;
                 StoredNode parentNode = (StoredNode) context.getBroker().objectWith(current.getOwnerDocument(), parentId);
             	visitor.setContext(current);
             	parentNode.accept(visitor);
