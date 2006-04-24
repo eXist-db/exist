@@ -24,6 +24,7 @@
     <property name="lib.tools" value="./tools/lib"/>
     <property name="build" value="./build"/>
     <property name="build.src" value="${build}/src"/>
+    <property name="build.scripts" value="${build}/scripts"/>
     <property name="build.soap" value="${build}/soap"/>
     <property name="build.classes" value="${build}/classes"/>
     <property name="build.docs" value="${build}/docs"/>
@@ -490,8 +491,10 @@
         </delete>
         <mkdir dir="${dist}"/>
         <mkdir dir="${dist.dir}"/>
-        <mkdir dir="${dist.dir}/bin"/>
-        <mkdir dir="${dist.dir}/src"/>
+    	<mkdir dir="${dist.dir}/bin"/>
+    	<mkdir dir="${dist.dir}/build"/>
+    	<mkdir dir="${dist.dir}/build/scripts"/>
+    	<mkdir dir="${dist.dir}/src"/>
         <mkdir dir="${dist.dir}/lib"/>
         <mkdir dir="${dist.dir}/lib/core"/>
         <mkdir dir="${dist.dir}/lib/optional"/>
@@ -522,8 +525,9 @@
                 <include name="README"/>
                 <include name="*.bat"/>
                 <include name="*.sh"/>
-                <include name="conf.xml"/>
-                <include name="descriptor.xml"/>
+            	<include name="conf.xml"/>
+            	<include name="conf.xml.tmpl"/>
+            	<include name="descriptor.xml"/>
                 <include name="build.xml"/>
                 <include name="log4j.xml"/>
                 <include name="examples-setup.xml"/>
@@ -557,6 +561,9 @@
                 <exclude name=".*"/>
             </fileset>
         </copy>
+        <copy todir="${dist.dir}/build/scripts">
+            <fileset dir="${build.scripts}"/>
+        </copy>
         <copy todir="${dist.dir}/lib/core">
             <fileset dir="${lib.core}"/>
         </copy>
@@ -586,7 +593,7 @@
         </copy>
         <copy todir="${dist.dir}/thirdparty">
             <fileset dir="./thirdparty">
-                <exclude name="**/lib/*.jar"/>
+                <!--<exclude name="**/lib/*.jar"/>-->
             </fileset>
         </copy>
         <copy todir="${dist.dir}/extensions">
