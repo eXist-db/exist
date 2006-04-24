@@ -47,6 +47,10 @@ public class DLNFactory implements NodeIdFactory {
         return new DLN(sizeHint, data, startOffset);
     }
 
+    public NodeId createFromString(String string) {
+    	return new DLN(string);
+    }
+    
     public NodeId documentNodeId() {
         return DLN.DOCUMENT_NODE;
     }

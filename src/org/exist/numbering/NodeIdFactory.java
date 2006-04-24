@@ -73,6 +73,15 @@ public interface NodeIdFactory {
      * @return the NodeId read
      */
     NodeId createFromData(int sizeHint, byte[] data, int startOffset);
+
+    /**
+     * Create a NodeId instance from its string representation.
+     * 
+     * @param string the string representation of the node id as returned
+     * by {@link Object#toString()}
+     * @return
+     */
+    NodeId createFromString(String string);
     
     /**
      * Returns the number of bytes occupied by the NodeId stored
