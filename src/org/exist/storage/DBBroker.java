@@ -57,7 +57,6 @@ import org.exist.util.LockException;
 import org.exist.xquery.XQuery;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /**
  * This is the base class for all database backends. All the basic database operations like storing,
@@ -631,8 +630,6 @@ public abstract class DBBroker extends Observable {
 	}
 
 	public abstract void insertNodeAfter(Txn transaction, final StoredNode previous, final StoredNode node);
-
-	public abstract void reindexXMLResource(Txn transaction, DocumentImpl oldDoc, DocumentImpl doc, StoredNode node);
 
     public void indexNode(Txn transaction, StoredNode node) {
         indexNode(transaction, node, null);

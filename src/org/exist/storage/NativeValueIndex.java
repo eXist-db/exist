@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -56,7 +57,6 @@ import org.exist.storage.lock.Lock;
 import org.exist.util.ByteConversion;
 import org.exist.util.FastQSort;
 import org.exist.util.LockException;
-import org.exist.util.LongLinkedList;
 import org.exist.util.ReadOnlyException;
 import org.exist.util.UTF8;
 import org.exist.util.ValueOccurrences;
@@ -228,7 +228,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             Map.Entry entry = (Map.Entry) i.next();
             Indexable indexable = (Indexable) entry.getKey();
             //TODO : NativeElementIndex uses ArrayLists -pb
-            ArrayList gids = (ArrayList) entry.getValue(); 
+            ArrayList gids = (ArrayList) entry.getValue();
             int gidsCount = gids.size();
             //Don't forget this one
             FastQSort.sort(gids, 0, gidsCount - 1);
@@ -236,6 +236,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
             os.clear();
             os.writeInt(this.doc.getDocId());
             os.writeInt(gidsCount);
+            int lenOffset = os.position();
+            os.writeFixedInt(0);
             //Compute the GID list
             for (int j = 0; j < gidsCount; j++) {                    
                 NodeId nodeId = (NodeId) gids.get(j);
@@ -245,6 +247,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     LOG.warn("IO error while writing range index: " + e.getMessage(), e);
                 }
             }
+            os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
+            
             //Compute a key for the value
             Value ref = new Value(indexable.serialize(collectionId, caseSensitive));
             try {
@@ -282,12 +286,10 @@ public class NativeValueIndex implements ContentLoadingObserver {
         for (Iterator i = pending.entrySet().iterator(); i.hasNext();) {
             Map.Entry entry = (Map.Entry) i.next();
             Indexable indexable = (Indexable) entry.getKey();
-            //TODO : NativeElementIndex uses ArrayLists -pb
-            LongLinkedList storedGIDList = (LongLinkedList) entry.getValue();   
+            ArrayList storedGIDList = (ArrayList) entry.getValue();   
             //Compute a key for the value
             Value searchKey = new Value(indexable.serialize(collectionId, caseSensitive));
-            //TODO : NativeElementIndex uses ArrayLists -pb
-            LongLinkedList newGIDList = new LongLinkedList();
+            ArrayList newGIDList = new ArrayList();
             os.clear();              
             try {                    
                 lock.acquire(Lock.WRITE_LOCK); 
@@ -300,25 +302,25 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         while (is.available() > 0) {
                             int storedDocId = is.readInt();
                             int gidsCount = is.readInt();
+                            int size = is.readFixedInt();
                             if (storedDocId != this.doc.getDocId()) {
                                 // data are related to another document:
                                 // append them to any existing data
                                 os.writeInt(storedDocId);
-                                os.writeInt(gidsCount);                                                                       
-                                is.copyTo(os, gidsCount);
+                                os.writeInt(gidsCount);
+                                os.writeFixedInt(size);
+                                is.copyRaw(os, size);
                             } else {
                                 // data are related to our document:
                                 // feed the new list with the GIDs
-                                long previousGID = 0;
                                 for (int j = 0; j < gidsCount; j++) {
-                                    long delta = is.readLong();
-                                    long storedGID = previousGID + delta;  
+                                    NodeId nodeId = 
+                                        broker.getBrokerPool().getNodeFactory().createFromStream(is);  
                                     // add the node to the new list if it is not 
                                     // in the list of removed nodes
-                                    if (!storedGIDList.contains(storedGID)) {
-                                        newGIDList.add(storedGID);
+                                    if (!containsNode(storedGIDList, nodeId)) {
+                                        newGIDList.add(nodeId);
                                     }
-                                    previousGID = storedGID;
                                 }
                             }
                         }
@@ -327,19 +329,23 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         LOG.warn("REPORT ME " + e.getMessage(), e);
                     }
                     //append the data from the new list
-                    if (newGIDList.getSize() > 0) {                        
-                        long[] gids = newGIDList.getData();
-                        int gidsCount = gids.length;
+                    if (newGIDList.size() > 0) {
+                        int gidsCount = newGIDList.size();
                         //Don't forget this one
-                        Arrays.sort(gids);
+                        FastQSort.sort(newGIDList, 0, gidsCount - 1);
                         os.writeInt(this.doc.getDocId());
                         os.writeInt(gidsCount);
-                        long previousGID = 0;
+                        int lenOffset = os.position();
+                        os.writeFixedInt(0);
                         for (int j = 0; j < gidsCount; j++) {
-                            long delta = gids[j] - previousGID;                            
-                            os.writeLong(delta);
-                            previousGID = gids[j];
-                        } 
+                            NodeId nodeId = (NodeId) newGIDList.get(j);
+                            try {
+                                nodeId.write(os);
+                            } catch (IOException e) {
+                                LOG.warn("IO error while writing range index: " + e.getMessage(), e);
+                            }
+                        }
+                        os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
                     }
                 }                
                 //Store the data
@@ -365,6 +371,14 @@ public class NativeValueIndex implements ContentLoadingObserver {
         }
         pending.clear();
     }    
+    
+    private static boolean containsNode(List list, NodeId nodeId) {
+        for (int i = 0; i < list.size(); i++) {
+            if (((NodeId) list.get(i)).equals(nodeId)) 
+                return true;
+        }
+        return false;
+    }
     
     /* Drop all index entries for the given collection.
 	 * @see org.exist.storage.IndexGenerator#dropIndex(org.exist.collections.Collection)
@@ -408,21 +422,19 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 os.clear();                
                 while (is.available() > 0) {
                     int storedDocId = is.readInt();
-                    int gidsCount = is.readInt();                        
+                    int gidsCount = is.readInt();
+                    int size = is.readFixedInt();
 					if (storedDocId != document.getDocId()) {
 					    // data are related to another document:
                         // copy them to any existing data
                         os.writeInt(storedDocId);
                         os.writeInt(gidsCount);
-                        NodeId nodeId;
-                        for (int j = 0; j < gidsCount; j++) {
-                            nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
-                            nodeId.write(os);
-                        }
+                        os.writeFixedInt(size);
+                        is.copyRaw(os, size);
                     } else {
                         // data are related to our document:
-                        // skip them                          
-                        is.skip(gidsCount);
+                        // skip them
+                        is.skipBytes(size);
                         changed = true;
                     }
                 }
@@ -449,110 +461,6 @@ public class NativeValueIndex implements ContentLoadingObserver {
         } finally {
             lock.release();
         }
-    }
-    
-	/* (non-Javadoc)
-	 * @see org.exist.storage.IndexGenerator#reindex(org.exist.dom.DocumentImpl, org.exist.dom.NodeImpl)
-	 */
-    //TODO : note that this is *not* this.doc -pb
-    public void reindex(DocumentImpl document, StoredNode node) {
-        if (pending.size() == 0) 
-            return;        
-        final short collectionId = document.getCollection().getId();
-        final Lock lock = dbValues.getLock();              
-        for (Iterator i = pending.entrySet().iterator(); i.hasNext();) {
-            //Compute a key for the value
-            Map.Entry entry = (Map.Entry) i.next();
-            Indexable indexable = (Indexable) entry.getKey();
-            //TODO : NativeElementIndex uses ArrayLists -pb
-            LongLinkedList storedGIDList = (LongLinkedList) entry.getValue();
-            Value ref = new Value(indexable.serialize(collectionId, caseSensitive)); 
-            try {
-                lock.acquire(Lock.WRITE_LOCK);
-                VariableByteInput is = dbValues.getAsStream(ref);
-                os.clear();
-                //TODO : NativeElementIndex uses ArrayLists -pb
-                LongLinkedList newGIDList = new LongLinkedList();
-                //Does the value already has data in the index ?
-                if (is != null) {                    
-                    try {
-                        while (is.available() > 0) {
-                            int storedDocId = is.readInt();
-                            int gidsCount = is.readInt();
-                            if (storedDocId != document.getDocId()) {
-                                // data are related to another document:
-                                // append them to any existing data
-                                os.writeInt(gidsCount);
-                                os.writeInt(gidsCount);
-                                is.copyTo(os, gidsCount);
-                            } else {
-                                // data are related to our document:
-                                // feed the new list with the GIDs                                    
-                                long previousGID = 0;
-                                for (int j = 0; j < gidsCount; j++) {
-                                    long delta = is.readLong();
-                                    long storedGID = previousGID + delta;    
-                                    if (node == null) {
-                                        if (document.getTreeLevel(storedGID) < document.getMetadata().reindexRequired())
-                                            storedGIDList.add(storedGID);
-                                    } else {
-                                         if (!NodeSetHelper.isDescendant(document, node.getGID(), storedGID))
-                                             //TO UNDERSTAND : what will these GIDs become ? -pb
-                                             newGIDList.add(storedGID);
-                                    }
-                                    previousGID = storedGID;
-                                }
-                            }
-                        }
-                    } catch (EOFException e) {
-                        //EOFException expected
-                    }
-                }
-                //TOUNDERSTAND (bis) : don't we lack the 2 following lines like in NativeElementIndex ? -pb
-                //if (node != null) 
-                //    storedGIDList.addAll(newGIDList);
-                // append the data
-                if (storedGIDList.getSize() > 0) {                   
-                    long[] gids = storedGIDList.getData();
-                    int gidsCount = gids.length;
-                    //Don't forget this one
-                    Arrays.sort(gids);
-                    os.writeInt(document.getDocId());
-                    os.writeInt(gidsCount);
-                    long previousGID = 0;
-                    for (int j = 0; j < gidsCount; j++) {
-                        long delta = gids[j] - previousGID;                        
-                        os.writeLong(delta);
-                        previousGID = gids[j];
-                    }
-                }
-                //Store the data
-                if (is == null) {
-                    //TOUNDERSTAND : Should is be null, what will there be in os.data() ? -pb
-                    if (dbValues.put(ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                        LOG.error("Could not put index data for value '" +  ref + "'");
-                    }
-                } else {
-                    long address = ((BFile.PageInputStream) is).getAddress();
-                    if (dbValues.update(address, ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                        LOG.error("Could not update index data for value '" +  ref + "'");
-                    }
-                }
-                
-            } catch (LockException e) {
-                LOG.warn("Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e);     
-                return;
-            } catch (IOException e) {
-                LOG.error(e.getMessage(), e);                
-                //TODO : return ?
-            } catch (ReadOnlyException e) {
-                LOG.warn(e.getMessage(), e);  
-                //TODO : return ?
-            } finally {
-                lock.release(Lock.WRITE_LOCK);
-            }
-        }
-        pending.clear();
     }
     
 	/** find
@@ -793,16 +701,17 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 while (is.available() > 0) {
                     int storedDocId = is.readInt();
                     int gidsCount = is.readInt();
+                    int size = is.readFixedInt();
                     DocumentImpl storedDocument = docs.getDoc(storedDocId);
                     //Exit if the document is not concerned
                 	if (storedDocument == null) {
-                        is.skip(gidsCount);
+                        is.skipBytes(size);
                         continue;                        
                     }                
                 	if (contextSet != null) { 
                         //Exit if the document is not concerned
                 	    if (!contextSet.containsDoc(storedDocument)) {
-                	        is.skip(gidsCount);
+                            is.skipBytes(size);
                 	        continue;
                         }                        
                 	}
@@ -902,10 +811,11 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     boolean docAdded = false;
                     int storedDocId = is.readInt();
                     int gidsCount = is.readInt();
+                    int size = is.readFixedInt();
                     DocumentImpl storedDocument = docs.getDoc(storedDocId); 
                     //Exit if the document is not concerned
                     if (storedDocument == null) {
-                        is.skip(gidsCount);
+                        is.skipBytes(size);
                         continue;
                     }                    
                     NodeId nodeId;
@@ -938,5 +848,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
             }
             return true;
         }
+    }
+
+    public void reindex(DocumentImpl oldDoc, StoredNode node) {
     }
 }

@@ -1022,7 +1022,7 @@ public class NativeBroker extends DBBroker {
                     public Object start() {
                         if(doc.getResourceType() == DocumentImpl.BINARY_FILE) {
                             domDb.removeOverflowValue(transaction, ((BinaryDocument)doc).getPage());
-                        } else {                            
+                        } else {
                             StoredNode node = (StoredNode)doc.getFirstChild();
                             domDb.removeAll(transaction, node.getInternalAddress());
                         }
@@ -1668,7 +1668,7 @@ public class NativeBroker extends DBBroker {
             n = (StoredNode) nodes.item(i);
             iterator =
                 getNodeIterator(
-                        new NodeProxy(oldDoc, n.getGID(), n.getInternalAddress()));
+                        new NodeProxy(oldDoc, n.getNodeId(), n.getInternalAddress()));
             iterator.next();
             copyNodes(transaction, iterator, n, new NodePath(), newDoc, true);
         }
@@ -1706,7 +1706,7 @@ public class NativeBroker extends DBBroker {
             newName = doc.getFileName().substring(p + 1);
         }
         Lock lock = collectionsDb.getLock();
-        try {           
+        try {
             lock.acquire(Lock.WRITE_LOCK);
             // check if the move would overwrite a collection
             ///TODO : use dedicated function in XmldbURI
@@ -1963,76 +1963,6 @@ public class NativeBroker extends DBBroker {
      * descendant nodes of the passed node, or all nodes below some level of
      * the document if node is null.
      */
-    public void reindexXMLResource(final Txn transaction, final DocumentImpl oldDoc, final DocumentImpl doc, 
-            final StoredNode node) {
-        int idxLevel = doc.getMetadata().reindexRequired();     
-        if (idxLevel == DocumentMetadata.REINDEX_ALL) {
-            flush();
-            return;
-        }
-        oldDoc.getMetadata().setReindexRequired(idxLevel);
-        if (node == null)
-            LOG.debug("reindexing level " + idxLevel + " of document " + doc.getDocId());
-//      checkTree(doc);
-        
-        final long start = System.currentTimeMillis();
-        // remove all old index keys from the btree 
-        new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
-            public Object start() throws ReadOnlyException {
-                try {
-                    Value ref = new NodeRef(doc.getDocId());
-                    IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-                    final ArrayList nodes = domDb.findKeys(query);                  
-                    for (Iterator i = nodes.iterator(); i.hasNext();) {
-                        ref = (Value) i.next();
-                        long gid = ByteConversion.byteToLong(ref.data(), ref.start() + 4);
-                        if (oldDoc.getTreeLevel(gid) >= doc.getMetadata().reindexRequired()) {
-                            if (node != null) {
-                                if (NodeSetHelper.isDescendant(oldDoc, node.getGID(), gid)) {
-                                    domDb.removeValue(transaction, ref);
-                                }
-                            } else
-                                domDb.removeValue(transaction, ref);
-                        }
-                    }
-                } catch (BTreeException e) {
-                    LOG.debug("Exception while reindexing document: " + e.getMessage(), e);
-                } catch (IOException e) {
-                    LOG.debug("Exception while reindexing document: " + e.getMessage(), e);
-                }
-                return null;
-            }
-        }.run();
-        try {
-            // now reindex the nodes
-            Iterator iterator;
-            if (node == null) {
-                NodeList nodes = doc.getChildNodes();                
-                for (int i = 0; i < nodes.getLength(); i++) {
-                    StoredNode n = (StoredNode) nodes.item(i);
-                    iterator =  getNodeIterator(new NodeProxy(doc, n.getGID(), n.getInternalAddress()));
-                    iterator.next();
-                    scanNodes(transaction, iterator, n, new NodePath(), false, false);
-                }
-            } else {
-                iterator = getNodeIterator(new NodeProxy(doc, node.getGID(), node.getInternalAddress()));
-                iterator.next();
-                scanNodes(transaction, iterator, node, node.getPath(), false, false);
-            }
-        } catch(Exception e) {
-            LOG.error("Error occured while reindexing document: " + e.getMessage(), e);
-        }
-        notifyReindex(oldDoc, node);
-        doc.getMetadata().setReindexRequired(DocumentMetadata.REINDEX_ALL);
-//      checkTree(doc);
-        LOG.debug("reindex took " + (System.currentTimeMillis() - start) + "ms.");
-    }
-    
-    /**
-     * Reindex the nodes in the document. This method will either reindex all
-     * descendant nodes of the passed node, or all nodes below some level of
-     * the document if node is null.
-     */
     private void reindexXMLResource(Txn transaction, DocumentImpl doc, boolean repairMode) {
         if(CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE.equals(doc.getFileName()))
             doc.getCollection().setConfigEnabled(false);
@@ -2232,12 +2162,6 @@ public class NativeBroker extends DBBroker {
         final IndexSpec idxSpec = 
             doc.getCollection().getIdxConf(this);
 //        final FulltextIndexSpec ftIdx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null;
-        long id = node.getGID();
-        if (id < 0) {
-            id = 1;
-            return;
-        }
-        final long gid = id;
         final short nodeType = node.getNodeType();
         final int depth = idxSpec == null ? defaultIndexDepth : idxSpec.getIndexDepth();
         new DOMTransaction(this, domDb, Lock.WRITE_LOCK, doc) {
@@ -2246,7 +2170,7 @@ public class NativeBroker extends DBBroker {
                 final byte data[] = node.serialize();
                 if (nodeType == Node.TEXT_NODE
                     || nodeType == Node.ATTRIBUTE_NODE
-                    || doc.getTreeLevel(gid) > depth)
+                    || node.getNodeId().getTreeLevel() > depth + 1)
                     address = domDb.add(transaction, data);
                 else {
                     address = domDb.put(transaction, new NodeRef(doc.getDocId(), node.getNodeId()), data);
@@ -2907,7 +2831,6 @@ public class NativeBroker extends DBBroker {
         private NodePath currentPath;
         /** work variables */
         private short nodeType;
-        private long gid;
         private DocumentImpl doc;
         private long address;
         private IndexSpec idxSpec;
@@ -2930,13 +2853,12 @@ public class NativeBroker extends DBBroker {
             this.node = node;
             this.currentPath = currentPath;
             nodeType = node.getNodeType();
-            gid = node.getGID();
             doc = (DocumentImpl) node.getOwnerDocument();
             address = node.getInternalAddress();
             idxSpec = doc.getCollection().getIdxConf(NativeBroker.this);
             ftIdx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null;
             depth = idxSpec == null ? defaultIndexDepth : idxSpec.getIndexDepth();
-            level = doc.getTreeLevel(gid);
+            level = node.getNodeId().getTreeLevel();
         }
         
         public void reset(Txn transaction, StoredNode node, NodePath currentPath, boolean index) {

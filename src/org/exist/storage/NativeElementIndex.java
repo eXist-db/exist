@@ -401,123 +401,6 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
      */
     //TODO : note that this is *not* this.doc -pb
     public void reindex(DocumentImpl document, StoredNode node) {
-        if (pending.size() == 0) 
-            return;         
-        final SymbolTable symbols = broker.getSymbols();
-        final short collectionId = document.getCollection().getId();
-        final Lock lock = dbNodes.getLock();
-        for (Iterator i = pending.entrySet().iterator(); i.hasNext();) {
-            try {
-                lock.acquire(Lock.WRITE_LOCK);            
-                os.clear();
-                //TODO : NativeValueIndex uses LongLinkedLists -pb
-                List newGIDList =  new ArrayList();
-                //Compute a key for the node
-                Map.Entry entry = (Map.Entry) i.next();
-                //TODO : NativeValueIndex uses LongLinkedLists -pb
-                List storedGIDList = (ArrayList) entry.getValue();
-                QName qname = (QName) entry.getKey();
-                Value ref;
-                if (qname.getNameType() == ElementValue.ATTRIBUTE_ID) {
-                    ref = new ElementValue(qname.getNameType(), collectionId, qname.getLocalName());                    
-                } else {
-                    short sym = symbols.getSymbol(qname.getLocalName());
-                    short nsSym = symbols.getNSSymbol(qname.getNamespaceURI());
-                    ref = new ElementValue(qname.getNameType(), collectionId, sym, nsSym);
-                }
-                VariableByteInput is = dbNodes.getAsStream(ref);
-                //Does the node already exist in the index ?
-                if (is != null) {
-                    //Add its data to the new list
-                    try {
-                        while (is.available() > 0) {
-                            int storedDocId = is.readInt();
-                            int gidsCount = is.readInt();
-                            //TOUNDERSTAND -pb
-                            int size = is.readFixedInt();
-                            if (storedDocId != document.getDocId()) {
-                                // data are related to another document:
-                                // append them to any existing data                                
-                                os.writeInt(storedDocId);
-                                os.writeInt(gidsCount);
-                                os.writeFixedInt(size);
-                                is.copyTo(os, gidsCount * 4);
-                            } else {
-                                // data are related to our document:
-                                // feed the new list with the GIDs
-                                long previousGID = 0;
-                                for (int j = 0; j < gidsCount; j++) {
-                                    long delta = is.readLong();
-                                    long storedGID = previousGID + delta;                                        
-                                    long address = StorageAddress.read(is);
-                                    if (node == null) {
-                                        if (document.getTreeLevel(storedGID) < document.getMetadata().reindexRequired()) {
-                                            //TOUNDERSTAND : given what is below, why not use newGIDList ? -pb
-                                            storedGIDList.add(new NodeProxy(document, storedGID, address));
-                                        }
-                                    } else {
-                                        if (!NodeSetHelper.isDescendant(document, node.getGID(), storedGID)) {
-                                            //TOUNDERSTAND : given what is below, why not use storedGIDList ? -pb
-                                            newGIDList.add(new NodeProxy(document, storedGID, address));
-                                        }
-                                    }
-                                    previousGID = storedGID;
-                                }
-                            }
-                        }
-                    } catch (EOFException e) {
-                        //EOFExceptions expected there
-                    }
-                }  
-                // TOUNDERSTAND : given what is above :-), why not rationalize ? -pb
-                // append the new list to any existing data
-                if (node != null) 
-                    storedGIDList.addAll(newGIDList);
-                // append the data
-                if (storedGIDList.size() > 0) {
-                    int gidsCount = storedGIDList.size();
-                    //Don't forget this one
-                    FastQSort.sort(storedGIDList, 0, gidsCount - 1);               
-                    os.writeInt(document.getDocId());
-                    os.writeInt(gidsCount);
-                    //TOUNDERSTAND -pb       
-                    int lenOffset = os.position();
-                    os.writeFixedInt(0);
-                    long previousGID = 0;
-                    for (int j = 0; j < gidsCount; j++) {
-                        NodeProxy storedNode = (NodeProxy) storedGIDList.get(j);
-                        long delta = storedNode.getGID() - previousGID;                        
-                        os.writeLong(delta);
-                        StorageAddress.write(storedNode.getInternalAddress(), os);
-                        previousGID = storedNode.getGID();
-                    }                
-                    os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
-                }                
-                if (is == null) {
-                    //TOUNDERSTAND : Should is be null, what will there be in os.data() ? -pb
-                    if (dbNodes.put(ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                        LOG.error("Could not put index data for node '" +  qname + "'");
-                    }
-                } else {
-                    long address = ((BFile.PageInputStream) is).getAddress();
-                    if (dbNodes.update(address, ref, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                        LOG.error("Could not update index data for node '" +  qname + "'");
-                    }
-                }                
-            } catch (LockException e) {
-                LOG.warn("Failed to acquire lock for '" + dbNodes.getFile().getName() + "'", e);
-                return;
-            } catch (IOException e) {
-                LOG.error(e.getMessage(), e);                
-                //TODO : return ?
-            } catch (ReadOnlyException e) {
-                LOG.warn("database is read only");
-                //TODO : return ?
-            } finally {
-                lock.release(Lock.WRITE_LOCK);
-            }
-        }
-        pending.clear();
     }
     
     public NodeSet getAttributesByName(DocumentSet docs, QName qname, NodeSelector selector) {
@@ -781,7 +664,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         }
     } 
     
-    private final static boolean containsNode(List list, NodeId nodeId) {
+    private static boolean containsNode(List list, NodeId nodeId) {
         for (int i = 0; i < list.size(); i++) {
             if (((NodeProxy) list.get(i)).getNodeId().equals(nodeId)) 
                 return true;

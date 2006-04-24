@@ -63,6 +63,7 @@ import org.exist.util.hashtable.Object2LongIdentityHashMap;
 import org.exist.util.sanity.SanityCheck;
 import org.exist.xquery.TerminatedException;
 import org.exist.numbering.DLN;
+import org.exist.numbering.DLNBase;
 import org.exist.numbering.NodeId;
 import org.w3c.dom.Node;
 
@@ -2542,11 +2543,14 @@ public class DOMFile extends BTree implements Lockable {
 	protected void dumpValue(Writer writer, Value key) throws IOException {
 		writer.write(Integer.toString(ByteConversion.byteToInt(key.data(), key.start())));
 		writer.write(':');
-		int bytes = key.getLength() - 4;
 		try {
-			NodeId id = pool.getNodeFactory().createFromData(bytes * 8 / DLN.BITS_PER_UNIT, key.data(), key.start() + 4);
-			writer.write(id.toString());
+            int bytes = key.getLength() - 4;
+            byte[] data = key.data();
+            for (int i = 0; i < bytes; i++) {
+                writer.write(DLNBase.toBitString(data[key.start() + 4 + i]));
+            }
 		} catch (Exception e) {
+            e.printStackTrace();
 			System.out.println(e.getMessage() + ": doc: " + Integer.toString(ByteConversion.byteToInt(key.data(), key.start())));
 		}
 	}
