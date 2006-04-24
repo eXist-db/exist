@@ -617,19 +617,17 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                         } else {
                             // data are related to our document:
                             // check   
-                            long previousGID = 0;
                             for (int j = 0; j < gidsCount; j++) {
-                                long delta = is.readLong();
-                                long storedGID = previousGID + delta;                                
+                            	NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);                                
                                 long address = StorageAddress.read(is);
-                                Node storedNode = broker.objectWith(new NodeProxy(doc, storedGID, address));
+                                Node storedNode = broker.objectWith(new NodeProxy(doc, nodeId, address));
                                 if (storedNode == null) {
-                                    throw new EXistException("Node " + storedGID + " in document " + document.getFileName() + " not found.");
+                                    throw new EXistException("Node " + nodeId + " in document " + document.getFileName() + " not found.");
                                 }
                                 if (storedNode.getNodeType() != Node.ELEMENT_NODE && storedNode.getNodeType() != Node.ATTRIBUTE_NODE) {
-                                    LOG.error("Node " + storedGID + " in document " +  document.getFileName() + " is not an element or attribute node.");
+                                    LOG.error("Node " + nodeId + " in document " +  document.getFileName() + " is not an element or attribute node.");
                                     LOG.error("Type = " + storedNode.getNodeType() + "; name = " + storedNode.getNodeName() + "; value = " + storedNode.getNodeValue());
-                                    throw new EXistException("Node " + storedGID + " in document " + document.getFileName() + " is not an element or attribute node.");
+                                    throw new EXistException("Node " + nodeId + " in document " + document.getFileName() + " is not an element or attribute node.");
                                 }
                                 if(!storedNode.getLocalName().equals(nodeName)) {
                                     LOG.error("Node name does not correspond to index entry. Expected " + nodeName + "; found " + storedNode.getLocalName());
@@ -637,7 +635,6 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                                 }
                                 //TODO : better message (see above) -pb
                                 msg.append(StorageAddress.toString(address)).append(" ");
-                                previousGID = storedGID;
                             }
                         }                            
                     }                

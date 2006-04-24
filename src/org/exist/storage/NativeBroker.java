@@ -52,7 +52,6 @@ import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeIndexListener;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.dom.NodeSetHelper;
 import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
 import org.exist.dom.TextImpl;
@@ -381,13 +380,6 @@ public class NativeBroker extends DBBroker {
         for (int i = 0; i < contentLoadingObservers.size(); i++) {
             ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
             observer.sync();
-        }
-    }
-
-    private void notifyReindex(final DocumentImpl oldDoc, final StoredNode node) {
-        for (int i = 0; i < contentLoadingObservers.size(); i++) {
-            ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
-            observer.reindex(oldDoc, node);
         }
     }
 
@@ -1973,7 +1965,7 @@ public class NativeBroker extends DBBroker {
             n = (StoredNode) nodes.item(i);
             iterator = getNodeIterator(new NodeProxy(doc, n.getNodeId(), n.getInternalAddress()));
             iterator.next();
-            scanNodes(transaction, iterator, n, new NodePath(), true, repairMode);
+            scanNodes(transaction, iterator, n, new NodePath(), repairMode);
         }
         flush();
         if(CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE.equals(doc.getFileName()))
@@ -2216,7 +2208,7 @@ public class NativeBroker extends DBBroker {
                 "Exception while storing "
                     + node.getNodeName()
                     + "; gid = "
-                    + node.getGID()
+                    + node.getNodeId()
                     + "; old = " + old.getNodeName(),
                 e);
         }
@@ -2437,18 +2429,6 @@ public class NativeBroker extends DBBroker {
         nodeProcessor.index();
     }
     
-    /**
-     * Reindex the given node after the DOM tree has been 
-     * modified by an XUpdate.
-     * 
-     * @param node
-     * @param currentPath
-     */
-    private void reindexNode(final Txn transaction, final StoredNode node, NodePath currentPath) {
-        nodeProcessor.reset(transaction, node, currentPath);
-        nodeProcessor.reindex();
-    }
-    
     private void checkNodeTree(Iterator iterator, StoredNode node) {
         if (node.hasChildNodes()) {
             int count = node.getChildCount();
@@ -2474,14 +2454,10 @@ public class NativeBroker extends DBBroker {
      * @param currentPath
      */
     private void scanNodes(Txn transaction, Iterator iterator, StoredNode node, NodePath currentPath,
-            boolean fullReindex, boolean repairMode) {
+            boolean repairMode) {
         if (node.getNodeType() == Node.ELEMENT_NODE)
             currentPath.addComponent(node.getQName());
-        if(fullReindex)
-            indexNode(transaction, node, currentPath, repairMode);
-        else
-            reindexNode(transaction, node, currentPath);
-        final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
+        indexNode(transaction, node, currentPath, repairMode);
         if (node.hasChildNodes()) {
             StoredNode child;
             final int count = node.getChildCount();
@@ -2492,13 +2468,11 @@ public class NativeBroker extends DBBroker {
                             "; children = " + node.getChildCount());
                     throw new IllegalStateException("Wrong node id");
                 }
-                scanNodes(transaction, iterator, child, currentPath, fullReindex, repairMode);
+                scanNodes(transaction, iterator, child, currentPath, repairMode);
             }
         }
         if (node.getNodeType() == Node.ELEMENT_NODE) {
-            if((fullReindex || doc.getTreeLevel(node.getGID()) >= doc.getMetadata().reindexRequired())) {
-                endElement(node, currentPath, null);
-            }
+            endElement(node, currentPath, null);
             currentPath.removeLastComponent();
         }
     }
