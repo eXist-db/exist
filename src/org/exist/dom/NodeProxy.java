@@ -81,14 +81,6 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	 */
 	private DocumentImpl doc = null;
 
-	/**
-	 * The unique internal id of this node in the document, if known.
-	 * @link #UNKNOWN_NODE_GID
-	 * @link #DOCUMENT_NODE_GID
-	 * @link #DOCUMENT_ELEMENT_GID
-	 */
-	private long gid = UNKNOWN_NODE_GID;
-
     private NodeId nodeId;
     /**
 	 * The internal storage address of this node in the
@@ -113,16 +105,6 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 
 	private ContextItem context = null;
 
-	public NodeProxy(DocumentImpl doc, long gid) {
-        this(doc, null, UNKNOWN_NODE_TYPE, UNKNOWN_NODE_ADDRESS);
-        this.gid = gid;
-	}
-    
-    public NodeProxy(DocumentImpl doc, long gid, long address) {
-        this(doc, null, UNKNOWN_NODE_TYPE, address);
-        this.gid = gid;
-    }    
-
     public NodeProxy(DocumentImpl doc, NodeId nodeId, long address) {
         this(doc, nodeId, UNKNOWN_NODE_TYPE, address);
     }
@@ -133,7 +115,6 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
     
     public NodeProxy(DocumentImpl doc, NodeId nodeId, short nodeType, long address) {
         this.doc = doc;
-        this.gid = 1;
         this.nodeType = nodeType;
         this.internalAddress = address;
         this.nodeId = nodeId;
@@ -233,10 +214,6 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
     public boolean isDocument() {
         return nodeType == Node.DOCUMENT_NODE;
     }
-    
-	public long getGID() {
-		return gid;
-	}
 
 	public Node getNode() {
 		if (isDocument())
@@ -465,7 +442,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	
 	public String debugContext() {
 		StringBuffer buf = new StringBuffer();
-		buf.append("Context for " + gid + "[ " + toString() + "] : ");
+		buf.append("Context for " + nodeId + " [ " + toString() + "] : ");
 		ContextItem next = context;
 		while(next != null) {
 			buf.append('[');

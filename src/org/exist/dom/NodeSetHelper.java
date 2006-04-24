@@ -25,7 +25,6 @@ package org.exist.dom;
 import java.util.Iterator;
 
 import org.exist.numbering.NodeId;
-import org.exist.util.Range;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
@@ -601,63 +600,5 @@ public class NodeSetHelper {
             // TODO : error ? -pb
             return null;
         }
-    }
-
-    public final static long getParentId(NodeProxy node) {
-        return getParentId(node.getDocument(), node.getGID());
-    }
-
-    public final static long getParentId(final DocumentImpl doc, final long gid) {
-        final int level = doc.getTreeLevel(gid);
-        return getParentId(doc, gid, level);
-    }
-
-    public final static long getParentId(final DocumentImpl doc,
-            final long gid, final int level) {
-        if (level < 1)
-            return NodeProxy.DOCUMENT_NODE_GID;
-        return (gid - doc.getLevelStartPoint(level))
-                / doc.getTreeLevelOrder(level)
-                + doc.getLevelStartPoint(level - 1);
-    }
-
-    public final static long getFirstChildId(DocumentImpl doc, long gid) {
-        final int level = doc.getTreeLevel(gid);
-        if (level < 0)
-            throw new RuntimeException("Node level out of bounds");
-        return getFirstChildId(doc, gid, level);
-    }
-
-    public final static long getFirstChildId(DocumentImpl doc, long gid,
-            int level) {
-        final int order = doc.getTreeLevelOrder(level + 1);
-        if (order < 0)
-            throw new RuntimeException("Node level order out of bounds");
-        return (gid - doc.getLevelStartPoint(level)) * order
-                + doc.getLevelStartPoint(level + 1);
-    }
-
-    public final static Range getChildRange(DocumentImpl doc, long gid) {
-        final int level = doc.getTreeLevel(gid);
-        final int order = doc.getTreeLevelOrder(level + 1);
-        final long start = (gid - doc.getLevelStartPoint(level)) * order
-                + doc.getLevelStartPoint(level + 1);
-        return new Range(start, start + order - 1);
-    }
-
-    public final static boolean isDescendantOrSelf(DocumentImpl doc,
-            long ancestor, long descendant) {
-        if (ancestor == descendant)
-            return true;
-        return isDescendant(doc, ancestor, descendant);
-    }
-
-    public final static boolean isDescendant(DocumentImpl doc, long ancestor,
-            long descendant) {
-        while ((descendant = getParentId(doc, descendant)) != NodeProxy.DOCUMENT_NODE_GID) {
-            if (descendant == ancestor)
-                return true;
-        }
-        return false;
     }
 }

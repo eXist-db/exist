@@ -33,7 +33,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeSet;
 
-import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.numbering.DLN;
 import org.exist.numbering.NodeId;
@@ -69,7 +68,6 @@ public class ElementImpl extends NamedNode implements Element {
 
     private short attributes = 0;
     private int children = 0;
-    private long firstChild = StoredNode.NODE_IMPL_UNKNOWN_GID;
     private int position = 0;
     private Map namespaceMappings = null;
     private int indexType = RangeIndexSpec.NO_INDEX;
@@ -107,7 +105,6 @@ public class ElementImpl extends NamedNode implements Element {
         super.clear();
         attributes = 0;
         children = 0;
-        firstChild = StoredNode.NODE_IMPL_UNKNOWN_GID;
         position = 0;
         namespaceMappings = null;
         //TODO : reset below as well ? -pb
@@ -385,7 +382,7 @@ public class ElementImpl extends NamedNode implements Element {
             return;
         if (children == 0) {
             // no children: append a new child
-            appendChildren(transaction, nodeId.newChild(), firstChildID(), new NodeImplRef(this), getPath(), nodes, true);
+            appendChildren(transaction, nodeId.newChild(), -1, new NodeImplRef(this), getPath(), nodes, true);
         } else {
             if (child == 1) {
                 Node firstChild = getFirstChild();
@@ -540,21 +537,6 @@ public class ElementImpl extends NamedNode implements Element {
         }
     }
 
-    /**
-     * @see org.exist.dom.NodeImpl#firstChildID()
-     */
-    public long firstChildID() {
-        //TOUNDERSTAND : what are the semantics of this 0 ? -pb
-        if (getGID() == 0)
-            return 0;
-        //Return if already computed
-        if (firstChild != StoredNode.NODE_IMPL_UNKNOWN_GID)
-            return firstChild;
-        //Compute
-        firstChild = NodeSetHelper.getFirstChildId((DocumentImpl)getOwnerDocument(), getGID());
-        return firstChild;
-    }
-
     public short getAttributesCount() {
         return attributes;
     }
@@ -697,27 +679,6 @@ public class ElementImpl extends NamedNode implements Element {
         return dupList;
     }
 
-    private static Node findAttribute(Node child, NodeList attrs) throws DOMException {
-    	String childNS = child.getNamespaceURI();
-    	if (childNS == null)
-    		childNS = "";
-    	for(int i = 0; i < attrs.getLength(); i++) {
-    		Node current = (Node) attrs.item(i);
-    		if (current == null)
-                continue;
-            if (current.getNodeType() != Node.ATTRIBUTE_NODE)
-                continue;
-    		String currentNS = current.getNamespaceURI();
-    		if (currentNS == null)
-    			currentNS = "";
-    		if (!child.getLocalName().equals(current.getLocalName()))
-    			continue;
-    		if (childNS.equals(currentNS))
-    			return current;
-    	}
-    	return null;
-    }
-
     /**
      * @see org.exist.dom.NodeImpl#getChildCount()
      */
@@ -814,12 +775,6 @@ public class ElementImpl extends NamedNode implements Element {
      */
     public boolean hasChildNodes() {
         return children > 0;
-    }
-
-    public long lastChildID() {
-        if (!hasChildNodes())
-            return StoredNode.NODE_IMPL_UNKNOWN_GID;
-        return firstChildID() + children - 1;
     }
 
     /**

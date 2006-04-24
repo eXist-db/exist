@@ -37,16 +37,12 @@ import org.w3c.dom.Node;
  *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
  */
 public class StoredNode extends NodeImpl implements Visitable {
-    
-    public final static int NODE_IMPL_UNKNOWN_GID = -1; 
-    public final static int NODE_IMPL_ROOT_NODE_GID = 1;      
+          
     public final static long UNKNOWN_NODE_IMPL_ADDRESS = -1;
     public final static short UNKNOWN_NODE_IMPL_NODE_TYPE = -1;
 	
     protected NodeId nodeId = null;
     
-    //TOUNDERSTAND : what are the semantics of this 0 ? -pb
-	private long gid = 0;
 	private long internalAddress = UNKNOWN_NODE_IMPL_ADDRESS;
     private DocumentImpl ownerDocument = null;
 	private short nodeType = UNKNOWN_NODE_IMPL_NODE_TYPE;
@@ -67,7 +63,6 @@ public class StoredNode extends NodeImpl implements Visitable {
      */
     public StoredNode(StoredNode other) {
         this.nodeType = other.nodeType;
-        this.gid = other.gid;
         this.nodeId = other.nodeId;
         this.internalAddress = other.internalAddress;
         this.ownerDocument = other.ownerDocument;        
@@ -165,15 +160,6 @@ public class StoredNode extends NodeImpl implements Visitable {
 	 */
 	public DBBroker getBroker() {
 		return ownerDocument.getBroker();
-	}    
-
-	/**
-	 *  Get the unique identifier assigned to this node.
-	 *
-	 *@return
-	 */
-	public long getGID() {
-		return gid;
 	}
 
     public void setNodeId(NodeId dln) {
@@ -223,10 +209,6 @@ public class StoredNode extends NodeImpl implements Visitable {
      */
     public void setOwnerDocument(Document ownerDocument) {
         this.ownerDocument = (DocumentImpl) ownerDocument;
-    }
-    
-    public long firstChildID(){
-        return NodeSetHelper.getFirstChildId(ownerDocument, getGID());
     }
 
 	/**
