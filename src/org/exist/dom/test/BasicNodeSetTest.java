@@ -132,6 +132,7 @@ public class BasicNodeSetTest extends TestCase {
             assertEquals(2639, set.getLength());
             System.out.println("DescendantSelector: PASS");
         } catch (Exception e) {
+            e.printStackTrace();
 	        fail(e.getMessage());
         } finally {
         	if (pool != null) pool.release(broker);
@@ -340,7 +341,8 @@ public class BasicNodeSetTest extends TestCase {
             
             transact.commit(transaction);
             System.out.println("BasicNodeSetTest#setUp finished.");
-        } catch (Exception e) {            
+        } catch (Exception e) {
+            e.printStackTrace();
 	        fail(e.getMessage()); 	        
         } finally {
         	if (pool != null) pool.release(broker);
@@ -363,6 +365,26 @@ public class BasicNodeSetTest extends TestCase {
     }
 
     protected void tearDown() {
+        DBBroker broker = null;
+        try {
+            broker = pool.get(SecurityManager.SYSTEM_USER);
+            assertNotNull(broker);            
+            TransactionManager transact = pool.getTransactionManager();
+            assertNotNull(transact);
+            Txn transaction = transact.beginTransaction();
+            assertNotNull(transaction);            
+            System.out.println("BasicNodeSetTest#tearDown >>>");
+            
+            root = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test");
+            assertNotNull(root);
+            broker.removeCollection(transaction, root);
+            
+            transact.commit(transaction);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (pool != null) pool.release(broker);
+        }
         BrokerPool.stopAll(false);
     }
 }

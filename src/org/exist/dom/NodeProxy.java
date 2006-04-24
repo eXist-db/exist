@@ -811,12 +811,13 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 			return null;
         if(includeSelf && otherId.compareTo(nodeId) == 0)
             return this;
+        otherId = otherId.getParentId();
 		while (otherId != null) {
-			otherId = otherId.getParentId();
 			if(otherId.compareTo(nodeId) == 0)
 				return this;
 			else if (directParent)
 				return null;
+            otherId = otherId.getParentId();
 		}
 		return null;
     }

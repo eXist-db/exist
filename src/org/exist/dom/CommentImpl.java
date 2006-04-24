@@ -14,14 +14,6 @@ public class CommentImpl extends CharacterDataImpl implements Comment {
     public CommentImpl() {
     	super(Node.COMMENT_NODE);
     }
-    
-    public CommentImpl( long gid ) {
-        super( Node.COMMENT_NODE, gid );
-    }
-
-    public CommentImpl( long gid, String data ) {
-        super( Node.COMMENT_NODE, gid, data );
-    }
 
     public CommentImpl( String data ) {
         super( Node.COMMENT_NODE, data );

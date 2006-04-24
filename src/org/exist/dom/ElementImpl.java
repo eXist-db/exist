@@ -36,10 +36,7 @@ import java.util.TreeSet;
 import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.numbering.DLN;
-import org.exist.numbering.DLNBase;
 import org.exist.numbering.NodeId;
-import org.exist.storage.GeneralRangeIndexSpec;
-import org.exist.storage.IndexSpec;
 import org.exist.storage.NodePath;
 import org.exist.storage.RangeIndexSpec;
 import org.exist.storage.Signatures;
@@ -85,30 +82,11 @@ public class ElementImpl extends NamedNode implements Element {
     /**
      * Constructor for the ElementImpl object
      *
-     * @param gid Description of the Parameter
-     */
-    public ElementImpl(long gid) {
-        super(Node.ELEMENT_NODE, gid, null);
-    }
-
-    /**
-     * Constructor for the ElementImpl object
-     *
      * @param nodeName Description of the Parameter
      */
     public ElementImpl(QName nodeName) {
         super(Node.ELEMENT_NODE, nodeName);
         this.nodeName = nodeName;
-    }
-
-    /**
-     * Constructor for the ElementImpl object
-     *
-     * @param gid      Description of the Parameter
-     * @param nodeName Description of the Parameter
-     */
-    public ElementImpl(long gid, QName nodeName) {
-        super(Node.ELEMENT_NODE, gid, nodeName);
     }
 
     public ElementImpl(ElementImpl other) {
@@ -321,43 +299,16 @@ public class ElementImpl extends NamedNode implements Element {
      * @throws DOMException
      */
     public void appendChildInternal(StoredNode prevNode, StoredNode child) throws DOMException {
-        //TOUNDERSTAND : what are the semantics of this 0 ? -pb
-        if (getGID() > 0) {
             NodeId childId;
             if (prevNode == null)
                 childId = getNodeId().newChild();
             else {
+                if (prevNode.getNodeId() == null) {
+                    LOG.warn(getQName() + " : " + prevNode.getNodeName());
+                }
                 childId = prevNode.getNodeId().nextSibling();
             }
             child.setNodeId(childId);
-            long childGID = firstChildID();
-            if (childGID < 0)
-                childGID = 1;
-            child.setGID(childGID + children);
-            if (child.getGID() == StoredNode.NODE_IMPL_UNKNOWN_GID) {
-                final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
-                final int level = owner.getTreeLevel(getGID());
-                final int order = owner.getTreeLevelOrder(level);
-                throw new DOMException(DOMException.INVALID_STATE_ERR,
-                        "internal error: node "
-                        + getGID()
-                        + "; first-child: "
-                        + firstChildID()
-                        + "; level: "
-                        + level
-                        + "; maxDepth: "
-                        + owner.getMaxDepth()
-                        + "; order(level+1): "
-                        + order
-                        + "; start0: "
-                        + owner.getLevelStartPoint(level)
-                        + "; start1: "
-                        + owner.getLevelStartPoint(level + 1));
-            }
-        }
-        else
-            //TOUNDERSTAND : what are the semantics of this 0 ? -pb
-            child.setGID(0);
         ++children;
     }
 
@@ -365,49 +316,17 @@ public class ElementImpl extends NamedNode implements Element {
      * @see org.w3c.dom.Node#appendChild(org.w3c.dom.Node)
      */
     public Node appendChild(Node child) throws DOMException {
-        final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
-        long childGid;
-        NodeImplRef last = new NodeImplRef();
-        if (children == 0) {
-            childGid = firstChildID();
-            last.setNode(this);
-        } else {
-            childGid = lastChildID() + 1;
-            last.setNode(getLastNode((StoredNode) owner.getNode(childGid - 1)));
-        }
         TransactionManager transact = getBroker().getBrokerPool().getTransactionManager();
         Txn transaction = transact.beginTransaction();
+        NodeListImpl nl = new NodeListImpl();
+        nl.add(child);
         try {
-            checkTree(1);
-            children++;
-            Node node = appendChild(transaction, null, childGid, last, getPath(), child, true);
-            getBroker().updateNode(transaction, this);
-            getBroker().reindexXMLResource(transaction, owner, owner, null);
-            getBroker().storeXMLResource(transaction, owner);
-            transact.commit(transaction);
-            return node;
-        } catch (EXistException e) {
+            appendChildren(transaction, nl, 0);
+            getBroker().storeXMLResource(transaction, (DocumentImpl) getOwnerDocument());
+            return getLastChild();
+        } catch (Exception e) {
             transact.abort(transaction);
             throw new DOMException(DOMException.INVALID_STATE_ERR, e.getMessage());
-        }
-    }
-
-    private void checkTree(int size) throws EXistException {
-        final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
-        // check if the tree structure needs to be changed
-        int level = owner.getTreeLevel(getGID());
-        if (owner.getMaxDepth() == level + 1) {
-            owner.incMaxDepth();
-            LOG.debug("Incrementing maxDepth to '" + owner.getMaxDepth() + "'");
-        }
-        if (owner.getTreeLevelOrder(level + 1) < children + size) {
-            // recompute the order of the tree
-            owner.setTreeLevelOrder(level + 1, children + size + getBroker().getXUpdateGrowthFactor());
-            owner.calculateTreeLevelStartPoints(false);
-            int reindex = owner.getMetadata().reindexRequired();
-            if (reindex == DocumentMetadata.REINDEX_ALL || reindex > level + 1) {
-                owner.getMetadata().setReindexRequired(level + 1);
-            }
         }
     }
 
@@ -460,7 +379,6 @@ public class ElementImpl extends NamedNode implements Element {
     }
 
     public void appendChildren(Txn transaction, NodeList nodes, int child) throws DOMException {
-        final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
         // attributes are handled differently. Call checkForAttributes to extract them.
         nodes = checkForAttributes(transaction, nodes);
         if (nodes == null || nodes.getLength() == 0)
@@ -474,7 +392,6 @@ public class ElementImpl extends NamedNode implements Element {
                 insertBefore(transaction, nodes, firstChild);
             }
             else {
-                StoredNode prevNode;
                 if (child > 0 && child <= children) {
                     NodeList cl = getChildNodes();
                     StoredNode last = (StoredNode) cl.item(child - 1);
@@ -533,7 +450,6 @@ public class ElementImpl extends NamedNode implements Element {
                         child.getNamespaceURI(),
                         child.getPrefix())
                     );
-                elem.setGID(gid);
                 elem.setNodeId(newNodeId);
                 elem.setOwnerDocument(owner);
                 final NodeListImpl ch = new NodeListImpl();
@@ -558,13 +474,7 @@ public class ElementImpl extends NamedNode implements Element {
                 getBroker().indexNode(transaction, elem, lastPath);
 
                 elem.setChildCount(0);
-                try {
-                    elem.checkTree(ch.getLength());
-                }
-                catch (EXistException e) {
-                    throw new DOMException(DOMException.INVALID_MODIFICATION_ERR,
-                            "max. document size exceeded");
-                }
+
                 // process child nodes
                 last.setNode(elem);
                 elem.appendChildren(transaction, newNodeId.newChild(), -1, last, lastPath, ch, index);
@@ -574,9 +484,7 @@ public class ElementImpl extends NamedNode implements Element {
                 lastPath.removeLastComponent();
                 return elem;
             case Node.TEXT_NODE :
-                final TextImpl text = new TextImpl(((Text) child).getData());
-                text.setGID(gid);
-                text.setNodeId(newNodeId);
+                final TextImpl text = new TextImpl(newNodeId, ((Text) child).getData());
                 text.setOwnerDocument(owner);
                 // insert the node
                 getBroker().insertNodeAfter(transaction, last.getNode(), text);
@@ -591,7 +499,6 @@ public class ElementImpl extends NamedNode implements Element {
                 if (name == null) name = attr.getName();
                 QName attrName = new QName(name, ns, prefix);
                 final AttrImpl attrib = new AttrImpl(attrName, attr.getValue());
-                attrib.setGID(gid);
                 attrib.setNodeId(newNodeId);
                 attrib.setOwnerDocument(owner);
                 if (ns != null && attrName.compareTo(Namespaces.XML_ID_QNAME) == Constants.EQUAL) {
@@ -606,7 +513,6 @@ public class ElementImpl extends NamedNode implements Element {
                 return attrib;
             case Node.COMMENT_NODE:
                 final CommentImpl comment = new CommentImpl(((Comment) child).getData());
-                comment.setGID(gid);
                 comment.setNodeId(newNodeId);
                 comment.setOwnerDocument(owner);
                 // insert the node
@@ -616,11 +522,10 @@ public class ElementImpl extends NamedNode implements Element {
                 return comment;
             case Node.PROCESSING_INSTRUCTION_NODE:
                 final ProcessingInstructionImpl pi =
-                    new ProcessingInstructionImpl(gid,
+                    new ProcessingInstructionImpl(newNodeId,
                             ((ProcessingInstruction) child).getTarget(),
                             ((ProcessingInstruction) child).getData());
                 pi.setOwnerDocument(owner);
-                pi.setNodeId(newNodeId);
                 //          insert the node
                 getBroker().insertNodeAfter(transaction, last.getNode(), pi);
                 getBroker().indexNode(transaction, pi, lastPath);
@@ -770,27 +675,6 @@ public class ElementImpl extends NamedNode implements Element {
     }
 
     /**
-     * Check if an attribute is already present in the node's attribute list. Throws a
-     * DOMException if yes. Otherwise, returns the last attribute in the attribute list.
-     *
-     * @param attrs
-     * @return
-     * @throws DOMException
-     */
-    private AttrImpl getLastAttribute() throws DOMException {
-        long start = firstChildID();
-        AttrImpl attr = null;
-        for (long i = start; i < start + children; i++) {
-            Node child = ((DocumentImpl)getOwnerDocument()).getNode(i);
-            if (child == null)
-                break;
-            if (child.getNodeType() == Node.ATTRIBUTE_NODE)
-                attr = (AttrImpl) child;
-        }
-        return attr;
-    }
-
-    /**
      * Returns a list of all attribute nodes in attrs that are already present
      * in the current element.
      *
@@ -845,8 +729,8 @@ public class ElementImpl extends NamedNode implements Element {
         final NodeListImpl childList = new NodeListImpl(1);
         accept(new NodeVisitor() {
             public boolean visit(StoredNode node) {
-                if (node.getNodeType() != Node.ATTRIBUTE_NODE && 
-                        node.nodeId.isChildOf(nodeId))
+//                if (node.getNodeType() != Node.ATTRIBUTE_NODE && 
+                if(node.nodeId.isChildOf(nodeId))
                     childList.add(node);
                 return true;
             }
@@ -890,13 +774,11 @@ public class ElementImpl extends NamedNode implements Element {
         return null;
     }
     
-    /**
-     * @see org.w3c.dom.Node#getLastChild()
-     */
     public Node getLastChild() {
         if (!hasChildNodes())
             return null;
-        return ((DocumentImpl)getOwnerDocument()).getNode(lastChildID());
+        NodeList cl = getChildNodes();
+        return cl.item(cl.getLength() - 1);
     }
 
     /**
@@ -1034,7 +916,7 @@ public class ElementImpl extends NamedNode implements Element {
         if (top && false) {
             buf.append(" xmlns:exist=\"http://exist.sourceforge.net/NS/exist\"");
             buf.append(" exist:id=\"");
-            buf.append(getGID());
+            buf.append(getNodeId());
             buf.append("\" exist:document=\"");
             buf.append(((DocumentImpl)getOwnerDocument()).getFileName());
             buf.append("\"");
@@ -1088,6 +970,7 @@ public class ElementImpl extends NamedNode implements Element {
                     children.append(child.toString());
             }
         }
+        
         if (attributes.length() > 0)
             buf.append(attributes.toString());
 
@@ -1112,29 +995,18 @@ public class ElementImpl extends NamedNode implements Element {
             return appendChild(newChild);
         if (!(refChild instanceof StoredNode))
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "wrong node type");
-        final StoredNode ref = (StoredNode) refChild;
-        final long first = firstChildID();
-        if (ref.getGID() < first || ref.getGID() > ref.getGID() + children - 1)
-            throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR,
-                    "reference node is not a child of the selected node");
-        Node result;
+        NodeListImpl nl = new NodeListImpl();
+        nl.add(newChild);
+        
+        TransactionManager transact = getBroker().getBrokerPool().getTransactionManager();
+        Txn transaction = transact.beginTransaction();
         try {
-            TransactionManager transact = getBroker().getBrokerPool().getTransactionManager();
-            Txn transaction = transact.beginTransaction();
-            if (ref.getGID() == first)
-                result = appendChild(null, null, first, new NodeImplRef(this), getPath(), newChild, false);
-            else {
-                StoredNode prev = (StoredNode) ref.getPreviousSibling();
-                result = appendChild(null, null, ref.getGID(), new NodeImplRef(getLastNode(prev)), getPath(), newChild, false);
-            }
-            getBroker().updateNode(null, this);
-            final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
-            getBroker().reindexXMLResource(null, owner, owner, null);
-            getBroker().storeXMLResource(null, owner);
+            insertBefore(transaction, nl, refChild);
+            getBroker().storeXMLResource(transaction, (DocumentImpl) getOwnerDocument());
             transact.commit(transaction);
-            return result;
+            return refChild.getPreviousSibling();
         } catch(TransactionException e) {
-            //TODO : rollback ? -pb
+            transact.abort(transaction);
             throw new DOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR, e.getMessage());
         }
     }
@@ -1280,45 +1152,8 @@ public class ElementImpl extends NamedNode implements Element {
         getBroker().flush();
         return oldNode;
     }
-
-    private void removeAll(Txn transaction, StoredNode node, NodePath currentPath) {
-        switch (node.getNodeType()) {
-            case Node.ELEMENT_NODE:
-				String content = null;
-                final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
-				IndexSpec idxSpec = 
-                    owner.getCollection().getIdxConf(owner.getBroker());
-				if (idxSpec != null) {
-					GeneralRangeIndexSpec spec = idxSpec.getIndexByPath(currentPath);
-					RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
-					if (spec != null || qnIdx != null) {
-						NodeProxy p = new NodeProxy(owner, node.getGID(), node.getInternalAddress());
-						content = getBroker().getNodeValue(p, false);
-					}
-				}
-                NodeList children = node.getChildNodes();
-                StoredNode child;
-                for (int i = children.getLength() - 1; i >= 0; i--) {
-                    child = (StoredNode) children.item(i);
-                    if (child.getNodeType() == Node.ELEMENT_NODE) {
-                        currentPath.addComponent(((ElementImpl) child).getQName());
-                        removeAll(transaction, child, currentPath);
-                        currentPath.removeLastComponent();
-                    }
-                    else
-                        removeAll(transaction, child, currentPath);
-                }
-                getBroker().removeNode(transaction, node, currentPath, content);
-                break;
-            default :
-                getBroker().removeNode(transaction, node, currentPath, null);
-                break;
-            //TODO : manage unknown type ! -pb
-        }
-    }
 	
 	public void removeAppendAttributes(Txn transaction, NodeList removeList, NodeList appendList) {
-        final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
 		try {
 			if (removeList != null) {
 				try {

@@ -22,22 +22,15 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
     public ProcessingInstructionImpl() {
         super(Node.PROCESSING_INSTRUCTION_NODE);
     }
-
-    public ProcessingInstructionImpl( long gid ) {
-        super( Node.PROCESSING_INSTRUCTION_NODE, gid );
-    }
-
-    /**
-     *  Constructor for the ProcessingInstructionImpl object
-     *
-     *@param  gid     Description of the Parameter
-     *@param  target  Description of the Parameter
-     *@param  data    Description of the Parameter
-     */
-    public ProcessingInstructionImpl( long gid, String target, String data ) {
-        super( Node.PROCESSING_INSTRUCTION_NODE, gid );
+    
+    public ProcessingInstructionImpl( NodeId nodeId, String target, String data ) {
+        super( Node.PROCESSING_INSTRUCTION_NODE, nodeId);
         this.target = target;
         this.data = data;
+    }
+    
+    public ProcessingInstructionImpl(String target, String data) {
+        this(null, target, data);
     }
     
     public void clear() {
@@ -153,6 +146,7 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
             pi = new ProcessingInstructionImpl();
         pi.target = target;
         pi.data = cdata;
+        pi.nodeId = dln;
         return pi;
     }
     

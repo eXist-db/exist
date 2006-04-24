@@ -21,6 +21,8 @@
  */
 package org.exist.dom;
 
+import java.util.Iterator;
+
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NodePath;
@@ -28,8 +30,6 @@ import org.exist.storage.Signatures;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
-
-import java.util.Iterator;
 
 /**
  *  The base class for all persistent DOM nodes in the database.
@@ -52,17 +52,12 @@ public class StoredNode extends NodeImpl implements Visitable {
 	private short nodeType = UNKNOWN_NODE_IMPL_NODE_TYPE;
     
 	public StoredNode(short nodeType) {
-        //TOUNDERSTAND : what are the semantics of this 0 ? -pb
-		this(nodeType, 0);
-	}
-    
-    public StoredNode(long gid) {
-        this(UNKNOWN_NODE_IMPL_NODE_TYPE, gid);
-    } 
-    
-    public StoredNode(short nodeType, long gid) {
         this.nodeType = nodeType;
-        this.gid = gid;
+	}
+
+    public StoredNode(short nodeType, NodeId nodeId) {
+        this.nodeType = nodeType;
+        this.nodeId = nodeId;
     }
 
     /**
@@ -73,6 +68,7 @@ public class StoredNode extends NodeImpl implements Visitable {
     public StoredNode(StoredNode other) {
         this.nodeType = other.nodeType;
         this.gid = other.gid;
+        this.nodeId = other.nodeId;
         this.internalAddress = other.internalAddress;
         this.ownerDocument = other.ownerDocument;        
     }
@@ -82,8 +78,7 @@ public class StoredNode extends NodeImpl implements Visitable {
      * parser to be able to reuse node objects.
      */
     public void clear() {
-        //TODO : what are the semantics of this 0 ? -pb     
-        this.gid = 0;
+        this.nodeId = null;
         this.internalAddress = UNKNOWN_NODE_IMPL_ADDRESS;
         this.ownerDocument = null;
         //this.nodeType is *immutable*         
@@ -160,9 +155,7 @@ public class StoredNode extends NodeImpl implements Visitable {
 	public boolean equals(Object obj) {
 		if (!(obj instanceof StoredNode))
 			return false;
-		if (((StoredNode) obj).getGID() == getGID())
-			return true;
-		return false;
+        return ((StoredNode)obj).nodeId.equals(nodeId);
 	}
 
 	/**
@@ -182,15 +175,6 @@ public class StoredNode extends NodeImpl implements Visitable {
 	public long getGID() {
 		return gid;
 	}
-    
-    /**
-     *  Set the unique node identifier of this node.
-     *
-     *@param  gid  The new gID value
-     */
-    public void setGID(long gid) {
-        this.gid = gid;
-    }
 
     public void setNodeId(NodeId dln) {
         this.nodeId = dln;
@@ -240,15 +224,6 @@ public class StoredNode extends NodeImpl implements Visitable {
     public void setOwnerDocument(Document ownerDocument) {
         this.ownerDocument = (DocumentImpl) ownerDocument;
     }
-    
-	/**
-	 *  Get the unique node identifier of this node's parent node.
-	 *
-	 *@return    The parentGID value
-	 */
-	public long getParentGID() {
-        return NodeSetHelper.getParentId(ownerDocument, getGID());
-	}
     
     public long firstChildID(){
         return NodeSetHelper.getFirstChildId(ownerDocument, getGID());
@@ -331,7 +306,7 @@ public class StoredNode extends NodeImpl implements Visitable {
 
 	public String toString() {
 		StringBuffer buf = new StringBuffer();
-		buf.append(Long.toString(getGID()));
+		buf.append(nodeId.toString());
 		buf.append('\t');
 		buf.append(getQName());
 		return buf.toString();

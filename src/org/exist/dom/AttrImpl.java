@@ -48,10 +48,6 @@ public class AttrImpl extends NamedNode implements Attr {
     public AttrImpl() {
     	super(Node.ATTRIBUTE_NODE);
     }
-    
-    public AttrImpl( long gid ) {
-        super( Node.ATTRIBUTE_NODE, gid, null );
-    }
 
     public AttrImpl( QName name, String value ) {
         super( Node.ATTRIBUTE_NODE, name);
@@ -212,7 +208,7 @@ public class AttrImpl extends NamedNode implements Attr {
             result.append( "<exist:attribute " );
             result.append( "xmlns:exist=\"http://exist.sourceforge.net/NS/exist\" " );
             result.append( "exist:id=\"" );
-            result.append( getGID() );
+            result.append( getNodeId() );
             result.append( "\" exist:source=\"" );
             result.append( ((DocumentImpl)getOwnerDocument()).getFileName() );
             result.append( "\" " );

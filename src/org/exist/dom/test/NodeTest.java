@@ -31,7 +31,8 @@ public class NodeTest extends XMLTestCase {
 	}
 
 	private static final String XML =
-		"<test xmlns:ns=\"http://foo.org\">" +
+		"<!-- doc starts here -->" +
+        "<test xmlns:ns=\"http://foo.org\">" +
 		"	<a ns:a=\"1\" ns:b=\"m\">abc</a>" +
 		"	<b ns:a=\"2\">def</b>" +
         "   <c>ghi</c>" +
@@ -41,6 +42,29 @@ public class NodeTest extends XMLTestCase {
 	private BrokerPool pool = null;
 	private Collection root = null;
 	
+    public void testDocument() {
+        DBBroker broker = null;
+        DocumentImpl doc = null;
+        try {
+            assertNotNull(pool);
+            broker = pool.get(SecurityManager.SYSTEM_USER);
+            assertNotNull(broker);
+            
+            doc = root.getDocumentWithLock(broker, "test.xml");
+            NodeList children = doc.getChildNodes();
+            for (int i = 0; i < children.getLength(); i++) {
+                StoredNode node = (StoredNode) children.item(i);
+                System.out.println(node.getNodeId() + ": " + node.getNodeName());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            if (doc != null) doc.getUpdateLock().release();
+            if (pool != null) pool.release(broker);
+        }
+    }
+    
 	public void testChildAxis() {
 		DBBroker broker = null;
 		DocumentImpl doc = null;
@@ -60,13 +84,16 @@ public class NodeTest extends XMLTestCase {
         	assertEquals(cl.item(1).getNodeName(), "b");
         	
         	System.out.println("Testing getFirstChild() ...");
-        	Node first = cl.item(1).getFirstChild();
-            assertEquals(first.getNodeValue(), "def");
+        	StoredNode node = (StoredNode) cl.item(1).getFirstChild();
+            assertEquals(node.getNodeValue(), "def");
             
             System.out.println("Testing getChildNodes() ...");
-        	cl = cl.item(0).getChildNodes();
-        	assertEquals(1, cl.getLength());
-        	assertEquals(cl.item(0).getNodeValue(), "abc");
+            node = (StoredNode) cl.item(0);
+            assertEquals(3, node.getChildCount());
+            assertEquals(2, node.getAttributesCount());
+        	cl = node.getChildNodes();
+        	assertEquals(3, cl.getLength());
+        	assertEquals(cl.item(2).getNodeValue(), "abc");
         	
         	System.out.println("Testing getParentNode() ...");
         	Node parent = cl.item(0).getParentNode();
@@ -261,6 +288,26 @@ public class NodeTest extends XMLTestCase {
     }
 
     protected void tearDown() {
+        DBBroker broker = null;
+        try {
+            broker = pool.get(SecurityManager.SYSTEM_USER);
+            assertNotNull(broker);            
+            TransactionManager transact = pool.getTransactionManager();
+            assertNotNull(transact);
+            Txn transaction = transact.beginTransaction();
+            assertNotNull(transaction);            
+            System.out.println("BasicNodeSetTest#tearDown >>>");
+            
+            root = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test");
+            assertNotNull(root);
+            broker.removeCollection(transaction, root);
+            
+            transact.commit(transaction);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (pool != null) pool.release(broker);
+        }
         BrokerPool.stopAll(false);
     }
 }

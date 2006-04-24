@@ -43,23 +43,15 @@ public class TextImpl extends CharacterDataImpl implements Text {
     public TextImpl() {
         super( Node.TEXT_NODE );
     }
-    
-    public TextImpl( long gid ) {
-        super( Node.TEXT_NODE, gid );
-    }
 
     public TextImpl( String data ) {
         super( Node.TEXT_NODE, data );
     }
+
+    public TextImpl( NodeId nodeId, String data ) {
+        super( Node.TEXT_NODE, nodeId, data );
+    }
     
-    public TextImpl( long gid, String data ) {
-        super( Node.TEXT_NODE, gid, data );
-    }
-
-    public TextImpl( char[] data, int start, int howmany ) {
-        super( Node.TEXT_NODE, data, start, howmany );
-    }
-
     public static StoredNode deserialize(byte[] data,
                                        int start,
                                        int len,
@@ -134,7 +126,7 @@ public class TextImpl extends CharacterDataImpl implements Text {
             result.append( "<exist:text " );
             result.append( "xmlns:exist=\"http://exist.sourceforge.net/NS/exist\" " );
             result.append( "exist:id=\"" );
-            result.append( getGID() );
+            result.append( getNodeId() );
             result.append( "\" exist:source=\"" );
             result.append( ((DocumentImpl)getOwnerDocument()).getFileName() );
             result.append( "\">" );
