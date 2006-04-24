@@ -520,7 +520,7 @@ public class DLNBase implements Comparable {
      * @param b the byte to display
      * @return string representation
      */
-    private static String toBitString(byte b) {
+    public final static String toBitString(byte b) {
         char[] buf = new char[8];
         int charPos = 8;
         int radix = 2;

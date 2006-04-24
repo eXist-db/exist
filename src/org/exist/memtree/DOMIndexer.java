@@ -31,6 +31,7 @@ import org.exist.dom.CommentImpl;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.ProcessingInstructionImpl;
 import org.exist.dom.TextImpl;
+import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NodePath;
 import org.exist.storage.serializers.Serializer;
@@ -99,7 +100,7 @@ public class DOMIndexer {
      */
     public void store() {
     	// create a wrapper element as root node
-    	ElementImpl elem = new ElementImpl(1, ROOT_QNAME);
+    	ElementImpl elem = new ElementImpl(ROOT_QNAME);
         elem.setNodeId(broker.getBrokerPool().getNodeFactory().createInstance());
     	elem.setOwnerDocument(targetDoc);
         elem.setChildCount(doc.getChildCount());
@@ -153,7 +154,7 @@ public class DOMIndexer {
      */
     private void startNode(int nodeNr, NodePath currentPath) {
         if (doc.nodeKind[nodeNr] == Node.ELEMENT_NODE) {
-            ElementImpl elem = new ElementImpl(1);
+            ElementImpl elem = new ElementImpl();
             if(stack.empty()) {
                 elem.setNodeId(broker.getBrokerPool().getNodeFactory().createInstance());
                 initElement(nodeNr, elem);
@@ -169,7 +170,7 @@ public class DOMIndexer {
                 broker.storeNode(transaction, elem, currentPath);
                 elem.setChildCount(0);
             }
-            prevNode = null;
+            setPrevious(null);
             currentPath.addComponent(elem.getQName());
             storeAttributes(nodeNr, elem, currentPath);
         } else if (doc.nodeKind[nodeNr] == Node.TEXT_NODE) {
@@ -177,21 +178,20 @@ public class DOMIndexer {
             text.setData(new String(doc.characters, doc.alpha[nodeNr], doc.alphaLen[nodeNr]));
             text.setOwnerDocument(targetDoc);
             last.appendChildInternal(prevNode, text);
-            prevNode = text;
+            setPrevious(text);
             broker.storeNode(transaction, text, null);
-            text.clear();
         } else if (doc.nodeKind[nodeNr] == Node.COMMENT_NODE) {
             CommentImpl comment = new CommentImpl(new String(doc.characters, doc.alpha[nodeNr], 
                     doc.alphaLen[nodeNr]));
             comment.setOwnerDocument(targetDoc);
             if (stack.empty()) {
-                comment.setGID(1);
+                comment.setNodeId(NodeId.DOCUMENT_NODE);
                 broker.storeNode(transaction, comment, null);
                 targetDoc.appendChild(comment);
             } else {
                 ElementImpl last = (ElementImpl) stack.peek();
                 last.appendChildInternal(prevNode, comment);
-                prevNode = comment;
+                setPrevious(comment);
                 broker.storeNode(transaction, comment, null);
             }
         } else if (doc.nodeKind[nodeNr] == Node.PROCESSING_INSTRUCTION_NODE) {
@@ -201,13 +201,13 @@ public class DOMIndexer {
             pi.setTarget(qn.getLocalName());
             pi.setData(new String(doc.characters, doc.alpha[nodeNr], doc.alphaLen[nodeNr]));
             if (stack.empty()) {
-                pi.setGID(1);
+                pi.setNodeId(NodeId.DOCUMENT_NODE);
                 broker.storeNode(transaction, pi, null);
                 targetDoc.appendChild(pi);
             } else {
                 ElementImpl last = (ElementImpl) stack.peek();
                 last.appendChildInternal(prevNode, pi);
-                prevNode = pi;
+                setPrevious(pi);
                 broker.storeNode(transaction, pi, null);
             }
         }
@@ -257,7 +257,7 @@ public class DOMIndexer {
                 AttrImpl attrib = new AttrImpl(qn, doc.attrValue[attr]);
                 attrib.setOwnerDocument(targetDoc);
                 elem.appendChildInternal(prevNode, attrib);
-                prevNode = attrib;
+                setPrevious(attrib);
                 broker.storeNode(transaction, attrib, path);
                 ++attr;
             }
@@ -272,7 +272,15 @@ public class DOMIndexer {
             ElementImpl last = (ElementImpl) stack.pop();
             broker.endElement(last, currentPath, null);
             currentPath.removeLastComponent();
-            prevNode = last;
+            setPrevious(last);
         }
+    }
+    
+    private void setPrevious(StoredNode previous) {
+        if (prevNode != null) {
+            if (prevNode.getNodeType() == Node.TEXT_NODE)
+                    prevNode.clear();
+        }
+        prevNode = previous;
     }
 }
