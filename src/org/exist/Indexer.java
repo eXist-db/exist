@@ -23,6 +23,7 @@
  */
 package org.exist;
 
+import org.apache.cocoon.acting.ClearPersistentStoreAction;
 import org.apache.log4j.Logger;
 import org.exist.dom.*;
 import org.exist.storage.DBBroker;
@@ -165,6 +166,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
         stack = new Stack();
         nsMappings.clear();
         rootNode = null;
+        setPrevious(null);
     }
     
 	/**
@@ -209,14 +211,14 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 					text.setData(normalized);
 					text.setOwnerDocument(document);
 					last.appendChildInternal(prevNode, text);
-                  prevNode = text;
 					if (!validate)
 						storeText();
+                    setPrevious(text);
 				}
 				charBuf.reset();
 			}
 			last.appendChildInternal(prevNode, comment);
-           prevNode = comment;
+            setPrevious(comment);
 			if (!validate)
 				broker.storeNode(transaction, comment, currentPath);
 		}
@@ -251,13 +253,12 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 				} else
 					normalized = charBuf;
 				if (normalized != null && normalized.length() > 0) {
-					text.setData(normalized);
-					text.setOwnerDocument(document);
-					last.appendChildInternal(prevNode, text);
-                  prevNode = text;
-					if (!validate)
+				    text.setData(normalized);
+				    text.setOwnerDocument(document);
+				    last.appendChildInternal(prevNode, text);
+				    if (!validate)
 						storeText();
-					text.clear();
+                    setPrevious(text);
 				}
 				charBuf.reset();
 			}
@@ -270,26 +271,22 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 			
 			if (!validate)
 			    broker.endElement(last, currentPath, elemContent == null ? null : elemContent.toString());
-			
+
 			currentPath.removeLastComponent();
 			if (validate) {
-				if (document.getTreeLevelOrder(level) < last.getChildCount()) {
-					document.setTreeLevelOrder(level, last.getChildCount());
-				}
-                if (childCnt != null)
-                    setChildCount(last);
+			    if (document.getTreeLevelOrder(level) < last.getChildCount()) {
+			        document.setTreeLevelOrder(level, last.getChildCount());
+			    }
+			    if (childCnt != null)
+			        setChildCount(last);
 			} else {
-				document.setOwnerDocument(document);
-				if (childCnt == null && last.getChildCount() > 0) {
-					broker.updateNode(transaction, last);
-				}
+			    document.setOwnerDocument(document);
+			    if (childCnt == null && last.getChildCount() > 0) {
+			        broker.updateNode(transaction, last);
+			    }
 			}
-           prevNode = last;
+			setPrevious(last);
 			level--;
-			if (last != rootNode) {
-				last.clear();
-				usedElements.push(last);
-			}
 		}
 	}
 
@@ -335,7 +332,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 
 	public void processingInstruction(String target, String data) {
 		ProcessingInstructionImpl pi =
-			new ProcessingInstructionImpl(0, target, data);
+			new ProcessingInstructionImpl(target, data);
 		pi.setOwnerDocument(document);
 		if (stack.isEmpty()) {
             pi.setNodeId(broker.getBrokerPool().getNodeFactory().createInstance());
@@ -352,15 +349,14 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 					text.setData(normalized);
 					text.setOwnerDocument(document);
 					last.appendChildInternal(prevNode, text);
-                  prevNode = text;
 					if (!validate)
 						storeText();
-					text.clear();
+                    setPrevious(text);
 				}
 				charBuf.reset();
 			}
 			last.appendChildInternal(prevNode, pi);
-           prevNode = pi;
+            setPrevious(pi);
 			if (!validate)
 				broker.storeNode(transaction, pi, currentPath);
 		}
@@ -448,10 +444,9 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 							text.setData(charBuf);
 							text.setOwnerDocument(document);
 							last.appendChildInternal(prevNode, text);
-                         prevNode = text;
 							if (!validate)
 								storeText();
-							text.clear();
+                            setPrevious(text);
 					   }
 					}
 					
@@ -461,10 +456,9 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 					text.setData(charBuf);
 					text.setOwnerDocument(document);
 					last.appendChildInternal(prevNode, text);
-                  prevNode = text;
 					if (!validate)
 						storeText();
-					text.clear();
+                    setPrevious(text);
 				}
 				charBuf.reset();
 			}
@@ -478,7 +472,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 			// append the node to its parent 
 			// (computes the node id and updates the parent's child count)
 			last.appendChildInternal(prevNode, node);
-			prevNode = null;
+            setPrevious(null);
 			node.setOwnerDocument(document);
 			node.setAttributes((short) attrLength);
 			if (nsMappings != null && nsMappings.size() > 0) {
@@ -497,12 +491,12 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 			}
 		} else {
 			if (validate)
-				node = new ElementImpl(0, qn);
+				node = new ElementImpl(qn);
 			else
-				node = new ElementImpl(1, qn);
+			    node = new ElementImpl(qn);
 			rootNode = node;
-           prevNode = null;
-           node.setNodeId(broker.getBrokerPool().getNodeFactory().createInstance());
+			setPrevious(null);
+			node.setNodeId(broker.getBrokerPool().getNodeFactory().createInstance());
 			node.setOwnerDocument(document);
 			node.setAttributes((short) attrLength);
 			if (nsMappings != null && nsMappings.size() > 0) {
@@ -554,10 +548,9 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 					node.setPreserveSpace("preserve".equals(attr.getValue()));
 				}
 				node.appendChildInternal(prevNode, attr);
-               prevNode = attr;
+               setPrevious(attr);
 				if (!validate)
 					broker.storeNode(transaction, attr, currentPath);
-				attr.release();
 			}
 		}
 		if (attrLength > 0)
@@ -625,4 +618,23 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 		return path.delete(i, path.length());
 	}
 
+    private void setPrevious(StoredNode previous) {
+        if (prevNode != null) {
+            switch (prevNode.getNodeType()) {
+                case Node.ATTRIBUTE_NODE :
+                    prevNode.release();
+                    break;
+                case Node.ELEMENT_NODE :
+                    if (prevNode != rootNode) {
+                        prevNode.clear();
+                        usedElements.push(prevNode);
+                    }
+                    break;
+                case Node.TEXT_NODE :
+                    prevNode.clear();
+                    break;
+            }
+        }
+        prevNode = previous;
+    }
 }
