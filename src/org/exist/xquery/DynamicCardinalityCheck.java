@@ -68,20 +68,16 @@ public class DynamicCardinalityCheck extends AbstractExpression {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
         
-        Sequence seq = expression.eval(contextSequence, contextItem);		
-		if(!seq.isEmpty() && requiredCardinality == Cardinality.EMPTY) {
-            error.addArgs(ExpressionDumper.dump(expression), 
-                    Cardinality.getDescription(requiredCardinality), new Integer(seq.getLength()));
-            throw new XPathException(getASTNode(), error.toString());
-        }
-		if(seq.isEmpty() && (!Cardinality.checkCardinality(requiredCardinality, Cardinality.ZERO))) {
-            error.addArgs(ExpressionDumper.dump(expression), Cardinality.getDescription(requiredCardinality), 
-                    new Integer(seq.getLength()));
-            throw new XPathException(getASTNode(), error.toString());
-        } else if(seq.hasMany() && (!Cardinality.checkCardinality(requiredCardinality, Cardinality.MANY))) {
-            error.addArgs(ExpressionDumper.dump(expression), Cardinality.getDescription(requiredCardinality), 
-                    new Integer(seq.getLength()));
-            throw new XPathException(getASTNode(), error.toString());
+        Sequence seq = expression.eval(contextSequence, contextItem);
+        
+        int actualCardinality;
+        if (seq.isEmpty()) actualCardinality = Cardinality.EMPTY;
+        else if (seq.hasMany()) actualCardinality = Cardinality.MANY;
+        else actualCardinality = Cardinality.ONE;
+        
+        if (!Cardinality.checkCardinality(requiredCardinality, actualCardinality)) {
+      	  error.addArgs(ExpressionDumper.dump(expression), Cardinality.getDescription(requiredCardinality), new Integer(seq.getLength()));
+      	  throw new XPathException(getASTNode(), error.toString());
         }
         
         if (context.getProfiler().isEnabled())           

@@ -305,6 +305,11 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
         return ((Expression)steps.get(steps.size() - 1)).returnsType();
     }
 
+ 	public int getCardinality() {
+		if (steps.size() == 0) return Cardinality.ZERO;
+		return ((Expression) steps.get(steps.size() -1)).getCardinality();
+	}
+ 	
     /*
      * (non-Javadoc)
      * 
