@@ -206,7 +206,7 @@ public class XIncludeFilter implements Receiver {
 				externalUri = new URI(href);
 			} catch (URISyntaxException ee) {
 			*/
-				throw new IllegalArgumentException("Stylesheet URI could not be parsed: "+e.getMessage(),e);
+				throw new IllegalArgumentException("Stylesheet URI could not be parsed: "+e.getMessage());
 			//}
 		}
 

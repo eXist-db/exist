@@ -295,7 +295,7 @@ public class DatabaseResources {
         try{
         	documentURI = XmldbURI.xmldbUriFor(documentPath);
         } catch(URISyntaxException e) {
-        	throw new IllegalArgumentException(e);
+        	throw new IllegalArgumentException("Invalid URI: "+e.getMessage());
         }
 
         MimeType mime = MimeTable.getInstance().getContentTypeFor(documentURI.lastSegment());
@@ -363,7 +363,7 @@ public class DatabaseResources {
         try{
         	documentURI = XmldbURI.xmldbUriFor(documentPath);
         } catch(URISyntaxException e) {
-        	throw new IllegalArgumentException(e);
+        	throw new IllegalArgumentException("Invalid URI: "+e.getMessage());
         }
 
         DBBroker broker = null;
