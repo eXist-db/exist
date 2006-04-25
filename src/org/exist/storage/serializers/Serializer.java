@@ -535,7 +535,7 @@ public abstract class Serializer implements XMLReader {
 				try {
 					externalUri = new URI(stylesheet);
 				} catch (URISyntaxException ee) {
-					throw new IllegalArgumentException("Stylesheet URI could not be parsed: "+ee.getMessage(),ee);
+					throw new IllegalArgumentException("Stylesheet URI could not be parsed: "+ee.getMessage());
 				}
 			}
 			// does stylesheet point to an external resource?
