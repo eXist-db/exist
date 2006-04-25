@@ -100,15 +100,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
     private DocumentMetadata metadata = null;
     
     private transient long metadataLocation = StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;    
-
-    /** number of levels in this DOM tree */
-    private int maxDepth = 0;
-    
-    /** arity of the tree at every level */    
-    private int treeLevelOrder[] = new int[15];
-
-    /** Id's of first node at each depth level */
-    private transient long treeLevelStartPoints[] = new long[15];
     
     public DocumentImpl(DBBroker broker) {
         this(broker, null, null);
@@ -126,7 +117,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 		this.broker = broker;
         this.collection = collection;
 		this.fileName = fileName;		
-		treeLevelOrder[0] = 1;
 	}
 
 //	public DocumentImpl(DocumentImpl old) {
@@ -234,11 +224,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
      * 
      * Persistent node methods
      *
-     ************************************************/ 
-
-    public int getMaxDepth() {
-        return maxDepth;
-    }
+     ************************************************/
 	
 	/**
 	 * Copy the relevant internal fields from the specified document object.
@@ -247,11 +233,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	 * @param other
 	 */
 	public void copyOf(DocumentImpl other) {
-	    maxDepth = other.maxDepth;
 	    childList = null;
 	    children = 0;
-	    treeLevelOrder = other.treeLevelOrder;
-	    treeLevelStartPoints = other.treeLevelStartPoints;
 	    if (metadata == null)
 	    	metadata = new DocumentMetadata();
 	    metadata.setLastModified(other.getMetadata().getLastModified());
@@ -323,10 +306,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
             return getDocumentElement();
         return broker.objectWith(this, nodeId);
     }
-
-    public Node getNode(long gid) {
-    	throw new RuntimeException("Method is deprecated");
-    }
     
     public Node getNode(NodeProxy p) {
         if(p.getNodeId().getTreeLevel() == 1)
@@ -362,11 +341,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
                 ostream.writeInt(user.getUID());
                 ostream.writeInt(group.getId());
             }
-            ostream.writeInt(permissions.getPermissions());            
-            ostream.writeInt(maxDepth);
-            for (int i = 0; i < maxDepth; i++) {                
-                ostream.writeInt(treeLevelOrder[i]);
-            }
+            ostream.writeInt(permissions.getPermissions());
             ostream.writeInt(children);
             if (children > 0) {
 			    for(int i = 0; i < children; i++) {
@@ -398,12 +373,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
                 if (group != null)
                     permissions.setGroup(group.getName());
             }
-            permissions.setPermissions(perm);            
-            maxDepth = istream.readInt();
-            treeLevelOrder = new int[maxDepth + 1];
-            for (int i = 0; i < maxDepth; i++) {
-                treeLevelOrder[i] = istream.readInt();
-            }
+            permissions.setPermissions(perm);
             //Should be > 0 ;-)
             children = istream.readInt();            
 			childList = new long[children];
@@ -413,119 +383,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
             metadataLocation = StorageAddress.read(istream);
 		} catch (IOException e) {
             LOG.error("IO error while reading document data for document " + fileName, e);
-		}        
-        try {
-            calculateTreeLevelStartPoints();
-        } catch (EXistException e) {
-            LOG.error(e.getMessage(), e);
-            //TODO :rethrow ? -pb
-        }
-	}
-    
-    public int getTreeLevel(long gid) {
-        for (int i = 0; i < maxDepth; i++) {
-            if (gid < treeLevelStartPoints[i])
-                continue;
-            if (i + 1 == maxDepth || gid < treeLevelStartPoints[i + 1])
-                return i;
-        }
-        return -1;
-    }    
-    
-    public long getLevelStartPoint(int level) {
-       //TODO : check *before* calling ? -pb
-       if (level < 0) {           
-           return -1;
-       }
-       if (level > maxDepth) {           
-           LOG.error("tree level " + level + " does not exist (maximum " + maxDepth + ")");
-           //throw an exception ? -pb
-           return -1;
-       }       
-        return treeLevelStartPoints[level];
-    }
-
-    public int getTreeLevelOrder(int level) {        
-        if (level > maxDepth) {
-            //throw an exception ? -pb
-            LOG.error("tree level " + level + " does not exist (maximum " + maxDepth + ")");
-            return -1;
-        }
-        return treeLevelOrder[level];
-    }
-
-    public int getTreeLevelOrder(long gid) {
-        int order = 0;
-        for (int i = 0; i < maxDepth; i++) {
-            if (gid < treeLevelStartPoints[i])
-                continue;
-            if (gid < treeLevelStartPoints[i + 1]) {
-                order = treeLevelOrder[i];
-                break;
-            }
-        }
-        return order;
-    } 
-    
-    public void setTreeLevelOrder(int level, int order) {
-        //TODO : range check ? -pb
-        treeLevelOrder[level] = order;
-    }    
-
-    public void setMaxDepth(int depth) {        
-        maxDepth = depth;
-        //Expand the array if maxDepth is now too big
-        if (treeLevelOrder.length <= maxDepth) {
-            int temp[] = new int[maxDepth + 1];
-            System.arraycopy(treeLevelOrder, 0, temp, 0, treeLevelOrder.length);
-            temp[maxDepth] = 0;
-            treeLevelOrder = temp;
-        }
-    }
-
-    public void incMaxDepth() {
-        ++maxDepth; 
-        //Expand the array if maxDepth is now too big
-        if (treeLevelOrder.length < maxDepth) {
-            int temp[] = new int[maxDepth];
-            System.arraycopy(treeLevelOrder, 0, temp, 0, maxDepth - 1);            
-            treeLevelOrder = temp;
-            treeLevelOrder[maxDepth - 1] = 0;
-        }
-    }    
-	
-	public void calculateTreeLevelStartPoints() throws EXistException {
-		calculateTreeLevelStartPoints(true);
-	}
-	
-	public void calculateTreeLevelStartPoints(boolean failOnError) throws EXistException {
-		treeLevelStartPoints = new long[maxDepth + 1];
-		// we know the start point of the root element (which is always 1)
-		// and the start point of the first non-root node (children + 1)
-		treeLevelStartPoints[0] = 1;
-		treeLevelStartPoints[1] = 2;
-		for (int i = 1; i < maxDepth; i++) {
-			treeLevelStartPoints[i + 1] =
-				(treeLevelStartPoints[i] - treeLevelStartPoints[i - 1]) * treeLevelOrder[i]
-					+ treeLevelStartPoints[i];
-			if(treeLevelStartPoints[i + 1] < 0 ||
-                    treeLevelStartPoints[i + 1] > 0x6fffffffffffffffL) {
-				treeLevelStartPoints[i + 1] = 1;
-			}
 		}
 	}
-
-	public String printTreeLevelOrder() {
-		StringBuffer buf = new StringBuffer();
-		buf.append("[ ");
-		for(int i = 0; i < maxDepth; i++) {
-			if(i > 0)
-				buf.append(", ");
-			buf.append(treeLevelOrder[i]);
-		}
-		buf.append(" ]");
-		return buf.toString();
-	}   
 	
 	public final int compareTo(Object other) {
 		final long otherId = ((DocumentImpl)other).docId;
@@ -665,7 +524,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
         docs.add(this);
         NodeProxy p = new NodeProxy(this, root.getNodeId(), root.getInternalAddress());
         NodeSelector selector = new DescendantSelector(p, Expression.NO_CONTEXT_ID);
-        return (NodeSet) broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT, docs, qname, selector);
+        return broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT, docs, qname, selector);
     } 
     
     /************************************************
@@ -1018,6 +877,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	public Object getUserData(String key) {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getUserData not implemented on class " + getClass().getName());
 	}
+    
 	public String toString() {
 		return getName() + " - <" + 
 		( getDocumentElement() != null ? getDocumentElement().getNodeName() : null ) + ">";	

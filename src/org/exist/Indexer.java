@@ -274,9 +274,6 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 
 			currentPath.removeLastComponent();
 			if (validate) {
-			    if (document.getTreeLevelOrder(level) < last.getChildCount()) {
-			        document.setTreeLevelOrder(level, last.getChildCount());
-			    }
 			    if (childCnt != null)
 			        setChildCount(last);
 			} else {
@@ -517,8 +514,6 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 		}
 
 		level++;
-		if (document.getMaxDepth() < level)
-			document.setMaxDepth(level);
 
 		String attrPrefix;
 		String attrLocalName;

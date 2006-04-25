@@ -78,20 +78,7 @@ public class DOMIndexer {
     public void scan() throws EXistException {
         //Creates a dummy DOCTYPE
         final DocumentTypeImpl dt = new DocumentTypeImpl("temp", null, "");
-        targetDoc.setDocumentType(dt);        
-        targetDoc.setTreeLevelOrder(1, doc.getChildCount());
-        for (int i = 1; i < doc.size; i++) {
-            if (doc.treeLevel[i] + 1 > targetDoc.getMaxDepth())
-                targetDoc.setMaxDepth(doc.treeLevel[i] + 1);
-            if (doc.nodeKind[i] == Node.ELEMENT_NODE) {
-                int length = doc.getChildCountFor(i) + doc.getAttributesCountFor(i);
-                if (length > targetDoc.getTreeLevelOrder(doc.treeLevel[i] + 1))
-                    targetDoc.setTreeLevelOrder(doc.treeLevel[i] + 1, length);
-            }
-        }
-        // increase computed max depth by one
-        targetDoc.setMaxDepth(targetDoc.getMaxDepth() + 1);
-        targetDoc.calculateTreeLevelStartPoints(true);
+        targetDoc.setDocumentType(dt);
     }
     
     /**

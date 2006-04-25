@@ -1473,8 +1473,7 @@ public class XQueryContext {
             if (targetDoc == null)
                 throw new XPathException("Internal error: failed to store temporary doc fragment");
 			watchdog.addTemporaryFragment(targetDoc.getFileName());
-            LOG.debug("Stored: " + targetDoc.getDocId() + ": " + targetDoc.getName() +
-            		": " + targetDoc.printTreeLevelOrder());
+            LOG.debug("Stored: " + targetDoc.getDocId() + ": " + targetDoc.getName());
 			return targetDoc;
 		} catch (EXistException e) {
 			throw new XPathException(TEMP_STORE_ERROR, e);
