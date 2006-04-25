@@ -98,12 +98,6 @@ public class Predicate extends PathExpr {
             else
                 executionMode = BOOLEAN;
         // Case 2: predicate expression returns a number.
-            
-            
-            //Warning : in ((1,2,3,4,5,6,7,8,9,10,11)[(2 to 4)])
-            //the range expression has a cardinality Cardinality.EXACTLY_ONE 
-            //whereas it is obvious that we have more !        
-        	
         } else if (Type.subTypeOf(inner.returnsType(), Type.NUMBER) && inner.getCardinality() == Cardinality.EXACTLY_ONE) {
             //Just a hint : inner's cardinality may still be potential
             executionMode = POSITIONAL;
@@ -138,9 +132,13 @@ public class Predicate extends PathExpr {
             if (executionMode == BOOLEAN && Type.subTypeOf(inner.returnsType(), Type.NUMBER)) {
                 Sequence innerSeq = inner.eval(contextSequence);   
                 //Only if we have an actual *singleton* of numeric items
-                //TODO : get rid of getLength()
-                if (innerSeq.hasOne())
-                    recomputedExecutionMode = POSITIONAL;
+                if (innerSeq.hasOne()) {
+                    //TODO : find a workaround for the polysemy of "." which is expanded as self::node() even when it is not relevant
+                    // (1,2,3)[xs:float(.)]
+                	//Something like :
+                    //if (!(inner instanceof LocationStep && ((LocationStep)inner).axis == Constants.SELF_AXIS))
+                    	recomputedExecutionMode = POSITIONAL;
+                }
             }  
             
             if (executionMode == NODE && Type.subTypeOf(contextSequence.getItemType(), Type.ATOMIC)
