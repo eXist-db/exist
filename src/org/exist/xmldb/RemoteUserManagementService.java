@@ -430,7 +430,8 @@ public class RemoteUserManagementService implements UserManagementService {
 				Vector groups = (Vector) tab.get("groups");
 				for (Iterator j = groups.iterator(); j.hasNext();)
 					u[i].addGroup((String) j.next());
-				u[i].setHome(XmldbURI.create((String) tab.get("home")));
+				String home = (String) tab.get("home");
+				u[i].setHome(home==null?null:XmldbURI.create(home));
 			}
 			return u;
 		} catch (XmlRpcException e) {
