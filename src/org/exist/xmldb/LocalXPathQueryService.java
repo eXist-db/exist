@@ -24,7 +24,6 @@ package org.exist.xmldb;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.net.URISyntaxException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
@@ -48,6 +47,7 @@ import org.exist.xquery.Pragma;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Sequence;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.CompiledExpression;
@@ -246,8 +246,8 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	
 	protected void setupContext(XQueryContext context) throws XMLDBException, XPathException {
 	    try {
-	    	context.setBaseURI(XmldbURI.xmldbUriFor(properties.getProperty("base-uri", collection.getPath())));
-	    } catch(URISyntaxException e) {
+	    	context.setBaseURI(new AnyURIValue(properties.getProperty("base-uri", collection.getPath())));
+	    } catch(XPathException e) {
 	    	throw new XMLDBException(ErrorCodes.INVALID_URI,"Invalid base uri",e);
 	    }
 		if(moduleLoadPath != null)

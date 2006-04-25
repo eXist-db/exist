@@ -121,7 +121,7 @@ public class DocUtils {
 			try {
 				XmldbURI pathUri = XmldbURI.xmldbUriFor(path);
 				// relative collection Path: add the current base URI
-				pathUri = context.getBaseURI().resolveCollectionPath(pathUri);
+				pathUri = context.getBaseURI().toXmldbURI().resolveCollectionPath(pathUri);
 				// try to open the document and acquire a lock
 				doc = (DocumentImpl) context.getBroker().getXMLResource(pathUri, Lock.READ_LOCK);
 				if (doc != null) {				

@@ -99,6 +99,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.HTTPUtils;
+import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -272,13 +273,9 @@ public class RpcConnection extends Thread {
             context = xquery.newContext(AccessContext.XMLRPC);
         else
             context = compiled.getContext();
-        try {
-        	String base = (String) parameters.get(RpcAPI.BASE_URI);
-        	if(base!=null)
-        		context.setBaseURI(XmldbURI.xmldbUriFor(base));
-		} catch (URISyntaxException e) {
-			throw new XPathException(e);
-		}
+    	String base = (String) parameters.get(RpcAPI.BASE_URI);
+    	if(base!=null)
+    		context.setBaseURI(new AnyURIValue(base));
         Hashtable namespaces = (Hashtable)parameters.get(RpcAPI.NAMESPACES);
         if(namespaces != null && namespaces.size() > 0) {
             context.declareNamespaces(namespaces);
@@ -306,7 +303,7 @@ public class RpcConnection extends Thread {
         		throw new XPathException(e);
         	}
         } else if(context.getBaseURI() != null) {
-            context.setStaticallyKnownDocuments(new XmldbURI[] { context.getBaseURI() });
+            context.setStaticallyKnownDocuments(new XmldbURI[] { context.getBaseURI().toXmldbURI() });
         }
         if(compiled == null)
             compiled = xquery.compile(context, source);

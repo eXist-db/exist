@@ -52,6 +52,7 @@ public class SourceFactory {
     public static final Source getSource(String contextPath, String location, boolean checkXQEncoding) 
     throws MalformedURLException, IOException {
         Source source = null;
+        //TODO: Xmldb source for xmldbURIs?
         if(location.indexOf(':') == Constants.STRING_NOT_FOUND) {
             File f = new File(contextPath + File.separatorChar + location);
             if(!f.canRead()) {

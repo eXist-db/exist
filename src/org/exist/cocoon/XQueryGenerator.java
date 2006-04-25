@@ -25,6 +25,7 @@ package org.exist.cocoon;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.URI;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
@@ -252,7 +253,7 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
 		int p = baseURIBuffer.lastIndexOf("/");
 		if (p != Constants.STRING_NOT_FOUND)
             baseURIBuffer.delete(p, baseURIBuffer.length());            
-		final String baseURI = context.getRealPath(baseURIBuffer.toString());
+		final URI baseURI = new File(context.getRealPath(baseURIBuffer.toString())).toURI();
 		
 		// check if user and password can be read from the session
 		if (session != null && request.isRequestedSessionIdValid()) {
@@ -280,9 +281,9 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
 			service.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
 			service.setProperty(EXistOutputKeys.EXPAND_XINCLUDES,
 					expandXIncludes ? "yes" : "no");
-			service.setProperty("base-uri", baseURI);
+			service.setProperty("base-uri", baseURI.toString());
 			//service.setNamespace(RequestModule.PREFIX, RequestModule.NAMESPACE_URI);
-			service.setModuleLoadPath(baseURI);
+			service.setModuleLoadPath(baseURI.toString());
 			if(!((CollectionImpl)collection).isRemoteCollection()) {
 				HttpServletRequest httpRequest = (HttpServletRequest) objectModel
 						.get(HttpEnvironment.HTTP_REQUEST_OBJECT);
