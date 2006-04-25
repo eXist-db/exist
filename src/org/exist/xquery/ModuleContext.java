@@ -6,7 +6,7 @@ import org.exist.dom.DocumentSet;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.storage.DBBroker;
 import org.exist.storage.UpdateListener;
-import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.value.AnyURIValue;
 
 
 /**
@@ -65,11 +65,11 @@ public class ModuleContext extends XQueryContext {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.XQueryContext#getBaseURI()
 	 */
-	public XmldbURI getBaseURI() {
+	public AnyURIValue getBaseURI() {
 		return parentContext.getBaseURI();
 	}
     
-    public void setBaseURI(XmldbURI uri) {
+    public void setBaseURI(AnyURIValue uri) {
         parentContext.setBaseURI(uri);
     }
     

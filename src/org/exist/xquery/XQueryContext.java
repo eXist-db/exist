@@ -66,6 +66,7 @@ import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
+import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.NodeValue;
@@ -163,7 +164,7 @@ public class XQueryContext {
 	 */
 	protected DBBroker broker;
 
-	protected XmldbURI baseURI = XmldbURI.EMPTY_URI;
+	protected AnyURIValue baseURI = AnyURIValue.EMPTY_URI;
 	
     protected boolean baseURISetInProlog = false;
     
@@ -1159,7 +1160,7 @@ public class XQueryContext {
 	 * 
 	 * @param uri
 	 */
-	public void setBaseURI(XmldbURI uri) {
+	public void setBaseURI(AnyURIValue uri) {
 		setBaseURI(uri, false);
 	}
 
@@ -1172,11 +1173,11 @@ public class XQueryContext {
      * @param uri
      * @param setInProlog
      */
-    public void setBaseURI(XmldbURI uri, boolean setInProlog) {
+    public void setBaseURI(AnyURIValue uri, boolean setInProlog) {
         if (baseURISetInProlog)
             return;
         if (uri == null)
-            baseURI = XmldbURI.EMPTY_URI;
+            baseURI = AnyURIValue.EMPTY_URI;
         baseURI = uri;
         baseURISetInProlog = setInProlog;
     }
@@ -1203,7 +1204,7 @@ public class XQueryContext {
 	 * 
 	 * @return
 	 */
-	public XmldbURI getBaseURI() {
+	public AnyURIValue getBaseURI() {
 		return baseURI;
 	}
     
