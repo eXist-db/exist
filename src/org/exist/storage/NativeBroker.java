@@ -144,11 +144,6 @@ public class NativeBroker extends DBBroker {
 	// private static final String TEMP_STORE_ERROR = "An error occurred while storing temporary data: ";
 	private static final String EXCEPTION_DURING_REINDEX = "exception during reindex";
 	private static final String DATABASE_IS_READ_ONLY = "database is read-only";
-	
-	/**
-     * Log4J Logger for this class
-     */
-    private static final Logger LOG = Logger.getLogger(NativeBroker.class);
     
     public final String DEFAULT_DATA_DIR = "data";
     public final int DEFAULT_PAGE_SIZE = 4096;
@@ -2150,10 +2145,8 @@ public class NativeBroker extends DBBroker {
         checkAvailableMemory();
         
         final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
-//        final boolean isTemp = TEMP_COLLECTION.equals(doc.getCollection().getName());
         final IndexSpec idxSpec = 
             doc.getCollection().getIdxConf(this);
-//        final FulltextIndexSpec ftIdx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null;
         final short nodeType = node.getNodeType();
         final int depth = idxSpec == null ? defaultIndexDepth : idxSpec.getIndexDepth();
         new DOMTransaction(this, domDb, Lock.WRITE_LOCK, doc) {
@@ -2248,7 +2241,7 @@ public class NativeBroker extends DBBroker {
         if (node.getNodeType() == Node.ELEMENT_NODE)
             endElement(node, currentPath, null, oldAddress);
         if (node.getNodeId().getTreeLevel() == 1)
-            newDoc.appendChild((StoredNode) node);
+            newDoc.appendChild(node);
         node.setOwnerDocument(doc);
         
         if (node.hasChildNodes()) {
@@ -2616,8 +2609,7 @@ public class NativeBroker extends DBBroker {
 //					return null;
 					return objectWith(p.getDocument(), p.getNodeId()); // retry?
 				}
-				StoredNode node = StoredNode.deserialize(val.getData(), 0, val.getLength(), 
-                        (DocumentImpl) p.getDocument());
+				StoredNode node = StoredNode.deserialize(val.getData(), 0, val.getLength(), p.getDocument());
 				node.setOwnerDocument(p.getDocument());
 				node.setInternalAddress(p.getInternalAddress());
 				return node;
