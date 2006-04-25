@@ -1732,7 +1732,7 @@ public class NativeBroker extends DBBroker {
     
                 if(!renameOnly) {
                     // reindexing
-                    reindexXMLResource(transaction, doc, false);
+                    reindexXMLResource(transaction, doc, true);
                 }
             } else {
                 // binary resource
@@ -2419,6 +2419,7 @@ public class NativeBroker extends DBBroker {
     
     public void indexNode(final Txn transaction, final StoredNode node, NodePath currentPath, boolean repairMode) {
         nodeProcessor.reset(transaction, node, currentPath);
+        nodeProcessor.setRepairMode(repairMode);
         nodeProcessor.index();
     }
     
@@ -2991,18 +2992,6 @@ public class NativeBroker extends DBBroker {
             checkAvailableMemory();
             doIndex();
             store();
-        }
-        
-        /** Updates the various indices and stores this node into the database
-         * if necessary */
-        public void reindex() {
-            if (level >= doc.getMetadata().reindexRequired()) {
-                NodeIndexListener listener = doc.getMetadata().getIndexListener();
-                if(listener != null)
-                    listener.nodeChanged(node);
-                store();
-                doIndex();
-            }
         }
     }    
 
