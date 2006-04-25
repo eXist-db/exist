@@ -30,15 +30,12 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.security.AccessController;
 import java.text.Collator;
 import java.util.BitSet;
 
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
-
-import sun.security.action.GetPropertyAction;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
@@ -95,7 +92,8 @@ public class AnyURIValue extends AtomicValue {
 	 * http://www.w3.org/TR/2000/PR-xlink-20001220/#link-locators
 	 */
 	private String uri;
-
+	//TODO: save escaped(URI) version?
+	
 	AnyURIValue() {
 		this.uri = "";
 	}
@@ -106,11 +104,12 @@ public class AnyURIValue extends AtomicValue {
 		this.uri = uri.toString();
 	}
 	public AnyURIValue(String s) throws XPathException {
+		String escapedString = escape(s);
 		try {
-			new URI(s);
+			new URI(escapedString);
 		} catch (URISyntaxException e) {
 			try {
-				XmldbURI.xmldbUriFor(s);
+				XmldbURI.xmldbUriFor(escapedString);
 			} catch (URISyntaxException ex) {
 				throw new XPathException(
 					"Type error: the given string '" + s + "' cannot be cast to " + Type.getTypeName(getType()));
@@ -341,7 +340,7 @@ public class AnyURIValue extends AtomicValue {
 	
 	public XmldbURI toXmldbURI() throws XPathException {
 		try {
-			return XmldbURI.xmldbUriFor(uri);
+			return XmldbURI.xmldbUriFor(escape(uri));
 		} catch (URISyntaxException e) {
 			throw new XPathException(
 				"failed to convert " + uri + " into an XmldbURI: " + e.getMessage(),
@@ -351,7 +350,7 @@ public class AnyURIValue extends AtomicValue {
 
 	public URI toURI() throws XPathException {
 		try {
-			return new URI(uri);
+			return new URI(escape(uri));
 		} catch (URISyntaxException e) {
 			throw new XPathException(
 				"failed to convert " + uri + " into an XmldbURI: " + e.getMessage(),

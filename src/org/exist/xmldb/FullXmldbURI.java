@@ -143,7 +143,7 @@ public class FullXmldbURI extends XmldbURI {
 			recomputeURI();
 		} catch (URISyntaxException e) {
 			this.instanceName = oldInstanceName;
-			throw new IllegalArgumentException(e);
+			throw new IllegalArgumentException("Invalid URI: "+e.getMessage());
 		}			
 	}
 	
@@ -160,7 +160,7 @@ public class FullXmldbURI extends XmldbURI {
 			recomputeURI();
 		} catch (URISyntaxException e) {
 			this.context = oldContext;
-			throw new IllegalArgumentException(e);
+			throw new IllegalArgumentException("Invalid URI: "+e.getMessage());
 		}
 	}
 	
@@ -206,7 +206,7 @@ public class FullXmldbURI extends XmldbURI {
 			xmldbURI.setContext(uri.normalize().getRawPath());
 			return xmldbURI;
 		} catch (URISyntaxException e) {
-			throw new IllegalArgumentException(e.getMessage());
+			throw new IllegalArgumentException("Invalid URI: "+e.getMessage());
 		}
 	}	
 	

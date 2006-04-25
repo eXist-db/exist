@@ -106,7 +106,7 @@ public class XmldbURI implements Comparable {
 		try {
 			return xmldbUriFor(uri);
 		} catch (URISyntaxException e) {
-			throw new IllegalArgumentException(e);
+			throw new IllegalArgumentException("Invalid URI: "+e.getMessage());
 		}
 	}
 	
@@ -114,7 +114,7 @@ public class XmldbURI implements Comparable {
 		try {
 			return xmldbUriFor(uri);
 		} catch (URISyntaxException e) {
-			throw new IllegalArgumentException(e);
+			throw new IllegalArgumentException("Invalid URI: "+e.getMessage());
 		}
 	}
 	
@@ -122,7 +122,7 @@ public class XmldbURI implements Comparable {
 		try {
 			return xmldbUriFor(accessURI,collectionPath);
 		} catch (URISyntaxException e) {
-			throw new IllegalArgumentException(e);
+			throw new IllegalArgumentException("Invalid URI: "+e.getMessage());
 		}
 	}
 	
@@ -233,7 +233,7 @@ public class XmldbURI implements Comparable {
 			recomputeURI();
 		} catch (URISyntaxException e) {
 			this.instanceName = oldInstanceName;
-			throw new IllegalArgumentException(e);
+			throw new IllegalArgumentException("Invalid URI: "+e.getMessage());
 		}			
 	}
 	
@@ -349,7 +349,7 @@ public class XmldbURI implements Comparable {
 			recomputeURI();
 		} catch (URISyntaxException e) {
 			encodedCollectionPath = oldCollectionPath;
-			throw new IllegalArgumentException(e);
+			throw new IllegalArgumentException("Invalid URI: "+e.getMessage());
 		}
 	}
 	
