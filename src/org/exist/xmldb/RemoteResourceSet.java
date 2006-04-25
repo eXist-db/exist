@@ -3,6 +3,7 @@ package org.exist.xmldb;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
 import java.util.Properties;
 import java.util.Vector;
 
@@ -59,7 +60,7 @@ public class RemoteResourceSet implements ResourceSet {
 				content = new String(data);
 			}
 			RemoteXMLResource res = new RemoteXMLResource( collection, handle, 0, 
-	            	"", null );
+	            	XmldbURI.create(""), null );
 	        res.setContent( content );
 	        res.setProperties(outputProperties);
 	        return res;
@@ -79,14 +80,18 @@ public class RemoteResourceSet implements ResourceSet {
             Vector v = (Vector) resources.elementAt( (int) pos );
             String doc = (String) v.elementAt( 0 );
             String s_id = (String) v.elementAt( 1 );
-            //TODO : use dedicated function in XmldbURI
-			String path = doc.substring(0, doc.lastIndexOf("/"));
+            XmldbURI docUri;
+            try {
+            	docUri = XmldbURI.xmldbUriFor(doc);
+            } catch (URISyntaxException e) {
+            	throw new XMLDBException(ErrorCodes.INVALID_URI,e.getMessage(),e);
+            }
 			RemoteCollection parent = 
-				new RemoteCollection(collection.getClient(), null, path);
+				new RemoteCollection(collection.getClient(), null, docUri.removeLastSegment());
 			parent.properties = outputProperties;
             RemoteXMLResource res =
                 new RemoteXMLResource( parent, handle,
-                	(int)pos, doc, s_id );
+                	(int)pos, docUri, s_id );
             res.setProperties(outputProperties);
             return res;
         } else if ( resources.elementAt( (int) pos ) instanceof Resource )
@@ -94,7 +99,7 @@ public class RemoteResourceSet implements ResourceSet {
         else {
             // value
             RemoteXMLResource res = new RemoteXMLResource( collection, handle, (int)pos, 
-            	Long.toString( pos ), null );
+            	XmldbURI.create(Long.toString( pos )), null );
             res.setContent( resources.elementAt( (int) pos ) );
             res.setProperties(outputProperties);
             return res;

@@ -32,7 +32,6 @@ import java.util.Vector;
 
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.security.Permission;
-import org.exist.xquery.Constants;
 import org.w3c.dom.DocumentType;
 import org.xml.sax.ext.LexicalHandler;
 import org.xmldb.api.base.Collection;
@@ -47,8 +46,7 @@ import org.xmldb.api.modules.BinaryResource;
  */
 public class RemoteBinaryResource implements BinaryResource, EXistResource {
 
-	private String documentName;
-	private String path;
+	private XmldbURI path;
     private String mimeType = "application/octet-stream";
 	private RemoteCollection parent;
 	private byte[] data = null;
@@ -60,16 +58,12 @@ public class RemoteBinaryResource implements BinaryResource, EXistResource {
 	protected Date datemodified= null;
 
 	
-	public RemoteBinaryResource(RemoteCollection parent, String documentName) throws XMLDBException {
+	public RemoteBinaryResource(RemoteCollection parent, XmldbURI documentName) throws XMLDBException {
 		this.parent = parent;
-		int p;
-        //TODO : use dedicated function in XmldbURI
-		if (documentName != null && (p = documentName.lastIndexOf("/")) != Constants.STRING_NOT_FOUND) {
+ 		if (documentName.numSegments()>1) {
 			this.path = documentName;
-			this.documentName = documentName.substring(p + 1);
 		} else {
-			this.path = parent.getPath() + "/" + documentName;
-			this.documentName = documentName;
+			this.path = parent.getPathURI().append(documentName);
 		}
 	}
 	
@@ -84,7 +78,7 @@ public class RemoteBinaryResource implements BinaryResource, EXistResource {
 	 * @see org.xmldb.api.base.Resource#getId()
 	 */
 	public String getId() throws XMLDBException {
-		return documentName;
+		return path.lastSegment().toString();
 	}
 
 	/* (non-Javadoc)
@@ -101,7 +95,7 @@ public class RemoteBinaryResource implements BinaryResource, EXistResource {
 		if(data != null)
 			return data;
 		Vector params = new Vector();
-		params.addElement(path);
+		params.addElement(path.toString());
 		try {
 			data = (byte[])parent.getClient().execute("getBinaryResource", params);
 		} catch (XmlRpcException e) {
@@ -151,7 +145,7 @@ public class RemoteBinaryResource implements BinaryResource, EXistResource {
 	 */
 	public Date getCreationTime() throws XMLDBException {
 		Vector params = new Vector(1);
-		params.addElement(path);
+		params.addElement(path.toString());
 		try {
 			return (Date) ((Vector) parent.getClient().execute("getTimestamps", params)).get(0);
 		} catch (XmlRpcException e) {
@@ -166,7 +160,7 @@ public class RemoteBinaryResource implements BinaryResource, EXistResource {
 	 */
 	public Date getLastModificationTime() throws XMLDBException {
 		Vector params = new Vector(1);
-		params.addElement(path);
+		params.addElement(path.toString());
 		try {
 			return (Date) ((Vector) parent.getClient().execute("getTimestamps", params)).get(1);
 		} catch (XmlRpcException e) {

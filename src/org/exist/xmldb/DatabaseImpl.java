@@ -32,7 +32,6 @@ import org.exist.EXistException;
 import org.exist.security.User;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
-import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -118,7 +117,7 @@ public class DatabaseImpl implements Database {
             String newURIString = XmldbURI.recoverPseudoURIs(uri);
             //Remember that DatabaseManager (provided in xmldb.jar) trims the leading "xmldb:" !!!
             //... prepend it to have a real xmldb URI again...
-            xmldbURI = new XmldbURI(XmldbURI.XMLDB_URI_PREFIX + newURIString);                    
+            xmldbURI = XmldbURI.xmldbUriFor(XmldbURI.XMLDB_URI_PREFIX + newURIString);                    
             return acceptsURI(xmldbURI);
         } catch (URISyntaxException e) {
             //... even in the error message
@@ -143,7 +142,7 @@ public class DatabaseImpl implements Database {
     		String newURIString = XmldbURI.recoverPseudoURIs(uri);
             //Remember that DatabaseManager (provided in xmldb.jar) trims the leading "xmldb:" !!!
             //... prepend it to have a real xmldb URI again...
-    		xmldbURI = new XmldbURI(XmldbURI.XMLDB_URI_PREFIX + newURIString);    		 			
+    		xmldbURI = XmldbURI.xmldbUriFor(XmldbURI.XMLDB_URI_PREFIX + newURIString);    		 			
     	} catch (URISyntaxException e) {   
             //... even in the error message
     		throw new XMLDBException(ErrorCodes.INVALID_DATABASE, "xmldb URI is not well formed: " + 
@@ -186,7 +185,7 @@ public class DatabaseImpl implements Database {
         }
         User u = getUser(user, password, pool);
         try {
-            Collection current = new LocalCollection(u, pool, xmldbURI.getRawCollectionPath(), AccessContext.XMLDB);
+            Collection current = new LocalCollection(u, pool, xmldbURI.toCollectionPathURI(), AccessContext.XMLDB);
             return (current != null) ? current : null;
         } catch (XMLDBException e) {
             switch (e.errorCode) {
@@ -230,10 +229,16 @@ public class DatabaseImpl implements Database {
     }    
     
     public static Collection readCollection(String c, XmlRpcClient rpcClient) throws XMLDBException {
-        String[] components = XmldbURI.getPathComponents(c);
-        String rootName = components[0];
-        if (DBBroker.ROOT_COLLECTION_NAME.equals(rootName))
-            rootName = DBBroker.ROOT_COLLECTION;
+    	XmldbURI path;
+    	try {
+    		path = XmldbURI.xmldbUriFor(c);
+    	} catch (URISyntaxException e) {
+    		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+    	}
+        XmldbURI[] components = path.getPathSegments();
+        XmldbURI rootName = components[0];
+        if (XmldbURI.RELATIVE_ROOT_COLLECTION_URI.equals(rootName))
+            rootName = XmldbURI.ROOT_COLLECTION_URI;
         Collection current = new RemoteCollection(rpcClient, null, rootName); 
         for (int i = 1 ; i < components.length ; i++) {
             current = ((RemoteCollection)current).getChildCollection(components[i]);

@@ -19,6 +19,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.exist.dom.DocumentTypeImpl;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
 import org.exist.storage.DBBroker;
@@ -28,7 +29,9 @@ import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.util.URIUtils;
 import org.exist.xquery.value.DateTimeValue;
+import org.w3c.dom.DocumentType;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -38,8 +41,6 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
-import org.w3c.dom.DocumentType;
-import org.exist.dom.DocumentTypeImpl;
 
 
 /**
@@ -57,6 +58,9 @@ public class Restore extends DefaultHandler {
 	private CollectionImpl current;
 	private Stack stack = new Stack();
 	private RestoreDialog dialog = null;
+	private int version=0;
+	
+	private static final int strictUriVersion = 1;
 
 	public final static String NS = "http://exist.sourceforge.net/NS/exist";
 
@@ -160,6 +164,14 @@ public class Restore extends DefaultHandler {
 				final String group = atts.getValue("group");
 				final String mode = atts.getValue("mode");
 				final String created = atts.getValue("created");
+				String strVersion = atts.getValue("version");
+				if(strVersion!=null) {
+					try {
+						this.version = Integer.parseInt(strVersion);
+					} catch (NumberFormatException e) {
+						this.version=0;
+					}
+				}
 
 				
 				if (name == null)
@@ -168,7 +180,21 @@ public class Restore extends DefaultHandler {
 					if(dialog != null)
 						dialog.displayMessage("creating collection " + name);
 					
-					
+					XmldbURI collUri;
+					if(version >= strictUriVersion) {
+						collUri = XmldbURI.create(name);
+					} else {
+						try {
+							collUri = URIUtils.encodeXmldbUriFor(name);
+						} catch (URISyntaxException e) {
+							String message = "Could not parse document name into a URI: "+e.getMessage();
+		                    if (dialog != null)
+		                        dialog.displayMessage(message);
+		                    else
+		                        System.err.println(message);
+							return;
+						}
+					}
 					
 					Date date_created = null;
 					
@@ -180,7 +206,7 @@ public class Restore extends DefaultHandler {
 
 					 
 					
-					current = mkcol(name, date_created);
+					current = mkcol(collUri, date_created);
 					UserManagementService service =
 						(UserManagementService) current.getService("UserManagementService", "1.0");
 					User u = new User(owner, null, group);
@@ -203,7 +229,9 @@ public class Restore extends DefaultHandler {
 				
 				 String name = atts.getValue("filename");
 				
-				if (name == null) name = atts.getValue("name");
+				if (name == null) {
+					name = atts.getValue("name");
+				}
 
 				final String fname =
 					contents.getParentFile().getAbsolutePath()
@@ -243,6 +271,21 @@ public class Restore extends DefaultHandler {
                     else
                         System.err.println("Wrong entry in backup descriptor: resource requires a name attribute.");
                 }
+				XmldbURI docUri;
+				if(version >= strictUriVersion) {
+					docUri = XmldbURI.create(name);
+				} else {
+					try {
+						docUri = URIUtils.encodeXmldbUriFor(name);
+					} catch (URISyntaxException e) {
+						String message = "Could not parse document name into a URI: "+e.getMessage();
+	                    if (dialog != null)
+	                        dialog.displayMessage(message);
+	                    else
+	                        System.err.println(message);
+						return;
+					}
+				}
 				final File f =
 					new File(
 						contents.getParentFile().getAbsolutePath() + File.separatorChar + filename);
@@ -253,7 +296,7 @@ public class Restore extends DefaultHandler {
 					if(dialog != null)
 						dialog.setResource(name);
 					final Resource res =
-						current.createResource(name, type);
+						current.createResource(docUri.toString(), type);
 					if (mimetype != null)
 						((EXistResource)res).setMimeType(mimetype);
 
@@ -326,20 +369,16 @@ public class Restore extends DefaultHandler {
 		}
 	}
 
-	private final CollectionImpl mkcol(String collPath, Date created) throws XMLDBException, URISyntaxException {
-		if (collPath.startsWith(DBBroker.ROOT_COLLECTION))
-			collPath = collPath.substring(DBBroker.ROOT_COLLECTION.length());
+	private final CollectionImpl mkcol(XmldbURI collPath, Date created) throws XMLDBException, URISyntaxException {
+		XmldbURI[] segments = collPath.getPathSegments();
 		CollectionManagementServiceImpl mgtService;
 		Collection c;
-		Collection current = DatabaseManager.getCollection(uri + DBBroker.ROOT_COLLECTION, username, pass);
-		String p = DBBroker.ROOT_COLLECTION, token;
-        //TODO : use dedicated function in XmldbURI
-		//TODO : use dedicated shared code !
-		StringTokenizer tok = new StringTokenizer(collPath, "/");
-		while (tok.hasMoreTokens()) {
-			token = tok.nextToken();
-			p = p + "/" + token;
-			XmldbURI xmldbURI = new XmldbURI(uri, p); 
+		XmldbURI dbUri = XmldbURI.xmldbUriFor(uri);
+		Collection current = DatabaseManager.getCollection(dbUri.append(XmldbURI.ROOT_COLLECTION_URI).toString(), username, pass);
+		XmldbURI p = XmldbURI.ROOT_COLLECTION_URI;
+		for(int i=1;i<segments.length;i++) {
+			p = p.append(segments[i]);
+			XmldbURI xmldbURI = dbUri.resolveCollectionPath(p);
 			c = DatabaseManager.getCollection(xmldbURI.toString(), username, pass);
 			if (c == null) {
 				mgtService =
@@ -347,7 +386,7 @@ public class Restore extends DefaultHandler {
 						"CollectionManagementService",
 						"1.0");
 				//current = mgtService.createCollection(token);
-				current = mgtService.createCollection(token, created);
+				current = mgtService.createCollection(segments[i], created);
 			} else
 				current = c;
 		}

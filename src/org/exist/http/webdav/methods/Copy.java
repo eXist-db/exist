@@ -41,7 +41,7 @@ import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
-import org.exist.xquery.Constants;
+import org.exist.xmldb.XmldbURI;
 
 
 /**
@@ -62,7 +62,7 @@ public class Copy extends AbstractWebDAVMethod {
      * @see org.exist.http.webdav.WebDAVMethod#process(org.exist.security.User, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, org.exist.collections.Collection, org.exist.dom.DocumentImpl)
      */
     public void process(User user, HttpServletRequest request,
-            HttpServletResponse response, String path)
+            HttpServletResponse response, XmldbURI path)
             throws ServletException, IOException {
         DBBroker broker = null;
         Collection collection = null;
@@ -72,19 +72,17 @@ public class Copy extends AbstractWebDAVMethod {
             broker = pool.get(user);
             collection = broker.openCollection(path, Lock.READ_LOCK);
             if(collection == null) {
-                //TODO : use dedicated function in XmldbURI
-                int pos = path.lastIndexOf("/");
-                String collName = path.substring(0, pos);
-                String docName = path.substring(pos + 1);
+            	XmldbURI docUri = path.lastSegment();
+            	XmldbURI collUri = path.removeLastSegment();
                 
-                collection = broker.openCollection(collName, Lock.READ_LOCK);
+                collection = broker.openCollection(collUri, Lock.READ_LOCK);
                 if(collection == null) {
                     LOG.debug("No resource or collection found for path: " + path);
                     response.sendError(HttpServletResponse.SC_NOT_FOUND, NOT_FOUND_ERR);
                     return;
                 }
                 
-                resource = collection.getDocumentWithLock(broker, docName, Lock.READ_LOCK);
+                resource = collection.getDocumentWithLock(broker, docUri, Lock.READ_LOCK);
                 if(resource == null) {
                     LOG.debug("No resource found for path: " + path);
                     response.sendError(HttpServletResponse.SC_NOT_FOUND, NOT_FOUND_ERR);
@@ -93,7 +91,7 @@ public class Copy extends AbstractWebDAVMethod {
             }
             
             String destination = request.getHeader("Destination");
-            String destPath = null;
+            XmldbURI destPath = null;
             try {
                 URI uri = new URI(destination);
                 String host = uri.getHost();
@@ -104,14 +102,16 @@ public class Copy extends AbstractWebDAVMethod {
                     return;
                 }
                 
-                destPath = uri.getPath();
+                //TODO: use XmldbURI for this stuff too
+                String tempDestPath = uri.getPath();
                 
-                if(destPath.startsWith(request.getContextPath()))
-                    destPath = destPath.substring(request.getContextPath().length());
+                if(tempDestPath.startsWith(request.getContextPath()))
+                	tempDestPath = tempDestPath.substring(request.getContextPath().length());
                 
-                if(destPath.startsWith(request.getServletPath()))
-                    destPath = destPath.substring(request.getServletPath().length());
+                if(tempDestPath.startsWith(request.getServletPath()))
+                	tempDestPath = tempDestPath.substring(request.getServletPath().length());
                 
+                destPath = XmldbURI.create(tempDestPath);
             } catch (URISyntaxException e) {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Malformed URL in destination header");
             }
@@ -143,17 +143,16 @@ public class Copy extends AbstractWebDAVMethod {
     private void copyResource(User user, DBBroker broker,
             HttpServletRequest request, HttpServletResponse response,
             Collection sourceCollection, DocumentImpl resource,
-            String destination)  throws ServletException, IOException {
-        //TODO : use dedicated function in XmldbURI
-        int p = destination.lastIndexOf("/");
-        if(p == Constants.STRING_NOT_FOUND) {
+            XmldbURI destination)  throws ServletException, IOException {
+    	
+        XmldbURI newResourceName = destination.lastSegment();
+        if(newResourceName==null) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST,
                     "Bad destination: " + destination);
             return;
         }
         
-        String newResourceName = destination.substring(p + 1);
-        destination = destination.substring(0, p);
+        destination = destination.removeLastSegment();
         boolean replaced = false;
         Collection destCollection = null;
         
@@ -205,17 +204,16 @@ public class Copy extends AbstractWebDAVMethod {
     }
     
     private void copyCollection(User user, DBBroker broker, HttpServletRequest request, HttpServletResponse response,
-            Collection collection, String destination)
+            Collection collection, XmldbURI destination)
             throws ServletException, IOException {
-        ///TODO : use dedicated function in XmldbURI
-        int p = destination.lastIndexOf("/");
-        if(p == Constants.STRING_NOT_FOUND) {
+
+        XmldbURI newCollectionName = destination.lastSegment();
+        if(newCollectionName==null) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST,
                     "Bad destination: " + destination);
             return;
         }
-        String newCollectionName = destination.substring(p + 1);
-        destination = destination.substring(0, p);
+        destination = destination.lastSegment();
         boolean replaced = false;
         Collection destCollection = null;
         TransactionManager transact = broker.getBrokerPool().getTransactionManager();

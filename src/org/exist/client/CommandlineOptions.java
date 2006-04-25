@@ -22,7 +22,9 @@ package org.exist.client;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.apache.avalon.excalibur.cli.CLOptionDescriptor;
+import org.exist.xmldb.XmldbURI;
 
 /**
  *
@@ -155,9 +157,9 @@ public class CommandlineOptions {
     boolean doStore = false;
     boolean doReindex = false;
     String optionRemove = null;
-    String optionGet = null;
-    String optionMkcol = null;
-    String optionRmcol = null;
+    XmldbURI optionGet = null;
+    XmldbURI optionMkcol = null;
+    XmldbURI optionRmcol = null;
     String optionXpath = null;
     String optionQueryFile = null;
     String optionXUpdate = null;

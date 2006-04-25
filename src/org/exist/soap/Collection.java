@@ -8,6 +8,7 @@
 package org.exist.soap;
 
 public class Collection  implements java.io.Serializable {
+	//TODO: should this become XmldbURI?
     private org.exist.soap.StringArray collections;
     private org.exist.soap.StringArray resources;
 

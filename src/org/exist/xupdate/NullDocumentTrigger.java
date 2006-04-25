@@ -13,6 +13,7 @@ import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
+import org.exist.xmldb.XmldbURI;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.Locator;
@@ -21,7 +22,7 @@ import org.xml.sax.ext.LexicalHandler;
 
 class NullDocumentTrigger implements DocumentTrigger {
 
-	public void prepare(int event, DBBroker broker, Txn transaction, String documentPath, DocumentImpl existingDocument) throws TriggerException {
+	public void prepare(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl existingDocument) throws TriggerException {
 	}
 
 	public void finish(int event, DBBroker broker, Txn transaction, DocumentImpl document) {

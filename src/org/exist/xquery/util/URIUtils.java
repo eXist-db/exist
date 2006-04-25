@@ -22,7 +22,12 @@
 package org.exist.xquery.util;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
+
+import org.exist.xmldb.XmldbURI;
 
 /**
  * Utilities for URI related functions
@@ -32,8 +37,8 @@ import java.net.URLEncoder;
 
 public class URIUtils {
 	
-	public static String encodeForURI(String uriPart) throws UnsupportedEncodingException {
-		String result = URLEncoder.encode(uriPart, "UTF-8");	
+	public static String encodeForURI(String uriPart) {
+		String result = urlEncodeUtf8(uriPart);
 		result = result.replaceAll("\\+", "%20");
 		result = result.replaceAll("%23", "#");
 		result = result.replaceAll("%2D", "-");
@@ -44,12 +49,12 @@ public class URIUtils {
 		result = result.replaceAll("%2A", "*");
 		result = result.replaceAll("%27", "'");
 		result = result.replaceAll("%28", "(");
-		result = result.replaceAll("%29", ")");		
+		result = result.replaceAll("%29", ")");
 		return result;
 	}
 	
-	public static String iriToURI(String uriPart) throws UnsupportedEncodingException {
-		String result = URLEncoder.encode(uriPart, "UTF-8");
+	public static String iriToURI(String uriPart) {
+		String result = urlEncodeUtf8(uriPart);
 		result = result.replaceAll("%23", "#");
 		result = result.replaceAll("%2D", "-");
 		result = result.replaceAll("%5F", "_");
@@ -76,10 +81,11 @@ public class URIUtils {
 		return result;
 	}
 	
-	public static String escapeHtmlURI(String uri) throws UnsupportedEncodingException {
-		String result = URLEncoder.encode(uri, "UTF-8");
+	public static String escapeHtmlURI(String uri){
+		String result = urlEncodeUtf8(uri);
 		//TODO : to be continued
 		result = result.replaceAll("\\+", " ");
+		result = result.replaceAll("%20", " ");
 		result = result.replaceAll("%23", "#");
 		result = result.replaceAll("%2D", "-");
 		result = result.replaceAll("%5F", "_");
@@ -106,13 +112,119 @@ public class URIUtils {
 		return result;
 	}
 	
-	public static String urlEncodeUtf8(String url) {
+	/**
+	 * This method is a wrapper for {@link java.net.URLEncoder.encode(java.lang.String,java.lang.String)}
+	 * It calls this method, suppying the url parameter as
+	 * the first parameter, and "UTF-8" (the W3C recommended
+	 * encoding) as the second.  UnsupportedEncodingExceptions
+	 * are wrapped in a runtime exception.
+	 * 
+	 * IMPORTANT: the java.net.URLEncoder class encodes a space (" ")
+	 * as a "+".  The proper method of encoding spaces in the path of
+	 * a URI is with "%20", so this method will replace all instances of "+"
+	 * in the encoded string with "%20" before returning.  This means that
+	 * XmldbURIs constructed from java.net.URLEncoder.encoded strings
+	 * will not be String equivalents of XmldbURIs created with the result of
+	 * calls to this function.
+	 * 
+	 * @param uri The uri to encode
+	 * @return The UTF-8 encoded value of the supplied uri
+	 */
+	public static String urlEncodeUtf8(String uri) {
 		try {
-			return URLEncoder.encode(url, "UTF-8");
+			String almostEncoded = URLEncoder.encode(uri, "UTF-8");
+			return almostEncoded.replaceAll("\\+","%20");
 		} catch(UnsupportedEncodingException e) {
 			//wrap with a runtime Exception
 			throw new RuntimeException(e);
 		}
+	}
+	
+	/**
+	 * This method decodes the provided uri for human readability.  The
+	 * method simply wraps URLDecoder.decode(uri,"UTF-8).  It is places here
+	 * to provide a friendly way to decode URIs encoded by urlEncodeUtf8()
+	 * 
+	 * @param url The uri to decode
+	 * @return The decoded value of the supplied uri
+	 */
+	public static String urlDecodeUtf8(String uri) {
+		try {
+			return URLDecoder.decode(uri, "UTF-8");
+		} catch(UnsupportedEncodingException e) {
+			//wrap with a runtime Exception
+			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * This method decodes the provided uri for human readability.  The
+	 * method simply wraps URLDecoder.decode(uri,"UTF-8).  It is places here
+	 * to provide a friendly way to decode URIs encoded by urlEncodeUtf8()
+	 * 
+	 * @param url The uri to decode
+	 * @return The decoded value of the supplied uri
+	 */
+	public static String urlDecodeUtf8(XmldbURI uri) {
+		try {
+			return URLDecoder.decode(uri.toString(), "UTF-8");
+		} catch(UnsupportedEncodingException e) {
+			//wrap with a runtime Exception
+			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * This method splits the supplied url on the character
+	 * '/' then URL encodes the segments between, returning
+	 * a URL encoded version of the passed url, leaving any
+	 * occurrence of '/' as it is.
+	 * 
+	 * @param path The path to encode
+	 * @return A UTF-8 URL encoded string
+	 */
+	public static String urlEncodePartsUtf8(String url) {
+		String[] split = url.split("/",-1);
+		StringBuffer ret = new StringBuffer(url.length());
+		for(int i=0;i<split.length;i++) {
+			ret.append(urlEncodeUtf8(split[i]));
+			if(i<split.length-1) {
+				ret.append("/");
+			}
+		}
+		return ret.toString();
+	}
+	
+	/**
+	 * This method ensure that a collection path (e.g. /db/[])
+	 * is properly URL encoded.  Uses W3C recommended UTF-8
+	 * encoding.
+	 * 
+	 * @param path The path to check
+	 * @return A UTF-8 URL encoded string
+	 */
+	public static String ensureUrlEncodedUtf8(String path) {
+		try {
+			XmldbURI uri = XmldbURI.xmldbUriFor(path);
+			return uri.getRawCollectionPath();
+		} catch (URISyntaxException e) {
+			return URIUtils.urlEncodePartsUtf8(path);
+		}
+	}
+
+	/**
+	 * This method creates an <code>XmldbURI</code> by encoding the provided
+	 * string, then calling XmldbURI.xmldbUriFor(String) with the result of that
+	 * encoding
+	 * 
+	 * @param path The path to encode and create an XmldbURI from
+	 * @return A UTF-8 URI encoded string
+	 * @throws URISyntaxException A URISyntaxException is thrown if the path
+	 * cannot be parsed by XmldbURI, after being encoded by
+	 * <code>urlEncodePartsUtf8</code>
+	 */
+	public static XmldbURI encodeXmldbUriFor(String path) throws URISyntaxException {
+		return XmldbURI.xmldbUriFor(URIUtils.urlEncodePartsUtf8(path));
 	}
 
 }

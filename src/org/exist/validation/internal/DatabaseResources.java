@@ -58,6 +58,8 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xmldb.api.base.ErrorCodes;
+import org.xmldb.api.base.XMLDBException;
 
 
 
@@ -266,7 +268,7 @@ public class DatabaseResources {
             
             XmldbURI col=null;
             try {
-                col = new XmldbURI("xmldb:exist://" + getCollectionPath(catalogPath));
+                col = XmldbURI.xmldbUriFor("xmldb:exist://" + getCollectionPath(catalogPath));
             } catch (URISyntaxException ex) {
                 ex.printStackTrace();
             }
@@ -286,16 +288,24 @@ public class DatabaseResources {
      * @param documentPath  Path to the resource.
      * @return              Byte array of resource, null if not found.
      */
+    //TODO: use XmldbURI
     public byte[] getResource(String documentPath){
         
-        MimeType mime = MimeTable.getInstance().getContentTypeFor(documentPath);
+        XmldbURI documentURI;
+        try{
+        	documentURI = XmldbURI.xmldbUriFor(documentPath);
+        } catch(URISyntaxException e) {
+        	throw new IllegalArgumentException(e);
+        }
+
+        MimeType mime = MimeTable.getInstance().getContentTypeFor(documentURI.lastSegment());
         if (mime == null){
             mime = MimeType.BINARY_TYPE;
         }
         
         byte[] data = null;
         
-        logger.debug("Get resource '"+documentPath);
+        logger.debug("Get resource '"+documentURI);
         
         DBBroker broker = null;
         try {
@@ -303,12 +313,12 @@ public class DatabaseResources {
             
             if(mime.isXMLType()){
                 DocumentImpl doc = broker
-                        .getXMLResource(documentPath, Lock.READ_LOCK);
+                        .getXMLResource(documentURI, Lock.READ_LOCK);
                 
                 // if document is not present, null is returned
                 if(doc == null){
                     logger.error("Xml document '"
-                            + documentPath + " does not exist.");
+                            + documentURI + " does not exist.");
                 } else {
                     Serializer serializer = broker.getSerializer();
                     serializer.reset();
@@ -318,12 +328,12 @@ public class DatabaseResources {
                 
             } else {
                 BinaryDocument binDoc = (BinaryDocument) broker
-                        .getXMLResource(documentPath, Lock.READ_LOCK);
+                        .getXMLResource(documentURI, Lock.READ_LOCK);
                 
                 // if document is not present, null is returned
                 if(binDoc == null){
                     logger.error("Binary document '"
-                            + documentPath + " does not exist.");
+                            + documentURI + " does not exist.");
                 } else {
                     data = broker.getBinaryResource(binDoc);
                     binDoc.getUpdateLock().release(Lock.READ_LOCK);
@@ -345,15 +355,20 @@ public class DatabaseResources {
         return data;
     }
     
+    //TODO: use XmldbURI
     public boolean insertResource(String documentPath, byte[] grammar){
         boolean insertIsSuccesfull = false;
         
-        String collectionName = DatabaseResources.getCollectionPath(documentPath);
-        String documentName = DatabaseResources.getDocumentName(documentPath);
-        
+        XmldbURI documentURI;
+        try{
+        	documentURI = XmldbURI.xmldbUriFor(documentPath);
+        } catch(URISyntaxException e) {
+        	throw new IllegalArgumentException(e);
+        }
+
         DBBroker broker = null;
         try {
-            MimeType mime = MimeTable.getInstance().getContentTypeFor(documentPath);
+            MimeType mime = MimeTable.getInstance().getContentTypeFor(documentURI.lastSegment());
             if (mime == null){
                 mime = MimeType.BINARY_TYPE;
             }
@@ -364,19 +379,19 @@ public class DatabaseResources {
             Txn transaction = transact.beginTransaction();
             
             Collection collection = broker
-                    .getOrCreateCollection(transaction, collectionName);
+                    .getOrCreateCollection(transaction, documentURI.removeLastSegment());
             
             broker.saveCollection(transaction, collection);
             
             if(mime.isXMLType()){
                 
-                IndexInfo info = collection.validateXMLResource( transaction, broker, documentName , new InputSource( new ByteArrayInputStream(grammar) ) );
+                IndexInfo info = collection.validateXMLResource( transaction, broker, documentURI.lastSegment() , new InputSource( new ByteArrayInputStream(grammar) ) );
                 collection.store(transaction, broker, info, new InputSource( new ByteArrayInputStream(grammar) ), false);
                 
             } else {
                 // TODO : call mime-type stuff for good mimetypes
                 collection.addBinaryResource(transaction, broker,
-                        documentName, grammar, mime.getName() );
+                        		documentURI.lastSegment(), grammar, mime.getName() );
             }
             transact.commit(transaction);
             

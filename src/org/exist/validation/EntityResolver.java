@@ -92,7 +92,7 @@ public class EntityResolver  implements XMLEntityResolver {
         this.databaseResources = resources;
         
         try {
-            collection = new XmldbURI("xmldb:exist:///db");
+            collection = XmldbURI.xmldbUriFor("xmldb:exist:///db");
         } catch (URISyntaxException ex) {
             logger.error(ex);
         }
@@ -134,7 +134,7 @@ public class EntityResolver  implements XMLEntityResolver {
             isCatalogSpecified=true;
             
             try {
-                collection= new XmldbURI( DatabaseResources.getCollectionPath(path) );
+                collection= XmldbURI.xmldbUriFor( DatabaseResources.getCollectionPath(path) );
             } catch (URISyntaxException ex) {
                 logger.error("Error constructing collection uri of '"+path+"'.", ex);
             }
@@ -147,7 +147,7 @@ public class EntityResolver  implements XMLEntityResolver {
             isGrammarSpecified=true;
             logger.info("cp="+DatabaseResources.getCollectionPath(path));
             try {
-                collection= new XmldbURI( DatabaseResources.getCollectionPath(path) );
+                collection= XmldbURI.xmldbUriFor( DatabaseResources.getCollectionPath(path) );
             } catch (URISyntaxException ex) {
                 logger.error("Error constructing collection uri of '"+path+"'.", ex);
             }
@@ -159,7 +159,7 @@ public class EntityResolver  implements XMLEntityResolver {
             logger.debug("Searching grammars in collection '"+path+"'.");
             isGrammarSearched=true;
             try {
-                collection=new XmldbURI( DatabaseResources.getCollectionPath(path) );
+                collection=XmldbURI.xmldbUriFor( DatabaseResources.getCollectionPath(path) );
             } catch (URISyntaxException ex) {
                 logger.error("Error constructing collection uri of '"+path+"'.", ex);
             }
@@ -203,7 +203,7 @@ public class EntityResolver  implements XMLEntityResolver {
             } else {
                 // subsequent steps
                 try {
-                    resourcePath = new XmldbURI(xrid.getExpandedSystemId()).getCollectionPath();
+                    resourcePath = XmldbURI.xmldbUriFor(xrid.getExpandedSystemId()).getCollectionPath();
                     
                 } catch (URISyntaxException ex) {
                     logger.error(ex);

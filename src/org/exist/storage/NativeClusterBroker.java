@@ -1,6 +1,7 @@
 //$Id$
 package org.exist.storage;
 
+import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.cluster.ClusterCollection;
 import org.exist.cluster.ClusterComunication;
@@ -9,7 +10,7 @@ import org.exist.collections.Collection;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
-import org.apache.log4j.Logger;
+import org.exist.xmldb.XmldbURI;
 
 /**
  * Created by Francesco Mondora.
@@ -38,7 +39,7 @@ public class NativeClusterBroker extends NativeBroker {
      * @param name Description of the Parameter
      * @return The collection value
      */
-    public Collection openCollection(String name, long addr, int lockMode) {
+    public Collection openCollection(XmldbURI name, long addr, int lockMode) {
         Collection c= super.openCollection(name, addr, lockMode);
 
         return c==null?null:new ClusterCollection(c);
@@ -60,7 +61,7 @@ public class NativeClusterBroker extends NativeBroker {
      * @throws org.exist.security.PermissionDeniedException
      *          Description of the Exception
      */
-    public Collection getOrCreateCollection(Txn transaction, String name) throws PermissionDeniedException {
+    public Collection getOrCreateCollection(Txn transaction, XmldbURI name) throws PermissionDeniedException {
         Collection c=   super.getOrCreateCollection(transaction, name);
         return c==null?null:new ClusterCollection(c);
 

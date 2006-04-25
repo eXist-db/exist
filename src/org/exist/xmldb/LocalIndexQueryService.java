@@ -21,6 +21,8 @@
  */
 package org.exist.xmldb;
 
+import java.net.URISyntaxException;
+
 import org.exist.EXistException;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
@@ -63,7 +65,7 @@ public class LocalIndexQueryService implements IndexQueryService {
         DBBroker broker = null;
         try {
             broker = pool.get(user);
-            broker.reindexCollection(parent.getCollection().getName());
+            broker.reindexCollection(parent.getCollection().getURI());
             broker.sync(Sync.MAJOR_SYNC);
         } catch (PermissionDeniedException e) {
             throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
@@ -79,11 +81,22 @@ public class LocalIndexQueryService implements IndexQueryService {
      * @see org.exist.xmldb.IndexQueryService#reindexCollection(java.lang.String)
      */
     public void reindexCollection(String collectionPath) throws XMLDBException {
-    	String path = XmldbURI.checkPath(collectionPath, parent.getPath());
+    	try{
+    		reindexCollection(XmldbURI.xmldbUriFor(collectionPath));
+    	} catch(URISyntaxException e) {
+    		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+    	}
+    }
+        /* (non-Javadoc)
+         * @see org.exist.xmldb.IndexQueryService#reindexCollection(java.lang.String)
+         */
+   public void reindexCollection(XmldbURI collectionPath) throws XMLDBException {
+       if (parent != null)
+    	   collectionPath = parent.getPathURI().resolveCollectionPath(collectionPath);        
         DBBroker broker = null;
         try {
             broker = pool.get(user);
-            broker.reindexCollection(path);
+            broker.reindexCollection(collectionPath);
             broker.sync(Sync.MAJOR_SYNC);
         } catch (PermissionDeniedException e) {
             throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
@@ -106,7 +119,7 @@ public class LocalIndexQueryService implements IndexQueryService {
             CollectionConfigurationManager mgr = pool.getConfigurationManager();
             mgr.addConfiguration(txn, broker, parent.getCollection(), configData);
             transact.commit(txn);
-            System.out.println("Configured '" + parent.getCollection().getName() + "'");
+            System.out.println("Configured '" + parent.getCollection().getURI() + "'");
         } catch (CollectionConfigurationException e) {
             transact.abort(txn);
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);

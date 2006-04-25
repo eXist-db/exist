@@ -55,7 +55,7 @@ public class LocalBinaryResource extends AbstractEXistResource implements Binary
 	/**
 	 * 
 	 */
-	public LocalBinaryResource(User user, BrokerPool pool, LocalCollection collection, String docId) {
+	public LocalBinaryResource(User user, BrokerPool pool, LocalCollection collection, XmldbURI docId) {
 		super(user, pool, collection, docId, null);
 	}
 	
@@ -70,7 +70,7 @@ public class LocalBinaryResource extends AbstractEXistResource implements Binary
 	 * @see org.xmldb.api.base.Resource#getId()
 	 */
 	public String getId() throws XMLDBException {
-		return docId;
+		return docId.toString();
 	}
 
 	/* (non-Javadoc)

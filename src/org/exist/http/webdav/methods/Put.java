@@ -49,6 +49,7 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
+import org.exist.xmldb.XmldbURI;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -68,7 +69,7 @@ public class Put extends AbstractWebDAVMethod {
          * @see org.exist.http.webdav.WebDAVMethod#process(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, org.exist.collections.Collection, org.exist.dom.DocumentImpl)
          */
     public void process(User user, HttpServletRequest request,
-            HttpServletResponse response, String path) throws ServletException, IOException {
+            HttpServletResponse response, XmldbURI path) throws ServletException, IOException {
         LOG.debug("PUT start");
         File tempFile = saveRequestContent(request);
         
@@ -82,29 +83,21 @@ public class Put extends AbstractWebDAVMethod {
         Txn txn = transact.beginTransaction();
         try {
             broker = pool.get(user);
-            ///TODO : use dedicated function in XmldbURI
-            if(path == null)
-                path = "";
             
-            if(path.endsWith("/"))
-                path = path.substring(0, path.length() - 1);
+        	XmldbURI pathUri = path.lastSegment();
+        	XmldbURI collUri = path.removeLastSegment();
             
-            int p = path.lastIndexOf("/");
+            LOG.debug("collUri='"+collUri+"';  path="+pathUri+"';" );
             
-            String collectionName = path.substring(0, p);
-            path = path.substring(p + 1);
-            
-            LOG.debug("collectionName='"+collectionName+"';  path="+path+"';" );
-            
-            collection = broker.openCollection(collectionName, Lock.READ_LOCK);
+            collection = broker.openCollection(collUri, Lock.READ_LOCK);
             // TODO check why not use WRITE_LOCK here?
             if(collection == null) {
                 transact.abort(txn);
                 response.sendError(HttpServletResponse.SC_CONFLICT,
-                        "Parent collection " + collectionName + " not found");
+                        "Parent collection " + collUri + " not found");
                 return;
             }
-            if(collection.hasChildCollection(path)) {
+            if(collection.hasChildCollection(pathUri)) {
                 transact.abort(txn);
                 response.sendError(HttpServletResponse.SC_CONFLICT,
                         "Cannot overwrite an existing collection with a resource");
@@ -121,7 +114,7 @@ public class Put extends AbstractWebDAVMethod {
             
             MimeType mime;
             if(contentType == null) {
-                mime = MimeTable.getInstance().getContentTypeFor(path);
+                mime = MimeTable.getInstance().getContentTypeFor(pathUri);
                 if (mime != null)
                     contentType = mime.getName();
             } else {
@@ -132,14 +125,14 @@ public class Put extends AbstractWebDAVMethod {
                 mime = MimeType.BINARY_TYPE;
             
             
-            LOG.debug("storing document " + path
+            LOG.debug("storing document " + pathUri
                     + "; content-type='" + contentType+"'");
             
             DocumentImpl doc = null;
             if(mime.isXMLType()) {
                 LOG.debug("storing XML resource");
                 InputSource is = new InputSource(url);
-                IndexInfo info = collection.validateXMLResource(txn, broker, path, is);
+                IndexInfo info = collection.validateXMLResource(txn, broker, pathUri, is);
                 doc = info.getDocument();
                 doc.getMetadata().setMimeType(contentType);
                 collection.release();
@@ -157,7 +150,7 @@ public class Put extends AbstractWebDAVMethod {
                 }
                 
                 doc = collection.addBinaryResource(txn, broker,
-                        path, os.toByteArray(), contentType);
+                		pathUri, os.toByteArray(), contentType);
                 
                 LOG.debug("done");
             }

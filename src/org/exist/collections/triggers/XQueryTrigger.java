@@ -13,10 +13,12 @@ import org.exist.security.xacml.AccessContext;
 import org.exist.source.StringSource;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
@@ -52,7 +54,7 @@ public class XQueryTrigger extends FilteringTrigger {
 	 */
 	public void configure(DBBroker broker, Collection parent, Map parameters)
 		throws CollectionConfigurationException {
- 		LOG.debug("Configured XQuery trigger for collection : '" + parent.getName() + "'");	
+ 		LOG.debug("Configured XQuery trigger for collection : '" + parent.getURI() + "'");	
  		this.collection = parent;
  		this.query = (String) parameters.get("query");
 		if (query == null)
@@ -67,7 +69,7 @@ public class XQueryTrigger extends FilteringTrigger {
 	 * @see org.exist.collections.Trigger#prepare(java.lang.String, org.w3c.dom.Document)
 	 */
 	public void prepare(int event, DBBroker broker, Txn transaction, 
-			String documentName, DocumentImpl existingDocument )
+			XmldbURI documentName, DocumentImpl existingDocument )
 		throws TriggerException {				
 		
 		LOG.debug("Preparing " + eventToString(event) + "XQuery trigger for document : '" + documentName + "'");
@@ -108,8 +110,8 @@ public class XQueryTrigger extends FilteringTrigger {
 	        context.declareGlobalVariable(globalVar);
 	        */
         	
-        	context.declareVariable(bindingPrefix + "collectionName", new StringValue(collection.getName()));
-        	context.declareVariable(bindingPrefix + "documentName", new StringValue(documentName));
+        	context.declareVariable(bindingPrefix + "collectionName", new AnyURIValue(collection.getURI()));
+        	context.declareVariable(bindingPrefix + "documentName", new AnyURIValue(documentName));
         	context.declareVariable(bindingPrefix + "triggerEvent", new StringValue(eventToString(event))); 
         	//if (existingDocument == null)
         	if (existingDocument instanceof BinaryDocument)
@@ -151,7 +153,7 @@ public class XQueryTrigger extends FilteringTrigger {
 			return;
 		}
 		
-    	LOG.debug("Finishing " + eventToString(event) + "XQuery trigger for document : '" + document.getName() + "'");
+    	LOG.debug("Finishing " + eventToString(event) + "XQuery trigger for document : '" + document.getURI() + "'");
 
 		if (query == null)
 			return;
@@ -182,8 +184,8 @@ public class XQueryTrigger extends FilteringTrigger {
 	        context.declareGlobalVariable(globalVar);
 	        */
         	      	
-        	context.declareVariable(bindingPrefix + "collectionName", new StringValue(collection.getName()));
-        	context.declareVariable(bindingPrefix + "documentName", new StringValue(document.getName()));
+        	context.declareVariable(bindingPrefix + "collectionName", new AnyURIValue(collection.getURI()));
+        	context.declareVariable(bindingPrefix + "documentName", new AnyURIValue(document.getURI()));
         	context.declareVariable(bindingPrefix + "triggerEvent", new StringValue(eventToString(event)));
         	if (event == REMOVE_DOCUMENT_EVENT)
 //        		Document does not exist any more -> Sequence.EMPTY_SEQUENCE

@@ -22,6 +22,7 @@
  */
 package org.exist.xquery.functions;
 
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -36,6 +37,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.UpdateListener;
 import org.exist.util.LockException;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
@@ -124,21 +126,24 @@ public class ExtDocument extends Function {
 			} else {
 				docs = new DocumentSet();
 				for(int i = 0; i < args.size(); i++) {
-					String next = (String)args.get(i);
-					if(next.length() == 0)
-						throw new XPathException("Invalid argument to fn:doc function: empty string is not allowed here.");
-					//TODO : use dedicated function in XmldbURI
-                    if(next.charAt(0) != '/')                        
-						next = context.getBaseURI() + "/" + next;
 					try {
+						XmldbURI next = XmldbURI.xmldbUriFor((String)args.get(i));
+						if(next.getCollectionPath().length() == 0) {
+							throw new XPathException("Invalid argument to fn:doc function: empty string is not allowed here.");
+						}
+	                    if(next.numSegments()==1) {                     
+							next = context.getBaseURI().append(next);
+	                    }
 						DocumentImpl doc = (DocumentImpl) context.getBroker().getXMLResource(next);
 						if(doc != null) {
 						    if(!doc.getPermissions().validate(context.getUser(), Permission.READ))
 							    throw new XPathException("Insufficient privileges to read resource " + next);
 							docs.add(doc);
 						}
-					} catch (PermissionDeniedException e) {
-						throw new XPathException("Permission denied: unable to load document " + next);
+			        } catch (URISyntaxException e) {
+			            throw new XPathException(getASTNode(), "Invalid resource uri",e);
+			        } catch (PermissionDeniedException e) {
+						throw new XPathException("Permission denied: unable to load document " + (String)args.get(i));
 					}
 				}
 				cachedArgs = args;

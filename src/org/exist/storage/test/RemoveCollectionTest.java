@@ -23,6 +23,9 @@ package org.exist.storage.test;
 
 import java.io.File;
 
+import junit.framework.TestCase;
+import junit.textui.TestRunner;
+
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.DocumentImpl;
@@ -33,11 +36,10 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
+import org.exist.xmldb.XmldbURI;
 import org.xml.sax.InputSource;
-
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
 
 /**
  * @author wolf
@@ -64,11 +66,11 @@ public class RemoveCollectionTest extends TestCase {
             assertNotNull(transaction);   
             System.out.println("Transaction started ...");
             
-            Collection test = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test");
+            Collection test = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             assertNotNull(test);   
             broker.saveCollection(transaction, test);
             
-            Collection test2 = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test/test2");
+            Collection test2 = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI2);
             assertNotNull(test2);   
             broker.saveCollection(transaction, test2);
             
@@ -76,7 +78,7 @@ public class RemoveCollectionTest extends TestCase {
             assertNotNull(f);   
             InputSource is = new InputSource(f.toURI().toASCIIString());
             assertNotNull(is);   
-            IndexInfo info = test.validateXMLResource(transaction, broker, "biblio.rdf", is);
+            IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create("biblio.rdf"), is);
             assertNotNull(info);   
             test.store(transaction, broker, info, is, false);
             
@@ -109,10 +111,10 @@ public class RemoveCollectionTest extends TestCase {
             Serializer serializer = broker.getSerializer();
             serializer.reset();
             
-            Collection test = broker.openCollection(DBBroker.ROOT_COLLECTION + "/test", Lock.READ_LOCK);            
+            Collection test = broker.openCollection(TestConstants.TEST_COLLECTION_URI, Lock.READ_LOCK);            
             assertNotNull("Collection '" + DBBroker.ROOT_COLLECTION +  "/test' not found", test);
             
-            DocumentImpl doc = broker.getXMLResource(DBBroker.ROOT_COLLECTION + "/test/biblio.rdf", Lock.READ_LOCK);
+            DocumentImpl doc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI.append("biblio.rdf"), Lock.READ_LOCK);
             assertNotNull("Document '" + DBBroker.ROOT_COLLECTION +  "/test/biblio.rdf' should not be null", doc);
             String data = serializer.serialize(doc);
             assertNotNull(data);

@@ -44,6 +44,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Comparator;
@@ -101,12 +102,13 @@ import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.UserManagementService;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
+import org.exist.xquery.util.URIUtils;
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 
 /** Main frame of the eXist GUI */
@@ -144,14 +146,14 @@ public class ClientFrame extends JFrame
     private JTextPane shell;
     private JPopupMenu shellPopup;
     private InteractiveClient client;
-    private String path = null;
+    private XmldbURI path = null;
     private ProcessThread process = new ProcessThread();
     private Properties properties;
     
     /**
      * @throws java.awt.HeadlessException
      */
-    public ClientFrame(InteractiveClient client, String path,
+    public ClientFrame(InteractiveClient client, XmldbURI path,
             Properties properties) throws HeadlessException {
         super("eXist Admin Client");
         this.path = path;
@@ -361,7 +363,7 @@ public class ClientFrame extends JFrame
                 if (nameres != null) {
                     try {
                         result = (XMLResource) collection.createResource(
-                                nameres, XMLResource.RESOURCE_TYPE);
+                                URIUtils.urlEncodeUtf8(nameres), XMLResource.RESOURCE_TYPE);
                         result.setContent("<template></template>");
                         collection.storeResource(result);
                         collection.close();
@@ -596,17 +598,18 @@ public class ClientFrame extends JFrame
         return menubar;
     }
     
-    public void setPath(String currentPath) {
+    public void setPath(XmldbURI currentPath) {
         path = currentPath;
     }
     
     protected void displayPrompt() {
+    	String pathString = path.getCollectionPath();
         try {
             commandStart = doc.getLength();
             doc.insertString(commandStart, "exist:", promptAttrs);
             commandStart += 6;
-            doc.insertString(commandStart, path + '>', promptAttrs);
-            commandStart += path.length() + 1;
+            doc.insertString(commandStart, pathString + '>', promptAttrs);
+            commandStart += pathString.length() + 1;
             doc.insertString(commandStart++, " ", defaultAttrs);
             shell.setCaretPosition(commandStart);
         } catch (BadLocationException e) {
@@ -778,7 +781,7 @@ public class ClientFrame extends JFrame
                         ResourceDescriptor resource = res[i];
                         if (resource.isCollection()) {
                             try {
-                                CollectionManagementService mgtService = (CollectionManagementService) client.current
+                                CollectionManagementServiceImpl mgtService = (CollectionManagementServiceImpl) client.current
                                         .getService(
                                         "CollectionManagementService",
                                         "1.0");
@@ -790,7 +793,7 @@ public class ClientFrame extends JFrame
                         } else {
                             try {
                                 Resource res = client.current
-                                        .getResource(resource.getName());
+                                        .getResource(resource.getName().toString());
                                 client.current.removeResource(res);
                             } catch (XMLDBException e) {
                                 showErrorMessage(e.getMessage(), e);
@@ -814,21 +817,28 @@ public class ClientFrame extends JFrame
     private void moveAction(ActionEvent ev) {
         final ResourceDescriptor[] res = getSelectedResources();
         
-        String[] collections = null;
-        try {
-            Collection root = client.getCollection(DBBroker.ROOT_COLLECTION);
+    	PrettyXmldbURI[] collections = null;
+        
+    	//get an array of collection paths
+        try
+		{    
+        	Collection root = client.getCollection(DBBroker.ROOT_COLLECTION);
             Vector collectionsVec = getCollections(root, new Vector());
-            collections = new String[collectionsVec.size()];
+            collections = new PrettyXmldbURI[collectionsVec.size()];
             collectionsVec.toArray(collections);
-        } catch (XMLDBException e) {
+        } 
+        catch (XMLDBException e)
+		{
             showErrorMessage(e.getMessage(), e);
             return;
         }
-        Object val = JOptionPane.showInputDialog(this, "Select target collection", "Move", JOptionPane.QUESTION_MESSAGE,
-                null, collections, collections[0]);
+        
+        //prompt the user for a destination collection from the list
+        Object val = JOptionPane.showInputDialog(this, "Select target collection", "Copy", JOptionPane.QUESTION_MESSAGE, null, collections, collections[0]);
         if(val == null)
             return;
-        final String destinationPath = (String)val;
+	    
+        final XmldbURI destinationPath = ((PrettyXmldbURI)val).getTargetURI();
         Runnable moveTask = new Runnable() {
             public void run() {
                 try {
@@ -854,22 +864,18 @@ public class ClientFrame extends JFrame
     private void renameAction(ActionEvent ev) {
         final ResourceDescriptor[] res = getSelectedResources();
         
-        String[] collections = null;
-        try {
-            Collection root = client.getCollection(DBBroker.ROOT_COLLECTION);
-            Vector collectionsVec = getCollections(root, new Vector());
-            collections = new String[collectionsVec.size()];
-            collectionsVec.toArray(collections);
-        } catch (XMLDBException e) {
-            showErrorMessage(e.getMessage(), e);
-            return;
-        }
-        
         Object val = JOptionPane.showInputDialog(this, "Please enter a new filename", "Rename", JOptionPane.QUESTION_MESSAGE);
 		
         if(val == null)
             return;
-        final String destinationFilename = (String)val;
+        XmldbURI parseIt;
+        try {
+        	parseIt = URIUtils.encodeXmldbUriFor((String)val);
+        } catch (URISyntaxException e) {
+        	showErrorMessage("Could not parse new name as a valid uri: "+e.getMessage(),e);
+        	return;
+        }
+        final XmldbURI destinationFilename = parseIt;
         Runnable renameTask = new Runnable() {
             public void run() {
                 try {
@@ -895,14 +901,14 @@ public class ClientFrame extends JFrame
     private void copyAction(ActionEvent ev) {
         
     	final ResourceDescriptor[] res = getSelectedResources();
-    	String[] collections = null;
+    	PrettyXmldbURI[] collections = null;
         
     	//get an array of collection paths
         try
 		{    
         	Collection root = client.getCollection(DBBroker.ROOT_COLLECTION);
             Vector collectionsVec = getCollections(root, new Vector());
-            collections = new String[collectionsVec.size()];
+            collections = new PrettyXmldbURI[collectionsVec.size()];
             collectionsVec.toArray(collections);
         } 
         catch (XMLDBException e)
@@ -916,7 +922,7 @@ public class ClientFrame extends JFrame
         if(val == null)
             return;
 	    
-        final String destinationPath = (String)val;
+        final XmldbURI destinationPath = ((PrettyXmldbURI)val).getTargetURI();
                
         Runnable moveTask = new Runnable() {
             public void run() {
@@ -952,7 +958,7 @@ public class ClientFrame extends JFrame
     
     private Vector getCollections(Collection root, Vector collectionsList)
     throws XMLDBException {
-        collectionsList.addElement(root.getName());
+        collectionsList.addElement(new PrettyXmldbURI(XmldbURI.create(root.getName())));
         String[] childCollections= root.listChildCollections();
         Collection child;
         for (int i= 0; i < childCollections.length; i++) {
@@ -1048,13 +1054,12 @@ public class ClientFrame extends JFrame
                 null, null, null) == JOptionPane.YES_OPTION) {
             String collection = dialog.getCollection();
             String dir = dialog.getBackupDir();
+            try {
             Backup backup = new Backup(
                     properties.getProperty("user", "admin"),
                     properties.getProperty("password", null), dir,
-                    //TODO : use dedicated function in XmldbURI
-                    properties.getProperty("uri", "xmldb:exist://")
-                    + collection);
-            try {
+                    XmldbURI.xmldbUriFor(properties.getProperty("uri", "xmldb:exist://")
+                    + collection));
                 backup.backup(true, this);
             } catch (XMLDBException e) {
                 showErrorMessage("XMLDBException: " + e.getMessage(), e);
@@ -1062,7 +1067,9 @@ public class ClientFrame extends JFrame
                 showErrorMessage("IOException: " + e.getMessage(), e);
             } catch (SAXException e) {
                 showErrorMessage("SAXException: " + e.getMessage(), e);
-            }
+            } catch (URISyntaxException e) {
+                showErrorMessage("URISyntaxException: " + e.getMessage(), e);
+			}
         }
     }
     
@@ -1167,7 +1174,7 @@ public class ClientFrame extends JFrame
             UserManagementService service = (UserManagementService) collection
                     .getService("UserManagementService", "1.0");
             Permission perm = null;
-            String name;
+            XmldbURI name;
             Date created = new Date();
             Date modified = null;
             String mimeType = null;
@@ -1177,18 +1184,18 @@ public class ClientFrame extends JFrame
                 name = desc.getName();
                 
                 if (desc.isCollection()) {
-                    Collection coll = collection.getChildCollection(name);
+                    Collection coll = collection.getChildCollection(name.toString());
                     created = ((CollectionImpl) coll).getCreationTime();
                     perm = service.getPermissions(coll);
                 } else {
-                    Resource res = collection.getResource(name);
+                    Resource res = collection.getResource(name.toString());
                     created = ((EXistResource) res).getCreationTime();
                     modified = ((EXistResource) res).getLastModificationTime();
                     mimeType = ((EXistResource) res).getMimeType();
                     perm = service.getPermissions(res);
                 }
             } else {
-                name = "...";
+                name = XmldbURI.create("...");
                 perm = new Permission("", "", Permission.DEFAULT_PERM);
             }
             ResourcePropertyDialog dialog = new ResourcePropertyDialog(this,
@@ -1200,10 +1207,10 @@ public class ClientFrame extends JFrame
                     ResourceDescriptor desc = resources.getRow(rows[i]);
                     if (desc.isCollection()) {
                         Collection coll = collection.getChildCollection(desc
-                                .getName());
+                                .getName().toString());
                         service.setPermissions(coll, dialog.permissions);
                     } else {
-                        Resource res = collection.getResource(desc.getName());
+                        Resource res = collection.getResource(desc.getName().toString());
                         service.setPermissions(res, dialog.permissions);
                     }
                 }
@@ -1289,7 +1296,7 @@ public class ClientFrame extends JFrame
                 final ResourceDescriptor resource = resources.getRow(row);
                 if (resource.isCollection()) {
                     // cd into collection
-                    String command = "cd \"" + resource.getName() + '"';
+                    String command = "cd \"" + URIUtils.urlDecodeUtf8(resource.getName()) + '"';
                     display(command + "\n");
                     process.setAction(command);
                 } else {
@@ -1612,6 +1619,9 @@ public class ClientFrame extends JFrame
         public Component getTableCellRendererComponent(JTable table,
                 Object value, boolean isSelected, boolean hasFocus, int row,
                 int column) {
+            if(value instanceof XmldbURI) {
+            	value = new PrettyXmldbURI((XmldbURI)value);
+            }
             Component renderer = DEFAULT_RENDERER
                     .getTableCellRendererComponent(table, value, isSelected,
                     hasFocus, row, column);
@@ -1632,6 +1642,7 @@ public class ClientFrame extends JFrame
                 foreground = Color.black;
                 background = Color.white;
             }
+
             renderer.setForeground(foreground);
             renderer.setBackground(background);
             return renderer;

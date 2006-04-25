@@ -129,7 +129,7 @@ public class TextImpl extends CharacterDataImpl implements Text {
             result.append( "exist:id=\"" );
             result.append( getGID() );
             result.append( "\" exist:source=\"" );
-            result.append( ((DocumentImpl)getOwnerDocument()).getFileName() );
+            result.append( ((DocumentImpl)getOwnerDocument()).getFileURI() );
             result.append( "\">" );
             result.append( getData() );
             result.append( "</exist:text>" );

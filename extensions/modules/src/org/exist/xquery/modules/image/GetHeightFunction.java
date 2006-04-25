@@ -31,6 +31,7 @@ package org.exist.xquery.modules.image;
 import java.awt.Image;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+
 import javax.imageio.ImageIO;
 
 import org.exist.dom.BinaryDocument;
@@ -44,6 +45,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -68,7 +70,7 @@ public class GetHeightFunction extends BasicFunction
 			"Get's the Height of the image in the db indicated by $a, returning an integer of the images Height in pixels or an empty sequence if $a is invalid.",
 			new SequenceType[]
 			{
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+				new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE)
 			},
 			new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE));
 
@@ -99,19 +101,19 @@ public class GetHeightFunction extends BasicFunction
             return Sequence.EMPTY_SEQUENCE;
 		
 		//get the path of the image
-        String imgPath = args[0].getStringValue();
+		AnyURIValue imgPath = (AnyURIValue)args[0];
         
         //Get the image document from the db
         DBBroker dbbroker = context.getBroker();
         DocumentImpl docImage = null;
         try
         {
-        	docImage = dbbroker.getXMLResource(imgPath, Lock.READ_LOCK);
+        	docImage = dbbroker.getXMLResource(imgPath.toXmldbURI(), Lock.READ_LOCK);
         }
         catch (PermissionDeniedException e)
         {
         	throw new XPathException(getASTNode(), imgPath + ": permission denied to read resource");
-        }
+         }
         
         //Valid document?
         if (docImage == null)

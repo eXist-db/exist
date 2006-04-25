@@ -1,11 +1,12 @@
 
 package org.exist.security;
 
-import org.apache.log4j.Logger;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -69,7 +70,7 @@ public class User {
     private String digestPassword = null;
     private String user;
     private int uid = -1;
-    private String home = null;
+    private XmldbURI home = null;
     
     /** 
      * Indicates if the user belongs to the dba group,
@@ -147,7 +148,8 @@ public class User {
           throw new DatabaseConfigurationException("illegal user id: " +
                   userId + " for user " + user);
        }
-       this.home = node.getAttribute( HOME );
+       String home = node.getAttribute( HOME );
+       this.home = home==null?null:XmldbURI.create(home);
        NodeList gl = node.getChildNodes();
        Node group;
        for ( int i = 0; i < gl.getLength(); i++ ) {
@@ -366,11 +368,11 @@ public class User {
     	this.uid = uid;
     }
     
-    public void setHome(String homeCollection) {
+    public void setHome(XmldbURI homeCollection) {
     	home = homeCollection;
     }
     
-    public String getHome() {
+    public XmldbURI getHome() {
     	return home;
     }
     

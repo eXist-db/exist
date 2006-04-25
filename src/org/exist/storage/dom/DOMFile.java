@@ -1602,7 +1602,7 @@ public class DOMFile extends BTree implements Lockable {
 
 	public String debugPages(DocumentImpl doc, boolean showPageContents) {
 		StringBuffer buf = new StringBuffer();
-		buf.append("Pages used by ").append(doc.getName());
+		buf.append("Pages used by ").append(doc.getURI());
 		buf.append("; docId ").append(doc.getDocId()).append(':');
 		long pnum = StorageAddress.pageFromPointer(((StoredNode) doc
 				.getFirstChild()).getInternalAddress());

@@ -34,6 +34,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.exist.xmldb.XmldbURI;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -91,9 +92,14 @@ public class MimeTable {
         return this.src;
     }
     
+    //TODO: deprecate?
     public MimeType getContentTypeFor(String fileName) {
         String ext = getExtension(fileName);
         return ext == null ? null : (MimeType) extensions.get(ext);
+    }
+    
+    public MimeType getContentTypeFor(XmldbURI fileName) {
+    	return getContentTypeFor(fileName.toString());
     }
     
     public MimeType getContentType(String mimeType) {

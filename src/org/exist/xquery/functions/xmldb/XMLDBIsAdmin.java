@@ -24,9 +24,9 @@ package org.exist.xquery.functions.xmldb;
 
 import org.exist.dom.QName;
 import org.exist.security.User;
-import org.exist.storage.DBBroker;
 import org.exist.xmldb.LocalCollection;
 import org.exist.xmldb.UserManagementService;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -66,7 +66,7 @@ public class XMLDBIsAdmin extends BasicFunction {
         
         Collection collection = null;
 		try {
-            collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), DBBroker.ROOT_COLLECTION, context.getAccessContext());
+            collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), XmldbURI.ROOT_COLLECTION_URI, context.getAccessContext());
 			UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
 			User user = ums.getUser(userName);
 			if(user == null)

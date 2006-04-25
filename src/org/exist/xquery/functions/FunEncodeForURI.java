@@ -69,11 +69,7 @@ public class FunEncodeForURI extends Function {
             result = Sequence.EMPTY_SEQUENCE;
         else {
     		String value; 
-    		try {
-    			value = URIUtils.encodeForURI(seq.getStringValue());
-    		} catch (UnsupportedEncodingException e) {
-    			throw new XPathException(e.getMessage());
-    		}
+   			value = URIUtils.encodeForURI(seq.getStringValue());
             result = new StringValue(value);
         }
         

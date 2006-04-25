@@ -1,5 +1,6 @@
 package org.exist.collections.triggers;
 
+import java.net.URISyntaxException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -12,6 +13,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
+import org.exist.xmldb.XmldbURI;
 
 /**
  * This collection trigger will save all old versions of documents before
@@ -43,27 +45,28 @@ import org.exist.util.LockException;
  */
 public class HistoryTrigger extends FilteringTrigger implements DocumentTrigger {
 
-    protected String root = DBBroker.ROOT_COLLECTION  + "/history";
+    protected XmldbURI rootPath = XmldbURI.ROOT_COLLECTION_URI.append("history");
 
     public void configure(DBBroker broker, Collection parent, Map parameters) 
       throws CollectionConfigurationException {
         super.configure(broker, parent, parameters);
         if (parameters.containsKey("root")) {
-            root = parameters.get("root").toString();
+            try {
+            	rootPath = XmldbURI.xmldbUriFor(parameters.get("root").toString());
+            } catch(URISyntaxException e) {
+            	throw new CollectionConfigurationException(e);
+            }
         }
     }
     
-    public void prepare(int event, DBBroker broker, Txn transaction, String documentName, DocumentImpl existingDocument) throws TriggerException{
-   	  if (existingDocument == null) return;
-        // retrieve the document in question
-        DocumentImpl doc = (DocumentImpl) existingDocument;
-      
+    public void prepare(int event, DBBroker broker, Txn transaction, XmldbURI documentName, DocumentImpl doc) throws TriggerException{
+   	  if (doc == null) return;
         // construct the destination path
-        String path = root + doc.getName();
+        XmldbURI path = rootPath.append(doc.getURI());
         
         // construct the destination document name
         DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd-HH:mm:ss:SSS");
-        String name = formatter.format(new Date(doc.getMetadata().getLastModified()));
+        XmldbURI name = XmldbURI.create(formatter.format(new Date(doc.getMetadata().getLastModified())));
         
         // create the destination document
         try {

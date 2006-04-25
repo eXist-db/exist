@@ -28,6 +28,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.util.Configuration;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.util.ExpressionDumper;
 
 
@@ -131,10 +132,20 @@ public class XQueryWatchDog {
         }
     }
     
+    /**
+     * 
+     * @param docName
+     * @deprecated Use xmldbURI instead
+     */
+    //TODO: remove this
     public void addTemporaryFragment(String docName) {
     	if(tempFragments == null)
     		tempFragments = new LinkedList();
     	tempFragments.add(docName);
+    }
+    
+    public void addTemporaryFragment(XmldbURI docName) {
+    	addTemporaryFragment(docName.toString());
     }
     
     public void cleanUp() {

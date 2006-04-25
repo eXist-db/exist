@@ -22,10 +22,11 @@
  */
 package org.exist.xmldb;
 
+import java.util.Date;
+
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
-import java.util.Date;
 
 
 /**
@@ -38,18 +39,59 @@ import java.util.Date;
 public interface CollectionManagementServiceImpl extends
         CollectionManagementService {
 
+	/**
+	 * @deprecated Use XmldbURI version instead
+	 */
     public void move(String collection, String destination, String newName)
     throws XMLDBException;
     
+	/**
+	 * @deprecated Use XmldbURI version instead
+	 */
     public void moveResource(String resourcePath, String destinationPath, String newName) 
     throws XMLDBException;
      
+	/**
+	 * @deprecated Use XmldbURI version instead
+	 */
     public void copyResource(String resourcePath, String destinationPath, String newName)
     throws XMLDBException;
     
+	/**
+	 * @deprecated Use XmldbURI version instead
+	 */
     public void copy(String collection, String destination, String newName)
     throws XMLDBException;
     
+	/**
+	 * @deprecated Use XmldbURI version instead
+	 */
     public Collection createCollection( String collName, Date created) throws XMLDBException;
- 
+    
+    public void move(XmldbURI collection, XmldbURI destination, XmldbURI newName)
+    throws XMLDBException;
+    
+    public void moveResource(XmldbURI resourcePath, XmldbURI destinationPath, XmldbURI newName) 
+    throws XMLDBException;
+     
+    public void copyResource(XmldbURI resourcePath, XmldbURI destinationPath, XmldbURI newName)
+    throws XMLDBException;
+    
+    public void copy(XmldbURI collection, XmldbURI destination, XmldbURI newName)
+    throws XMLDBException;
+    
+    public Collection createCollection( XmldbURI collName, Date created) throws XMLDBException;
+    
+    /**
+     * @deprecated Use XmldbURI version instead
+     */
+    public Collection createCollection( String collName) throws XMLDBException;
+    public Collection createCollection( XmldbURI collName) throws XMLDBException;
+    
+    /**
+     * @deprecated Use XmldbURI version instead
+     */
+    public void removeCollection( String collName) throws XMLDBException;
+    public void removeCollection( XmldbURI collName) throws XMLDBException;
+    
 }

@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.exist.http.webdav.WebDAVMethod;
 import org.exist.security.User;
+import org.exist.xmldb.XmldbURI;
 
 /**
  * @author wolf
@@ -36,7 +37,7 @@ import org.exist.security.User;
 public class Options implements WebDAVMethod {
 	
 	public void process(User user, HttpServletRequest request,
-			HttpServletResponse response, String path) throws ServletException, IOException {
+			HttpServletResponse response, XmldbURI path) throws ServletException, IOException {
             
                 // TODO DWES change to 2
 		response.addHeader("DAV", "1");

@@ -22,6 +22,7 @@
 package org.exist.xmldb;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Vector;
 
 import org.apache.xmlrpc.XmlRpcClient;
@@ -49,11 +50,24 @@ public class RemoteIndexQueryService implements IndexQueryService {
     }
     
     
-    /** @see org.exist.xmldb.IndexQueryService#reindexCollection(java.lang.String) */
+    /* (non-Javadoc)
+     * @see org.exist.xmldb.IndexQueryService#reindexCollection(java.lang.String)
+     */
     public void reindexCollection(String collectionPath) throws XMLDBException {
-    	String path = XmldbURI.checkPath(collectionPath, parent.getPath());
+    	try{
+    		reindexCollection(XmldbURI.xmldbUriFor(collectionPath));
+    	} catch(URISyntaxException e) {
+    		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+    	}
+    }
+        /* (non-Javadoc)
+         * @see org.exist.xmldb.IndexQueryService#reindexCollection(java.lang.String)
+         */
+   public void reindexCollection(XmldbURI collectionPath) throws XMLDBException {
+       if (parent != null)
+    	   collectionPath = parent.getPathURI().resolveCollectionPath(collectionPath);        
 		Vector params = new Vector();
-		params.addElement(path);
+		params.addElement(collectionPath.toString());
 		try {
 			rpcClient.execute("reindexCollection", params);
 		} catch (XmlRpcException e) {

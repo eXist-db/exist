@@ -255,7 +255,7 @@ public abstract class Modification {
 						if( trigger != null )
 							trigger.prepare(Trigger.UPDATE_DOCUMENT_EVENT, broker,
 								TriggerStatePerThread.getTransaction(),
-								doc.getName() /* documentPath */, doc);
+								doc.getURI(), doc);
 					} catch (TriggerException e) {
 						throw new EXistException(
 								"Error in calling user trigger", e);

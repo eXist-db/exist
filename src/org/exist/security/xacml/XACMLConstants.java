@@ -22,6 +22,11 @@
 
 package org.exist.security.xacml;
 
+import java.net.URI;
+
+import org.exist.storage.DBBroker;
+import org.exist.xmldb.XmldbURI;
+
 import com.sun.xacml.EvaluationCtx;
 import com.sun.xacml.attr.AnyURIAttribute;
 import com.sun.xacml.attr.DateAttribute;
@@ -29,9 +34,6 @@ import com.sun.xacml.attr.DateTimeAttribute;
 import com.sun.xacml.attr.StringAttribute;
 import com.sun.xacml.attr.TimeAttribute;
 import com.sun.xacml.finder.impl.CurrentEnvModule;
-
-import java.net.URI;
-import org.exist.storage.DBBroker;
 
 /**
 * This class provides constants for use in creating XACML requests.
@@ -103,6 +105,11 @@ public final class XACMLConstants
 	* The location of the top-level Policy and/or PolicySet documents.
 	*/
 	public static final String POLICY_COLLECTION = DBBroker.SYSTEM_COLLECTION + '/' + POLICY_COLLECTION_NAME;
+
+	/**
+	* The location of the top-level Policy and/or PolicySet documents.
+	*/
+	public static final XmldbURI POLICY_COLLECTION_URI = XmldbURI.create(POLICY_COLLECTION);
 
 	/**
 	* The namespace used for eXist-specific XACML constants.

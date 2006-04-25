@@ -22,6 +22,7 @@
 package org.exist.http.webdav;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Properties;
 
 import javax.servlet.ServletException;
@@ -38,6 +39,7 @@ import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
+import org.exist.xmldb.XmldbURI;
 
 /**
  * The main class for processing WebDAV requests.
@@ -134,7 +136,12 @@ public class WebDAV {
                     "Method is not supported: " + request.getMethod());
             return;
         }
-        method.process(user, request, response, path);
+        try {
+        	method.process(user, request, response, XmldbURI.xmldbUriFor(path));
+        } catch (URISyntaxException e) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+        }
+        	
     }
     
     private User authenticate(HttpServletRequest request, HttpServletResponse response)

@@ -6,6 +6,7 @@ import org.exist.storage.cache.LRDCache;
 import org.exist.storage.lock.Lock;
 import org.exist.util.hashtable.Long2ObjectHashMap;
 import org.exist.util.hashtable.Object2LongHashMap;
+import org.exist.xmldb.XmldbURI;
 
 /**
  * Global cache for {@link org.exist.collections.Collection} objects. The
@@ -32,14 +33,14 @@ public class CollectionCache extends LRDCache {
 
 	public void add(Collection collection, int initialRefCount) {
 		super.add(collection, initialRefCount);
-		names.put(collection.getName(), collection.getKey());
+		names.put(collection.getURI(), collection.getKey());
 	}
 
 	public Collection get(Collection collection) {
 		return (Collection) get(collection.getKey());
 	}
 
-	public Collection get(String name) {
+	public Collection get(XmldbURI name) {
 		long key = names.get(name);
 		if (key < 0)
 			return null;
@@ -79,9 +80,9 @@ public class CollectionCache extends LRDCache {
 		}
 		old = (Collection)items[bucket];
 		if (old != null) {
-			pool.getConfigurationManager().invalidate(old.getName());
+			pool.getConfigurationManager().invalidate(old.getURI());
 			map.remove(old.getKey());
-			names.remove(old.getName());
+			names.remove(old.getURI());
 			old.sync(true);
 		}
 		items[bucket] = item;
@@ -97,9 +98,9 @@ public class CollectionCache extends LRDCache {
     public void remove(Cacheable item) {
     	final Collection col = (Collection) item;
         super.remove(item);
-        names.remove(col.getName());
+        names.remove(col.getURI());
         if(pool.getConfigurationManager() != null) // might be null during db initialization
-            pool.getConfigurationManager().invalidate(col.getName());
+           pool.getConfigurationManager().invalidate(col.getURI());
     }
     
     public void resize(int newSize) {
@@ -114,7 +115,7 @@ public class CollectionCache extends LRDCache {
             for (int i = 0; i < count; i++) {
                 newItems[i] = items[i];
                 newMap.put(items[i].getKey(), items[i]);
-                newNames.put(((Collection) items[i]).getName(), items[i].getKey());
+                newNames.put(((Collection) items[i]).getURI(), items[i].getKey());
             }
             this.size = newSize;
             this.map = newMap;

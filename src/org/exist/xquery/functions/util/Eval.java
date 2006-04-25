@@ -184,7 +184,7 @@ public class Eval extends BasicFunction {
 		} catch (IOException e) {
 			throw new XPathException(getASTNode(), e.getMessage(), e);
 		} finally {
-			if (cache)
+			if (cache && compiled!=null)
 				pool.returnCompiledXQuery(source, compiled);
 			if (oldDocs != null)
 				context.setStaticallyKnownDocuments(oldDocs);

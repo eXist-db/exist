@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Properties;
 
@@ -19,6 +20,7 @@ import org.apache.avalon.excalibur.cli.CLUtil;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.xmldb.XmldbURI;
 import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -221,13 +223,13 @@ public class Main {
 					optionBackup = DBBroker.ROOT_COLLECTION;
 			}
 			if (optionBackup != null) {
-				Backup backup =
+				try {
+					Backup backup =
 					new Backup(
 						properties.getProperty("user", "admin"),
 						optionPass,
 						properties.getProperty("backup-dir", "backup"),
-						properties.getProperty("uri", "xmldb:exist://") + optionBackup);
-				try {
+						XmldbURI.xmldbUriFor(properties.getProperty("uri", "xmldb:exist://") + optionBackup));
 					backup.backup(guiMode, null);
 				} catch (XMLDBException e) {
 					reportError(e);
@@ -237,6 +239,8 @@ public class Main {
 					System.err.println("ERROR: " + e.getMessage());
 					System.err.println("caused by ");
 					e.getException().printStackTrace();
+				} catch (URISyntaxException e) {
+					reportError(e);
 				}
 			}
 		}

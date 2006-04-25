@@ -35,7 +35,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
-import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.LockToken;
 import org.exist.http.webdav.WebDAV;
@@ -44,17 +43,14 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.LockException;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
-
+import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
 
 /**
  * Implements the WebDAV LOCK method.
@@ -86,7 +82,7 @@ public class Lock extends AbstractWebDAVMethod {
     
     private void createNullResource(User user,
             HttpServletRequest request, HttpServletResponse response,
-            String path){
+            XmldbURI path){
         
         LOG.debug("Create NullResource for '"+path+"'.");
         DBBroker broker =null;
@@ -103,32 +99,22 @@ public class Lock extends AbstractWebDAVMethod {
             txManager = pool.getTransactionManager();
             txn = txManager.beginTransaction();
             
-            
-            if(path == null)
-                path = "/";
-            
-            if(path.endsWith("/"))
-                path = path.substring(0, path.length() - 1);
-            
-            int p = path.lastIndexOf("/");
-            
-            // Dangerous
-            String collectionName = path.substring(0, p);
-            path = path.substring(p + 1);
+            XmldbURI collName = path.removeLastSegment();
+            XmldbURI docName = path.lastSegment();
             
             MimeType mime = MimeTable.getInstance().getContentTypeFor(path);
             if (mime == null){
                 mime = MimeType.BINARY_TYPE;
             }
             
-            LOG.debug("storing document '" + path + "' in collection '"+collectionName);
+            LOG.debug("storing document '" + path + "' in collection '"+collName);
             
-            Collection collection = broker.openCollection(collectionName, org.exist.storage.lock.Lock.READ_LOCK);
+            Collection collection = broker.openCollection(collName, org.exist.storage.lock.Lock.READ_LOCK);
             
             if(mime.isXMLType()) {
                 LOG.debug("Storing NULL xml resource");
                 
-                IndexInfo info = collection.validateXMLResource(txn, broker, path, "<nullresource/>");
+                IndexInfo info = collection.validateXMLResource(txn, broker, docName, "<nullresource/>");
                 resource = info.getDocument();
                 info.getDocument().getMetadata().setMimeType(contentType);
                 collection.release();
@@ -139,7 +125,7 @@ public class Lock extends AbstractWebDAVMethod {
             } else {
                 LOG.debug("Storing NULL byte binary resource.");
                 resource = collection.addBinaryResource(
-                        txn, broker, path, new byte[0], contentType);
+                        txn, broker, docName, new byte[0], contentType);
             }
             
             resource.setUserLock(user);
@@ -172,7 +158,7 @@ public class Lock extends AbstractWebDAVMethod {
             LOG.error(ex);
             txManager.abort(txn);
             try {
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ex.getMessage());
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex.getMessage());
             } catch (IOException e) {
                 LOG.error(e);
             }
@@ -189,7 +175,7 @@ public class Lock extends AbstractWebDAVMethod {
      * @see org.exist.http.webdav.WebDAVMethod#process(org.exist.security.User, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, org.exist.collections.Collection, org.exist.dom.DocumentImpl)
      */
     public void process(User user, HttpServletRequest request,
-            HttpServletResponse response, String path)
+            HttpServletResponse response, XmldbURI path)
             throws ServletException, IOException {
         
         DBBroker broker = null;

@@ -35,7 +35,6 @@ import javax.swing.JFrame;
 import javax.xml.transform.OutputKeys;
 
 import org.exist.security.Permission;
-import org.exist.storage.DBBroker;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.serializer.SAXSerializer;
@@ -43,6 +42,8 @@ import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.UserManagementService;
+import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.util.URIUtils;
 import org.exist.xquery.value.DateTimeValue;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
@@ -56,10 +57,12 @@ import org.xmldb.api.modules.XMLResource;
 public class Backup {
 
 	private String backupDir;
-	private String rootCollection;
+	private XmldbURI rootCollection;
 	private String user;
 	private String pass;
 
+	private static final int currVersion = 1;
+	
 	public final static String NS = "http://exist.sourceforge.net/NS/exist";
 
 	public final static Properties defaultOutputProperties = new Properties();
@@ -70,7 +73,7 @@ public class Backup {
 		
 	}
 	
-	public Backup(String user, String pass, String backupDir, String rootCollection) {
+	public Backup(String user, String pass, String backupDir, XmldbURI rootCollection) {
 		this.user = user;
 		this.pass = pass;
 		this.backupDir = backupDir;
@@ -78,7 +81,7 @@ public class Backup {
 	}
 
 	public Backup(String user, String pass, String backupDir) {
-		this(user, pass, backupDir, "xmldb:exist://" + DBBroker.ROOT_COLLECTION);
+		this(user, pass, backupDir, XmldbURI.create("xmldb:exist://").append(XmldbURI.ROOT_COLLECTION_URI));
 	}
 
 	public String encode(String enco) {		
@@ -150,7 +153,7 @@ public class Backup {
 	}
 	
 	public void backup(boolean guiMode, JFrame parent) throws XMLDBException, IOException, SAXException {
-		Collection current = DatabaseManager.getCollection(rootCollection, user, pass);
+		Collection current = DatabaseManager.getCollection(rootCollection.toString(), user, pass);
 		if (guiMode) {
 			BackupDialog dialog = new BackupDialog(parent, false);
 			dialog.setSize(new Dimension(350, 150));
@@ -189,7 +192,7 @@ public class Backup {
 		String cname = current.getName();
 		if (cname.charAt(0) != '/')
 			cname = "/" + cname;
-		String path = backupDir + encode(cname);
+		String path = backupDir + encode(URIUtils.urlDecodeUtf8(cname));
 		
 		UserManagementService mgtService =
 			(UserManagementService) current.getService("UserManagementService", "1.0");
@@ -220,6 +223,7 @@ public class Backup {
 		// write <collection> element
 		CollectionImpl cur = (CollectionImpl)current;
 		AttributesImpl attr = new AttributesImpl();
+		//The name should have come from an XmldbURI.toString() call
 		attr.addAttribute(NS, "name", "name", "CDATA", current.getName());
 		attr.addAttribute(NS, "owner", "owner", "CDATA", currentPerms.getOwner());
 		attr.addAttribute(NS, "group", "group", "CDATA", currentPerms.getOwnerGroup());
@@ -235,6 +239,7 @@ public class Backup {
 				"created",
 				"CDATA",
 				""+new DateTimeValue(cur.getCreationTime()));
+		attr.addAttribute(NS, "version", "version", "CDATA", String.valueOf(currVersion));
 		serializer.startElement(NS, "collection", "collection", attr);
 
 		// scan through resources
@@ -255,7 +260,7 @@ public class Backup {
                     dialog.setProgress(i);
                 }
                 //os = new FileOutputStream(path + File.eparatorChar + resources[i]);
-                os = new FileOutputStream(path + File.separatorChar + encode(resources[i]));
+                os = new FileOutputStream(path + File.separatorChar + encode(URIUtils.urlDecodeUtf8(resources[i])));
                 if(resource.getResourceType().equals("BinaryResource")) {
                     byte[] bdata = (byte[])resource.getContent();
                     os.write(bdata);
@@ -310,7 +315,7 @@ public class Backup {
                         "filename",
                         "filename",
                         "CDATA",
-                        encode( ""+resources[i] )
+                        encode( URIUtils.urlDecodeUtf8(resources[i]) )
                 );
                 attr.addAttribute(
                         NS,
@@ -349,7 +354,7 @@ public class Backup {
 				continue;
 			attr.clear();
 			attr.addAttribute(NS, "name", "name", "CDATA", collections[i]);
-			attr.addAttribute(NS, "filename", "filename", "CDATA", encode(collections[i]));
+			attr.addAttribute(NS, "filename", "filename", "CDATA", encode(URIUtils.urlDecodeUtf8(collections[i])));
 			serializer.startElement(NS, "subcollection", "subcollection", attr);
 			serializer.endElement(NS, "subcollection", "subcollection");
 		}
@@ -396,7 +401,7 @@ public class Backup {
 			Database database = (Database) cl.newInstance();
 			database.setProperty("create-database", "true");
 			DatabaseManager.registerDatabase(database);
-			Backup backup = new Backup("admin", null, "backup", args[0]);
+			Backup backup = new Backup("admin", null, "backup", URIUtils.encodeXmldbUriFor(args[0]));
 			backup.backup(false, null);
 		} catch (Exception e) {
 			e.printStackTrace();

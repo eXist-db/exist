@@ -38,6 +38,7 @@ import org.exist.storage.btree.BTree;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
+import org.exist.xmldb.XmldbURI;
 
 /**
  * @author wolf
@@ -47,7 +48,8 @@ public class CollectionTest extends TestCase {
 
     private static String docs[] = { "hamlet.xml", "r_and_j.xml", "macbeth.xml" };
     
-    private static String TEST_COLLECTION = DBBroker.ROOT_COLLECTION + "/test";
+    private static XmldbURI TEST_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("test");
+    
     private static String TEST_XML =
         "<?xml version=\"1.0\"?>" +
         "<test>" +
@@ -70,10 +72,10 @@ public class CollectionTest extends TestCase {
             Txn transaction = transact.beginTransaction();            
             System.out.println("Transaction started ...");
             
-            Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION);
+            Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI);
             broker.saveCollection(transaction, root);
             
-            Collection test = broker.getOrCreateCollection(transaction, TEST_COLLECTION + "/test2");
+            Collection test = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI.append("test2"));
             broker.saveCollection(transaction, test);
             
             transact.commit(transaction);
@@ -99,12 +101,12 @@ public class CollectionTest extends TestCase {
             btree.dump(writer);
             System.out.println(writer.toString());
             
-            Collection test = broker.getCollection(TEST_COLLECTION + "/test2");
+            Collection test = broker.getCollection(TEST_COLLECTION_URI.append("test2"));
             assertNotNull(test);
-            System.out.println("Contents of collection " + test.getName() + ":");
+            System.out.println("Contents of collection " + test.getURI() + ":");
             for (Iterator i = test.iterator(broker); i.hasNext(); ) {
                 DocumentImpl next = (DocumentImpl) i.next();
-                System.out.println("- " + next.getName());
+                System.out.println("- " + next.getURI());
             }
         } catch (Exception e) {            
             fail(e.getMessage());              

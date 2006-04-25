@@ -31,6 +31,7 @@ import org.exist.source.FileSource;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
 import org.exist.source.URLSource;
+import org.exist.xmldb.XmldbURI;
 
 /**
  * This class represents the source of some content.  It has
@@ -91,8 +92,12 @@ public class XACMLSource
 		}
 		if(source instanceof DBSource)
 		{
-			String key = ((DBSource)source).getDocumentPath();
-			return new XACMLSource(XACMLConstants.DB_SOURCE_TYPE, key);
+			XmldbURI key = ((DBSource)source).getDocumentPath();
+			/*
+			 * TODO: not sure what implications using toString here has, when the key
+			 * is really an XmldbURI?
+			 */
+			return new XACMLSource(XACMLConstants.DB_SOURCE_TYPE, key.toString());
 		}
 		throw new IllegalArgumentException("Unsupported source type '" + source.getClass().getName() + "'");
 	}

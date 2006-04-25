@@ -32,6 +32,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
+import org.exist.xmldb.XmldbURI;
 
 /**
  * @author wolf
@@ -58,17 +59,17 @@ public class Dumper extends FilteringTrigger {
 		int event,
 		DBBroker broker,
 		Txn transaction,
-		String documentName, 
+		XmldbURI documentName, 
 		DocumentImpl existingDocument)
 		throws TriggerException {
-		System.out.println("\nstoring document " + documentName + " into collection " + collection.getName());
+		System.out.println("\nstoring document " + documentName + " into collection " + collection.getURI());
 		if(existingDocument != null)
-			System.out.println("replacing document " + ((DocumentImpl)existingDocument).getFileName());
+			System.out.println("replacing document " + ((DocumentImpl)existingDocument).getFileURI());
 		System.out.println("collection contents:");
 		DocumentSet docs = new DocumentSet();
 		collection.getDocuments(broker, docs, true);
 		for(int i = 0; i < docs.getLength(); i++)
-			System.out.println("\t" + ((DocumentImpl)docs.item(i)).getFileName());
+			System.out.println("\t" + ((DocumentImpl)docs.item(i)).getFileURI());
 	}
 
     /* (non-Javadoc)

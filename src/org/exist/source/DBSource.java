@@ -32,6 +32,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
+import org.exist.xmldb.XmldbURI;
 
 /**
  * Source implementation that reads from a binary resource
@@ -42,7 +43,7 @@ import org.exist.storage.lock.Lock;
 public class DBSource extends AbstractSource {
     
     private BinaryDocument doc;
-    private String key;
+    private XmldbURI key;
     private long lastModified;
     private String encoding = "UTF-8";
     private boolean checkEncoding;
@@ -51,7 +52,7 @@ public class DBSource extends AbstractSource {
     public DBSource(DBBroker broker, BinaryDocument doc, boolean checkXQEncoding) {
         this.broker = broker;
         this.doc = doc;
-        this.key = doc.getName();
+        this.key = doc.getURI();
         this.lastModified = doc.getMetadata().getLastModified();
         this.checkEncoding = checkXQEncoding;
     }
@@ -63,7 +64,7 @@ public class DBSource extends AbstractSource {
         return key;
     }
     
-    public String getDocumentPath() {
+    public XmldbURI getDocumentPath() {
     	return key;
     }
 

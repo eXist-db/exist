@@ -23,8 +23,10 @@
 package org.exist.validation.internal;
 
 import java.io.InputStream;
+
 import org.apache.log4j.Logger;
 import org.exist.storage.BrokerPool;
+import org.exist.xmldb.XmldbURI;
 
 
 /**
@@ -48,13 +50,13 @@ public class ResourceInputStream extends InputStream {
      * @param brokerPool          BrokerPool
      * @param resourceId    XML resource that must be streamed.
      */
-    public ResourceInputStream(BrokerPool brokerPool, String resourceId) {
+    public ResourceInputStream(BrokerPool brokerPool, XmldbURI docUri) {
         
         logger.debug("Initializing ResourceInputStream");
         
         bis = new BlockingOutputStream();
         
-        ResourceThread rt = new ResourceThread(brokerPool, resourceId, bis);
+        ResourceThread rt = new ResourceThread(brokerPool, docUri, bis);
         
         rt.start();
         

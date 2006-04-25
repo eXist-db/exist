@@ -28,16 +28,15 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 
 import org.apache.log4j.Logger;
-
 import org.exist.EXistException;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.SecurityManager;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
-import org.exist.security.SecurityManager;
-import org.exist.storage.BrokerPool;
-
+import org.exist.xmldb.XmldbURI;
 import org.xml.sax.SAXException;
 
 
@@ -50,14 +49,14 @@ public class ResourceThread extends Thread {
     
     private final static Logger logger = Logger.getLogger(ResourceThread.class);
     private BrokerPool brokerPool;
-    private String resourceId;
+    private XmldbURI docUri;
     private OutputStream outputStream;
     
     /** Creates a new instance of ResourceThread */
-    public ResourceThread(BrokerPool pool, String resourceId, OutputStream os) {
+    public ResourceThread(BrokerPool pool, XmldbURI docUri, OutputStream os) {
         logger.debug("Initializing ResourceThread." );
         this.brokerPool=pool;
-        this.resourceId=resourceId;
+        this.docUri=docUri;
         this.outputStream=os;
     }
     
@@ -76,17 +75,17 @@ public class ResourceThread extends Thread {
      */
     private void writeXmlResource( Writer writer ){
         
-        logger.debug("Writing XML resource '"+resourceId+"' as stream." );
+        logger.debug("Writing XML resource '"+docUri+"' as stream." );
         DBBroker broker = null;
         
         try {
             broker = brokerPool.get(SecurityManager.SYSTEM_USER);
             
             
-            DocumentImpl doc = broker.getXMLResource(resourceId, Lock.READ_LOCK);
+            DocumentImpl doc = broker.getXMLResource(docUri, Lock.READ_LOCK);
             
             if(doc==null){
-                logger.error("Document '"+resourceId+"' does not exist");
+                logger.error("Document '"+docUri+"' does not exist");
             } else {
                 Serializer serializer = broker.getSerializer();
                 serializer.reset();

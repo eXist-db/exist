@@ -24,6 +24,7 @@ package org.exist.xquery.util;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -37,6 +38,7 @@ import org.exist.memtree.SAXAdapter;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
@@ -111,18 +113,17 @@ public class DocUtils {
 			}			
 		//Database documents
 		} else {
-			// relative collection Path: add the current base URI
-			//TODO : use another strategy
-			if (path.charAt(0) != '/')
-				path = context.getBaseURI() + "/" + path;
 
 			// check if the loaded documents should remain locked
 			boolean lockOnLoad = context.lockDocumentsOnLoad();
 
 			DocumentImpl doc = null;
 			try {
+				XmldbURI pathUri = XmldbURI.xmldbUriFor(path);
+				// relative collection Path: add the current base URI
+				pathUri = context.getBaseURI().resolveCollectionPath(pathUri);
 				// try to open the document and acquire a lock
-				doc = (DocumentImpl) context.getBroker().getXMLResource(path, Lock.READ_LOCK);
+				doc = (DocumentImpl) context.getBroker().getXMLResource(pathUri, Lock.READ_LOCK);
 				if (doc != null) {				
 					if (!doc.getPermissions().validate(context.getUser(), Permission.READ)) {
 						doc.getUpdateLock().release(Lock.READ_LOCK);
@@ -137,6 +138,8 @@ public class DocUtils {
 				}
 			} catch (PermissionDeniedException e) {
 				throw e;
+			} catch (URISyntaxException e) {
+				throw new XPathException(e);
 			} finally {
 				// release all locks unless lockOnLoad is true
 				if (!lockOnLoad && doc != null)

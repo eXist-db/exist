@@ -21,11 +21,14 @@
  */
 package org.exist.xquery.functions.util;
 
+import java.net.URISyntaxException;
+
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -61,7 +64,7 @@ public class BinaryDoc extends BasicFunction {
             return Sequence.EMPTY_SEQUENCE;
         String path = args[0].getStringValue();
         try {
-            DocumentImpl doc = context.getBroker().getXMLResource(path, Lock.READ_LOCK);
+            DocumentImpl doc = context.getBroker().getXMLResource(XmldbURI.xmldbUriFor(path), Lock.READ_LOCK);
             if (doc == null)
                 return Sequence.EMPTY_SEQUENCE;
             if (doc.getResourceType() != DocumentImpl.BINARY_FILE)
@@ -69,6 +72,8 @@ public class BinaryDoc extends BasicFunction {
             BinaryDocument bin = (BinaryDocument) doc;
             byte[] data = context.getBroker().getBinaryResource(bin);
             return new Base64Binary(data);
+        } catch (URISyntaxException e) {
+            throw new XPathException(getASTNode(), "Invalid resource uri",e);
         } catch (PermissionDeniedException e) {
             throw new XPathException(getASTNode(), path + ": permission denied to read resource");
         }

@@ -33,7 +33,9 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
+import org.exist.xmldb.XmldbURI;
 
 /**
  *  0 byte binary files cannot be retrieved from database. This test
@@ -44,8 +46,7 @@ import org.exist.util.Configuration;
 public class ResourceTest extends TestCase {
     
     private static String EMPTY_BINARY_FILE="";
-    private static String TEST_COLLECTION = DBBroker.ROOT_COLLECTION + "/test";
-    private static String DOCUMENT_NAME = "empty.txt";
+    private static XmldbURI DOCUMENT_NAME_URI = XmldbURI.create("empty.txt");
     
     
     public static void main(String[] args) {
@@ -83,13 +84,13 @@ public class ResourceTest extends TestCase {
             System.out.println("Transaction started ...");
             
             Collection collection = broker
-                    .getOrCreateCollection(transaction, TEST_COLLECTION);
+                    .getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             
             broker.saveCollection(transaction, collection);
             
             BinaryDocument doc =
                     collection.addBinaryResource(transaction, broker,
-                    DOCUMENT_NAME , EMPTY_BINARY_FILE.getBytes(), "text/text");
+                    DOCUMENT_NAME_URI , EMPTY_BINARY_FILE.getBytes(), "text/text");
             
             transact.commit(transaction);
             System.out.println("Transaction commited ...");
@@ -119,7 +120,7 @@ public class ResourceTest extends TestCase {
             Txn transaction = transact.beginTransaction();
             System.out.println("Transaction started ...");
             
-            String docPath = TEST_COLLECTION + "/" + DOCUMENT_NAME;
+            XmldbURI docPath = TestConstants.TEST_COLLECTION_URI.append(DOCUMENT_NAME_URI);
             
             BinaryDocument binDoc = (BinaryDocument) broker
                     .getXMLResource(docPath, Lock.READ_LOCK);
@@ -132,7 +133,7 @@ public class ResourceTest extends TestCase {
                 binDoc.getUpdateLock().release(Lock.READ_LOCK);
             }
             
-            Collection collection = broker.getCollection(TEST_COLLECTION);
+            Collection collection = broker.getCollection(TestConstants.TEST_COLLECTION_URI);
             collection.removeBinaryResource(transaction, broker, binDoc);
             
             broker.saveCollection(transaction, collection);
@@ -173,7 +174,7 @@ public class ResourceTest extends TestCase {
             Txn transaction = transact.beginTransaction();
             System.out.println("Transaction started ...");
             
-            String docPath = TEST_COLLECTION + "/" + DOCUMENT_NAME;
+            XmldbURI docPath = TestConstants.TEST_COLLECTION_URI.append(DOCUMENT_NAME_URI);
             
             BinaryDocument binDoc = (BinaryDocument) broker
                     .getXMLResource(docPath, Lock.READ_LOCK);
@@ -186,7 +187,7 @@ public class ResourceTest extends TestCase {
                 binDoc.getUpdateLock().release(Lock.READ_LOCK);
             }
             
-            Collection collection = broker.getCollection(TEST_COLLECTION);
+            Collection collection = broker.getCollection(TestConstants.TEST_COLLECTION_URI);
             broker.removeCollection(transaction, collection);
             
             transact.commit(transaction);

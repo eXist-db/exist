@@ -36,6 +36,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 
 
@@ -51,7 +52,7 @@ public class Mkcol extends AbstractWebDAVMethod {
     }
 
     public void process(User user, HttpServletRequest request,
-            HttpServletResponse response, String path) throws ServletException, IOException {
+            HttpServletResponse response, XmldbURI path) throws ServletException, IOException {
     	String origPath = request.getPathInfo();
     	if(path == null || path.equals("")) {
             response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
@@ -69,18 +70,18 @@ public class Mkcol extends AbstractWebDAVMethod {
 	                    "collection " + request.getPathInfo() + " already exists");
 	            return;
 			}
-            ///TODO : use dedicated function in XmldbURI
-			int p = path.lastIndexOf("/");
-	        String parentPath = (p != Constants.STRING_NOT_FOUND) ? path.substring(0, p) : DBBroker.ROOT_COLLECTION;
-	        String newCollection = (p != Constants.STRING_NOT_FOUND) ? path.substring(p + 1) : path;
-	        collection = broker.openCollection(parentPath, Lock.WRITE_LOCK);
+            XmldbURI parentURI = path.removeLastSegment();
+            if(parentURI==null)
+            	parentURI = XmldbURI.ROOT_COLLECTION_URI;
+            XmldbURI collURI = path.lastSegment();
+	        collection = broker.openCollection(parentURI, Lock.WRITE_LOCK);
 	        if(collection == null) {
-                LOG.debug("Parent collection " + parentPath + " not found");
+                LOG.debug("Parent collection " + parentURI + " not found");
                 response.sendError(HttpServletResponse.SC_CONFLICT,
                         "Parent collection not found");
                 return;
             }
-	        if(collection.hasDocument(newCollection)) {
+	        if(collection.hasDocument(collURI)) {
 	        	collection.release();
 	        	response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
 	        		"path conflicts with an existing resource");

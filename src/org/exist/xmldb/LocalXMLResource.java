@@ -63,13 +63,13 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 	protected Date datemodified= null;
 
 	public LocalXMLResource(User user, BrokerPool pool, LocalCollection parent,
-			String did) throws XMLDBException {
+			XmldbURI did) throws XMLDBException {
 		super(user, pool, parent, did, "text/xml");
 	}
 
 	public LocalXMLResource(User user, BrokerPool pool, LocalCollection parent,
 			NodeProxy p) throws XMLDBException {
-		this(user, pool, parent, p.getDocument().getFileName());
+		this(user, pool, parent, p.getDocument().getFileURI());
 		this.proxy = p;
 	}
 
@@ -254,12 +254,14 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 		}
 	}
 
+	//TODO: use xmldbURI?
 	public String getDocumentId() throws XMLDBException {
-		return docId;
+		return docId.toString();
 	}
 
+	//TODO: use xmldbURI?
 	public String getId() throws XMLDBException {
-		return docId;
+		return docId.toString();
 	}
 
 	public Collection getParentCollection() throws XMLDBException {
@@ -481,12 +483,12 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
            	
 			if (document == null) {
                 throw new EXistException("Resource "
-                        + document.getFileName() + " not found");
+                        + document.getFileURI() + " not found");
             }
 			
 			if (!document.getPermissions().validate(user, Permission.UPDATE))
 				throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, 
-						"User is not allowed to lock resource " + document.getFileName());
+						"User is not allowed to lock resource " + document.getFileURI());
 			
 			document.setDocumentType(doctype);
          	broker.storeXMLResource(transaction, document);

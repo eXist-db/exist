@@ -22,29 +22,10 @@
  */
 package org.exist.security;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-
-import org.apache.log4j.Logger;
-import org.exist.EXistException;
-import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
-import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.DocumentImpl;
 import org.exist.security.xacml.ExistPDP;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.sync.Sync;
-import org.exist.storage.txn.TransactionManager;
-import org.exist.storage.txn.Txn;
-import org.exist.util.LockException;
-import org.exist.util.MimeType;
-import org.exist.util.hashtable.Int2ObjectHashMap;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
+import org.exist.xmldb.XmldbURI;
 
 /**
  * SecurityManager is responsible for managing users and groups.
@@ -60,6 +41,7 @@ import org.xml.sax.SAXException;
 public interface SecurityManager {
 
    public final static String ACL_FILE = "users.xml";
+   public final static XmldbURI ACL_FILE_URI = XmldbURI.create(ACL_FILE);
    public final static String DBA_GROUP = "dba";
    public final static String DBA_USER = "admin";
    public final static String GUEST_GROUP = "guest";

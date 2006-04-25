@@ -7,9 +7,12 @@
  */
 package org.exist.ant;
 
+import java.net.URISyntaxException;
+
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.exist.security.User;
+import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.base.XMLDBException;
 
 /**
@@ -39,15 +42,16 @@ public class AddUserTask extends UserTask
       if (secret != null)
         usr.setPassword(secret);
       if (home != null)
-        usr.setHome(home);
+        usr.setHome(XmldbURI.xmldbUriFor(home));
       if (primaryGroup != null)
         usr.addGroup(primaryGroup);
       log("Adding user " + name, Project.MSG_INFO);
       service.addUser(usr);
-    } catch (XMLDBException e)
-    {
+    } catch (XMLDBException e) {
       throw new BuildException("XMLDB exception caught: " + e.getMessage(), e);
-    }
+    } catch (URISyntaxException e) {
+    throw new BuildException("XMLDB exception caught: " + e.getMessage(), e);
+  }
   }
 
   public void setName(String name)

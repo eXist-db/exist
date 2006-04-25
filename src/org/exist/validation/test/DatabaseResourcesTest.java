@@ -94,7 +94,7 @@ public class DatabaseResourcesTest extends TestCase {
         dt = new DatabaseTools(pool);
         
         try {
-            baseURI = new XmldbURI("xmldb:exist:///db");
+            baseURI = XmldbURI.xmldbUriFor("xmldb:exist:///db");
         } catch (URISyntaxException ex) {
             ex.printStackTrace();
             fail(ex.getMessage());

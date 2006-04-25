@@ -405,7 +405,7 @@ public class RemoteUserManagementService implements UserManagementService {
 			for (Iterator i = groups.iterator(); i.hasNext();)
 				u.addGroup((String) i.next());
 			String home = (String) tab.get("home");
-			u.setHome(home);
+			u.setHome(home==null?null:XmldbURI.create(home));
 			return u;
 		} catch (XmlRpcException e) {
 			return null;
@@ -430,7 +430,7 @@ public class RemoteUserManagementService implements UserManagementService {
 				Vector groups = (Vector) tab.get("groups");
 				for (Iterator j = groups.iterator(); j.hasNext();)
 					u[i].addGroup((String) j.next());
-				u[i].setHome((String) tab.get("home"));
+				u[i].setHome(XmldbURI.create((String) tab.get("home")));
 			}
 			return u;
 		} catch (XmlRpcException e) {

@@ -22,6 +22,7 @@
  */
 package org.exist.xquery.functions;
 
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -37,6 +38,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.UpdateListener;
 import org.exist.storage.lock.Lock;
 import org.exist.util.LockException;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
@@ -119,15 +121,18 @@ public class ExtCollection extends Function {
 		// check if the loaded documents should remain locked
         boolean lockOnLoad = context.lockDocumentsOnLoad();
         
-        // build the document set
+         // build the document set
 		DocumentSet docs = new DocumentSet(521);
-		for (int i = 0; i < args.size(); i++) {
-			String next = (String)args.get(i);
-		    Collection coll = context.getBroker().getCollection(next);            
-		    if(coll != null)
-		    	coll.allDocs(context.getBroker(), docs, includeSubCollections, true);          
-		}
-        
+	    try {
+			for (int i = 0; i < args.size(); i++) {
+				String next = (String)args.get(i);
+			    Collection coll = context.getBroker().getCollection(XmldbURI.xmldbUriFor(next));            
+			    if(coll != null)
+			    	coll.allDocs(context.getBroker(), docs, includeSubCollections, true);          
+			}
+        } catch (URISyntaxException e) {
+            throw new XPathException(getASTNode(), "Invalid resource uri",e);
+        }
         // iterate through all docs and create the node set
 		NodeSet result = new ExtArrayNodeSet(docs.getLength(), 1);
 		Lock dlock;
@@ -139,11 +144,11 @@ public class ExtCollection extends Function {
 		        dlock.acquire(Lock.READ_LOCK);
 		        result.add(new NodeProxy(doc)); // , -1, Node.DOCUMENT_NODE));
                 if(lockOnLoad) {
-                    LOG.debug("Locking document: " + doc.getName());
+                    LOG.debug("Locking document: " + doc.getURI());
                     context.getLockedDocuments().add(doc);
                 }
 		    } catch (LockException e) {
-                LOG.info("Could not acquire read lock on document " + doc.getFileName());
+                LOG.info("Could not acquire read lock on document " + doc.getURI());
             } finally {
                 if(!lockOnLoad)
                     dlock.release(Lock.READ_LOCK);

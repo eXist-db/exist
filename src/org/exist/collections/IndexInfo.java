@@ -27,6 +27,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.util.serializer.DOMStreamer;
+import org.exist.xmldb.XmldbURI;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
@@ -103,12 +104,12 @@ public class IndexInfo {
 		return trigger;
 	}
 	
-	void prepareTrigger(DBBroker broker, Txn transaction, String docPath, DocumentImpl doc) throws TriggerException {
+	void prepareTrigger(DBBroker broker, Txn transaction, XmldbURI docUri, DocumentImpl doc) throws TriggerException {
 		if (trigger == null) return;
 		trigger.setOutputHandler(indexer);
 		trigger.setLexicalOutputHandler(indexer);
 		trigger.setValidating(true);
-		trigger.prepare(event, broker, transaction, docPath, doc);
+		trigger.prepare(event, broker, transaction, docUri, doc);
 	}
 	
 	void postValidateTrigger() {

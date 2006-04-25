@@ -41,6 +41,7 @@ import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
+import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xquery.XQuery;
@@ -122,8 +123,8 @@ public class DOMIndexerTest extends TestCase {
     		pool = BrokerPool.getInstance();
 	        User user = pool.getSecurityManager().getUser(SecurityManager.GUEST_USER);	            
             broker = pool.get(user);
-            Collection collection = broker.getOrCreateCollection(null, DBBroker.ROOT_COLLECTION + "/test");
-            IndexInfo info = collection.validateXMLResource(null, broker, "test.xml", XML);
+            Collection collection = broker.getOrCreateCollection(null, TestConstants.TEST_COLLECTION_URI);
+            IndexInfo info = collection.validateXMLResource(null, broker, TestConstants.TEST_XML_URI, XML);
             collection.store(null, broker, info, XML, false);
             org.exist.dom.DocumentImpl doc = info.getDocument();
             broker.flush();
