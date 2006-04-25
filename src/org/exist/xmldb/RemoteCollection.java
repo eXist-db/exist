@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -38,7 +39,6 @@ import java.util.Vector;
 import org.apache.xmlrpc.XmlRpcClient;
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.security.Permission;
-import org.exist.storage.DBBroker;
 import org.exist.util.Compressor;
 import org.exist.validation.service.RemoteValidationService;
 import org.exist.xquery.Constants;
@@ -64,31 +64,35 @@ public class RemoteCollection implements CollectionImpl {
 	private static final int MAX_UPLOAD_CHUNK = 10 * 1024 * 1024;
 	
 	protected Map childCollections = null;
-	protected String name;
+	protected XmldbURI path;
 	protected Permission permissions = null;
 	protected RemoteCollection parent = null;
 	protected XmlRpcClient rpcClient = null;
 	protected Properties properties = null;
  
-	public RemoteCollection(XmlRpcClient client, String collection)
+	public RemoteCollection(XmlRpcClient client, XmldbURI path)
 		throws XMLDBException {
-		this(client, null, collection);
+		this(client, null, path);
 	}
 
 	public RemoteCollection(
 		XmlRpcClient client,
 		RemoteCollection parent,
-		String collection)
+		XmldbURI path)
 		throws XMLDBException {
 		this.parent = parent;
-		this.name = collection;
+		this.path = path.toCollectionPathURI();
 		this.rpcClient = client;
 	}
 
 	protected void addChildCollection(Collection child) throws XMLDBException {
 		if (childCollections == null)
 			readCollection();
-		childCollections.put(child.getName(), child);
+		try {
+			childCollections.put(XmldbURI.xmldbUriFor(child.getName()), child);
+		} catch(URISyntaxException e) {
+			throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+		}
 	}
 
 	public void close() throws XMLDBException {
@@ -114,7 +118,12 @@ public class RemoteCollection implements CollectionImpl {
 	}
 
 	public Resource createResource(String id, String type) throws XMLDBException {
-		String newId = id == null ? createId() : id;
+		XmldbURI newId;
+		try {
+			newId = (id == null) ? XmldbURI.xmldbUriFor(createId()) : XmldbURI.xmldbUriFor(id);
+		} catch(URISyntaxException e) {
+			throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+		}
 		Resource r;
 		if(type.equals("XMLResource"))
 			r = new RemoteXMLResource(this, -1, -1, newId, null);
@@ -126,13 +135,20 @@ public class RemoteCollection implements CollectionImpl {
 	}
 
 	public Collection getChildCollection(String name) throws XMLDBException {
+		try {
+			return getChildCollection(XmldbURI.xmldbUriFor(name));
+		} catch(URISyntaxException e) {
+			throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+		}
+	}
+
+	public Collection getChildCollection(XmldbURI name) throws XMLDBException {
 		if (childCollections == null)
-			readCollection();
-        //TODO : use dedicated function in XmldbURI
-		if (name.indexOf("/") != Constants.STRING_NOT_FOUND)
+		readCollection();
+		if (name.numSegments()>1)
 			return (Collection) childCollections.get(name);
 		else
-			return (Collection) childCollections.get(getPath() + "/" + name);
+			return (Collection) childCollections.get(getPathURI().append(name));
 	}
 
 	public int getChildCollectionCount() throws XMLDBException {
@@ -146,28 +162,31 @@ public class RemoteCollection implements CollectionImpl {
 	}
 
 	public String getName() throws XMLDBException {
-		return name;
+		return path.toString();
 	}
 
 	public Collection getParentCollection() throws XMLDBException {
-	    if(parent == null && !name.equals(DBBroker.ROOT_COLLECTION)) {
-            //TODO : use dedicated function in XmldbURI
-	        String parentName = name.substring(0, name.lastIndexOf("/"));
-	        return new RemoteCollection(rpcClient, null, parentName);
+	    if(parent == null && !path.equals(XmldbURI.ROOT_COLLECTION_URI)) {
+	        XmldbURI parentUri = path.removeLastSegment();
+	        return new RemoteCollection(rpcClient, null, parentUri);
 	    }
 		return parent;
 	}
 
 	public String getPath() throws XMLDBException {
+		return getPathURI().toString();
+	}
+
+	public XmldbURI getPathURI() {
 		if (parent == null) {
 			/*
 		    if(name != null)
 		        return name;
 		    else
 		    */
-		        return DBBroker.ROOT_COLLECTION;
+		        return XmldbURI.ROOT_COLLECTION_URI;
 		}
-		return name;
+		return path;
 	}
 
 	public String getProperty(String property) throws XMLDBException {
@@ -228,7 +247,11 @@ public class RemoteCollection implements CollectionImpl {
 	protected boolean hasChildCollection(String name) throws XMLDBException {
 		if (childCollections == null)
 			readCollection();
-		return childCollections.containsKey(name);
+		try {
+			return childCollections.containsKey(XmldbURI.xmldbUriFor(name));
+		} catch(URISyntaxException e) {
+			throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+		}
 	}
 
 	public boolean isOpen() throws XMLDBException {
@@ -248,13 +271,10 @@ public class RemoteCollection implements CollectionImpl {
 			readCollection();
 		String coll[] = new String[childCollections.size()];
 		int j = 0;
-		int p;
+		XmldbURI uri;
 		for (Iterator i = childCollections.keySet().iterator(); i.hasNext(); j++) {
-			coll[j] = (String) i.next();
-            //TODO : use dedicated function in XmldbURI
-			if ((p = coll[j].lastIndexOf("/")) != Constants.STRING_NOT_FOUND)
-				coll[j] = coll[j].substring(p + 1);
-
+			uri = (XmldbURI) i.next();
+			coll[j] = uri.lastSegment().toString();
 		}
 		return coll;
 	}
@@ -286,8 +306,13 @@ public class RemoteCollection implements CollectionImpl {
 	
 	public Resource getResource(String name) throws XMLDBException {
 	    Vector params = new Vector();
-        //TODO : use dedicated function in XmldbURI
-		params.addElement(getPath() + "/" + name);
+		XmldbURI docUri;
+		try {
+			docUri = XmldbURI.xmldbUriFor(name);
+		} catch(URISyntaxException e) {
+			throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+		}
+		params.addElement(getPathURI().append(docUri).toString());
 		Hashtable hash;
 		try {
 			hash = (Hashtable) rpcClient.execute("describeResource", params);
@@ -300,9 +325,11 @@ public class RemoteCollection implements CollectionImpl {
 		if(docName == null)
 			return null;	// resource does not exist!
 		int p;	
-        //TODO : use dedicated function in XmldbURI
-		if ((p = docName.lastIndexOf("/")) != Constants.STRING_NOT_FOUND)
-			docName = docName.substring(p + 1);
+		try {
+			docUri = XmldbURI.xmldbUriFor(docName).lastSegment();
+		} catch(URISyntaxException e) {
+			throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+		}
 		Permission perm =
 			new Permission(
 				(String) hash.get("owner"),
@@ -313,12 +340,12 @@ public class RemoteCollection implements CollectionImpl {
 		if(hash.containsKey("content-length"))
 			contentLen = ((Integer)hash.get("content-length")).intValue();
 		if(type == null || type.equals("XMLResource")) {
-			RemoteXMLResource r = new RemoteXMLResource(this, -1, -1, docName, null);
+			RemoteXMLResource r = new RemoteXMLResource(this, -1, -1, docUri, null);
 			r.setPermissions(perm);
 			r.setContentLength(contentLen);
 			return r;
 		} else {
-			RemoteBinaryResource r = new RemoteBinaryResource(this, docName);
+			RemoteBinaryResource r = new RemoteBinaryResource(this, docUri);
 			r.setContentLength(contentLen);
 			r.setPermissions(perm);
             if (hash.containsKey("mime-type"))
@@ -350,9 +377,9 @@ public class RemoteCollection implements CollectionImpl {
 		for (int i = 0; i < collections.size(); i++) {
 			childName = (String) collections.elementAt(i);
 			try {
-                //TODO : use dedicated function in XmldbURI
+                //TODO: Should this use the checked version instead?
 				RemoteCollection child =
-					new RemoteCollection(rpcClient, this, getPath() + "/"+ childName);
+					new RemoteCollection(rpcClient, this, getPathURI().append(XmldbURI.create(childName)));
 				addChildCollection(child);
 			} catch (XMLDBException e) {
 			}
@@ -364,16 +391,26 @@ public class RemoteCollection implements CollectionImpl {
 	}
 
 	public void removeChildCollection(String name) throws XMLDBException {
+		try {
+			removeChildCollection(XmldbURI.xmldbUriFor(name));
+		} catch(URISyntaxException e) {
+			throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+		}
+	}
+
+	public void removeChildCollection(XmldbURI name) throws XMLDBException {
 		if (childCollections == null)
 			readCollection();
-        //TODO : use dedicated function in XmldbURI
-		childCollections.remove(getPath() + "/" + name);
+		childCollections.remove(getPathURI().append(name));
 	}
 
 	public void removeResource(Resource res) throws XMLDBException {
 		Vector params = new Vector();
-        //TODO : use dedicated function in XmldbURI
-		params.addElement(getPath() + "/" + res.getId());
+		try {
+			params.addElement(getPathURI().append(XmldbURI.xmldbUriFor(res.getId())).toString());
+		} catch(URISyntaxException e) {
+			throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+		}
 
 		try {
 			rpcClient.execute("remove", params);
@@ -441,8 +478,11 @@ public class RemoteCollection implements CollectionImpl {
 		byte[] data = res.getData();
 		Vector params = new Vector();
 		params.addElement(data);
-        //TODO : use dedicated function in XmldbURI
-		params.addElement(getPath() + "/" + res.getId());
+		try {
+			params.addElement(getPathURI().append(XmldbURI.xmldbUriFor(res.getId())).toString());
+		} catch(URISyntaxException e) {
+			throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+		}
 		params.addElement(new Integer(1));
 		
 		if (res.datecreated != null) {
@@ -466,8 +506,11 @@ public class RemoteCollection implements CollectionImpl {
 		byte[] data = (byte[])res.getContent();
 		Vector params = new Vector();
 		params.addElement(data);
-        //TODO : use dedicated function in XmldbURI
-		params.addElement(getPath() + "/" + res.getId());
+		try {
+			params.addElement(getPathURI().append(XmldbURI.xmldbUriFor(res.getId())).toString());
+		} catch(URISyntaxException e) {
+			throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+		}
         params.addElement(res.getMimeType());
 		params.addElement(Boolean.TRUE);
 		
@@ -514,8 +557,11 @@ public class RemoteCollection implements CollectionImpl {
 			}
 			params = new Vector();
 			params.addElement(fileName);
-            //TODO : use dedicated function in XmldbURI
-			params.addElement(getPath() + "/" + res.getId());
+			try {
+				params.addElement(getPathURI().append(XmldbURI.xmldbUriFor(res.getId())).toString());
+			} catch(URISyntaxException e) {
+				throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+			}
 			params.addElement(Boolean.TRUE);
 			
 			if ( ((RemoteXMLResource)res).datecreated  != null ) {
@@ -549,7 +595,7 @@ public class RemoteCollection implements CollectionImpl {
     public boolean isRemoteCollection() throws XMLDBException {
         return true;
     }
-    
+
     //You probably will have to call this method from this cast :
     //((org.exist.xmldb.CollectionImpl)collection).getURI()
     public XmldbURI getURI() {

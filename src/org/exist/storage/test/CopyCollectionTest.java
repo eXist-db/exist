@@ -23,6 +23,9 @@ package org.exist.storage.test;
 
 import java.io.File;
 
+import junit.framework.TestCase;
+import junit.textui.TestRunner;
+
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.DocumentImpl;
@@ -33,15 +36,14 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
 import org.exist.xmldb.CollectionManagementServiceImpl;
+import org.exist.xmldb.XmldbURI;
 import org.xml.sax.InputSource;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
-
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
 
 public class CopyCollectionTest extends TestCase {
 
@@ -49,8 +51,6 @@ public class CopyCollectionTest extends TestCase {
         TestRunner.run(CopyCollectionTest.class);
     }
     
-    private static String TEST_COLLECTION = DBBroker.ROOT_COLLECTION + "/test";
-
     public void testStore() {
         BrokerPool.FORCE_CORRUPTION = true;
         BrokerPool pool = startDB();
@@ -63,21 +63,21 @@ public class CopyCollectionTest extends TestCase {
             Txn transaction = transact.beginTransaction();
             System.out.println("Transaction started ...");
 
-            Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION);
+            Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             broker.saveCollection(transaction, root);
 
-            Collection test = broker.getOrCreateCollection(transaction, TEST_COLLECTION + "/test2");
+            Collection test = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI.append("test2"));
             broker.saveCollection(transaction, test);
     
             File f = new File("samples/biblio.rdf");
-            IndexInfo info = test.validateXMLResource(transaction, broker, "test.xml",
+            IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"),
                     new InputSource(f.toURI().toASCIIString()));
             test.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
             
-            Collection dest = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/destination");
+            Collection dest = broker.getOrCreateCollection(transaction, XmldbURI.ROOT_COLLECTION_URI.append("destination"));
             broker.saveCollection(transaction, dest);
             
-            broker.copyCollection(transaction, test, dest, "test3");
+            broker.copyCollection(transaction, test, dest, XmldbURI.create("test3"));
 
             transact.commit(transaction);
             System.out.println("Transaction commited ...");
@@ -104,7 +104,7 @@ public class CopyCollectionTest extends TestCase {
             Serializer serializer = broker.getSerializer();
             serializer.reset(); 
             
-            DocumentImpl doc = broker.getXMLResource(DBBroker.ROOT_COLLECTION + "/destination/test3/test.xml", Lock.READ_LOCK);
+            DocumentImpl doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("destination/test3/test.xml"), Lock.READ_LOCK);
             assertNotNull("Document should not be null", doc);
             String data = serializer.serialize(doc);
             System.out.println(data);
@@ -132,17 +132,17 @@ public class CopyCollectionTest extends TestCase {
             assertNotNull(transaction);
             System.out.println("Transaction started ...");
 
-            Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION);
+            Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             assertNotNull(root);
             broker.saveCollection(transaction, root);
 
-            Collection test2 = broker.getOrCreateCollection(transaction, TEST_COLLECTION + "/test2");
+            Collection test2 = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI.append("test2"));
             assertNotNull(test2);
             broker.saveCollection(transaction, test2);
     
             File f = new File("samples/biblio.rdf");
             assertNotNull(f);
-            IndexInfo info = test2.validateXMLResource(transaction, broker, "test.xml", new InputSource(f.toURI().toASCIIString()));
+            IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), new InputSource(f.toURI().toASCIIString()));
             test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
             
             transact.commit(transaction);
@@ -151,10 +151,10 @@ public class CopyCollectionTest extends TestCase {
             transaction = transact.beginTransaction();
             System.out.println("Transaction started ...");
             
-            Collection dest = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/destination");
+            Collection dest = broker.getOrCreateCollection(transaction, XmldbURI.ROOT_COLLECTION_URI.append("destination"));
             assertNotNull(dest);
             broker.saveCollection(transaction, dest);            
-            broker.copyCollection(transaction, test2, dest, "test3");
+            broker.copyCollection(transaction, test2, dest, XmldbURI.create("test3"));
 
 //          Don't commit...
             transact.getJournal().flushToLog(true);
@@ -180,7 +180,7 @@ public class CopyCollectionTest extends TestCase {
         	
             Serializer serializer = broker.getSerializer();
             serializer.reset();            
-            DocumentImpl doc = broker.getXMLResource(DBBroker.ROOT_COLLECTION + "/destination/test3/test.xml", Lock.READ_LOCK);
+            DocumentImpl doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("destination/test3/test.xml"), Lock.READ_LOCK);
             assertNotNull("Document should be null", doc);
 	    } catch (Exception e) {            
 	        fail(e.getMessage());              
@@ -202,11 +202,11 @@ public class CopyCollectionTest extends TestCase {
 	        assertNotNull(mgr);
 	        org.xmldb.api.base.Collection test = root.getChildCollection("test");
 	        if (test == null)
-	            test = mgr.createCollection(TEST_COLLECTION);
+	            test = mgr.createCollection(TestConstants.TEST_COLLECTION_URI.toString());
 	        assertNotNull(test);
 	        org.xmldb.api.base.Collection test2 = test.getChildCollection("test2");
 	        if (test2 == null)
-	            test2 = mgr.createCollection(TEST_COLLECTION + "/test2");
+	            test2 = mgr.createCollection(TestConstants.TEST_COLLECTION_URI.append("test2").toString());
 	        assertNotNull(test2);
 	        
 	        File f = new File("samples/biblio.rdf");
@@ -221,7 +221,7 @@ public class CopyCollectionTest extends TestCase {
 	            dest = mgr.createCollection("destination");
 	        assertNotNull(dest);
 	        
-	        mgr.copy(TEST_COLLECTION + "/test2", DBBroker.ROOT_COLLECTION + "/destination", "test3");
+	        mgr.copy(TestConstants.TEST_COLLECTION_URI2, XmldbURI.ROOT_COLLECTION_URI.append("destination"), XmldbURI.create("test3"));
 	    } catch (Exception e) {            
 	        fail(e.getMessage()); 
 	    }

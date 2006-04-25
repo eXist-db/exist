@@ -30,7 +30,6 @@ import junit.textui.TestRunner;
 
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
-import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.security.SecurityManager;
 import org.exist.storage.BrokerPool;
@@ -41,12 +40,9 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
-import org.exist.xquery.XQuery;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
+import org.exist.xmldb.XmldbURI;
 import org.xml.sax.InputSource;
 
 /**
@@ -85,11 +81,11 @@ public class RecoveryTest2 extends TestCase {
             assertNotNull(transaction);            
             System.out.println("Transaction started ...");
             
-            Collection root = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test");
+            Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             assertNotNull(root); 
             broker.saveCollection(transaction, root);
             
-            Collection test2 = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test/test2");
+            Collection test2 = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI2);
             assertNotNull(test2); 
             broker.saveCollection(transaction, test2);
             
@@ -111,7 +107,7 @@ public class RecoveryTest2 extends TestCase {
             for (int i = 0; i < docs.length; i++) {
                 f = docs[i];
                 assertNotNull(f); 
-                info = test2.validateXMLResource(transaction, broker, f.getName(), new InputSource(f.toURI().toASCIIString()));
+                info = test2.validateXMLResource(transaction, broker, XmldbURI.create(f.getName()), new InputSource(f.toURI().toASCIIString()));
                 assertNotNull(info); 
                 test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
             }
@@ -139,7 +135,7 @@ public class RecoveryTest2 extends TestCase {
             Serializer serializer = broker.getSerializer();
             serializer.reset();
             
-            DocumentImpl doc = broker.getXMLResource(DBBroker.ROOT_COLLECTION + "/test/test2/terms-eng.xml", Lock.READ_LOCK);
+            DocumentImpl doc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append("terms-eng.xml"), Lock.READ_LOCK);
             assertNotNull("Document should not be null", doc);
             String data = serializer.serialize(doc);
             assertNotNull(data);

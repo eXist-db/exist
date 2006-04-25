@@ -23,18 +23,19 @@
 package org.exist.validation.service;
 
 import java.io.InputStream;
+import java.net.URISyntaxException;
 
 import org.apache.log4j.Logger;
-
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
-import org.exist.xmldb.LocalCollection;
-import org.exist.validation.Validator;
 import org.exist.validation.ValidationReport;
+import org.exist.validation.Validator;
 import org.exist.validation.internal.DatabaseResources;
 import org.exist.validation.internal.ResourceInputStream;
-
+import org.exist.xmldb.LocalCollection;
+import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 
 
@@ -68,6 +69,16 @@ public class LocalValidationService implements ValidationService {
      * Validate specified resource.
      */
     public boolean validateResource(String id) throws XMLDBException {
+    	try{
+    		return validateResource(XmldbURI.xmldbUriFor(id));
+    	} catch(URISyntaxException e) {
+    		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+    	}
+    }
+    /**
+     * Validate specified resource.
+     */
+    public boolean validateResource(XmldbURI id) throws XMLDBException {
         
         logger.info("Validating resource '"+id+"'");
         

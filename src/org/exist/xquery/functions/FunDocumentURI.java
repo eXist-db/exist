@@ -24,18 +24,19 @@ package org.exist.xquery.functions;
 
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Expression;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
 /**
@@ -49,7 +50,7 @@ public class FunDocumentURI extends Function {
 			new SequenceType[] {
 				 new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
 			},
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
+			new SequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE));
 			
 	/**
 	 * 
@@ -74,9 +75,8 @@ public class FunDocumentURI extends Function {
 		Expression arg = getArgument(0);
 		Sequence s = arg.eval(contextSequence, contextItem);
 		NodeProxy node = (NodeProxy) s.itemAt(0);
-        //TODO : use dedicated function in XmldbURI
-		String path = node.getDocument().getCollection().getName() + "/" +node.getDocument().getFileName(); 
-		Sequence result = new StringValue(path);
+ 		XmldbURI path = node.getDocument().getURI(); 
+		Sequence result = new AnyURIValue(path);
         
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result); 

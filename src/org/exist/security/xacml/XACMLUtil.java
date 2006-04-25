@@ -22,19 +22,6 @@
 
 package org.exist.security.xacml;
 
-import com.sun.xacml.AbstractPolicy;
-import com.sun.xacml.Indenter;
-import com.sun.xacml.ParsingException;
-import com.sun.xacml.Policy;
-import com.sun.xacml.PolicyReference;
-import com.sun.xacml.PolicySet;
-import com.sun.xacml.PolicyTreeElement;
-import com.sun.xacml.ProcessingException;
-import com.sun.xacml.Target;
-import com.sun.xacml.cond.Apply;
-import com.sun.xacml.ctx.Status;
-import com.sun.xacml.finder.PolicyFinderResult;
-
 import java.io.ByteArrayOutputStream;
 import java.io.CharArrayWriter;
 import java.io.IOException;
@@ -48,7 +35,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
@@ -62,13 +48,26 @@ import org.exist.storage.NativeValueIndexByQName;
 import org.exist.storage.UpdateListener;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Sequence;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+
+import com.sun.xacml.AbstractPolicy;
+import com.sun.xacml.Indenter;
+import com.sun.xacml.ParsingException;
+import com.sun.xacml.Policy;
+import com.sun.xacml.PolicyReference;
+import com.sun.xacml.PolicySet;
+import com.sun.xacml.PolicyTreeElement;
+import com.sun.xacml.ProcessingException;
+import com.sun.xacml.Target;
+import com.sun.xacml.cond.Apply;
+import com.sun.xacml.ctx.Status;
+import com.sun.xacml.finder.PolicyFinderResult;
 
 /**
  * This class contains utility methods for working with XACML
@@ -78,9 +77,9 @@ public class XACMLUtil implements UpdateListener
 {
 	private static final Logger LOG = Logger.getLogger(ExistPolicyModule.class);
 	private static final Map POLICY_CACHE = Collections.synchronizedMap(new HashMap(8));
-	private static final String[] samplePolicyDocs = { "policies/main_modules_policy.xml",
-			"policies/builtin_policy.xml", "policies/external_modules_policy.xml",
-			"policies/reflection_policy.xml" };
+	private static final XmldbURI[] samplePolicyDocs = { XmldbURI.create("policies/main_modules_policy.xml"),
+		XmldbURI.create("policies/builtin_policy.xml"), XmldbURI.create("policies/external_modules_policy.xml"),
+			XmldbURI.create("policies/reflection_policy.xml") };
 	
 	private ExistPDP pdp;
 	
@@ -132,7 +131,7 @@ public class XACMLUtil implements UpdateListener
 	public void documentUpdated(DocumentImpl document, int event)
 	{
 		if(inPolicyCollection(document) && (event == UpdateListener.REMOVE || event == UpdateListener.UPDATE))
-			POLICY_CACHE.remove(document.getName());
+			POLICY_CACHE.remove(document.getURI());
 	}
 	
 	/**
@@ -144,7 +143,7 @@ public class XACMLUtil implements UpdateListener
 	 */
 	public static boolean inPolicyCollection(DocumentImpl document)
 	{
-		return XACMLConstants.POLICY_COLLECTION.equals(document.getCollection().getName());
+		return XACMLConstants.POLICY_COLLECTION.equals(document.getCollection().getURI());
 	}
 	/**
 	* Performs any necessary cleanup operations.  Generally only
@@ -212,14 +211,14 @@ public class XACMLUtil implements UpdateListener
 	 */
 	public static Collection getPolicyCollection(DBBroker broker)
 	{
-		Collection policyCollection = broker.getCollection(XACMLConstants.POLICY_COLLECTION);
+		Collection policyCollection = broker.getCollection(XACMLConstants.POLICY_COLLECTION_URI);
 		if(policyCollection == null)
 		{
 			TransactionManager transact = broker.getBrokerPool().getTransactionManager();
 			Txn txn = transact.beginTransaction();
 			try
 			{
-				policyCollection = broker.getOrCreateCollection(txn, XACMLConstants.POLICY_COLLECTION);
+				policyCollection = broker.getOrCreateCollection(txn, XACMLConstants.POLICY_COLLECTION_URI);
 				broker.saveCollection(txn, policyCollection);
 				transact.commit(txn);
 			}
@@ -356,7 +355,8 @@ public class XACMLUtil implements UpdateListener
 	*/
 	public AbstractPolicy getPolicyDocument(DocumentImpl policyDoc) throws ParsingException
 	{
-		String name = policyDoc.getName();
+		//TODO: use xmldbUri
+		String name = policyDoc.getURI().toString();
 		AbstractPolicy policy = (AbstractPolicy)POLICY_CACHE.get(name);
 		if(policy == null)
 		{
@@ -525,7 +525,7 @@ public class XACMLUtil implements UpdateListener
 		LOG.debug("Storing default XACML policies");
 		for(int i = 0; i < samplePolicyDocs.length; ++i)
 		{
-			String docPath = samplePolicyDocs[i];
+			XmldbURI docPath = samplePolicyDocs[i];
 			try
 			{
 				storePolicy(broker, docPath);
@@ -547,14 +547,11 @@ public class XACMLUtil implements UpdateListener
 	 * @param docPath The location of the resource
 	 * @throws EXistException
 	 */
-	public static void storePolicy(DBBroker broker, String docPath) throws EXistException, IOException
+	public static void storePolicy(DBBroker broker, XmldbURI docPath) throws EXistException, IOException
 	{
-		String docName = docPath;
-		int lastSlash = docName.lastIndexOf('/');
-		if(lastSlash >= 0)
-			docName = docName.substring(lastSlash+1);
+		XmldbURI docName = docPath.lastSegment();
 		
-		URL url = XACMLUtil.class.getResource(docPath);
+		URL url = XACMLUtil.class.getResource(docPath.toString());
 		if(url == null)
 			return;
 		String content = toString(url.openStream());

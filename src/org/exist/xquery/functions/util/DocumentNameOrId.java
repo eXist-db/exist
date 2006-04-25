@@ -42,6 +42,7 @@ import org.exist.xquery.value.Type;
  */
 public class DocumentNameOrId extends BasicFunction {
 
+	//TODO: should this return a uri?
 	public final static FunctionSignature docNameSignature =
 		new FunctionSignature(
 			new QName("document-name", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
@@ -73,7 +74,7 @@ public class DocumentNameOrId extends BasicFunction {
 		if(node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 			NodeProxy proxy = (NodeProxy)node;
 			if("document-name".equals(getSignature().getName().getLocalName()))
-				return new StringValue(proxy.getDocument().getFileName());
+				return new StringValue(proxy.getDocument().getFileURI().toString());
 			else
 				return new IntegerValue(proxy.getDocument().getDocId(), Type.INT);
 		}

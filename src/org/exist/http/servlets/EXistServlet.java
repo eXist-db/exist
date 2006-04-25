@@ -35,7 +35,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.xmlrpc.Base64;
+import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.http.BadRequestException;
 import org.exist.http.Descriptor;
@@ -49,11 +49,11 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.XMLDBException;
-import org.apache.log4j.Logger;
 
 /**
  * Implements the REST-style interface if eXist is running within
@@ -197,7 +197,7 @@ public class EXistServlet extends HttpServlet {
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
-			server.doPut(broker, tempFile, path, request, response);
+			server.doPut(broker, tempFile, XmldbURI.create(path), request, response);
 		} catch (BadRequestException e) {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
 		} catch (PermissionDeniedException e) {
@@ -349,7 +349,7 @@ public class EXistServlet extends HttpServlet {
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
-			server.doDelete(broker, path, response);
+			server.doDelete(broker, XmldbURI.create(path), response);
 		} catch (PermissionDeniedException e) {
 			response
 			.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());

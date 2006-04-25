@@ -22,6 +22,7 @@
 
 package org.exist.validation.service;
 
+import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.base.Service;
 import org.xmldb.api.base.XMLDBException;
 
@@ -33,5 +34,9 @@ import org.xmldb.api.base.XMLDBException;
  */
 public interface ValidationService extends Service {
     
+	/**
+	 * @deprecated Use XmldbURI version instead
+	 */
     boolean validateResource(String resourcePath) throws XMLDBException;
+    boolean validateResource(XmldbURI resourcePath) throws XMLDBException;
 }

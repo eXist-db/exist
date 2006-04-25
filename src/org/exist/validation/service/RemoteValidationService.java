@@ -23,6 +23,7 @@
 package org.exist.validation.service;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
@@ -58,9 +59,19 @@ public class RemoteValidationService implements ValidationService {
      * Validate specified resource.
      */
     public boolean validateResource(String id) throws XMLDBException {
+    	try{
+    		return validateResource(XmldbURI.xmldbUriFor(id));
+    	} catch(URISyntaxException e) {
+    		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+    	}
+    }
+    /**
+     * Validate specified resource.
+     */
+    public boolean validateResource(XmldbURI id) throws XMLDBException {
         logger.info("Validating resource '" + id + "'");
         boolean documentIsValid = false;       
-        id = XmldbURI.checkPath(id, remoteCollection.getPath());
+        id = remoteCollection.getPathURI().resolveCollectionPath(id);
         
         Vector params = new Vector();
         params.addElement( id );

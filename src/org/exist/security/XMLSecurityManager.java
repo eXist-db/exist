@@ -40,6 +40,7 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import org.exist.util.hashtable.Int2ObjectHashMap;
+import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -99,15 +100,15 @@ public class XMLSecurityManager implements SecurityManager {
        Txn txn = null;
        DBBroker broker = sysBroker;
        try {
-          Collection sysCollection = broker.getCollection(DBBroker.SYSTEM_COLLECTION);
+          Collection sysCollection = broker.getCollection(XmldbURI.SYSTEM_COLLECTION_URI);
           if (sysCollection == null) {
              txn = transact.beginTransaction();
-             sysCollection = broker.getOrCreateCollection(txn, DBBroker.SYSTEM_COLLECTION);
+             sysCollection = broker.getOrCreateCollection(txn, XmldbURI.SYSTEM_COLLECTION_URI);
              sysCollection.setPermissions(0770);
              broker.saveCollection(txn, sysCollection);
              transact.commit(txn);
           }
-          Document acl = sysCollection.getDocument(broker, ACL_FILE);
+          Document acl = sysCollection.getDocument(broker, ACL_FILE_URI);
           Element docElement = null;
           if (acl != null)
              docElement = acl.getDocumentElement();
@@ -340,9 +341,9 @@ public class XMLSecurityManager implements SecurityManager {
 		broker.sync(Sync.MAJOR_SYNC);
 		try {
 			broker.setUser(getUser(DBA_USER));
-			Collection sysCollection = broker.getCollection(DBBroker.SYSTEM_COLLECTION);
+			Collection sysCollection = broker.getCollection(XmldbURI.SYSTEM_COLLECTION_URI);
             String data = buf.toString();
-            IndexInfo info = sysCollection.validateXMLResource(transaction, broker, ACL_FILE, data);
+            IndexInfo info = sysCollection.validateXMLResource(transaction, broker, ACL_FILE_URI, data);
             DocumentImpl doc = info.getDocument();
             doc.getMetadata().setMimeType(MimeType.XML_TYPE.getName());
             sysCollection.store(transaction, broker, info, data, false);

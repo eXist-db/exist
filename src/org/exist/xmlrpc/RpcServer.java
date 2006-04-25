@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Hashtable;
@@ -114,7 +115,7 @@ public class RpcServer implements RpcAPI {
     }
 
     public String createId(User user, String collection) throws EXistException,
-            PermissionDeniedException {
+            PermissionDeniedException, URISyntaxException {
         RpcConnection con = pool.get();
         try {
             return con.createId(user, collection);
@@ -437,6 +438,8 @@ public class RpcServer implements RpcAPI {
         RpcConnection con = pool.get();
         try {
             return con.listDocumentPermissions(user, name);
+ 		} catch (URISyntaxException e) {
+ 			throw new EXistException("Invalid uri",e);
         } finally {
             pool.release(con);
         }
@@ -558,6 +561,8 @@ public class RpcServer implements RpcAPI {
         try {
             con = pool.get();
             return con.getIndexedElements(user, collectionName, inclusive);
+ 		} catch (URISyntaxException e) {
+ 			throw new EXistException("Invalid uri",e);
         } finally {
             pool.release(con);
         }
@@ -569,7 +574,9 @@ public class RpcServer implements RpcAPI {
         try {
             con = pool.get();
             return con.scanIndexTerms(user, collectionName, start, end, inclusive);
-        } finally {
+ 		} catch (URISyntaxException e) {
+ 			throw new EXistException("Invalid uri",e);
+		} finally {
             pool.release(con);
         }
     }

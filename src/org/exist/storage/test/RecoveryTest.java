@@ -42,7 +42,9 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
@@ -89,11 +91,11 @@ public class RecoveryTest extends TestCase {
             assertNotNull(transaction);            
             System.out.println("Transaction started ...");
             
-            Collection root = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test");
+            Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             assertNotNull(root);
             broker.saveCollection(transaction, root);
             
-            Collection test2 = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test/test2");
+            Collection test2 = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI2);
             broker.saveCollection(transaction, test2);
             
             
@@ -103,14 +105,14 @@ public class RecoveryTest extends TestCase {
             File f;
             IndexInfo info;
             
-            BinaryDocument doc = test2.addBinaryResource(transaction, broker, "binary.txt", "Some text data".getBytes(), null);
+            BinaryDocument doc = test2.addBinaryResource(transaction, broker, TestConstants.TEST_BINARY_URI, "Some text data".getBytes(), null);
             assertNotNull(doc);
             
             // store some documents. Will be replaced below
             for (int i = 0; i < files.length; i++) {
                 f = files[i];
                 try {
-                    info = test2.validateXMLResource(transaction, broker, f.getName(), new InputSource(f.toURI().toASCIIString()));
+                    info = test2.validateXMLResource(transaction, broker, XmldbURI.create(f.getName()), new InputSource(f.toURI().toASCIIString()));
                     assertNotNull(info);
                     test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
                 } catch (SAXException e) {
@@ -123,7 +125,7 @@ public class RecoveryTest extends TestCase {
             for (int i = 0; i < files.length; i++) {
                 f = files[i];
                 try {
-                    info = test2.validateXMLResource(transaction, broker, f.getName(), new InputSource(f.toURI().toASCIIString()));
+                    info = test2.validateXMLResource(transaction, broker, XmldbURI.create(f.getName()), new InputSource(f.toURI().toASCIIString()));
                     assertNotNull(info);
                     test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
                 } catch (SAXException e) {
@@ -132,12 +134,12 @@ public class RecoveryTest extends TestCase {
                 }
             }
     
-            info = test2.validateXMLResource(transaction, broker, "test_string.xml", TEST_XML);
+            info = test2.validateXMLResource(transaction, broker, XmldbURI.create("test_string.xml"), TEST_XML);
             assertNotNull(info);
             
             test2.store(transaction, broker, info, TEST_XML, false);            
             // remove last document
-            test2.removeXMLResource(transaction, broker, files[files.length - 1].getName());            
+            test2.removeXMLResource(transaction, broker, XmldbURI.create(files[files.length - 1].getName()));            
             
             transact.commit(transaction);
             System.out.println("Transaction commited ...");
@@ -146,7 +148,7 @@ public class RecoveryTest extends TestCase {
             transaction = transact.beginTransaction();
             System.out.println("Transaction started ...");
             
-            test2.removeXMLResource(transaction, broker, files[0].getName());            
+            test2.removeXMLResource(transaction, broker, XmldbURI.create(files[0].getName()));            
             test2.removeBinaryResource(transaction, broker, doc);
             
 //          Don't commit...            
@@ -178,14 +180,14 @@ public class RecoveryTest extends TestCase {
             Serializer serializer = broker.getSerializer();
             serializer.reset();
             
-            DocumentImpl doc = broker.getXMLResource(DBBroker.ROOT_COLLECTION + "/test/test2/hamlet.xml", Lock.READ_LOCK);
+            DocumentImpl doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test/test2/hamlet.xml"), Lock.READ_LOCK);
             assertNotNull("Document '" + DBBroker.ROOT_COLLECTION + "/test/test2/hamlet.xml' should not be null", doc);
             String data = serializer.serialize(doc);
             assertNotNull(data);
             System.out.println(data);
             doc.getUpdateLock().release(Lock.READ_LOCK);
             
-            doc = broker.getXMLResource(DBBroker.ROOT_COLLECTION + "/test/test2/test_string.xml", Lock.READ_LOCK);
+            doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test/test2/test_string.xml"), Lock.READ_LOCK);
             assertNotNull("Document '" + DBBroker.ROOT_COLLECTION + "/test/test2/test_string.xml' should not be null", doc);
             data = serializer.serialize(doc);
             assertNotNull(data);
@@ -195,7 +197,7 @@ public class RecoveryTest extends TestCase {
             File files[] = dir.listFiles();
             assertNotNull(files);
             
-            doc = broker.getXMLResource(DBBroker.ROOT_COLLECTION + "/test/test2/" + files[files.length - 1].getName(), Lock.READ_LOCK);
+            doc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append(files[files.length - 1].getName()), Lock.READ_LOCK);
             assertNull("Document '" + DBBroker.ROOT_COLLECTION + "/test/test2/'" + files[files.length - 1].getName() + " should not exist anymore", doc);
             
             XQuery xquery = broker.getXQueryService();
@@ -208,7 +210,7 @@ public class RecoveryTest extends TestCase {
                 System.out.println(serializer.serialize((NodeValue) next));
             }
             
-            BinaryDocument binDoc = (BinaryDocument) broker.getXMLResource(DBBroker.ROOT_COLLECTION + "/test/test2/binary.txt", Lock.READ_LOCK);
+            BinaryDocument binDoc = (BinaryDocument) broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append(TestConstants.TEST_BINARY_URI), Lock.READ_LOCK);
             assertNotNull("Binary document is null", binDoc);
             data = new String(broker.getBinaryResource(binDoc));
             assertNotNull(data);
@@ -226,7 +228,7 @@ public class RecoveryTest extends TestCase {
             assertNotNull(transaction);
             System.out.println("Transaction started ...");
             
-            Collection root = broker.openCollection(DBBroker.ROOT_COLLECTION + "/test", Lock.WRITE_LOCK);
+            Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, Lock.WRITE_LOCK);
             assertNotNull(root);
             transaction.registerLock(root.getLock(), Lock.WRITE_LOCK);            
             broker.removeCollection(transaction, root);

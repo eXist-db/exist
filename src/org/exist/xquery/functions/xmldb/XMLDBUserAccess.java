@@ -28,14 +28,15 @@ package org.exist.xquery.functions.xmldb;
 
 import org.exist.dom.QName;
 import org.exist.security.User;
-import org.exist.storage.DBBroker;
 import org.exist.xmldb.LocalCollection;
 import org.exist.xmldb.UserManagementService;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -70,6 +71,7 @@ public class XMLDBUserAccess extends BasicFunction {
             },
 			new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE));
 	
+	//TODO: let users know about signature change from string to any_uri
 	public final static FunctionSignature fnUserHome = new FunctionSignature(
 			new QName("get-user-home", XMLDBModule.NAMESPACE_URI,
 					XMLDBModule.PREFIX),
@@ -78,7 +80,7 @@ public class XMLDBUserAccess extends BasicFunction {
 			new SequenceType[]{
 					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
             },
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
+			new SequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE));
 
 	/**
 	 * @param context
@@ -101,7 +103,7 @@ public class XMLDBUserAccess extends BasicFunction {
         
         Collection collection = null;
 		try {
-            collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), DBBroker.ROOT_COLLECTION, context.getAccessContext());
+            collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), XmldbURI.ROOT_COLLECTION_URI, context.getAccessContext());
 			UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
 			User user = ums.getUser(userName);
 			
@@ -119,8 +121,8 @@ public class XMLDBUserAccess extends BasicFunction {
 				return groups;
 			// get-user-home
 			} else {
-				String home = user.getHome();
-				return null == home ? Sequence.EMPTY_SEQUENCE : new StringValue(home);
+				XmldbURI home = user.getHome();
+				return null == home ? Sequence.EMPTY_SEQUENCE : new AnyURIValue(home);
 			}
 		} catch (XMLDBException xe) {
 			throw new XPathException(getASTNode(), "Failed to query user " + userName, xe);

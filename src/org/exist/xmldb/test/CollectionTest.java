@@ -4,6 +4,7 @@ import junit.framework.TestCase;
 import junit.textui.TestRunner;
 
 import org.exist.storage.DBBroker;
+import org.exist.test.TestConstants;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -14,14 +15,13 @@ public class CollectionTest extends TestCase {
 
 	private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
 	private final static String URI = "xmldb:exist://";
-	private final static String ESC_COLL = "test%5B98%5D";
 	
 	public void testCreate() {
 		try {
 			Collection root = DatabaseManager.getCollection(URI + DBBroker.ROOT_COLLECTION, "admin", null);
 			CollectionManagementService service = (CollectionManagementService) 
 				root.getService("CollectionManagementService", "1.0");
-			Collection testCollection = service.createCollection(ESC_COLL);
+			Collection testCollection = service.createCollection(TestConstants.SPECIAL_NAME);
 			assertNotNull(testCollection);
 		} catch (XMLDBException e) {
 			e.printStackTrace();
@@ -31,16 +31,15 @@ public class CollectionTest extends TestCase {
 	
 	public void testRead() {
 		try {
-			// this will fail!!!
 			Collection test = 
-			DatabaseManager.getCollection(URI + DBBroker.ROOT_COLLECTION + '/' + ESC_COLL, "admin", null);
+			DatabaseManager.getCollection(URI + TestConstants.SPECIAL_COLLECTION_URI, "admin", null);
 			assertNotNull(test);
 			Collection root = DatabaseManager.getCollection(URI + DBBroker.ROOT_COLLECTION, "admin", null);
-			test = root.getChildCollection(ESC_COLL);
+			test = root.getChildCollection(TestConstants.SPECIAL_NAME);
 			assertNotNull(test);
             CollectionManagementService service = (CollectionManagementService) root
                     .getService("CollectionManagementService", "1.0");
-            service.removeCollection(ESC_COLL);
+            service.removeCollection(TestConstants.SPECIAL_NAME);
 		} catch (XMLDBException e) {
 			e.printStackTrace();
 			fail(e.getMessage());

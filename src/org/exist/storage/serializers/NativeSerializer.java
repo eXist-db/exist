@@ -127,7 +127,7 @@ public class NativeSerializer extends Serializer {
     	}
     	DocumentImpl documentImpl = (DocumentImpl) doc;
 		LOG.debug("serializing document " + documentImpl.getDocId()
-				+ " (" + documentImpl.getName() + ")"
+				+ " (" + documentImpl.getURI() + ")"
     			+ " to SAX took " + (System.currentTimeMillis() - start));
     	if (generateDocEvent) receiver.endDocument();
     }
@@ -169,7 +169,7 @@ public class NativeSerializer extends Serializer {
             }
             if (first && showId > 0) {
             	// String src = doc.getCollection().getName() + "/" + doc.getFileName();
-                attribs.addAttribute(SOURCE_ATTRIB, doc.getFileName());
+                attribs.addAttribute(SOURCE_ATTRIB, doc.getFileURI().toString());
             }
             int children = node.getChildCount();
             int count = 0;
@@ -215,7 +215,7 @@ public class NativeSerializer extends Serializer {
                 AttrList tattribs = new AttrList();
                 if (showId > 0) {
                     tattribs.addAttribute(ID_ATTRIB, Long.toString(gid));
-                    tattribs.addAttribute(SOURCE_ATTRIB, doc.getFileName());
+                    tattribs.addAttribute(SOURCE_ATTRIB, doc.getFileURI().toString());
                 }
                 receiver.startElement(TEXT_ELEMENT, tattribs);
             }
@@ -239,7 +239,7 @@ public class NativeSerializer extends Serializer {
             		AttrList tattribs = new AttrList();
                     if (showId > 0) {
                         tattribs.addAttribute(ID_ATTRIB, Long.toString(gid));
-                        tattribs.addAttribute(SOURCE_ATTRIB, doc.getFileName());
+                        tattribs.addAttribute(SOURCE_ATTRIB, doc.getFileURI().toString());
                     }
                     tattribs.addAttribute(((AttrImpl)node).getQName(), cdata);
                     receiver.startElement(ATTRIB_ELEMENT, tattribs);

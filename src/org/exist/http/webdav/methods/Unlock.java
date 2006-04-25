@@ -26,19 +26,19 @@ import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
-import org.exist.dom.LockToken;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
-
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
+import org.exist.xmldb.XmldbURI;
 
 /**
  * Implements the WebDAV UNLOCK method.
@@ -54,7 +54,7 @@ public class Unlock extends AbstractWebDAVMethod {
     }
     
     public void process(User user, HttpServletRequest request,
-            HttpServletResponse response, String path)
+            HttpServletResponse response, XmldbURI path)
             throws ServletException, IOException {
         
         DBBroker broker = null;
@@ -120,9 +120,9 @@ public class Unlock extends AbstractWebDAVMethod {
                     LOG.debug("Unlock NullResource");
                     try {
                         if(resource.getResourceType() == DocumentImpl.BINARY_FILE)
-                            collection.removeBinaryResource(transaction, broker, resource.getFileName());
+                            collection.removeBinaryResource(transaction, broker, resource.getFileURI());
                         else
-                            collection.removeXMLResource(transaction, broker, resource.getFileName());
+                            collection.removeXMLResource(transaction, broker, resource.getFileURI());
                     } catch (LockException ex) {
                         LOG.error(ex);
                     } catch (TriggerException ex) {

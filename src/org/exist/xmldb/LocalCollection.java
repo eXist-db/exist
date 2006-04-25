@@ -23,6 +23,7 @@
  */
 package org.exist.xmldb;
 
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -85,7 +86,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 		defaultProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "no");
 	}
 
-	protected String path = null;
+	protected XmldbURI path = null;
 	protected BrokerPool brokerPool = null;
 	protected Properties properties = new Properties(defaultProperties);
 	protected LocalCollection parent = null;
@@ -106,7 +107,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 	 * @param collection
 	 * @throws XMLDBException
 	 */
-	public LocalCollection(User user, BrokerPool brokerPool, String collection, AccessContext accessCtx)
+	public LocalCollection(User user, BrokerPool brokerPool, XmldbURI collection, AccessContext accessCtx)
 		throws XMLDBException {
 		this(user, brokerPool, null, collection, accessCtx);
 	}
@@ -124,7 +125,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 		User user,
 		BrokerPool brokerPool,
 		LocalCollection parent,
-		String name,
+		XmldbURI name,
 		AccessContext accessCtx)
 		throws XMLDBException {
 		if(accessCtx == null)
@@ -137,7 +138,8 @@ public class LocalCollection extends Observable implements CollectionImpl {
 		this.brokerPool = brokerPool;
 		this.path = name;
 		if (path == null)
-			path = DBBroker.ROOT_COLLECTION;
+			path = XmldbURI.ROOT_COLLECTION_URI;
+		path = path.toCollectionPathURI();
 		getCollection();
 	}
 	
@@ -233,15 +235,16 @@ public class LocalCollection extends Observable implements CollectionImpl {
 		}
 	}
 
+	//TODO: api change to XmldbURI?
 	public String createId() throws XMLDBException {
 		Collection collection = getCollectionWithLock(Lock.READ_LOCK);
 		try {
-			String id;
+			XmldbURI id;
 			Random rand = new Random();
 			boolean ok;
 			do {
 				ok = true;
-				id = Integer.toHexString(rand.nextInt()) + ".xml";
+				id = XmldbURI.create(Integer.toHexString(rand.nextInt()) + ".xml");
 				// check if this id does already exist
 				if (collection.hasDocument(id))
 					ok = false;
@@ -250,21 +253,28 @@ public class LocalCollection extends Observable implements CollectionImpl {
 					ok = false;
 	
 			} while (!ok);
-			return id;
+			return id.toString();
 		} finally {
 			collection.getLock().release(Lock.READ_LOCK);
 		}
 	}
 
+	//TODO: api change to XmldbURI?
 	public Resource createResource(String id, String type) throws XMLDBException {
 		if (id == null)
 			id = createId();
 
+		XmldbURI idURI;
+		try {
+			idURI = XmldbURI.xmldbUriFor(id);
+		} catch(URISyntaxException e) {
+			throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+		}
 		Resource r = null;
 		if (type.equals("XMLResource"))
-			r = new LocalXMLResource(user, brokerPool, this, id);
+			r = new LocalXMLResource(user, brokerPool, this, idURI);
 		else if (type.equals("BinaryResource"))
-			r = new LocalBinaryResource(user, brokerPool, this, id);
+			r = new LocalBinaryResource(user, brokerPool, this, idURI);
 		else
 			throw new XMLDBException(
 				ErrorCodes.INVALID_RESOURCE,
@@ -273,17 +283,23 @@ public class LocalCollection extends Observable implements CollectionImpl {
 		return r;
 	}
 
+	//TODO: api change to XmldbURI?
 	public org.xmldb.api.base.Collection getChildCollection(String name) throws XMLDBException {
-		String childName = null;
+		XmldbURI childName = null;
+		XmldbURI childURI;
+		try {
+			childURI = XmldbURI.xmldbUriFor(name);
+		} catch(URISyntaxException e) {
+			throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+		}
 		Collection collection = getCollectionWithLock(Lock.READ_LOCK);
 		try {
 			if (!checkPermissions(collection, Permission.READ))
 				throw new XMLDBException(
 					ErrorCodes.PERMISSION_DENIED,
 					"You are not allowed to access this collection");
-			if(collection.hasChildCollection(name))
-                //TODO : use dedicated function in XmldbURI
-				childName = getPath() + "/" + name;
+			if(collection.hasChildCollection(childURI))
+				childName = getPathURI().append(childURI);
 		} finally {
 			collection.release();
 		}
@@ -305,10 +321,11 @@ public class LocalCollection extends Observable implements CollectionImpl {
 		}
 	}
 
+	//TODO: api change to XmldbURI?
 	public String getName() throws XMLDBException {
 		Collection collection = getCollectionWithLock(Lock.READ_LOCK);
 		try {
-			return collection.getName();
+			return collection.getURI().toString();
 		} finally {
 			collection.release();
 		}
@@ -326,7 +343,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 				collection = broker.openCollection(path, Lock.READ_LOCK);
 				if(collection == null)
 					throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
-				parent = new LocalCollection(user, brokerPool, null, collection.getParentPath(), accessCtx);
+				parent = new LocalCollection(user, brokerPool, null, collection.getParentURI(), accessCtx);
 			} catch (EXistException e) {
 				throw new XMLDBException(
 						ErrorCodes.UNKNOWN_ERROR,
@@ -342,16 +359,26 @@ public class LocalCollection extends Observable implements CollectionImpl {
 	}
 
 	public String getPath() throws XMLDBException {
-		return path;
+		return path.toString();
 	}
 
-	public String getProperty(String property) throws XMLDBException {
+    public XmldbURI getPathURI() {
+    	return path;
+    }
+
+    public String getProperty(String property) throws XMLDBException {
 		return properties.getProperty(property);
 	}
 
 	public Resource getResource(String id) throws XMLDBException {
 		Collection collection = null;
 		DBBroker broker = null;
+		XmldbURI idURI;
+		try {
+			idURI = XmldbURI.xmldbUriFor(id);
+		} catch(URISyntaxException e) {
+			throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+		}
 		try {
 			broker = brokerPool.get(user);
 			collection = broker.openCollection(path, Lock.READ_LOCK);
@@ -361,16 +388,16 @@ public class LocalCollection extends Observable implements CollectionImpl {
 				throw new XMLDBException(
 						ErrorCodes.PERMISSION_DENIED,
 				"not allowed to read collection");
-			DocumentImpl document = collection.getDocument(broker, id);
+			DocumentImpl document = collection.getDocument(broker, idURI);
 			if (document == null) {
-				LOG.warn("Resource " + id + " not found");
+				LOG.warn("Resource " + idURI + " not found");
 				return null;
 			}
 			Resource r;
 			if (document.getResourceType() == DocumentImpl.XML_FILE)
-				r = new LocalXMLResource(user, brokerPool, this, id);
+				r = new LocalXMLResource(user, brokerPool, this, idURI);
 			else if (document.getResourceType() == DocumentImpl.BINARY_FILE)
-				r = new LocalBinaryResource(user, brokerPool, this, id);
+				r = new LocalBinaryResource(user, brokerPool, this, idURI);
 			else
 				throw new XMLDBException(
 						ErrorCodes.INVALID_RESOURCE,
@@ -449,6 +476,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 		return true;
 	}
 
+	//TODO: api change to XmldbURI?
 	public String[] listChildCollections() throws XMLDBException {
 		Collection collection = getCollectionWithLock(Lock.READ_LOCK);
 		try {
@@ -457,7 +485,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
 			String[] collections = new String[collection.getChildCollectionCount()];
 			int j = 0;
 			for (Iterator i = collection.collectionIterator(); i.hasNext(); j++)
-				collections[j] = (String) i.next();
+				collections[j] = ((XmldbURI) i.next()).toString();
 			return collections;
 		} finally {
 			collection.release();
@@ -487,14 +515,14 @@ public class LocalCollection extends Observable implements CollectionImpl {
                     // Only if Locktoken has Null resource flag set
                     LockToken lock = doc.getMetadata().getLockToken();
                     if(lock==null || lock.getResourceType()!=LockToken.RESOURCE_TYPE_NULL_RESOURCE){
-                        allresources.add( doc.getFileName() );
+                        allresources.add( doc.getFileURI() );
                     }
                 }
                 
                 int j=0;
                 String[] resources = new String[allresources.size()];
                 for(Iterator i = allresources.iterator(); i.hasNext(); j++){
-                    resources[j]= (String) i.next();
+                    resources[j]= ((XmldbURI) i.next()).toString();
                 }
                 
                 return resources;
@@ -521,13 +549,18 @@ public class LocalCollection extends Observable implements CollectionImpl {
 	public void removeResource(Resource res) throws XMLDBException {
 		if (res == null)
 			return;
+		XmldbURI resURI;
+		try {
+			resURI = XmldbURI.xmldbUriFor(res.getId());
+		} catch(URISyntaxException e) {
+			throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+		}
 		Collection collection = null;
 		DBBroker broker = null;
         TransactionManager transact = brokerPool.getTransactionManager();
         Txn txn = transact.beginTransaction();
 		try {
-			String name = res.getId();
-			LOG.debug("removing " + name);
+			LOG.debug("removing " + resURI);
 			
 			broker = brokerPool.get(user);
 			collection = broker.openCollection(path, Lock.READ_LOCK);
@@ -535,17 +568,17 @@ public class LocalCollection extends Observable implements CollectionImpl {
 				transact.abort(txn);
                 throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
             }
-			DocumentImpl doc = collection.getDocument(broker, name);
+			DocumentImpl doc = collection.getDocument(broker, resURI);
 			if (doc == null) {
                 transact.abort(txn);
                 throw new XMLDBException(
 						ErrorCodes.INVALID_RESOURCE,
-						"resource " + name + " not found");
+						"resource " + resURI + " not found");
             }
 			if (res.getResourceType().equals("XMLResource"))
-				collection.removeXMLResource(txn, broker, name);
+				collection.removeXMLResource(txn, broker, resURI);
 			else
-				collection.removeBinaryResource(txn, broker, name);
+				collection.removeBinaryResource(txn, broker, resURI);
             transact.commit(txn);
 		} catch (EXistException e) {
             transact.abort(txn);
@@ -596,6 +629,12 @@ public class LocalCollection extends Observable implements CollectionImpl {
 	}
 
 	private void storeBinaryResource(LocalBinaryResource res) throws XMLDBException {
+		XmldbURI resURI;
+		try {
+			resURI = XmldbURI.xmldbUriFor(res.getId());
+		} catch(URISyntaxException e) {
+			throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+		}
 	    Collection collection = null;
 		DBBroker broker = null;
         TransactionManager transact = brokerPool.getTransactionManager();
@@ -609,7 +648,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
             }
 			collection.addBinaryResource(txn,
 					broker,
-					res.getId(),
+					resURI,
 					(byte[]) res.getContent(),
 					res.getMimeType(), res.datecreated, res.datemodified  );
             transact.commit(txn);
@@ -627,12 +666,17 @@ public class LocalCollection extends Observable implements CollectionImpl {
 	}
 
 	private void storeXMLResource(LocalXMLResource res) throws XMLDBException {
+		XmldbURI resURI;
+		try {
+			resURI = XmldbURI.xmldbUriFor(res.getId());
+		} catch(URISyntaxException e) {
+			throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+		}
 		DBBroker broker = null;
         TransactionManager transact = brokerPool.getTransactionManager();
         Txn txn = transact.beginTransaction();
 		try {
 			broker = brokerPool.get(user);
-			String name = res.getDocumentId();
 			String uri = null;
 			if(res.file != null) uri = res.file.toURI().toASCIIString();
             IndexInfo info = null;
@@ -649,11 +693,11 @@ public class LocalCollection extends Observable implements CollectionImpl {
     			}
     			if (uri != null) {
     				setupParser(collection, res);
-    			    info = collection.validateXMLResource(txn, broker, name, new InputSource(uri));
+    			    info = collection.validateXMLResource(txn, broker, resURI, new InputSource(uri));
     			} else if (res.root != null)
-    			    info = collection.validateXMLResource(txn, broker, name, res.root);
+    			    info = collection.validateXMLResource(txn, broker, resURI, res.root);
     			else
-    			    info = collection.validateXMLResource(txn, broker, name, res.content);
+    			    info = collection.validateXMLResource(txn, broker, resURI, res.content);
                 info.getDocument().getMetadata().setMimeType(res.getMimeType());
                 
                 if (res.datecreated  != null) 

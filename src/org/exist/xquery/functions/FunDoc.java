@@ -138,7 +138,7 @@ public class FunDoc extends Function {
                         cachedPath = null;
                         cached = null;
                     } else {
-                        if (cachedPath != null && (document == null || cachedPath.equals(document.getName()))) {
+                        if (cachedPath != null && (document == null || cachedPath.equals(document.getURI()))) {
                             cached = null;
                             cachedPath = null;
                         }

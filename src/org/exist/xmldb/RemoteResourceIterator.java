@@ -24,6 +24,8 @@ import org.xmldb.api.base.*;
 import org.xmldb.api.modules.*;
 import java.util.Vector;
 import java.io.IOException;
+import java.net.URISyntaxException;
+
 import org.apache.xmlrpc.*;
 
 public class RemoteResourceIterator implements ResourceIterator {
@@ -72,14 +74,16 @@ public class RemoteResourceIterator implements ResourceIterator {
             params.addElement(encoding);
             try {
                 byte[] data = (byte[])collection.getClient().execute("retrieve", params);
-                XMLResource res = new RemoteXMLResource(collection, doc, doc + "_" + s_id);
+                XMLResource res = new RemoteXMLResource(collection, XmldbURI.xmldbUriFor(doc), doc + "_" + s_id);
                 res.setContent((Object)new String(data, encoding));
                 return res;
             } catch(XmlRpcException xre) {
                 throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, xre.getMessage(), xre);
             } catch(IOException ioe) {
                 throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
-            }
+			} catch (URISyntaxException e) {
+                throw new XMLDBException(ErrorCodes.INVALID_URI, e.getMessage(), e);
+			}
         } else {
             // value
             XMLResource res = new RemoteXMLResource(collection, null, Integer.toString(pos));

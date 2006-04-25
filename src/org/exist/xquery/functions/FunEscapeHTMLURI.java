@@ -69,11 +69,7 @@ public class FunEscapeHTMLURI extends Function {
             result = Sequence.EMPTY_SEQUENCE;
         else {
     		String value; 
-    		try {
-    			value = URIUtils.escapeHtmlURI(seq.getStringValue());
-    		} catch (UnsupportedEncodingException e) {
-    			throw new XPathException(e.getMessage());
-    		}
+   			value = URIUtils.escapeHtmlURI(seq.getStringValue());
             result =  new StringValue(value);
         }
         

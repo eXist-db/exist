@@ -30,7 +30,6 @@ import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.LockException;
-import org.exist.xquery.Constants;
 import org.w3c.dom.DocumentType;
 import org.xml.sax.ext.LexicalHandler;
 import org.xmldb.api.base.ErrorCodes;
@@ -44,19 +43,31 @@ public abstract class AbstractEXistResource implements EXistResource {
 	protected User user;
 	protected BrokerPool pool;
 	protected LocalCollection parent;
-	protected String docId = null;
+	protected XmldbURI docId = null;
 	protected String mimeType = null;
     protected boolean isNewResource = false;
     
-	public AbstractEXistResource(User user, BrokerPool pool, LocalCollection parent, String docId, String mimeType) {
+	public AbstractEXistResource(User user, BrokerPool pool, LocalCollection parent, XmldbURI docId, String mimeType) {
 		this.user = user;
 		this.pool = pool;
 		this.parent = parent;
-        //TODO : use dedicated function in XmldbURI
-		if (docId.indexOf("/") != Constants.STRING_NOT_FOUND)
-			docId = docId.substring(docId.lastIndexOf("/") + 1);
+		docId = docId.lastSegment();
 		this.docId = docId;
         this.mimeType = mimeType;
+	}
+	
+	/**
+	 * 
+	 * @param user
+	 * @param pool
+	 * @param parent
+	 * @param docId
+	 * @param mimeType
+	 * 
+	 * @deprecated Use the XmldbURI constructor instead
+	 */
+	public AbstractEXistResource(User user, BrokerPool pool, LocalCollection parent, String docId, String mimeType) {
+		this(user, pool, parent, XmldbURI.create(docId), mimeType);
 	}
 	
 	/* (non-Javadoc)

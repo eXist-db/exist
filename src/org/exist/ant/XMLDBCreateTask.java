@@ -22,14 +22,15 @@
  */
 package org.exist.ant;
 
+import java.net.URISyntaxException;
+
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
+import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
-
-import java.util.StringTokenizer;
 
 /**
  * an ant task to create a empty collection
@@ -60,7 +61,7 @@ public class XMLDBCreateTask extends AbstractXMLDBTask
       if (collection != null)
       {
         log("Creating collection " + collection + " in base collection " + uri, Project.MSG_DEBUG);
-        root = mkcol(base, uri, null, collection);
+        root = mkcol(base, uri, collection);
       } else
       {
         root = base;
@@ -69,6 +70,9 @@ public class XMLDBCreateTask extends AbstractXMLDBTask
     } catch (XMLDBException e)
     {
       throw new BuildException("XMLDB exception caught: " + e.getMessage(), e);
+    } catch (URISyntaxException e)
+    {
+    	throw new BuildException("URISyntaxException: " + e.getMessage(), e);
     }
   }
 
@@ -81,35 +85,27 @@ public class XMLDBCreateTask extends AbstractXMLDBTask
     this.collection = collection;
   }
 
-  private final Collection mkcol(Collection root, String baseURI, String path, String relPath)
-    throws XMLDBException
+  private final Collection mkcol(Collection root, String base, /*String path,*/ String relPath)
+    throws XMLDBException, URISyntaxException
   {
     CollectionManagementService mgtService;
     Collection current = root, c;
-    String token;
-    StringTokenizer tok = new StringTokenizer(relPath, "/");
-    log("BASEURI=" + baseURI, Project.MSG_DEBUG);
+    XmldbURI baseUri = XmldbURI.xmldbUriFor(base);
+    XmldbURI collPath = XmldbURI.xmldbUriFor(relPath);
+    log("BASEURI=" + baseUri, Project.MSG_DEBUG);
     log("RELPATH=" + relPath, Project.MSG_DEBUG);
-    log("PATH=" + path, Project.MSG_DEBUG);
-    //TODO : use dedicated function in XmldbURI
-    while (tok.hasMoreTokens())
-    {
-      token = tok.nextToken();
-      if (path != null)
-      {
-        path = path + "/" + token;
-      } else
-      {
-        path = "/" + token;
-      }
-      log("Get collection " + baseURI + path, Project.MSG_DEBUG);
-      c = DatabaseManager.getCollection(baseURI + path, user, password);
+    //log("PATH=" + path, Project.MSG_DEBUG);
+    XmldbURI[] segments = collPath.getPathSegments();
+    for(int i=0;i<segments.length;i++){
+    	baseUri = baseUri.append(segments[i]);
+      log("Get collection " + baseUri, Project.MSG_DEBUG);
+      c = DatabaseManager.getCollection(baseUri.toString(), user, password);
       if (c == null)
       {
         log("Create collection management service for collection " + current.getName(), Project.MSG_DEBUG);
         mgtService = (CollectionManagementService) current.getService("CollectionManagementService", "1.0");
-        log("Create child collection " + token);
-        current = mgtService.createCollection(token);
+        log("Create child collection " + segments[i]);
+        current = mgtService.createCollection(segments[i].toString());
         log("Created collection " + current.getName() + '.');
       } else
         current = c;

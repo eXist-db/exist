@@ -24,6 +24,9 @@ package org.exist.storage.test;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 
+import junit.framework.TestCase;
+import junit.textui.TestRunner;
+
 import org.exist.collections.Collection;
 import org.exist.dom.BinaryDocument;
 import org.exist.security.SecurityManager;
@@ -32,10 +35,8 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
-
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
 
 /**
  * @author wolf
@@ -62,7 +63,7 @@ public class RecoverBinaryTest extends TestCase {
             assertNotNull(transaction);
             System.out.println("Transaction started ...");
             
-            Collection root = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test");
+            Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             assertNotNull(root);
             broker.saveCollection(transaction, root);
     
@@ -75,7 +76,7 @@ public class RecoverBinaryTest extends TestCase {
                 os.write(buf, 0, count);
             }
             BinaryDocument doc = 
-				root.addBinaryResource(transaction, broker, "binary.txt", os.toByteArray(),	"text/text");
+				root.addBinaryResource(transaction, broker, TestConstants.TEST_BINARY_URI, os.toByteArray(),	"text/text");
             assertNotNull(doc);
             
             transact.commit(transaction);
@@ -102,7 +103,7 @@ public class RecoverBinaryTest extends TestCase {
         	assertNotNull(pool);
         	broker = pool.get(SecurityManager.SYSTEM_USER);
         	assertNotNull(broker);
-            BinaryDocument binDoc = (BinaryDocument) broker.getXMLResource(DBBroker.ROOT_COLLECTION + "/test/binary.txt", Lock.READ_LOCK);
+            BinaryDocument binDoc = (BinaryDocument) broker.getXMLResource(TestConstants.TEST_COLLECTION_URI.append(TestConstants.TEST_BINARY_URI), Lock.READ_LOCK);
             assertNotNull("Binary document is null", binDoc);
             String data = new String(broker.getBinaryResource(binDoc));
             assertNotNull(data);

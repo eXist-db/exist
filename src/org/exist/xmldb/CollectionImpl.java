@@ -49,5 +49,7 @@ public interface CollectionImpl extends Collection {
 	
 	public XmldbURI getURI();
 	
+	public XmldbURI getPathURI();
+	
 	
 }

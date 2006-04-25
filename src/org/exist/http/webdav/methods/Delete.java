@@ -40,6 +40,7 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
+import org.exist.xmldb.XmldbURI;
 
 /**
  * @author wolf
@@ -54,7 +55,7 @@ public class Delete extends AbstractWebDAVMethod {
          * @see org.exist.http.webdav.WebDAVMethod#process(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, org.exist.collections.Collection, org.exist.dom.DocumentImpl)
          */
     public void process(User user, HttpServletRequest request,
-            HttpServletResponse response, String path) throws ServletException, IOException {
+            HttpServletResponse response, XmldbURI path) throws ServletException, IOException {
         DBBroker broker = null;
         Collection collection = null;
         DocumentImpl resource = null;
@@ -64,10 +65,8 @@ public class Delete extends AbstractWebDAVMethod {
             broker = pool.get(user);
             collection = broker.openCollection(path, Lock.WRITE_LOCK);
             if(collection == null) {
-                ///TODO : use dedicated function in XmldbURI
-                int pos = path.lastIndexOf("/");
-                String collName = path.substring(0, pos);
-                String docName = path.substring(pos + 1);
+                XmldbURI collName = path.removeLastSegment();
+                XmldbURI docName = path.lastSegment();
                 LOG.debug("collection = " + collName + "; doc = " + docName);
                 collection = broker.openCollection(collName, Lock.WRITE_LOCK);
                 if(collection == null) {
@@ -95,9 +94,9 @@ public class Delete extends AbstractWebDAVMethod {
                 broker.removeCollection(txn, collection);
             } else {
                 if(resource.getResourceType() == DocumentImpl.BINARY_FILE)
-                    collection.removeBinaryResource(txn, broker, resource.getFileName());
+                    collection.removeBinaryResource(txn, broker, resource.getFileURI());
                 else
-                    collection.removeXMLResource(txn, broker, resource.getFileName());
+                    collection.removeXMLResource(txn, broker, resource.getFileURI());
             }
             transact.commit(txn);
         } catch (EXistException e) {

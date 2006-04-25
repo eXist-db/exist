@@ -35,6 +35,7 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
@@ -43,7 +44,7 @@ import org.exist.xquery.value.SequenceIterator;
 
 public abstract class AbstractUpdateTest extends TestCase {
 
-	protected static String TEST_COLLECTION = DBBroker.ROOT_COLLECTION + "/test";
+	protected static XmldbURI TEST_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("test");
     protected static String TEST_XML = 
         "<?xml version=\"1.0\"?>" +
         "<products/>";
@@ -64,8 +65,8 @@ public abstract class AbstractUpdateTest extends TestCase {
             DocumentImpl doc;
             String data;
             
-            doc = broker.getXMLResource(TEST_COLLECTION + "/test2/test.xml", Lock.READ_LOCK);
-            assertNotNull("Document '"+ TEST_COLLECTION + "/test2/test.xml' should not be null", doc);
+            doc = broker.getXMLResource(TEST_COLLECTION_URI.append("test2/test.xml"), Lock.READ_LOCK);
+            assertNotNull("Document '"+ TEST_COLLECTION_URI.append("test2/test.xml")+"' should not be null", doc);
             data = serializer.serialize(doc);
             System.out.println(data);
             doc.getUpdateLock().release(Lock.READ_LOCK);
@@ -91,13 +92,13 @@ public abstract class AbstractUpdateTest extends TestCase {
         	Txn transaction = mgr.beginTransaction();        
         	System.out.println("Transaction started ...");
 	        
-	        Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION);
+	        Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI);
 	        broker.saveCollection(transaction, root);
 	        
-	        Collection test = broker.getOrCreateCollection(transaction, TEST_COLLECTION + "/test2");
+	        Collection test = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI.append("test2"));
 	        broker.saveCollection(transaction, test);
 	        
-	        info = test.validateXMLResource(transaction, broker, "test.xml", TEST_XML);
+	        info = test.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), TEST_XML);
 	        test.store(transaction, broker, info, TEST_XML, false);
 	
 	        mgr.commit(transaction);	

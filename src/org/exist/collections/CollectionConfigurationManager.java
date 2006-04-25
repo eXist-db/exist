@@ -37,6 +37,7 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.util.sanity.SanityCheck;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.xml.sax.SAXException;
 
@@ -54,7 +55,9 @@ public class CollectionConfigurationManager {
 	
     public final static String CONFIG_COLLECTION = DBBroker.SYSTEM_COLLECTION + "/config";
     
-	private BrokerPool pool;
+    public final static XmldbURI CONFIG_COLLECTION_URI = XmldbURI.create(CONFIG_COLLECTION);
+
+    private BrokerPool pool;
 	
     private Map cache = new TreeMap();
     
@@ -68,17 +71,17 @@ public class CollectionConfigurationManager {
 	 * 
 	 * @param broker
 	 * @param collection the collection to which the configuration applies.
-	 * @param config the xconf document as a string.
+	 * @param config the xconf document as a String.
 	 * @throws CollectionConfigurationException
 	 */
     public void addConfiguration(Txn transaction, DBBroker broker, Collection collection, String config) 
     throws CollectionConfigurationException {
     	try {
-			String path = CONFIG_COLLECTION + collection.getName();
+			XmldbURI path = CONFIG_COLLECTION_URI.append(collection.getURI());
 			Collection confCol = broker.getOrCreateCollection(transaction, path);
 			if(confCol == null)
 				throw new CollectionConfigurationException("Failed to create config collection: " + path);
-            String configurationDocumentName = null;
+			XmldbURI configurationDocumentName = null;
             //Replaces the current configuration file if there is one
             CollectionConfiguration conf = getConfiguration(broker, collection);
             if (conf != null) {                
@@ -88,7 +91,7 @@ public class CollectionConfigurationManager {
                 
             }
             if (configurationDocumentName == null)
-                configurationDocumentName = CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
+                configurationDocumentName = CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE_URI;
             //broker.saveCollection(transaction, confCol);
 			IndexInfo info = confCol.validateXMLResource(transaction, broker, configurationDocumentName, config);
 			confCol.store(transaction, broker, info, config, false);
@@ -124,28 +127,31 @@ public class CollectionConfigurationManager {
 
     	CollectionConfiguration conf = new CollectionConfiguration(broker.getBrokerPool(), collection);
         boolean configFound = false;
-        //TODO : use dedicated function in XmldbURI
-    	String path = collection.getName() + "/";
-    	int p = DBBroker.ROOT_COLLECTION.length();
-    	String next;
+    	XmldbURI path = CONFIG_COLLECTION_URI.append(collection.getURI());
     	Collection coll = null;
-    	while(p != Constants.STRING_NOT_FOUND) {
-    		next = CONFIG_COLLECTION + path.substring(0, p);    
+    	/*
+    	 * This used to go from the root collection (/db), and continue all the
+    	 * way to the end of the path, checking each collection on the way.  I
+    	 * modified it to start at the collection path and work its way back to
+    	 * the root, stopping at the first config file it finds. This should be
+    	 * more efficient, and fit more appropriately will the XmldbURI api
+    	 */
+    	while(!configFound && !path.equals(CONFIG_COLLECTION_URI)) {
     		try {
-    			coll = broker.openCollection(next, Lock.READ_LOCK);
+    			coll = broker.openCollection(path,Lock.READ_LOCK);
     			if (coll != null && coll.getDocumentCount() > 0) {
     			    for(Iterator i = coll.iterator(broker); i.hasNext(); ) {
     			        DocumentImpl confDoc = (DocumentImpl) i.next();
-    			        if(confDoc.getFileName().endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX)) {
+    			        if(confDoc.getFileURI().endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX_URI)) {
                             if (!configFound) {
-                                LOG.debug("Reading collection configuration for '" + collection.getName() + "' from '" + confDoc.getName() + "'");
-        			            conf.read(broker, confDoc, next, confDoc.getFileName());                            
+                                LOG.debug("Reading collection configuration for '" + collection.getURI() + "' from '" + confDoc.getURI() + "'");
+        			            conf.read(broker, confDoc, path, confDoc.getFileURI());                            
                                 configFound = true;
                                 //Allow just one configuration document per collection
                                 //TODO : do not break if a system property allows several ones -pb
         			            break;
                             } else {
-                                LOG.debug("Found another collection configuration for '" + collection.getName() + "' in '" + confDoc.getName() + "'");
+                                LOG.debug("Found another collection configuration for '" + collection.getURI() + "' in '" + confDoc.getURI() + "'");
                             }
     			        }
     			    }                    
@@ -154,10 +160,10 @@ public class CollectionConfigurationManager {
     			if(coll != null)
     				coll.release();
     		}
-    		p = path.indexOf("/", p + 1);
+    		path = path.removeLastSegment();
 	    }
         if (!configFound) {
-            LOG.debug("Reading collection configuration for '" + collection.getName() + "' from index configuration");
+            LOG.debug("Reading collection configuration for '" + collection.getURI() + "' from index configuration");
             // use default configuration
             conf.setIndexConfiguration(broker.getIndexConfiguration());
         }
@@ -166,7 +172,7 @@ public class CollectionConfigurationManager {
 		// the calling code does mostly already hold a lock on CollectionCache.
 		CollectionCache collectionCache = pool.getCollectionsCache();
 		synchronized (collectionCache) {
-			cache.put(collection.getName(), conf);
+			cache.put(collection.getURI(), conf);
 		}
         return conf;
     }
@@ -177,10 +183,10 @@ public class CollectionConfigurationManager {
      * 
      * @param collectionPath
      */
-    protected void invalidateAll(String collectionPath) {
-        if (!collectionPath.startsWith(CONFIG_COLLECTION))
+    protected void invalidateAll(XmldbURI collectionPath) {
+        if (!collectionPath.startsWith(CONFIG_COLLECTION_URI))
     		return;
-    	collectionPath = collectionPath.substring(CONFIG_COLLECTION.length());
+        collectionPath = collectionPath.trimFromBeginning(CONFIG_COLLECTION_URI);
 		// we synchronize on the global CollectionCache to avoid deadlocks.
 		// the calling code does mostly already hold a lock on CollectionCache.
 		CollectionCache collectionCache = pool.getCollectionsCache();
@@ -189,7 +195,7 @@ public class CollectionConfigurationManager {
 	    	CollectionConfiguration config;
 	    	for(Iterator i = cache.entrySet().iterator(); i.hasNext(); ) {
 	    		next = (Map.Entry) i.next();
-	    		if(next.getKey().toString().startsWith(collectionPath)) {
+	    		if(((XmldbURI)next.getKey()).startsWith(collectionPath)) {
 	    			config = (CollectionConfiguration) next.getValue();
 	    			if (config != null)
 	    				config.getCollection().invalidateConfiguration();
@@ -205,10 +211,10 @@ public class CollectionConfigurationManager {
      * 
      * @param collectionPath
      */
-    protected void invalidate(String collectionPath) {
-    	if (!collectionPath.startsWith(CONFIG_COLLECTION))
+    protected void invalidate(XmldbURI collectionPath) {
+    	if (!collectionPath.startsWith(CONFIG_COLLECTION_URI))
     		return;
-    	collectionPath = collectionPath.substring(CONFIG_COLLECTION.length());
+    	collectionPath = collectionPath.trimFromBeginning(CONFIG_COLLECTION_URI);
 		CollectionCache collectionCache = pool.getCollectionsCache();
 		synchronized (collectionCache) {
 	    	CollectionConfiguration config = (CollectionConfiguration) cache.get(collectionPath);
@@ -229,10 +235,10 @@ public class CollectionConfigurationManager {
         TransactionManager transact = pool.getTransactionManager();
         Txn txn = null;
     	try {
-    		Collection root = broker.getCollection(CONFIG_COLLECTION);
+    		Collection root = broker.getCollection(CONFIG_COLLECTION_URI);
     		if(root == null) {
     			txn = transact.beginTransaction();
-    			root = broker.getOrCreateCollection(txn, CONFIG_COLLECTION);
+    			root = broker.getOrCreateCollection(txn, CONFIG_COLLECTION_URI);
                 SanityCheck.THROW_ASSERT(root != null);
     			broker.saveCollection(txn, root);
                 transact.commit(txn);

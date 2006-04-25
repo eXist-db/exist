@@ -90,7 +90,7 @@ public class FunBaseURI extends BasicFunction {
                 result = new AnyURIValue(context.getBaseURI());
             else {
                 NodeProxy proxy = (NodeProxy) node;
-                result = new AnyURIValue(proxy.getDocument().getName());
+                result = new AnyURIValue(proxy.getDocument().getURI());
             }
         }
         

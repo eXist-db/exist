@@ -1019,7 +1019,7 @@ public class ElementImpl extends NamedNode implements Element {
             buf.append(" exist:id=\"");
             buf.append(getGID());
             buf.append("\" exist:document=\"");
-            buf.append(((DocumentImpl)getOwnerDocument()).getFileName());
+            buf.append(((DocumentImpl)getOwnerDocument()).getFileURI());
             buf.append("\"");
         }
         if (declaresNamespacePrefixes()) {

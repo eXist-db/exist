@@ -55,8 +55,7 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
     private XMLReader xmlReader = null;
 	
     protected String id;
-    protected String documentName;
-    protected String path = null ;
+    protected XmldbURI path = null ;
     protected int handle = -1;
     protected int pos = -1;
     protected RemoteCollection parent;
@@ -72,7 +71,7 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
     protected Date datecreated= null;
     protected Date datemodified= null;
 	
-    public RemoteXMLResource(RemoteCollection parent, String docId, String id)
+    public RemoteXMLResource(RemoteCollection parent, XmldbURI docId, String id)
 	throws XMLDBException {
 	this(parent, -1, -1, docId, id);
     }
@@ -81,27 +80,23 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 			     RemoteCollection parent,
 			     int handle,
 			     int pos,
-			     String docId,
+			     XmldbURI docId,
 			     String id)
 	throws XMLDBException {
-	this.handle = handle;
-	this.pos = pos;
-	this.parent = parent;
-	this.id = id;
-	int p;
-    //TODO : use dedicated function in XmldbURI
-	if (docId != null && (p = docId.lastIndexOf("/")) != Constants.STRING_NOT_FOUND) {
-	    path = docId;
-	    documentName = docId.substring(p + 1);
-	} else {
-	    path = parent.getPath() + "/" + docId;
-	    documentName = docId;
-	}
+		this.handle = handle;
+		this.pos = pos;
+		this.parent = parent;
+		this.id = id;
+		if (docId.numSegments()>1) {
+			this.path = docId;
+		} else {
+			this.path = parent.getPathURI().append(docId);
+		}
     }
 
     public Date getCreationTime() throws XMLDBException {
 	Vector params = new Vector(1);
-	params.addElement(path);
+	params.addElement(path.toString());
 	try {
 	    return (Date) ((Vector) parent.getClient().execute("getTimestamps", params)).get(0);
 	} catch (XmlRpcException e) {
@@ -113,7 +108,7 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 
     public Date getLastModificationTime() throws XMLDBException {
 	Vector params = new Vector(1);
-	params.addElement(path);
+	params.addElement(path.toString());
 	try {
 	    return (Date) ((Vector) parent.getClient().execute("getTimestamps", params)).get(1);
 	} catch (XmlRpcException e) {
@@ -134,7 +129,7 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 	byte[] data = null;
 	if (id == null) {
 	    Vector params = new Vector();
-	    params.addElement(path);
+	    params.addElement(path.toString());
 	    params.addElement(properties);
 	    try {
 		Hashtable table = (Hashtable) parent.getClient().execute("getDocumentData", params);
@@ -256,13 +251,13 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
     }
 
     public String getDocumentId() throws XMLDBException {
-	return documentName;
+	return path.lastSegment().toString();
     }
 
     public String getId() throws XMLDBException {
 	if (id == null || id.equals("1")) 
-	    return documentName; 
-	return documentName + '_' + id;
+	    return getDocumentId(); 
+	return getDocumentId() + '_' + id;
     }
 
     public Collection getParentCollection() throws XMLDBException {
@@ -436,7 +431,7 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
     	DocumentType result = null;
     	Vector params = new Vector(1);
     	Vector request = null;
-    	params.addElement(path);
+    	params.addElement(path.toString());
     	try {
     		
     		request = (Vector) parent.getClient().execute("getDocType", params);
@@ -457,7 +452,7 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
     public void setDocType(DocumentType doctype) throws XMLDBException {
     	if (doctype != null ) {
     		Vector params = new Vector(4);
-    		params.addElement(path);
+    		params.addElement(path.toString());
     		params.addElement(doctype.getName());
     		params.addElement(doctype.getPublicId() == null ? "" : doctype.getPublicId());
     		params.addElement(doctype.getSystemId() == null ? "" : doctype.getSystemId());

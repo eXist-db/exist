@@ -45,6 +45,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
@@ -74,7 +75,7 @@ public class Get extends AbstractWebDAVMethod {
     }
     
     public void process(User user, HttpServletRequest request,
-            HttpServletResponse response, String path)
+            HttpServletResponse response, XmldbURI path)
             throws ServletException, IOException {
         
         DBBroker broker = null;
@@ -187,7 +188,7 @@ public class Get extends AbstractWebDAVMethod {
                 context = compiled.getContext();
             }
             
-            context.declareVariable("collection", collection.getName());
+            context.declareVariable("collection", collection.getURI());
             context.declareVariable("uri", request.getRequestURI());
             
             if(compiled == null){

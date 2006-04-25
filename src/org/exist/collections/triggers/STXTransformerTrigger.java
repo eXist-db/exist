@@ -23,6 +23,7 @@
  */
 package org.exist.collections.triggers;
 
+import java.net.URISyntaxException;
 import java.util.Map;
 
 import javax.xml.transform.Templates;
@@ -41,6 +42,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.Txn;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.xml.sax.SAXException;
 
@@ -74,17 +76,19 @@ public class STXTransformerTrigger extends FilteringTrigger {
 			System.setProperty("javax.xml.transform.TransformerFactory", origProperty);
 
 		getLogger().debug("compiling stylesheet " + stylesheet);
-        if(stylesheet.indexOf(':') == Constants.STRING_NOT_FOUND) {
-            ///TODO : use dedicated function in XmldbURI
-            // load stylesheet out of the database
-            int p = stylesheet.indexOf("/");
+    	XmldbURI stylesheetUri=null;
+    	try {
+    		stylesheetUri = XmldbURI.xmldbUriFor(stylesheet);
+    	} catch(URISyntaxException e) {
+     	}
+    	//TODO: allow full XmldbURIs to be used as well.
+        if(stylesheetUri==null || stylesheet.indexOf(':') == Constants.STRING_NOT_FOUND) {
+        	stylesheetUri = parent.getURI().resolveCollectionPath(stylesheetUri);
             DocumentImpl doc;
-            if(p == Constants.STRING_NOT_FOUND)
-                stylesheet = parent.getName() + "/" + stylesheet;
             try {
-				doc = (DocumentImpl)broker.getXMLResource(stylesheet);
+				doc = (DocumentImpl)broker.getXMLResource(stylesheetUri);
 				if(doc == null)
-					throw new CollectionConfigurationException("stylesheet " + stylesheet + " not found in database");
+					throw new CollectionConfigurationException("stylesheet " + stylesheetUri + " not found in database");
 				Serializer serializer = broker.getSerializer();
 				TemplatesHandler thandler = factory.newTemplatesHandler();
 				serializer.setSAXHandlers(thandler, null);
@@ -110,7 +114,7 @@ public class STXTransformerTrigger extends FilteringTrigger {
 	/* (non-Javadoc)
 	 * @see org.exist.collections.Trigger#prepare(java.lang.String, org.w3c.dom.Document)
 	 */
-	public void prepare(int event, DBBroker broker, Txn transaction, String documentName, DocumentImpl existingDocument) throws TriggerException {
+	public void prepare(int event, DBBroker broker, Txn transaction, XmldbURI documentName, DocumentImpl existingDocument) throws TriggerException {
 			SAXResult result = new SAXResult();
 			result.setHandler(getOutputHandler());
 			result.setLexicalHandler(getLexicalOutputHandler());

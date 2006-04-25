@@ -608,7 +608,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         final User user = broker.getUser();
         if (!collection.getPermissions().validate(user, Permission.READ))
             throw new PermissionDeniedException("User '" + user.getName() + 
-                    "' has no permission to read collection '" + collection.getName() + "'");        
+                    "' has no permission to read collection '" + collection.getURI() + "'");        
         List collections;
         if (includeDescendants) 
             collections = collection.getDescendants(broker, broker.getUser());
@@ -714,12 +714,12 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                             long address = StorageAddress.read(is);
                             Node storedNode = broker.objectWith(new NodeProxy(doc, storedGID, address));
                             if (storedNode == null) {
-                                throw new EXistException("Node " + storedGID + " in document " + document.getFileName() + " not found.");
+                                throw new EXistException("Node " + storedGID + " in document " + document.getFileURI() + " not found.");
                             }
                             if (storedNode.getNodeType() != Node.ELEMENT_NODE && storedNode.getNodeType() != Node.ATTRIBUTE_NODE) {
-                                LOG.error("Node " + storedGID + " in document " +  document.getFileName() + " is not an element or attribute node.");
+                                LOG.error("Node " + storedGID + " in document " +  document.getFileURI() + " is not an element or attribute node.");
                                 LOG.error("Type = " + storedNode.getNodeType() + "; name = " + storedNode.getNodeName() + "; value = " + storedNode.getNodeValue());
-                                throw new EXistException("Node " + storedGID + " in document " + document.getFileName() + " is not an element or attribute node.");
+                                throw new EXistException("Node " + storedGID + " in document " + document.getFileURI() + " is not an element or attribute node.");
                             }
                             if(!storedNode.getLocalName().equals(nodeName)) {
                                 LOG.error("Node name does not correspond to index entry. Expected " + nodeName + "; found " + storedNode.getLocalName());

@@ -41,6 +41,7 @@ import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.lang.reflect.Field;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -74,7 +75,6 @@ import org.apache.avalon.excalibur.cli.CLUtil;
 import org.exist.dom.XMLUtil;
 import org.exist.security.Permission;
 import org.exist.security.User;
-import org.exist.storage.DBBroker;
 import org.exist.util.CollectionScanner;
 import org.exist.util.Configuration;
 import org.exist.util.DirectoryScanner;
@@ -94,6 +94,7 @@ import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XPathQueryServiceImpl;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
+import org.exist.xquery.util.URIUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -107,7 +108,6 @@ import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
-import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XPathQueryService;
 import org.xmldb.api.modules.XUpdateQueryService;
 
@@ -168,7 +168,7 @@ public class InteractiveClient {
     protected Collection current = null;
     protected int nextInSet = 1;
     protected int maxResults = 10;
-    protected String path = DBBroker.ROOT_COLLECTION;
+    protected XmldbURI path = XmldbURI.ROOT_COLLECTION_URI;
     protected Properties properties;
     
     protected String[] resources = null;
@@ -318,14 +318,14 @@ public class InteractiveClient {
                 cols[0] = perm.toString();
                 cols[1] = perm.getOwner();
                 cols[2] = perm.getOwnerGroup();
-                cols[3] = childCollections[i];
+                cols[3] = URIUtils.urlDecodeUtf8(childCollections[i]);
                 resources[i] = 'd' + formatString(cols, colSizes);
             } else
-                resources[i] = childCollections[i];
+                resources[i] = URIUtils.urlDecodeUtf8(childCollections[i]);
             
             if (startGUI) {
                 tableData.add( new ResourceDescriptor.Collection(
-                        childCollections[i],
+                        XmldbURI.create(childCollections[i]),
                         perm.getOwner(),
                         perm.getOwnerGroup(),
                         perm.toString(), null /*lastModificationTime*/ ) );
@@ -341,16 +341,16 @@ public class InteractiveClient {
             if (properties.getProperty("permissions").equals("true")) {
                 resources[i] = '-' + perm.toString() + '\t' + perm.getOwner()
                 + '\t' + perm.getOwnerGroup() + '\t'
-                        + childResources[j];
+                        + URIUtils.urlDecodeUtf8(childResources[j]);
             } else
-                resources[i] = childResources[j];
+                resources[i] = URIUtils.urlDecodeUtf8(childResources[j]);
             
             Date lastModificationTime = ((EXistResource)res).getLastModificationTime();
             resources[i] += "\t" + lastModificationTime;
             
             if (startGUI) {
                 tableData.add(new ResourceDescriptor.Document(
-                        childResources[j],
+                        XmldbURI.create(childResources[j]),
                         perm.getOwner(),
                         perm.getOwnerGroup(),
                         perm.toString(),
@@ -428,9 +428,10 @@ public class InteractiveClient {
             args = new String[argList.size()];
             argList.toArray(args);
         }
-        String newPath = path;
         if (args.length == 0) return true;
         try {
+            XmldbURI newPath = path;
+            XmldbURI currUri = XmldbURI.xmldbUriFor(properties.getProperty("uri")).resolveCollectionPath(path);
             if (args[0].equalsIgnoreCase("ls")) {
                 // list collection contents
                 getResources();
@@ -454,39 +455,27 @@ public class InteractiveClient {
             } else if (args[0].equalsIgnoreCase("cd")) {
                 // change current collection
                 completitions.clear();
-                String tempPath = newPath;
                 Collection temp;
-                //TODO : use dedicated function in XmldbURI
+                XmldbURI collectionPath;
                 if (args.length < 2 || args[1] == null) {
-                    tempPath = DBBroker.ROOT_COLLECTION;
-                    temp = DatabaseManager.getCollection(
-                            properties.getProperty("uri") + DBBroker.ROOT_COLLECTION, 
-                            properties.getProperty("user"), 
-                            properties.getProperty("password"));
+                    collectionPath = XmldbURI.ROOT_COLLECTION_URI;
                 } else {
-                    //TODO : use dedicated function in XmldbURI
-                    if (args[1].equals("..")) {
-                        tempPath = newPath.equals(DBBroker.ROOT_COLLECTION) ? 
-                        DBBroker.ROOT_COLLECTION : 
-                        tempPath.substring(0, newPath.lastIndexOf("/"));
-                        if (tempPath.length() == 0)
-                            tempPath = DBBroker.ROOT_COLLECTION;
-                    } else if (args[1].startsWith("/"))
-                        tempPath = args[1];
-                    else
-                        tempPath = tempPath + "/" + args[1];                    
-
-                    XmldbURI uri = new XmldbURI(properties.getProperty("uri"), tempPath);                   
-                    temp = DatabaseManager.getCollection(
-                    		uri.toString(), 
-                    		properties.getProperty("user"),
-                            properties.getProperty("password"));
+                	collectionPath = XmldbURI.xmldbUriFor(URIUtils.urlEncodeUtf8(args[1]));
                 }
+                collectionPath = currUri.resolveCollectionPath(collectionPath);
+                if(collectionPath.numSegments()==0) {
+                	collectionPath = currUri.resolveCollectionPath(XmldbURI.ROOT_COLLECTION_URI);
+                    messageln("cannot go above "+XmldbURI.ROOT_COLLECTION_URI.toString());
+                }
+                temp = DatabaseManager.getCollection(
+                		collectionPath.toString(), 
+                		properties.getProperty("user"),
+                        properties.getProperty("password"));
                 if (temp != null) {
                     current = temp;
-                    newPath = tempPath;
+                    newPath = collectionPath.toCollectionPathURI();
                     if (startGUI)
-                        frame.setPath(newPath);
+                        frame.setPath(collectionPath.toCollectionPathURI());
                 } else {
                     messageln("no such collection.");
                 }
@@ -496,12 +485,27 @@ public class InteractiveClient {
                     messageln("cp requires two arguments.");
                     return true;
                 }
-                copy(args[1], args[2]);
+                XmldbURI src,dest;
+                try {
+                	src = URIUtils.encodeXmldbUriFor(args[1]);
+                	dest = URIUtils.encodeXmldbUriFor(args[2]);
+                } catch(URISyntaxException e) {
+                    messageln("could not parse collection name into a valid URI: "+e.getMessage());
+                    return false;
+                }
+                copy(src,dest);
                 getResources();
                 
             } else if (args[0].equalsIgnoreCase("edit")) {
                 if (args.length == 2) {
-                    editResource(args[1]);
+                    XmldbURI resource;
+                    try {
+                    	resource = URIUtils.encodeXmldbUriFor(args[1]);
+                    } catch(URISyntaxException e) {
+                        messageln("could not parse resource name into a valid URI: "+e.getMessage());
+                        return false;
+                    }
+                    editResource(resource);
                 } else {
                     messageln("Please specify a resource.");
                 }
@@ -510,7 +514,14 @@ public class InteractiveClient {
                     System.err.println("wrong number of arguments.");
                     return true;
                 }
-                Resource res = retrieve(args[1]);
+                XmldbURI resource;
+                try {
+                	resource = URIUtils.encodeXmldbUriFor(args[1]);
+                } catch(URISyntaxException e) {
+                    messageln("could not parse resource name into a valid URI: "+e.getMessage());
+                    return false;
+                }
+                Resource res = retrieve(resource);
                 // display document
                 if (res != null) {
                     String data;
@@ -617,9 +628,16 @@ public class InteractiveClient {
                     messageln("missing argument.");
                     return true;
                 }
-                CollectionManagementService mgtService = (CollectionManagementService) current
+                XmldbURI collUri;
+                try {
+                	collUri = URIUtils.encodeXmldbUriFor(args[1]);
+                } catch(URISyntaxException e) {
+                    messageln("could not parse collection name into a valid URI: "+e.getMessage());
+                    return false;
+                }
+                CollectionManagementServiceImpl mgtService = (CollectionManagementServiceImpl) current
                         .getService("CollectionManagementService", "1.0");
-                Collection newCollection = mgtService.createCollection(args[1]);
+                Collection newCollection = mgtService.createCollection(collUri);
                 if (newCollection == null)
                     messageln("could not create collection.");
                 else
@@ -673,7 +691,14 @@ public class InteractiveClient {
                     messageln("wrong argument count.");
                     return true;
                 }
-                rmcol(args[1]);
+                XmldbURI collUri;
+                try {
+                	collUri = URIUtils.encodeXmldbUriFor(args[1]);
+                } catch(URISyntaxException e) {
+                    messageln("could not parse collection name into a valid URI: "+e.getMessage());
+                    return false;
+                }
+                rmcol(collUri);
                 // re-read current collection
                 current = DatabaseManager.getCollection(properties
                         .getProperty("uri")
@@ -704,8 +729,9 @@ public class InteractiveClient {
                     }
                     String home = console.readLine("home collection [none]: ");
                     User user = new User(args[1], p1);
-                    if (home != null && home.length() > 0)
-                        user.setHome(home);
+                    if (home != null && home.length() > 0) {
+                        user.setHome(URIUtils.encodeXmldbUriFor(home));
+                    }
                     String groups = console.readLine("enter groups: ");
                     StringTokenizer tok = new StringTokenizer(groups, " ,");
                     String group;
@@ -1003,7 +1029,7 @@ public class InteractiveClient {
     /**
      * @param args
      */
-    private void editResource(String name) {
+    private void editResource(XmldbURI name) {
         try {
             DocumentView view = new DocumentView(this, name, properties);
             view.setSize(new Dimension(640, 400));
@@ -1116,13 +1142,13 @@ public class InteractiveClient {
         }
     }
     
-    protected final Resource retrieve(String resource) throws XMLDBException {
+    protected final Resource retrieve(XmldbURI resource) throws XMLDBException {
         return retrieve(resource, properties.getProperty("indent"));
     }
     
-    protected final Resource retrieve(String resource, String indent)
+    protected final Resource retrieve(XmldbURI resource, String indent)
     throws XMLDBException {
-        Resource res = current.getResource(resource);
+        Resource res = current.getResource(resource.toString());
         if (res == null) {
             messageln("document not found.");
             return null;
@@ -1172,39 +1198,35 @@ public class InteractiveClient {
         messageln(modifications + " modifications processed " + "successfully.");
     }
     
-    private final void rmcol(String collection) throws XMLDBException {
-        CollectionManagementService mgtService = (CollectionManagementService) current
+    private final void rmcol(XmldbURI collection) throws XMLDBException {
+    	CollectionManagementServiceImpl mgtService = (CollectionManagementServiceImpl) current
                 .getService("CollectionManagementService", "1.0");
         message("removing collection " + collection + " ...");
         mgtService.removeCollection(collection);
         messageln("done.");
     }
     
-    private final void copy(String source, String destination) throws XMLDBException {
+    private final void copy(XmldbURI source, XmldbURI destination) throws XMLDBException {
         CollectionManagementServiceImpl mgtService = (CollectionManagementServiceImpl)
         current.getService("CollectionManagementService", "1.0");
-        String destName = null;
+        XmldbURI destName = destination.lastSegment();
         Collection destCol = resolveCollection(destination);
         if(destCol == null) {
-            ///TODO : use dedicated function in XmldbURI
-            int p = destination.lastIndexOf("/");
-            if(p == Constants.STRING_NOT_FOUND) {
-                destName = destination;
-                destination = current.getName();
-            } else {
-                destName = destination.substring(p + 1);
-                destination = destination.substring(0, p);
-            }
+        	if(destination.numSegments()==1) {
+                destination = XmldbURI.create(current.getName());
+        	} else {
+        		destination = destination.removeLastSegment();
+        	}
         }
         Resource srcDoc = resolveResource(source);
         if(srcDoc != null) {
-            ///TODO : use dedicated function in XmldbURI
-            String resourcePath = srcDoc.getParentCollection().getName() + "/" + srcDoc.getId();
+            XmldbURI resourcePath = XmldbURI.create(srcDoc.getParentCollection().getName()).append(srcDoc.getId());
             messageln("Copying resource '" + resourcePath + "' to '" + destination + "'");
             mgtService.copyResource(resourcePath, destination, destName);
-        } else
+        } else {
             messageln("Copying collection '" + source + "' to '" + destination + "'");
-        mgtService.copy(source, destination, destName);
+            mgtService.copy(source, destination, destName);
+        }
     }
     
     private final void reindex() throws XMLDBException {
@@ -1228,52 +1250,54 @@ public class InteractiveClient {
     }
     
     private synchronized boolean findRecursive(Collection collection, File dir,
-            String base) {
-        File temp[] = dir.listFiles();
+            XmldbURI base) {
+        File files[] = dir.listFiles();
         Collection c;
         Resource document;
-        CollectionManagementService mgtService;
-        String next;
+        CollectionManagementServiceImpl mgtService;
+        //The XmldbURIs here aren't really used...
+        XmldbURI next;
         MimeType mimeType;
-        for (int i = 0; i < temp.length; i++) {
-            //TODO : use dedicated function in XmldbURI
-            next = base + "/" + temp[i].getName();
+        for (int i = 0; i < files.length; i++) {
+            next = base.append(files[i].getName());
             try {
-                if (temp[i].isDirectory()) {
-                    messageln("entering directory " + temp[i].getAbsolutePath());
-                    c = collection.getChildCollection(temp[i].getName());
+                if (files[i].isDirectory()) {
+                    messageln("entering directory " + files[i].getAbsolutePath());
+                    c = collection.getChildCollection(files[i].getName());
                     if (c == null) {
-                        mgtService = (CollectionManagementService) collection
+                        mgtService = (CollectionManagementServiceImpl) collection
                                 .getService("CollectionManagementService",
                                 "1.0");
-                        c = mgtService.createCollection(temp[i].getName());
+                        c = mgtService.createCollection(URIUtils.encodeXmldbUriFor(files[i].getName()));
                     }
                     if (c instanceof Observable && verbose) {
                         ProgressObserver observer = new ProgressObserver();
                         ((Observable) c).addObserver(observer);
                     }
-                    findRecursive(c, temp[i], next);
+                    findRecursive(c, files[i], next);
                 } else {
                     long start1 = System.currentTimeMillis();
-                    mimeType = MimeTable.getInstance().getContentTypeFor(temp[i].getName());
+                    mimeType = MimeTable.getInstance().getContentTypeFor(files[i].getName());
                     if(mimeType == null)
-                        messageln("File " + temp[i].getName() + " has an unknown " +
+                        messageln("File " + files[i].getName() + " has an unknown " +
                                 "suffix. Cannot determine file type.");
                     else {
-                        message("storing document " + temp[i].getName() + " (" + i
-                                + " of " + temp.length + ") " + "...");
-                        document = collection.createResource(temp[i]
-                                .getName(), mimeType.getXMLDBType());
-                        document.setContent(temp[i]);
+                        message("storing document " + files[i].getName() + " (" + i
+                                + " of " + files.length + ") " + "...");
+                        document = collection.createResource(URIUtils.urlEncodeUtf8(files[i]
+                                .getName()), mimeType.getXMLDBType());
+                        document.setContent(files[i]);
                         ((EXistResource)document).setMimeType(mimeType.getName());
                         collection.storeResource(document);
                         ++filesCount;
-                        messageln(" " + temp[i].length() + " bytes in "
+                        messageln(" " + files[i].length() + " bytes in "
                                 + (System.currentTimeMillis() - start1) + "ms.");
                     }
                 }
+            } catch (URISyntaxException e) {
+                messageln("uri syntax exception parsing " + files[i].getAbsolutePath() + ": " + e.getMessage());
             } catch (XMLDBException e) {
-                messageln("could not parse file " + temp[i].getAbsolutePath());
+                messageln("could not parse file " + files[i].getAbsolutePath() + ": " + e.getMessage());
             }
         }
         return true;
@@ -1407,16 +1431,23 @@ public class InteractiveClient {
             return;
         }
         
+        XmldbURI filenameUri;
+        try {
+			filenameUri = URIUtils.encodeXmldbUriFor(file.getName());
+		} catch (URISyntaxException e1) {
+            upload.showMessage(file.getAbsolutePath()+ " could not be encoded as a URI");
+            return;
+		}
         // Directory, create collection, and crawl it
         if (file.isDirectory()) {
             Collection c=null;
             try {
-                c = collection.getChildCollection(file.getName());
+                c = collection.getChildCollection(filenameUri.toString());
                 if (c == null) {
-                    CollectionManagementService mgtService = (CollectionManagementService) collection
+                    CollectionManagementServiceImpl mgtService = (CollectionManagementServiceImpl) collection
                             .getService("CollectionManagementService",
                             "1.0");
-                    c = mgtService.createCollection(file.getName());
+                    c = mgtService.createCollection(filenameUri);
                 }
             } catch (XMLDBException e) {
                 upload.showMessage("Impossible to create a collection "
@@ -1453,7 +1484,7 @@ public class InteractiveClient {
             }
             try {
                 Resource res = collection.createResource(
-                        file.getName(), 
+                		filenameUri.toString(), 
                         mimeType.getXMLDBType()
                 );
                 ((EXistResource) res).setMimeType(mimeType.getName());
@@ -1473,26 +1504,22 @@ public class InteractiveClient {
         
     
     
-    private void mkcol(String collPath) throws XMLDBException {
+    private void mkcol(XmldbURI collPath) throws XMLDBException {
         System.out.println("creating '" + collPath + "'");
-        ///TODO : use dedicated function in XmldbURI
-        if (collPath.startsWith(DBBroker.ROOT_COLLECTION))
-            collPath = collPath.substring(DBBroker.ROOT_COLLECTION.length());
-        CollectionManagementService mgtService;
+        XmldbURI[] segments = collPath.getPathSegments(); 
+        CollectionManagementServiceImpl mgtService;
         Collection c;
-        String p = DBBroker.ROOT_COLLECTION, token;
-        StringTokenizer tok = new StringTokenizer(collPath, "/");
-        while (tok.hasMoreTokens()) {
-            token = tok.nextToken();            
-            p = p + "/" + token;
+        XmldbURI p = XmldbURI.ROOT_COLLECTION_URI;
+        for(int i=1;i<segments.length;i++) {
+             p = p.append(segments[i]);
             c = DatabaseManager.getCollection(
                     properties.getProperty("uri") + p, 
                     properties.getProperty("user"), 
                     properties.getProperty("password"));
             if (c == null) {
-                mgtService = (CollectionManagementService) current.getService(
+                mgtService = (CollectionManagementServiceImpl) current.getService(
                         "CollectionManagementService", "1.0");
-                current = mgtService.createCollection(token);
+                current = mgtService.createCollection(segments[i]);
             } else
                 current = c;
         }
@@ -1643,8 +1670,13 @@ public class InteractiveClient {
                             .getArgument());
                     break;
                 case CommandlineOptions.COLLECTION_OPT :
-                    path = option.getArgument();
-                    cOpt.foundCollection = true;
+                	try {
+                		path = URIUtils.encodeXmldbUriFor(option.getArgument());
+                        cOpt.foundCollection = true;
+                	} catch(URISyntaxException e) {
+                        System.err.println("Invalid collection path specified: "+e.getMessage());
+                        return null;
+                	}
                     break;
                 case CommandlineOptions.RESOURCE_OPT :
                     cOpt.optionResource = option.getArgument();
@@ -1666,17 +1698,32 @@ public class InteractiveClient {
                     cOpt.interactive = false;
                     break;
                 case CommandlineOptions.GET_OPT :
-                    cOpt.optionGet = option.getArgument();
-                    cOpt.interactive = false;
+                	try {
+                		cOpt.optionGet = URIUtils.encodeXmldbUriFor(option.getArgument());
+                        cOpt.interactive = false;
+                	} catch(URISyntaxException e) {
+                        System.err.println("Invalid collection path specified: "+e.getMessage());
+                        return null;
+                	}
                     break;
                 case CommandlineOptions.MKCOL_OPT :
-                    cOpt.optionMkcol = option.getArgument();
-                    cOpt.foundCollection = true;
+                	try {
+	                    cOpt.optionMkcol = URIUtils.encodeXmldbUriFor(option.getArgument());
+	                    cOpt.foundCollection = true;
+                	} catch(URISyntaxException e) {
+                        System.err.println("Invalid collection path specified: "+e.getMessage());
+                        return null;
+                	}
                     break;
                 case CommandlineOptions.RMCOL_OPT :
-                    cOpt.optionRmcol = option.getArgument();
-                    cOpt.foundCollection = true;
-                    cOpt.interactive = false;
+                	try {
+	                    cOpt.optionRmcol = URIUtils.encodeXmldbUriFor(option.getArgument());
+	                    cOpt.foundCollection = true;
+	                    cOpt.interactive = false;
+	               	} catch(URISyntaxException e) {
+                        System.err.println("Invalid collection path specified: "+e.getMessage());
+                        return null;
+                	}
                     break;
                 case CommandlineOptions.FIND_OPT :
                     cOpt.optionXpath = (option.getArgumentCount() == 1 ? option
@@ -2277,32 +2324,24 @@ public class InteractiveClient {
         }
     }
     
-    //TODO : use dedicated function in XmldbURI
-    private Collection resolveCollection(String path) throws XMLDBException {
+    private Collection resolveCollection(XmldbURI path) throws XMLDBException {
         return DatabaseManager.getCollection(
                 properties.getProperty("uri") + path, 
                 properties.getProperty("user"), 
                 properties.getProperty("password"));
     }
     
-    //TODO : use dedicated function in XmldbURI
-    private Resource resolveResource(String path) throws XMLDBException {        String collectionPath;
-        String resourceName = path;
+    private Resource resolveResource(XmldbURI path) throws XMLDBException {
+    	XmldbURI collectionPath = path.numSegments()==1?XmldbURI.create(current.getName()):path.removeLastSegment();
+    	XmldbURI resourceName = path.lastSegment();
         
-        int p = path.lastIndexOf("/");
-        if(p == Constants.STRING_NOT_FOUND) {
-            collectionPath = current.getName();
-        } else {
-            collectionPath = path.substring(0, p);
-            resourceName = path.substring(p + 1);
-        }
         Collection collection = resolveCollection(collectionPath);
         if(collection == null) {
             messageln("Collection " + collectionPath + " not found.");
             return null;
         }
         messageln("Locating resource " + resourceName + " in collection " + collection.getName());
-        return collection.getResource(resourceName);
+        return collection.getResource(resourceName.toString());
     }
     
     private class CollectionCompleter  implements Completor {

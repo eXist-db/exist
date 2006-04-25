@@ -23,6 +23,9 @@ package org.exist.storage.test;
 
 import java.io.File;
 
+import junit.framework.TestCase;
+import junit.textui.TestRunner;
+
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.DocumentImpl;
@@ -33,16 +36,12 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
-import org.exist.xmldb.CollectionManagementServiceImpl;
+import org.exist.xmldb.XmldbURI;
 import org.xml.sax.InputSource;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
-import org.xmldb.api.base.Resource;
-import org.xmldb.api.modules.CollectionManagementService;
-
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
 
 public class MoveResourceTest extends TestCase {
 
@@ -65,22 +64,22 @@ public class MoveResourceTest extends TestCase {
 			assertNotNull(transaction);
 			System.out.println("Transaction started ...");
 
-			Collection root = broker.getOrCreateCollection(transaction,	DBBroker.ROOT_COLLECTION + "/test");
+			Collection root = broker.getOrCreateCollection(transaction,	TestConstants.TEST_COLLECTION_URI);
 			assertNotNull(root);
 			broker.saveCollection(transaction, root);
 
-			Collection test2 = broker.getOrCreateCollection(transaction,	DBBroker.ROOT_COLLECTION + "/test/test2");
+			Collection test2 = broker.getOrCreateCollection(transaction,TestConstants.TEST_COLLECTION_URI2);
 			assertNotNull(test2);
 			broker.saveCollection(transaction, test2);
 
 			File f = new File("samples/shakespeare/r_and_j.xml");
 			assertNotNull(f);
-			IndexInfo info = test2.validateXMLResource(transaction, broker, "test.xml", new InputSource(f.toURI().toASCIIString()));
+			IndexInfo info = test2.validateXMLResource(transaction, broker, TestConstants.TEST_XML_URI, new InputSource(f.toURI().toASCIIString()));
 			assertNotNull(info);
 			test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
 			
             System.out.println("Moving document test.xml to new_test.xml ...");
-			broker.moveXMLResource(transaction, info.getDocument(), root, "new_test.xml");
+			broker.moveXMLResource(transaction, info.getDocument(), root, XmldbURI.create("new_test.xml"));
 			broker.saveCollection(transaction, root);
             
 			transact.commit(transaction);
@@ -105,7 +104,7 @@ public class MoveResourceTest extends TestCase {
 	        Serializer serializer = broker.getSerializer();
 	        serializer.reset();
 	        
-	        DocumentImpl doc = broker.getXMLResource(DBBroker.ROOT_COLLECTION + "/test/new_test.xml", Lock.READ_LOCK);
+	        DocumentImpl doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test/new_test.xml"), Lock.READ_LOCK);
 	        assertNotNull("Document should not be null", doc);
 	        String data = serializer.serialize(doc);
 	        assertNotNull(data);
@@ -118,7 +117,7 @@ public class MoveResourceTest extends TestCase {
             assertNotNull(transaction);
             System.out.println("Transaction started ...");
             
-            Collection root = broker.openCollection(DBBroker.ROOT_COLLECTION + "/test", Lock.WRITE_LOCK);
+            Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, Lock.WRITE_LOCK);
             assertNotNull(root);
             transaction.registerLock(root.getLock(), Lock.WRITE_LOCK);            
             broker.removeCollection(transaction, root); 
@@ -220,7 +219,7 @@ public class MoveResourceTest extends TestCase {
 //	    res.setContent(f);
 //	    test2.storeResource(res);
 //	    
-//	    mgr.moveResource(DBBroker.ROOT_COLLECTION +  "/test/test2/test3.xml", DBBroker.ROOT_COLLECTION + "/test", "new_test3.xml");
+//	    mgr.moveResource(DBBroker.ROOT_COLLECTION +  "/test/test2/test3.xml", TestConstants.TEST_COLLECTION_URI, "new_test3.xml");
 //	}
 //	
 //	public void testXMLDBRead() {

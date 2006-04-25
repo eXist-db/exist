@@ -53,6 +53,7 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.LockException;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XQuery;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -80,7 +81,7 @@ public abstract class DBBroker extends Observable {
     public final static String CONFIG_COLLECTION = SYSTEM_COLLECTION + "/config";
     public final static String COLLECTION_CONFIG_FILENAME = "collection.xconf";
     
-	protected final static Logger LOG = Logger.getLogger(DBBroker.class);
+    protected final static Logger LOG = Logger.getLogger(DBBroker.class);
 	
 	protected boolean caseSensitive = true;
 
@@ -255,8 +256,19 @@ public abstract class DBBroker extends Observable {
 	 * The path should be absolute, e.g. /db/shakespeare.
 	 * 
 	 * @return collection or null if no collection matches the path
-	 */
+	 *
+	 * @deprecated Use XmldbURI instead!
+	 *
 	public abstract Collection getCollection(String name);
+	*/
+	
+	/**
+	 *  Returns the database collection identified by the specified path.
+	 * The path should be absolute, e.g. /db/shakespeare.
+	 * 
+	 * @return collection or null if no collection matches the path
+	 */
+	public abstract Collection getCollection(XmldbURI uri);
 
 	/**
 	 * Returns the database collection identified by the specified path.
@@ -264,8 +276,35 @@ public abstract class DBBroker extends Observable {
 	 * looking up the path in the btree.
 	 * 
 	 * @return
-	 */
+	 * @deprecated Use XmldbURI instead!
+	 *
 	public abstract Collection getCollection(String name, long address);
+	*/
+	
+	/**
+	 * Returns the database collection identified by the specified path.
+	 * The storage address is used to locate the collection without
+	 * looking up the path in the btree.
+	 * 
+	 * @return
+	 */
+	public abstract Collection getCollection(XmldbURI uri, long address);
+	
+	/**
+	 * Open a collection for reading or writing. The collection is identified by its
+	 * absolute path, e.g. /db/shakespeare. It will be loaded and locked according to the
+	 * lockMode argument. 
+	 * 
+	 * The caller should take care to release the collection lock properly.
+	 * 
+	 * @param name the collection path
+	 * @param lockMode one of the modes specified in class {@link org.exist.storage.lock.Lock}
+	 * @return collection or null if no collection matches the path
+	 * 
+	 * @deprecated Use XmldbURI instead!
+	 *
+	public abstract Collection openCollection(String name, int lockMode);
+	*/
 	
 	/**
 	 * Open a collection for reading or writing. The collection is identified by its
@@ -278,7 +317,22 @@ public abstract class DBBroker extends Observable {
 	 * @param lockMode one of the modes specified in class {@link org.exist.storage.lock.Lock}
 	 * @return collection or null if no collection matches the path
 	 */
-	public abstract Collection openCollection(String name, int lockMode);
+	public abstract Collection openCollection(XmldbURI uri, int lockMode);
+	
+	/**
+	 *  Returns the database collection identified by the specified path.
+	 * If the collection does not yet exist, it is created - including all
+	 * ancestors. The path should be absolute, e.g. /db/shakespeare.
+	 * 
+	 * @return collection or null if no collection matches the path
+	 * 
+	 * @deprecated Use XmldbURI instead!
+	 *
+	public Collection getOrCreateCollection(Txn transaction, String name)
+		throws PermissionDeniedException {
+		return null;
+	}
+	*/
 	
 	/**
 	 *  Returns the database collection identified by the specified path.
@@ -287,7 +341,7 @@ public abstract class DBBroker extends Observable {
 	 * 
 	 * @return collection or null if no collection matches the path
 	 */
-	public Collection getOrCreateCollection(Txn transaction, String name)
+	public Collection getOrCreateCollection(Txn transaction, XmldbURI uri)
 		throws PermissionDeniedException {
 		return null;
 	}
@@ -336,10 +390,37 @@ public abstract class DBBroker extends Observable {
 	 * 
 	 * @return the document or null if no document could be found at the
 	 * specified location.
-	 */
+	 * 
+	 * @deprecated Use XmldbURI instead!
+	 *
 	public abstract Document getXMLResource(String path) throws PermissionDeniedException;
+	*/
 
+	/**
+	 *  Return the document stored at the specified path. The
+	 * path should be absolute, e.g. /db/shakespeare/plays/hamlet.xml.
+	 * 
+	 * @return the document or null if no document could be found at the
+	 * specified location.
+	 */
+	public abstract Document getXMLResource(XmldbURI docURI) throws PermissionDeniedException;
+
+	/**
+	 * @deprecated Use XmldbURI instead!
+	 *
 	public abstract DocumentImpl getXMLResource(String docPath, int lockMode) 
+		throws PermissionDeniedException;
+	*/
+
+	/**
+	 *  Return the document stored at the specified path. The
+	 * path should be absolute, e.g. /db/shakespeare/plays/hamlet.xml,
+	 * with the specified lock.
+	 * 
+	 * @return the document or null if no document could be found at the
+	 * specified location.
+	 */
+	public abstract DocumentImpl getXMLResource(XmldbURI docURI, int lockMode) 
 		throws PermissionDeniedException;
 
 	/**
@@ -446,8 +527,11 @@ public abstract class DBBroker extends Observable {
 	 * 
 	 * @param collectionName
 	 * @throws PermissionDeniedException
-	 */
+	 *
 	public abstract void reindexCollection(String collectionName) 
+		throws PermissionDeniedException;
+	*/
+	public abstract void reindexCollection(XmldbURI collectionName) 
 		throws PermissionDeniedException;
 	
     public abstract void repair() throws PermissionDeniedException;
@@ -559,8 +643,22 @@ public abstract class DBBroker extends Observable {
 	 * @param collection the collection to move
 	 * @param destination the destination collection
 	 * @param newName the new name the collection should have in the destination collection
-	 */
+	 * @deprecated Use XmldbURI instead
+	 *
 	public abstract void moveCollection(Txn transaction, Collection collection, Collection destination, String newName) 
+	throws PermissionDeniedException, LockException;
+	*/
+	
+	/**
+	 * Move a collection and all its subcollections to another collection and rename it.
+	 * Moving a collection just modifies the collection path and all resource paths. The
+	 * data itself remains in place.
+	 * 
+	 * @param collection the collection to move
+	 * @param destination the destination collection
+	 * @param newName the new name the collection should have in the destination collection
+	 */
+	public abstract void moveCollection(Txn transaction, Collection collection, Collection destination, XmldbURI newName) 
 	throws PermissionDeniedException, LockException;
 	
 	/**
@@ -569,8 +667,20 @@ public abstract class DBBroker extends Observable {
 	 * @param doc the resource to move
 	 * @param destination the destination collection
 	 * @param new Name the new name the resource should have in the destination collection
-	 */
+	 * @deprecated Use XmldbURI version instead
+	 *
 	public abstract void moveXMLResource(Txn transaction, DocumentImpl doc, Collection destination, String newName)
+	throws PermissionDeniedException, LockException;
+	*/
+	
+	/**
+	 * Move a resource to the destination collection and rename it.
+	 * 
+	 * @param doc the resource to move
+	 * @param destination the destination collection
+	 * @param new Name the new name the resource should have in the destination collection
+	 */
+	public abstract void moveXMLResource(Txn transaction, DocumentImpl doc, Collection destination, XmldbURI newName)
 	throws PermissionDeniedException, LockException;
 	
 	/**
@@ -579,8 +689,20 @@ public abstract class DBBroker extends Observable {
 	 * @param doc the resource to move
 	 * @param destination the destination collection
 	 * @param new Name the new name the resource should have in the destination collection
-	 */
+	 * @deprecated Use XmldbURI version instead
+	 *
 	public abstract void copyCollection(Txn transaction, Collection collection, Collection destination, String newName)
+	throws PermissionDeniedException, LockException;
+	*/
+	
+	/**
+	 * Copy a collection to the destination collection and rename it.
+	 * 
+	 * @param doc the resource to move
+	 * @param destination the destination collection
+	 * @param new Name the new name the resource should have in the destination collection
+	 */
+	public abstract void copyCollection(Txn transaction, Collection collection, Collection destination, XmldbURI newName)
 	throws PermissionDeniedException, LockException;
 	
 	/**
@@ -591,8 +713,22 @@ public abstract class DBBroker extends Observable {
 	 * @param newName the new name the resource should have in the destination collection
 	 * @throws PermissionDeniedException
 	 * @throws LockException
-	 */
+	 * @deprecated Use XmldbURI version instead
+	 *
 	public abstract void copyXMLResource(Txn transaction, DocumentImpl doc, Collection destination, String newName) 
+	throws PermissionDeniedException, LockException;
+	*/
+	
+	/**
+	 * Copy a resource to the destination collection and rename it.
+	 * 
+	 * @param doc the resource to copy
+	 * @param destination the destination collection
+	 * @param newName the new name the resource should have in the destination collection
+	 * @throws PermissionDeniedException
+	 * @throws LockException
+	 */
+	public abstract void copyXMLResource(Txn transaction, DocumentImpl doc, Collection destination, XmldbURI newName) 
 	throws PermissionDeniedException, LockException;
 	
     /**

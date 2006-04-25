@@ -31,6 +31,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -39,7 +40,9 @@ import org.w3c.dom.NodeList;
 public class CollectionConfiguration {
 
     public final static String COLLECTION_CONFIG_SUFFIX = ".xconf"; 
+    public final static XmldbURI COLLECTION_CONFIG_SUFFIX_URI = XmldbURI.create(COLLECTION_CONFIG_SUFFIX); 
     public final static String DEFAULT_COLLECTION_CONFIG_FILE = "collection" + COLLECTION_CONFIG_SUFFIX; 
+    public final static XmldbURI DEFAULT_COLLECTION_CONFIG_FILE_URI = XmldbURI.create(DEFAULT_COLLECTION_CONFIG_FILE); 
     	
     public final static String NAMESPACE = "http://exist-db.org/collection-config/1.0";
     
@@ -65,8 +68,8 @@ public class CollectionConfiguration {
 
 	private Collection collection;
     
-    private String docName = null;
-    private String srcCollectionName;
+    private XmldbURI docName = null;
+    private XmldbURI srcCollectionURI;
 	
 	private int defCollPermissions;
 	private int defResPermissions;
@@ -78,25 +81,25 @@ public class CollectionConfiguration {
     }
     
     
-	public static boolean isCollectionConfigDocument(String docName) {
-		return docName.endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX);
+	public static boolean isCollectionConfigDocument(XmldbURI docName) {
+		return docName.endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX_URI);
 	}
 	
 	public static boolean isCollectionConfigDocument(DocumentImpl doc ) {
-		String docName = doc.getName();
+		XmldbURI docName = doc.getURI();
 		return isCollectionConfigDocument( docName );
 	}
 	
 	/**
      * @param broker
-     * @param srcCollectionName The collection from which the document is being read.  This
-     * is not necessarily the same as this.collection.getName() because the
+     * @param srcCollectionURI The collection from which the document is being read.  This
+     * is not necessarily the same as this.collection.getURI() because the
      * source document may have come from a parent collection.
      * @param docName The name of the document being read
      * @param doc collection configuration document
      * @throws CollectionConfigurationException
      */
-    protected void read(DBBroker broker, Document doc, String srcCollectionName, String docName) throws CollectionConfigurationException {
+    protected void read(DBBroker broker, Document doc, XmldbURI srcCollectionURI, XmldbURI docName) throws CollectionConfigurationException {
         Element root = doc.getDocumentElement();
         if (root == null)
             throw new CollectionConfigurationException("Configuration document can not be parsed"); 
@@ -109,7 +112,7 @@ public class CollectionConfiguration {
                     "' in configuration document. Got '" + root.getNamespaceURI() + "'");     
         
         this.docName = docName;        
-        this.srcCollectionName = srcCollectionName;
+        this.srcCollectionURI = srcCollectionURI;
         
         NodeList childNodes = root.getChildNodes();
 		Node node;
@@ -166,15 +169,10 @@ public class CollectionConfiguration {
 		}
     }
     
-    public String getDocName() {
+    public XmldbURI getDocName() {
         return docName;
     }
     
-    //TODO : we should not have write access
-    public void setDocName(String docName) {
-        this.docName = docName;
-    }    
-
     protected void setIndexConfiguration(IndexSpec spec) {
         this.indexSpec = spec;
     }
@@ -183,8 +181,8 @@ public class CollectionConfiguration {
     	return collection;
     }
 
-    public String getSourceCollectionName() {
-        return srcCollectionName;
+    public XmldbURI getSourceCollectionURI() {
+        return srcCollectionURI;
     }    
     public int getDefCollPermissions() {
     	return defCollPermissions;

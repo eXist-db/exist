@@ -88,7 +88,7 @@ public class LocalUserManagementService implements UserManagementService {
         Txn transaction = transact.beginTransaction();
 		try {
 			broker = pool.get(user);
-			coll = broker.openCollection(collection.getPath(), Lock.WRITE_LOCK);
+			coll = broker.openCollection(collection.getPathURI(), Lock.WRITE_LOCK);
 			if(coll == null)
 				throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + collection.getPath() + 
 						" not found");
@@ -135,7 +135,7 @@ public class LocalUserManagementService implements UserManagementService {
         Txn transaction = transact.beginTransaction();
 		try {
 			broker = pool.get(user);
-			coll = broker.openCollection(collection.getPath(), Lock.WRITE_LOCK);
+			coll = broker.openCollection(collection.getPathURI(), Lock.WRITE_LOCK);
 			if(coll == null)
 				throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + collection.getPath() + 
 						" not found");
@@ -219,7 +219,7 @@ public class LocalUserManagementService implements UserManagementService {
         Txn transaction = transact.beginTransaction();
 		try {
 			broker = pool.get(user);
-			coll = broker.openCollection(collection.getPath(), Lock.WRITE_LOCK);
+			coll = broker.openCollection(collection.getPathURI(), Lock.WRITE_LOCK);
 			if(coll == null)
 				throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + collection.getPath() + 
 						" not found");
@@ -309,7 +309,7 @@ public class LocalUserManagementService implements UserManagementService {
         Txn transaction = transact.beginTransaction();
 		try {
 			broker = pool.get(user);
-			coll = broker.openCollection(collection.getPath(), Lock.WRITE_LOCK);
+			coll = broker.openCollection(collection.getPathURI(), Lock.WRITE_LOCK);
 			coll.getPermissions().setOwner(u);
 			coll.getPermissions().setGroup(group);
 			broker.saveCollection(transaction, coll);
@@ -491,7 +491,7 @@ public class LocalUserManagementService implements UserManagementService {
 		org.exist.collections.Collection c = null;
 		try {
 			broker = pool.get(user);
-			c = broker.openCollection(collection.getPath(), Lock.READ_LOCK);
+			c = broker.openCollection(collection.getPathURI(), Lock.READ_LOCK);
 			if (!c	.getPermissions().validate(user, Permission.READ))
 				return new Permission[0];
 			Permission perms[] =
@@ -520,19 +520,18 @@ public class LocalUserManagementService implements UserManagementService {
 		org.exist.collections.Collection c = null;
 		try {
 			broker = pool.get(user);
-			c = broker.openCollection(collection.getPath(), Lock.READ_LOCK);
+			c = broker.openCollection(collection.getPathURI(), Lock.READ_LOCK);
 			if (!c.getPermissions().validate(user, Permission.READ))
 				return new Permission[0];
 			Permission perms[] =
 				new Permission[c.getChildCollectionCount()];
-			String child;
+			XmldbURI child;
 			org.exist.collections.Collection childColl;
 			int j = 0;
 			for (Iterator i = c.collectionIterator(); i.hasNext(); j++) {
-				child = (String) i.next();
-                //TODO : use dedicated function in XmldbURI
-				childColl =
-					broker.openCollection(collection.getPath() + "/" + child, Lock.READ_LOCK);
+				child = (XmldbURI) i.next();
+ 				childColl =
+					broker.openCollection(collection.getPathURI().append(child), Lock.READ_LOCK);
 				if(childColl != null) {
 					try {
 						perms[j] = childColl.getPermissions();

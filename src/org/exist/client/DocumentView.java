@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Observable;
@@ -58,7 +59,6 @@ import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.border.BevelBorder;
-
 import javax.xml.transform.OutputKeys;
 
 import org.exist.security.User;
@@ -66,6 +66,8 @@ import org.exist.storage.ElementIndex;
 import org.exist.storage.TextSearchEngine;
 import org.exist.util.ProgressIndicator;
 import org.exist.xmldb.UserManagementService;
+import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.util.URIUtils;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
@@ -73,7 +75,7 @@ import org.xmldb.api.modules.XMLResource;
 class DocumentView extends JFrame {
 	
 	protected InteractiveClient client;
-	private	 String resourceName;
+	private	 XmldbURI resourceName;
 	protected Resource resource;
 	protected Collection collection;
 	protected boolean readOnly = false;
@@ -85,9 +87,8 @@ class DocumentView extends JFrame {
 	protected JPopupMenu popup;
 	protected Properties properties;
 	
-	public DocumentView(InteractiveClient client, String resourceName, Properties properties) throws XMLDBException
+	public DocumentView(InteractiveClient client, XmldbURI resourceName, Properties properties) throws XMLDBException
 	{
-	    //TODO : use dedicated function in XmldbURI
 		super("View Document ");
 		this.resourceName = resourceName;
 		this.resource = client.retrieve(resourceName, properties.getProperty(OutputKeys.INDENT, "yes"));
@@ -341,7 +342,7 @@ class DocumentView extends JFrame {
 		statusMessage = new JTextField(20);
 		statusMessage.setEditable(false);
 		statusMessage.setFocusable(false);
-		statusMessage.setText("Loading " + resource.getId() + " ...");
+		statusMessage.setText("Loading " + URIUtils.urlDecodeUtf8(resource.getId()) + " ...");
 		statusbar.add(statusMessage);
 		progress = new JProgressBar();
 		progress.setPreferredSize(new Dimension(200, 30));
@@ -354,7 +355,7 @@ class DocumentView extends JFrame {
 		new Thread() {
 			public void run() {
 				try {
-					statusMessage.setText("Storing " + resource.getId());
+					statusMessage.setText("Storing " + URIUtils.urlDecodeUtf8(resource.getId()));
 					if (collection instanceof Observable)
 						((Observable) collection)
 								.addObserver(new ProgressObserver());
@@ -396,7 +397,7 @@ class DocumentView extends JFrame {
 					
 						//Create a new resource as named, set the content, store the resource
 						XMLResource result = null;
-						result = (XMLResource) collection.createResource(nameres, XMLResource.RESOURCE_TYPE);
+						result = (XMLResource) collection.createResource(URIUtils.encodeXmldbUriFor(nameres).toString(), XMLResource.RESOURCE_TYPE);
 						result.setContent(text.getText());
 						collection.storeResource(result);
 						client.reloadCollection();	//reload the client collection
@@ -406,6 +407,8 @@ class DocumentView extends JFrame {
 					catch (XMLDBException e)
 					{
 						ClientFrame.showErrorMessage("XMLDBException: " + e.getMessage(), e);
+					} catch (URISyntaxException e) {
+						ClientFrame.showErrorMessage("URISyntaxException: " + e.getMessage(), e);
 					}
 					finally
 					{
@@ -464,7 +467,7 @@ class DocumentView extends JFrame {
 		text.setText(content);
 		text.setCaretPosition(0);
 		text.scrollToCaret();
-		statusMessage.setText("Loaded " + client.getCollection().getName() + "/" + resourceName +" from "+properties.getProperty("uri"));
+		statusMessage.setText("Loaded " + XmldbURI.create(client.getCollection().getName()).append(resourceName) +" from "+properties.getProperty("uri"));
 	}
 	
 	class ProgressObserver implements Observer {

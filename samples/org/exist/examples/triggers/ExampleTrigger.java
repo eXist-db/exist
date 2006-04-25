@@ -5,6 +5,7 @@
 package org.exist.examples.triggers;
 
 import java.io.StringReader;
+import java.net.URISyntaxException;
 import java.util.Map;
 
 import org.exist.collections.Collection;
@@ -17,6 +18,7 @@ import org.exist.dom.DocumentSet;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
 import org.xml.sax.InputSource;
@@ -34,7 +36,7 @@ public class ExampleTrigger extends FilteringTrigger {
 	/* (non-Javadoc)
 	 * @see org.exist.collections.Trigger#prepare(java.lang.String, org.w3c.dom.Document)
 	 */
-	public void prepare(int event, DBBroker broker, Txn transaction, String documentName, DocumentImpl existingDocument)
+	public void prepare(int event, DBBroker broker, Txn transaction, XmldbURI documentName, DocumentImpl existingDocument)
 		throws TriggerException {
 		String xupdate;
 		// we react to the store and remove events
@@ -43,13 +45,13 @@ public class ExampleTrigger extends FilteringTrigger {
 			xupdate = "<?xml version=\"1.0\"?>" +
 				"<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
 				"<xu:append select='/contents'><xu:element name='file'>" +
-				documentName +
+				documentName.toString() +
 				"</xu:element></xu:append></xu:modifications>";
 		else if(event == REMOVE_DOCUMENT_EVENT)
 			// create XUpdate command for removals
 			xupdate = "<?xml version=\"1.0\"?>" +
 				"<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
-				"<xu:remove select=\"//file[text()='" + documentName + "']\"></xu:remove>" +
+				"<xu:remove select=\"//file[text()='" + documentName.toString() + "']\"></xu:remove>" +
 				"</xu:modifications>";
 		else
 			return;
@@ -84,9 +86,17 @@ public class ExampleTrigger extends FilteringTrigger {
 		throws CollectionConfigurationException {
 		super.configure(broker, parent, parameters);
 		// the name of the contents file can be set through parameters
-		String contentsFile = (String)parameters.get("contents");
-		if(contentsFile == null)
-			contentsFile = "contents.xml";
+		XmldbURI contentsFile = null;
+		String contentsName = (String)parameters.get("contents");
+		if(contentsName == null) {
+			contentsFile = XmldbURI.create("contents.xml");
+		} else {
+			try{
+				contentsFile = XmldbURI.xmldbUriFor(contentsName);
+			} catch(URISyntaxException e) {
+				throw new CollectionConfigurationException(e);
+			}
+		}
 		// try to retrieve the contents file
 		this.doc = parent.getDocument(broker, contentsFile);
 		if(this.doc == null)

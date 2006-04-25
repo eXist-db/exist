@@ -23,6 +23,8 @@ package org.exist.storage.serializers;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -43,6 +45,7 @@ import org.exist.source.StringSource;
 import org.exist.storage.XQueryPool;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.Receiver;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Expression;
@@ -186,40 +189,52 @@ public class XIncludeFilter implements Receiver {
 		boolean createContainerElements = serializer.createContainerElements;
 		serializer.createContainerElements = false;
 
+		//The following comments are the basis for possible external documents
+		XmldbURI docUri = null;
+		//URI externalUri = null;
+		try {
+			docUri = XmldbURI.xmldbUriFor(href);
+			/*
+			if(!stylesheetUri.toCollectionPathURI().equals(stylesheetUri)) {
+				externalUri = stylesheetUri.getXmldbURI();
+			}
+			*/
+		} catch (URISyntaxException e) {
+			//could be an external URI!
+			/*
+			try {
+				externalUri = new URI(href);
+			} catch (URISyntaxException ee) {
+			*/
+				throw new IllegalArgumentException("Stylesheet URI could not be parsed: "+e.getMessage(),e);
+			//}
+		}
+
 		// parse the href attribute
-		if (href != null) {
 			LOG.debug("found href=\"" + href + "\"");
-			String xpointer = null;
-			String docName = href;
-			// try to find xpointer part
-			int p = href.indexOf('#');
-			if (p != Constants.STRING_NOT_FOUND) {
-				docName = href.substring(0, p);
-				xpointer = XMLUtil.decodeAttrMarkup(href.substring(p + 1));
-				LOG.debug("found xpointer: " + xpointer);
+			//String xpointer = null;
+			//String docName = href;
+			String xpointer = docUri.getFragment();
+			if(xpointer!=null) {
+				xpointer = XMLUtil.decodeAttrMarkup(xpointer);
 			}
             
             // extract possible parameters in the URI
             Map params = null;
-            int paramsStart = docName.indexOf('?');
-            if (paramsStart != Constants.STRING_NOT_FOUND) {
-                if (paramsStart < docName.length() - 1) {
-                    String paramStr = docName.substring(paramsStart + 1);
-                    params = processParameters(paramStr);
-                }
-                docName = docName.substring(0, paramsStart);
+            String paramStr = docUri.getQuery();
+            if(paramStr!=null) {
+            	params = processParameters(paramStr);
             }
             
 			// if docName has no collection specified, assume
 			// current collection 
-            ///TODO : use dedicated function in XmldbURI
-			p = docName.lastIndexOf("/");
-			if (p == Constants.STRING_NOT_FOUND && document != null)
-				docName = document.getCollection().getName() + "/" + docName;
+            if(docUri.numSegments()==1)
+            	docUri = document.getCollection().getURI().append(docUri);
+
 			// retrieve the document
 			DocumentImpl doc = null;
 			try {
-				doc = (DocumentImpl) serializer.broker.getXMLResource(docName);
+				doc = (DocumentImpl) serializer.broker.getXMLResource(docUri);
 				if(doc != null && !doc.getPermissions().validate(serializer.broker.getUser(), Permission.READ))
 					throw new PermissionDeniedException("Permission denied to read xincluded resource");
 			} catch (PermissionDeniedException e) {
@@ -232,7 +247,7 @@ public class XIncludeFilter implements Receiver {
 			 * a collection.
 			 */
 			if (doc == null && xpointer == null)
-				throw new SAXException("document " + docName + " not found");
+				throw new SAXException("document " + docUri + " not found");
             
             /* Check if the document is a stored XQuery */
             boolean xqueryDoc = false;
@@ -263,13 +278,14 @@ public class XIncludeFilter implements Receiver {
                         context = xquery.newContext(AccessContext.XINCLUDE);
                     context.declareNamespaces(namespaces);
                     context.declareNamespace("xinclude", XINCLUDE_NS);
-                    context.declareVariable("xinclude:current-doc", document.getFileName());
-                    context.declareVariable("xinclude:current-collection", document.getCollection().getName());
+                    //TODO: change these to putting the XmldbURI in, but we need to warn users!
+                    context.declareVariable("xinclude:current-doc", document.getFileURI().toString());
+                    context.declareVariable("xinclude:current-collection", document.getCollection().getURI().toString());
                     if (xpointer != null) {
     					if(doc != null)
-    						context.setStaticallyKnownDocuments(new String[] { doc.getName() } );
+    						context.setStaticallyKnownDocuments(new XmldbURI[] { doc.getURI() } );
     					else
-    						context.setStaticallyKnownDocuments(new String[] { docName });
+    						context.setStaticallyKnownDocuments(new XmldbURI[] { docUri });
                     }
                     
                     // pass parameters as variables
@@ -312,7 +328,6 @@ public class XIncludeFilter implements Receiver {
 					throw new SAXException("Error while processing XInclude expression: " + e.getMessage(), e);
 				}
 			}
-		}
 		// restore settings
 		document = prevDoc;
 		serializer.createContainerElements = createContainerElements;

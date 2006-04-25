@@ -54,6 +54,8 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.exist.xmldb.XmldbURI;
+
 /**
  * This class implements the graphical login panel used to log into
  * local and remote eXist database instances.
@@ -67,7 +69,7 @@ public class LoginPanel extends JPanel {
     public static final int TYPE_EMBEDDED = 1;
     
     /** Uri for local connections */
-    public static final String URI_EMBEDDED = "xmldb:exist://";
+    public static final String URI_EMBEDDED = XmldbURI.EMBEDDED_SERVER_URI.toString();
     
     /** Default uri for remote connections */
     public static final String URI_REMOTE = "xmldb:exist://localhost:8080/exist/xmlrpc";

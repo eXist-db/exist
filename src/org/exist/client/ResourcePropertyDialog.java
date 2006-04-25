@@ -31,6 +31,7 @@ import javax.swing.border.EtchedBorder;
 import org.exist.security.Permission;
 import org.exist.security.User;
 import org.exist.xmldb.UserManagementService;
+import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.base.XMLDBException;
 
 public class ResourcePropertyDialog extends JDialog {
@@ -40,7 +41,7 @@ public class ResourcePropertyDialog extends JDialog {
 	public final static int CANCEL_OPTION = 1;
 
 	Permission permissions;
-	String resource;
+	XmldbURI resource;
 	UserManagementService service;
 	Date creationDate;
 	Date modificationDate;
@@ -61,7 +62,7 @@ public class ResourcePropertyDialog extends JDialog {
 	public ResourcePropertyDialog(
 		Frame owner,
 		UserManagementService mgt,
-		String res,
+		XmldbURI res,
 		Permission perm,
 		Date created,
 		Date modified,
@@ -105,7 +106,7 @@ public class ResourcePropertyDialog extends JDialog {
 		grid.setConstraints(label, c);
 		getContentPane().add(label);
 
-		label = new JLabel(resource);
+		label = new JLabel(resource.toString());
 		c.gridx = 1;
 		c.gridy = 0;
 		c.anchor = GridBagConstraints.EAST;

@@ -24,6 +24,7 @@ package org.exist.ant;
 
 import org.apache.tools.ant.BuildException;
 import org.exist.backup.Backup;
+import org.exist.xquery.util.URIUtils;
 
 /**
  * @author wolf
@@ -45,10 +46,10 @@ public class BackupTask extends AbstractXMLDBTask
 
     registerDatabase();
     log("Creating backup of collection: " + uri);
-    Backup backup = new Backup(user, password, dir, uri);
-    log("Backup directory: " + dir);
+     log("Backup directory: " + dir);
     try
     {
+      Backup backup = new Backup(user, password, dir, URIUtils.encodeXmldbUriFor(uri));
       backup.backup(false, null);
     } catch (Exception e)
     {

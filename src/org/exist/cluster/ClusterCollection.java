@@ -1,11 +1,17 @@
 //$Id$
 package org.exist.cluster;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Observer;
-import java.net.URL;
 
 import org.exist.EXistException;
 import org.exist.Indexer;
@@ -25,6 +31,7 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.util.SyntaxException;
+import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -69,12 +76,12 @@ public final class ClusterCollection extends Collection {
     }
 
 
-    public void removeXMLResource(Txn transaction, DBBroker broker, String docname) throws PermissionDeniedException, TriggerException, LockException {
-        collection.removeXMLResource(transaction, broker, docname);
+    public void removeXMLResource(Txn transaction, DBBroker broker, XmldbURI docURI) throws PermissionDeniedException, TriggerException, LockException {
+        collection.removeXMLResource(transaction, broker, docURI);
         try {
             ClusterComunication cluster = ClusterComunication.getInstance();
             if(cluster!=null)
-                cluster.removeDocument(this.getName(), docname);
+                cluster.removeDocument(this.getURI().toString(), docURI.toString());
         } catch (ClusterException e) {
             e.printStackTrace();
         }
@@ -152,7 +159,7 @@ public final class ClusterCollection extends Collection {
         try {
             ClusterComunication cluster = ClusterComunication.getInstance();
             if(cluster!=null)
-                cluster.storeDocument(this.getName(), document.getName().substring(this.getName().length() + 1), content);
+                cluster.storeDocument(this.getURI().toString(), document.getFileURI().toString(), content);
         } catch (ClusterException e) {
             e.printStackTrace();
         }
@@ -161,13 +168,9 @@ public final class ClusterCollection extends Collection {
     }
 
     public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker,
-			String name, byte[] data, String mimeType) throws EXistException,
+			XmldbURI name, byte[] data, String mimeType) throws EXistException,
             PermissionDeniedException, LockException, TriggerException {
         return collection.addBinaryResource(transaction, broker, name, data, mimeType);
-    }
-
-    public void setName(String name) {
-        collection.setName(name);
     }
 
     public Lock getLock() {
@@ -177,13 +180,11 @@ public final class ClusterCollection extends Collection {
     public void addCollection(DBBroker broker, Collection child, boolean isNew) {
         try {
             collection.addCollection(broker, child, isNew);
-            //TODO : use dedicated function in XmldbURI
-    		final int p = child.getName().lastIndexOf("/") + 1;
-    		final String childName = child.getName().substring(p);
-            System.out.println("________ ADDDING COLLECTION " + child.getName() +" TO " + this.getName() );
+    		final String childName = child.getURI().lastSegment().toString();
+            System.out.println("________ ADDDING COLLECTION " + child.getURI() +" TO " + this.getURI() );
             ClusterComunication cluster = ClusterComunication.getInstance();
             if(cluster!=null)
-                cluster.addCollection(this.getName(),childName);
+                cluster.addCollection(this.getURI().toString(),childName);
         } catch (ClusterException e) {
             e.printStackTrace();
         }
@@ -191,19 +192,20 @@ public final class ClusterCollection extends Collection {
     }
 
 
-    public void removeCollection(String name) throws LockException {
+    public void removeCollection(XmldbURI name) throws LockException {
         try {
             collection.removeCollection(name);
             System.out.println("REMOVED COLLECTION " +name);
             ClusterComunication cluster = ClusterComunication.getInstance();
+    		//TODO: use xmldbUri
             if(cluster!=null)
-                cluster.removeCollection(this.getName(),name);
+                cluster.removeCollection(this.getURI().toString(),name.toString());
         } catch (ClusterException e) {
             e.printStackTrace();
         }
     }
 
-    public boolean hasChildCollection(String name) {
+    public boolean hasChildCollection(XmldbURI name) {
         return collection.hasChildCollection(name);
     }
 
@@ -252,16 +254,16 @@ public final class ClusterCollection extends Collection {
         return collection.getChildCollectionCount();
     }
 
-    public DocumentImpl getDocument(DBBroker broker, String name) {
+    public DocumentImpl getDocument(DBBroker broker, XmldbURI name) {
         return collection.getDocument(broker, name);
     }
 
-    public DocumentImpl getDocumentWithLock(DBBroker broker, String name)
+    public DocumentImpl getDocumentWithLock(DBBroker broker, XmldbURI name)
             throws LockException {
         return collection.getDocumentWithLock(broker, name);
     }
 
-    public DocumentImpl getDocumentWithLock(DBBroker broker, String name, int lockMode)
+    public DocumentImpl getDocumentWithLock(DBBroker broker, XmldbURI name, int lockMode)
             throws LockException {
         return collection.getDocumentWithLock(broker, name, lockMode);
     }
@@ -278,23 +280,23 @@ public final class ClusterCollection extends Collection {
         return collection.getId();
     }
 
-    public String getName() {
-        return collection.getName();
+    public XmldbURI getURI() {
+        return collection.getURI();
     }
 
-    public String getParentPath() {
-        return collection.getParentPath();
+    public XmldbURI getParentURI() {
+        return collection.getParentURI();
     }
 
     public Permission getPermissions() {
         return collection.getPermissions();
     }
 
-    public boolean hasDocument(String name) {
+    public boolean hasDocument(XmldbURI name) {
         return collection.hasDocument(name);
     }
 
-    public boolean hasSubcollection(String name) {
+    public boolean hasSubcollection(XmldbURI name) {
         return collection.hasSubcollection(name);
     }
 
@@ -307,7 +309,7 @@ public final class ClusterCollection extends Collection {
         collection.read(broker, istream);
     }
 
-    public void removeBinaryResource(Txn transaction, DBBroker broker, String docname) 
+    public void removeBinaryResource(Txn transaction, DBBroker broker, XmldbURI docname) 
     	throws PermissionDeniedException, LockException, TriggerException {
         collection.removeBinaryResource(transaction, broker, docname);
     }
@@ -317,21 +319,21 @@ public final class ClusterCollection extends Collection {
         collection.removeBinaryResource(transaction, broker, doc);
     }
 
-    public IndexInfo validateXMLResource(Txn txn, DBBroker broker, String name, InputSource source)
+    public IndexInfo validateXMLResource(Txn txn, DBBroker broker, XmldbURI name, InputSource source)
             throws EXistException, PermissionDeniedException, TriggerException,
             SAXException, LockException {
         return collection.validateXMLResource(txn, broker, name, source);
     }
 
 
-    public IndexInfo validateXMLResource(Txn txn, DBBroker broker, String name, String data)
+    public IndexInfo validateXMLResource(Txn txn, DBBroker broker, XmldbURI name, String data)
             throws EXistException, PermissionDeniedException, TriggerException,
             SAXException, LockException {
         return collection.validateXMLResource(txn, broker, name, data);
     }
 
 
-    public IndexInfo validateXMLResource(Txn txn, DBBroker broker, String name, Node node)
+    public IndexInfo validateXMLResource(Txn txn, DBBroker broker, XmldbURI name, Node node)
             throws EXistException, PermissionDeniedException, TriggerException,
             SAXException, LockException {
         return collection.validateXMLResource(txn, broker, name, node);

@@ -24,6 +24,8 @@ package org.exist.client;
 
 import java.util.Date;
 
+import org.exist.xmldb.XmldbURI;
+
 /**
  * Description of a resource, suitable for display by the graphical
  * client for instance.
@@ -31,13 +33,13 @@ import java.util.Date;
  * @author gpothier
  */
 public abstract class ResourceDescriptor {
-    private String name;
+    private XmldbURI name;
     private String owner;
     private String group;
     private String permissions;
     private Date date;
     
-    public ResourceDescriptor(String aName, String aOwner, 
+    public ResourceDescriptor(XmldbURI aName, String aOwner, 
                               String aGroup, String aPermissions, Date date ) {
         name = aName;
         owner = aOwner;
@@ -50,7 +52,7 @@ public abstract class ResourceDescriptor {
         return group;
     }
     
-    public String getName() {
+    public XmldbURI getName() {
         return name;
     }
     
@@ -69,7 +71,7 @@ public abstract class ResourceDescriptor {
     public abstract boolean isCollection();
     
     public static class Document extends ResourceDescriptor {
-        public Document(String aName, String aOwner, String aGroup, String aPermissions, Date date) {
+        public Document(XmldbURI aName, String aOwner, String aGroup, String aPermissions, Date date) {
             super(aName, aOwner, aGroup, aPermissions, date);
         }
         
@@ -79,11 +81,11 @@ public abstract class ResourceDescriptor {
     }
     
     public static class Collection extends ResourceDescriptor {
-        public Collection(String aName) {
+        public Collection(XmldbURI aName) {
             super(aName, null, null, null, null);
         }
         
-        public Collection(String aName, String aOwner, String aGroup, String aPermissions, Date date) {
+        public Collection(XmldbURI aName, String aOwner, String aGroup, String aPermissions, Date date) {
             super(aName, aOwner, aGroup, aPermissions, date);
         }
         

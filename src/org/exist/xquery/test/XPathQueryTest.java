@@ -453,7 +453,7 @@ public class XPathQueryTest extends XMLTestCase {
                 storeXMLStringAndGetQueryService("nested2.xml", nested2);
             
             String query = "(<a/>,<b/>)/name()";
-            ResourceSet result = service.queryResource("numbers.xml", query);
+            ResourceSet result = service.queryResource("nested2.xml", query);
             assertEquals("XPath: " + query, 2, result.getSize());            
             assertEquals( "a", result.getResource(0).getContent() );
             assertEquals( "b", result.getResource(1).getContent() );

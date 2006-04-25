@@ -21,6 +21,7 @@
  */
 package org.exist.xmldb;
 
+import java.net.URISyntaxException;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
@@ -70,15 +71,23 @@ public class LocalCollectionManagementService implements CollectionManagementSer
         return createCollection (collName, (Date)null);
     }
 
+    public Collection createCollection( XmldbURI collName ) throws XMLDBException {
+        return createCollection (collName, (Date)null);
+    }
+
+    public Collection createCollection( String collName, Date created ) throws XMLDBException {
+    	try{
+    		return createCollection(XmldbURI.xmldbUriFor(collName), created);
+    	} catch(URISyntaxException e) {
+    		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+    	}
+    }
     
-    public Collection createCollection( String collName, Date created) throws XMLDBException {
-    	//Is collection's name relative ?
-    	//TODO : use dedicated function in XmldbURI
-        if (!collName.startsWith(DBBroker.ROOT_COLLECTION) && parent != null)
-        	collName = parent.getPath() + "/" + collName;
-        String path = XmldbURI.checkPath(collName, parent.getPath());
-        
-        TransactionManager transact = brokerPool.getTransactionManager();
+    public Collection createCollection( XmldbURI collName, Date created ) throws XMLDBException {
+        if (parent != null)
+        	collName = parent.getPathURI().resolveCollectionPath(collName);        
+
+		TransactionManager transact = brokerPool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
         DBBroker broker = null;
         try {
@@ -131,25 +140,29 @@ public class LocalCollectionManagementService implements CollectionManagementSer
     }
 
     public void removeCollection( String collName ) throws XMLDBException {
-    	//Is collection's name relative ?
-    	//TODO : use dedicated function in XmldbURI
-        if (!collName.startsWith(DBBroker.ROOT_COLLECTION) && parent != null)
-        	collName = parent.getPath() + "/" + collName;        
-    	String path = XmldbURI.checkPath(collName, parent.getPath());
-        
+    	try{
+    		removeCollection(XmldbURI.xmldbUriFor(collName));
+    	} catch(URISyntaxException e) {
+    		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+    	}
+    }
+    public void removeCollection( XmldbURI collName ) throws XMLDBException {
+        if (parent != null)
+        	collName = parent.getPathURI().resolveCollectionPath(collName);        
+
     	TransactionManager transact = brokerPool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
         DBBroker broker = null;
         org.exist.collections.Collection collection = null;
         try {
             broker = brokerPool.get(user);
-            collection = broker.openCollection(path, Lock.WRITE_LOCK);
+            collection = broker.openCollection(collName, Lock.WRITE_LOCK);
             if(collection == null) {
                 transact.abort(transaction);
             	throw new XMLDBException(ErrorCodes.INVALID_COLLECTION,
-            			"Collection " + path + " not found");
+            			"Collection " + collName + " not found");
             }
-            LOG.debug( "removing collection " + path );
+            LOG.debug( "removing collection " + collName );
             broker.removeCollection(transaction, collection);
             transact.commit(transaction);
         } catch ( EXistException e ) {
@@ -168,13 +181,22 @@ public class LocalCollectionManagementService implements CollectionManagementSer
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xmldb.CollectionManagementServiceImpl#move(org.xmldb.api.base.Collection, org.xmldb.api.base.Collection, java.lang.String)
-     */
     public void move(String collectionPath, String destinationPath,
             String newName) throws XMLDBException {
-    	collectionPath = XmldbURI.checkPath(collectionPath, parent.getPath());
-    	destinationPath = XmldbURI.checkPath(destinationPath, parent.getPath());    	
+    	try{
+    		move(XmldbURI.xmldbUriFor(collectionPath), XmldbURI.xmldbUriFor(destinationPath),XmldbURI.xmldbUriFor(newName));
+    	} catch(URISyntaxException e) {
+    		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+    	}
+    }
+   /* (non-Javadoc)
+     * @see org.exist.xmldb.CollectionManagementServiceImpl#move(org.xmldb.api.base.Collection, org.xmldb.api.base.Collection, java.lang.String)
+     */
+    public void move(XmldbURI collectionPath, XmldbURI destinationPath,
+            XmldbURI newName) throws XMLDBException {
+    	collectionPath = parent.getPathURI().resolveCollectionPath(collectionPath);
+    	destinationPath = parent.getPathURI().resolveCollectionPath(destinationPath);
+    	
         TransactionManager transact = brokerPool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
         DBBroker broker = null;
@@ -216,10 +238,19 @@ public class LocalCollectionManagementService implements CollectionManagementSer
         }
     }
     
-    public void moveResource(String resourcePath, String destinationPath, String newName) 
+    public void moveResource(String resourcePath, String destinationPath,
+            String newName) throws XMLDBException {
+    	try{
+    		moveResource(XmldbURI.xmldbUriFor(resourcePath), XmldbURI.xmldbUriFor(destinationPath),XmldbURI.xmldbUriFor(newName));
+    	} catch(URISyntaxException e) {
+    		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+    	}
+    }
+    public void moveResource(XmldbURI resourcePath, XmldbURI destinationPath, XmldbURI newName) 
     		throws XMLDBException { 
-    	resourcePath = XmldbURI.checkPath(resourcePath, parent.getPath());
-    	destinationPath = XmldbURI.checkPath(destinationPath, parent.getPath());
+    	resourcePath = parent.getPathURI().resolveCollectionPath(resourcePath);
+    	destinationPath = parent.getPathURI().resolveCollectionPath(destinationPath);
+
         TransactionManager transact = brokerPool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
         DBBroker broker = null;
@@ -227,16 +258,12 @@ public class LocalCollectionManagementService implements CollectionManagementSer
         org.exist.collections.Collection source = null;
         try {
             broker = brokerPool.get(user);
-            //TODO : use dedicated function in XmldbURI
-            int pos = resourcePath.lastIndexOf("/");
-    		String collName = resourcePath.substring(0, pos);
-    		String docName = resourcePath.substring(pos + 1);
-    		source = broker.openCollection(collName, Lock.WRITE_LOCK);
+     		source = broker.openCollection(resourcePath.removeLastSegment(), Lock.WRITE_LOCK);
     		if(source == null) {
                 transact.abort(transaction);
-    			throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + collName + " not found");
+    			throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + resourcePath.removeLastSegment() + " not found");
             }
-    		DocumentImpl doc = source.getDocument(broker, docName);
+    		DocumentImpl doc = source.getDocument(broker, resourcePath.lastSegment());
             if(doc == null) {
                 transact.abort(transaction);
                 throw new XMLDBException(ErrorCodes.NO_SUCH_RESOURCE, "Resource " + resourcePath + " not found");
@@ -271,30 +298,33 @@ public class LocalCollectionManagementService implements CollectionManagementSer
         }
     }
     
-    /* (non-Javadoc)
-	 * @see org.exist.xmldb.CollectionManagementServiceImpl#copyResource(java.lang.String, java.lang.String, java.lang.String)
-	 */
-	public void copyResource(String resourcePath, String destinationPath, String newName) 
-		throws XMLDBException {
-		resourcePath = XmldbURI.checkPath(resourcePath, parent.getPath());
-		destinationPath = XmldbURI.checkPath(destinationPath, parent.getPath());
-        TransactionManager transact = brokerPool.getTransactionManager();
+    public void copyResource(String resourcePath, String destinationPath,
+            String newName) throws XMLDBException {
+    	try{
+    		copyResource(XmldbURI.xmldbUriFor(resourcePath), XmldbURI.xmldbUriFor(destinationPath),XmldbURI.xmldbUriFor(newName));
+    	} catch(URISyntaxException e) {
+    		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+    	}
+    }
+    
+    public void copyResource(XmldbURI resourcePath, XmldbURI destinationPath, XmldbURI newName) 
+    		throws XMLDBException { 
+    	resourcePath = parent.getPathURI().resolveCollectionPath(resourcePath);
+    	destinationPath = parent.getPathURI().resolveCollectionPath(destinationPath);
+
+		TransactionManager transact = brokerPool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
         DBBroker broker = null;
         org.exist.collections.Collection destination = null;
         org.exist.collections.Collection source = null;
         try {
             broker = brokerPool.get(user);
-            //TODO : use dedicated function in XmldbURI
-            int pos = resourcePath.lastIndexOf("/");
-    		String collName = resourcePath.substring(0, pos);
-    		String docName = resourcePath.substring(pos + 1);
-    		source = broker.openCollection(collName, Lock.WRITE_LOCK);
+     		source = broker.openCollection(resourcePath.removeLastSegment(), Lock.WRITE_LOCK);
     		if(source == null) {
                 transact.abort(transaction);
-    			throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + collName + " not found");
+    			throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + resourcePath.removeLastSegment() + " not found");
             }
-    		DocumentImpl doc = source.getDocument(broker, docName);
+    		DocumentImpl doc = source.getDocument(broker, resourcePath.lastSegment());
             if(doc == null) {
                 transact.abort(transaction);
                 throw new XMLDBException(ErrorCodes.NO_SUCH_RESOURCE, "Resource " + resourcePath + " not found");
@@ -326,12 +356,22 @@ public class LocalCollectionManagementService implements CollectionManagementSer
         }
 	}
 	
+    public void copy(String collectionPath, String destinationPath,
+            String newName) throws XMLDBException {
+    	try{
+    		copy(XmldbURI.xmldbUriFor(collectionPath), XmldbURI.xmldbUriFor(destinationPath),XmldbURI.xmldbUriFor(newName));
+    	} catch(URISyntaxException e) {
+    		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+    	}
+    }
 	/* (non-Javadoc)
 	 * @see org.exist.xmldb.CollectionManagementServiceImpl#copy(java.lang.String, java.lang.String, java.lang.String)
 	 */
-	public void copy(String collectionPath, String destinationPath, String newName) throws XMLDBException {
-		collectionPath = XmldbURI.checkPath(collectionPath, parent.getPath());
-		destinationPath = XmldbURI.checkPath(destinationPath, parent.getPath());
+    public void copy(XmldbURI collectionPath, XmldbURI destinationPath,
+            XmldbURI newName) throws XMLDBException {
+    	collectionPath = parent.getPathURI().resolveCollectionPath(collectionPath);
+    	destinationPath = parent.getPathURI().resolveCollectionPath(destinationPath);
+
         System.out.println("Copying '" + collectionPath + "' to '" + destinationPath + "' as '" + newName + "'");
         TransactionManager transact = brokerPool.getTransactionManager();
         Txn transaction = transact.beginTransaction();

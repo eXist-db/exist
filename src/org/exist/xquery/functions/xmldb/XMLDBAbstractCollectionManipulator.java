@@ -25,8 +25,11 @@
  */
 package org.exist.xquery.functions.xmldb;
 
+import java.net.URISyntaxException;
+
 import org.exist.dom.NodeProxy;
 import org.exist.xmldb.LocalCollection;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
@@ -37,6 +40,7 @@ import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 
 public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
@@ -51,7 +55,11 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
 	}
 	
 	protected LocalCollection createLocalCollection(String name) throws XMLDBException {
-		return new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), name, context.getAccessContext());
+		try {
+			return new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), XmldbURI.xmldbUriFor(name), context.getAccessContext());
+		} catch(URISyntaxException e) {
+			throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+		}
 	}
 	
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
@@ -76,10 +84,11 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
         		org.exist.collections.Collection internalCol = ((NodeProxy)node).getDocument().getCollection();
         		LOG.debug("Found node");
         		try {
-					collection = createLocalCollection(internalCol.getName());
+        			//TODO: use xmldbURI
+					collection = createLocalCollection(internalCol.getURI().toString());
 					LOG.debug("Loaded collection " + collection.getName());
 				} catch (XMLDBException e) {
-					throw new XPathException(getASTNode(), "Failed to access collection: " + internalCol.getName(), e);
+					throw new XPathException(getASTNode(), "Failed to access collection: " + internalCol.getURI(), e);
 				}
         	} else
         		return Sequence.EMPTY_SEQUENCE;

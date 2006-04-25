@@ -58,6 +58,7 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
@@ -299,6 +300,7 @@ public class Transform extends BasicFunction {
 		}
 	}
 	
+	//TODO: revisit this class with XmldbURI in mind
 	private class CachedStylesheet {
 		
 		SAXTransformerFactory factory;
@@ -320,7 +322,7 @@ public class Transform extends BasicFunction {
 				String docPath = uri.substring("xmldb:exist://".length());
 				DocumentImpl doc = null;
 				try {
-					doc = context.getBroker().getXMLResource(docPath, Lock.READ_LOCK);
+					doc = context.getBroker().getXMLResource(XmldbURI.create(docPath), Lock.READ_LOCK);
 					if (doc != null && (templates == null || doc.getMetadata().getLastModified() > lastModified))
 						templates = getSource(factory, doc);
 					lastModified = doc.getMetadata().getLastModified();
@@ -390,15 +392,15 @@ public class Transform extends BasicFunction {
 			if(href.startsWith("/"))
 				path = href;
 			else
-				path = collection.getName() + "/" + href;
+				path = collection.getURI() + "/" + href;
 			DocumentImpl xslDoc;
 			try {
-				xslDoc = (DocumentImpl) context.getBroker().getXMLResource(path);
+				xslDoc = (DocumentImpl) context.getBroker().getXMLResource(XmldbURI.create(path));
 			} catch (PermissionDeniedException e) {
 				throw new TransformerException(e.getMessage(), e);
 			}
 			if(xslDoc == null) {
-				LOG.debug("Document " + href + " not found in collection " + collection.getName());
+				LOG.debug("Document " + href + " not found in collection " + collection.getURI());
 				return null;
 			}
 			if(!xslDoc.getPermissions().validate(context.getUser(), Permission.READ))

@@ -28,15 +28,15 @@ import junit.textui.TestRunner;
 
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
-import org.exist.dom.DocumentImpl;
 import org.exist.security.SecurityManager;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
-import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
+import org.exist.xmldb.XmldbURI;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -76,11 +76,11 @@ public class RecoveryTest3 extends TestCase {
             assertNotNull(transaction);            
             System.out.println("Transaction started ...");
             
-            Collection root = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test");
+            Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             assertNotNull(root);
             broker.saveCollection(transaction, root);
             
-            Collection test2 = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test/test2");
+            Collection test2 = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI2);
             assertNotNull(test2);
             broker.saveCollection(transaction, test2);            
             
@@ -95,7 +95,7 @@ public class RecoveryTest3 extends TestCase {
                 f = files[i];
                 assertNotNull(f);
                 try {
-                    info = test2.validateXMLResource(transaction, broker, f.getName(), new InputSource(f.toURI().toASCIIString()));
+                    info = test2.validateXMLResource(transaction, broker, XmldbURI.create(f.getName()), new InputSource(f.toURI().toASCIIString()));
                     assertNotNull(info);
                     test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
                 } catch (SAXException e) {
@@ -129,7 +129,7 @@ public class RecoveryTest3 extends TestCase {
             assertNotNull(transaction);
             System.out.println("Transaction started ...");
             
-            Collection root = broker.openCollection(DBBroker.ROOT_COLLECTION + "/test", Lock.WRITE_LOCK);
+            Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, Lock.WRITE_LOCK);
             assertNotNull(root);
             transaction.registerLock(root.getLock(), Lock.WRITE_LOCK);            
             broker.removeCollection(transaction, root);   
@@ -140,11 +140,11 @@ public class RecoveryTest3 extends TestCase {
             transaction = transact.beginTransaction();
             System.out.println("Transaction started ...");
             
-            root = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test");
+            root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             assertNotNull(root);
             broker.saveCollection(transaction, root);
             
-            Collection test2 = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test/test2");
+            Collection test2 = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI2);
             assertNotNull(test2);
             broker.saveCollection(transaction, test2);
             
@@ -159,7 +159,7 @@ public class RecoveryTest3 extends TestCase {
                 f = files[i];
                 assertNotNull(f);
                 try {
-                    info = test2.validateXMLResource(transaction, broker, f.getName(), new InputSource(f.toURI().toASCIIString()));
+                    info = test2.validateXMLResource(transaction, broker, XmldbURI.create(f.getName()), new InputSource(f.toURI().toASCIIString()));
                     assertNotNull(info);
                     test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
                 } catch (SAXException e) {

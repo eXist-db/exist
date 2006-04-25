@@ -48,6 +48,7 @@ import org.exist.util.Configuration;
 import org.exist.util.XMLReaderObjectFactory;
 import org.exist.util.XMLReaderPool;
 import org.exist.xmldb.ShutdownListener;
+import org.exist.xmldb.XmldbURI;
 
 /**
  * This class controls all available instances of the database.
@@ -638,11 +639,11 @@ public class BrokerPool {
 			recovered = transactionManager.runRecovery(broker);
             //TODO : extract the following from this block ? What if we ware not transactional ? -pb 
             if (!recovered) {
-            	if (broker.getCollection(DBBroker.ROOT_COLLECTION) == null) {
+            	if (broker.getCollection(XmldbURI.ROOT_COLLECTION_URI) == null) {
             		Txn txn = transactionManager.beginTransaction();
             		try {
             			//TODO : use a root collection final member
-            			broker.getOrCreateCollection(txn, DBBroker.ROOT_COLLECTION);
+            			broker.getOrCreateCollection(txn, XmldbURI.ROOT_COLLECTION_URI);
             			transactionManager.commit(txn);
             		} catch (PermissionDeniedException e) {
             			transactionManager.abort(txn);

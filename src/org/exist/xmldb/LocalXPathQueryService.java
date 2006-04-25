@@ -23,8 +23,8 @@
 package org.exist.xmldb;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.io.Writer;
+import java.net.URISyntaxException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
@@ -40,7 +40,6 @@ import org.exist.security.User;
 import org.exist.security.xacml.AccessContext;
 import org.exist.security.xacml.NullAccessContextException;
 import org.exist.source.Source;
-import org.exist.source.StringSource;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
@@ -119,7 +118,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	}
 
 	public ResourceSet query(String query, String sortBy) throws XMLDBException {
-		String[] docs = new String[] { collection.getName() };
+		XmldbURI[] docs = new XmldbURI[] { XmldbURI.create(collection.getName()) };
 		return doQuery(query, docs, null, sortBy);
 	}
 
@@ -129,12 +128,12 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 		if (node == null) {
 			// resource is a document
             //TODO : use dedicated function in XmldbURI
-			String[] docs = new String[] { res.getParentCollection().getName() + "/" + res.getDocumentId() };
+			XmldbURI[] docs = new XmldbURI[] { XmldbURI.create(res.getParentCollection().getName()).append(res.getDocumentId()) };
 			return doQuery(query, docs, null, sortBy);
 		} else {
 			NodeSet set = new ExtArrayNodeSet(1);
 			set.add(node);
-			String[] docs = new String[] { node.getDocument().getName() };
+			XmldbURI[] docs = new XmldbURI[] { node.getDocument().getURI() };
 			return doQuery(query, docs, set, sortBy);
 		}
 	}
@@ -148,13 +147,12 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 		NodeProxy node = ((LocalXMLResource) res).getNode();
 		if (node == null) {
 			// resource is a document
-            //TODO : use dedicated function in XmldbURI
-			String[] docs = new String[] { res.getParentCollection().getName() + "/" + res.getDocumentId() };
+			XmldbURI[] docs = new XmldbURI[] { XmldbURI.create(res.getParentCollection().getName()).append(res.getDocumentId()) };
 			return execute(docs, null, expression, null);
 		} else {
 			NodeSet set = new ExtArrayNodeSet(1);
 			set.add(node);
-			String[] docs = new String[] { node.getDocument().getName() };
+			XmldbURI[] docs = new XmldbURI[] { node.getDocument().getURI() };
 			return execute(docs, set, expression, null);
 		}
 	}
@@ -242,13 +240,16 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
     		throw new XMLDBException(
     			ErrorCodes.INVALID_RESOURCE,
     			"resource '" + resource + "' not found");
-        //TODO : use dedicated function in XmldbURI
-        String[] docs = new String[] { res.getParentCollection().getName() + "/" + res.getDocumentId() };
+        XmldbURI[] docs = new XmldbURI[] { XmldbURI.create(res.getParentCollection().getName()).append(res.getDocumentId()) };
     	return doQuery(query, docs, null, null);
     }
 	
 	protected void setupContext(XQueryContext context) throws XMLDBException, XPathException {
-	    context.setBaseURI(properties.getProperty("base-uri", collection.getPath()));
+	    try {
+	    	context.setBaseURI(XmldbURI.xmldbUriFor(properties.getProperty("base-uri", collection.getPath())));
+	    } catch(URISyntaxException e) {
+	    	throw new XMLDBException(ErrorCodes.INVALID_URI,"Invalid base uri",e);
+	    }
 		if(moduleLoadPath != null)
 			context.setModuleLoadPath(moduleLoadPath);
 		Map.Entry entry;
@@ -290,7 +291,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	
 	private ResourceSet doQuery(
 		String query,
-		String[] docs,
+		XmldbURI[] docs,
 		NodeSet contextSet,
 		String sortExpr)
 		throws XMLDBException {
@@ -330,7 +331,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 		}
 	}
 
-    private ResourceSet execute(String[] docs, 
+    private ResourceSet execute(XmldbURI[] docs, 
     	NodeSet contextSet, CompiledExpression expression, String sortExpr) 
     throws XMLDBException {
     	long start = System.currentTimeMillis();

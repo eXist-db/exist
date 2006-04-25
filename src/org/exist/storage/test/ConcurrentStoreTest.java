@@ -37,6 +37,7 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.XMLFilenameFilter;
+import org.exist.xmldb.XmldbURI;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -48,7 +49,7 @@ public class ConcurrentStoreTest extends TestCase {
     
     //TODO : revisit !
     private static String directory = "/home/wolf/xml/shakespeare";
-    private static String TEST_COLLECTION = DBBroker.ROOT_COLLECTION + "/test";
+    private static XmldbURI TEST_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("test");
     
     private static File dir = new File(directory);
     
@@ -83,14 +84,14 @@ public class ConcurrentStoreTest extends TestCase {
         DBBroker broker = null;
         try {
             broker = pool.get(SecurityManager.SYSTEM_USER);
-            test = broker.getCollection(TEST_COLLECTION+ "/test1");
+            test = broker.getCollection(TEST_COLLECTION_URI.append("test1"));
             assertNotNull(test);
-            test2 = broker.getCollection(TEST_COLLECTION + "/test2");
+            test2 = broker.getCollection(TEST_COLLECTION_URI.append("test2"));
             assertNotNull(test2);
-            System.out.println("Contents of collection " + test.getName() + ":");
+            System.out.println("Contents of collection " + test.getURI() + ":");
             for (Iterator i = test.iterator(broker); i.hasNext(); ) {
                 DocumentImpl next = (DocumentImpl) i.next();
-                System.out.println("- " + next.getName());
+                System.out.println("- " + next.getURI());
             }
 	    } catch (Exception e) {            
 	        fail(e.getMessage());              
@@ -108,13 +109,13 @@ public class ConcurrentStoreTest extends TestCase {
             
             System.out.println("Transaction started ...");
             
-            Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION);
+            Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI);
             broker.saveCollection(transaction, root);
             
-            test = broker.getOrCreateCollection(transaction, TEST_COLLECTION + "/test1");
+            test = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI.append("test1"));
             broker.saveCollection(transaction, test);
             
-            test2 = broker.getOrCreateCollection(transaction, TEST_COLLECTION + "/test2");
+            test2 = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI.append("test2"));
             broker.saveCollection(transaction, test2);
             
             transact.commit(transaction);
@@ -161,7 +162,7 @@ public class ConcurrentStoreTest extends TestCase {
                 for (int i = 0; i < files.length; i++) {
                     f = files[i];
                     try {
-                        info = test.validateXMLResource(transaction, broker, f.getName(), new InputSource(f.toURI().toASCIIString()));
+                        info = test.validateXMLResource(transaction, broker, XmldbURI.create(f.getName()), new InputSource(f.toURI().toASCIIString()));
                         test.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
                     } catch (SAXException e) {
                         System.err.println("Error found while parsing document: " + f.getName() + ": " + e.getMessage());
@@ -200,11 +201,11 @@ public class ConcurrentStoreTest extends TestCase {
                 DocumentImpl doc = (DocumentImpl)i.next();
                 
                 System.out.println("\nREMOVING DOCUMENT\n");
-                test.removeXMLResource(transaction, broker, doc.getFileName());
+                test.removeXMLResource(transaction, broker, doc.getFileURI());
                 
                 File f = new File(dir + File.separator + "hamlet.xml");
                 try {
-                    IndexInfo info = test.validateXMLResource(transaction, broker, "test.xml", new InputSource(f.toURI().toASCIIString()));
+                    IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), new InputSource(f.toURI().toASCIIString()));
                     test.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
                 } catch (SAXException e) {
                     System.err.println("Error found while parsing document: " + f.getName() + ": " + e.getMessage());

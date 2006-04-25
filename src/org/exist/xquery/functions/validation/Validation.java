@@ -24,11 +24,14 @@
 package org.exist.xquery.functions.validation;
 
 import java.io.InputStream;
+import java.net.URISyntaxException;
+
 import org.exist.dom.QName;
 import org.exist.storage.BrokerPool;
 import org.exist.validation.ValidationReport;
 import org.exist.validation.Validator;
 import org.exist.validation.internal.ResourceInputStream;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -125,8 +128,13 @@ public class Validation extends BasicFunction  {
         }
         
         // Get inputstream
-        InputStream is = new ResourceInputStream(brokerPool, 
-                                                      args[0].getStringValue());
+        InputStream is;
+        try {
+        	is = new ResourceInputStream(brokerPool,XmldbURI.xmldbUriFor(args[0].getStringValue()));
+        } catch(URISyntaxException e) {
+        	throw new XPathException(getASTNode(),"Invalid resource URI",e);
+        }
+                                                      
         
         ValidationReport vr = null;
         if(args.length==1){

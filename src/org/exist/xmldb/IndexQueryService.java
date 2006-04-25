@@ -48,8 +48,17 @@ public interface IndexQueryService extends Service {
      * 
      * @param collectionPath
      * @throws XMLDBException
+     * @deprecated Use XmldbURI version instead
      */
     public void reindexCollection(String collectionPath) throws XMLDBException;
+    
+    /**
+     * Reindex the collection specified by its path.
+     * 
+     * @param collectionPath
+     * @throws XMLDBException
+     */
+    public void reindexCollection(XmldbURI collectionPath) throws XMLDBException;
     
     /**
      * Returns frequency statistics on all elements and attributes contained in the

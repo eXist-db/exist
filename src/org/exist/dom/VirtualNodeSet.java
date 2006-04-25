@@ -289,7 +289,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 				StoredNode child = (StoredNode) iter.next();
 				if(child == null)
 					LOG.debug("CHILD == NULL; doc = " + 
-							((DocumentImpl)node.getOwnerDocument()).getName());
+							((DocumentImpl)node.getOwnerDocument()).getURI());
 				if(node.getOwnerDocument() == null)
 					LOG.debug("DOC == NULL");
 				child.setOwnerDocument((DocumentImpl)node.getOwnerDocument());

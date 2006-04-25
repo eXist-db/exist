@@ -154,7 +154,7 @@ public class RemoteXPathQueryService implements XPathQueryServiceImpl, XQuerySer
                     outputProperties.getProperty("base-uri", collection.getPath()));
             Vector params = new Vector();
             params.addElement( query.getBytes("UTF-8") );
-            params.addElement( resource.path );
+            params.addElement( resource.path.toString() );
             if(resource.id == null)
             	params.addElement("");
             else

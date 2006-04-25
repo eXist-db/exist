@@ -17,6 +17,7 @@ import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.PathExpr;
 import org.exist.xquery.XQueryContext;
@@ -80,8 +81,8 @@ public class LexerTest extends TestCase {
 		try {
 			// parse the xml source
 			broker = pool.get(user);
-			Collection collection = broker.getCollection(DBBroker.ROOT_COLLECTION + "/test");
-            IndexInfo info = collection.validateXMLResource(null, broker, "test.xml", xml);
+			Collection collection = broker.getCollection(XmldbURI.ROOT_COLLECTION_URI.append("test"));
+            IndexInfo info = collection.validateXMLResource(null, broker, XmldbURI.create("test.xml"), xml);
             collection.store(null, broker, info, xml, false);
 
 			// parse the query into the internal syntax tree

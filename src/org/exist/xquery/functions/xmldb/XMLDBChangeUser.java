@@ -22,11 +22,14 @@
  */
 package org.exist.xquery.functions.xmldb;
 
+import java.net.URISyntaxException;
+
 import org.exist.dom.QName;
 import org.exist.security.User;
-import org.exist.storage.DBBroker;
+import org.exist.validation.internal.ResourceInputStream;
 import org.exist.xmldb.LocalCollection;
 import org.exist.xmldb.UserManagementService;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -37,6 +40,7 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 
 /**
@@ -69,7 +73,7 @@ public class XMLDBChangeUser extends BasicFunction {
 		String userName = args[0].getStringValue();
 		Collection collection = null;
 		try {
-            collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), DBBroker.ROOT_COLLECTION, context.getAccessContext());
+            collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), XmldbURI.ROOT_COLLECTION_URI, context.getAccessContext());
 			UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
 			User oldUser = ums.getUser(userName);
 			User user = new User(oldUser.getName());
@@ -89,7 +93,11 @@ public class XMLDBChangeUser extends BasicFunction {
 				user.setGroups(oldUser.getGroups());
 			if(!args[3].isEmpty()) {
 				// set home collection
-				user.setHome(args[3].getStringValue());
+		        try {
+		        	user.setHome(XmldbURI.xmldbUriFor(args[3].getStringValue()));
+		        } catch(URISyntaxException e) {
+		        	throw new XPathException(getASTNode(),"Invalid home collection URI",e);
+		        }
 			} else
 				user.setHome(oldUser.getHome());
 			ums.updateUser(user);

@@ -80,7 +80,8 @@ public class CollectionName extends BasicFunction {
 			NodeValue node = (NodeValue) item;
 			if(node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 				NodeProxy p = (NodeProxy) node;
-				return new StringValue(p.getDocument().getCollection().getName());	
+				//TODO: use xmldbUri
+				return new StringValue(p.getDocument().getCollection().getURI().toString());	
 			}
 		} else
 			throw new XPathException(getASTNode(), "First argument to util:collection-name should be either " +

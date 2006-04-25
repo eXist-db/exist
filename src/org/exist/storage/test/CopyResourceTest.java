@@ -37,6 +37,7 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
+import org.exist.xmldb.XmldbURI;
 import org.xml.sax.InputSource;
 
 /**
@@ -65,21 +66,21 @@ public class CopyResourceTest extends TestCase {
 			assertNotNull(transaction);
 			System.out.println("Transaction started ...");
 
-			Collection root = broker.getOrCreateCollection(transaction,	DBBroker.ROOT_COLLECTION + "/test");
+			Collection root = broker.getOrCreateCollection(transaction,	XmldbURI.ROOT_COLLECTION_URI.append("test"));
 			assertNotNull(root);
 			broker.saveCollection(transaction, root);
 
-			Collection test2 = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION +  "/test/test2");
+			Collection test2 = broker.getOrCreateCollection(transaction, XmldbURI.ROOT_COLLECTION_URI.append("test/test2"));
 			assertNotNull(test2);
 			broker.saveCollection(transaction, test2);
 
 			File f = new File("samples/shakespeare/r_and_j.xml");
 			assertNotNull(f);
-			IndexInfo info = test2.validateXMLResource(transaction, broker, "test.xml", new InputSource(f.toURI().toASCIIString()));
+			IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), new InputSource(f.toURI().toASCIIString()));
 			assertNotNull(info);
 			test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
 
-			broker.copyXMLResource(transaction, info.getDocument(), root, "new_test.xml");
+			broker.copyXMLResource(transaction, info.getDocument(), root, XmldbURI.create("new_test.xml"));
 			broker.saveCollection(transaction, root);
 
 			transact.commit(transaction);
@@ -105,7 +106,7 @@ public class CopyResourceTest extends TestCase {
 			Serializer serializer = broker.getSerializer();
 			serializer.reset();
 
-			DocumentImpl doc = broker.getXMLResource(DBBroker.ROOT_COLLECTION + "/test/new_test.xml", Lock.READ_LOCK);
+			DocumentImpl doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test/new_test.xml"), Lock.READ_LOCK);
 			assertNotNull("Document should not be null", doc);
 			String data = serializer.serialize(doc);
 			assertNotNull(data);
@@ -133,17 +134,17 @@ public class CopyResourceTest extends TestCase {
 			assertNotNull(transaction);
 			System.out.println("Transaction started ...");
 
-			Collection root = broker.getOrCreateCollection(transaction,	DBBroker.ROOT_COLLECTION + "/test");
+			Collection root = broker.getOrCreateCollection(transaction,	XmldbURI.ROOT_COLLECTION_URI.append("test"));
 			assertNotNull(root);
 			broker.saveCollection(transaction, root);
 
-			Collection test2 = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test/test2");
+			Collection test2 = broker.getOrCreateCollection(transaction, XmldbURI.ROOT_COLLECTION_URI.append("test/test2"));
 			assertNotNull(test2);
 			broker.saveCollection(transaction, test2);
 
 			File f = new File("samples/shakespeare/r_and_j.xml");
 			assertNotNull(f);
-			IndexInfo info = test2.validateXMLResource(transaction, broker, "test2.xml", new InputSource(f.toURI().toASCIIString()));
+			IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create("test2.xml"), new InputSource(f.toURI().toASCIIString()));
 			assertNotNull(info);
 			test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
 
@@ -153,7 +154,7 @@ public class CopyResourceTest extends TestCase {
 			transaction = transact.beginTransaction();
 			System.out.println("Transaction started ...");
 
-			broker.copyXMLResource(transaction, info.getDocument(), root, "new_test2.xml");
+			broker.copyXMLResource(transaction, info.getDocument(), root, XmldbURI.create("new_test2.xml"));
 			broker.saveCollection(transaction, root);
 			
 //			Don't commit...
@@ -179,14 +180,14 @@ public class CopyResourceTest extends TestCase {
 			Serializer serializer = broker.getSerializer();
 			serializer.reset();
 
-			DocumentImpl doc = broker.getXMLResource(DBBroker.ROOT_COLLECTION +  "/test/test2/test2.xml",	Lock.READ_LOCK);
+			DocumentImpl doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test/test2/test2.xml"),	Lock.READ_LOCK);
 			assertNotNull("Document should not be null", doc);
 			String data = serializer.serialize(doc);
 			assertNotNull(data);
 			System.out.println(data);
 			doc.getUpdateLock().release(Lock.READ_LOCK);
 
-			doc = broker.getXMLResource(DBBroker.ROOT_COLLECTION +  "/test/new_test2.xml", Lock.READ_LOCK);
+			doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("test/new_test2.xml"), Lock.READ_LOCK);
 			assertNull("Document should not exist", doc);
 	    } catch (Exception e) {            
 	        fail(e.getMessage());  			

@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.exist.security.User;
+import org.exist.xmldb.XmldbURI;
 
 /**
  * Interface for all WebDAV methods.
@@ -50,6 +51,6 @@ public interface WebDAVMethod {
 	 * @throws IOException
 	 */
 	void process(User user, HttpServletRequest request, HttpServletResponse response, 
-			String path) 
+			XmldbURI path) 
 	throws ServletException, IOException;
 }

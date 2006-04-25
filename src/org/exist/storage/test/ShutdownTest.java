@@ -3,23 +3,24 @@ package org.exist.storage.test;
 import java.io.File;
 import java.io.FilenameFilter;
 
+import junit.framework.TestCase;
+import junit.textui.TestRunner;
+
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
-import org.exist.dom.BinaryDocument;
 import org.exist.security.SecurityManager;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-
-import junit.framework.TestCase;
-import junit.textui.TestRunner;
 
 public class ShutdownTest extends TestCase {
 
@@ -53,7 +54,7 @@ public class ShutdownTest extends TestCase {
             assertNotNull(transaction);            
             System.out.println("Transaction started ...");
             
-            Collection test = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test");
+            Collection test = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             assertNotNull(test); 
             broker.saveCollection(transaction, test);
             
@@ -74,7 +75,7 @@ public class ShutdownTest extends TestCase {
                 f = files[i];
                 assertNotNull(f); 
                 try {
-                    info = test.validateXMLResource(transaction, broker, f.getName(), new InputSource(f.toURI().toASCIIString()));
+                    info = test.validateXMLResource(transaction, broker, XmldbURI.create(f.getName()), new InputSource(f.toURI().toASCIIString()));
                     assertNotNull(info); 
                     test.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
                 } catch (SAXException e) {

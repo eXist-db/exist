@@ -57,6 +57,7 @@ import org.exist.storage.lock.Lock;
 import org.exist.util.LockException;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -136,7 +137,7 @@ public class Propfind extends AbstractWebDAVMethod {
         super(pool);
     }
     
-    public void process(User user, HttpServletRequest request, HttpServletResponse response, String path)
+    public void process(User user, HttpServletRequest request, HttpServletResponse response, XmldbURI path)
     throws ServletException, IOException {
         DBBroker broker = null;
         Collection collection = null;
@@ -149,16 +150,15 @@ public class Propfind extends AbstractWebDAVMethod {
                 if(collection == null) {
                     ///TODO : use dedicated function in XmldbURI
                     // no collection found: check for a resource
-                    int pos = path.lastIndexOf("/");
-                    String collName = path.substring(0, pos);
-                    String docName = path.substring(pos + 1);
-                    collection = broker.openCollection(collName, Lock.READ_LOCK);
+                	XmldbURI docUri = path.lastSegment();
+                	XmldbURI collUri = path.removeLastSegment();
+                    collection = broker.openCollection(collUri, Lock.READ_LOCK);
                     if(collection == null) {
                         LOG.debug("No resource or collection found for path: " + path);
                         response.sendError(HttpServletResponse.SC_NOT_FOUND, NOT_FOUND_ERR);
                         return;
                     }
-                    resource = collection.getDocumentWithLock(broker, docName, Lock.READ_LOCK);
+                    resource = collection.getDocumentWithLock(broker, docUri, Lock.READ_LOCK);
                     if(resource == null) {
                         LOG.debug("No resource found for path: " + path);
                         response.sendError(HttpServletResponse.SC_NOT_FOUND, NOT_FOUND_ERR);
@@ -270,7 +270,7 @@ public class Propfind extends AbstractWebDAVMethod {
         serializer.startElement(WebDAV.DAV_NS, "response", "D:response", attrs);
         // write D:href
         serializer.startElement(WebDAV.DAV_NS, "href", "D:href", attrs);
-        serializer.characters(servletPath + collection.getName());
+        serializer.characters(servletPath + collection.getURI());
         serializer.endElement(WebDAV.DAV_NS, "href", "D:href");
         
         serializer.startElement(WebDAV.DAV_NS, "propstat", "D:propstat", attrs);
@@ -278,11 +278,7 @@ public class Propfind extends AbstractWebDAVMethod {
         
         if(shouldIncludeProperty(type, searchedProperties, DISPLAY_NAME_PROP)) {
             // write D:displayname
-            String displayName = collection.getName();
-            ///TODO : use dedicated function in XmldbURI
-            int p = displayName.lastIndexOf("/");
-            if(p != Constants.STRING_NOT_FOUND)
-                displayName = displayName.substring(p + 1);
+            String displayName = collection.getURI().lastSegment().toString();
             writeSimpleElement(DISPLAY_NAME_PROP, displayName, serializer);
         }
         
@@ -332,7 +328,7 @@ public class Propfind extends AbstractWebDAVMethod {
                         doc.getUpdateLock().acquire(Lock.READ_LOCK);
                         writeResourceProperties(user, searchedProperties, type, collection, doc, serializer, servletPath);
                     } catch (LockException e) {
-                        LOG.debug("Failed to acquire lock on document " + doc.getName());
+                        LOG.debug("Failed to acquire lock on document " + doc.getURI());
                     } finally {
                         doc.getUpdateLock().release(Lock.READ_LOCK);
                     }
@@ -340,11 +336,10 @@ public class Propfind extends AbstractWebDAVMethod {
             }
             if(collection.getChildCollectionCount() > 0) {
                 for(Iterator i = collection.collectionIterator(); i.hasNext(); ) {
-                    String child = (String)i.next();
+                    XmldbURI child = (XmldbURI)i.next();
                     Collection childCollection = null;
                     try {
-                        ///TODO : use dedicated function in XmldbURI
-                        childCollection = broker.openCollection(collection.getName() + "/" + child, Lock.READ_LOCK);
+                        childCollection = broker.openCollection(collection.getURI().append(child), Lock.READ_LOCK);
                         if(childCollection != null)
                             writeCollectionProperties(user, broker, searchedProperties, type, childCollection, serializer,
                                     servletPath, maxDepth, currentDepth);
@@ -368,8 +363,7 @@ public class Propfind extends AbstractWebDAVMethod {
         serializer.startElement(WebDAV.DAV_NS, "response", "D:response", attrs);
         // write D:href
         serializer.startElement(WebDAV.DAV_NS, "href", "D:href", attrs);
-        ///TODO : use dedicated function in XmldbURI
-        serializer.characters(servletPath + collection.getName() + "/" + resource.getFileName());
+        serializer.characters(servletPath + collection.getURI().append(resource.getFileURI()).toString());
         serializer.endElement(WebDAV.DAV_NS, "href", "D:href");
         
         serializer.startElement(WebDAV.DAV_NS, "propstat", "D:propstat", attrs);
@@ -377,7 +371,7 @@ public class Propfind extends AbstractWebDAVMethod {
         
         if(shouldIncludeProperty(type, searchedProperties, DISPLAY_NAME_PROP)) {
             // write D:displayname
-            writeSimpleElement(DISPLAY_NAME_PROP, resource.getFileName(), serializer);
+            writeSimpleElement(DISPLAY_NAME_PROP, resource.getFileURI().toString(), serializer);
         }
         
         if(shouldIncludeProperty(type, searchedProperties, RESOURCE_TYPE_PROP)) {
@@ -504,8 +498,8 @@ public class Propfind extends AbstractWebDAVMethod {
         // write D:href
         serializer.startElement(WebDAV.DAV_NS, "href", "D:href", attrs);
         ///TODO : use dedicated function in XmldbURI
-        String href = servletPath + (resource != null ? collection.getName() + "/" + resource.getFileName() :
-            collection.getName());
+        String href = servletPath + (resource != null ? collection.getURI().toString() + "/" + resource.getFileURI() :
+            collection.getURI().toString());
         serializer.characters(href);
         serializer.endElement(WebDAV.DAV_NS, "href", "D:href");
         

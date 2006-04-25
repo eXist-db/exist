@@ -33,6 +33,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.btree.Paged.Page;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
+import org.exist.xmldb.XmldbURI;
 
 /**
  * Represents a binary resource. Binary resources are just stored
@@ -54,12 +55,12 @@ public class BinaryDocument extends DocumentImpl {
 		super(broker, collection);
 	}
 
-    public BinaryDocument(DBBroker broker, String fileName) {
-        super(broker, null, fileName);       
+    public BinaryDocument(DBBroker broker, XmldbURI fileURI) {
+        super(broker, null, fileURI);       
     }    
 
-	public BinaryDocument(DBBroker broker, String docName, Collection collection) {
-		super(broker, collection, docName);
+	public BinaryDocument(DBBroker broker, Collection collection, XmldbURI fileURI) {
+		super(broker, collection, fileURI);
 	}
 	
 	/* (non-Javadoc)
@@ -79,7 +80,7 @@ public class BinaryDocument extends DocumentImpl {
 
 	public void write(VariableByteOutputStream ostream) throws IOException {
 		ostream.writeInt(getDocId());
-		ostream.writeUTF(getFileName());
+		ostream.writeUTF(getFileURI().toString());
 		ostream.writeLong(pageNr);
 		SecurityManager secman = getBroker().getBrokerPool().getSecurityManager();
 		if (secman == null) {
@@ -99,7 +100,7 @@ public class BinaryDocument extends DocumentImpl {
 	public void read(VariableByteInput istream)
 		throws IOException, EOFException {
 		setDocId(istream.readInt());
-		setFileName(istream.readUTF());
+		setFileURI(XmldbURI.create(istream.readUTF()));
 		pageNr = istream.readLong();
 		final SecurityManager secman =
 			getBroker().getBrokerPool().getSecurityManager();

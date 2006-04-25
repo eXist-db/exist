@@ -22,11 +22,14 @@
  */
 package org.exist.xquery.functions.xmldb;
 
+import java.net.URISyntaxException;
+
 import org.exist.dom.QName;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.LocalCollection;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -38,6 +41,7 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 
 /**
@@ -85,8 +89,12 @@ public class XMLDBCollection extends BasicFunction {
 				User localUser = context.getUser();
 				// Must be a LOCAL collection
 				if (!localUser.getName().equals(user))
-					localUser = getUser(user, passwd);                 
-		        collection = new LocalCollection(localUser, context.getBroker().getBrokerPool(), collectionURI, context.getAccessContext());
+					localUser = getUser(user, passwd);
+				try {
+			        collection = new LocalCollection(localUser, context.getBroker().getBrokerPool(), XmldbURI.xmldbUriFor(collectionURI), context.getAccessContext());
+				} catch(URISyntaxException e) {
+					throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+				}
 			} else {
 				collection = DatabaseManager.getCollection(collectionURI, user, passwd);
 			}

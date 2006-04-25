@@ -5,28 +5,65 @@ import java.net.URISyntaxException;
 
 import junit.framework.TestCase;
 
+import org.exist.test.TestConstants;
 import org.exist.xmldb.XmldbURI;
 
 public class XmldbURITest extends TestCase {
-    
-	private final static String DECODED_COLL = "test[98]";
-	private final static String ENCODED_COLL = "test%5B98%5D";
-
+   
 	public void testXmldbURIConstructors() {
         try{
-            XmldbURI xmldbURI;
-            //TODO : add some other instances
-            xmldbURI = new XmldbURI(".");
-            xmldbURI = new XmldbURI("..");
-            xmldbURI = new XmldbURI("/db");
+            XmldbURI.xmldbUriFor(".");
+            XmldbURI.xmldbUriFor("..");
+            XmldbURI.xmldbUriFor("/db");
+            XmldbURI.xmldbUriFor("xmldb:exist:///db");
+            XmldbURI.xmldbUriFor("xmldb:exist://localhost/db");
+            XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/db");
+            XmldbURI.xmldbUriFor("//localhost:8080/db");
+            XmldbURI.xmldbUriFor("./db");
+            XmldbURI.xmldbUriFor("../db");
+            XmldbURI.xmldbUriFor("/db/test");
+            XmldbURI.xmldbUriFor("xmldb:exist:///db/test");
+            XmldbURI.xmldbUriFor("xmldb:exist://localhost/db/test");
+            XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/db/test");
+            XmldbURI.xmldbUriFor("//localhost:8080/db/test");
+            XmldbURI.xmldbUriFor("./");
+            XmldbURI.xmldbUriFor("../");
+            XmldbURI.xmldbUriFor("/db/");
+            XmldbURI.xmldbUriFor("xmldb:exist:///db/");
+            XmldbURI.xmldbUriFor("xmldb:exist://localhost/db/");
+            XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/db/");
+            XmldbURI.xmldbUriFor("//localhost:8080/db/");
         } catch (URISyntaxException e) {
             fail(e.getMessage());
         }
     }
     
+	public void testFailingXmldbURIConstructors() {
+        try{
+            XmldbURI.xmldbUriFor("exist:///db");
+            fail("Invalid constructor threw no exception!");
+        } catch (URISyntaxException e) {
+        }
+        try{
+            XmldbURI.xmldbUriFor("exist://localhost/db");
+            fail("Invalid constructor threw no exception!");
+        } catch (URISyntaxException e) {
+        }
+        try{
+            XmldbURI.xmldbUriFor("exist://localhost:8080/db");
+            fail("Invalid constructor threw no exception!");
+        } catch (URISyntaxException e) {
+        }
+        try{
+            XmldbURI.xmldbUriFor("[");
+            fail("Invalid constructor threw no exception!");
+        } catch (URISyntaxException e) {
+        }
+    }
+    
     public void testXmldbURIConstructor1() {
         try{
-            XmldbURI xmldbURI = new XmldbURI("xmldb:exist:///db");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist:///db");
             assertEquals("exist", xmldbURI.getInstanceName());
             assertNull(xmldbURI.getHost());
             assertEquals(-1, xmldbURI.getPort());
@@ -47,7 +84,7 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURIConstructor2() {
         try{
-            XmldbURI xmldbURI = new XmldbURI("xmldb:exist://localhost:8080/exist/xmlrpc");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/exist/xmlrpc");
             assertEquals("exist", xmldbURI.getInstanceName());
             assertEquals("localhost", xmldbURI.getHost());
             assertEquals(8080, xmldbURI.getPort());
@@ -68,7 +105,7 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURIConstructor3() {
         try{
-            XmldbURI xmldbURI = new XmldbURI("xmldb:exist://localhost:8088/xmlrpc");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8088/xmlrpc");
             assertEquals("exist", xmldbURI.getInstanceName());
             assertEquals("localhost", xmldbURI.getHost());
             assertEquals(8088, xmldbURI.getPort());
@@ -89,7 +126,7 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURIConstructor4() {
         try{
-            XmldbURI xmldbURI = new XmldbURI("xmldb:exist://localhost:8088/webdav");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8088/webdav");
             assertEquals("exist", xmldbURI.getInstanceName());
             assertEquals("localhost", xmldbURI.getHost());
             assertEquals(8088, xmldbURI.getPort());
@@ -110,7 +147,7 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURIConstructor5() {
         try{
-            XmldbURI xmldbURI = new XmldbURI("xmldb:exist:///db/");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist:///db/");
             assertEquals("/db", xmldbURI.getCollectionPath());
             //assertEquals("xmldb:exist:///db", xmldbURI.toString());
             xmldbURI = XmldbURI.create("xmldb:exist:///db/");
@@ -123,7 +160,7 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURIConstructor6() {
         try{
-            XmldbURI xmldbURI = new XmldbURI("xmldb:exist2://localhost:8088/webdav/db");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist2://localhost:8088/webdav/db");
             assertEquals("exist2", xmldbURI.getInstanceName());
             xmldbURI = XmldbURI.create("xmldb:exist2://localhost:8088/webdav/db");
             assertEquals("exist2", xmldbURI.getInstanceName());
@@ -134,7 +171,7 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURIConstructor7() {
         try{
-            XmldbURI xmldbURI = new XmldbURI("xmldb:exist://localhost:8088/xmlrpc/db");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8088/xmlrpc/db");
             assertEquals("exist", xmldbURI.getInstanceName());
             assertEquals("localhost", xmldbURI.getHost());
             assertEquals(8088, xmldbURI.getPort());
@@ -155,7 +192,7 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURIConstructor8() {
         try{
-            XmldbURI xmldbURI = new XmldbURI("xmldb:exist://localhost:8088/webdav/db");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8088/webdav/db");
             assertEquals("exist", xmldbURI.getInstanceName());
             assertEquals("localhost", xmldbURI.getHost());
             assertEquals(8088, xmldbURI.getPort());
@@ -176,7 +213,7 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURIConstructor9() {
         try{
-            XmldbURI xmldbURI = new XmldbURI("xmldb:exist://localhost:8088/xmlrpc/webdav/db");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8088/xmlrpc/webdav/db");
             assertEquals("exist", xmldbURI.getInstanceName());
             assertEquals("localhost", xmldbURI.getHost());
             assertEquals(8088, xmldbURI.getPort());
@@ -197,7 +234,7 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURIConstructor10() {
         try{
-            XmldbURI xmldbURI = new XmldbURI("xmldb:exist://localhost:8088/webdav/xmlrpc/db");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8088/webdav/xmlrpc/db");
             assertEquals("exist", xmldbURI.getInstanceName());
             assertEquals("localhost", xmldbURI.getHost());
             assertEquals(8088, xmldbURI.getPort());
@@ -218,7 +255,7 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURIConstructor11() {
         try{
-            XmldbURI xmldbURI = new XmldbURI("xmldb:exist://localhost/db");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost/db");
             assertEquals("exist", xmldbURI.getInstanceName());
             assertEquals("localhost", xmldbURI.getHost());
             assertEquals(-1, xmldbURI.getPort());
@@ -232,7 +269,7 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURIConstructor12() {
         try{
-            XmldbURI xmldbURI = new XmldbURI("xmldb:exist:///db/aa/bb/ccc");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist:///db/aa/bb/ccc");
             assertEquals("exist", xmldbURI.getInstanceName());
             assertNull(xmldbURI.getHost());
             assertEquals(-1, xmldbURI.getPort());
@@ -253,7 +290,7 @@ public class XmldbURITest extends TestCase {
     public void testXmldbURIFaultyConstructor1() {
         boolean exceptionThrown = false;
         try{
-            XmldbURI xmldbURI = new XmldbURI("exist:///db");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("exist:///db");
         } catch (URISyntaxException e) {
             exceptionThrown = true;
         }
@@ -271,7 +308,7 @@ public class XmldbURITest extends TestCase {
     public void testXmldbURIFaultyConstructor2() {
         boolean exceptionThrown = false;
         try{
-            XmldbURI xmldbURI = new XmldbURI("xmldb:///db");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:///db");
         } catch (URISyntaxException e) {
             exceptionThrown = true;
         }
@@ -288,7 +325,7 @@ public class XmldbURITest extends TestCase {
     public void testXmldbURIFaultyConstructor3() {
         boolean exceptionThrown = false;
         try{
-            XmldbURI xmldbURI = new XmldbURI("xmldb:exist://");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://");
         } catch (URISyntaxException e) {
             exceptionThrown = true;
         }
@@ -305,7 +342,7 @@ public class XmldbURITest extends TestCase {
     public void testXmldbURIFaultyConstructor4() {
         boolean exceptionThrown = false;
         try{
-            XmldbURI xmldbURI = new XmldbURI("xmldb:exist://");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://");
         } catch (URISyntaxException e) {
             exceptionThrown = true;
         }
@@ -322,7 +359,7 @@ public class XmldbURITest extends TestCase {
     public void testXmldbURIFaultyConstructor5() {
         boolean exceptionThrown = false;
         try{
-            XmldbURI xmldbURI = new XmldbURI("xmldb:exist:///db?param=value");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist:///db?param=value");
         } catch (URISyntaxException e) {
             exceptionThrown = true;
         }
@@ -339,7 +376,7 @@ public class XmldbURITest extends TestCase {
     public void testXmldbURIFaultyConstructor6() {
         boolean exceptionThrown = false;
         try{
-            XmldbURI xmldbURI = new XmldbURI("xmldb:exist:///db#123");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist:///db#123");
         } catch (URISyntaxException e) {
             exceptionThrown = true;
         }
@@ -353,9 +390,13 @@ public class XmldbURITest extends TestCase {
         assertTrue(exceptionThrown);
     }
     
+    /*
+     * These test are irrelevant for immutable URIs
+     */
+    /*
     public void testXmldbURIChangePart1() {
         try {
-            XmldbURI xmldbURI = new XmldbURI("xmldb:exist://localhost:8088/xmlrpc/webdav/db");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8088/xmlrpc/webdav/db");
             xmldbURI.setInstanceName("exist2");
             assertEquals("xmldb:exist2://localhost:8088/xmlrpc/webdav/db", xmldbURI.toString());
         } catch (URISyntaxException e) {
@@ -365,7 +406,7 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURIChangePart2() {
         try {
-            XmldbURI xmldbURI = new XmldbURI("xmldb:exist://localhost:8088/xmlrpc/webdav/db");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8088/xmlrpc/webdav/db");
             xmldbURI.setHost("remotehost");
             assertEquals("xmldb:exist://remotehost:8088/xmlrpc/webdav/db", xmldbURI.toString());
         } catch (URISyntaxException e) {
@@ -375,7 +416,7 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURIChangePart3() {
         try {
-            XmldbURI xmldbURI = new XmldbURI("xmldb:exist://localhost:8088/xmlrpc/webdav/db");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8088/xmlrpc/webdav/db");
             xmldbURI.setPort(8080);
             assertEquals("xmldb:exist://localhost:8080/xmlrpc/webdav/db", xmldbURI.toString());
         } catch (URISyntaxException e) {
@@ -385,7 +426,7 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURIChangePart4() {
         try {
-            XmldbURI xmldbURI = new XmldbURI("xmldb:exist://localhost:8088/xmlrpc/webdav/db");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8088/xmlrpc/webdav/db");
             xmldbURI.setPort(-1);
             assertEquals("xmldb:exist://localhost/xmlrpc/webdav/db", xmldbURI.toString());
         } catch (URISyntaxException e) {
@@ -395,18 +436,19 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURIChangePart5() {
         try {
-            XmldbURI xmldbURI = new XmldbURI("xmldb:exist://localhost:8088/xmlrpc/webdav/db");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8088/xmlrpc/webdav/db");
             xmldbURI.setContext("/webdav");
             assertEquals("xmldb:exist://localhost:8088/webdav/db", xmldbURI.toString());
         } catch (URISyntaxException e) {
             fail(e.getMessage());
         }
     }
+    */
     
     public void testXmldbURICompareTo1() {
         try{
-            XmldbURI xmldbURI1 = new XmldbURI("xmldb:exist:///db");
-            XmldbURI xmldbURI2 = new XmldbURI("xmldb:exist:///db/collection1");
+            XmldbURI xmldbURI1 = XmldbURI.xmldbUriFor("xmldb:exist:///db");
+            XmldbURI xmldbURI2 = XmldbURI.xmldbUriFor("xmldb:exist:///db/collection1");
             assertTrue(xmldbURI1.compareTo(xmldbURI2) < 0);
             assertTrue(xmldbURI2.compareTo(xmldbURI1) > 0);
         } catch (URISyntaxException e) {
@@ -416,8 +458,8 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURICompareTo2() {
         try{
-            XmldbURI xmldbURI1 = new XmldbURI("xmldb:exist:///db/collection1");
-            XmldbURI xmldbURI2 = new XmldbURI("xmldb:exist:///db/collection1");
+            XmldbURI xmldbURI1 = XmldbURI.xmldbUriFor("xmldb:exist:///db/collection1");
+            XmldbURI xmldbURI2 = XmldbURI.xmldbUriFor("xmldb:exist:///db/collection1");
             assertEquals(0, xmldbURI1.compareTo(xmldbURI2));
         } catch (URISyntaxException e) {
             fail(e.getMessage());
@@ -426,8 +468,8 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURICompareTo3() {
         try{
-            XmldbURI xmldbURI1 = new XmldbURI("xmldb:exist:///collection1");
-            XmldbURI xmldbURI2 = new XmldbURI("xmldb:exist:///collection2");
+            XmldbURI xmldbURI1 = XmldbURI.xmldbUriFor("xmldb:exist:///collection1");
+            XmldbURI xmldbURI2 = XmldbURI.xmldbUriFor("xmldb:exist:///collection2");
             assertTrue(xmldbURI1.compareTo(xmldbURI2) < 0);
             assertTrue(xmldbURI2.compareTo(xmldbURI1) > 0);
         } catch (URISyntaxException e) {
@@ -437,8 +479,8 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURICompareTo4() {
         try{
-            XmldbURI xmldbURI1 = new XmldbURI("xmldb:exist1:///db");
-            XmldbURI xmldbURI2 = new XmldbURI("xmldb:exist2:///db");
+            XmldbURI xmldbURI1 = XmldbURI.xmldbUriFor("xmldb:exist1:///db");
+            XmldbURI xmldbURI2 = XmldbURI.xmldbUriFor("xmldb:exist2:///db");
             assertTrue(xmldbURI1.compareTo(xmldbURI2) < 0);
             assertTrue(xmldbURI2.compareTo(xmldbURI1) > 0);
         } catch (URISyntaxException e) {
@@ -448,8 +490,8 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURIEquals1() {
         try{
-            XmldbURI xmldbURI1 = new XmldbURI("xmldb:exist:///db");
-            XmldbURI xmldbURI2 = new XmldbURI("xmldb:exist:///db");
+            XmldbURI xmldbURI1 = XmldbURI.xmldbUriFor("xmldb:exist:///db");
+            XmldbURI xmldbURI2 = XmldbURI.xmldbUriFor("xmldb:exist:///db");
             assertTrue(xmldbURI1.equals(xmldbURI2));
         } catch (URISyntaxException e) {
             fail(e.getMessage());
@@ -458,8 +500,8 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURIEquals2() {
         try{
-            XmldbURI xmldbURI1 = new XmldbURI("xmldb:exist://localhost:8080/db");
-            XmldbURI xmldbURI2 = new XmldbURI("xmldb:exist://localhost:8080/db");
+            XmldbURI xmldbURI1 = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/db");
+            XmldbURI xmldbURI2 = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/db");
             assertTrue(xmldbURI1.equals(xmldbURI2));
         } catch (URISyntaxException e) {
             fail(e.getMessage());
@@ -468,8 +510,8 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURIEquals3() {
         try{
-            XmldbURI xmldbURI1 = new XmldbURI("xmldb:exist://localhost:8080/exist/xmlrpc");
-            XmldbURI xmldbURI2 = new XmldbURI("xmldb:exist://localhost:8080/exist/xmlrpc");
+            XmldbURI xmldbURI1 = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/exist/xmlrpc");
+            XmldbURI xmldbURI2 = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/exist/xmlrpc");
             assertTrue(xmldbURI1.equals(xmldbURI2));
         } catch (URISyntaxException e) {
             fail(e.getMessage());
@@ -478,8 +520,8 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURIEquals4() {
         try{
-            XmldbURI xmldbURI1 = new XmldbURI("xmldb:exist://localhost:8080/exist/xmlrpc/db");
-            XmldbURI xmldbURI2 = new XmldbURI("xmldb:exist://localhost:8080/exist/xmlrpc/db");
+            XmldbURI xmldbURI1 = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/exist/xmlrpc/db");
+            XmldbURI xmldbURI2 = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/exist/xmlrpc/db");
             assertTrue(xmldbURI1.equals(xmldbURI2));
         } catch (URISyntaxException e) {
             fail(e.getMessage());
@@ -488,8 +530,8 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURIEquals5() {
         try{
-            XmldbURI xmldbURI1 = new XmldbURI("xmldb:exist1://localhost:8088/db");
-            XmldbURI xmldbURI2 = new XmldbURI("xmldb:exist1://localhost:8088/db");
+            XmldbURI xmldbURI1 = XmldbURI.xmldbUriFor("xmldb:exist1://localhost:8088/db");
+            XmldbURI xmldbURI2 = XmldbURI.xmldbUriFor("xmldb:exist1://localhost:8088/db");
             assertTrue(xmldbURI1.equals(xmldbURI2));
         } catch (URISyntaxException e) {
             fail(e.getMessage());
@@ -498,7 +540,7 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURIIsAbsolute1() {
         try{
-            XmldbURI xmldbURI = new XmldbURI("xmldb:exist:///db");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist:///db");
             assertTrue(xmldbURI.isAbsolute());
         } catch (URISyntaxException e) {
             fail(e.getMessage());
@@ -507,7 +549,7 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURIIsAbsolute2() {
         try{
-            XmldbURI xmldbURI = new XmldbURI(".");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor(".");
             assertFalse(xmldbURI.isAbsolute());
         } catch (URISyntaxException e) {
             fail(e.getMessage());
@@ -516,7 +558,7 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURIIsAbsolute3() {
         try{
-            XmldbURI xmldbURI = new XmldbURI("..");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("..");
             assertFalse(xmldbURI.isAbsolute());
         } catch (URISyntaxException e) {
             fail(e.getMessage());
@@ -525,7 +567,7 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURIIsContextAbsolute1() {
         try{
-            XmldbURI xmldbURI1 = new XmldbURI("xmldb:exist://localhost:8080/exist/exist/xmlrpc/db");
+            XmldbURI xmldbURI1 = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/exist/exist/xmlrpc/db");
             assertTrue(xmldbURI1.isContextAbsolute());
         } catch (URISyntaxException e) {
             fail(e.getMessage());
@@ -534,7 +576,7 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURINormalizeContext1() {
         try{
-            XmldbURI xmldbURI1 = new XmldbURI("xmldb:exist://localhost:8080/exist/./xmlrpc/db");
+            XmldbURI xmldbURI1 = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/exist/./xmlrpc/db");
             XmldbURI xmldbURI2 = xmldbURI1.normalizeContext();
             assertEquals("xmldb:exist://localhost:8080/exist/xmlrpc/db", xmldbURI2.toString());
         } catch (URISyntaxException e) {
@@ -544,7 +586,7 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURINormalizeContext2() {
         try{
-            XmldbURI xmldbURI1 = new XmldbURI("xmldb:exist://localhost:8080/exist/../xmlrpc/db");
+            XmldbURI xmldbURI1 = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/exist/../xmlrpc/db");
             XmldbURI xmldbURI2 = xmldbURI1.normalizeContext();
             assertEquals("xmldb:exist://localhost:8080/xmlrpc/db", xmldbURI2.toString());
         } catch (URISyntaxException e) {
@@ -554,7 +596,7 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURINormalizeContext3() {
         try{
-            XmldbURI xmldbURI1 = new XmldbURI("xmldb:exist:///db");
+            XmldbURI xmldbURI1 = XmldbURI.xmldbUriFor("xmldb:exist:///db");
             XmldbURI xmldbURI2  = xmldbURI1.normalizeContext();
             assertEquals("xmldb:exist:///db", xmldbURI2.toString());
         } catch (URISyntaxException e) {
@@ -564,7 +606,7 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURIRelativizeContext1() {
         try{
-            XmldbURI xmldbURI = new XmldbURI("xmldb:exist://localhost:8080/exist/exist/xmlrpc/db");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/exist/exist/xmlrpc/db");
             URI uri = new URI("/exist/xmlrpc");
             assertEquals("/exist/xmlrpc", xmldbURI.relativizeContext(uri).toString());
         } catch (URISyntaxException e) {
@@ -574,7 +616,7 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURIRelativizeContext2() {
         try{
-            XmldbURI xmldbURI = new XmldbURI("xmldb:exist://localhost:8080/exist/xmlrpc/db");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/exist/xmlrpc/db");
             URI uri = new URI("/exist/exist/xmlrpc");
             assertEquals("/exist/exist/xmlrpc", xmldbURI.relativizeContext(uri).toString());
         } catch (URISyntaxException e) {
@@ -585,7 +627,7 @@ public class XmldbURITest extends TestCase {
     public void testXmldbURIRelativizeContext3() {
         boolean exceptionThrown = false;
         try{
-            XmldbURI xmldbURI = new XmldbURI("xmldb:exist:///db");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist:///db");
             URI uri = new URI("/db");
             assertEquals("/exist/exist/xmlrpc", xmldbURI.relativizeContext(uri).toString());
         } catch (URISyntaxException e) {
@@ -597,7 +639,7 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURIResolveContext1() {
         try{
-            XmldbURI xmldbURI = new XmldbURI("xmldb:exist://localhost:8080/a/b/xmlrpc/db");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/a/b/xmlrpc/db");
             URI uri = new URI("..");
             //Strange but it's like this
             assertEquals("/a/b/", xmldbURI.resolveContext(uri).toString());
@@ -608,7 +650,7 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURIResolveContext2() {
         try{
-            XmldbURI xmldbURI = new XmldbURI("xmldb:exist://localhost:8080/a/b/xmlrpc/db");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/a/b/xmlrpc/db");
             URI uri = new URI("../..");
             //Strange but it's like this
             assertEquals("/a/", xmldbURI.resolveContext(uri).toString());
@@ -621,7 +663,7 @@ public class XmldbURITest extends TestCase {
         boolean exceptionThrown = false;
         try{
             //Null context here ;-)
-            XmldbURI xmldbURI = new XmldbURI("xmldb:exist:///a/db");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist:///a/db");
             URI uri = new URI("..");
             xmldbURI.resolveContext(uri);
         } catch (URISyntaxException e) {
@@ -635,7 +677,7 @@ public class XmldbURITest extends TestCase {
     public void testXmldbURIResolveContext4() {
         try{
             //Null context here ;-)
-            XmldbURI xmldbURI = new XmldbURI("xmldb:exist://localhost:8080/xmlrpc/db");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/xmlrpc/db");
             //Up and up...
             URI uri = new URI("/../../..");
             //Strange but it's like this
@@ -647,7 +689,7 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURIIsCollectionNameAbsolute1() {
         try{
-            XmldbURI xmldbURI1 = new XmldbURI("xmldb:exist://localhost:8080/xmlrpc/db");
+            XmldbURI xmldbURI1 = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/xmlrpc/db");
             assertTrue(xmldbURI1.isCollectionPathAbsolute());
         } catch (URISyntaxException e) {
             fail(e.getMessage());
@@ -656,7 +698,7 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURINormalizeCollectionName1() {
         try{
-            XmldbURI xmldbURI = new XmldbURI("xmldb:exist://localhost:8080/xmlrpc/db/./collection");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/xmlrpc/db/./collection");
             assertEquals("xmldb:exist://localhost:8080/xmlrpc/db/collection", xmldbURI.normalizeCollectionPath().toString());
         } catch (URISyntaxException e) {
             fail(e.getMessage());
@@ -665,7 +707,7 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURINormalizeCollectionName2() {
         try{
-            XmldbURI xmldbURI1 = new XmldbURI("xmldb:exist://localhost:8080/xmlrpc/db/../collection");
+            XmldbURI xmldbURI1 = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/xmlrpc/db/../collection");
             XmldbURI xmldbURI2 = xmldbURI1.normalizeCollectionPath();
             assertEquals("xmldb:exist://localhost:8080/xmlrpc/collection", xmldbURI2.toString());
         } catch (URISyntaxException e) {
@@ -675,7 +717,7 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURINormalizeCollectionName3() {
         try{
-            XmldbURI xmldbURI1 = new XmldbURI("xmldb:exist:///");
+            XmldbURI xmldbURI1 = XmldbURI.xmldbUriFor("xmldb:exist:///");
             XmldbURI xmldbURI2  = xmldbURI1.normalizeCollectionPath();
             assertEquals("xmldb:exist:///", xmldbURI2.toString());
         } catch (URISyntaxException e) {
@@ -685,7 +727,7 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURIRelativizeCollectionName1() {
         try{
-            XmldbURI xmldbURI = new XmldbURI("xmldb:exist://localhost:8080/xmlrpc/db/db/collection");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/xmlrpc/db/db/collection");
             URI uri = new URI("/db/collection");
             assertEquals("/db/collection", xmldbURI.relativizeCollectionPath(uri).toString());
         } catch (URISyntaxException e) {
@@ -695,7 +737,7 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURIRelativizeCollectionName2() {
         try{
-            XmldbURI xmldbURI = new XmldbURI("xmldb:exist://localhost:8080/xmlrpc/db/collection");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/xmlrpc/db/collection");
             URI uri = new URI("/db/db/collection");
             assertEquals("/db/db/collection", xmldbURI.relativizeCollectionPath(uri).toString());
         } catch (URISyntaxException e) {
@@ -706,7 +748,7 @@ public class XmldbURITest extends TestCase {
     public void testXmldbURIRelativizeCollectionName3() {
         boolean exceptionThrown = false;
         try{
-            XmldbURI xmldbURI = new XmldbURI("xmldb:exist:///");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist:///");
             URI uri = new URI("/");
             assertEquals("", xmldbURI.relativizeCollectionPath(uri).toString());
         } catch (URISyntaxException e) {
@@ -718,7 +760,7 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURIResolveCollectionName1() {
         try{
-            XmldbURI xmldbURI = new XmldbURI("xmldb:exist://localhost:8080/xmlrpc/db/a/b");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/xmlrpc/db/a/b");
             URI uri = new URI("..");
             assertEquals("/db/a/", xmldbURI.resolveCollectionPath(uri).toString());
         } catch (URISyntaxException e) {
@@ -728,7 +770,7 @@ public class XmldbURITest extends TestCase {
     
     public void testXmldbURIResolveCollectionName2() {
         try{
-            XmldbURI xmldbURI = new XmldbURI("xmldb:exist://localhost:8080/xmlrpc/db/a/b");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/xmlrpc/db/a/b");
             URI uri = new URI("../..");
             assertEquals("/db/", xmldbURI.resolveCollectionPath(uri).toString());
         } catch (URISyntaxException e) {
@@ -739,7 +781,7 @@ public class XmldbURITest extends TestCase {
     public void testXmldbURIResolveCollectionName3() {
         try{
             //Null context here ;-)
-            XmldbURI xmldbURI = new XmldbURI("xmldb:exist:///");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist:///");
             URI uri = new URI("..");
             assertEquals("/..", xmldbURI.resolveCollectionPath(uri).toString());
         } catch (URISyntaxException e) {
@@ -750,7 +792,7 @@ public class XmldbURITest extends TestCase {
     public void testXmldbURIResolveCollectionName4() {
         try{
             //Null context here ;-)
-            XmldbURI xmldbURI = new XmldbURI("xmldb:exist://localhost:8080/xmlrpc/db");
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/xmlrpc/db");
             //Up and up...
             URI uri = new URI("/../../..");
             //Strange but it's like this
@@ -763,8 +805,8 @@ public class XmldbURITest extends TestCase {
     public void testXmldbURICollectionPathEncoding1() {
         try{
         	//Should return decoded path
-            XmldbURI xmldbURI = new XmldbURI("xmldb:exist:///xmlrpc/"+ENCODED_COLL);
-            assertEquals(xmldbURI.getCollectionPath(),"/xmlrpc/"+DECODED_COLL);
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist:///xmlrpc/"+TestConstants.SPECIAL_NAME);
+            assertEquals(xmldbURI.getCollectionPath(),"/xmlrpc/"+TestConstants.DECODED_SPECIAL_NAME);
         } catch (URISyntaxException e) {
             fail(e.getMessage());
         }
@@ -773,8 +815,73 @@ public class XmldbURITest extends TestCase {
     public void testXmldbURICollectionPathEncoding2() {
         try{
         	//Should return encoded path
-            XmldbURI xmldbURI = new XmldbURI("xmldb:exist:///xmlrpc/"+ENCODED_COLL);
-            assertEquals(xmldbURI.getRawCollectionPath(),"/xmlrpc/"+ENCODED_COLL);
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist:///xmlrpc/"+TestConstants.SPECIAL_NAME);
+            assertEquals(xmldbURI.getRawCollectionPath(),"/xmlrpc/"+TestConstants.SPECIAL_NAME);
+        } catch (URISyntaxException e) {
+            fail(e.getMessage());
+        }
+    }
+    
+    public void testXmldbURILastSegment() {
+        try{
+        	//Should return encoded path
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist:///xmlrpc/test/"+TestConstants.SPECIAL_NAME);
+            assertEquals(xmldbURI.lastSegment(),TestConstants.SPECIAL_URI);
+            
+            xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist:///xmlrpc/"+TestConstants.SPECIAL_NAME);
+            assertEquals(xmldbURI.lastSegment(),TestConstants.SPECIAL_URI);
+            
+            xmldbURI = XmldbURI.xmldbUriFor("test/"+TestConstants.SPECIAL_NAME);
+            assertEquals(xmldbURI.lastSegment(),TestConstants.SPECIAL_URI);
+            
+            xmldbURI = XmldbURI.xmldbUriFor("test/"+TestConstants.SPECIAL_NAME+"/");
+            assertEquals(xmldbURI.lastSegment(),TestConstants.SPECIAL_URI);
+            
+            xmldbURI = XmldbURI.xmldbUriFor("/test/"+TestConstants.SPECIAL_NAME+"/");
+            assertEquals(xmldbURI.lastSegment(),TestConstants.SPECIAL_URI);
+            
+            xmldbURI = XmldbURI.xmldbUriFor(TestConstants.SPECIAL_NAME+"/");
+            assertEquals(xmldbURI.lastSegment(),TestConstants.SPECIAL_URI);
+            
+            assertEquals(TestConstants.SPECIAL_URI.lastSegment(),TestConstants.SPECIAL_URI);
+            assertEquals(XmldbURI.create("").lastSegment(),XmldbURI.create(""));
+            assertEquals(XmldbURI.create("/").lastSegment(),XmldbURI.create(""));
+        } catch (URISyntaxException e) {
+            fail(e.getMessage());
+        }
+    }
+    
+    public void testXmldbURIRemoveLastSegment() {
+        try{
+        	//Should return encoded path
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist:///xmlrpc/test/"+TestConstants.SPECIAL_NAME);
+            assertEquals(xmldbURI.removeLastSegment(),XmldbURI.xmldbUriFor("xmldb:exist:///xmlrpc/test"));
+            
+            xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist:///xmlrpc/test/"+TestConstants.SPECIAL_NAME+"/");
+            assertEquals(xmldbURI.removeLastSegment(),XmldbURI.xmldbUriFor("xmldb:exist:///xmlrpc/test"));
+            
+            xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist:///xmlrpc/"+TestConstants.SPECIAL_NAME);
+            assertEquals(xmldbURI.removeLastSegment(),XmldbURI.xmldbUriFor("xmldb:exist:///xmlrpc"));
+            
+            xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist:///xmlrpc/"+TestConstants.SPECIAL_NAME+"/");
+            assertEquals(xmldbURI.removeLastSegment(),XmldbURI.xmldbUriFor("xmldb:exist:///xmlrpc"));
+            
+            xmldbURI = XmldbURI.xmldbUriFor("test/"+TestConstants.SPECIAL_NAME);
+            assertEquals(xmldbURI.removeLastSegment(),XmldbURI.xmldbUriFor("test"));
+            
+            xmldbURI = XmldbURI.xmldbUriFor("test/"+TestConstants.SPECIAL_NAME+"/");
+            assertEquals(xmldbURI.removeLastSegment(),XmldbURI.xmldbUriFor("test"));
+            
+            xmldbURI = XmldbURI.xmldbUriFor("/test/"+TestConstants.SPECIAL_NAME);
+            assertEquals(xmldbURI.removeLastSegment(),XmldbURI.xmldbUriFor("/test"));
+            
+            xmldbURI = XmldbURI.xmldbUriFor("/test/"+TestConstants.SPECIAL_NAME+"/");
+            assertEquals(xmldbURI.removeLastSegment(),XmldbURI.xmldbUriFor("/test"));
+            
+            xmldbURI = XmldbURI.xmldbUriFor(TestConstants.SPECIAL_NAME+"/");
+            assertEquals(xmldbURI.removeLastSegment(),XmldbURI.create(""));
+            
+            assertEquals(TestConstants.SPECIAL_URI.removeLastSegment(),XmldbURI.xmldbUriFor(""));
         } catch (URISyntaxException e) {
             fail(e.getMessage());
         }

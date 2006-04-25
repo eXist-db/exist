@@ -13,6 +13,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 import javax.swing.BorderFactory;
@@ -37,6 +38,7 @@ import javax.swing.table.AbstractTableModel;
 
 import org.exist.security.User;
 import org.exist.xmldb.UserManagementService;
+import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.base.XMLDBException;
 
 class UserDialog extends JFrame {
@@ -319,7 +321,12 @@ class UserDialog extends JFrame {
 			return;
 		}
 		user.setPassword(pass1);
-		user.setHome(homedir.getText());
+		try {
+			user.setHome(XmldbURI.xmldbUriFor(homedir.getText()));
+		} catch (URISyntaxException e) {
+			JOptionPane.showMessageDialog(this, e.getMessage());
+			return;
+		}
 		if(groupsModel.size() == 0) {
 			JOptionPane.showMessageDialog(this, "Please assign a group to the new user");
 			return;
@@ -354,7 +361,12 @@ class UserDialog extends JFrame {
 		
 		user.setPassword(pass1);
 		System.out.println("Pass = " + user.getPassword());
-		user.setHome(homedir.getText());
+		try {
+			user.setHome(XmldbURI.xmldbUriFor(homedir.getText()));
+		} catch (URISyntaxException e) {
+			JOptionPane.showMessageDialog(this, e.getMessage());
+			return;
+		}
 		for (int i = 0; i < groupsModel.size(); i++)
 			user.addGroup((String) groupsModel.elementAt(i));
 		try {
@@ -403,7 +415,7 @@ class UserDialog extends JFrame {
 		groupsModel.clear();
 		password1.setText("");
 		password2.setText("");
-		homedir.setText(user.getHome());
+		homedir.setText(user.getHome().toString());
 		String[] groups = user.getGroups();
 		for (int i = 0; i < groups.length; i++) {
 			groupsModel.addElement(groups[i]);

@@ -1,6 +1,7 @@
 
 package org.exist.xmldb;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.Vector;
 
@@ -24,17 +25,27 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
     }
 
     public Collection createCollection( String collName ) throws XMLDBException {
-           return createCollection(collName, (Date)null);
+        return createCollection (collName, (Date)null);
     }
 
-    public Collection createCollection( String collName, Date created) throws XMLDBException {
-        String name = collName;
-        //TODO : use dedicated function in XmldbURI
-        if ( ( !collName.startsWith( DBBroker.ROOT_COLLECTION ) ) && parent != null )
-            name = parent.getPath() + "/" + collName;
+    public Collection createCollection( XmldbURI collName ) throws XMLDBException {
+        return createCollection (collName, (Date)null);
+    }
+
+    public Collection createCollection( String collName, Date created ) throws XMLDBException {
+    	try{
+    		return createCollection(XmldbURI.xmldbUriFor(collName), created);
+    	} catch(URISyntaxException e) {
+    		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+    	}
+    }
+    
+    public Collection createCollection( XmldbURI collName, Date created ) throws XMLDBException {
+        if (parent != null)
+        	collName = parent.getPathURI().resolveCollectionPath(collName);        
 
         Vector params = new Vector();
-        params.addElement( name );
+        params.addElement( collName.toString() );
         
         if (created != null) {
     		params.addElement( created );			
@@ -52,7 +63,7 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
                 ioe );
         }
         RemoteCollection collection =
-            new RemoteCollection( client, (RemoteCollection) parent, name );
+            new RemoteCollection( client, (RemoteCollection) parent, collName );
         parent.addChildCollection( collection );
         return collection;
     }
@@ -84,13 +95,18 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
     }
 
     public void removeCollection( String collName ) throws XMLDBException {
-        String name = collName;
-        //TODO : use dedicated function in XmldbURI
-        if ( ( !collName.startsWith( DBBroker.ROOT_COLLECTION ) ) && parent != null )
-            name = parent.getPath() + "/" + collName;
+    	try{
+    		removeCollection(XmldbURI.xmldbUriFor(collName));
+    	} catch(URISyntaxException e) {
+    		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+    	}
+    }
+    public void removeCollection( XmldbURI collName ) throws XMLDBException {
+        if (parent != null)
+        	collName = parent.getPathURI().resolveCollectionPath(collName);        
 
         Vector params = new Vector();
-        params.addElement( name );
+        params.addElement( collName.toString() );
         try {
             client.execute( "removeCollection", params );
         } catch ( XmlRpcException xre ) {
@@ -113,21 +129,29 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
                              String value ) {
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xmldb.CollectionManagementServiceImpl#move(java.lang.String, java.lang.String, java.lang.String)
+    public void move(String collectionPath, String destinationPath,
+            String newName) throws XMLDBException {
+    	try{
+    		move(XmldbURI.xmldbUriFor(collectionPath), XmldbURI.xmldbUriFor(destinationPath),XmldbURI.xmldbUriFor(newName));
+    	} catch(URISyntaxException e) {
+    		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+    	}
+    }
+   /* (non-Javadoc)
+     * @see org.exist.xmldb.CollectionManagementServiceImpl#move(org.xmldb.api.base.Collection, org.xmldb.api.base.Collection, java.lang.String)
      */
-    public void move(String collectionPath, String destinationPath, String newName) throws XMLDBException {    	
-    	collectionPath = XmldbURI.checkPath(collectionPath, parent.getPath());
-    	destinationPath = XmldbURI.checkPath(destinationPath, parent.getPath());
+    public void move(XmldbURI collectionPath, XmldbURI destinationPath,
+            XmldbURI newName) throws XMLDBException {
+    	collectionPath = parent.getPathURI().resolveCollectionPath(collectionPath);
+    	destinationPath = parent.getPathURI().resolveCollectionPath(destinationPath);
+    	
         if(newName == null) {
-            //TODO : use dedicated function in XmldbURI
-            int p = collectionPath.lastIndexOf(("/"));
-            newName = collectionPath.substring(p + 1);
+            newName = collectionPath.lastSegment();
         }
         Vector params = new Vector();
-        params.addElement( collectionPath );
-        params.addElement( destinationPath );
-        params.addElement( newName );
+        params.addElement( collectionPath.toString() );
+        params.addElement( destinationPath.toString() );
+        params.addElement( newName.toString() );
         try {
             client.execute( "moveCollection", params );
         } catch ( XmlRpcException xre ) {
@@ -141,21 +165,26 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.exist.xmldb.CollectionManagementServiceImpl#moveResource(java.lang.String, java.lang.String, java.lang.String)
-     */
-    public void moveResource(String resourcePath, String destinationPath, String newName) throws XMLDBException {
-    	resourcePath = XmldbURI.checkPath(resourcePath, parent.getPath());
-      	destinationPath = XmldbURI.checkPath(destinationPath, parent.getPath());
+    public void moveResource(String resourcePath, String destinationPath,
+            String newName) throws XMLDBException {
+    	try{
+    		move(XmldbURI.xmldbUriFor(resourcePath), XmldbURI.xmldbUriFor(destinationPath),XmldbURI.xmldbUriFor(newName));
+    	} catch(URISyntaxException e) {
+    		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+    	}
+    }
+    public void moveResource(XmldbURI resourcePath, XmldbURI destinationPath, XmldbURI newName) 
+    		throws XMLDBException { 
+    	resourcePath = parent.getPathURI().resolveCollectionPath(resourcePath);
+    	destinationPath = parent.getPathURI().resolveCollectionPath(destinationPath);
         if(newName == null) {
-            //TODO : use dedicated function in XmldbURI
-            int p = resourcePath.lastIndexOf(("/"));
-            newName = resourcePath.substring(p + 1);
+            newName = resourcePath.lastSegment();
         }
+
         Vector params = new Vector();
-        params.addElement( resourcePath );
-        params.addElement( destinationPath );
-        params.addElement( newName );
+        params.addElement( resourcePath.toString() );
+        params.addElement( destinationPath.toString() );
+        params.addElement( newName.toString() );
         try {
             client.execute( "moveResource", params );
         } catch ( XmlRpcException xre ) {
@@ -169,22 +198,29 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
         }
     }
 
-    /* (non-Javadoc)
+    public void copy(String collectionPath, String destinationPath,
+            String newName) throws XMLDBException {
+    	try{
+    		move(XmldbURI.xmldbUriFor(collectionPath), XmldbURI.xmldbUriFor(destinationPath),XmldbURI.xmldbUriFor(newName));
+    	} catch(URISyntaxException e) {
+    		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+    	}
+    }
+	/* (non-Javadoc)
 	 * @see org.exist.xmldb.CollectionManagementServiceImpl#copy(java.lang.String, java.lang.String, java.lang.String)
 	 */
-	public void copy(String collectionPath, String destinationPath, String newName)
-			throws XMLDBException {		
-		collectionPath = XmldbURI.checkPath(collectionPath, parent.getPath());
-		destinationPath = XmldbURI.checkPath(destinationPath, parent.getPath());
+    public void copy(XmldbURI collectionPath, XmldbURI destinationPath,
+            XmldbURI newName) throws XMLDBException {
+    	collectionPath = parent.getPathURI().resolveCollectionPath(collectionPath);
+    	destinationPath = parent.getPathURI().resolveCollectionPath(destinationPath);
         if(newName == null) {
-            //TODO : use dedicated function in XmldbURI
-            int p = collectionPath.lastIndexOf(("/"));
-            newName = collectionPath.substring(p + 1);
+            newName = collectionPath.lastSegment();
         }
+
         Vector params = new Vector();
-        params.addElement( collectionPath );
-        params.addElement( destinationPath );
-        params.addElement( newName );
+        params.addElement( collectionPath.toString() );
+        params.addElement( destinationPath.toString() );
+        params.addElement( newName.toString() );
         try {
             client.execute( "copyCollection", params );
         } catch ( XmlRpcException xre ) {
@@ -198,22 +234,26 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
         }
 	}
 	
-    /* (non-Javadoc)
-     * @see org.exist.xmldb.CollectionManagementServiceImpl#copyResource(java.lang.String, java.lang.String, java.lang.String)
-     */
-	
-    public void copyResource(String resourcePath, String destinationPath, String newName) throws XMLDBException {
-    	resourcePath = XmldbURI.checkPath(resourcePath, parent.getPath());
-    	destinationPath = XmldbURI.checkPath(destinationPath, parent.getPath());
+    public void copyResource(String resourcePath, String destinationPath,
+            String newName) throws XMLDBException {
+    	try{
+    		move(XmldbURI.xmldbUriFor(resourcePath), XmldbURI.xmldbUriFor(destinationPath),XmldbURI.xmldbUriFor(newName));
+    	} catch(URISyntaxException e) {
+    		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
+    	}
+    }
+    
+    public void copyResource(XmldbURI resourcePath, XmldbURI destinationPath, XmldbURI newName) 
+    		throws XMLDBException { 
+    	resourcePath = parent.getPathURI().resolveCollectionPath(resourcePath);
+    	destinationPath = parent.getPathURI().resolveCollectionPath(destinationPath);
         if(newName == null) {
-            //TODO : use dedicated function in XmldbURI
-            int p = resourcePath.lastIndexOf(("/"));
-            newName = resourcePath.substring(p + 1);
+            newName = resourcePath.lastSegment();
         }
         Vector params = new Vector();
-        params.addElement( resourcePath );
-        params.addElement( destinationPath );
-        params.addElement( newName );
+        params.addElement( resourcePath.toString() );
+        params.addElement( destinationPath.toString() );
+        params.addElement( newName.toString() );
         try {
             client.execute( "copyResource", params );
         } catch ( XmlRpcException xre ) {

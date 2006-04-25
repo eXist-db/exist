@@ -31,6 +31,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.journal.Journal;
 import org.exist.storage.recovery.RecoveryManager;
+import org.exist.xmldb.XmldbURI;
 
 /**
  * This is the central entry point to the transaction management service.
@@ -164,7 +165,7 @@ public class TransactionManager {
     public void reindex(DBBroker broker) {
         broker.setUser(SecurityManager.SYSTEM_USER);
         try {
-            broker.reindexCollection(DBBroker.ROOT_COLLECTION);
+            broker.reindexCollection(XmldbURI.ROOT_COLLECTION_URI);
         } catch (PermissionDeniedException e) {
             LOG.warn("Exception during reindex: " + e.getMessage(), e);
         }

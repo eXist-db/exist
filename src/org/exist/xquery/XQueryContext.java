@@ -25,6 +25,7 @@ package org.exist.xquery;
 import java.io.IOException;
 import java.io.Reader;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -60,6 +61,7 @@ import org.exist.storage.lock.Lock;
 import org.exist.util.Collations;
 import org.exist.util.Configuration;
 import org.exist.util.LockException;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
@@ -84,7 +86,7 @@ import antlr.collections.AST;
 public class XQueryContext {
 	
 	private static final String JAVA_URI_START = "java:";
-    private static final String XMLDB_URI_START = "xmldb:exist://";
+    //private static final String XMLDB_URI_START = "xmldb:exist://";
     
     public final static String XQUERY_LOCAL_NS =
 		"http://www.w3.org/2003/08/xquery-local-functions";
@@ -146,7 +148,7 @@ public class XQueryContext {
 	 * The set of statically known documents specified as
 	 * an array of paths to documents and collections.
 	 */
-	protected String[] staticDocumentPaths = null;
+	protected XmldbURI[] staticDocumentPaths = null;
 	
 	/**
 	 * The actual set of statically known documents. This
@@ -161,7 +163,8 @@ public class XQueryContext {
 	 */
 	protected DBBroker broker;
 
-	protected String baseURI = "";
+	protected XmldbURI baseURI = XmldbURI.EMPTY_URI;
+	
     protected boolean baseURISetInProlog = false;
     
 	protected String moduleLoadPath = ".";
@@ -540,7 +543,7 @@ public class XQueryContext {
 	 * 
 	 * @param docs
 	 */
-	public void setStaticallyKnownDocuments(String[] docs) {
+	public void setStaticallyKnownDocuments(XmldbURI[] docs) {
 		staticDocumentPaths = docs;
 	}
 	
@@ -1156,7 +1159,7 @@ public class XQueryContext {
 	 * 
 	 * @param uri
 	 */
-	public void setBaseURI(String uri) {
+	public void setBaseURI(XmldbURI uri) {
 		setBaseURI(uri, false);
 	}
 
@@ -1169,11 +1172,11 @@ public class XQueryContext {
      * @param uri
      * @param setInProlog
      */
-    public void setBaseURI(String uri, boolean setInProlog) {
+    public void setBaseURI(XmldbURI uri, boolean setInProlog) {
         if (baseURISetInProlog)
             return;
         if (uri == null)
-            baseURI = "";
+            baseURI = XmldbURI.EMPTY_URI;
         baseURI = uri;
         baseURISetInProlog = setInProlog;
     }
@@ -1200,7 +1203,7 @@ public class XQueryContext {
 	 * 
 	 * @return
 	 */
-	public String getBaseURI() {
+	public XmldbURI getBaseURI() {
 		return baseURI;
 	}
     
@@ -1319,14 +1322,13 @@ public class XQueryContext {
 			} else {
 				Source source;
                 // Is the module source stored in the database?
-                if (location.startsWith(XMLDB_URI_START) || moduleLoadPath.startsWith(XMLDB_URI_START)) {
-                    //TODO : use dedicated function in XmldbURI
-                    if (location.indexOf(':') == Constants.STRING_NOT_FOUND)
-                        location = moduleLoadPath + "/" + location;
-                    String path = location.substring(XMLDB_URI_START.length());
-                    DocumentImpl sourceDoc = null;
+				try {
+					XmldbURI locationUri = XmldbURI.xmldbUriFor(location);
+					XmldbURI moduleLoadPathUri = XmldbURI.xmldbUriFor(moduleLoadPath);
+					locationUri = moduleLoadPathUri.resolveCollectionPath(locationUri);
+	                DocumentImpl sourceDoc = null;
                     try {
-                        sourceDoc = broker.getXMLResource(path, Lock.READ_LOCK);
+                        sourceDoc = broker.getXMLResource(locationUri.toCollectionPathURI(), Lock.READ_LOCK);
                         if (sourceDoc == null)
                             throw new XPathException("source for module " + location + " not found in database");
                         if (sourceDoc.getResourceType() != DocumentImpl.BINARY_FILE ||
@@ -1341,8 +1343,8 @@ public class XQueryContext {
                         if(sourceDoc != null)
                             sourceDoc.getUpdateLock().release(Lock.READ_LOCK);
                     }
-                // No. Load from file or URL
-                } else {
+				} catch(URISyntaxException ignoreMe) {
+					// No. Load from file or URL
                     try {
                         source = SourceFactory.getSource(moduleLoadPath, location, true);
                     } catch (MalformedURLException e) {
@@ -1532,8 +1534,8 @@ public class XQueryContext {
 	public DocumentImpl storeTemporaryDoc(org.exist.memtree.DocumentImpl doc) throws XPathException {
 		try {
 			DocumentImpl targetDoc = broker.storeTempResource(doc);
-			watchdog.addTemporaryFragment(targetDoc.getFileName());
-            LOG.debug("Stored: " + targetDoc.getDocId() + ": " + targetDoc.getName() +
+			watchdog.addTemporaryFragment(targetDoc.getFileURI());
+            LOG.debug("Stored: " + targetDoc.getDocId() + ": " + targetDoc.getURI() +
             		": " + targetDoc.printTreeLevelOrder());
 			return targetDoc;
 		} catch (EXistException e) {

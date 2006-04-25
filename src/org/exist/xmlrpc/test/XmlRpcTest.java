@@ -35,6 +35,8 @@ import org.custommonkey.xmlunit.XMLTestCase;
 import org.exist.StandaloneServer;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
+import org.exist.test.TestConstants;
+import org.exist.xmldb.XmldbURI;
 import org.mortbay.util.MultiException;
 
 /**
@@ -62,8 +64,14 @@ public class XmlRpcTest extends XMLTestCase {
 		"<p><xsl:value-of select=\"$testparam\"/>: <xsl:apply-templates/></p></xsl:template>" +
 		"</xsl:stylesheet>";
     
-    private final static String TARGET_COLLECTION = DBBroker.ROOT_COLLECTION + "/xmlrpc/";
- 
+    private final static XmldbURI TARGET_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("xmlrpc");
+    
+    private final static XmldbURI TARGET_RESOURCE = TARGET_COLLECTION.append(TestConstants.TEST_XML_URI);
+    
+    private final static XmldbURI SPECIAL_COLLECTION = TARGET_COLLECTION.append(TestConstants.SPECIAL_NAME);
+    
+    private final static XmldbURI SPECIAL_RESOURCE = SPECIAL_COLLECTION.append(TestConstants.SPECIAL_XML_URI);
+    
 	public XmlRpcTest(String name) {
 		super(name);
 	}
@@ -110,21 +118,21 @@ public class XmlRpcTest extends XMLTestCase {
 			System.out.println("Creating collection " + TARGET_COLLECTION);
 			XmlRpcClient xmlrpc = getClient();
 			Vector params = new Vector();
-			params.addElement(TARGET_COLLECTION);
+			params.addElement(TARGET_COLLECTION.toString());
 			Boolean result = (Boolean)xmlrpc.execute("createCollection", params);
 			assertTrue(result.booleanValue());
 			
 			System.out.println("Storing document " + XML_DATA);
 			params.clear();
 			params.addElement(XML_DATA);
-			params.addElement(TARGET_COLLECTION + "test.xml");
+			params.addElement(TARGET_RESOURCE.toString());
 			params.addElement(new Integer(1));
 			
 			result = (Boolean)xmlrpc.execute("parse", params);
 			assertTrue(result.booleanValue());
 			
 			params.setElementAt(XSL_DATA, 0);
-			params.setElementAt(TARGET_COLLECTION + "test.xsl", 1);
+			params.setElementAt(TARGET_COLLECTION.append("test.xsl").toString(), 1);
 			result = (Boolean)xmlrpc.execute("parse", params);
 			assertTrue(result.booleanValue());
 			
@@ -135,7 +143,7 @@ public class XmlRpcTest extends XMLTestCase {
 	}
 	
 	public void testRetrieveDoc() {
-		System.out.println("Retrieving document " + TARGET_COLLECTION + "test.xml");
+		System.out.println("Retrieving document " + TARGET_RESOURCE);
 		Hashtable options = new Hashtable();
         options.put("indent", "yes");
         options.put("encoding", "UTF-8");
@@ -143,7 +151,7 @@ public class XmlRpcTest extends XMLTestCase {
         options.put("process-xsl-pi", "no");
         
         Vector params = new Vector();
-        params.addElement( TARGET_COLLECTION + "test.xml" ); 
+        params.addElement( TARGET_RESOURCE.toString() ); 
         params.addElement( options );
         
         try {
@@ -269,38 +277,41 @@ public class XmlRpcTest extends XMLTestCase {
 	    }	        
 	}
 	
-	public void testCollectionWithAccents() {
+	public void testCollectionWithAccentsAndSpaces() {
 		try {
-			System.out.println("Creating collection with accents in name ...");
+			System.out.println("Creating collection with accents and spaces in name ...");
 			Vector params = new Vector();
-			params.addElement(DBBroker.ROOT_COLLECTION + "/Citt\u00E0");
+			params.addElement(SPECIAL_COLLECTION.toString());
 			XmlRpcClient xmlrpc = getClient();
 			xmlrpc.execute( "createCollection", params );
 			
 			System.out.println("Storing document " + XML_DATA);
 			params.clear();
 			params.addElement(XML_DATA);
-			params.addElement(DBBroker.ROOT_COLLECTION + "/Citt\u00E0/test.xml");
+			params.addElement(SPECIAL_RESOURCE.toString());
 			params.addElement(new Integer(1));
 			
 			Boolean result = (Boolean)xmlrpc.execute("parse", params);
 			assertTrue(result.booleanValue());
 			
 			params.clear();
-			params.addElement(DBBroker.ROOT_COLLECTION);
+			params.addElement(SPECIAL_COLLECTION.removeLastSegment().toString());
 	
 			Hashtable collection = (Hashtable) xmlrpc.execute("describeCollection", params);
 			Vector collections = (Vector) collection.get("collections");
-			String colWithAccent = null;
+			boolean foundMatch=false;
+			String targetCollectionName = SPECIAL_COLLECTION.lastSegment().toString();
 			for (int i = 0; i < collections.size(); i++) {
 				String childName = (String) collections.elementAt(i);
-				if(childName.equals("Citt\u00E0"))
-					colWithAccent = childName;
 				System.out.println("Child collection: " + childName);
+				if(childName.equals(targetCollectionName)) {
+					foundMatch=true;
+					break;
+				}
 			}
-			assertNotNull("added collection not found", colWithAccent);
+			assertTrue("added collection not found", foundMatch);
 			
-			System.out.println("Retrieving document '" + DBBroker.ROOT_COLLECTION + "/Citt\u00E0/test.xml'");
+			System.out.println("Retrieving document '" + SPECIAL_RESOURCE.toString() + "'");
 			Hashtable options = new Hashtable();
 	        options.put("indent", "yes");
 	        options.put("encoding", "UTF-8");
@@ -308,7 +319,7 @@ public class XmlRpcTest extends XMLTestCase {
 	        options.put("process-xsl-pi", "no");
 	        
 	        params.clear();
-	        params.addElement( DBBroker.ROOT_COLLECTION + "/" + colWithAccent + "/test.xml" ); 
+	        params.addElement( SPECIAL_RESOURCE.toString() ); 
 	        params.addElement( options );
 	        
 	        // execute the call
@@ -318,56 +329,6 @@ public class XmlRpcTest extends XMLTestCase {
 	        fail(e.getMessage());  
 	    }			
 	}
-	
-	public void testCollectionWithSpaces() {
-		try {
-			System.out.println("Creating collection with spaces in name ...");
-			Vector params = new Vector();
-			params.addElement(DBBroker.ROOT_COLLECTION + "/watch the spaces");
-			XmlRpcClient xmlrpc = getClient();
-			xmlrpc.execute( "createCollection", params );
-			
-			System.out.println("Storing document " + XML_DATA);
-			params.clear();
-			params.addElement(XML_DATA);
-			params.addElement(DBBroker.ROOT_COLLECTION + "/watch the spaces/test.xml");
-			params.addElement(new Integer(1));
-			
-			Boolean result = (Boolean)xmlrpc.execute("parse", params);
-			assertTrue(result.booleanValue());
-			
-			params.clear();
-			params.addElement(DBBroker.ROOT_COLLECTION);
-	
-			Hashtable collection = (Hashtable) xmlrpc.execute("describeCollection", params);
-			Vector collections = (Vector) collection.get("collections");
-			String colWithSpaces = null;
-			for (int i = 0; i < collections.size(); i++) {
-				String childName = (String) collections.elementAt(i);
-				if(childName.equals("watch the spaces"))
-					colWithSpaces = childName;
-				System.out.println("Child collection: " + childName);
-			}
-			assertNotNull("added collection not found", colWithSpaces);
-			
-			System.out.println("Retrieving document '" + DBBroker.ROOT_COLLECTION + "/watch the spaces/test.xml'");
-			Hashtable options = new Hashtable();
-	        options.put("indent", "yes");
-	        options.put("encoding", "UTF-8");
-	        options.put("expand-xincludes", "yes");
-	        options.put("process-xsl-pi", "no");
-	        
-	        params.clear();
-	        params.addElement( DBBroker.ROOT_COLLECTION + "/" + colWithSpaces + "/test.xml" ); 
-	        params.addElement( options );
-	        
-	        // execute the call
-			byte[] data = (byte[]) xmlrpc.execute( "getDocument", params );
-			System.out.println( new String(data, "UTF-8") );
-	    } catch (Exception e) {            
-	        fail(e.getMessage());  
-	    }			
-	}	
 	
 	protected XmlRpcClient getClient() {
 		try {

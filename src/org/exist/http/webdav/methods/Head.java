@@ -37,6 +37,7 @@ import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
+import org.exist.xmldb.XmldbURI;
 
 /**
  * @author wolf
@@ -51,7 +52,7 @@ public class Head extends AbstractWebDAVMethod {
 	 * @see org.exist.http.webdav.WebDAVMethod#process(org.exist.security.User, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, org.exist.collections.Collection, org.exist.dom.DocumentImpl)
 	 */
 	public void process(User user, HttpServletRequest request,
-			HttpServletResponse response, String path) throws ServletException, IOException {
+			HttpServletResponse response, XmldbURI path) throws ServletException, IOException {
 		DBBroker broker = null;
 		Collection collection = null;
 		DocumentImpl resource = null;

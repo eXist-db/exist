@@ -1,5 +1,11 @@
 package org.exist.xmldb;
 
+import java.io.IOException;
+import java.io.StringReader;
+import java.net.URISyntaxException;
+
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.cluster.ClusterComunication;
@@ -19,10 +25,6 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XUpdateQueryService;
-
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
-import java.io.StringReader;
 
 /**
  * LocalXUpdateQueryService.java
@@ -67,7 +69,8 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 			if (resource == null) {
 				docs = c.allDocs(broker, docs, true, true);
 			} else {
-				DocumentImpl doc = c.getDocument(broker, resource);
+				XmldbURI resourceURI = XmldbURI.xmldbUriFor(resource);
+				DocumentImpl doc = c.getDocument(broker, resourceURI);
 				if(doc == null) {
                     transact.abort(transaction);
 					throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "Resource not found: " + resource);
@@ -91,8 +94,10 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
 
             //Cluster event send
             ClusterComunication clCommunication  = ClusterComunication.getInstance();  //retrieve the cluster communication
+            
+            //TODO: use xmldbURI?
             if ( clCommunication != null) //if cluster is setting use the cluster communication behaviour
-                clCommunication.update( resource, c.getName(), xupdate );
+                clCommunication.update( resource, c.getURI().toString(), xupdate );
 
 
             LOG.debug("xupdate took " + (System.currentTimeMillis() - start) +
@@ -105,6 +110,9 @@ public class LocalXUpdateQueryService implements XUpdateQueryService {
             transact.abort(transaction);
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
 		} catch (SAXException e) {
+            transact.abort(transaction);
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
+		} catch (URISyntaxException e) {
             transact.abort(transaction);
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(),e);
 		} catch (PermissionDeniedException e) {
