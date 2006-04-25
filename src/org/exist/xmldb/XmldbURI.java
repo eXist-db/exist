@@ -494,9 +494,20 @@ public class XmldbURI implements Comparable {
 	}
 	
 	public boolean equals(Object ob) {
-		if (!(ob instanceof XmldbURI))
-			return false;
-		return getXmldbURI().equals(((XmldbURI)ob).getXmldbURI());
+		if (ob instanceof XmldbURI) {
+			return getXmldbURI().equals(((XmldbURI)ob).getXmldbURI());
+		}
+		if (ob instanceof URI) {
+			return getXmldbURI().equals(ob);
+		}
+		if (ob instanceof String) {
+			try {
+				return getXmldbURI().equals(new URI((String)ob));
+			} catch(URISyntaxException e) {
+				return false;
+			}
+		}
+		return false;
 	}	
 	
 	public boolean isAbsolute() {	
