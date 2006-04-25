@@ -772,7 +772,7 @@ public class XQueryContext {
             if (mClass == null) {
     			mClass = Class.forName(moduleClass);
     			if (!(Module.class.isAssignableFrom(mClass))) {
-    				LOG.warn(
+    				LOG.info(
     					"failed to load module. "
     						+ moduleClass
     						+ " is not an instance of org.exist.xquery.Module.");
