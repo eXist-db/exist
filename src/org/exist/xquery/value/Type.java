@@ -197,8 +197,12 @@ public class Type {
 		defineBuiltInType(FUNCTION_REFERENCE, "function");
         
 		defineBuiltInType(ANY_TYPE, "xs:anyType");
+		//Duplicate definition : new one first
+		defineBuiltInType(ATOMIC, "xs:anyAtomicType");
 		defineBuiltInType(ATOMIC, "xdt:anyAtomicType");
-		defineBuiltInType(UNTYPED_ATOMIC, "xdt:untypedAtomic");
+		//Duplicate definition : new one first
+		defineBuiltInType(UNTYPED_ATOMIC, "xs:untypedAtomic");
+		defineBuiltInType(UNTYPED_ATOMIC, "xdt:untypedAtomic");		
 
 		defineBuiltInType(BOOLEAN, "xs:boolean");
 		defineBuiltInType(DECIMAL, "xs:decimal");
@@ -228,8 +232,12 @@ public class Type {
 		defineBuiltInType(DATE, "xs:date");
 		defineBuiltInType(TIME, "xs:time");
 		defineBuiltInType(DURATION, "xs:duration");
-		defineBuiltInType(YEAR_MONTH_DURATION, "xdt:yearMonthDuration");
-		defineBuiltInType(DAY_TIME_DURATION, "xdt:dayTimeDuration");
+		//Duplicate definition : new one first
+		defineBuiltInType(YEAR_MONTH_DURATION, "xs:yearMonthDuration");
+		defineBuiltInType(YEAR_MONTH_DURATION, "xdt:yearMonthDuration");		
+		//Duplicate definition : new one first
+		defineBuiltInType(DAY_TIME_DURATION, "xs:dayTimeDuration");
+		defineBuiltInType(DAY_TIME_DURATION, "xdt:dayTimeDuration");		
 		
 		defineBuiltInType(NORMALIZED_STRING, "xs:normalizedString");
 		defineBuiltInType(TOKEN, "xs:token");
