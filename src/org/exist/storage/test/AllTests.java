@@ -34,7 +34,7 @@ public class AllTests {
         TestSuite suite = new TestSuite("Test for org.exist.storage.test");
         //$JUnit-BEGIN$
         // TODO: some problem here... uncommenting next test causes a db corruption
-//        suite.addTestSuite(ShutdownTest.class);
+        suite.addTestSuite(ShutdownTest.class);
         suite.addTestSuite(CollectionTest.class);
         suite.addTestSuite(CopyResourceTest.class);
         suite.addTestSuite(MoveResourceTest.class);
