@@ -22,7 +22,6 @@
  */
 package org.exist.xquery.functions;
 
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -38,7 +37,6 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.UpdateListener;
 import org.exist.storage.lock.Lock;
 import org.exist.util.LockException;
-import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
@@ -46,6 +44,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -126,12 +125,13 @@ public class ExtCollection extends Function {
 	    try {
 			for (int i = 0; i < args.size(); i++) {
 				String next = (String)args.get(i);
-			    Collection coll = context.getBroker().getCollection(XmldbURI.xmldbUriFor(next));            
+			    Collection coll = context.getBroker().getCollection(new AnyURIValue(next).toXmldbURI());            
 			    if(coll != null)
 			    	coll.allDocs(context.getBroker(), docs, includeSubCollections, true);          
 			}
-        } catch (URISyntaxException e) {
-            throw new XPathException(getASTNode(), "Invalid resource uri",e);
+        } catch (XPathException e) { //From AnyURIValue constructor
+        	e.setASTNode(getASTNode());
+            throw e;
         }
         // iterate through all docs and create the node set
 		NodeSet result = new ExtArrayNodeSet(docs.getLength(), 1);

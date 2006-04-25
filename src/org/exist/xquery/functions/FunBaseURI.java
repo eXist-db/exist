@@ -81,13 +81,13 @@ public class FunBaseURI extends BasicFunction {
         
         Sequence result;
         if (args.length == 0)
-            result = new AnyURIValue(context.getBaseURI());
+            result = context.getBaseURI();
         else if (args[0].isEmpty())
             result = Sequence.EMPTY_SEQUENCE;
         else {
             NodeValue node = (NodeValue) args[0].itemAt(0);
             if (node.getImplementationType() == NodeValue.IN_MEMORY_NODE)
-                result = new AnyURIValue(context.getBaseURI());
+                result = context.getBaseURI();
             else {
                 NodeProxy proxy = (NodeProxy) node;
                 result = new AnyURIValue(proxy.getDocument().getURI());

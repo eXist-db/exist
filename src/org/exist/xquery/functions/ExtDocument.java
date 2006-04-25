@@ -22,7 +22,6 @@
  */
 package org.exist.xquery.functions;
 
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -44,6 +43,7 @@ import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -127,21 +127,23 @@ public class ExtDocument extends Function {
 				docs = new DocumentSet();
 				for(int i = 0; i < args.size(); i++) {
 					try {
-						XmldbURI next = XmldbURI.xmldbUriFor((String)args.get(i));
-						if(next.getCollectionPath().length() == 0) {
+						String next = (String)args.get(i);
+						XmldbURI nextUri = new AnyURIValue(next).toXmldbURI();
+						if(nextUri.getCollectionPath().length() == 0) {
 							throw new XPathException("Invalid argument to fn:doc function: empty string is not allowed here.");
 						}
-	                    if(next.numSegments()==1) {                     
-							next = context.getBaseURI().append(next);
+	                    if(nextUri.numSegments()==1) {                     
+	                    	nextUri = context.getBaseURI().toXmldbURI().resolveCollectionPath(nextUri);
 	                    }
-						DocumentImpl doc = (DocumentImpl) context.getBroker().getXMLResource(next);
+						DocumentImpl doc = (DocumentImpl) context.getBroker().getXMLResource(nextUri);
 						if(doc != null) {
 						    if(!doc.getPermissions().validate(context.getUser(), Permission.READ))
 							    throw new XPathException("Insufficient privileges to read resource " + next);
 							docs.add(doc);
 						}
-			        } catch (URISyntaxException e) {
-			            throw new XPathException(getASTNode(), "Invalid resource uri",e);
+			        } catch (XPathException e) { //From AnyURIValue constructor
+			        	e.setASTNode(getASTNode());
+			            throw e;
 			        } catch (PermissionDeniedException e) {
 						throw new XPathException("Permission denied: unable to load document " + (String)args.get(i));
 					}
