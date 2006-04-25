@@ -24,7 +24,6 @@ package org.exist.dom;
 import java.io.EOFException;
 import java.io.IOException;
 
-import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.numbering.NodeId;
 import org.exist.security.Group;
@@ -118,26 +117,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
         this.collection = collection;
 		this.fileName = fileName;		
 	}
-
-//	public DocumentImpl(DocumentImpl old) {
-//		this.broker = old.broker;
-//		this.fileName = old.fileName;
-//		this.collection = old.collection;
-//		if(old.collection == null)
-//			throw new RuntimeException("Collection == null");
-//		this.children = old.children;
-//		this.maxDepth = old.maxDepth;
-//		this.docId = old.docId;
-//		this.childList = old.childList;
-//		this.docType = old.docType;
-//		this.permissions = old.permissions;
-//		treeLevelOrder = new int[old.treeLevelOrder.length];
-//		for (int i = 0; i < treeLevelOrder.length; i++)
-//			treeLevelOrder[i] = old.treeLevelOrder[i];
-//		treeLevelStartPoints = new long[old.treeLevelStartPoints.length];
-//		for (int i = 0; i < treeLevelStartPoints.length; i++)
-//			treeLevelStartPoints[i] = old.treeLevelStartPoints[i];
-//	}
     
     /************************************************
      * 
@@ -402,28 +381,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
     
     public void setBroker(DBBroker broker) {
         this.broker = broker;
-    }    
-
-    /*
-    public long getGID() {
-        //TOUNDERSTAND : what are the semantics of this 0 ? -pb
-        return 0;
     }
-
-    public void setGID(long gid) {
-    }
-
-    public long getInternalAddress() {
-        return StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;
-    }
-
-    public void setInternalAddress(long address) {
-    }    
-
-    public long getParentGID() {
-        return StoredNode.NODE_IMPL_UNKNOWN_GID;
-    }
-    */
 
     /* (non-Javadoc)
      * @see org.exist.dom.NodeImpl#updateChild(org.w3c.dom.Node, org.w3c.dom.Node)
