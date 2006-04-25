@@ -182,6 +182,11 @@ public class UntypedAtomicValue extends AtomicValue {
 				? this
 				: other;
 	}
+	
+	public boolean effectiveBooleanValue() throws XPathException {
+		return value.length() > 0;
+	}
+	
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Item#conversionPreference(java.lang.Class)
