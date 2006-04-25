@@ -37,7 +37,7 @@ import org.exist.xquery.value.Type;
 public class CastableExpression extends AbstractExpression {
 
 	private Expression expression;	
-	private int cardinality = Cardinality.EXACTLY_ONE;
+	private int requiredCardinality;
 	private final int requiredType;
 	
 	/**
@@ -46,11 +46,11 @@ public class CastableExpression extends AbstractExpression {
 	 * @param requiredType
 	 * @param cardinality
 	 */
-	public CastableExpression(XQueryContext context, Expression expr, int requiredType, int cardinality) {
+	public CastableExpression(XQueryContext context, Expression expr, int requiredType, int requiredCardinality) {
 		super(context);
 		this.expression = expr;
 		this.requiredType = requiredType;
-		this.cardinality = cardinality;
+		this.requiredCardinality = requiredCardinality;
 		if (!Type.subTypeOf(expression.returnsType(), Type.ATOMIC))
 			expression = new Atomize(context, expression);
 	}
@@ -97,7 +97,7 @@ public class CastableExpression extends AbstractExpression {
         Sequence result;
 		Sequence seq = expression.eval(contextSequence, contextItem);
 		if(seq.isEmpty()) {
-			if ((cardinality & Cardinality.ZERO) == 0)
+			if (Cardinality.checkCardinality(requiredCardinality, Cardinality.ZERO))
                 result = BooleanValue.FALSE;
 			else
                 result = BooleanValue.TRUE;
@@ -105,7 +105,10 @@ public class CastableExpression extends AbstractExpression {
         else {
     		try {
     			seq.itemAt(0).convertTo(requiredType);
-                result = BooleanValue.TRUE;
+    			if (Cardinality.checkCardinality(requiredCardinality, seq.getCardinality()))
+    				result = BooleanValue.TRUE;
+    			else
+    				result = BooleanValue.FALSE;
             //TODO : improve by *not* using a costly exception ?
     		} catch(XPathException e) {
                 result = BooleanValue.FALSE;
