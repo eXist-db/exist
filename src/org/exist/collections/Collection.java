@@ -829,7 +829,7 @@ public  class Collection extends Observable
 //			broker.checkTree(document);
             LOG.debug("document stored.");
             // if we are running in privileged mode (e.g. backup/restore), notify the SecurityManager about changes
-            if (getURI().equals(DBBroker.SYSTEM_COLLECTION) 
+            if (getURI().equals(XmldbURI.SYSTEM_COLLECTION_URI) 
                 && document.getFileURI().equals(XMLSecurityManager.ACL_FILE_URI)
                 && privileged == false) {
                 // inform the security manager that system data has changed
