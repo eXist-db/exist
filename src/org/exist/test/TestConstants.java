@@ -11,7 +11,7 @@ public class TestConstants {
 	public static final String DECODED_SPECIAL_NAME = "t[e s]t\u00E0\uC5F4";
 	
 	/**
-	 * String representing the encoded path:
+	 * String representing the encoded path: t%5Be%20s%5Dt%C3%A0%EC%97%B4
 	 */
 	public static final String SPECIAL_NAME = URIUtils.urlEncodeUtf8(DECODED_SPECIAL_NAME);
 
