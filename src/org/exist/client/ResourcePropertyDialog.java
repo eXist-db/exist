@@ -32,6 +32,7 @@ import org.exist.security.Permission;
 import org.exist.security.User;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.util.URIUtils;
 import org.xmldb.api.base.XMLDBException;
 
 public class ResourcePropertyDialog extends JDialog {
@@ -106,7 +107,7 @@ public class ResourcePropertyDialog extends JDialog {
 		grid.setConstraints(label, c);
 		getContentPane().add(label);
 
-		label = new JLabel(resource.toString());
+		label = new JLabel(URIUtils.urlDecodeUtf8(resource));
 		c.gridx = 1;
 		c.gridy = 0;
 		c.anchor = GridBagConstraints.EAST;
