@@ -109,6 +109,13 @@ public class JavaCall extends Function {
 	}
 
 	/* (non-Javadoc)
+	 * @see org.exist.xquery.AbstractExpression#getCardinality()
+	 */
+	public int getCardinality() {
+		return Cardinality.ZERO_OR_MORE;
+	}
+	
+	/* (non-Javadoc)
 	 * @see org.exist.xquery.Function#setArguments(java.util.List)
 	 */
 	public void setArguments(List arguments) throws XPathException {

@@ -936,7 +936,8 @@ public class RESTServer {
         	response.setHeader("X-XQuery-Cached", "true");
             context = compiled.getContext();
         }
-        context.setModuleLoadPath("xmldb:exist://" + resource.getCollection().getURI());
+        //TODO: don't hardcode this?
+        context.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI.append(resource.getCollection().getURI()).toString());
         context.setStaticallyKnownDocuments(
                  new XmldbURI[] { resource.getCollection().getURI() }
         );
