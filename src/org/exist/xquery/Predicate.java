@@ -55,6 +55,8 @@ public class Predicate extends PathExpr {
 	
     private int outerContextId;
     
+    private boolean innerExpressionDot = false; 
+    
 	public Predicate(XQueryContext context) {
 		super(context);
 	}
@@ -88,6 +90,9 @@ public class Predicate extends PathExpr {
     	newContextInfo.setParent(this);
         super.analyze(newContextInfo);
         
+        if ((newContextInfo.getFlags() & DOT_TEST) == DOT_TEST)
+        	innerExpressionDot = true;
+        
         // Case 1: predicate expression returns a node set. 
         // Check the returned node set against the context set 
         // and return all nodes from the context, for which the
@@ -97,10 +102,12 @@ public class Predicate extends PathExpr {
                 executionMode = NODE;
             else
                 executionMode = BOOLEAN;
+            
         // Case 2: predicate expression returns a number.
         } else if (Type.subTypeOf(inner.returnsType(), Type.NUMBER) && inner.getCardinality() == Cardinality.EXACTLY_ONE) {
             //Just a hint : inner's cardinality may still be potential
             executionMode = POSITIONAL;
+            
         // Case 3: predicate expression evaluates to a boolean.
         } else
             executionMode = BOOLEAN;
@@ -132,11 +139,9 @@ public class Predicate extends PathExpr {
             if (executionMode == BOOLEAN && Type.subTypeOf(inner.returnsType(), Type.NUMBER)) {
                 Sequence innerSeq = inner.eval(contextSequence);   
                 //Only if we have an actual *singleton* of numeric items
-                if (innerSeq.hasOne()) {
-                    //TODO : find a workaround for the polysemy of "." which is expanded as self::node() even when it is not relevant
-                    // (1,2,3)[xs:float(.)]
-                	//Something like :
-                    //if (!(inner instanceof LocationStep && ((LocationStep)inner).axis == Constants.SELF_AXIS))
+                if (innerSeq.hasOne()) { 
+                	//Atomic sequences will evaluate "." in BOOLEAN mode
+                	if (!innerExpressionDot || Type.subTypeOf(contextSequence.getItemType(), Type.NODE))
                     	recomputedExecutionMode = POSITIONAL;
                 }
             }  
@@ -150,19 +155,19 @@ public class Predicate extends PathExpr {
     			case NODE: 
                     if (context.getProfiler().isEnabled())
                         context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, 
-                                "OPTIMIZATION CHOICE", "selectByNodeSet");                    
+                                "OPTIMIZATION CHOICE", "Node selection");                    
                     result = selectByNodeSet(contextSequence);                    
                     break;
                 case BOOLEAN: 
                     if (context.getProfiler().isEnabled())
                         context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, 
-                                "OPTIMIZATION CHOICE", "evalBoolean");                    
+                                "OPTIMIZATION CHOICE", "Boolean evaluation");                    
                     result = evalBoolean(contextSequence, inner);
                     break;
     			case POSITIONAL: 
                     if (context.getProfiler().isEnabled())
                         context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, 
-                                "OPTIMIZATION CHOICE", "selectByPosition");                    
+                                "OPTIMIZATION CHOICE", "Positional evaluation");                    
                     result = selectByPosition(outerSequence, contextSequence, mode, inner);
                     break;
     			default:

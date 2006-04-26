@@ -64,6 +64,8 @@ public interface Expression {
      */
     public final static int IN_UPDATE = 8;
     
+    public final static int DOT_TEST = 128;
+    
     /**
      * Indicates that no context id is supplied to an expression.
      */
