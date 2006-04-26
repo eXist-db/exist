@@ -39,7 +39,7 @@ public class RemoteUserManagementService implements UserManagementService {
 				groups.addElement(gl[i]);
 			params.addElement(groups);
 			if (user.getHome() != null)
-				params.addElement(user.getHome());
+				params.addElement(user.getHome().toString());
 			parent.getClient().execute("setUser", params);
 		} catch (XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
@@ -506,7 +506,7 @@ public class RemoteUserManagementService implements UserManagementService {
 				groups.addElement(gl[i]);
 			params.addElement(groups);
 			if (user.getHome() != null)
-				params.addElement(user.getHome());
+				params.addElement(user.getHome().toString());
 			parent.getClient().execute("setUser", params);
 		} catch (XmlRpcException e) {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
