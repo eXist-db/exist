@@ -19,6 +19,7 @@
  * $Id$
  */
 package org.exist.client;
+
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -72,6 +73,7 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
+
 class DocumentView extends JFrame {
 	
 	protected InteractiveClient client;

@@ -26,13 +26,11 @@ import java.io.IOException;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.URIResolver;
 
 import org.apache.log4j.Logger;
 import org.apache.xml.resolver.Catalog;
 import org.apache.xml.resolver.CatalogManager;
 import org.apache.xml.resolver.tools.CatalogResolver;
-
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 

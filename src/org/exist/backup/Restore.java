@@ -8,7 +8,6 @@ import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.Observable;
 import java.util.Stack;
-import java.util.StringTokenizer;
 
 import javax.swing.JDialog;
 import javax.swing.JFrame;

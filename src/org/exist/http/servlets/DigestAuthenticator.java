@@ -29,7 +29,6 @@ import java.security.NoSuchAlgorithmException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.exist.security.Base64Coder;
 
 import org.exist.security.MD5;
 import org.exist.security.SecurityManager;

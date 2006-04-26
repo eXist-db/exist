@@ -25,11 +25,8 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import java.net.URISyntaxException;
-
 import org.exist.dom.NodeProxy;
 import org.exist.xmldb.LocalCollection;
-import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;

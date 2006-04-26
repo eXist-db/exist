@@ -9,12 +9,20 @@
  */
 package org.exist.start;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.StringTokenizer;
+
 import org.exist.storage.BrokerPool;
 
 /**
@@ -89,18 +97,19 @@ public class Main {
     }
 
     boolean isAvailable(String classname, Classpath classpath) {
-        Class check; //unused
         try {
-            check = Class.forName(classname);
+            Class.forName(classname);
             return true;
         } catch (ClassNotFoundException e) {
+        	//ignore
         }
 
         ClassLoader loader = classpath.getClassLoader(null);
         try {
-            check = loader.loadClass(classname);
+            loader.loadClass(classname);
             return true;
         } catch (ClassNotFoundException e) {
+        	//ignore
         }
 
         return false;

@@ -7,6 +7,8 @@
 
 package org.exist.soap;
 
+import java.rmi.RemoteException;
+
 public interface Query extends java.rmi.Remote {
 	/**
 	 * Retrieve a document from the database.

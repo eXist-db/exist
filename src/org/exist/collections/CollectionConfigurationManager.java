@@ -38,7 +38,6 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.util.sanity.SanityCheck;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.Constants;
 import org.xml.sax.SAXException;
 
 /**

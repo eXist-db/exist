@@ -26,8 +26,6 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import java.net.URISyntaxException;
-
 import org.exist.dom.QName;
 import org.exist.security.User;
 import org.exist.xmldb.LocalCollection;
