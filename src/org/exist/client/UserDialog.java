@@ -415,7 +415,11 @@ class UserDialog extends JFrame {
 		groupsModel.clear();
 		password1.setText("");
 		password2.setText("");
-		homedir.setText(user.getHome().toString());
+		if(user.getHome()!=null) {
+			homedir.setText(user.getHome().toString());
+		} else {
+			homedir.setText("");
+		}
 		String[] groups = user.getGroups();
 		for (int i = 0; i < groups.length; i++) {
 			groupsModel.addElement(groups[i]);
