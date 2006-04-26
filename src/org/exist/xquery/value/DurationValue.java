@@ -262,12 +262,14 @@ public class DurationValue extends ComputableValue {
 		switch (operator) {
 		case Constants.EQ :
 			if (!(other.getClass().isAssignableFrom(DurationValue.class))) 
-				throw new XPathException("FORG0006: invalid operand type: " + Type.getTypeName(other.getType()));					
-			return (duration.compare(((DurationValue)other).duration) == 0);
+				throw new XPathException("FORG0006: invalid operand type: " + Type.getTypeName(other.getType()));
+			//TODO : upgrade so that P365D is *not* equal to P1Y
+			return duration.equals(((DurationValue)other).duration);
 		case Constants.NEQ :
 			if (!(other.getClass().isAssignableFrom(DurationValue.class))) 
-				throw new XPathException("FORG0006: invalid operand type: " + Type.getTypeName(other.getType()));					
-			return (duration.compare(((DurationValue)other).duration) != 0);
+				throw new XPathException("FORG0006: invalid operand type: " + Type.getTypeName(other.getType()));
+			//TODO : upgrade so that P365D is *not* equal to P1Y
+			return !duration.equals(((DurationValue)other).duration);
 		case Constants.LT :			
 		case Constants.LTEQ :			
 		case Constants.GT :

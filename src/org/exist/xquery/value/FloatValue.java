@@ -25,15 +25,13 @@ package org.exist.xquery.value;
 
 import java.text.Collator;
 
-import org.exist.storage.Indexable;
-import org.exist.util.ByteConversion;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 
 /**
  * @author wolf
  */
-public class FloatValue extends NumericValue implements Indexable {
+public class FloatValue extends NumericValue {
 
 	public final static FloatValue NaN = new FloatValue(Float.NaN);
 	public final static FloatValue ZERO = new FloatValue(0.0E0f);
@@ -57,6 +55,16 @@ public class FloatValue extends NumericValue implements Indexable {
 					" from \"" + getStringValue() + "\"");					
 		}
 	}
+	
+	public float getValue() {
+		return value;
+	}	
+	
+	/*
+	public float getFloat() throws XPathException  {
+		return value;
+	}
+	*/
 
 	/* (non-Javadoc)
      * @see org.exist.xquery.value.AtomicValue#getType()
@@ -332,28 +340,7 @@ public class FloatValue extends NumericValue implements Indexable {
 				+ target.getName());
 	}
 
-	/** @deprecated
-     * @see org.exist.storage.Indexable#serialize(short)
-     */
-    public byte[] serialize(short collectionId, boolean caseSensitive) {
-        final byte[] data = new byte[7];
-        ByteConversion.shortToByte(collectionId, data, 0);
-        data[2] = (byte) Type.FLOAT;
-        final int bits = (int)(Float.floatToIntBits(value) ^ 0x80000000);
-        ByteConversion.intToByte(bits, data, 3);
-        return data;
-    }
-
-    /** Serialize for the persistant storage */
-    public byte[] serializeValue ( int offset, boolean caseSensitive) {
-		final byte[] data = new byte[ offset + 1 + 4 ];
-		data[offset] = (byte) Type.FLOAT;
-        final int bits = (int)(Float.floatToIntBits(value) ^ 0x80000000);
-        ByteConversion.intToByte(bits, data, offset+1 );
-        return data;
-    }
-	
-    /* (non-Javadoc)
+	/* (non-Javadoc)
      * @see java.lang.Comparable#compareTo(java.lang.Object)
      */
     public int compareTo(Object o) {

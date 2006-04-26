@@ -251,6 +251,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 if (dbValues.append(key, os.data()) == BFile.UNKNOWN_ADDRESS) {
                     LOG.error("Could not append index data for key '" +  key + "'");                   
                 }
+			} catch (EXistException e) {
+                LOG.error(e.getMessage(), e);                
             } catch (LockException e) {
                 LOG.warn("Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e);
                //TODO : return ?                         
@@ -281,14 +283,14 @@ public class NativeValueIndex implements ContentLoadingObserver {
             Map.Entry entry = (Map.Entry) i.next();
             Indexable indexable = (Indexable) entry.getKey();
             //TODO : NativeElementIndex uses ArrayLists -pb
-            LongLinkedList storedGIDList = (LongLinkedList) entry.getValue();   
-            //Compute a key for the value
-            Value searchKey = new Value(indexable.serialize(collectionId, caseSensitive));
+            LongLinkedList storedGIDList = (LongLinkedList) entry.getValue();               
             //TODO : NativeElementIndex uses ArrayLists -pb
             LongLinkedList newGIDList = new LongLinkedList();
             os.clear();              
             try {                    
                 lock.acquire(Lock.WRITE_LOCK); 
+                //Compute a key for the value
+                Value searchKey = new Value(indexable.serialize(collectionId, caseSensitive));                
                 Value value = dbValues.get(searchKey);
                 //Does the value already has data in the index ?
                 if (value != null) {
@@ -347,6 +349,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         LOG.error("Could not put index data for value '" +  searchKey + "'");  
                     }                    
                 }  
+			} catch (EXistException e) {
+                LOG.error(e.getMessage(), e);                
             } catch (LockException e) {
                 LOG.warn("Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e);
                 //TODO : return ?
@@ -459,10 +463,10 @@ public class NativeValueIndex implements ContentLoadingObserver {
             Map.Entry entry = (Map.Entry) i.next();
             Indexable indexable = (Indexable) entry.getKey();
             //TODO : NativeElementIndex uses ArrayLists -pb
-            LongLinkedList storedGIDList = (LongLinkedList) entry.getValue();
-            Value key = new Value(indexable.serialize(collectionId, caseSensitive)); 
+            LongLinkedList storedGIDList = (LongLinkedList) entry.getValue();            
             try {
                 lock.acquire(Lock.WRITE_LOCK);
+                Value key = new Value(indexable.serialize(collectionId, caseSensitive)); 
                 VariableByteInput is = dbValues.getAsStream(key);
                 os.clear();
                 //TODO : NativeElementIndex uses ArrayLists -pb
@@ -531,7 +535,9 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     if (dbValues.update(address, key, os.data()) == BFile.UNKNOWN_ADDRESS) {
                         LOG.error("Could not update index data for key '" +  key + "'");
                     }
-                }                
+                }            
+			} catch (EXistException e) {
+                LOG.error(e.getMessage(), e);                
             } catch (LockException e) {
                 LOG.warn("Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e);     
                 return;
@@ -560,11 +566,13 @@ public class NativeValueIndex implements ContentLoadingObserver {
 			try {
 				lock.acquire();	
                 final short collectionId = ((Collection) iter.next()).getId();
-                final byte[] key = value.serialize(collectionId, caseSensitive);
+                final Value searchKey = new Value(value.serialize(collectionId, caseSensitive));
                 final int idxOp =  checkRelationOp(relation);
-                final IndexQuery query = new IndexQuery(idxOp, new Value(key));
+                final IndexQuery query = new IndexQuery(idxOp, searchKey);
                 final Value keyPrefix = computeKeyPrefix(value.getType(), collectionId);                
-				dbValues.query(query, keyPrefix, callback);				
+				dbValues.query(query, keyPrefix, callback);	
+			} catch (EXistException e) {
+                LOG.error(e.getMessage(), e);				
 			} catch (LockException e) {
                 LOG.warn("Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e);  
             } catch (IOException e) {
@@ -613,9 +621,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
 				lock.acquire();
                 final short collectionId = ((Collection) iter.next()).getId();
                 Value searchKey;
-                if (startTerm != null) {
-                    byte[] key = startTerm.serialize(collectionId, caseSensitive);
-                    searchKey = new Value(key);
+                if (startTerm != null) {                 
+                    searchKey = new Value(startTerm.serialize(collectionId, caseSensitive));
                 } else {
                     searchKey = computeKeyPrefix(Type.STRING, collectionId);                
                     //key = new byte[3];
@@ -624,6 +631,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 }
                 final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, searchKey);                
 				dbValues.query(query, callback);
+			} catch (EXistException e) {
+                LOG.error(e.getMessage(), e);
             } catch (LockException e) {
                 LOG.warn("Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e);  
 			} catch (IOException e) {
@@ -647,14 +656,16 @@ public class NativeValueIndex implements ContentLoadingObserver {
             try {
                 lock.acquire(); 
                 final  short collectionId = ((Collection) i.next()).getId();            
-                final byte[] startKey = start.serialize(collectionId, caseSensitive);            
-                final IndexQuery query = new IndexQuery(op, new Value(startKey));                  
+                final Value startKey = new Value(start.serialize(collectionId, caseSensitive));            
+                final IndexQuery query = new IndexQuery(op, startKey);                  
                 if (stringType)
                     dbValues.query(query, cb);
                 else {
                     Value keyPrefix = computeKeyPrefix(start.getType(), collectionId);
                     dbValues.query(query, keyPrefix, cb);
                 }
+			} catch (EXistException e) {
+                LOG.error(e.getMessage(), e);                
             } catch (LockException e) {
                 LOG.warn("Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e);
             } catch (IOException e) {
@@ -871,7 +882,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         public boolean indexInfo(Value key, long pointer) throws TerminatedException {            
             AtomicValue atomic;
             try {
-                atomic = ValueIndexFactory.deserialize(key.data(), key.start(), key.getLength());
+                atomic = (AtomicValue)ValueIndexFactory.deserialize(key.data(), key.start(), key.getLength());
                 if (atomic.getType() != type)
                     return false;
             } catch (EXistException e) {

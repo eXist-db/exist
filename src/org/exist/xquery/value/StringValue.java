@@ -25,15 +25,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.exist.dom.QName;
-import org.exist.storage.Indexable;
-import org.exist.util.ByteConversion;
 import org.exist.util.Collations;
 import org.exist.util.UTF8;
 import org.exist.util.XMLChar;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 
-public class StringValue extends AtomicValue implements Indexable {
+public class StringValue extends AtomicValue {
 
 	public final static StringValue EMPTY_STRING = new StringValue("");
 
@@ -494,18 +492,6 @@ public class StringValue extends AtomicValue implements Indexable {
             return getType() > other.getType() ? 1 : -1;
     }
     
-    /** @deprecated
-     * @see org.exist.storage.Indexable#serialize(short)
-     */
-    public byte[] serialize(short collectionId, boolean caseSensitive) {
-        final String val = caseSensitive ? value : value.toLowerCase();
-		final byte[] data = new byte[UTF8.encoded(val) + 3];
-		ByteConversion.shortToByte(collectionId, data, 0);
-		data[2] = (byte) type;	// TODO: cast to byte is not safe
-		UTF8.encode(val, data, 3);
-		return data;
-    }
-    
     /** Serialize for the persistant storage 
      * @param offset
      * */
@@ -516,9 +502,5 @@ public class StringValue extends AtomicValue implements Indexable {
 		UTF8.encode(val, data, offset+1);  
 		return data;
 	}
-	
-    public static String deserializeString(byte[] data) {
-    	return new String(data, 3, data.length - 3);
-    }
 
 }

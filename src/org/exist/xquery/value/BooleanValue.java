@@ -22,12 +22,10 @@ package org.exist.xquery.value;
 
 import java.text.Collator;
 
-import org.exist.storage.Indexable;
-import org.exist.util.ByteConversion;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 
-public class BooleanValue extends AtomicValue implements Indexable {
+public class BooleanValue extends AtomicValue {
 
 	public final static BooleanValue TRUE = new BooleanValue(true);
 	public final static BooleanValue FALSE = new BooleanValue(false);
@@ -189,26 +187,6 @@ public class BooleanValue extends AtomicValue implements Indexable {
 		throw new XPathException("cannot convert value of type " + Type.getTypeName(getType()) +
 			" to Java object of type " + target.getName());
 	}
-
-    /** @deprecated
-     * @see org.exist.storage.Indexable#serialize(short)
-     */
-    public byte[] serialize(short collectionId, boolean caseSensitive) {
-        byte[] data = new byte[4];
-        ByteConversion.shortToByte(collectionId, data, 0);
-        data[2] = Type.BOOLEAN;
-        data[3] = (byte)(value ? 1 : 0);
-        return data;
-    }
-
-    /** serialize for the persistant storage 
-     * @see org.exist.storage.Indexable#serializeValue(int, boolean) */
-    public byte[] serializeValue ( int offset, boolean caseSensitive) {
-		final byte[] data = new byte[ offset + 1 + 1 ];
-    	data[offset]   = Type.BOOLEAN;
-        data[offset+1] = (byte)(value ? 1 : 0);
-        return data;
-    }
     
     /* (non-Javadoc)
      * @see java.lang.Comparable#compareTo(java.lang.Object)
