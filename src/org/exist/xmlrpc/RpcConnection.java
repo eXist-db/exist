@@ -1066,7 +1066,7 @@ public class RpcConnection extends Thread {
 			groups.addElement(gl[i]);
         tab.put("groups", groups);
         if (u.getHome() != null)
-            tab.put("home", u.getHome());
+            tab.put("home", u.getHome().toString());
         return tab;
     }
     
