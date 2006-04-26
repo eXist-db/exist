@@ -12,6 +12,7 @@ import org.exist.EXistException;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.XMLUtil;
+import org.exist.memtree.AttributeImpl;
 import org.exist.memtree.NodeImpl;
 import org.exist.security.Permission;
 import org.exist.security.User;
@@ -29,6 +30,7 @@ import org.exist.util.serializer.SerializerPool;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.NodeValue;
+import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -39,7 +41,6 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
-import org.w3c.dom.DocumentType;
 
 /**
  * Local implementation of XMLResource.
@@ -356,6 +357,9 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 	}
 
 	public void setContentAsDOM(Node root) throws XMLDBException {
+		if (root instanceof AttributeImpl)
+			throw new XMLDBException(ErrorCodes.WRONG_CONTENT_TYPE,
+					"SENR0001: can not serialize a standalone attribute");
 		this.root = root;
 	}
 
