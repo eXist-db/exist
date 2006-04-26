@@ -33,6 +33,8 @@ import java.util.regex.Pattern;
  * 
  * @see LatestFileResolver#getResolvedFileName(String)
  * 
+ * @author Ben Schmaus (exist@benschmaus.com)
+ * @version $Revision$
  */
 public class LatestFileResolver {
 
