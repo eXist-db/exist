@@ -22,10 +22,11 @@
  */
 package org.exist.xquery.test;
 
-import org.exist.storage.DBBroker;
-
 import junit.framework.Test;
 import junit.framework.TestSuite;
+
+import org.exist.storage.DBBroker;
+import org.exist.xquery.value.test.AnyURITest;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
@@ -41,6 +42,7 @@ public class AllTests {
         //$JUnit-BEGIN$
         XPathQueryTest.setURI("xmldb:exist://" + DBBroker.ROOT_COLLECTION);
         suite.addTestSuite(XQueryFunctionsTest.class);
+        suite.addTestSuite(JavaFunctionsTest.class);
         suite.addTestSuite(XPathQueryTest.class);
         suite.addTestSuite(XQueryTest.class);
         suite.addTestSuite(ValueIndexTest.class);
@@ -51,6 +53,7 @@ public class AllTests {
         suite.addTestSuite(OpNumericTest.class);
         suite.addTestSuite(FtQueryTest.class);
         suite.addTestSuite(DocumentUpdateTest.class);
+        suite.addTestSuite(AnyURITest.class);
         //		suite.addTestSuite(XQueryUseCasesTest.class);
         //$JUnit-END$
         return suite;
