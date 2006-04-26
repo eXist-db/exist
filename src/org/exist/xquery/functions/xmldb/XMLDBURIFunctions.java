@@ -93,11 +93,11 @@ public class XMLDBURIFunctions extends BasicFunction {
 	{
 		try {
 			if(isCalledAs("encode")) {
-				return new StringValue(URIUtils.urlEncodePartsUtf8(args[0].toString()));
+				return new StringValue(URIUtils.urlEncodePartsUtf8(args[0].getStringValue()));
 			} else if(isCalledAs("encode-uri")) {
-				return new AnyURIValue(URIUtils.encodeXmldbUriFor(args[0].toString()));
+				return new AnyURIValue(URIUtils.encodeXmldbUriFor(args[0].getStringValue()));
 			} else {
-				return new StringValue(URIUtils.urlDecodeUtf8(args[0].toString()));
+				return new StringValue(URIUtils.urlDecodeUtf8(args[0].getStringValue()));
 			}
 		} catch(URISyntaxException e) {
 			throw new XPathException("URI Syntax Exception: " + e.getMessage(), e);
