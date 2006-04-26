@@ -24,13 +24,11 @@ import java.math.BigDecimal;
 import java.text.Collator;
 import java.util.regex.Matcher;
 
-import org.exist.storage.Indexable;
-import org.exist.util.ByteConversion;
 import org.exist.util.FastStringBuffer;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 
-public class DoubleValue extends NumericValue implements Indexable {
+public class DoubleValue extends NumericValue {
 
 	public final static DoubleValue ZERO = new DoubleValue(0.0E0);
 	public final static DoubleValue POSITIVE_INFINITY = new DoubleValue(Double.POSITIVE_INFINITY);
@@ -519,28 +517,6 @@ public class DoubleValue extends NumericValue implements Indexable {
 				+ " to Java object of type "
 				+ target.getName());
 	}
-
-    /** @deprecated
-     * @see org.exist.storage.Indexable#serialize(short)
-     */
-    public byte[] serialize(short collectionId, boolean caseSensitive) {
-        final byte[] data = new byte[11];
-        ByteConversion.shortToByte(collectionId, data, 0);
-        data[2] = (byte) Type.DOUBLE;
-        final long bits = Double.doubleToLongBits(value) ^ 0x8000000000000000L;
-        ByteConversion.longToByte(bits, data, 3);
-        return data;
-    }
-
-    /** Serialize for the persistant storage 
-     * @see org.exist.storage.Indexable#serializeValue(int, boolean) */
-    public byte[] serializeValue ( int offset, boolean caseSensitive) {
-        final byte[] data = new byte[ offset + 1 + 8 ];
-        data[offset] = (byte) Type.DOUBLE;
-        final long bits = Double.doubleToLongBits(value) ^ 0x8000000000000000L;
-        ByteConversion.longToByte(bits, data, offset+1 );
-        return data;
-    }
 
     /** size writen by {@link #serialize(byte[] data, int offset)} */
 	public int getSerializedSize() {

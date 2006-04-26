@@ -21,6 +21,8 @@
  */
 package org.exist.storage;
 
+import org.exist.EXistException;
+
 /**
  * This interface should be implemented by all basic types
  * to be used as keys in a value index.
@@ -45,7 +47,8 @@ public interface Indexable extends Comparable {
      * strings should be serialized in lower case
      * @return
      */
-    public byte[] serialize(short collectionId, boolean caseSensitive);
+	//TODO : better exception ?
+    public byte[] serialize(short collectionId, boolean caseSensitive) throws EXistException;
 
     /** Serialize the value to an array of bytes for the persistant storage.
      * 
@@ -56,7 +59,8 @@ public interface Indexable extends Comparable {
      * @param offset, starting index for writing in array data
      * @return the size actually writen in the array argument
      */
-	byte[] serializeValue (int offset, boolean caseSensitive);
+    //TODO : better exception ?
+	public byte[] serializeValue(int offset, boolean caseSensitive) throws EXistException;
 
     /**
      * Returns the type of the Indexable as one of the constants defined

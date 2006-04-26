@@ -22,10 +22,13 @@ package org.exist.xquery.value;
 
 import java.text.Collator;
 
+import org.exist.EXistException;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.storage.DBBroker;
+import org.exist.storage.Indexable;
+import org.exist.storage.ValueIndexFactory;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
@@ -39,7 +42,7 @@ import org.xml.sax.SAXException;
  * 
  * @author wolf
  */
-public abstract class AtomicValue implements Item, Sequence {
+public abstract class AtomicValue implements Item, Sequence, Indexable {
 
     /** An empty atomic value */
 	public final static AtomicValue EMPTY_VALUE = new EmptyValue();
@@ -306,6 +309,26 @@ public abstract class AtomicValue implements Item, Sequence {
     public boolean isPersistentSet() {
         return false;
     }
+    
+	public final static AtomicValue deserialize(byte[] data, int start, int len) throws EXistException {
+		return (AtomicValue)ValueIndexFactory.deserialize(data, start, len);
+	}
+	
+	public byte[] serialize(short collectionId, boolean caseSensitive) 
+		throws EXistException {	
+		//TODO : pass the factory as an argument
+		return ValueIndexFactory.serialize(this, collectionId, caseSensitive);
+	}	
+	
+	public byte[] serializeValue(int offset, boolean caseSensitive) 
+		throws EXistException {		
+		//TODO : pass the factory as an argument
+		return ValueIndexFactory.serialize(this, offset, caseSensitive);
+	}
+	
+	public int compareTo(Object other) {		
+		throw new IllegalArgumentException("Invalid call to compareTo by " + Type.getTypeName(this.getItemType()));
+	}
     
 	private final static class EmptyValue extends AtomicValue {
 		

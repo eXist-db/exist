@@ -2,6 +2,7 @@
 $Id$ */
 package org.exist.storage;
 
+import org.exist.EXistException;
 import org.exist.util.ByteConversion;
 
 /** Simple wrapper around an Indexable object, that adds the collectionId
@@ -18,7 +19,7 @@ public class ValueIndexKeyFactorySimple implements ValueIndexKeyFactory {
 	/** called from {@link NativeValueIndex};
 	 * provides the persistant storage key :
 	 * (collectionId, qname, indexType, indexData) */
-	public byte[] serialize(short collectionId, boolean caseSensitive) {
+	public byte[] serialize(short collectionId, boolean caseSensitive)  throws EXistException {
         final byte[] data = indexable.serializeValue( 2, caseSensitive);
         ByteConversion.shortToByte(collectionId, data, 0);
 		return data;

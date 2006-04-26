@@ -29,8 +29,6 @@ import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 
-import org.exist.storage.Indexable;
-import org.exist.util.ByteConversion;
 import org.exist.xquery.XPathException;
 
 /**
@@ -39,7 +37,7 @@ import org.exist.xquery.XPathException;
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
  */
-public class DateTimeValue extends AbstractDateTimeValue implements Indexable {
+public class DateTimeValue extends AbstractDateTimeValue {
 
 	public DateTimeValue() throws XPathException {
 		super(TimeUtils.getInstance().newXMLGregorianCalendar(new GregorianCalendar()));
@@ -127,45 +125,5 @@ public class DateTimeValue extends AbstractDateTimeValue implements Indexable {
 	}
 
 	public Date getDate() { return calendar.toGregorianCalendar().getTime(); }
-	
-	
-	/** @deprecated
-     * @see org.exist.storage.Indexable#serialize(short)
-     */
-    public byte[] serialize(short collectionId, boolean caseSensitive)
-    {
-    	GregorianCalendar utccal = calendar.normalize().toGregorianCalendar();	//Get the dateTime (XMLGregorianCalendar) normalized to UTC (as a GregorianCalendar)
-		long value = utccal.getTimeInMillis();									//Get the normalized dateTime as a long (milliseconds since the Epoch) 
-        
-		byte[] data = new byte[11];						//alocate a byte array for holding collectionId,Type,long (11 = (byte)short + byte + (byte)long)
-		ByteConversion.shortToByte(collectionId, data, 0);	//put the collectionId in the byte array
-		data[2] = (byte) Type.DATE_TIME;					//put the Type in the byte array
-		ByteConversion.longToByte(value, data, 3);			//put the long in the byte array
-		return(data);										//return the byte array
-    }
-    
-    /** Serialize for the persistant storage */
-    public byte[] serializeValue (int offset, boolean caseSensitive)
-    {
-    	GregorianCalendar utccal = calendar.normalize().toGregorianCalendar();	//Get the dateTime (XMLGregorianCalendar) normalized to UTC (as a GregorianCalendar)
-		long value = utccal.getTimeInMillis();									//Get the normalized dateTime as a long (milliseconds since the Epoch) 
-    	
-		final byte[] data = new byte[offset + 1 + 8];		//allocate an appropriately sized byte array for holding Type,long
-		data[offset] = (byte) Type.DATE_TIME;				//put the Type in the byte array
-		ByteConversion.longToByte(value, data, offset+1);	//put the long into the byte array
-		return(data);										//return the byte array
-    }
-    
-    /* (non-Javadoc)
-     * @see java.lang.Comparable#compareTo(java.lang.Object)
-     */
-    public int compareTo(Object o)
-    {
-        final AtomicValue other = (AtomicValue)o;
-        if(Type.subTypeOf(other.getType(), Type.DATE_TIME))
-        	return calendar.compare((XMLGregorianCalendar)o);
-        else
-            return getType() > other.getType() ? 1 : -1;
-    }
 
 }

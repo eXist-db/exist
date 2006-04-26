@@ -24,8 +24,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.Collator;
 
-import org.exist.storage.Indexable;
-import org.exist.util.ByteConversion;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 
@@ -35,7 +33,7 @@ import org.exist.xquery.XPathException;
  * The �base type� of integer is decimal.
  * cf http://www.w3.org/TR/xmlschema-2/#integer 
  */
-public class IntegerValue extends NumericValue implements Indexable {
+public class IntegerValue extends NumericValue {
 
 	public final static IntegerValue ZERO = new IntegerValue(0);
 	private static final BigInteger ZERO_BIGINTEGER = new BigInteger("0");
@@ -472,27 +470,6 @@ public class IntegerValue extends NumericValue implements Indexable {
 		throw new XPathException("cannot convert value of type " + Type.getTypeName(getType()) +
 			" to Java object of type " + target.getName());
 	}
-	
-	/** @deprecated
-     * @see org.exist.storage.Indexable#serialize(short)
-     */
-    public byte[] serialize(short collectionId, boolean caseSensitive) {
-        long l = value.longValue() - Long.MIN_VALUE;
-        byte[] data = new byte[11];
-		ByteConversion.shortToByte(collectionId, data, 0);
-		data[2] = (byte) Type.INTEGER;
-		ByteConversion.longToByte(l, data, 3);
-		return data;
-    }
-    
-    /** Serialize for the persistant storage */
-    public byte[] serializeValue ( int offset, boolean caseSensitive) {
-		final byte[] data = new byte[ offset + 1 + 8 ];
-		data[offset] = (byte) Type.INTEGER;
-        long l = value.longValue() - Long.MIN_VALUE;
-		ByteConversion.longToByte(l, data, offset+1 );
-		return data;
-    }
 	
     /* (non-Javadoc)
      * @see java.lang.Comparable#compareTo(java.lang.Object)

@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
+import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.DocumentImpl;
@@ -209,7 +210,7 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
 		/** called from {@link NativeValueIndex};
 		 * provides the persistant storage key :
 		 * (collectionId, qname, indexType, indexData) */
-		public byte[] serialize(short collectionId, boolean caseSensitive) {
+		public byte[] serialize(short collectionId, boolean caseSensitive) throws EXistException {
 	        final byte[] data = indexable.serializeValue(6, caseSensitive);
 	        ByteConversion.shortToByte(collectionId, data, 0);
 			serializeQName(data, 2 );
@@ -273,20 +274,24 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
         for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
 			Collection collection = (Collection) iter.next();
 			short collectionId = collection.getId();
-			byte[] key = value.serialize(collectionId, caseSensitive);
-			IndexQuery query = new IndexQuery(idxOp, new Value(key));
 			try {
+				Value key = new Value(value.serialize(collectionId, caseSensitive));
+				IndexQuery query = new IndexQuery(idxOp, key);
 				lock.acquire();
 				try {
 					SearchCallback callback = new SearchCallback(docs, contextSet, result, false);
 					dbValues.query(query, callback );
 				} catch (IOException ioe) {
-					LOG.debug(ioe);
+					//TODO : error ?
+					LOG.warn(ioe);
 				} catch (BTreeException bte) {
-					LOG.debug(bte);
+					//TODO : error ?
+					LOG.warn(bte);
 				}
-			} catch (LockException e) {
-				LOG.debug(e);
+			} catch (EXistException e) {
+                LOG.error(e.getMessage(), e);
+            } catch (LockException e) {
+				LOG.warn(e);
 			} finally {
 				lock.release();
 			}

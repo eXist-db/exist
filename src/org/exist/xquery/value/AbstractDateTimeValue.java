@@ -28,7 +28,9 @@ import java.text.Collator;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import javax.xml.datatype.*;
+import javax.xml.datatype.DatatypeConstants;
+import javax.xml.datatype.Duration;
+import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 
 import org.exist.xquery.Constants;
@@ -40,7 +42,8 @@ import org.exist.xquery.XPathException;
  */
 public abstract class AbstractDateTimeValue extends ComputableValue {
 	
-	protected final XMLGregorianCalendar calendar;
+	//Provisionally public
+	public final XMLGregorianCalendar calendar;
 	private XMLGregorianCalendar implicitCalendar, canonicalCalendar, trimmedCalendar;
 
 	public final static int YEAR = 0;
@@ -283,5 +286,17 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 
 		throw new XPathException("cannot convert value of type " + Type.getTypeName(getType()) + " to Java object of type " + target.getName());
 	}
+    
+    /* (non-Javadoc)
+     * @see java.lang.Comparable#compareTo(java.lang.Object)
+     */
+    public int compareTo(Object o)
+    {
+        final AtomicValue other = (AtomicValue)o;
+        if(Type.subTypeOf(other.getType(), Type.DATE_TIME))
+        	return calendar.compare((XMLGregorianCalendar)o);
+        else
+            return getType() > other.getType() ? 1 : -1;
+    }	
 
 }
