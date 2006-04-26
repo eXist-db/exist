@@ -28,6 +28,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -67,7 +68,7 @@ public class XMLDBSize extends XMLDBAbstractCollectionManipulator {
 	protected Sequence evalWithCollection(Collection collection, Sequence[] args,
 			Sequence contextSequence) throws XPathException {
 		try {
-			Resource resource = collection.getResource(args[1].getStringValue());
+			Resource resource = collection.getResource(new AnyURIValue(args[1].getStringValue()).toXmldbURI().toString());
 			return new IntegerValue(((EXistResource)resource).getContentLength(), Type.LONG);
 		} catch (XMLDBException e) {
 			throw new XPathException(getASTNode(), "Failed to retrieve size: " + e.getMessage(), e);

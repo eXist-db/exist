@@ -19,6 +19,7 @@ import org.exist.xmldb.RemoteIndexQueryService;
 import org.exist.xmldb.RemoteUserManagementService;
 import org.exist.xmldb.RemoteXPathQueryService;
 import org.exist.xmldb.RemoteXUpdateQueryService;
+import org.exist.xquery.util.URIUtils;
 import org.mortbay.util.MultiException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -120,7 +121,7 @@ public class RemoteCollectionTest extends RemoteDBTest {
 	
 	public void testGetPath() {
 		try {
-			assertEquals(DBBroker.ROOT_COLLECTION + "/" + getTestCollectionName(), getCollection().getPath());
+			assertEquals(DBBroker.ROOT_COLLECTION + "/" + getTestCollectionName(), URIUtils.urlDecodeUtf8(getCollection().getPath()));
         } catch (Exception e) {            
             fail(e.getMessage()); 
         }

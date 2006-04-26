@@ -27,6 +27,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -72,7 +73,7 @@ public class XMLDBRemove extends XMLDBAbstractCollectionManipulator {
 	public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
 		throws XPathException {
 		if(getSignature().getArgumentCount() == 2) {
-			String doc = args[1].itemAt(0).getStringValue();
+			String doc = new AnyURIValue(args[1].itemAt(0).getStringValue()).toXmldbURI().toString();
 			try {
 				Resource resource = collection.getResource(doc);
 				if (resource == null)

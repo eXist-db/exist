@@ -27,6 +27,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -74,7 +75,7 @@ public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 			CollectionManagementService mgtService = (CollectionManagementService) collection
 					.getService("CollectionManagementService", "1.0");
 			Collection newCollection = mgtService
-					.createCollection(collectionName);
+					.createCollection(new AnyURIValue(collectionName).toXmldbURI().toString());
 			if (newCollection == null)
 				return Sequence.EMPTY_SEQUENCE;
 			else

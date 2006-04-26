@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
@@ -55,11 +56,11 @@ import org.apache.excalibur.source.impl.validity.AggregatedValidity;
 import org.apache.excalibur.source.impl.validity.ExpiresValidity;
 import org.exist.http.Descriptor;
 import org.exist.source.CocoonSource;
-import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.XQueryService;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.functions.request.RequestModule;
@@ -138,8 +139,8 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
 	private boolean defaultExpandXIncludes = false;
 	private final static String EXPAND_XINCLUDES = "expand-xincludes";
 
-	private String collectionURI;
-	private String defaultCollectionURI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
+	private XmldbURI collectionURI;
+	private XmldbURI defaultCollectionURI = XmldbURI.EMBEDDED_SERVER_URI.append(XmldbURI.ROOT_COLLECTION_URI);
 	private final static String COLLECTION_URI = "collection";
 	
 	private long cacheValidity;
@@ -190,8 +191,16 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
 
 		this.objectModel = objectModel;
 		this.inputSource = resolver.resolveURI(source);
-		this.collectionURI = parameters.getParameter(COLLECTION_URI,
-				this.defaultCollectionURI);
+		String paramCollectionURI = parameters.getParameter(COLLECTION_URI,null);
+		if(paramCollectionURI != null) {
+			try {
+				this.collectionURI = XmldbURI.xmldbUriFor(paramCollectionURI);
+			} catch(URISyntaxException e) {
+				throw new ProcessingException("Invalid XmldbURI for parameter '"+COLLECTION_URI+"': "+e.getMessage(),e);
+			}
+		} else {
+			this.collectionURI = this.defaultCollectionURI;
+		}
 		this.user = parameters.getParameter(USER, this.defaultUser);
 		this.password = parameters.getParameter(PASSWORD, this.defaultPassword);
 		this.createSession = parameters.getParameterAsBoolean(CREATE_SESSION,
@@ -248,12 +257,19 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
 		
 		final String servletPath = request.getServletPath();
 		final String pathInfo = request.getPathInfo();
-		StringBuffer baseURIBuffer = new StringBuffer(servletPath);
-		if (pathInfo != null) baseURIBuffer.append(pathInfo);
-		int p = baseURIBuffer.lastIndexOf("/");
-		if (p != Constants.STRING_NOT_FOUND)
-            baseURIBuffer.delete(p, baseURIBuffer.length());            
-		final URI baseURI = new File(context.getRealPath(baseURIBuffer.toString())).toURI();
+		StringBuffer moduleLoadPathBuffer = new StringBuffer(servletPath);
+		if (pathInfo != null) {
+			moduleLoadPathBuffer.append(pathInfo);
+		}
+		int p = moduleLoadPathBuffer.lastIndexOf("/");
+		if (p != Constants.STRING_NOT_FOUND) {
+			moduleLoadPathBuffer.delete(p, moduleLoadPathBuffer.length());  
+		}
+		final URI moduleLoadPath = new File(context.getRealPath(moduleLoadPathBuffer.toString())).toURI();
+		XmldbURI baseUri = collectionURI;
+		if(pathInfo!=null) {
+			baseUri = baseUri.append(request.getPathInfo());
+		}
 		
 		// check if user and password can be read from the session
 		if (session != null && request.isRequestedSessionIdValid()) {
@@ -268,7 +284,7 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
 			password = defaultPassword;
 		try {
 			Collection collection = DatabaseManager.getCollection(
-					collectionURI, user, password);
+					collectionURI.toString(), user, password);
 			if (collection == null) {
 				if (getLogger().isErrorEnabled())
 					getLogger().error(
@@ -281,9 +297,9 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
 			service.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
 			service.setProperty(EXistOutputKeys.EXPAND_XINCLUDES,
 					expandXIncludes ? "yes" : "no");
-			service.setProperty("base-uri", baseURI.toString());
+			service.setProperty("base-uri", baseUri.toString());
 			//service.setNamespace(RequestModule.PREFIX, RequestModule.NAMESPACE_URI);
-			service.setModuleLoadPath(baseURI.toString());
+			service.setModuleLoadPath(moduleLoadPath.toString());
 			if(!((CollectionImpl)collection).isRemoteCollection()) {
 				HttpServletRequest httpRequest = (HttpServletRequest) objectModel
 						.get(HttpEnvironment.HTTP_REQUEST_OBJECT);
@@ -339,7 +355,14 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
 	 * @see org.apache.avalon.framework.configuration.Configurable#configure(org.apache.avalon.framework.configuration.Configuration)
 	 */
 	public void configure(Configuration config) throws ConfigurationException {
-		this.defaultCollectionURI = config.getAttribute(COLLECTION_URI, this.defaultCollectionURI);
+		String paramCollectionURI = config.getAttribute(COLLECTION_URI,null);
+		if(paramCollectionURI != null) {
+			try {
+				this.defaultCollectionURI = XmldbURI.xmldbUriFor(paramCollectionURI);
+			} catch(URISyntaxException e) {
+				throw new ConfigurationException("Invalid XmldbURI for config attribute '"+COLLECTION_URI+"': "+e.getMessage(),e);
+			}
+		}
 		this.defaultCreateSession = config.getAttributeAsBoolean(CREATE_SESSION, this.defaultCreateSession);
 		this.defaultExpandXIncludes = config.getAttributeAsBoolean(EXPAND_XINCLUDES, this.defaultExpandXIncludes);
 		this.defaultPassword = config.getAttribute(PASSWORD, this.defaultPassword);

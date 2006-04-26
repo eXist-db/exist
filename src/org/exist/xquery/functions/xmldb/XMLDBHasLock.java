@@ -28,6 +28,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
@@ -70,7 +71,7 @@ public class XMLDBHasLock extends XMLDBAbstractCollectionManipulator {
 	throws XPathException {
 		try {
 			UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
-			Resource res = collection.getResource(args[1].getStringValue());
+			Resource res = collection.getResource(new AnyURIValue(args[1].getStringValue()).toXmldbURI().toString());
 			if (res != null) {
 			    String lockUser = ums.hasUserLock(res);
 			    return lockUser == null ? Sequence.EMPTY_SEQUENCE : new StringValue(lockUser);

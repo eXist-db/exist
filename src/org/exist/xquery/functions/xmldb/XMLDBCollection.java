@@ -22,19 +22,17 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import java.net.URISyntaxException;
-
 import org.exist.dom.QName;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.LocalCollection;
-import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -54,8 +52,9 @@ public class XMLDBCollection extends BasicFunction {
 			new QName("collection", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			"Get a reference to a collection. The first argument is either a collection path like '" +
 			DBBroker.ROOT_COLLECTION + "/shakespeare/plays' or an XMLDB URI like 'xmldb:exist://localhost:8081/" +
-			DBBroker.ROOT_COLLECTION + "/shakespeare/plays'. " +
-			"The second argument should specify the name of " +
+			DBBroker.ROOT_COLLECTION + "/shakespeare/plays'. While the function " +
+			"accepts a string argument, this argument must conform to the xs:anyURI "+
+			"type specification. The second argument should specify the name of " +
 			"a valid user, the third is the password. The method returns a Java object " +
 			"type, which can then be used as argument to the create-collection or store " +
 			"functions.",
@@ -91,8 +90,8 @@ public class XMLDBCollection extends BasicFunction {
 				if (!localUser.getName().equals(user))
 					localUser = getUser(user, passwd);
 				try {
-			        collection = new LocalCollection(localUser, context.getBroker().getBrokerPool(), XmldbURI.xmldbUriFor(collectionURI), context.getAccessContext());
-				} catch(URISyntaxException e) {
+			        collection = new LocalCollection(localUser, context.getBroker().getBrokerPool(), new AnyURIValue(collectionURI).toXmldbURI(), context.getAccessContext());
+				} catch(XPathException e) {
 					throw new XMLDBException(ErrorCodes.INVALID_URI,e);
 				}
 			} else {
