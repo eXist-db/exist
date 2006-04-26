@@ -155,7 +155,8 @@ public class DOMIndexerTest extends TestCase {
             serializer.endDocument();
             System.out.println(out.toString());
     	} catch (Exception e) {
-    		fail(e.getMessage());             
+            e.printStackTrace();
+    		fail(e.getMessage());
         } finally {
             pool.release(broker);
         }
@@ -196,9 +197,7 @@ public class DOMIndexerTest extends TestCase {
 	        XMLReader reader = parser.getXMLReader();
 	        SAXAdapter adapter = new SAXAdapter();
 	        reader.setContentHandler(adapter);
-	        reader.setProperty(
-	                "http://xml.org/sax/properties/lexical-handler",
-	                adapter);
+	        reader.setProperty("http://xml.org/sax/properties/lexical-handler", adapter);
 	        reader.parse(src);
 	        
 	        return (DocumentImpl) adapter.getDocument();

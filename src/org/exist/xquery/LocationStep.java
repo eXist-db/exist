@@ -352,7 +352,7 @@ public class LocationStep extends Step {
                         "OPTIMIZATION", "direct attribute selection");
             NodeProxy proxy = contextSet.get(0);
             if (proxy != null
-                    && proxy.getInternalAddress() != NodeProxy.UNKNOWN_NODE_ADDRESS)
+                    && proxy.getInternalAddress() != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
                 return contextSet.directSelectAttribute(test.getName(),
                         contextId);
         }

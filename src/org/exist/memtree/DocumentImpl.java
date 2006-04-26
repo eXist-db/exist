@@ -631,7 +631,12 @@ public class DocumentImpl extends NodeImpl implements Document {
         NodeImpl top = node;
         while (node != null) {
             copyStartNode(node, receiver, expandRefs);
-            NodeImpl nextNode = (NodeImpl) node.getFirstChild();
+            NodeImpl nextNode;
+        	if (node instanceof ReferenceNode)
+        		//Nothing more to stream ?
+        		nextNode = null;
+        	else
+        		nextNode = (NodeImpl) node.getFirstChild();
             while (nextNode == null) {
                 copyEndNode(node, receiver);
                 if (top != null && top.nodeNumber == node.nodeNumber) 
@@ -729,11 +734,11 @@ public class DocumentImpl extends NodeImpl implements Document {
      * reference nodes.
      */
     public void expand() throws DOMException {
-        DocumentImpl newDoc = expandRefs();
+        DocumentImpl newDoc = expandRefs(null);
         copyDocContents(newDoc);
     }
-
-    private DocumentImpl expandRefs() throws DOMException {
+    
+    public DocumentImpl expandRefs(NodeImpl rootNode) throws DOMException {
         if(nextRef == 0) {
             return this;
         }
@@ -741,7 +746,7 @@ public class DocumentImpl extends NodeImpl implements Document {
         DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
         try {
             builder.startDocument();
-            NodeImpl node = (NodeImpl) getFirstChild();
+            NodeImpl node = rootNode == null ? (NodeImpl) getFirstChild() : rootNode;
             while(node != null) {
                 copyTo(node, receiver, true);
                 node = (NodeImpl) node.getNextSibling();
@@ -792,7 +797,12 @@ public class DocumentImpl extends NodeImpl implements Document {
         NodeImpl top = node;
         while (node != null) {
             startNode(serializer, node, receiver);
-            NodeImpl nextNode = (NodeImpl) node.getFirstChild();
+            NodeImpl nextNode;
+        	if (node instanceof ReferenceNode)
+        		//Nothing more to stream ?
+        		nextNode = null;
+        	else
+        		nextNode = (NodeImpl) node.getFirstChild();
             while (nextNode == null) {
                 endNode(node, receiver);
                 if (top != null && top.nodeNumber == node.nodeNumber) break;
@@ -904,17 +914,19 @@ public class DocumentImpl extends NodeImpl implements Document {
             oldIds.add(new Integer(top));
             top = getNextSiblingFor(top);
         }
-        DocumentImpl expandedDoc = expandRefs();
+        DocumentImpl expandedDoc = expandRefs(null);
         org.exist.dom.DocumentImpl doc = context.storeTemporaryDoc(expandedDoc);
         org.exist.dom.ElementImpl root = (org.exist.dom.ElementImpl) doc.getDocumentElement();
         NodeList cl = root.getChildNodes();
         storedNodes = new Int2ObjectHashMap();
-        storedNodes.put(0, new NodeProxy(doc, root.getNodeId(), root.getInternalAddress()));
+        storedNodes.put(0, new NodeProxy(doc, root.getNodeId(), 
+        		root.getNodeType(), root.getInternalAddress()));
         top = 1;
         int i = 0;
         while(top > 0 && i < cl.getLength()) {
             StoredNode node = (StoredNode) cl.item(i);
-            NodeProxy proxy = new NodeProxy(doc, node.getNodeId(), node.getInternalAddress());
+            NodeProxy proxy = new NodeProxy(doc, node.getNodeId(), 
+            		node.getNodeType(), node.getInternalAddress());
             int old = ((Integer)oldIds.get(i)).intValue();
             storedNodes.put(old, proxy);
             top = expandedDoc.getNextSiblingFor(top);

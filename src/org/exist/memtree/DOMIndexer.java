@@ -29,6 +29,7 @@ import org.exist.EXistException;
 import org.exist.dom.*;
 import org.exist.dom.CommentImpl;
 import org.exist.dom.ElementImpl;
+import org.exist.dom.NodeProxy;
 import org.exist.dom.ProcessingInstructionImpl;
 import org.exist.dom.TextImpl;
 import org.exist.numbering.NodeId;
@@ -63,6 +64,9 @@ public class DOMIndexer {
     private TextImpl text = new TextImpl();
     private StoredNode prevNode = null;
     
+    private CommentImpl comment = new CommentImpl();
+    private ProcessingInstructionImpl pi = new ProcessingInstructionImpl();
+
     public DOMIndexer(DBBroker broker, Txn transaction, DocumentImpl doc, org.exist.dom.DocumentImpl targetDoc) {
         this.broker = broker;
         this.transaction = transaction;
@@ -140,7 +144,9 @@ public class DOMIndexer {
      * @param nodeNr
      */
     private void startNode(int nodeNr, NodePath currentPath) {
-        if (doc.nodeKind[nodeNr] == Node.ELEMENT_NODE) {
+    	ElementImpl last;
+    	switch (doc.nodeKind[nodeNr]) {
+    	case Node.ELEMENT_NODE :
             ElementImpl elem = new ElementImpl();
             if(stack.empty()) {
                 elem.setNodeId(broker.getBrokerPool().getNodeFactory().createInstance());
@@ -150,7 +156,7 @@ public class DOMIndexer {
                 targetDoc.appendChild(elem);
                 elem.setChildCount(0);
             } else {
-                ElementImpl last = (ElementImpl) stack.peek();
+                last = (ElementImpl) stack.peek();
                 initElement(nodeNr, elem);
                 last.appendChildInternal(prevNode, elem);
                 stack.push(elem);
@@ -160,43 +166,45 @@ public class DOMIndexer {
             setPrevious(null);
             currentPath.addComponent(elem.getQName());
             storeAttributes(nodeNr, elem, currentPath);
-        } else if (doc.nodeKind[nodeNr] == Node.TEXT_NODE) {
-            ElementImpl last = (ElementImpl) stack.peek();
+            break;
+    	case Node.TEXT_NODE :
+            last = (ElementImpl) stack.peek();
             text.setData(new String(doc.characters, doc.alpha[nodeNr], doc.alphaLen[nodeNr]));
             text.setOwnerDocument(targetDoc);
             last.appendChildInternal(prevNode, text);
             setPrevious(text);
             broker.storeNode(transaction, text, null);
-        } else if (doc.nodeKind[nodeNr] == Node.COMMENT_NODE) {
-            CommentImpl comment = new CommentImpl(new String(doc.characters, doc.alpha[nodeNr], 
-                    doc.alphaLen[nodeNr]));
+            break;
+    	case Node.COMMENT_NODE :            
+            comment.setData(doc.characters, doc.alpha[nodeNr], doc.alphaLen[nodeNr]);
             comment.setOwnerDocument(targetDoc);
             if (stack.empty()) {
                 comment.setNodeId(NodeId.DOCUMENT_NODE);
-                broker.storeNode(transaction, comment, null);
                 targetDoc.appendChild(comment);
             } else {
-                ElementImpl last = (ElementImpl) stack.peek();
+                last = (ElementImpl) stack.peek();
                 last.appendChildInternal(prevNode, comment);
                 setPrevious(comment);
-                broker.storeNode(transaction, comment, null);
             }
-        } else if (doc.nodeKind[nodeNr] == Node.PROCESSING_INSTRUCTION_NODE) {
-            ProcessingInstructionImpl pi = new ProcessingInstructionImpl();
-            pi.setOwnerDocument(targetDoc);
+            broker.storeNode(transaction, comment, null);
+            break;
+    	case Node.PROCESSING_INSTRUCTION_NODE :
             QName qn = (QName)doc.namePool.get(doc.nodeName[nodeNr]);
             pi.setTarget(qn.getLocalName());
             pi.setData(new String(doc.characters, doc.alpha[nodeNr], doc.alphaLen[nodeNr]));
+            pi.setOwnerDocument(targetDoc);
             if (stack.empty()) {
                 pi.setNodeId(NodeId.DOCUMENT_NODE);
-                broker.storeNode(transaction, pi, null);
                 targetDoc.appendChild(pi);
             } else {
-                ElementImpl last = (ElementImpl) stack.peek();
+                last = (ElementImpl) stack.peek();
                 last.appendChildInternal(prevNode, pi);
                 setPrevious(pi);
-                broker.storeNode(transaction, pi, null);
             }
+            broker.storeNode(transaction, pi, null);
+            break;
+        default:
+        	System.out.println("Indexing in-memory node of type " + doc.nodeKind[nodeNr]);
         }
     }
 
@@ -265,7 +273,9 @@ public class DOMIndexer {
     
     private void setPrevious(StoredNode previous) {
         if (prevNode != null) {
-            if (prevNode.getNodeType() == Node.TEXT_NODE)
+            if (prevNode.getNodeType() == Node.TEXT_NODE ||
+                    prevNode.getNodeType() == Node.COMMENT_NODE ||
+                    prevNode.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE)
                     prevNode.clear();
         }
         prevNode = previous;

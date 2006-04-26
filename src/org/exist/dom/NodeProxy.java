@@ -72,10 +72,10 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	public static final int UNKNOWN_NODE_GID = 0;	
 	public static final int DOCUMENT_ELEMENT_GID = 1;
 	
-	public static final int UNKNOWN_NODE_LEVEL = -1;
 	public static final short UNKNOWN_NODE_TYPE = -1;	
-	public static final int UNKNOWN_NODE_ADDRESS = -1;
 	
+	public static final int UNKNOWN_NODE_LEVEL = -1;
+
 	/**
 	 * The owner document of this node.
 	 */
@@ -87,13 +87,13 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	 * dom.dbx file, if known.
 	 * @link #UNKNOWN_NODE_ADDRESS
 	 */
-	private long internalAddress;
+	private long internalAddress = StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;
 	
 	/**
 	 * The type of this node (as defined by DOM), if known. 
 	 * @link #UNKNOWN_NODE_TYPE
 	 */
-	private short nodeType;
+	private short nodeType = UNKNOWN_NODE_TYPE;
 
 	/**
 	 * The first {@link Match} object associated with this node.
@@ -105,12 +105,16 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 
 	private ContextItem context = null;
 
+    public NodeProxy(DocumentImpl doc, NodeId nodeId) {
+        this(doc, nodeId, UNKNOWN_NODE_TYPE, StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
+    }
+    
     public NodeProxy(DocumentImpl doc, NodeId nodeId, long address) {
         this(doc, nodeId, UNKNOWN_NODE_TYPE, address);
     }
     
     public NodeProxy(DocumentImpl doc, NodeId nodeId, short nodeType) {
-        this(doc, nodeId, nodeType, UNKNOWN_NODE_ADDRESS);
+        this(doc, nodeId, nodeType, StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
     }
     
     public NodeProxy(DocumentImpl doc, NodeId nodeId, short nodeType, long address) {
@@ -126,13 +130,13 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
         //TODO : what about node's context ?		
 	}
 
+	public NodeProxy(StoredNode n) {
+        this((DocumentImpl)n.getOwnerDocument(), n.getNodeId(), n.getNodeType(), n.getInternalAddress());
+	}
+	
 	/** create a proxy to a document node */
 	public NodeProxy(DocumentImpl doc) {
-        this(doc, NodeId.DOCUMENT_NODE, Node.DOCUMENT_NODE, UNKNOWN_NODE_ADDRESS);
-    }
-
-    public NodeProxy(DocumentImpl doc, NodeId nodeId) {
-        this(doc, nodeId, UNKNOWN_NODE_TYPE, UNKNOWN_NODE_ADDRESS);
+        this(doc, NodeId.DOCUMENT_NODE, Node.DOCUMENT_NODE, StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
     }
 
     public void setNodeId(NodeId id) {
@@ -142,8 +146,8 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
     public NodeId getNodeId() {
         return nodeId;
     }
-    
-    /* (non-Javadoc)
+	
+	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.NodeValue#getImplementation()
 	 */
 	public int getImplementationType() {
@@ -154,7 +158,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	 * according to node gid. */
 	public int compareTo(NodeProxy other) {
 		final int diff = doc.getDocId() - other.doc.getDocId();
-		if (diff != 0)
+		if (diff != Constants.EQUAL)
             return diff;
 		return nodeId.compareTo(other.nodeId);
 	}
@@ -215,6 +219,10 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
         return nodeType == Node.DOCUMENT_NODE;
     }
 
+	/* Gets the node from the broker, i.e. fom the underlying file system
+     * Call this method <string>only</strong> <hen necessary
+	 * @see org.exist.xquery.value.NodeValue#getNode()
+	 */
 	public Node getNode() {
 		if (isDocument())
 			return doc;
@@ -695,19 +703,31 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
             return false;
         return true;
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see org.exist.dom.NodeSet#addAll(org.exist.dom.NodeSet)
 	 */
 	public void addAll(NodeSet other) {
         throw new RuntimeException("Method not supported");
 	}
+	
+	public boolean isEmpty() {
+		return false;
+	}
 
+	public boolean hasOne() {
+		return true;
+	}
+
+	public boolean hasMany() {
+		return false;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.exist.dom.NodeSet#add(org.exist.dom.NodeProxy)
 	 */
 	public void add(NodeProxy proxy) {
-        throw new RuntimeException("Method not supported");
+		throw new RuntimeException("Method not supported");
 	}
 
 	/* (non-Javadoc)
@@ -840,7 +860,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
         if(document.getDocId() == doc.getDocId())
             return 1;
         else
-            return 0;
+            return Constants.NO_SIZE_HINT;
     }
     
     /* (non-Javadoc)
@@ -987,6 +1007,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
     public NodeSet directSelectAttribute(QName qname, int contextId) {
         if (nodeType != UNKNOWN_NODE_TYPE && nodeType != Node.ELEMENT_NODE)
             return NodeSet.EMPTY_SET;
+        //TODO : maybe we could improve performance here
         NodeImpl node = (NodeImpl) getNode();
         if (node.getNodeType() != Node.ELEMENT_NODE)
             return NodeSet.EMPTY_SET;

@@ -56,6 +56,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	private boolean isCached = false;
 	
 	protected AbstractNodeSet() {
+		isEmpty = true;
 	}
 	
 	/**
@@ -449,7 +450,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 				if (parent == null || parent.getDocument().getDocId() != current.getDocument().getDocId() || 
 						!parent.getNodeId().equals(parentID)) {
                     parent = new NodeProxy(current.getDocument(), parentID, Node.ELEMENT_NODE,
-                            NodeProxy.UNKNOWN_NODE_ADDRESS);
+                            StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
 				}
 				if (Expression.NO_CONTEXT_ID != contextId)
 					parent.addContextNode(contextId, current);

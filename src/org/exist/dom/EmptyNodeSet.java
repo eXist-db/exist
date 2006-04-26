@@ -60,6 +60,14 @@ public final class EmptyNodeSet extends AbstractNodeSet {
     public boolean contains(DocumentImpl doc) {
 	return false;
     }
+    
+    public boolean isEmpty() {
+    	return true;
+    }
+    
+    public boolean hasOne() {
+    	return false;
+    }    
 
     public void add(DocumentImpl doc, long nodeId) {
     }

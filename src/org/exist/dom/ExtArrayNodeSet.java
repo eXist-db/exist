@@ -70,8 +70,11 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
     
     private boolean isSorted = false;
     
+    private boolean hasOne = false;
+    
     protected int lastDoc = -1;
     protected Part lastPart = null;
+    protected NodeProxy lastAdded = null;
     
     private int state = 0;
 
@@ -159,12 +162,31 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         ++partCount;
     }
     
+    public boolean isEmpty() {
+    	return (size == 0);
+    }
+    
+    public boolean hasOne() {
+    	return hasOne;
+    }   
+    
     public void add(NodeProxy proxy) {
+    	if (size > 0) {
+    		if (hasOne) {
+	    		if (isSorted)
+	    			hasOne = get(proxy) == null;
+	    		else
+	    			hasOne = lastAdded == null || lastAdded.compareTo(proxy) == 0;
+    		}
+    	} else
+    		hasOne = true;
         getPart(proxy.getDocument(), true, initalSize).add(proxy);
         ++size;
         isSorted = false;
         setHasChanged();
         checkItemType(proxy.getType());
+        
+        lastAdded = proxy;
     }
 
     /**
@@ -175,12 +197,23 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
      * If the size hint is correct, no further reallocations will be required.
      */
     public void add(NodeProxy proxy, int sizeHint) {
+    	if (size > 0) {
+    		if (hasOne) {
+	    		if (isSorted)
+	    			hasOne = get(proxy) == null;
+	    		else
+	    			hasOne = lastAdded == null || lastAdded.compareTo(proxy) == 0;
+    		}
+    	} else
+    		hasOne = true;
         getPart(proxy.getDocument(), true, sizeHint != Constants.NO_SIZE_HINT ? sizeHint : initalSize).add(
                 proxy);
         ++size;
         isSorted = false;
         setHasChanged();
         checkItemType(proxy.getType());
+
+        lastAdded = proxy;
     }
 
     private void checkItemType(int type) {
@@ -254,9 +287,9 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
      * @see org.exist.dom.NodeSet#addAll(org.exist.dom.NodeSet)
      */
     public void addAll(NodeSet other) {
-        if (other.getLength() == 0)
+        if (other.isEmpty())
             return;
-        if (other.getLength() == 1) {
+        if (other.hasOne()) {
             add((NodeProxy) other.itemAt(0));
         } else {
             for (Iterator i = other.iterator(); i.hasNext();) {

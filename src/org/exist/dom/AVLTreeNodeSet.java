@@ -68,6 +68,14 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
         Node n = searchData(p);
         return n == null ? null : n.getData();
     }
+	
+    public boolean isEmpty() {		
+		return (size == 0);
+    }
+    
+    public boolean hasOne() {
+    	return (size == 1);
+    }   
 
     /* (non-Javadoc)
       * @see org.exist.xquery.value.Sequence#itemAt(int)
@@ -82,43 +90,43 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
         return null;
     }
 
-    public final void add(NodeProxy proxy) {
-        if(proxy == null)
-            return;
-        if (root == null) {
-            root = new Node(proxy);
-            ++size;
-            return;
-        }
-        Node tempNode = root;
-        while (true) {
-            int c = tempNode.data.compareTo(proxy);
-            if (c == 0) {
-                return;
-            }
-            if (c > 0) { // inserts s into left subtree.
-                if (tempNode.hasLeftChild()) {
-                    tempNode = tempNode.leftChild;
-                    continue;
-                } else {
-                    Node newNode = tempNode.addLeft(proxy);
-                    balance(newNode);
-                    ++size;
-                    return;
-                }
-            } else { // inserts s to right subtree
-                if (tempNode.hasRightChild()) {
-                    tempNode = tempNode.rightChild;
-                    continue;
-                } else {
-                    Node newNode = tempNode.addRight(proxy);
-                    balance(newNode);
-                    ++size;
-                    return;
-                }
-            }
-        }
-    }
+	public final void add(NodeProxy proxy) {
+		if(proxy == null)
+			return;
+		if (root == null) {
+			root = new Node(proxy);
+			++size;
+			return;
+		}
+		Node tempNode = root;
+		while (true) {
+			int c = tempNode.data.compareTo(proxy);
+			if (c == 0) {
+				return;
+			}
+			if (c > 0) { // inserts s into left subtree.
+				if (tempNode.hasLeftChild()) {
+					tempNode = tempNode.leftChild;
+					continue;
+				} else {
+					Node newNode = tempNode.addLeft(proxy);
+					balance(newNode);
+					++size;
+					return;
+				}
+			} else { // inserts s to right subtree
+				if (tempNode.hasRightChild()) {
+					tempNode = tempNode.rightChild;
+					continue;
+				} else {
+					Node newNode = tempNode.addRight(proxy);
+					balance(newNode);
+					++size;
+					return;
+				}
+			}
+		}		
+	}
 
     public Node getMinNode() {
         if (root == null)

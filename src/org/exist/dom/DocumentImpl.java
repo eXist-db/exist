@@ -442,7 +442,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
     
 	public long getFirstChildAddress() {
 		if (children == 0)
-			return NodeProxy.UNKNOWN_NODE_ADDRESS;
+			return StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;
 		return childList[0];
 	}
     	
