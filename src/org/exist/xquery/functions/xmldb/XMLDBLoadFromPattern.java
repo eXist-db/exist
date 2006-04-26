@@ -114,6 +114,7 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
 			File[] files = DirectoryScanner.scanDir(baseDir, pattern);
 			for(int j = 0; j < files.length; j++) {
 				try {
+					//TODO: these probably need to be encoded
 					Resource resource =
 						collection.createResource(files[j].getName(), resourceType);
 					resource.setContent(files[j]);

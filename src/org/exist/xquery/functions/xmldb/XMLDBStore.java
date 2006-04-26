@@ -41,6 +41,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
@@ -117,6 +118,8 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 		String docName = args[1].isEmpty() ? null : args[1].getStringValue();
 		if(docName != null && docName.length() == 0)
 			docName = null;
+		else 
+			docName = new AnyURIValue(docName).toXmldbURI().toString();
 		
         String mimeType = "text/xml";
 		boolean binary = false;

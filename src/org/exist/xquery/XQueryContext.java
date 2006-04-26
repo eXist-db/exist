@@ -1347,6 +1347,7 @@ public class XQueryContext {
 				} catch(URISyntaxException ignoreMe) {
 					// No. Load from file or URL
                     try {
+                    	//TODO: use URIs to ensure proper resolution of relative locations
                         source = SourceFactory.getSource(moduleLoadPath, location, true);
                     } catch (MalformedURLException e) {
                         throw new XPathException("source location for module " + namespaceURI + " should be a valid URL: " +

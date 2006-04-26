@@ -55,6 +55,7 @@ public class XMLDBGetChildCollections extends XMLDBAbstractCollectionManipulator
 		super(context, signature);
 	}
 	
+	//TODO: decode names?
 	public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
 		throws XPathException {
 		ValueSequence result = new ValueSequence();

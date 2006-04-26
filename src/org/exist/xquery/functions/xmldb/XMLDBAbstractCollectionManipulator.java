@@ -34,6 +34,7 @@ import org.exist.xquery.BasicFunction;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.NodeValue;
@@ -56,8 +57,8 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
 	
 	protected LocalCollection createLocalCollection(String name) throws XMLDBException {
 		try {
-			return new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), XmldbURI.xmldbUriFor(name), context.getAccessContext());
-		} catch(URISyntaxException e) {
+			return new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), new AnyURIValue(name).toXmldbURI(), context.getAccessContext());
+		} catch(XPathException e) {
 			throw new XMLDBException(ErrorCodes.INVALID_URI,e);
 		}
 	}

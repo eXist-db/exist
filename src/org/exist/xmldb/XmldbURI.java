@@ -34,6 +34,7 @@ import org.exist.collections.CollectionConfigurationManager;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.Constants;
 import org.exist.xquery.util.URIUtils;
+import org.exist.xquery.value.AnyURIValue;
 
 /** A utility class for xmldb URis.
  * Since, java.net.URI is <strong>final</strong> this class acts as a wrapper.
@@ -87,7 +88,7 @@ public class XmldbURI implements Comparable {
 	}
 	
 	public static XmldbURI xmldbUriFor(String xmldbURI) throws URISyntaxException {
-		URI uri = new URI(xmldbURI);
+		URI uri = new URI(AnyURIValue.escape(xmldbURI));
 		if(isCollectionPathOnly(uri)) {
 			return new XmldbURI(uri);
 		}

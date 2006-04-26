@@ -38,6 +38,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -95,8 +96,8 @@ public class XMLDBCreateUser extends BasicFunction {
         if("".equals(args[3].getStringValue()))
             throw new XPathException(getASTNode(), "Empty user collection");
         try {
-        	userObj.setHome(XmldbURI.xmldbUriFor(args[3].getStringValue()));
-        } catch(URISyntaxException e) {
+        	userObj.setHome(new AnyURIValue(args[3].getStringValue()).toXmldbURI());
+        } catch(XPathException e) {
         	throw new XPathException(getASTNode(),"Invalid home collection URI",e);
         }
         Collection collection = null;

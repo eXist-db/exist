@@ -33,6 +33,7 @@ import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.session.SessionModule;
+import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
@@ -97,7 +98,7 @@ public class XMLDBAuthenticate extends BasicFunction {
 		String password = args[2].getStringValue();
 		
 		try {
-			Collection root = DatabaseManager.getCollection(uri, userName, password);
+			Collection root = DatabaseManager.getCollection(new AnyURIValue(uri).toXmldbURI().toString(), userName, password);
             if (isCalledAs("login")) {
                 UserManagementService ums = (UserManagementService) root.getService("UserManagementService", "1.0");
                 User user = ums.getUser(userName);

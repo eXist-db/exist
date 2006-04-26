@@ -33,6 +33,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -74,7 +75,7 @@ public class XMLDBSetResourcePermissions extends XMLDBAbstractCollectionManipula
 		throws XPathException {
 
         try {
-            Resource res = collection.getResource(args[1].getStringValue());
+            Resource res = collection.getResource(new AnyURIValue(args[1].getStringValue()).toXmldbURI().toString());
             if (res != null) {
                 UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
                 String user = args[2].getStringValue();

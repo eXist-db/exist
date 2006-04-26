@@ -118,9 +118,17 @@ public class AnyURIValue extends AtomicValue {
 		this.uri = s;
 	}
 
-	//TODO: TEST TEST TEST!
-	// basically copied from URLEncoder.encode
-	protected static String escape(String uri) {
+	/**
+	 * This function accepts a String representation of an xs:anyURI and applies
+	 * the escaping method described in Section 5.4 of XML Linking ({@link http://www.w3.org/TR/2000/PR-xlink-20001220/#link-locators})
+	 * to turn it into a valid URI
+	 * 
+	 * @param uri The xs:anyURI to escape into a valid URI
+	 * @return An escaped string representation of the provided xs:anyURI
+	 */
+	 public static String escape(String uri) {
+			//TODO: TEST TEST TEST!
+			// basically copied from URLEncoder.encode
 		try {
 			boolean needToChange = false;
 			boolean wroteUnencodedChar = false; 
