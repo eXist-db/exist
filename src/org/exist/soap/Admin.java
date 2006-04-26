@@ -7,6 +7,8 @@
 
 package org.exist.soap;
 
+import java.rmi.RemoteException;
+
 public interface Admin extends java.rmi.Remote {
 	/**
 	 * Store a new document into the database. The document will be stored using

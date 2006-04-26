@@ -41,7 +41,6 @@ import org.apache.xmlrpc.XmlRpcException;
 import org.exist.security.Permission;
 import org.exist.util.Compressor;
 import org.exist.validation.service.RemoteValidationService;
-import org.exist.xquery.Constants;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;

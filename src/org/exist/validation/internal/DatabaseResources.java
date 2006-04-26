@@ -58,10 +58,6 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xmldb.api.base.ErrorCodes;
-import org.xmldb.api.base.XMLDBException;
-
-
 
 /**
  *  Helper class for accessing grammars.

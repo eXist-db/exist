@@ -27,9 +27,9 @@ import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.Compressor;
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.util.serializer.SAXSerializer;
-import org.exist.xquery.Constants;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
+import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
@@ -43,7 +43,6 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
-import org.w3c.dom.DocumentType;
 
 public class RemoteXMLResource implements XMLResource, EXistResource {
 	

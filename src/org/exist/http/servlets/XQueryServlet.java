@@ -38,11 +38,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.xml.transform.OutputKeys;
 
-import org.apache.cocoon.ProcessingException;
 import org.exist.http.Descriptor;
 import org.exist.source.FileSource;
 import org.exist.source.Source;
-import org.exist.storage.DBBroker;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.XQueryService;
 import org.exist.xmldb.XmldbURI;

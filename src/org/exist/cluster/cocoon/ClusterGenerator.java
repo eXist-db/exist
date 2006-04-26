@@ -1,18 +1,17 @@
 //$Id$
 package org.exist.cluster.cocoon;
 
-import org.apache.cocoon.ProcessingException;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Vector;
+
 import org.apache.cocoon.generation.AbstractGenerator;
 import org.exist.cluster.ClusterComunication;
 import org.exist.storage.report.XMLStatistics;
+import org.jgroups.Address;
+import org.jgroups.stack.IpAddress;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
-import org.jgroups.stack.IpAddress;
-import org.jgroups.Address;
-
-import java.io.IOException;
-import java.util.Vector;
-import java.util.HashMap;
 
 /**
  * A Cocoon Generator which generates status information about running database instances,

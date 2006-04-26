@@ -23,8 +23,7 @@
 package org.exist.webstart;
 
 import java.io.File;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
 import org.apache.log4j.Logger;
 import org.exist.start.LatestFileResolver;
 

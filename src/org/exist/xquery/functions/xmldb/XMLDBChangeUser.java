@@ -26,7 +26,6 @@ import java.net.URISyntaxException;
 
 import org.exist.dom.QName;
 import org.exist.security.User;
-import org.exist.validation.internal.ResourceInputStream;
 import org.exist.xmldb.LocalCollection;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XmldbURI;
@@ -40,7 +39,6 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 
 /**

@@ -37,7 +37,6 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.Constants;
 
 
 /**

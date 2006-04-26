@@ -21,8 +21,6 @@
  */
 package org.exist.xquery.functions;
 
-import java.io.UnsupportedEncodingException;
-
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;

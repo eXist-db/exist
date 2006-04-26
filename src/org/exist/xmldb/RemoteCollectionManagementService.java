@@ -1,5 +1,6 @@
 
 package org.exist.xmldb;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Date;
@@ -7,7 +8,6 @@ import java.util.Vector;
 
 import org.apache.xmlrpc.XmlRpcClient;
 import org.apache.xmlrpc.XmlRpcException;
-import org.exist.storage.DBBroker;
 import org.w3c.dom.Document;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
