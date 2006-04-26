@@ -810,9 +810,15 @@ public class XPathQueryTest extends XMLTestCase {
             	"return $doc/a[$doc/a/@b or $doc/a/@d]";
             result = queryResource(service, "numbers.xml", query, 1);
             assertXMLEqual("<a b=\"c\" d=\"e\"/>", result.getResource(0)
-            .getContent().toString());     
+            .getContent().toString());
+            
+            //Boolean evaluation for "." (atomic sequence)
+            query = "(1,2,3)[xs:decimal(.)]";
+            result = queryResource(service, "numbers.xml", query, 3);
+  
 
         } catch (XMLDBException e) {
+        	e.printStackTrace();
             fail(e.getMessage());
         }
     }    
