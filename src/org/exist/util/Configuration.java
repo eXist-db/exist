@@ -144,7 +144,7 @@ public class Configuration implements ErrorHandler {
             
             
             // Create resolver
-            LOG.debug("Creating CatalogResolver");
+            LOG.debug("Creating eXist catalog resolver");
             System.setProperty("xml.catalog.verbosity", "10");
             eXistCatalogResolver resolver = new eXistCatalogResolver(true);
             config.put("resolver", resolver);
@@ -291,6 +291,7 @@ public class Configuration implements ErrorHandler {
                     throw new DatabaseConfigurationException("element 'module' requires an attribute 'class'");
                 moduleList[i][0] = uri;
                 moduleList[i][1] = clazz;
+                LOG.debug("Configured module '" + uri + "' implemented in '" + clazz + "'");
             }
             config.put("xquery.modules", moduleList);
         }
@@ -341,20 +342,24 @@ public class Configuration implements ErrorHandler {
      */
     private void configureXUpdate(NodeList xupdates) throws NumberFormatException {
         Element xupdate = (Element) xupdates.item(0);
+        
         String growth = xupdate.getAttribute("growth-factor");
         if (growth != null) {
             config.put("xupdate.growth-factor", new Integer(growth));
+            LOG.debug("xupdate.growth-factor: " + config.get("xupdate.growth-factor"));
         }
-        String fragmentation = xupdate
-                .getAttribute("allowed-fragmentation");
-        if (fragmentation != null)
-            config.put("xupdate.fragmentation", new Integer(
-                    fragmentation));
-        String consistencyCheck = xupdate
-                .getAttribute("enable-consistency-checks");
-        if (consistencyCheck != null)
-            config.put("xupdate.consistency-checks", Boolean
-                    .valueOf(consistencyCheck.equals("yes")));
+        
+        String fragmentation = xupdate.getAttribute("allowed-fragmentation");
+        if (fragmentation != null) {
+        	config.put("xupdate.fragmentation", new Integer(fragmentation));
+        	LOG.debug("xupdate.fragmentation: " + config.get("xupdate.fragmentation"));
+        }
+        
+        String consistencyCheck = xupdate.getAttribute("enable-consistency-checks");
+        if (consistencyCheck != null) {
+            config.put("xupdate.consistency-checks", Boolean.valueOf(consistencyCheck.equals("yes")));
+            LOG.debug("xupdate.consistency-checks: " + config.get("xupdate.consistency-checks"));
+        }
     }
     
     /**
@@ -362,28 +367,42 @@ public class Configuration implements ErrorHandler {
      */
     private void configureSerializer(NodeList serializers) {
         Element serializer = (Element) serializers.item(0);
+        
         String xinclude = serializer.getAttribute("enable-xinclude");
-        if (xinclude != null)
+        if (xinclude != null) {
             config.put("serialization.enable-xinclude", xinclude);
+            LOG.debug("serialization.enable-xinclude: " + config.get("serialization.enable-xinclude"));
+        }
+        
         String xsl = serializer.getAttribute("enable-xsl");
-        if (xsl != null)
+        if (xsl != null) {
             config.put("serialization.enable-xsl", xsl);
+            LOG.debug("serialization.enable-xsl: " + config.get("serialization.enable-xsl"));
+        }
+        
         String indent = serializer.getAttribute("indent");
-        if (indent != null)
+        if (indent != null) {
             config.put("serialization.indent", indent);
+            LOG.debug("serialization.indent: " + config.get("serialization.indent"));
+        }
+        
         String internalId = serializer.getAttribute("add-exist-id");
-        if (internalId != null)
+        if (internalId != null) {
             config.put("serialization.add-exist-id", internalId);
-        String tagElementMatches = serializer
-                .getAttribute("match-tagging-elements");
-        if (tagElementMatches != null)
-            config.put("serialization.match-tagging-elements",
-                    tagElementMatches);
-        String tagAttributeMatches = serializer
-                .getAttribute("match-tagging-attributes");
-        if (tagAttributeMatches != null)
-            config.put("serialization.match-tagging-attributes",
-                    tagAttributeMatches);
+            LOG.debug("serialization.add-exist-id: " + config.get("serialization.add-exist-id"));
+        }
+        
+        String tagElementMatches = serializer.getAttribute("match-tagging-elements");
+        if (tagElementMatches != null) {
+            config.put("serialization.match-tagging-elements", tagElementMatches);
+            LOG.debug("serialization.match-tagging-elements: " + config.get("serialization.match-tagging-elements"));
+        }
+        
+        String tagAttributeMatches = serializer.getAttribute("match-tagging-attributes");
+        if (tagAttributeMatches != null) {
+            config.put("serialization.match-tagging-attributes", tagAttributeMatches);
+            LOG.debug("serialization.match-tagging-attributes: " + config.get("serialization.match-tagging-attributes"));
+        }
     }
     
     /**
@@ -406,7 +425,7 @@ public class Configuration implements ErrorHandler {
             config.put("database", mysql);
         // directory for database files
         if (dataFiles != null) {
-        		File df = lookup(dataFiles, dbHome);
+        	File df = lookup(dataFiles, dbHome);
             if (!df.canRead())
                 throw new DatabaseConfigurationException(
                         "cannot read data directory: "
@@ -419,46 +438,46 @@ public class Configuration implements ErrorHandler {
             if (cacheMem.endsWith("M") || cacheMem.endsWith("m"))
                 cacheMem = cacheMem.substring(0, cacheMem.length() - 1);
             try {
-                config.put("db-connection.cache-size", new Integer(
-                        cacheMem));
+                config.put("db-connection.cache-size", new Integer(cacheMem));                
             } catch (NumberFormatException nfe) {
+            	LOG.warn(nfe);
             }
         }
         if (buffers != null)
             try {
-                config.put("db-connection.buffers",
-                        new Integer(buffers));
+                config.put("db-connection.buffers", new Integer(buffers));
             } catch (NumberFormatException nfe) {
+            	LOG.warn(nfe);
             }
         if (pageSize != null)
             try {
-                config.put("db-connection.page-size", new Integer(
-                        pageSize));
+                config.put("db-connection.page-size", new Integer(pageSize));
             } catch (NumberFormatException nfe) {
+            	LOG.warn(nfe);
             }
         if (collBuffers != null)
             try {
-                config.put("db-connection.collections.buffers",
-                        new Integer(collBuffers));
+                config.put("db-connection.collections.buffers", new Integer(collBuffers));
             } catch (NumberFormatException nfe) {
+            	LOG.warn(nfe);
             }
         if (wordBuffers != null)
             try {
-                config.put("db-connection.words.buffers", new Integer(
-                        wordBuffers));
+                config.put("db-connection.words.buffers", new Integer(wordBuffers));
             } catch (NumberFormatException nfe) {
+            	LOG.warn(nfe);
             }
         if (elementBuffers != null)
             try {
-                config.put("db-connection.elements.buffers",
-                        new Integer(elementBuffers));
+                config.put("db-connection.elements.buffers", new Integer(elementBuffers));
             } catch (NumberFormatException nfe) {
+            	LOG.warn(nfe);
             }
         if (freeMem != null)
             try {
-                config.put("db-connection.min_free_memory",
-                        new Integer(freeMem));
+                config.put("db-connection.min_free_memory", new Integer(freeMem));
             } catch (NumberFormatException nfe) {
+            	LOG.warn(nfe);
             }
         NodeList securityConf = con.getElementsByTagName("security");
         String securityManagerClassName = "org.exist.security.XMLSecurityManager";
@@ -522,6 +541,7 @@ public class Configuration implements ErrorHandler {
             value = option.equals("yes");
         }
         setProperty("db-connection.recovery.enabled", new Boolean(value));
+        LOG.debug("db-connection.recovery.enabled: " + config.get("db-connection.recovery.enabled"));
         
         option = recovery.getAttribute("sync-on-commit");
         value = true;
@@ -529,6 +549,7 @@ public class Configuration implements ErrorHandler {
             value = option.equals("yes");
         }
         setProperty("db-connection.recovery.sync-on-commit", new Boolean(value));
+        LOG.debug("db-connection.recovery.sync-on-commit: " + config.get("db-connection.recovery.sync-on-commit"));
         
         option = recovery.getAttribute("group-commit");
         value = false;
@@ -536,10 +557,13 @@ public class Configuration implements ErrorHandler {
             value = option.equals("yes");
         }
         setProperty("db-connection.recovery.group-commit", new Boolean(value));
+        LOG.debug("db-connection.recovery.group-commit: " + config.get("db-connection.recovery.group-commit"));
         
         option = recovery.getAttribute("journal-dir");
-        if (option != null)
+        if (option != null) {
             setProperty("db-connection.recovery.journal-dir", option);
+            LOG.debug("db-connection.recovery.journal-dir: " + config.get("db-connection.recovery.journal-dir"));
+        }
         
         option = recovery.getAttribute("size");
         if (option != null) {
@@ -548,6 +572,7 @@ public class Configuration implements ErrorHandler {
             try {
                 Integer size = new Integer(option);
                 setProperty("db-connection.recovery.size-limit", size);
+                LOG.debug("db-connection.recovery.size-limit: " + config.get("db-connection.recovery.size-limit"));
             } catch (NumberFormatException e) {
                 throw new DatabaseConfigurationException("size attribute in recovery section needs to be a number");
             }
@@ -619,22 +644,22 @@ public class Configuration implements ErrorHandler {
      */
     private void configureWatchdog(NodeList watchConf) {
         Element watchDog = (Element) watchConf.item(0);
+
         String timeout = watchDog.getAttribute("query-timeout");
-        String maxOutput = watchDog
-                .getAttribute("output-size-limit");
         if (timeout != null) {
             try {
-                config.put("db-connection.watchdog.query-timeout",
-                        new Long(timeout));
+                config.put("db-connection.watchdog.query-timeout", new Long(timeout));
             } catch (NumberFormatException e) {
+            	LOG.warn(e);
             }
         }
+        
+        String maxOutput = watchDog.getAttribute("output-size-limit");
         if (maxOutput != null) {
             try {
-                config.put(
-                        "db-connection.watchdog.output-size-limit",
-                        new Integer(maxOutput));
+                config.put("db-connection.watchdog.output-size-limit", new Integer(maxOutput));
             } catch (NumberFormatException e) {
+            	LOG.warn(e);
             }
         }
     }
@@ -644,39 +669,42 @@ public class Configuration implements ErrorHandler {
      */
     private void configureXQueryPool(NodeList queryPoolConf) {
         Element queryPool = (Element) queryPoolConf.item(0);
-        String maxStackSize = queryPool
-                .getAttribute("max-stack-size");
-        String maxPoolSize = queryPool.getAttribute("size");
-        String timeout = queryPool.getAttribute("timeout");
-        String timeoutCheckInterval = queryPool
-                .getAttribute("timeout-check-interval");
-        if (maxStackSize != null)
+
+        String maxStackSize = queryPool.getAttribute("max-stack-size");
+        if (maxStackSize != null) {
             try {
-                config.put(
-                        "db-connection.query-pool.max-stack-size",
-                        new Integer(maxStackSize));
+                config.put("db-connection.query-pool.max-stack-size", new Integer(maxStackSize));
             } catch (NumberFormatException e) {
+            	LOG.warn(e);
             }
+        }
+    
+        String maxPoolSize = queryPool.getAttribute("size");
         if (maxPoolSize != null) {
         	try {
         		config.put("db-connection.query-pool.size", new Integer(maxPoolSize));
         	} catch (NumberFormatException e) {
+        		LOG.warn(e);
         	}
         }
-        if (timeout != null)
+
+        String timeout = queryPool.getAttribute("timeout");
+        if (timeout != null) {
             try {
-                config.put("db-connection.query-pool.timeout",
-                        new Long(timeout));
+                config.put("db-connection.query-pool.timeout", new Long(timeout));
             } catch (NumberFormatException e) {
+            	LOG.warn(e);
             }
-        if (timeoutCheckInterval != null)
+        }
+
+        String timeoutCheckInterval = queryPool.getAttribute("timeout-check-interval");           
+        if (timeoutCheckInterval != null) {
             try {
-                config
-                        .put(
-                        "db-connection.query-pool.timeout-check-interval",
-                        new Long(timeoutCheckInterval));
+                config.put("db-connection.query-pool.timeout-check-interval", new Long(timeoutCheckInterval));
             } catch (NumberFormatException e) {
+            	LOG.warn(e);
             }
+        }
     }
     
     /**
