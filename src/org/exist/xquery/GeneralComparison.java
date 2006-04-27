@@ -598,6 +598,7 @@ public class GeneralComparison extends BinaryOp {
             boolean backwardsCompatible, int truncation, int relation) throws XPathException{
 		int ltype = lv.getType();
 		int rtype = rv.getType();
+		/*
 		if (ltype == Type.ITEM || ltype == Type.ATOMIC || ltype == Type.UNTYPED_ATOMIC) {
 			if (Type.subTypeOf(rtype, Type.NUMBER)) {
 			    if(isEmptyString(lv))
@@ -619,8 +620,9 @@ public class GeneralComparison extends BinaryOp {
 			} else
 				rv = rv.convertTo(lv.getType());
 		}
-		if (!"".equals(lv.getStringValue()) && !"".equals(rv.getStringValue())) {
-			if (backwardsCompatible) {
+		*/
+		if (backwardsCompatible) {
+			if (!"".equals(lv.getStringValue()) && !"".equals(rv.getStringValue())) {
 				// in XPath 1.0 compatible mode, if one of the operands is a number, cast
 				// both operands to xs:double
 				if (Type.subTypeOf(ltype, Type.NUMBER)
