@@ -97,4 +97,16 @@ public class ValueOccurrences {
 			return Constants.INFERIOR;
 		}
 	}
+	
+	public String toString() {
+		StringBuffer buf = new StringBuffer();
+		try {
+			buf.append("Value: '" + value.getStringValue() +"'");
+		} catch (XPathException e) {
+			buf.append("Value: '" + e.getMessage() +"'");
+		}
+		buf.append(" occurences: '" + occurrences +"'");
+		buf.append(" documents: '" + docs.getLength() +"'");
+		return buf.toString();
+	}
 }
