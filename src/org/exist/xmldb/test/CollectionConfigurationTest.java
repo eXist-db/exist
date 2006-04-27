@@ -3,7 +3,6 @@ package org.exist.xmldb.test;
 import junit.framework.TestCase;
 
 import org.exist.collections.CollectionConfiguration;
-import org.exist.collections.CollectionConfigurationManager;
 import org.exist.storage.DBBroker;
 import org.exist.test.TestConstants;
 import org.exist.xmldb.DatabaseInstanceManager;
@@ -49,6 +48,8 @@ public class CollectionConfigurationTest extends TestCase {
             + "  <index>"
             + "    <create qname=\"a\" type=\"xs:integer\"/>"
             + "    <create qname=\"b\" type=\"xs:string\"/>"
+            + "    <create path=\"//a\" type=\"xs:integer\"/>"
+            + "    <create path=\"//b\" type=\"xs:string\"/>"
             + "  </index>"
             + "</collection>";
 
@@ -116,14 +117,22 @@ public class CollectionConfigurationTest extends TestCase {
      
              XPathQueryService service = (XPathQueryService)
              testCollection.getService("XPathQueryService", "1.0");
-    
+                 
              //3 numeric values 
+             result = service.query("util:index-key-occurences(/test/a, 1)"); 
+             assertEquals("3", result.getResource(0).getContent()); 
+             //... but 1 string value 
+             result = service.query("util:index-key-occurences(/test/b, \"1\")"); 
+             assertEquals("1", result.getResource(0).getContent());             
+         
+         	//3 numeric values 
              result = service.query("util:qname-index-lookup(xs:QName(\"a\"), 1 ) "); 
              assertEquals(3, result.getSize()); 
              //... but 1 string value 
              result = service.query("util:qname-index-lookup(xs:QName(\"b\"), \"1\" ) "); 
              assertEquals(1, result.getSize()); }
          catch(Exception e) { 
+        	 e.printStackTrace();
              fail(e.getMessage());             
          }
     }
@@ -147,14 +156,28 @@ public class CollectionConfigurationTest extends TestCase {
                     .getService("XPathQueryService", "1.0");
 
             // No numeric values because we have no index
+            result = service.query("util:index-key-occurences( /test/a, 1 ) ");
+            assertEquals(0, result.getSize());
+            // No string value because we have no index
+            result = service.query("util:index-key-occurences( /test/b, \"1\" ) ");
+            assertEquals(0, result.getSize());
+
+            // No numeric values because we have no index
             result = service.query("util:qname-index-lookup( xs:QName(\"a\"), 1 ) ");
             assertEquals(0, result.getSize());
             // No string value because we have no index
             result = service.query("util:qname-index-lookup( xs:QName(\"b\"), \"1\" ) ");
             assertEquals(0, result.getSize());
-
+            
             // ...let's activate the index
             idxConf.reindexCollection();            
+
+            //3 numeric values 
+            result = service.query("util:index-key-occurences(/test/a, 1)"); 
+            assertEquals("3", result.getResource(0).getContent()); 
+            //... but 1 string value 
+            result = service.query("util:index-key-occurences(/test/b, \"1\")"); 
+            assertEquals("1", result.getResource(0).getContent());             
 
             // 3 numeric values
             result = service.query("util:qname-index-lookup( xs:QName(\"a\"), 1 ) ");
@@ -164,6 +187,7 @@ public class CollectionConfigurationTest extends TestCase {
             assertEquals(1, result.getSize());
 
         } catch (Exception e) {
+        	e.printStackTrace();
             fail(e.getMessage());
         }
     }
@@ -182,6 +206,13 @@ public class CollectionConfigurationTest extends TestCase {
             XPathQueryService service = (XPathQueryService)
             testCollection.getService("XPathQueryService", "1.0");
    
+            //3 numeric values 
+            result = service.query("util:index-key-occurences(/test/a, 1)"); 
+            assertEquals("3", result.getResource(0).getContent()); 
+            //... but 1 string value 
+            result = service.query("util:index-key-occurences(/test/b, \"1\")"); 
+            assertEquals("1", result.getResource(0).getContent());             
+
             //3 numeric values 
             result = service.query("util:qname-index-lookup(xs:QName(\"a\"), 1 ) "); 
             assertEquals(3, result.getSize()); 
@@ -210,6 +241,13 @@ public class CollectionConfigurationTest extends TestCase {
                    .getService("XPathQueryService", "1.0");
 
            // No numeric values because we have no index
+           result = service.query("util:index-key-occurences( /test/a, 1 ) ");
+           assertEquals(0, result.getSize());
+           // No string value because we have no index
+           result = service.query("util:index-key-occurences( /test/b, \"1\" ) ");
+           assertEquals(0, result.getSize());
+
+           // No numeric values because we have no index
            result = service.query("util:qname-index-lookup( xs:QName(\"a\"), 1 ) ");
            assertEquals(0, result.getSize());
            // No string value because we have no index
@@ -220,6 +258,13 @@ public class CollectionConfigurationTest extends TestCase {
            IndexQueryService idxConf = (IndexQueryService) 
                testCollection.getService("IndexQueryService", "1.0");
            idxConf.reindexCollection();            
+
+           //3 numeric values 
+           result = service.query("util:index-key-occurences(/test/a, 1)"); 
+           assertEquals("3", result.getResource(0).getContent()); 
+           //... but 1 string value 
+           result = service.query("util:index-key-occurences(/test/b, \"1\")"); 
+           assertEquals("1", result.getResource(0).getContent());             
 
            // 3 numeric values
            result = service.query("util:qname-index-lookup( xs:QName(\"a\"), 1 ) ");
@@ -260,6 +305,13 @@ public class CollectionConfigurationTest extends TestCase {
                    "')");  
            assertEquals(configurationFileName.toString(), result.getResource(0).getContent());           
            
+           //3 numeric values 
+           result = service.query("util:index-key-occurences(/test/a, 1)"); 
+           assertEquals("3", result.getResource(0).getContent()); 
+           //... but 1 string value 
+           result = service.query("util:index-key-occurences(/test/b, \"1\")"); 
+           assertEquals("1", result.getResource(0).getContent());             
+
            // 3 numeric values
            result = service.query("util:qname-index-lookup( xs:QName(\"a\"), 1 ) ");
            assertEquals(3, result.getSize());
@@ -300,6 +352,13 @@ public class CollectionConfigurationTest extends TestCase {
            assertEquals(configurationFileName.toString(), result.getResource(0).getContent());
 
            // No numeric values because we have no index
+           result = service.query("util:index-key-occurences( /test/a, 1 ) ");
+           assertEquals(0, result.getSize());
+           // No string value because we have no index
+           result = service.query("util:index-key-occurences( /test/b, \"1\" ) ");
+           assertEquals(0, result.getSize());
+
+           // No numeric values because we have no index
            result = service.query("util:qname-index-lookup( xs:QName(\"a\"), 1 ) ");
            assertEquals(0, result.getSize());
            // No string value because we have no index
@@ -314,6 +373,13 @@ public class CollectionConfigurationTest extends TestCase {
            //Adding confMgr.invalidateAll(getName()); in Collection.storeInternal solved the problem
            //Strange case that needs investigations... -pb
            
+           //3 numeric values 
+           result = service.query("util:index-key-occurences(/test/a, 1)"); 
+           assertEquals("3", result.getResource(0).getContent()); 
+           //... but 1 string value 
+           result = service.query("util:index-key-occurences(/test/b, \"1\")"); 
+           assertEquals("1", result.getResource(0).getContent());             
+
            // 3 numeric values
            result = service.query("util:qname-index-lookup( xs:QName(\"a\"), 1 ) ");
            assertEquals(3, result.getSize());
