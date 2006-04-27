@@ -41,18 +41,32 @@ public class CollectionConfigurationTest extends TestCase {
 	private static final XmldbURI TEST_CONFIG_NAME_2 = XmldbURI.create(TestConstants.SPECIAL_NAME.toString()+".xconf");
 
     private final static String DOCUMENT_CONTENT = "<test>" + "<a>001</a>"
-            + "<a>01</a>" + "<a>1</a>" + "<b>001</b>" + "<b>01</b>"
-            + "<b>1</b>" + "</test>";
+    + "<a>01</a>" + "<a>1</a>" + "<b>001</b>" + "<b>01</b>"
+    + "<b>1</b>" + "</test>";
 
+    private final static String DOCUMENT_CONTENT2 = "<test>" + "<c>2002-12-07T12:20:46.275+01:00</c>"
+    + "<d>1</d>" + "<e>1</e>" + "<f>true</f>"
+    + "</test>";
+
+    
     private String CONFIG1 = "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">"
-            + "  <index>"
-            + "    <create qname=\"a\" type=\"xs:integer\"/>"
-            + "    <create qname=\"b\" type=\"xs:string\"/>"
-            + "    <create path=\"//a\" type=\"xs:integer\"/>"
-            + "    <create path=\"//b\" type=\"xs:string\"/>"
-            + "  </index>"
-            + "</collection>";
+        + "  <index>"
+        + "    <create qname=\"a\" type=\"xs:integer\"/>"
+        + "    <create qname=\"b\" type=\"xs:string\"/>"
+        + "    <create path=\"//a\" type=\"xs:integer\"/>"
+        + "    <create path=\"//b\" type=\"xs:string\"/>"
+        + "  </index>"
+        + "</collection>";
 
+    private String CONFIG2 = "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">"
+        + "  <index>"
+        + "    <create path=\"//c\" type=\"xs:dateTime\"/>"
+        + "    <create path=\"//d\" type=\"xs:double\"/>"
+        + "    <create path=\"//e\" type=\"xs:float\"/>"
+        + "    <create path=\"//f\" type=\"xs:boolean\"/>"        
+        + "  </index>"
+        + "</collection>";
+    
     private Collection testCollection;
 
     protected void setUp() {
@@ -102,40 +116,40 @@ public class CollectionConfigurationTest extends TestCase {
     }
 
 
-     public void testCollectionConfigurationService1() { 
-         ResourceSet result; 
-         try {
-             //Configure collection automatically
-             IndexQueryService idxConf = (IndexQueryService)
-             testCollection.getService("IndexQueryService", "1.0");
-             idxConf.configureCollection(CONFIG1);
- 
-             //... then index document 
-             XMLResource doc = (XMLResource)
-             testCollection.createResource(TestConstants.TEST_XML_URI.toString(), "XMLResource" );
-             doc.setContent(DOCUMENT_CONTENT); testCollection.storeResource(doc);
-     
-             XPathQueryService service = (XPathQueryService)
-             testCollection.getService("XPathQueryService", "1.0");
-                 
-             //3 numeric values 
-             result = service.query("util:index-key-occurrences(/test/a, 1)"); 
-             assertEquals("3", result.getResource(0).getContent()); 
-             //... but 1 string value 
-             result = service.query("util:index-key-occurrences(/test/b, \"1\")"); 
-             assertEquals("1", result.getResource(0).getContent());             
-         
-         	//3 numeric values 
-             result = service.query("util:qname-index-lookup(xs:QName(\"a\"), 1 ) "); 
-             assertEquals(3, result.getSize()); 
-             //... but 1 string value 
-             result = service.query("util:qname-index-lookup(xs:QName(\"b\"), \"1\" ) "); 
-             assertEquals(1, result.getSize()); }
-         catch(Exception e) { 
-        	 e.printStackTrace();
-             fail(e.getMessage());             
-         }
-    }
+    public void testCollectionConfigurationService1() { 
+        ResourceSet result; 
+        try {
+            //Configure collection automatically
+            IndexQueryService idxConf = (IndexQueryService)
+            testCollection.getService("IndexQueryService", "1.0");
+            idxConf.configureCollection(CONFIG1);
+
+            //... then index document 
+            XMLResource doc = (XMLResource)
+            testCollection.createResource(TestConstants.TEST_XML_URI.toString(), "XMLResource" );
+            doc.setContent(DOCUMENT_CONTENT); testCollection.storeResource(doc);
+    
+            XPathQueryService service = (XPathQueryService)
+            testCollection.getService("XPathQueryService", "1.0");
+                
+            //3 numeric values 
+            result = service.query("util:index-key-occurrences(/test/a, 1)"); 
+            assertEquals("3", result.getResource(0).getContent()); 
+            //... but 1 string value 
+            result = service.query("util:index-key-occurrences(/test/b, \"1\")"); 
+            assertEquals("1", result.getResource(0).getContent());             
+        
+        	//3 numeric values 
+            result = service.query("util:qname-index-lookup(xs:QName(\"a\"), 1 ) "); 
+            assertEquals(3, result.getSize()); 
+            //... but 1 string value 
+            result = service.query("util:qname-index-lookup(xs:QName(\"b\"), \"1\" ) "); 
+            assertEquals(1, result.getSize()); }
+        catch(Exception e) { 
+       	 e.printStackTrace();
+            fail(e.getMessage());             
+        }
+   }
      
 
     public void testCollectionConfigurationService2() {
@@ -393,6 +407,41 @@ public class CollectionConfigurationTest extends TestCase {
        }
    } 
    
+   public void testRangeIndex1() { 
+       ResourceSet result; 
+       try {
+           //Configure collection automatically
+           IndexQueryService idxConf = (IndexQueryService)
+           testCollection.getService("IndexQueryService", "1.0");
+           idxConf.configureCollection(CONFIG2);
+
+           //... then index document 
+           XMLResource doc = (XMLResource)
+           testCollection.createResource(TestConstants.TEST_XML_URI.toString(), "XMLResource" );
+           doc.setContent(DOCUMENT_CONTENT2); 
+           testCollection.storeResource(doc);
+   
+           XPathQueryService service = (XPathQueryService)
+           testCollection.getService("XPathQueryService", "1.0");
+               
+           result = service.query("util:index-key-occurrences(/test/c, xs:dateTime(\"2002-12-07T12:20:46.275+01:00\") )");
+           assertEquals(1, result.getSize());
+           assertEquals("1", result.getResource(0).getContent());             
+           result = service.query("util:index-key-occurrences(/test/d, xs:double(1) )");
+           assertEquals(1, result.getSize());
+           assertEquals("1", result.getResource(0).getContent());             
+           result = service.query("util:index-key-occurrences(/test/e, xs:float(1) )");
+           assertEquals(1, result.getSize());
+           assertEquals("1", result.getResource(0).getContent());             
+           result = service.query("util:index-key-occurrences(/test/f, true() )");
+           assertEquals(1, result.getSize());
+           assertEquals("1", result.getResource(0).getContent());             
+       
+       } catch(Exception e) { 
+      	 	e.printStackTrace();
+           fail(e.getMessage());             
+       }
+  }
 
    public void testMultipleConfigurations00() {     	  
        checkStoreConf(CONF_COLL_URI, TEST_CONFIG_NAME_1, CONF_COLL_URI, TEST_CONFIG_NAME_1, true);
