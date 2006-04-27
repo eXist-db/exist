@@ -42,11 +42,11 @@ import org.exist.xquery.value.Type;
 /**
  * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
  */
-public class IndexKeyOccurences extends BasicFunction {
+public class IndexKeyOccurrences extends BasicFunction {
 
 	public final static FunctionSignature signature = new FunctionSignature(
-			new QName("index-key-occurences", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-			"Return the number of occurences for an indexed value. " +
+			new QName("index-key-occurrences", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+			"Return the number of occurrences for an indexed value. " +
             "The first argument specifies the nodes whose content is indexed. " +
             "The second argument specifies the value. ",
 			new SequenceType[] {
@@ -54,7 +54,7 @@ public class IndexKeyOccurences extends BasicFunction {
 					new SequenceType(Type.ATOMIC, Cardinality.EXACTLY_ONE) },
 			new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE));
 
-	public IndexKeyOccurences(XQueryContext context) {
+	public IndexKeyOccurrences(XQueryContext context) {
 		super(context, signature);
 	}
     
