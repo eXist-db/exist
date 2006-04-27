@@ -183,10 +183,31 @@ public class UntypedAtomicValue extends AtomicValue {
 				: other;
 	}
 	
-	public boolean effectiveBooleanValue() throws XPathException {
-		return value.length() > 0;
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.value.AtomicValue#startsWith(org.exist.xquery.value.AtomicValue)
+	 */
+	public boolean startsWith(Collator collator, AtomicValue other) throws XPathException {
+		return Collations.startsWith(collator, value, other.getStringValue());
 	}
 	
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.value.AtomicValue#endsWith(org.exist.xquery.value.AtomicValue)
+	 */
+	public boolean endsWith(Collator collator, AtomicValue other) throws XPathException {
+		return Collations.endsWith(collator, value, other.getStringValue());
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.value.AtomicValue#contains(org.exist.xquery.value.AtomicValue)
+	 */
+	public boolean contains(Collator collator, AtomicValue other) throws XPathException {
+		return Collations.indexOf(collator, value, other.getStringValue()) != Constants.STRING_NOT_FOUND;
+	}	
+	
+	public boolean effectiveBooleanValue() throws XPathException {
+		return value.length() > 0;
+	}	
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Item#conversionPreference(java.lang.Class)
