@@ -78,7 +78,7 @@ public class RedirectTo extends BasicFunction {
 			try {
 				((ResponseWrapper) value.getObject()).sendRedirect(redirectURI);
 			} catch (IOException e) {
-				throw new XPathException("IO exception occurred during redirect: " + e.getMessage(), e);
+				throw new XPathException("An IO exception occurred during redirect: " + e.getMessage(), e);
 			}
 		else
 			throw new XPathException("Variable response is not bound to a response object.");
