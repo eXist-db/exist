@@ -1790,8 +1790,10 @@ public class DOMFile extends BTree implements Lockable {
 		case Node.ELEMENT_NODE:
 			final int children = ByteConversion.byteToInt(data, readOffset);
             readOffset += 4;
+            int dlnLen = ByteConversion.byteToShort(data, readOffset);
+            readOffset += 2;
             readOffset +=
-                doc.getBroker().getBrokerPool().getNodeFactory().lengthInBytes(data[readOffset++], data, readOffset);
+                doc.getBroker().getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, data, readOffset);
             final short attributes = ByteConversion.byteToShort(data, readOffset);
 			final boolean extraWhitespace = addWhitespace
 					&& children - attributes > 1;
@@ -1803,10 +1805,12 @@ public class DOMFile extends BTree implements Lockable {
 			}
 			return;
 		case Node.TEXT_NODE:
+            dlnLen = ByteConversion.byteToShort(data, readOffset);
+            readOffset += 2;
             int nodeIdLen =
-                doc.getBroker().getBrokerPool().getNodeFactory().lengthInBytes(data[readOffset++], data, readOffset);
+                doc.getBroker().getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, data, readOffset);
             readOffset += nodeIdLen;
-            os.write(data, readOffset, len - nodeIdLen - 2);
+            os.write(data, readOffset, len - nodeIdLen - 3);
 			break;
 		case Node.ATTRIBUTE_NODE:
 			// use attribute value if the context node is an attribute, i.e.
@@ -1815,8 +1819,10 @@ public class DOMFile extends BTree implements Lockable {
                 int start = readOffset - 1;
                 final byte idSizeType = (byte) (data[start] & 0x3);
 				final boolean hasNamespace = (data[start] & 0x10) == 0x10;
+                dlnLen = ByteConversion.byteToShort(data, readOffset);
+                readOffset += 2;
                 nodeIdLen  =
-                    doc.getBroker().getBrokerPool().getNodeFactory().lengthInBytes(data[readOffset++], data, readOffset);
+                    doc.getBroker().getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, data, readOffset);
                 readOffset += nodeIdLen + Signatures.getLength(idSizeType);
 
                 if (hasNamespace) {

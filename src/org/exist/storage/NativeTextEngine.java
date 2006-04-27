@@ -672,11 +672,12 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     collect(words, domIterator);
                 break;
             case Node.TEXT_NODE :
+                int dlnLen = ByteConversion.byteToShort(data, 1);
             	int nodeIdLen = 
-            		broker.getBrokerPool().getNodeFactory().lengthInBytes(data[1], data, 2);
+            		broker.getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, data, 3);
                 String s;
                 try {
-                    s = new String(data, nodeIdLen + 2, data.length - nodeIdLen - 2, "UTF-8");
+                    s = new String(data, nodeIdLen + 3, data.length - nodeIdLen - 3, "UTF-8");
                     tokenizer.setText(s);
                     TextToken token;
                     while (null != (token = tokenizer.nextToken())) {
@@ -694,9 +695,10 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             case Node.ATTRIBUTE_NODE :
                 byte idSizeType = (byte) (data[0] & 0x3);
                 boolean hasNamespace = (data[0] & 0x10) == 0x10;
+                dlnLen = ByteConversion.byteToShort(data, 1);
                 nodeIdLen  =
-                    broker.getBrokerPool().getNodeFactory().lengthInBytes(data[1], data, 2);
-                int readOffset = Signatures.getLength(idSizeType) + nodeIdLen + 2;
+                    broker.getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, data, 3);
+                int readOffset = Signatures.getLength(idSizeType) + nodeIdLen + 3;
                 if (hasNamespace) {
 					readOffset += 2; // skip namespace id
 					final short prefixLen = ByteConversion.byteToShort(data, readOffset);

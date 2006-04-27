@@ -24,6 +24,7 @@ package org.exist.dom;
 
 import org.exist.storage.Signatures;
 import org.exist.util.ByteArrayPool;
+import org.exist.util.ByteConversion;
 import org.exist.util.UTF8;
 import org.exist.numbering.NodeId;
 import org.w3c.dom.DOMException;
@@ -62,11 +63,12 @@ public class TextImpl extends CharacterDataImpl implements Text {
             text = (TextImpl)NodeObjectPool.getInstance().borrowNode(TextImpl.class);
         else
             text = new TextImpl();
+        int dlnLen = ByteConversion.byteToShort(data, start + 1);
         NodeId dln =
-                doc.getBroker().getBrokerPool().getNodeFactory().createFromData(data[start + 1], data, start +2);
+                doc.getBroker().getBrokerPool().getNodeFactory().createFromData(dlnLen, data, start + 3);
         text.setNodeId(dln);
         int nodeIdLen = dln.size();
-        text.cdata = UTF8.decode(data, start + nodeIdLen + 2, len - nodeIdLen - 2);
+        text.cdata = UTF8.decode(data, start + nodeIdLen + 3, len - nodeIdLen - 3);
         return text;
     }
 
@@ -100,11 +102,11 @@ public class TextImpl extends CharacterDataImpl implements Text {
 
     public byte[] serialize() {
         final int nodeIdLen = nodeId.size();
-        byte[] data = ByteArrayPool.getByteArray(cdata.UTF8Size() + nodeIdLen + 2);
+        byte[] data = ByteArrayPool.getByteArray(cdata.UTF8Size() + nodeIdLen + 3);
         data[0] = (byte) ( Signatures.Char << 0x5 );
-        data[1] = (byte) nodeId.units();
-        nodeId.serialize(data, 2);
-        cdata.UTF8Encode(data, nodeIdLen + 2);
+        ByteConversion.shortToByte((short) nodeId.units(), data, 1);
+        nodeId.serialize(data, 3);
+        cdata.UTF8Encode(data, nodeIdLen + 3);
         return data;
     }
 

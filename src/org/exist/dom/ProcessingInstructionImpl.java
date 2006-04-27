@@ -108,10 +108,11 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
             dd = data.getBytes();
         }
         int nodeIdLen = nodeId.size();
-        byte[] d = new byte[td.length + dd.length + nodeIdLen + 6];
+        byte[] d = new byte[td.length + dd.length + nodeIdLen + 7];
         int pos = 0;
         d[pos++] = (byte) ( Signatures.Proc << 0x5 );
-        d[pos++] = (byte) nodeId.units();
+        ByteConversion.shortToByte((short) nodeId.units(), d, pos);
+        pos += 2;
         nodeId.serialize(d, pos);
         pos += nodeIdLen;
         ByteConversion.intToByte( td.length, d, pos);
@@ -123,20 +124,21 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
     }
 
     public static StoredNode deserialize( byte[] data, int start, int len, DocumentImpl doc, boolean pooled ) {
+        int dlnLen = ByteConversion.byteToShort(data, start + 1);
         NodeId dln =
-                doc.getBroker().getBrokerPool().getNodeFactory().createFromData(data[start + 1], data, start + 2);
+                doc.getBroker().getBrokerPool().getNodeFactory().createFromData(dlnLen, data, start + 3);
         int nodeIdLen = dln.size();
 
-        int l = ByteConversion.byteToInt( data, start + 2 + nodeIdLen);
+        int l = ByteConversion.byteToInt( data, start + 3 + nodeIdLen);
 
         String target;
         String cdata;
         try {
-            target = new String( data, start + 6 + nodeIdLen, l, "UTF-8" );
-            cdata = new String( data, start + 6 + nodeIdLen + l, len - 6 - l - nodeIdLen, "UTF-8" );
+            target = new String( data, start + 7 + nodeIdLen, l, "UTF-8" );
+            cdata = new String( data, start + 7 + nodeIdLen + l, len - 7 - l - nodeIdLen, "UTF-8" );
         } catch ( UnsupportedEncodingException uee ) {
-            target = new String( data, start + 6 + nodeIdLen, l );
-            cdata = new String( data, start + 6 + nodeIdLen + l, len - 6 - l - nodeIdLen);
+            target = new String( data, start + 7 + nodeIdLen, l );
+            cdata = new String( data, start + 7 + nodeIdLen + l, len - 7 - l - nodeIdLen);
         }
         ProcessingInstructionImpl pi;
         if(pooled)

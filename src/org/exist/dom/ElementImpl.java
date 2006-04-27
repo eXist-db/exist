@@ -170,11 +170,8 @@ public class ElementImpl extends NamedNode implements Element {
                 signature |= 0x10;
             }
             final int nodeIdLen = nodeId.size();
-            if (nodeId.toString().equals("1.1/0/0/6"))
-                System.out.println("STORING 1.1/0/0/6: " + nodeIdLen + "; units: " + nodeId.units() +
-                        "; " + ((DLN)nodeId).toBitString());
             byte[] data =
-                    ByteArrayPool.getByteArray(7
+                    ByteArrayPool.getByteArray(8
                     + Signatures.getLength(idSizeType)
                     + (hasNamespace ? prefixLen + 4 : 0)
                     + (prefixData != null ? prefixData.length : 0)
@@ -183,7 +180,8 @@ public class ElementImpl extends NamedNode implements Element {
             data[next++] = signature;
             ByteConversion.intToByte(children, data, next);
             next += 4;
-            data[next++] = (byte) nodeId.units();
+            ByteConversion.shortToByte((short) nodeId.units(), data, next);
+            next += 2;
             nodeId.serialize(data, next);
             next += nodeIdLen;
 
@@ -219,12 +217,11 @@ public class ElementImpl extends NamedNode implements Element {
         boolean hasNamespace = (data[start++] & 0x10) == 0x10;
         int children = ByteConversion.byteToInt(data, start);
         start += 4;
+        int dlnLen = ByteConversion.byteToShort(data, start);
+        start += 2;
         NodeId dln =
-                doc.getBroker().getBrokerPool().getNodeFactory().createFromData(data[start++], data, start);
+                doc.getBroker().getBrokerPool().getNodeFactory().createFromData(dlnLen, data, start);
         start += dln.size();
-        if (dln.toString().equals("1.1/0/0/6"))
-            System.out.println("READING 1.1/0/0/6: " + data[start - 1] + "; reported: " + dln.size() +
-                    "; units: " + dln.units() + "; " + ((DLN)dln).toBitString());
         short attributes = ByteConversion.byteToShort(data, start);
         start += 2;
 

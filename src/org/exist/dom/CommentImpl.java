@@ -3,6 +3,7 @@ package org.exist.dom;
 import java.io.UnsupportedEncodingException;
 
 import org.exist.storage.Signatures;
+import org.exist.util.ByteConversion;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.StringValue;
 import org.exist.numbering.NodeId;
@@ -45,11 +46,11 @@ public class CommentImpl extends CharacterDataImpl implements Comment {
             cd = s.getBytes();
         }
         int nodeIdLen = nodeId.size();
-        byte[] data = new byte[cd.length + nodeIdLen + 2];
+        byte[] data = new byte[cd.length + nodeIdLen + 3];
         data[0] = (byte) ( Signatures.Comm << 0x5 );
-        data[1] = (byte) nodeId.units();
-        nodeId.serialize(data, 2);
-        System.arraycopy( cd, 0, data, 2 + nodeIdLen, cd.length );
+        ByteConversion.shortToByte((short) nodeId.units(), data, 1);
+        nodeId.serialize(data, 3);
+        System.arraycopy( cd, 0, data, 3 + nodeIdLen, cd.length );
         return data;
     }
 
@@ -58,15 +59,16 @@ public class CommentImpl extends CharacterDataImpl implements Comment {
                                        int len,
                                        DocumentImpl doc,
                                        boolean pooled) {
+        int dlnLen = ByteConversion.byteToShort(data, start + 1);
         NodeId dln =
-                doc.getBroker().getBrokerPool().getNodeFactory().createFromData(data[start + 1], data, start +2);
+                doc.getBroker().getBrokerPool().getNodeFactory().createFromData(dlnLen, data, start + 3);
         int nodeIdLen = dln.size();
 
         String cdata;
         try {
-            cdata = new String( data, start + nodeIdLen + 2, len - nodeIdLen - 2, "UTF-8" );
+            cdata = new String( data, start + nodeIdLen + 3, len - nodeIdLen - 3, "UTF-8" );
         } catch ( UnsupportedEncodingException uee ) {
-            cdata = new String( data, start + 1, len - 1 );
+            cdata = new String( data, start + nodeIdLen + 3, len - nodeIdLen - 3 );
         }
         CommentImpl comment;
         if(pooled)

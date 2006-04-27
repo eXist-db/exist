@@ -76,11 +76,12 @@ public class AttrImpl extends NamedNode implements Attr {
             prefixLen = nodeName.getPrefix() != null && nodeName.getPrefix().length() > 0 ?
                 UTF8.encoded(nodeName.getPrefix()) : 0;
         }
-        final int nodeIdLen = getNodeId().size();
+        final int nodeIdLen = nodeId.size();
         final byte[] data = ByteArrayPool.getByteArray(UTF8.encoded(value) +
                 Signatures.getLength( idSizeType ) +
                 nodeIdLen +
-                (nodeName.needsNamespaceDecl() ? prefixLen + 4 : 0) + 2);
+                (nodeName.needsNamespaceDecl() ? prefixLen + 4 : 0) + 
+                3);
         int pos = 0;
         data[pos] = (byte) ( Signatures.Attr << 0x5 );
         data[pos] |= idSizeType;
@@ -89,8 +90,9 @@ public class AttrImpl extends NamedNode implements Attr {
             data[pos] |= 0x10;
         pos++;
         
-        data[pos++] = (byte) nodeId.units();
-        getNodeId().serialize(data, pos);
+        ByteConversion.shortToByte((short) nodeId.units(), data, pos);
+        pos += 2;
+        nodeId.serialize(data, pos);
         pos += nodeIdLen;
         
         Signatures.write( idSizeType, id, data, pos );
@@ -113,10 +115,11 @@ public class AttrImpl extends NamedNode implements Attr {
         int next = start;
         byte idSizeType = (byte) ( data[next] & 0x3 );
 		boolean hasNamespace = (data[next] & 0x10) == 0x10;
-        int attrType = (int)( ( data[next++] & 0x4 ) >> 0x2);
-        
+        int attrType = ( data[next++] & 0x4 ) >> 0x2;
+        int dlnLen = ByteConversion.byteToShort(data, next);
+        next += 2;
         NodeId dln =
-                doc.getBroker().getBrokerPool().getNodeFactory().createFromData(data[next++], data, next);
+                doc.getBroker().getBrokerPool().getNodeFactory().createFromData(dlnLen, data, next);
         next += dln.size();
 
         short id = (short) Signatures.read( idSizeType, data, next );
