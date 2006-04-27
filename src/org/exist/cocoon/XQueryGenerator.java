@@ -265,7 +265,7 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
 		if (p != Constants.STRING_NOT_FOUND) {
 			moduleLoadPathBuffer.delete(p, moduleLoadPathBuffer.length());  
 		}
-		final URI moduleLoadPath = new File(context.getRealPath(moduleLoadPathBuffer.toString())).toURI();
+		final String moduleLoadPath = context.getRealPath(moduleLoadPathBuffer.toString());
 		XmldbURI baseUri = collectionURI;
 		if(pathInfo!=null) {
 			baseUri = baseUri.append(request.getPathInfo());
@@ -299,7 +299,7 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
 					expandXIncludes ? "yes" : "no");
 			service.setProperty("base-uri", baseUri.toString());
 			//service.setNamespace(RequestModule.PREFIX, RequestModule.NAMESPACE_URI);
-			service.setModuleLoadPath(moduleLoadPath.toString());
+			service.setModuleLoadPath(moduleLoadPath);
 			if(!((CollectionImpl)collection).isRemoteCollection()) {
 				HttpServletRequest httpRequest = (HttpServletRequest) objectModel
 						.get(HttpEnvironment.HTTP_REQUEST_OBJECT);
