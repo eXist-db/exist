@@ -689,7 +689,7 @@
         <ant antfile="build/scripts/jarsigner.xml" dir="." target="jnlp-sign-exist"/>
 
         <echo message="!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"/>
-        <echo message="!! Please run &apos;build -f build-sign.xml&apos; "/>
+        <echo message="!! Please run &apos;build.bat -f build\scripts\jarsigner.xml&apos; "/>
         <echo message="!! at least once manually for enabling webstart !!"/>
         <echo message="!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"/>
         
