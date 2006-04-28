@@ -620,6 +620,7 @@ public class Configuration implements ErrorHandler {
                 try {
                     Integer perms = new Integer(Integer.parseInt(option, 8));
                     setProperty("indexer.permissions.collection", perms);
+                    LOG.debug("indexer.permissions.collection: " + config.get("indexer.permissions.collection"));
                 } catch (NumberFormatException e) {
                     throw new DatabaseConfigurationException("collection attribute in default-permissions section needs " +
                             "to be an octal number");
@@ -630,6 +631,7 @@ public class Configuration implements ErrorHandler {
                 try {
                     Integer perms = new Integer(Integer.parseInt(option, 8));
                     setProperty("indexer.permissions.resource", perms);
+                    LOG.debug("indexer.permissions.resource: " + config.get("indexer.permissions.resource"));
                 } catch (NumberFormatException e) {
                     throw new DatabaseConfigurationException("resource attribute in default-permissions section needs " +
                             "to be an octal number");
@@ -670,6 +672,7 @@ public class Configuration implements ErrorHandler {
             taskList[i] = sysTask;
         }
         config.put("db-connection.system-task-config", taskList);
+        LOG.debug("db-connection.system-task-config: " + config.get("db-connection.system-task-config"));
     }
     
     /**
@@ -682,6 +685,7 @@ public class Configuration implements ErrorHandler {
         if (timeout != null) {
             try {
                 config.put("db-connection.watchdog.query-timeout", new Long(timeout));
+                LOG.debug("db-connection.watchdog.query-timeout: " + config.get("db-connection.watchdog.query-timeout"));
             } catch (NumberFormatException e) {
             	LOG.warn(e);
             }
@@ -691,6 +695,7 @@ public class Configuration implements ErrorHandler {
         if (maxOutput != null) {
             try {
                 config.put("db-connection.watchdog.output-size-limit", new Integer(maxOutput));
+                LOG.debug("db-connection.watchdog.output-size-limit: " + config.get("db-connection.watchdog.output-size-limit"));
             } catch (NumberFormatException e) {
             	LOG.warn(e);
             }
@@ -707,6 +712,7 @@ public class Configuration implements ErrorHandler {
         if (maxStackSize != null) {
             try {
                 config.put("db-connection.query-pool.max-stack-size", new Integer(maxStackSize));
+                LOG.debug("db-connection.query-pool.max-stack-size: " + config.get("db-connection.query-pool.max-stack-size"));
             } catch (NumberFormatException e) {
             	LOG.warn(e);
             }
@@ -716,6 +722,7 @@ public class Configuration implements ErrorHandler {
         if (maxPoolSize != null) {
         	try {
         		config.put("db-connection.query-pool.size", new Integer(maxPoolSize));
+        		LOG.debug("db-connection.query-pool.size: " + config.get("db-connection.query-pool.size"));
         	} catch (NumberFormatException e) {
         		LOG.warn(e);
         	}
@@ -725,6 +732,7 @@ public class Configuration implements ErrorHandler {
         if (timeout != null) {
             try {
                 config.put("db-connection.query-pool.timeout", new Long(timeout));
+                LOG.debug("db-connection.query-pool.timeout: " + config.get("db-connection.query-pool.timeout"));
             } catch (NumberFormatException e) {
             	LOG.warn(e);
             }
@@ -734,6 +742,7 @@ public class Configuration implements ErrorHandler {
         if (timeoutCheckInterval != null) {
             try {
                 config.put("db-connection.query-pool.timeout-check-interval", new Long(timeoutCheckInterval));
+                LOG.debug("db-connection.query-pool.timeout-check-interval: " + config.get("db-connection.query-pool.timeout-check-interval"));
             } catch (NumberFormatException e) {
             	LOG.warn(e);
             }
