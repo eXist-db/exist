@@ -419,73 +419,96 @@ public class Configuration implements ErrorHandler {
      */
     private void configureBackend(String dbHome, NodeList dbcon) throws DatabaseConfigurationException {
         Element con = (Element) dbcon.item(0);
-        String cacheMem = con.getAttribute("cacheSize");
-        String pageSize = con.getAttribute("pageSize");
-        String dataFiles = con.getAttribute("files");
-        String buffers = con.getAttribute("buffers");
-        String collBuffers = con.getAttribute("collection_buffers");
-        String wordBuffers = con.getAttribute("words_buffers");
-        String elementBuffers = con.getAttribute("elements_buffers");
-        String freeMem = con.getAttribute("free_mem_min");
+        
         String mysql = con.getAttribute("database");
-        if (mysql != null)
+        if (mysql != null) {
             config.put("database", mysql);
+            LOG.debug("database: " + config.get("database"));
+        }
+        
         // directory for database files
+        String dataFiles = con.getAttribute("files");
         if (dataFiles != null) {
         	File df = lookup(dataFiles, dbHome);
             if (!df.canRead())
                 throw new DatabaseConfigurationException(
                         "cannot read data directory: "
-                        + df.getAbsolutePath());
-            
+                        + df.getAbsolutePath());            
             config.put("db-connection.data-dir", df.getAbsolutePath());
             LOG.info("data directory = " + df.getAbsolutePath());
         }
+
+        String cacheMem = con.getAttribute("cacheSize");
         if (cacheMem != null) {
             if (cacheMem.endsWith("M") || cacheMem.endsWith("m"))
                 cacheMem = cacheMem.substring(0, cacheMem.length() - 1);
             try {
-                config.put("db-connection.cache-size", new Integer(cacheMem));                
+                config.put("db-connection.cache-size", new Integer(cacheMem));
+                LOG.debug("db-connection.cache-size: " + config.get("db-connection.cache-size") + "m");
             } catch (NumberFormatException nfe) {
             	LOG.warn(nfe);
             }
         }
-        if (buffers != null)
+        
+        String buffers = con.getAttribute("buffers");
+        if (buffers != null) {
             try {
                 config.put("db-connection.buffers", new Integer(buffers));
+                LOG.debug("db-connection.buffers: " + config.get("db-connection.buffers"));
             } catch (NumberFormatException nfe) {
             	LOG.warn(nfe);
             }
-        if (pageSize != null)
+        }
+
+        String pageSize = con.getAttribute("pageSize");
+        if (pageSize != null) {
             try {
                 config.put("db-connection.page-size", new Integer(pageSize));
+                LOG.debug("db-connection.page-size: " + config.get("db-connection.page-size"));
             } catch (NumberFormatException nfe) {
             	LOG.warn(nfe);
             }
-        if (collBuffers != null)
+        }  
+            
+        String collBuffers = con.getAttribute("collection_buffers");            
+        if (collBuffers != null) {
             try {
                 config.put("db-connection.collections.buffers", new Integer(collBuffers));
+                LOG.debug("db-connection.collections.buffers: " + config.get("db-connection.collections.buffers"));               
             } catch (NumberFormatException nfe) {
             	LOG.warn(nfe);
             }
+        }
+
+        String wordBuffers = con.getAttribute("words_buffers");
         if (wordBuffers != null)
-            try {
-                config.put("db-connection.words.buffers", new Integer(wordBuffers));
-            } catch (NumberFormatException nfe) {
-            	LOG.warn(nfe);
-            }
-        if (elementBuffers != null)
+        try {
+            config.put("db-connection.words.buffers", new Integer(wordBuffers));
+            LOG.debug("db-connection.words.buffers: " + config.get("db-connection.words.buffers"));
+        } catch (NumberFormatException nfe) {
+        	LOG.warn(nfe);
+        }
+
+        String elementBuffers = con.getAttribute("elements_buffers");
+        if (elementBuffers != null) {
             try {
                 config.put("db-connection.elements.buffers", new Integer(elementBuffers));
+                LOG.debug("db-connection.elements.buffers: " + config.get("db-connection.elements.buffers"));
             } catch (NumberFormatException nfe) {
             	LOG.warn(nfe);
             }
-        if (freeMem != null)
+        }
+
+        String freeMem = con.getAttribute("free_mem_min");
+        if (freeMem != null) {
             try {
                 config.put("db-connection.min_free_memory", new Integer(freeMem));
+                LOG.debug("db-connection.min_free_memory: " + config.get("db-connection.min_free_memory"));
             } catch (NumberFormatException nfe) {
             	LOG.warn(nfe);
             }
+        }
+        
         NodeList securityConf = con.getElementsByTagName("security");
         String securityManagerClassName = "org.exist.security.XMLSecurityManager";
         if (securityConf.getLength()>0) {
@@ -494,7 +517,7 @@ public class Configuration implements ErrorHandler {
            String encoding = security.getAttribute("password-encoding");
            config.put("db-connection.security.password-encoding",encoding);
            if (encoding!=null) {
-              LOG.info("Using password encoding "+encoding);
+        	   LOG.info("db-connection.security.password-encoding: " + config.get("db-connection.security.password-encoding"));
               User.setPasswordEncoding(encoding);
            } else {
               LOG.info("No password encoding set, defaulting.");
@@ -502,14 +525,16 @@ public class Configuration implements ErrorHandler {
            String realm = security.getAttribute("password-realm");
            config.put("db-connection.security.password-realm",realm);
            if (realm!=null) {
-              LOG.info("Using password realm "+realm);
+        	   LOG.info("db-connection.security.password-realm: " + config.get("db-connection.security.password-realm"));
               User.setPasswordRealm(realm);
            } else {
               LOG.info("No password realm set, defaulting.");
            }
         }
+        
         try {
-           config.put("db-connection.security.class",config.getClass().forName(securityManagerClassName));
+           config.put("db-connection.security.class",Class.forName(securityManagerClassName));
+           LOG.debug("db-connection.security.class: " + config.get("db-connection.security.class"));
         } catch (Throwable ex) {
            if (ex instanceof ClassNotFoundException) {
               throw new DatabaseConfigurationException("Cannot find security manager class "+securityManagerClassName);
@@ -517,6 +542,7 @@ public class Configuration implements ErrorHandler {
               throw new DatabaseConfigurationException("Cannot load security manager class "+securityManagerClassName+" due to "+ex.getMessage());
            }
         }
+        
         NodeList poolConf = con.getElementsByTagName("pool");
         if (poolConf.getLength() > 0) {
             configurePool(poolConf);
@@ -536,7 +562,7 @@ public class Configuration implements ErrorHandler {
         NodeList recovery = con.getElementsByTagName("recovery");
         if (recovery.getLength() > 0) {
             configureRecovery(recovery);
-        }
+        }        
         configurePermissions(con.getElementsByTagName("default-permissions"));
     }
     
@@ -579,7 +605,7 @@ public class Configuration implements ErrorHandler {
             try {
                 Integer size = new Integer(option);
                 setProperty("db-connection.recovery.size-limit", size);
-                LOG.debug("db-connection.recovery.size-limit: " + config.get("db-connection.recovery.size-limit"));
+                LOG.debug("db-connection.recovery.size-limit: " + config.get("db-connection.recovery.size-limit") + "m");
             } catch (NumberFormatException e) {
                 throw new DatabaseConfigurationException("size attribute in recovery section needs to be a number");
             }
