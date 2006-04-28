@@ -233,18 +233,22 @@ public class Configuration implements ErrorHandler {
         String protocol = cluster.getAttribute("protocol");
         if(protocol != null) {
             config.put("cluster.protocol", protocol);
+            LOG.debug("cluster.protocol: " + config.get("cluster.protocol"));
         }
         String user = cluster.getAttribute("dbaUser");
         if(user != null) {
             config.put("cluster.user", user);
+            LOG.debug("cluster.user: " + config.get("cluster.user"));
         }
         String pwd = cluster.getAttribute("dbaPassword");
         if(pwd != null) {
             config.put("cluster.pwd", pwd);
+            LOG.debug("cluster.pwd: " + config.get("cluster.pwd"));
         }
         String dir = cluster.getAttribute("journalDir");
         if(dir != null) {
             config.put("cluster.journalDir", dir);
+            LOG.debug("cluster.journalDir: " + config.get("cluster.journalDir"));
         }
         String excludedColl = cluster.getAttribute("exclude");
         ArrayList list = new ArrayList();
@@ -252,11 +256,13 @@ public class Configuration implements ErrorHandler {
             String[] excl = excludedColl.split(",");
             for(int i=0;i<excl.length;i++){
                 list.add(excl[i]);
+                
             }
         }
         if(!list.contains(NativeBroker.TEMP_COLLECTION))
             list.add(NativeBroker.TEMP_COLLECTION);
         config.put("cluster.exclude", list);
+        LOG.debug("cluster.exlude: " + config.get("cluster.exclude"));
         
         /*Cluster parameters for test*/
         String maxStore = cluster.getAttribute("journalMaxItem");
@@ -264,15 +270,14 @@ public class Configuration implements ErrorHandler {
             maxStore = "65000";
         }
         config.put("cluster.journal.maxStore", Integer.valueOf(maxStore));
+        LOG.debug("cluster.journal.maxStore: " + config.get("cluster.journal.maxStore"));
+        
         String shift = cluster.getAttribute("journalIndexShift");
         if(shift == null || shift.trim().length()==0 ) {
             shift = "100";
         }
         config.put("cluster.journal.shift", Integer.valueOf(shift));
-        
-        System.out.println("IN CONFIGURE");
-        System.out.println("cluster.journal.maxStore " + this.getProperty("cluster.journal.maxStore"));
-        System.out.println("cluster.journal.shift " + this.getProperty("cluster.journal.shift"));
+        LOG.debug("cluster.journal.shift: " + config.get("cluster.journal.shift"));        
     }
     
     private void configureXQuery(Element xquery) throws DatabaseConfigurationException {
@@ -312,9 +317,11 @@ public class Configuration implements ErrorHandler {
     private void configureXACML(Element xacml) {
     	String enable = xacml.getAttribute(XACMLConstants.ENABLE_XACML_ATTRIBUTE);
     	config.put(XACMLConstants.ENABLE_XACML_PROPERTY, parseBoolean(enable, false));
+    	LOG.debug(XACMLConstants.ENABLE_XACML_PROPERTY + ": " + config.get(XACMLConstants.ENABLE_XACML_PROPERTY));
     	
     	String loadDefaults = xacml.getAttribute(XACMLConstants.LOAD_DEFAULT_POLICIES_ATTRIBUTE);
     	config.put(XACMLConstants.LOAD_DEFAULT_POLICIES_PROPERTY, parseBoolean(loadDefaults, true));
+    	LOG.debug(XACMLConstants.LOAD_DEFAULT_POLICIES_PROPERTY + ": " + config.get(XACMLConstants.LOAD_DEFAULT_POLICIES_PROPERTY));
     }
     
     /**
@@ -346,7 +353,7 @@ public class Configuration implements ErrorHandler {
         String growth = xupdate.getAttribute("growth-factor");
         if (growth != null) {
             config.put("xupdate.growth-factor", new Integer(growth));
-            LOG.debug("xupdate.growth-factor: " + config.get("xupdate.growth-factor"));
+            LOG.debug("xupdate.growth-factor: " + config.get("xupdate.growth-factor"));    
         }
         
         String fragmentation = xupdate.getAttribute("allowed-fragmentation");
@@ -754,43 +761,66 @@ public class Configuration implements ErrorHandler {
     private void configureIndexer(String dbHome, Document doc, NodeList indexer) throws DatabaseConfigurationException, MalformedURLException {
         
         Element p = (Element) indexer.item(0);
+
         String parseNum = p.getAttribute("parseNumbers");
-        String indexDepth = p.getAttribute("index-depth");
+        if (parseNum != null) {
+            config.put("indexer.indexNumbers", Boolean.valueOf(parseNum.equals("yes")));
+            LOG.debug("indexer.indexNumbers: " + config.get("indexer.indexNumbers"));
+        }
+
         String stemming = p.getAttribute("stemming");
+        if (stemming != null) {
+            config.put("indexer.stem", Boolean.valueOf(stemming.equals("yes")));
+            LOG.debug("indexer.stem: " + config.get("indexer.stem"));
+        }
+
         String termFreq = p.getAttribute("track-term-freq");
-        String suppressWS = p.getAttribute("suppress-whitespace");
+        if (termFreq != null) {
+            config.put("indexer.store-term-freq", Boolean.valueOf(termFreq.equals("yes")));
+            LOG.debug("indexer.store-term-freq: " + config.get("indexer.store-term-freq"));
+        }
+
         String caseSensitive = p.getAttribute("caseSensitive");
-        String tokenizer = p.getAttribute("tokenizer");
-        String validation = p.getAttribute("validation");
-        String suppressWSmixed = p
-                .getAttribute("preserve-whitespace-mixed-content");
-        if (parseNum != null)
-            config.put("indexer.indexNumbers", Boolean.valueOf(parseNum
-                    .equals("yes")));
-        if (stemming != null)
-            config.put("indexer.stem", Boolean.valueOf(stemming
-                    .equals("yes")));
-        if (termFreq != null)
-            config.put("indexer.store-term-freq", Boolean
-                    .valueOf(termFreq.equals("yes")));
-        if (caseSensitive != null)
-            config.put("indexer.case-sensitive", Boolean
-                    .valueOf(caseSensitive.equals("yes")));
-        if (suppressWS != null)
+        if (caseSensitive != null) {
+            config.put("indexer.case-sensitive", Boolean.valueOf(caseSensitive.equals("yes")));
+            LOG.debug("indexer.case-sensitive: " + config.get("indexer.case-sensitive"));
+        }
+
+        String suppressWS = p.getAttribute("suppress-whitespace");
+        if (suppressWS != null) {
             config.put("indexer.suppress-whitespace", suppressWS);
-        if (validation != null)
+            LOG.debug("indexer.suppress-whitespace: " + config.get("indexer.suppress-whitespace"));
+        }
+
+        String validation = p.getAttribute("validation");         
+        if (validation != null) {
             config.put("indexer.validation", validation);
-        if (tokenizer != null)
+            LOG.debug("indexer.validation: " + config.get("indexer.validation"));
+        }
+        
+        String tokenizer = p.getAttribute("tokenizer");
+        if (tokenizer != null) {
             config.put("indexer.tokenizer", tokenizer);
-        if (indexDepth != null)
+            LOG.debug("indexer.tokenizer: " + config.get("indexer.tokenizer"));
+        }
+
+        String indexDepth = p.getAttribute("index-depth");
+        if (indexDepth != null) {
             try {
                 int depth = Integer.parseInt(indexDepth);
                 config.put("indexer.index-depth", new Integer(depth));
+                LOG.debug("indexer.index-depth: " + config.get("indexer.index-depth"));
             } catch (NumberFormatException e) {
+            	LOG.warn(e);
             }
-        if (suppressWSmixed != null)
-            config.put("indexer.preserve-whitespace-mixed-content",
-                    Boolean.valueOf(suppressWSmixed.equals("yes")));
+        }
+
+        String suppressWSmixed = p.getAttribute("preserve-whitespace-mixed-content");
+        if (suppressWSmixed != null) {
+            config.put("indexer.preserve-whitespace-mixed-content", Boolean.valueOf(suppressWSmixed.equals("yes")));
+            LOG.debug("indexer.preserve-whitespace-mixed-content: " + config.get("indexer.preserve-whitespace-mixed-content"));
+        }
+        
         // index settings
         NodeList cl = doc.getElementsByTagName("index");
         if (cl.getLength() > 0) {
@@ -798,15 +828,19 @@ public class Configuration implements ErrorHandler {
             IndexSpec spec = new IndexSpec(elem);
             config.put("indexer.config", spec);
         }
+        
         // stopwords
         NodeList stopwords = p.getElementsByTagName("stopwords");
         if (stopwords.getLength() > 0) {
-            String stopwordFile = ((Element) stopwords.item(0))
-            .getAttribute("file");
+            String stopwordFile = ((Element) stopwords.item(0)).getAttribute("file");
             File sf = lookup(stopwordFile, dbHome);
-            if (sf.canRead())
+            if (sf.canRead()) {
                 config.put("stopwords", stopwordFile);
+                LOG.debug("stopwords: " + config.get("stopwords"));
+            }
         }
+        
+        //TODO : what does the following code makes here ??? -pb
         
         eXistCatalogResolver resolver = (eXistCatalogResolver) config.get("resolver");
         NodeList entityResolver = p.getElementsByTagName("entity-resolver");
