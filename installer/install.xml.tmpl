@@ -71,19 +71,23 @@
             <fileset targetdir="$INSTALL_PATH/tools" dir="tools">
                 <include name="**/*.jar"/>
                 <include name="wrapper/**"/>
+                <include name="requestlog/**"/>
+                <include name="rulesets/**"/>
+                <include name="lib/**"/>
                 <include name="jetty/**"/>
                 <exclude name="jetty/logs/*"/>
+                <exclude name="ircbot/**"/>
             </fileset>
             <fileset targetdir="$INSTALL_PATH/webapp" dir="webapp">
                 <exclude name="**/*.dbx"/>
                 <exclude name="**/*.log*"/>
                 <exclude name="api/**"/>
+                <exclude name="xqts/**"/>
                 <exclude name="**/CVS/"/>
                 <exclude name="**/*~"/>
                 <exclude name="resources/*.jpg"/>
             </fileset>
-            <fileset targetdir="$INSTALL_PATH/webapp/WEB-INF"
-                dir="webapp/WEB-INF">
+            <fileset targetdir="$INSTALL_PATH/webapp/WEB-INF" dir="webapp/WEB-INF">
                 <include name="data/"/>
                 <include name="logs/"/>
                 <exclude name="**/*.dbx"/>
