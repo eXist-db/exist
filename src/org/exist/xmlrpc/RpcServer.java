@@ -1419,7 +1419,7 @@ public class RpcServer implements RpcAPI {
         RpcConnection con = null;
         try {
             con = pool.get();
-            return con.setUser(user, name, password, digestPassword,groups, home);
+            return con.setUser(user, name, password, digestPassword,groups, ("".equals(home) ? null : home));
         } catch (Exception e) {
             handleException(e);
             return false;
