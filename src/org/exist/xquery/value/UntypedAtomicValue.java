@@ -102,6 +102,8 @@ public class UntypedAtomicValue extends AtomicValue {
 			case Type.UNSIGNED_SHORT :
 			case Type.UNSIGNED_BYTE :
 				return new IntegerValue(value, requiredType);
+			case Type.BASE64_BINARY :
+				return new Base64Binary(value);
 			case Type.DATE_TIME :
 				return new DateTimeValue(value);
 			case Type.TIME :

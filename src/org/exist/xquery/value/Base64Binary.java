@@ -36,6 +36,14 @@ public class Base64Binary extends AtomicValue {
         this.data = data;
     }
 
+    public Base64Binary(String str) {
+    	try {
+			this.data = Base64.decode(str.getBytes("UTF-8"));
+		} catch (UnsupportedEncodingException e) {
+			this.data = Base64.decode(str.getBytes());
+		}
+    }
+    
     public int getType() {
         return Type.BASE64_BINARY;
     }
@@ -45,7 +53,11 @@ public class Base64Binary extends AtomicValue {
     }
     
     public String getStringValue() throws XPathException {
-        return new String(Base64.encode(data));
+        try {
+			return new String(Base64.encode(data), "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			return new String(Base64.encode(data));
+		}
     }
 
     public AtomicValue convertTo(int requiredType) throws XPathException {
