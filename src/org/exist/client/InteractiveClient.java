@@ -1653,7 +1653,7 @@ public class InteractiveClient {
                     verbose = true;
                     break;
                 case CommandlineOptions.LOCAL_OPT :
-                    props.setProperty("uri", "xmldb:exist://");
+                    props.setProperty("uri", XmldbURI.EMBEDDED_SERVER_URI.toString());
                     break;
                 case CommandlineOptions.USER_OPT :
                     props.setProperty("user", option.getArgument());
