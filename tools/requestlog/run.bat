@@ -1,3 +1,3 @@
 @echo off
 
-java org.exist.requestlog.RequestReplayer
+java -classpath classes org.exist.requestlog.RequestReplayer
