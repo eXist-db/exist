@@ -77,6 +77,8 @@ public class RequestReplayer extends JFrame {
 	private JLabel lblRequestCount = null;
 	private JTextField txtIterations = null;
 	private JTextField txtAlternateHost = null;
+	private JLabel lblWaitTimeRequest = null;
+	private JTextField txtWaitTimeRequest = null;
 	private JButton btnStart = null;
 	private JTextArea txtStatus = null;
 	
@@ -267,6 +269,25 @@ public class RequestReplayer extends JFrame {
 		panelReplayGrid.setConstraints(txtAlternateHost, c);
 		panelReplay.add(txtAlternateHost);
 		
+		//Wait Time Request Label
+		JLabel lblWaitTimeRequest = new JLabel("Delay between requests:");
+		c.gridx = 0;
+		c.gridy = 2;
+		c.anchor = GridBagConstraints.WEST;
+		c.fill = GridBagConstraints.NONE;
+		panelReplayGrid.setConstraints(lblWaitTimeRequest, c);
+		panelReplay.add(lblWaitTimeRequest);
+		
+		//Wait Time Request Field
+		txtWaitTimeRequest = new JTextField("200",6);
+		c.gridx = 1;
+		c.gridy = 2;
+		c.anchor = GridBagConstraints.WEST;
+		c.fill = GridBagConstraints.NONE;
+		panelReplayGrid.setConstraints(txtWaitTimeRequest, c);
+		panelReplay.add(txtWaitTimeRequest);
+		
+		
 		//Start Button
 		btnStart = new JButton("Start");
 		btnStart.setMnemonic('S');
@@ -421,6 +442,9 @@ public class RequestReplayer extends JFrame {
 		
 		//repeat as specified by the user in the iteration text field	
     	int iterations = new Integer(txtIterations.getText()).intValue();
+    	
+		//Wait time trought request	
+    	long WaitTime = new Long(txtWaitTimeRequest.getText()).longValue();
     	for(int i = 0; i < iterations; i++)
     	{	
     		try
@@ -516,7 +540,7 @@ public class RequestReplayer extends JFrame {
 									synchronized (this) {
 										// wait 200 milliseconds before sending next request
 										try {
-											wait(200);
+											wait(WaitTime);
 										} catch (InterruptedException e) {
 										}
 									}
