@@ -129,7 +129,7 @@ public class RequestReplayer extends JFrame {
 	{		
 		setupGUI();
 		
-		this.setSize(600, 400);
+		this.setSize(600, 430);
 		this.setVisible(true);
 	}
 	
