@@ -754,35 +754,46 @@ public class Configuration implements ErrorHandler {
      */
     private void configurePool(NodeList poolConf) {
         Element pool = (Element) poolConf.item(0);
+        
         String min = pool.getAttribute("min");
+        if (min != null) {
+            try {
+                config.put("db-connection.pool.min", new Integer(min));
+                LOG.debug("db-connection.pool.min: " + config.get("db-connection.pool.min"));
+            } catch (NumberFormatException e) {
+            	LOG.warn(e);
+            }
+        }
+
         String max = pool.getAttribute("max");
+        if (max != null) {
+	        try {
+	            config.put("db-connection.pool.max", new Integer(max));
+	            LOG.debug("db-connection.pool.max: " + config.get("db-connection.pool.max"));
+	        } catch (NumberFormatException e) {
+	        	LOG.warn(e);
+	        }
+        }
+        
         String sync = pool.getAttribute("sync-period");
-        String maxShutdownWait = pool
-                .getAttribute("wait-before-shutdown");
-        if (min != null)
+        if (sync != null) {
             try {
-                config.put("db-connection.pool.min", new Integer(
-                        min));
+                config.put("db-connection.pool.sync-period", new Long(sync));
+                LOG.debug("db-connection.pool.sync-period: " + config.get("db-connection.pool.sync-period"));
             } catch (NumberFormatException e) {
+            	LOG.warn(e);
             }
-        if (max != null)
+        }
+        
+        String maxShutdownWait = pool.getAttribute("wait-before-shutdown");
+        if (maxShutdownWait != null) {
             try {
-                config.put("db-connection.pool.max", new Integer(
-                        max));
+                config.put("wait-before-shutdown", new Long(maxShutdownWait));
+                LOG.debug("wait-before-shutdown: " + config.get("wait-before-shutdown"));
             } catch (NumberFormatException e) {
+            	LOG.warn(e);
             }
-        if (sync != null)
-            try {
-                config.put("db-connection.pool.sync-period",
-                        new Long(sync));
-            } catch (NumberFormatException e) {
-            }
-        if (maxShutdownWait != null)
-            try {
-                config.put("db-connection.pool.shutdown-wait",
-                        new Long(maxShutdownWait));
-            } catch (NumberFormatException e) {
-            }
+        }
     }
     
     /**
@@ -1012,23 +1023,34 @@ public class Configuration implements ErrorHandler {
 
         // try path argument
         if (path != null) {
-            existHome = new File(path);
-            if (existHome.isDirectory()) return existHome; 
+            existHome = new File(path);            
+            if (existHome.isDirectory()) {
+            	LOG.debug("Got eXist home from provided argument:" + existHome);
+            	return existHome; 
+            }
         }
         // try exist.home
         if (System.getProperty("exist.home") != null) {
             existHome = new File(resolvePath(System.getProperty("exist.home")));
-            if (existHome.isDirectory()) return existHome; 
+            if (existHome.isDirectory()) {
+            	LOG.debug("Got eXist home from system property 'exist.home': " + existHome);
+            	return existHome; 
+            }
         }
+        
         // try user.home
         existHome = new File(System.getProperty("user.home"));
         if (existHome.isDirectory() && new File(existHome, config).isFile()) {
-            return existHome;
+        	LOG.debug("Got eXist home from system property 'user.home': " + existHome);
+        	return existHome; 
         }
+        
+        
         // try user.dir
         existHome = new File(System.getProperty("user.dir"));
         if (existHome.isDirectory() && new File(existHome, config).isFile()) {
-            return existHome;
+        	LOG.debug("Got eXist home from system property 'user.dir': " + existHome);
+        	return existHome; 
         }
 
         existHome = null;
