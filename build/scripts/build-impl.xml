@@ -30,6 +30,7 @@
     <property name="build.docs" value="${build}/docs"/>
     <property name="build.docs.src" value="${build.docs}/source"/>
     <property name="build.docs.html" value="${build.docs}/html"/>
+    <property name="build.examples" value="${build}/examples"/>
     <property name="ant.home" value="."/>
     <property name="dist" value="./dist"/>
     <property name="webapp.dir" value="${dist}/webapp"/>
@@ -207,19 +208,19 @@
     <!-- Create samples                                                     -->
     <!-- ================================================================== -->
     <target depends="prepare" name="samples" description="Create samples">
-        <delete failonerror="false" dir="${build}/examples"/>
-        <mkdir dir="${build}/examples"/>
+        <delete failonerror="false" dir="${build.examples}"/>
+        <mkdir dir="${build.examples}"/>
         <echo message="Compiling samples with Java ${ant.java.version} from ${build.compiler.source} source to ${build.compiler.target} target, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
         <javac debug="${build.debug}"
             deprecation="${build.deprecation}"
-            destdir="${build}/examples" srcdir="${samples}"
+            destdir="${build.examples}" srcdir="${samples}"
             source="${build.compiler.source}" target="${build.compiler.target}"
             optimize="${build.optimize}" encoding="UTF-8">
             <classpath>
                 <path refid="classpath.core"/>
             </classpath>
         </javac>
-        <jar basedir="${build}/examples" compress="true" jarfile="examples.jar">
+        <jar basedir="${build.examples}" compress="true" jarfile="examples.jar">
             <include name="org/exist/examples/**"/>
         </jar>
     </target>
@@ -371,6 +372,7 @@
         <echo message="Cleaning"/>
         <echo message="-------------------------"/>
         <delete dir="${build.classes}"/>
+        <delete dir="${build.examples}"/>
         <delete dir="${dist.dir}"/>
         <delete quiet="true">
             <fileset dir="log" includes="*"/>
