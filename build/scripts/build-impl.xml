@@ -21,7 +21,7 @@
     <property name="lib.optional" value="./lib/optional"/>
     <property name="lib.endorsed" value="./lib/endorsed"/>
     <property name="lib.user" value="./lib/user"/>
-    <property name="lib.tools" value="./tools/ant/lib"/>
+    <!--  property name="lib.tools" value="./tools/ant/lib"/-->
     <property name="build" value="./build"/>
     <property name="build.src" value="${build}/src"/>
     <property name="build.scripts" value="${build}/scripts"/>
@@ -31,7 +31,7 @@
     <property name="build.docs.src" value="${build.docs}/source"/>
     <property name="build.docs.html" value="${build.docs}/html"/>
     <property name="build.examples" value="${build}/examples"/>
-    <property name="ant.home" value="."/>
+    <property name="ant.home" value="./tools/ant"/>
     <property name="dist" value="./dist"/>
     <property name="webapp.dir" value="${dist}/webapp"/>
     <property name="build.compiler" value="modern"/>
@@ -60,12 +60,15 @@
         <fileset dir="${lib.endorsed}">
             <include name="*.jar"/>
         </fileset>
-        <fileset dir="${lib.tools}">
-            <include name="*.jar"/>
-        </fileset>
         <fileset dir="${lib.user}">
             <include name="*.jar"/>
         </fileset>
+        
+        <!-- DIZZ Why must these be part of classpath ? -->
+        <fileset dir="${ant.home}/lib">
+            <include name="*.jar"/>
+        </fileset>
+        
         <pathelement path="exist.jar"/>
         <pathelement path="exist-optional.jar"/>
         <pathelement path="exist-modules.jar"/>

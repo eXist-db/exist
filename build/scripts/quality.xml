@@ -14,18 +14,18 @@ $Header$
     <!-- import default properties from file -->
     <property file="build.properties"/>
  
-	<!-- You must put tools/lib/jdepend-2.9.jar in the classpath,
-	sorry this an Ant problem. -->
-    <target name="jdepend" depends="compile,check-jars-present"
-    	description="jdepend" >
+	<!-- You must put tools/ant/lib/jdepend-2.9.jar in the classpath,
+	     sorry this an Ant problem. -->
+    <target name="jdepend" description="Run jdepend" depends="compile,check-jars-present">
     	<taskdef name="jdepend" loaderref="ant.classpath"
     		classname="org.apache.tools.ant.taskdefs.optional.jdepend.JDependTask" >		
     		<classpath>
-    	   		<pathelement path="tools/lib/jdepend-2.9.jar" />
+    	   		<pathelement path="tools/ant/lib/jdepend-2.9.jar" />
     		</classpath>
     	</taskdef>
     	
         <mkdir dir="test" />
+        
         <jdepend outputfile="test/jdepend.xml" format="xml" >
             <exclude name="java.*"/>
             <exclude name="javax.*"/>
@@ -33,9 +33,11 @@ $Header$
                 <pathelement location="${build.classes}" />
             </classespath>
         </jdepend>
+        
     </target>
 
 	<available file="tools/pmd-3.5.jar" property="jars-present" />
+    
     <target name="check-jars-present" unless="jars-present" >
     	<get src="http://jmvanel.free.fr/jars/jdepend-2.9.jar"
     		dest="tools/jdepend-2.9.jar" />
@@ -47,8 +49,7 @@ $Header$
     		dest="tools/jaxen-1.1-beta-7.jar" />
 	</target>
 	
-    <target name="pmd" description="PMD non severe :-)" 
-    	depends="check-jars-present" >
+    <target name="pmd" description="PMD non severe :-)" depends="check-jars-present" >
 
     	<taskdef name="pmd" classname="net.sourceforge.pmd.ant.PMDTask">
     		<classpath><fileset dir=".">
