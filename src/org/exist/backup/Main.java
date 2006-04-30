@@ -147,7 +147,8 @@ public class Main {
 					properties.setProperty("user", option.getArgument());
 					break;
 				case PASS_OPT :
-					optionPass = option.getArgument();
+					properties.setProperty("password", option.getArgument());
+					optionPass = option.getArgument();  //remove after change inside restore
 					break;
 				case DBA_PASS_OPT :
 					optionDbaPass = option.getArgument();
@@ -202,7 +203,7 @@ public class Main {
 						new CreateBackupDialog(
 							properties.getProperty("uri", "xmldb:exist://"),
 							properties.getProperty("user", "admin"),
-							optionPass,
+							properties.getProperty("password",""),
 							properties.getProperty("backup-dir", System.getProperty("user.home") +
 									File.separatorChar + "backup"));
 					if (JOptionPane
@@ -227,7 +228,7 @@ public class Main {
 					Backup backup =
 					new Backup(
 						properties.getProperty("user", "admin"),
-						optionPass,
+						properties.getProperty("password",""),
 						properties.getProperty("backup-dir", "backup"),
 						XmldbURI.xmldbUriFor(properties.getProperty("uri", "xmldb:exist://") + optionBackup));
 					backup.backup(guiMode, null);
