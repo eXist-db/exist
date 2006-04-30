@@ -21,7 +21,7 @@
     <property name="lib.optional" value="./lib/optional"/>
     <property name="lib.endorsed" value="./lib/endorsed"/>
     <property name="lib.user" value="./lib/user"/>
-    <property name="lib.tools" value="./tools/lib"/>
+    <property name="lib.tools" value="./tools/ant/lib"/>
     <property name="build" value="./build"/>
     <property name="build.src" value="${build}/src"/>
     <property name="build.scripts" value="${build}/scripts"/>
@@ -503,7 +503,7 @@
         <mkdir dir="${dist.dir}/lib/endorsed"/>
         <mkdir dir="${dist.dir}/lib/user"/>
         <mkdir dir="${dist.dir}/tools"/>
-        <mkdir dir="${dist.dir}/tools/lib"/>
+        <mkdir dir="${dist.dir}/tools/ant"/>
         <mkdir dir="${jetty.dir}/logs"/>
         <mkdir dir="${jetty.dir}/work"/>
         <mkdir dir="${dist.dir}/webapp"/>

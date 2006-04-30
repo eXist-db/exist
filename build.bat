@@ -11,7 +11,7 @@ if not "%EXIST_HOME%" == "" goto gotExistHome
 set EXIST_HOME=%CD%
 
 :gotExistHome
-set ANT_HOME=%EXIST_HOME%\tools
+set ANT_HOME=%EXIST_HOME%\tools\ant
 set _LIBJARS=%CLASSPATH%;%ANT_HOME%\lib\ant-launcher.jar;%ANT_HOME%\lib\junit.jar;%JAVA_HOME%\lib\tools.jar
 
 set JAVA_ENDORSED_DIRS=%EXIST_HOME%\lib\endorsed
