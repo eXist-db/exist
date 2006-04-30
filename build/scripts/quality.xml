@@ -93,7 +93,7 @@ $Header$
             <ruleset>junit</ruleset>
             <ruleset>strings</ruleset>  
     		
-            <formatter type="text" toFile="test/pmd/report.txt" linkPrefix="src" />-->
+            <formatter type="text" toFile="test/pmd/report.txt" linkPrefix="src" />
             <formatter type="html" toFile="test/pmd/report.html"/>
             <formatter type="xml"  toFile="test/pmd/report.xml" />
             
