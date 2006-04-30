@@ -5,12 +5,21 @@
 
 body{
 	font: 100% Arial, Helvetica, sans-serif;
-	background: #EEEEEE url(../images/logo.gif) center center no-repeat fixed;
+	background: #c2c2f9 url(../images/logo.png) center center no-repeat fixed;
 	margin: 15px;
 }
 
-#overlay {
-	background-image: url(../images/overlay.png);
+#overlay{
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 90;
+	width: 100%;
+	height: 500px;
+	background-color: #000;
+	filter:alpha(opacity=60);
+	-moz-opacity: 0.6;
+	opacity: 0.6;
 }
 
 * html #overlay{
@@ -26,11 +35,15 @@ a:link, a:visited {
 	text-decoration: none;
 }
 
+.irc {
+	position: relative;
+}
+
 .irc_main {
-	position: absolute;
+	position: relative;
 	left: 0;
 	top: 0;
-	width: 70%;
+	width: 73%;
 }
 
 .irc_userlist {
@@ -57,6 +70,15 @@ a:link, a:visited {
 	top: 48%;
 }
 
+.irc_actions {
+	margin: 8px 0 0 0;
+}
+
+.irc_actions button {
+	border: 1px solid #D6D6D6;
+	background-color: white;
+}
+
 .ircinput {
 	margin-top: 6px;
 }
@@ -72,15 +94,26 @@ a:link, a:visited {
 	width: 100%;
 }
 
+.irclog td {
+	vertical-align: top;
+	margin-bottom: 10px;
+	padding-right: 10px;
+	line-height: 1.66;
+}
+
 .irc_line {
-	position: relative;
+}
+
+.time {
+}
+.time:before {
+	content: '[';
+}
+.time:after {
+	content: ']';
 }
 
 .nick {
-	position: absolute;
-	left: 0;
-	top: 0;
-	display: block;
 	color: #6666CC;
 	font-weight: bold;
 }
@@ -96,9 +129,7 @@ a:link, a:visited {
 }
 
 .message {
-	display: block;
 	color: #990033;
-	margin-left: 150px;
 }
 
 .event {
@@ -107,22 +138,82 @@ a:link, a:visited {
 
 .notice {
 	color: #0033CC;
+	font-style: italic;
+}
+
+.join, .part {
+	color: #999999;
+	font-style: italic;
 }
 
 .window {
 	position: absolute;
 	z-index: 1;
 	font-size: .9em;
-	background: url(../images/block_bottom.gif) #fff no-repeat left bottom;
 	border: 0;
 }
 
-.window h1 {
+.window_close {
+	width: 14px;
+	height: 14px;
+	position:absolute;
+	top:5px;
+	right:8px;
+	cursor:pointer;
+	z-index:2000;
+}
+
+.window table {
+	width: 100%;
+}
+
+.window_topleft {
+	width: 9px;
+	height: 23px;
+	background: transparent url(../images/top_left.gif) no-repeat 0 0;
+}
+
+.window_title {
 	height:17px;
 	font: .75em/1.2em bold Geneva, Arial, Helvetica, sans-serif;
 	color: white;
-	background-color: #63B2E4;
+	background: transparent url(../images/top_mid.gif) repeat-x 0 0;	
 	padding: 2px 3px;
+	cursor:move;
+}
+
+.window_topright {
+	width: 9px;
+	height: 23px;
+	background: transparent url(../images/top_right.gif) no-repeat 0 0;
+}
+
+.window_midleft {
+	width: 2px;
+	height: 100%;
+	background: transparent url(../images/center_left.gif) repeat-y 0 0;
+}
+
+.window_midright {
+	width: 2px;
+	height: 100%;
+	background: transparent url(../images/center_right.gif) repeat-y 0 0;
+}
+
+.window_bottomleft {
+	width: 9px;
+	height: 19px;
+	background: transparent url(../images/bottom_left.gif) no-repeat 0 0;
+}
+
+.window_bottom {
+	background: transparent url(../images/bottom_mid.gif) repeat-x 0 0;
+}
+
+.window_bottomright {
+	width: 9px;
+	height: 19px;
+	background: transparent url(../images/bottom_right.gif) no-repeat 0 0;
 }
 
 .window_content h1 {
@@ -133,13 +224,12 @@ a:link, a:visited {
 
 .window_content {
 	position: relative;
-	padding: 4px;
 	overflow: hidden;
+	background-color: white;
 }
 
-.window_closeButton {
-	float: right;
-	padding-right: 3px;
+.window_resize {
+	cursor: nw-resize;
 }
 
 .modal {
@@ -177,4 +267,5 @@ a:link, a:visited {
 
 .modal_buttons button {
 	border: 1px solid #D6D6D6;
+	background-color: white;
 }
