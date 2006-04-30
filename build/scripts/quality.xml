@@ -43,7 +43,7 @@ $Header$
 
     </target>
 	
-    <available file="{ant.home}/lib/pmd-3.6.jar" property="jars-present" />
+    <available file="${ant.home}/lib/pmd-3.6.jar" property="jars-present" />
 
     <target name="check-jars-present" unless="jars-present">
     	
@@ -52,6 +52,10 @@ $Header$
     	
         <get src="http://www.ibiblio.org/maven2/jaxen/jaxen/1.1-beta-8/jaxen-1.1-beta-8.jar"
                 dest="${ant.home}/lib/jaxen-1.1-beta-8.jar" verbose="true" />
+           
+        <get src="http://www.ibiblio.org/maven2/oro/oro/2.0.8/oro-2.0.8.jar"
+                dest="${ant.home}/lib/oro-2.0.8.jar" verbose="true" />
+                
     </target>
 
     <target name="pmd" description="PMD non severe :-)" depends="check-jars-present">
@@ -59,11 +63,14 @@ $Header$
         <!-- TODO make this not hardcoded -->
         <mkdir dir="test/pmd" />
     	
+        <!-- At "java.lang.ClassNotFoundException: 
+             net.sourceforge.pmd.rules.XPathRule please rerun build pmd -->
         <taskdef name="pmd" classname="net.sourceforge.pmd.ant.PMDTask">
             <classpath>
                 <fileset dir="${ant.home}/lib">
-                    <include name="pmd*.jar" />
                     <include name="jaxen-1.1-beta-8.jar" />
+                    <include name="oro-2.0.8.jar" />
+                    <include name="pmd*.jar" />
                 </fileset>
             </classpath>
         </taskdef>
