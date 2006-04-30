@@ -19,7 +19,7 @@ if [ -z "$EXIST_HOME" ]; then
     fi
 fi
 
-ANT_HOME="$EXIST_HOME/tools"
+ANT_HOME="$EXIST_HOME/tools/ant"
 
 LOCALCLASSPATH=$CLASSPATH:$ANT_HOME/lib/ant-launcher.jar:$ANT_HOME/lib/junit.jar:.
 

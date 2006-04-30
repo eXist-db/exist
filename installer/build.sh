@@ -11,7 +11,7 @@ fi
 
 JAVA_CMD="$JAVA_HOME/bin/java"
 
-ANT_HOME="$EXIST_HOME/tools"
+ANT_HOME="$EXIST_HOME/tools/ant"
 
 LOCALCLASSPATH=$CLASSPATH:$ANT_HOME/lib/ant-launcher.jar:$ANT_HOME/lib/junit.jar
 

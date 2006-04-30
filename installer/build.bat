@@ -9,7 +9,7 @@ if not "%JAVA_HOME%" == "" goto gotJavaHome
 set JAVA_HOME=$JAVA_HOME
 
 :gotJavaHome
-set ANT_HOME=%EXIST_HOME%\tools
+set ANT_HOME=%EXIST_HOME%\tools\ant
 set _LIBJARS=%CLASSPATH%;%ANT_HOME%\lib\ant-launcher.jar;%ANT_HOME%\lib\junit.jar;%JAVA_HOME%\lib\tools.jar
 
 set JAVA_ENDORSED_DIRS=%EXIST_HOME%\lib\endorsed
