@@ -16,52 +16,65 @@ $Header$
  
 	<!-- You must put tools/ant/lib/jdepend-2.9.jar in the classpath,
 	     sorry this an Ant problem. -->
-    <target name="jdepend" description="Run jdepend" depends="compile,check-jars-present">
-    	<taskdef name="jdepend" loaderref="ant.classpath"
-    		classname="org.apache.tools.ant.taskdefs.optional.jdepend.JDependTask" >		
-    		<classpath>
-    	   		<pathelement path="tools/ant/lib/jdepend-2.9.jar" />
-    		</classpath>
-    	</taskdef>
-    	
-        <mkdir dir="test" />
-        
-        <jdepend outputfile="test/jdepend.xml" format="xml" >
+    <target name="jdepend" description="Run jdepend" depends="compile">
+    
+        <taskdef name="jdepend" loaderref="ant.classpath"
+                classname="org.apache.tools.ant.taskdefs.optional.jdepend.JDependTask">
+            <classpath>
+                <pathelement path="$(ant.home)/lib/jdepend-2.9.jar" />
+            </classpath>
+        </taskdef>
+
+        <!-- TODO make this not hardcoded -->
+        <mkdir dir="test/jdepend/data" />
+        <mkdir dir="test/jdepend/html" />
+
+        <jdepend outputfile="test/jdepend/data/jdepend.xml" format="xml">
             <exclude name="java.*"/>
             <exclude name="javax.*"/>
             <classespath>
                 <pathelement location="${build.classes}" />
             </classespath>
         </jdepend>
-        
+
+        <xslt in="test/jdepend/data/jdepend.xml" out="test/jdepend/html/jdepend.html"
+                style="${ant.home}/etc/jdepend-frames.xsl">
+        </xslt>
+
+    </target>
+	
+    <available file="{ant.home}/lib/pmd-3.6.jar" property="jars-present" />
+
+    <target name="check-jars-present" unless="jars-present">
+    	
+        <get src="http://www.ibiblio.org/maven2/pmd/pmd/3.6/pmd-3.6.jar"
+                dest="${ant.home}/lib/pmd-3.6.jar" verbose="true" />
+    	
+        <get src="http://www.ibiblio.org/maven2/jaxen/jaxen/1.1-beta-8/jaxen-1.1-beta-8.jar"
+                dest="${ant.home}/lib/jaxen-1.1-beta-8.jar" verbose="true" />
     </target>
 
-	<available file="tools/pmd-3.5.jar" property="jars-present" />
+    <target name="pmd" description="PMD non severe :-)" depends="check-jars-present">
     
-    <target name="check-jars-present" unless="jars-present" >
-    	<get src="http://jmvanel.free.fr/jars/jdepend-2.9.jar"
-    		dest="tools/jdepend-2.9.jar" />
-
-    	<get src="http://jmvanel.free.fr/jars/pmd-3.5.jar"
-    		dest="tools/pmd-3.5.jar" />
+        <!-- TODO make this not hardcoded -->
+        <mkdir dir="test/pmd" />
     	
-    	<get src="http://jmvanel.free.fr/jars/jaxen-1.1-beta-7.jar"
-    		dest="tools/jaxen-1.1-beta-7.jar" />
-	</target>
-	
-    <target name="pmd" description="PMD non severe :-)" depends="check-jars-present" >
-
-    	<taskdef name="pmd" classname="net.sourceforge.pmd.ant.PMDTask">
-    		<classpath><fileset dir=".">
-    			<include name="tools" />
-    			<include name="tools/lib/pmd*.jar" />
-    		</fileset></classpath>
-    	</taskdef>
-    	<pmd classpath="tools" >
-	    	<ruleset>basic</ruleset>
-    		<ruleset>codesize</ruleset>
-    		<ruleset>design</ruleset>
-    		<ruleset>unusedcode</ruleset>
+        <taskdef name="pmd" classname="net.sourceforge.pmd.ant.PMDTask">
+            <classpath>
+                <fileset dir="${ant.home}/lib">
+                    <include name="pmd*.jar" />
+                    <include name="jaxen-1.1-beta-8.jar" />
+                </fileset>
+            </classpath>
+        </taskdef>
+        
+        <echo message="Please wait, running PMD...."/>
+        
+        <pmd classpath="tools">
+            <ruleset>basic</ruleset>
+            <ruleset>codesize</ruleset>
+            <ruleset>design</ruleset>
+            <ruleset>unusedcode</ruleset>
 <!--    		
     		<ruleset>imports</ruleset>
     		<ruleset>naming</ruleset>
@@ -71,22 +84,24 @@ $Header$
     		<ruleset>javabeans</ruleset>
     		<ruleset>logging-java</ruleset>
     		<ruleset>logging-jakarta-commons</ruleset>
--->    		
-    		<ruleset>optimizations</ruleset>
-    		<ruleset>strictexception</ruleset>
-    		<ruleset>clone</ruleset>
-    		<ruleset>coupling</ruleset>
-        	<ruleset>finalizers</ruleset>
-       		<ruleset>junit</ruleset>
-       		<ruleset>strings</ruleset>
-
-    		<formatter type="text" toFile="test/pmd-report.txt" 
-    			linkPrefix="src" />
-    		<fileset dir="src" >
-    			<include name="**/*.java" />
-    			<exclude name="**/parser/*.java" />
-    		</fileset>
-    	</pmd>
+-->
+            <ruleset>optimizations</ruleset>
+            <ruleset>strictexception</ruleset>
+            <ruleset>clone</ruleset>
+            <ruleset>coupling</ruleset>
+            <ruleset>finalizers</ruleset>
+            <ruleset>junit</ruleset>
+            <ruleset>strings</ruleset>  
+    		
+            <formatter type="text" toFile="test/pmd/report.txt" linkPrefix="src" />-->
+            <formatter type="html" toFile="test/pmd/report.html"/>
+            <formatter type="xml"  toFile="test/pmd/report.xml" />
+            
+            <fileset dir="src">
+                <include name="**/*.java" />
+                <exclude name="**/parser/*.java" />
+            </fileset>
+        </pmd>
     </target>
 
 </project>
