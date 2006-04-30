@@ -12,8 +12,8 @@
             description="Run jUnit tests"/>
 
     <!-- Extra jUnit properties -->
-    <property name="junit.reports.dat" value="${junit.reports}/report/data"/>
-    <property name="junit.reports.html" value="${junit.reports}/report/html"/>
+    <property name="junit.reports.dat" value="${junit.reports}/junit/data"/>
+    <property name="junit.reports.html" value="${junit.reports}/junit/html"/>
 
     <!-- Seperate target for creating folders -->
     <target name="test-prepare" depends="jar">

@@ -383,8 +383,12 @@
             <fileset dir="${src.webapp}/WEB-INF/logs"
             excludes=".DO_NOT_DELETE" includes="*"/>
         </delete>
-        <delete dir="${junit.reports.dat}"/>
-        <delete dir="${junit.reports.html}"/>
+        
+        <delete dir="${junit.reports}/junit"/>
+        <delete dir="${junit.reports}/pmd"/>
+        <delete dir="${junit.reports}/jdepend"/>
+        <delete dir="${junit.reports}"/>
+        
         <delete dir="${src.webapp}/api"/>
         <delete dir="${src.webapp}/WEB-INF/data/backup"/>
         <delete dir="${src.webapp}/WEB-INF/data/journal"/>
