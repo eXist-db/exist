@@ -35,16 +35,10 @@
             </classpath>
         </javac>
     </target>
-<<<<<<< .mine
 	
     <target name="jar" depends="compile">
         <jar basedir="${classes}" jarfile="ircbot.jar"/>
     </target>
-    
-	<target name="clean">
-		<delete dir="${classes}"/>
-	</target>
-=======
 
     <target name="clean">
         <delete dir="${classes}"/>
@@ -61,5 +55,4 @@
             </lib>
         </war>
     </target>
->>>>>>> .r3357
 </project>
