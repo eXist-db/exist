@@ -230,7 +230,8 @@ public class Main {
 						properties.getProperty("user", "admin"),
 						properties.getProperty("password",""),
 						properties.getProperty("backup-dir", "backup"),
-						XmldbURI.xmldbUriFor(properties.getProperty("uri", "xmldb:exist://") + optionBackup));
+						XmldbURI.xmldbUriFor(properties.getProperty("uri", "xmldb:exist://") + optionBackup),
+						properties);
 					backup.backup(guiMode, null);
 				} catch (XMLDBException e) {
 					reportError(e);

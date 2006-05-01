@@ -65,23 +65,31 @@ public class Backup {
 	
 	public final static String NS = "http://exist.sourceforge.net/NS/exist";
 
-	public final static Properties defaultOutputProperties = new Properties();
-	static {
+	public Properties defaultOutputProperties = new Properties();
+	{
 		defaultOutputProperties.setProperty(OutputKeys.INDENT, "no");
 		defaultOutputProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
 		defaultOutputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
-		
+		defaultOutputProperties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "no");
+		defaultOutputProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "no");
 	}
+		
+	
 	
 	public Backup(String user, String pass, String backupDir, XmldbURI rootCollection) {
 		this.user = user;
 		this.pass = pass;
 		this.backupDir = backupDir;
-		this.rootCollection = rootCollection;
+		this.rootCollection = rootCollection;		
 	}
 
 	public Backup(String user, String pass, String backupDir) {
 		this(user, pass, backupDir, XmldbURI.create("xmldb:exist://").append(XmldbURI.ROOT_COLLECTION_URI));
+	}
+	
+	public Backup(String user, String pass, String backupDir, XmldbURI rootCollection, Properties property) {
+		this(user, pass, backupDir, rootCollection);
+		this.defaultOutputProperties.setProperty(OutputKeys.INDENT, property.getProperty("indent","no"));
 	}
 
 	public String encode(String enco) {		
@@ -179,11 +187,12 @@ public class Backup {
 		throws XMLDBException, IOException, SAXException {
 		if (current == null)
 			return;
-		current.setProperty(OutputKeys.ENCODING, "UTF-8");
-		current.setProperty(OutputKeys.INDENT, "no");
-		current.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "no");
-		current.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "no");
-
+		
+		current.setProperty(OutputKeys.ENCODING, defaultOutputProperties.getProperty(OutputKeys.ENCODING));
+		current.setProperty(OutputKeys.INDENT, defaultOutputProperties.getProperty(OutputKeys.INDENT));
+		current.setProperty(EXistOutputKeys.EXPAND_XINCLUDES,  defaultOutputProperties.getProperty(EXistOutputKeys.EXPAND_XINCLUDES));
+		current.setProperty(EXistOutputKeys.PROCESS_XSL_PI,  defaultOutputProperties.getProperty(EXistOutputKeys.PROCESS_XSL_PI));
+		
 		// get resources and permissions
 		String[] resources = current.listResources();
 		Arrays.sort(resources);
