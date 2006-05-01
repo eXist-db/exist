@@ -96,7 +96,7 @@
                         <a href="http://prdownloads.sourceforge.net/exist/exist-20060316.war">
                             exist-20060316.war </a>
                     </td>
-                    <td> Web application archive, ready to be installed into an existing
+                    <td>Web application archive, ready to be installed into an existing
                         servlet-engine like Tomcat or Jetty. </td>
                 </tr>
                 <tr>
