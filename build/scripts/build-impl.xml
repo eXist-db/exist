@@ -31,7 +31,7 @@
     <property name="build.docs.src" value="${build.docs}/source"/>
     <property name="build.docs.html" value="${build.docs}/html"/>
     <property name="build.examples" value="${build}/examples"/>
-    <property name="ant.home" value="./tools/ant"/>
+    <property name="tools.ant" value="./tools/ant"/>
     <property name="dist" value="./dist"/>
     <property name="webapp.dir" value="${dist}/webapp"/>
     <property name="build.compiler" value="modern"/>
@@ -65,7 +65,7 @@
         </fileset>
         
         <!-- DIZZ Why must these be part of classpath ? -->
-        <fileset dir="${ant.home}/lib">
+        <fileset dir="${tools.ant}/lib">
             <include name="*.jar"/>
         </fileset>
         

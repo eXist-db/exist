@@ -21,7 +21,7 @@ $Header$
         <taskdef name="jdepend" loaderref="ant.classpath"
                 classname="org.apache.tools.ant.taskdefs.optional.jdepend.JDependTask">
             <classpath>
-                <pathelement path="$(ant.home)/lib/jdepend-2.9.jar" />
+                <pathelement path="$(tools.ant)/lib/jdepend-2.9.jar" />
             </classpath>
         </taskdef>
 
@@ -38,27 +38,27 @@ $Header$
         </jdepend>
 
         <xslt in="test/jdepend/data/jdepend.xml" out="test/jdepend/html/jdepend.html"
-                style="${ant.home}/etc/jdepend-frames.xsl">
+                style="${tools.ant}/etc/jdepend-frames.xsl">
         </xslt>
 
     </target>
 	
-    <available file="${ant.home}/lib/pmd-3.6.jar" property="jars-present" />
+    <available file="${tools.ant}/lib/pmd-3.6.jar" property="jars-present" />
 
     <target name="check-jars-present" unless="jars-present">
     	
         <get src="http://www.ibiblio.org/maven2/pmd/pmd/3.6/pmd-3.6.jar"
-                dest="${ant.home}/lib/pmd-3.6.jar" verbose="true" />
+                dest="${tools.ant}/lib/pmd-3.6.jar" verbose="true" />
     	
         <get src="http://www.ibiblio.org/maven2/jaxen/jaxen/1.1-beta-8/jaxen-1.1-beta-8.jar"
-                dest="${ant.home}/lib/jaxen-1.1-beta-8.jar" verbose="true" />
+                dest="${tools.ant}/lib/jaxen-1.1-beta-8.jar" verbose="true" />
            
         <get src="http://www.ibiblio.org/maven2/oro/oro/2.0.8/oro-2.0.8.jar"
-                dest="${ant.home}/lib/oro-2.0.8.jar" verbose="true" />
+                dest="${tools.ant}/lib/oro-2.0.8.jar" verbose="true" />
                 
     </target>
 
-    <target name="pmd" description="PMD non severe :-)" depends="check-jars-present">
+    <target name="pmd" description="Run PMD" depends="check-jars-present">
     
         <!-- TODO make this not hardcoded -->
         <mkdir dir="test/pmd" />
@@ -67,7 +67,7 @@ $Header$
              net.sourceforge.pmd.rules.XPathRule please rerun build pmd -->
         <taskdef name="pmd" classname="net.sourceforge.pmd.ant.PMDTask">
             <classpath>
-                <fileset dir="${ant.home}/lib">
+                <fileset dir="${tools.ant}/lib">
                     <include name="jaxen-1.1-beta-8.jar" />
                     <include name="oro-2.0.8.jar" />
                     <include name="pmd*.jar" />
