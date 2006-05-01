@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="samples"/>
 	<classpathentry kind="src" path="src"/>
@@ -64,9 +64,9 @@
 	<classpathentry kind="lib" path="thirdparty/tomcat5/bin/jmx.jar"/>
 	<classpathentry kind="lib" path="thirdparty/tomcat5/server/lib/catalina-5.0.28.jar"/>
 	<classpathentry kind="lib" path="tools/jetty/lib/org.mortbay.jetty.jar"/>
-	<classpathentry kind="lib" path="tools/lib/ant.jar"/>
-	<classpathentry kind="lib" path="tools/lib/junit.jar"/>
-	<classpathentry kind="lib" path="tools/lib/xmlunit1.0.jar"/>
+	<classpathentry kind="lib" path="tools/ant/lib/ant.jar"/>
+	<classpathentry kind="lib" path="tools/ant/lib/junit.jar"/>
+	<classpathentry kind="lib" path="tools/ant/lib/xmlunit1.0.jar"/>
 	<classpathentry kind="lib" path="tools/wrapper/lib/wrapper.jar"/>
 	<classpathentry kind="lib" path="lib/core/jline-0_9_5.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
