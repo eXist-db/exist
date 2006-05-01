@@ -4,5 +4,5 @@
     <logo src="logo.jpg"/>
     <title>Open Source Native XML Database</title>
 	<author email="wolfgang@exist-db.org">Wolfgang M. Meier</author>
-    <version>1.0-dev-20060402</version>
+    <version>1.0-dev-20060501</version>
 </header>
