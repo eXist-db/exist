@@ -9,6 +9,7 @@
     <xsl:template match="book">
         <html>
             <head>
+                <title><xsl:value-of select="bookinfo/title/text()"/></title>
                 <xsl:choose>
                     <xsl:when test="bookinfo/style/@href">
                         <link rel="stylesheet" type="text/css" href="{bookinfo/style/@href}"/>
@@ -18,9 +19,19 @@
                     </xsl:otherwise>
                 </xsl:choose>
                 <xsl:if test="bookinfo/style[not(@href)]">
-                        <xsl:copy-of select="bookinfo/style[not(@href)]"/>
+                    <xsl:copy-of select="bookinfo/style[not(@href)]"/>
                 </xsl:if>
-                <title><xsl:value-of select="bookinfo/title/text()"/></title>
+                <script type="text/javascript" src="styles/niftycube.js"></script>
+                <script type="text/javascript">
+                    window.onload = function() {
+                        Nifty("h1.chaptertitle", "transparent");
+                        Nifty("div.note", "transparent");
+                        Nifty("div.example", "transparent");
+                        Nifty("div.important", "transparent");
+                        Nifty("div.block div.head", "top");
+                        Nifty("div.block ul", "bottom");
+                    }
+                </script>
             </head>
     
             <body bgcolor="#FFFFFF">
@@ -34,22 +45,26 @@
     </xsl:template>
             
     <xsl:template name="toc">
-        <div class="toc">
+        <ul class="toc">
             <xsl:for-each select="section">
-                <div class="tocitem">
+                <li>
                     <a href="#{generate-id()}">
                         <xsl:number count="section" level="multiple" format="1. "/> <xsl:value-of select="title"/>
                     </a>
-                    <xsl:for-each select="section">
-                        <div class="tocitem2">
-                            <a href="#{generate-id()}">
-                                <xsl:number count="section" level="multiple" format="1. "/> <xsl:value-of select="title"/>
-                            </a>
-                        </div>
-                    </xsl:for-each>
-                </div>
+                    <xsl:if test="section">
+                        <ul>
+                            <xsl:for-each select="section">
+                                <li>
+                                    <a href="#{generate-id()}">
+                                        <xsl:number count="section" level="multiple" format="1. "/> <xsl:value-of select="title"/>
+                                    </a>
+                                </li>
+                            </xsl:for-each>
+                        </ul>
+                    </xsl:if>
+                </li>
             </xsl:for-each>
-        </div>
+        </ul>
     </xsl:template>
     
     <xsl:template match="author">
@@ -65,13 +80,15 @@
     </xsl:template>
   
     <xsl:template match="chapter">
-        <xsl:apply-templates select="title"/>
-        <xsl:call-template name="toc"/>
-        <xsl:apply-templates select="*[not(name()='title')]"/>
+        <div class="chapter">
+            <xsl:apply-templates select="title"/>
+            <xsl:call-template name="toc"/>
+            <xsl:apply-templates select="*[not(name()='title')]"/>
+        </div>
     </xsl:template>
     
     <xsl:template match="chapter/title">
-        <h1>
+        <h1 class="chaptertitle">
             <a>
                 <xsl:attribute name="name"><xsl:value-of select="generate-id()"/></xsl:attribute>
             </a>
@@ -80,7 +97,7 @@
     </xsl:template>
     
     <xsl:template match="chapter/abstract">
-        <p class="abstract"><xsl:apply-templates/></p>
+        <div class="abstract"><xsl:apply-templates/></div>
     </xsl:template>
     
     <xsl:template match="chapter/section">
@@ -123,6 +140,9 @@
         <h4><xsl:apply-templates/></h4>
     </xsl:template>
     
+    <!--xsl:template match="listitem/para">
+        <xsl:apply-templates/>
+    </xsl:template-->
     <xsl:template match="para">
         <p><xsl:apply-templates/></p>
     </xsl:template>
@@ -149,8 +169,15 @@
                 </xsl:otherwise>
             </xsl:choose>
             <div id="navbar">
-                <h1><xsl:value-of select="title"/></h1>
                 <xsl:apply-templates select="../sidebar:sidebar/sidebar:toolbar"/>
+                <xsl:choose>
+                    <xsl:when test="productname">
+                        <h1><xsl:value-of select="productname"/></h1>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <h1><xsl:value-of select="title"/></h1>
+                    </xsl:otherwise>
+                </xsl:choose>
             </div>
         </div>
     </xsl:template>
@@ -159,24 +186,9 @@
         <img src="{@fileref}"/>
     </xsl:template>
     
-    <xsl:template match="filename">
-        <span class="filename"><xsl:apply-templates/></span>
-    </xsl:template>
-    
-    <xsl:template match="classname">
-        <span class="classname"><xsl:apply-templates/></span>
-    </xsl:template>
-    
-    <xsl:template match="methodname">
-        <span class="methodname"><xsl:apply-templates/></span>
-    </xsl:template>
-    
-    <xsl:template match="option">
-        <span class="option"><xsl:apply-templates/></span>
-    </xsl:template>
-    
-    <xsl:template match="command">
-        <span class="command"><xsl:apply-templates/></span>
+    <xsl:template match="filename|classname|methodname|option|command|parameter|
+        guimenu|guimenuitem|function">
+        <span class="{local-name(.)}"><xsl:apply-templates/></span>
     </xsl:template>
     
     <xsl:template match="synopsis">
@@ -189,8 +201,10 @@
     
     <xsl:template match="example">
         <div class="example">
-            <div class="example_title">Example: <xsl:value-of select="title"/></div>
-            <xsl:apply-templates select="*[name(.)!='title']"/>
+            <h1>Example: <xsl:value-of select="title"/></h1>
+            <div class="example_content">
+                <xsl:apply-templates select="*[name(.)!='title']"/>
+            </div>            
         </div>
     </xsl:template>
     
@@ -203,9 +217,9 @@
     </xsl:template>
 
     <xsl:template match="screenshot">
-        <center>
+        <div class="screenshot">
             <xsl:apply-templates/>
-        </center>
+        </div>
     </xsl:template>
     
     <xsl:template match="programlisting">
@@ -216,8 +230,19 @@
     
     <xsl:template match="note">
         <div class="note">
-            <span class="note_title">Note</span>
-            <xsl:apply-templates/>
+            <h1>Note</h1>
+            <div class="note_content">
+                <xsl:apply-templates/>
+            </div>            
+        </div>
+    </xsl:template>
+    
+    <xsl:template match="important">
+        <div class="important">
+            <h1>Important</h1>
+            <div class="important_content">
+                <xsl:apply-templates/>
+            </div>            
         </div>
     </xsl:template>
     
@@ -321,14 +346,21 @@
     <xsl:template match="sidebar:toolbar">
         <ul id="menu">
             <xsl:for-each select="sidebar:link">
-                <li><xsl:apply-templates select="."/></li>
+                <li>
+                    <xsl:if test="position() = last()">
+                        <xsl:attribute name="class">last</xsl:attribute>
+                    </xsl:if>
+                    <xsl:apply-templates select="."/>
+                </li>
             </xsl:for-each>
         </ul>
     </xsl:template>
     
     <xsl:template match="sidebar:group">
         <div class="block">
-            <h3><xsl:value-of select="@name"/></h3>
+            <div class="head">
+                <h3><xsl:value-of select="@name"/></h3>
+            </div>
             <ul><xsl:apply-templates/></ul>
         </div>
     </xsl:template>
