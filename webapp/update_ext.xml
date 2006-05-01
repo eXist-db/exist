@@ -4,16 +4,11 @@
 <book xmlns:ci="http://apache.org/cocoon/include/1.0">
     <bookinfo>
         <graphic fileref="logo.jpg"/>
-        
-        <title>Open Source Native XML Database</title>
+        <productname>Open Source Native XML Database</productname>
+        <title>XQuery Update Extensions</title>
         <author>
             <firstname>Wolfgang M.</firstname>
             <surname>Meier</surname>
-            <affiliation>
-                <address format="linespecific">
-                    <email>wolfgang@exist-db.org</email>
-                </address>
-            </affiliation>
         </author>
     </bookinfo>
     <ci:include src="sidebar.xml"/>
