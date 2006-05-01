@@ -1322,29 +1322,35 @@ public class XQueryContext {
 				module = loadBuiltInModule(namespaceURI, location);
 			} else {
 				Source source;
-                // Is the module source stored in the database?
-				try {
-					XmldbURI locationUri = XmldbURI.xmldbUriFor(location);
-					XmldbURI moduleLoadPathUri = XmldbURI.xmldbUriFor(moduleLoadPath);
-					locationUri = moduleLoadPathUri.resolveCollectionPath(locationUri);
-	                DocumentImpl sourceDoc = null;
-                    try {
-                        sourceDoc = broker.getXMLResource(locationUri.toCollectionPathURI(), Lock.READ_LOCK);
-                        if (sourceDoc == null)
-                            throw new XPathException("source for module " + location + " not found in database");
-                        if (sourceDoc.getResourceType() != DocumentImpl.BINARY_FILE ||
-                                !sourceDoc.getMetadata().getMimeType().equals("application/xquery"))
-                            throw new XPathException("source for module " + location + " is not an XQuery or " +
-                            "declares a wrong mime-type");
-                        source = new DBSource(broker, (BinaryDocument) sourceDoc, true);
-                        module = compileModule(namespaceURI, location, module, source);
-                    } catch (PermissionDeniedException e) {
-                        throw new XPathException("permission denied to read module source from " + location);
-                    } finally {
-                        if(sourceDoc != null)
-                            sourceDoc.getUpdateLock().release(Lock.READ_LOCK);
+                if (location.startsWith(XmldbURI.XMLDB_URI_PREFIX) || 
+                        moduleLoadPath.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
+                    // Is the module source stored in the database?
+    				try {
+    					XmldbURI locationUri = XmldbURI.xmldbUriFor(location);
+    					XmldbURI moduleLoadPathUri = XmldbURI.xmldbUriFor(moduleLoadPath);
+    					locationUri = moduleLoadPathUri.resolveCollectionPath(locationUri);
+                        
+    	                DocumentImpl sourceDoc = null;
+                        try {
+                            sourceDoc = broker.getXMLResource(locationUri.toCollectionPathURI(), Lock.READ_LOCK);
+                            if (sourceDoc == null)
+                                throw new XPathException("source for module " + location + " not found in database");
+                            if (sourceDoc.getResourceType() != DocumentImpl.BINARY_FILE ||
+                                    !sourceDoc.getMetadata().getMimeType().equals("application/xquery"))
+                                throw new XPathException("source for module " + location + " is not an XQuery or " +
+                                "declares a wrong mime-type");
+                            source = new DBSource(broker, (BinaryDocument) sourceDoc, true);
+                            module = compileModule(namespaceURI, location, module, source);
+                        } catch (PermissionDeniedException e) {
+                            throw new XPathException("permission denied to read module source from " + location);
+                        } finally {
+                            if(sourceDoc != null)
+                                sourceDoc.getUpdateLock().release(Lock.READ_LOCK);
+                        }
+    				} catch(URISyntaxException e) {
+                        throw new XPathException(e.getMessage(), e);
                     }
-				} catch(URISyntaxException ignoreMe) {
+                } else {
 					// No. Load from file or URL
                     try {
                     	//TODO: use URIs to ensure proper resolution of relative locations
