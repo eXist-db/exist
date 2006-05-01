@@ -16,12 +16,10 @@
     </xsl:template>
     
 	<xsl:template match="module">
-		<div class="module">
-			<a style="color: white">
-				<xsl:attribute name="name"><xsl:value-of select="generate-id()"/></xsl:attribute>
-				<xsl:value-of select="description"/> (<xsl:value-of select="@namespace"/>)
-			</a>
-		</div>
+		<h2>
+			<xsl:attribute name="name"><xsl:value-of select="generate-id()"/></xsl:attribute>
+			<xsl:value-of select="description"/> (<xsl:value-of select="@namespace"/>)
+		</h2>
 		<xsl:apply-templates select="function"/>
 	</xsl:template>
 
