@@ -44,6 +44,17 @@
                 <xsl:if test="header/script">
                     <xsl:copy-of select="header/script"/>
                 </xsl:if>
+                <script type="text/javascript" src="styles/niftycube.js"></script>
+                <script type="text/javascript">
+                    window.onload = function() {
+                    Nifty("h1.chaptertitle", "transparent");
+                    Nifty("div.note", "top transparent");
+                    Nifty("div.example", "top transparent");
+                    Nifty("div.block div.head", "top");
+                    Nifty("div.news_content", "bottom");
+                    Nifty("div.block ul", "bottom");
+                    }
+                </script>
             </head>
 
             <body bgcolor="#FFFFFF">
@@ -51,8 +62,8 @@
                     <img src="logo.jpg" title="eXist"/>
                     <div id="version-info">Site based on <xsl:value-of select="header/version"/></div>
                     <div id="navbar">
-                        <h1><xsl:value-of select="header/title"/></h1>
                         <xsl:apply-templates select="sidebar:sidebar/sidebar:toolbar"/>
+                        <h1><xsl:value-of select="header/title"/></h1>
                     </div>
                 </div>
                 <xsl:apply-templates select="sidebar:sidebar"/>
@@ -104,14 +115,21 @@
     <xsl:template match="sidebar:toolbar">
         <ul id="menu">
             <xsl:for-each select="sidebar:link">
-                <li><xsl:apply-templates select="."/></li>
+                <li>
+                    <xsl:if test="position() = last()">
+                        <xsl:attribute name="class">last</xsl:attribute>
+                    </xsl:if>
+                    <xsl:apply-templates select="."/>
+                </li>
             </xsl:for-each>
         </ul>
     </xsl:template>
     
     <xsl:template match="sidebar:group">
         <div class="block">
-            <h3><xsl:value-of select="@name"/></h3>
+            <div class="head">
+                <h3><xsl:value-of select="@name"/></h3>
+            </div>            
             <ul><xsl:apply-templates/></ul>
         </div>
     </xsl:template>
@@ -163,7 +181,7 @@
     </xsl:template>
 
     <xsl:template match="body/section">
-        <h1>
+        <h1 class="chaptertitle">
             <xsl:if test="@id">
                 <a name="{@id}"></a>
             </xsl:if>
@@ -430,24 +448,26 @@
     
     <xsl:template match="rss">
         <div class="block">
-            <h3>News</h3>
-            <xsl:apply-templates select="channel/item[position()&lt;7]"/>
+            <div class="head"><h3>News</h3></div>
+            <ul class="news_content">
+                <xsl:apply-templates select="channel/item[position()&lt;7]"/>
+            </ul>            
         </div>
     </xsl:template>
     
     <xsl:template match="item">
-        <div class="headline">
-            <div class="date">
+        <li class="headline">
+            <p class="date">
                 <xsl:value-of select="substring(dc:date, 1, 10)"/>
-            </div>
+            </p>
             
             <a href="{link/text()}"><xsl:value-of select="title"/></a>
-        </div>
+        </li>
     </xsl:template>
     
     <xsl:template match="warning">
         <div class="warning">
-            <h4><xsl:value-of select="title"/></h4>
+            <h5><xsl:value-of select="title"/></h5>
             <xsl:apply-templates select="p"/>    
         </div>
     </xsl:template>
