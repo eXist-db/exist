@@ -1,223 +1,139 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<book xmlns:ci="http://apache.org/cocoon/include/1.0">
+<book>
     <bookinfo>
         <graphic fileref="logo.jpg"/>
-        <title>Open Source Native XML Database</title>
+        <productname>Open Source Native XML Database</productname>
+        <title>Quick Start Guide</title>
         <author>
             <firstname>Wolfgang M.</firstname>
             <surname>Meier</surname>
-            <affiliation>
-                <address format="linespecific">
-                    <email>wolfgang@exist-db.org</email>
-                </address>
-            </affiliation>
         </author>
     </bookinfo>
-    <ci:include src="sidebar.xml"/>
+
+    <ci:include xmlns:ci="http://apache.org/cocoon/include/1.0" src="sidebar.xml"/>
+
     <chapter>
-        <title>Quick Start</title>
+        <title>Quick Start Guide</title>
+        <abstract>
+            <para>This document provides a quick introduction to get you started with eXist. For
+                eXist to be useful, you should probably have a basic knowledge of XQuery and XML
+                fundamentals. You can certainly also use eXist as a tool <emphasis>while
+                learning</emphasis> XQuery, but you should then make sure you get yourself an
+                introductory book, tutorial or some articles, which you can read while you are
+                making your first steps with eXist. </para>
+        </abstract>
         <section>
             <title>Installation</title>
-            <para>For a quick start, we will use the server through 
-				a servlet engine. The source distribution already includes
-                a servlet engine (<ulink
-            url="http://www.jetty.org">Jetty</ulink>), so no additional
-                software is required.
-				For other deployment options, have a look at 
-				the documentation on <ulink url="deployment.xml">Server
-                Deployment</ulink>.</para>
-            <section>
-                <title>Installer</title>
-                <para>The installer will try to determine correct paths and 
-					environment variables to launch eXist. On Windows, it can 
-					also create desktop shortcuts. The installer is started 
-					either by double-clicking the downloaded jar-file 
-					(Windows/MAC) or by calling java with the 
-                <option>-jar</option> option: </para>
-                <synopsis format="linespecific">java -jar eXist-{version}.jar</synopsis>
-                <para>After the installation has completed, you should be ready 
-					to launch eXist. If the installer has created shortcuts, 
-					you may simply click on the <emphasis>"eXist Database 
-					Startup"</emphasis> icon on the desktop or select the 
-					corresponding item in the Windows start menu. 
-					In other cases, you 
-					have to start eXist manually: Open a shell or DOS command 
-					prompt, change into the location where you installed eXist 
-					and enter:</para>
-                <synopsis format="linespecific">bin/startup.sh</synopsis>
-                <para>(Unix) or</para>
-                <synopsis format="linespecific">bin\startup.bat</synopsis>
-                <para>If the provided scripts don't work for you, you may 
-					directly call the bootstrap loader with</para>
-                <synopsis>java -Xmx128M -Djava.endorsed.dirs=lib/endorsed -jar 
+
+            <para>In this document we assume you downloaded the standard distribution, which offers
+                an installer that will guide you through the process. This is the recommended type
+                of installation for all those not yet familiar with eXist. Other installation types
+                will be described elsewhere (TODO). </para>
+            <para>The standard distribution comes as a <filename>.jar</filename> file, which
+                contains a graphical installer. The advantage of using this installer is that it
+                will try to determine correct paths and environment variables for eXist. On Windows
+                and Linux, it can also create desktop shortcuts.</para>
+            <para>The installer is started either by double-clicking the downloaded jar-file
+                (Windows/MAC) or by calling java with the <option>-jar</option> option:</para>
+            <synopsis format="linespecific">java -jar eXist-{version}.jar</synopsis>
+            <note>
+                <para>The installer requires a graphical desktop. If you want to install eXist on a
+                    headless system, you can try to pass the <option>-p</option> parameter to the
+                    installer to start an automatic install. Option <option>-p</option> expects a
+                    single parameter: the path to the directory where you would like to install
+                    eXist. For example:</para>
+                <synopsis>java -jar eXist-{version}.jar -p /usr/local/exist</synopsis>
+            </note>
+            <para>After the installation has completed, you should be ready to launch eXist. If the
+                installer has created shortcuts, you may simply click on the <emphasis>"eXist
+                    Database Startup"</emphasis> icon on the desktop or select the corresponding
+                item in the start menu of your desktop. In other cases, you have to start eXist
+                manually: open a shell or DOS command prompt, change into the location where you
+                installed eXist and enter:</para>
+            <synopsis format="linespecific">bin/startup.sh</synopsis>
+            <para>(Unix) or</para>
+            <synopsis format="linespecific">bin\startup.bat</synopsis>
+            <para>If the provided scripts don't work for you, you may directly call the bootstrap
+                loader with</para>
+            <synopsis>java -Xmx128M -Djava.endorsed.dirs=lib/endorsed -jar 
 					start.jar jetty</synopsis>
-                <para>This will launch the included Jetty webserver and eXist. 
-					Now continue with <ulink url="#sect3">section 
-					3</ulink>.</para>
-                    
-                <note>
-                    <para>You can also install eXist as a service to have it
-                    automatically launched at system startup. You can read more
-                    about this <ulink url="#service">below</ulink>.</para>
-                </note>
-            </section>
-            <section>
-                <title>Installing the Source Distribution</title>
-                <para>Simply unzip or untar the distribution file to some 
-					suitable location. Your JAVA_HOME environment variable 
-					should point to the Java installation directory.</para>
-                <para>Now set the EXIST_HOME environment variable to eXist's 
-					base directory, e.g.:</para>
-                <synopsis format="linespecific">set 
-					EXIST_HOME=c:\Devel\eXist-{version}</synopsis>
-                <para>or on a Unix system:</para>
-                <synopsis format="linespecific">export 
-					EXIST_HOME=/home/wolf/eXist-{version}</synopsis>
-                <para>The distribution contains several shell and batch scripts 
-					to start the servers and various clients in directory 
-                <filename moreinfo="none">bin</filename>. To launch the 
-					included webserver, use the scripts <filename 
-                moreinfo="none">startup.sh</filename> or <filename 
-                moreinfo="none">startup.bat</filename> from the root 
-					directory of the distribution: </para>
-                <synopsis format="linespecific">bin\startup.bat</synopsis>
-                <para>The scripts will set a few parameters and then call the 
-					startup bootloader in <filename 
-                moreinfo="none">start.jar</filename>. <filename 
-                moreinfo="none">start.jar</filename>, will try to determine 
-					correct classpath settings.</para>
-                <para>If the provided scripts don't work for you, you may 
-					directly call the bootstrap loader with</para>
-                <synopsis>java -Xmx128M -Djava.endorsed.dirs=lib/endorsed -jar 
-					start.jar jetty</synopsis>
-                <para>Now continue with <ulink url="#sect3">section 
-					3</ulink>.</para>
-            </section>
-            <section id="sect2">
-                <title>Installing eXist as a Web Application</title>
-                <para>To install eXist with an existing servlet-engine, 
-					download the .war-file and put it into a proper location 
-					where your servlet-engine can find it. Most installations 
-					have a directory called <filename 
-                moreinfo="none">webapps</filename> and will automatically 
-					launch any .war-files found therein. Please rename the file 
-					to <filename moreinfo="none">exist.war</filename> 
-					(otherwise some examples may not work correctly).</para>
-                <important>
-                    <para>Most servlet-engines will automatically unpack 
-						war-files (Tomcat does so). If not, you have to do this 
-						by hand (otherwise eXist's data may get lost if you 
-						shutdown the servlet-engine). Create a sub-directory 
-                    <filename moreinfo="none">exist</filename> in <filename 
-                    moreinfo="none">webapps</filename>, cd into it and 
-						unpack the archive using <command 
-                    moreinfo="none">jar</command>. For example:</para>
-                    <example>
-                        <title>Unpack the .war file</title>
-                        <screen format="linespecific"><![CDATA[
-                        mkdir exist
-                        cd exist
-                        jar xfv ../exist.war]]></screen>
-                    </example>
-                    <para>Finally, remove the .war file.</para>
-                </important>
-                <para>You may have to restart your servlet-engine now.</para>
-                <para>If eXist is running inside a servlet-engine, its home 
-					directory will always be in <filename 
-                moreinfo="none">WEB-INF</filename>. This is where the main 
-					configuration file <filename 
-                moreinfo="none">conf.xml</filename> and the database files 
-					reside. Log files will be written to <filename 
-                moreinfo="none">WEB-INF/logs</filename>. </para>
-            </section>
+            <para>While eXist starts up, some log output might be shown in the console. If it looks
+                as shown below, everything should be ok.</para>
+            <example>
+                <title>Console Output</title>
+                <screen><![CDATA[
+                    [wolf@localhost eXist-trunk]$ bin/startup.sh
+WARN: The following JAR file entries from 'org/exist/start/start.config' aren't available (this may NOT be a problem):
+    /home/wolf/Devel/eXist/eXist-trunk/examples.jar
+
+Configuring eXist from /home/wolf/Devel/eXist/eXist-trunk/conf.xml
+Found 1 catalog entries.
+Loading catalog: /home/wolf/Devel/eXist/eXist-trunk/webapp/WEB-INF/catalog.xml
+IN CONFIGURE
+cluster.journal.maxStore 65000
+cluster.journal.shift 100
+29 Apr 2006 13:56:00,153 [main] INFO  (FileResource.java [<clinit>]:60) - Checking Resource aliases
+29 Apr 2006 13:56:00,474 [main] INFO  (HttpServer.java [setStatsOn]:1068) - Statistics on = false for org.mortbay.jetty.Server@571a75a2
+29 Apr 2006 13:56:00,548 [main] INFO  (HttpServer.java [start]:654) - Starting Jetty/5.0.0
+29 Apr 2006 13:56:00,554 [main] INFO  (HttpServer.java [start]:669) - Started org.mortbay.http.NCSARequestLog@236acdd1
+29 Apr 2006 13:56:01,800 [main] INFO  (HttpContext.java [start]:1604) - Started WebApplicationContext[eXist Server,eXist Server]
+Logging already initialized. Skipping...
+29 Apr 2006 13:56:03,982 [main] WARN  (JavaUtils.java [isAttachmentSupported]:1305) - Unable to find required classes (javax.activation.DataHandler and javax.mail.internet.MimeMultipart). Attachment support is disabled.
+29 Apr 2006 13:56:04,272 [main] INFO  (SocketListener.java [start]:204) - Started SocketListener on 0.0.0.0:8080
+29 Apr 2006 13:56:04,273 [main] INFO  (HttpServer.java [start]:690) - Started org.mortbay.jetty.Server@571a75a2
+                ]]></screen>
+            </example>
         </section>
+
         <section id="sect3">
             <title>Check if the server is running</title>
-            <para>eXist's home page should now be available at <ulink 
-            url="http://localhost:8080/exist/index.xml">http://localhost:8080/exist/index.xml</ulink>. 
-				To see if the database engine is running, you may click on the 
-            <command moreinfo="none">Server status</command> menu entry in 
-				the sidebar or browse directly to <ulink 
-            url="http://localhost:8080/exist/status"> 
-				http://localhost:8080/exist/status</ulink>. The server will 
-				present you some information on the configuration, the data 
-				directory used by the engine and available database instances. 
-				If this worked, continue <ulink url="#sect4">to read 
-				below</ulink>.</para>
-            <para>If anything goes wrong, you may try to set the <command 
-            moreinfo="none">EXIST_HOME</command> environment variable. It 
-				should point to the directory where the configuration file <filename 
-            moreinfo="none">conf.xml</filename> can be found. The server 
-				will try to read the file from <filename 
-            moreinfo="none">EXIST_HOME/conf.xml</filename>. For the source 
-				distribution EXIST_HOME is simply the root directory of the 
-				distribution as explained above. If you installed eXist as a 
-				web application, EXIST_HOME should be set to the <filename 
-            moreinfo="none">WEB-INF</filename> directory of the web 
-				application, e.g.:</para>
-            <synopsis format="linespecific">set 
-				EXIST_HOME=c:\jakarta-tomcat-4.x\webapps\exist\WEB-INF</synopsis>
-            <para>You should also ensure that you have write permissions for 
-				the <filename moreinfo="none">data</filename> directory. You 
-				will find it in <filename 
-            moreinfo="none">webapps/WEB-INF/data</filename> or <filename 
-            moreinfo="none">WEB-INF/data</filename>.</para>
-                
-            <para>Another frequent problem is caused by conflicting versions of Xalan
-            (Apache's XSL processor): Java already contains an outdated version
-            of the Xalan library. However, Cocoon needs a newer version to function
-            properly.</para>
-            
-            <para>You have to overwrite Java's default settings to get the
-            correct versions of Xalan and Xerces. This can be done in two
-            ways:</para>
-            
-            <itemizedlist>
-                <listitem>
-                    <para>Set the system property
-                    <option>java.endorsed.dirs</option> to point to the supplied
-                    jar files in <filename>lib/endorsed</filename>, e.g.:</para>
-                    
-                    <synopsis>java -Xmx128M -Djava.endorsed.dirs=lib/endorsed -jar 
-					start.jar jetty</synopsis>
-                    
-                    <para>This is what the shell scripts do.</para>
-                </listitem>
-                <listitem>
-                    <para>Copy the jars in <filename>lib/endorsed</filename> to
-                    directory <filename>$JAVA_HOME/jre/lib/endorsed</filename>.
-                    $JAVA_HOME is where your JDK has been installed. The endorsed 
-                    subdirectory may not exist, so you have to create it first.</para>
-                </listitem>
-            </itemizedlist>
+            <para>eXist's documentation should now be available at <ulink
+                    url="http://localhost:8080/exist/index.xml"
+                    >http://localhost:8080/exist/index.xml</ulink>. Don't be confused: you were not
+                redirected to eXist's web site, you are just looking at a copy of the website
+                contents installed on your machine. In fact, by calling
+                <command>bin/startup.sh</command> you have started an ordinary webserver (called
+                Jetty), which has the database running in its process and provides the required
+                interfaces to eXist. </para>
+            <note>
+                <para>If anything goes wrong, check the <command>EXIST_HOME</command> and
+                        <command>JAVA_HOME</command> environment variables. Both are set in the
+                        <filename>startup.bat</filename> and <filename>startup.sh</filename>
+                    scripts. <command>EXIST_HOME</command> should point to the directory where the
+                    configuration file <filename moreinfo="none">conf.xml</filename> can be found.
+                    The server will try to read the file from
+                    <filename>EXIST_HOME/conf.xml</filename>.</para>
+                <para><command>JAVA_HOME</command> should point to the directory where the Java JDK
+                    is installed. A common problem is that the path added by the installer points to
+                    the JRE, not the JDK.</para>
+                <para>You should also ensure that you have write permissions for the <filename
+                        moreinfo="none">data</filename> directory. You will find it in <filename
+                        moreinfo="none">webapp/WEB-INF/data</filename>.</para>
+            </note>
         </section>
         <section id="sect4">
-            <title>Installed Files</title>
-            <para>The <filename>bin</filename> directory contains a number of 
-				shell and batch scripts. If you installed the source 
-				distribution or used the installer, you will find the 
-            <filename>bin</filename> directory directly below the root 
-				directory of the distribution. If you installed the exist.war 
-				file, you have to look into the location where the war file has 
-				been unpacked and find the <filename>bin</filename> directory 
-				there.</para>
-            <para>In fact, the shell and batch scripts are just wrappers around 
-				the bootstrap loader contained in the jar file 
-            <filename>start.jar</filename>. If the scripts don't work for 
-				your os, just call java with start.jar and pass it a command to 
-				specify which application you would like to start.</para>
-            <para>The different applications are:</para>
+            <title>Executable Files</title>
+            <para>The <filename>bin</filename> directory contains a number of shell and batch
+                scripts. If you installed the source distribution or used the installer, you will
+                find the <filename>bin</filename> directory directly below the root directory of the
+                distribution. If you installed the exist.war file, you have to look into the
+                location where the war file has been unpacked and find the <filename>bin</filename>
+                directory there.</para>
+            <para>In fact, the shell and batch scripts are just wrappers around the bootstrap loader
+                contained in the jar file <filename>start.jar</filename>. If the scripts don't work
+                for your os, just call java with start.jar and pass it a command to specify which
+                application you would like to start.</para>
+            <para>The different launch scripts are:</para>
             <variablelist>
                 <varlistentry>
                     <term>startup.sh</term>
                     <listitem>
                         <para>Has the same effect as calling</para>
                         <synopsis>java -jar start.jar jetty</synopsis>
-                        <para>Starts the included Jetty webserver at port 8080. 
-							eXist and Cocoon are installed as a web 
-							application, located at <ulink 
-                            url="http://localhost:8080/exist/">http://localhost:8080/exist/</ulink>. 
-                        </para>
+                        <para>Starts the included Jetty webserver at port 8080. eXist and Cocoon are
+                            installed as a web application, located at <ulink
+                                url="http://localhost:8080/exist/"
+                            >http://localhost:8080/exist/</ulink>. </para>
                     </listitem>
                 </varlistentry>
                 <varlistentry>
@@ -225,15 +141,13 @@
                     <listitem>
                         <para>Same as</para>
                         <synopsis>java -jar start.jar shutdown</synopsis>
-                        <para>Use this to cleanly shut down a running instance 
-							of eXist. If eXist has been started with 
-                        <filename>startup.sh</filename>, calling shutdown 
-							will also stop the Jetty webserver. In other cases, 
-							eXist has no control over the environment it is 
-							running in, so only the database is stopped. 
-							However, you should <emphasis>always</emphasis> 
-							call <filename>shutdown</filename> before killing 
-							the server process.</para>
+                        <para>Use this to cleanly shut down a running instance of eXist. If eXist
+                            has been started with <filename>startup.sh</filename>, calling shutdown
+                            will also stop the Jetty webserver. In other cases, eXist has no control
+                            over the environment it is running in, so only the database is stopped.
+                            However, you should <emphasis>always</emphasis> call
+                            <filename>shutdown</filename> before killing the server process. Read
+                            the section below for a detailed description.</para>
                     </listitem>
                 </varlistentry>
                 <varlistentry>
@@ -241,10 +155,9 @@
                     <listitem>
                         <para>Same as</para>
                         <synopsis>java -jar start.jar server</synopsis>
-                        <para>This launches eXist as a stand-alone server 
-							process. In this setup, eXist is only accessible 
-							through the XMLRPC and the simple, built-in HTTP 
-							interface.</para>
+                        <para>This launches eXist as a stand-alone server process. In this setup,
+                            eXist is only accessible through the XMLRPC and the simple, built-in
+                            HTTP interface.</para>
                     </listitem>
                 </varlistentry>
                 <varlistentry>
@@ -252,8 +165,8 @@
                     <listitem>
                         <para>Same as</para>
                         <synopsis>java -jar start.jar client</synopsis>
-                        <para>Launches the Java client. This is also the default
-                        if no application is selected on the command line, i.e.</para>
+                        <para>Launches the Java client. This is also the default if no application
+                            is selected on the command line, i.e.</para>
                         <synopsis>java -jar start.jar</synopsis>
                     </listitem>
                 </varlistentry>
@@ -261,263 +174,178 @@
         </section>
         <section>
             <title>Import the Example Documents</title>
-            
-            <para>To play with the database, we first need to store something into it.
-            The examples that come with eXist require a few documents to be stored into
-            the correct collections.</para>
-            
-            <para>To make things as simple as possible, we added an XQuery script
-            to create the required collections and import the files. However, you can
-            also do that manually as described in the next section.</para>
-            
-            <para>The setup script can be found in the admin web application, which
-            is itself completely written in XQuery and can be used for the basic
-            administration steps. Browse to</para>
-            
-            <para><ulink url="http://localhost:8080/exist/admin/admin.xql">
-            http://localhost:8080/exist/admin/admin.xql</ulink></para>
-            
-            <para>or select <option>Administration/Admin</option> from the
-            sidebar on the start page of eXist.</para>
-            
-            <para>Login as "admin" and leave the password field empty. Once logged
-            in, select <option>Examples Setup</option> from the menu at the left.</para>
 
-            <para>The following sections introduce the Java client, explain 
-			backup/restore, clean database shutdown and WebDAV. These things are
-			good to know, but you don't have to read them now.</para>
-			
+            <para>To experiment with the database, we first need to store something into it. The
+                examples that come with eXist require a few documents to be stored into the correct
+                database collections. To make things as simple as possible, we added an XQuery
+                script to create the required collections and import the files.</para>
+
+            <para>The setup script can be found in the admin web application, which is itself
+                completely written in XQuery and can be used for the basic administration steps.
+                Browse to</para>
+
+            <para>
+                <ulink url="http://localhost:8080/exist/admin/admin.xql">
+                    http://localhost:8080/exist/admin/admin.xql</ulink>
+            </para>
+
+            <para>or select <option>Administration/Admin</option> from the sidebar on the start page
+                of eXist. You should see the login screen as shown below.</para>
+
+            <screenshot>
+                <graphic fileref="resources/admin1.png"/>
+            </screenshot>
+
+            <para>Login as "admin" and leave the password field empty. Once logged in, select
+                    <option>Examples Setup</option> from the menu at the left.</para>
+
+            <screenshot>
+                <graphic fileref="resources/admin2.png"/>
+            </screenshot>
+
+            <para>Click on "Import Example Data" to start loading the sample setup. The following
+                screen will ask you if you also want to download some additional data from the web.
+                These files are not really required, though the mondial db in particular provies an
+                interesting data set to execute queries against.</para>
+
+            <para>Once you have uploaded the data, you are taken to the "XQuery Examples" page,
+                where you will find various small web applications based on eXist and XQuery. The
+                easiest way to start experimenting with XQuery yourself, is probably the "XQuery
+                Sandbox", which can be found at: <ulink url="http://localhost:8080/exist/sandbox/"
+                    >http://localhost:8080/exist/sandbox/</ulink>. </para>
+
+            <screenshot>
+                <graphic fileref="resources/sandbox.png"/>
+            </screenshot>
         </section>
-        
-        <section>
-            <title>Using the Client to Index Files</title>
 
-            <para>There is no preferred way to work with eXist. The server 
-            offers quite a number of different interfaces, including 
-            XML-RPC, SOAP, REST-style HTTP or direct access via Cocoon 
-            and the XML:DB API.</para>
-            <para>This section explains how to add and query files using the 
-				admin client. The command-line client may either be controlled by 
-				parameters, or used interactively. If no action is specified on 
-				the command-line, the client will enter interactive mode and 
-				start a graphical user interface. More information on the 
-				client is available in the corresponding client <ulink 
-            url="client.xml">documentation</ulink>.</para>
-            <para>On windows, you can start the client through the created desktop 
-            shortcut or start menu entry.</para>
+        <section>
+            <title>The Java Admin Client</title>
+
+            <para>Besides the web interfaces, eXist also provides a graphical Java admin client,
+                offering access to more complex administrative tasks like user management, security
+                settings and backup/restore. </para>
+            <para>The GUI client can either be used as a command-line tool controlled via
+                parameters, or used interactively. If no action is specified on the command-line,
+                the client will enter interactive mode and display a graphical login. More
+                information on the client is available in the corresponding client <ulink
+                    url="client.xml">documentation</ulink>.</para>
+            <para>On windows, you can start the client through the created desktop shortcut or start
+                menu entry.</para>
             <para>For other systems, the shell scripts to start the client are called</para>
             <synopsis format="linespecific">bin\client.bat</synopsis>
             <para>on DOS/Windows or on Unix:</para>
             <synopsis format="linespecific">bin/client.sh</synopsis>
-            <para>or alternatively</para>
+            <para>If neither of those works for you, you can also call:</para>
             <synopsis>java -jar start.jar client</synopsis>
-            <note>
-                <para>If you can't execute the shell script on Unix, try to do 
-					a <command moreinfo="none">chmod +x bin/client.sh</command> 
-					first.</para>
-            </note>
-            <para>For the first time let's index some sample files provided in 
-				directory <filename moreinfo="none">samples</filename> using 
-				interactive mode.</para>
-            <para>If you start the client without arguments, it will connect to 
-				the database, enter interactive mode and present the graphical 
-				interface. In graphical mode, the client first prompts for a 
-				username and password. As long as no password is specified for 
-				the admin user, the database grants access to any user. Thus, 
-				simply pressing enter is enough. Now, the GUI will show 
-				up:</para>
             <screenshot>
-                <graphic fileref="client-1.png"/>
+                <graphic fileref="resources/client1.png"/>
             </screenshot>
-            <para>At the bottom you see the shell window. It offers the same 
-				commands as in pure shell mode. If you type <command 
-            moreinfo="none">help</command>, a list of known commands is 
-				displayed.</para>
-            <para>eXist organizes all documents in hierarchical collections. 
-				Collections are like directories. They are used to group 
-				related documents together. So first of all we should add new 
-				collections for our documents. To create a new collection, 
-				press on the <guibutton moreinfo="none">Create New 
-				Collection</guibutton> button in the toolbar. Enter the name of 
-				the new collection into the dialog:</para>
+            <para>In the login window, you provide your user credentials and select a server to
+                connect to. The client can either connect to a remote server, or launch an embedded
+                database instance, which will then run in the same process as the client. This
+                option is useful for backup/restore or mass-uploads of data (writing to an embedded
+                instance avoids the network overhead).</para>
+            <para>If you connect to a remote db, the URL field specifies the location of the server.
+                The URI scheme used here is standardized. For the standard setup the displayed
+                default URI should be correct and does not need to be changed here. The <ulink
+                    url="deployment.xml">deployment guide</ulink> explains the meaning of these URIs
+                in more depth.</para>
+            <para>The "admin" user is eXist's super user account. Leave the password field empty if
+                you have not yet changed the admin password. After clicking "OK", the main client
+                window will open:</para>
             <screenshot>
-                <graphic fileref="client-2.png"/>
+                <graphic fileref="resources/client2.png"/>
             </screenshot>
-            <para>Now add another collection called <emphasis>plays</emphasis> 
-				below the <emphasis>shakespeare</emphasis> collection. You can 
-				change into the <emphasis>shakespeare</emphasis> collection by 
-				double-clicking on it in the table view.</para>
-            <para>Finally, we add some documents to the collection. Just press 
-				the <guibutton moreinfo="none">Store</guibutton> button. A file 
-				selection dialog will pop up. You may select either a single 
-				file, multiple files (hold the ctrl-key during selection) or 
-				entire directories. Selecting an entire directory means that 
-				all files in the directory and all its descendant directories 
-				are stored to the database. We thus just select the <filename 
-            moreinfo="none">shakespeare</filename> directory, which can be 
-				found in <filename 
-            moreinfo="none">EXIST_HOME/samples</filename>. After you have 
-				finished the selection, a progress monitor will appear while 
-				the client sends the files to the server:</para>
+            <para>The window is split into two panels: the collection view at the top and the
+                "shell" at the bottom. The "shell" allows you to directly type in commands, but most
+                of them are accessible through the menu as well, so we don't cover it here.</para>
+            <para>If you plan to expose eXist to the outside world (which you don't need to if you
+                are just using it as an embedded library), changing the admin password should be one
+                of the first steps. Open the user management window by clicking on the "keys" icon
+                in the toolbar. The "Edit Users" dialog will open:</para>
             <screenshot>
-                <graphic fileref="client-3.png"/>
+                <graphic fileref="resources/client3.png"/>
             </screenshot>
-            <note>
-                <para>The second progress bar will only change if you run the 
-					client with an embedded database instance. Otherwise, the 
-					client has no information on parsing progress.</para>
-            </note>
-            <para>In addition to the Shakespeare plays, you should also create 
-				a collection /db/library and put the file samples/biblio.rdf 
-				into it. Finally, to experiment with XInclude, you should add 
-				the files in samples/xinclude to another collection 
-				/db/xinclude.</para>
-        </section>
-        <section>
-            <title>Querying documents</title>
-            <para>The client also offers a graphical interface to query the 
-				database, which can be found in the toolbar.</para>
-            <para>For example, to find all SPEECH elements where Juliet talks 
-				about love to her Romeo you may use the simple query:</para>
-            <synopsis format="linespecific">//SPEECH[SPEAKER &amp;= 'juliet' 
-				and . &amp;= 'love romeo']</synopsis>
-            <para>Just open the query interface and enter the query into the 
-				text box at the top. Then press <guibutton>submit</guibutton>. 
-				The results are show in the text box at the bottom.</para>
-            <screenshot>
-                <graphic fileref="client-8.png"/>
-            </screenshot>
-            <para>For more information on XQuery support in eXist, please refer 
-				to the <ulink url="xquery.xml">XQuery 
-				documentation</ulink>.</para>
+            <para>In the table at the top, select the "admin" user, type in a password into the
+                corresponding fields at the middle of the dialog, then click on "Modify User" to
+                apply your changes.</para>
         </section>
         <section>
             <title>Shutting down the database</title>
-            <para>It is always recommended to cleanly shut down the database 
-				before killing the server process. Otherwise, data files may 
-				get corrupted. The simplest way to shut down the database is 
-				through the corresponding menu entry in the Java client.</para>
-            <para>Otherwise, you can use the <filename 
-            moreinfo="none">bin/shutdown.sh</filename> or <filename 
-            moreinfo="none">bin\shutdown.bat</filename> scripts to cleany 
-				shut down the database and stop the webserver. Again, you can 
-				also use the <filename moreinfo="none">start.jar</filename> 
-				bootloader to do the same thing:</para>
-            <synopsis format="linespecific">java -jar start.jar 
-				shutdown</synopsis>
+            <para>It is always recommended to cleanly shut down the database before killing the
+                server process. Otherwise, data files may get corrupted. There are several ways to
+                trigger a shutdown:</para>
+            <itemizedlist>
+                <listitem>
+                    <para>Use the <command>Connection/Shutdown</command> menu entry in the graphical
+                        client</para>
+                </listitem>
+                <listitem>
+                    <para>On the web-based admin interface select the <command>Shutdown</command>
+                        link:</para>
+                    <para>
+                        <ulink url="http://localhost:8080/admin.xql"
+                        >http://localhost:8080/admin.xql</ulink>
+                    </para>
+                </listitem>
+                <listitem>
+                    <para>Use the <filename>bin/shutdown.sh</filename> or
+                        <filename>shutdown.bat</filename> shell scripts or manually call
+                            <filename>java -jar start.jar shutdown</filename>.</para>
+                    <para>To specify user and password, pass the <parameter>-u</parameter> and
+                            <parameter>-p</parameter> parameters on the command line. By default,
+                        the command attempts to shut down the database running at the default URI:
+                        xmldb:exist://localhost:8080/exist/xmlrpc/db. To shut down a different
+                        database, pass another URI with parameter <parameter>-l</parameter>: </para>
+                    <synopsis>java -jar start.jar shutdown -u admin -p adminpass -l xmldb:exist://localhost:8080/exist/xmlrpc/db</synopsis>
+                </listitem>
+            </itemizedlist>
+
             <note>
-                <para>If eXist has been deployed as a web application in 
-					another web server than the supplied Jetty, calling 
-					shutdown will just close the database instance, not the 
-					server process of the webserver. eXist doesn't know in 
-					which environment it is running, so it can just take care 
-					of itself.</para>
-                <para>Nevertheless, closing the database explicitely is always 
-					a good idea.</para>
+                <para>If eXist has been deployed as a web application in another web server than the
+                    supplied Jetty, calling shutdown will just close the database instance, not the
+                    server process of the webserver. eXist doesn't know in which environment it is
+                    running, so it can just take care of itself.</para>
+                <para>Nevertheless, closing the database explicitely is always a good idea.</para>
             </note>
         </section>
         <section id="service">
             <title>Starting eXist as a service</title>
-            <para>Instead of manually running the eXist server in a shell window, 
-            you may prefer to run it as a background service, which is automatically launched
-            during system startup. eXist ships with preconfigured scripts, using
-            Tanuki Software's <a href="http://wrapper.tanukisoftware.org">Java Service
-            Wrapper</a> to handle the setup procedure.</para>
-            
-            <para>The required scripts are contained in directory 
-            <filename>tools/wrapper</filename>. On Windows, you can simply choose
-            the entry <emphasis>Install eXist as Service</emphasis> from the eXist
-            menu created in the start menu. You can also call 
-            <filename>tools/wrapper/bin/install.bat</filename> instead. This will
-            install eXist and Jetty as a Windows service.</para>
-            
+            <para>Instead of manually running the eXist server in a shell window, you may prefer to
+                run it as a background service, which is automatically launched during system
+                startup. eXist ships with preconfigured scripts, using Tanuki Software's <ulink
+                    url="http://wrapper.tanukisoftware.org">Java Service Wrapper</ulink> to handle
+                the setup procedure.</para>
+
+            <para>The required scripts are contained in directory
+                <filename>tools/wrapper</filename>. On Windows, you can simply choose the entry
+                    <emphasis>Install eXist as Service</emphasis> from the eXist menu created in the
+                start menu. You can also call <filename>tools/wrapper/bin/install.bat</filename>
+                instead. This will install eXist and Jetty as a Windows service.</para>
+
             <para>For Linux there's the usual start/stop script in
-            <filename>tools/wrapper/bin/exist.sh</filename>. Create a link to this file
-            from the <filename>init.d</filename> directory of your distribution (where
-            all the start/stop scripts reside). Normally, the directory will be 
-            <filename>/etc/init.d</filename>. For example:</para>
-            
+                    <filename>tools/wrapper/bin/exist.sh</filename>. Create a link to this file from
+                the <filename>init.d</filename> directory of your distribution (where all the
+                start/stop scripts reside). Normally, the directory will be
+                <filename>/etc/init.d</filename>. For example:</para>
+
             <synopsis>ln -s $EXIST_HOME/tools/wrapper/bin/exist.sh /etc/init.d/exist</synopsis>
-            
+
             <para>Then add the service to the correct runlevel. It depends on your Linux
-            distribution how to do that.</para>
-        </section>
-        <section>
-            <title>Backup/Restore</title>
-            <para>The graphical user interface of the client provides a 
-				convenient way to create backups and to restore them after a 
-				server crash. You may backup any local or remote collection 
-				available through the XML:DB API. To create a backup, simply 
-				click on the <emphasis>Create Backup</emphasis> button in the 
-				toolbar. You will be asked to select a collection and a 
-				directory. During backup, a hierarchy of directories will be 
-				created below the backup directory. The directories correspond 
-				to the hierarchy of collections found in the database.</para>
-            <para>The tool will also backup user permissions for each 
-				collection and document. This information is written into the 
-				special file <filename>__contents__.xml</filename> placed in 
-				each subdirectory. You need these files to restore the database 
-				contents.<abbrev></abbrev> </para>
-            <screenshot>
-                <graphic fileref="client-4.png"/>
-            </screenshot>
-            <para>To restore selected collections, click on the 
-            <emphasis>Restore Files from Backup</emphasis> button. As shown 
-				above, you will be asked to select one of the 
-            <filename>__contents__.xml</filename> files, which have been 
-				created inside each backup directory. For example, to restore 
-				the entire database, select 
-            <filename>BACKUP_DIR/db/__contents__.xml</filename>. To restore 
-				a specific collection, just select the __contents__.xml file in 
-				the directory corresponding to the collection. Once you have 
-				selected a file, the client will begin to restore the 
-				collection contents, showing the following progress 
-				monitor:</para>
-            <screenshot>
-                <graphic fileref="client-7.png"/>
-            </screenshot>
-            <note>
-                <para>Please note that - if you restore the root collection - the 
-                client will also restore the user settings which were in effect 
-                at the time you created the backup. If new users have been created 
-                in the meantime, they will be overwritten.</para>
-            </note>
+                distribution how to do that.</para>
         </section>
         <section>
             <title>Log Files</title>
-            <para>eXist uses the log4j-package to write logging output. By
-            default logging output is written to <filename 
-                moreinfo="none">webapp/WEB-INF/logs</filename> or <filename>tools/wrapper/logs</filename>
-            if you are running eXist as a Windows or Unix service.
-            </para>
-            <para>If you experience any problems with eXist, please have a look 
-				at the corresponding log-files (exist.log). This is also recommended if 
-				Cocoon presents you an error-report. Cocoon log-files also reside in 
-				the <filename moreinfo="none">WEB-INF/logs</filename> 
-				directory. Usually, looking at these files helps to understand 
-				why an exception occurred.</para>
-        </section>
-        <section>
-            <title>What Next?</title>
-            <para>To use all the power of eXist you should read the <ulink 
-            url="xquery.xml">XQuery docs</ulink>. eXist provides a number 
-				of extensions and you can make your queries a lot faster by 
-				using these extensions, so don't miss them.</para>
-                
-            <para>Available APIs are covered by the <ulink url="devguide.xml">
-            Developer's Guide</ulink>. The directory
-            <filename>samples/</filename> contains example code for all the
-            APIs, using different programming languages.</para>
-            
-            <para>If you would like to know more about the different deployment 
-				options, read the document about <ulink 
-            url="deployment.xml">Server Deployment</ulink>. Security 
-				related issues are covered by <ulink 
-            url="security.xml">security.xml</ulink>.</para>
-            
-            <para><ulink url="webdav.xml">WebDAV</ulink> makes it possible 
-            to manage database collections in
-            eXist just like directories in a file system.</para>
+            <para>eXist uses the log4j-package to write logging output. By default logging output is
+                written to <filename moreinfo="none">webapp/WEB-INF/logs</filename> or
+                    <filename>tools/wrapper/logs</filename> if you are running eXist as a Windows or
+                Unix service. </para>
+            <para>If you experience any problems with eXist, please have a look at the corresponding
+                log-files (exist.log). This is also recommended if Cocoon presents you an
+                error-report. Cocoon log-files also reside in the <filename moreinfo="none"
+                    >WEB-INF/logs</filename> directory. Usually, looking at these files helps to
+                understand why an exception occurred.</para>
         </section>
     </chapter>
 </book>

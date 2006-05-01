@@ -1,123 +1,135 @@
 <?xml version="1.0"?>
-<!--<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "docbookx.dtd">-->
+<book>
 
-<book xmlns:ci="http://apache.org/cocoon/include/1.0">
-    
     <bookinfo>
         <graphic fileref="logo.jpg"/>
-        <title>Open Source Native XML Database</title>
-        <author> 
-          <firstname>Wolfgang M.</firstname>
-          <surname>Meier</surname>
-          <affiliation>
-            <address format="linespecific">
-				<email>wolfgang@exist-db.org</email>
-            </address>
-          </affiliation>
+        <productname>Open Source Native XML Database</productname>
+        <title>Documentation</title>
+        <author>
+            <firstname>Wolfgang M.</firstname>
+            <surname>Meier</surname>
         </author>
     </bookinfo>
 
-    <ci:include src="sidebar.xml"/>
-      
+    <ci:include xmlns:ci="http://apache.org/cocoon/include/1.0" src="sidebar.xml"/>
+
     <chapter>
-		<title>Documentation</title>
-        
+        <title>Documentation</title>
+
         <section>
             <title>Available Documentation</title>
-            
-            <unorderedlist>
-                <listitem>
-                    <para><ulink href="quickstart.xml">Quick Start</ulink>: getting started with eXist.</para>
-                </listitem>
-                <listitem>
-                    <para><ulink href="changes.xml">Changes</ulink>: overview of changes in this release.</para>
-                </listitem>
-                <listitem>
-                    <para><ulink href="xquery.xml">XQuery</ulink>: current status, supported
-                    features and extensions.</para>
-                </listitem>
-                <listitem>
-                    <para><ulink href="update_ext.xml">XQuery Update Extensions</ulink>: eXist provides a
-                    number of extensions to update document fragments from within an XQuery.</para>
-                </listitem>
-                
-                <listitem>
-                    <para><ulink href="indexing.xml">Configuring Indexes</ulink>: how to configure
-                    specific indexes.</para>
-                </listitem>
-                <listitem>
-                    <para><ulink href="devguide.xml">Developer's Guide</ulink>: describes the
-                    various interfaces: XML:DB API, XML-RPC, REST, SOAP.</para>
-                </listitem>
-                <listitem>
-                    <para><ulink href="client.xml">Java Admin Client</ulink>: manual for the 
-                    GUI client.</para>
-                </listitem>
-                <listitem>
-                    <para><ulink href="deployment.xml">Deployment</ulink>: eXist supports different
-                    alternatives for server deployment.</para>
-                </listitem>
-                <listitem>
-                    <para><ulink href="security.xml">Security</ulink>: creating/changing users, passwords
-                    and resource permissions.</para>
-                    <para><ulink href="xacml.xml">XACML</ulink>: XQuery access control.</para>
-                </listitem>
-                <listitem>
-                    <para><ulink href="configuration.xml">Server Configuration</ulink>: configuration
-                    options for the server.</para>
-                </listitem>
-                <listitem>
-                    <para><ulink href="xinclude.xml">XInclude</ulink>: XInclude support in eXist.</para>
-                </listitem>
-                <listitem>
-                    <para><ulink href="ant-tasks.xml">Ant Tasks</ulink>: how to automate tasks with Ant.</para>
-                </listitem>
-                <listitem>
-                    <para><ulink href="cluster.xml">Cluster configuration</ulink>: how to configure cluster environment.</para>
-                </listitem>
-                <listitem>
-                    <para><ulink href="webdav.xml">WebDAV</ulink>: how to setup your favourite webDAV enabled application.</para>
-                </listitem>
-                <listitem>
-                    <para><ulink href="developper.html">Developper Manual</ulink>: How to use the various tools; SVN, eclipse, Ant, PMD, JDepend, ... .</para>
-                </listitem>
-            </unorderedlist>
-            
+
+            <table class="documentation">
+                <title/>
+                <tgroup cols="2">
+                    <tbody>
+                        <tr>
+                            <td class="doclink"><ulink url="quickstart.xml">Quick Start</ulink>:</td>
+                            <td>getting started with eXist.</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="changes.xml">Changes</ulink>:</td>
+                            <td>overview of changes in this release.</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="xquery.xml">XQuery</ulink>:</td>
+                            <td>current status, supported features and extensions.</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="update_ext.xml">XQuery Update Extensions</ulink>:</td>
+                            <td>eXist provides a number of extensions to update document fragments
+                                from within an XQuery.</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="backup.xml">Backup and Restore</ulink>:</td>
+                            <td>Explains how to backup/restore your database contents.</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="indexing.xml">Configuring Indexes</ulink>:</td>
+                            <td>how to configure specific indexes.</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="devguide.xml">Developer's Guide</ulink>:</td>
+                            <td>describes the various interfaces: XML:DB API, XML-RPC, REST,
+                            SOAP.</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="client.xml">Java Admin Client</ulink>:</td>
+                            <td>manual for the GUI client.</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="deployment.xml">Deployment</ulink>:</td>
+                            <td>eXist supports different alternatives for server deployment.</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="security.xml">Security</ulink>:</td>
+                            <td>creating/changing users, passwords and resource permissions.</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="xacml.xml">XACML</ulink>:</td>
+                            <td>XQuery access control.</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="configuration.xml">Server Configuration</ulink>:</td>
+                            <td>configuration options for the server.</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="xinclude.xml">XInclude</ulink>:</td>
+                            <td>XInclude support in eXist.</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="ant-tasks.xml">Ant Tasks</ulink>:</td>
+                            <td>how to automate tasks with Ant.</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="cluster.xml">Cluster configuration</ulink>:</td>
+                            <td>how to configure cluster environment.</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="webdav.xml">WebDAV</ulink>:</td>
+                            <td>how to setup your favourite webDAV enabled application.</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="developper.html">Developer's Manual</ulink>:</td>
+                            <td>How to use the various tools; SVN, eclipse, Ant, PMD, JDepend, ...
+                            .</td>
+                        </tr>
+                    </tbody>
+                </tgroup>
+            </table>
         </section>
         <section>
-        	<title>Documentation on the Wiki</title>
-        	
-        	<para>Further documentation can be found in the <ulink url="http://wiki.exist-db.org">Wiki</ulink>.
-        	Among other things, have a look at:</para>
-            
-            <unorderedlist>
-            	<listitem>
-                    <para><ulink href="http://wiki.exist-db.org/space/NewSchemaValidation">
-                    New Schema Validation</ulink>.</para>
+            <title>Documentation on the Wiki</title>
+
+            <para>Further documentation can be found in the <ulink url="http://wiki.exist-db.org"
+                    >Wiki</ulink>. Among other things, have a look at:</para>
+
+            <itemizedlist>
+                <listitem>
+                    <para><ulink url="http://wiki.exist-db.org/space/NewSchemaValidation"> New
+                            Schema Validation</ulink>.</para>
                 </listitem>
-			</unorderedlist>
-		</section>
-		
+            </itemizedlist>
+        </section>
+
         <section>
             <title>Articles</title>
-            
-            <p>If you would like to know more about the internal workings of eXist, you may
-                read the following article:</p>
 
-            <p>
-                Wolfgang Meier. <ulink href="http://exist-db.org/webdb.pdf">eXist: An 
-            Open Source Native XML Database</ulink>. 
-            In: Akmal B. Chaudri, Mario Jeckle, Erhard Rahm, Rainer Unland (Eds.): 
-            Web, Web-Services, and Database Systems. NODe 2002 Web- and Database-Related 
-            Workshops, Erfurt, Germany, October 2002. Springer LNCS Series, 2593.</p>
-			
-            <p>A chapter about eXist is also contained in the book:</p>
-			
-            <p>Akmal B. Chaudri, Awais Rashid, Roberto Zicari (Eds.): 
-			<link href="http://www.aw.com/catalog/academic/product/1,4096,0201844524,00.html">XML 
-			Data Management: Native XML and XML-Enabled Database Systems</link>. 
-			ISBN: 0-201-84452-4. Published by Addison Wesley Professional,
-			March, 2003.</p>
+            <para>If you would like to know more about the internal workings of eXist, you may read
+                the following article:</para>
+
+            <para> Wolfgang Meier. <ulink url="http://exist-db.org/webdb.pdf">eXist: An Open Source
+                    Native XML Database</ulink>. In: Akmal B. Chaudri, Mario Jeckle, Erhard Rahm,
+                Rainer Unland (Eds.): Web, Web-Services, and Database Systems. NODe 2002 Web- and
+                Database-Related Workshops, Erfurt, Germany, October 2002. Springer LNCS Series,
+                2593.</para>
+
+            <para>A chapter about eXist is also contained in the book:</para>
+
+            <para>Akmal B. Chaudri, Awais Rashid, Roberto Zicari (Eds.): <ulink
+                    url="http://www.aw.com/catalog/academic/product/1,4096,0201844524,00.html">XML
+                    Data Management: Native XML and XML-Enabled Database Systems</ulink>. ISBN:
+                0-201-84452-4. Published by Addison Wesley Professional, March, 2003.</para>
 
         </section>
     </chapter>

@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<book>
+    <bookinfo>
+        <graphic fileref="logo.jpg"/>
+        <productname>Open Source Native XML Database</productname>
+        <title>Backup / Restore</title>
+        <author>
+            <firstname>Wolfgang M.</firstname>
+            <surname>Meier</surname>
+        </author>
+    </bookinfo>
+
+    <ci:include xmlns:ci="http://apache.org/cocoon/include/1.0" src="sidebar.xml"/>
+    
+    <chapter>
+        <title>Backup and Restore</title>
+
+        <para>Using the backup/restore facility, you can backup the entire database into the file
+            system. This is not only vital in case of a system crash, but also useful if you just
+            want to export your data and reimport all or parts of it into a different database, e.g.
+            while upgrading eXist to a newer version. </para>
+
+        <para>Instead of using some proprietary format, eXist will export the database contents into
+            a hierarchy of directories containing ordinary XML files. The directories correspond to
+            the collections in the db, the XML and binary files to the resource stored in each
+            collection.</para>
+
+        <para>The resource and collection metadata is exported into a special XML file, called
+                <filename>__contents__.xml</filename>. The file lists information about type, owner,
+            modification date or the permissions assigned to a resource. You will find one
+                <filename>__contents__.xml</filename> file in each directory written by the backup.</para>
+
+        <para>The advantage of this backup structure is that you can hand-edit any of the written
+            files, and the changes will be reflected in the database after you restored the data.
+            You can even change the user database, which is stored in
+            <filename>/db/system/users.xml</filename>. This is handy sometimes, for example, if you
+            need to reset the passwords of all your users at once. Just edit users.xml, remove the
+            password attribute or set it to a default value and restore the document.</para>
+
+        <section>
+            <title>Backup</title>
+            <para>You can create a backup either through the graphical Java client or on the command
+                line. Using the graphical client, click on the restore icon in the toolbar or select
+                    <command>Tools/Backup</command> from the menu.</para>
+
+            <screenshot>
+                <graphic fileref="resources/backup1.png"/>
+            </screenshot>
+
+            <para>Select the collection to backup. If you want to backup the entire database, select
+                    <command>/db</command>. Otherwise, select the top collection that should be
+                stored. However, user data and permissions will only be exported if you do a full
+                backup.</para>
+
+            <para>Into the <command>Backup-Directory</command> field, enter the full path to the
+                directory where you want the backup to be stored. The database contents will be
+                dumped into this directory. Once you are finished, click
+            <command>OK</command>.</para>
+            
+            <para>Instead of using the graphical client, there's also a command-line utility for
+            backup/restore. The utility can be started through the shell scripts <command>bin/backup.sh</command>,
+            <command>bin/backup.bat</command>, or directly:</para>
+            
+            <synopsis>java -jar start.jar backup</synopsis>
+            
+            <para>Passing parameter <parameter>-h</parameter> will print the available options to
+            the console.</para>
+            
+            <para>To backup a collection, you specify the collection path with parameter 
+            <parameter>-b</parameter>, the target directory with <parameter>-d</parameter>.
+            For example, to backup the entire database, we do:</para>
+            
+            <synopsis>bin/backup.sh -u admin -p admin-pass -b /db -d /var/backup/hd060501</synopsis>
+            
+            <para>By default, the utility connects to the database at URI 
+            xmldb:exist://localhost:8080/exist/xmlrpc. If you want to backup a database at a
+            different location, specify its XML:DB URI (excluding any collection path) to the
+            <parameter>-o</parameter> parameter as follows:</para>
+            
+            <synopsis>bin/backup.sh -u admin -p admin-pass -b /db -d /var/backup/hd060501
+            -ouri=xmldb:exist://192.168.1.2:8080/exist/xmlrpc</synopsis>
+            
+            <note>
+                <para>The defaults for user, password or server uri can also be set via the
+                <filename>backup.properties</filename> file.</para>
+            </note>
+        </section>
+
+        <section>
+            <title>Restore</title>
+            
+            <para>To restore database contents from a backup through the graphical Java client, 
+            click on the restore icon in the toolbar or select <option>Tools/Restore</option> 
+            from the menu.</para>
+            
+            <para>As shown below, you will be asked to select one of the
+                <filename>__contents__.xml</filename> files, which have been created inside each
+                backup directory. Select the <filename>__contents__.xml</filename> file in the
+                topmost directory you want to be restored. To restore the entire database, select
+                <filename>/db/__contents__.xml</filename>.</para>
+                
+            <screenshot><graphic fileref="resources/backup2.png"/></screenshot>
+            
+            <note>
+                <para>The restore operation will overwrite any existing resource in the database
+                with the same path and name as a resource in the backup. However, resources
+                in the db with different names will not be touched.</para>
+            </note>
+            
+            <para>After selecting the file, a new dialog will appear, asking you for the
+            admin password to be used for the restore process. You need to provide a password
+            here if and only if the password of the "admin" user set in the backup will be
+            different from the password you logged in with. The restore process
+            will restore the user settings from the backup, so your current user password
+            will become invalid after the user database was restored. If you specify a wrong
+            password, the restore process will abort.</para>
+            
+            <note>
+                <para>Whenever the <filename>/db/system</filename> collection is restored, the 
+                existing user database will be overwritten by the one contained in
+                the backup. If new users were added after the backup, these users will get lost.
+                </para>
+            </note>
+            
+            <para>If everything goes ok, a progress dialog will appear and you can watch as
+            your files are restored:</para>
+            
+            <screenshot><graphic fileref="resources/backup3.png"/></screenshot>
+            
+            <para>To restore from a backup using the command-line utility, pass parameter
+            <parameter>-r</parameter> with the full path to the <filename>__contents__.xml</filename>
+            file you want to restore. If the backup uses a different password for the "admin"
+            user, you should specify it with parameter <parameter>-P</parameter>. Example:</para>
+            
+            <synopsis>bin/backup.sh -u admin -p admin-pass -P backup-pass -r /var/backup/hd060501/db/__contents__.xml</synopsis>
+        </section>
+    </chapter>
+</book>
