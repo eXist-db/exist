@@ -15,7 +15,7 @@ if [ -z "$EXIST_BASE" ]; then
     EXIST_BASE=$EXIST_HOME
 fi
 
-LOCALCLASSPATH=$JAVA_HOME/lib/tools.jar:$EXIST_BASE/exist.jar:$EXIST_BASE/exist-optional.jar:$EXIST_BASE/examples.jar:$EXIST_BASE/tools/lib/junit.jar
+LOCALCLASSPATH=$JAVA_HOME/lib/tools.jar:$EXIST_BASE/exist.jar:$EXIST_BASE/exist-optional.jar:$EXIST_BASE/examples.jar:$EXIST_BASE/tools/ant/lib/junit.jar:$EXIST_BASE/tools/ant/lib/xmlunit1.0.jar:$EXIST_BASE/tools/jetty/lib/org.mortbay.jetty.jar
 
 JARS=`ls -1 $EXIST_BASE/lib/core/*.jar $EXIST_BASE/lib/optional/*.jar`
 for jar in $JARS
