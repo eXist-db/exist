@@ -4,6 +4,10 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Arrays;
+import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
@@ -15,13 +19,22 @@ import org.jibble.pircbot.User;
 
 public class IRCSession extends PircBot {
 
+	private static final int PING_PERIOD = 120000;
+	
 	private static final String EV_MESSAGE = "message";
 	private static final String EV_NOTICE = "notice";
 	private static final String EV_JOIN = "join";
 	private static final String EV_PART = "part";
 	private static final String EV_USERS_LIST = "users";
+	private static final String EV_PING = "ping";
+	
+	private static char[] CHUNK = new char[8192];
+	static {
+		Arrays.fill(CHUNK, ' ');
+	}
 	
 	// server and channel settings
+	private String server;
 	private String channel;
 	
 	private String sessionId;
@@ -29,19 +42,35 @@ public class IRCSession extends PircBot {
 	private PrintWriter writer;
 	private StringWriter tempWriter = new StringWriter();
 	
+	private boolean fillChunks = false;
+	
 	private boolean disconnect = false;
 	
-	public IRCSession(String server, String channel, String nick) throws IOException, NickAlreadyInUseException, IrcException {
+	private boolean awaitingPing = false;
+	
+	private Pattern cmdRegex = Pattern.compile("^/\\s*(\\w+)\\s+(.*)$");
+	private Matcher matcher = cmdRegex.matcher("");
+	
+	public IRCSession(String server, String channel, String nick, boolean modProxyHack) throws IOException, NickAlreadyInUseException, IrcException {
 		super();
+		
+		this.server = server;
 		this.channel = channel;
 		this.sessionId = Integer.toString(hashCode());
+		this.fillChunks = modProxyHack;
 		this.writer = new PrintWriter(tempWriter);
 		
 		this.setVersion("XIRCProxy 0.1");
+		this.setLogin("XIRCProxy");
 		
 		this.setName(nick);
 		this.setVerbose(true);
+		this.setEncoding("UTF-8");
 		
+		connect();
+	}
+
+	protected void connect() throws IOException, IrcException, NickAlreadyInUseException {
 		log("Connecting to " + server);
 
 		connect(server);
@@ -56,37 +85,71 @@ public class IRCSession extends PircBot {
 	
 	public synchronized void run(HttpServletResponse response) {
 		response.setContentType("text/html");
-		
 		response.setBufferSize(64);
 		try {
 			ServletOutputStream os = response.getOutputStream();
 			writer = new PrintWriter(new OutputStreamWriter(os, "UTF-8"), false);
-			writer.println("<html><head><title>IRCProxy</title>");
+			writer.println("<html><head>");
+			writer.println("<title>IRCProxy</title>");
+			writer.println("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />");
 			writer.println("</head><body>");
 			writer.println(tempWriter.toString());
 			tempWriter = null;
-			writer.flush();
+			flush();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log("Exception while opening push stream: " + e.getMessage());
+			return;
 		}
 		
 		log("Listening to chat events ...");
+		disconnect = false;
+		awaitingPing = false;
 		while (!disconnect) {
 			try {
-				wait();
+				wait(PING_PERIOD);
 			} catch (InterruptedException e) {
+			}
+			if (!disconnect) {
+				if (awaitingPing) {
+					log("No response from client, disconnecting user " + getNick() + " from channel " + channel + " ...");
+					partChannel(channel, "Connection Timed Out");
+					quitServer();
+				} else
+					pingClient();
 			}
 		}
 	}
 	
 	public void quit() {
-		disconnect();
+		quit("Client Quit");
+	}
+	
+	private void quit(String partMessage) {
+		partChannel(channel, partMessage);
+		quitServer();
 	}
 	
 	public synchronized void send(String message) {
-		sendMessage(channel, message);
-		writeMessage(getNick(), message);
+		matcher.reset(message);
+		if (matcher.find()) {
+			String cmd = matcher.group(1);
+			message = matcher.group(2);
+			processCommand(cmd, message);
+		} else {
+			sendMessage(channel, message);
+			writeMessage(getNick(), message);
+		}
+	}
+	
+	public synchronized void attemptReconnect() throws NickAlreadyInUseException, IOException, IrcException {
+		log("Reconnecting ...");
+		disconnect = true;
+		awaitingPing = false;
+		tempWriter = new StringWriter();
+		notifyAll();
+		if (!isConnected()) {
+			connect();
+		}
 	}
 	
 	protected synchronized void onDisconnect() {
@@ -107,7 +170,7 @@ public class IRCSession extends PircBot {
 					sender + " [" + hostname + "] has joined " + channel
 			}));
 			writer.println("</script>\n\n");
-			writer.flush();
+			flush();
 		} catch (Exception e) {
 			e.printStackTrace();
 			closeConnection(e.getMessage());
@@ -122,7 +185,7 @@ public class IRCSession extends PircBot {
 					sender + " [" + hostname + "] has left " + channel
 			}));
 			writer.println("</script>\n\n");
-			writer.flush();
+			flush();
 		} catch (Exception e) {
 			e.printStackTrace();
 			closeConnection(e.getMessage());
@@ -137,7 +200,7 @@ public class IRCSession extends PircBot {
 					sourceNick + " [" + sourceLogin + '@' + sourceHostname + "] has quit: \"" + reason + '"'
 			}));
 			writer.println("</script>\n\n");
-			writer.flush();
+			flush();
 		} catch (Exception e) {
 			e.printStackTrace();
 			closeConnection(e.getMessage());
@@ -158,11 +221,22 @@ public class IRCSession extends PircBot {
 			writer.println("<script language=\"JavaScript\" type=\"text/javascript\">");
 			writer.println(jsCall("dispatchEvent", args));
 			writer.println("</script>\n\n");
-			writer.flush();
+			flush();
 		} catch (Exception e) {
 			e.printStackTrace();
 			closeConnection(e.getMessage());
 		}
+	}
+	
+	public void pingResponse() {
+		log("Received ping reponse ...");
+		awaitingPing = false;
+	}
+	
+	private void pingClient() {
+		String js = jsCall("dispatchEvent", new String[] { EV_PING });
+		writeLine(js);
+		awaitingPing = true;
 	}
 	
 	private void writeMessage(String sender, String message) {
@@ -180,7 +254,7 @@ public class IRCSession extends PircBot {
 			writer.println("<script language=\"JavaScript\" type=\"text/javascript\">");
 			writer.println(data);
 			writer.println("</script>\n\n");
-			writer.flush();
+			flush();
 		} catch (Exception e) {
 			e.printStackTrace();
 			closeConnection(e.getMessage());
@@ -201,12 +275,18 @@ public class IRCSession extends PircBot {
 		return buf.toString();
 	}
 	
+	private void flush() {
+		if (fillChunks)
+			writer.write(CHUNK);
+		writer.flush();
+	}
+	
 	private void closeConnection(String message) {
 		if (writer != null) {
 			writer.println("<h1>Error</h1>");
 			writer.println("<p>Error found: " + message + "</p>");
 			writer.println("<p>Closing connection.</p>");
-			writer.flush();
+			flush();
 		}
 		partChannel(channel);
 		quitServer();
@@ -235,5 +315,29 @@ public class IRCSession extends PircBot {
 			}
 		}
 		return buf.toString();
+	}
+	
+	private void processCommand(String command, String message) {
+		if ("MSG".equalsIgnoreCase(command)) {
+			String target = new StringTokenizer(message).nextToken();
+			sendMessage(target, message.substring(target.length() + 1));
+		} else if ("QUIT".equalsIgnoreCase(command)) {
+			writeMessage(getNick(), "QUIT: " + message);
+			quit(message);
+		} else if ("NICK".equalsIgnoreCase(command)) {
+			writeMessage(getNick(), "Trying to change nick to " + message);
+			changeNick(message);
+		}
+	}
+	
+	public static void main(String[] args) {
+		Pattern cmdRegex = Pattern.compile("^/\\s*(\\w+)\\s+(.*)$");
+		Matcher matcher = cmdRegex.matcher("");
+		matcher.reset("/quit abcdefg");
+		if (matcher.find()) {
+			System.out.println("Command: " + matcher.group(1) + " - " + matcher.group(2));
+		} else {
+			System.out.println("Nothing");
+		}
 	}
 }
