@@ -5,7 +5,7 @@
 
 body{
 	font: 100% Verdana, Arial, Helvetica, sans-serif;
-	background: #c2c2f9 url(../images/logo.png) center center no-repeat fixed;
+	background: #3c3c7a url(../images/logo.png) center center no-repeat fixed;
 	margin: 15px;
 }
 
@@ -90,7 +90,7 @@ a:link, a:visited {
 }
 
 .irclog {
-	font-family: "Bitstream Vera Sans Mono", "Courier New", Courier, monospace
+    font-family: "Bitstream Vera Sans Mono", "Courier New", Courier, monospace;
 	position: relative;
 	width: 100%;
 }
