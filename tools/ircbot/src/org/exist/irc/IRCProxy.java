@@ -1,15 +1,12 @@
 package org.exist.irc;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -23,7 +20,27 @@ public class IRCProxy extends HttpServlet {
 	private String channel = "#testaabb";
 	
 	private Map channels = new HashMap();
+
+	private boolean modProxyHack = false;
 	
+	public void init(ServletConfig config) throws ServletException {
+		super.init(config);
+		
+		String param = config.getInitParameter("mod-proxy");
+		if (param != null)
+			modProxyHack = param.equalsIgnoreCase("true");
+	}
+	
+	/**
+	 * The GET method opens a connection to the client and keeps it open, i.e. the
+	 * method will only return if the client does explicitely close the session (via a POST)
+	 * or the session is killed. The server sends all input it receives from the IRC server down
+	 * this stream.
+	 * 
+	 * Before calling GET, the client has to create a session by sending a POST request
+	 * with just the channel and the nick as parameters (but no 'session' parameter). After
+	 * the session was created successfully, the client can call GET and start listening.
+	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String sessionId = request.getParameter("session");
 		if (sessionId == null) {
@@ -35,10 +52,14 @@ public class IRCProxy extends HttpServlet {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Session " + sessionId + " not found");
 			return;
 		}
-		
 		session.run(response);
 	}
 	
+	/**
+	 * The POST method is used to initialize a session and to process
+	 * commands. The client will use POST to pass the user input to the
+	 * server asynchronously.
+	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) 
 	throws ServletException, IOException {
 		String sessionId = request.getParameter("session");
@@ -46,12 +67,16 @@ public class IRCProxy extends HttpServlet {
 		String channelParam = request.getParameter("channel");
 		String close = request.getParameter("close");
 		String send = request.getParameter("send");
+		String pong = request.getParameter("pong");
+		String reconnect = request.getParameter("refresh");
 		if (sessionId == null) {
+			// No session yet: connect and create a new one
 			if (channelParam != null && channelParam.length() > 0)
 				channel = channelParam;
 			try {
-				IRCSession session = new IRCSession(server, channel, nick);
+				IRCSession session = new IRCSession(server, channel, nick, modProxyHack);
 				sessionId = session.getSessionId();
+				// add the session to the list of channels
 				synchronized(channels) {
 					channels.put(sessionId, session);
 				}
@@ -71,9 +96,23 @@ public class IRCProxy extends HttpServlet {
 				response.sendError(HttpServletResponse.SC_NOT_FOUND, "Session " + sessionId + " not found");
 				return;
 			}
-			if (close != null) {
+			// we have a valid session, so check for commands and process them
+			if (pong != null) {
+				log("Received pong from client.");
+				session.pingResponse();
+			} else if (close != null) {
 				log("Closing session " + sessionId);
 				session.quit();
+			} else if (reconnect != null) {
+				try {
+					session.attemptReconnect();
+				} catch (NickAlreadyInUseException e) {
+					response.sendError(HttpServletResponse.SC_CONFLICT, "Nick is already in use");
+				} catch (IOException e) {
+					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+				} catch (IrcException e) {
+					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+				}
 			} else if (send != null) {
 				log("Sending message: " + send + "; id: " + sessionId);
 				session.send(send);
