@@ -24,13 +24,13 @@ var CHANNELS = [ '#existdb', '#testaabb'];
 	
 function newChat() {
 	var chat = new Chat();
-	chat.connect();
-//	chat.mainWindow();
-//	chat.dispatchEvent(Chat.EV_MESSAGE, ['wolf', 'Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Fusce purus. Mauris sed orci. Sed feugiat hendrerit justo. Fusce eu mauris a urna lobortis cursus. Quisque fermentum, diam quis semper scelerisque, purus nibh mollis nibh, euismod ultrices tortor pede ac risus. Cras vitae metus. Maecenas ut libero. Maecenas non justo. Pellentesque suscipit ullamcorper leo. Maecenas ipsum. Mauris velit dui, feugiat quis, bibendum sed, eleifend iaculis, diam. Sed nunc velit, venenatis non, scelerisque ut, porttitor ut, nisl.']);
-//	chat.dispatchEvent(Chat.EV_MESSAGE, ['hans', 'Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Fusce purus. Mauris sed orci. Sed feugiat hendrerit justo. Fusce eu mauris a urna lobortis cursus. Quisque fermentum, diam quis semper scelerisque, purus nibh mollis nibh, euismod ultrices tortor pede ac risus. Cras vitae metus. Maecenas ut libero. Maecenas non justo. Pellentesque suscipit ullamcorper leo. Maecenas ipsum. Mauris velit dui, feugiat quis, bibendum sed, eleifend iaculis, diam. Sed nunc velit, venenatis non, scelerisque ut, porttitor ut, nisl.']);
-//	chat.dispatchEvent(Chat.EV_NOTICE, ["This is a notice"]);
-//	chat.dispatchEvent(Chat.EV_JOIN, ["wolf", "joined the chat"]);
-//	chat.dispatchEvent(Chat.EV_MESSAGE, ['rudi', 'Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Fusce purus. Mauris sed orci. Sed feugiat hendrerit justo. Fusce eu mauris a urna lobortis cursus. Quisque fermentum, diam quis semper scelerisque, purus nibh mollis nibh, euismod ultrices tortor pede ac risus. Cras vitae metus. Maecenas ut libero. Maecenas non justo. Pellentesque suscipit ullamcorper leo. Maecenas ipsum. Mauris velit dui, feugiat quis, bibendum sed, eleifend iaculis, diam. Sed nunc velit, venenatis non, scelerisque ut, porttitor ut, nisl.']);
+//	chat.connect();
+	chat.mainWindow();
+	chat.dispatchEvent(Chat.EV_MESSAGE, ['wolf', 'Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Fusce purus. Mauris sed orci. Sed feugiat hendrerit justo. Fusce eu mauris a urna lobortis cursus. Quisque fermentum, diam quis semper scelerisque, purus nibh mollis nibh, euismod ultrices tortor pede ac risus. Cras vitae metus. Maecenas ut libero. Maecenas non justo. Pellentesque suscipit ullamcorper leo. Maecenas ipsum. Mauris velit dui, feugiat quis, bibendum sed, eleifend iaculis, diam. Sed nunc velit, venenatis non, scelerisque ut, porttitor ut, nisl.']);
+	chat.dispatchEvent(Chat.EV_MESSAGE, ['hans', 'Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Fusce purus. Mauris sed orci. Sed feugiat hendrerit justo. Fusce eu mauris a urna lobortis cursus. Quisque fermentum, diam quis semper scelerisque, purus nibh mollis nibh, euismod ultrices tortor pede ac risus. Cras vitae metus. Maecenas ut libero. Maecenas non justo. Pellentesque suscipit ullamcorper leo. Maecenas ipsum. Mauris velit dui, feugiat quis, bibendum sed, eleifend iaculis, diam. Sed nunc velit, venenatis non, scelerisque ut, porttitor ut, nisl.']);
+	chat.dispatchEvent(Chat.EV_NOTICE, ["This is a notice"]);
+	chat.dispatchEvent(Chat.EV_JOIN, ["wolf", "joined the chat"]);
+	chat.dispatchEvent(Chat.EV_MESSAGE, ['rudi', 'Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Fusce purus. Mauris sed orci. Sed feugiat hendrerit justo. Fusce eu mauris a urna lobortis cursus. Quisque fermentum, diam quis semper scelerisque, purus nibh mollis nibh, euismod ultrices tortor pede ac risus. Cras vitae metus. Maecenas ut libero. Maecenas non justo. Pellentesque suscipit ullamcorper leo. Maecenas ipsum. Mauris velit dui, feugiat quis, bibendum sed, eleifend iaculis, diam. Sed nunc velit, venenatis non, scelerisque ut, porttitor ut, nisl.']);
 }
 
 function dispatchEvent(sessionId, ev) {
@@ -192,7 +192,8 @@ Chat.prototype = {
 		var div = $(this.handle + '_o');
 		div.style.height = 
 			(dimensions.height - div.offsetTop - input.parentNode.offsetHeight - 44) + 'px';
-		div.style.overflow = 'auto';
+		div.style.overflowY = 'auto';
+		div.style.overflowX = 'hidden';
 		
 		input.style.width = div.offsetWidth + 'px';
 		
