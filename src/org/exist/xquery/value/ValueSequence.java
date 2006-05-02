@@ -59,7 +59,11 @@ public class ValueSequence extends AbstractSequence {
 	private boolean noDuplicates = false;
 	
 	public ValueSequence() {
-		values = new Item[INITIAL_SIZE];
+		this(INITIAL_SIZE);
+	}
+	
+	public ValueSequence(int initialSize) {
+		values = new Item[initialSize];
 	}
 	
 	public ValueSequence(Sequence otherSequence) {
