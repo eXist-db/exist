@@ -37,14 +37,14 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 
 
-/**
- * TODO: could loose the member arrays of RangeIndexTableModel, QNameIndexTableModel, and replace with calls to cx
- * 
- */
-
 class IndexDialog extends JFrame {
 	
 	CollectionXConf cx = null;
+	
+	JCheckBox chkDefaultAll = null;
+	JCheckBox chkAlphanum = null;
+	JCheckBox chkAttributes = null;
+	
 	
 	JTextField txtXPath;
 	JComboBox cmbxsType;
@@ -132,28 +132,19 @@ class IndexDialog extends JFrame {
 		GridBagLayout panelFullTextIndexGrid = new GridBagLayout();
 		panelFullTextIndex.setLayout(panelFullTextIndexGrid);
 		
-		//fulltext default label
-		JLabel lblDefault = new JLabel("Default");
+		
+		//fulltext default all checkbox
+		chkDefaultAll = new JCheckBox("Default All");
 		c.gridx = 0;
 		c.gridy = 0;
 		c.gridwidth = 1;
 		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.NONE;
-		panelFullTextIndexGrid.setConstraints(lblDefault, c);
-		panelFullTextIndex.add(lblDefault);
-		
-		//fulltext default combobox
-		JComboBox cmbDefault = new JComboBox(new String[]{"all", "none"});
-		c.gridx = 1;
-		c.gridy = 0;
-		c.gridwidth = 1;
-		c.anchor = GridBagConstraints.WEST;
-		c.fill = GridBagConstraints.NONE;
-		panelFullTextIndexGrid.setConstraints(cmbDefault, c);
-		panelFullTextIndex.add(cmbDefault);
+		panelFullTextIndexGrid.setConstraints(chkDefaultAll, c);
+		panelFullTextIndex.add(chkDefaultAll);
         
 		//fulltext alphanumeric checkbox
-		JCheckBox chkAlphanum = new JCheckBox("Alphanumeric");
+		chkAlphanum = new JCheckBox("Alphanumeric");
 		c.gridx = 0;
 		c.gridy = 1;
 		c.gridwidth = 1;
@@ -163,7 +154,7 @@ class IndexDialog extends JFrame {
 		panelFullTextIndex.add(chkAlphanum);
 
 		//fulltext attributes checkbox
-		JCheckBox chkAttributes = new JCheckBox("Attributes");
+		chkAttributes = new JCheckBox("Attributes");
 		c.gridx = 0;
 		c.gridy = 2;
 		c.gridwidth = 1;
@@ -173,7 +164,7 @@ class IndexDialog extends JFrame {
 		panelFullTextIndex.add(chkAttributes);
 		
         //Table to hold the FullText Indexes with Sroll bar
-		/*fulltextIndexModel = new FullTextIndexTableModel();
+		fulltextIndexModel = new FullTextIndexTableModel();
         tblFullTextIndexes = new JTable(fulltextIndexModel);
         tblFullTextIndexes.setAutoResizeMode(JTable.AUTO_RESIZE_NEXT_COLUMN);
         tblFullTextIndexes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -188,7 +179,7 @@ class IndexDialog extends JFrame {
 		c.anchor = GridBagConstraints.WEST;
 		c.fill = GridBagConstraints.BOTH;
 		panelFullTextIndexGrid.setConstraints(scrollFullTextIndexes, c);
-		panelFullTextIndex.add(scrollFullTextIndexes);*/
+		panelFullTextIndex.add(scrollFullTextIndexes);
 		
 		//add fulltext panel to content frame
 		c.gridx = 0;
@@ -252,7 +243,7 @@ class IndexDialog extends JFrame {
 		panelRangeIndexesGrid.setConstraints(rangeIndexToolbarBox, c);
 		panelRangeIndexes.add(rangeIndexToolbarBox);
 
-		//add request panel to content frame
+		//add range index panel to content frame
 		c.gridx = 0;
 		c.gridy = 2;
 		c.gridwidth = 2;
@@ -374,9 +365,13 @@ class IndexDialog extends JFrame {
 		try
 		{
 			cx = new CollectionXConf(collectionName, client);
-			//fulltextIndexModel.reload();
-			rangeIndexModel.reload();
-			qnameIndexModel.reload();
+			
+			chkDefaultAll.setSelected(cx.getFullTextIndexDefaultAll());
+			chkAlphanum.setSelected(cx.getFullTextIndexAlphanum());
+			chkAttributes.setSelected(cx.getFullTextIndexAttributes());
+			fulltextIndexModel.fireTableDataChanged();
+			rangeIndexModel.fireTableDataChanged();
+			qnameIndexModel.fireTableDataChanged();
 		}
 		catch(XMLDBException xe)
 		{
@@ -388,7 +383,7 @@ class IndexDialog extends JFrame {
 	private void tableSelectAction(MouseEvent ev)
 	{
 		int row = tblRangeIndexes.rowAtPoint(ev.getPoint());
-		CollectionXConf.RangeIndex rangeindex = rangeIndexModel.rangeIndexes[row];
+		//CollectionXConf.RangeIndex rangeindex = rangeIndexModel.rangeIndexes[row];
 	}
 	
 	
@@ -434,13 +429,8 @@ class IndexDialog extends JFrame {
 		public FullTextIndexTableModel()
 		{
 			super();
-			//reload();
-		}
-
-		/*public void reload()
-		{
 			fireTableDataChanged();
-		}*/
+		}
 		
 		/* (non-Javadoc)
 		* @see javax.swing.table.TableModel#isCellEditable()
@@ -450,28 +440,28 @@ class IndexDialog extends JFrame {
 			switch (columnIndex)
 			{
 				case 0:		/* XPath */
-			//		cx.updateFullNameIndex(rowIndex, aValue.toString(), null);
-//					reload();
+					cx.updateFullTextIndex(rowIndex, aValue.toString(), null);					
 					break;
 				case 1 :	/* action */
-			//		cx.updateFullNameIndex(rowIndex, null, aValue.toString());
-	//				reload();
+					cx.updateFullTextIndex(rowIndex, null, aValue.toString());
 					break;
 				default :
 					break;
 			}
+			
+			fireTableCellUpdated(rowIndex, columnIndex);
 		}
 		
 		public void removeRow(int rowIndex)
 		{
-			//cx.deleteFullTextIndex(rowIndex);
-		//	reload();
+			cx.deleteFullTextIndex(rowIndex);
+			fireTableRowsDeleted(rowIndex, rowIndex);
 		}
 		
 		public void addRow()
 		{	
-			//cx.addFullTextIndex("", "xs:string");
-		//	reload();
+			cx.addFullTextIndex("", "xs:string");
+			fireTableRowsInserted(getRowCount(), getRowCount() + 1);
 		}
 		
 		/* (non-Javadoc)
@@ -526,23 +516,10 @@ class IndexDialog extends JFrame {
 	class RangeIndexTableModel extends AbstractTableModel
 	{	
 		private final String[] columnNames = new String[] { "XPath", "xsType" };
-		private CollectionXConf.RangeIndex rangeIndexes[] = null;
 
 		public RangeIndexTableModel()
 		{
 			super();
-			reload();
-		}
-
-		public void reload()
-		{
-			if(cx != null)
-			{
-				if(cx.getRangeIndexes() != null)
-				{
-						rangeIndexes = cx.getRangeIndexes();
-				}
-			}
 			fireTableDataChanged();
 		}
 		
@@ -555,28 +532,27 @@ class IndexDialog extends JFrame {
 			{
 				case 0:		/* XPath */
 					cx.updateRangeIndex(rowIndex, aValue.toString(), null);
-					reload();
 					break;
 				case 1 :	/* xsType */
 					cx.updateRangeIndex(rowIndex, null, aValue.toString());
-					reload();
 					break;
 				default :
 					break;
 			}
+			
+			fireTableCellUpdated(rowIndex, columnIndex);
 		}
 		
 		public void removeRow(int rowIndex)
 		{
 			cx.deleteRangeIndex(rowIndex);
-			reload();
-			
+			fireTableRowsDeleted(rowIndex, rowIndex);
 		}
 		
 		public void addRow()
 		{			
 			cx.addRangeIndex("", "xs:string");
-			reload();
+			fireTableRowsInserted(getRowCount(), getRowCount() + 1);
 		}
 		
 		/* (non-Javadoc)
@@ -608,7 +584,7 @@ class IndexDialog extends JFrame {
 		 */
 		public int getRowCount()
 		{
-			return rangeIndexes == null ? 0 : rangeIndexes.length;
+			return cx != null ? cx.getRangeIndexCount() : 0;
 		}
 
 		/* (non-Javadoc)
@@ -619,9 +595,9 @@ class IndexDialog extends JFrame {
 			switch (columnIndex)
 			{
 				case 0 :	/* XPath */
-					return rangeIndexes[rowIndex].getXPath();
+					return cx.getRangeIndex(rowIndex).getXPath();
 				case 1 :	/* xsType */
-					return rangeIndexes[rowIndex].getxsType();
+					return cx.getRangeIndex(rowIndex).getxsType();
 				default :
 					return null;
 			}
@@ -631,23 +607,11 @@ class IndexDialog extends JFrame {
 	class QNameIndexTableModel extends AbstractTableModel
 	{	
 		private final String[] columnNames = new String[] { "QName", "xsType" };
-		private CollectionXConf.QNameIndex qnameIndexes[] = null;
+		//private CollectionXConf.QNameIndex qnameIndexes[] = null;
 
 		public QNameIndexTableModel()
 		{
 			super();
-			reload();
-		}
-
-		public void reload()
-		{
-			if(cx != null)
-			{
-				if(cx.getQNameIndexes() != null)
-				{
-						qnameIndexes = cx.getQNameIndexes();
-				}
-			}
 			fireTableDataChanged();
 		}
 		
@@ -660,28 +624,28 @@ class IndexDialog extends JFrame {
 			{
 				case 0:		/* QName */
 					cx.updateQNameIndex(rowIndex, aValue.toString(), null);
-					reload();
 					break;
 				case 1 :	/* xsType */
 					cx.updateQNameIndex(rowIndex, null, aValue.toString());
-					reload();
 					break;
 				default :
 					break;
 			}
+			
+			fireTableCellUpdated(rowIndex, columnIndex);
 		}
 		
 		public void removeRow(int rowIndex)
 		{
 			cx.deleteQNameIndex(rowIndex);
-			reload();
+			fireTableRowsDeleted(rowIndex, rowIndex);
 			
 		}
 		
 		public void addRow()
 		{	
-			cx.addQNameIndex("", "xs:string");
-			reload();
+			cx.addQNameIndex("", "include");
+			fireTableRowsInserted(getRowCount(), getRowCount() + 1);
 		}
 		
 		/* (non-Javadoc)
@@ -713,7 +677,7 @@ class IndexDialog extends JFrame {
 		 */
 		public int getRowCount()
 		{
-			return qnameIndexes == null ? 0 : qnameIndexes.length;
+			return cx != null ? cx.getQNameIndexCount() : 0;
 		}
 
 		/* (non-Javadoc)
@@ -724,9 +688,9 @@ class IndexDialog extends JFrame {
 			switch (columnIndex)
 			{
 				case 0 :	/* QName */
-					return qnameIndexes[rowIndex].getQName();
+					return cx.getQNameIndex(rowIndex).getQName();
 				case 1 :	/* xsType */
-					return qnameIndexes[rowIndex].getxsType();
+					return cx.getQNameIndex(rowIndex).getxsType();
 				default :
 					return null;
 			}
