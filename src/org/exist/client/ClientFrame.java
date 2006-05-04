@@ -46,12 +46,12 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
-import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -823,9 +823,9 @@ public class ClientFrame extends JFrame
         try
 		{    
         	Collection root = client.getCollection(DBBroker.ROOT_COLLECTION);
-            Vector collectionsVec = getCollections(root, new Vector());
-            collections = new PrettyXmldbURI[collectionsVec.size()];
-            collectionsVec.toArray(collections);
+            ArrayList alCollections = getCollections(root, new ArrayList());
+            collections = new PrettyXmldbURI[alCollections.size()];
+            alCollections.toArray(collections);
         } 
         catch (XMLDBException e)
 		{
@@ -907,9 +907,9 @@ public class ClientFrame extends JFrame
         try
 		{    
         	Collection root = client.getCollection(DBBroker.ROOT_COLLECTION);
-            Vector collectionsVec = getCollections(root, new Vector());
-            collections = new PrettyXmldbURI[collectionsVec.size()];
-            collectionsVec.toArray(collections);
+            ArrayList alCollections = getCollections(root, new ArrayList());
+            collections = new PrettyXmldbURI[alCollections.size()];
+            alCollections.toArray(collections);
         } 
         catch (XMLDBException e)
 		{
@@ -956,13 +956,14 @@ public class ClientFrame extends JFrame
         new Thread(moveTask).start();
     }
     
-    private Vector getCollections(Collection root, Vector collectionsList)
-    throws XMLDBException {
-        collectionsList.addElement(new PrettyXmldbURI(XmldbURI.create(root.getName())));
+    private ArrayList getCollections(Collection root, ArrayList collectionsList) throws XMLDBException
+    {
+        collectionsList.add(new PrettyXmldbURI(XmldbURI.create(root.getName())));
         String[] childCollections= root.listChildCollections();
         Collection child;
-        for (int i= 0; i < childCollections.length; i++) {
-            child= root.getChildCollection(childCollections[i]);
+        for(int i = 0; i < childCollections.length; i++)
+        {
+            child = root.getChildCollection(childCollections[i]);
             getCollections(child, collectionsList);
         }
         return collectionsList;
