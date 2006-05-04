@@ -51,7 +51,7 @@ public class DescendantSelector implements NodeSelector {
 		case Node.ELEMENT_NODE :
 			break;			
 		case Node.ATTRIBUTE_NODE :
-			return null;
+			break;
 		case Node.TEXT_NODE :
 			return null;
 		case Node.PROCESSING_INSTRUCTION_NODE :
