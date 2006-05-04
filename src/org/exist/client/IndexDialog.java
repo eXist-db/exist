@@ -1,7 +1,23 @@
 /*
- * UserDialog.java - Jun 16, 2003
- * 
- * @author wolf
+ * eXist Open Source Native XML Database
+ *
+ * Copyright (C) 2001-06 Wolfgang M. Meier wolfgang@exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ * $Id
  */
 package org.exist.client;
 
@@ -12,8 +28,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.util.Vector;
+import java.util.ArrayList;
 
 import javax.swing.Box;
 import javax.swing.DefaultCellEditor;
@@ -33,11 +48,21 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
 import org.exist.storage.DBBroker;
+import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 
-
+/**
+ * Dialog for viewing and editing Indexes in the Admin Client 
+ * 
+ * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @serial 2006-03-12
+ * @version 1.0
+ */
 class IndexDialog extends JFrame {
+	
+	private static final String[] FULLTEXT_INDEX_ACTIONS = {"include", "exclude"};
+	private static final String[] INDEX_TYPES = {"xs:boolean","xs:integer","xs:dateTime","xs:string"};
 	
 	CollectionXConf cx = null;
 	
@@ -56,9 +81,7 @@ class IndexDialog extends JFrame {
 	QNameIndexTableModel qnameIndexModel;
 	
 	InteractiveClient client;
-
-	private static final String[] FULLTEXT_INDEX_ACTIONS = {"include", "exclude"};
-	private static final String[] INDEX_TYPES = {"xs:boolean","xs:integer","xs:dateTime","xs:string"};
+	
 	
 	public IndexDialog(String title, InteractiveClient client ) 
 	{
@@ -91,16 +114,16 @@ class IndexDialog extends JFrame {
 		getContentPane().add(label);
 		
 		//get the collections but not system collections
-		Vector ourCollectionsVec = new Vector();
+		ArrayList alCollections = new ArrayList();
         try
         {
             Collection root = client.getCollection(DBBroker.ROOT_COLLECTION);
-            Vector allCollectionsVec = getCollections(root, new Vector());
-            for(int i = 0; i < allCollectionsVec.size(); i++)
+            ArrayList alAllCollections = getCollections(root, new ArrayList());
+            for(int i = 0; i < alAllCollections.size(); i++)
             {
-            	if(allCollectionsVec.get(i).toString().indexOf(DBBroker.SYSTEM_COLLECTION)  == -1)
+            	if(alAllCollections.get(i).toString().indexOf(DBBroker.CONFIG_COLLECTION)  == -1)
             	{
-            		ourCollectionsVec.add(allCollectionsVec.get(i));
+            		alCollections.add(alAllCollections.get(i));
             	}
             }
         }
@@ -111,7 +134,7 @@ class IndexDialog extends JFrame {
         }
         
         //Create a combobox listing the collections
-        JComboBox combo = new JComboBox(ourCollectionsVec);
+        JComboBox combo = new JComboBox(alCollections.toArray());
         combo.addActionListener(new ActionListener(){
         		public void actionPerformed(ActionEvent e) {
    				 JComboBox cb = (JComboBox)e.getSource();
@@ -315,15 +338,18 @@ class IndexDialog extends JFrame {
 		pack();
 	}
 
+	
+	
 	//THIS IS A COPY FROM ClientFrame
 	//TODO: share this code between the two classes
-	private Vector getCollections(Collection root, Vector collectionsList)
-    throws XMLDBException {
-        collectionsList.addElement(root.getName());
+	private ArrayList getCollections(Collection root, ArrayList collectionsList) throws XMLDBException
+    {
+        collectionsList.add(new PrettyXmldbURI(XmldbURI.create(root.getName())));
         String[] childCollections= root.listChildCollections();
         Collection child;
-        for (int i= 0; i < childCollections.length; i++){
-            child= root.getChildCollection(childCollections[i]);
+        for(int i = 0; i < childCollections.length; i++)
+        {
+            child = root.getChildCollection(childCollections[i]);
             getCollections(child, collectionsList);
         }
         return collectionsList;
