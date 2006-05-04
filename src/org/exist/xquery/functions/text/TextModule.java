@@ -45,7 +45,9 @@ public class TextModule extends AbstractInternalModule {
         new FunctionDef(HighlightMatches.signature, HighlightMatches.class),
         new FunctionDef(KWICDisplay.signatures[0], KWICDisplay.class),
         new FunctionDef(KWICDisplay.signatures[1], KWICDisplay.class),
-        new FunctionDef(RegexpFilter.signature, RegexpFilter.class)
+        new FunctionDef(RegexpFilter.signatures[0], RegexpFilter.class),
+        new FunctionDef(RegexpFilter.signatures[1], RegexpFilter.class),
+        new FunctionDef(RegexpFilter.signatures[2], RegexpFilter.class)
     };
     
     /**
