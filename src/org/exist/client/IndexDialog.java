@@ -380,13 +380,6 @@ class IndexDialog extends JFrame {
 		
 	}
 	
-	private void tableSelectAction(MouseEvent ev)
-	{
-		int row = tblRangeIndexes.rowAtPoint(ev.getPoint());
-		//CollectionXConf.RangeIndex rangeindex = rangeIndexModel.rangeIndexes[row];
-	}
-	
-	
 	public class ComboBoxCellRenderer extends JComboBox implements TableCellRenderer
 	{
         public ComboBoxCellRenderer(String[] items)

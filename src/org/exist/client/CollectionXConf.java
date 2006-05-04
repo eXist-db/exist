@@ -1,8 +1,8 @@
 package org.exist.client;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Properties;
-import java.util.Vector;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -343,7 +343,7 @@ public class CollectionXConf
 	//given the root element of collection.xconf it will return an array of range indexes
 	private RangeIndex[] getRangeIndexes(Element xconf)
 	{
-		Vector vecRangeIndexes = new Vector();
+		ArrayList alRangeIndexes = new ArrayList();
 		
 		NodeList nlRangeIndexes = xconf.getElementsByTagName("create");
 		if(nlRangeIndexes.getLength() > 0)
@@ -354,14 +354,14 @@ public class CollectionXConf
 				//is it a range index or a qname index
 				if(rangeIndex.getAttribute("path").length() > 0)
 				{
-					vecRangeIndexes.add(new RangeIndex(rangeIndex.getAttribute("path"), rangeIndex.getAttribute("type")));
+					alRangeIndexes.add(new RangeIndex(rangeIndex.getAttribute("path"), rangeIndex.getAttribute("type")));
 				}
 			}
 			
-			RangeIndex[] rangeIndexes = new RangeIndex[vecRangeIndexes.size()];
-			for(int i=0; i < vecRangeIndexes.size(); i++)
+			RangeIndex[] rangeIndexes = new RangeIndex[alRangeIndexes.size()];
+			for(int i=0; i < alRangeIndexes.size(); i++)
 			{
-				rangeIndexes[i] = (RangeIndex)vecRangeIndexes.get(i);
+				rangeIndexes[i] = (RangeIndex)alRangeIndexes.get(i);
 			}
 			return rangeIndexes;
 		}
@@ -371,7 +371,7 @@ public class CollectionXConf
 	//given the root element of collection.xconf it will return an array of qname indexes
 	private QNameIndex[] getQNameIndexes(Element xconf)
 	{		
-		Vector vecQNameIndexes = new Vector();
+		ArrayList alQNameIndexes = new ArrayList();
 		
 		NodeList nlQNameIndexes = xconf.getElementsByTagName("create");
 		if(nlQNameIndexes.getLength() > 0)
@@ -382,14 +382,14 @@ public class CollectionXConf
 				//is it a range index or a qname index
 				if(qnameIndex.getAttribute("qname").length() > 0)
 				{
-					vecQNameIndexes.add(new QNameIndex(qnameIndex.getAttribute("qname"), qnameIndex.getAttribute("type")));
+					alQNameIndexes.add(new QNameIndex(qnameIndex.getAttribute("qname"), qnameIndex.getAttribute("type")));
 				}
 			}
 			
-			QNameIndex[] qnameIndexes = new QNameIndex[vecQNameIndexes.size()];
-			for(int i=0; i < vecQNameIndexes.size(); i++)
+			QNameIndex[] qnameIndexes = new QNameIndex[alQNameIndexes.size()];
+			for(int i=0; i < alQNameIndexes.size(); i++)
 			{
-				qnameIndexes[i] = (QNameIndex)vecQNameIndexes.get(i);
+				qnameIndexes[i] = (QNameIndex)alQNameIndexes.get(i);
 			}
 			return qnameIndexes;
 		}
