@@ -611,7 +611,10 @@ public class BrokerPool {
         //REFACTOR : construct then... configure
         xmlReaderPool = new XMLReaderPool(new XMLReaderObjectFactory(this), 5, 0);
         //REFACTOR : construct then... configure
-        collectionCache = new CollectionCache(this, DEFAULT_COLLECTION_BUFFER_SIZE, 0.9);
+        int bufferSize = conf.getInteger("db-connection.collection-cache-size");
+        if(bufferSize==-1)
+        	bufferSize = DEFAULT_COLLECTION_BUFFER_SIZE;
+        collectionCache = new CollectionCache(this, bufferSize, 0.9);
         
         notificationService = new NotificationService();
         

@@ -72,7 +72,7 @@ public class GetParameter extends BasicFunction {
 		// request object is read from global variable $request
 		Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
 		if (var == null || var.getValue().getItemType() != Type.JAVA_OBJECT)
-			throw new XPathException(getASTNode(), "Variable $request is not bound to an Java object.");
+			return args[1]; //Just return the default, don't: throw new XPathException(getASTNode(), "Variable $request is not bound to an Java object.");
 
 		// get parameters
 		String param = args[0].getStringValue();

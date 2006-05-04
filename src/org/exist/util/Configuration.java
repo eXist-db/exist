@@ -509,6 +509,16 @@ public class Configuration implements ErrorHandler {
             }
         }
         
+        String collCacheSize = con.getAttribute("collectionCacheSize");
+        if (collCacheSize != null) {
+            try {
+                config.put("db-connection.collection-cache-size", new Integer(collCacheSize));
+                LOG.debug("db-connection.collection-cache-size: " + config.get("db-connection.collection-cache-size"));
+            } catch (NumberFormatException nfe) {
+            	LOG.warn(nfe);
+            }
+        }
+        
         NodeList securityConf = con.getElementsByTagName("security");
         String securityManagerClassName = "org.exist.security.XMLSecurityManager";
         if (securityConf.getLength()>0) {
