@@ -3,7 +3,7 @@
 <property name="src.dir" location="."/>
 <property name="dist.minimal" location="${dist}/minimal"/>
 
-<target name="dist-minimal" depends="all,samples">
+<target name="dist-minimal" depends="all">
   <mkdir dir="${dist.minimal}"/>
   <copy file="${src.dir}/webapp/WEB-INF/catalog.xml" todir="${dist.minimal}"/>
   <echo file="${dist.minimal}/client.properties">
@@ -46,7 +46,6 @@ highlight-matches=none
 
 </echo>
   <xslt in="${src.dir}/conf.xml" out="${dist.minimal}/conf.xml" style="${build.scripts}/minimal-fix-conf.xsl"/>
-  <copy file="${src.dir}/examples.jar" todir="${dist.minimal}"/>
   <copy file="${src.dir}/exist.jar" todir="${dist.minimal}"/>
   <copy file="${src.dir}/exist-modules.jar" todir="${dist.minimal}"/>
   <copy file="${src.dir}/exist-optional.jar" todir="${dist.minimal}"/>
@@ -64,7 +63,17 @@ highlight-matches=none
   <mkdir dir="${dist.minimal}/logs"/>
   <mkdir dir="${dist.minimal}/lib"/>
   <copy todir="${dist.minimal}/lib">
-    <fileset dir="${src.dir}/lib"/>
+    <fileset dir="${src.dir}/lib">
+        <exclude name="**/cocoon*.jar"/>
+        <exclude name="**/excalibur*jar"/>
+        <exclude name="**/avalon*jar"/>
+        <exclude name="**/javac*jar"/>
+        <exclude name="**/logkit*jar"/>
+        <exclude name="**/commons*collection*jar"/>
+        <exclude name="**/commons*jexl*jar"/>
+        <exclude name="**/commons*jxpath*jar"/>
+        <exclude name="**/commons*lang*jar"/>
+    </fileset>
   </copy>
   <mkdir dir="${dist.minimal}/tools"/>
   <mkdir dir="${dist.minimal}/tools/jetty"/>
