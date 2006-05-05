@@ -256,7 +256,7 @@ public abstract class DBBroker extends Observable {
 	 * 
 	 * @return collection or null if no collection matches the path
 	 *
-	 * @deprecated Use XmldbURI instead!
+	 * deprecated Use XmldbURI instead!
 	 *
 	public abstract Collection getCollection(String name);
 	*/
@@ -275,7 +275,7 @@ public abstract class DBBroker extends Observable {
 	 * looking up the path in the btree.
 	 * 
 	 * @return
-	 * @deprecated Use XmldbURI instead!
+	 * deprecated Use XmldbURI instead!
 	 *
 	public abstract Collection getCollection(String name, long address);
 	*/
@@ -325,7 +325,7 @@ public abstract class DBBroker extends Observable {
 	 * 
 	 * @return collection or null if no collection matches the path
 	 * 
-	 * @deprecated Use XmldbURI instead!
+	 * deprecated Use XmldbURI instead!
 	 *
 	public Collection getOrCreateCollection(Txn transaction, String name)
 		throws PermissionDeniedException {
@@ -390,7 +390,7 @@ public abstract class DBBroker extends Observable {
 	 * @return the document or null if no document could be found at the
 	 * specified location.
 	 * 
-	 * @deprecated Use XmldbURI instead!
+	 * deprecated Use XmldbURI instead!
 	 *
 	public abstract Document getXMLResource(String path) throws PermissionDeniedException;
 	*/
@@ -405,7 +405,7 @@ public abstract class DBBroker extends Observable {
 	public abstract Document getXMLResource(XmldbURI docURI) throws PermissionDeniedException;
 
 	/**
-	 * @deprecated Use XmldbURI instead!
+	 * deprecated Use XmldbURI instead!
 	 *
 	public abstract DocumentImpl getXMLResource(String docPath, int lockMode) 
 		throws PermissionDeniedException;
@@ -642,7 +642,7 @@ public abstract class DBBroker extends Observable {
 	 * @param collection the collection to move
 	 * @param destination the destination collection
 	 * @param newName the new name the collection should have in the destination collection
-	 * @deprecated Use XmldbURI instead
+	 * deprecated Use XmldbURI instead
 	 *
 	public abstract void moveCollection(Txn transaction, Collection collection, Collection destination, String newName) 
 	throws PermissionDeniedException, LockException;
@@ -666,7 +666,7 @@ public abstract class DBBroker extends Observable {
 	 * @param doc the resource to move
 	 * @param destination the destination collection
 	 * @param new Name the new name the resource should have in the destination collection
-	 * @deprecated Use XmldbURI version instead
+	 * deprecated Use XmldbURI version instead
 	 *
 	public abstract void moveXMLResource(Txn transaction, DocumentImpl doc, Collection destination, String newName)
 	throws PermissionDeniedException, LockException;
@@ -712,7 +712,7 @@ public abstract class DBBroker extends Observable {
 	 * @param newName the new name the resource should have in the destination collection
 	 * @throws PermissionDeniedException
 	 * @throws LockException
-	 * @deprecated Use XmldbURI version instead
+	 * deprecated Use XmldbURI version instead
 	 *
 	public abstract void copyXMLResource(Txn transaction, DocumentImpl doc, Collection destination, String newName) 
 	throws PermissionDeniedException, LockException;
