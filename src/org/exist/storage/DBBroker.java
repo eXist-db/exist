@@ -300,7 +300,7 @@ public abstract class DBBroker extends Observable {
 	 * @param lockMode one of the modes specified in class {@link org.exist.storage.lock.Lock}
 	 * @return collection or null if no collection matches the path
 	 * 
-	 * @deprecated Use XmldbURI instead!
+	 * deprecated Use XmldbURI instead!
 	 *
 	public abstract Collection openCollection(String name, int lockMode);
 	*/
@@ -688,7 +688,7 @@ public abstract class DBBroker extends Observable {
 	 * @param doc the resource to move
 	 * @param destination the destination collection
 	 * @param new Name the new name the resource should have in the destination collection
-	 * @deprecated Use XmldbURI version instead
+	 * deprecated Use XmldbURI version instead
 	 *
 	public abstract void copyCollection(Txn transaction, Collection collection, Collection destination, String newName)
 	throws PermissionDeniedException, LockException;
