@@ -16,7 +16,7 @@
 		<fileset dir="${top.dir}/${lib.endorsed}">
 			<include name="*.jar"/>
 		</fileset>
-		<pathelement path="${top.dir}/tools/lib/xmlunit1.0.jar"/>
+		<pathelement path="${top.dir}/tools/ant/lib/xmlunit1.0.jar"/>
         <pathelement path="${top.dir}/exist.jar"/>
 		<pathelement path="${top.dir}/exist-optional.jar"/>
     	<pathelement path="${top.dir}/start.jar"/>
