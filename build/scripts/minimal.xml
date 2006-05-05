@@ -3,7 +3,7 @@
 <property name="src.dir" location="."/>
 <property name="dist.minimal" location="${dist}/minimal"/>
 
-<target name="dist-minimal">
+<target name="dist-minimal" depends="all,samples">
   <mkdir dir="${dist.minimal}"/>
   <copy file="${src.dir}/webapp/WEB-INF/catalog.xml" todir="${dist.minimal}"/>
   <echo file="${dist.minimal}/client.properties">
