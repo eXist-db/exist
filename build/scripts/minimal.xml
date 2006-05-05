@@ -1,10 +1,12 @@
-<project name="minimal" basedir="." default="dist-minimal">
+<project name="minimal" basedir="../.." default="dist-minimal">
 
-<property name="src.dir" location="../"/>
+<property name="src.dir" location="."/>
+<property name="dist.minimal" location="${dist}/minimal"/>
+
 <target name="dist-minimal">
-  <mkdir dir="minimal"/>
-  <copy file="${src.dir}/webapp/WEB-INF/catalog.xml" todir="minimal"/>
-  <echo file="minimal/client.properties">
+  <mkdir dir="${dist.minimal}"/>
+  <copy file="${src.dir}/webapp/WEB-INF/catalog.xml" todir="${dist.minimal}"/>
+  <echo file="${dist.minimal}/client.properties">
 driver=org.exist.xmldb.DatabaseImpl
 
 # uncomment following line if you want to access a
@@ -43,36 +45,37 @@ expand-xincludes=yes
 highlight-matches=none
 
 </echo>
-  <xslt in="${src.dir}/conf.xml" out="minimal/conf.xml" style="minimal-fix-conf.xsl"/>
-  <copy file="${src.dir}/examples.jar" todir="minimal"/>
-  <copy file="${src.dir}/exist.jar" todir="minimal"/>
-  <copy file="${src.dir}/exist-modules.jar" todir="minimal"/>
-  <copy file="${src.dir}/exist-optional.jar" todir="minimal"/>
-  <copy file="${src.dir}/LICENSE" todir="minimal"/>
+  <xslt in="${src.dir}/conf.xml" out="${dist.minimal}/conf.xml" style="${build.scripts}/minimal-fix-conf.xsl"/>
+  <copy file="${src.dir}/examples.jar" todir="${dist.minimal}"/>
+  <copy file="${src.dir}/exist.jar" todir="${dist.minimal}"/>
+  <copy file="${src.dir}/exist-modules.jar" todir="${dist.minimal}"/>
+  <copy file="${src.dir}/exist-optional.jar" todir="${dist.minimal}"/>
+  <copy file="${src.dir}/LICENSE" todir="${dist.minimal}"/>
   <echo file="${src.dir}/log4j.dtd"/>
-  <xslt in="${src.dir}/log4j.xml" out="minimal/log4j.xml" style="minimal-fix-log4j.xsl"/>
-  <copy file="${src.dir}/mime-types.xml" todir="minimal"/>
-  <copy file="${src.dir}/server.xml" todir="minimal"/>
-  <copy file="${src.dir}/start.jar" todir="minimal"/>
-  <mkdir dir="minimal/bin"/>
-  <copy todir="minimal/bin">
+  <xslt in="${src.dir}/log4j.xml" out="${dist.minimal}/log4j.xml" style="${build.scripts}/minimal-fix-log4j.xsl"/>
+  <copy file="${src.dir}/mime-types.xml" todir="${dist.minimal}"/>
+  <copy file="${src.dir}/server.xml" todir="${dist.minimal}"/>
+  <copy file="${src.dir}/start.jar" todir="${dist.minimal}"/>
+  <mkdir dir="${dist.minimal}/bin"/>
+  <copy todir="${dist.minimal}/bin">
     <fileset dir="${src.dir}/bin"/>
   </copy>
-  <mkdir dir="minimal/data"/>
-  <mkdir dir="minimal/logs"/>
-  <mkdir dir="minimal/lib"/>
-  <copy todir="minimal/lib">
+  <mkdir dir="${dist.minimal}/data"/>
+  <mkdir dir="${dist.minimal}/logs"/>
+  <mkdir dir="${dist.minimal}/lib"/>
+  <copy todir="${dist.minimal}/lib">
     <fileset dir="${src.dir}/lib"/>
   </copy>
-  <mkdir dir="minimal/tools"/>
-  <mkdir dir="minimal/tools/jetty"/>
-  <copy todir="minimal/tools/jetty">
+  <mkdir dir="${dist.minimal}/tools"/>
+  <mkdir dir="${dist.minimal}/tools/jetty"/>
+  <copy todir="${dist.minimal}/tools/jetty">
     <fileset dir="${src.dir}/tools/jetty"/>
   </copy>
+  <mkdir dir="${dist.minimal}/webapp"/>
 </target>
 
 <target name="clean-minimal">
-<delete dir="minimal"/>
+    <delete dir="${dist.minimal}"/>
 </target>
 
 </project>
