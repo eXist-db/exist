@@ -49,7 +49,7 @@ highlight-matches=none
   <copy file="${src.dir}/exist-modules.jar" todir="minimal"/>
   <copy file="${src.dir}/exist-optional.jar" todir="minimal"/>
   <copy file="${src.dir}/LICENSE" todir="minimal"/>
-  <echo file="minimal/log4j.dtd"/>
+  <echo file="${src.dir}/log4j.dtd"/>
   <xslt in="${src.dir}/log4j.xml" out="minimal/log4j.xml" style="minimal-fix-log4j.xsl"/>
   <copy file="${src.dir}/mime-types.xml" todir="minimal"/>
   <copy file="${src.dir}/server.xml" todir="minimal"/>
