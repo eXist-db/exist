@@ -7,6 +7,7 @@ import junit.framework.TestCase;
 import junit.textui.TestRunner;
 
 import org.exist.storage.DBBroker;
+import org.exist.util.Configuration;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xquery.XPathException;
 import org.xmldb.api.DatabaseManager;
@@ -25,6 +26,9 @@ public class JavaFunctionsTest extends TestCase {
 	private Collection root = null;
 	private Database database = null;
 	
+	private boolean javabindingenabled = false;
+	
+	
 	public static void main(String[] args) throws XPathException {
 		TestRunner.run(JavaFunctionsTest.class);
 	}
@@ -33,7 +37,8 @@ public class JavaFunctionsTest extends TestCase {
 	 * called properly
 	 */
 	public void testLists() throws XPathException {
-		try {
+		try
+		{
 			String query = "declare namespace list='java:java.util.ArrayList'; " +
 					"let $list := list:new() "+
 					"let $actions := (list:add($list,'a'),list:add($list,'b'),list:add($list,'c')) "+
@@ -41,7 +46,15 @@ public class JavaFunctionsTest extends TestCase {
 			ResourceSet result = service.query( query );
 			String r = (String) result.getResource(0).getContent();
 			assertEquals( "b", r );
-		} catch (XMLDBException e) {
+		}
+		catch (XMLDBException e)
+		{
+			//if exception is a java binding exception and java binding is disabled then this is a success
+			if(e.getMessage().indexOf("Java binding is currently disabled") > -1 && !javabindingenabled)
+			{
+				return;
+			}
+			
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
@@ -58,6 +71,19 @@ public class JavaFunctionsTest extends TestCase {
 		DatabaseManager.registerDatabase(database);
 		root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", null);
 		service = (XPathQueryService) root.getService( "XQueryService", "1.0" );
+		
+		//Check the configuration file to see if Java binding is enabled
+		//if it is not enabled then we expect an exception when trying to
+		//perform Java binding.
+		Configuration config = new Configuration();
+		String javabinding = (String)config.getProperty("xquery.enable-java-binding");
+		if(javabinding != null)
+		{
+			if(javabinding.equals("yes"))
+			{
+				javabindingenabled = true;
+			}
+		}
 	}
 
 	/*
