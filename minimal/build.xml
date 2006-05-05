@@ -1,7 +1,7 @@
-<project name="minimal" basedir="." default="dist">
+<project name="minimal" basedir="." default="dist-minimal">
 
 <property name="src.dir" location="../"/>
-<target name="dist">
+<target name="dist-minimal">
   <mkdir dir="minimal"/>
   <copy file="${src.dir}/webapp/WEB-INF/catalog.xml" todir="minimal"/>
   <echo file="minimal/client.properties">
@@ -71,7 +71,7 @@ highlight-matches=none
   </copy>
 </target>
 
-<target name="clean">
+<target name="clean-minimal">
 <delete dir="minimal"/>
 </target>
 
