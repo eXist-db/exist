@@ -58,6 +58,8 @@ public class Configuration implements ErrorHandler {
 	 * file and existHome fields and static methods), or if we should allow many instances to
 	 * run around in the system.  Right now, any attempts to create multiple instances will
 	 * likely get the system confused.  Let's decide which one it should be and fix it properly.
+	 * 
+	 * I vote for a Singleton (like Descriptor.java) - deliriumsky
 	 */
     
     private final static Logger LOG = Logger.getLogger(Configuration.class);	//Logger
@@ -281,7 +283,16 @@ public class Configuration implements ErrorHandler {
     }
     
     private void configureXQuery(Element xquery) throws DatabaseConfigurationException {
-        NodeList builtins = xquery.getElementsByTagName("builtin-modules");
+        
+    	//java binding
+    	String javabinding = xquery.getAttribute("enable-java-binding");
+    	if(javabinding != null) {
+            config.put("xquery.enable-java-binding", javabinding);
+            LOG.debug("xquery.enable-java-binding: " + config.get("xquery.enable-java-binding"));
+        }
+
+    	//builin-modules
+    	NodeList builtins = xquery.getElementsByTagName("builtin-modules");
         if (builtins.getLength() > 0) {
             Element elem = (Element) builtins.item(0);
             NodeList modules = elem.getElementsByTagName("module");

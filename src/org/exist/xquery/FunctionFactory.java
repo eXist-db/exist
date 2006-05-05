@@ -167,10 +167,27 @@ public class FunctionFactory {
 		// Check if the namespace URI starts with "java:". If yes, treat the function call as a call to
 		// an arbitrary Java function.
 		} else if(uri.startsWith("java:")) {
-			JavaCall call = new JavaCall(context, qname);
-			call.setASTNode(ast);
-			call.setArguments(params);
-			step = call;
+			
+			//Only allow java binding if specified in config file <xquery enable-java-binding="yes">
+			String javabinding = (String)context.broker.getConfiguration().getProperty("xquery.enable-java-binding");
+			if(javabinding != null)
+			{
+				if(javabinding.equals("yes"))
+				{
+					JavaCall call = new JavaCall(context, qname);
+					call.setASTNode(ast);
+					call.setArguments(params);
+					step = call;
+				}
+				else
+				{
+					throw new XPathException(ast, "Java binding is currently disabled in config.xml. Call to " + qname.toString() + " denied.");
+				}
+			}
+			else
+			{
+				throw new XPathException(ast, "Java binding is currently disabled in config.xml. Call to " + qname.toString() + " denied.");
+			}
 		}
 		
 		// None of the above matched: function is either a builtin function or

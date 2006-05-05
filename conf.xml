@@ -124,7 +124,7 @@
 	<xupdate growth-factor="20" allowed-fragmentation="20"
 		enable-consistency-checks="no"/>
 
-    <xquery>
+    <xquery enable-java-binding="no">
         <builtin-modules>
             <module uri="http://exist-db.org/xquery/util"
                 class="org.exist.xquery.functions.util.UtilModule"/>
