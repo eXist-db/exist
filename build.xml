@@ -18,6 +18,7 @@
     <import file="build/scripts/soap.xml" />
     <import file="build/scripts/jarsigner.xml" />
     <import file="build/scripts/installer.xml" />
+    <import file="build/scripts/dist.xml" />
     
     <!-- Specialties -->
     <import file="build/scripts/minimal.xml" />
