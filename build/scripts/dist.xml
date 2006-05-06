@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+
+<project basedir="../.." default="dist" name="dist">
+
+    <description>Create eXist distribution</description>
+    
+    <!-- ================================================================== -->
+    <!-- Prepare webapp                                                     -->
+    <!-- ================================================================== -->
+    <target depends="jar,extension-modules,samples" name="webapps">
+        <mkdir dir="dist"/>
+        
+        <!-- When there are no java docs, create empty file -->
+        <mkdir dir="webapp/api"/>
+        <touch file="webapp/api/index.html"/>
+
+        <mkdir dir="webapp/WEB-INF/data"/>
+        <mkdir dir="webapp/WEB-INF/logs"/>
+
+        <chmod file="webapp/bin/client.sh" perm="+x"/>
+    </target>
+
+    <!-- ================================================================== -->
+    <!-- Create .war file                                                   -->
+    <!-- ================================================================== -->
+    <target name="dist-war" depends="webapps" description="Create war file">
+        <war destfile="${dist}/exist-${DSTAMP}.war" webxml="webapp/WEB-INF/web.xml">
+                
+            <!-- Add files to WEB-INF/lib -->
+            <lib dir=".">
+                <include name="start.jar"/>
+                <include name="exist.jar"/>
+                <include name="exist-optional.jar"/>
+                <include name="exist-modules.jar"/>
+            </lib>
+            <lib dir="${lib.core}">
+                <include name="*.jar"/>
+                <exclude name="javax.servlet.jar"/>
+            </lib>
+            <lib dir="${lib.optional}">
+                <include name="*.jar"/>
+            </lib>
+            <lib dir="${lib.user}">
+                <include name="*.jar"/>
+            </lib>
+            <!-- The following jars should not be here, but in 'endorsed' -->
+            <lib dir="${lib.endorsed}">
+                <include name="*.jar"/>
+            </lib>
+            
+            <!-- Add configuration files to WEB-INF -->
+            <webinf dir=".">
+                <include name="client.properties"/>
+                <include name="backup.properties"/>
+                <include name="server.xml"/>
+            </webinf>
+            
+            <!-- Add files context root ('/') -->
+            <fileset dir="webapp">
+                <exclude name="**/*~"/>
+                <exclude name="WEB-INF/web.xml"/>
+                <exclude name="WEB-INF/data/*.dbx"/>
+                <exclude name="**/*.log"/>
+            </fileset>
+            <zipfileset dir="samples" prefix="samples">
+                <include name="**"/>
+                <exclude name="**/*~"/>
+                <exclude name="xupdate/**"/>
+                <exclude name="test.xml"/>
+                <exclude name="**/.*"/>
+            </zipfileset>
+            
+            <!-- Not needed for war file -->
+            <!-- <fileset dir=".">
+            <include name="start.jar"/>
+            <include name="examples.jar"/>
+            </fileset> -->
+            
+            <!-- Add additional information -->
+            <manifest>
+                <attribute name="Built-By" value="${user.name}"/>
+                <attribute name="Build-Timestamp" value="${DSTAMP}"/>
+                <attribute name="Project-Name" value="${project.name}"/>
+                <attribute name="Project-Version" value="${project.version}"/>
+            </manifest>
+
+        </war>
+    </target>
+    
+    <!-- ================================================================== -->
+    <!-- Prepare dist                                                       -->
+    <!-- ================================================================== -->
+    <target depends="jar,samples,extension-modules,wrapper" name="dist">
+        <delete dir="dist"/>
+        <delete failonerror="false">
+            <fileset dir="webapp/WEB-INF/logs" includes="*.log"/>
+        </delete>
+        <mkdir dir="${dist}"/>
+        <mkdir dir="${dist.dir}"/>
+        <mkdir dir="${dist.dir}/bin"/>
+        <mkdir dir="${dist.dir}/build"/>
+        <mkdir dir="${dist.dir}/build/scripts"/>
+        <mkdir dir="${dist.dir}/src"/>
+        <mkdir dir="${dist.dir}/lib"/>
+        <mkdir dir="${dist.dir}/lib/core"/>
+        <mkdir dir="${dist.dir}/lib/optional"/>
+        <mkdir dir="${dist.dir}/lib/endorsed"/>
+        <mkdir dir="${dist.dir}/lib/user"/>
+        <mkdir dir="${dist.dir}/tools"/>
+        <mkdir dir="${dist.dir}/tools/ant"/>
+        <mkdir dir="${jetty.dir}/logs"/>
+        <mkdir dir="${jetty.dir}/work"/>
+        <mkdir dir="${dist.dir}/webapp"/>
+        <mkdir dir="${dist.dir}/webapp/WEB-INF/logs"/>
+        <mkdir dir="${dist.dir}/webapp/WEB-INF/data"/>
+        <mkdir dir="${dist.dir}/log"/>
+        <mkdir dir="${dist.dir}/samples"/>
+        <mkdir dir="${dist.dir}/thirdparty"/>
+        <mkdir dir="${dist.dir}/extensions"/>
+        <mkdir dir="${dist.dir}/extensions/modules"/>
+        <touch file="${dist.dir}/webapp/WEB-INF/data/.DO_NOT_DELETE"/>
+        <touch file="${dist.dir}/webapp/WEB-INF/logs/.DO_NOT_DELETE"/>
+        <touch file="${dist.dir}/log/.DO_NOT_DELETE"/>
+
+        <!--   <filter token="database" value="native_cluster"/>   -->
+        <filter token="database" value="native"/>
+
+        <copy todir="${dist.dir}/" filtering="true">
+            <fileset dir=".">
+                <include name="LICENSE"/>
+                <include name="README"/>
+                <include name="*.bat"/>
+                <include name="*.sh"/>
+                <include name="conf.xml"/>
+                <include name="conf.xml.tmpl"/>
+                <include name="descriptor.xml"/>
+                <include name="build.xml"/>
+                <include name="log4j.xml"/>
+                <include name="examples-setup.xml"/>
+                <include name="stopword"/>
+                <include name="*.properties"/>
+                <include name="*.jpg"/>
+                <include name="*.css"/>
+            </fileset>
+        </copy>
+
+        <copy todir="${dist.dir}/">
+            <fileset dir=".">
+                <include name="exist.jar"/>
+                <include name="exist-optional.jar"/>
+                <include name="examples.jar"/>
+                <include name="start.jar"/>
+                <include name="exist-modules.jar"/>
+            </fileset>
+        </copy>
+
+        <copy todir="${dist.dir}/src">
+            <fileset dir="./src">
+                <exclude name="**/*~"/>
+                <exclude name=".*"/>
+            </fileset>
+        </copy>
+        <copy todir="${dist.dir}/bin">
+            <fileset dir="./bin">
+                <exclude name="**/*~"/>
+                <exclude name="*.log"/>
+                <exclude name=".*"/>
+            </fileset>
+        </copy>
+        <copy todir="${dist.dir}/build/scripts">
+            <fileset dir="${build.scripts}"/>
+        </copy>
+        <copy todir="${dist.dir}/lib/core">
+            <fileset dir="${lib.core}"/>
+        </copy>
+        <copy todir="${dist.dir}/lib/optional">
+            <fileset dir="${lib.optional}"/>
+        </copy>
+        <copy todir="${dist.dir}/lib/endorsed">
+            <fileset dir="${lib.endorsed}"/>
+        </copy>
+        <copy todir="${dist.dir}/lib/user">
+            <fileset dir="${lib.user}"/>
+        </copy>
+        <copy todir="${dist.dir}/tools">
+            <fileset dir="tools">
+                <exclude name="**/work/**/*"/>
+                <exclude name="**/logs/*"/>
+            </fileset>
+        </copy>
+        <copy todir="${dist.dir}/webapp">
+            <fileset dir="./webapp">
+                <exclude name="**/*.dbx"/>
+                <exclude name="**/logs/*"/>
+                <exclude name="*~"/>
+                <exclude name=".*"/>
+                <exclude name="resources/*.jpg"/>
+            </fileset>
+        </copy>
+        <copy todir="${dist.dir}/thirdparty">
+            <fileset dir="./thirdparty">
+                <!--<exclude name="**/lib/*.jar"/>--></fileset>
+        </copy>
+        <copy todir="${dist.dir}/extensions">
+            <fileset dir="./extensions"/>
+        </copy>
+        <copy todir="${dist.dir}/samples">
+            <fileset dir="./samples">
+                <exclude name="**/*~"/>
+                <exclude name=".*"/>
+                <exclude name="xupdate/**"/>
+                <exclude name="test.xml"/>
+            </fileset>
+        </copy>
+        <copy file="${src}/org/exist/util/mime-types.xml"
+                todir="${dist.dir}"/>
+        <fixcrlf eol="crlf" includes="**/*.bat" srcdir="${dist.dir}/bin"/>
+        <fixcrlf eof="remove" eol="lf" includes="**/*.sh" srcdir="${dist.dir}/bin"/>
+        <fixcrlf eol="crlf" includes="build.bat" srcdir="${dist.dir}"/>
+        <fixcrlf eof="remove" eol="lf" includes="build.sh" srcdir="${dist.dir}"/>
+        <fixcrlf eol="crlf" includes="conf.xml" srcdir="${dist.dir}"/>
+        <chmod perm="+x">
+            <fileset dir="${dist.dir}">
+                <include name="**/*.sh"/>
+                <include name="**/*.pl"/>
+            </fileset>
+        </chmod>
+        <chmod perm="+x">
+            <fileset dir="${dist.dir}/tools/wrapper/bin">
+                <include name="wrapper"/>
+            </fileset>
+        </chmod>
+    </target>
+    
+    <!-- ================================================================== -->
+    <!-- Create dist-zip                                                    -->
+    <!-- ================================================================== -->
+    <target depends="dist" name="dist-zip" description="Create dist-zip">
+        <zip basedir="${dist}" compress="true"
+                excludes="${project.name}-${project.version}.zip"
+                zipfile="${dist}/${project.name}-${project.version}.zip"/>
+    </target>
+	
+    <!-- ================================================================== -->
+    <!-- Create dist-tgz                                                    -->
+    <!-- ================================================================== -->
+    <target depends="dist" name="dist-tgz" description="Create dist-tgz">
+        <property name="dist.name" value="${project.name}-${project.version}"/>
+        <delete file="${dist}/${dist.name}.tar.gz"/>
+        <delete file="${dist}/${dist.name}.tar"/>
+        <tar basedir="${dist}" excludes="${dist.name}.zip" longfile="gnu" tarfile="${dist}/${dist.name}.tar"/>
+        <gzip src="${dist}/${dist.name}.tar" zipfile="${dist}/${dist.name}.tar.gz"/>
+        <delete file="${dist}/${dist.name}.tar"/>
+    </target>
+
+</project>
