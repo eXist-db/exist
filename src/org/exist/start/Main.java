@@ -41,6 +41,7 @@ public class Main {
     private String _classname = null;
 
     private String _mode = "jetty";
+    private ClassLoader mainClassLoader;
     private static Main exist;
 
 
@@ -402,6 +403,7 @@ public class Main {
 
             // Invoke org.mortbay.jetty.Server.main(args) using new classloader.
             try {
+                mainClassLoader = cl;
                 invokeMain(cl, _classname, args);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -411,6 +413,10 @@ public class Main {
             System.err.println("ERROR: exist.home cound not be autodetected, bailing out.");
             System.err.flush();
         }
+    }
+
+    public ClassLoader getClassLoader() {
+       return mainClassLoader;
     }
 
     /**
