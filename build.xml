@@ -10,6 +10,9 @@
 
     <description>Ant build file for eXist</description>
 	
+    <!-- import default properties from file -->
+    <property file="build.properties"/>
+
     <!-- Core build scripts -->
     <import file="build/scripts/build-impl.xml" />
     <import file="build/scripts/soap.xml" />
