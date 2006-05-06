@@ -1,0 +1,876 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<roadmap>
+    <ci:include xmlns:ci="http://apache.org/cocoon/include/1.0"
+        src="sidebar.xml"/>
+    <title>eXist: Current State, Features and Roadmap</title>
+    <comment>Due to size restrictions, longer remarks on some of the listed
+        topics are available in an extra document.</comment>
+    <module>
+        <name>Document Storage</name>
+        <part>
+            <name>File size/complexity limits</name>
+            <status>Beta</status>
+            <priority>Highest</priority>
+            <test_coverage>N/A</test_coverage>
+            <progress>90</progress>
+            <who/>
+            <remark>
+                <p> The numbering scheme at the core of eXist does currently
+                    limit the maximum size of a document to be stored within the
+                    database. This is a well-known problem. The limit is not a
+                    question of the document size alone, but also depends on the
+                    overall number of nodes and how deep elements are nested
+                    within the document. The actual limit thus differs from
+                    document to document and is difficult to compute in advance.
+                    This poses a major problem for many users. </p>
+                <p>"Dynamic Level Numbering" (DLN) as proposed by Böhme and Rahm
+                    seems to be most promising. This numbering scheme avoids to
+                    put a conceptual limit on the size of documents to be
+                    indexed. It also has a number of positive side-effects,
+                    including, for example: fast node-level updates. Re indexing
+                    parts of the node tree after a major update would no longer
+                    be necessary.</p>
+                <p>As of May 2006, the switch to DLN is nearly complete and the
+                    DLN branch is ready for testing. For a report on the
+                    implementation, check the <a
+                        href="http://wiki.exist-db.org/space/NewIndexArchitecture"
+                        >wiki</a>. The code is available in SVN branch <a
+                        href="http://svn.sourceforge.net/viewcvs.cgi/exist/branches/DLN/eXist-1.0/"
+                        >DLN</a>. </p>
+            </remark>
+        </part>
+        <part>
+            <name>Collection size/number of collections limit</name>
+            <status>Stable_redesign</status>
+            <priority>High</priority>
+            <test_coverage>No tests</test_coverage>
+            <progress>50</progress>
+            <who/>
+            <remark>
+                <p>Concerning collection management, there are two known
+                    problems:</p>
+                <ol>
+                    <li>if a huge number of documents (&gt; 100,000) is
+                        stored in a collection, queries across the whole
+                        collection will spend a major part of the query time
+                        just for loading the document descriptors</li>
+                    <li>the current collection cache has a too small default
+                        setting (128) and is currently static. Using more than a
+                        few 100 collections will result in a lot of disk I/O and
+                        makes the db slow </li>
+                </ol>
+                <p>The first problem could be solved by using placeholder (or
+                    proxy) objects for the real document during query
+                    processing. Most of the administrative metadata
+                    (creation-time etc.) is not required. As of May 2006, the storage
+                    location of the document metadata has already been separated
+                    from the collection store. However, eXist will still load
+                    all the document descriptors when the collection is accessed
+                    the first time.</p>
+                <p>The switch to the DLN numbering scheme also results in smaller document
+                objects. TODO: re-check memory consumption with DLN scheme.</p>
+                <p>For the second issue, a better, more dynamic caching
+                    mechanism for collections needs to be implemented.</p>
+            </remark>
+        </part>
+        <part>
+            <name>Allow metadata to be associated with a document</name>
+            <status>Open</status>
+            <priority>Avg</priority>
+            <test_coverage>N/A</test_coverage>
+            <progress>0</progress>
+            <who/>
+            <remark>
+                <p>Metadata could include system properties like
+                    last-modification date or user-defined metadata. Preferably,
+                    metadata records should be ordinary XML documents. The
+                    format should not be restricted.</p>
+            </remark>
+        </part>
+    </module>
+    <module>
+        <name>Indexing</name>
+        <remark>
+            <p>Currently, eXist supports these index types:</p>
+            <ul>
+                <li>structural index</li>
+                <li>full text index</li>
+                <li>range index</li>
+                <li>combined range and qname index</li>
+                <li>index on xml:id's</li>
+            </ul>
+            <p>However, there will be other index types added in the future, for
+                example:</p>
+            <ul>
+                <li>an n-gram based index to better support languages for which
+                    word based tokenization is not applicable</li>
+                <li> combined path indexes to speed up frequently-used XPath
+                    expressions</li>
+                <li>indexes to support operations on atomic-values, e.g. in
+                    order-by expressions or the distinct-values function</li>
+                <li>integration of specialized, external index types (e.g.
+                    spatial indexes)</li>
+            </ul>
+            <p>In the current architecture, integration of new index types faces
+                two major problems:</p>
+            <ol>
+                <li>there's no general interface to plug in new indexes </li>
+                <li>index selection is hard-coded into the query engine</li>
+            </ol>
+            <p>Preferably, it should be possible for the query engine to
+                determine if an index can be used or not at compile time, i.e.
+                during query analysis phase. To achieve this, index
+                configuration probably needs to be simplified, so the query
+                engine can make a decision on index usage before the query is
+                actually evaluated. It might not be possible to keep the
+                current, fine-grained configuration scheme, which allows indexes
+                to depend on the presence of ancestor nodes. Some commercial
+                (and highly efficient) xml DBMS allow users to define indexes
+                only on a given QName, not a path expression. This topic needs
+                further discussion in the community.</p>
+            <p>The interfaces to the indexing system need to be redesigned to
+                support the query engine in index selection. This includes, for
+                example, statistical information about the frequency of index
+                items. The redesign of the indexing system thus presents a
+                necessary foundation for the query optimizer.</p>
+        </remark>
+        <part>
+            <name>Full text indexing</name>
+            <status>Stable_redesign</status>
+            <priority>Avg</priority>
+            <test_coverage>Tested</test_coverage>
+            <progress>75</progress>
+            <who/>
+            <remark>
+                <p>(Align with the XQuery Full-text specification)</p>
+                <p>The interfaces to the indexing system need to be redesigned
+                    to support the query engine in index selection. This
+                    includes, for example, statistical information about the
+                    frequency of index items. The redesign of the indexing
+                    system thus presents a necessary foundation for the query
+                    optimizer.</p>
+                <p>The current architecture is also too limited with respect to
+                    text analysis. The general-purpose tokenizer is not suitable
+                    for language-dependent analysis. Plans are to replace these
+                    classes by Lucene's analyzer. Lucene offers a pluggable
+                    architecture in which multiple analyzers can be
+                combined.</p>
+            </remark>
+        </part>
+        <part>
+            <name>Range indexing</name>
+            <status>Stable</status>
+            <priority>x</priority>
+            <test_coverage>Partially tested</test_coverage>
+            <progress>100</progress>
+            <who/>
+            <remark>
+                <p>It is currently difficult to check if a range index has been
+                    actually used by a query. More profiling needed. See comment
+                    Indexing</p>
+            </remark>
+        </part>
+        <part>
+            <name>Combined range and qname index</name>
+            <status>Alpha</status>
+            <priority>Avg</priority>
+            <test_coverage>x</test_coverage>
+            <progress>50</progress>
+            <who/>
+            <remark><p>Works, but special functions need to be used.</p> </remark>
+        </part>
+        <part>
+            <name>Indexes on xml:id</name>
+            <status>Stable_redesign</status>
+            <priority>Avg</priority>
+            <test_coverage>Tested</test_coverage>
+            <progress>90</progress>
+            <who/>
+            <remark>
+                <p>Currently stored in the structural index. Should be moved to
+                    the range index.</p>
+            </remark>
+        </part>
+        <part>
+            <name>N-gram</name>
+            <status>Open</status>
+            <priority>High</priority>
+            <test_coverage>x</test_coverage>
+            <progress>0</progress>
+            <who/>
+            <remark>
+                <p>When dealing with texts in many non-European languages, the
+                    token-based full-text index produces insufficient results.
+                    Tokenization is currently based on Unicode code points. Most
+                    chinese characters, for example, are thus stored as single
+                    tokens. Users have to abuse the near() or phrase() function
+                    to search for character sequences consisting of more than
+                    one character, which is quite slow. It also means that real
+                    proximity searches are not available.</p>
+                <p> An N-gram based index would be much more suitable for these
+                    languages. It would also allow additional functionality to
+                    be implemented, e.g. to deal with varying spellings. The
+                    main question is how the N-gram index would integrate
+                    conceptually with the existing full-text functions.</p>
+            </remark>
+        </part>
+        <part>
+            <name>Integration of other index types (e.g. Spatial indexes,
+                external indexes)</name>
+            <status>Open</status>
+            <priority>Avg</priority>
+            <test_coverage>N/A</test_coverage>
+            <progress>0</progress>
+            <who/>
+            <remark>
+                <p>For some types of data, e.g.. spatial information,
+                    specialized indexes might be provided by other systems.</p>
+            </remark>
+        </part>
+        <part>
+            <name>Index-support for order-by, distinct-values</name>
+            <status>Open</status>
+            <priority>Avg</priority>
+            <test_coverage>N/A</test_coverage>
+            <progress>0</progress>
+            <who/>
+            <remark>
+                <p>Order-by expressions and other functions that need to access
+                    atomized nodes are not supported by indexes.</p>
+            </remark>
+        </part>
+    </module>
+    <module>
+        <name>Transactions and Recovery</name>
+        <remark>
+            <p>The journal log and the recovery manager should be stable and are
+                covered by extensive tests. However, recovery failures can not
+                be excluded entirely. The tests can't reproduce every possible
+                real-world scenario.</p>
+            <p>However, some steps remain for eXist to become a fully
+                transactional database system. Transaction support is currently
+                limited to the functionality needed for crash recovery. Though
+                we maintain transactions internally, they are currently not
+                exposed to applications. Also, read operations are not
+                transactional right now.</p>
+            <p>In order to allow user-defined ACID transactions with support for
+                rollback, all index files would need to be protected by the
+                journaling log. The required functionality is basically
+                available, but the feature is currently not regarded as
+                high-priority.</p>
+        </remark>
+        <part>
+            <name>Journal log</name>
+            <status>Stable</status>
+            <priority>x</priority>
+            <test_coverage>Tested</test_coverage>
+            <progress>100</progress>
+            <who/>
+            <remark></remark>
+        </part>
+        <part>
+            <name>Recovery</name>
+            <status>Stable</status>
+            <priority>x</priority>
+            <test_coverage>Tested</test_coverage>
+            <progress>100</progress>
+            <who/>
+            <remark></remark>
+        </part>
+        <part>
+            <name>Internal transaction management</name>
+            <status>Stable</status>
+            <priority>x</priority>
+            <test_coverage>Tested</test_coverage>
+            <progress>100</progress>
+            <who/>
+            <remark>
+                <p>Transactions are maintained internally, but they are not
+                    exposed to applications. eXist does not yet support full
+                    ACID transactions. Read-only operations bypass the
+                    transaction system.</p>
+            </remark>
+        </part>
+        <part>
+            <name>User-definable transactions</name>
+            <status>Open</status>
+            <priority>Low</priority>
+            <test_coverage>N/A</test_coverage>
+            <progress>0</progress>
+            <who/>
+            <remark>
+                <p>Journal logs are limited to critical data required for
+                    recovery. No transaction rollbacks.</p>
+            </remark>
+        </part>
+    </module>
+    <module>
+        <name>Backup / Restore</name>
+        <status>Stable</status>
+        <priority>x</priority>
+        <test_coverage>No tests</test_coverage>
+        <progress>100</progress>
+        <who/>
+        <remark></remark>
+    </module>
+    <module>
+        <name>Node-level updates</name>
+        <part>
+            <name>XUpdate</name>
+            <status>Stable</status>
+            <priority>x</priority>
+            <test_coverage>Tested</test_coverage>
+            <progress>100</progress>
+            <who/>
+            <remark>
+                <p>W3C is working on an update extension, but no draft released
+                    so far.</p>
+            </remark>
+        </part>
+    </module>
+    <module>
+        <name>Access-Control</name>
+        <remark>
+            <p>The currently implemented Unix-like access control scheme is
+                sufficient to protect resources and collections in a multi-user
+                environment. However, it might be too coarse-grained for some
+                types of applications. A more dynamic ACL implementation could
+                help here. Right now, security management forms part of the
+                database core. This is unnecessary. A more modular architecture
+                would allow different security managers to be plugged in. It
+                would be the responsibility of the security manager
+                implementation to handle ACL lists.</p>
+            <p>More important, some critical areas are currently not protected:
+                This includes access to stored XQueries, system-critical XQuery
+                functions and the Java binding. Basically all Java classes can
+                be used from within an XQuery and this leaves doors wide open on
+                all systems that allow users to execute XQuery on the server.</p>
+            <p>Required steps:</p>
+            <ul>
+                <li>restrict the right to execute stored queries to selected
+                    users</li>
+                <li>limit access to defined XQuery functions and modules</li>
+                <li>fine-grained access control for the Java binding. Usage of
+                    Java classes should be disallowed by default. Access to
+                    specific classes needs to be allowed by the dba admin </li>
+            </ul>
+        </remark>
+        <part>
+            <name>User management</name>
+            <status>Stable</status>
+            <priority>x</priority>
+            <test_coverage>No tests</test_coverage>
+            <progress>100</progress>
+            <who/>
+            <remark></remark>
+        </part>
+        <part>
+            <name>Access control on resources and collections</name>
+            <status>Stable_redesign</status>
+            <priority>Avg</priority>
+            <test_coverage>No tests</test_coverage>
+            <progress>100</progress>
+            <who/>
+            <remark>
+                <p>Need more dynamic ACL structures that can adapt to varying
+                    requirements.</p>
+            </remark>
+        </part>
+        <part>
+            <name>Access control on stored XQueries, XQuery functions and
+                modules</name>
+            <status>Beta</status>
+            <priority>High</priority>
+            <test_coverage>N/A</test_coverage>
+            <progress>90</progress>
+            <who/>
+            <remark></remark>
+        </part>
+        <part>
+            <name>Java binding </name>
+            <status>Beta</status>
+            <priority>High</priority>
+            <test_coverage>N/A</test_coverage>
+            <progress>90</progress>
+            <who/>
+            <remark></remark>
+        </part>
+    </module>
+    <module>
+        <name>Schema Validation </name>
+        <part>
+            <name>Validate document against schema when indexing</name>
+            <status>Stable</status>
+            <priority>x</priority>
+            <test_coverage>No tests</test_coverage>
+            <progress>100</progress>
+            <who/>
+            <remark></remark>
+        </part>
+        <part>
+            <name>Validate document after node-level updates</name>
+            <status>Open</status>
+            <priority>Avg</priority>
+            <test_coverage>N/A</test_coverage>
+            <progress>0</progress>
+            <who/>
+            <remark></remark>
+        </part>
+        <part>
+            <name>Locate schema's and DTDs stored in database</name>
+            <status>Beta</status>
+            <priority>High</priority>
+            <test_coverage>x</test_coverage>
+            <progress>75</progress>
+            <who/>
+            <remark></remark>
+        </part>
+        <part>
+            <name>Support for catalog files in database</name>
+            <status>Beta</status>
+            <priority>High</priority>
+            <test_coverage>x</test_coverage>
+            <progress>75</progress>
+            <who/>
+            <remark></remark>
+        </part>
+        <part>
+            <name>Manual validation against schema</name>
+            <status>Beta</status>
+            <priority>High</priority>
+            <test_coverage>Tested</test_coverage>
+            <progress>75</progress>
+            <who/>
+            <remark></remark>
+        </part>
+        <part>
+            <name>XQuery validation features</name>
+            <status>Open</status>
+            <priority>Avg</priority>
+            <test_coverage>N/A</test_coverage>
+            <progress>0</progress>
+            <who/>
+            <remark></remark>
+        </part>
+        <part>
+            <name>Store PSVI with the node tree in the database</name>
+            <status>Open</status>
+            <priority>Low</priority>
+            <test_coverage>N/A</test_coverage>
+            <progress>0</progress>
+            <who/>
+            <remark></remark>
+        </part>
+        <part>
+            <name>Static typing based on PSVI</name>
+            <status>Open</status>
+            <priority>Low</priority>
+            <test_coverage>N/A</test_coverage>
+            <progress>0</progress>
+            <who/>
+            <remark></remark>
+        </part>
+    </module>
+    <module>
+        <name>XQuery</name>
+        <remark>
+            <p>The XQuery engine as well as the standard function libraries
+                should be updated to align with the latest candidate
+                recommendation. Basically, almost all core language features are
+                implemented, excluding schema related features, which are
+                currently beyond eXist's scope.</p>
+            <p>XQuery support in eXist is not sufficiently covered by the test
+                suite. In particular, we lack tests for the function library.
+                Implementing the official XQTS XQuery test suite should thus be
+                a top priority in order to guarantee standard conformance and
+                avoid future regressions.</p>
+        </remark>
+        <part>
+            <name>Core XPath and XQuery</name>
+            <status>Stable</status>
+            <priority>High</priority>
+            <test_coverage>Partially tested</test_coverage>
+            <progress>100</progress>
+            <who/>
+            <remark>
+                <p>Update to latest Candidate Recommendation. Stable, excluding
+                    schema-related features</p>
+            </remark>
+        </part>
+        <part>
+            <name>XPath and XQuery function libraries</name>
+            <status>Stable</status>
+            <priority>High</priority>
+            <test_coverage>Partially tested</test_coverage>
+            <progress>100</progress>
+            <who/>
+            <remark>
+                <p>Update to latest Candidate Recommendation. Stable, excluding
+                    schema-related features.</p>
+            </remark>
+        </part>
+        <part>
+            <name>XPath and XQuery function libraries</name>
+            <status>Stable</status>
+            <priority>High</priority>
+            <test_coverage>No tests</test_coverage>
+            <progress>100</progress>
+            <who/>
+            <remark>
+                <p>Update to latest Candidate Recommendation</p>
+            </remark>
+        </part>
+        <part>
+            <name>XQuery serialization</name>
+            <status>Stable_redesign</status>
+            <priority>Avg</priority>
+            <test_coverage>No tests</test_coverage>
+            <progress>75</progress>
+            <who/>
+            <remark>
+                <p>Though we implement most of the serialization options
+                    specified in the XQuery and XSLT serialization spec, some
+                    options need to be reworked and should be covered by
+                tests.</p>
+            </remark>
+        </part>
+        <part>
+            <name>XQTS XQuery test suite</name>
+            <status>Alpha</status>
+            <priority>High</priority>
+            <test_coverage>N/A</test_coverage>
+            <progress>70</progress>
+            <who/>
+            <remark>
+                <p>Should be implemented to avoid future regressions and ensure
+                    conformance</p>
+            </remark>
+        </part>
+        <part>
+            <name>XQuery Optimizer</name>
+            <status>Stable_redesign</status>
+            <priority>High</priority>
+            <test_coverage>No tests</test_coverage>
+            <progress>75</progress>
+            <who/>
+            <remark>
+                <p>Most query optimizations are currently hard-coded into the
+                    query engine and are applied at execution time, not at
+                    compile time. This puts a limit on extensibility and
+                    possible optimizations. As described above, adding new index
+                    types is difficult. For example, the operator implementation
+                    for “=” and “eq” does currently include about 4 or 5
+                    different optimization paths. Location steps like child::foo
+                    can choose among 3 execution alternatives. This makes it
+                    hard to see if the correct optimization is applied or not.
+                    Adding further index types will make the code unmanageable.</p>
+
+                <p>As already explained above, the decision which index to use
+                    should thus be moved into the query analysis phase. The
+                    index implementation thus has to provide sufficient
+                    information to make the decision.</p>
+
+                <p>A good part of the performance problems eXist currently has
+                    could be solved by a post-compilation/pre-evaluation
+                    optimizer and intelligent query rewriting. In particular,
+                    query rewriting could be used to reduce the general size of
+                    the node sets that need to be processed by an XPath
+                    expression, which can result in a tremendous performance
+                    boost for queries on huge document sets, if those queries
+                    involve a predicate expression which limits the number of
+                    potential matches.</p>
+            </remark>
+        </part>
+        <part>
+            <name>Error reporting</name>
+            <status>Stable_redesign</status>
+            <priority>Avg</priority>
+            <test_coverage>N/A</test_coverage>
+            <progress>75</progress>
+            <who/>
+            <remark>
+                <p>Error reports by the XQuery parser and compiler need to be
+                    improved.</p>
+            </remark>
+        </part>
+        <part>
+            <name>Make function calls tail-recursive</name>
+            <status>Open</status>
+            <priority>High</priority>
+            <test_coverage>N/A</test_coverage>
+            <progress>0</progress>
+            <who/>
+            <remark>
+                <p>Recursive functions may trigger a StackOverflowException. We
+                    need to handle tail-recursion.</p>
+            </remark>
+        </part>
+    </module>
+    <module>
+        <name>XInclude</name>
+        <status>Stable</status>
+        <priority>Low</priority>
+        <test_coverage>No tests</test_coverage>
+        <progress>100</progress>
+        <who/>
+        <remark>
+            <p>XInclude expansion happens at serialization time. Queries across
+                the included document fragments are not possible. Stable, but
+                limited</p>
+        </remark>
+    </module>
+    <module>
+        <name>Interfaces</name>
+        <part>
+            <name>XML:DB API embedded</name>
+            <status>Stable</status>
+            <priority>x</priority>
+            <test_coverage>Tested</test_coverage>
+            <progress>100</progress>
+            <who/>
+            <remark></remark>
+        </part>
+        <part>
+            <name>XML:DB API remote access</name>
+            <status>Stable_redesign</status>
+            <priority>Low</priority>
+            <test_coverage>Partially tested</test_coverage>
+            <progress>75</progress>
+            <who/>
+            <remark>
+                <p>New implementation should be based on REST to avoid current
+                    problems (e.g.. With character encodings)</p>
+            </remark>
+        </part>
+        <part>
+            <name>XML-RPC</name>
+            <status>Stable</status>
+            <priority>x</priority>
+            <test_coverage>Partially tested</test_coverage>
+            <progress>100</progress>
+            <who/>
+            <remark>
+                <p>Exposes the entire database functionality.</p>
+            </remark>
+        </part>
+        <part>
+            <name>REST</name>
+            <status>Stable_redesign</status>
+            <priority>Low</priority>
+            <test_coverage>Partially tested</test_coverage>
+            <progress>75</progress>
+            <who/>
+            <remark>
+                <p>Does not cover user-management and permissions as well as
+                    other administrative functions. Stable, but further
+                    functionality could be exposed</p>
+            </remark>
+        </part>
+        <part>
+            <name>SOAP</name>
+            <status>Stable_redesign</status>
+            <priority>Low</priority>
+            <test_coverage>No tests</test_coverage>
+            <progress>75</progress>
+            <who/>
+            <remark>
+                <p>Currently instable, needs rewrite</p>
+            </remark>
+        </part>
+        <part>
+            <name>Cocoon Integration </name>
+            <status>Stable</status>
+            <priority>x</priority>
+            <test_coverage>No tests</test_coverage>
+            <progress>100</progress>
+            <who/>
+            <remark>
+                <p>General functionality tests required</p>
+            </remark>
+        </part>
+        <part>
+            <name>XQJ XQuery API for Java </name>
+            <status>Open</status>
+            <priority>Low</priority>
+            <test_coverage>N/A</test_coverage>
+            <progress>0</progress>
+            <who/>
+            <remark>
+                <p>Could be a simpler alternative to the now somewhat bloated
+                    XML:DB API</p>
+            </remark>
+        </part>
+    </module>
+    <module>
+        <name>Other Tasks</name>
+        <part>
+            <name>I18n</name>
+            <status>Open</status>
+            <priority>Low</priority>
+            <test_coverage>N/A</test_coverage>
+            <progress>0</progress>
+            <who/>
+            <remark>
+                <p>Provide translations for error messages, console outputs etc.
+                    At least, resource bundles should be used, so others can
+                    translate them if they want.</p>
+            </remark>
+        </part>
+        <part>
+            <name>Clean up/upgrade libraries</name>
+            <status>Open</status>
+            <priority>Low</priority>
+            <test_coverage>N/A</test_coverage>
+            <progress>0</progress>
+            <who/>
+            <remark>
+                <p>All libraries included with eXist need to be checked.</p>
+            </remark>
+        </part>
+    </module>
+    <module>
+        <name>Documentation</name>
+        <part>
+            <name>XQuery on the Web</name>
+            <status>Open</status>
+            <priority>High</priority>
+            <test_coverage>N/A</test_coverage>
+            <progress>0</progress>
+            <who/>
+            <remark>
+                <p>Should explain in more depth how one can write webapps in
+                    XQuery, using the XQueryGenerator with Cocoon or stored
+                    XQueries.</p>
+            </remark>
+        </part>
+        <part>
+            <name>XQuery stored modules</name>
+            <status>Open</status>
+            <priority>High</priority>
+            <test_coverage>N/A</test_coverage>
+            <progress>0</progress>
+            <who/>
+            <remark>
+                <p>calling XQuery scripts stored in the DB; import stored
+                    modules into a query passed to the DB</p>
+            </remark>
+        </part>
+        <part>
+            <name>WebDAV</name>
+            <status>Beta</status>
+            <priority>Avg</priority>
+            <test_coverage>N/A</test_coverage>
+            <progress>90</progress>
+            <who/>
+            <remark></remark>
+        </part>
+        <part>
+            <name>Deployment</name>
+            <status>Stable_redesign</status>
+            <priority>High</priority>
+            <test_coverage>N/A</test_coverage>
+            <progress>75</progress>
+            <who/>
+            <remark>
+                <p>Integration with a servlet engine, Cocoon, stand-alone
+                    server, embedded use.</p>
+            </remark>
+        </part>
+        <part>
+            <name>Indexation and Index Configuration</name>
+            <status>Stable</status>
+            <priority>High</priority>
+            <test_coverage>N/A</test_coverage>
+            <progress>100</progress>
+            <who/>
+            <remark></remark>
+        </part>
+        <part>
+            <name>Trigger</name>
+            <status>Open</status>
+            <priority>Low</priority>
+            <test_coverage>N/A</test_coverage>
+            <progress>0</progress>
+            <who/>
+            <remark></remark>
+        </part>
+        <part>
+            <name>Searchable Documentation</name>
+            <status>Open</status>
+            <priority>Avg</priority>
+            <test_coverage>N/A</test_coverage>
+            <progress>0</progress>
+            <who/>
+            <remark>
+                <p>The documentation is currently not searchable, though most of
+                    it is provided in XML.</p>
+            </remark>
+        </part>
+        <part>
+            <name>XQDoc integration</name>
+            <status>Open</status>
+            <priority>High</priority>
+            <test_coverage>N/A</test_coverage>
+            <progress>0</progress>
+            <who/>
+            <remark>
+                <p>Migrate the function documentation to XQDoc. Use XQDoc to
+                    better document all XQuery examples.</p>
+            </remark>
+        </part>
+    </module>
+    <legend>
+        <title>Legend</title>
+        <status>
+            <name>Open</name>
+            <description>Not yet started</description>
+        </status>
+        <status>
+            <name>Instable</name>
+            <description>Some work is necessary</description>
+        </status>
+        <status>
+            <name>Alpha</name>
+            <description>Implemented, but not tested</description>
+        </status>
+        <status>
+            <name>Beta</name>
+            <description>Tested, but not finished</description>
+        </status>
+        <status>
+            <name>Stable_redesign</name>
+            <description>Basically stable, but redesign might be necessary</description>
+        </status>
+        <status>
+            <name>Stable</name>
+            <description>No further work needed</description>
+        </status>
+
+        <progress>
+            <name>Percentage</name>
+            <description>Percentage of completion</description>
+        </progress>
+        <priority>
+            <name>Highest</name>
+            <description>Very important</description>
+        </priority>
+        <priority>
+            <name>High</name>
+            <description>Important</description>
+        </priority>
+        <priority>
+            <name>Avg</name>
+            <description>Nice to have</description>
+        </priority>
+        <priority>
+            <name>Low</name>
+            <description>Not very important</description>
+        </priority>
+        <priority>
+            <name>x</name>
+            <description>Not yet decided</description>
+        </priority>
+
+    </legend>
+
+</roadmap>
