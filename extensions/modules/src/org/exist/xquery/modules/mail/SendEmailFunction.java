@@ -137,7 +137,7 @@ public class SendEmailFunction extends BasicFunction
 			mail theMail = ParseMailXML( ((NodeValue)args[0].itemAt(0)).getNode() );
 			
 			//Send email with Sendmail or SMTP?
-			if(args[1].getLength() > 0)
+			if(!args[1].isEmpty())
 			{
 				//SMTP
 				if(SendSMTP(theMail, args[1].getStringValue()))
