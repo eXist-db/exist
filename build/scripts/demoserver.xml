@@ -38,6 +38,7 @@
             <replacefilter token="cluster.xml" value="cluster.html"/>
             <replacefilter token="journal.xml" value="journal.html"/>
             <replacefilter token="configuration.xml" value="configuration.html"/>
+            <replacefilter token="ldap-security.xml" value="ldap-security.html"/>
             <replacefilter token="credits.xml" value="credits.html"/>
             <replacefilter token="deployment.xml" value="deployment.html"/>
             <replacefilter token="devguide.xml" value="devguide.html"/>
@@ -103,6 +104,7 @@
                 <uri type="append" src="cluster.xml"/>
                 <uri type="append" src="journal.xml"/>
                 <uri type="append" src="configuration.xml"/>
+                <uri type="append" src="ldap-security.xml"/>
                 <uri type="append" src="credits.xml"/>
                 <uri type="append" src="deployment.xml"/>
                 <uri type="append" src="devguide.xml"/>
