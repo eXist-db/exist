@@ -1,7 +1,8 @@
 <project name="minimal" basedir="../.." default="dist-minimal">
 
 <property name="src.dir" location="."/>
-<property name="dist.minimal" location="${dist}/minimal"/>
+<property name="dist.minimal.name" value="minimal"/>
+<property name="dist.minimal" location="${dist}/${dist.minimal.name}"/>
 
 <target name="dist-minimal" depends="all">
   <mkdir dir="${dist.minimal}"/>
