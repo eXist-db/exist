@@ -59,9 +59,9 @@ public class LDAPSecurityManager implements SecurityManager
    protected String uidNumberAttr = getProperty("security.ldap.attr.uidNumber", "uidNumber");
    protected String gidNumberAttr = getProperty("security.ldap.attr.gidNumber", "gidNumber");
    protected String groupNameAttr = getProperty("security.ldap.attr.groupName", "cn");
+   protected String groupMemberName = getProperty("security.ldap.attr.groupMemberName", "uniqueMember");
    protected String groupClassName = getProperty("security.ldap.groupClass", "posixGroup");
    protected String userClassName = getProperty("security.ldap.userClass", "posixAccount");
-   protected String groupMemberName = getProperty("security.ldap.groupMemberName", "uniqueMember");
    
    protected String userBase = getProperty("security.ldap.dn.user", null);
    protected String groupBase = getProperty("security.ldap.dn.group", null);
