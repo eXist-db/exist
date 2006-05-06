@@ -74,6 +74,10 @@
                             <td>configuration options for the server.</td>
                         </tr>
                         <tr>
+                            <td class="doclink"><ulink url="ldap-security.xml">LDAP Security Manager</ulink>:</td>
+                            <td>configuring eXist to use LDAP for users and groups.</td>
+                        </tr>
+                        <tr>
                             <td class="doclink"><ulink url="xinclude.xml">XInclude</ulink>:</td>
                             <td>XInclude support in eXist.</td>
                         </tr>
