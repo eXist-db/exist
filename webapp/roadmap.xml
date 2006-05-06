@@ -498,6 +498,17 @@
             </remark>
         </part>
         <part>
+            <name>XPath and XQuery atomic value types</name>
+            <status>Stable</status>
+            <priority>Avg</priority>
+            <test_coverage>Partially tested</test_coverage>
+            <progress>60</progress>
+            <who/>
+            <remark>
+                <p>Add gregorian dates, hexBinary and NOTATION</p>
+            </remark>
+        </part>
+        <part>
             <name>XPath and XQuery function libraries</name>
             <status>Stable</status>
             <priority>High</priority>
