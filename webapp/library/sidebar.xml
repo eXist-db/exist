@@ -55,7 +55,7 @@
     </group>
     <group name="Development">
         <item>
-            <link href="http://wiki.exist-db.org/space/Roadmap">Roadmap</link>
+            <link href="roadmap.xml">Roadmap</link>
         </item>
         <item>
             <link href="../api/index.html">Javadocs</link>
