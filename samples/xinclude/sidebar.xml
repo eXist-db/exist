@@ -39,7 +39,7 @@
     </group>
     <group name="Development">
         <item>
-            <link href="roadmap.xml">Roadmap</link>
+            <link href="/exist/roadmap.xml">Roadmap</link>
         </item>
         <item>
             <link href="/exist/api/index.html">Javadocs</link>
