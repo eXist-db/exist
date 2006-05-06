@@ -170,16 +170,20 @@ public class StandaloneServer {
         initXMLDB();
             
         startHTTPServer(httpPort, props);
+        String host = props.getProperty("host");
+        if (host==null) {
+           host = "localhost";
+        }
         
         System.out.println("\nServer launched ...");
         System.out.println("Installed services:");
         System.out.println("-----------------------------------------------");
         if (props.getProperty("rest.enabled").equalsIgnoreCase("yes"))
-        	System.out.println("REST servlet:\tlocalhost:" + httpPort);
+        	System.out.println("REST servlet:\t"+host+":" + httpPort);
         if (props.getProperty("webdav.enabled").equalsIgnoreCase("yes"))
-        	System.out.println("WebDAV:\t\tlocalhost:" + httpPort + "/webdav");
+        	System.out.println("WebDAV:\t\t"+host+":" + httpPort + "/webdav");
         if (props.getProperty("xmlrpc.enabled").equalsIgnoreCase("yes"))
-        	System.out.println("XMLRPC:\t\tlocalhost:" + httpPort + "/xmlrpc");
+        	System.out.println("XMLRPC:\t\t"+host+":" + httpPort + "/xmlrpc");
     }
     
     public boolean isStarted() {
@@ -211,7 +215,17 @@ public class StandaloneServer {
     throws UnknownHostException, IllegalArgumentException, MultiException {
         httpServer = new HttpServer();
         SocketListener listener = new SocketListener();
-        listener.setHost(null);
+        String host = props.getProperty("host");
+        String address = props.getProperty("address");
+        if (host!=null) {
+           listener.setHost(host);
+        } else {
+           listener.setHost(null);
+        }
+        if (address!=null) {
+           java.net.InetAddress iaddress = java.net.InetAddress.getByName(address);
+           listener.setInetAddress(iaddress);
+        }
         listener.setPort(httpPort);
         listener.setMinThreads(5);
         listener.setMaxThreads(50);
@@ -323,6 +337,12 @@ public class StandaloneServer {
         String port = root.getAttribute("port");
         if (port != null && port.length() > 0)
             properties.setProperty("port", port);
+        String host= root.getAttribute("host");
+        if (host!= null && host.length() > 0)
+            properties.setProperty("host",host);
+        String address = root.getAttribute("address ");
+        if (address != null && address .length() > 0)
+            properties.setProperty("address ",address );
         
         NodeList cl = root.getChildNodes();
         for (int i = 0; i < cl.getLength(); i++) {
