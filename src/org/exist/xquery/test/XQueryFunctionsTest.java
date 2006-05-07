@@ -185,6 +185,36 @@ public class XQueryFunctionsTest extends TestCase {
 		}
 	}	
 	
+	public void testString() throws XPathException {
+		ResourceSet result 		= null;
+		String		r			= "";
+		try {
+			result 	= service.query( "let $a2 := <a><b>test1</b><b>test2</b></a> " +
+					"let $a1 := <a><b>test1</b></a> " +
+					"let $a0 := <a></a> "+
+					"return "+
+					"(" +
+					"  count($a2//b/string()), " +
+					"  count($a1//b/string()), " +
+					"  count($a0//b/string()) " +
+					")");
+
+			assertEquals( 3, result.getSize() );
+			r 		= (String) result.getResource(0).getContent();
+			assertEquals( "2", r );	
+			r 		= (String) result.getResource(1).getContent();
+			assertEquals( "1", r );	
+			r 		= (String) result.getResource(2).getContent();
+			assertEquals( "0", r );	
+			
+			
+
+		} catch (XMLDBException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+	}	
+
 	public void testSum() throws XPathException {
 		ResourceSet result 		= null;
 		String		r			= "";
