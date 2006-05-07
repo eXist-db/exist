@@ -27,13 +27,14 @@ import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 
 /**
  * xpath-library function: string(object)
@@ -77,9 +78,13 @@ public class FunString extends Function {
         
         Sequence result;
 		if(contextSequence.isEmpty())
-			result = StringValue.EMPTY_STRING;
-        else
-            result = contextSequence.convertTo(Type.STRING);        
+			result = Sequence.EMPTY_SEQUENCE;
+        else {
+            result = new ValueSequence();            
+    		for (SequenceIterator i = contextSequence.iterate(); i.hasNext();) {
+    			result.add(i.nextItem().convertTo(Type.STRING));
+    		}
+        }
 
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result); 
