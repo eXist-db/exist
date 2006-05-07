@@ -55,7 +55,7 @@ public class FunPosition extends Function {
 	 */
 	public int getDependencies() {
 		return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM +
-			Dependency.CONTEXT_POSITION;
+		Dependency.CONTEXT_POSITION;
 	}
 
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
@@ -69,7 +69,9 @@ public class FunPosition extends Function {
         }        
         
         Sequence result;
-		if(contextSequence == null || contextSequence.isEmpty())
+		if (contextSequence == null)
+			throw new XPathException(getASTNode(), "FONC0001: undefined context item");
+		else if (contextSequence.isEmpty())
             result = Sequence.EMPTY_SEQUENCE;
         else
             result = new IntegerValue(context.getContextPosition() + 1);
