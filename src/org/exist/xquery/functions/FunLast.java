@@ -56,7 +56,11 @@ public class FunLast extends Function {
 	 * @see org.exist.xquery.functions.Function#getDependencies()
 	 */
 	public int getDependencies() {
-		return Dependency.CONTEXT_ITEM + Dependency.CONTEXT_SET;
+		if (inPredicate)
+			return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
+		else
+			return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM +
+			Dependency.CONTEXT_POSITION;				
 	}
 
 	/* (non-Javadoc)
@@ -74,13 +78,11 @@ public class FunLast extends Function {
         
         Sequence result;
 		if (contextSequence == null)
-            result = Sequence.EMPTY_SEQUENCE;
-        else {            
-            if (contextSequence.isEmpty()) 
-                result = Sequence.EMPTY_SEQUENCE;
-            else
-                result = new IntegerValue(contextSequence.getLength());
-        }
+			throw new XPathException(getASTNode(), "FONC0001: undefined context item");
+        else if (contextSequence.isEmpty())
+        	result = Sequence.EMPTY_SEQUENCE;
+        else
+        	result = new IntegerValue(contextSequence.getLength());
         
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result); 
