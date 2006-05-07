@@ -187,7 +187,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 if (Dependency.dependsOn(expr, Dependency.CONTEXT_POSITION) && 
                 		!result.isEmpty()) {
                       
-                    Sequence exprResult = Sequence.EMPTY_SEQUENCE;
+                    Sequence exprResult = new ValueSequence();
                     
                     //Restore a position which may have been modified by inner expressions 
                     int p = context.getContextPosition();
@@ -198,8 +198,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                         //0 or 1 item
                         if (!result.hasMany())
                         	exprResult = expr.eval(result, current);
-                        else {
-                        	exprResult = new ValueSequence();  
+                        else {                        	
                         	exprResult.addAll(expr.eval(result, current));
                         }
                     }

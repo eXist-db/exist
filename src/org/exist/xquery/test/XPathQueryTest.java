@@ -662,7 +662,6 @@ public class XPathQueryTest extends XMLTestCase {
             queryResource(service, "numbers.xml", "//item[position() gt 3]", 1);     
             queryResource(service, "numbers.xml", "//item[position() ge 3]", 2); 
             
-            // Currently fails with error XPTY0004
             queryResource(service, "numbers.xml", "//item[last() - 1]", 1);
             queryResource(service, "numbers.xml", "//item[count(('a','b')) - 1]", 1);
             
@@ -709,7 +708,25 @@ public class XPathQueryTest extends XMLTestCase {
             fail(e.getMessage());
         }
     }
-	
+
+    public void testLast() {
+        try {
+            XQueryService service = 
+                storeXMLStringAndGetQueryService("numbers.xml", numbers);
+            
+            String query = "<a><b>test1</b><b>test2</b></a>/b/last()";
+            ResourceSet  result = service.queryResource("numbers.xml", query);           
+            assertEquals("XPath: " + query, 2, result.getSize());            
+            XMLResource resource = (XMLResource)result.getResource(0); 
+            assertEquals("XPath: " + query, "2", resource.getContent().toString());
+            resource = (XMLResource)result.getResource(1); 
+            assertEquals("XPath: " + query, "2", resource.getContent().toString());
+        } catch (XMLDBException e) {
+        	e.printStackTrace();
+            fail(e.getMessage());
+        }
+    }
+    
 	public void testNumbers() {
 		try {
             XQueryService service = 
