@@ -227,7 +227,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
                         NodeProxy contextNode = new NodeProxy(p);
                         contextNode.deepCopyContext(proxy);
                         //TODO : is this StoredNode construction necessary ?
-                        Iterator domIter = contextNode.getDocument().getBroker().getNodeIterator(contextNode);
+                        Iterator domIter = contextNode.getDocument().getBroker().getNodeIterator(new StoredNode(contextNode));
                         domIter.next();
     					contextNode.setMatches(proxy.getMatches());
     					addChildren(contextNode, result, node, domIter, 0);
@@ -245,7 +245,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 				} 
 				if (axis != Constants.SELF_AXIS) {
 					//TODO : is this StroredNode construction necessary ?
-					Iterator domIter = proxy.getDocument().getBroker().getNodeIterator(proxy);
+					Iterator domIter = proxy.getDocument().getBroker().getNodeIterator(new StoredNode(proxy));
 					StoredNode node = (StoredNode) domIter.next();
 					node.setOwnerDocument(proxy.getDocument());
 					node.setNodeId(proxy.getNodeId());
@@ -264,7 +264,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 				StoredNode child = (StoredNode) iter.next();
 				if(child == null)
 					LOG.debug("CHILD == NULL; doc = " + 
-							((DocumentImpl)node.getOwnerDocument()).getName());
+							((DocumentImpl)node.getOwnerDocument()).getURI());
 				if(node.getOwnerDocument() == null)
 					LOG.debug("DOC == NULL");
 				child.setOwnerDocument((DocumentImpl)node.getOwnerDocument());

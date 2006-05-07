@@ -58,6 +58,7 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
@@ -65,7 +66,6 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.functions.response.ResponseModule;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.JavaObjectValue;
@@ -110,7 +110,7 @@ public class Transform extends BasicFunction {
             new SequenceType(Type.ITEM, Cardinality.EMPTY))
     };
 
-	private Map cache = new HashMap();
+	private final Map cache = new HashMap();
 	
 	/**
 	 * @param context
@@ -124,13 +124,13 @@ public class Transform extends BasicFunction {
 	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-		if(args[0].getLength() == 0)
+		if(args[0].isEmpty())
 			return Sequence.EMPTY_SEQUENCE;
 		Item inputNode = args[0].itemAt(0);
 		Item stylesheetItem = args[1].itemAt(0);
 		
 		Node options = null;
-		if(args[2].getLength() > 0)
+		if(!args[2].isEmpty())
 			options = ((NodeValue)args[2].itemAt(0)).getNode();
 		
 		TransformerHandler handler = createHandler(stylesheetItem, options);
@@ -157,11 +157,11 @@ public class Transform extends BasicFunction {
     		context.popDocumentContext();
     		return seq;
         } else {
-            RequestModule myModule = (RequestModule)context.getModule(RequestModule.NAMESPACE_URI);
-            // request object is read from global variable $request
+            ResponseModule myModule = (ResponseModule)context.getModule(ResponseModule.NAMESPACE_URI);
+            // response object is read from global variable $response
             Variable respVar = myModule.resolveVariable(ResponseModule.RESPONSE_VAR);
             if(respVar == null)
-                throw new XPathException(getASTNode(), "No request object found in the current XQuery context.");
+                throw new XPathException(getASTNode(), "No response object found in the current XQuery context.");
             if(respVar.getValue().getItemType() != Type.JAVA_OBJECT)
                 throw new XPathException(getASTNode(), "Variable $response is not bound to an Java object.");
             JavaObjectValue respValue = (JavaObjectValue)
@@ -300,6 +300,7 @@ public class Transform extends BasicFunction {
 		}
 	}
 	
+	//TODO: revisit this class with XmldbURI in mind
 	private class CachedStylesheet {
 		
 		SAXTransformerFactory factory;
@@ -321,7 +322,7 @@ public class Transform extends BasicFunction {
 				String docPath = uri.substring("xmldb:exist://".length());
 				DocumentImpl doc = null;
 				try {
-					doc = context.getBroker().getXMLResource(docPath, Lock.READ_LOCK);
+					doc = context.getBroker().getXMLResource(XmldbURI.create(docPath), Lock.READ_LOCK);
 					if (doc != null && (templates == null || doc.getMetadata().getLastModified() > lastModified))
 						templates = getSource(factory, doc);
 					lastModified = doc.getMetadata().getLastModified();
@@ -391,15 +392,15 @@ public class Transform extends BasicFunction {
 			if(href.startsWith("/"))
 				path = href;
 			else
-				path = collection.getName() + "/" + href;
+				path = collection.getURI() + "/" + href;
 			DocumentImpl xslDoc;
 			try {
-				xslDoc = (DocumentImpl) context.getBroker().getXMLResource(path);
+				xslDoc = (DocumentImpl) context.getBroker().getXMLResource(XmldbURI.create(path));
 			} catch (PermissionDeniedException e) {
 				throw new TransformerException(e.getMessage(), e);
 			}
 			if(xslDoc == null) {
-				LOG.debug("Document " + href + " not found in collection " + collection.getName());
+				LOG.debug("Document " + href + " not found in collection " + collection.getURI());
 				return null;
 			}
 			if(!xslDoc.getPermissions().validate(context.getUser(), Permission.READ))

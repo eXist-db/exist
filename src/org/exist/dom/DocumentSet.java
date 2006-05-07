@@ -34,6 +34,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.util.LockException;
 import org.exist.util.hashtable.Int2ObjectHashMap;
+import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -149,13 +150,13 @@ public class DocumentSet extends Int2ObjectHashMap implements NodeList {
 		return (DocumentImpl) get(docId);
 	}
 
-	public String[] getNames() {
-		String result[] = new String[size()];
+	public XmldbURI[] getNames() {
+		XmldbURI result[] = new XmldbURI[size()];
 		DocumentImpl d;
 		int j = 0;
 		for (Iterator i = iterator(); i.hasNext(); j++) {
 			d = (DocumentImpl) i.next();
-			result[j] = d.getFileName();
+			result[j] = d.getFileURI();
 		}
 		Arrays.sort(result);
 		return result;

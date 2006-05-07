@@ -50,6 +50,7 @@ import org.exist.util.Configuration;
 import org.exist.util.XMLReaderObjectFactory;
 import org.exist.util.XMLReaderPool;
 import org.exist.xmldb.ShutdownListener;
+import org.exist.xmldb.XmldbURI;
 
 /**
  * This class controls all available instances of the database.
@@ -614,7 +615,10 @@ public class BrokerPool {
         //REFACTOR : construct then... configure
         xmlReaderPool = new XMLReaderPool(new XMLReaderObjectFactory(this), 5, 0);
         //REFACTOR : construct then... configure
-        collectionCache = new CollectionCache(this, DEFAULT_COLLECTION_BUFFER_SIZE, 0.9);
+        int bufferSize = conf.getInteger("db-connection.collection-cache-size");
+        if(bufferSize==-1)
+        	bufferSize = DEFAULT_COLLECTION_BUFFER_SIZE;
+        collectionCache = new CollectionCache(this, bufferSize, 0.9);
         
         notificationService = new NotificationService();
         
@@ -642,11 +646,11 @@ public class BrokerPool {
 			recovered = transactionManager.runRecovery(broker);
             //TODO : extract the following from this block ? What if we ware not transactional ? -pb 
             if (!recovered) {
-            	if (broker.getCollection(DBBroker.ROOT_COLLECTION) == null) {
+            	if (broker.getCollection(XmldbURI.ROOT_COLLECTION_URI) == null) {
             		Txn txn = transactionManager.beginTransaction();
             		try {
             			//TODO : use a root collection final member
-            			broker.getOrCreateCollection(txn, DBBroker.ROOT_COLLECTION);
+            			broker.getOrCreateCollection(txn, XmldbURI.ROOT_COLLECTION_URI);
             			transactionManager.commit(txn);
             		} catch (PermissionDeniedException e) {
             			transactionManager.abort(txn);
@@ -1052,9 +1056,13 @@ public class BrokerPool {
             }
             cacheManager.checkCaches();
             sync.restart();
+            notificationService.debug();
         } else
             cacheManager.checkDistribution();
         //TODO : touch this.syncEvent and syncRequired ?
+	
+        //After setting the SYSTEM_USER above we must change back to the DEFAULT User to prevent a security problem
+        broker.setUser(User.DEFAULT);
 	}
 	
 	/**
@@ -1174,6 +1182,8 @@ public class BrokerPool {
 	 * @param killed <code>true</code> when the JVM is (cleanly) exiting
 	 */
 	public synchronized void shutdown(boolean killed) {
+		notificationService.debug();
+		
 		//Notify all running tasks that we are shutting down
 		syncDaemon.shutDown();
 		//Notify all running XQueries that we are shutting down
@@ -1217,8 +1227,10 @@ public class BrokerPool {
 			broker = (DBBroker)inactiveBrokers.peek();
 		//TOUNDERSTAND (pb) : shutdown() is called on only *one* broker ?
         // WM: yes, the database files are shared, so only one broker is needed to close them for all
-        if (broker != null)
+        if (broker != null) {
+            broker.setUser(SecurityManager.SYSTEM_USER);
             broker.shutdown();
+        }
         
         transactionManager.shutdown();
 		

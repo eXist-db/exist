@@ -18,7 +18,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id: RequestModule.java 3035 2006-04-02 20:43:35 +0100 (Sun, 02 Apr 2006) deliriumsky $
+ *  $Id$
  */
 package org.exist.xquery.functions.request;
 
@@ -40,7 +40,7 @@ public class RequestModule extends AbstractInternalModule {
 		new FunctionDef(GetData.signature, GetData.class),
 		new FunctionDef(GetParameter.signature, GetParameter.class),
 		new FunctionDef(GetParameterNames.signature, GetParameterNames.class),
-		new FunctionDef(GetUploadedFile.signature, GetUploadedFile.class),
+//		new FunctionDef(GetUploadedFile.signature, GetUploadedFile.class),
 		new FunctionDef(GetUploadedFileName.signature, GetUploadedFileName.class),
 		new FunctionDef(GetURI.signature, GetURI.class),
 		new FunctionDef(GetURL.signature, GetURL.class),

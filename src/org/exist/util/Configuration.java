@@ -36,6 +36,7 @@ import javax.xml.parsers.SAXParserFactory;
 import org.apache.log4j.Logger;
 
 import org.exist.memtree.SAXAdapter;
+import org.exist.security.User;
 import org.exist.security.xacml.XACMLConstants;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NativeBroker;
@@ -52,11 +53,22 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 
 public class Configuration implements ErrorHandler {
+	
+	/* FIXME:  It's not clear whether this class is meant to be a singleton (due to the static
+	 * file and existHome fields and static methods), or if we should allow many instances to
+	 * run around in the system.  Right now, any attempts to create multiple instances will
+	 * likely get the system confused.  Let's decide which one it should be and fix it properly.
+	 * 
+	 * I vote for a Singleton (like Descriptor.java) - deliriumsky
+	 */
     
     private final static Logger LOG = Logger.getLogger(Configuration.class);	//Logger
+    protected static String file = null;												//config file (conf.xml by default)
+    protected static File existHome = null;
+
     protected DocumentBuilder builder = null;									
     protected HashMap config = new HashMap();									//Configuration						
-    protected String file = null;												//config file (conf.xml)
+    
     public static final class SystemTaskConfig {
         
         private String className;
@@ -81,76 +93,60 @@ public class Configuration implements ErrorHandler {
         }
     }
     
-    //Constructor (wrapper)
-    public Configuration(String file) throws DatabaseConfigurationException
-	{
-        this(file, null);
+    public Configuration() throws DatabaseConfigurationException {
+        this("conf.xml", null);
+    }
+
+    public Configuration(String configFilename) throws DatabaseConfigurationException {
+        this(configFilename, null);
     }
     
-    //Constructor
-    public Configuration(String file, String dbHome) throws DatabaseConfigurationException
-	{
-        try
-		{
+    public Configuration(String configFilename, String existHomeDirname) throws DatabaseConfigurationException {
+        try {
             InputStream is = null;
-        
-            //firstly, try to read the configuration from a file within the classpath
-            if(file != null)
-            {
-            	is = Configuration.class.getClassLoader().getResourceAsStream(file);
-            	if(is != null)
-            	{
-            		LOG.info("Reading configuration from classloader");
-            	}
-            }
-            else
-            {
-            	//Default file name
-            	file = "conf.xml";
+
+            // firstly, try to read the configuration from a file within the
+            // classpath
+            try {
+				if (configFilename != null) {
+				    is = Configuration.class.getClassLoader().getResourceAsStream(configFilename);
+				    if (is != null) LOG.info("Reading configuration from classloader");
+				} else {
+				    // Default file name
+				    configFilename = "conf.xml";
+				}
+			} catch (Exception e) {
+				// EB: ignore and go forward, e.g. in case there is an absolute
+				// file name for configFileName
+				LOG.debug(e);
+			}
+
+            // otherise, secondly try to read configuration from file. Guess the
+            // location if necessary
+            if (is == null) {
+                Configuration.existHome = (existHomeDirname != null) ? new File(existHomeDirname) : getExistHome(existHomeDirname);
+                if (Configuration.existHome == null) {
+                	// EB: try to create existHome based on location of config file
+                	// when config file points to absolute file location
+                	File absoluteConfigFile = new File(configFilename);
+                	if (absoluteConfigFile.isAbsolute() &&
+                			absoluteConfigFile.exists() && absoluteConfigFile.canRead())
+                		Configuration.existHome = absoluteConfigFile.getParentFile();
+                }
+                File configFile = lookup(configFilename);
+                if (!configFile.exists() || !configFile.canRead())
+                    throw new DatabaseConfigurationException("Unable to read configuration file at " + config);
+                Configuration.file = configFile.getAbsolutePath();
+                is = new FileInputStream(configFile);
+                // set dbHome to parent of the conf file found, to resolve relative
+                // path from conf file
+                existHomeDirname = configFile.getParentFile().getCanonicalPath();
+                LOG.info("Reading configuration from file " + configFile);
             }
             
-            
-            //otherise, secondly try to read configuration from file. Guess the location if necessary
-            if(is == null)
-            {
-                //try and read the config file from the specified home folder 
-            	File f = new File(file);
-                if((!f.isAbsolute()) && dbHome != null)
-                {
-                    file = dbHome + File.separatorChar + file;
-                    f = new File(file);
-                }
-                
-                //if cant read config from specified home folder
-                if(!f.canRead())
-                {
-                    LOG.info("Unable to read configuration. Trying to guess location ...");
-                    
-                    //Read from the configration file from the guessed home folder
-                    if(dbHome == null)
-                    {
-                        // try to determine exist home directory
-                        dbHome = System.getProperty("exist.home");
-                        
-                        if(dbHome == null)
-                            dbHome = System.getProperty("user.dir");
-                    }
-                    if(dbHome != null)
-                        file = dbHome + File.separatorChar + file;
-                    f = new File(file);
-                    if(!f.canRead())
-                    {
-                        LOG.warn("giving up");
-                        throw new DatabaseConfigurationException("Unable to read configuration file");
-                    }
-                    
-                }
-                this.file = file;
-                is = new FileInputStream(file);
-            }
             
             // Create resolver
-            System.out.println("Creating CatalogResolver");
+            LOG.debug("Creating eXist catalog resolver");
             System.setProperty("xml.catalog.verbosity", "10");
             eXistCatalogResolver resolver = new eXistCatalogResolver(true);
             config.put("resolver", resolver);
@@ -174,13 +170,13 @@ public class Configuration implements ErrorHandler {
             //indexer settings
             NodeList indexer = doc.getElementsByTagName("indexer");
             if (indexer.getLength() > 0) {
-                configureIndexer(dbHome, doc, indexer);
+                configureIndexer(existHomeDirname, doc, indexer);
             }
             
             //db connection settings
             NodeList dbcon = doc.getElementsByTagName("db-connection");
             if (dbcon.getLength() > 0) {
-                configureBackend(dbHome, dbcon);
+                configureBackend(existHomeDirname, dbcon);
             }
             
             //serializer settings
@@ -220,17 +216,17 @@ public class Configuration implements ErrorHandler {
         }
         catch (SAXException e)
 		{
-            LOG.warn("error while reading config file: " + file, e);
+            LOG.warn("error while reading config file: " + configFilename, e);
             throw new DatabaseConfigurationException(e.getMessage());
         }
         catch (ParserConfigurationException cfg)
 		{
-            LOG.warn("error while reading config file: " + file, cfg);
+            LOG.warn("error while reading config file: " + configFilename, cfg);
             throw new DatabaseConfigurationException(cfg.getMessage());
         }
         catch (IOException io)
 		{
-            LOG.warn("error while reading config file: " + file, io);
+            LOG.warn("error while reading config file: " + configFilename, io);
             throw new DatabaseConfigurationException(io.getMessage());
         }
     }
@@ -239,18 +235,22 @@ public class Configuration implements ErrorHandler {
         String protocol = cluster.getAttribute("protocol");
         if(protocol != null) {
             config.put("cluster.protocol", protocol);
+            LOG.debug("cluster.protocol: " + config.get("cluster.protocol"));
         }
         String user = cluster.getAttribute("dbaUser");
         if(user != null) {
             config.put("cluster.user", user);
+            LOG.debug("cluster.user: " + config.get("cluster.user"));
         }
         String pwd = cluster.getAttribute("dbaPassword");
         if(pwd != null) {
             config.put("cluster.pwd", pwd);
+            LOG.debug("cluster.pwd: " + config.get("cluster.pwd"));
         }
         String dir = cluster.getAttribute("journalDir");
         if(dir != null) {
             config.put("cluster.journalDir", dir);
+            LOG.debug("cluster.journalDir: " + config.get("cluster.journalDir"));
         }
         String excludedColl = cluster.getAttribute("exclude");
         ArrayList list = new ArrayList();
@@ -258,11 +258,13 @@ public class Configuration implements ErrorHandler {
             String[] excl = excludedColl.split(",");
             for(int i=0;i<excl.length;i++){
                 list.add(excl[i]);
+                
             }
         }
         if(!list.contains(NativeBroker.TEMP_COLLECTION))
             list.add(NativeBroker.TEMP_COLLECTION);
         config.put("cluster.exclude", list);
+        LOG.debug("cluster.exlude: " + config.get("cluster.exclude"));
         
         /*Cluster parameters for test*/
         String maxStore = cluster.getAttribute("journalMaxItem");
@@ -270,19 +272,27 @@ public class Configuration implements ErrorHandler {
             maxStore = "65000";
         }
         config.put("cluster.journal.maxStore", Integer.valueOf(maxStore));
+        LOG.debug("cluster.journal.maxStore: " + config.get("cluster.journal.maxStore"));
+        
         String shift = cluster.getAttribute("journalIndexShift");
         if(shift == null || shift.trim().length()==0 ) {
             shift = "100";
         }
         config.put("cluster.journal.shift", Integer.valueOf(shift));
-        
-        System.out.println("IN CONFIGURE");
-        System.out.println("cluster.journal.maxStore " + this.getProperty("cluster.journal.maxStore"));
-        System.out.println("cluster.journal.shift " + this.getProperty("cluster.journal.shift"));
+        LOG.debug("cluster.journal.shift: " + config.get("cluster.journal.shift"));        
     }
     
     private void configureXQuery(Element xquery) throws DatabaseConfigurationException {
-        NodeList builtins = xquery.getElementsByTagName("builtin-modules");
+        
+    	//java binding
+    	String javabinding = xquery.getAttribute("enable-java-binding");
+    	if(javabinding != null) {
+            config.put("xquery.enable-java-binding", javabinding);
+            LOG.debug("xquery.enable-java-binding: " + config.get("xquery.enable-java-binding"));
+        }
+
+    	//builin-modules
+    	NodeList builtins = xquery.getElementsByTagName("builtin-modules");
         if (builtins.getLength() > 0) {
             Element elem = (Element) builtins.item(0);
             NodeList modules = elem.getElementsByTagName("module");
@@ -297,6 +307,7 @@ public class Configuration implements ErrorHandler {
                     throw new DatabaseConfigurationException("element 'module' requires an attribute 'class'");
                 moduleList[i][0] = uri;
                 moduleList[i][1] = clazz;
+                LOG.debug("Configured module '" + uri + "' implemented in '" + clazz + "'");
             }
             config.put("xquery.modules", moduleList);
         }
@@ -317,9 +328,11 @@ public class Configuration implements ErrorHandler {
     private void configureXACML(Element xacml) {
     	String enable = xacml.getAttribute(XACMLConstants.ENABLE_XACML_ATTRIBUTE);
     	config.put(XACMLConstants.ENABLE_XACML_PROPERTY, parseBoolean(enable, false));
+    	LOG.debug(XACMLConstants.ENABLE_XACML_PROPERTY + ": " + config.get(XACMLConstants.ENABLE_XACML_PROPERTY));
     	
     	String loadDefaults = xacml.getAttribute(XACMLConstants.LOAD_DEFAULT_POLICIES_ATTRIBUTE);
     	config.put(XACMLConstants.LOAD_DEFAULT_POLICIES_PROPERTY, parseBoolean(loadDefaults, true));
+    	LOG.debug(XACMLConstants.LOAD_DEFAULT_POLICIES_PROPERTY + ": " + config.get(XACMLConstants.LOAD_DEFAULT_POLICIES_PROPERTY));
     }
     
     /**
@@ -347,20 +360,24 @@ public class Configuration implements ErrorHandler {
      */
     private void configureXUpdate(NodeList xupdates) throws NumberFormatException {
         Element xupdate = (Element) xupdates.item(0);
+        
         String growth = xupdate.getAttribute("growth-factor");
         if (growth != null) {
             config.put("xupdate.growth-factor", new Integer(growth));
+            LOG.debug("xupdate.growth-factor: " + config.get("xupdate.growth-factor"));    
         }
-        String fragmentation = xupdate
-                .getAttribute("allowed-fragmentation");
-        if (fragmentation != null)
-            config.put("xupdate.fragmentation", new Integer(
-                    fragmentation));
-        String consistencyCheck = xupdate
-                .getAttribute("enable-consistency-checks");
-        if (consistencyCheck != null)
-            config.put("xupdate.consistency-checks", Boolean
-                    .valueOf(consistencyCheck.equals("yes")));
+        
+        String fragmentation = xupdate.getAttribute("allowed-fragmentation");
+        if (fragmentation != null) {
+        	config.put("xupdate.fragmentation", new Integer(fragmentation));
+        	LOG.debug("xupdate.fragmentation: " + config.get("xupdate.fragmentation"));
+        }
+        
+        String consistencyCheck = xupdate.getAttribute("enable-consistency-checks");
+        if (consistencyCheck != null) {
+            config.put("xupdate.consistency-checks", Boolean.valueOf(consistencyCheck.equals("yes")));
+            LOG.debug("xupdate.consistency-checks: " + config.get("xupdate.consistency-checks"));
+        }
     }
     
     /**
@@ -368,28 +385,42 @@ public class Configuration implements ErrorHandler {
      */
     private void configureSerializer(NodeList serializers) {
         Element serializer = (Element) serializers.item(0);
+        
         String xinclude = serializer.getAttribute("enable-xinclude");
-        if (xinclude != null)
+        if (xinclude != null) {
             config.put("serialization.enable-xinclude", xinclude);
+            LOG.debug("serialization.enable-xinclude: " + config.get("serialization.enable-xinclude"));
+        }
+        
         String xsl = serializer.getAttribute("enable-xsl");
-        if (xsl != null)
+        if (xsl != null) {
             config.put("serialization.enable-xsl", xsl);
+            LOG.debug("serialization.enable-xsl: " + config.get("serialization.enable-xsl"));
+        }
+        
         String indent = serializer.getAttribute("indent");
-        if (indent != null)
+        if (indent != null) {
             config.put("serialization.indent", indent);
+            LOG.debug("serialization.indent: " + config.get("serialization.indent"));
+        }
+        
         String internalId = serializer.getAttribute("add-exist-id");
-        if (internalId != null)
+        if (internalId != null) {
             config.put("serialization.add-exist-id", internalId);
-        String tagElementMatches = serializer
-                .getAttribute("match-tagging-elements");
-        if (tagElementMatches != null)
-            config.put("serialization.match-tagging-elements",
-                    tagElementMatches);
-        String tagAttributeMatches = serializer
-                .getAttribute("match-tagging-attributes");
-        if (tagAttributeMatches != null)
-            config.put("serialization.match-tagging-attributes",
-                    tagAttributeMatches);
+            LOG.debug("serialization.add-exist-id: " + config.get("serialization.add-exist-id"));
+        }
+        
+        String tagElementMatches = serializer.getAttribute("match-tagging-elements");
+        if (tagElementMatches != null) {
+            config.put("serialization.match-tagging-elements", tagElementMatches);
+            LOG.debug("serialization.match-tagging-elements: " + config.get("serialization.match-tagging-elements"));
+        }
+        
+        String tagAttributeMatches = serializer.getAttribute("match-tagging-attributes");
+        if (tagAttributeMatches != null) {
+            config.put("serialization.match-tagging-attributes", tagAttributeMatches);
+            LOG.debug("serialization.match-tagging-attributes: " + config.get("serialization.match-tagging-attributes"));
+        }
     }
     
     /**
@@ -399,84 +430,132 @@ public class Configuration implements ErrorHandler {
      */
     private void configureBackend(String dbHome, NodeList dbcon) throws DatabaseConfigurationException {
         Element con = (Element) dbcon.item(0);
-        String cacheMem = con.getAttribute("cacheSize");
-        String pageSize = con.getAttribute("pageSize");
-        String dataFiles = con.getAttribute("files");
-        String buffers = con.getAttribute("buffers");
-        String collBuffers = con.getAttribute("collection_buffers");
-        String wordBuffers = con.getAttribute("words_buffers");
-        String elementBuffers = con.getAttribute("elements_buffers");
-        String freeMem = con.getAttribute("free_mem_min");
+        
         String mysql = con.getAttribute("database");
-        if (mysql != null)
+        if (mysql != null) {
             config.put("database", mysql);
+            LOG.debug("database: " + config.get("database"));
+        }
+        
         // directory for database files
+        String dataFiles = con.getAttribute("files");
         if (dataFiles != null) {
-            File df = new File(dataFiles);
-            if ((!df.isAbsolute()) && dbHome != null) {
-                dataFiles = dbHome + File.separatorChar + dataFiles;
-                df = new File(dataFiles);
-            }
+        	File df = lookup(dataFiles, dbHome);
             if (!df.canRead())
                 throw new DatabaseConfigurationException(
                         "cannot read data directory: "
-                        + df.getAbsolutePath());
-            
+                        + df.getAbsolutePath());            
             config.put("db-connection.data-dir", df.getAbsolutePath());
             LOG.info("data directory = " + df.getAbsolutePath());
         }
+
+        String cacheMem = con.getAttribute("cacheSize");
         if (cacheMem != null) {
             if (cacheMem.endsWith("M") || cacheMem.endsWith("m"))
                 cacheMem = cacheMem.substring(0, cacheMem.length() - 1);
             try {
-                config.put("db-connection.cache-size", new Integer(
-                        cacheMem));
+                config.put("db-connection.cache-size", new Integer(cacheMem));
+                LOG.debug("db-connection.cache-size: " + config.get("db-connection.cache-size") + "m");
             } catch (NumberFormatException nfe) {
+            	LOG.warn(nfe);
             }
         }
-        if (buffers != null)
+        
+        String buffers = con.getAttribute("buffers");
+        if (buffers != null) {
             try {
-                config.put("db-connection.buffers",
-                        new Integer(buffers));
+                config.put("db-connection.buffers", new Integer(buffers));
+                LOG.debug("db-connection.buffers: " + config.get("db-connection.buffers"));
             } catch (NumberFormatException nfe) {
+            	LOG.warn(nfe);
             }
-        if (pageSize != null)
+        }
+
+        String pageSize = con.getAttribute("pageSize");
+        if (pageSize != null) {
             try {
-                config.put("db-connection.page-size", new Integer(
-                        pageSize));
+                config.put("db-connection.page-size", new Integer(pageSize));
+                LOG.debug("db-connection.page-size: " + config.get("db-connection.page-size"));
             } catch (NumberFormatException nfe) {
+            	LOG.warn(nfe);
             }
-        if (collBuffers != null)
+        }  
+            
+        String collBuffers = con.getAttribute("collection_buffers");            
+        if (collBuffers != null) {
             try {
-                config.put("db-connection.collections.buffers",
-                        new Integer(collBuffers));
+                config.put("db-connection.collections.buffers", new Integer(collBuffers));
+                LOG.debug("db-connection.collections.buffers: " + config.get("db-connection.collections.buffers"));               
             } catch (NumberFormatException nfe) {
+            	LOG.warn(nfe);
             }
+        }
+
+        String wordBuffers = con.getAttribute("words_buffers");
         if (wordBuffers != null)
+        try {
+            config.put("db-connection.words.buffers", new Integer(wordBuffers));
+            LOG.debug("db-connection.words.buffers: " + config.get("db-connection.words.buffers"));
+        } catch (NumberFormatException nfe) {
+        	LOG.warn(nfe);
+        }
+
+        String elementBuffers = con.getAttribute("elements_buffers");
+        if (elementBuffers != null) {
             try {
-                config.put("db-connection.words.buffers", new Integer(
-                        wordBuffers));
+                config.put("db-connection.elements.buffers", new Integer(elementBuffers));
+                LOG.debug("db-connection.elements.buffers: " + config.get("db-connection.elements.buffers"));
             } catch (NumberFormatException nfe) {
+            	LOG.warn(nfe);
             }
-        if (elementBuffers != null)
+        }
+
+        String freeMem = con.getAttribute("free_mem_min");
+        if (freeMem != null) {
             try {
-                config.put("db-connection.elements.buffers",
-                        new Integer(elementBuffers));
+                config.put("db-connection.min_free_memory", new Integer(freeMem));
+                LOG.debug("db-connection.min_free_memory: " + config.get("db-connection.min_free_memory"));
             } catch (NumberFormatException nfe) {
+            	LOG.warn(nfe);
             }
-        if (freeMem != null)
+        }
+        
+        String collCacheSize = con.getAttribute("collectionCacheSize");
+        if (collCacheSize != null) {
             try {
-                config.put("db-connection.min_free_memory",
-                        new Integer(freeMem));
+                config.put("db-connection.collection-cache-size", new Integer(collCacheSize));
+                LOG.debug("db-connection.collection-cache-size: " + config.get("db-connection.collection-cache-size"));
             } catch (NumberFormatException nfe) {
+            	LOG.warn(nfe);
             }
+        }
+        
         NodeList securityConf = con.getElementsByTagName("security");
         String securityManagerClassName = "org.exist.security.XMLSecurityManager";
         if (securityConf.getLength()>0) {
-           securityManagerClassName = ((Element)securityConf.item(0)).getAttribute("class");
+           Element security = (Element)securityConf.item(0);
+           securityManagerClassName = security.getAttribute("class");
+           String encoding = security.getAttribute("password-encoding");
+           config.put("db-connection.security.password-encoding",encoding);
+           if (encoding!=null) {
+        	   LOG.info("db-connection.security.password-encoding: " + config.get("db-connection.security.password-encoding"));
+              User.setPasswordEncoding(encoding);
+           } else {
+              LOG.info("No password encoding set, defaulting.");
+           }
+           String realm = security.getAttribute("password-realm");
+           config.put("db-connection.security.password-realm",realm);
+           if (realm!=null) {
+        	   LOG.info("db-connection.security.password-realm: " + config.get("db-connection.security.password-realm"));
+              User.setPasswordRealm(realm);
+           } else {
+              LOG.info("No password realm set, defaulting.");
+           }
         }
+        
         try {
-           config.put("db-connection.security.class",config.getClass().forName(securityManagerClassName));
+           config.put("db-connection.security.class",Class.forName(securityManagerClassName));
+           LOG.debug("db-connection.security.class: " + config.get("db-connection.security.class"));
         } catch (Throwable ex) {
            if (ex instanceof ClassNotFoundException) {
               throw new DatabaseConfigurationException("Cannot find security manager class "+securityManagerClassName);
@@ -484,6 +563,7 @@ public class Configuration implements ErrorHandler {
               throw new DatabaseConfigurationException("Cannot load security manager class "+securityManagerClassName+" due to "+ex.getMessage());
            }
         }
+        
         NodeList poolConf = con.getElementsByTagName("pool");
         if (poolConf.getLength() > 0) {
             configurePool(poolConf);
@@ -503,7 +583,7 @@ public class Configuration implements ErrorHandler {
         NodeList recovery = con.getElementsByTagName("recovery");
         if (recovery.getLength() > 0) {
             configureRecovery(recovery);
-        }
+        }        
         configurePermissions(con.getElementsByTagName("default-permissions"));
     }
     
@@ -515,6 +595,7 @@ public class Configuration implements ErrorHandler {
             value = option.equals("yes");
         }
         setProperty("db-connection.recovery.enabled", new Boolean(value));
+        LOG.debug("db-connection.recovery.enabled: " + config.get("db-connection.recovery.enabled"));
         
         option = recovery.getAttribute("sync-on-commit");
         value = true;
@@ -522,6 +603,7 @@ public class Configuration implements ErrorHandler {
             value = option.equals("yes");
         }
         setProperty("db-connection.recovery.sync-on-commit", new Boolean(value));
+        LOG.debug("db-connection.recovery.sync-on-commit: " + config.get("db-connection.recovery.sync-on-commit"));
         
         option = recovery.getAttribute("group-commit");
         value = false;
@@ -529,10 +611,13 @@ public class Configuration implements ErrorHandler {
             value = option.equals("yes");
         }
         setProperty("db-connection.recovery.group-commit", new Boolean(value));
+        LOG.debug("db-connection.recovery.group-commit: " + config.get("db-connection.recovery.group-commit"));
         
         option = recovery.getAttribute("journal-dir");
-        if (option != null)
+        if (option != null) {
             setProperty("db-connection.recovery.journal-dir", option);
+            LOG.debug("db-connection.recovery.journal-dir: " + config.get("db-connection.recovery.journal-dir"));
+        }
         
         option = recovery.getAttribute("size");
         if (option != null) {
@@ -541,6 +626,7 @@ public class Configuration implements ErrorHandler {
             try {
                 Integer size = new Integer(option);
                 setProperty("db-connection.recovery.size-limit", size);
+                LOG.debug("db-connection.recovery.size-limit: " + config.get("db-connection.recovery.size-limit") + "m");
             } catch (NumberFormatException e) {
                 throw new DatabaseConfigurationException("size attribute in recovery section needs to be a number");
             }
@@ -555,6 +641,7 @@ public class Configuration implements ErrorHandler {
                 try {
                     Integer perms = new Integer(Integer.parseInt(option, 8));
                     setProperty("indexer.permissions.collection", perms);
+                    LOG.debug("indexer.permissions.collection: " + config.get("indexer.permissions.collection"));
                 } catch (NumberFormatException e) {
                     throw new DatabaseConfigurationException("collection attribute in default-permissions section needs " +
                             "to be an octal number");
@@ -565,6 +652,7 @@ public class Configuration implements ErrorHandler {
                 try {
                     Integer perms = new Integer(Integer.parseInt(option, 8));
                     setProperty("indexer.permissions.resource", perms);
+                    LOG.debug("indexer.permissions.resource: " + config.get("indexer.permissions.resource"));
                 } catch (NumberFormatException e) {
                     throw new DatabaseConfigurationException("resource attribute in default-permissions section needs " +
                             "to be an octal number");
@@ -605,6 +693,7 @@ public class Configuration implements ErrorHandler {
             taskList[i] = sysTask;
         }
         config.put("db-connection.system-task-config", taskList);
+        LOG.debug("db-connection.system-task-config: " + config.get("db-connection.system-task-config"));
     }
     
     /**
@@ -612,22 +701,24 @@ public class Configuration implements ErrorHandler {
      */
     private void configureWatchdog(NodeList watchConf) {
         Element watchDog = (Element) watchConf.item(0);
+
         String timeout = watchDog.getAttribute("query-timeout");
-        String maxOutput = watchDog
-                .getAttribute("output-size-limit");
         if (timeout != null) {
             try {
-                config.put("db-connection.watchdog.query-timeout",
-                        new Long(timeout));
+                config.put("db-connection.watchdog.query-timeout", new Long(timeout));
+                LOG.debug("db-connection.watchdog.query-timeout: " + config.get("db-connection.watchdog.query-timeout"));
             } catch (NumberFormatException e) {
+            	LOG.warn(e);
             }
         }
+        
+        String maxOutput = watchDog.getAttribute("output-size-limit");
         if (maxOutput != null) {
             try {
-                config.put(
-                        "db-connection.watchdog.output-size-limit",
-                        new Integer(maxOutput));
+                config.put("db-connection.watchdog.output-size-limit", new Integer(maxOutput));
+                LOG.debug("db-connection.watchdog.output-size-limit: " + config.get("db-connection.watchdog.output-size-limit"));
             } catch (NumberFormatException e) {
+            	LOG.warn(e);
             }
         }
     }
@@ -637,39 +728,46 @@ public class Configuration implements ErrorHandler {
      */
     private void configureXQueryPool(NodeList queryPoolConf) {
         Element queryPool = (Element) queryPoolConf.item(0);
-        String maxStackSize = queryPool
-                .getAttribute("max-stack-size");
-        String maxPoolSize = queryPool.getAttribute("size");
-        String timeout = queryPool.getAttribute("timeout");
-        String timeoutCheckInterval = queryPool
-                .getAttribute("timeout-check-interval");
-        if (maxStackSize != null)
+
+        String maxStackSize = queryPool.getAttribute("max-stack-size");
+        if (maxStackSize != null) {
             try {
-                config.put(
-                        "db-connection.query-pool.max-stack-size",
-                        new Integer(maxStackSize));
+                config.put("db-connection.query-pool.max-stack-size", new Integer(maxStackSize));
+                LOG.debug("db-connection.query-pool.max-stack-size: " + config.get("db-connection.query-pool.max-stack-size"));
             } catch (NumberFormatException e) {
+            	LOG.warn(e);
             }
+        }
+    
+        String maxPoolSize = queryPool.getAttribute("size");
         if (maxPoolSize != null) {
         	try {
         		config.put("db-connection.query-pool.size", new Integer(maxPoolSize));
+        		LOG.debug("db-connection.query-pool.size: " + config.get("db-connection.query-pool.size"));
         	} catch (NumberFormatException e) {
+        		LOG.warn(e);
         	}
         }
-        if (timeout != null)
+
+        String timeout = queryPool.getAttribute("timeout");
+        if (timeout != null) {
             try {
-                config.put("db-connection.query-pool.timeout",
-                        new Long(timeout));
+                config.put("db-connection.query-pool.timeout", new Long(timeout));
+                LOG.debug("db-connection.query-pool.timeout: " + config.get("db-connection.query-pool.timeout"));
             } catch (NumberFormatException e) {
+            	LOG.warn(e);
             }
-        if (timeoutCheckInterval != null)
+        }
+
+        String timeoutCheckInterval = queryPool.getAttribute("timeout-check-interval");           
+        if (timeoutCheckInterval != null) {
             try {
-                config
-                        .put(
-                        "db-connection.query-pool.timeout-check-interval",
-                        new Long(timeoutCheckInterval));
+                config.put("db-connection.query-pool.timeout-check-interval", new Long(timeoutCheckInterval));
+                LOG.debug("db-connection.query-pool.timeout-check-interval: " + config.get("db-connection.query-pool.timeout-check-interval"));
             } catch (NumberFormatException e) {
+            	LOG.warn(e);
             }
+        }
     }
     
     /**
@@ -677,35 +775,46 @@ public class Configuration implements ErrorHandler {
      */
     private void configurePool(NodeList poolConf) {
         Element pool = (Element) poolConf.item(0);
+        
         String min = pool.getAttribute("min");
+        if (min != null) {
+            try {
+                config.put("db-connection.pool.min", new Integer(min));
+                LOG.debug("db-connection.pool.min: " + config.get("db-connection.pool.min"));
+            } catch (NumberFormatException e) {
+            	LOG.warn(e);
+            }
+        }
+
         String max = pool.getAttribute("max");
+        if (max != null) {
+	        try {
+	            config.put("db-connection.pool.max", new Integer(max));
+	            LOG.debug("db-connection.pool.max: " + config.get("db-connection.pool.max"));
+	        } catch (NumberFormatException e) {
+	        	LOG.warn(e);
+	        }
+        }
+        
         String sync = pool.getAttribute("sync-period");
-        String maxShutdownWait = pool
-                .getAttribute("wait-before-shutdown");
-        if (min != null)
+        if (sync != null) {
             try {
-                config.put("db-connection.pool.min", new Integer(
-                        min));
+                config.put("db-connection.pool.sync-period", new Long(sync));
+                LOG.debug("db-connection.pool.sync-period: " + config.get("db-connection.pool.sync-period"));
             } catch (NumberFormatException e) {
+            	LOG.warn(e);
             }
-        if (max != null)
+        }
+        
+        String maxShutdownWait = pool.getAttribute("wait-before-shutdown");
+        if (maxShutdownWait != null) {
             try {
-                config.put("db-connection.pool.max", new Integer(
-                        max));
+                config.put("wait-before-shutdown", new Long(maxShutdownWait));
+                LOG.debug("wait-before-shutdown: " + config.get("wait-before-shutdown"));
             } catch (NumberFormatException e) {
+            	LOG.warn(e);
             }
-        if (sync != null)
-            try {
-                config.put("db-connection.pool.sync-period",
-                        new Long(sync));
-            } catch (NumberFormatException e) {
-            }
-        if (maxShutdownWait != null)
-            try {
-                config.put("db-connection.pool.shutdown-wait",
-                        new Long(maxShutdownWait));
-            } catch (NumberFormatException e) {
-            }
+        }
     }
     
     /**
@@ -719,44 +828,66 @@ public class Configuration implements ErrorHandler {
     private void configureIndexer(String dbHome, Document doc, NodeList indexer) throws DatabaseConfigurationException, MalformedURLException {
         
         Element p = (Element) indexer.item(0);
+
         String parseNum = p.getAttribute("parseNumbers");
-        String indexDepth = p.getAttribute("index-depth");
+        if (parseNum != null) {
+            config.put("indexer.indexNumbers", Boolean.valueOf(parseNum.equals("yes")));
+            LOG.debug("indexer.indexNumbers: " + config.get("indexer.indexNumbers"));
+        }
+
         String stemming = p.getAttribute("stemming");
+        if (stemming != null) {
+            config.put("indexer.stem", Boolean.valueOf(stemming.equals("yes")));
+            LOG.debug("indexer.stem: " + config.get("indexer.stem"));
+        }
+
         String termFreq = p.getAttribute("track-term-freq");
-        String suppressWS = p.getAttribute("suppress-whitespace");
+        if (termFreq != null) {
+            config.put("indexer.store-term-freq", Boolean.valueOf(termFreq.equals("yes")));
+            LOG.debug("indexer.store-term-freq: " + config.get("indexer.store-term-freq"));
+        }
+
         String caseSensitive = p.getAttribute("caseSensitive");
-        String tokenizer = p.getAttribute("tokenizer");
-        String validation = p.getAttribute("validation");
-        String suppressWSmixed = p
-                .getAttribute("preserve-whitespace-mixed-content");
-        if (parseNum != null)
-            config.put("indexer.indexNumbers", Boolean.valueOf(parseNum
-                    .equals("yes")));
-        if (stemming != null)
-            config.put("indexer.stem", Boolean.valueOf(stemming
-                    .equals("yes")));
-        if (termFreq != null)
-            config.put("indexer.store-term-freq", Boolean
-                    .valueOf(termFreq.equals("yes")));
-        if (caseSensitive != null)
-            config.put("indexer.case-sensitive", Boolean
-                    .valueOf(caseSensitive.equals("yes")));
-        if (suppressWS != null)
+        if (caseSensitive != null) {
+            config.put("indexer.case-sensitive", Boolean.valueOf(caseSensitive.equals("yes")));
+            LOG.debug("indexer.case-sensitive: " + config.get("indexer.case-sensitive"));
+        }
+
+        String suppressWS = p.getAttribute("suppress-whitespace");
+        if (suppressWS != null) {
             config.put("indexer.suppress-whitespace", suppressWS);
-        if (validation != null)
+            LOG.debug("indexer.suppress-whitespace: " + config.get("indexer.suppress-whitespace"));
+        }
+
+        String validation = p.getAttribute("validation");         
+        if (validation != null) {
             config.put("indexer.validation", validation);
-        if (tokenizer != null)
+            LOG.debug("indexer.validation: " + config.get("indexer.validation"));
+        }
+        
+        String tokenizer = p.getAttribute("tokenizer");
+        if (tokenizer != null) {
             config.put("indexer.tokenizer", tokenizer);
+            LOG.debug("indexer.tokenizer: " + config.get("indexer.tokenizer"));
+        }
         int depth = 2;
-        if (indexDepth != null)
+        String indexDepth = p.getAttribute("index-depth");
+        if (indexDepth != null) {
             try {
                 depth = Integer.parseInt(indexDepth);
                 config.put("indexer.index-depth", new Integer(depth));
+                LOG.debug("indexer.index-depth: " + config.get("indexer.index-depth"));
             } catch (NumberFormatException e) {
+            	LOG.warn(e);
             }
-        if (suppressWSmixed != null)
-            config.put("indexer.preserve-whitespace-mixed-content",
-                    Boolean.valueOf(suppressWSmixed.equals("yes")));
+        }
+
+        String suppressWSmixed = p.getAttribute("preserve-whitespace-mixed-content");
+        if (suppressWSmixed != null) {
+            config.put("indexer.preserve-whitespace-mixed-content", Boolean.valueOf(suppressWSmixed.equals("yes")));
+            LOG.debug("indexer.preserve-whitespace-mixed-content: " + config.get("indexer.preserve-whitespace-mixed-content"));
+        }
+        
         // index settings
         NodeList cl = doc.getElementsByTagName("index");
         if (cl.getLength() > 0) {
@@ -765,20 +896,19 @@ public class Configuration implements ErrorHandler {
             spec.setIndexDepth(depth);
             config.put("indexer.config", spec);
         }
+        
         // stopwords
         NodeList stopwords = p.getElementsByTagName("stopwords");
         if (stopwords.getLength() > 0) {
-            String stopwordFile = ((Element) stopwords.item(0))
-            .getAttribute("file");
-            File sf = new File(stopwordFile);
-            
-            if (!sf.canRead()) {
-                stopwordFile = dbHome + File.separatorChar + stopwordFile;
-                sf = new File(stopwordFile);
-            }
-            if (sf.canRead())
+            String stopwordFile = ((Element) stopwords.item(0)).getAttribute("file");
+            File sf = lookup(stopwordFile, dbHome);
+            if (sf.canRead()) {
                 config.put("stopwords", stopwordFile);
+                LOG.debug("stopwords: " + config.get("stopwords"));
+            }
         }
+        
+        //TODO : what does the following code makes here ??? -pb
         
         eXistCatalogResolver resolver = (eXistCatalogResolver) config.get("resolver");
         NodeList entityResolver = p.getElementsByTagName("entity-resolver");
@@ -793,12 +923,7 @@ public class Configuration implements ErrorHandler {
             for (int i = 0; i < catalogs.getLength(); i++) {
                 String catalog = ((Element) catalogs.item(i)).getAttribute("file");
                            
-                File catalogFile=null;
-                if (dbHome == null)
-                    catalogFile = new File(catalog);
-                else
-                    catalogFile = new File(dbHome, catalog);
-                
+                File catalogFile = lookup(catalog, dbHome);                
                 if (catalogFile!=null && catalogFile.exists()) {
                     LOG.info("Loading catalog '"+catalogFile.getAbsolutePath()+"'.");
                     // TODO dizzzz remove debug
@@ -834,13 +959,158 @@ public class Configuration implements ErrorHandler {
         return ((Integer) obj).intValue();
     }
     
-    public String getPath() {
+    /**
+     * Returns the absolut path to the configuration file.
+     * 
+     * @return the path to the configuration file
+     */
+    public static String getPath() {
+    		if (file == null) {
+    			File f = lookup("conf.xml");
+    			return f.getAbsolutePath();
+    		}
         return file;
     }
+   
+    /**
+     * Returns a file handle for the given path, while <code>path</code> specifies
+     * the path to an eXist configuration file or directory.
+     * <br>
+     * Note that relative paths are being interpreted relative to <code>exist.home</code>
+     * or the current working directory, in case <code>exist.home</code> was not set.
+     * 
+     * @param path the file path
+     * @return the file handle
+     */
+    public static File lookup(String path) {
+        return lookup(path, null);
+    }
+        
+    /**
+     * Returns a file handle for the given path, while <code>path</code> specifies
+     * the path to an eXist configuration file or directory.
+     * <br>
+     * If <code>parent</code> is null, then relative paths are being interpreted
+     * relative to <code>exist.home</code> or the current working directory, in
+     * case <code>exist.home</code> was not set.
+     * 
+     * @param path path to the file or directory
+     * @param parent parent directory used to lookup <code>path</code>
+     * @return the file handle
+     */
+    public static File lookup(String path, String parent) {
+        // resolvePath is used for things like ~user/folder 
+    		File f = new File(resolvePath(path));
+         if (f.isAbsolute()) return f;
+         if (parent == null) {
+            File home = getExistHome();
+            if (home == null)
+                home = new File(System.getProperty("user.dir"));
+            parent = home.getPath();
+         }
+		return new File(parent, path);
+    }
     
+    /**
+     * Returns a file handle for eXist's home directory.
+     * <p>
+     * If either none of the directories identified by the system properties
+     * <code>exist.home</code> and <code>user.home</code> exist or none of
+     * them contain a configuration file, this method returns <code>null</code>.
+     * 
+     * @return the file handle or <code>null</code>
+     */
+    public static File getExistHome() {
+        return getExistHome(null);
+    }
+
+    /**
+     * Returns a file handle for eXist's home directory.
+     * Order of tests is designed with the idea, the more precise it is,
+     * the more the developper know what he is doing
+     * <ol>
+     *   <li>proposed path : if exists
+     *   <li>exist.home    : if exists
+     *   <li>user.home     : if exists, with a conf.xml file
+     *   <li>user.dir      : if exists, with a conf.xml file
+     * </ol>
+     *
+     * @param path path to eXist home directory
+     * @return the file handle or <code>null</code>
+     */
+    public static File getExistHome(String path) {
+		if (existHome != null) return existHome;
+		
+        String config = "conf.xml";
+
+        // try path argument
+        if (path != null) {
+            existHome = new File(path);            
+            if (existHome.isDirectory()) {
+            	LOG.debug("Got eXist home from provided argument:" + existHome);
+            	return existHome; 
+            }
+        }
+        // try exist.home
+        if (System.getProperty("exist.home") != null) {
+            existHome = new File(resolvePath(System.getProperty("exist.home")));
+            if (existHome.isDirectory()) {
+            	LOG.debug("Got eXist home from system property 'exist.home': " + existHome);
+            	return existHome; 
+            }
+        }
+        
+        // try user.home
+        existHome = new File(System.getProperty("user.home"));
+        if (existHome.isDirectory() && new File(existHome, config).isFile()) {
+        	LOG.debug("Got eXist home from system property 'user.home': " + existHome);
+        	return existHome; 
+        }
+        
+        
+        // try user.dir
+        existHome = new File(System.getProperty("user.dir"));
+        if (existHome.isDirectory() && new File(existHome, config).isFile()) {
+        	LOG.debug("Got eXist home from system property 'user.dir': " + existHome);
+        	return existHome; 
+        }
+
+        existHome = null;
+        return existHome;
+	}
+    
+    /**
+     * Returns <code>true</code> if the directory <code>dir</code> contains a file
+     * named <tt>conf.xml</tt>.
+     * 
+     * @param dir the directory
+     * @return <code>true</code> if the directory contains a configuration file
+     */
+    private static boolean containsConfig(File dir, String config) {
+    		if (dir != null && dir.exists() && dir.isDirectory() && dir.canRead()) {
+    			File c = new File(dir, config);
+    			return c.exists() && c.isFile() && c.canRead();
+    		}
+    		return false;
+    }
+    
+    /**
+     * Resolves the given path by means of eventually replacing <tt>~</tt> with the users
+     * home directory, taken from the system property <code>user.home</code>.
+     * 
+     * @param path the path to resolve
+     * @return the resolved path
+     */
+    private static String resolvePath(String path) {
+        if (path != null && path.startsWith("~") && path.length() > 1) {
+            path = System.getProperty("user.home") + path.substring(1);
+        }
+        return path;
+    }
+     
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see org.xml.sax.ErrorHandler#error(org.xml.sax.SAXParseException)
      */
     public void error(SAXParseException exception) throws SAXException {

@@ -80,7 +80,7 @@ public class HighlightMatches extends BasicFunction {
 
     public Sequence eval(Sequence[] args, Sequence contextSequence)
             throws XPathException {
-        if (args[0].getLength() == 0)
+        if (args[0].isEmpty())
             return Sequence.EMPTY_SEQUENCE;
         
         FunctionReference func = (FunctionReference) args[1].itemAt(0);

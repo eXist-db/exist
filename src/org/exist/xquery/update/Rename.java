@@ -86,7 +86,7 @@ public class Rename extends Modification {
 			contextSequence = contextItem.toSequence();
 		
 		Sequence contentSeq = value.eval(contextSequence);
-		if (contentSeq.getLength() == 0)
+		if (contentSeq.isEmpty())
 			throw new XPathException(getASTNode(), Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));
         
         Sequence inSeq = select.eval(contextSequence);
@@ -100,11 +100,11 @@ public class Rename extends Modification {
          */
         if (!Type.subTypeOf(inSeq.getItemType(), Type.NODE)) 
         {
-        	//Indicate the failure to perform this update by adding it to the sequence in the context variable "_eXist_xquery_update_error"
+        	//Indicate the failure to perform this update by adding it to the sequence in the context variable XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR
         	ValueSequence prevUpdateErrors = null;
         	
         	XPathException xpe = new XPathException(getASTNode(), Messages.getMessage(Error.UPDATE_SELECT_TYPE));
-        	Object ctxVarObj = context.getXQueryContextVar("_eXist_xquery_update_error");
+        	Object ctxVarObj = context.getXQueryContextVar(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR);
         	if(ctxVarObj == null)
         	{
         		prevUpdateErrors = new ValueSequence();
@@ -114,14 +114,14 @@ public class Rename extends Modification {
         		prevUpdateErrors = (ValueSequence)XPathUtil.javaObjectToXPath(ctxVarObj, context);
         	}
         	prevUpdateErrors.add(new StringValue(xpe.getMessage()));
-			context.setXQueryContextVar("_eXist_xquery_update_error", prevUpdateErrors);
+			context.setXQueryContextVar(XQueryContext.XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR, prevUpdateErrors);
 			
-        	if(inSeq.getLength() > 0)
+        	if(!inSeq.isEmpty())
         		throw xpe;	//TODO: should we trap this instead of throwing an exception - deliriumsky?
         }
         //END trap Rename failure
         
-        if (inSeq.getLength() > 0) {
+        if (!inSeq.isEmpty()) {
                 
             QName newQName;
             Item item = contentSeq.itemAt(0);
@@ -135,15 +135,13 @@ public class Rename extends Modification {
                 TransactionManager transact = context.getBroker().getBrokerPool().getTransactionManager();
                 Txn transaction = transact.beginTransaction();
                 StoredNode[] ql = selectAndLock(inSeq.toNodeSet());
-                DocumentImpl doc = null;
                 DocumentSet modifiedDocs = new DocumentSet();
-                NodeImpl node;
                 NodeImpl parent;
                 IndexListener listener = new IndexListener(ql);
                 NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
                 for (int i = 0; i < ql.length; i++) {
-                    node = ql[i];
-                    doc = (DocumentImpl) node.getOwnerDocument();
+                    StoredNode node = ql[i];
+                    DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
                     if (!doc.getPermissions().validate(context.getUser(),
                             Permission.UPDATE))
                             throw new XPathException(getASTNode(),

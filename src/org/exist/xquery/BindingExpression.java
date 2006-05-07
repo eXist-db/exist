@@ -187,7 +187,7 @@ public abstract class BindingExpression extends AbstractExpression {
 		for (int i = 0; i < orderSpecs.length; i++) {
 			Expression expr = orderSpecs[i].getSortExpression();
 			if(!Type.subTypeOf(expr.returnsType(), Type.NODE) ||
-					(expr.getDependencies() & Dependency.CONTEXT_ITEM ) != 0)
+					Dependency.dependsOn(expr, Dependency.CONTEXT_ITEM ))
 				return false;
 		}
 		return true;

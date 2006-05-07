@@ -43,6 +43,7 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.XMLFilenameFilter;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.AncestorSelector;
 import org.exist.xquery.ChildSelector;
 import org.exist.xquery.DescendantOrSelfSelector;
@@ -317,7 +318,7 @@ public class BasicNodeSetTest extends TestCase {
             assertNotNull(transaction);            
             System.out.println("BasicNodeSetTest#setUp ...");
             
-            root = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test");
+            root = broker.getOrCreateCollection(transaction, XmldbURI.create(DBBroker.ROOT_COLLECTION + "/test"));
             assertNotNull(root);
             broker.saveCollection(transaction, root);
             
@@ -331,7 +332,7 @@ public class BasicNodeSetTest extends TestCase {
             for (int i = 0; i < files.length; i++) {
                 f = files[i];
                 try {
-                    info = root.validateXMLResource(transaction, broker, f.getName(), new InputSource(f.toURI().toASCIIString()));
+                    info = root.validateXMLResource(transaction, broker, XmldbURI.create(f.getName()), new InputSource(f.toURI().toASCIIString()));
                     assertNotNull(info);
                     root.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
                 } catch (SAXException e) {
@@ -375,7 +376,7 @@ public class BasicNodeSetTest extends TestCase {
             assertNotNull(transaction);            
             System.out.println("BasicNodeSetTest#tearDown >>>");
             
-            root = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test");
+            root = broker.getOrCreateCollection(transaction, XmldbURI.create(DBBroker.ROOT_COLLECTION + "/test"));
             assertNotNull(root);
             broker.removeCollection(transaction, root);
             

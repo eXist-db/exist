@@ -132,6 +132,8 @@ public class ValueIndexTest extends TestCase {
         queryResource(service, "items.xml", "//item[mixed = 'uneven']", 1);
 		queryResource(service, "items.xml", "//item[mixed = 'external']", 1);
 		queryResource(service, "items.xml", "//item[fn:matches(mixed, 'un.*')]", 2);
+        queryResource(service, "items.xml", "//item[price/@specialprice = false()]", 2);
+        queryResource(service, "items.xml", "//item[price/@specialprice = true()]", 1);
     }
 
     public void testIndexScan() {

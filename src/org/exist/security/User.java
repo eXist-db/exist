@@ -4,7 +4,10 @@ package org.exist.security;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.xmldb.XmldbURI;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -16,21 +19,24 @@ import org.w3c.dom.NodeList;
  */
 public class User {
 
+   private final static Logger LOG = Logger.getLogger(User.class);
     public final static User DEFAULT =
         new User( "guest", null, "guest" );
         
     private final static String GROUP = "group";
     private final static String NAME = "name";
     private final static String PASS = "password";
+    private final static String DIGEST_PASS = "digest-password";
     private final static String USER_ID = "uid";
     private final static String HOME = "home";
+    private static String realm = "exist";
 
     public final static int PLAIN_ENCODING = 0;
 	public final static int SIMPLE_MD5_ENCODING = 1;
 	public final static int MD5_ENCODING = 2;
 	
 	public static int PASSWORD_ENCODING;
-	
+        
 	static {
 		Properties props = new Properties(); 
 		try {
@@ -40,21 +46,32 @@ public class User {
 		} catch (IOException e) {
 		}
 		String encoding = props.getProperty("passwords.encoding", "md5");
-		if(encoding != null) {
-			if(encoding.equalsIgnoreCase("plain"))
-				PASSWORD_ENCODING = PLAIN_ENCODING;
-			else if(encoding.equalsIgnoreCase("md5"))
-				PASSWORD_ENCODING = MD5_ENCODING;
-			else
-				PASSWORD_ENCODING = SIMPLE_MD5_ENCODING;
-		}
+                setPasswordEncoding(encoding);
 	}
+        
+   static public void setPasswordEncoding(String encoding) {
+      if (encoding != null) {
+         LOG.equals("Setting password encoding to "+encoding);
+         if (encoding.equalsIgnoreCase("plain")) {
+            PASSWORD_ENCODING = PLAIN_ENCODING;
+         } else if (encoding.equalsIgnoreCase("md5")) {
+            PASSWORD_ENCODING = MD5_ENCODING;
+         } else {
+            PASSWORD_ENCODING = SIMPLE_MD5_ENCODING;
+         }
+      }
+   }
+   
+   static public void setPasswordRealm(String value) {
+      realm = value;
+   }
 	
     private String[] groups = null;
     private String password = null;
+    private String digestPassword = null;
     private String user;
     private int uid = -1;
-    private String home = null;
+    private XmldbURI home = null;
     
     /** 
      * Indicates if the user belongs to the dba group,
@@ -76,7 +93,7 @@ public class User {
 
 
     /**
-     *  Create a new user with name
+     *  Create a new user :ewith name
      *
      *@param  user  Description of the Parameter
      */
@@ -104,29 +121,48 @@ public class User {
      *@param  node                                Description of the Parameter
      *@exception  DatabaseConfigurationException  Description of the Exception
      */
-    public User( Element node ) throws DatabaseConfigurationException {
-        this.user = node.getAttribute( NAME );
-        if ( user == null )
-            throw new DatabaseConfigurationException( "user needs a name" );
-        this.password = node.hasAttribute(PASS) ? node.getAttribute( PASS ) : null;
-		String userId = node.getAttribute( USER_ID );
-		if(userId == null)
-			throw new DatabaseConfigurationException("attribute id missing");
-		try {
-			uid = Integer.parseInt(userId);
-		} catch(NumberFormatException e) {
-			throw new DatabaseConfigurationException("illegal user id: " + 
-				userId + " for user " + user);
-		}
-		this.home = node.getAttribute( HOME );
-		NodeList gl = node.getChildNodes();
-        Node group;
-        for ( int i = 0; i < gl.getLength(); i++ ) {
-            group = gl.item( i );
-            if(group.getNodeType() == Node.ELEMENT_NODE &&
-            	group.getLocalName().equals(GROUP))
-            	addGroup( group.getFirstChild().getNodeValue() );
-        }
+    public User( int majorVersion, int minorVersion,Element node ) throws DatabaseConfigurationException {
+       this.user = node.getAttribute( NAME );
+       if ( user == null || user.length() == 0)
+          throw new DatabaseConfigurationException( "user needs a name" );
+       Attr attr;
+       if (majorVersion==0) {
+    	   attr = node.getAttributeNode(PASS);
+    	   this.digestPassword = attr == null ? null : attr.getValue();
+          this.password = null;
+       } else {
+    	   attr = node.getAttributeNode(PASS);
+          this.password = attr == null ? null : attr.getValue();
+          if (this.password!=null && this.password.length() > 0) {
+             if (this.password.startsWith("{MD5}")) {
+                this.password = this.password.substring(5);
+             }
+             if (this.password.charAt(0)=='{') {
+                throw new DatabaseConfigurationException("Unrecognized password encoding "+password+" for user "+user);
+             }
+          }
+          attr = node.getAttributeNode(DIGEST_PASS);
+          this.digestPassword = attr == null ? null : attr.getValue();
+       }
+       Attr userId = node.getAttributeNode( USER_ID );
+       if(userId == null)
+          throw new DatabaseConfigurationException("attribute id missing");
+       try {
+          uid = Integer.parseInt(userId.getValue());
+       } catch(NumberFormatException e) {
+          throw new DatabaseConfigurationException("illegal user id: " +
+                  userId + " for user " + user);
+       }
+       Attr home = node.getAttributeNode( HOME );
+       this.home = home == null ? null : XmldbURI.create(home.getValue());
+       NodeList gl = node.getChildNodes();
+       Node group;
+       for ( int i = 0; i < gl.getLength(); i++ ) {
+          group = gl.item( i );
+          if(group.getNodeType() == Node.ELEMENT_NODE &&
+                  group.getLocalName().equals(GROUP))
+             addGroup( group.getFirstChild().getNodeValue() );
+       }
     }
 
 
@@ -192,6 +228,10 @@ public class User {
         return password;
     }
 
+    public final String getDigestPassword() {
+        return digestPassword;
+    }
+
 
     /**
      *  Get the primary group this user belongs to
@@ -228,16 +268,31 @@ public class User {
      *@param  passwd  The new password value
      */
     public final void setPassword( String passwd ) {
-        this.password = ( passwd == null ? null : digest( passwd ) );
+       if (passwd==null) {
+          this.password = null;
+          this.digestPassword = null;
+       } else {
+          this.password = MD5.md(passwd,true);
+          this.digestPassword = digest(passwd);
+       }
     }
 
 
     /**
-     *  Sets the passwordDigest attribute of the User object
+     *  Sets the digest passwod value of the User object
      *
      *@param  passwd  The new passwordDigest value
      */
     public final void setPasswordDigest( String passwd ) {
+        this.digestPassword = ( passwd == null ) ? null : passwd;
+    }
+
+    /**
+     *  Sets the encoded passwod value of the User object
+     *
+     *@param  passwd  The new passwordDigest value
+     */
+    public final void setEncodedPassword( String passwd ) {
         this.password = ( passwd == null ) ? null : passwd;
     }
 
@@ -246,9 +301,9 @@ public class User {
     		case PLAIN_ENCODING:
     			return passwd;
     		case MD5_ENCODING:
-    			return MD5.md(user + ":exist:" + passwd);
+    			return MD5.md(user + ":"+realm+":" + passwd,false);
     		default:
-    			return MD5.md(passwd);
+    			return MD5.md(passwd,true);
     	}
     	
     }
@@ -262,8 +317,13 @@ public class User {
         buf.append( Integer.toString(uid) );
         buf.append( "\"" );
         if ( password != null ) {
-            buf.append( " password=\"" );
+            buf.append( " password=\"{MD5}" );
             buf.append( password );
+            buf.append( '"' );
+        }
+        if (digestPassword!=null) {
+            buf.append( " digest-password=\"" );
+            buf.append( digestPassword );
             buf.append( '"' );
         }
 		if( home != null ) {
@@ -282,22 +342,42 @@ public class User {
     }
 
     public final boolean validate( String passwd ) {
-        if ( password == null )
+       if (password==null && digestPassword==null) {
+            return true;
+       }
+       if ( passwd == null ) {
+            return false;
+       }
+       if (password!=null) {
+          if (MD5.md(passwd,true).equals( password )) {
+             return true;
+          }
+       }
+       if (digestPassword!=null) {
+           if (digest( passwd ).equals( digestPassword )) {
+              return true;
+           }
+       }
+       return false;
+    }
+    
+    public final boolean validateDigest( String passwd ) {
+        if ( digestPassword == null )
             return true;
         if ( passwd == null )
             return false;
-        return digest( passwd ).equals( password );
+        return digest( passwd ).equals( digestPassword );
     }
     
     public void setUID(int uid) {
     	this.uid = uid;
     }
     
-    public void setHome(String homeCollection) {
+    public void setHome(XmldbURI homeCollection) {
     	home = homeCollection;
     }
     
-    public String getHome() {
+    public XmldbURI getHome() {
     	return home;
     }
     
@@ -306,7 +386,15 @@ public class User {
 	 */
 	public boolean equals(Object obj) {
 		User other = (User)obj;
-		return uid == other.uid;
+		
+		if(other != null)
+		{
+			return uid == other.uid;
+		}
+		else
+		{
+			return(false);
+		}
 	}
 }
 

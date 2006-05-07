@@ -1,0 +1,266 @@
+
+/*
+ *  eXist Native XML Database
+ *  Copyright (C) 2001-06,  Wolfgang M. Meier (wolfgang@exist-db.org)
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Library General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Library General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * 
+ * $Id$
+ */
+
+package org.exist.xquery;
+
+import java.util.Iterator;
+
+import org.exist.dom.QName;
+import org.exist.memtree.DocumentImpl;
+import org.exist.memtree.MemTreeBuilder;
+import org.exist.memtree.NodeImpl;
+import org.exist.xquery.util.ExpressionDumper;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.StringValue;
+import org.xml.sax.helpers.AttributesImpl;
+
+/**
+ * Constructor for element nodes. This class handles both, direct and dynamic
+ * element constructors.
+ * 
+ * @author wolf
+ */
+public class ElementConstructor extends NodeConstructor {
+
+	private Expression qnameExpr;
+	private PathExpr content = null;
+	private AttributeConstructor attributes[] = null;
+	private QName namespaceDecls[] = null;
+	
+	public ElementConstructor(XQueryContext context) {
+	    super(context);
+	}
+	
+	public ElementConstructor(XQueryContext context, String qname) {
+		super(context);
+		this.qnameExpr = new LiteralValue(context, new StringValue(qname));
+	}
+	
+	public void setContent(PathExpr path) {
+		this.content = path;
+	}
+	
+	public void setNameExpr(Expression expr) {
+	    this.qnameExpr = new Atomize(context, expr);
+	}
+	
+	public void addAttribute(AttributeConstructor attr) {
+		if(attr.isNamespaceDeclaration()) {
+			if(attr.getQName().equals("xmlns"))
+				addNamespaceDecl("xmlns", attr.getLiteralValue());
+			else
+				addNamespaceDecl(QName.extractLocalName(attr.getQName()), attr.getLiteralValue());
+		} else	if(attributes == null) {
+			attributes = new AttributeConstructor[1];
+			attributes[0] = attr;
+		} else {
+		    AttributeConstructor natts[] = new AttributeConstructor[attributes.length + 1];
+		    System.arraycopy(attributes, 0, natts, 0, attributes.length);
+		    natts[attributes.length] = attr;
+		    attributes = natts;
+		}
+	}
+	
+	public void addNamespaceDecl(String name, String uri) {
+        String prefix = "xmlns".equals(name) ? null : "xmlns";
+		if(namespaceDecls == null) {
+			namespaceDecls = new QName[1];
+			namespaceDecls[0] = new QName(name, uri, prefix);
+		} else {
+			QName decls[] = new QName[namespaceDecls.length + 1];
+			System.arraycopy(namespaceDecls, 0, decls, 0, namespaceDecls.length);
+			decls[namespaceDecls.length] = new QName(name, uri, prefix);
+			namespaceDecls = decls;
+		}
+	}
+	
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Expression#analyze(org.exist.xquery.AnalyzeContextInfo)
+     */
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+    	contextInfo.setParent(this);
+        qnameExpr.analyze(contextInfo);
+        if(attributes != null) {
+	        for(int i = 0; i < attributes.length; i++) {
+	            attributes[i].analyze(contextInfo);
+	        }
+        }
+        if(content != null)
+            content.analyze(contextInfo);
+    }
+    
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+	 */
+	public Sequence eval(
+		Sequence contextSequence,
+		Item contextItem)
+		throws XPathException {
+		context.pushInScopeNamespaces();
+		MemTreeBuilder builder = context.getDocumentBuilder();
+		// declare namespaces
+		if(namespaceDecls != null) {
+			for(int i = 0; i < namespaceDecls.length; i++) {
+				context.declareInScopeNamespace(namespaceDecls[i].getLocalName(), namespaceDecls[i].getNamespaceURI());
+			}
+		}
+		// process attributes
+		AttributesImpl attrs = new AttributesImpl();
+		if(attributes != null) {
+			AttributeConstructor constructor;
+			Sequence attrValues;
+			QName attrQName;
+			// first, search for xmlns attributes and declare in-scope namespaces
+			for (int i = 0; i < attributes.length; i++) {
+				constructor = (AttributeConstructor)attributes[i];
+				if(constructor.isNamespaceDeclaration()) {
+					int p = constructor.getQName().indexOf(':');
+					if(p == Constants.STRING_NOT_FOUND)
+						context.declareInScopeNamespace("", constructor.getLiteralValue());
+					else {
+						String prefix = constructor.getQName().substring(p + 1);
+						context.declareInScopeNamespace(prefix, constructor.getLiteralValue());
+					}
+				}
+			}
+			// process the remaining attributes
+			for (int i = 0; i < attributes.length; i++) {
+			    context.proceed(this, builder);
+				constructor = (AttributeConstructor)attributes[i];
+				attrValues = constructor.eval(contextSequence, contextItem);
+				attrQName = QName.parse(context, constructor.getQName(), "");
+				attrs.addAttribute(attrQName.getNamespaceURI(), attrQName.getLocalName(),
+						attrQName.toString(), "CDATA", attrValues.getStringValue());
+			}
+		}
+		context.proceed(this, builder);
+		
+		// create the element
+		Sequence qnameSeq = qnameExpr.eval(contextSequence, contextItem);
+		if(!qnameSeq.hasOne())
+		    throw new XPathException("Type error: the node name should evaluate to a single string");
+		QName qn = QName.parse(context, qnameSeq.getStringValue());
+		
+		// add namespace declaration nodes
+		int nodeNr = builder.startElement(qn, attrs);
+		if(namespaceDecls != null) {
+			for(int i = 0; i < namespaceDecls.length; i++) {
+				builder.namespaceNode(namespaceDecls[i]);
+			}
+		}
+		// process element contents
+		if(content != null) {
+            content.eval(contextSequence, contextItem);
+		}
+		builder.endElement();
+		NodeImpl node = ((DocumentImpl)builder.getDocument()).getNode(nodeNr);
+		context.popInScopeNamespaces();
+		return node;
+	}
+	
+	/* (non-Javadoc)
+     * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
+     */
+    public void dump(ExpressionDumper dumper) {
+        dumper.display("element ");
+        //TODO : remove curly braces if Qname
+        dumper.display("{");
+        qnameExpr.dump(dumper);
+        dumper.display("} ");
+        dumper.display("{");
+        dumper.startIndent();
+        if(attributes != null) {
+			AttributeConstructor attr;
+			for(int i = 0; i < attributes.length; i++) {
+			    if(i > 0)
+			        dumper.nl();
+				attr = (AttributeConstructor)attributes[i];
+				attr.dump(dumper);
+			}
+	        dumper.endIndent();
+	        dumper.startIndent();
+	    }
+        if(content != null) {
+            for(Iterator i = content.steps.iterator(); i.hasNext(); ) {
+                Expression expr = (Expression) i.next();
+                expr.dump(dumper);
+                if(i.hasNext())
+                    dumper.nl();
+            }
+            dumper.endIndent().nl();
+        }        
+        dumper.display("} ");
+    }
+    
+    public String toString() {
+    	StringBuffer result = new StringBuffer();
+    	result.append("element ");
+        //TODO : remove curly braces if Qname
+        result.append("{");    
+    	result.append(qnameExpr.toString());
+        result.append("} ");    
+        result.append("{");        
+        if(attributes != null) {
+			AttributeConstructor attr;
+			for(int i = 0; i < attributes.length; i++) {
+			    if(i > 0)
+			    	result.append(" ");
+				attr = (AttributeConstructor)attributes[i];
+				result.append(attr.toString());
+			}
+		}
+        if(content != null) {
+            for(Iterator i = content.steps.iterator(); i.hasNext(); ) {
+                Expression expr = (Expression) i.next();
+                result.append(expr.toString());
+                if(i.hasNext())
+                	result.append(" ");
+            }
+        }        
+        result.append("} ");
+        return result.toString();
+    }    
+    
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.AbstractExpression#setPrimaryAxis(int)
+	 */
+	public void setPrimaryAxis(int axis) {
+		if(content != null)
+			content.setPrimaryAxis(axis);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.AbstractExpression#resetState()
+	 */
+	public void resetState() {
+		super.resetState();
+		qnameExpr.resetState();
+		if(content != null)
+			content.resetState();
+		if(attributes != null)
+		    for(int i = 0; i < attributes.length; i++) {
+				Expression next = (Expression)attributes[i];
+				next.resetState();
+			}
+	}
+}

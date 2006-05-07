@@ -38,6 +38,7 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
 import org.exist.xmldb.CollectionManagementServiceImpl;
 import org.exist.xupdate.Modification;
@@ -84,15 +85,15 @@ public class UpdateRecoverTest extends TestCase {
             assertNotNull(transaction);
             System.out.println("Transaction started ...");
             
-            Collection root = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test");
+            Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             assertNotNull(root);
             broker.saveCollection(transaction, root);
             
-            Collection test2 = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test/test2");
+            Collection test2 = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI2);
             assertNotNull(test2);
             broker.saveCollection(transaction, test2);
             
-            IndexInfo info = test2.validateXMLResource(transaction, broker, "test.xml", TEST_XML);
+            IndexInfo info = test2.validateXMLResource(transaction, broker, TestConstants.TEST_XML_URI, TEST_XML);
             assertNotNull(info);
             test2.store(transaction, broker, info, TEST_XML, false);
             
@@ -291,7 +292,7 @@ public class UpdateRecoverTest extends TestCase {
             assertNotNull(serializer);
             serializer.reset();
             
-            DocumentImpl doc = broker.getXMLResource(DBBroker.ROOT_COLLECTION + "/test/test2/test.xml", Lock.READ_LOCK);
+            DocumentImpl doc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI2.append(TestConstants.TEST_XML_URI), Lock.READ_LOCK);
             assertNotNull("Document '" + DBBroker.ROOT_COLLECTION + "/test/test2/test.xml' should not be null", doc);
             String data = serializer.serialize(doc);
             assertNotNull(data);
@@ -317,11 +318,11 @@ public class UpdateRecoverTest extends TestCase {
         	assertNotNull(mgr);
         	org.xmldb.api.base.Collection test = root.getChildCollection("test");
         	if (test == null)
-        		test = mgr.createCollection(DBBroker.ROOT_COLLECTION + "/test");
+        		test = mgr.createCollection(TestConstants.TEST_COLLECTION_URI.toString());
         	assertNotNull(test);
         	org.xmldb.api.base.Collection test2 = test.getChildCollection("test2");
         	if (test2 == null)
-        		test2 = mgr.createCollection(DBBroker.ROOT_COLLECTION + "/test/test2");
+        		test2 = mgr.createCollection(TestConstants.TEST_COLLECTION_URI2.toString());
         	assertNotNull(test2);        
         	Resource res = test2.createResource("test_xmldb.xml", "XMLResource");
         	assertNotNull(res);
@@ -450,7 +451,7 @@ public class UpdateRecoverTest extends TestCase {
         BrokerPool.FORCE_CORRUPTION = false;
         try {
 	        
-        	org.xmldb.api.base.Collection test2 = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION + "/test/test2", "admin", "");
+        	org.xmldb.api.base.Collection test2 = DatabaseManager.getCollection("xmldb:exist://" + TestConstants.TEST_COLLECTION_URI2, "admin", "");
         	assertNotNull(test2);
         	Resource res = test2.getResource("test_xmldb.xml");
 	        assertNotNull("Document should not be null", res);
@@ -470,12 +471,8 @@ public class UpdateRecoverTest extends TestCase {
     }
     
     protected BrokerPool startDB() {
-        String home, file = "conf.xml";
-        home = System.getProperty("exist.home");
-        if (home == null)
-            home = System.getProperty("user.dir");
         try {
-            Configuration config = new Configuration(file, home);
+            Configuration config = new Configuration();
             BrokerPool.configure(1, 5, config);
             
             // initialize driver

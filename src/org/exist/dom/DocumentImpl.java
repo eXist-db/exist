@@ -40,6 +40,7 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.MultiReadReentrantLock;
 import org.exist.storage.txn.Txn;
 import org.exist.util.SyntaxException;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.exist.xquery.DescendantSelector;
 import org.exist.xquery.Expression;
@@ -89,7 +90,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	private int docId = UNKNOWN_DOCUMENT_ID;
 
 	/** the document's file name */
-	private String fileName = null;
+	private XmldbURI fileURI = null;
     
     //TODO : make private
     protected Permission permissions = new Permission(Permission.DEFAULT_PERM);
@@ -108,14 +109,14 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
         this(broker, collection, null);
     }
 
-    public DocumentImpl(DBBroker broker, String fileName) {
-        this(broker, null, fileName);       
+    public DocumentImpl(DBBroker broker, XmldbURI fileURI) {
+        this(broker, null, fileURI);       
     }
 
-	public DocumentImpl(DBBroker broker, Collection collection, String fileName) {
+    public DocumentImpl(DBBroker broker, Collection collection, XmldbURI fileURI) {
 		this.broker = broker;
         this.collection = collection;
-		this.fileName = fileName;		
+		this.fileURI = fileURI;		
 	}
     
     /************************************************
@@ -149,19 +150,18 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
     public byte getResourceType() {
         return XML_FILE;
     }
-
-    public String getFileName() {
+    
+    public XmldbURI getFileURI() {
         //checkAvail();
-        return fileName;
+        return fileURI;
     }
     
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
+    public void setFileURI(XmldbURI fileURI) {
+        this.fileURI = fileURI;
     } 
     
-    public String getName() {
-        //TODO : use dedicated function in XmldbURI
-        return collection.getName() + "/" + fileName;
+    public XmldbURI getURI() {
+        return collection.getURI().append(fileURI);
     }
     
     public Permission getPermissions() {
@@ -308,7 +308,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	public void write(VariableByteOutputStream ostream) throws IOException {
 		try {
             ostream.writeInt(docId);
-            ostream.writeUTF(fileName);
+            ostream.writeUTF(fileURI.toString());
             final SecurityManager secman = broker.getBrokerPool().getSecurityManager();
             if (secman == null) {
                 //TODO : explain those 2 values -pb
@@ -337,7 +337,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	public void read(VariableByteInput istream) throws IOException, EOFException {
 		try {
             docId = istream.readInt();
-            fileName = istream.readUTF();
+            fileURI = XmldbURI.create(istream.readUTF());
             final SecurityManager secman = broker.getBrokerPool().getSecurityManager();
             final int uid = istream.readInt();
             final int gid = istream.readInt();
@@ -361,7 +361,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			}
             metadataLocation = StorageAddress.read(istream);
 		} catch (IOException e) {
-            LOG.error("IO error while reading document data for document " + fileName, e);
+            LOG.error("IO error while reading document data for document " + fileURI, e);
 		}
 	}
 	
@@ -837,7 +837,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	}
     
 	public String toString() {
-		return getName() + " - <" + 
+		return getURI() + " - <" + 
 		( getDocumentElement() != null ? getDocumentElement().getNodeName() : null ) + ">";	
 	}
 }

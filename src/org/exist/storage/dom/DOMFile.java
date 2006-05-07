@@ -32,8 +32,9 @@ import java.util.Iterator;
 
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSetHelper;
 import org.exist.dom.StoredNode;
+import org.exist.numbering.DLNBase;
+import org.exist.numbering.NodeId;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BufferStats;
 import org.exist.storage.CacheManager;
@@ -62,9 +63,6 @@ import org.exist.util.ReadOnlyException;
 import org.exist.util.hashtable.Object2LongIdentityHashMap;
 import org.exist.util.sanity.SanityCheck;
 import org.exist.xquery.TerminatedException;
-import org.exist.numbering.DLN;
-import org.exist.numbering.DLNBase;
-import org.exist.numbering.NodeId;
 import org.w3c.dom.Node;
 
 /**
@@ -143,7 +141,7 @@ public class DOMFile extends BTree implements Lockable {
         LogEntryTypes.addEntryType(LOG_UPDATE_LINK, UpdateLinkLoggable.class);
 	}
 
-	public final static short FILE_FORMAT_VERSION_ID = 2;
+	public final static short FILE_FORMAT_VERSION_ID = 3;
 
 	// page types
 	public final static byte LOB = 21;
@@ -1594,7 +1592,7 @@ public class DOMFile extends BTree implements Lockable {
 
 	public String debugPages(DocumentImpl doc, boolean showPageContents) {
 		StringBuffer buf = new StringBuffer();
-		buf.append("Pages used by ").append(doc.getName());
+		buf.append("Pages used by ").append(doc.getURI());
 		buf.append("; docId ").append(doc.getDocId()).append(':');
 		long pnum = StorageAddress.pageFromPointer(((StoredNode) doc
 				.getFirstChild()).getInternalAddress());
@@ -1720,11 +1718,11 @@ public class DOMFile extends BTree implements Lockable {
 	 * @param proxy
 	 * @return
 	 */
-	public String getNodeValue(NodeProxy proxy, boolean addWhitespace) {
+	public String getNodeValue(StoredNode node, boolean addWhitespace) {
 		try {
-			long address = proxy.getInternalAddress();
-			if (address < 0)
-				address = findValue(this, proxy);
+			long address = node.getInternalAddress();
+			if (address == StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
+				address = findValue(this, new NodeProxy(node));
 			if (address == BTree.KEY_NOT_FOUND)
 				return null;
 			final RecordPos rec = findRecord(address);
@@ -1734,7 +1732,7 @@ public class DOMFile extends BTree implements Lockable {
 							+ "; tid: "
 							+ StorageAddress.tidFromPointer(address));
 			final ByteArrayOutputStream os = new ByteArrayOutputStream();
-			getNodeValue(proxy.getDocument(), os, rec, true, addWhitespace);
+			getNodeValue((DocumentImpl)node.getOwnerDocument(), os, rec, true, addWhitespace);
 			final byte[] data = os.toByteArray();
 			String value;
 			try {
