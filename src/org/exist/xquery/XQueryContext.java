@@ -25,6 +25,7 @@ package org.exist.xquery;
 import java.io.IOException;
 import java.io.Reader;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,6 +44,7 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.http.servlets.SessionWrapper;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
@@ -54,14 +56,19 @@ import org.exist.source.DBSource;
 import org.exist.source.Source;
 import org.exist.source.SourceFactory;
 import org.exist.storage.DBBroker;
+import org.exist.storage.UpdateListener;
 import org.exist.storage.lock.Lock;
 import org.exist.util.Collations;
 import org.exist.util.Configuration;
 import org.exist.util.LockException;
+import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
+import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Item;
+import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -80,7 +87,7 @@ import antlr.collections.AST;
 public class XQueryContext {
 	
 	private static final String JAVA_URI_START = "java:";
-    private static final String XMLDB_URI_START = "xmldb:exist://";
+    //private static final String XMLDB_URI_START = "xmldb:exist://";
     
     public final static String XQUERY_LOCAL_NS =
 		"http://www.w3.org/2003/08/xquery-local-functions";
@@ -100,27 +107,27 @@ public class XQueryContext {
 	protected HashMap prefixes;
 	
 	// Local prefix/namespace mappings in the current context
-	protected HashMap inScopePrefixes = new HashMap();
+	protected final HashMap inScopePrefixes = new HashMap();
 
 	// Local namespace stack
-	protected Stack namespaceStack = new Stack();
+	protected final Stack namespaceStack = new Stack();
 
 	// Known user defined functions in the local module
-	protected TreeMap declaredFunctions = new TreeMap();
+	protected final TreeMap declaredFunctions = new TreeMap();
 
 	// Globally declared variables
-	protected TreeMap globalVariables = new TreeMap();
+	protected final TreeMap globalVariables = new TreeMap();
 
 	// The last element in the linked list of local in-scope variables
 	protected LocalVariable lastVar = null;
 	
-    protected Stack contextStack = new Stack();
+    protected final Stack contextStack = new Stack();
     
 	// The current size of the variable stack
 	protected int variableStackSize = 0;
 	
 	// Unresolved references to user defined functions
-	protected Stack forwardReferences = new Stack();
+	protected final Stack forwardReferences = new Stack();
 	
 	// List of pragmas declared for this query
 	protected List pragmas = null;
@@ -136,13 +143,13 @@ public class XQueryContext {
 	/**
 	 * Loaded modules.
 	 */
-	protected HashMap modules = new HashMap();
+	protected final HashMap modules = new HashMap();
 
 	/** 
 	 * The set of statically known documents specified as
 	 * an array of paths to documents and collections.
 	 */
-	protected String[] staticDocumentPaths = null;
+	protected XmldbURI[] staticDocumentPaths = null;
 	
 	/**
 	 * The actual set of statically known documents. This
@@ -157,7 +164,8 @@ public class XQueryContext {
 	 */
 	protected DBBroker broker;
 
-	protected String baseURI = "";
+	protected AnyURIValue baseURI = AnyURIValue.EMPTY_URI;
+	
     protected boolean baseURISetInProlog = false;
     
 	protected String moduleLoadPath = ".";
@@ -234,10 +242,15 @@ public class XQueryContext {
     
     //For holding XQuery Context variables from setXQueryContextVar() and getXQueryContextVar()
     HashMap XQueryContextVars = new HashMap();
+    public static final String XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR = "_eXist_xquery_update_error";
+    public static final String HTTP_SESSIONVAR_XMLDB_USER = "_eXist_xmldb_user";
     
 	private AccessContext accessCtx;
     
+	private ContextUpdateListener updateListener = null;
+	
     private XQueryContext() {}
+	
 	protected XQueryContext(AccessContext accessCtx) {
 		if(accessCtx == null)
 			throw new NullAccessContextException();
@@ -531,7 +544,7 @@ public class XQueryContext {
 	 * 
 	 * @param docs
 	 */
-	public void setStaticallyKnownDocuments(String[] docs) {
+	public void setStaticallyKnownDocuments(XmldbURI[] docs) {
 		staticDocumentPaths = docs;
 	}
 	
@@ -685,12 +698,19 @@ public class XQueryContext {
 		staticDocuments = null;
 		lastVar = null;
 		fragmentStack = new Stack();
+		
+		//remove the context-vars, subsequent execution of the query
+		//may generate different values for the vars based on the
+		//content of the db
+		XQueryContextVars.clear();
+		
 		watchdog.reset();
         profiler.reset();
 		for(Iterator i = modules.values().iterator(); i.hasNext(); ) {
 			Module module = (Module)i.next();
 			module.reset();
 		}
+		clearUpdateListeners();
 	}
 	
 	/**
@@ -1025,8 +1045,54 @@ public class XQueryContext {
 	 * 
 	 * @return
 	 */
-	public User getUser() {
-		return broker.getUser();
+	public User getUser()
+	{
+		/* if there is a user cached in the http session use that,
+		 * otherwise return the current user */
+
+		User user = getUserFromHttpSession();
+		if(user == null)
+		{
+			user = broker.getUser();
+		}	
+		
+		return user;
+	}
+	
+	/**
+	 * If there is a HTTP Session, and a User has been stored in the session then this will
+	 * return the user object from the session
+	 * 
+	 * @return The user or null if there is no session or no user
+	 */
+	private User getUserFromHttpSession()
+	{
+        SessionModule myModule = (SessionModule)getModule(SessionModule.NAMESPACE_URI);
+		
+		Variable var = null;
+		try
+		{
+			var = myModule.resolveVariable(SessionModule.SESSION_VAR);
+		}
+		catch(XPathException xpe)
+		{
+			return null;
+		}
+		
+		if(var != null && var.getValue() != null)
+		{
+    		if(var.getValue().getItemType() == Type.JAVA_OBJECT)
+    		{
+        		JavaObjectValue session = (JavaObjectValue) var.getValue().itemAt(0);
+        		
+        		if(session.getObject() instanceof SessionWrapper)
+        		{
+        			return (User)((SessionWrapper)session.getObject()).getAttribute(HTTP_SESSIONVAR_XMLDB_USER);
+        		}
+    		}
+    	}
+		
+		return null;
 	}
 
 	/**
@@ -1094,7 +1160,7 @@ public class XQueryContext {
 	 * 
 	 * @param uri
 	 */
-	public void setBaseURI(String uri) {
+	public void setBaseURI(AnyURIValue uri) {
 		setBaseURI(uri, false);
 	}
 
@@ -1107,11 +1173,11 @@ public class XQueryContext {
      * @param uri
      * @param setInProlog
      */
-    public void setBaseURI(String uri, boolean setInProlog) {
+    public void setBaseURI(AnyURIValue uri, boolean setInProlog) {
         if (baseURISetInProlog)
             return;
         if (uri == null)
-            baseURI = "";
+            baseURI = AnyURIValue.EMPTY_URI;
         baseURI = uri;
         baseURISetInProlog = setInProlog;
     }
@@ -1138,7 +1204,7 @@ public class XQueryContext {
 	 * 
 	 * @return
 	 */
-	public String getBaseURI() {
+	public AnyURIValue getBaseURI() {
 		return baseURI;
 	}
     
@@ -1256,32 +1322,38 @@ public class XQueryContext {
 				module = loadBuiltInModule(namespaceURI, location);
 			} else {
 				Source source;
-                // Is the module source stored in the database?
-                if (location.startsWith(XMLDB_URI_START) || moduleLoadPath.startsWith(XMLDB_URI_START)) {
-                    //TODO : use dedicated function in XmldbURI
-                    if (location.indexOf(':') == Constants.STRING_NOT_FOUND)
-                        location = moduleLoadPath + "/" + location;
-                    String path = location.substring(XMLDB_URI_START.length());
-                    DocumentImpl sourceDoc = null;
-                    try {
-                        sourceDoc = broker.getXMLResource(path, Lock.READ_LOCK);
-                        if (sourceDoc == null)
-                            throw new XPathException("source for module " + location + " not found in database");
-                        if (sourceDoc.getResourceType() != DocumentImpl.BINARY_FILE ||
-                                !sourceDoc.getMetadata().getMimeType().equals("application/xquery"))
-                            throw new XPathException("source for module " + location + " is not an XQuery or " +
-                            "declares a wrong mime-type");
-                        source = new DBSource(broker, (BinaryDocument) sourceDoc, true);
-                        module = compileModule(namespaceURI, location, module, source);
-                    } catch (PermissionDeniedException e) {
-                        throw new XPathException("permission denied to read module source from " + location);
-                    } finally {
-                        if(sourceDoc != null)
-                            sourceDoc.getUpdateLock().release(Lock.READ_LOCK);
+                if (location.startsWith(XmldbURI.XMLDB_URI_PREFIX) || 
+                        moduleLoadPath.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
+                    // Is the module source stored in the database?
+    				try {
+    					XmldbURI locationUri = XmldbURI.xmldbUriFor(location);
+    					XmldbURI moduleLoadPathUri = XmldbURI.xmldbUriFor(moduleLoadPath);
+    					locationUri = moduleLoadPathUri.resolveCollectionPath(locationUri);
+                        
+    	                DocumentImpl sourceDoc = null;
+                        try {
+                            sourceDoc = broker.getXMLResource(locationUri.toCollectionPathURI(), Lock.READ_LOCK);
+                            if (sourceDoc == null)
+                                throw new XPathException("source for module " + location + " not found in database");
+                            if (sourceDoc.getResourceType() != DocumentImpl.BINARY_FILE ||
+                                    !sourceDoc.getMetadata().getMimeType().equals("application/xquery"))
+                                throw new XPathException("source for module " + location + " is not an XQuery or " +
+                                "declares a wrong mime-type");
+                            source = new DBSource(broker, (BinaryDocument) sourceDoc, true);
+                            module = compileModule(namespaceURI, location, module, source);
+                        } catch (PermissionDeniedException e) {
+                            throw new XPathException("permission denied to read module source from " + location);
+                        } finally {
+                            if(sourceDoc != null)
+                                sourceDoc.getUpdateLock().release(Lock.READ_LOCK);
+                        }
+    				} catch(URISyntaxException e) {
+                        throw new XPathException(e.getMessage(), e);
                     }
-                // No. Load from file or URL
                 } else {
+					// No. Load from file or URL
                     try {
+                    	//TODO: use URIs to ensure proper resolution of relative locations
                         source = SourceFactory.getSource(moduleLoadPath, location, true);
                     } catch (MalformedURLException e) {
                         throw new XPathException("source location for module " + namespaceURI + " should be a valid URL: " +
@@ -1472,8 +1544,8 @@ public class XQueryContext {
 			DocumentImpl targetDoc = broker.storeTempResource(doc);
             if (targetDoc == null)
                 throw new XPathException("Internal error: failed to store temporary doc fragment");
-			watchdog.addTemporaryFragment(targetDoc.getFileName());
-            LOG.debug("Stored: " + targetDoc.getDocId() + ": " + targetDoc.getName());
+			watchdog.addTemporaryFragment(targetDoc.getFileURI());
+            LOG.debug("Stored: " + targetDoc.getDocId() + ": " + targetDoc.getURI());
 			return targetDoc;
 		} catch (EXistException e) {
 			throw new XPathException(TEMP_STORE_ERROR, e);
@@ -1483,20 +1555,39 @@ public class XQueryContext {
 			throw new XPathException(TEMP_STORE_ERROR, e);
 		}
 	}
-    
-//	set an XQuery Context variable; called by context:set-var()
+	
+	/**
+	 * Set an XQuery Context variable.
+	 * Used by the context extension module; called by context:set-var().
+	 * 
+	 * @param name The variable name
+	 * @param XQVar The variable value, may be of any xs: type 
+	 */
     public void setXQueryContextVar(String name, Object XQvar)
     {
     	XQueryContextVars.put(name, XQvar);
     }
     
-    //get an XQuery Context variable; called by context:get-var()
+    /**
+	 * Get an XQuery Context variable.
+	 * Used by the context extension module; called by context:get-var().
+	 * 
+	 * @param name The variable name
+	 * @return The variable value indicated by name.
+	 */
     public Object getXQueryContextVar(String name)
     {
     	return(XQueryContextVars.get(name));
     }
     
-    //set the serializer to use for output; called by context:set-serializer()
+    /**
+	 * Set the serializer to use for output
+	 * Used by the context extension module; called by context:set-serializer().
+	 * 
+	 * @param name The name of the serializer to use
+	 * @param indent Should the output be indented?
+	 * @param omitxmldeclaration Should the output omit the xml declaration?
+	 */
     public void setXQuerySerializer(String name, boolean indent, boolean omitxmldeclaration) throws XPathException
     {
     	Pragma pragma;
@@ -1599,7 +1690,44 @@ public class XQueryContext {
 //				LOG.debug("Loading module " + modules[i][0]);
 				loadBuiltInModule(modules[i][0], modules[i][1]);
 			}
-		}		
+		}
+		
+	}
+	
+	public void registerUpdateListener(UpdateListener listener) {
+		if (updateListener == null) {
+			updateListener = new ContextUpdateListener();
+			broker.getBrokerPool().getNotificationService().subscribe(updateListener);
+		}
+		updateListener.addListener(listener);
+	}
+	
+	protected void clearUpdateListeners() {
+		if (updateListener != null)
+			broker.getBrokerPool().getNotificationService().unsubscribe(updateListener);
+		updateListener = null;
+	}
+	
+	private class ContextUpdateListener implements UpdateListener {
+
+		private List listeners = new ArrayList();
+		
+		public void addListener(UpdateListener listener) {
+			listeners.add(listener);
+		}
+		
+		public void documentUpdated(DocumentImpl document, int event) {
+			for (int i = 0; i < listeners.size(); i++) {
+				((UpdateListener) listeners.get(i)).documentUpdated(document, event);
+			}
+		}
+
+		public void debug() {
+			LOG.debug("XQueryContext: ");
+			for (int i = 0; i < listeners.size(); i++) {
+				((UpdateListener) listeners.get(i)).debug();
+			}
+		}
 		
 	}
 }

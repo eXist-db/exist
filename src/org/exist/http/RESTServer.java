@@ -56,7 +56,6 @@ import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentMetadata;
 import org.exist.dom.DocumentSet;
-import org.exist.http.Descriptor;
 import org.exist.http.servlets.HttpRequestWrapper;
 import org.exist.http.servlets.HttpResponseWrapper;
 import org.exist.http.servlets.RequestWrapper;
@@ -80,6 +79,7 @@ import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Pragma;
@@ -120,8 +120,7 @@ public class RESTServer {
         defaultProperties.setProperty(OutputKeys.INDENT, "yes");
         defaultProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
         defaultProperties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes");
-        defaultProperties.setProperty(EXistOutputKeys.HIGHLIGHT_MATCHES,
-                "elements");
+        defaultProperties.setProperty(EXistOutputKeys.HIGHLIGHT_MATCHES, "elements");
         defaultProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "yes");
     }
     
@@ -152,9 +151,8 @@ public class RESTServer {
             "<body>" +
             "<h1>XQuery Error</h1>";
     
-    private String formEncoding;
+    private String formEncoding;			//TODO: we may be able to remove this eventually, in favour of HttpServletRequestWrapper being setup in EXistServlet, currently used for doPost() but perhaps could be used for other Request Methods? - deliriumsky
     private String containerEncoding;
-    private Descriptor descriptor = null;
     
 
     //Constructor
@@ -162,8 +160,6 @@ public class RESTServer {
     {
         this.formEncoding = formEncoding;
         this.containerEncoding = containerEncoding;
-    
-        descriptor = new Descriptor(null);
     }
     
     /**
@@ -269,15 +265,10 @@ public class RESTServer {
         
         // Process the request
         DocumentImpl resource = null;
+        XmldbURI pathUri = XmldbURI.create(path);
         try {
-        	//first, see if a mapping is specified on the path
-        	if(descriptor != null)
-        	{
-        		path = descriptor.mapPath(path);
-        	}
-        	
-            // second, check if path leads to an XQuery resource
-            resource = (DocumentImpl) broker.getXMLResource(path, Lock.READ_LOCK);
+            // check if path leads to an XQuery resource
+            resource = (DocumentImpl) broker.getXMLResource(pathUri, Lock.READ_LOCK);
             if (resource != null)
             {
                 if (resource.getResourceType() == DocumentImpl.BINARY_FILE && "application/xquery".equals(resource.getMetadata().getMimeType()))
@@ -285,6 +276,7 @@ public class RESTServer {
                 	// found an XQuery resource
                     
                 	//Should we display the source of the XQuery or execute it
+                	Descriptor descriptor = Descriptor.getDescriptorSingleton();
                 	if(source && descriptor != null)
                 	{
                 		//show the source
@@ -345,7 +337,7 @@ public class RESTServer {
                 // path
                 if (resource == null) {
                     // no document: check if path points to a collection
-                    Collection collection = broker.getCollection(path);
+                    Collection collection = broker.getCollection(pathUri);
                     if (collection != null) {
                         if (!collection.getPermissions().validate(
                                 broker.getUser(), Permission.READ))
@@ -435,17 +427,11 @@ public class RESTServer {
     throws BadRequestException, PermissionDeniedException,
             NotFoundException, IOException {
         DocumentImpl resource = null;
+        XmldbURI pathUri = XmldbURI.create(path);
         try {
-        	
-        	//first, see if a mapping is specified on the path
-        	if(descriptor != null)
-        	{
-        		path = descriptor.mapPath(path);
-        	}
-        	
-            resource = broker.getXMLResource(path, Lock.READ_LOCK);
+            resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
             if(resource == null) {
-                throw new NotFoundException("Resouce " + path + " not found");
+                throw new NotFoundException("Resource " + pathUri + " not found");
             }
             if(!resource.getPermissions().validate(broker.getUser(), Permission.READ)) {
                 throw new PermissionDeniedException("Permission to read resource " + path + " denied");
@@ -475,23 +461,15 @@ public class RESTServer {
      * @throws BadRequestException
      * @throws PermissionDeniedException
      */
-    public void doPost(DBBroker broker, HttpServletRequest request,
-            HttpServletResponse response, String path)
-            throws BadRequestException, PermissionDeniedException, IOException {
-    	if (request.getCharacterEncoding() == null)
-			request.setCharacterEncoding(formEncoding);
+    public void doPost(DBBroker broker, HttpServletRequest request, HttpServletResponse response, String path) throws BadRequestException, PermissionDeniedException, IOException
+    {	
         Properties outputProperties = new Properties(defaultProperties);
+        XmldbURI pathUri = XmldbURI.create(path);
         DocumentImpl resource = null;
         try {
-        	//first, see if a mapping is specified on the path
-        	if(descriptor != null)
-        	{
-        		path = descriptor.mapPath(path);
-        	}
-        	
-            // second, check if path leads to an XQuery resource.
+            // check if path leads to an XQuery resource.
             // if yes, the resource is loaded and the XQuery executed.
-            resource = (DocumentImpl) broker.getXMLResource(path, Lock.READ_LOCK);
+            resource = (DocumentImpl) broker.getXMLResource(pathUri, Lock.READ_LOCK);
             if (resource != null) {
                 if (resource.getResourceType() == DocumentImpl.BINARY_FILE &&
                         "application/xquery".equals(resource.getMetadata().getMimeType())) {
@@ -515,8 +493,8 @@ public class RESTServer {
                 resource.getUpdateLock().release(Lock.READ_LOCK);
         }
         
-        // normal POST: read the request content and check if
-        // it is an XUpdate or a query request.
+        // third, normal POST: read the request content and check if
+        // it is an XUpdate or a query request.        
         int howmany = 10;
         int start = 1;
         boolean enclose = true;
@@ -622,11 +600,11 @@ public class RESTServer {
             } else if (rootNS != null && rootNS.equals(XUPDATE_NS)) {
                 LOG.debug("Got xupdate request: " + content);
                 DocumentSet docs = new DocumentSet();
-                Collection collection = broker.getCollection(path);
+                Collection collection = broker.getCollection(pathUri);
                 if (collection != null) {
                     collection.allDocs(broker, docs, true, true);
                 } else {
-                    DocumentImpl xupdateDoc = (DocumentImpl) broker.getXMLResource(path);
+                    DocumentImpl xupdateDoc = (DocumentImpl) broker.getXMLResource(pathUri);
                     if (xupdateDoc != null) {
                         if (!xupdateDoc.getPermissions().validate(
                                 broker.getUser(), Permission.READ)) {
@@ -722,12 +700,12 @@ public class RESTServer {
      * @param broker
      * @param tempFile
      * @param contentType
-     * @param docPath
+     * @param path
      * @return
      * @throws BadRequestException
      * @throws PermissionDeniedException
      */
-    public void doPut(DBBroker broker, File tempFile, String docPath,
+    public void doPut(DBBroker broker, File tempFile, XmldbURI path,
             HttpServletRequest request, HttpServletResponse response) throws BadRequestException,
             PermissionDeniedException, IOException {
         if (tempFile == null)
@@ -736,24 +714,17 @@ public class RESTServer {
         TransactionManager transact = broker.getBrokerPool().getTransactionManager();
         Txn transaction = transact.beginTransaction();
         try {
-        	//first, see if a mapping is specified on the docPath
-        	if(descriptor != null)
-        	{
-        		docPath = descriptor.mapPath(docPath);
-        	}
-        	
-            //TODO : use dedicated function in XmldbURI
-            int p = docPath.lastIndexOf("/");
-            if (p == Constants.STRING_NOT_FOUND || p == docPath.length() - 1) {
+        	XmldbURI docUri = path.lastSegment();
+        	XmldbURI collUri = path.removeLastSegment();
+
+            if (docUri==null || collUri==null) {
                 transact.abort(transaction);
-                throw new BadRequestException("Bad path: " + docPath);
+                throw new BadRequestException("Bad path: " + path);
             }
-            String collectionName = docPath.substring(0, p);
-            docPath = docPath.substring(p + 1);
-            Collection collection = broker.getCollection(collectionName);
+            Collection collection = broker.getCollection(collUri);
             if (collection == null) {
-                LOG.debug("creating collection " + collectionName);
-                collection = broker.getOrCreateCollection(transaction, collectionName);
+                LOG.debug("creating collection " + collUri);
+                collection = broker.getOrCreateCollection(transaction, collUri);
                 broker.saveCollection(transaction, collection);
             }
             MimeType mime;
@@ -773,7 +744,7 @@ public class RESTServer {
                 }
                 mime = MimeTable.getInstance().getContentType(contentType);
             } else {
-                mime = MimeTable.getInstance().getContentTypeFor(docPath);
+                mime = MimeTable.getInstance().getContentTypeFor(docUri);
                 if (mime != null)
                     contentType = mime.getName();
             }
@@ -782,10 +753,10 @@ public class RESTServer {
             
             if (mime.isXMLType()) {
                 URI url = tempFile.toURI();
-                IndexInfo info = collection.validateXMLResource(transaction, broker, docPath, createInputSource(charset,url));
+                IndexInfo info = collection.validateXMLResource(transaction, broker, docUri, createInputSource(charset,url));
                 info.getDocument().getMetadata().setMimeType(contentType);
                 collection.store(transaction, broker, info, createInputSource(charset,url), false);
-                response.sendError(HttpServletResponse.SC_OK, "Document " + docPath + " stored.");
+                response.sendError(HttpServletResponse.SC_OK, "Document " + docUri + " stored.");
             } else {
                 byte[] chunk = new byte[4096];
                 ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -794,9 +765,9 @@ public class RESTServer {
                 while ((l = is.read(chunk)) > -1) {
                     os.write(chunk, 0, l);
                 }
-                collection.addBinaryResource(transaction, broker, docPath, os
+                collection.addBinaryResource(transaction, broker, docUri, os
                         .toByteArray(), contentType);
-                response.sendError(HttpServletResponse.SC_OK, "Document " + docPath + " stored as binary resource.");
+                response.sendError(HttpServletResponse.SC_OK, "Document " + docUri + " stored as binary resource.");
             }
             transact.commit(transaction);
         } catch (SAXParseException e) {
@@ -824,17 +795,11 @@ public class RESTServer {
         return;
     }
     
-    public void doDelete(DBBroker broker, String path, HttpServletResponse response)
+    public void doDelete(DBBroker broker, XmldbURI path, HttpServletResponse response)
     throws PermissionDeniedException, NotFoundException, IOException {
         TransactionManager transact = broker.getBrokerPool().getTransactionManager();
         Txn txn = transact.beginTransaction();
         try {
-        	//first, see if a mapping is specified on the path
-        	if(descriptor != null)
-        	{
-        		path = descriptor.mapPath(path);
-        	}
-        	
             Collection collection = broker.getCollection(path);
             if (collection != null) {
                 // remove the collection
@@ -851,16 +816,11 @@ public class RESTServer {
                 } else {
                     // remove the document
                     LOG.debug("removing document " + path);
-                    //TODO : use dedicated function in XmldbURI
-                    int p = path.lastIndexOf("/");
-                    String docName = (p == Constants.STRING_NOT_FOUND || p == path.length() - 1) ?
-                        path :
-                        path.substring(p + 1);
                     if (doc.getResourceType() == DocumentImpl.BINARY_FILE)
                         doc.getCollection().removeBinaryResource(txn, broker,
-                                docName);
+                        		path.lastSegment());
                     else
-                        doc.getCollection().removeXMLResource(txn, broker, docName);
+                        doc.getCollection().removeXMLResource(txn, broker, path.lastSegment());
                     response.sendError(HttpServletResponse.SC_OK, "Document " + path + " removed.");
                 }
             }
@@ -904,6 +864,7 @@ public class RESTServer {
             HttpServletRequest request, HttpServletResponse response)
             throws BadRequestException, PermissionDeniedException,
             XPathException {
+        XmldbURI pathUri = XmldbURI.create(path);
         try {
             Source source = new StringSource(query);
             XQuery xquery = broker.getXQueryService();
@@ -914,7 +875,7 @@ public class RESTServer {
                 context = xquery.newContext(AccessContext.REST);
             else
                 context = compiled.getContext();
-            context.setStaticallyKnownDocuments(new String[] { path });
+            context.setStaticallyKnownDocuments(new XmldbURI[] { pathUri });
             declareVariables(context, request, response);
             
             if (compiled == null)
@@ -924,7 +885,8 @@ public class RESTServer {
                 long startTime = System.currentTimeMillis();
                 Sequence resultSequence = xquery.execute(compiled, null);
                 long queryTime = System.currentTimeMillis() - startTime;
-                LOG.debug("Found " + resultSequence.getLength() + " in "
+                if (LOG.isDebugEnabled())
+                	LOG.debug("Found " + resultSequence.getLength() + " in "
                         + queryTime + "ms.");
                 return printResults(broker, resultSequence, howmany, start,
                         queryTime, outputProperties, wrap);
@@ -966,20 +928,25 @@ public class RESTServer {
         XQueryPool pool = xquery.getXQueryPool();
         XQueryContext context;
         CompiledXQuery compiled = pool.borrowCompiledXQuery(broker, source);
-        if(compiled == null)
+        if(compiled == null) {
+        	// special header to indicate that the query is not returned from cache
+        	response.setHeader("X-XQuery-Cached", "false");
             context = xquery.newContext(AccessContext.REST);
-        else
+    	} else {
+        	response.setHeader("X-XQuery-Cached", "true");
             context = compiled.getContext();
-        context.setModuleLoadPath("xmldb:exist://" + resource.getCollection().getName());
+        }
+        //TODO: don't hardcode this?
+        context.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI.append(resource.getCollection().getURI()).toString());
         context.setStaticallyKnownDocuments(
-                new String[] { resource.getCollection().getName() }
+                 new XmldbURI[] { resource.getCollection().getURI() }
         );
         declareVariables(context, request, response);
         if(compiled == null) {
             try {
                 compiled = xquery.compile(context, source);
             } catch (IOException e) {
-                throw new BadRequestException("Failed to read query from " + resource.getName(), e);
+                throw new BadRequestException("Failed to read query from " + resource.getURI(), e);
             }
         }
         checkPragmas(context, outputProperties);
@@ -1056,20 +1023,19 @@ public class RESTServer {
             serializer.startElement(NS, "result", "exist:result", attrs);
             
             attrs.addAttribute("", "name", "name", "CDATA", collection
-                    .getName());
+                    .getURI().toString());
             printPermissions(attrs, collection.getPermissions());
             
             serializer
                     .startElement(NS, "collection", "exist:collection", attrs);
             
             for (Iterator i = collection.collectionIterator(); i.hasNext();) {
-                String child = (String) i.next();
-                //TODO : use dedicated function in XmldbURI
-                Collection childCollection = broker.getCollection(collection.getName() + "/" + child);
+                XmldbURI child = (XmldbURI) i.next();
+                 Collection childCollection = broker.getCollection(collection.getURI().append(child));
                 if (childCollection.getPermissions().validate(broker.getUser(),
                         Permission.READ)) {
                     attrs.clear();
-                    attrs.addAttribute("", "name", "name", "CDATA", child);
+                    attrs.addAttribute("", "name", "name", "CDATA", child.toString());
                     
                     attrs.addAttribute("", "created", "created", "CDATA",
                             dateFormat.format(new Date(childCollection
@@ -1085,13 +1051,10 @@ public class RESTServer {
                 DocumentImpl doc = (DocumentImpl) i.next();
                 if (doc.getPermissions().validate(broker.getUser(),
                         Permission.READ)) {
-                    String resource = doc.getFileName();
+                    XmldbURI resource = doc.getFileURI();
                     DocumentMetadata metadata = doc.getMetadata();
-                    //TODO : use dedicated function in XmldbURI
-                    int p = resource.lastIndexOf("/");
                     attrs.clear();
-                    attrs.addAttribute("", "name", "name", "CDATA",
-                            (p == Constants.STRING_NOT_FOUND) ? resource : resource.substring(p + 1));
+                    attrs.addAttribute("", "name", "name", "CDATA", resource.toString());
                     attrs.addAttribute("", "created", "created", "CDATA",
                             dateFormat.format(new Date(metadata.getCreated())));
                     attrs.addAttribute("", "last-modified", "last-modified",
@@ -1127,9 +1090,9 @@ public class RESTServer {
     protected String printResults(DBBroker broker, Sequence results,
             int howmany, int start, long queryTime,
             Properties outputProperties, boolean wrap)
-            throws BadRequestException {
-        int rlen = results.getLength();
-        if (rlen > 0) {
+            throws BadRequestException {        
+        if (!results.isEmpty()) {
+        	int rlen = results.getLength();
             if ((start < 1) || (start > rlen))
                 throw new BadRequestException("Start parameter out of range");
             // FD : correct bound evaluation

@@ -40,6 +40,7 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import org.exist.util.hashtable.Int2ObjectHashMap;
+import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -92,107 +93,115 @@ public class XMLSecurityManager implements SecurityManager {
 	 * @param pool
 	 * @param sysBroker
 	 */
-	public void attach(BrokerPool pool, DBBroker sysBroker) {
-		this.pool = pool;
-		
-        TransactionManager transact = pool.getTransactionManager();
-        Txn txn = null;
-		DBBroker broker = sysBroker;
-		try {
-			Collection sysCollection = broker.getCollection(DBBroker.SYSTEM_COLLECTION);
-			if (sysCollection == null) {
-				txn = transact.beginTransaction();
-				sysCollection = broker.getOrCreateCollection(txn, DBBroker.SYSTEM_COLLECTION);
-				sysCollection.setPermissions(0770);
-				broker.saveCollection(txn, sysCollection);
-				transact.commit(txn);
-			}
-			Document acl = sysCollection.getDocument(broker, ACL_FILE);
-			Element docElement = null;
-			if (acl != null)
-				docElement = acl.getDocumentElement();
-			if (docElement == null) {
-				LOG.debug("creating system users");
-				User user = new User(DBA_USER, null);
-				user.addGroup(DBA_GROUP);
-				user.setUID(++nextUserId);
-				users.put(user.getUID(), user);
-				user = new User(GUEST_USER, GUEST_USER, GUEST_GROUP);
-				user.setUID(++nextUserId);
-				users.put(user.getUID(), user);
-				addGroup(DBA_GROUP);
-				addGroup(GUEST_GROUP);
-				txn = transact.beginTransaction();
-				save(broker, txn);
-				transact.commit(txn);
-			} else {
-				LOG.debug("loading acl");
-				Element root = acl.getDocumentElement();
-				NodeList nl = root.getChildNodes();
-				Node node;
-				Element next;
-				User user;
-				NodeList ul;
-				String lastId;
-				Group group;
-				for (int i = 0; i < nl.getLength(); i++) {
-					if(nl.item(i).getNodeType() != Node.ELEMENT_NODE)
-						continue;
-					next = (Element) nl.item(i);
-					if (next.getTagName().equals("users")) {
-						lastId = next.getAttribute("last-id");
-						try {
-							nextUserId = Integer.parseInt(lastId);
-						} catch (NumberFormatException e) {
-						}
-						ul = next.getChildNodes();
-						for (int j = 0; j < ul.getLength(); j++) {
-							node = ul.item(j);
-							if(node.getNodeType() == Node.ELEMENT_NODE &&
-								node.getLocalName().equals("user")) {
-								user = new User((Element)node);
-								users.put(user.getUID(), user);
-							}
-						}
-					} else if (next.getTagName().equals("groups")) {
-						lastId = next.getAttribute("last-id");
-						try {
-							nextGroupId = Integer.parseInt(lastId);
-						} catch (NumberFormatException e) {
-						}
-						ul = next.getChildNodes();
-						for (int j = 0; j < ul.getLength(); j++) {
-							node = ul.item(j);
-							if(node.getNodeType() == Node.ELEMENT_NODE &&
-								node.getLocalName().equals("group")) {
-								group = new Group((Element)node);
-								groups.put(group.getId(), group);
-							}
-						}
-					}
-				}
-			}
-		} catch (Exception e) {
-            transact.abort(txn);
-			e.printStackTrace();
-			LOG.debug("loading acl failed: " + e.getMessage());
-		}
-		// read default collection and resource permissions
-		Integer defOpt = (Integer)
-			broker.getConfiguration().getProperty("indexer.permissions.collection");
-		if (defOpt != null)
-			defCollectionPermissions = defOpt.intValue();
-		defOpt = (Integer)
-			broker.getConfiguration().getProperty("indexer.permissions.resource");
-		if (defOpt != null)
-			defResourcePermissions = defOpt.intValue();
-
-		Boolean enableXACML = (Boolean)broker.getConfiguration().getProperty("xacml.enable");
-		if(enableXACML != null && enableXACML.booleanValue()) {
-			pdp = new ExistPDP(pool);
-			LOG.debug("XACML enabled");
-		}
-	}
+    public void attach(BrokerPool pool, DBBroker sysBroker) {
+       this.pool = pool;
+       
+       TransactionManager transact = pool.getTransactionManager();
+       Txn txn = null;
+       DBBroker broker = sysBroker;
+       try {
+          Collection sysCollection = broker.getCollection(XmldbURI.SYSTEM_COLLECTION_URI);
+          if (sysCollection == null) {
+             txn = transact.beginTransaction();
+             sysCollection = broker.getOrCreateCollection(txn, XmldbURI.SYSTEM_COLLECTION_URI);
+             sysCollection.setPermissions(0770);
+             broker.saveCollection(txn, sysCollection);
+             transact.commit(txn);
+          }
+          Document acl = sysCollection.getDocument(broker, ACL_FILE_URI);
+          Element docElement = null;
+          if (acl != null)
+             docElement = acl.getDocumentElement();
+          if (docElement == null) {
+             LOG.debug("creating system users");
+             User user = new User(DBA_USER, null);
+             user.addGroup(DBA_GROUP);
+             user.setUID(++nextUserId);
+             users.put(user.getUID(), user);
+             user = new User(GUEST_USER, GUEST_USER, GUEST_GROUP);
+             user.setUID(++nextUserId);
+             users.put(user.getUID(), user);
+             addGroup(DBA_GROUP);
+             addGroup(GUEST_GROUP);
+             txn = transact.beginTransaction();
+             save(broker, txn);
+             transact.commit(txn);
+          } else {
+             LOG.debug("loading acl");
+             Element root = acl.getDocumentElement();
+             String version = root.getAttribute("version");
+             int major = 0;
+             int minor = 0;
+             if (version!=null) {
+                String [] numbers = version.split("\\.");
+                major = Integer.parseInt(numbers[0]);
+                minor = Integer.parseInt(numbers[1]);
+             }
+             NodeList nl = root.getChildNodes();
+             Node node;
+             Element next;
+             User user;
+             NodeList ul;
+             String lastId;
+             Group group;
+             for (int i = 0; i < nl.getLength(); i++) {
+                if(nl.item(i).getNodeType() != Node.ELEMENT_NODE)
+                   continue;
+                next = (Element) nl.item(i);
+                if (next.getTagName().equals("users")) {
+                   lastId = next.getAttribute("last-id");
+                   try {
+                      nextUserId = Integer.parseInt(lastId);
+                   } catch (NumberFormatException e) {
+                   }
+                   ul = next.getChildNodes();
+                   for (int j = 0; j < ul.getLength(); j++) {
+                      node = ul.item(j);
+                      if(node.getNodeType() == Node.ELEMENT_NODE &&
+                              node.getLocalName().equals("user")) {
+                         user = new User(major,minor,(Element)node);
+                         users.put(user.getUID(), user);
+                      }
+                   }
+                } else if (next.getTagName().equals("groups")) {
+                   lastId = next.getAttribute("last-id");
+                   try {
+                      nextGroupId = Integer.parseInt(lastId);
+                   } catch (NumberFormatException e) {
+                   }
+                   ul = next.getChildNodes();
+                   for (int j = 0; j < ul.getLength(); j++) {
+                      node = ul.item(j);
+                      if(node.getNodeType() == Node.ELEMENT_NODE &&
+                              node.getLocalName().equals("group")) {
+                         group = new Group((Element)node);
+                         groups.put(group.getId(), group);
+                      }
+                   }
+                }
+             }
+          }
+       } catch (Exception e) {
+          transact.abort(txn);
+          e.printStackTrace();
+          LOG.debug("loading acl failed: " + e.getMessage());
+       }
+       // read default collection and resource permissions
+       Integer defOpt = (Integer)
+       broker.getConfiguration().getProperty("indexer.permissions.collection");
+       if (defOpt != null)
+          defCollectionPermissions = defOpt.intValue();
+       defOpt = (Integer)
+       broker.getConfiguration().getProperty("indexer.permissions.resource");
+       if (defOpt != null)
+          defResourcePermissions = defOpt.intValue();
+       
+       Boolean enableXACML = (Boolean)broker.getConfiguration().getProperty("xacml.enable");
+       if(enableXACML != null && enableXACML.booleanValue()) {
+          pdp = new ExistPDP(pool);
+          LOG.debug("XACML enabled");
+       }
+    }
 	public boolean isXACMLEnabled() {
 		return pdp != null;
 	}
@@ -311,7 +320,7 @@ public class XMLSecurityManager implements SecurityManager {
 	private synchronized void save(DBBroker broker, Txn transaction) throws EXistException {
 		LOG.debug("storing acl file");
 		StringBuffer buf = new StringBuffer();
-		buf.append("<auth>");
+		buf.append("<auth version='1.0'>");
 		// save groups
 		buf.append("<groups last-id=\"");
 		buf.append(Integer.toString(nextGroupId));
@@ -333,9 +342,9 @@ public class XMLSecurityManager implements SecurityManager {
 		broker.sync(Sync.MAJOR_SYNC);
 		try {
 			broker.setUser(getUser(DBA_USER));
-			Collection sysCollection = broker.getCollection(DBBroker.SYSTEM_COLLECTION);
+			Collection sysCollection = broker.getCollection(XmldbURI.SYSTEM_COLLECTION_URI);
             String data = buf.toString();
-            IndexInfo info = sysCollection.validateXMLResource(transaction, broker, ACL_FILE, data);
+            IndexInfo info = sysCollection.validateXMLResource(transaction, broker, ACL_FILE_URI, data);
             DocumentImpl doc = info.getDocument();
             doc.getMetadata().setMimeType(MimeType.XML_TYPE.getName());
             sysCollection.store(transaction, broker, info, data, false);

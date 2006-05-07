@@ -74,20 +74,18 @@ public class Update extends Modification {
             StoredNode ql[] = selectAndLock();
             IndexListener listener = new IndexListener(ql);
             NotificationService notifier = broker.getBrokerPool().getNotificationService();
-            StoredNode node;
             Node temp;
             TextImpl text;
             AttrImpl attribute;
             ElementImpl parent;
-            DocumentImpl doc = null;
             DocumentSet modifiedDocs = new DocumentSet();
             for (int i = 0; i < ql.length; i++) {
-                node = ql[i];
+            	StoredNode node = ql[i];
                 if (node == null) {
                     LOG.warn("select " + selectStmt + " returned empty node");
                     continue;
                 }
-                doc = (DocumentImpl) node.getOwnerDocument();
+                DocumentImpl  doc = (DocumentImpl)node.getOwnerDocument();
                 doc.getMetadata().setIndexListener(listener);
                 modifiedDocs.add(doc);
                 if (!doc.getPermissions().validate(broker.getUser(),

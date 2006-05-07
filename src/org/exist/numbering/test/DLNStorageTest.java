@@ -13,6 +13,7 @@ import org.exist.storage.StorageAddress;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
 import org.w3c.dom.Attr;
@@ -41,7 +42,7 @@ import org.w3c.dom.Text;
 
 public class DLNStorageTest extends TestCase {
 
-    private static String TEST_COLLECTION = DBBroker.ROOT_COLLECTION + "/test";
+    private static XmldbURI TEST_COLLECTION = XmldbURI.create(DBBroker.ROOT_COLLECTION + "/test");
 
     private static String TEST_XML =
             "<test>\n" +
@@ -137,7 +138,8 @@ public class DLNStorageTest extends TestCase {
             Collection test = broker.getOrCreateCollection(transaction, TEST_COLLECTION);
             broker.saveCollection(transaction, test);
 
-            IndexInfo info = test.validateXMLResource(transaction, broker, "test_string.xml", TEST_XML);
+            IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create("test_string.xml"), 
+            		TEST_XML);
             assertNotNull(info);
 
             test.store(transaction, broker, info, TEST_XML, false);

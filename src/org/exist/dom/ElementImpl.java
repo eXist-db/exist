@@ -34,7 +34,6 @@ import java.util.Map;
 import java.util.TreeSet;
 
 import org.exist.Namespaces;
-import org.exist.numbering.DLN;
 import org.exist.numbering.NodeId;
 import org.exist.storage.NodePath;
 import org.exist.storage.RangeIndexSpec;
@@ -68,6 +67,7 @@ public class ElementImpl extends NamedNode implements Element {
 
     private short attributes = 0;
     private int children = 0;
+
     private int position = 0;
     private Map namespaceMappings = null;
     private int indexType = RangeIndexSpec.NO_INDEX;
@@ -293,17 +293,17 @@ public class ElementImpl extends NamedNode implements Element {
      * @throws DOMException
      */
     public void appendChildInternal(StoredNode prevNode, StoredNode child) throws DOMException {
-            NodeId childId;
-            if (prevNode == null)
-                childId = getNodeId().newChild();
-            else {
-                if (prevNode.getNodeId() == null) {
-                    LOG.warn(getQName() + " : " + prevNode.getNodeName());
-                }
-                childId = prevNode.getNodeId().nextSibling();
-            }
-            child.setNodeId(childId);
-        ++children;
+    	NodeId childId;
+    	if (prevNode == null)
+    		childId = getNodeId().newChild();
+    	else {
+    		if (prevNode.getNodeId() == null) {
+    			LOG.warn(getQName() + " : " + prevNode.getNodeName());
+    		}
+    		childId = prevNode.getNodeId().nextSibling();
+    	}
+    	child.setNodeId(childId);
+    	++children;
     }
 
     /**
@@ -583,10 +583,7 @@ public class ElementImpl extends NamedNode implements Element {
     public NamedNodeMap getAttributes() {
         NamedNodeMapImpl map = new NamedNodeMapImpl();
         if (getAttributesCount() > 0) {
-        	final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
-            final NodeProxy p = new NodeProxy(owner, nodeId);
-            p.setInternalAddress(getInternalAddress());
-            final Iterator iterator = getBroker().getNodeIterator(p);
+            final Iterator iterator = getBroker().getNodeIterator(this);
             iterator.next();
             final int ccount = getChildCount();
             for (int i = 0; i < ccount; i++) {
@@ -610,10 +607,7 @@ public class ElementImpl extends NamedNode implements Element {
     }
     
     private AttrImpl findAttribute(String qname) {
-    	final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
-        final NodeProxy p = new NodeProxy(owner, nodeId);
-        p.setInternalAddress(getInternalAddress());
-        final Iterator iterator = getBroker().getNodeIterator(p);
+        final Iterator iterator = getBroker().getNodeIterator(this);
         iterator.next();
         return findAttribute(qname, iterator, this);
     }
@@ -632,10 +626,7 @@ public class ElementImpl extends NamedNode implements Element {
     }
     
     private AttrImpl findAttribute(QName qname) {
-    	final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
-        final NodeProxy p = new NodeProxy(owner, nodeId);
-        p.setInternalAddress(getInternalAddress());
-        final Iterator iterator = getBroker().getNodeIterator(p);
+        final Iterator iterator = getBroker().getNodeIterator(this);
         iterator.next();
         return findAttribute(qname, iterator, this);
     }
@@ -701,7 +692,7 @@ public class ElementImpl extends NamedNode implements Element {
      */
     public NodeList getElementsByTagName(String tagName) {
         QName qname = new QName(tagName, "", null);
-        return (NodeSet) ((DocumentImpl)getOwnerDocument()).findElementsByTagName(this, qname);
+        return (NodeSet)((DocumentImpl)getOwnerDocument()).findElementsByTagName(this, qname);
     }
 
     /**
@@ -709,7 +700,7 @@ public class ElementImpl extends NamedNode implements Element {
      */
     public NodeList getElementsByTagNameNS(String namespaceURI, String localName) {
         QName qname = new QName(localName, namespaceURI, null);
-        return (NodeSet) ((DocumentImpl)getOwnerDocument()).findElementsByTagName(this, qname);
+        return (NodeSet)((DocumentImpl)getOwnerDocument()).findElementsByTagName(this, qname);
     }
 
     /**
@@ -718,10 +709,7 @@ public class ElementImpl extends NamedNode implements Element {
     public Node getFirstChild() {
         if (!hasChildNodes() || getChildCount() == getAttributesCount())
             return null;
-        final DocumentImpl owner = (DocumentImpl) getOwnerDocument();
-        final NodeProxy p = new NodeProxy(owner, nodeId);
-        p.setInternalAddress(getInternalAddress());
-        final Iterator iterator = getBroker().getNodeIterator(p);
+        final Iterator iterator = getBroker().getNodeIterator(this);
         iterator.next();
         StoredNode next;
         for (int i = 0; i < getChildCount(); i++) {
@@ -870,7 +858,7 @@ public class ElementImpl extends NamedNode implements Element {
             buf.append(" exist:id=\"");
             buf.append(getNodeId());
             buf.append("\" exist:document=\"");
-            buf.append(((DocumentImpl)getOwnerDocument()).getFileName());
+            buf.append(((DocumentImpl)getOwnerDocument()).getFileURI());
             buf.append("\"");
         }
         if (declaresNamespacePrefixes()) {

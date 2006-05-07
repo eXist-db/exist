@@ -12,6 +12,7 @@ import org.exist.EXistException;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.XMLUtil;
+import org.exist.memtree.AttributeImpl;
 import org.exist.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
 import org.exist.security.Permission;
@@ -30,6 +31,7 @@ import org.exist.util.serializer.SerializerPool;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.NodeValue;
+import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -40,7 +42,6 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
-import org.w3c.dom.DocumentType;
 
 /**
  * Local implementation of XMLResource.
@@ -64,13 +65,13 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 	protected Date datemodified= null;
 
 	public LocalXMLResource(User user, BrokerPool pool, LocalCollection parent,
-			String did) throws XMLDBException {
+			XmldbURI did) throws XMLDBException {
 		super(user, pool, parent, did, "text/xml");
 	}
 
 	public LocalXMLResource(User user, BrokerPool pool, LocalCollection parent,
 			NodeProxy p) throws XMLDBException {
-		this(user, pool, parent, p.getDocument().getFileName());
+		this(user, pool, parent, p.getDocument().getFileURI());
 		this.proxy = p;
 	}
 
@@ -255,12 +256,14 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 		}
 	}
 
+	//TODO: use xmldbURI?
 	public String getDocumentId() throws XMLDBException {
-		return docId;
+		return docId.toString();
 	}
 
+	//TODO: use xmldbURI?
 	public String getId() throws XMLDBException {
-		return docId;
+		return docId.toString();
 	}
 
 	public Collection getParentCollection() throws XMLDBException {
@@ -355,6 +358,9 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 	}
 
 	public void setContentAsDOM(Node root) throws XMLDBException {
+		if (root instanceof AttributeImpl)
+			throw new XMLDBException(ErrorCodes.WRONG_CONTENT_TYPE,
+					"SENR0001: can not serialize a standalone attribute");
 		this.root = root;
 	}
 
@@ -437,7 +443,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 	    return document;
 	}
 	
-	protected NodeProxy getNode() throws XMLDBException {
+	public NodeProxy getNode() throws XMLDBException {
 	    if(proxy != null)
 	        return proxy;
 	    DBBroker broker = null;
@@ -482,12 +488,12 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
            	
 			if (document == null) {
                 throw new EXistException("Resource "
-                        + document.getFileName() + " not found");
+                        + document.getFileURI() + " not found");
             }
 			
 			if (!document.getPermissions().validate(user, Permission.UPDATE))
 				throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, 
-						"User is not allowed to lock resource " + document.getFileName());
+						"User is not allowed to lock resource " + document.getFileURI());
 			
 			document.setDocumentType(doctype);
          	broker.storeXMLResource(transaction, document);

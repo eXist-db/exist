@@ -283,7 +283,7 @@ public class NodeSetHelper {
      */
     public static NodeSet selectPrecedingSiblings(NodeSet candidates,
             NodeSet references, int contextId) {
-        if (references.getLength() == 0 || candidates.getLength() == 0)
+        if (references.isEmpty() || candidates.isEmpty())
             return NodeSet.EMPTY_SET;
         NodeSet result = new ExtArrayNodeSet();
         NodeSetIterator iReferences = references.iterator();
@@ -391,7 +391,7 @@ public class NodeSetHelper {
      */
     public static NodeSet selectFollowingSiblings(NodeSet candidates,
             NodeSet references, int contextId) {
-        if (references.getLength() == 0 || candidates.getLength() == 0)
+        if (references.isEmpty() || candidates.isEmpty())
             return NodeSet.EMPTY_SET;
         NodeSet result = new ExtArrayNodeSet();
         NodeSetIterator iReferences = references.iterator();
@@ -492,7 +492,7 @@ public class NodeSetHelper {
      */
     public static NodeSet selectPreceding(NodeSet references, NodeSet candidates)
             throws XPathException {
-        if (candidates.getLength() == 0 || references.getLength() == 0)
+        if (candidates.isEmpty() || references.isEmpty())
             return NodeSet.EMPTY_SET;
         NodeSet result = new ExtArrayNodeSet();
         for (Iterator iReferences = references.iterator(); iReferences
@@ -517,7 +517,7 @@ public class NodeSetHelper {
      */
     public static NodeSet selectFollowing(NodeSet references, NodeSet candidates)
             throws XPathException {
-        if (candidates.getLength() == 0 || references.getLength() == 0)
+        if (candidates.isEmpty() || references.isEmpty())
             return NodeSet.EMPTY_SET;
         NodeSet result = new ExtArrayNodeSet();
         for (Iterator iReferences = references.iterator(); iReferences
@@ -539,7 +539,7 @@ public class NodeSetHelper {
 
     public static NodeSet directSelectAttributes(NodeSet candidates,
             QName qname, int contextId) {
-        if (candidates.getLength() == 0)
+        if (candidates.isEmpty())
             return NodeSet.EMPTY_SET;
         NodeSet result = new ExtArrayNodeSet();
         for (Iterator iCandidates = candidates.iterator(); iCandidates

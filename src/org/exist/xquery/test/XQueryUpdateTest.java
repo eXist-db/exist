@@ -19,6 +19,7 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.LockException;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
@@ -32,7 +33,7 @@ public class XQueryUpdateTest extends TestCase {
         TestRunner.run(XQueryUpdateTest.class);
     }
 
-    protected static String TEST_COLLECTION = DBBroker.ROOT_COLLECTION + "/test";
+    protected static XmldbURI TEST_COLLECTION = XmldbURI.create(DBBroker.ROOT_COLLECTION + "/test");
     
     protected static String TEST_XML = 
         "<?xml version=\"1.0\"?>" +
@@ -435,12 +436,12 @@ public class XQueryUpdateTest extends TestCase {
 		Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION);
 		broker.saveCollection(transaction, root);
 		
-		IndexInfo info = root.validateXMLResource(transaction, broker, "test.xml", data);
+		IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), data);
 		root.store(transaction, broker, info, data, false);
    
 		mgr.commit(transaction);
 		
-		DocumentImpl doc = root.getDocument(broker, "test.xml");
+		DocumentImpl doc = root.getDocument(broker, XmldbURI.create("test.xml"));
 	    broker.getSerializer().serialize(doc);
 	}
     

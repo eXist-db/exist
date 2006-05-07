@@ -37,15 +37,16 @@ import org.w3c.dom.Node;
  *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
  */
 public class StoredNode extends NodeImpl implements Visitable {
-          
+	
     public final static long UNKNOWN_NODE_IMPL_ADDRESS = -1;
-    public final static short UNKNOWN_NODE_IMPL_NODE_TYPE = -1;
 	
     protected NodeId nodeId = null;
     
 	private long internalAddress = UNKNOWN_NODE_IMPL_ADDRESS;
+
     private DocumentImpl ownerDocument = null;
-	private short nodeType = UNKNOWN_NODE_IMPL_NODE_TYPE;
+    
+	private short nodeType = NodeProxy.UNKNOWN_NODE_TYPE;
     
 	public StoredNode(short nodeType) {
         this.nodeType = nodeType;
@@ -68,6 +69,13 @@ public class StoredNode extends NodeImpl implements Visitable {
         this.ownerDocument = other.ownerDocument;        
     }
     
+    public StoredNode(NodeProxy other) {
+    	this.ownerDocument = other.getDocument();
+    	this.nodeType = other.getNodeType();
+    	this.nodeId = other.getNodeId();
+    	this.internalAddress = other.getInternalAddress();           
+    }
+    
     /**
      * Reset this object to its initial state. Required by the
      * parser to be able to reuse node objects.
@@ -75,8 +83,6 @@ public class StoredNode extends NodeImpl implements Visitable {
     public void clear() {
         this.nodeId = null;
         this.internalAddress = UNKNOWN_NODE_IMPL_ADDRESS;
-        this.ownerDocument = null;
-        //this.nodeType is *immutable*         
     } 
     
     public byte[] serialize() {
@@ -127,9 +133,9 @@ public class StoredNode extends NodeImpl implements Visitable {
 				return null;
 		}
 	}
-
+	
 	public QName getQName() {
-		switch(nodeType) {
+		switch(getNodeType()) {
 			case Node.DOCUMENT_NODE:
 			    return QName.DOCUMENT_QNAME;
 			case Node.TEXT_NODE:
@@ -139,7 +145,7 @@ public class StoredNode extends NodeImpl implements Visitable {
 			case Node.DOCUMENT_TYPE_NODE:
 			    return QName.DOCTYPE_QNAME;
             default:
-                LOG.error("Unknown node type: " + nodeType); 
+                LOG.error("Unknown node type: " + getNodeType()); 
                 return null;
 		}		
 	}
@@ -192,7 +198,7 @@ public class StoredNode extends NodeImpl implements Visitable {
 	 * @see org.w3c.dom.Node#getNodeType()
 	 */
 	public short getNodeType() {
-		return nodeType;
+		return this.nodeType;
 	}
 
 	/**
@@ -207,8 +213,8 @@ public class StoredNode extends NodeImpl implements Visitable {
      *
      *@param  ownerDocument  The new ownerDocument value
      */
-    public void setOwnerDocument(Document ownerDocument) {
-        this.ownerDocument = (DocumentImpl) ownerDocument;
+    public void setOwnerDocument(DocumentImpl ownerDocument) {
+   		this.ownerDocument = ownerDocument;
     }
 
 	/**
@@ -242,8 +248,7 @@ public class StoredNode extends NodeImpl implements Visitable {
 	public Node getNextSibling() {
         if (nodeId.getTreeLevel() == 2 && ((DocumentImpl)getOwnerDocument()).getCollection().isTempCollection())
             return null;
-        NodeProxy p = new NodeProxy(ownerDocument, nodeId, internalAddress);
-        Iterator iterator = getBroker().getNodeIterator(p);
+        Iterator iterator = getBroker().getNodeIterator(this);
         iterator.next();
         getLastNode(iterator, this);
         if (iterator.hasNext()) {
@@ -254,8 +259,7 @@ public class StoredNode extends NodeImpl implements Visitable {
 	}
     
     protected StoredNode getLastNode(StoredNode node) {        
-        final NodeProxy p = new NodeProxy(ownerDocument, node.getNodeId(), node.getInternalAddress());
-        final Iterator iterator = getBroker().getNodeIterator(p);
+        final Iterator iterator = getBroker().getNodeIterator(node);
         //TODO : hasNext() test ? -pb
         iterator.next();
         return getLastNode(iterator, node);
@@ -276,10 +280,10 @@ public class StoredNode extends NodeImpl implements Visitable {
     
     public NodePath getPath() {
         NodePath path = new NodePath();
-        if (nodeType != ATTRIBUTE_NODE)
+        if (getNodeType() != NodeImpl.ATTRIBUTE_NODE)
             path.addComponent(getQName());
         NodeImpl parent = (NodeImpl)getParentNode();
-        while (parent != null && parent.getNodeType() != DOCUMENT_NODE) {
+        while (parent != null && parent.getNodeType() != NodeImpl.DOCUMENT_NODE) {
             path.addComponentAtStart(parent.getQName());
             parent = (NodeImpl)parent.getParentNode();
         }
@@ -307,9 +311,7 @@ public class StoredNode extends NodeImpl implements Visitable {
 	}
     
     public boolean accept(NodeVisitor visitor) {
-        final NodeProxy p = new NodeProxy((DocumentImpl)getOwnerDocument(), nodeId);
-        p.setInternalAddress(getInternalAddress());
-        final Iterator iterator = getBroker().getNodeIterator(p);
+        final Iterator iterator = getBroker().getNodeIterator(this);
         iterator.next();
         return accept(iterator, visitor);
     }

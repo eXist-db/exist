@@ -117,6 +117,9 @@ public class XPathQueryTest extends XMLTestCase {
 	    "<c xml:id=\"     id2     \"><name>two</name></c>" +
 	    "</test>";
 	
+    private final static String date =
+        "<timestamp date=\"2006-04-29+02:00\"/>";
+    
 	private final static String quotes =
 		"<test><title>&quot;Hello&quot;</title></test>";
 	
@@ -432,13 +435,37 @@ public class XPathQueryTest extends XMLTestCase {
             ResourceSet result = service.queryResource("numbers.xml", query);
             assertEquals("XPath: " + query, 1, result.getSize());            
             XMLResource resource = (XMLResource)result.getResource(0);
-            assertEquals("XPath: " + query, "a", resource.getContentAsDOM().getFirstChild().getLocalName());          
+            Node node = resource.getContentAsDOM();
+            //Oh dear ! Don't tell me that *I* have written this :'( -pb
+            if (node.getNodeType() == Node.DOCUMENT_NODE)
+                node = node.getFirstChild();            
+            assertEquals("XPath: " + query, "a", node.getLocalName());
             
+            query = "let $c := (<a/>,<b/>,<c/>,<d/>,<e/>) return count($c/root())";
+            result = service.queryResource("numbers.xml", query);
+            assertEquals( "5", result.getResource(0).getContent() );
+
         } catch (XMLDBException e) {
             fail(e.getMessage());
         }
     } 
     
+    public void testName() {
+        try {
+            XQueryService service = 
+                storeXMLStringAndGetQueryService("nested2.xml", nested2);
+            
+            String query = "(<a/>,<b/>)/name()";
+            ResourceSet result = service.queryResource("nested2.xml", query);
+            assertEquals("XPath: " + query, 2, result.getSize());            
+            assertEquals( "a", result.getResource(0).getContent() );
+            assertEquals( "b", result.getResource(1).getContent() );
+
+        } catch (XMLDBException e) {
+            fail(e.getMessage());
+        }
+    }    
+        
     public void testParentAxis() {
         try {
             XQueryService service = 
@@ -636,6 +663,10 @@ public class XPathQueryTest extends XMLTestCase {
             queryResource(service, "numbers.xml", "//item[position() gt 3]", 1);     
             queryResource(service, "numbers.xml", "//item[position() ge 3]", 2); 
             
+            // Currently fails with error XPTY0004
+            queryResource(service, "numbers.xml", "//item[last() - 1]", 1);
+            queryResource(service, "numbers.xml", "//item[count(('a','b')) - 1]", 1);
+            
             String query = "for $a in (<a/>, <b/>, <c/>) return $a/position()";
             ResourceSet  result = service.queryResource("numbers.xml", query);           
             assertEquals("XPath: " + query, 3, result.getSize());            
@@ -689,10 +720,10 @@ public class XPathQueryTest extends XMLTestCase {
             assertEquals( "96.94", result.getResource(0).getContent() );
 
 			result = queryResource(service, "numbers.xml", "round(sum(/test/item/price))", 1);
-			assertEquals( "97.0", result.getResource(0).getContent() );
+			assertEquals( "97", result.getResource(0).getContent() );
 
 			result = queryResource(service, "numbers.xml", "floor(sum(/test/item/stock))", 1);
-			assertEquals( "86.0", result.getResource(0).getContent());
+			assertEquals( "86", result.getResource(0).getContent());
 
 			queryResource(service, "numbers.xml", "/test/item[round(price + 3) > 60]", 1);
 
@@ -706,6 +737,18 @@ public class XPathQueryTest extends XMLTestCase {
 		}
 	}
 
+    public void testGeneralComparison() {
+        try {
+            XQueryService service = 
+                storeXMLStringAndGetQueryService("dates.xml", date);
+            
+            queryResource(service, "dates.xml", "/timestamp[@date = xs:date('2006-04-29+02:00')]", 1);
+        } catch (XMLDBException e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+    }
+    
     public void testPredicates() throws Exception {
         String numbers =
             "<test>"
@@ -785,13 +828,46 @@ public class XPathQueryTest extends XMLTestCase {
                     + "return $t//a[s='Z' and ./preceding-sibling::*[1]/s='B']";
             result = queryResource(service, "numbers.xml", query, 1);
             assertXMLEqual("<a><s>Z</s> 4 </a>", result.getResource(0)
-                    .getContent().toString());        
+                    .getContent().toString());     
             
+            query = "let $doc := <doc><rec n='1'><a>first</a><b>second</b></rec>" +
+            	"<rec n='2'><a>first</a><b>third</b></rec></doc> " +
+            	"return $doc//rec[fn:not(b = 'second') and (./a = 'first')]";
+            result = queryResource(service, "numbers.xml", query, 1);
+            assertXMLEqual("<rec n=\"2\"><a>first</a><b>third</b></rec>", result.getResource(0)
+                    .getContent().toString());  
+            
+            query = "let $doc := <doc><a b='c' d='e'/></doc> " +
+            	"return $doc/a[$doc/a/@b or $doc/a/@d]";
+            result = queryResource(service, "numbers.xml", query, 1);
+            assertXMLEqual("<a b=\"c\" d=\"e\"/>", result.getResource(0)
+            .getContent().toString());
+            
+            //Boolean evaluation for "." (atomic sequence)
+            query = "(1,2,3)[xs:decimal(.)]";
+            result = queryResource(service, "numbers.xml", query, 3);
+  
+
         } catch (XMLDBException e) {
             e.printStackTrace();
             fail(e.getMessage());
         }
     }    
+    
+    
+    // @see http://sourceforge.net/tracker/index.php?func=detail&aid=1460610&group_id=17691&atid=117691
+    public void testPredicatesBUG1460610() throws Exception {
+        String xQuery = "(1, 2, 3)[ . lt 3]";
+        
+        XQueryService service = getQueryService();
+        ResourceSet rs = service.query(xQuery);
+        
+        assertEquals("SFBUG 1460610 nr of results", 2, rs.getSize());
+        assertEquals("SFBUG 1460610 1st result", "1", 
+                                                rs.getResource(0).getContent());
+        assertEquals("SFBUG 1460610 2nd result", "2", 
+                                                rs.getResource(1).getContent());
+    }
 	
 	public void testStrings() {
 		try {
@@ -889,9 +965,16 @@ public class XPathQueryTest extends XMLTestCase {
 			assertEquals("boolean value of 5.6 should be true", "true", 
 					result.getResource(0).getContent());
 			
-			result = queryResource(service, "numbers.xml", "boolean(current-time())", 1);
-			assertEquals("boolean value of current-time() should be true", "true", 
-					result.getResource(0).getContent());
+            boolean exceptionThrown = false;
+            String message = "";
+            try {                
+    			result = queryResource(service, "numbers.xml", "boolean(current-time())", 1);             
+            } catch (XMLDBException e) {
+                exceptionThrown = true;
+                message = e.getMessage();
+            }
+            assertTrue(message.indexOf("FORG0006") > -1); 
+            
 		} catch (XMLDBException e) {
 			System.out.println("testBoolean(): XMLDBException: "+e);
 			fail(e.getMessage());

@@ -2,6 +2,7 @@ package org.exist.soap;
 
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
 import java.rmi.RemoteException;
 import java.util.Iterator;
 import java.util.Map;
@@ -26,8 +27,8 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.Configuration;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.AnalyzeContextInfo;
-import org.exist.xquery.Constants;
 import org.exist.xquery.PathExpr;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.parser.XQueryLexer;
@@ -40,7 +41,6 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import antlr.collections.AST;
@@ -71,14 +71,14 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
         QueryResponseCollection c[] = new QueryResponseCollection[collections.size()];
         QueryResponseDocument doc;
         QueryResponseDocument docs[];
-        String docId;
+        XmldbURI docId;
         int k = 0;
         int l;
         TreeMap documents;
         for (Iterator i = collections.entrySet().iterator(); i.hasNext(); k++) {
             Map.Entry entry = (Map.Entry) i.next();
             c[k] = new QueryResponseCollection();
-            c[k].setCollectionName((String) entry.getKey());
+            c[k].setCollectionName(((XmldbURI) entry.getKey()).toString());
             documents = (TreeMap) entry.getValue();
             docs = new QueryResponseDocument[documents.size()];
             c[k].setDocuments(new QueryResponseDocuments(docs));
@@ -86,11 +86,10 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
             for (Iterator j = documents.entrySet().iterator(); j.hasNext(); l++) {
                 Map.Entry docEntry = (Map.Entry) j.next();
                 doc = new QueryResponseDocument();
-                docId = (String) docEntry.getKey();
-                //TODO : use dedicated function in XmldbURI
-                if (docId.indexOf("/") != Constants.STRING_NOT_FOUND)
-                    docId = docId.substring(docId.lastIndexOf("/") + 1);
-                doc.setDocumentName(docId);
+                docId = (XmldbURI) docEntry.getKey();
+                //TODO: Unnecessary?
+                docId = docId.lastSegment();
+                doc.setDocumentName(docId.toString());
                 doc.setHitCount(((Integer) docEntry.getValue()).intValue());
                 docs[l] = doc;
             }
@@ -99,11 +98,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
     }
     
     private void configure() throws Exception {
-        String pathSep = System.getProperty("file.separator", "/");
-        String home = System.getProperty("exist.home");
-        if (home == null)
-            home = System.getProperty("user.dir");
-        Configuration config = new Configuration(home + pathSep + "conf.xml");
+        Configuration config = new Configuration();
         BrokerPool.configure(1, 5, config);
     }
     
@@ -159,6 +154,14 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
     
     protected String getResource(String sessionId, String name,
             Properties outputProperties) throws java.rmi.RemoteException {
+    	try {
+    		return getResource(sessionId,XmldbURI.xmldbUriFor(name),outputProperties);
+    	} catch(URISyntaxException e) {
+    		throw new RemoteException("Invalid collection URI",e);
+    	}
+    }
+    protected String getResource(String sessionId, XmldbURI name,
+            Properties outputProperties) throws java.rmi.RemoteException {
         Session session = getSession(sessionId);
         DBBroker broker = null;
         try {
@@ -196,12 +199,19 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
     }
     
     public org.exist.soap.Collection listCollection(java.lang.String sessionId, java.lang.String path) throws java.rmi.RemoteException {
+    	try {
+    		return listCollection(sessionId,XmldbURI.xmldbUriFor(path));
+    	} catch(URISyntaxException e) {
+    		throw new RemoteException("Invalid collection URI",e);
+    	}
+    }
+    public org.exist.soap.Collection listCollection(java.lang.String sessionId, XmldbURI path) throws java.rmi.RemoteException {
         Session session = getSession(sessionId);
         DBBroker broker = null;
         try {
             broker = pool.get(session.getUser());
             if (path == null)
-                path = DBBroker.ROOT_COLLECTION;
+                path = XmldbURI.ROOT_COLLECTION_URI;
             org.exist.collections.Collection collection = broker.getCollection(path);
             if (collection == null)
                 throw new RemoteException("collection " + path + " not found");
@@ -213,18 +223,15 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
             String childCollections[] = new String[collection.getChildCollectionCount()];
             int j = 0;
             for (Iterator i = collection.collectionIterator(); i.hasNext(); j++)
-                childCollections[j] = (String) i.next();
+                childCollections[j] = ((XmldbURI) i.next()).toString();
             
             // Resources
             String[] resources = new String[collection.getDocumentCount()];
             j = 0;
-            int p;
-            String resource;
+            XmldbURI resource;
             for (Iterator i = collection.iterator(broker); i.hasNext(); j++) {
-                resource = ((DocumentImpl) i.next()).getFileName();
-                ///TODO : use dedicated function in XmldbURI
-                p = resource.lastIndexOf("/");
-                resources[j] = (p == Constants.STRING_NOT_FOUND) ? resource : resource.substring(p + 1);
+                resource = ((DocumentImpl) i.next()).getFileURI();
+                resources[j] = resource.lastSegment().toString();
             }
             c.setResources(new StringArray(resources));
             c.setCollections(new StringArray(childCollections));
@@ -284,7 +291,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
             Sequence seq= expr.eval(null, null);
             
             QueryResponseCollection[] collections = null;
-            if (seq.getLength() > 0 && Type.subTypeOf(seq.getItemType(), Type.NODE))
+            if (!seq.isEmpty() && Type.subTypeOf(seq.getItemType(), Type.NODE))
                 collections = collectQueryInfo(scanResults(seq));
             session.addQueryResult(seq);
             resp.setCollections(new QueryResponseCollections(collections));
@@ -380,7 +387,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
 //				for (Iterator i = ((NodeSet) resultSet).iterator(); i.hasNext();) {
                     p = (NodeProxy) i.nextItem();
                     ///TODO : use dedicated function in XmldbURI
-                    ppath = p.getDocument().getCollection().getName() + '/' + p.getDocument().getFileName();
+                    ppath = p.getDocument().getCollection().getURI().toString() + '/' + p.getDocument().getFileURI();
                     if (ppath.equals(path))
                         hitsByDoc.add(p);
                 }
@@ -425,14 +432,14 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
                 NodeValue node = (NodeValue)item;
                 if(node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
                     NodeProxy p = (NodeProxy)node;
-                    if ((documents = (TreeMap) collections.get(p.getDocument().getCollection().getName())) == null) {
+                    if ((documents = (TreeMap) collections.get(p.getDocument().getCollection().getURI())) == null) {
                         documents = new TreeMap();
-                        collections.put(p.getDocument().getCollection().getName(), documents);
+                        collections.put(p.getDocument().getCollection().getURI(), documents);
                     }
-                    if ((hits = (Integer) documents.get(p.getDocument().getFileName())) == null)
-                        documents.put(p.getDocument().getFileName(), new Integer(1));
+                    if ((hits = (Integer) documents.get(p.getDocument().getFileURI())) == null)
+                        documents.put(p.getDocument().getFileURI(), new Integer(1));
                     else
-                        documents.put(p.getDocument().getFileName(), new Integer(hits.intValue() + 1));
+                        documents.put(p.getDocument().getFileURI(), new Integer(hits.intValue() + 1));
                 }
             }
         }

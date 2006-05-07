@@ -26,6 +26,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -36,11 +38,12 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.xml.transform.OutputKeys;
 
+import org.exist.http.Descriptor;
 import org.exist.source.FileSource;
 import org.exist.source.Source;
-import org.exist.storage.DBBroker;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.XQueryService;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.functions.request.RequestModule;
@@ -50,7 +53,6 @@ import org.exist.xquery.util.HTTPUtils;
 import org.exist.xquery.value.Sequence;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.CompiledExpression;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceIterator;
@@ -89,7 +91,7 @@ public class XQueryServlet extends HttpServlet {
 
 	public final static String DEFAULT_USER = "guest";
 	public final static String DEFAULT_PASS = "guest";
-	public final static String DEFAULT_URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
+	public final static XmldbURI DEFAULT_URI = XmldbURI.EMBEDDED_SERVER_URI.append(XmldbURI.ROOT_COLLECTION_URI);
 	public final static String DEFAULT_ENCODING = "UTF-8";
 	public final static String DEFAULT_CONTENT_TYPE = "text/html";
 	
@@ -97,7 +99,7 @@ public class XQueryServlet extends HttpServlet {
 		
 	private String user = null;
 	private String password = null;
-	private String collectionURI = null;
+	private XmldbURI collectionURI = null;
 	
 	private String containerEncoding = null;
 	private String formEncoding = null;
@@ -115,9 +117,16 @@ public class XQueryServlet extends HttpServlet {
 		password = config.getInitParameter("password");
 		if(password == null)
 			password = DEFAULT_PASS;
-		collectionURI = config.getInitParameter("uri");
-		if(collectionURI == null)
+		String confCollectionURI = config.getInitParameter("uri");
+		if(confCollectionURI == null) {
 			collectionURI = DEFAULT_URI;
+		} else {
+			try {
+				collectionURI = XmldbURI.xmldbUriFor(confCollectionURI);
+			} catch (URISyntaxException e) {
+				throw new ServletException("Invalid XmldbURI for parameter 'uri': "+e.getMessage(),e);
+			}
+		}
 		formEncoding = config.getInitParameter("form-encoding");
 		if(formEncoding == null)
 			formEncoding = DEFAULT_ENCODING;
@@ -141,59 +150,122 @@ public class XQueryServlet extends HttpServlet {
 			DatabaseManager.registerDatabase(database);
 		} catch(Exception e) {
 			throw new ServletException("Failed to initialize database driver: " + e.getMessage(), e);
-		}
-		
-//		// set exist.home property if not set
-//		String homeDir = System.getProperty("exist.home");
-//		if(homeDir == null) {
-//			homeDir = config.getServletContext().getRealPath("/");
-//			System.setProperty("exist.home", homeDir);
-//		}
+		}		
 	}
 
 	/* (non-Javadoc)
 	 * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
 	 */
-	protected void doGet(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
+	{
 		process(request, response);
 	}
 	
 	/* (non-Javadoc)
 	 * @see javax.servlet.http.HttpServlet#doPost(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
 	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
+	protected void doPost(HttpServletRequest req, HttpServletResponse response) throws ServletException, IOException
+	{
+		HttpServletRequest request = null;
+		
+		//For POST request, If we are logging the requests we must wrap HttpServletRequest in HttpServletRequestWrapper
+		//otherwise we cannot access the POST parameters from the content body of the request!!! - deliriumsky
+		Descriptor descriptor = Descriptor.getDescriptorSingleton();
+		if(descriptor != null)
+		{
+			if(descriptor.allowRequestLogging())
+			{
+				request = new HttpServletRequestWrapper(req, formEncoding);
+			}
+			else
+			{
+				request = req;
+			}
+		}
+		else
+		{
+			request = req;
+		}
+	
 		process(request, response);
 	}
 	
-	/* (non-Javadoc)
-	 * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-	 */
-	protected void process(HttpServletRequest request, HttpServletResponse response)
-		throws ServletException, IOException {
-		if (request.getCharacterEncoding() == null)
-			request.setCharacterEncoding(formEncoding);
-		ServletOutputStream sout = response.getOutputStream();
-		PrintWriter output = 
-			new PrintWriter(new OutputStreamWriter(sout, formEncoding));
-		response.setContentType(contentType + "; charset=" + formEncoding);
-		response.addHeader( "pragma", "no-cache" );
-		response.addHeader( "Cache-Control", "no-cache" );
-		
+	/**
+	Processes incoming HTTP requests for XQuery
+	*/
+	protected void process(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
+	{
+		//first, adjust the path
 		String path = request.getPathTranslated();
-		if(path == null) {
+		if(path == null)
+		{
 			path = request.getRequestURI().substring(request.getContextPath().length());
 			int p = path.lastIndexOf(';');
 			if(p != Constants.STRING_NOT_FOUND)
 				path = path.substring(0, p);
 			path = getServletContext().getRealPath(path);
 		}
+		
+		//second, perform descriptor actions
+		Descriptor descriptor = Descriptor.getDescriptorSingleton();
+		if(descriptor != null)
+    	{
+    		//logs the request if specified in the descriptor
+    		descriptor.doLogRequestInReplayLog(request);
+    		
+    		//map's the path if a mapping is specified in the descriptor
+    		path = descriptor.mapPath(path);
+    	}
+	
+		
+		if (request.getCharacterEncoding() == null)
+			request.setCharacterEncoding(formEncoding);	
+		ServletOutputStream sout = response.getOutputStream();
+		PrintWriter output = new PrintWriter(new OutputStreamWriter(sout, formEncoding));
+		response.setContentType(contentType + "; charset=" + formEncoding);
+		response.addHeader( "pragma", "no-cache" );
+		response.addHeader( "Cache-Control", "no-cache" );
+		
 		File f = new File(path);
-		if(!f.canRead()) {
+		if(!f.canRead())
+		{
 			sendError(output, "Cannot read source file", path);
 			return;
 		}
+		
+		//allow source viewing for GET?
+		if(request.getMethod().toUpperCase().equals("GET"))
+		{
+			String option;
+			boolean source = false;
+			if((option = request.getParameter("_source")) != null)
+	        	source = option.equals("yes");
+			
+			//Should we display the source of the XQuery or execute it
+        	if(source && descriptor != null)
+        	{
+        		//show the source
+        		
+        		//check are we allowed to show the xquery source - descriptor.xml
+        		if(descriptor.allowSourceXQuery(path))
+        		{	
+        			//Show the source of the XQuery
+        			//writeResourceAs(resource, broker, stylesheet, encoding, "text/plain", outputProperties, response);
+        			response.setContentType("text/plain;charset=" + formEncoding);
+        			FileSource fs = new FileSource(f, encoding, true);
+        			output.write(fs.getContent());
+        			output.flush();
+        			return;
+        		}
+        		else
+        		{
+        			//we are not allowed to show the source - query not allowed in descriptor.xml
+        			//TODO: is this the correct exception to throw or should we return a http response?
+        			throw new ServletException("Permission to view XQuery source for: " + path + " denied. Must be explicitly defined in descriptor.xml");
+        		}
+        	}
+		}
+		
 		
         //-------------------------------
         // Added by Igor Abade (igoravl@cosespseguros.com.br)
@@ -217,11 +289,20 @@ public class XQueryServlet extends HttpServlet {
 
         //-------------------------------
         
-		String baseURI = request.getRequestURI();
-		int p = baseURI.lastIndexOf("/");
+        URI baseUri;
+        try {
+        	baseUri = new URI(request.getScheme(),
+                null/*user info?*/, request.getLocalName(), request.getLocalPort(),
+                request.getRequestURI(), null, null);
+        } catch(URISyntaxException e) {
+        	baseUri = null;
+        }
+        
+		String requestPath = request.getRequestURI();
+		int p = requestPath.lastIndexOf("/");
 		if(p != Constants.STRING_NOT_FOUND)
-			baseURI = baseURI.substring(0, p);
-		String moduleLoadPath = getServletContext().getRealPath(baseURI.substring(request.getContextPath().length()));
+			requestPath = requestPath.substring(0, p);
+		String moduleLoadPath = getServletContext().getRealPath(requestPath.substring(request.getContextPath().length()));
 		String actualUser = null;
 		String actualPassword = null;
 		HttpSession session = request.getSession();
@@ -233,17 +314,16 @@ public class XQueryServlet extends HttpServlet {
 		if(actualPassword == null) actualPassword = password;
 		
 		try {
-			Collection collection = DatabaseManager.getCollection(collectionURI, actualUser, actualPassword);
+			Collection collection = DatabaseManager.getCollection(collectionURI.toString(), actualUser, actualPassword);
 			XQueryService service = (XQueryService)
 				collection.getService("XQueryService", "1.0");
-			service.setProperty("base-uri", baseURI);
+			service.setProperty("base-uri", collectionURI.toString());
 			service.setModuleLoadPath(moduleLoadPath);
-			String prefix = RequestModule.PREFIX;
 			//service.setNamespace(prefix, RequestModule.NAMESPACE_URI);
             if(!((CollectionImpl)collection).isRemoteCollection()) {
-                service.declareVariable(RequestModule.PREFIX + ":request", new HttpRequestWrapper(request, formEncoding, containerEncoding));
-                service.declareVariable(ResponseModule.PREFIX + ":response", new HttpResponseWrapper(response));
-                service.declareVariable(SessionModule.PREFIX + ":session", new HttpSessionWrapper(session));
+    			service.declareVariable(RequestModule.PREFIX + ":request", new HttpRequestWrapper(request, formEncoding, containerEncoding));
+    			service.declareVariable(ResponseModule.PREFIX + ":response", new HttpResponseWrapper(response));
+    			service.declareVariable(SessionModule.PREFIX + ":session", new HttpSessionWrapper(session));
             }
 
 			Source source = new FileSource(f, encoding, true);
@@ -314,28 +394,30 @@ public class XQueryServlet extends HttpServlet {
 		out.flush();
 	}
     
-	private static final class CachedQuery {
-		
-		long lastModified;
-		String sourcePath;
-		CompiledExpression expression;
-		
-		public CachedQuery(File sourceFile, CompiledExpression expression) {
-			this.sourcePath = sourceFile.getAbsolutePath();
-			this.lastModified = sourceFile.lastModified();
-			this.expression = expression;
-		}
-		
-		public boolean isValid() {
-			File f = new File(sourcePath);
-			if(f.lastModified() > lastModified)
-				return false;
-			return true;
-		}
-		
-		public CompiledExpression getExpression() {
-			return expression;
-		}
-	}
+   	// -jmvanel : never used locally
+	
+//	private static final class CachedQuery {
+//		
+//		long lastModified;
+//		String sourcePath;
+//		CompiledExpression expression;
+//		
+//		public CachedQuery(File sourceFile, CompiledExpression expression) {
+//			this.sourcePath = sourceFile.getAbsolutePath();
+//			this.lastModified = sourceFile.lastModified();
+//			this.expression = expression;
+//		}
+//		
+//		public boolean isValid() {
+//			File f = new File(sourcePath);
+//			if(f.lastModified() > lastModified)
+//				return false;
+//			return true;
+//		}
+//		
+//		public CompiledExpression getExpression() {
+//			return expression;
+//		}
+//	}
 
 }

@@ -12,6 +12,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
+import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -50,7 +51,7 @@ public class NodeTest extends XMLTestCase {
             broker = pool.get(SecurityManager.SYSTEM_USER);
             assertNotNull(broker);
             
-            doc = root.getDocumentWithLock(broker, "test.xml");
+            doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"));
             NodeList children = doc.getChildNodes();
             for (int i = 0; i < children.getLength(); i++) {
                 StoredNode node = (StoredNode) children.item(i);
@@ -73,7 +74,7 @@ public class NodeTest extends XMLTestCase {
             broker = pool.get(SecurityManager.SYSTEM_USER);
             assertNotNull(broker);
             
-            doc = root.getDocumentWithLock(broker, "test.xml");
+            doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"));
             Element rootNode = doc.getDocumentElement();
             
             System.out.println("Testing getChildNodes() ...");
@@ -122,7 +123,7 @@ public class NodeTest extends XMLTestCase {
             
             System.out.println("testSiblingAxis() ...");
             
-            doc = root.getDocumentWithLock(broker, "test.xml");
+            doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"));
             Element rootNode = doc.getDocumentElement();
             Element child = (Element) rootNode.getFirstChild();
             assertNotNull(child);
@@ -168,7 +169,7 @@ public class NodeTest extends XMLTestCase {
             broker = pool.get(SecurityManager.SYSTEM_USER);
             assertNotNull(broker);
             
-            doc = root.getDocumentWithLock(broker, "test.xml");
+            doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"));
             Element rootNode = doc.getDocumentElement();
             Element first = (Element) rootNode.getFirstChild();
             assertEquals(first.getNodeName(), "a");
@@ -224,7 +225,7 @@ public class NodeTest extends XMLTestCase {
             
             System.out.println("testVisitor() ...");
             
-            doc = root.getDocumentWithLock(broker, "test.xml");
+            doc = root.getDocumentWithLock(broker, XmldbURI.create("test.xml"));
             StoredNode rootNode = (StoredNode) doc.getDocumentElement();
             NodeVisitor visitor = new NodeVisitor() {
                 public boolean visit(StoredNode node) {
@@ -255,11 +256,11 @@ public class NodeTest extends XMLTestCase {
             assertNotNull(transaction);            
             System.out.println("NodeTest#setUp ...");
             
-            root = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test");
+            root = broker.getOrCreateCollection(transaction, XmldbURI.create(DBBroker.ROOT_COLLECTION + "/test"));
             assertNotNull(root);
             broker.saveCollection(transaction, root);
             
-            IndexInfo info = root.validateXMLResource(transaction, broker, "test.xml", XML);
+            IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), XML);
             assertNotNull(info);
             root.store(transaction, broker, info, XML, false);
             
@@ -298,7 +299,7 @@ public class NodeTest extends XMLTestCase {
             assertNotNull(transaction);            
             System.out.println("BasicNodeSetTest#tearDown >>>");
             
-            root = broker.getOrCreateCollection(transaction, DBBroker.ROOT_COLLECTION + "/test");
+            root = broker.getOrCreateCollection(transaction, XmldbURI.create(DBBroker.ROOT_COLLECTION + "/test"));
             assertNotNull(root);
             broker.removeCollection(transaction, root);
             

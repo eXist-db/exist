@@ -783,7 +783,13 @@ public class LocationStep extends Step {
                                         .contains(document.getDocId()))
                             cached = null;
                     }
-                };
+                    
+                }
+                
+                public void debug() {
+                	LOG.debug("UpdateListener: Line: " + LocationStep.this.toString() +
+                			"; id: " + LocationStep.this.getExpressionId());
+                }
             };
             NotificationService service = context.getBroker().getBrokerPool()
                     .getNotificationService();

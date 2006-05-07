@@ -98,13 +98,8 @@ public interface NodeSet extends Sequence, NodeList {
 	 * 
 	 * @param other
 	 */
-	public void addAll(NodeSet other);
-	
-	/**
-	 * Return the number of nodes contained in this node set.
-	 */
-	public int getLength();
-	
+	public void addAll(NodeSet other);	
+
 	/**
 	 * Get the node at position pos within this node set.
 	 * @param pos

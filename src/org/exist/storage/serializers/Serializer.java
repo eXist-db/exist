@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -62,6 +63,7 @@ import org.exist.util.serializer.Receiver;
 import org.exist.util.serializer.ReceiverToSAX;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
@@ -309,11 +311,12 @@ public abstract class Serializer implements XMLReader {
 	public void parse(String systemId) throws IOException, SAXException {
 		try {
 			// try to load document from eXist
-			DocumentImpl doc = (DocumentImpl) broker.getXMLResource(systemId);
+			//TODO: this systemId came from exist, so should be an unchecked create, right?
+			DocumentImpl doc = (DocumentImpl) broker.getXMLResource(XmldbURI.create(systemId));
 			if (doc == null)
 				throw new SAXException("document " + systemId + " not found in database");
 			else
-				LOG.debug("serializing " + doc.getFileName());
+				LOG.debug("serializing " + doc.getFileURI());
 			if(!doc.getPermissions().validate(broker.getUser(), Permission.READ))
 				throw new PermissionDeniedException("Not allowed to read resource");
 			toSAX(doc);
@@ -521,23 +524,37 @@ public abstract class Serializer implements XMLReader {
 		long start = System.currentTimeMillis();
 		xslHandler = null;
 		try {
+			XmldbURI stylesheetUri = null;
+			URI externalUri = null;
+			try {
+				stylesheetUri = XmldbURI.xmldbUriFor(stylesheet);
+				if(!stylesheetUri.toCollectionPathURI().equals(stylesheetUri)) {
+					externalUri = stylesheetUri.getXmldbURI();
+				}
+			} catch (URISyntaxException e) {
+				//could be an external URI!
+				try {
+					externalUri = new URI(stylesheet);
+				} catch (URISyntaxException ee) {
+					throw new IllegalArgumentException("Stylesheet URI could not be parsed: "+ee.getMessage());
+				}
+			}
 			// does stylesheet point to an external resource?
-			if (stylesheet.indexOf(":") != Constants.STRING_NOT_FOUND) {
-				StreamSource source = new StreamSource(stylesheet);
+			if (externalUri!=null) {
+				StreamSource source = new StreamSource(externalUri.toString());
 				templates = factory.newTemplates(source);
 			// read stylesheet from the database
 			} else {
 				// if stylesheet is relative, add path to the
-				// current collection
-				if(doc != null && !stylesheet.startsWith("/")) {
-                    ///TODO : use dedicated function in XmldbURI
-					stylesheet = doc.getCollection().getName() + "/" + stylesheet;
+				// current collection and normalize
+				if(doc != null) {
+					stylesheetUri = doc.getCollection().getURI().resolveCollectionPath(stylesheetUri).normalizeCollectionPath();
 				}
 				
 				// load stylesheet from eXist
 				DocumentImpl xsl = null;
 				try {
-					xsl = (DocumentImpl) broker.getXMLResource(stylesheet);
+					xsl = (DocumentImpl) broker.getXMLResource(stylesheetUri);
 				} catch (PermissionDeniedException e) {
 					LOG.debug("permission denied to read stylesheet");
 				}
@@ -550,9 +567,10 @@ public abstract class Serializer implements XMLReader {
 					return;
 				}
 				
+				//TODO: use xmldbURI
 				if (xsl.getCollection() != null) {
 					factory.setURIResolver(
-							new InternalURIResolver(xsl.getCollection().getName()));
+							new InternalURIResolver(xsl.getCollection().getURI().toString()));
 				}
 				
 				// save handlers

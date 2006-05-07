@@ -213,7 +213,7 @@ public class AttrImpl extends NamedNode implements Attr {
             result.append( "exist:id=\"" );
             result.append( getNodeId() );
             result.append( "\" exist:source=\"" );
-            result.append( ((DocumentImpl)getOwnerDocument()).getFileName() );
+            result.append( ((DocumentImpl)getOwnerDocument()).getFileURI());
             result.append( "\" " );
             result.append( getNodeName() );
             result.append( "=\"" );

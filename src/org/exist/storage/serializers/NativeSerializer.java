@@ -96,7 +96,8 @@ public class NativeSerializer extends Serializer {
     	}
     	setDocument(p.getDocument());
     	if (generateDocEvent) receiver.startDocument();
-        Iterator domIter = broker.getNodeIterator(p);
+    	//TODO : is this StoredNode construction necessary ?
+        Iterator domIter = broker.getNodeIterator(new StoredNode(p));
         serializeToReceiver(null, domIter, p.getDocument(), true, p.getMatches(), new TreeSet());
         if (generateDocEvent) receiver.endDocument();
     }
@@ -106,8 +107,9 @@ public class NativeSerializer extends Serializer {
     	long start = System.currentTimeMillis();
     	setDocument(doc);
     	NodeList children = doc.getChildNodes();
-    	if (generateDocEvent) receiver.startDocument();
-		if (doc.getDoctype()!=null){
+    	if (generateDocEvent) 
+    		receiver.startDocument();
+		if (doc.getDoctype() != null){
 			if (getProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "no").equals("yes")) {
 				final StoredNode n = (StoredNode) doc.getDoctype();
 				serializeToReceiver(n, null, (DocumentImpl) n.getOwnerDocument(), true, null, new TreeSet());
@@ -115,24 +117,27 @@ public class NativeSerializer extends Serializer {
 		}
     	// iterate through children
     	for (int i = 0; i < children.getLength(); i++) {
-    		final StoredNode n = (StoredNode) children.item(i);
-    		final NodeProxy p = new NodeProxy((DocumentImpl) n
-    				.getOwnerDocument(), n.getNodeId(), n.getInternalAddress());
-    		Iterator domIter = broker.getNodeIterator(p);
+    		StoredNode node = (StoredNode) children.item(i);
+    		NodeProxy p = new NodeProxy(node);
+    		Iterator domIter = broker.getNodeIterator(node);
     		domIter.next();
-    		serializeToReceiver(n, domIter, (DocumentImpl) n.getOwnerDocument(), true, p.getMatches(), new TreeSet());
+    		serializeToReceiver(node, domIter, (DocumentImpl)node.getOwnerDocument(), 
+    				true, p.getMatches(), new TreeSet());
     	}
     	DocumentImpl documentImpl = (DocumentImpl) doc;
 		LOG.debug("serializing document " + documentImpl.getDocId()
-				+ " (" + documentImpl.getName() + ")"
+				+ " (" + documentImpl.getURI() + ")"
     			+ " to SAX took " + (System.currentTimeMillis() - start));
     	if (generateDocEvent) receiver.endDocument();
     }
     
+    
     protected void serializeToReceiver(StoredNode node, Iterator iter,
             DocumentImpl doc, boolean first, Match match, Set namespaces) throws SAXException {
-        if (node == null) node = (StoredNode) iter.next();
-        if (node == null) return;
+        if (node == null) 
+        	node = (StoredNode) iter.next();
+        if (node == null) 
+        	return;
         // char ch[];
         String cdata;
         switch (node.getNodeType()) {
@@ -163,7 +168,7 @@ public class NativeSerializer extends Serializer {
             }
             if (first && showId > 0) {
             	// String src = doc.getCollection().getName() + "/" + doc.getFileName();
-                attribs.addAttribute(SOURCE_ATTRIB, doc.getFileName());
+                attribs.addAttribute(SOURCE_ATTRIB, doc.getFileURI().toString());
             }
             int children = node.getChildCount();
             int count = 0;
@@ -207,7 +212,7 @@ public class NativeSerializer extends Serializer {
                 AttrList tattribs = new AttrList();
                 if (showId > 0) {
                     tattribs.addAttribute(ID_ATTRIB, node.getNodeId().toString());
-                    tattribs.addAttribute(SOURCE_ATTRIB, doc.getFileName());
+                    tattribs.addAttribute(SOURCE_ATTRIB, doc.getFileURI().toString());
                 }
                 receiver.startElement(TEXT_ELEMENT, tattribs);
             }
@@ -230,7 +235,7 @@ public class NativeSerializer extends Serializer {
             		AttrList tattribs = new AttrList();
                     if (showId > 0) {
                         tattribs.addAttribute(ID_ATTRIB, node.getNodeId().toString());
-                        tattribs.addAttribute(SOURCE_ATTRIB, doc.getFileName());
+                        tattribs.addAttribute(SOURCE_ATTRIB, doc.getFileURI().toString());
                     }
                     tattribs.addAttribute(((AttrImpl)node).getQName(), cdata);
                     receiver.startElement(ATTRIB_ELEMENT, tattribs);
