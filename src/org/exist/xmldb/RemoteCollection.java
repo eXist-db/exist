@@ -400,7 +400,7 @@ public class RemoteCollection implements CollectionImpl {
 	public void removeChildCollection(XmldbURI name) throws XMLDBException {
 		if (childCollections == null)
 			readCollection();
-		childCollections.remove(getPathURI().append(name));
+		childCollections.remove(name);
 	}
 
 	public void removeResource(Resource res) throws XMLDBException {

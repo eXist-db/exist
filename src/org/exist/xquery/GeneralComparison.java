@@ -109,8 +109,7 @@ public class GeneralComparison extends BinaryOp {
 		this.truncation = truncation;		
 		if (left instanceof PathExpr && ((PathExpr) left).getLength() == 1) {
 			left = ((PathExpr) left).getExpression(0);
-            didLeftSimplification = true;            
-            
+            didLeftSimplification = true;  
 		}
 		add(left);		
 		if (right instanceof PathExpr && ((PathExpr) right).getLength() == 1) {
