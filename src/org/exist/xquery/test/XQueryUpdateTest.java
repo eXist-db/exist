@@ -39,7 +39,7 @@ public class XQueryUpdateTest extends TestCase {
         "<?xml version=\"1.0\"?>" +
         "<products/>";
     
-    protected final static int ITEMS_TO_APPEND = 100;
+    protected final static int ITEMS_TO_APPEND = 200;
     
     private BrokerPool pool;
     
