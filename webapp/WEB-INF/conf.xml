@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
 	This is the central configuration file for the database. If the database
     is running in a servlet-context, the configuration file will be read from
@@ -17,8 +16,8 @@
         - dbaPassword:
         defines the user password used by the cluster for the replica.
    -->
-    <cluster protocol="UDP:PING" dbaUser="admin" dbaPassword=""/>
-
+    <cluster protocol="UDP(mcast_addr=228.1.2.3;mcast_port=45566;ip_ttl=8;ip_mcast=true;mcast_send_buf_size=800000;mcast_recv_buf_size=150000;ucast_send_buf_size=800000;ucast_recv_buf_size=150000;loopback=true):PING(timeout=2000;num_initial_members=3;up_thread=true;down_thread=true):MERGE2(min_interval=10000;max_interval=20000):FD(shun=true;up_thread=true;down_thread=true;timeout=2500;max_tries=5):VERIFY_SUSPECT(timeout=3000;num_msgs=3;up_thread=true;down_thread=true):pbcast.NAKACK(gc_lag=50;retransmit_timeout=300,600,1200,2400,4800;max_xmit_size=8192;up_thread=true;down_thread=true):UNICAST(timeout=300,600,1200,2400,4800;window_size=100;min_threshold=10;down_thread=true):pbcast.STABLE(desired_avg_gossip=20000;up_thread=true;down_thread=true):FRAG(frag_size=8192;down_thread=true;up_thread=true):pbcast.GMS(join_timeout=5000;join_retry_timeout=2000;shun=true;print_local_addr=true)" journalDir="webapp/WEB-INF/data/journal" dbaUser="admin" dbaPassword="" exclude="/db/system,/db/system/config" />
+    
     <!-- Configures the database backend:
         - database:
             selects a database backend. Currently, "native" and "native_cluster"
@@ -46,8 +45,8 @@
     exceptions on machines with limited memory (256MB). Increase the
     buffer settings for elements_buffers and words_buffers if you have
     some more memory to waste. -->
-	<db-connection database="native" files="data"
-		pageSize="4096" cacheSize="48M" free_mem_min="5">
+    <db-connection database="native" files="data"
+		pageSize="4096" cacheSize="96M" free_mem_min="5">
     
         <!-- Settings for the database connection pool:
             - sync-period
@@ -63,13 +62,17 @@
         -->
 		<pool min="1" max="20" sync-period="120000" wait-before-shutdown="120000"/>
 
-		<recovery enabled="yes" sync-on-commit="no" journal-dir="data"	size="10M"/>
+        <recovery enabled="yes" sync-on-commit="no" group-commit="no"
+            size="100M" journal-dir="data"/>
 		
 		<watchdog query-timeout="-1" output-size-limit="10000"/>
 		
 		<!--system-task class="org.exist.storage.DataBackup" period="120000">
 			<parameter name="output-dir" value="backup"/>
 		</system-task-->
+        
+        <!--default-permissions collection="0775" resource="0775"/-->
+        
     </db-connection>
 	   
     <!-- Default settings for the serializer. Most of these can be changed
@@ -123,7 +126,7 @@
 	<xupdate growth-factor="20" allowed-fragmentation="20"
 		enable-consistency-checks="no"/>
 
-    <xquery>
+    <xquery enable-java-binding="no">
         <builtin-modules>
             <module uri="http://exist-db.org/xquery/util"
                 class="org.exist.xquery.functions.util.UtilModule"/>
@@ -133,6 +136,10 @@
                 class="org.exist.xquery.functions.xmldb.XMLDBModule"/>
             <module uri="http://exist-db.org/xquery/request"
                 class="org.exist.xquery.functions.request.RequestModule"/>
+            <module uri="http://exist-db.org/xquery/response"
+                class="org.exist.xquery.functions.response.ResponseModule"/>
+            <module uri="http://exist-db.org/xquery/session"
+                class="org.exist.xquery.functions.session.SessionModule"/>
             <module uri="http://exist-db.org/xquery/text"
                 class="org.exist.xquery.functions.text.TextModule"/>
             <module uri="http://exist-db.org/xquery/examples"
@@ -173,7 +180,7 @@
     -->
     <indexer stemming="no" caseSensitive="yes" suppress-whitespace="both" 
 	index-depth="1" tokenizer="org.exist.storage.analysis.SimpleTokenizer"
-	track-term-freq="yes" validation="no" preserve-whitespace-mixed-content="no">
+	track-term-freq="yes" validation="auto" preserve-whitespace-mixed-content="no">
         
 		<!-- where's the file containing a list of stopwords to be ignored
          by the parser. -->

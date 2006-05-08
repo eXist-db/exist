@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
 	This is the central configuration file for the database. If the database
     is running in a servlet-context, the configuration file will be read from
@@ -66,9 +65,12 @@
 		<recovery enabled="yes" sync-on-commit="no" group-commit="no"
             size="100M" journal-dir="webapp/WEB-INF/data"/>
 		
-		<!--system-task class="org.exist.storage.DataBackup" period="120000">
+		<!-- watchdog query-timeout="-1" output-size-limit="10000"/-->
+            
+        <!--system-task class="org.exist.storage.DataBackup" period="120000">
 			<parameter name="output-dir" value="backup"/>
 		</system-task-->
+        
 		<!--default-permissions collection="0775" resource="0775"/-->
 
     </db-connection>
