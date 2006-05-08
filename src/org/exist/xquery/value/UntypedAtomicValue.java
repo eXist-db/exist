@@ -114,28 +114,10 @@ public class UntypedAtomicValue extends AtomicValue {
 				return new DateValue(value);
 			case Type.DURATION :
 				return new DurationValue(value);
-			case Type.YEAR_MONTH_DURATION : {
-				Duration duration;			
-				try {
-					duration = TimeUtils.getInstance().newDuration(value);
-				} catch (IllegalArgumentException e) {
-					throw new XPathException("FORG0001: cannot construct " + Type.getTypeName(this.getItemType()) +
-							" from \"" + value + "\"");            
-				}
-				YearMonthDurationValue rawYMDV = new YearMonthDurationValue(duration);
-				return new YearMonthDurationValue(rawYMDV.getCanonicalDuration());
-			}
-			case Type.DAY_TIME_DURATION : {
-				Duration duration;
-				try {
-					duration = TimeUtils.getInstance().newDuration(value);
-				} catch (IllegalArgumentException e) {
-					throw new XPathException("FORG0001: cannot construct " + Type.getTypeName(this.getItemType()) +
-							" from \"" + value + "\"");            
-				}
-				DayTimeDurationValue rawDTDV = new DayTimeDurationValue(duration);
-				return new DayTimeDurationValue(rawDTDV.getCanonicalDuration());
-			}
+			case Type.YEAR_MONTH_DURATION :
+				return new YearMonthDurationValue(value);
+			case Type.DAY_TIME_DURATION :
+				return new DayTimeDurationValue(value);
 			default :
 				throw new XPathException("FORG0001: cannot cast '" + 
 						Type.getTypeName(this.getItemType()) + "(\"" + getStringValue() + "\")' to " +
