@@ -17,7 +17,7 @@
     <!-- the following appenders write to files  -->
     <appender name="exist.core" class="org.apache.log4j.RollingFileAppender">
         <param name="File" value="${logger.dir}/exist.log"/>
-		<param name="MaximumFileSize" value="500000"/>
+		<param name="MaximumFileSize" value="5000000"/>
         <param name="Encoding" value="UTF-8"/>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
@@ -25,7 +25,7 @@
     </appender>
 
     <appender name="exist.xacml" class="org.apache.log4j.RollingFileAppender">
-		 <param name="File" value="${logger.dir}/xacml.log"/>
+		<param name="File" value="${logger.dir}/xacml.log"/>
         <param name="MaximumFileSize" value="500000"/>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
@@ -40,12 +40,41 @@
         </layout>
     </appender>
 
+    <appender name="exist.profiling" class="org.apache.log4j.RollingFileAppender">
+        <param name="File" value="${logger.dir}/profile.log"/>
+        <param name="MaximumFileSize" value="500000"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
+        </layout>
+    </appender>
+    
+    <appender name="exist.validation" class="org.apache.log4j.RollingFileAppender">
+        <param name="File" value="${logger.dir}/validation.log"/>
+        <param name="MaximumFileSize" value="500000"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
+        </layout>
+    </appender>
+
+    
+    <!-- the following appenders write to NULL  -->
+    <appender name="null" class="org.apache.log4j.varia.NullAppender">
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
+        </layout>
+    </appender>
+  
     <!-- LF5 appender. Using this appender in an appender-ref will
         pop up the LogFactor5 gui.
     -->
     <appender name="lf5" class="org.apache.log4j.lf5.LF5Appender">
         <param name="MaxNumberOfRecords" value="1000"/>
     </appender>
+
+	<category name="xquery.profiling" additivity="false">
+	    <priority value="debug"/>
+	    <appender-ref ref="exist.profiling"/>
+	</category>
 
     <category name="org.exist.security.xacml" additivity="false">
         <priority value="warn"/>
@@ -62,11 +91,9 @@
         <appender-ref ref="console"/>
     </category>
 
-    <!-- Axis produces a large amount of debugging output if
-        priority is set to debug -->
-    <category name="org.apache" additivity="false">
-        <priority value="info"/>
-        <appender-ref ref="console"/>
+    <category name="org.exist.validation" additivity="false">
+        <priority value="debug"/>
+        <appender-ref ref="exist.validation"/>
     </category>
 
     <!--
@@ -75,9 +102,16 @@
       <priority value="debug" />
     </category>
     -->
+    
+    <!-- Axis produces a large amount of debugging output if
+        priority is set to debug -->
+    <category name="org.apache" additivity="false">
+        <priority value="info"/>
+        <appender-ref ref="console"/>
+    </category>
 
     <root>
-        <priority value="info"/>
+        <priority value="debug"/>
         <appender-ref ref="exist.core"/>
     </root>
 </log4j:configuration>
