@@ -146,6 +146,11 @@ public class IndexSpec {
      * @param depth
      */
 	public void setIndexDepth( int depth ) {
+		if (depth < 3) {
+			LOG.warn("parameter index-depth should be >= 3 or you will experience a severe " +
+				"performance loss for node updates (XUpdate or XQuery update extensions)");
+			depth = 3;
+		}
 		this.depth = depth;
 	}
 	

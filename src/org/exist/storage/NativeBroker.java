@@ -1661,7 +1661,7 @@ public class NativeBroker extends DBBroker {
         	StoredNode node = (StoredNode) nodes.item(i);
         	Iterator iterator = getNodeIterator(node);
             iterator.next();
-            copyNodes(transaction, iterator, node, new NodePath(), newDoc, true);
+            copyNodes(transaction, iterator, node, new NodePath(), newDoc, false, true);
         }
         flush();
         closeDocument();
@@ -2034,7 +2034,7 @@ public class NativeBroker extends DBBroker {
             	StoredNode node = (StoredNode) nodes.item(i);
             	Iterator iterator = getNodeIterator(node);
                 iterator.next();
-                copyNodes(transaction, iterator, node, new NodePath(), tempDoc, false);
+                copyNodes(transaction, iterator, node, new NodePath(), tempDoc, true, false);
             }
             flush();            
             // checkTree(tempDoc);
@@ -2220,7 +2220,7 @@ public class NativeBroker extends DBBroker {
     }
     
     private void copyNodes(Txn transaction, Iterator iterator, StoredNode node, NodePath currentPath, 
-            DocumentImpl newDoc, boolean index) {
+            DocumentImpl newDoc, boolean defrag, boolean index) {
         if (node.getNodeType() == Node.ELEMENT_NODE)
             currentPath.addComponent(node.getQName());
         final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
@@ -2237,9 +2237,17 @@ public class NativeBroker extends DBBroker {
         if (node.hasChildNodes()) {
             int count = node.getChildCount();
             StoredNode child;
+            NodeId nodeId = node.getNodeId();
             for (int i = 0; i < count; i++) {
                 child = (StoredNode) iterator.next();
-                copyNodes(transaction, iterator, child, currentPath, newDoc, index);
+                if (defrag) {
+	                if (i == 0)
+	            		nodeId = nodeId.newChild();
+	            	else
+	            		nodeId = nodeId.nextSibling();
+	                child.setNodeId(nodeId);
+                }
+                copyNodes(transaction, iterator, child, currentPath, newDoc, defrag, index);
             }
         }
         if(node.getNodeType() == Node.ELEMENT_NODE) {
@@ -2257,8 +2265,6 @@ public class NativeBroker extends DBBroker {
         final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
         final IndexSpec idxSpec = doc.getCollection().getIdxConf(this);
         final FulltextIndexSpec ftIdx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null;
-        final short nodeType = node.getNodeType();
-//      final String nodeName = node.getNodeName();
 
         new DOMTransaction(this, domDb, Lock.WRITE_LOCK, doc) {
             public Object start() {
@@ -2786,7 +2792,6 @@ public class NativeBroker extends DBBroker {
         private NodePath currentPath;
 
         /** work variables */
-        private short nodeType;
         private DocumentImpl doc;
         private long address;
 
@@ -2809,7 +2814,6 @@ public class NativeBroker extends DBBroker {
             this.node = node;
             this.currentPath = currentPath;
 
-            nodeType = node.getNodeType();
             doc = (DocumentImpl) node.getOwnerDocument();
             address = node.getInternalAddress();
             idxSpec = doc.getCollection().getIdxConf(NativeBroker.this);
