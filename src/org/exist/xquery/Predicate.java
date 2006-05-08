@@ -296,12 +296,15 @@ public class Predicate extends PathExpr {
             case Constants.DESCENDANT_SELF_AXIS:
             case Constants.DESCENDANT_ATTRIBUTE_AXIS: 
             {
-            	//TODO: with in-memory nodes, 
+            	//TODO: in some cases, especially with in-memory nodes, 
             	//outerSequence.toNodeSet() will generate a document
-            	//which will be different from the one in contextSet
+            	//which will be different from the one(s) in contextSet
             	//ancestors will thus be empty :-(
-				Sequence ancestors = contextSet.selectAncestorDescendant(outerSequence.toNodeSet(),
-						NodeSet.ANCESTOR, true, getExpressionId());
+            	NodeSet outerNodeSet = outerSequence.toNodeSet();
+				Sequence ancestors = contextSet.selectAncestorDescendant(outerNodeSet,
+						NodeSet.ANCESTOR, true, getExpressionId()); 
+				if (contextSet.getDocumentSet().intersection(outerNodeSet.getDocumentSet()).getLength() == 0)
+					LOG.info("contextSet and outerNodeSet don't share any document");
 				ArraySet temp = new ArraySet(100);
 				for(SequenceIterator i = ancestors.iterate(); i.hasNext(); ) {					
 				    NodeProxy p = (NodeProxy)i.nextItem();
