@@ -24,6 +24,8 @@ package org.exist.xquery.value;
 
 import java.text.Collator;
 
+import javax.xml.datatype.Duration;
+
 import org.exist.util.Collations;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
@@ -112,12 +114,28 @@ public class UntypedAtomicValue extends AtomicValue {
 				return new DateValue(value);
 			case Type.DURATION :
 				return new DurationValue(value);
-			case Type.YEAR_MONTH_DURATION :
-				YearMonthDurationValue rawYMDV = new YearMonthDurationValue(value);
+			case Type.YEAR_MONTH_DURATION : {
+				Duration duration;			
+				try {
+					duration = TimeUtils.getInstance().newDuration(value);
+				} catch (IllegalArgumentException e) {
+					throw new XPathException("FORG0001: cannot construct " + Type.getTypeName(this.getItemType()) +
+							" from \"" + value + "\"");            
+				}
+				YearMonthDurationValue rawYMDV = new YearMonthDurationValue(duration);
 				return new YearMonthDurationValue(rawYMDV.getCanonicalDuration());
-			case Type.DAY_TIME_DURATION :
-				DayTimeDurationValue rawDTDV = new DayTimeDurationValue(value);
+			}
+			case Type.DAY_TIME_DURATION : {
+				Duration duration;
+				try {
+					duration = TimeUtils.getInstance().newDuration(value);
+				} catch (IllegalArgumentException e) {
+					throw new XPathException("FORG0001: cannot construct " + Type.getTypeName(this.getItemType()) +
+							" from \"" + value + "\"");            
+				}
+				DayTimeDurationValue rawDTDV = new DayTimeDurationValue(duration);
 				return new DayTimeDurationValue(rawDTDV.getCanonicalDuration());
+			}
 			default :
 				throw new XPathException("FORG0001: cannot cast '" + 
 						Type.getTypeName(this.getItemType()) + "(\"" + getStringValue() + "\")' to " +
