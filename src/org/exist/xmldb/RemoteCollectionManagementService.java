@@ -101,6 +101,7 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
     		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
     	}
     }
+    
     public void removeCollection( XmldbURI collName ) throws XMLDBException {
         if (parent != null)
         	collName = parent.getPathURI().resolveCollectionPath(collName);        
