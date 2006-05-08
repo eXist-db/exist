@@ -36,11 +36,11 @@ public class Base64Binary extends AtomicValue {
         this.data = data;
     }
 
-    public Base64Binary(String str) {
+    public Base64Binary(String str) throws XPathException {
     	try {
 			this.data = Base64.decode(str.getBytes("UTF-8"));
 		} catch (UnsupportedEncodingException e) {
-			this.data = Base64.decode(str.getBytes());
+			throw new XPathException("cannot build UTF-8 " + Type.getTypeName(getType()) + " from '" + str + "'");
 		}
     }
     
@@ -56,7 +56,7 @@ public class Base64Binary extends AtomicValue {
         try {
 			return new String(Base64.encode(data), "UTF-8");
 		} catch (UnsupportedEncodingException e) {
-			return new String(Base64.encode(data));
+			throw new XPathException("cannot build UTF-8 " + Type.getTypeName(getType()) + " from " + Type.getTypeName(getType()));
 		}
     }
 
@@ -64,12 +64,21 @@ public class Base64Binary extends AtomicValue {
     	switch (requiredType) {
     	case Type.BASE64_BINARY: 
     		return this;
+    	case Type.UNTYPED_ATOMIC:
+    		try {
+    			//Added trim() since it looks like a new line character is added
+    			return new UntypedAtomicValue(new String(Base64.encode(data), "UTF-8").trim());
+			} catch (UnsupportedEncodingException e) {
+				throw new XPathException("cannot convert UTF-8 " + Type.getTypeName(getType()) + " to " + Type.getTypeName(requiredType));
+			}
     	case Type.STRING: 
     		try {
-					return new StringValue(new String(data, "UTF-8"));
-				} catch (UnsupportedEncodingException e) {
-					return new StringValue(new String(data));
-				}
+				//return new StringValue(new String(data, "UTF-8"));
+    			//Added trim() since it looks like a new line character is added
+    			return new StringValue(new String(Base64.encode(data), "UTF-8").trim());
+			} catch (UnsupportedEncodingException e) {
+				throw new XPathException("cannot convert UTF-8 " + Type.getTypeName(getType()) + " to " + Type.getTypeName(requiredType));
+			}
     	default:
     		throw new XPathException("cannot convert " + Type.getTypeName(getType()) + " to " + Type.getTypeName(requiredType));
     	}
@@ -93,8 +102,7 @@ public class Base64Binary extends AtomicValue {
     public AtomicValue min(Collator collator, AtomicValue other)
             throws XPathException {
         throw new XPathException("Cannot compare values of type xs:base64Binary");
-    }
-    
+    }    
     public int conversionPreference(Class javaClass) {
         if (javaClass.isArray() && javaClass.isInstance(Byte.class))
             return 0;
