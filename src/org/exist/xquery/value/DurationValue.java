@@ -65,7 +65,7 @@ public class DurationValue extends ComputableValue {
 	 * @param duration the duration to wrap
 	 * @return a new instance of the most specific subclass of <code>DurationValue</code>
 	 */
-	public static DurationValue wrap(Duration duration) {
+	public static DurationValue wrap(Duration duration) throws XPathException {
 		try {
 			return new DayTimeDurationValue(duration);
 		} catch (XPathException e) {
@@ -77,12 +77,22 @@ public class DurationValue extends ComputableValue {
 		}
 	}
 	
-	public DurationValue(Duration duration) {
-		this.duration = duration;		
+	public DurationValue(Duration duration) throws XPathException {
+		try {
+			this.duration = duration;
+		} catch (IllegalArgumentException e) {
+			throw new XPathException("FORG0001: cannot construct " + Type.getTypeName(this.getItemType()) +
+					" from \"" + duration + "\"");            
+		}			
 	}
 	
-	public DurationValue(String str) {
-		this.duration = TimeUtils.getInstance().newDuration(str);
+	public DurationValue(String str)  throws XPathException {
+		try {
+			this.duration = TimeUtils.getInstance().newDuration(str);
+		} catch (IllegalArgumentException e) {
+			throw new XPathException("FORG0001: cannot construct " + Type.getTypeName(this.getItemType()) +
+					" from \"" + str + "\"");            
+		}
 	}
 	
 	public Duration getCanonicalDuration() {

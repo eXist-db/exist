@@ -79,19 +79,15 @@ public class Predicate extends PathExpr {
         contextInfo.removeFlag(IN_WHERE_CLAUSE);	// remove where clause flag
         outerContextId = contextInfo.getContextId();
         contextInfo.setContextId(getExpressionId());
-        //TODO : how can it be possible ?
-        Expression inner = getExpression(0);        
-        if(inner == null) {
-            LOG.info("REPORT ME : null Inner Sequence");
-            return;
-        }
         AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
     	newContextInfo.setParent(this);
         super.analyze(newContextInfo);
-        
+      
         if ((newContextInfo.getFlags() & DOT_TEST) == DOT_TEST)
         	innerExpressionDot = true;
         
+        Expression inner = getExpression(0);        
+
         // Case 1: predicate expression returns a node set. 
         // Check the returned node set against the context set 
         // and return all nodes from the context, for which the
@@ -103,7 +99,8 @@ public class Predicate extends PathExpr {
                 executionMode = BOOLEAN;
             
         // Case 2: predicate expression returns a number.
-        } else if (Type.subTypeOf(inner.returnsType(), Type.NUMBER) && inner.getCardinality() == Cardinality.EXACTLY_ONE) {
+        } else if (Type.subTypeOf(inner.returnsType(), Type.NUMBER) && (inner.getCardinality() == Cardinality.EXACTLY_ONE
+        		|| inner.getCardinality() == Cardinality.ZERO_OR_ONE)) {
             //Just a hint : inner's cardinality may still be potential
             executionMode = POSITIONAL;
             
@@ -147,6 +144,14 @@ public class Predicate extends PathExpr {
             
             if (executionMode == NODE && Type.subTypeOf(contextSequence.getItemType(), Type.ATOMIC)
                     && !(contextSequence instanceof VirtualNodeSet)) {
+                recomputedExecutionMode = BOOLEAN;
+            }
+
+            //(1,2,3)[xs:decimal(.)]
+            //TODO : think and find *the* triggering condition that leads to boolean evaluation
+            //ideally determine it at analysis time
+            if (executionMode == POSITIONAL && innerExpressionDot && 
+            		Type.subTypeOf(contextSequence.getItemType(), Type.ATOMIC)) {
                 recomputedExecutionMode = BOOLEAN;
             }
             
@@ -193,9 +198,7 @@ public class Predicate extends PathExpr {
 		for (SequenceIterator i = contextSequence.iterate(); i.hasNext(); p++) {
             context.setContextPosition(p); 
 			Item item = i.nextItem();            
-            //Sequence innerSeq = inner.eval(contextSequence, item);
-			//We just test against the *current* item
-			Sequence innerSeq = inner.eval(item.toSequence());
+            Sequence innerSeq = inner.eval(contextSequence, item);
 			if(innerSeq.effectiveBooleanValue())
 				result.add(item);
 		}
@@ -292,6 +295,10 @@ public class Predicate extends PathExpr {
             case Constants.DESCENDANT_SELF_AXIS:
             case Constants.DESCENDANT_ATTRIBUTE_AXIS: 
             {
+            	//TODO: with in-memory nodes, 
+            	//outerSequence.toNodeSet() will generate a document
+            	//which will be different from the one in contextSet
+            	//ancestors will thus be empty :-(
 				Sequence ancestors = contextSet.selectAncestorDescendant(outerSequence.toNodeSet(),
 						NodeSet.ANCESTOR, true, getExpressionId());
 				ExtArrayNodeSet temp = new ExtArrayNodeSet(100);
