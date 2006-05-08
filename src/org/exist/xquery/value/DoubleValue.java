@@ -255,6 +255,14 @@ public class DoubleValue extends NumericValue {
 			case Type.STRING :
 				return new StringValue(getStringValue());
 			case Type.DECIMAL :
+				if (isNaN())
+					throw new XPathException("FORG0001: can not convert " + 
+							Type.getTypeName(getType()) + "('" + getStringValue() + "') to " +
+							Type.getTypeName(requiredType));
+				if (isInfinite())
+					throw new XPathException("FORG0001: can not convert " + 
+							Type.getTypeName(getType()) + "('" + getStringValue() + "') to " +
+							Type.getTypeName(requiredType));
 				return new DecimalValue(new BigDecimal(value));
 			case Type.INTEGER :
 			case Type.NON_POSITIVE_INTEGER :
@@ -270,9 +278,13 @@ public class DoubleValue extends NumericValue {
 			case Type.UNSIGNED_BYTE :
 			case Type.POSITIVE_INTEGER :
 				if (isNaN())
-					throw new XPathException("FORG0001: can not convert xs:double('" + getStringValue() + "') to xs:integer");
+					throw new XPathException("FORG0001: can not convert " + 
+							Type.getTypeName(getType()) + "('" + getStringValue() + "') to " +
+							Type.getTypeName(requiredType));
 				if (Double.isInfinite(value))
-					throw new XPathException("FORG0001: can not convert xs:double('" + getStringValue() + "') to xs:integer");				
+					throw new XPathException("FORG0001: can not convert " + 
+							Type.getTypeName(getType()) + "('" + getStringValue() + "') to " +
+							Type.getTypeName(requiredType));
 				return new IntegerValue((long) value, requiredType);
 			case Type.BOOLEAN :
 				return new BooleanValue(this.effectiveBooleanValue());				
