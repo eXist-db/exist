@@ -875,6 +875,11 @@ public class Configuration implements ErrorHandler {
         if (indexDepth != null) {
             try {
                 depth = Integer.parseInt(indexDepth);
+                if (depth < 3) {
+                	LOG.warn("parameter index-depth should be >= 3 or you will experience a severe " +
+                			"performance loss for node updates (XUpdate or XQuery update extensions)");
+                	depth = 3;
+                }
                 config.put("indexer.index-depth", new Integer(depth));
                 LOG.debug("indexer.index-depth: " + config.get("indexer.index-depth"));
             } catch (NumberFormatException e) {
