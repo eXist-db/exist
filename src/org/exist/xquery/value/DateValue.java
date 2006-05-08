@@ -81,10 +81,14 @@ public class DateValue extends AbstractDateTimeValue {
 				return this;
 			case Type.DATE_TIME :
 				return new DateTimeValue(calendar);
+			case Type.UNTYPED_ATOMIC:
+				return new UntypedAtomicValue(getStringValue());
 			case Type.STRING :
 				return new StringValue(getStringValue());
 			default :
-				throw new XPathException("Type error: cannot cast xs:date to " + Type.getTypeName(requiredType));
+				throw new XPathException("FORG0001: can not convert " + 
+						Type.getTypeName(getType()) + "('" + getStringValue() + "') to " +
+						Type.getTypeName(requiredType));
 		}
 	}
 
