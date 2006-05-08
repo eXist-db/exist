@@ -41,6 +41,7 @@ import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.xmldb.XmldbURI;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -129,11 +130,11 @@ public class XMLSecurityManager implements SecurityManager {
           } else {
              LOG.debug("loading acl");
              Element root = acl.getDocumentElement();
-             String version = root.getAttribute("version");
+             Attr version = root.getAttributeNode("version");
              int major = 0;
              int minor = 0;
              if (version!=null) {
-                String [] numbers = version.split("\\.");
+                String [] numbers = version.getValue().split("\\.");
                 major = Integer.parseInt(numbers[0]);
                 minor = Integer.parseInt(numbers[1]);
              }
