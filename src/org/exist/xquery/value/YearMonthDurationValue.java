@@ -52,7 +52,16 @@ public class YearMonthDurationValue extends OrderedDurationValue {
 	}
 
 	public YearMonthDurationValue(String str) throws XPathException {
-		this(TimeUtils.getInstance().newDurationYearMonth(str));		
+		this(createDurationYearMonth(str));		
+	}
+	
+	private static Duration createDurationYearMonth(String str) throws XPathException {
+		try {
+			return TimeUtils.getInstance().newDurationYearMonth(str);
+		} catch (IllegalArgumentException e) {
+			throw new XPathException("FORG0001: cannot construct " + Type.getTypeName(Type.YEAR_MONTH_DURATION) +
+					" from \"" + str + "\"");            
+		}
 	}
 	
 	protected Duration canonicalZeroDuration() {
