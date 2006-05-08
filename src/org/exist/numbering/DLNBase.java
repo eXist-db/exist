@@ -465,6 +465,8 @@ public class DLNBase implements Comparable {
      * @return
      */
     public boolean startsWith(DLNBase other) {
+    	if (other.bitIndex > bitIndex)
+    		return false;
     	int bytes = other.bitIndex / 8;
     	int remaining = other.bitIndex % 8;
     	for (int i = 0; i < bytes; i++) {
