@@ -153,8 +153,8 @@ public class User {
           throw new DatabaseConfigurationException("illegal user id: " +
                   userId + " for user " + user);
        }
-       Attr home = node.getAttributeNode( HOME );
-       this.home = home == null ? null : XmldbURI.create(home.getValue());
+       Attr homeAttr = node.getAttributeNode( HOME );
+       this.home = homeAttr == null ? null : XmldbURI.create(homeAttr.getValue());
        NodeList gl = node.getChildNodes();
        Node group;
        for ( int i = 0; i < gl.getLength(); i++ ) {
