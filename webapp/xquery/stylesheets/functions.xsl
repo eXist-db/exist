@@ -17,8 +17,10 @@
     
 	<xsl:template match="module">
 		<h2>
-			<xsl:attribute name="name"><xsl:value-of select="generate-id()"/></xsl:attribute>
-			<xsl:value-of select="description"/> (<xsl:value-of select="@namespace"/>)
+			<a>
+				<xsl:attribute name="name"><xsl:value-of select="generate-id()"/></xsl:attribute>
+				<xsl:value-of select="description"/> (<xsl:value-of select="@namespace"/>)
+			</a>
 		</h2>
 		<xsl:apply-templates select="function"/>
 	</xsl:template>
