@@ -255,12 +255,14 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * @return
 	 */
 	public NodeSet selectParentChild(NodeSet al, int mode, int contextId) {
-		if (!(al instanceof VirtualNodeSet)) {
-		    if(al.getLength() < 10)
-		        return hasChildrenInSet(al, mode, contextId);
-		    else
-		        return quickSelectParentChild(al, mode, contextId);
-		}
+		if (!(al instanceof VirtualNodeSet) && al.getLength() < 10)
+			return hasChildrenInSet(al, mode, contextId);
+//		if (!(al instanceof VirtualNodeSet)) {
+//		    if(al.getLength() < 10)
+//		        return hasChildrenInSet(al, mode, contextId);
+//		    else
+//		        return quickSelectParentChild(al, mode, contextId);
+//		}
 		return NodeSetHelper.selectParentChild(this, al, mode, contextId);
 	}
 
@@ -288,6 +290,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	}
 	
 	public NodeSet quickSelectParentChild(NodeSet al, int mode, int contextId) {
+		System.out.println(al.toString());
+		System.out.println(toString());
 	    final NodeSet result = new ExtArrayNodeSet();
 		final Iterator ia = al.iterator();
 		final Iterator ib = iterator();
@@ -315,38 +319,43 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 			    // same document
 			    pa = na.getNodeId();
 			    pb = nb.getNodeId();
-//			    System.out.println(pa + " -> " + pb);
-			    pb = pb.getParentId();
-//				System.out.println("comparing " + pa + " -> " + pb);
-			    cmp = pa.compareTo(pb);
-				if(cmp == 0) {
-				    if(mode == NodeSet.DESCENDANT) {
-				        if (Expression.NO_CONTEXT_ID != contextId)
-				            nb.addContextNode(contextId, na);
-				        else
-				            nb.copyContext(na);
-				        result.add(nb);
-				    } else {
-				        if (Expression.NO_CONTEXT_ID != contextId)
-				            na.addContextNode(contextId, nb);
-				        else
-				            na.copyContext(nb);
-				        result.add(na);
-				    }
+			    System.out.println(pa + " -> " + pb);
+
+				if (pb.isDescendantOf(pa)) {
+					if (pb.isChildOf(pa)) {
+						if(mode == NodeSet.DESCENDANT) {
+					        if (Expression.NO_CONTEXT_ID != contextId)
+					            nb.addContextNode(contextId, na);
+					        else
+					            nb.copyContext(na);
+					        result.add(nb);
+					    } else {
+					        if (Expression.NO_CONTEXT_ID != contextId)
+					            na.addContextNode(contextId, nb);
+					        else
+					            na.copyContext(nb);
+					        result.add(na);
+					    }
+					}
 				    if (ib.hasNext())
 						nb = (NodeProxy) ib.next();
 					else
 						break;
-				} else if (cmp < 0) {
-					if (ia.hasNext())
-						na = (NodeProxy) ia.next();
-					else
-						break;
+				    System.out.println("Found: " + pb + "; next: " + nb.getNodeId().toString());
 				} else {
-					if (ib.hasNext())
-						nb = (NodeProxy) ib.next();
-					else
-						break;
+				    cmp = pa.compareTo(pb);
+				    System.out.println("comparing " + pa + " -> " + pb + " = " + cmp);
+					if (cmp < 0) {
+						if (ia.hasNext())
+							na = (NodeProxy) ia.next();
+						else
+							break;
+					} else {
+						if (ib.hasNext())
+							nb = (NodeProxy) ib.next();
+						else
+							break;
+					}
 				}
 			}
 		}

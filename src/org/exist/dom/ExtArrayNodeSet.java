@@ -669,25 +669,29 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
             while (mid > 0 && array[mid - 1].getNodeId().compareTo(parentId) > 0)
                 --mid;
             // walk through the range of child nodes we found
-            for (int i = mid; i < length && array[i].getNodeId().isChildOf(parentId); i++) {
-                switch (mode) {
-                    case NodeSet.DESCENDANT :
-                        if (Expression.NO_CONTEXT_ID != contextId)
-                            array[i].addContextNode(contextId, parent);
-                        else
-                            array[i].copyContext(parent);
-                        array[i].addMatches(parent);
-                        result.add(array[i]);
-                        break;
-                    case NodeSet.ANCESTOR :
-                        if (Expression.NO_CONTEXT_ID != contextId)
-                            parent.addContextNode(contextId, array[i]);
-                        else
-                            parent.copyContext(array[i]);
-                        parent.addMatches(array[i]);
-                        result.add(parent, 1);
-                        break;
-                }
+            for (int i = mid; i < length; i++) {
+            	if (!array[i].getNodeId().isDescendantOf(parentId))
+            		break;
+            	if (array[i].getNodeId().isChildOf(parentId)) {
+	                switch (mode) {
+	                    case NodeSet.DESCENDANT :
+	                        if (Expression.NO_CONTEXT_ID != contextId)
+	                            array[i].addContextNode(contextId, parent);
+	                        else
+	                            array[i].copyContext(parent);
+	                        array[i].addMatches(parent);
+	                        result.add(array[i]);
+	                        break;
+	                    case NodeSet.ANCESTOR :
+	                        if (Expression.NO_CONTEXT_ID != contextId)
+	                            parent.addContextNode(contextId, array[i]);
+	                        else
+	                            parent.copyContext(array[i]);
+	                        parent.addMatches(array[i]);
+	                        result.add(parent, 1);
+	                        break;
+	                }
+            	}
             }
             return result;
         }
