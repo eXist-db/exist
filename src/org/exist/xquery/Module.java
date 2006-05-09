@@ -44,6 +44,14 @@ import org.exist.dom.QName;
  */
 public interface Module {
 
+	
+	/**
+	 * Namespace for the built-in eXist module.
+	 */
+	public final static String EXIST_FUNCTION_NS =
+		"http://exist-db.org/xquery/eXist";
+	
+	
 	/**
 	 * Namespace for the built-in xmldb module.
 	 */
