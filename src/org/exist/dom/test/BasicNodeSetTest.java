@@ -68,6 +68,17 @@ import org.xml.sax.SAXException;
  */
 public class BasicNodeSetTest extends TestCase {
 
+	private final static String NESTED_XML =
+		"<root>" +
+		"	<section n='1'>" +
+		"		<section n='1.1'>" +
+		"			<section n='1.1.1'/>" +
+		"			<section n='1.1.2'/>" +
+		"			<section n='1.1.3'/>" +
+		"		</section>" +
+		"	</section>" +
+		"</root>";
+	
 	private static String directory = "samples/shakespeare";
     
     private static File dir = new File(directory);
@@ -237,6 +248,17 @@ public class BasicNodeSetTest extends TestCase {
             largeSet = executeQuery(broker, "//SPEECH[LINE &= 'love']/LINE[1]", 160, null);
             result = ((AbstractNodeSet) speakers).selectPrecedingSiblings(largeSet.toNodeSet(), -1);
             assertEquals(160, result.getLength());
+            
+            Sequence nestedSet = executeQuery(broker, "//section[@n = '1.1']", 1, null);
+            test = new NameTest(Type.ELEMENT, new QName("section", ""));
+            NodeSet children = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT,
+                    docs, test.getName(), null);
+            result = ((AbstractNodeSet)children).hasChildrenInSet(nestedSet.toNodeSet(), NodeSet.DESCENDANT, -1);
+            assertEquals(3, result.getLength());
+            
+            result = ((AbstractNodeSet)children).quickSelectParentChild(nestedSet.toNodeSet(), NodeSet.DESCENDANT, -1);
+            assertEquals(3, result.getLength());
+            
         } catch (Exception e) {
         	e.printStackTrace();
 	        fail(e.getMessage());
@@ -339,6 +361,10 @@ public class BasicNodeSetTest extends TestCase {
                     System.err.println("Error found while parsing document: " + f.getName() + ": " + e.getMessage());
                 }
             }
+            
+            info = root.validateXMLResource(transaction, broker, XmldbURI.create("nested.xml"), NESTED_XML);
+            assertNotNull(info);
+            root.store(transaction, broker, info, NESTED_XML, false);
             
             transact.commit(transaction);
             System.out.println("BasicNodeSetTest#setUp finished.");
