@@ -43,6 +43,7 @@
             <replacefilter token="deployment.xml" value="deployment.html"/>
             <replacefilter token="devguide.xml" value="devguide.html"/>
             <replacefilter token="documentation.xml" value="documentation.html"/>
+            <replacefilter token="roadmap.xml" value="roadmap.html"/>
             <replacefilter token="indexing.xml" value="indexing.html"/>
             <replacefilter token="facts.xml" value="facts.html"/>
             <replacefilter token="howtos.xml" value="howtos.html"/>
@@ -67,7 +68,7 @@
             <replacefilter token="sandbox/sandbox.xql" value="${demo.host}/sandbox/sandbox.xql"/>
             <replacefilter token='url="xmldb/db/' value='url="${demo.host}/xmldb/db/'/>
             <replacefilter token='href="xmldb/db/' value='href="${demo.host}/xmldb/db/'/>
-            <replacefilter token="admin/admin.xql" value="${demo.host}/admin/admin.xql"/>
+            <replacefilter token='="admin/admin.xql' value='="${demo.host}/admin/admin.xql'/>
             <replacefilter token='href="status"' value='href="${demo.host}/status"'/>
             <replacefilter token="xquery/functions.xq" value="${demo.host}/xquery/functions.xq"/>
             <replacefilter token='url="xquery/guess.xql' value='url="${demo.host}/xquery/guess.xql'/>
@@ -127,6 +128,7 @@
                 <uri type="append" src="xacml-dev.xml"/>
                 <uri type="append" src="webdav.xml"/>
                 <uri type="append" src="developper.html"/>
+                <uri type="append" src="roadmap.xml"/>
             </uris>
         </cocoon>
 
