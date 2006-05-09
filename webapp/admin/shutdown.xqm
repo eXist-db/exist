@@ -3,12 +3,10 @@
 :)
 module namespace shutdown="http://exist-db.org/xquery/admin-interface/shutdown";
 
+declare namespace eXist="http://exist-db.org/xquery/eXist";
 declare namespace xdb="http://exist-db.org/xquery/xmldb";
 declare namespace request="http://exist-db.org/xquery/request";
 declare namespace session="http://exist-db.org/xquery/session";
-
-declare namespace coll="java:org.xmldb.api.base.Collection";
-declare namespace manager="java:org.exist.xmldb.DatabaseInstanceManager";
 
 declare function shutdown:main($user as xs:string, $password as xs:string) as element() {
     <div class="panel">
@@ -22,7 +20,10 @@ declare function shutdown:main($user as xs:string, $password as xs:string) as el
                 let $shutdown := request:get-parameter("action", ())
                 return
                     if($shutdown) then
-                        shutdown:shutdown($user, $password)
+                    	<div class="actions">
+					        Database shutdown starts in {request:get-parameter("delay", "2")} sec.
+				            {eXist:shutdown($user, $password, request:get-parameter("delay", "2") cast as xs:long)}
+				        </div>
                     else
                         <form action="{session:encode-url(request:get-uri())}" method="POST">
                             <p>Clicking on the button below will trigger a database shutdown. If
@@ -39,15 +40,4 @@ declare function shutdown:main($user as xs:string, $password as xs:string) as el
                         </form>
         }
     </div>
-};
-
-declare function shutdown:shutdown($user as xs:string, $password as xs:string) as element() {
-    let $rootCol := xdb:collection("/db", $user, $password),
-        $delay := request:get-parameter("delay", "2") cast as xs:long,
-        $service := coll:get-service($rootCol, "DatabaseInstanceManager", "1.0")
-    return
-        <div class="actions">
-        Database shutdown starts in {$delay} sec.
-            {manager:shutdown($service, $delay * 1000)}
-        </div>
 };
