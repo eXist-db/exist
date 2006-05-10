@@ -51,10 +51,13 @@ public class SystemProperty extends BasicFunction {
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException { 
 		if(sysProperties == null) {
-			sysProperties = new Properties();
-			try {
-				sysProperties.load(ExistVersion.class.getClassLoader().getResourceAsStream("org/exist/system.properties"));
-			} catch (IOException e) {
+			Properties sysProperties = new Properties();
+			try
+			{
+				sysProperties.load(SystemProperty.class.getClassLoader().getResourceAsStream("org/exist/system.properties"));
+			}
+			catch (IOException e)
+			{
 				LOG.debug("Unable to load system.properties from class loader");
 			}
 		}
