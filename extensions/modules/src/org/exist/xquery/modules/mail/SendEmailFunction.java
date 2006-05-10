@@ -55,7 +55,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.functions.util.ExistVersion;
+import org.exist.xquery.functions.eXist.GetVersion;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -449,7 +449,7 @@ public class SendEmailFunction extends BasicFunction
 	private String eXistVersion() throws IOException
 	{
 		Properties sysProperties = new Properties();
-		sysProperties.load(ExistVersion.class.getClassLoader().getResourceAsStream("org/exist/system.properties"));
+		sysProperties.load(GetVersion.class.getClassLoader().getResourceAsStream("org/exist/system.properties"));
 		return((String)sysProperties.getProperty("product-version", "unknown version"));
 	}
 	
