@@ -420,9 +420,9 @@ declare namespace util="http://exist-db.org/xquery/util";
 
 declare function local:do-query() as element()
 {
-    let $n1 := request:request-parameter("n1", ""),
-		$n2 := request:request-parameter("n2", ""),
-		$op := request:request-parameter("op", "")
+    let $n1 := request:get-parameter("n1", ""),
+		$n2 := request:get-parameter("n2", ""),
+		$op := request:get-parameter("op", "")
 	return
 		if($n1 = "" or $n2 = "") then
 			<p>Please enter two operands.</p>
@@ -436,7 +436,7 @@ declare function local:do-query() as element()
 	<body>
 		<h1>Enter two numbers</h1>
 
-		<form action="{request:request-uri()}" method="get">
+		<form action="{request:get-uri()}" method="get">
 			<table border="0" cellpadding="5">
 			<tr>
 				<td>First number:</td>
@@ -519,7 +519,7 @@ declare function local:do-query() as element()
                 <title>HTTP Related Functions</title>
 
                 <para>The example above reads HTTP request parameters using the
-                function <command>request:request-parameter</command>. Obviously, 
+                function <command>request:get-parameter</command>. Obviously, 
                 functions in the http://exist-db.org/xquery/request namespace 
                 are only usable if the query is executed through the
                 XQueryGenerator or the XQueryServlet (please have a look at the 
@@ -527,17 +527,17 @@ declare function local:do-query() as element()
                 information).</para>
 
                 <para>
-                    <command>request:request-parameter</command> expects two
+                    <command>request:get-parameter</command> expects two
                 arguments: the first argument denotes the name of the parameter,
                 the second specifies a default value, which is returned if the
                 parameter is not set. The function returns a sequence containing
                 the values for the parameter.</para>
 
                 <para>
-                    <command>request:request-uri</command> returns the URI of
+                    <command>request:get-uri</command> returns the URI of
                 the current request. You may call</para>
 
-                <synopsis>request:encode-url(request:request-uri())</synopsis>
+                <synopsis>session:encode-url(request:get-uri())</synopsis>
 
                 <para>to encode the current session id into the URI.</para>
 
@@ -548,7 +548,7 @@ declare function local:do-query() as element()
                             url="examples.xml">examples</ulink>.</para>
 
                 <para>The function call
-                <option>request:create-session()</option> will create a new HTTP
+                <option>session:create()</option> will create a new HTTP
                 session if none has been created before.</para>
             </section>
         </section>
