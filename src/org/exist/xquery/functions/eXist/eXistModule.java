@@ -33,7 +33,6 @@ import org.exist.xquery.XPathException;
  * 
  * TODO: add get-uptime()
  * TODO: add count-sessions()
- * TODO: add count-instances()
  */
 
 public class eXistModule extends AbstractInternalModule
@@ -43,6 +42,9 @@ public class eXistModule extends AbstractInternalModule
 	
 	public final static FunctionDef[] functions = {
 		
+		new FunctionDef(CountInstances.countInstancesMax, CountInstances.class),
+		new FunctionDef(CountInstances.countInstancesActive, CountInstances.class),
+		new FunctionDef(CountInstances.countInstancesAvailable, CountInstances.class),
 		new FunctionDef(GetMemory.getMemoryMax, GetMemory.class),
 		new FunctionDef(GetMemory.getMemoryTotal, GetMemory.class),
 		new FunctionDef(GetMemory.getMemoryFree, GetMemory.class),
