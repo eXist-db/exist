@@ -276,18 +276,26 @@ public abstract class Paged {
 		file.delete();
 	}
 	
-	/**
-	 *  getFreePage returns the first free Page from secondary storage. If no
-	 *  Pages are available, the file is grown as appropriate.
-	 *
-	 *@return               The next free Page
-	 *@throws  IOException  if an Exception occurs
-	 */
 	protected final Page getFreePage() throws IOException {
+		return getFreePage(true);
+	}
+	
+	/**
+	 * Returns the first free page it can find, either by reusing a deleted page
+	 * or by appending a new one to secondary storage.
+	 *
+	 * @param reuseDeleted if set to false, the method will not try to reuse a
+	 * previously deleted page. This is required by btree page split operations to avoid 
+	 * concurrency conflicts within a transaction.
+	 *
+	 * @return a free page
+	 * @throws  IOException
+	 */
+	protected final Page getFreePage(boolean reuseDeleted) throws IOException {
 		Page p = null;
 		synchronized (fileHeader) {
 			long pageNum = fileHeader.firstFreePage;
-			if (pageNum != Page.NO_PAGE) {
+			if (reuseDeleted && pageNum != Page.NO_PAGE) {
 				// Steal a deleted page
 				p = new Page(pageNum);
 				p.read();

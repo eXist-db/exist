@@ -374,9 +374,10 @@ public class BTree extends Paged {
      * @param parent
      * @return
      */
-	private BTreeNode createBTreeNode(Txn transaction, byte status, BTreeNode parent) {
+	private BTreeNode createBTreeNode(Txn transaction, byte status, BTreeNode parent, 
+		boolean reuseDeleted) {
 		try {
-			Page p = getFreePage();
+			Page p = getFreePage(reuseDeleted);
 			BTreeNode node = new BTreeNode(p, true);
             if (transaction != null && isTransactional) {
                 Loggable loggable = 
@@ -416,7 +417,7 @@ public class BTree extends Paged {
      * @throws IOException
      */
 	protected long createRootNode(Txn transaction) throws IOException {
-		BTreeNode root = createBTreeNode(transaction, LEAF, null);
+		BTreeNode root = createBTreeNode(transaction, LEAF, null, true);
 		setRootNode(root);
 		return root.page.getPageNum();
 	}
@@ -1011,7 +1012,8 @@ public class BTree extends Paged {
 					}
 					return -1;
 				default :
-					throw new BTreeException("Invalid Page Type In addValue: " + ph.getStatus());
+					throw new BTreeException("Invalid Page Type In addValue: " + ph.getStatus() + "; " +
+							page.getPageInfo());
 			}
 		}
 
@@ -1104,7 +1106,7 @@ public class BTree extends Paged {
             BTreeNode parent = getParent();
             if (parent == null) {
                 // This can only happen if this is the root
-                parent = createBTreeNode(transaction, BRANCH, null);
+                parent = createBTreeNode(transaction, BRANCH, null, false);
                 
                 // Log change of the parent page
                 if (transaction != null && isTransactional) {
@@ -1115,7 +1117,7 @@ public class BTree extends Paged {
                 
                 setParent(parent);
 
-                final BTreeNode rNode = createBTreeNode(transaction, ph.getStatus(), parent);
+                final BTreeNode rNode = createBTreeNode(transaction, ph.getStatus(), parent, false);
                 
                 // Log update of the right node
                 if (isTransactional && transaction != null) {
@@ -1149,7 +1151,7 @@ public class BTree extends Paged {
                     rNode.split(transaction);
                 }
             } else {
-                final BTreeNode rNode = createBTreeNode(transaction, ph.getStatus(), parent);
+                final BTreeNode rNode = createBTreeNode(transaction, ph.getStatus(), parent, false);
                 
                 // Log update of the right node
                 if (isTransactional && transaction != null) {
