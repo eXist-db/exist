@@ -61,15 +61,15 @@
             <zipfileset dir="${conf}/eXist" includes="jboss-service.xml" prefix="META-INF"/>
             <fileset dir="${build}" includes="org/exist/jboss/**" />
 
-            <zipfileset dir="${server.lib}"
+            <zipfileset dir="${server.lib}/core"
                       includes="antlr.jar,
-                                jakarta-regexp-*.jar,
-                                resolver-*.jar,
-                                trove.jar,
+                                commons-pool-*.jar,
+                                resolver.jar,
                                 xmlrpc-*.jar,
-                                xmldb*.jar" />
+                                xmldb.jar" />
             <zipfileset dir="${server.root}"
-                      includes="exist.jar" />
+                      includes="exist.jar,
+					  			exist-optional.jar" />
         </jar>
     </target>
 
