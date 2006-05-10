@@ -35,8 +35,6 @@ public class SystemProperty extends BasicFunction {
 			new SequenceType[] { new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE) },
 			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
 	
-	private Properties sysProperties = null;
-	
 	/**
 	 * @param context
 	 * @param signature
@@ -48,19 +46,18 @@ public class SystemProperty extends BasicFunction {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
 	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence)
-			throws XPathException { 
-		if(sysProperties == null) {
-			Properties sysProperties = new Properties();
-			try
-			{
-				sysProperties.load(SystemProperty.class.getClassLoader().getResourceAsStream("org/exist/system.properties"));
-			}
-			catch (IOException e)
-			{
-				LOG.debug("Unable to load system.properties from class loader");
-			}
+	public Sequence eval(Sequence[] args, Sequence contextSequence)throws XPathException
+	{ 
+		Properties sysProperties = new Properties();
+		try
+		{
+			sysProperties.load(SystemProperty.class.getClassLoader().getResourceAsStream("org/exist/system.properties"));
 		}
+		catch (IOException e)
+		{
+			LOG.debug("Unable to load system.properties from class loader");
+		}
+		
 		String key = args[0].getStringValue();
 		String value = sysProperties.getProperty(key);
 		if(value == null)
