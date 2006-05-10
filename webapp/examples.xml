@@ -58,7 +58,7 @@
                         </td>
                         <td width="70%">
                             Enter an arbitrary XQuery expression and execute it on
-                            the server. NB - Requires Java binding to be enabled.
+                            the server.
                         </td>
                     </tr>
                     <tr>
