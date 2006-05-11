@@ -194,7 +194,6 @@ public class FunMatches extends Function {
         } else {
             if (context.isProfilingEnabled())
                 context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "", "Generic evaluation");
-            LOG.debug("GENERIC");
             result = evalGeneric(contextSequence, contextItem, input);
         }
         
