@@ -42,17 +42,18 @@
     -->
 
     <!-- The settings below are very conservative to avoid out-of-memory
-    exceptions on machines with limited memory (256MB). Increase the
-    buffer settings for elements_buffers and words_buffers if you have
-    some more memory to waste. -->
+	    exceptions on machines with limited memory (256MB). Increase the
+	    buffer settings for elements_buffers and words_buffers if you have
+	    some more memory to waste. If you deal with lots of collections, you
+    	can also increase the collectionCacheSize value -->
 	<db-connection database="native" files="webapp/WEB-INF/data"
-		pageSize="4096" cacheSize="96M" free_mem_min="5">
-    
+		pageSize="4096" cacheSize="96M" free_mem_min="5" collectionCacheSize="128" >
+
         <!-- Settings for the database connection pool:
             - sync-period
-                defines how often the database will flush its 
-                internal buffers to disk. The sync thread will interrupt 
-                normal database operation after the specified number of 
+                defines how often the database will flush its
+                internal buffers to disk. The sync thread will interrupt
+                normal database operation after the specified number of
                 milliseconds and write all dirty pages to disk.
             - min: minimum number of connections to keep alive.
             - max: maximum number of connections allowed.
@@ -61,33 +62,33 @@
 			    operations to complete before it forces a shutdown.
         -->
 		<pool min="1" max="20" sync-period="120000" wait-before-shutdown="120000"/>
-		
+
 		<recovery enabled="yes" sync-on-commit="no" group-commit="no"
             size="100M" journal-dir="webapp/WEB-INF/data"/>
-		
+
 		<!-- watchdog query-timeout="-1" output-size-limit="10000"/-->
-            
+
         <!--system-task class="org.exist.storage.DataBackup" period="120000">
 			<parameter name="output-dir" value="backup"/>
 		</system-task-->
-        
+
 		<!--default-permissions collection="0775" resource="0775"/-->
 
     </db-connection>
-	   
+
     <!-- Default settings for the serializer. Most of these can be changed
     by client code:
 
-    - enable-xinclude: 
+    - enable-xinclude:
         should the database expand XInclude tags by default?
-    - enable-xsl: 
+    - enable-xsl:
         should the database evaluate XSL processing instructions
         when serializing documents?
     - indent:
         should the serializer pretty-print (indent) XML?
     - match-tagging-elements:
     - match-tagging-attributes:
-        
+
     - add-exist-id:
         for debugging: add an exist:id attribute to every element, showing
         the internal node identifier (as a long int) assigned to this node.
@@ -110,15 +111,15 @@
 	The "growth-factor" attribute determines the number of spare ids to be
 	inserted whenever the node id scheme is recomputed after an XUpdate.
 	Increase the setting to have less reindex runs. However, you have to
-	be aware that leaving spare ids also limits the maximum size of a 
-	document that can be indexed. 
+	be aware that leaving spare ids also limits the maximum size of a
+	document that can be indexed.
 
 	"enable-consistency-checks" is for debugging only. If the parameter
-	is set to "yes", a consistency check will be run on every modified 
-	document after every XUpdate request. It checks if the 
+	is set to "yes", a consistency check will be run on every modified
+	document after every XUpdate request. It checks if the
 	persistent DOM is complete and all pointers in the structural
 	index point to valid storage addresses containing valid nodes.
-    
+
     "allowed-fragmentation" defines the maximum number of page splits allowed within a
     document before a defragmentation run will be triggered.
 	-->
@@ -151,7 +152,7 @@
         </builtin-modules>
     </xquery>
 
-    <!-- 
+    <!--
         Settings for the indexer:
         - suppress-whitespace
             should leading or trailing whitespace be removed from a text
@@ -174,20 +175,20 @@
         - index-depth
             defines the maximum nesting depth of nodes which will be indexed
             in the DOM index. Nodes below the specified nesting depth will
-            not be indexed in the DOM file. This has only an effect when 
+            not be indexed in the DOM file. This has only an effect when
             retrieving query results or for some types of XPath subexpressions, like
             equality comparisons.
         - suppress-whitespace-mixed-content
             preserve the white space inside a mixed content node
     -->
-    <indexer stemming="no" caseSensitive="yes" suppress-whitespace="both" 
+    <indexer stemming="no" caseSensitive="yes" suppress-whitespace="both"
 	index-depth="1" tokenizer="org.exist.storage.analysis.SimpleTokenizer"
 	track-term-freq="yes" validation="auto" preserve-whitespace-mixed-content="no">
-        
+
 		<!-- where's the file containing a list of stopwords to be ignored
          by the parser. -->
 		<stopwords file="stopword"/>
-        
+
 		<!-- default index settings. Default settings apply if there's no collection-specific
 		configuration for a collection.
         -->
@@ -204,5 +205,5 @@
 			<catalog file="webapp/WEB-INF/catalog.xml"/>
 		</entity-resolver>
     </indexer>
-   
+
 </exist>

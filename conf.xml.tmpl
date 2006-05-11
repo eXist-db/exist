@@ -43,11 +43,12 @@
     -->
 
     <!-- The settings below are very conservative to avoid out-of-memory
-    exceptions on machines with limited memory (256MB). Increase the
-    buffer settings for elements_buffers and words_buffers if you have
-    some more memory to waste. -->
-	<db-connection database="@database@" files="webapp/WEB-INF/data"
-		pageSize="4096" cacheSize="96M" free_mem_min="5">
+	    exceptions on machines with limited memory (256MB). Increase the
+	    buffer settings for elements_buffers and words_buffers if you have
+	    some more memory to waste. If you deal with lots of collections, you 
+    	can also increase the collectionCacheSize value -->
+	<db-connection database="native" files="webapp/WEB-INF/data"
+		pageSize="4096" cacheSize="96M" free_mem_min="5" collectionCacheSize="128" >
     
         <!-- Settings for the database connection pool:
             - sync-period
