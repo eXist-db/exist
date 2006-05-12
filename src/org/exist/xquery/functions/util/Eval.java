@@ -69,7 +69,7 @@ public class Eval extends BasicFunction {
 				"Dynamically evaluates its string argument as an XPath/XQuery expression. " +
                 "The query is specified via the first argument. If it is of type xs:string, util:eval " +
                 "tries to execute this string as the query. If the first argument is an xs:anyURI, " +
-                "the function will try to load the query from the resource to which the URI resolves. " +
+                "the function will try to load the query from the resource to which the (absolute) URI resolves. " +
                 "If the URI has no scheme, it is assumed that the query is stored in the db and the " +
                 "URI is interpreted as a database path. This is the same as calling " +
                 "util:eval('xmldb:exist:///db/test/test.xq'). " +
@@ -255,8 +255,14 @@ public class Eval extends BasicFunction {
         if (location.indexOf(':') < 0 || location.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
             try {
                 XmldbURI locationUri = XmldbURI.xmldbUriFor(location);
-                XmldbURI moduleLoadPathUri = XmldbURI.xmldbUriFor(context.getModuleLoadPath());
-                locationUri = moduleLoadPathUri.resolveCollectionPath(locationUri);
+                
+                // If location is relative (does not contain any / and does
+                // not start with . or .. then the path of the module need to
+                // be added.
+                if(location.indexOf("/") <0 || location.startsWith(".")){
+                    XmldbURI moduleLoadPathUri = XmldbURI.xmldbUriFor(context.getModuleLoadPath());
+                    locationUri = moduleLoadPathUri.resolveCollectionPath(locationUri);
+                }
                 
                 DocumentImpl sourceDoc = null;
                 try {
