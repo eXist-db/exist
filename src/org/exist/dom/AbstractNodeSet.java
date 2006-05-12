@@ -255,14 +255,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * @return
 	 */
 	public NodeSet selectParentChild(NodeSet al, int mode, int contextId) {
-		if (!(al instanceof VirtualNodeSet) && al.getLength() < 10)
-			return hasChildrenInSet(al, mode, contextId);
-//		if (!(al instanceof VirtualNodeSet)) {
-//		    if(al.getLength() < 10)
-//		        return hasChildrenInSet(al, mode, contextId);
-//		    else
-//		        return quickSelectParentChild(al, mode, contextId);
-//		}
+		LOG.debug("Node select");
 		return NodeSetHelper.selectParentChild(this, al, mode, contextId);
 	}
 

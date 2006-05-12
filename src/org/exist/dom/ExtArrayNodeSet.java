@@ -376,6 +376,33 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
 		return result;
     }
 
+    public NodeSet selectParentChild(NodeSet al, int mode, int contextId) {
+    	sort();
+    	if (al instanceof VirtualNodeSet)
+    		return super.selectParentChild(al, mode, contextId);
+    	NodeSet result = new ExtArrayNodeSet();
+		Iterator ia = al.iterator();
+		NodeProxy na = (NodeProxy) ia.next();
+		if (na == null || partCount == 0)
+			return NodeSet.EMPTY_SET;
+		int currentPart = 0;
+		while (currentPart < partCount) {
+			// first, try to find nodes belonging to the same doc
+			if (na.getDocument().getDocId() < documentIds[currentPart]) {
+				if (ia.hasNext())
+					na = (NodeProxy) ia.next();
+				else
+					break;
+			} else if (na.getDocument().getDocId() > documentIds[currentPart]) {
+				++currentPart;
+			} else {
+				parts[currentPart].selectParentChild(result, na, ia, mode, contextId);
+				++currentPart;
+			}
+		}
+		return result;
+    }
+    
     private boolean isSorted() {
         return isSorted;
     }
@@ -421,11 +448,6 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         for (int i = 0; i < partCount; i++) {
             parts[i].setSelfAsContext(contextId);
         }
-    }
-
-    public NodeSet selectParentChild(NodeSet al, int mode, int contextId) {
-        sort();
-        return super.selectParentChild(al, mode, contextId);
     }
     
     
@@ -546,7 +568,65 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
             array = new NodeProxy[initialSize];
         }
 
-        void add(NodeProxy p) {
+        public void selectParentChild(NodeSet result, NodeProxy na, Iterator ia, int mode, int contextId) {
+        	if (length == 0)
+        		return;
+        	int pos = 0;
+        	int startPos = 0;
+        	NodeProxy nb = array[pos];
+        	while (true) {
+        		// first, try to find nodes belonging to the same doc
+    			if (na.getDocument().getDocId() != nb.getDocument().getDocId())
+    				break;
+    			
+    			// same document
+    			NodeId pa = na.getNodeId();
+    			NodeId pb = nb.getNodeId();
+    			
+    			if (pb.isDescendantOf(pa)) {
+    				if (pb.isChildOf(pa)) {
+    					if(mode == NodeSet.DESCENDANT) {
+    						if (Expression.NO_CONTEXT_ID != contextId)
+    							nb.addContextNode(contextId, na);
+    						else
+    							nb.copyContext(na);
+    						result.add(nb);
+    					} else {
+    						if (Expression.NO_CONTEXT_ID != contextId)
+    							na.addContextNode(contextId, nb);
+    						else
+    							na.copyContext(nb);
+    						result.add(na);
+    					}
+    				}
+    				if (++pos < length)
+    					nb = array[pos];
+    				else
+    					break;
+    			} else {
+    				int cmp = pa.compareTo(pb);
+    				if (cmp < 0) {
+    					if (ia.hasNext()) {
+    						NodeProxy next = (NodeProxy) ia.next();
+    						if (next.getNodeId().isDescendantOf(pa)) {
+    							pos = startPos;
+    							nb = array[pos];
+    						}
+    						na = next;
+    						startPos = pos;
+    					} else
+    						break;
+    				} else {
+    					if (++pos < length)
+    						nb = array[pos];
+    					else
+    						break;
+    				}
+    			}
+        	}
+        }
+
+		void add(NodeProxy p) {
             // just check if this node has already been added. We only
             // check the last entry, which should avoid most of the likely
             // duplicates. The remaining duplicates are removed by
