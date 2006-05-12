@@ -52,7 +52,6 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -187,7 +186,6 @@ public class Eval extends BasicFunction {
             querySource = new StringSource(expr.getStringValue());
         }
 		
-        LOG.debug("Source: " + querySource.getClass().getName());
 		NodeValue contextInit = null;
 		if (isCalledAs("eval-with-context")) {
 			// set the context initialization param for later use
