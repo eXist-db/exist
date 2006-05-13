@@ -3,7 +3,7 @@
 :)
 module namespace status="http://exist-db.org/xquery/admin-interface/status";
 
-declare namespace exist="http://exist-db.org/xquery/exist";
+declare namespace system="http://exist-db.org/xquery/system";
 declare namespace util="http://exist-db.org/xquery/util";
 
 declare function status:status-line($key as xs:string, $value as xs:string) as element() {
@@ -19,8 +19,8 @@ declare function status:main() as element() {
         <table id="status" cellpadding="7">
             <tr><th colspan="2">General</th></tr>
             {
-                status:status-line("eXist Version", exist:get-version()),
-                status:status-line("eXist Build", exist:get-build()),
+                status:status-line("eXist Version", system:get-version()),
+                status:status-line("eXist Build", system:get-build()),
                 status:status-line("Java Vendor", util:system-property("java.vendor")),
                 status:status-line("Java Version", util:system-property("java.version")),
                 status:status-line("Operating System", 
@@ -30,9 +30,9 @@ declare function status:main() as element() {
             }
             <tr><th colspan="2">Memory Usage</th></tr>
             {
-                    let $max := exist:get-memory-max() idiv 1024,
-                    $current := exist:get-memory-total() idiv 1024,
-                    $free := exist:get-memory-free() idiv 1024
+                    let $max := system:get-memory-max() idiv 1024,
+                    $current := system:get-memory-total() idiv 1024,
+                    $free := system:get-memory-free() idiv 1024
                 return (
                     status:status-line("Max. Memory", concat($max, "K")),
                     status:status-line("Current Total", concat($current, "K")),
