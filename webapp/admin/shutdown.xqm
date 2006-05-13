@@ -3,7 +3,7 @@
 :)
 module namespace shutdown="http://exist-db.org/xquery/admin-interface/shutdown";
 
-declare namespace eXist="http://exist-db.org/xquery/eXist";
+declare namespace exist="http://exist-db.org/xquery/exist";
 declare namespace xdb="http://exist-db.org/xquery/xmldb";
 declare namespace request="http://exist-db.org/xquery/request";
 declare namespace session="http://exist-db.org/xquery/session";
@@ -22,7 +22,7 @@ declare function shutdown:main($user as xs:string, $password as xs:string) as el
                     if($shutdown) then
                     	<div class="actions">
 					        Database shutdown starts in {request:get-parameter("delay", "2")} sec.
-				            {eXist:shutdown($user, $password, request:get-parameter("delay", "2") cast as xs:long)}
+				            {exist:shutdown($user, $password, request:get-parameter("delay", "2") cast as xs:long)}
 				        </div>
                     else
                         <form action="{session:encode-url(request:get-uri())}" method="POST">
