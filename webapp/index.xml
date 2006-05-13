@@ -188,7 +188,8 @@
             </p>
 
             <p>The project also has an <b>IRC channel</b>
-                <link href="irc://irc.freenode.net/existdb">#existdb</link> at irc.freenode.net. The
+                <link href="http://irc.exist-db.org">#existdb</link> at 
+                <link href="irc://irc.freenode.net/existdb">irc.freenode.net</link>. The
                 channel is open for general discussions on eXist and related subjects. </p>
 
         </section>
