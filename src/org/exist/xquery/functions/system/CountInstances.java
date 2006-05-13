@@ -20,7 +20,7 @@
  *  
  *  $Id:
  */
-package org.exist.xquery.functions.exist;
+package org.exist.xquery.functions.system;
 
 import org.exist.dom.QName;
 import org.exist.storage.BrokerPool;

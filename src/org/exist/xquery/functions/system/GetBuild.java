@@ -20,7 +20,7 @@
  *  
  *  $Id:
  */
-package org.exist.xquery.functions.exist;
+package org.exist.xquery.functions.system;
 
 import java.io.IOException;
 import java.util.Properties;
