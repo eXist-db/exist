@@ -59,6 +59,6 @@ public class SystemModule extends AbstractInternalModule {
 	}
 
 	public String getDescription() {
-		return "Internal functions used by the XQuery optimizer.";
+		return "Functions to retrieve information about eXist and the system.";
 	}
 }
