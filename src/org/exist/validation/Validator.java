@@ -58,9 +58,6 @@ public class Validator {
     private static SAXParserFactory saxFactory = null;
     private static BrokerPool brokerPool ;
     
-    // Required Xerces version.
-    public final static String XERCESVERSION = "Xerces-J 2.8.0";
-    
     // Xerces feature and property names
     final static String FEATURE_VALIDATION
             ="http://xml.org/sax/features/validation";
@@ -90,9 +87,10 @@ public class Validator {
         try{
             String version = org.apache.xerces.impl.Version.getVersion();
             
-            if(!XERCESVERSION.equals(version)){
+            if( !XmlLibraryChecker.isXercesVersionOK() ){
                 logger.error("Xerces version mismatch! eXist requires '"
-                        + XERCESVERSION+"' but found '"+version+"'. "
+                        + XmlLibraryChecker.XERCESVERSION+"' but found '"
+                        + XmlLibraryChecker.getXercesVersion()+"'. "
                         + "Please add correct Xerces libraries to the "
                         + "endorsed folder of your JRE or webcontainer.");
             }
