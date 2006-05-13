@@ -32,7 +32,18 @@ public class SystemModule extends AbstractInternalModule {
 	public static final String PREFIX = "system";
 	
 	public static final FunctionDef[] functions = {
-        new FunctionDef(FtIndexLookup.signature, FtIndexLookup.class)
+            new FunctionDef(FtIndexLookup.signature, FtIndexLookup.class),
+            
+            new FunctionDef(CountInstances.countInstancesMax, CountInstances.class),
+            new FunctionDef(CountInstances.countInstancesActive, CountInstances.class),
+            new FunctionDef(CountInstances.countInstancesAvailable, CountInstances.class),
+            new FunctionDef(GetMemory.getMemoryMax, GetMemory.class),
+            new FunctionDef(GetMemory.getMemoryTotal, GetMemory.class),
+            new FunctionDef(GetMemory.getMemoryFree, GetMemory.class),
+            new FunctionDef(GetVersion.signature, GetVersion.class),
+            new FunctionDef(GetBuild.signature, GetBuild.class),
+            new FunctionDef(Shutdown.signatures[0], Shutdown.class),
+            new FunctionDef(Shutdown.signatures[1], Shutdown.class)
 	};
 	
 	public SystemModule() {
