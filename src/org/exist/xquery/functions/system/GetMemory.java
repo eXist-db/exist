@@ -42,7 +42,7 @@ public class GetMemory extends BasicFunction
 {
 	public final static FunctionSignature getMemoryMax =
 		new FunctionSignature(
-			new QName("get-memory-max", ExistModule.NAMESPACE_URI, ExistModule.PREFIX),
+			new QName("get-memory-max", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
 			"Returns the maximum amount of memory eXist may use.",
 			FunctionSignature.NO_ARGS,
 			new SequenceType(Type.LONG, Cardinality.EXACTLY_ONE)
@@ -50,7 +50,7 @@ public class GetMemory extends BasicFunction
 	
 	public final static FunctionSignature getMemoryTotal =
 		new FunctionSignature(
-			new QName("get-memory-total", ExistModule.NAMESPACE_URI, ExistModule.PREFIX),
+			new QName("get-memory-total", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
 			"Returns the total amount of memory in use by eXist.",
 			FunctionSignature.NO_ARGS,
 			new SequenceType(Type.LONG, Cardinality.EXACTLY_ONE)
@@ -58,7 +58,7 @@ public class GetMemory extends BasicFunction
 	
 	public final static FunctionSignature getMemoryFree =
 		new FunctionSignature(
-				new QName("get-memory-free", ExistModule.NAMESPACE_URI, ExistModule.PREFIX),
+				new QName("get-memory-free", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
 				"Returns the amount of free memory available to eXist.",
 				FunctionSignature.NO_ARGS,
 				new SequenceType(Type.LONG, Cardinality.EXACTLY_ONE)

@@ -35,7 +35,7 @@ import org.exist.xquery.value.Type;
 import org.exist.xquery.XPathException;
 
 /**
- * Return details abount eXist instances
+ * Return details about eXist instances
  * 
  * @author Adam Retter (adam.retter@devon.gov.uk)
  */
@@ -43,7 +43,7 @@ public class CountInstances extends BasicFunction
 {
 	public final static FunctionSignature countInstancesMax =
 		new FunctionSignature(
-			new QName("count-instances-max", ExistModule.NAMESPACE_URI, ExistModule.PREFIX),
+			new QName("count-instances-max", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
 			"Returns the maximum number of eXist instances.",
 			FunctionSignature.NO_ARGS,
 			new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE)
@@ -51,7 +51,7 @@ public class CountInstances extends BasicFunction
 	
 	public final static FunctionSignature countInstancesActive =
 		new FunctionSignature(
-			new QName("count-instances-active", ExistModule.NAMESPACE_URI, ExistModule.PREFIX),
+			new QName("count-instances-active", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
 			"Returns the number of eXist instances that are active.",
 			FunctionSignature.NO_ARGS,
 			new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE)
@@ -59,7 +59,7 @@ public class CountInstances extends BasicFunction
 	
 	public final static FunctionSignature countInstancesAvailable =
 		new FunctionSignature(
-				new QName("count-instances-available", ExistModule.NAMESPACE_URI, ExistModule.PREFIX),
+				new QName("count-instances-available", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
 				"Returns the number of eXist instances that are available.",
 				FunctionSignature.NO_ARGS,
 				new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE)
