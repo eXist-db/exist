@@ -46,7 +46,7 @@ public class GetVersion extends BasicFunction
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("get-version", eXistModule.NAMESPACE_URI, eXistModule.PREFIX),
+			new QName("get-version", ExistModule.NAMESPACE_URI, ExistModule.PREFIX),
 			"Returns the version of eXist running this query.",
 			FunctionSignature.NO_ARGS,
 			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE));
