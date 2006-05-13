@@ -129,8 +129,8 @@
 
     <xquery enable-java-binding="no">
         <builtin-modules>
-            <module uri="http://exist-db.org/xquery/eXist"
-                class="org.exist.xquery.functions.eXist.eXistModule"/>
+            <module uri="http://exist-db.org/xquery/exist"
+                class="org.exist.xquery.functions.exist.eXistModule"/>
             <module uri="http://exist-db.org/xquery/util"
                 class="org.exist.xquery.functions.util.UtilModule"/>
             <module uri="http://exist-db.org/xquery/transform"

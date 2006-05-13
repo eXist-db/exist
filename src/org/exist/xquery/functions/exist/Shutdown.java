@@ -49,7 +49,7 @@ public class Shutdown extends BasicFunction
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
-			new QName("shutdown", eXistModule.NAMESPACE_URI, eXistModule.PREFIX),
+			new QName("shutdown", ExistModule.NAMESPACE_URI, ExistModule.PREFIX),
 			"Shutdown eXist. $a is the username and $b is the password.",
 			new SequenceType[] {
 					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
@@ -59,7 +59,7 @@ public class Shutdown extends BasicFunction
 		),
 		
 		new FunctionSignature(
-			new QName("shutdown", eXistModule.NAMESPACE_URI, eXistModule.PREFIX),
+			new QName("shutdown", ExistModule.NAMESPACE_URI, ExistModule.PREFIX),
 			"Shutdown eXist. $a is the username, $b is the password and $c is the delay in milliseconds.",
 			new SequenceType[] {
 					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
