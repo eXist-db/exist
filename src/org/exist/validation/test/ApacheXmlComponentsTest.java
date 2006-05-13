@@ -27,6 +27,7 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.exist.validation.Validator;
+import org.exist.validation.XmlLibraryChecker;
 
 /**
  *  Class for testing xerces and xalan configuration.
@@ -34,9 +35,7 @@ import org.exist.validation.Validator;
  * @author dizzzz
  */
 public class ApacheXmlComponentsTest extends TestCase {  
-    
-    public static String XALANVERSION = "Xalan Java 2.7.0";
-    
+        
     public ApacheXmlComponentsTest(String testName) {
         super(testName);
     }
@@ -61,12 +60,12 @@ public class ApacheXmlComponentsTest extends TestCase {
          String version = org.apache.xerces.impl.Version.getVersion();
          
          System.out.println("Xerces");
-         System.out.println("Required version '"+Validator.XERCESVERSION+"'");
+         System.out.println("Required version '"+XmlLibraryChecker.XERCESVERSION+"'");
          System.out.println("Found version '"+version+"'");
          
-         assertEquals("Incorrect Xerces version! "+
+         assertTrue("Incorrect Xerces version! "+
                              "Please put correct jar in endorsed folder",
-                             Validator.XERCESVERSION,  version);
+                             XmlLibraryChecker.isXercesVersionOK() );
          
      }
      
@@ -75,11 +74,11 @@ public class ApacheXmlComponentsTest extends TestCase {
          String version = org.apache.xalan.Version.getVersion();
          
          System.out.println("Xalan");
-         System.out.println("Required version '"+XALANVERSION+"'");
+         System.out.println("Required version '"+ XmlLibraryChecker.XALANVERSION+"'");
          System.out.println("Found version '"+version+"'");
          
-         assertEquals("Incorrect Xalan version! "+
+         assertTrue("Incorrect Xalan version! "+
                              "Please put correct jar in endorsed folder", 
-                             XALANVERSION, version);
+                             XmlLibraryChecker.isXalanVersionOK() );
      }
 }
