@@ -88,7 +88,7 @@ public class Shutdown extends BasicFunction
 		{
 			if(!args[2].isEmpty())
 			{
-				delay = ((NumericValue)args[1].itemAt(0)).getLong();
+				delay = ((NumericValue)args[2].itemAt(0)).getLong();
 			}
 		}
 		
