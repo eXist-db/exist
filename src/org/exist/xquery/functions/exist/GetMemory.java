@@ -18,9 +18,9 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id:
+ *  $Id$
  */
-package org.exist.xquery.functions.eXist;
+package org.exist.xquery.functions.exist;
 
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
