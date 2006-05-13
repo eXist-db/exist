@@ -20,7 +20,7 @@
  *  
  *  $Id:
  */
-package org.exist.xquery.functions.eXist;
+package org.exist.xquery.functions.exist;
 
 
 import org.exist.dom.QName;

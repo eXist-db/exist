@@ -20,7 +20,7 @@
  *  
  *  $Id: ExistVersion.java 2436 2006-01-07 21:47:15 +0000 (Sat, 07 Jan 2006) brihaye $
  */
-package org.exist.xquery.functions.eXist;
+package org.exist.xquery.functions.exist;
 
 import java.io.IOException;
 import java.util.Properties;

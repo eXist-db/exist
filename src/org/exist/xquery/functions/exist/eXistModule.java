@@ -18,16 +18,16 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id:
+ *  $Id$
  */
-package org.exist.xquery.functions.eXist;
+package org.exist.xquery.functions.exist;
 
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 import org.exist.xquery.XPathException;
 
 /**
- * Module to provide information and fundtion directly related to a running eXist server
+ * Module to provide information and function directly related to a running eXist server
  * 
  * @author Adam Retter (adam.retter@devon.gov.uk)
  * 
@@ -37,8 +37,8 @@ import org.exist.xquery.XPathException;
 
 public class eXistModule extends AbstractInternalModule
 {
-	public final static String NAMESPACE_URI = "http://exist-db.org/xquery/eXist";
-	public final static String PREFIX = "eXist";
+	public final static String NAMESPACE_URI = "http://exist-db.org/xquery/exist";
+	public final static String PREFIX = "exist";
 	
 	public final static FunctionDef[] functions = {
 		
