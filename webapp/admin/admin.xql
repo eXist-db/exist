@@ -133,45 +133,40 @@ declare function admin:login() as xs:string* {
 };
 
 
-
-if(request:get-parameter("logout", ()))then
-(
-    session:invalidate()
-)
-else
-(
-    session:create(),
-    let $credentials := admin:login(),
-    $user := if(exists($credentials)) then $credentials[1] else "not logged in" return
-        <html>
-            <head>
-                <title>eXist Database Administration</title>
-                <link type="text/css" href="admin.css" rel="stylesheet"/>
-            </head>
-            <body>
-                <div class="header">
-                    {admin:info-header($user)}
-                    <img src="logo.jpg"/>
-                </div>
-                
-                <div class="content">
-                    <div class="guide">
-                        <div class="guide-title">Select a Page</div>
-                        <ul>
-                            <li><a href="..">Home</a></li>
-                            <li><a href="{session:encode-url(request:get-uri())}?panel=status">System Status</a></li>
-                            <li><a href="{session:encode-url(request:get-uri())}?panel=browse">Browse Collections</a></li>
-                            <li><a href="{session:encode-url(request:get-uri())}?panel=users">Manage Users</a></li>
-                            <li><a href="{session:encode-url(request:get-uri())}?panel=setup">Examples Setup</a></li>
-                            <li><a href="{session:encode-url(request:get-uri())}?panel=shutdown">Shutdown</a></li>
-                            <li><a href="{session:encode-url(request:get-uri())}?logout=yes">Logout</a></li>
-                        </ul>
-                        <div class="userinfo">
-                            Logged in as: {$user}
-                        </div>
+session:create(),
+let $logout := request:get-parameter("logout", ()),
+    $s := if($logout) then session:invalidate() else session:create(),
+    $credentials := admin:login(),
+    $user := if(exists($credentials)) then $credentials[1] else "not logged in"
+return
+    <html>
+        <head>
+            <title>eXist Database Administration</title>
+            <link type="text/css" href="admin.css" rel="stylesheet"/>
+        </head>
+        <body>
+            <div class="header">
+                {admin:info-header($user)}
+                <img src="logo.jpg"/>
+            </div>
+            
+            <div class="content">
+                <div class="guide">
+                    <div class="guide-title">Select a Page</div>
+                    <ul>
+                        <li><a href="..">Home</a></li>
+                        <li><a href="{session:encode-url(request:get-uri())}?panel=status">System Status</a></li>
+                        <li><a href="{session:encode-url(request:get-uri())}?panel=browse">Browse Collections</a></li>
+                        <li><a href="{session:encode-url(request:get-uri())}?panel=users">Manage Users</a></li>
+                        <li><a href="{session:encode-url(request:get-uri())}?panel=setup">Examples and Documentation Setup</a></li>
+                        <li><a href="{session:encode-url(request:get-uri())}?panel=shutdown">Shutdown</a></li>
+                        <li><a href="{session:encode-url(request:get-uri())}?logout=yes">Logout</a></li>
+                    </ul>
+                    <div class="userinfo">
+                        Logged in as: {$user}
                     </div>
-                    {admin:main($credentials)}
                 </div>
-            </body>
-        </html>
-)
+                {admin:main($credentials)}
+            </div>
+        </body>
+    </html>
