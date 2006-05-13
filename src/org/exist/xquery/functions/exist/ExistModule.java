@@ -35,7 +35,7 @@ import org.exist.xquery.XPathException;
  * TODO: add count-sessions()
  */
 
-public class eXistModule extends AbstractInternalModule
+public class ExistModule extends AbstractInternalModule
 {
 	public final static String NAMESPACE_URI = "http://exist-db.org/xquery/exist";
 	public final static String PREFIX = "exist";
@@ -55,7 +55,7 @@ public class eXistModule extends AbstractInternalModule
 		
 	};
     
-	public eXistModule() throws XPathException
+	public ExistModule() throws XPathException
 	{
 		super(functions);
 	}
