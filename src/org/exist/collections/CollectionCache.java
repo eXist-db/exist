@@ -33,7 +33,7 @@ public class CollectionCache extends LRDCache {
 
 	public void add(Collection collection, int initialRefCount) {
 		super.add(collection, initialRefCount);
-		names.put(collection.getURI(), collection.getKey());
+		names.put(collection.getURI().toString(), collection.getKey());
 	}
 
 	public Collection get(Collection collection) {
@@ -41,7 +41,7 @@ public class CollectionCache extends LRDCache {
 	}
 
 	public Collection get(XmldbURI name) {
-		long key = names.get(name);
+		long key = names.get(name.toString());
 		if (key < 0)
 			return null;
 		return (Collection) get(key);
@@ -82,7 +82,7 @@ public class CollectionCache extends LRDCache {
 		if (old != null) {
 			pool.getConfigurationManager().invalidate(old.getURI());
 			map.remove(old.getKey());
-			names.remove(old.getURI());
+			names.remove(old.getURI().toString());
 			old.sync(true);
 		}
 		items[bucket] = item;
@@ -98,7 +98,7 @@ public class CollectionCache extends LRDCache {
     public void remove(Cacheable item) {
     	final Collection col = (Collection) item;
         super.remove(item);
-        names.remove(col.getURI());
+        names.remove(col.getURI().toString());
         if(pool.getConfigurationManager() != null) // might be null during db initialization
            pool.getConfigurationManager().invalidate(col.getURI());
     }
@@ -115,7 +115,7 @@ public class CollectionCache extends LRDCache {
             for (int i = 0; i < count; i++) {
                 newItems[i] = items[i];
                 newMap.put(items[i].getKey(), items[i]);
-                newNames.put(((Collection) items[i]).getURI(), items[i].getKey());
+                newNames.put(((Collection) items[i]).getURI().toString(), items[i].getKey());
             }
             this.size = newSize;
             this.map = newMap;
