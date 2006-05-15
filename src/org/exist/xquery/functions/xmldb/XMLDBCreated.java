@@ -70,9 +70,10 @@ public class XMLDBCreated extends XMLDBAbstractCollectionManipulator {
 	public final static FunctionSignature lastModifiedSignature =
         new FunctionSignature(
 			new QName("last-modified", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			"Returns the last-modification date of a resource in the collection specified by $a. " +
-			"The collection can be passed as a simple collection " +
-			"path, an XMLDB URI or a collection object (obtained from the collection function).",
+			"Returns the last-modification date of a resource, whose name is " +
+			"specified by $b, in the collection specified by $a. The collection " +
+			"can be passed as a simple collection path, an XMLDB URI or a" +
+			"collection object (obtained from the collection function).",
 			new SequenceType[] {
                 new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
                 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
