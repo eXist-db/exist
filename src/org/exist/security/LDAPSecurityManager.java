@@ -280,6 +280,10 @@ public class LDAPSecurityManager implements SecurityManager
          SearchResult result = (SearchResult)groups.next();
          mainGroup = getAttributeValue(groupNameAttr, result.getAttributes());
       }
+      
+      if (mainGroup==null || mainGroup.length()==0) {
+         throw new IllegalStateException("Main group "+gid+" for user "+username+" is not able to be found in LDAP for group property "+gidNumberAttr);
+      }
 
       int uid = Integer.parseInt(getAttributeValue(uidNumberAttr, attrs));
       LOG.info("Constructing user "+username+"/"+uid+" in group "+(mainGroup==null ? "<none>" : mainGroup));
@@ -309,6 +313,9 @@ public class LDAPSecurityManager implements SecurityManager
       while (groups.hasMore()) {
          SearchResult result = (SearchResult)groups.next();
          String name = getAttributeValue(groupNameAttr, result.getAttributes());
+         if (name==null || name.length()==0) {
+            throw new IllegalStateException("Group associated with "+username+" does not have a valid name for attribute "+groupNameAttr);
+         }
          if (!name.equals(mainGroup)) {
             LOG.info("   ...adding: "+name);
             user.addGroup(name);
