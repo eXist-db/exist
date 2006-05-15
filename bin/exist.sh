@@ -29,7 +29,9 @@ TMP_DIR=/var/tmp
 PID_FILE=$EXIST_HOME/jsvc.pid
 
 JAVA_ENDORSED_DIR=$EXIST_HOME/lib/endorsed
-JAVA_OPTIONS="-Djava.library.path=$EXIST_HOME/jni/native/.libs -Xmx512m -Dfile.encoding=UTF-8"
+#LDAP_OPTIONS="-Dsecurity.ldap.connection.url=ldap://your-server.com:389 -Dsecurity.ldap.dn.user=ou=Users,dc=yourdomain,dc=org,dc=authority -Dsecurity.ldap.dn.group=ou=Groups,dc=yourdomain,dc=org,dc=authority"
+JAVA_OPTIONS="-Dexist.home=$EXIST_HOME -Djava.library.path=$EXIST_HOME/jni/native/.libs -Xmx512m -Dfile.encoding=UTF-8 $LDAP_OPTIONS"
+
 CLASSPATH=\
 $EXIST_HOME/bin/commons-daemon.jar:\
 $EXIST_HOME/start.jar
