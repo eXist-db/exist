@@ -144,19 +144,21 @@ public class XmldbURI implements Comparable {
 	 * @throws URISyntaxException If the given string is not a valid xmldb URI.
 	 */
 	protected XmldbURI(URI xmldbURI) throws URISyntaxException {
+		boolean hadXmldbPrefix=false;
 		if(xmldbURI.getScheme()!=null) {
 			if (!XMLDB_SCHEME.equals(xmldbURI.getScheme())) {
 				throw new URISyntaxException(xmldbURI.toString(), "xmldb URI scheme does not start with " + XMLDB_URI_PREFIX);
 			}
 			xmldbURI = new URI(xmldbURI.toString().substring(XMLDB_URI_PREFIX.length()));
+			hadXmldbPrefix=true;
 		}
-		parseURI(xmldbURI);
+		parseURI(xmldbURI,hadXmldbPrefix);
 	}
 	
     /** Feeds private members.  Receives a URI with the xmldb: scheme already stripped
      * @throws URISyntaxException
      */
-	protected void parseURI(URI xmldbURI) throws URISyntaxException {	
+	protected void parseURI(URI xmldbURI, boolean hadXmldbPrefix) throws URISyntaxException {	
 		splitPath(xmldbURI.getRawPath());
 	}
 	

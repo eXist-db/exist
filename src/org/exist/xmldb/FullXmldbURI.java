@@ -7,7 +7,6 @@ public class FullXmldbURI extends XmldbURI {
 
 	//this will never have xmldb:
 	private URI wrappedURI;	
-	private String instanceName;  
 	private String context;      
 	private String apiName;
 	
@@ -23,34 +22,32 @@ public class FullXmldbURI extends XmldbURI {
     /** Feeds private members
      * @throws URISyntaxException
      */
-	protected void parseURI(URI xmldbURI) throws URISyntaxException {
+	protected void parseURI(URI xmldbURI, boolean hadXmldbPrefix) throws URISyntaxException {
 		wrappedURI = xmldbURI;
-		//Reinitialise members
-		this.instanceName = null;
-		//Is an encoded scheme ever possible ?
-		instanceName = wrappedURI.getScheme();
-		if (instanceName == null)   
-			//Put the "right" URI in the message ;-)
-			throw new URISyntaxException(XMLDB_URI_PREFIX+wrappedURI.toString(), "xmldb URI scheme has no instance name");			
-		String userInfo = wrappedURI.getUserInfo();
-		//Very tricky :
-		if (wrappedURI.getHost() == null && wrappedURI.getAuthority() != null) {
-			userInfo = wrappedURI.getAuthority();
-			if (userInfo.endsWith("@"))
-				userInfo = userInfo.substring(0, userInfo.length() - 1);
+		if(hadXmldbPrefix) {
+			if (wrappedURI.getScheme() == null)   
+				//Put the "right" URI in the message ;-)
+				throw new URISyntaxException(XMLDB_URI_PREFIX+wrappedURI.toString(), "xmldb URI scheme has no instance name");			
+			String userInfo = wrappedURI.getUserInfo();
+			//Very tricky :
+			if (wrappedURI.getHost() == null && wrappedURI.getAuthority() != null) {
+				userInfo = wrappedURI.getAuthority();
+				if (userInfo.endsWith("@"))
+					userInfo = userInfo.substring(0, userInfo.length() - 1);
+			}
+			//Eventually rewrite wrappedURI *without* user info
+			if (userInfo != null) {
+				StringBuffer recomputed = new StringBuffer();//XMLDB_URI_PREFIX);                
+				recomputed.append(wrappedURI.getScheme());
+				recomputed.append("://");
+				recomputed.append(wrappedURI.getHost());
+				if (wrappedURI.getPort() != -1)
+					recomputed.append(":").append(wrappedURI.getPort());                
+				recomputed.append(wrappedURI.getRawPath());
+				wrappedURI = new URI(recomputed.toString());                
+			}
 		}
-		//Eventually rewrite wrappedURI *without* user info
-		if (userInfo != null) {
-			StringBuffer recomputed = new StringBuffer();//XMLDB_URI_PREFIX);                
-			recomputed.append(wrappedURI.getScheme());
-			recomputed.append("://");
-			recomputed.append(wrappedURI.getHost());
-			if (wrappedURI.getPort() != -1)
-				recomputed.append(":").append(wrappedURI.getPort());                
-			recomputed.append(wrappedURI.getRawPath());
-			wrappedURI = new URI(recomputed.toString());                
-		} 
-		super.parseURI(xmldbURI);
+		super.parseURI(xmldbURI,hadXmldbPrefix);
 	}
 	
 	protected void splitPath(String path) throws URISyntaxException {
@@ -106,8 +103,8 @@ public class FullXmldbURI extends XmldbURI {
 	protected void recomputeURI() throws URISyntaxException {
 		URI oldWrappedURI = wrappedURI;
 		StringBuffer buf = new StringBuffer();
-		if (instanceName != null)	
-			buf.append(instanceName).append("://");
+		if (getInstanceName() != null)	
+			buf.append(getInstanceName()).append("://");
         //No userInfo
 		if (getHost() != null)	
 			buf.append(getHost());				
@@ -125,22 +122,7 @@ public class FullXmldbURI extends XmldbURI {
         	throw e; 
     	}			
 	}
-	
-
-	/*
-	 * It is an error for any of the following private members to throw an exception.
-	 */
-	private void setInstanceName(String instanceName) {		 
-		String oldInstanceName = this.instanceName;
-		try {
-			this.instanceName = instanceName;
-			recomputeURI();
-		} catch (URISyntaxException e) {
-			this.instanceName = oldInstanceName;
-			throw new IllegalArgumentException("Invalid URI: "+e.getMessage());
-		}			
-	}
-	
+		
 	private void setContext(String context) {
 		String oldContext = this.context;
 		try {
@@ -167,7 +149,7 @@ public class FullXmldbURI extends XmldbURI {
 	}
 	
 	public String getInstanceName() {		
-		return instanceName; 
+		return wrappedURI.getScheme(); 
 	}
     
 
