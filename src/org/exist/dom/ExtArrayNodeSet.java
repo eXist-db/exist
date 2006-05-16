@@ -483,11 +483,6 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         sort();
         return super.selectAncestors(al, includeSelf, contextId);
     }
-    
-    public NodeProxy parentWithChild(DocumentImpl doc, long gid, boolean directParent, boolean includeSelf, 
-            int level) {
-        return null;
-    }
 
     public NodeProxy parentWithChild(DocumentImpl doc, NodeId nodeId, boolean directParent, boolean includeSelf) {
         sort();
