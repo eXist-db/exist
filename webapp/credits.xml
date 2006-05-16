@@ -82,6 +82,9 @@
                     <para>Mark R. Diggory (tomcat realm)</para>
                 </listitem>
                 <listitem>
+                    <para>Mark Harrah (XACML)</para>
+                </listitem>
+                <listitem>
                     <para>Piotr Kaminski (patches)</para>
                 </listitem>
                 <listitem>
@@ -97,7 +100,13 @@
                     <para>Wolfgang Meier (main developer)</para>
                 </listitem>
                 <listitem>
+                    <para>Alex Milowski (patches; LDAP security manager)</para>
+                </listitem>
+                <listitem>
                     <para>Per Nyfelt (JBoss integration)</para>
+                </listitem>
+                <listitem>
+                    <para>Leif-Jöran Olsson (patches)</para>
                 </listitem>
                 <listitem>
                     <para>Giulio Valentino (developer)</para>
