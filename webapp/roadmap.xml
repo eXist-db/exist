@@ -514,7 +514,7 @@
             <priority>High</priority>
             <test_coverage>Partially tested</test_coverage>
             <progress>100</progress>
-            <who/>
+            <who></who>
             <remark>
                 <p>Update to latest Candidate Recommendation. Stable, excluding
                     schema-related features.</p>
