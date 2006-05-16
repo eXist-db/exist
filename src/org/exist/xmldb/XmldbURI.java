@@ -81,26 +81,17 @@ public class XmldbURI implements Comparable {
 
 
 	public static XmldbURI xmldbUriFor(URI uri) throws URISyntaxException {
-		if(isCollectionPathOnly(uri)) {
-			return new XmldbURI(uri);
-		}
-		return new FullXmldbURI(uri);
+		return getXmldbURI(uri);
 	}
 	
 	public static XmldbURI xmldbUriFor(String xmldbURI) throws URISyntaxException {
 		URI uri = new URI(AnyURIValue.escape(xmldbURI));
-		if(isCollectionPathOnly(uri)) {
-			return new XmldbURI(uri);
-		}
-		return new FullXmldbURI(uri);
+		return getXmldbURI(uri);
 	}
 	
 	public static XmldbURI xmldbUriFor(String accessURI, String collectionPath) throws URISyntaxException {
 		URI uri = new URI(accessURI + URIUtils.iriToURI(collectionPath));
-		if(isCollectionPathOnly(uri)) {
-			return new XmldbURI(uri);
-		}
-		return new FullXmldbURI(uri);
+		return getXmldbURI(uri);
 	}
 	
 	public static XmldbURI create(URI uri){
@@ -127,13 +118,11 @@ public class XmldbURI implements Comparable {
 		}
 	}
 	
-	private static boolean isCollectionPathOnly(URI uri) {
-		if(XMLDB_SCHEME.equals(uri.getScheme())) {
-			return false;
+	private static XmldbURI getXmldbURI(URI uri) throws URISyntaxException{
+		if(uri.getScheme()!=null || uri.getFragment()!=null || uri.getQuery()!=null) {
+			return new FullXmldbURI(uri);
 		}
-		String path = uri.getPath();
-		if (path == null)
-			return false;
+		return new XmldbURI(uri);
 		/*
 		//TODO : get rid of this and use a more robust approach (dedicated constructor ?) -pb
 		//TODO : use named constants  
@@ -147,7 +136,6 @@ public class XmldbURI implements Comparable {
 			return false;
 		}  
 		*/
-		return true;						
 	}
 	/**
 	 * Contructs an XmldbURI from given URI.
