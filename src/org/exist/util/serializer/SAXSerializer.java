@@ -311,6 +311,9 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
 				) {
 				nsEntry = (Map.Entry) i.next();
 				prefix = (String) nsEntry.getKey();
+                                if (prefix.equals("xmlns")) {
+                                   continue;
+                                }
 				uri = (String) nsEntry.getValue(); 
 				if(!optionalNamespaceDecls.containsKey(prefix)) {
 					receiver.namespace(prefix, uri);
