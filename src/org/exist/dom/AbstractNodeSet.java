@@ -255,7 +255,6 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * @return
 	 */
 	public NodeSet selectParentChild(NodeSet al, int mode, int contextId) {
-		LOG.debug("Node select");
 		return NodeSetHelper.selectParentChild(this, al, mode, contextId);
 	}
 
@@ -280,80 +279,6 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 */
 	public NodeSet selectAncestorDescendant(NodeSet al,	int mode, boolean includeSelf, int contextId) {
 		return NodeSetHelper.selectAncestorDescendant(this, al, mode, includeSelf, contextId);
-	}
-	
-	public NodeSet quickSelectParentChild(NodeSet al, int mode, int contextId) {
-		System.out.println(al.toString());
-		System.out.println(toString());
-	    final NodeSet result = new ExtArrayNodeSet();
-		final Iterator ia = al.iterator();
-		final Iterator ib = iterator();
-//		final long start = System.currentTimeMillis();
-		NodeProxy na = (NodeProxy) ia.next(), nb = (NodeProxy) ib.next();
-		
-		// check if one of the node sets is empty
-		if(na == null || nb == null)
-		    return result;
-		NodeId pa, pb;
-		int cmp;
-		while (true) {
-			// first, try to find nodes belonging to the same doc
-			if (na.getDocument().getDocId() < nb.getDocument().getDocId()) {
-				if (ia.hasNext())
-					na = (NodeProxy) ia.next();
-				else
-					break;
-			} else if (na.getDocument().getDocId() > nb.getDocument().getDocId()) {
-				if (ib.hasNext())
-					nb = (NodeProxy) ib.next();
-				else
-					break;
-			} else {
-			    // same document
-			    pa = na.getNodeId();
-			    pb = nb.getNodeId();
-			    System.out.println(pa + " -> " + pb);
-
-				if (pb.isDescendantOf(pa)) {
-					if (pb.isChildOf(pa)) {
-						if(mode == NodeSet.DESCENDANT) {
-					        if (Expression.NO_CONTEXT_ID != contextId)
-					            nb.addContextNode(contextId, na);
-					        else
-					            nb.copyContext(na);
-					        result.add(nb);
-					    } else {
-					        if (Expression.NO_CONTEXT_ID != contextId)
-					            na.addContextNode(contextId, nb);
-					        else
-					            na.copyContext(nb);
-					        result.add(na);
-					    }
-					}
-				    if (ib.hasNext())
-						nb = (NodeProxy) ib.next();
-					else
-						break;
-				    System.out.println("Found: " + pb + "; next: " + nb.getNodeId().toString());
-				} else {
-				    cmp = pa.compareTo(pb);
-				    System.out.println("comparing " + pa + " -> " + pb + " = " + cmp);
-					if (cmp < 0) {
-						if (ia.hasNext())
-							na = (NodeProxy) ia.next();
-						else
-							break;
-					} else {
-						if (ib.hasNext())
-							nb = (NodeProxy) ib.next();
-						else
-							break;
-					}
-				}
-			}
-		}
-//		LOG.debug("quickSelect took " + (System.currentTimeMillis() - start));
-		return result;
 	}
 	
 	/**
