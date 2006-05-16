@@ -29,10 +29,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.net.URI;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -397,23 +399,28 @@ public class RESTServer {
             try
 			{
                 serializer.setProperties(outputProperties);
-                String output = serializer.serialize(resource);
                 if(asMimeType != null) //was a mime-type specified?
                 {
-                	response.setContentType(asMimeType);
+                	response.setContentType(asMimeType+"; charset="+encoding);
                 }
                 else
                 {
 	                if (serializer.isStylesheetApplied())
 	                {
-	                    response.setContentType("text/html");
+	                    response.setContentType("text/html; charset="+encoding);
 	                }
 	                else
 	                {
-	                    response.setContentType(resource.getMetadata().getMimeType());
+	                    response.setContentType(resource.getMetadata().getMimeType()+"; charset="+encoding);
 	                }
                 }
-                writeResponse(response, output, encoding);
+                OutputStream is = response.getOutputStream();
+                Writer w = new OutputStreamWriter(is,encoding);
+                serializer.serialize(resource,w);
+                w.flush();
+                w.close();
+                //String output = serializer.serialize(resource);
+                //writeResponse(response, output, encoding);
             }
             catch (SAXException saxe)
 			{
