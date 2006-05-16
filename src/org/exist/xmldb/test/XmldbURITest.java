@@ -287,6 +287,80 @@ public class XmldbURITest extends TestCase {
         }
     }
     
+    /*
+     * These are no longer faulty
+     */
+    public void testXmldbURIConstructor13() {
+        try{
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist:///db?param=value");
+            assertEquals("exist", xmldbURI.getInstanceName());
+            assertNull(xmldbURI.getHost());
+            assertEquals(-1, xmldbURI.getPort());
+            assertNull(xmldbURI.getContext());
+            assertEquals("/db", xmldbURI.getCollectionPath());
+            assertEquals(XmldbURI.API_LOCAL, xmldbURI.getApiName());
+            assertEquals("param=value",xmldbURI.getQuery());
+            xmldbURI = XmldbURI.create("xmldb:exist:///db?param=value");
+            assertEquals("exist", xmldbURI.getInstanceName());
+            assertNull(xmldbURI.getHost());
+            assertEquals(-1, xmldbURI.getPort());
+            assertNull(xmldbURI.getContext());
+            assertEquals("/db", xmldbURI.getCollectionPath());
+            assertEquals(XmldbURI.API_LOCAL, xmldbURI.getApiName());
+            assertEquals("param=value",xmldbURI.getQuery());
+       } catch (URISyntaxException e) {
+            fail(e.getMessage());
+        }
+    }
+    
+    public void testXmldbURIConstructor14() {
+        try{
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist:///db#123");
+            assertEquals("exist", xmldbURI.getInstanceName());
+            assertNull(xmldbURI.getHost());
+            assertEquals(-1, xmldbURI.getPort());
+            assertNull(xmldbURI.getContext());
+            assertEquals("/db", xmldbURI.getCollectionPath());
+            assertEquals(XmldbURI.API_LOCAL, xmldbURI.getApiName());
+            assertEquals("123",xmldbURI.getFragment());
+            xmldbURI = XmldbURI.create("xmldb:exist:///db#123");
+            assertEquals("exist", xmldbURI.getInstanceName());
+            assertNull(xmldbURI.getHost());
+            assertEquals(-1, xmldbURI.getPort());
+            assertNull(xmldbURI.getContext());
+            assertEquals("/db", xmldbURI.getCollectionPath());
+            assertEquals(XmldbURI.API_LOCAL, xmldbURI.getApiName());
+            assertEquals("123",xmldbURI.getFragment());
+       } catch (URISyntaxException e) {
+            fail(e.getMessage());
+        }
+    }
+    
+    public void testXmldbURIConstructor15() {
+        try{
+            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist:///db?param=value#123");
+            assertEquals("exist", xmldbURI.getInstanceName());
+            assertNull(xmldbURI.getHost());
+            assertEquals(-1, xmldbURI.getPort());
+            assertNull(xmldbURI.getContext());
+            assertEquals("/db", xmldbURI.getCollectionPath());
+            assertEquals(XmldbURI.API_LOCAL, xmldbURI.getApiName());
+            assertEquals("123",xmldbURI.getFragment());
+            assertEquals("param=value",xmldbURI.getQuery());
+            xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist:///db?param=value#123");
+            assertEquals("exist", xmldbURI.getInstanceName());
+            assertNull(xmldbURI.getHost());
+            assertEquals(-1, xmldbURI.getPort());
+            assertNull(xmldbURI.getContext());
+            assertEquals("/db", xmldbURI.getCollectionPath());
+            assertEquals(XmldbURI.API_LOCAL, xmldbURI.getApiName());
+            assertEquals("123",xmldbURI.getFragment());
+            assertEquals("param=value",xmldbURI.getQuery());
+       } catch (URISyntaxException e) {
+            fail(e.getMessage());
+        }
+    }
+    
     public void testXmldbURIFaultyConstructor1() {
         boolean exceptionThrown = false;
         try{
@@ -356,40 +430,7 @@ public class XmldbURITest extends TestCase {
         assertTrue(exceptionThrown);
     }
     
-    public void testXmldbURIFaultyConstructor5() {
-        boolean exceptionThrown = false;
-        try{
-            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist:///db?param=value");
-        } catch (URISyntaxException e) {
-            exceptionThrown = true;
-        }
-        assertTrue(exceptionThrown);
-        exceptionThrown = false;
-        try{
-            XmldbURI xmldbURI = XmldbURI.create("xmldb:exist:///db?param=value");
-        } catch (Exception e) {
-            exceptionThrown = true;
-        }
-        assertTrue(exceptionThrown);
-    }
-    
-    public void testXmldbURIFaultyConstructor6() {
-        boolean exceptionThrown = false;
-        try{
-            XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist:///db#123");
-        } catch (URISyntaxException e) {
-            exceptionThrown = true;
-        }
-        assertTrue(exceptionThrown);
-        exceptionThrown = false;
-        try{
-            XmldbURI xmldbURI = XmldbURI.create("xmldb:exist:///db#123");
-        } catch (Exception e) {
-            exceptionThrown = true;
-        }
-        assertTrue(exceptionThrown);
-    }
-    
+
     /*
      * These test are irrelevant for immutable URIs
      */

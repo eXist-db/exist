@@ -27,17 +27,11 @@ public class FullXmldbURI extends XmldbURI {
 		wrappedURI = xmldbURI;
 		//Reinitialise members
 		this.instanceName = null;
-		if (wrappedURI.getQuery() != null)
-			//Put the "right" URI in the message ;-)
-			throw new URISyntaxException(wrappedURI.toString(), "xmldb URI should not provide a query part");
-		if (wrappedURI.getFragment() != null)
-			//Put the "right" URI in the message ;-)    		
-			throw new URISyntaxException(wrappedURI.toString(), "xmldb URI should not provide a fragment part");
 		//Is an encoded scheme ever possible ?
 		instanceName = wrappedURI.getScheme();
 		if (instanceName == null)   
 			//Put the "right" URI in the message ;-)
-			throw new URISyntaxException(wrappedURI.toString(), "xmldb URI scheme has no instance name");			
+			throw new URISyntaxException(XMLDB_URI_PREFIX+wrappedURI.toString(), "xmldb URI scheme has no instance name");			
 		String userInfo = wrappedURI.getUserInfo();
 		//Very tricky :
 		if (wrappedURI.getHost() == null && wrappedURI.getAuthority() != null) {
@@ -70,7 +64,7 @@ public class FullXmldbURI extends XmldbURI {
 			if(host==null || EMBEDDED_SERVER_AUTHORITY.equals(host)) {
 	        	if (getPort() != NO_PORT)
 	        		//Put the "right" URI in the message ;-)
-	        		throw new URISyntaxException(wrappedURI.toString(), "Local xmldb URI should not provide a port");
+	        		throw new URISyntaxException(XMLDB_URI_PREFIX+wrappedURI.toString(), "Local xmldb URI should not provide a port");
 	        	apiName = API_LOCAL;  
 	        	context = null;
 	        	pathForSuper = path; 	 
