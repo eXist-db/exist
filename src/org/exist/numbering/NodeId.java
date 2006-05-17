@@ -38,7 +38,10 @@ public interface NodeId extends Comparable {
      * Static field representing the document node.
      */
     public final static NodeId DOCUMENT_NODE = new DLN(0);
-
+ 
+    public final static int IS_CHILD = 1;
+    public final static int IS_DESCENDANT = 2;
+    
     /**
      * Returns a new NodeId representing the first child
      * node of this node. The returned id can be used
@@ -118,7 +121,9 @@ public interface NodeId extends Comparable {
      */
     boolean isChildOf(NodeId parent);
 
-    public int isSiblingOf(NodeId sibling);
+    int isDescendantOrChildOf(NodeId ancestor);
+    
+    int isSiblingOf(NodeId sibling);
     
     /**
      * Returns the level within the document tree at which

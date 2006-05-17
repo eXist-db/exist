@@ -224,13 +224,23 @@ public class DLN extends DLNBase implements NodeId {
     	return levels == 1;
     }
 
+    public int isDescendantOrChildOf(NodeId ancestor) {
+        DLN other = (DLN) ancestor;
+        if (startsWith(other) && bitIndex > other.bitIndex) {
+            if (getLevelCount(other.bitIndex + 2) == 1)
+                return IS_CHILD;
+            return IS_DESCENDANT;
+        }
+        return -1;
+    }
+    
     public int isSiblingOf(NodeId sibling) {
         DLN other = (DLN) sibling;
         int last = lastLevelOffset();
         if (last == other.lastLevelOffset())
             return compareBits(other, last);
         else
-            return super.compareTo(other);
+            return compareTo(other);
     }
     
     /**
@@ -247,8 +257,27 @@ public class DLN extends DLNBase implements NodeId {
         return super.equals((DLNBase) other);
     }
 
-    public int compareTo(NodeId other) {
-        return super.compareTo(other);
+    public int compareTo(Object other) {
+        return compareTo((DLN) other);
+    }
+    
+    public int compareTo(NodeId otherId) {
+        if (otherId == null)
+            return 1;
+        
+        final DLN other = (DLN) otherId;
+        final int a1len = bits.length;
+        final int a2len = other.bits.length;
+
+        int limit = a1len <= a2len ? a1len : a2len;
+        byte[] obits = other.bits;
+        for (int i = 0; i < limit; i++) {
+            byte b1 = bits[i];
+            byte b2 = obits[i];
+            if (b1 != b2)
+                return (b1 & 0xFF) - (b2 & 0xFF);
+        }
+        return (a1len - a2len);
     }
 
     public boolean after(NodeId other, boolean isFollowing) {
