@@ -71,10 +71,6 @@
 	<classpathentry kind="lib" path="tools/ant/lib/xmlunit1.0.jar"/>
 	<classpathentry kind="lib" path="tools/wrapper/lib/wrapper.jar"/>
 	<classpathentry kind="lib" path="lib/core/jline-0_9_5.jar"/>
-	<classpathentry kind="lib" path="exist.jar"/>
-	<classpathentry kind="lib" path="exist-modules.jar"/>
-	<classpathentry kind="lib" path="exist-optional.jar"/>
-	<classpathentry kind="lib" path="start.jar"/>
 	<classpathentry kind="lib" path="tools/ircbot/lib/pircbot.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
