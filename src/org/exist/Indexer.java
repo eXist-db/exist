@@ -58,6 +58,8 @@ import java.util.Stack;
  */
 public class Indexer extends Observable implements ContentHandler, LexicalHandler, ErrorHandler {
 
+	private static final int CACHE_CHILD_COUNT_MAX = 0x10000;
+
 	private static final String ATTR_ID_TYPE = "ID";
 
     private final static Logger LOG =
@@ -292,6 +294,10 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
      */
     private void setChildCount(final ElementImpl last) {
         if (last.getPosition() >= childCnt.length) {
+        	if (childCnt.length > CACHE_CHILD_COUNT_MAX) {
+        		childCnt = null;
+        		return;
+        	}
             int n[] = new int[childCnt.length * 2];
             System.arraycopy(childCnt, 0, n, 0, childCnt.length);
             childCnt = n;
@@ -371,10 +377,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 	 *@param  feature  
 	 *@param  value    
 	 */
-	private void setFeature(
-		SAXParserFactory factory,
-		String feature,
-		boolean value) {
+	private void setFeature(SAXParserFactory factory, String feature, boolean value) {
 		try {
 			factory.setFeature(feature, value);
 		} catch (SAXNotRecognizedException e) {
@@ -601,18 +604,6 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 			e);
 	}
 	
-	private static StringBuffer removeLastPathComponent(StringBuffer path) {
-		int i;
-        //TODO : rewrite with subString -pb
-		for(i = path.length() - 1; i >= 0; i--) {
-			if(path.charAt(i) == '/')
-				break;
-		}
-		if(i == Constants.STRING_NOT_FOUND)
-			return path;
-		return path.delete(i, path.length());
-	}
-
     private void setPrevious(StoredNode previous) {
         if (prevNode != null) {
             switch (prevNode.getNodeType()) {
