@@ -181,17 +181,6 @@ public class BasicNodeSetTest extends TestCase {
             assertEquals(160, result.getLength());
             System.out.println("NodeSetHelper.selectParentChild: PASS");
             
-            System.out.println("Testing AbstractNodeSet.quickSelectParentChild ...");
-            result = ((AbstractNodeSet)speakers).quickSelectParentChild(smallSet.toNodeSet(), NodeSet.DESCENDANT, -1);
-            assertEquals(1, result.getLength());
-            value = serialize(broker, result.itemAt(0));
-            System.out.println("AbstractNodeSet.quickSelectParentChild: " + value);
-            assertEquals(value, "<SPEAKER>HAMLET</SPEAKER>");
-            
-            result = ((AbstractNodeSet)speakers).quickSelectParentChild(largeSet.toNodeSet(), NodeSet.DESCENDANT, -1);
-            assertEquals(160, result.getLength());
-            System.out.println("AbstractNodeSet.quickSelectParentChild: PASS");
-            
             System.out.println("Testing AbstractNodeSet.hasChildrenInSet ...");
             result = ((AbstractNodeSet)speakers).hasChildrenInSet(smallSet.toNodeSet(), NodeSet.DESCENDANT, -1);
             assertEquals(1, result.getLength());
@@ -254,9 +243,6 @@ public class BasicNodeSetTest extends TestCase {
             NodeSet children = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT,
                     docs, test.getName(), null);
             result = ((AbstractNodeSet)children).hasChildrenInSet(nestedSet.toNodeSet(), NodeSet.DESCENDANT, -1);
-            assertEquals(3, result.getLength());
-            
-            result = ((AbstractNodeSet)children).quickSelectParentChild(nestedSet.toNodeSet(), NodeSet.DESCENDANT, -1);
             assertEquals(3, result.getLength());
             
         } catch (Exception e) {
