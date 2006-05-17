@@ -40,7 +40,7 @@ import org.exist.storage.io.VariableByteInput;
  * @author wolf
  *
  */
-public class DLNBase implements Comparable {
+public class DLNBase {
 
     /**
      * The default number of bits used per fixed
@@ -423,27 +423,27 @@ public class DLNBase implements Comparable {
         return Arrays.equals(bits, other.bits);
     }
 
-    public int compareTo(final DLNBase other) {
-        if (other == null)
-            return 1;
-        final int a1len = bits.length;
-        final int a2len = other.bits.length;
-
-        int limit = a1len <= a2len ? a1len : a2len;
-        byte[] obits = other.bits;
-        for (int i = 0; i < limit; i++) {
-            byte b1 = bits[i];
-            byte b2 = obits[i];
-            if (b1 != b2)
-                return (b1 & 0xFF) - (b2 & 0xFF);
-        }
-        return (a1len - a2len);
-    }
-
-    public int compareTo(Object obj) {
-        DLNBase other = (DLNBase) obj;
-        return compareTo(other);
-    }
+//    public int compareTo(final DLNBase other) {
+//        if (other == null)
+//            return 1;
+//        final int a1len = bits.length;
+//        final int a2len = other.bits.length;
+//
+//        int limit = a1len <= a2len ? a1len : a2len;
+//        byte[] obits = other.bits;
+//        for (int i = 0; i < limit; i++) {
+//            byte b1 = bits[i];
+//            byte b2 = obits[i];
+//            if (b1 != b2)
+//                return (b1 & 0xFF) - (b2 & 0xFF);
+//        }
+//        return (a1len - a2len);
+//    }
+//
+//    public int compareTo(Object obj) {
+//        DLNBase other = (DLNBase) obj;
+//        return compareTo(other);
+//    }
 
     public int compareBits(DLNBase other, int bitCount) {
         int bytes = bitCount / 8;
