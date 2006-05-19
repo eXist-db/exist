@@ -24,6 +24,7 @@ package org.exist.storage.dom;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.text.NumberFormat;
@@ -337,6 +338,15 @@ public class DOMFile extends BTree implements Lockable {
 		return getOverflowValue(pageNum);
 	}
 
+	public void readBinary(long pageNum, OutputStream os) {
+		try {
+			OverflowDOMPage overflow = new OverflowDOMPage(pageNum);
+			overflow.streamTo(os);
+		} catch (IOException e) {
+			LOG.error("io error while loading overflow value", e);
+		}
+	}
+	
 	/**
 	 * Insert a new node after the specified node.
 	 * 
@@ -1273,7 +1283,7 @@ public class DOMFile extends BTree implements Lockable {
 			return null;
 		}
 	}
-
+	
 	public void removeOverflowValue(Txn transaction, long pnum) {
 		try {
 			OverflowDOMPage overflow = new OverflowDOMPage(pnum);
@@ -2936,14 +2946,8 @@ public class DOMFile extends BTree implements Lockable {
 		Page firstPage = null;
 
 		public OverflowDOMPage(Txn transaction) {
-			LOG.debug("Creating overflow page");
 			firstPage = createNewPage();
-
-			// if (transaction != null) {
-			// Loggable loggable = new CreatePageLoggable(transaction, Page.NO_PAGE,
-			// firstPage.getPageNum());
-			// writeToLog(loggable, firstPage);
-			// }
+			LOG.debug("Creating overflow page: " + firstPage.getPageNum());
 		}
 
 		public OverflowDOMPage(long first) throws IOException {
@@ -2992,6 +2996,11 @@ public class DOMFile extends BTree implements Lockable {
 
 		public byte[] read() {
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
+			streamTo(os);
+			return os.toByteArray();
+		}
+
+		public void streamTo(OutputStream os) {
 			Page page = firstPage;
 			byte[] chunk;
 			long np;
@@ -3009,9 +3018,7 @@ public class DOMFile extends BTree implements Lockable {
 				}
 				++count;
 			}
-			return os.toByteArray();
 		}
-
 		public void delete(Txn transaction) throws IOException {
 			Page page = firstPage;
 			long np;

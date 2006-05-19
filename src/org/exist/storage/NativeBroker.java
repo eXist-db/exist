@@ -25,6 +25,7 @@ package org.exist.storage;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.text.Collator;
 import java.util.ArrayList;
@@ -1509,6 +1510,17 @@ public class NativeBroker extends DBBroker {
         }
         .run();
         return data;
+    }
+    
+    public void readBinaryResource(final BinaryDocument blob, final OutputStream os) {
+    	if (blob.getPage() < 0)
+    		return;
+        new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
+            public Object start() throws ReadOnlyException {
+                domDb.readBinary(blob.getPage(), os);
+                return null;
+            }
+        }.run();
     }
     
     //TODO : consider a better cooperation with Collection -pb
