@@ -42,6 +42,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
@@ -381,7 +382,9 @@ public class RESTServer {
         	{
         		response.setContentType(resource.getMetadata().getMimeType());
         	}
-            writeResponse(response, broker.getBinaryResource((BinaryDocument) resource));
+        	OutputStream os = response.getOutputStream();
+        	broker.readBinaryResource((BinaryDocument) resource, os);
+        	os.flush();
         }
         else
         {
@@ -419,8 +422,6 @@ public class RESTServer {
                 serializer.serialize(resource,w);
                 w.flush();
                 w.close();
-                //String output = serializer.serialize(resource);
-                //writeResponse(response, output, encoding);
             }
             catch (SAXException saxe)
 			{
