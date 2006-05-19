@@ -808,6 +808,9 @@ public class XPathQueryTest extends XMLTestCase {
             assertEquals(result.getResource(0).getContent().toString(), "test");
             result = queryResource(service, "numbers.xml", "let $credentials := ('test', 'pass') let $user := $credentials[2] return $user", 1);
             assertEquals(result.getResource(0).getContent().toString(), "pass");
+
+            result = queryResource(service, "numbers.xml", "let $els := <els><el>text1</el><el>text2</el></els> return $els/el[xs:string(.) eq 'text1'] ", 1);
+            assertEquals(result.getResource(0).getContent().toString(), "<el>text1</el>");
             
         } catch (XMLDBException e) {
             fail(e.getMessage());
