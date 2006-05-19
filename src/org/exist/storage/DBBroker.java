@@ -619,12 +619,10 @@ public abstract class DBBroker extends Observable {
      */
     public abstract byte[] getBinaryResource(BinaryDocument blob);
     
+    public abstract void readBinaryResource(final BinaryDocument blob, final OutputStream os);
+
     public abstract void getResourceMetadata(DocumentImpl doc);
-    
-
-	
-
-	
+    	
     /**
      * Completely delete this binary document (descriptor and binary
      * data).
