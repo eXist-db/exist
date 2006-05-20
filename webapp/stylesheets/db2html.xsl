@@ -56,7 +56,15 @@
         <ul class="toc">
             <xsl:for-each select="section">
                 <li>
-                    <a href="#{generate-id()}">
+                    <a>
+                        <xsl:choose>
+                            <xsl:when test="@id">
+                                <xsl:attribute name="href">#<xsl:value-of select="@id"/></xsl:attribute>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:attribute name="href">#<xsl:value-of select="generate-id()"/></xsl:attribute>
+                            </xsl:otherwise>
+                        </xsl:choose>
                         <xsl:number count="section" level="multiple" format="1. "/>
                         <xsl:value-of select="title"/>
                     </a>
@@ -122,40 +130,46 @@
     </xsl:template>
 
     <xsl:template match="chapter/section|article/section">
-        <a>
-            <xsl:attribute name="name">
-                <xsl:value-of select="generate-id()"/>
-            </xsl:attribute>
-        </a>
-        <xsl:if test="@id">
-            <a name="{@id}"/>
-        </xsl:if>
-        <xsl:apply-templates/>
+        <h2>
+            <a>
+                <xsl:choose>
+                    <xsl:when test="@id">
+                        <xsl:attribute name="name"><xsl:value-of select="@id"/></xsl:attribute>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:attribute name="name"><xsl:value-of select="generate-id()"/></xsl:attribute>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </a>
+            <xsl:apply-templates select="title"/>
+        </h2>
+        <xsl:apply-templates select="*[not(self::title)]"/>
     </xsl:template>
 
     <xsl:template match="chapter/section/title|article/section/title">
-        <h2>
-            <xsl:number count="section"/>. <xsl:apply-templates/>
-        </h2>
+        <xsl:number count="section"/>. <xsl:apply-templates/>
     </xsl:template>
 
     <xsl:template match="chapter/section/section|article/section/section">
-        <a>
-            <xsl:attribute name="name">
-                <xsl:value-of select="generate-id()"/>
-            </xsl:attribute>
-        </a>
-        <xsl:if test="@id">
-            <a name="{@id}"/>
-        </xsl:if>
+        <h3>
+            <a>
+                <xsl:choose>
+                    <xsl:when test="@id">
+                        <xsl:attribute name="name"><xsl:value-of select="@id"/></xsl:attribute>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:attribute name="name"><xsl:value-of select="generate-id()"/></xsl:attribute>
+                    </xsl:otherwise>
+                </xsl:choose>
+                <xsl:apply-templates select="title"/>
+            </a>
+        </h3>
         <xsl:apply-templates/>
     </xsl:template>
 
     <xsl:template match="chapter/section/section/title|article/section/section/title">
-        <h3>
-            <xsl:number count="section" level="multiple" format="1. "/>
-            <xsl:apply-templates/>
-        </h3>
+        <xsl:number count="section" level="multiple" format="1. "/>
+        <xsl:apply-templates/>
     </xsl:template>
 
     <xsl:template match="chapter/section/section/section|article/section/section/section">

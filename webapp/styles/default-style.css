@@ -43,7 +43,7 @@ a, a:visited {
 }
 #page-head {
     margin: 25px 50px 5px 50px;
-    min-height: 200px;
+    height: 185px;
 }
 #page-head #navbar {
     margin: 10px 0 0 0;
@@ -99,10 +99,11 @@ a, a:visited {
 
 @media screen {
     #content2col {
-        position: absolute;
-        left: 220px;
+/*        left: 220px;
         right: 50px;
-        top: 215px;
+        top: 215px; */
+        margin-left: 220px;
+        margin-right: 50px;
         display: block;
         overflow: visible;
         background-color: white;
