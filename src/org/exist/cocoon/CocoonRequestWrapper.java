@@ -33,6 +33,7 @@ import java.util.Enumeration;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.Cookie;
 
 import org.apache.cocoon.environment.Request;
 import org.apache.cocoon.environment.Session;
@@ -66,6 +67,11 @@ public class CocoonRequestWrapper implements RequestWrapper {
 		this.servletRequest = servletRequest;
 	}	
 	 
+	public Cookie[] getCookies()
+	{
+		return servletRequest.getCookies();
+	}
+	
 	/** 
 	 * @see javax.servlet.http.HttpServletRequest#getInputStream()
 	 */	

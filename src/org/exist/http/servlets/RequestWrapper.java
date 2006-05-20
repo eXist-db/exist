@@ -29,6 +29,8 @@ import java.io.UnsupportedEncodingException;
 import java.security.Principal;
 import java.util.Enumeration;
 
+import javax.servlet.http.Cookie;
+
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
@@ -39,6 +41,8 @@ public interface RequestWrapper {
 	public int getContentLength();
 	
 	public InputStream getInputStream() throws IOException;
+	
+	public Cookie[] getCookies();
 	
 	public String getContentType();
 	

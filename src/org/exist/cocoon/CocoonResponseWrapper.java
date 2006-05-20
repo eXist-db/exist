@@ -30,6 +30,7 @@ import java.util.Map;
 
 import org.apache.cocoon.environment.Cookie;
 import org.apache.cocoon.environment.Response;
+import org.apache.cocoon.environment.http.HttpCookie;
 import org.exist.http.servlets.ResponseWrapper;
 
 /**
@@ -46,6 +47,15 @@ public class CocoonResponseWrapper implements ResponseWrapper {
 		this.response = response;
 	}
 
+	/**
+	 * @param name Name of the Cookie
+	 * @param value Value of the Cookie
+	 */
+	public void addCookie(String name, String value)
+	{
+		response.addCookie(new HttpCookie(name, value));
+	}
+	
 	/**
 	 * @param arg0
 	 */
