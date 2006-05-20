@@ -16,37 +16,39 @@
     </xsl:template>
     
 	<xsl:template match="module">
-		<h2>
+		<h2 class="modulename">
 			<a>
 				<xsl:attribute name="name"><xsl:value-of select="generate-id()"/></xsl:attribute>
-				<xsl:value-of select="description"/> (<xsl:value-of select="@namespace"/>)
-			</a>
+            </a>
+			<xsl:value-of select="description"/>
 		</h2>
+        <h3 class="moduleuri"><xsl:value-of select="@namespace"/></h3>
 		<xsl:apply-templates select="function"/>
 	</xsl:template>
 
     <xsl:template match="function">
 		<div class="function">
-			<div class="functionhead">
-                <a name="{@name}">
-                    <xsl:value-of select="@name"/>
-                </a>
-			</div>
+			<h4 class="functionhead">
+                <a name="{@name}"></a>
+                <xsl:value-of select="@name"/>
+			</h4>
 			<xsl:apply-templates/>
 		</div>
 	</xsl:template>
 	
 	<xsl:template match="prototype">
 		<div class="prototype">
-			<div class="signature">
+			<p class="signature">
 				<xsl:value-of select="signature"/>
-			</div>
-			<div class="description">
-				<xsl:apply-templates select="description"/>
-			</div>
+			</p>
+			<xsl:apply-templates select="description"/>
 		</div>
     </xsl:template>
     
+    <xsl:template match="description">
+        <p class="description"><xsl:apply-templates/></p>
+    </xsl:template>
+
     <xsl:template match="node()|@*" priority="-1">
         <xsl:copy>
             <xsl:apply-templates select="node()|@*"/>

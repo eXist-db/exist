@@ -1,76 +1,79 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
 @media screen {
     body {
-        font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
-        font-size: 13px;
-        line-height: 1.4;
-    }
-    
-    p, ul, ol {
-        font-size: 13px;
-        margin-left: 15px;
-        margin-right: 15px;
+        font-family: Verdana, Arial, Helvetica, sans-serif;
+        font-size: 76%;
+        background-color: white;
     }
 }
 
-table {
-    font-size: 13px;
+p, .synopsis, .note, .example, .important {
+    font-size: 1em;
+    margin: 0 15px 1em 15px;
 }
 
-table p {
-    margin: 0px;
+p, td {
+    line-height: 1.7;
+}
+
+ol, ul {
+    margin: 0 15px 1em 40px;
+}
+
+ul li, ol li {
+    margin-bottom: .5em;
+    margin-top: .5em;
+    line-height: 1.5em;
 }
 
 a:hover {
     border-bottom: solid 1px gray;
 }
-
 a, a:visited {
     color: #0000AA;
     font-weight: bold;
     text-decoration: none;
 }
-
 #notes {
     border-top: solid 1px #DEDEDE;
 }
-
 #page-head {
-    margin-bottom: 5px;
-	min-height: 200px;
+    margin: 25px 50px 5px 50px;
+    height: 185px;
 }
-
 #page-head #navbar {
-    margin: 1em 0 0 0;
-    height: 2.2em;
+    margin: 10px 0 0 0;
     border-top: 1px solid #DEDEDE;
     border-bottom: 1px solid #DEDEDE;
 }
-
 #page-head h1 {
-    float: left;
     color: #0A0AA0;
     background-color: #FFF;
     border: 0;
-    font-size: 1.5em;
+    font-size: 1.375em;
     font-weight: normal;
-    margin: 0 0 0 0;
-    padding: 0;
+    margin: 0;
+    padding: 5px 0;
 }
-
 #page-head #menu {
     margin: 0.3em 0 0 0;
-    padding: 0;
+    padding: 0 0 0 0;
     float: right;
 }
-
 #menu li {
-    list-style: none; 
+    list-style: none;
     float: left;
     margin: 0;
     white-space: nowrap;
     padding: 0px 20px 0px 20px;
 }
-
+#menu li.last {
+    padding: 0 0 0 20px;
+}
 #menu li a {
     color: #666666;
 }
@@ -87,41 +90,133 @@ a, a:visited {
 
 #sidebar {
     position: absolute;
-    width: 16%;
-	top: 215px;
+    width: 160px;
+    left: 50px;
+    top: 215px;
     display: block;
     overflow: hidden;
 }
 
 @media screen {
     #content2col {
-        position: absolute;
-        left: 18%;
-        width: 80%;
-		top: 215px;
+/*        left: 220px;
+        right: 50px;
+        top: 215px; */
+        margin-left: 220px;
+        margin-right: 50px;
         display: block;
-        background-color: white;
         overflow: visible;
+        background-color: white;
     }
     
     #content {
         position: absolute;
-        left: 18%;
-        width: 62%;
-		top: 215px;
+        left: 220px;
+        right: 220px;
+        top: 215px;
         display: block;
-        background-color: white;
         overflow: visible;
+        background-color: white;
     }
 }
 
 #news {
     position: absolute;
-    width: 18%;
-    left: 82%;
-	top: 215px;
+    width: 160px;
+    top: 215px;
+    right: 50px;
     display: block;
     overflow: hidden;
+}
+
+/* a block in the sidebar or the news */
+.block {
+    margin: 0 0 12px 0;
+    background-color: #fff;
+}
+.block .head {
+    background-color: #ddd;
+    width: 100%;
+}
+#news .head {
+    background-color: #fbd7a6;
+}
+.block h3 {
+    font-size: 1em;
+    padding: 3px 0 3px 10px;
+}
+.block ul {
+    margin: 0;
+    padding: 3px 0 5px 0;
+    background-color: #f6f6f6;
+}
+.block .news_content {
+    margin: 0;
+    padding: 3px 0 5px 0;
+    background-color: #fef7d6;
+}
+.block li {
+    display: inline;
+    list-style-type: none;
+    margin: 0;
+    line-height: 1.5em;
+}
+.block p.date {
+    text-align: right;
+    font-size: .875em;
+    font-style: italic;
+    margin: 0 5px 0;
+    border-bottom: 1px solid #999;
+}
+.block .headline {
+    margin-bottom: 10px;
+}
+.block a {
+    display: block;
+    padding: 0 10px 3px 10px;
+    color: #666;
+    font-weight: normal;
+    text-decoration: none;
+}
+.block a:hover {
+    background-color: #ddd;
+    border-bottom: none;
+}
+.block a:visited {
+    color: #666;
+    font-weight: normal;
+}
+#quotes {
+    text-align: center;
+    padding: 8px 5px;
+}
+#quotes blockquote {
+    font-size: .75em;
+    margin: 0;
+    padding: 0;
+    line-height: 1.5em;
+}
+#quotes blockquote:before {
+    content: open-quote;
+    font-weight: bold;
+    font-family: serif;
+    font-size: 1.6em;
+}
+#quotes blockquote:after {
+    content: close-quote;
+    font-weight: bold;
+    font-family: serif;
+    font-size: 1.6em;
+}
+#quotes .source {
+    text-align: right;
+    font-size: .75em;
+    font-style: italic;
+    padding-top: 3px;
+}
+.banner {
+    text-align: center;
+    margin-top: 20px;
 }
 
 @media print {
@@ -132,33 +227,39 @@ a, a:visited {
         display: none;
     }
 }
-   
+
 #version-info {
-    color: #666666;
-    text-align: right;
-    margin: 3px 0 0 0;
-    padding: 0;
-    font-size: 8pt;
-  }
-  
+    color: #666;
+    position: absolute;
+    font-size: .75em;
+    right: 10px;
+    top: 10px;
+}
 .toc {
-	margin-top: 10px;
-	margin-bottom: 5px;
-	font-size: 80%;
-	padding-left: 40px;
-	padding-bottom: 5px;
+    margin-top: 10px;
+    margin-bottom: 5px;
+    font-size: .85em;
+    margin-left: 20px;
 }
-
+.toc li {
+    list-style: none;
+}
 .tocitem2 {
-	padding-left: 15px;
+    padding-left: 15px;
 }
-
-h1 { 
-    font-size: 160%;
+.chapter {
+    background-color: white;
+}
+.abstract {
+    margin-left: 40px;
+    margin-right: 40px;
+    margin-top: 2em;
+}
+h1 {
+    font-size: 1.5em;
     font-weight: normal;
     color: white;
     background-color: #0990EE;
-    border: 1px solid #999;
     margin-left: 0px;
     margin-bottom: 15px;
     margin-top: 0px;
@@ -166,21 +267,16 @@ h1 {
     padding-right: 5px;
     padding-bottom: 5px;
 }
-
-h2 { 
-    font-size: 160%;
+h2 {
+    font-size: 1.33em;
     font-weight: normal;
-    color: #666666;
-    margin-left: 0px;
-    margin-top: 25px;
-    margin-bottom: 5px;
-    margin-right: 20px;
-    text-align: left;
-    border-bottom: 1px solid ;
+    color: #666;
+    line-height: 1.7em;
+    margin: 15px 0 15px 0;
+    border-bottom: 1px solid;
 }
-
-h3 { 
-    font-size: 12pt;
+h3 {
+    font-size: 1em;
     font-weight: normal;
     color: #666666;
     font-style: italic;
@@ -188,210 +284,172 @@ h3 {
     padding-left: 15px;
     margin-right: 20px;
 }
-
 h4 {
     font-weight: bold;
     padding-left: 15px;
 }
-			
-.note {
-}
-
 input.mark {
     float: left;
     margin-left: -30px;
 }
-
 input.search {
     margin-left: 40px;
     padding: 10px;
     background-color: transparent;
-    font-size: 10px;
+    font-size: .75em;
     font-weight: bold;
 }
-
-input.view{
+input.view {
     margin-left: 40px;
     margin-top: 10px;
     font-size: 9px;
 }
-
-input.search-button{
+input.search-button {
     margin-left: 20px;
     font-size: 9px;
     width: 70px;
 }
-
 select.choose {
-    font-size: 9px;
+    font-size: .66em;
     margin-left: 10px;
     margin-top: 10px;
     background-color: #E1DD68;
 }
-
-.banner {
+.reference {
+    margin-top: 30px;
     text-align: center;
-    margin-top: 20px;
 }
-
-.block {
-    margin:0px 6px 12px 6px;
-	padding: 4px;
-	background: #fff;
-	border: 1px solid #999; 
+.reference h3 {
+    font-size: .75em;
+    text-align: left;
 }
-
-.block h3 {
-	background: #ddd;
-	color: #000;
-	margin: -4px -4px 4px -4px;
-	padding: 4px;
-	border-bottom: 1px solid #999;
-	font-size: 11px;
-}
-
-.block ul {
-    margin: 0;
-    padding: 0;
-}
-
-.block li {
-	display: inline;
-    list-style-type: none;
-}
-
-.block .date {
-    text-align: right;
-    font-size: 9.5pt;
-    font-style: italic;
-    border-bottom: 1px solid #999;
-}
-
-.block .headline {
-    margin-bottom: 10px;
-}
-
-.block a {
-	display: block;
-    padding: 0 10px 3px 10px;
-    font-size: small;
-    color: #666;
-    font-weight: normal;
-	text-decoration: none;
-}
-
-.block a:hover   {
-    background-color: #ddd;
-    border-bottom: none;
-}
-
-.block a:visited {
-	color: #666;
-	font-weight: normal;
-}
-
 #sidebar input.search-sidebar {
     margin-left: 10px;
     width: 120px;
 }
-
 #sidebar input.search-button {
     margin-top: 5px;
     margin-bottom: 15px;
 }
-
 .xmlsrc {
     margin-top: 20px;
     margin-bottom: 20px;
     padding-right: 10px;
     text-align: right;
 }
-
-.filename {
-    font-family: Courier, monospace;
-    font-size: 120%;
+.filename, .option {
+    font-family: "Bitstream Vera Sans Mono", Courier, monospace;
 }
-
-.option {
-    font-family: Courier, monospace;
+.guimenu, .guimenuitem {
+    font-family: "Bitstream Vera Sans Mono", Courier, monospace;
+    padding: 0 3px;
+    background-color:#FF7;
 }
-
 .classname {
-    text-decoration: underline;
+    font-family: "Bitstream Vera Sans Mono", Courier, monospace;
+    font-weight:bold;
 }
-
 .methodname {
-    text-decoration: underline;
+    font-family: "Bitstream Vera Sans Mono", Courier, monospace;
+    font-weight:bold;
 }
-
 .command {
     font-weight: bold;
 }
-
+.parameter {
+    font-family: "Bitstream Vera Sans Mono", Courier, monospace;
+}
+.envar {
+    font-family: "Bitstream Vera Sans Mono", Courier, monospace;
+    font-weight:bold;
+}
+.function {
+    font-family: "Bitstream Vera Sans Mono", Courier, monospace;
+}
 .variablelist {
     margin-left: 15px;
 }
-
-div.screen {
-    font-family: Courier, monospace;
+.variablelist td {
+    font-size: 1em;
 }
-
-div.synopsis {
-    margin: 15px;
+.variablelist th {
+    font-size: 1em;
+}
+.screen {
+    font-family: "Bitstream Vera Sans Mono", Courier, monospace;
+    padding: 5px;
+    overflow: hidden;
+}
+.synopsis {
     padding-left: 5px;
-    font-family: Courier, monospace;
-    text-align: left;
-    background: #ddd;
+    font-family: "Bitstream Vera Sans Mono", Courier, monospace;
+    background-color: #fef3c1;
 }
 
-.note_title {
-    font-decoration: underline;
-    font-weight: bold;
-}
-
-div.note {
+.note, .example, .important {
     margin-top: 10px;
     margin-bottom: 10px;
-    padding-left: 5px;
-    padding-right: 5px;
-    padding-top: 5px;
-    padding-bottom: 5px;
-    border: 1px solid #203cd8;
 }
 
-.important_title {
-    font-decoration: underline;
-    font-color: red;
-    font-weight: bold;
+.note h1, .example h1, .important h1 {
+    font-size: 1em;
+    color: black;
+    border: 0;
+    margin: 5px 0 0 10px;
 }
 
-div.important {
-    margin-top: 10px;
-    margin-bottom: 10px;
-    padding-left: 5px;
-    padding-right: 5px;
-    padding-top: 5px;
-    padding-bottom: 5px;
-    border: 1px solid red;
+.note {
+    background-color: #fac783;
+}
+
+.note h1 {
+    background-color: #fac783;
+}
+
+.note .note_content {
+    background-color: #fde7ca;
+    border-left: 4px solid #fac783;
+    border-right: 4px solid #fac783;
+    border-bottom: 4px solid #fac783;
+    padding: 5px 0;
 }
 
 .example {
-    margin-top: 15px;
-    margin-bottom: 15px;
-    padding-left: 10px;
-    padding-right: 15px;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    text-align: left;
-    background: #fafafa;
-    border: 1px solid #999;
+    background-color: #c3d9ff;
 }
 
-div.example_title {
-    font-size: 14px;
-    font-weight: bold;
-    margin-bottom: 5px;
-    text-decoration: underline;
+.example h1 {
+    background-color: #c3d9ff;
+}
+
+.example .example_content {
+    background-color: #e0ecff;
+    border-left: 4px solid #c3d9ff;
+    border-right: 4px solid #c3d9ff;
+    border-bottom: 4px solid #c3d9ff;
+    padding: 5px 0;
+}
+
+.important {
+    background-color: #f18b8b;
+}
+
+.important h1 {
+    background-color: #f18b8b;
+}
+
+.important .important_content {
+    background-color: #f8cbcb;
+    border-left: 4px solid #f18b8b;
+    border-right: 4px solid #f18b8b;
+    border-bottom: 4px solid #f18b8b;
+    padding: 5px 0;
+}
+
+@media print {
+    .note_content, .example_content, .important_content {
+        border: 0px;
+    }
 }
 
 .figure {
@@ -400,16 +458,50 @@ div.example_title {
     margin-left: 25px;
     margin-right: 25px;
     padding-left: 15px;
-    alignment: center;
+    text-align: center;
 }
-
 .figtitle {
-    font-size: 14px;
+    font-size: 1.25em;
     font-weight: bold;
     text-decoration: underline;
 }
+.informaltable {
 
+}
+.screenshot {
+    margin: 10px;
+    text-align: center;
+}
 .variablelist {
     margin-left: 15px;
     margin-right: 15px;
+}
+.warning {
+    border: 1px solid red;
+    padding: 7px;
+}
+.warning p {
+    font-size: .85em;
+}
+.warning h4 {
+    font-weight: bold;
+    color: red;
+    margin: 5px 0;
+}
+.documentation {
+    width: 100%;
+    margin: 0 25px;
+}
+td {
+    padding: 5px 0 5px 5px;
+    font-size:1em;
+}
+
+th {
+    padding: 5px 0 5px 5px;
+    font-size:1em;
+}
+td.doclink {
+    width: 25%;
+    background-color: #F6F6F6;
 }

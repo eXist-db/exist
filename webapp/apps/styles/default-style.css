@@ -6,20 +6,21 @@
 @media screen {
     body {
         font-family: Verdana, Arial, Helvetica, sans-serif;
-        font-size: 88%;
+        font-size: 76%;
         background-color: white;
-    }
-    
-    p, .synopsis, .note, .example {
-        margin: 0 15px 1em 15px;
-    }
-    
-    p, td {
-        line-height: 1.7;
     }
 }
 
-ol, ul{
+p, .synopsis, .note, .example, .important {
+    font-size: 1em;
+    margin: 0 15px 1em 15px;
+}
+
+p, td {
+    line-height: 1.7;
+}
+
+ol, ul {
     margin: 0 15px 1em 40px;
 }
 
@@ -32,28 +33,23 @@ ul li, ol li {
 a:hover {
     border-bottom: solid 1px gray;
 }
-
 a, a:visited {
     color: #0000AA;
     font-weight: bold;
     text-decoration: none;
 }
-
 #notes {
     border-top: solid 1px #DEDEDE;
 }
-
 #page-head {
     margin: 25px 50px 5px 50px;
-	min-height: 200px;
+    height: 185px;
 }
-
 #page-head #navbar {
     margin: 10px 0 0 0;
     border-top: 1px solid #DEDEDE;
     border-bottom: 1px solid #DEDEDE;
 }
-
 #page-head h1 {
     color: #0A0AA0;
     background-color: #FFF;
@@ -63,25 +59,21 @@ a, a:visited {
     margin: 0;
     padding: 5px 0;
 }
-
 #page-head #menu {
     margin: 0.3em 0 0 0;
     padding: 0 0 0 0;
     float: right;
 }
-
 #menu li {
-    list-style: none; 
+    list-style: none;
     float: left;
     margin: 0;
     white-space: nowrap;
     padding: 0px 20px 0px 20px;
 }
-
 #menu li.last {
     padding: 0 0 0 20px;
 }
-
 #menu li a {
     color: #666666;
 }
@@ -100,17 +92,18 @@ a, a:visited {
     position: absolute;
     width: 160px;
     left: 50px;
-	top: 215px;
+    top: 215px;
     display: block;
     overflow: hidden;
 }
 
 @media screen {
     #content2col {
-        position: absolute;
-        left: 220px;
+/*        left: 220px;
         right: 50px;
-		top: 215px;
+        top: 215px; */
+        margin-left: 220px;
+        margin-right: 50px;
         display: block;
         overflow: visible;
         background-color: white;
@@ -120,7 +113,7 @@ a, a:visited {
         position: absolute;
         left: 220px;
         right: 220px;
-		top: 215px;
+        top: 215px;
         display: block;
         overflow: visible;
         background-color: white;
@@ -130,8 +123,8 @@ a, a:visited {
 #news {
     position: absolute;
     width: 160px;
-	top: 215px;
-	right: 50px;
+    top: 215px;
+    right: 50px;
     display: block;
     overflow: hidden;
 }
@@ -139,42 +132,35 @@ a, a:visited {
 /* a block in the sidebar or the news */
 .block {
     margin: 0 0 12px 0;
-    background-color: #fff; 
+    background-color: #fff;
 }
-
 .block .head {
     background-color: #ddd;
     width: 100%;
 }
-
 #news .head {
     background-color: #fbd7a6;
 }
-
 .block h3 {
-	font-size: 88%;
-	padding: 3px 0 3px 10px;
+    font-size: 1em;
+    padding: 3px 0 3px 10px;
 }
-
 .block ul {
     margin: 0;
     padding: 3px 0 5px 0;
     background-color: #f6f6f6;
 }
-
 .block .news_content {
     margin: 0;
     padding: 3px 0 5px 0;
     background-color: #fef7d6;
 }
-
 .block li {
-	display: inline;
+    display: inline;
     list-style-type: none;
     margin: 0;
-    line-height: 1.1em;
+    line-height: 1.5em;
 }
-
 .block p.date {
     text-align: right;
     font-size: .875em;
@@ -182,63 +168,52 @@ a, a:visited {
     margin: 0 5px 0;
     border-bottom: 1px solid #999;
 }
-
 .block .headline {
     margin-bottom: 10px;
 }
-
 .block a {
-	display: block;
+    display: block;
     padding: 0 10px 3px 10px;
-    font-size: small;
     color: #666;
     font-weight: normal;
-	text-decoration: none;
+    text-decoration: none;
 }
-
-.block a:hover   {
+.block a:hover {
     background-color: #ddd;
     border-bottom: none;
 }
-
 .block a:visited {
-	color: #666;
-	font-weight: normal;
+    color: #666;
+    font-weight: normal;
 }
-
 #quotes {
-	text-align: center;
-	padding: 8px 5px;
+    text-align: center;
+    padding: 8px 5px;
 }
-
 #quotes blockquote {
-	font-size: 75%;
-	margin: 0;
-	padding: 0;
-	line-height: 1.5em;
+    font-size: .75em;
+    margin: 0;
+    padding: 0;
+    line-height: 1.5em;
 }
-
 #quotes blockquote:before {
-	content: open-quote; 
-	font-weight: bold;
-	font-family: serif;
-	font-size: 160%;
+    content: open-quote;
+    font-weight: bold;
+    font-family: serif;
+    font-size: 1.6em;
 }
-
-#quotes blockquote:after { 
-	content: close-quote; 
-	font-weight: bold;
-	font-family: serif;
-	font-size: 160%;
+#quotes blockquote:after {
+    content: close-quote;
+    font-weight: bold;
+    font-family: serif;
+    font-size: 1.6em;
 }
-
 #quotes .source {
-	text-align: right;
-	font-size: 75%;
-	font-style: italic;
-	padding-top: 3px;
+    text-align: right;
+    font-size: .75em;
+    font-style: italic;
+    padding-top: 3px;
 }
-
 .banner {
     text-align: center;
     margin-top: 20px;
@@ -260,32 +235,26 @@ a, a:visited {
     right: 10px;
     top: 10px;
 }
-  
 .toc {
-	margin-top: 10px;
-	margin-bottom: 5px;
-	font-size: 88%;
-	margin-left: 20px;
+    margin-top: 10px;
+    margin-bottom: 5px;
+    font-size: .85em;
+    margin-left: 20px;
 }
-
 .toc li {
     list-style: none;
 }
-
 .tocitem2 {
-	padding-left: 15px;
+    padding-left: 15px;
 }
-
 .chapter {
     background-color: white;
 }
-
 .abstract {
     margin-left: 40px;
     margin-right: 40px;
     margin-top: 2em;
 }
-
 h1 {
     font-size: 1.5em;
     font-weight: normal;
@@ -298,8 +267,7 @@ h1 {
     padding-right: 5px;
     padding-bottom: 5px;
 }
-
-h2 { 
+h2 {
     font-size: 1.33em;
     font-weight: normal;
     color: #666;
@@ -307,9 +275,8 @@ h2 {
     margin: 15px 0 15px 0;
     border-bottom: 1px solid;
 }
-
-h3 { 
-    font-size: 12pt;
+h3 {
+    font-size: 1em;
     font-weight: normal;
     color: #666666;
     font-style: italic;
@@ -317,119 +284,114 @@ h3 {
     padding-left: 15px;
     margin-right: 20px;
 }
-
 h4 {
     font-weight: bold;
     padding-left: 15px;
 }
-
 input.mark {
     float: left;
     margin-left: -30px;
 }
-
 input.search {
     margin-left: 40px;
     padding: 10px;
     background-color: transparent;
-    font-size: 10px;
+    font-size: .75em;
     font-weight: bold;
 }
-
-input.view{
+input.view {
     margin-left: 40px;
     margin-top: 10px;
     font-size: 9px;
 }
-
-input.search-button{
+input.search-button {
     margin-left: 20px;
     font-size: 9px;
     width: 70px;
 }
-
 select.choose {
-    font-size: 9px;
+    font-size: .66em;
     margin-left: 10px;
     margin-top: 10px;
     background-color: #E1DD68;
 }
-
 .reference {
-	margin-top: 30px;
-	text-align: center;
+    margin-top: 30px;
+    text-align: center;
 }
-
 .reference h3 {
-	font-size: 75%;
-	text-align: left;
+    font-size: .75em;
+    text-align: left;
 }
-
 #sidebar input.search-sidebar {
     margin-left: 10px;
     width: 120px;
 }
-
 #sidebar input.search-button {
     margin-top: 5px;
     margin-bottom: 15px;
 }
-
 .xmlsrc {
     margin-top: 20px;
     margin-bottom: 20px;
     padding-right: 10px;
     text-align: right;
 }
-
-.filename {
-    font-family: "Bitstream Vera Sans Mono", Courier, monospace;
-    font-size: 120%;
-}
-
-.option {
+.filename, .option {
     font-family: "Bitstream Vera Sans Mono", Courier, monospace;
 }
-
+.guimenu, .guimenuitem {
+    font-family: "Bitstream Vera Sans Mono", Courier, monospace;
+    padding: 0 3px;
+    background-color:#FF7;
+}
 .classname {
-    text-decoration: underline;
+    font-family: "Bitstream Vera Sans Mono", Courier, monospace;
+    font-weight:bold;
 }
-
 .methodname {
-    text-decoration: underline;
+    font-family: "Bitstream Vera Sans Mono", Courier, monospace;
+    font-weight:bold;
 }
-
 .command {
     font-weight: bold;
 }
-
 .parameter {
     font-family: "Bitstream Vera Sans Mono", Courier, monospace;
 }
-
+.envar {
+    font-family: "Bitstream Vera Sans Mono", Courier, monospace;
+    font-weight:bold;
+}
+.function {
+    font-family: "Bitstream Vera Sans Mono", Courier, monospace;
+}
 .variablelist {
     margin-left: 15px;
 }
-
+.variablelist td {
+    font-size: 1em;
+}
+.variablelist th {
+    font-size: 1em;
+}
 .screen {
     font-family: "Bitstream Vera Sans Mono", Courier, monospace;
     padding: 5px;
     overflow: hidden;
 }
-
 .synopsis {
     padding-left: 5px;
     font-family: "Bitstream Vera Sans Mono", Courier, monospace;
     background-color: #fef3c1;
 }
 
-.note, .example {
-    font-size: .85em;
+.note, .example, .important {
     margin-top: 10px;
     margin-bottom: 10px;
 }
 
-.note h1, .example h1 {
+.note h1, .example h1, .important h1 {
     font-size: 1em;
     color: black;
     border: 0;
@@ -452,22 +414,6 @@ select.choose {
     padding: 5px 0;
 }
 
-.important_title {
-    text-decoration: underline;
-    color: red;
-    font-weight: bold;
-}
-
-.important {
-    margin-top: 10px;
-    margin-bottom: 10px;
-    padding-left: 5px;
-    padding-right: 5px;
-    padding-top: 5px;
-    padding-bottom: 5px;
-    border: 1px solid red;
-}
-
 .example {
     background-color: #c3d9ff;
 }
@@ -484,6 +430,28 @@ select.choose {
     padding: 5px 0;
 }
 
+.important {
+    background-color: #f18b8b;
+}
+
+.important h1 {
+    background-color: #f18b8b;
+}
+
+.important .important_content {
+    background-color: #f8cbcb;
+    border-left: 4px solid #f18b8b;
+    border-right: 4px solid #f18b8b;
+    border-bottom: 4px solid #f18b8b;
+    padding: 5px 0;
+}
+
+@media print {
+    .note_content, .example_content, .important_content {
+        border: 0px;
+    }
+}
+
 .figure {
     margin-top: 15px;
     margin-bottom: 15px;
@@ -492,48 +460,48 @@ select.choose {
     padding-left: 15px;
     text-align: center;
 }
-
 .figtitle {
-    font-size: 14px;
+    font-size: 1.25em;
     font-weight: bold;
     text-decoration: underline;
 }
+.informaltable {
 
+}
 .screenshot {
-    margin: 15px 0;
+    margin: 10px;
     text-align: center;
 }
-
 .variablelist {
     margin-left: 15px;
     margin-right: 15px;
 }
-
 .warning {
     border: 1px solid red;
     padding: 7px;
 }
-
 .warning p {
-    font-size: smaller;
+    font-size: .85em;
 }
-
 .warning h4 {
     font-weight: bold;
     color: red;
     margin: 5px 0;
 }
-
 .documentation {
     width: 100%;
     margin: 0 25px;
 }
-
 td {
     padding: 5px 0 5px 5px;
+    font-size:1em;
 }
 
+th {
+    padding: 5px 0 5px 5px;
+    font-size:1em;
+}
 td.doclink {
-    width: 25%;    
+    width: 25%;
     background-color: #F6F6F6;
 }
