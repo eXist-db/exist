@@ -8,14 +8,26 @@
 	margin-left: 15px;
 }
 
+.modulename {
+    border: 0;
+    margin: 10px 0 0 0;
+}
+
+.moduleuri {
+    padding: 0;
+    margin-bottom: 10px;
+}
+
 .function {
+    font-family: Verdana, Arial, Helvetica, sans-serif;
 	margin-left: 15px;
 	margin-top: 10px;
 	margin-bottom: 15px;
 }
 
 .functionhead {
-	margin-bottom: 10px;
+	margin: 10px 0;
+    padding: 0;
 	font-weight: bold;
 }
 
@@ -26,11 +38,11 @@
 }
 
 .signature {
-	font-family: Courier, monospace;
+	font-family: "Bitstream Vera Sans Mono", Courier, monospace;
 }
 
 .description {
 	padding-left: 15px;
 	padding-right: 15px;
-	text-align: justify;
+    line-height: inherit;
 }
