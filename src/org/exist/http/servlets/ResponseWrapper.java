@@ -30,6 +30,13 @@ import java.util.Locale;
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
 public interface ResponseWrapper {
+	
+	/**
+	 * @param name	Name of the Cookie
+	 * @param value	Value of the Cookie
+	 */
+	public void addCookie(String name, String value);
+	
 	/**
 	 * @param arg0
 	 * @param arg1

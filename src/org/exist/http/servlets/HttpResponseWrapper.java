@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
 /**
@@ -44,6 +45,15 @@ public class HttpResponseWrapper implements ResponseWrapper {
 		this.response = response;
 	}
 
+	/**
+	 * @param name Name of the Cookie
+	 * @param value Value of the Cookie
+	 */
+	public void addCookie(String name, String value)
+	{
+		response.addCookie(new Cookie(name, value));
+	}
+	
 	/**
 	 * @param arg0
 	 * @param arg1

@@ -33,6 +33,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
@@ -70,6 +71,14 @@ public class HttpRequestWrapper implements RequestWrapper {
             parseMultipartContent();
         }
     }    
+    
+    /**
+     * Returns an array of Cookies
+     */
+    public Cookie[] getCookies()
+    {
+    	return servletRequest.getCookies();
+    }
     
     /**
      * Parses multi-part requests in order to set the parameters. 
