@@ -24,6 +24,7 @@ package org.exist.storage.dom;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
@@ -46,6 +47,8 @@ import org.exist.storage.btree.BTreeCallback;
 import org.exist.storage.btree.BTreeException;
 import org.exist.storage.btree.DBException;
 import org.exist.storage.btree.IndexQuery;
+import org.exist.storage.btree.Paged.Page;
+import org.exist.storage.btree.Paged.PageHeader;
 import org.exist.storage.btree.Value;
 import org.exist.storage.cache.Cache;
 import org.exist.storage.cache.Cacheable;
@@ -321,12 +324,21 @@ public class DOMFile extends BTree implements Lockable {
 	 * @param value
 	 * @return
 	 */
-	public long addBinary(Txn transaction, DocumentImpl doc, byte[] value) {
-		OverflowDOMPage overflow = new OverflowDOMPage(transaction);
-		int pagesCount = overflow.write(transaction, value);
-        doc.getMetadata().setPageCount(pagesCount);
-		return overflow.getPageNum();
-	}
+        public long addBinary(Txn transaction, DocumentImpl doc, byte[] value) {
+            OverflowDOMPage overflow = new OverflowDOMPage(transaction);
+            int pagesCount = overflow.write(transaction, value);
+            doc.getMetadata().setPageCount(pagesCount);
+            return overflow.getPageNum();
+        }
+        
+        
+        // TODO DWES under construction
+        public long addBinary(Txn transaction, DocumentImpl doc, InputStream is) {
+            OverflowDOMPage overflow = new OverflowDOMPage(transaction);
+            int pagesCount = overflow.write(transaction, is);
+            doc.getMetadata().setPageCount(pagesCount);
+            return overflow.getPageNum();
+        }
 
 	/**
 	 * Return binary data stored with {@link #addBinary(byte[])}.
@@ -2954,44 +2966,84 @@ public class DOMFile extends BTree implements Lockable {
 			firstPage = getPage(first);
 		}
 
+                // TODO DWES under construction
+                public int write(Txn transaction, InputStream is){
+                    
+                    int pageCount = 0;
+                    int chunkSize = fileHeader.getWorkSize();
+                    int pos = 0;
+                    Page page = firstPage, next = null;
+                    try {
+                        
+                        // Transfer bytes from in to out
+                        byte[] buf = new byte[chunkSize];
+                        int len;
+                        while ((len = is.read(buf)) > 0) {
+                            
+                            next = createNewPage();
+                            
+                            Value value = new Value(buf);
+                            
+                            page.getPageHeader().setNextPage(next.getPageNum());
+                          
+                            // What does this?
+//                        if (isTransactional && transaction != null) {
+//                            Loggable loggable = new WriteOverflowPageLoggable(
+//                                    transaction, page.getPageNum(),
+//                                    remaining > 0 ? next.getPageNum() : Page.NO_PAGE, value);
+//                            writeToLog(loggable, page);
+//                        }
+                            
+                            writeValue(page, value);
+                            pageCount++;
+                        }
+                        page.getPageHeader().setNextPage(Page.NO_PAGE);
+                        
+                    } catch (IOException ex) {
+                       LOG.error("io error while writing overflow page", ex);
+                    }
+                    
+                    return pageCount;
+                    
+                }
 		public int write(Txn transaction, byte[] data) {
-            int pageCount = 0;
-			try {
-				int remaining = data.length;
-				int chunkSize = fileHeader.getWorkSize();
-				Page page = firstPage, next = null;
-				int pos = 0;
-				Value value;
-				while (remaining > 0) {
-					chunkSize = remaining > fileHeader.getWorkSize() ? fileHeader
-							.getWorkSize()
-							: remaining;
-					value = new Value(data, pos, chunkSize);
-					remaining -= chunkSize;
-					if (remaining > 0) {
-						next = createNewPage();
-
-						page.getPageHeader().setNextPage(next.getPageNum());
-					} else
-						page.getPageHeader().setNextPage(Page.NO_PAGE);
-
-					if (isTransactional && transaction != null) {
-						Loggable loggable = new WriteOverflowPageLoggable(
-								transaction, page.getPageNum(),
-								remaining > 0 ? next.getPageNum() : Page.NO_PAGE, value);
-						writeToLog(loggable, page);
-					}
-
-					writeValue(page, value);
-					pos += chunkSize;
-					page = next;
-					next = null;
-                    ++pageCount;
-				}
-			} catch (IOException e) {
-				LOG.error("io error while writing overflow page", e);
-			}
-            return pageCount;
+                    int pageCount = 0;
+                    try {
+                        int remaining = data.length;
+                        int chunkSize = fileHeader.getWorkSize();
+                        Page page = firstPage, next = null;
+                        int pos = 0;
+                        Value value;
+                        while (remaining > 0) {
+                            chunkSize = remaining > fileHeader.getWorkSize() ? fileHeader
+                                    .getWorkSize()
+                                    : remaining;
+                            value = new Value(data, pos, chunkSize);
+                            remaining -= chunkSize;
+                            if (remaining > 0) {
+                                next = createNewPage();
+                                
+                                page.getPageHeader().setNextPage(next.getPageNum());
+                            } else
+                                page.getPageHeader().setNextPage(Page.NO_PAGE);
+                            
+                            if (isTransactional && transaction != null) {
+                                Loggable loggable = new WriteOverflowPageLoggable(
+                                        transaction, page.getPageNum(),
+                                        remaining > 0 ? next.getPageNum() : Page.NO_PAGE, value);
+                                writeToLog(loggable, page);
+                            }
+                            
+                            writeValue(page, value);
+                            pos += chunkSize;
+                            page = next;
+                            next = null;
+                            ++pageCount;
+                        }
+                    } catch (IOException e) {
+                        LOG.error("io error while writing overflow page", e);
+                    }
+                    return pageCount;
 		}
 
 		public byte[] read() {
