@@ -2971,23 +2971,28 @@ public class DOMFile extends BTree implements Lockable {
 
         int pageCount = 0;
         int chunkSize = fileHeader.getWorkSize();
-        int pos = 0;
         Page page = firstPage, next = null;
         
         try {
             // Transfer bytes from inputstream to db
             byte[] buf = new byte[chunkSize];
             int len = is.read(buf);
-            while ( len != -1 ) {
-                // len 0=<n=<chunkSize
-                next = createNewPage();
+            Value value =null;
+            
+            while ( len > -1 ) {
 
-                Value value = new Value(buf, 0, len);
+                value = new Value(buf, 0, len);
 
+                if (len == chunkSize) {
+                    next = createNewPage();
+                    page.getPageHeader().setNextPage(next.getPageNum());
+                    
+                } else {
+                    page.getPageHeader().setNextPage(Page.NO_PAGE);
+                }
+                
                 long nextPageNum = (len==chunkSize) ? next.getPageNum() 
                                                     : Page.NO_PAGE;
-
-                page.getPageHeader().setNextPage( nextPageNum );
 
                 if (isTransactional && transaction != null) {
                     Loggable loggable = new WriteOverflowPageLoggable(
@@ -2998,6 +3003,8 @@ public class DOMFile extends BTree implements Lockable {
 
                 writeValue(page, value);
                 pageCount++;
+                page = next;
+                next = null;
 
                 len = is.read(buf);
             }
