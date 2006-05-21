@@ -240,12 +240,12 @@ return
 declare namespace request="http://exist-db.org/xquery/request";
 
 <request>
-<request-uri>{request:request-uri()}</request-uri>
+<request-uri>{request:get-uri()}</request-uri>
 <parameters>
 	{
-		for $name in request:parameter-names() return
+		for $name in request:get-parameter-names() return
 			<parameter name="{$name}">
-				<value>{request:request-parameter($name, ())}</value>
+				<value>{request:get-parameter($name, ())}</value>
 			</parameter>
 	}
 </parameters>
