@@ -2966,60 +2966,48 @@ public class DOMFile extends BTree implements Lockable {
 			firstPage = getPage(first);
 		}
 
-                // TODO DWES under construction
-                public int write(Txn transaction, InputStream is){
-                    
-                    int pageCount = 0;
-                    int chunkSize = fileHeader.getWorkSize();
-                    int pos = 0;
-                    Page page = firstPage, next = null;
-                    try {
-                        
-                        // Transfer bytes from in to out
-                        byte[] buf = new byte[chunkSize];
-                        int len;
-                        while ((len = is.read(buf)) > 0) {
-                            
-                            next = createNewPage();
-                            
-                            Value value = new Value(buf, 0, len);
-                            
-                            long nextPage = (len==chunkSize) ? next.getPageNum() : Page.NO_PAGE;
-                            
-                            page.getPageHeader().setNextPage( nextPage );
-                          
-                            // TODO DWES ; this seem to be rightm but where to put
-                            // Page.NO_PAGE ?
-                            if (isTransactional && transaction != null) {
-                                
-                                
-                                
-                                Loggable loggable = new WriteOverflowPageLoggable(
-                                        transaction, page.getPageNum(),
-                                        nextPage , value);
-                                writeToLog(loggable, page);
-                            }
-                            
-                            writeValue(page, value);
-                            pageCount++;
-                        }
-                        
-//                        if (isTransactional && transaction != null) {
-//                            Loggable loggable = new WriteOverflowPageLoggable(
-//                                    transaction, page.getPageNum(),
-//                                    remaining > 0 ? next.getPageNum() : Page.NO_PAGE, value);
-//                            writeToLog(loggable, page);
-//                        }
-                        
-//                        page.getPageHeader().setNextPage(Page.NO_PAGE);
-                        
-                    } catch (IOException ex) {
-                       LOG.error("io error while writing overflow page", ex);
-                    }
-                    
-                    return pageCount;
-                    
+    // TODO DWES under construction
+    public int write(Txn transaction, InputStream is){
+
+        int pageCount = 0;
+        int chunkSize = fileHeader.getWorkSize();
+        int pos = 0;
+        Page page = firstPage, next = null;
+        
+        try {
+            // Transfer bytes from in to out
+            byte[] buf = new byte[chunkSize];
+            int len = is.read(buf);
+            while ( len != -1 ) {
+                // len 0=<n=<chunkSize
+                next = createNewPage();
+
+                Value value = new Value(buf, 0, len);
+
+                long nextPageNum = (len==chunkSize) ? next.getPageNum() : Page.NO_PAGE;
+
+                page.getPageHeader().setNextPage( nextPageNum );
+
+                if (isTransactional && transaction != null) {
+                    Loggable loggable = new WriteOverflowPageLoggable(
+                            transaction, page.getPageNum(),
+                            nextPageNum , value);
+                    writeToLog(loggable, page);
                 }
+
+                writeValue(page, value);
+                pageCount++;
+
+                len = is.read(buf);
+            }
+
+        } catch (IOException ex) {
+           LOG.error("io error while writing overflow page", ex);
+        }
+
+        return pageCount;
+    }
+    
 		public int write(Txn transaction, byte[] data) {
                     int pageCount = 0;
                     try {
