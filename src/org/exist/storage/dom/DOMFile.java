@@ -2984,14 +2984,19 @@ public class DOMFile extends BTree implements Lockable {
                             
                             Value value = new Value(buf, 0, len);
                             
-                            page.getPageHeader().setNextPage(next.getPageNum());
+                            long nextPage = (len==chunkSize) ? next.getPageNum() : Page.NO_PAGE;
+                            
+                            page.getPageHeader().setNextPage( nextPage );
                           
                             // TODO DWES ; this seem to be rightm but where to put
                             // Page.NO_PAGE ?
                             if (isTransactional && transaction != null) {
+                                
+                                
+                                
                                 Loggable loggable = new WriteOverflowPageLoggable(
                                         transaction, page.getPageNum(),
-                                        next.getPageNum() , value);
+                                        nextPage , value);
                                 writeToLog(loggable, page);
                             }
                             
@@ -3006,7 +3011,7 @@ public class DOMFile extends BTree implements Lockable {
 //                            writeToLog(loggable, page);
 //                        }
                         
-                        page.getPageHeader().setNextPage(Page.NO_PAGE);
+//                        page.getPageHeader().setNextPage(Page.NO_PAGE);
                         
                     } catch (IOException ex) {
                        LOG.error("io error while writing overflow page", ex);
