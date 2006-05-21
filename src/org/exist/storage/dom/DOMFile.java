@@ -2975,7 +2975,7 @@ public class DOMFile extends BTree implements Lockable {
         Page page = firstPage, next = null;
         
         try {
-            // Transfer bytes from in to out
+            // Transfer bytes from inputstream to db
             byte[] buf = new byte[chunkSize];
             int len = is.read(buf);
             while ( len != -1 ) {
@@ -2984,7 +2984,8 @@ public class DOMFile extends BTree implements Lockable {
 
                 Value value = new Value(buf, 0, len);
 
-                long nextPageNum = (len==chunkSize) ? next.getPageNum() : Page.NO_PAGE;
+                long nextPageNum = (len==chunkSize) ? next.getPageNum() 
+                                                    : Page.NO_PAGE;
 
                 page.getPageHeader().setNextPage( nextPageNum );
 
