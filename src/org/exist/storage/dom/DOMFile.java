@@ -2982,7 +2982,7 @@ public class DOMFile extends BTree implements Lockable {
                             
                             next = createNewPage();
                             
-                            Value value = new Value(buf);
+                            Value value = new Value(buf, 0, len);
                             
                             page.getPageHeader().setNextPage(next.getPageNum());
                           
