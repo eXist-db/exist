@@ -2986,17 +2986,26 @@ public class DOMFile extends BTree implements Lockable {
                             
                             page.getPageHeader().setNextPage(next.getPageNum());
                           
-                            // What does this?
+                            // TODO DWES ; this seem to be rightm but where to put
+                            // Page.NO_PAGE ?
+                            if (isTransactional && transaction != null) {
+                                Loggable loggable = new WriteOverflowPageLoggable(
+                                        transaction, page.getPageNum(),
+                                        next.getPageNum() , value);
+                                writeToLog(loggable, page);
+                            }
+                            
+                            writeValue(page, value);
+                            pageCount++;
+                        }
+                        
 //                        if (isTransactional && transaction != null) {
 //                            Loggable loggable = new WriteOverflowPageLoggable(
 //                                    transaction, page.getPageNum(),
 //                                    remaining > 0 ? next.getPageNum() : Page.NO_PAGE, value);
 //                            writeToLog(loggable, page);
 //                        }
-                            
-                            writeValue(page, value);
-                            pageCount++;
-                        }
+                        
                         page.getPageHeader().setNextPage(Page.NO_PAGE);
                         
                     } catch (IOException ex) {
