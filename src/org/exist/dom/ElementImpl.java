@@ -714,6 +714,10 @@ public class ElementImpl extends NamedNode implements Element {
     	long start = firstChildID();
         for (long i = start; i < start + children; i++) {
             Node child = ((DocumentImpl)getOwnerDocument()).getNode(i);
+            //How could this be possible ?
+            //http://sourceforge.net/tracker/index.php?func=detail&aid=1492390&group_id=17691&atid=117691
+            if (child == null)
+            	break;
             if (child.getNodeType() != Node.ATTRIBUTE_NODE)                
             	break;
             Node duplicate = findAttribute(child, attrs);
