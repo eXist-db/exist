@@ -78,6 +78,7 @@ public class Predicate extends PathExpr {
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         contextInfo.addFlag(IN_PREDICATE); // set flag to signal subexpression that we are in a predicate
         contextInfo.removeFlag(IN_WHERE_CLAUSE);	// remove where clause flag
+        contextInfo.removeFlag(DOT_TEST);
         outerContextId = contextInfo.getContextId();
         contextInfo.setContextId(getExpressionId());
         AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
