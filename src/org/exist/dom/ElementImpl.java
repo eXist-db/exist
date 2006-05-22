@@ -930,8 +930,10 @@ public class ElementImpl extends NamedNode implements Element {
     /**
      * @see org.w3c.dom.Node#getNodeValue()
      */
-    public String getNodeValue() throws DOMException {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getNodeValue() not implemented on class " + getClass().getName());
+    public String getNodeValue() /*throws DOMException*/ {
+    	//TODO : parametrize the boolea value ?
+    	return getBroker().getNodeValue(this, false);
+        //throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getNodeValue() not implemented on class " + getClass().getName());
     }    
 
     /**
