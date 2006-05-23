@@ -159,12 +159,17 @@ public class MemTreeBuilder {
 	
 	public int addAttribute(QName qname, String value) {
 		int lastNode = doc.getLastNode();
-		if(0 < lastNode && doc.nodeKind[lastNode] != Node.ELEMENT_NODE) {
-			lastNode = characters(value);
-		} else {
-			lastNode = doc.addAttribute(lastNode, qname, value);
-		}
-		return lastNode;
+		//if(0 < lastNode && doc.nodeKind[lastNode] != Node.ELEMENT_NODE) {
+			//Definitely wrong !
+			//lastNode = characters(value);
+		//} else {
+			//lastNode = doc.addAttribute(lastNode, qname, value);
+		//}
+		int nodeNr = doc.addAttribute(lastNode, qname, value);
+		//TODO :
+		//1) call linkNode(nodeNr); ?
+		//2) is there a relationship between lastNode and nodeNr ?
+		return nodeNr;
 	}
 	
 	/**
