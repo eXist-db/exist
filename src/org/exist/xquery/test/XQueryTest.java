@@ -32,6 +32,7 @@ import org.xmldb.api.modules.XPathQueryService;
 public class XQueryTest extends XMLTestCase {
 
 	private static final String NUMBERS_XML = "numbers.xml";
+	private static final String BOWLING_XML = "bowling.xml";
 	private static final String MODULE1_NAME = "module1.xqm";
 	private static final String MODULE2_NAME = "module2.xqm";
 	private static final String MODULE3_NAME = "module3.xqm";
@@ -99,6 +100,49 @@ public class XQueryTest extends XMLTestCase {
 	         	"<x:edition>place</x:edition> \n" +
 	         "</rdf:Description> \n" +
 	         "</rdf:RDF>";
+	
+	private final static String bowling = 
+		"<series>" +
+			"<game num='1'>" +
+				"<frame num='1'>" +
+					"<throw num='1' pins='4'/>" +
+					"<throw num='1' pins='6'/>" +
+				"</frame>" +
+				"<frame num='2'>" +
+					"<throw num='1' pins='10'/>" +
+				"</frame>" +
+				"<frame num='3'>" +
+					"<throw num='1' pins='4'/>" +
+					"<throw num='1' pins='5'/>" +
+				"</frame>" +
+			"</game>" +
+			"<game num='2'>" +
+				"<frame num='1'>" +
+					"<throw num='1' pins='4'/>" +
+					"<throw num='1' pins='6'/>" +
+				"</frame>" +
+				"<frame num='2'>" +
+					"<throw num='1' pins='10'/>" +
+				"</frame>" +
+				"<frame num='3'>" +
+					"<throw num='1' pins='4'/>" +
+					"<throw num='1' pins='5'/>" +
+				"</frame>" +
+			"</game>" +
+			"<game num='3'>" +
+				"<frame num='1'>" +
+					"<throw num='1' pins='4'/>" +
+					"<throw num='1' pins='6'/>" +
+				"</frame>" +
+				"<frame num='2'>" +
+					"<throw num='1' pins='10'/>" +
+				"</frame>" +
+				"<frame num='3'>" +
+					"<throw num='1' pins='4'/>" +
+					"<throw num='1' pins='5'/>" +
+				"</frame>" +
+			"</game>" +
+		"</series>";
 	
 	private Collection testCollection;
 	private static String attributeXML;
@@ -1446,11 +1490,55 @@ public class XQueryTest extends XMLTestCase {
             System.out.println("testXUpdateWithAdvancentTextNodes 1: ========" );
             result = service.query(query);              
             assertEquals( "XQuery: " + query, 1, result.getSize() );
-	} catch (XMLDBException e) {
-		System.out.println("testXUpdateWithAdvancentTextNodes(): XMLDBException: "+ e);
-		fail(e.getMessage());
+		} catch (XMLDBException e) {
+			System.out.println("testXUpdateWithAdvancentTextNodes(): XMLDBException: "+ e);
+			fail(e.getMessage());
+		}
 	}
-}		
+	/**
+	 * Fails with NPE
+	 *
+	 */
+	public void testXUpdateAttributesAndElements() {
+		ResourceSet result;
+		String query;	
+		
+        query = 
+		"declare function local:update-game($game) {\n" +
+		"local:update-frames($game),\n" +
+		"update insert\n" +
+		"<stats>\n" +
+		"<strikes>{count($game/frame/throw[@num=1][@pins=10])}</strikes>\n" +
+		"<spares>\n" +
+		"<attempted>{count($game/frame/throw[@num=1][@pins!=10])}</attempted>\n" +
+		"</spares>\n" +
+		"</stats>\n" +
+		"into $game\n" +
+		"};\n" +
+		"declare function local:update-frames($game) {\n" +
+		// Uncomment this, and it works:
+		//"for $frame in $game/frame return update insert <processed/> into $frame,\n" +
+		"for $f in (1 to 3)\n" +
+		"let $frame := $game/frame[@num=$f]\n" +
+		"let $points := sum($frame/throw/@pins)\n" +
+		"return update insert attribute points {$points} into $frame\n" +
+		"};\n" +
+		"let $series := document('bowling.xml')/series\n" +
+		"let $nul1 := for $game in $series/game return local:update-game($game)\n" +
+		"return $series/game/stats\n";
+		
+		try {
+			XPathQueryService service = 
+				storeXMLStringAndGetQueryService(BOWLING_XML, bowling);
+	
+            System.out.println("testXUpdateAttributesAndElements 1: ========" );
+            result = service.query(query);              
+            assertEquals( "XQuery: " + query, 3, result.getSize() );
+		} catch (XMLDBException e) {
+			System.out.println("testXUpdateAttributesAndElements(): XMLDBException: "+ e);
+			fail(e.getMessage());
+		}
+	}
 	/**
 	 * @return
 	 * @throws XMLDBException
