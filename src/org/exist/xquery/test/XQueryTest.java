@@ -103,44 +103,11 @@ public class XQueryTest extends XMLTestCase {
 	
 	private final static String bowling = 
 		"<series>" +
-			"<game num='1'>" +
-				"<frame num='1'>" +
-					"<throw num='1' pins='4'/>" +
-					"<throw num='1' pins='6'/>" +
-				"</frame>" +
-				"<frame num='2'>" +
-					"<throw num='1' pins='10'/>" +
-				"</frame>" +
-				"<frame num='3'>" +
-					"<throw num='1' pins='4'/>" +
-					"<throw num='1' pins='5'/>" +
-				"</frame>" +
+			"<game>" +
+				"<frame/>" +
 			"</game>" +
-			"<game num='2'>" +
-				"<frame num='1'>" +
-					"<throw num='1' pins='4'/>" +
-					"<throw num='1' pins='6'/>" +
-				"</frame>" +
-				"<frame num='2'>" +
-					"<throw num='1' pins='10'/>" +
-				"</frame>" +
-				"<frame num='3'>" +
-					"<throw num='1' pins='4'/>" +
-					"<throw num='1' pins='5'/>" +
-				"</frame>" +
-			"</game>" +
-			"<game num='3'>" +
-				"<frame num='1'>" +
-					"<throw num='1' pins='4'/>" +
-					"<throw num='1' pins='6'/>" +
-				"</frame>" +
-				"<frame num='2'>" +
-					"<throw num='1' pins='10'/>" +
-				"</frame>" +
-				"<frame num='3'>" +
-					"<throw num='1' pins='4'/>" +
-					"<throw num='1' pins='5'/>" +
-				"</frame>" +
+			"<game>" +
+				"<frame/>" +
 			"</game>" +
 		"</series>";
 	
@@ -1508,9 +1475,9 @@ public class XQueryTest extends XMLTestCase {
 		"local:update-frames($game),\n" +
 		"update insert\n" +
 		"<stats>\n" +
-		"<strikes>{count($game/frame/throw[@num=1][@pins=10])}</strikes>\n" +
+		"<strikes>4</strikes>\n" +
 		"<spares>\n" +
-		"<attempted>{count($game/frame/throw[@num=1][@pins!=10])}</attempted>\n" +
+		"<attempted>4</attempted>\n" +
 		"</spares>\n" +
 		"</stats>\n" +
 		"into $game\n" +
@@ -1518,10 +1485,8 @@ public class XQueryTest extends XMLTestCase {
 		"declare function local:update-frames($game) {\n" +
 		// Uncomment this, and it works:
 		//"for $frame in $game/frame return update insert <processed/> into $frame,\n" +
-		"for $f in (1 to 3)\n" +
-		"let $frame := $game/frame[@num=$f]\n" +
-		"let $points := sum($frame/throw/@pins)\n" +
-		"return update insert attribute points {$points} into $frame\n" +
+		"for $frame in $game/frame\n" +
+		"return update insert attribute points {4} into $frame\n" +
 		"};\n" +
 		"let $series := document('bowling.xml')/series\n" +
 		"let $nul1 := for $game in $series/game return local:update-game($game)\n" +
