@@ -2892,7 +2892,7 @@ public class NativeBroker extends DBBroker {
 	public void shutdown() {		
 		try {
 			flush();
-            cleanUpTempCollection();
+//            cleanUpTempCollection();
 			sync(Sync.MAJOR_SYNC);
             domDb.close();
             textEngine.close();
