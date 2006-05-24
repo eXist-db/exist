@@ -413,9 +413,7 @@ public class RpcConnection extends Thread {
                     hash.put("name", doc.getFileURI().toString());
                     hash.put("owner", perms.getOwner());
                     hash.put("group", perms.getOwnerGroup());
-                    hash
-                            .put("permissions", new Integer(perms
-                            .getPermissions()));
+                    hash.put("permissions", new Integer(perms.getPermissions()));
                     hash.put("type",
                             doc.getResourceType() == DocumentImpl.BINARY_FILE
                             ? "BinaryResource"
@@ -473,6 +471,8 @@ public class RpcConnection extends Thread {
                     : "XMLResource");
             hash.put("content-length", new Integer(doc.getContentLength()));
             hash.put("mime-type", doc.getMetadata().getMimeType());
+            hash.put("created", new Date(doc.getMetadata().getCreated()));
+            hash.put("modified", new Date(doc.getMetadata().getLastModified()));
             return hash;
         } finally {
             if(doc != null)
