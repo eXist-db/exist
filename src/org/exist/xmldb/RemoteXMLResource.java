@@ -67,8 +67,8 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
     protected Properties outputProperties = null;
     protected LexicalHandler lexicalHandler = null;
 	
-    protected Date datecreated= null;
-    protected Date datemodified= null;
+    protected Date dateCreated= null;
+    protected Date dateModified= null;
 	
     public RemoteXMLResource(RemoteCollection parent, XmldbURI docId, String id)
 	throws XMLDBException {
@@ -94,27 +94,11 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
     }
 
     public Date getCreationTime() throws XMLDBException {
-	Vector params = new Vector(1);
-	params.addElement(path.toString());
-	try {
-	    return (Date) ((Vector) parent.getClient().execute("getTimestamps", params)).get(0);
-	} catch (XmlRpcException e) {
-	    throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
-	} catch (IOException e) {
-	    throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
-	}
+        return dateCreated;
     }
 
     public Date getLastModificationTime() throws XMLDBException {
-	Vector params = new Vector(1);
-	params.addElement(path.toString());
-	try {
-	    return (Date) ((Vector) parent.getClient().execute("getTimestamps", params)).get(1);
-	} catch (XmlRpcException e) {
-	    throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
-	} catch (IOException e) {
-	    throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
-	}
+        return dateModified;
     }
 
     public Object getContent() throws XMLDBException {
@@ -468,4 +452,12 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
     	}
 		
 }
+
+    protected void setDateCreated(Date dateCreated) {
+        this.dateCreated = dateCreated;
+    }
+
+    protected void setDateModified(Date dateModified) {
+        this.dateModified = dateModified;
+    }
 }

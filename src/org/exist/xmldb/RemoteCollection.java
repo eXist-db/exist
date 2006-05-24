@@ -342,11 +342,17 @@ public class RemoteCollection implements CollectionImpl {
 			RemoteXMLResource r = new RemoteXMLResource(this, -1, -1, docUri, null);
 			r.setPermissions(perm);
 			r.setContentLength(contentLen);
+            r.setDateCreated((Date) hash.get("created"));
+            r.setDateModified((Date) hash.get("modified"));
+            if (hash.containsKey("mime-type"))
+                r.setMimeType((String) hash.get("mime-type"));
 			return r;
 		} else {
 			RemoteBinaryResource r = new RemoteBinaryResource(this, docUri);
 			r.setContentLength(contentLen);
 			r.setPermissions(perm);
+            r.setDateCreated((Date) hash.get("created"));
+            r.setDateModified((Date) hash.get("modified"));
             if (hash.containsKey("mime-type"))
                 r.setMimeType((String) hash.get("mime-type"));
 			return r;
@@ -451,23 +457,23 @@ public class RemoteCollection implements CollectionImpl {
 					ErrorCodes.INVALID_RESOURCE,
 					"failed to read resource from file " + file.getAbsolutePath());
 			if (file.length() < MAX_CHUNK_LENGTH) {
-				((RemoteXMLResource)res).datecreated =a;
-				((RemoteXMLResource)res).datemodified =b;
+				((RemoteXMLResource)res).dateCreated =a;
+				((RemoteXMLResource)res).dateModified =b;
 				store((RemoteXMLResource)res);
 			} else {
-				((RemoteXMLResource)res).datecreated =a;
-				((RemoteXMLResource)res).datemodified =b;
+				((RemoteXMLResource)res).dateCreated =a;
+				((RemoteXMLResource)res).dateModified =b;
 				uploadAndStore(res);
 			}
 		} else if(res.getResourceType().equals("BinaryResource"))
 		{
-			((RemoteBinaryResource)res).datecreated =a;
-	        ((RemoteBinaryResource)res).datemodified =b;			
+			((RemoteBinaryResource)res).dateCreated =a;
+	        ((RemoteBinaryResource)res).dateModified =b;			
 			store((RemoteBinaryResource)res);
 		}	
 		else {
-			((RemoteXMLResource)res).datecreated =a;
-		    ((RemoteXMLResource)res).datemodified =b;
+			((RemoteXMLResource)res).dateCreated =a;
+		    ((RemoteXMLResource)res).dateModified =b;
 			store((RemoteXMLResource)res);
 	}
 	}
@@ -484,9 +490,9 @@ public class RemoteCollection implements CollectionImpl {
 		}
 		params.addElement(new Integer(1));
 		
-		if (res.datecreated != null) {
-		params.addElement(res.datecreated );
-		params.addElement(res.datemodified );			
+		if (res.dateCreated != null) {
+		params.addElement(res.dateCreated );
+		params.addElement(res.dateModified );			
 		}
 		        
 		try {
@@ -514,9 +520,9 @@ public class RemoteCollection implements CollectionImpl {
 		params.addElement(Boolean.TRUE);
 		
 		
-		if ((Date)res.datecreated != null) {
-			params.addElement((Date)res.datecreated );
-			params.addElement((Date)res.datemodified );			
+		if ((Date)res.dateCreated != null) {
+			params.addElement((Date)res.dateCreated );
+			params.addElement((Date)res.dateModified );			
 			}
 		
 		try {
@@ -563,9 +569,9 @@ public class RemoteCollection implements CollectionImpl {
 			}
 			params.addElement(Boolean.TRUE);
 			
-			if ( ((RemoteXMLResource)res).datecreated  != null ) {
-				params.addElement( ((RemoteXMLResource)res).datecreated );
-				params.addElement( ((RemoteXMLResource)res).datemodified );			
+			if ( ((RemoteXMLResource)res).dateCreated  != null ) {
+				params.addElement( ((RemoteXMLResource)res).dateCreated );
+				params.addElement( ((RemoteXMLResource)res).dateModified );			
 				}
 
 			rpcClient.execute("parseLocal", params);
