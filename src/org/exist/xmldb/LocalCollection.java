@@ -506,19 +506,22 @@ public class LocalCollection extends Observable implements CollectionImpl {
                     throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
                 if (!checkPermissions(collection, Permission.READ))
                     return new String[0];
-                
+
                 List allresources = new ArrayList();
                 DocumentImpl doc;
                 for (Iterator i = collection.iterator(broker); i.hasNext(); ) {
                     doc = (DocumentImpl) i.next();
                     
-                    // Only if Locktoken has Null resource flag set
+                    // Include only when (1) locktoken is present or (2)
+                    // locktoken indicates that it is not a null resource
                     LockToken lock = doc.getMetadata().getLockToken();
-                    if(lock==null || lock.getResourceType()!=LockToken.RESOURCE_TYPE_NULL_RESOURCE){
+                    if(lock==null || (!lock.isNullResource()) ){
                         allresources.add( doc.getFileURI() );
                     }
+                    
                 }
                 
+                // Copy content of list into String array.
                 int j=0;
                 String[] resources = new String[allresources.size()];
                 for(Iterator i = allresources.iterator(); i.hasNext(); j++){
