@@ -28,6 +28,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.Collator;
 import java.util.Iterator;
@@ -607,6 +608,15 @@ public abstract class DBBroker extends Observable {
      * @param data the document binary data
      */
     public abstract void storeBinaryResource(Txn transaction, BinaryDocument blob, byte[] data);
+
+    /**
+     * Stores the given data under the given binary resource descriptor 
+     * (BinaryDocument).
+     * 
+     * @param blob the binary document descriptor
+     * @param is the document binary data as input stream
+     */
+    public abstract void storeBinaryResource(Txn transaction, BinaryDocument blob, InputStream is);
     
     public abstract void getCollectionResources(Collection collection);
 	

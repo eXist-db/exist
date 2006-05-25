@@ -140,25 +140,10 @@ public class Put extends AbstractWebDAVMethod {
                 collection.store(txn, broker, info, is, false);
                 LOG.debug("done");
             } else {
-                LOG.debug("storing Binary resource");
-                
-                // TODO Here binary data is written as a blob
-                // into the database. This can cause Out of (heapsize) memory
-                // exceptions
-                
-                // Write content of file into ByteArray
-                byte[] chunk = new byte[4096];
-                ByteArrayOutputStream os = new ByteArrayOutputStream();
+                LOG.debug("storing Binary resource"); 
                 FileInputStream is = new FileInputStream(tempFile);
-                int l;
-                while((l = is.read(chunk)) > -1) {
-                    os.write(chunk, 0, l);
-                }
-                
-                // Pass ByteArray in one step to collection
-                doc = collection.addBinaryResource(txn, broker,
-                		pathUri, os.toByteArray(), contentType);
-                
+                doc = collection.addBinaryResource(txn, broker, pathUri, is, contentType);
+                is.close();
                 LOG.debug("done");
             }
             

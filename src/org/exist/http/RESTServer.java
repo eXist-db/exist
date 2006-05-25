@@ -766,17 +766,13 @@ public class RESTServer {
                 collection.store(transaction, broker, info, createInputSource(charset,url), false);
                 response.sendError(HttpServletResponse.SC_OK, "Document " + docUri + " stored.");
             } else {
-                byte[] chunk = new byte[4096];
-                ByteArrayOutputStream os = new ByteArrayOutputStream();
+
                 FileInputStream is = new FileInputStream(tempFile);
-                int l;
-                while ((l = is.read(chunk)) > -1) {
-                    os.write(chunk, 0, l);
-                }
-                collection.addBinaryResource(transaction, broker, docUri, os
-                        .toByteArray(), contentType);
+                collection.addBinaryResource(transaction, broker, docUri, is, contentType);
+                is.close();
                 response.sendError(HttpServletResponse.SC_OK, "Document " + docUri + " stored as binary resource.");
             }
+            
             transact.commit(transaction);
         } catch (SAXParseException e) {
             transact.abort(transaction);
