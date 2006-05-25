@@ -137,7 +137,6 @@ public class Get extends AbstractWebDAVMethod {
                 }
                 
             } else {
-                // contentData = broker.getBinaryResource((BinaryDocument)resource);
                 broker.readBinaryResource((BinaryDocument) resource, os);
                 os.flush();
             }
