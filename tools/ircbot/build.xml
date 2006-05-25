@@ -37,7 +37,7 @@
     </target>
 	
     <target name="jar" depends="compile">
-        <jar basedir="${classes}" jarfile="ircbot.jar"/>
+        <jar basedir="${classes}" jarfile="${dist}/ircbot.jar"/>
     </target>
 
     <target name="clean">
