@@ -36,7 +36,7 @@ public class XBot extends PircBot {
 
 	private final static String VERSION = "0.1";
 	
-	private final static String URI = "xmldb:exist://localhost:8080/exist/xmlrpc/db";
+	private final static String URI = "xmldb:exist://localhost:8080/xmlrpc/db";
 	
 	private final static String COLLECTION = "ircbot";
 	
