@@ -321,7 +321,7 @@ public class DOMFile extends BTree implements Lockable {
 	 * Store a raw binary resource into the file. The data will always be
 	 * written into an overflow page.
 	 * 
-	 * @param value
+	 * @param value     Binary resource as byte array
 	 * @return
 	 */
         public long addBinary(Txn transaction, DocumentImpl doc, byte[] value) {
@@ -332,7 +332,13 @@ public class DOMFile extends BTree implements Lockable {
         }
         
         
-        // TODO DWES under construction
+        /**
+         * Store a raw binary resource into the file. The data will always be
+         * written into an overflow page.
+         * 
+         * @param is   Binary resource as stream.
+         * @return
+         */
         public long addBinary(Txn transaction, DocumentImpl doc, InputStream is) {
             OverflowDOMPage overflow = new OverflowDOMPage(transaction);
             int pagesCount = overflow.write(transaction, is);
@@ -2966,55 +2972,70 @@ public class DOMFile extends BTree implements Lockable {
 			firstPage = getPage(first);
 		}
 
-    // TODO DWES under construction
-    public int write(Txn transaction, InputStream is){
+// Write binary resource from inputstream
+public int write(Txn transaction, InputStream is) {
 
-        int pageCount = 0;
-        int chunkSize = fileHeader.getWorkSize();
-        Page page = firstPage, next = null;
+    int pageCount = 0;
+    int chunkSize = fileHeader.getWorkSize();
+    Page page = firstPage, next = null;
+
+    try {
+        // Transfer bytes from inputstream to db
+        byte[] buf = new byte[chunkSize];
+        int len = is.read(buf);
         
-        try {
-            // Transfer bytes from inputstream to db
-            byte[] buf = new byte[chunkSize];
-            int len = is.read(buf);
-            Value value =null;
+        // Check if stream does contain any data
+        if(len<1){
+            page.setPageNum(Page.NO_PAGE);
+            page.getPageHeader().setNextPage(Page.NO_PAGE);
+            return -1;
+        }
+        
+        // Read remaining stream
+        while ( len > -1 ) {
             
-            while ( len > -1 ) {
-
-                value = new Value(buf, 0, len);
-
+            // If there are bytes in stream, read
+            if(len>0){
+                Value value = new Value(buf, 0, len);
+                
                 if (len == chunkSize) {
                     next = createNewPage();
                     page.getPageHeader().setNextPage(next.getPageNum());
                     
-                } else {
+                } else { // there are less then 'chuckSize'
                     page.getPageHeader().setNextPage(Page.NO_PAGE);
                 }
                 
-                long nextPageNum = (len==chunkSize) ? next.getPageNum() 
-                                                    : Page.NO_PAGE;
-
+                // If no data is in input stream left, don't write
                 if (isTransactional && transaction != null) {
+                    
+                    
+                    long nextPageNum = (len==chunkSize) ? next.getPageNum()
+                                                        : Page.NO_PAGE;
+                    
                     Loggable loggable = new WriteOverflowPageLoggable(
                             transaction, page.getPageNum(),
                             nextPageNum , value);
                     writeToLog(loggable, page);
                 }
-
+                
                 writeValue(page, value);
                 pageCount++;
                 page = next;
                 next = null;
-
-                len = is.read(buf);
+                
             }
-
-        } catch (IOException ex) {
-           LOG.error("io error while writing overflow page", ex);
+            len = is.read(buf);
         }
+        // TODO what if remaining length=0?
 
-        return pageCount;
+    } catch (IOException ex) {
+        LOG.error("io error while writing overflow page", ex);
     }
+
+    return pageCount;
+}
+    
     
 		public int write(Txn transaction, byte[] data) {
                     int pageCount = 0;
