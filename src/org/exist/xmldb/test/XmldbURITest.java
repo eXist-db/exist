@@ -928,6 +928,20 @@ public class XmldbURITest extends TestCase {
         }
     }
     
+    public void testAppenders(){
+        
+        String   append_txt_1 = "test/new_test.xml";
+        XmldbURI root         = XmldbURI.ROOT_COLLECTION_URI;
+        XmldbURI append_uri_1 = root.append(append_txt_1);
+        assertEquals( root.toString() +"/"+ append_txt_1 , append_uri_1.toString() );
+
+        assertEquals( 
+                    TestConstants.TEST_COLLECTION_URI.toString() 
+                    + "/" + TestConstants.TEST_BINARY_URI.toString() ,
+                    (TestConstants.TEST_COLLECTION_URI.append(TestConstants.TEST_BINARY_URI)).toString()
+                );
+    }
+    
     public static void main(String[] args) {
         junit.textui.TestRunner.run(XmldbURITest.class);
     }
