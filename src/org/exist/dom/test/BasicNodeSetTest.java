@@ -29,6 +29,7 @@ import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.AbstractNodeSet;
 import org.exist.dom.DocumentSet;
+import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.NodeSetHelper;
@@ -46,6 +47,7 @@ import org.exist.util.XMLFilenameFilter;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.AncestorSelector;
 import org.exist.xquery.ChildSelector;
+import org.exist.xquery.Constants;
 import org.exist.xquery.DescendantOrSelfSelector;
 import org.exist.xquery.DescendantSelector;
 import org.exist.xquery.NameTest;
@@ -69,15 +71,21 @@ import org.xml.sax.SAXException;
 public class BasicNodeSetTest extends TestCase {
 
 	private final static String NESTED_XML =
-		"<root>" +
-		"	<section n='1'>" +
-		"		<section n='1.1'>" +
-		"			<section n='1.1.1'/>" +
-		"			<section n='1.1.2'/>" +
-		"			<section n='1.1.3'/>" +
-		"		</section>" +
-		"	</section>" +
-		"</root>";
+        "<section n='1'>" +
+		    "<section n='1.1'>" +
+		        "<section n='1.1.1'>" +
+		            "<para n='1.1.1.1'/>" +
+		            "<para n='1.1.1.2'/>" +
+		            "<para n='1.1.1.3'/>" +
+	            "</section>" +
+                "<section n='1.1.2'>" +
+                    "<para n='1.1.2.1'/>" +
+                "</section>" +
+            "</section>" +
+            "<section n='1.2'>" +
+                "<para n='1.2.1'/>" +
+            "</section>" +
+        "</section>";
 	
 	private static String directory = "samples/shakespeare";
     
@@ -238,8 +246,8 @@ public class BasicNodeSetTest extends TestCase {
             result = ((AbstractNodeSet) speakers).selectPrecedingSiblings(largeSet.toNodeSet(), -1);
             assertEquals(160, result.getLength());
             
-            Sequence nestedSet = executeQuery(broker, "//section[@n = '1.1']", 1, null);
-            test = new NameTest(Type.ELEMENT, new QName("section", ""));
+            Sequence nestedSet = executeQuery(broker, "//section[@n = '1.1.1']", 1, null);
+            test = new NameTest(Type.ELEMENT, new QName("para", ""));
             NodeSet children = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT,
                     docs, test.getName(), null);
             result = ((AbstractNodeSet)children).hasChildrenInSet(nestedSet.toNodeSet(), NodeSet.DESCENDANT, -1);
@@ -253,6 +261,87 @@ public class BasicNodeSetTest extends TestCase {
         }
 	}
 	
+    public void testOptimizations() {
+        DBBroker broker = null;
+        try {
+            assertNotNull(pool);
+            broker = pool.get(SecurityManager.SYSTEM_USER);
+            assertNotNull(broker);
+            
+            Serializer serializer = broker.getSerializer();
+            serializer.reset();
+            DocumentSet docs = root.allDocs(broker, new DocumentSet(), true, false);
+
+            System.out.println("------------ Testing NativeElementIndex.findChildNodesByTagName ---------");
+            // parent set: 1.1.1; child set: 1.1.1.1, 1.1.1.2, 1.1.1.3, 1.1.2.1, 1.2.1
+            ExtArrayNodeSet nestedSet = (ExtArrayNodeSet) executeQuery(broker, "//section[@n = '1.1.1']", 1, null);
+            NodeSet children = 
+            	broker.getElementIndex().findDescendantsByTagName(ElementValue.ELEMENT, 
+            			new QName("para", ""), Constants.CHILD_AXIS, docs, nestedSet, -1);
+            assertEquals(3, children.getLength());
+            
+            // parent set: 1.1; child set: 1.1.1, 1.1.2
+            nestedSet = (ExtArrayNodeSet) executeQuery(broker, "//section[@n = '1.1']", 1, null);
+            children = 
+            	broker.getElementIndex().findDescendantsByTagName(ElementValue.ELEMENT, 
+            			new QName("section", ""), Constants.CHILD_AXIS, docs, nestedSet, -1);
+            assertEquals(2, children.getLength());
+            
+            // parent set: 1, 1.1, 1.1.1, 1.1.2 ; child set: 1.1.1.1, 1.1.1.2, 1.1.1.3, 1.1.2.1, 1.2.1
+            // problem: ancestor set contains nested nodes
+            nestedSet = (ExtArrayNodeSet) executeQuery(broker, "//section[@n = ('1.1', '1.1.1', '1.1.2')]", 3, null);
+            children = 
+            	broker.getElementIndex().findDescendantsByTagName(ElementValue.ELEMENT, 
+        			new QName("para", ""), Constants.CHILD_AXIS, docs, nestedSet, -1);
+            assertEquals(4, children.getLength());
+            
+            // parent set: 1.1, 1.1.2, 1.2 ; child set: 1.1.1.1, 1.1.1.2, 1.1.1.3, 1.1.2.1, 1.2.1
+            // problem: ancestor set contains nested nodes
+            nestedSet = (ExtArrayNodeSet) executeQuery(broker, "//section[@n = ('1.1', '1.1.2', '1.2')]", 3, null);
+            children = 
+                broker.getElementIndex().findDescendantsByTagName(ElementValue.ELEMENT, new QName("para", ""), 
+                		Constants.CHILD_AXIS, docs, nestedSet, -1);
+            assertEquals(2, children.getLength());
+            
+            nestedSet = (ExtArrayNodeSet) executeQuery(broker, "//section[@n = '1.1']", 1, null);
+            children = 
+                broker.getElementIndex().findDescendantsByTagName(ElementValue.ELEMENT, new QName("para", ""), 
+                		Constants.DESCENDANT_AXIS, docs, nestedSet, -1);
+            assertEquals(4, children.getLength());
+            
+            nestedSet = (ExtArrayNodeSet) executeQuery(broker, "//section[@n = '1']", 1, null);
+            children = 
+                broker.getElementIndex().findDescendantsByTagName(ElementValue.ELEMENT, new QName("para", ""), 
+                		Constants.DESCENDANT_AXIS, docs, nestedSet, -1);
+            assertEquals(5, children.getLength());
+            
+            nestedSet = (ExtArrayNodeSet) executeQuery(broker, "//section[@n = '1.1.2']", 1, null);
+            children = 
+                broker.getElementIndex().findDescendantsByTagName(ElementValue.ELEMENT, new QName("section", ""), 
+                		Constants.DESCENDANT_SELF_AXIS, docs, nestedSet, -1);
+            assertEquals(1, children.getLength());
+            
+            nestedSet = (ExtArrayNodeSet) executeQuery(broker, "//section[@n = '1.1.2']", 1, null);
+            children = 
+                broker.getElementIndex().findDescendantsByTagName(ElementValue.ATTRIBUTE, new QName("n", ""), 
+                		Constants.ATTRIBUTE_AXIS, docs, nestedSet, -1);
+            assertEquals(1, children.getLength());
+            
+            nestedSet = (ExtArrayNodeSet) executeQuery(broker, "//section[@n = '1.1']", 1, null);
+            children = 
+                broker.getElementIndex().findDescendantsByTagName(ElementValue.ATTRIBUTE, new QName("n", ""), 
+                		Constants.DESCENDANT_ATTRIBUTE_AXIS, docs, nestedSet, -1);
+            assertEquals(7, children.getLength());
+            
+            System.out.println("------------ PASSED: NativeElementIndex.findChildNodesByTagName ---------");
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            if (pool != null) pool.release(broker);
+        }
+    }
+    
 	public void testVirtualNodeSet() {
 		DBBroker broker = null;
         try {

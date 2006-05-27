@@ -294,9 +294,9 @@ public class ElementImpl extends NamedNode implements Element {
      */
     public void appendChildInternal(StoredNode prevNode, StoredNode child) throws DOMException {
     	NodeId childId;
-    	if (prevNode == null)
+    	if (prevNode == null) {
     		childId = getNodeId().newChild();
-    	else {
+        } else {
     		if (prevNode.getNodeId() == null) {
     			LOG.warn(getQName() + " : " + prevNode.getNodeName());
     		}
