@@ -271,6 +271,12 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         return new ExtArrayIterator();
     }
 
+    public ByDocumentIterator iterateByDocument() {
+    	if (!isSorted())
+    		sort();
+    	return new ExtDocIterator();
+    }
+    
     /*
      * (non-Javadoc)
      * 
@@ -407,6 +413,12 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         return isSorted;
     }
     
+    public void setSorted(DocumentImpl document, boolean sorted) {
+    	Part part = getPart(document, false, -1);
+    	if (part != null)
+    		part.setIsSorted(sorted);
+    }
+    
     /**
      * Remove all duplicate nodes, but merge their
      * contexts.
@@ -420,7 +432,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
     }
     
     public void sort(boolean mergeContexts) {
-//              long start = System.currentTimeMillis();
+//        long start = System.currentTimeMillis();
         if (isSorted)
             return;
         Part part;
@@ -431,8 +443,8 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
             size += part.removeDuplicates(mergeContexts);
         }
         isSorted = true;
-//              System.out.println("sort took " + (System.currentTimeMillis() -
-//       start) + "ms.");
+//        System.out.println("sort took " + (System.currentTimeMillis() -
+//                start) + "ms.");
     }
 
     public final void sortInDocumentOrder() {
@@ -556,6 +568,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
     
     private final class Part {
 
+    	private boolean isSorted = false;
         private NodeProxy array[];
         private int length = 0;
 
@@ -671,8 +684,14 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
                 return null;
             return array[0].getDocument();
         }
+
+        void setIsSorted(boolean sorted) {
+        	this.isSorted = sorted;
+        }
         
         void sort() {
+        	if (isSorted)
+        		return;
             FastQSort.sortByNodeId(array, 0, length - 1);
         }
 
@@ -911,5 +930,42 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
          */
         public void remove() {
         }
+    }
+    
+    private class ExtDocIterator implements ByDocumentIterator {
+    	
+    	Part currentPart = null;
+        int pos = 0;
+        NodeProxy next = null;
+        
+        public ExtDocIterator() {
+        	if (partCount > 0)
+                currentPart = parts[0];
+            if (currentPart != null && currentPart.length > 0)
+                next = currentPart.get(0);
+        }
+        
+    	public void nextDocument(DocumentImpl document) {
+    		currentPart = getPart(document, false, -1);
+    		pos = 0;
+    		if (currentPart != null && currentPart.length > 0)
+                next = currentPart.get(0);
+    		else
+    			next = null;
+    	}
+    	
+    	public boolean hasNextNode() {
+    		return next != null;
+    	}
+    	
+    	public NodeProxy nextNode() {
+    		if (next == null)
+                return null;
+            NodeProxy n = next;
+            next = null;
+            if (++pos < currentPart.length)
+            	next = currentPart.get(pos);
+            return n;
+    	}
     }
 }
