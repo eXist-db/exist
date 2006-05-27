@@ -127,5 +127,6 @@ public class RecoverBinaryTest extends TestCase {
 
     protected void tearDown() {
         BrokerPool.stopAll(false);
+        pool = null;
     }
 }
