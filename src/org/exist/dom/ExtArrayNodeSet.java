@@ -609,8 +609,17 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
     				}
     				if (++pos < length)
     					nb = array[pos];
-    				else
-    					break;
+                    else if (ia.hasNext()) {
+                        NodeProxy next = (NodeProxy) ia.next();
+                        if (next.getNodeId().isDescendantOf(pa)) {
+                            pos = startPos;
+                            nb = array[pos];
+                            na = next;
+                            startPos = pos;
+                        } else
+                            break;
+                    } else
+                        break;
     			} else {
     				int cmp = pa.compareTo(pb);
     				if (cmp < 0) {
