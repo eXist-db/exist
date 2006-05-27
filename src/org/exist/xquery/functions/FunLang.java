@@ -31,6 +31,7 @@ import org.exist.dom.NodeSet;
 import org.exist.dom.NodeSetHelper;
 import org.exist.dom.QName;
 import org.exist.numbering.NodeId;
+import org.exist.storage.ElementValue;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Dependency;
@@ -81,7 +82,7 @@ public class FunLang extends Function {
         else {
             String lang = getArgument(0).eval(contextSequence).getStringValue();
             QName qname = new QName("lang", context.getURIForPrefix("xml"), "xml");
-    		NodeSet attribs = context.getBroker().getElementIndex().getAttributesByName(contextSequence.toNodeSet().getDocumentSet(), qname, null);
+    		NodeSet attribs = context.getBroker().getElementIndex().findElementsByTagName(ElementValue.ATTRIBUTE, contextSequence.toNodeSet().getDocumentSet(), qname, null);
     		NodeSet temp = new ExtArrayNodeSet(); 
     		for (Iterator i = attribs.iterator(); i.hasNext();) {    			
                 NodeProxy p = (NodeProxy) i.next();

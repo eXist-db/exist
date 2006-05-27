@@ -1261,6 +1261,7 @@ public class XQueryTest extends XMLTestCase {
             assertEquals( "XQuery: " + query, "OK", ((Element)resu.getContentAsDOM()).getAttribute("id"));    
         } catch (XMLDBException e) {
             System.out.println("testAttributeAxis(): XMLDBException: "+e);
+            e.printStackTrace();
             fail(e.getMessage());
         }
     }    

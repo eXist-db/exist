@@ -140,7 +140,7 @@ public abstract class BindingExpression extends AbstractExpression {
 					throw new XPathException("Internal evaluation error: context node is missing for node " +
 							current.getNodeId() + "!");
 				}
-				LOG.debug(current.debugContext());				
+//				LOG.debug(current.debugContext());
 				while (context != null) {
                     //TODO : Is this the context we want ? Not sure... would have prefered the LetExpr.
 					if (context.getContextId() == whereExpr.getContextId()) {
