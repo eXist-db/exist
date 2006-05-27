@@ -114,7 +114,6 @@ public class ValueIndexTest extends TestCase {
     public void testStrings() throws Exception {
         configureCollection();
         XPathQueryService service = storeXMLFileAndGetQueryService("items.xml", "src/org/exist/xquery/test/items.xml");
-        
         queryResource(service, "items.xml", "//item[@id = 'i2']", 1);
         queryResource(service, "items.xml", "//item[name = 'Racing Bicycle']", 1);
         queryResource(service, "items.xml", "//item[name > 'Racing Bicycle']", 4);
@@ -153,8 +152,7 @@ public class ValueIndexTest extends TestCase {
                 "};\n" + 
                 "\n";
             
-            XQueryService service = (XQueryService)
-                testCollection.getService("XQueryService", "1.0");
+            XPathQueryService service = storeXMLFileAndGetQueryService("items.xml", "src/org/exist/xquery/test/items.xml");
             String query = queryBody + "u:index-keys(//item/name, \'\', util:function(\'f:term-callback\', 2), 1000)";
             ResourceSet result = service.query(query);
             for (ResourceIterator i = result.getIterator(); i.hasMoreResources(); ) {
@@ -166,32 +164,32 @@ public class ValueIndexTest extends TestCase {
         }           
     }
     
-//    public void testUpdates() throws Exception {
-//        String append =
-//            "<xu:modifications xmlns:xu=\"http://www.xmldb.org/xupdate\" version=\"1.0\">" +
-//            "<xu:append select=\"/items\">" +
-//            "<item id=\"i100\">" +
-//            "<itemno>10</itemno>" +
-//            "<name>New Item</name>" +
-//            "<price>55.50</price>" +
-//            "</item>" +
-//            "</xu:append>" +
-//            "</xu:modifications>";
-//        String remove =
-//            "<xu:modifications xmlns:xu=\"http://www.xmldb.org/xupdate\" version=\"1.0\">" +
-//            "<xu:remove select=\"/items/item[itemno=7]\"/>" +
-//            "</xu:modifications>";
-//        
-//        XPathQueryService query = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
-//        XUpdateQueryService update = (XUpdateQueryService) testCollection.getService("XUpdateQueryService", "1.0");
-//        long mods = update.updateResource("items.xml", append);
-//		assertEquals(mods, 1);
-//        queryResource(query, "items.xml", "//item[price = 55.50]", 1);
-//        queryResource(query, "items.xml", "//item[@id = 'i100']",1);
-//        mods = update.updateResource("items.xml", remove);
-//		assertEquals(mods, 1);
-//        queryResource(query, "items.xml", "//item[itemno = 7]", 0);
-//    }
+    public void testUpdates() throws Exception {
+        String append =
+            "<xu:modifications xmlns:xu=\"http://www.xmldb.org/xupdate\" version=\"1.0\">" +
+            "<xu:append select=\"/items\">" +
+            "<item id=\"i100\">" +
+            "<itemno>10</itemno>" +
+            "<name>New Item</name>" +
+            "<price>55.50</price>" +
+            "</item>" +
+            "</xu:append>" +
+            "</xu:modifications>";
+        String remove =
+            "<xu:modifications xmlns:xu=\"http://www.xmldb.org/xupdate\" version=\"1.0\">" +
+            "<xu:remove select=\"/items/item[itemno=7]\"/>" +
+            "</xu:modifications>";
+        
+        XPathQueryService query = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+        XUpdateQueryService update = (XUpdateQueryService) testCollection.getService("XUpdateQueryService", "1.0");
+        long mods = update.updateResource("items.xml", append);
+		assertEquals(mods, 1);
+        queryResource(query, "items.xml", "//item[price = 55.50]", 1);
+        queryResource(query, "items.xml", "//item[@id = 'i100']",1);
+        mods = update.updateResource("items.xml", remove);
+		assertEquals(mods, 1);
+        queryResource(query, "items.xml", "//item[itemno = 7]", 0);
+    }
     
     protected ResourceSet queryResource(XPathQueryService service,
             String resource, String query, int expected) throws XMLDBException {

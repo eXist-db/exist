@@ -404,7 +404,12 @@ public class LocationStep extends Step {
                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
                         "OPTIMIZATION",
                         "using index '" + index.toString() + "'");
-            return index.getAttributesByName(docs, test.getName(), selector);
+            if (contextSet instanceof ExtArrayNodeSet) {
+                return index.findDescendantsByTagName(ElementValue.ATTRIBUTE, test.getName(), axis,
+                        docs, (ExtArrayNodeSet) contextSet, contextId);
+            } else {
+                return index.findElementsByTagName(ElementValue.ATTRIBUTE, docs, test.getName(), selector);
+            }
         }
     }
 
@@ -439,9 +444,14 @@ public class LocationStep extends Step {
                         "OPTIMIZATION",
                         "using index '" + index.toString() + "'");
             DocumentSet docs = getDocumentSet(contextSet);
-            NodeSelector selector = new ChildSelector(contextSet, contextId);
-            return index.findElementsByTagName(ElementValue.ELEMENT, docs, test
-                    .getName(), selector);
+            if (contextSet instanceof ExtArrayNodeSet) {
+            	return index.findDescendantsByTagName(ElementValue.ELEMENT, test.getName(), axis,
+            			docs, (ExtArrayNodeSet) contextSet, contextId);
+            } else {
+            	NodeSelector selector = new ChildSelector(contextSet, contextId);
+            	return index.findElementsByTagName(ElementValue.ELEMENT, docs, test
+            			.getName(), selector);
+            }
         }
     }
 
@@ -498,8 +508,11 @@ public class LocationStep extends Step {
                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
                         "OPTIMIZATION",
                         "using index '" + index.toString() + "'");
-            return index.findElementsByTagName(ElementValue.ELEMENT, docs, test
-                    .getName(), selector);
+            if (contextSet instanceof ExtArrayNodeSet) {
+            	return index.findDescendantsByTagName(ElementValue.ELEMENT, test.getName(), axis,
+            			docs, (ExtArrayNodeSet) contextSet, contextId);
+            } else
+            	return index.findElementsByTagName(ElementValue.ELEMENT, docs, test.getName(), selector);
         }
     }
 
