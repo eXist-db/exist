@@ -41,6 +41,7 @@ public interface NodeId extends Comparable {
  
     public final static int IS_CHILD = 1;
     public final static int IS_DESCENDANT = 2;
+    public final static int IS_SELF = 3;
     
     /**
      * Returns a new NodeId representing the first child
@@ -121,7 +122,17 @@ public interface NodeId extends Comparable {
      */
     boolean isChildOf(NodeId parent);
 
-    int isDescendantOrChildOf(NodeId ancestor);
+    /**
+     * Computes the relationship of this node to the given potential
+     * ancestor node. The method returns an int constant indicating
+     * the relation. Possible relations are: {@link #IS_CHILD}, {@link #IS_DESCENDANT}
+     * or {@link #IS_SELF}. If the nodes are not in a ancestor-descendant relation,
+     * the method returns -1.
+     * 
+     * @param ancestor the (potential) ancestor node to check against
+     * @return an int value indicating the relation
+     */
+    int computeRelation(NodeId ancestor);
     
     int isSiblingOf(NodeId sibling);
     
