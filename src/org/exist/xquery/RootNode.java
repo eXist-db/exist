@@ -132,7 +132,7 @@ public class RootNode extends Step {
         if (listener == null) {
             listener = new UpdateListener() {
                 public void documentUpdated(DocumentImpl document, int event) {
-                    if (event == UpdateListener.ADD) {
+                    if (document == null || event == UpdateListener.ADD || event == UpdateListener.REMOVE) {
                         // clear all
                         cachedDocs = null;
                         cached = null;
