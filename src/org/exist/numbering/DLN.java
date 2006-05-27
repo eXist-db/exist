@@ -209,11 +209,12 @@ public class DLN extends DLNBase implements NodeId {
 
     public boolean isDescendantOf(NodeId ancestor) {
     	DLN other = (DLN) ancestor;
-    	return startsWith(other) && bitIndex > other.bitIndex;
+    	return startsWith(other) && bitIndex > other.bitIndex
+            && isLevelSeparator(other.bitIndex + 1);
     }
 
     public boolean isDescendantOrSelfOf(NodeId ancestor) {
-        return startsWith((DLN) ancestor);
+        return startsWith((DLN) ancestor) && isLevelSeparator(((DLN)ancestor).bitIndex + 1);
     }
 
     public boolean isChildOf(NodeId parent) {
@@ -223,13 +224,20 @@ public class DLN extends DLNBase implements NodeId {
     	int levels = getLevelCount(other.bitIndex + 2);
     	return levels == 1;
     }
-
-    public int isDescendantOrChildOf(NodeId ancestor) {
+    
+    public int computeRelation(NodeId ancestor) {
         DLN other = (DLN) ancestor;
-        if (startsWith(other) && bitIndex > other.bitIndex) {
-            if (getLevelCount(other.bitIndex + 2) == 1)
-                return IS_CHILD;
-            return IS_DESCENDANT;
+        if (other == NodeId.DOCUMENT_NODE)
+        	return getLevelCount(0) == 1 ? IS_CHILD : IS_DESCENDANT;
+
+        if (startsWith(other)) {
+        	if (bitIndex == other.bitIndex)
+        		return IS_SELF;
+        	if (bitIndex > other.bitIndex && isLevelSeparator(other.bitIndex + 1)) {
+        		if (getLevelCount(other.bitIndex + 2) == 1)
+                    return IS_CHILD;
+                return IS_DESCENDANT;
+        	}
         }
         return -1;
     }
@@ -312,23 +320,11 @@ public class DLN extends DLNBase implements NodeId {
     }
 
     public static void main(String[] args) {
-        DLN id0 = new DLN("1.1/0/0/7");
-        System.out.println(id0.size());
+        DLN id0 = new DLN("1.1");
+        DLN id1 = new DLN("1.1/1.3");
+        System.out.println("Descendant: " + id1.computeRelation(id0));
         
-        DLN id1 = new DLN("1.1");
-        DLN id = (DLN) id1.insertNode(id0);
-        System.out.println(id.debug());
-        System.out.println(id.size());
-        System.out.println(id.units());
-        
-        byte[] data = new byte[id.size() + 1];
-        data[0] = (byte) id.units();
-        id.serialize(data, 1);
-        
-        
-        DLN dln = new DLN(data[0], data, 1);
-        System.out.println(dln.debug());
-        System.out.println(dln.size());
-        System.out.println(dln.units());
+        id0 = new DLN("1.1/1");
+        System.out.println("Descendant:\n" + id1.toBitString() + "\n" + id0.toBitString() + "\n: " + id1.isDescendantOf(id0));
     }
 }

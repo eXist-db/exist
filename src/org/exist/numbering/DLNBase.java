@@ -251,6 +251,10 @@ public class DLNBase {
         return units;
     }
 
+    public boolean isLevelSeparator(int index) {
+        return (bits[index >> UNIT_SHIFT] & (1 << ((7 - index) & 7))) == 0;
+    }
+    
     /**
      * Returns the number of level in this id, which corresponds
      * to the depth at which the node occurs within the node tree.
