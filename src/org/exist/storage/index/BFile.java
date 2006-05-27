@@ -2189,7 +2189,12 @@ public class BFile extends BTree {
     }
 
     public interface PageInputStream {
+        
         public long getAddress();
+        
+        public void mark();
+        
+        public void rewind() throws IOException;
     }
 
     /**
@@ -2202,6 +2207,8 @@ public class BFile extends BTree {
 
         private long address = 0L;
 
+        private int mark = 0;
+        
         public SimplePageInput() {
         }
 
@@ -2212,6 +2219,15 @@ public class BFile extends BTree {
 
         public long getAddress() {
             return address;
+        }
+        
+        public void mark() {
+            mark = position;
+        }
+        
+        public void rewind() {
+            LOG.debug("REWIND to " + mark);
+            position = mark;
         }
     }
 
@@ -2230,6 +2246,9 @@ public class BFile extends BTree {
 
         private long address = 0L;
 
+        private int markedOffset;
+        private long markedPage;
+        
         public MultiPageInput() {
         }
 
@@ -2241,6 +2260,9 @@ public class BFile extends BTree {
                 pageLen = fileHeader.getWorkSize();
             dataCache.add(first, 3);
             this.address = address;
+            
+            markedOffset = offset;
+            markedPage = nextPage.getPageNum();
         }
 
         public long getAddress() {
@@ -2467,6 +2489,28 @@ public class BFile extends BTree {
                 if (offset == pageLen) advance();
                 os.writeByte(nextPage.data[offset++]);
             }        	
+        }
+        
+        public void mark() {
+            markedOffset = offset;
+            markedPage = nextPage.getPageNum();
+        }
+        
+        public void rewind() throws IOException {
+            LOG.debug("REWIND");
+            offset = markedOffset;
+            try {
+                lock.acquire(Lock.READ_LOCK);
+                nextPage = (SinglePage) getDataPage(markedPage, false);
+                pageLen = nextPage.ph.getDataLength();
+                offset = 0;
+                dataCache.add(nextPage);
+            } catch (LockException e) {
+                throw new IOException("failed to acquire a read lock on "
+                        + getFile().getName());
+            } finally {
+                lock.release();
+            }
         }
     }
 

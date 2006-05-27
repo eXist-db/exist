@@ -340,6 +340,7 @@ public class NativeBroker extends DBBroker {
     public void addContentLoadingObserver(ContentLoadingObserver observer) {
         contentLoadingObservers.add(observer);
     }
+    
     /** Observer Design Pattern: remove an observer. */
     public void removeContentLoadingObserver(ContentLoadingObserver observer) {
         contentLoadingObservers.remove(observer);
@@ -2036,7 +2037,7 @@ public class NativeBroker extends DBBroker {
                 iterator.next();
                 copyNodes(transaction, iterator, node, new NodePath(), tempDoc, true, false);
             }
-            flush();            
+            flush();
             // checkTree(tempDoc);
             // remove the old nodes
             new DOMTransaction(this, domDb) {
@@ -2413,6 +2414,7 @@ public class NativeBroker extends DBBroker {
     }
     
     public void indexNode(final Txn transaction, final StoredNode node, NodePath currentPath, boolean repairMode) {
+        elementIndex.setInUpdateMode(true);
         nodeProcessor.reset(transaction, node, currentPath);
         nodeProcessor.setRepairMode(repairMode);
         nodeProcessor.index();

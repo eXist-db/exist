@@ -772,10 +772,6 @@ public abstract class DBBroker extends Observable {
 	}
 
 	public abstract void insertNodeAfter(Txn transaction, final StoredNode previous, final StoredNode node);
-
-    public void indexNode(Txn transaction, StoredNode node) {
-        indexNode(transaction, node, null);
-    }
     
     public abstract void indexNode(Txn transaction, StoredNode node, NodePath currentPath);    
 

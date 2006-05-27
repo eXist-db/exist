@@ -1,6 +1,6 @@
 /*
- * eXist Open Source Native XML Database Copyright (C) 2001-06, Wolfgang M.
- * Meier (wolfgang@exist-db.org)
+ * eXist Open Source Native XML Database 
+ * Copyright (C) 2001-06 The eXist Project
  * 
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Library General Public License as published by the Free
@@ -22,6 +22,7 @@ package org.exist.storage;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.numbering.DLN;
 import org.exist.numbering.NodeId;
 import org.exist.collections.Collection;
 import org.exist.dom.*;
@@ -39,6 +40,8 @@ import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.Lock;
 import org.exist.util.*;
+import org.exist.xquery.Constants;
+import org.exist.xquery.Expression;
 import org.exist.xquery.NodeSelector;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XQueryContext;
@@ -54,6 +57,9 @@ import java.util.*;
  */
 public class NativeElementIndex extends ElementIndex implements ContentLoadingObserver {
     
+	private final static byte ENTRIES_ORDERED = 0;
+	private final static byte ENTRIES_UNORDERED = 1;
+	
     private static Logger LOG = Logger.getLogger(NativeElementIndex.class.getName());
 
     /** The datastore for this node index */
@@ -61,12 +67,12 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
 
     /** Work output Stream taht should be cleared before every use */
     private VariableByteOutputStream os = new VariableByteOutputStream();
-
+    
     public NativeElementIndex(DBBroker broker, BFile dbNodes) {
         super(broker);
         this.dbNodes = dbNodes;
     }
-
+ 
     /** Store the given node in the node index.
      * @param qname The node's identity
      * @param proxy The node's proxy
@@ -129,7 +135,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
     public void flush() {
         //TODO : return if doc == null? -pb
         if (pending.size() == 0) 
-            return;        
+            return;
         final ProgressIndicator progress = new ProgressIndicator(pending.size(), 5);
         final SymbolTable symbols = broker.getSymbols(); 
         final short collectionId = this.doc.getCollection().getId(); 
@@ -145,6 +151,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             FastQSort.sort(gids, 0, gidsCount - 1);
             os.clear();
             os.writeInt(this.doc.getDocId());
+            os.writeByte(inUpdateMode ? ENTRIES_UNORDERED : ENTRIES_ORDERED);
+            
             os.writeInt(gidsCount);
             //TOUNDERSTAND -pb
             int lenOffset = os.position();
@@ -198,6 +206,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         setChanged();
         notifyObservers(progress);
         pending.clear();
+        inUpdateMode = false;
     }    
     
     public void remove() {      
@@ -232,6 +241,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                     try {
                         while (is.available() > 0) {
                             int storedDocId = is.readInt();
+                            byte isOrdered = is.readByte();
                             int gidsCount = is.readInt();
                             //TOUNDERSTAND -pb
                             int size = is.readFixedInt();
@@ -239,6 +249,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                                 // data are related to another document:
                                 // append them to any existing data
                                 os.writeInt(storedDocId);
+                                os.writeByte(isOrdered);
                                 os.writeInt(gidsCount);
                                 os.writeFixedInt(size);
                                 try {
@@ -272,6 +283,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                         //Don't forget this one
                         FastQSort.sort(newGIDList, 0, gidsCount - 1);                
                         os.writeInt(this.doc.getDocId());
+                        os.writeByte(ENTRIES_ORDERED);
                         os.writeInt(gidsCount);
                         //TOUNDERSTAND -pb
                         int lenOffset = os.position();
@@ -347,12 +359,13 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             ArrayList elements = dbNodes.findKeys(query);  
             for (int i = 0; i < elements.size(); i++) {
                 boolean changed = false;
-                Value key = (Value) elements.get(i);                
+                Value key = (Value) elements.get(i);
                 VariableByteInput is = dbNodes.getAsStream(key);
                 os.clear();  
                 try {              
                     while (is.available() > 0) {
                         int storedDocId = is.readInt();
+                        byte ordered = is.readByte();
                         int gidsCount = is.readInt();
                         //TOUNDERSTAND -pb
                         int size = is.readFixedInt();
@@ -360,6 +373,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                             // data are related to another document:
                             // copy them to any existing data
                             os.writeInt(storedDocId);
+                            os.writeByte(ordered);
                             os.writeInt(gidsCount);
                             os.writeFixedInt(size);
                             is.copyRaw(os, size);
@@ -402,36 +416,22 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
     //TODO : note that this is *not* this.doc -pb
     public void reindex(DocumentImpl document, StoredNode node) {
     }
-    
-    public NodeSet getAttributesByName(DocumentSet docs, QName qname, NodeSelector selector) {
-        //TODO : should we consider ElementValue.ATTRIBUTE_ID as well ? -pb
-        return findElementsByTagName(ElementValue.ATTRIBUTE, docs, qname, selector);       
-    }
 
     /**
-     * Find elements by their tag name. This method is comparable to the DOM's
-     * method call getElementsByTagName. All elements matching tagName and
-     * belonging to one of the documents in the DocumentSet docs are returned.
+     * Lookup elements or attributes in the index matching a given {@link QName} and
+     * {@link NodeSelector}. The NodeSelector argument is optional. If selector is
+     * null, all elements or attributes matching qname will be returned.
      * 
-     * @param docs
-     *                  Description of the Parameter
-     * @param tagName
-     *                  Description of the Parameter
+     * @param type either {@link ElementValue#ATTRIBUTE}, {@link ElementValue#ELEMENT}
+     *      or {@link ElementValue#ATTRIBUTE_ID}
+     * @param docs the set of documents to look up in the index
+     * @param qname the QName of the attribute or element
+     * @param selector an (optional) NodeSelector
+     * 
      * @return
      */
     public NodeSet findElementsByTagName(byte type, DocumentSet docs, QName qname, NodeSelector selector) {
-        short nodeType;
-        switch (type) {   
-            case ElementValue.ATTRIBUTE_ID : //is this correct ? -pb
-            case ElementValue.ATTRIBUTE :
-                nodeType = Node.ATTRIBUTE_NODE;
-                break;            
-            case ElementValue.ELEMENT :
-                nodeType = Node.ELEMENT_NODE;
-                 break;            
-            default :
-                throw new IllegalArgumentException("Invalid type");
-        }        
+        short nodeType = getIndexType(type);
         final ExtArrayNodeSet result = new ExtArrayNodeSet(docs.getLength(), 256);
         final SymbolTable symbols = broker.getSymbols();
         final Lock lock = dbNodes.getLock();
@@ -443,11 +443,11 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             short collectionId = collection.getId();            
             ElementValue ref;
             if (type == ElementValue.ATTRIBUTE_ID) {
-                ref = new ElementValue((byte) type, collectionId, qname.getLocalName());
+                ref = new ElementValue(type, collectionId, qname.getLocalName());
             } else {
                 short sym = symbols.getSymbol(qname.getLocalName());
                 short nsSym = symbols.getNSSymbol(qname.getNamespaceURI());
-                ref = new ElementValue((byte) type, collectionId, sym, nsSym);
+                ref = new ElementValue(type, collectionId, sym, nsSym);
             }
             try {
                 lock.acquire(Lock.READ_LOCK);
@@ -459,6 +459,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 }
                 while (is.available() > 0) {
                     int storedDocId = is.readInt();
+                    is.readByte();
                     int gidsCount = is.readInt();
                     //TOUNDERSTAND -pb
                     int size = is.readFixedInt();
@@ -506,6 +507,206 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         return result;
     }
 
+    /**
+     * Optimized lookup method which directly implements the ancestor-descendant join. The algorithm
+     * does directly operate on the input stream containing the potential descendant nodes. It thus needs
+     * less comparisons than {@link #findElementsByTagName(byte, DocumentSet, QName, NodeSelector)}.
+     * 
+     * @param type either {@link ElementValue#ATTRIBUTE}, {@link ElementValue#ELEMENT}
+     *      or {@link ElementValue#ATTRIBUTE_ID}
+     * @param docs the set of documents to look up in the index
+     * @param contextSet the set of ancestor nodes for which the method will try to find descendants
+     * @param contextId id of the current context expression as passed by the query engine
+     * @param qname the QName to search for
+     */
+    public NodeSet findDescendantsByTagName(byte type, QName qname, int axis,
+    		DocumentSet docs, ExtArrayNodeSet contextSet,  int contextId) {
+        short nodeType = getIndexType(type);
+        ByDocumentIterator citer = contextSet.iterateByDocument();
+        final ExtArrayNodeSet result = new ExtArrayNodeSet(docs.getLength(), 256);
+        final SymbolTable symbols = broker.getSymbols();
+        final Lock lock = dbNodes.getLock();
+        // true if the output document set is the same as the input document set
+        boolean sameDocSet = true;
+        for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
+            //Compute a key for the node
+            Collection collection = (Collection) i.next();
+            short collectionId = collection.getId();
+            ElementValue ref;
+            if (type == ElementValue.ATTRIBUTE_ID) {
+                ref = new ElementValue(type, collectionId, qname.getLocalName());
+            } else {
+                short sym = symbols.getSymbol(qname.getLocalName());
+                short nsSym = symbols.getNSSymbol(qname.getNamespaceURI());
+                ref = new ElementValue(type, collectionId, sym, nsSym);
+            }
+            try {
+                lock.acquire(Lock.READ_LOCK);
+                VariableByteInput is = dbNodes.getAsStream(ref); 
+                //Does the node already has data in the index ?
+                if (is == null) {
+                	sameDocSet = false;
+                    continue;
+                }
+                int lastDocId = -1;
+                NodeProxy ancestor = null;
+                
+                while (is.available() > 0) {
+                    int storedDocId = is.readInt();
+                    byte ordered = is.readByte();
+                    int gidsCount = is.readInt();
+                    //TOUNDERSTAND -pb
+                    int size = is.readFixedInt();
+                    DocumentImpl storedDocument = docs.getDoc(storedDocId);
+                    //Exit if the document is not concerned
+                    if (storedDocument == null) {
+                        is.skipBytes(size);
+                        continue;
+                    }
+                    // position the context iterator on the next document
+                    if (storedDocId != lastDocId || ordered == ENTRIES_UNORDERED) {
+                    	citer.nextDocument(storedDocument);
+                    	lastDocId = storedDocId;
+                    	ancestor = citer.nextNode();
+                    }
+                    // no ancestor node in the context set, skip the document
+                    if (ancestor == null || gidsCount == 0) {
+                    	is.skipBytes(size);
+                        continue;
+                    }
+                    NodeId ancestorId = ancestor.getNodeId();
+                    ((BFile.PageInputStream)is).mark();
+                    
+                    //Process the nodes for the current document
+                    NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
+                    long address = StorageAddress.read(is);
+                    int k = 0, marked = 0;
+                    int found = 0;
+                    while (true) {
+                        int relation = nodeId.computeRelation(ancestorId);
+//                        LOG.debug(ancestorId + " -> " + nodeId + ": " + relation);
+                        if (relation != -1) {
+                            // current node is a descendant. walk through the descendants
+                            // and add them to the result
+                            if (((axis == Constants.CHILD_AXIS || axis == Constants.ATTRIBUTE_AXIS) && relation == NodeId.IS_CHILD) || 
+                            		(axis == Constants.DESCENDANT_AXIS && relation == NodeId.IS_DESCENDANT) ||
+                            		axis == Constants.DESCENDANT_SELF_AXIS || axis == Constants.DESCENDANT_ATTRIBUTE_AXIS
+                        		) {
+                                NodeProxy storedNode = new NodeProxy(storedDocument, nodeId, nodeType, address);
+                                if (Expression.NO_CONTEXT_ID != contextId)
+                                    storedNode.addContextNode(contextId, ancestor);
+                                else
+                                    storedNode.copyContext(ancestor);
+                                result.add(storedNode, gidsCount);
+                                if (Expression.NO_CONTEXT_ID != contextId) {
+                                    storedNode.deepCopyContext(ancestor, contextId);
+                                } else
+                                    storedNode.copyContext(ancestor);
+                                found++;
+                            }
+                            if (k + 1 < gidsCount) {
+                                // retrieve the next descendant from the stream
+                                k++;
+                                nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
+                                address = StorageAddress.read(is);
+                            } else {
+                                // no more descendants. check if there are more ancestors
+                                if (citer.hasNextNode()) {
+                                    ancestor = citer.nextNode();
+                                    // reached the end of the input stream:
+                                    // if the ancestor set has more nodes and the following ancestor
+                                    // is a descendant of the previous one, we have to rescan the input stream
+                                    // for further matches
+                                    if (ancestor.getNodeId().isDescendantOf(ancestorId)) {
+                                        ((BFile.PageInputStream)is).rewind();
+                                        k = marked;
+                                        nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
+                                        address = StorageAddress.read(is);
+                                        ancestorId = ancestor.getNodeId();
+                                    } else {
+                                        ancestorId = ancestor.getNodeId();
+                                        break;
+                                    }
+                                } else
+                                    break;
+                            }
+                        } else {
+                            // current node is not a descendant of the ancestor node. Compare the
+                            // node ids and proceed with next descendant or ancestor.
+                            int cmp = ancestorId.compareTo(nodeId);
+//                            LOG.debug("cmp: " + ancestor.getNodeId() + " -> " + nodeId + ": " + cmp);
+                            if (cmp < 0) {
+                                // check if we have more ancestors
+                                if (citer.hasNextNode()) {
+                                    NodeProxy next = citer.nextNode();
+                                    // if the ancestor set has more nodes and the following ancestor
+                                    // is a descendant of the previous one, we have to rescan the input stream
+                                    // for further matches
+                                    if (next.getNodeId().isDescendantOf(ancestorId)) {
+                                        // rewind the input stream to the position from where we started
+                                        // for the previous ancestor node
+                                        ((BFile.PageInputStream)is).rewind();
+                                        k = marked;
+                                        nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
+                                        address = StorageAddress.read(is);
+                                    } else {
+                                        // mark the current position in the input stream
+                                        ((BFile.PageInputStream)is).mark();
+                                        marked = k;
+                                    }
+                                    ancestor = next;
+                                    ancestorId = ancestor.getNodeId();
+                                } else {
+                                    // no more ancestors: skip the remaining descendants for this document
+                                    while (++k  < gidsCount) {
+                                        broker.getBrokerPool().getNodeFactory().createFromStream(is);
+                                        StorageAddress.read(is);
+                                    }
+                                    break;
+                                }
+                            } else {
+                                // load the next descendant from the input stream
+                                if (++k < gidsCount) {
+                                    nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
+                                    address = StorageAddress.read(is);
+                                } else
+                                    break;
+                            }
+                        }
+                    }
+                    result.setSorted(storedDocument, ordered == ENTRIES_ORDERED);
+                }
+            } catch (EOFException e) {
+                //EOFExceptions are expected here
+//                LOG.warn("EOF: " + e.getMessage(), e);
+            } catch (LockException e) {
+                LOG.warn("Failed to acquire lock for '" + dbNodes.getFile().getName() + "'", e);
+            } catch (IOException e) {
+                LOG.error(e.getMessage(), e);           
+                //TODO : return ?
+            } finally {
+                lock.release();
+            }
+        }
+//        LOG.debug("Found: " + result.getLength() + " for " + qname);
+        if (sameDocSet) {
+        	result.setDocumentSet(docs);
+        }
+        return result;
+    }
+    
+    private short getIndexType(byte type) {
+        switch (type) {   
+            case ElementValue.ATTRIBUTE_ID : //is this correct ? -pb
+            case ElementValue.ATTRIBUTE :
+                return Node.ATTRIBUTE_NODE;            
+            case ElementValue.ELEMENT :
+                return Node.ELEMENT_NODE;            
+            default :
+                throw new IllegalArgumentException("Invalid type");
+        }
+    }
+    
     public Occurrences[] scanIndexedElements(Collection collection, boolean inclusive) 
             throws PermissionDeniedException {
         final User user = broker.getUser();
@@ -555,6 +756,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                     try {
                         while (is.available() > 0) { 
                             is.readInt();
+                            is.readByte();
                             int gidsCount = is.readInt();
                             //TOUNDERSTAND -pb
                             int size = is.readFixedInt();                            
@@ -607,6 +809,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 try {
                     while (is.available() > 0) {
                         int storedDocId = is.readInt();
+                        byte ordered = is.readByte();
                         int gidsCount = is.readInt();
                         //TOUNDERSTAND -pb
                         int size = is.readFixedInt(); //unused                       
