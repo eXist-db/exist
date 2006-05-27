@@ -37,6 +37,8 @@ public class RequestModule extends AbstractInternalModule {
 	public static final QName REQUEST_VAR = new QName("request", NAMESPACE_URI, PREFIX);
 	
 	public static final FunctionDef[] functions = {
+		new FunctionDef(GetCookieNames.signature, GetCookieNames.class),
+		new FunctionDef(GetCookieValue.signature, GetCookieValue.class),
 		new FunctionDef(GetData.signature, GetData.class),
 		new FunctionDef(GetParameter.signature, GetParameter.class),
 		new FunctionDef(GetParameterNames.signature, GetParameterNames.class),

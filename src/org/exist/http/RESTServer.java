@@ -29,10 +29,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.net.URI;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -40,6 +42,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
@@ -379,7 +382,9 @@ public class RESTServer {
         	{
         		response.setContentType(resource.getMetadata().getMimeType());
         	}
-            writeResponse(response, broker.getBinaryResource((BinaryDocument) resource));
+        	OutputStream os = response.getOutputStream();
+        	broker.readBinaryResource((BinaryDocument) resource, os);
+        	os.flush();
         }
         else
         {
@@ -397,23 +402,26 @@ public class RESTServer {
             try
 			{
                 serializer.setProperties(outputProperties);
-                String output = serializer.serialize(resource);
                 if(asMimeType != null) //was a mime-type specified?
                 {
-                	response.setContentType(asMimeType);
+                	response.setContentType(asMimeType+"; charset="+encoding);
                 }
                 else
                 {
 	                if (serializer.isStylesheetApplied())
 	                {
-	                    response.setContentType("text/html");
+	                    response.setContentType("text/html; charset="+encoding);
 	                }
 	                else
 	                {
-	                    response.setContentType(resource.getMetadata().getMimeType());
+	                    response.setContentType(resource.getMetadata().getMimeType()+"; charset="+encoding);
 	                }
                 }
-                writeResponse(response, output, encoding);
+                OutputStream is = response.getOutputStream();
+                Writer w = new OutputStreamWriter(is,encoding);
+                serializer.serialize(resource,w);
+                w.flush();
+                w.close();
             }
             catch (SAXException saxe)
 			{
@@ -758,17 +766,13 @@ public class RESTServer {
                 collection.store(transaction, broker, info, createInputSource(charset,url), false);
                 response.sendError(HttpServletResponse.SC_OK, "Document " + docUri + " stored.");
             } else {
-                byte[] chunk = new byte[4096];
-                ByteArrayOutputStream os = new ByteArrayOutputStream();
+
                 FileInputStream is = new FileInputStream(tempFile);
-                int l;
-                while ((l = is.read(chunk)) > -1) {
-                    os.write(chunk, 0, l);
-                }
-                collection.addBinaryResource(transaction, broker, docUri, os
-                        .toByteArray(), contentType);
+                collection.addBinaryResource(transaction, broker, docUri, is, contentType);
+                is.close();
                 response.sendError(HttpServletResponse.SC_OK, "Document " + docUri + " stored as binary resource.");
             }
+            
             transact.commit(transaction);
         } catch (SAXParseException e) {
             transact.abort(transaction);

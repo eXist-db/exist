@@ -52,7 +52,8 @@ public class SequenceConstructor extends PathExpr {
         
         for (int i = 0; i < steps.size(); i++) {
             Expression expr = (Expression) steps.get(i);
-            expr.analyze(contextInfo);
+            //Create a new context info because each sequence expression could modify it (add/remove flags...)            
+            expr.analyze(new AnalyzeContextInfo(contextInfo));
         }
     }
     

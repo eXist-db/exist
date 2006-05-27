@@ -176,21 +176,9 @@ public class StringValue extends AtomicValue {
 			case Type.DURATION :
 				return new DurationValue(value);
 			case Type.YEAR_MONTH_DURATION : 
-				try {
-					YearMonthDurationValue rawYMDV = new YearMonthDurationValue(value);
-					return new YearMonthDurationValue(rawYMDV.getCanonicalDuration());
-				} catch (IllegalArgumentException e) {
-					throw new XPathException("FORG0001: cannot construct " + Type.getTypeName(this.getItemType()) +
-							" from \"" + value + "\"");            
-				}				
+				return new YearMonthDurationValue(value);
 			case Type.DAY_TIME_DURATION :	
-				try {
-					DayTimeDurationValue rawDTDV = new DayTimeDurationValue(value);
-					return new DayTimeDurationValue(rawDTDV.getCanonicalDuration());
-				} catch (IllegalArgumentException e) {
-					throw new XPathException("FORG0001: cannot construct " + Type.getTypeName(this.getItemType()) +
-							" from \"" + value + "\"");            
-				}
+				return new DayTimeDurationValue(value);
 			case Type.UNTYPED_ATOMIC :
 				return new UntypedAtomicValue(getStringValue());
 			default :

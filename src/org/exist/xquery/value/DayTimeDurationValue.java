@@ -50,9 +50,18 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 	}
 	
 	public DayTimeDurationValue(String str) throws XPathException {
-		this(TimeUtils.getInstance().newDurationDayTime(str));
+		this(createDurationDayTime(str));
 	}
 
+	private static Duration createDurationDayTime(String str) throws XPathException {
+		try {
+			return TimeUtils.getInstance().newDurationDayTime(str);
+		} catch (IllegalArgumentException e) {
+			throw new XPathException("FORG0001: cannot construct " + Type.getTypeName(Type.DAY_TIME_DURATION) +
+					" from \"" + str + "\"");            
+		}
+	}
+	
 	public int getType() {
 		return Type.DAY_TIME_DURATION;
 	}

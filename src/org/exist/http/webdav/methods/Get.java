@@ -23,6 +23,8 @@
 package org.exist.http.webdav.methods;
 
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -79,7 +81,6 @@ public class Get extends AbstractWebDAVMethod {
             throws ServletException, IOException {
         
         DBBroker broker = null;
-        byte[] contentData = null;
         DocumentImpl resource = null;
         Collection collection = null;
         
@@ -111,17 +112,24 @@ public class Get extends AbstractWebDAVMethod {
                 return;
             }
             
+            
             DocumentMetadata metadata = resource.getMetadata();
             response.setContentType(metadata.getMimeType());
             response.addDateHeader("Last-Modified", metadata.getLastModified());
+            
+            response.setContentLength(resource.getContentLength());
+            ServletOutputStream os = response.getOutputStream();
             
             if(resource.getResourceType() == DocumentImpl.XML_FILE) {
                 Serializer serializer = broker.getSerializer();
                 serializer.reset();
                 try {
                     serializer.setProperties(WebDAV.OUTPUT_PROPERTIES);
-                    String content = serializer.serialize(resource);
-                    contentData = content.getBytes("UTF-8");
+                    
+                    Writer w = new OutputStreamWriter(os,"UTF-8");
+                    serializer.serialize(resource,w);
+                    w.flush();
+                    w.close();
                     
                 } catch (SAXException e) {
                     LOG.error(e);
@@ -129,22 +137,10 @@ public class Get extends AbstractWebDAVMethod {
                 }
                 
             } else {
-                contentData = broker.getBinaryResource((BinaryDocument)resource);
+                broker.readBinaryResource((BinaryDocument) resource, os);
+                os.flush();
             }
             
-            // TODO all data is serialized here to bytearray. for large files this
-            // is far from efficient. Implement streaming, XML content already supports
-            // this.
-            
-            // Serve out content
-            if(contentData == null) {
-                LOG.debug("content data is empty. No data could be retrieved.");
-                response.sendError(HttpServletResponse.SC_NOT_FOUND); // TODO is this correct Code?
-                return;
-            }
-            response.setContentLength(contentData.length);
-            ServletOutputStream os = response.getOutputStream();
-            os.write(contentData);
             os.flush();
             
         } catch (EXistException e) {

@@ -65,7 +65,7 @@ public class DurationValue extends ComputableValue {
 	 * @param duration the duration to wrap
 	 * @return a new instance of the most specific subclass of <code>DurationValue</code>
 	 */
-	public static DurationValue wrap(Duration duration) throws XPathException {
+	public static DurationValue wrap(Duration duration) {
 		try {
 			return new DayTimeDurationValue(duration);
 		} catch (XPathException e) {
@@ -77,16 +77,11 @@ public class DurationValue extends ComputableValue {
 		}
 	}
 	
-	public DurationValue(Duration duration) throws XPathException {
-		try {
-			this.duration = duration;
-		} catch (IllegalArgumentException e) {
-			throw new XPathException("FORG0001: cannot construct " + Type.getTypeName(this.getItemType()) +
-					" from \"" + duration + "\"");            
-		}			
+	public DurationValue(Duration duration) {
+		this.duration = duration;
 	}
 	
-	public DurationValue(String str)  throws XPathException {
+	public DurationValue(String str) throws XPathException {
 		try {
 			this.duration = TimeUtils.getInstance().newDuration(str);
 		} catch (IllegalArgumentException e) {
@@ -235,27 +230,19 @@ public class DurationValue extends ComputableValue {
 			case Type.DURATION:
 				return this;
 			case Type.YEAR_MONTH_DURATION:
-				if (duration.getField(DatatypeConstants.YEARS) == null && 
-					duration.getField(DatatypeConstants.MONTHS) == null)
-					return new YearMonthDurationValue(YearMonthDurationValue.CANONICAL_ZERO_DURATION);					
-				else return new YearMonthDurationValue(TimeUtils.getInstance().newDurationYearMonth(
-						duration.getSign() >= 0,
-						(BigInteger) duration.getField(DatatypeConstants.YEARS),
-						(BigInteger) duration.getField(DatatypeConstants.MONTHS)));
+				return new YearMonthDurationValue(TimeUtils.getInstance().newDurationYearMonth(
+					duration.getSign() >= 0,
+					(BigInteger) duration.getField(DatatypeConstants.YEARS),
+					(BigInteger) duration.getField(DatatypeConstants.MONTHS)));
 			case Type.DAY_TIME_DURATION:
-				if (duration.getField(DatatypeConstants.DAYS) == null && 
-					duration.getField(DatatypeConstants.HOURS) == null && 
-					duration.getField(DatatypeConstants.MINUTES) == null && 
-					duration.getField(DatatypeConstants.SECONDS) == null)
-					return new DayTimeDurationValue(DayTimeDurationValue.CANONICAL_ZERO_DURATION);					
-				else return new DayTimeDurationValue(TimeUtils.getInstance().newDuration(
-						duration.getSign() >= 0,
-						null,
-						null,
-						(BigInteger) duration.getField(DatatypeConstants.DAYS),
-						(BigInteger) duration.getField(DatatypeConstants.HOURS),
-						(BigInteger) duration.getField(DatatypeConstants.MINUTES),
-						(BigDecimal) duration.getField(DatatypeConstants.SECONDS)));
+				return new DayTimeDurationValue(TimeUtils.getInstance().newDuration(
+					duration.getSign() >= 0,
+					null,
+					null,
+					(BigInteger) duration.getField(DatatypeConstants.DAYS),
+					(BigInteger) duration.getField(DatatypeConstants.HOURS),
+					(BigInteger) duration.getField(DatatypeConstants.MINUTES),
+					(BigDecimal) duration.getField(DatatypeConstants.SECONDS)));
 			case Type.STRING:
 				return new StringValue(getStringValue());
 			case Type.UNTYPED_ATOMIC :

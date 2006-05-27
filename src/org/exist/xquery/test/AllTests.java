@@ -41,7 +41,7 @@ public class AllTests {
         TestSuite suite = new TestSuite("Test for org.exist.xquery.test");
         //$JUnit-BEGIN$
         XPathQueryTest.setURI("xmldb:exist://" + DBBroker.ROOT_COLLECTION);
-//        suite.addTestSuite(XQueryUpdateTest.class);
+        suite.addTestSuite(XQueryUpdateTest.class);
         suite.addTestSuite(XQueryFunctionsTest.class);
         suite.addTestSuite(JavaFunctionsTest.class);
         suite.addTestSuite(XPathQueryTest.class);

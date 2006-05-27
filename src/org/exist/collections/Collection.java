@@ -21,6 +21,7 @@
  */
 package org.exist.collections;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -1092,14 +1093,31 @@ public  class Collection extends Observable
         return trigger;
     }
     
+    // Blob
     public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker,
-    		XmldbURI docUri, byte[] data, String mimeType)
+                XmldbURI docUri, byte[] data, String mimeType)
             throws EXistException, PermissionDeniedException, LockException, TriggerException {
         return addBinaryResource(transaction, broker, docUri, data, mimeType, null, null);
     }
     
+    // Blob
     public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker,
     		XmldbURI docUri, byte[] data, String mimeType, Date created, Date modified)
+            throws EXistException, PermissionDeniedException, LockException, TriggerException {
+        return addBinaryResource(transaction, broker, docUri, 
+                                new ByteArrayInputStream(data), mimeType, created, modified);
+    }
+    
+    // Streaming
+    public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker,
+    		XmldbURI docUri, InputStream is, String mimeType)
+            throws EXistException, PermissionDeniedException, LockException, TriggerException {
+        return addBinaryResource(transaction, broker, docUri, is, mimeType, null, null);
+    }
+    
+    // Streaming
+    public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker,
+    		XmldbURI docUri, InputStream is, String mimeType, Date created, Date modified)
             throws EXistException, PermissionDeniedException, LockException, TriggerException {
         if (broker.isReadOnly())
             throw new PermissionDeniedException("Database is read-only");
@@ -1142,7 +1160,7 @@ public  class Collection extends Observable
             if(modified != null)
             	metadata.setLastModified(modified.getTime());
             
-            broker.storeBinaryResource(transaction, blob, data);
+            broker.storeBinaryResource(transaction, blob, is);
             addDocument(transaction, broker, blob);
             
             broker.storeXMLResource(transaction, blob);

@@ -54,8 +54,8 @@ public class RemoteBinaryResource implements BinaryResource, EXistResource {
 	private Permission permissions = null;
 	private int contentLen = 0;
 	
-	protected Date datecreated= null;
-	protected Date datemodified= null;
+	protected Date dateCreated= null;
+	protected Date dateModified= null;
 
 	
 	public RemoteBinaryResource(RemoteCollection parent, XmldbURI documentName) throws XMLDBException {
@@ -144,30 +144,14 @@ public class RemoteBinaryResource implements BinaryResource, EXistResource {
 	 * @see org.exist.xmldb.EXistResource#getCreationTime()
 	 */
 	public Date getCreationTime() throws XMLDBException {
-		Vector params = new Vector(1);
-		params.addElement(path.toString());
-		try {
-			return (Date) ((Vector) parent.getClient().execute("getTimestamps", params)).get(0);
-		} catch (XmlRpcException e) {
-			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
-		} catch (IOException e) {
-			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
-		}
+		return dateCreated;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xmldb.EXistResource#getLastModificationTime()
 	 */
 	public Date getLastModificationTime() throws XMLDBException {
-		Vector params = new Vector(1);
-		params.addElement(path.toString());
-		try {
-			return (Date) ((Vector) parent.getClient().execute("getTimestamps", params)).get(1);
-		} catch (XmlRpcException e) {
-			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
-		} catch (IOException e) {
-			throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
-		}
+		return dateModified;
 	}
 
 	public void setPermissions(Permission perms) {
@@ -215,5 +199,13 @@ public class RemoteBinaryResource implements BinaryResource, EXistResource {
 
     public void setDocType(DocumentType doctype) throws XMLDBException {
 		
+    }
+
+    protected void setDateCreated(Date dateCreated) {
+        this.dateCreated = dateCreated;
+    }
+
+    protected void setDateModified(Date dateModified) {
+        this.dateModified = dateModified;
     }
 }

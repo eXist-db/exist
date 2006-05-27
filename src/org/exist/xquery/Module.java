@@ -73,6 +73,12 @@ public interface Module {
 	 */
 	public final static String SESSION_FUNCTION_NS =
 		"http://exist-db.org/xquery/session";
+        
+	/**
+	 * Namespace for the built-in system module.
+	 */
+	public final static String SYSTEM_FUNCTION_NS =
+		"http://exist-db.org/xquery/system";
 	
 	/**
 	 * Namespace for the built-in transform module.

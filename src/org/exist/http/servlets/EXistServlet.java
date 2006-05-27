@@ -49,6 +49,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.validation.XmlLibraryChecker;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.xmldb.api.DatabaseManager;
@@ -148,6 +149,31 @@ public class EXistServlet extends HttpServlet {
 		if(containerEncoding == null)
 			containerEncoding = DEFAULT_ENCODING;
 		server = new RESTServer(formEncoding, containerEncoding);
+                
+                // XML lib checks....
+                if( XmlLibraryChecker.isXercesVersionOK() ){
+                    LOG.info("Detected "+ XmlLibraryChecker.XERCESVERSION + ", OK.");
+                    
+                } else {
+                    LOG.warn("eXist requires '"+ XmlLibraryChecker.XERCESVERSION 
+                            + "' but detected '"+ XmlLibraryChecker.getXercesVersion()
+                            +"'. Please add the correct version to the "
+                            +"class-path, e.g. in the 'endorsed' folder of " 
+                            +"the servlet container or in the 'endorsed' folder "
+                            +"of the JRE.");
+                }
+
+                if( XmlLibraryChecker.isXalanVersionOK() ){
+                    LOG.info("Detected "+ XmlLibraryChecker.XALANVERSION+ ", OK.");
+                    
+                } else {
+                    LOG.warn("eXist requires '"+ XmlLibraryChecker.XALANVERSION 
+                            + "' but detected '"+ XmlLibraryChecker.getXalanVersion()
+                            +"'. Please add the correct version to the "
+                            +"class-path, e.g. in the 'endorsed' folder of " 
+                            +"the servlet container or in the 'endorsed' folder "
+                            +"of the JRE.");
+                }
 	}
 
 	/* (non-Javadoc)

@@ -29,6 +29,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
 import org.exist.xmldb.DatabaseImpl;
 import org.exist.xmldb.ShutdownListener;
+import org.exist.validation.XmlLibraryChecker;
 import org.mortbay.jetty.Server;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
@@ -47,8 +48,30 @@ public class JettyStart {
 		start.run(args);
 	}
 	
-	public JettyStart() {
-	}
+        public JettyStart() {
+            // Additional checks XML libs @@@@
+            if( XmlLibraryChecker.isXercesVersionOK() ){
+                System.out.println("Detected "+ XmlLibraryChecker.XERCESVERSION + ", OK.");
+                
+            } else {
+                System.err.println("\nWARN: eXist requires '"+ XmlLibraryChecker.XERCESVERSION
+                        + "' but detected '"+ XmlLibraryChecker.getXercesVersion()
+                        +"'. Please add the correct version to the "
+                        +"class-path, e.g. in the 'endorsed' folder of "
+                        +"eXist or in the 'endorsed' folder of the JRE.\n");
+            }
+            
+            if( XmlLibraryChecker.isXalanVersionOK() ){
+                System.out.println("Detected "+ XmlLibraryChecker.XALANVERSION + ", OK.");
+                
+            } else {
+                System.err.println("\nWARN: eXist requires '"+ XmlLibraryChecker.XALANVERSION
+                        + "' but detected '"+ XmlLibraryChecker.getXalanVersion()
+                        +"'. Please add the correct version to the "
+                        +"class-path, e.g. in the 'endorsed' folder of "
+                        +"eXist or the 'endorsed' folder of the JRE.\n");
+            }
+        }
 	
 	public void  run(String[] args) {
 		if (args.length == 0) {
