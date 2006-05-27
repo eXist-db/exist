@@ -54,6 +54,7 @@ import org.exist.dom.QName;
 import org.exist.http.servlets.ResponseWrapper;
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.memtree.MemTreeBuilder;
+import org.exist.numbering.NodeId;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
@@ -87,7 +88,10 @@ public class Transform extends BasicFunction {
 		new FunctionSignature(
 			new QName("transform", TransformModule.NAMESPACE_URI, TransformModule.PREFIX),
 			"Applies an XSL stylesheet to the node tree passed as first argument. The stylesheet " +
-			"is specified in the second argument. This should either be an URI or a node. " +
+			"is specified in the second argument. This should either be an URI or a node. If it is an " +
+			"URI, it can either point to an external location or to an XSL stored in the db by using the " +
+			"'xmldb:' scheme. Stylesheets are cached unless they were just created from an XML " +
+			"fragment and not from a complete document. " +
 			"Stylesheet parameters " +
 			"may be passed in the third argument using an XML fragment with the following structure: " +
 			"<parameters><param name=\"param-name1\" value=\"param-value1\"/>" +
@@ -197,10 +201,22 @@ public class Transform extends BasicFunction {
         SAXTransformerFactory factory = (SAXTransformerFactory)SAXTransformerFactory.newInstance();
 		TransformerHandler handler;
 		try {
-			Templates templates;
+			Templates templates = null;
 			if(Type.subTypeOf(stylesheetItem.getType(), Type.NODE)) {
 				NodeValue stylesheetNode = (NodeValue)stylesheetItem;
-				templates = getSource(factory, stylesheetNode);
+				// if the passed node is a document node or document root element,
+				// we construct an XMLDB URI and use the caching implementation. 
+				if(stylesheetNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+					NodeProxy root = (NodeProxy) stylesheetNode;
+                    if (root.getNodeId() == NodeId.DOCUMENT_NODE ||
+                            root.getNodeId().getTreeLevel() == 1) {
+						String uri = XmldbURI.XMLDB_URI_PREFIX + context.getBroker().getBrokerPool().getId() +
+							"://" + root.getDocument().getURI();
+						templates = getSource(factory, uri);
+					}
+				}
+				if (templates == null)
+					templates = getSource(factory, stylesheetNode);
 			} else {
 				String stylesheet = stylesheetItem.getStringValue();
 				templates = getSource(factory, stylesheet);
@@ -267,31 +283,12 @@ public class Transform extends BasicFunction {
 	
 	private Templates getSource(SAXTransformerFactory factory, NodeValue stylesheetRoot)
 	throws XPathException, TransformerConfigurationException {
-		if(stylesheetRoot.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+		if(stylesheetRoot.getImplementationType() == NodeValue.PERSISTENT_NODE)
 			factory.setURIResolver(new DatabaseResolver(((NodeProxy)stylesheetRoot).getDocument()));
-		}
 		TemplatesHandler handler = factory.newTemplatesHandler();
 		try {
 			handler.startDocument();
 			stylesheetRoot.toSAX(context.getBroker(), handler);
-			handler.endDocument();
-			return handler.getTemplates();
-		} catch (SAXException e) {
-			throw new XPathException(getASTNode(),
-				"A SAX exception occurred while compiling the stylesheet: " + e.getMessage(), e);
-		}
-	}
-	
-	private Templates getSource(SAXTransformerFactory factory, DocumentImpl stylesheet)
-	throws XPathException, TransformerConfigurationException {
-		factory.setURIResolver(new DatabaseResolver(stylesheet));
-		TemplatesHandler handler = factory.newTemplatesHandler();
-		try {
-			handler.startDocument();
-			Serializer serializer = context.getBroker().getSerializer();
-			serializer.reset();
-			serializer.setSAXHandlers(handler, null);
-			serializer.toSAX(stylesheet);
 			handler.endDocument();
 			return handler.getTemplates();
 		} catch (SAXException e) {
@@ -324,7 +321,7 @@ public class Transform extends BasicFunction {
 				try {
 					doc = context.getBroker().getXMLResource(XmldbURI.create(docPath), Lock.READ_LOCK);
 					if (doc != null && (templates == null || doc.getMetadata().getLastModified() > lastModified))
-						templates = getSource(factory, doc);
+						templates = getSource(doc);
 					lastModified = doc.getMetadata().getLastModified();
 				} catch (PermissionDeniedException e) {
 					throw new XPathException("Permission denied to read stylesheet: " + uri);
@@ -342,6 +339,24 @@ public class Transform extends BasicFunction {
 				lastModified = modified;
 			}
 			return templates;
+		}
+		
+		private Templates getSource(DocumentImpl stylesheet)
+		throws XPathException, TransformerConfigurationException {
+			factory.setURIResolver(new DatabaseResolver(stylesheet));
+			TemplatesHandler handler = factory.newTemplatesHandler();
+			try {
+				handler.startDocument();
+				Serializer serializer = context.getBroker().getSerializer();
+				serializer.reset();
+				serializer.setSAXHandlers(handler, null);
+				serializer.toSAX(stylesheet);
+				handler.endDocument();
+				return handler.getTemplates();
+			} catch (SAXException e) {
+				throw new XPathException(getASTNode(),
+					"A SAX exception occurred while compiling the stylesheet: " + e.getMessage(), e);
+			}
 		}
 	}
 	

@@ -25,6 +25,8 @@ package org.exist.storage;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.text.Collator;
 import java.util.ArrayList;
@@ -1415,6 +1417,22 @@ public class NativeBroker extends DBBroker {
         .run();
     }    
     
+    public void storeBinaryResource(final Txn transaction, final BinaryDocument blob, final InputStream is) {
+    	if (is == null) {
+    		blob.setPage(-1);
+    		return;
+    	}
+        new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
+            public Object start() throws ReadOnlyException {
+                LOG.debug("Storing binary resource as a stream " + blob.getFileURI());
+                blob.setPage(domDb.addBinary(transaction, blob, is));
+                return null;
+            }
+        }
+        .run();
+    }  
+    
+    
     /**
      *  get a document by its file name. The document's file name is used to
      *  identify a document.
@@ -1494,6 +1512,17 @@ public class NativeBroker extends DBBroker {
         }
         .run();
         return data;
+    }
+    
+    public void readBinaryResource(final BinaryDocument blob, final OutputStream os) {
+    	if (blob.getPage() < 0)
+    		return;
+        new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
+            public Object start() throws ReadOnlyException {
+                domDb.readBinary(blob.getPage(), os);
+                return null;
+            }
+        }.run();
     }
     
     //TODO : consider a better cooperation with Collection -pb

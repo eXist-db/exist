@@ -130,6 +130,11 @@ public class DocUtils {
 						throw new PermissionDeniedException("Insufficient privileges to read resource " + path);
 					}
 					
+                    if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
+                        throw new XPathException("Document is a binary resource, not " +
+                                "an XML document. Please consider using the function util:binary-resource to " +
+                                "retrieve a reference to it.");
+                    }
 					if (lockOnLoad) {
 						// add the document to the list of locked documents
 						context.getLockedDocuments().add(doc);

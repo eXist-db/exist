@@ -2262,7 +2262,7 @@ public class BFile extends BTree {
             this.address = address;
             
             markedOffset = offset;
-            markedPage = nextPage.getPageNum();
+            markedPage = first.getPageNum();
         }
 
         public long getAddress() {
@@ -2494,16 +2494,16 @@ public class BFile extends BTree {
         public void mark() {
             markedOffset = offset;
             markedPage = nextPage.getPageNum();
+            LOG.debug("Marked: " + markedPage + ":" + markedOffset);
         }
         
         public void rewind() throws IOException {
-            LOG.debug("REWIND");
-            offset = markedOffset;
+            LOG.debug("Rewind: " + markedPage + ":" + markedOffset);
             try {
                 lock.acquire(Lock.READ_LOCK);
-                nextPage = (SinglePage) getDataPage(markedPage, false);
+                nextPage = getSinglePage(markedPage);
                 pageLen = nextPage.ph.getDataLength();
-                offset = 0;
+                offset = markedOffset;
                 dataCache.add(nextPage);
             } catch (LockException e) {
                 throw new IOException("failed to acquire a read lock on "

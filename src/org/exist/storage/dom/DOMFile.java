@@ -24,6 +24,8 @@ package org.exist.storage.dom;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.text.NumberFormat;
@@ -46,6 +48,8 @@ import org.exist.storage.btree.BTreeCallback;
 import org.exist.storage.btree.BTreeException;
 import org.exist.storage.btree.DBException;
 import org.exist.storage.btree.IndexQuery;
+import org.exist.storage.btree.Paged.Page;
+import org.exist.storage.btree.Paged.PageHeader;
 import org.exist.storage.btree.Value;
 import org.exist.storage.cache.Cache;
 import org.exist.storage.cache.Cacheable;
@@ -318,15 +322,30 @@ public class DOMFile extends BTree implements Lockable {
 	 * Store a raw binary resource into the file. The data will always be
 	 * written into an overflow page.
 	 * 
-	 * @param value
+	 * @param value     Binary resource as byte array
 	 * @return
 	 */
-	public long addBinary(Txn transaction, DocumentImpl doc, byte[] value) {
-		OverflowDOMPage overflow = new OverflowDOMPage(transaction);
-		int pagesCount = overflow.write(transaction, value);
-        doc.getMetadata().setPageCount(pagesCount);
-		return overflow.getPageNum();
-	}
+        public long addBinary(Txn transaction, DocumentImpl doc, byte[] value) {
+            OverflowDOMPage overflow = new OverflowDOMPage(transaction);
+            int pagesCount = overflow.write(transaction, value);
+            doc.getMetadata().setPageCount(pagesCount);
+            return overflow.getPageNum();
+        }
+        
+        
+        /**
+         * Store a raw binary resource into the file. The data will always be
+         * written into an overflow page.
+         * 
+         * @param is   Binary resource as stream.
+         * @return
+         */
+        public long addBinary(Txn transaction, DocumentImpl doc, InputStream is) {
+            OverflowDOMPage overflow = new OverflowDOMPage(transaction);
+            int pagesCount = overflow.write(transaction, is);
+            doc.getMetadata().setPageCount(pagesCount);
+            return overflow.getPageNum();
+        }
 
 	/**
 	 * Return binary data stored with {@link #addBinary(byte[])}.
@@ -338,6 +357,15 @@ public class DOMFile extends BTree implements Lockable {
 		return getOverflowValue(pageNum);
 	}
 
+	public void readBinary(long pageNum, OutputStream os) {
+		try {
+			OverflowDOMPage overflow = new OverflowDOMPage(pageNum);
+			overflow.streamTo(os);
+		} catch (IOException e) {
+			LOG.error("io error while loading overflow value", e);
+		}
+	}
+	
 	/**
 	 * Insert a new node after the specified node.
 	 * 
@@ -1263,7 +1291,7 @@ public class DOMFile extends BTree implements Lockable {
 			return null;
 		}
 	}
-
+	
 	public void removeOverflowValue(Txn transaction, long pnum) {
 		try {
 			OverflowDOMPage overflow = new OverflowDOMPage(pnum);
@@ -2948,62 +2976,126 @@ public class DOMFile extends BTree implements Lockable {
 		Page firstPage = null;
 
 		public OverflowDOMPage(Txn transaction) {
-			LOG.debug("Creating overflow page");
 			firstPage = createNewPage();
-
-			// if (transaction != null) {
-			// Loggable loggable = new CreatePageLoggable(transaction, Page.NO_PAGE,
-			// firstPage.getPageNum());
-			// writeToLog(loggable, firstPage);
-			// }
+			LOG.debug("Creating overflow page: " + firstPage.getPageNum());
 		}
 
 		public OverflowDOMPage(long first) throws IOException {
 			firstPage = getPage(first);
 		}
 
+// Write binary resource from inputstream
+public int write(Txn transaction, InputStream is) {
+
+    int pageCount = 0;
+    int chunkSize = fileHeader.getWorkSize();
+    Page page = firstPage, next = null;
+
+    try {
+        // Transfer bytes from inputstream to db
+        byte[] buf = new byte[chunkSize];
+        int len = is.read(buf);
+        
+        // Check if stream does contain any data
+        if(len<1){
+            page.setPageNum(Page.NO_PAGE);
+            page.getPageHeader().setNextPage(Page.NO_PAGE);
+            return -1;
+        }
+        
+        // Read remaining stream
+        while ( len > -1 ) {
+            
+            // If there are bytes in stream, read
+            if(len>0){
+                Value value = new Value(buf, 0, len);
+                
+                if (len == chunkSize) {
+                    next = createNewPage();
+                    page.getPageHeader().setNextPage(next.getPageNum());
+                    
+                } else { // there are less then 'chuckSize'
+                    page.getPageHeader().setNextPage(Page.NO_PAGE);
+                }
+                
+                // If no data is in input stream left, don't write
+                if (isTransactional && transaction != null) {
+                    
+                    
+                    long nextPageNum = (len==chunkSize) ? next.getPageNum()
+                                                        : Page.NO_PAGE;
+                    
+                    Loggable loggable = new WriteOverflowPageLoggable(
+                            transaction, page.getPageNum(),
+                            nextPageNum , value);
+                    writeToLog(loggable, page);
+                }
+                
+                writeValue(page, value);
+                pageCount++;
+                page = next;
+                next = null;
+                
+            }
+            len = is.read(buf);
+        }
+        // TODO what if remaining length=0?
+
+    } catch (IOException ex) {
+        LOG.error("io error while writing overflow page", ex);
+    }
+
+    return pageCount;
+}
+    
+    
 		public int write(Txn transaction, byte[] data) {
-            int pageCount = 0;
-			try {
-				int remaining = data.length;
-				int chunkSize = fileHeader.getWorkSize();
-				Page page = firstPage, next = null;
-				int pos = 0;
-				Value value;
-				while (remaining > 0) {
-					chunkSize = remaining > fileHeader.getWorkSize() ? fileHeader
-							.getWorkSize()
-							: remaining;
-					value = new Value(data, pos, chunkSize);
-					remaining -= chunkSize;
-					if (remaining > 0) {
-						next = createNewPage();
-
-						page.getPageHeader().setNextPage(next.getPageNum());
-					} else
-						page.getPageHeader().setNextPage(Page.NO_PAGE);
-
-					if (isTransactional && transaction != null) {
-						Loggable loggable = new WriteOverflowPageLoggable(
-								transaction, page.getPageNum(),
-								remaining > 0 ? next.getPageNum() : Page.NO_PAGE, value);
-						writeToLog(loggable, page);
-					}
-
-					writeValue(page, value);
-					pos += chunkSize;
-					page = next;
-					next = null;
-                    ++pageCount;
-				}
-			} catch (IOException e) {
-				LOG.error("io error while writing overflow page", e);
-			}
-            return pageCount;
+                    int pageCount = 0;
+                    try {
+                        int remaining = data.length;
+                        int chunkSize = fileHeader.getWorkSize();
+                        Page page = firstPage, next = null;
+                        int pos = 0;
+                        Value value;
+                        while (remaining > 0) {
+                            chunkSize = remaining > fileHeader.getWorkSize() ? fileHeader
+                                    .getWorkSize()
+                                    : remaining;
+                            value = new Value(data, pos, chunkSize);
+                            remaining -= chunkSize;
+                            if (remaining > 0) {
+                                next = createNewPage();
+                                
+                                page.getPageHeader().setNextPage(next.getPageNum());
+                            } else
+                                page.getPageHeader().setNextPage(Page.NO_PAGE);
+                            
+                            if (isTransactional && transaction != null) {
+                                Loggable loggable = new WriteOverflowPageLoggable(
+                                        transaction, page.getPageNum(),
+                                        remaining > 0 ? next.getPageNum() : Page.NO_PAGE, value);
+                                writeToLog(loggable, page);
+                            }
+                            
+                            writeValue(page, value);
+                            pos += chunkSize;
+                            page = next;
+                            next = null;
+                            ++pageCount;
+                        }
+                    } catch (IOException e) {
+                        LOG.error("io error while writing overflow page", e);
+                    }
+                    return pageCount;
 		}
 
 		public byte[] read() {
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
+			streamTo(os);
+			return os.toByteArray();
+		}
+
+		public void streamTo(OutputStream os) {
 			Page page = firstPage;
 			byte[] chunk;
 			long np;
@@ -3021,9 +3113,7 @@ public class DOMFile extends BTree implements Lockable {
 				}
 				++count;
 			}
-			return os.toByteArray();
 		}
-
 		public void delete(Txn transaction) throws IOException {
 			Page page = firstPage;
 			long np;

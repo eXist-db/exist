@@ -1718,7 +1718,9 @@ public class XQueryContext {
 		
 		public void documentUpdated(DocumentImpl document, int event) {
 			for (int i = 0; i < listeners.size(); i++) {
-				((UpdateListener) listeners.get(i)).documentUpdated(document, event);
+                UpdateListener listener = (UpdateListener) listeners.get(i);
+                if (listener != null)
+                    listener.documentUpdated(document, event);
 			}
 		}
 

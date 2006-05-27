@@ -79,6 +79,9 @@ public class FunName extends Function {
         Sequence seq;
         Sequence result;
         Item item;
+        
+        if (contextItem != null)
+        	contextSequence = contextItem.toSequence();
  
 		if (contextSequence == null || contextSequence.isEmpty()) 
 			result = Sequence.EMPTY_SEQUENCE;            
