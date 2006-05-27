@@ -246,13 +246,28 @@ public class BasicNodeSetTest extends TestCase {
             result = ((AbstractNodeSet) speakers).selectPrecedingSiblings(largeSet.toNodeSet(), -1);
             assertEquals(160, result.getLength());
             
-            Sequence nestedSet = executeQuery(broker, "//section[@n = '1.1.1']", 1, null);
+            System.out.println("Testing ExtArrayNodeSet.selectParentChild ...");
+            Sequence nestedSet = executeQuery(broker, "//section[@n = ('1.1', '1.1.1')]", 2, null);
             test = new NameTest(Type.ELEMENT, new QName("para", ""));
             NodeSet children = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT,
                     docs, test.getName(), null);
-            result = ((AbstractNodeSet)children).hasChildrenInSet(nestedSet.toNodeSet(), NodeSet.DESCENDANT, -1);
+            result = children.selectParentChild(nestedSet.toNodeSet(), NodeSet.DESCENDANT);
             assertEquals(3, result.getLength());
             
+            nestedSet = executeQuery(broker, "//section[@n = ('1.1', '1.1.2', '1.2')]", 3, null);
+            result = children.selectParentChild(nestedSet.toNodeSet(), NodeSet.DESCENDANT);
+            assertEquals(2, result.getLength());
+            
+            nestedSet = executeQuery(broker, "//section[@n = ('1.1', '1.1.1', '1.2')]", 3, null);
+            result = children.selectParentChild(nestedSet.toNodeSet(), NodeSet.DESCENDANT);
+            assertEquals(4, result.getLength());
+            
+            nestedSet = executeQuery(broker, "//para[@n = ('1.1.2.1')]", 1, null);
+            test = new NameTest(Type.ELEMENT, new QName("section", ""));
+            NodeSet sections = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT,
+                    docs, test.getName(), null);
+            result = ((NodeSet) nestedSet).selectParentChild(sections.toNodeSet(), NodeSet.DESCENDANT);
+            assertEquals(1, result.getLength());
         } catch (Exception e) {
         	e.printStackTrace();
 	        fail(e.getMessage());
@@ -479,7 +494,7 @@ public class BasicNodeSetTest extends TestCase {
             
             root = broker.getOrCreateCollection(transaction, XmldbURI.create(DBBroker.ROOT_COLLECTION + "/test"));
             assertNotNull(root);
-            broker.removeCollection(transaction, root);
+//            broker.removeCollection(transaction, root);
             
             transact.commit(transaction);
         } catch (Exception e) {
