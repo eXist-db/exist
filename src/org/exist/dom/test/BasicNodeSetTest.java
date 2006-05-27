@@ -488,5 +488,7 @@ public class BasicNodeSetTest extends TestCase {
             if (pool != null) pool.release(broker);
         }
         BrokerPool.stopAll(false);
+        pool = null;
+        root = null;
     }
 }
