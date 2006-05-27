@@ -310,5 +310,7 @@ public class NodeTest extends XMLTestCase {
             if (pool != null) pool.release(broker);
         }
         BrokerPool.stopAll(false);
+        root = null;
+        pool = null;
     }
 }
