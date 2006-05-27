@@ -461,6 +461,7 @@ public class XQueryUpdateTest extends TestCase {
     }
     
      protected void tearDown() {
+         pool = null;
          try {
              BrokerPool.stopAll(false);
          } catch (Exception e) {            
