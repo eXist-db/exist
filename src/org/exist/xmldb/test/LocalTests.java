@@ -5,6 +5,10 @@ import junit.framework.TestSuite;
 
 public class LocalTests {
 
+    public static void main(String[] args) {
+        junit.textui.TestRunner.run(suite());
+    }
+    
 	public static Test suite() {
 		TestSuite suite = new TestSuite("Test suite for org.exist.xmldb.test");
 		//$JUnit-BEGIN$
