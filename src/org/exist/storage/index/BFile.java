@@ -2494,15 +2494,15 @@ public class BFile extends BTree {
         public void mark() {
             markedOffset = offset;
             markedPage = nextPage.getPageNum();
-            LOG.debug("Marked: " + markedPage + ":" + markedOffset);
         }
         
         public void rewind() throws IOException {
-            LOG.debug("Rewind: " + markedPage + ":" + markedOffset);
             try {
                 lock.acquire(Lock.READ_LOCK);
                 nextPage = getSinglePage(markedPage);
                 pageLen = nextPage.ph.getDataLength();
+                if (pageLen > fileHeader.getWorkSize())
+                    pageLen = fileHeader.getWorkSize();
                 offset = markedOffset;
                 dataCache.add(nextPage);
             } catch (LockException e) {
