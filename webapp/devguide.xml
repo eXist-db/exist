@@ -957,7 +957,7 @@ DatabaseManager.registerDatabase(database1);
             <example>
                 <title>XMLDBTransformer Example</title>
                 <screen format="linespecific"><![CDATA[
-<xdb:collection xmlns:xdb="http://exist-db/transformer/1.0"
+<xdb:collection xmlns:xdb="http://exist-db.org/transformer/1.0"
 	uri="xdb:exist:///db">
 	<!-- iterate through all rdf:Description elements containing the
 	     term "computer" -->
