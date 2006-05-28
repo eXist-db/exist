@@ -1753,12 +1753,20 @@ public class DOMFile extends BTree implements Lockable {
 				address = findValue(this, new NodeProxy(node));
 			if (address == BTree.KEY_NOT_FOUND)
 				return null;
-			final RecordPos rec = findRecord(address);
-			SanityCheck.THROW_ASSERT(rec != null,
-					"Node data could not be found! Page: "
-							+ StorageAddress.pageFromPointer(address)
-							+ "; tid: "
-							+ StorageAddress.tidFromPointer(address));
+			RecordPos rec = findRecord(address);
+            if (rec == null) {
+                address = findValue(this, new NodeProxy(node));
+                if (address != BTree.KEY_NOT_FOUND)
+                    rec = findRecord(address);
+                if (address == BTree.KEY_NOT_FOUND || rec == null)
+                    throw new RuntimeException(
+    					"Node data could not be found for node: " + node.getNodeId() + "; " + 
+                        ((DocumentImpl)node.getOwnerDocument()).getURI()
+                            + "; Page: "
+    							+ StorageAddress.pageFromPointer(address)
+    							+ "; tid: "
+    							+ StorageAddress.tidFromPointer(address));
+            }
 			final ByteArrayOutputStream os = new ByteArrayOutputStream();
 			getNodeValue((DocumentImpl)node.getOwnerDocument(), os, rec, true, addWhitespace);
 			final byte[] data = os.toByteArray();
