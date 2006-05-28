@@ -948,7 +948,7 @@ DatabaseManager.registerDatabase(database1);
                 using Transformers and about their basic concepts.</para>
             <para>As with other transformers, the XMLDBTransformer listens for a limited set of tags
                 that belong to the namespace <filename moreinfo="none"
-                    >http://exist-db/transformer/1.0</filename>. These are
+                    >http://exist-db.org/transformer/1.0</filename>. These are
                 <sgmltag>collection</sgmltag>, <sgmltag>for-each</sgmltag>,
                 <sgmltag>select-node</sgmltag>, <sgmltag>current-node</sgmltag>. To examine how they
                 are used, let's consider the following example (Note that the complete version of
