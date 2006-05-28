@@ -590,9 +590,9 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
     			// same document
     			NodeId pa = na.getNodeId();
     			NodeId pb = nb.getNodeId();
-    			
-    			if (pb.isDescendantOf(pa)) {
-    				if (pb.isChildOf(pa)) {
+    			int relation = pb.computeRelation(pa);
+    			if (relation != -1) {
+    				if (relation == NodeId.IS_CHILD) {
     					if(mode == NodeSet.DESCENDANT) {
     						if (Expression.NO_CONTEXT_ID != contextId)
     							nb.addContextNode(contextId, na);
