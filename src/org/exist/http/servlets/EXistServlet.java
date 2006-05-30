@@ -41,6 +41,7 @@ import org.exist.http.BadRequestException;
 import org.exist.http.Descriptor;
 import org.exist.http.NotFoundException;
 import org.exist.http.RESTServer;
+import org.exist.http.SOAPServer;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
@@ -68,16 +69,17 @@ public class EXistServlet extends HttpServlet {
 	private String formEncoding = null;
 	public final static String DEFAULT_ENCODING = "UTF-8";
 	
-        protected final static Logger LOG = Logger.getLogger(EXistServlet.class);
+    protected final static Logger LOG = Logger.getLogger(EXistServlet.class);
 	private BrokerPool pool = null;
 	private String defaultUsername = SecurityManager.GUEST_USER;
 	private String defaultPassword = SecurityManager.GUEST_USER;
 	
-	private RESTServer server;
+	private RESTServer srvREST;
+	private SOAPServer srvSOAP; 
         
-        private Authenticator authenticator;
+    private Authenticator authenticator;
         
-        private User defaultUser;
+    private User defaultUser;
 
 	/* (non-Javadoc)
 	 * @see javax.servlet.GenericServlet#init(javax.servlet.ServletConfig)
@@ -141,15 +143,22 @@ public class EXistServlet extends HttpServlet {
 			throw new ServletException("Unable to configure database instance: " + e.getMessage(), e);
 		}
 
-		// Instantiate REST server
+		
+		//get form and container encoding's
 		formEncoding = config.getInitParameter("form-encoding");
 		if(formEncoding == null)
 			formEncoding = DEFAULT_ENCODING;
 		String containerEncoding = config.getInitParameter("container-encoding");
 		if(containerEncoding == null)
 			containerEncoding = DEFAULT_ENCODING;
-		server = new RESTServer(formEncoding, containerEncoding);
+		
+		//Instantiate REST Server
+		srvREST = new RESTServer(formEncoding, containerEncoding);
                 
+		//Instantiate SOAP Server
+		srvSOAP = new SOAPServer(formEncoding, containerEncoding);
+		
+		
                 // XML lib checks....
                 if( XmlLibraryChecker.isXercesVersionOK() ){
                     LOG.info("Detected "+ XmlLibraryChecker.XERCESVERSION + ", OK.");
@@ -163,12 +172,12 @@ public class EXistServlet extends HttpServlet {
                             +"of the JRE.");
                 }
 
-                if( XmlLibraryChecker.isXalanVersionOK() ){
-                    LOG.info("Detected "+ XmlLibraryChecker.XALANVERSION+ ", OK.");
+                if( XmlLibraryChecker.isSaxonVersionOK() ){
+                    LOG.info("Detected "+ XmlLibraryChecker.SAXONVERSION+ ", OK.");
                     
                 } else {
-                    LOG.warn("eXist requires '"+ XmlLibraryChecker.XALANVERSION 
-                            + "' but detected '"+ XmlLibraryChecker.getXalanVersion()
+                    LOG.warn("eXist requires '"+ XmlLibraryChecker.SAXONVERSION 
+                            + "' but detected '"+ XmlLibraryChecker.getSaxonVersion()
                             +"'. Please add the correct version to the "
                             +"class-path, e.g. in the 'endorsed' folder of " 
                             +"the servlet container or in the 'endorsed' folder "
@@ -223,7 +232,7 @@ public class EXistServlet extends HttpServlet {
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
-			server.doPut(broker, tempFile, XmldbURI.create(path), request, response);
+			srvREST.doPut(broker, tempFile, XmldbURI.create(path), request, response);
 		} catch (BadRequestException e) {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
 		} catch (PermissionDeniedException e) {
@@ -279,9 +288,21 @@ public class EXistServlet extends HttpServlet {
 
 		//fouth, process the request
 		DBBroker broker = null;
-		try {
+		try
+		{
 			broker = pool.get(user);
-			server.doGet(broker, request, response, path);
+			
+			//Route the request
+			if(path.indexOf(SOAPServer.WEBSERVICE_MODULE_EXTENSION) > -1)
+			{
+				//SOAP Server
+				srvSOAP.doGet(broker, request, response, path);
+			}
+			else
+			{
+				//REST Server
+				srvREST.doGet(broker, request, response, path);
+			}
 		} catch (BadRequestException e) {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, e
 					.getMessage());
@@ -328,7 +349,7 @@ public class EXistServlet extends HttpServlet {
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
-			server.doHead(broker, request, response, path);
+			srvREST.doHead(broker, request, response, path);
 		} catch (BadRequestException e) {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, e
 					.getMessage());
@@ -375,7 +396,7 @@ public class EXistServlet extends HttpServlet {
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
-			server.doDelete(broker, XmldbURI.create(path), response);
+			srvREST.doDelete(broker, XmldbURI.create(path), response);
 		} catch (PermissionDeniedException e) {
 			response
 			.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
@@ -450,7 +471,18 @@ public class EXistServlet extends HttpServlet {
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
-			server.doPost(broker, request, response, path);
+
+			//Route the request
+			if(path.indexOf(SOAPServer.WEBSERVICE_MODULE_EXTENSION) > -1)
+			{
+				//SOAP Server
+				srvSOAP.doPost(broker, request, response, path);
+			}
+			else
+			{
+				//REST Server
+				srvREST.doPost(broker, request, response, path);
+			}
 		} catch (PermissionDeniedException e) {
 			response
 			.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
