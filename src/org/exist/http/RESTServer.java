@@ -768,7 +768,7 @@ public class RESTServer {
             } else {
 
                 FileInputStream is = new FileInputStream(tempFile);
-                collection.addBinaryResource(transaction, broker, docUri, is, contentType);
+                collection.addBinaryResource(transaction, broker, docUri, is, contentType, (int) tempFile.length());
                 is.close();
                 response.sendError(HttpServletResponse.SC_OK, "Document " + docUri + " stored as binary resource.");
             }
