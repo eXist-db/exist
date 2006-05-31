@@ -7,4 +7,6 @@ public interface ByDocumentIterator {
 	public boolean hasNextNode();
 	
 	public NodeProxy nextNode();
+    
+    public NodeProxy peekNode();
 }
