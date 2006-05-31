@@ -462,11 +462,6 @@ public class NativeBroker extends DBBroker {
             if (qnameValueIndex != null)
                 qnameValueIndex.endElement((ElementImpl) node, currentPath, content);
         }
-        
-        // TODO move_to NativeElementIndex; name change (See ContentLoadingObserver ): addRow() --> endElement()
-        // save element by calling ElementIndex
-        elementIndex.setDocument(doc);
-        elementIndex.addNode(node.getQName(), p);
     }    
     
     /** Takes care of actually remove entries from the indices;
@@ -2896,6 +2891,10 @@ public class NativeBroker extends DBBroker {
                     
                     // qnameValueIndex.startElement((ElementImpl)node, currentPath, index);
                     notifyStartElement((ElementImpl)node, currentPath, index);
+                    NodeProxy p = new NodeProxy(node);
+                    p.setIndexType(indexType);
+                    elementIndex.setDocument(doc);
+                    elementIndex.addNode(node.getQName(), p);
                     break;
                     
                 case Node.ATTRIBUTE_NODE :

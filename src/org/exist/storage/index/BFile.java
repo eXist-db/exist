@@ -2192,9 +2192,9 @@ public class BFile extends BTree {
         
         public long getAddress();
         
-        public void mark();
+        public long position();
         
-        public void rewind() throws IOException;
+        public void seek(long position) throws IOException;
     }
 
     /**
@@ -2206,8 +2206,6 @@ public class BFile extends BTree {
             implements PageInputStream {
 
         private long address = 0L;
-
-        private int mark = 0;
         
         public SimplePageInput() {
         }
@@ -2221,13 +2219,12 @@ public class BFile extends BTree {
             return address;
         }
         
-        public void mark() {
-            mark = position;
+        public long position() {
+            return position;
         }
         
-        public void rewind() {
-            LOG.debug("REWIND to " + mark);
-            position = mark;
+        public void seek(long pos) throws IOException {
+            this.position = (int) pos;
         }
     }
 
@@ -2242,12 +2239,9 @@ public class BFile extends BTree {
 
         private int pageLen;
 
-        private int offset = 0;
+        private short offset = 0;
 
         private long address = 0L;
-
-        private int markedOffset;
-        private long markedPage;
         
         public MultiPageInput() {
         }
@@ -2260,9 +2254,6 @@ public class BFile extends BTree {
                 pageLen = fileHeader.getWorkSize();
             dataCache.add(first, 3);
             this.address = address;
-            
-            markedOffset = offset;
-            markedPage = first.getPageNum();
         }
 
         public long getAddress() {
@@ -2491,19 +2482,20 @@ public class BFile extends BTree {
             }        	
         }
         
-        public void mark() {
-            markedOffset = offset;
-            markedPage = nextPage.getPageNum();
+        public long position() {
+            return StorageAddress.createPointer((int) nextPage.getPageNum(), offset);
         }
         
-        public void rewind() throws IOException {
+        public void seek(long position) throws IOException {
+            int newPage = StorageAddress.pageFromPointer(position);
+            short newOffset = StorageAddress.tidFromPointer(position);
             try {
                 lock.acquire(Lock.READ_LOCK);
-                nextPage = getSinglePage(markedPage);
+                nextPage = getSinglePage(newPage);
                 pageLen = nextPage.ph.getDataLength();
                 if (pageLen > fileHeader.getWorkSize())
                     pageLen = fileHeader.getWorkSize();
-                offset = markedOffset;
+                offset = newOffset;
                 dataCache.add(nextPage);
             } catch (LockException e) {
                 throw new IOException("failed to acquire a read lock on "
