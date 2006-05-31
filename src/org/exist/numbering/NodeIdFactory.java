@@ -22,6 +22,7 @@
 package org.exist.numbering;
 
 import org.exist.storage.io.VariableByteInput;
+import org.exist.storage.io.VariableByteOutputStream;
 
 import java.io.IOException;
 
@@ -103,4 +104,6 @@ public interface NodeIdFactory {
      * @return the document node id.
      */
     NodeId documentNodeId();
+    
+    void writeEndOfDocument(VariableByteOutputStream os);
 }

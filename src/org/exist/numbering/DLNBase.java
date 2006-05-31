@@ -136,8 +136,7 @@ public class DLNBase {
         bitIndex = nbits - 1;
     }
 
-    public DLNBase(VariableByteInput is) throws IOException {
-        final int bitCnt = is.readShort();
+    public DLNBase(short bitCnt, VariableByteInput is) throws IOException {
         int blen = bitCnt / 8;
         if (bitCnt % 8 > 0)
         	++blen;
@@ -211,6 +210,9 @@ public class DLNBase {
         int units = unitsUsed(startBit, bits);
         startBit += units;
         int numBits = bitWidth(units);
+//            System.err.println("startBit: " + startBit + "; bitIndex: " + bitIndex + 
+//                    "; units: " + units + ": numBits: " + numBits + " " + toBitString() +
+//                    "; bits: " + bits.length);
         int id = 0;
         for (int i = numBits - 1; i >= 0; i--) {
             if ((bits[startBit >> UNIT_SHIFT] & (1 << ((7 - startBit++) & 7))) != 0) {

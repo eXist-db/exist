@@ -22,6 +22,7 @@
 package org.exist.numbering;
 
 import org.exist.storage.io.VariableByteInput;
+import org.exist.storage.io.VariableByteOutputStream;
 
 import java.io.IOException;
 
@@ -40,7 +41,8 @@ public class DLNFactory implements NodeIdFactory {
     }
     
     public NodeId createFromStream(VariableByteInput is) throws IOException {
-        return new DLN(is);
+        short bitCnt = is.readShort();
+        return bitCnt == 0 ? DLN.END_OF_DOCUMENT : new DLN(bitCnt, is);
     }
 
     public NodeId createFromData(int sizeHint, byte[] data, int startOffset) {
@@ -57,5 +59,9 @@ public class DLNFactory implements NodeIdFactory {
 
     public int lengthInBytes(int units, byte[] data, int startOffset) {
         return DLN.getLengthInBytes(units, data, startOffset);
+    }
+    
+    public void writeEndOfDocument(VariableByteOutputStream os) {
+        os.writeShort(0);
     }
 }
