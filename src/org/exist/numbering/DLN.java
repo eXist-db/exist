@@ -113,8 +113,8 @@ public class DLN extends DLNBase implements NodeId {
      * @param is
      * @throws IOException
      */
-    public DLN(VariableByteInput is) throws IOException {
-        super(is);
+    public DLN(short bitCnt, VariableByteInput is) throws IOException {
+        super(bitCnt, is);
     }
 
     /**
@@ -326,5 +326,8 @@ public class DLN extends DLNBase implements NodeId {
         
         id0 = new DLN("1.1/1");
         System.out.println("Descendant:\n" + id1.toBitString() + "\n" + id0.toBitString() + "\n: " + id1.isDescendantOf(id0));
+        
+        System.out.println("Doc node: " + DOCUMENT_NODE.toString() + " - " + 
+                ((DLN)DOCUMENT_NODE).bitIndex);
     }
 }
