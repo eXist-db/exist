@@ -1107,19 +1107,19 @@ public  class Collection extends Observable
     		XmldbURI docUri, byte[] data, String mimeType, Date created, Date modified)
             throws EXistException, PermissionDeniedException, LockException, TriggerException {
         return addBinaryResource(transaction, broker, docUri, 
-                                new ByteArrayInputStream(data), mimeType, created, modified);
+                                new ByteArrayInputStream(data), mimeType, data.length, created, modified);
     }
     
     // Streaming
     public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker,
-    		XmldbURI docUri, InputStream is, String mimeType)
+    		XmldbURI docUri, InputStream is, String mimeType, int size)
             throws EXistException, PermissionDeniedException, LockException, TriggerException {
-        return addBinaryResource(transaction, broker, docUri, is, mimeType, null, null);
+        return addBinaryResource(transaction, broker, docUri, is, mimeType, size, null, null);
     }
     
     // Streaming
     public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker,
-    		XmldbURI docUri, InputStream is, String mimeType, Date created, Date modified)
+    		XmldbURI docUri, InputStream is, String mimeType, int size, Date created, Date modified)
             throws EXistException, PermissionDeniedException, LockException, TriggerException {
         if (broker.isReadOnly())
             throw new PermissionDeniedException("Database is read-only");
@@ -1161,7 +1161,7 @@ public  class Collection extends Observable
             
             if(modified != null)
             	metadata.setLastModified(modified.getTime());
-            
+            blob.setContentLength(size);
             broker.storeBinaryResource(transaction, blob, is);
             addDocument(transaction, broker, blob);
             

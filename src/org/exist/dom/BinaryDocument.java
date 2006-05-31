@@ -47,6 +47,8 @@ public class BinaryDocument extends DocumentImpl {
 	
 	private long pageNr = Page.NO_PAGE;
     
+    private int realSize = 0;
+    
     public BinaryDocument(DBBroker broker) {
         super(broker, null, null);
     } 
@@ -78,6 +80,14 @@ public class BinaryDocument extends DocumentImpl {
 		return pageNr;
 	}
 
+    public int getContentLength() {
+        return realSize;
+    }
+    
+    public void setContentLength(int length) {
+        this.realSize = length;
+    }
+    
 	public void write(VariableByteOutputStream ostream) throws IOException {
 		ostream.writeInt(getDocId());
 		ostream.writeUTF(getFileURI().toString());
@@ -93,7 +103,8 @@ public class BinaryDocument extends DocumentImpl {
 			ostream.writeInt(user.getUID());
 			ostream.writeInt(group.getId());
 		}
-		ostream.writeByte((byte) permissions.getPermissions());		
+		ostream.writeByte((byte) permissions.getPermissions());
+        ostream.writeInt(realSize);
 		getMetadata().write(ostream);
 	}
 
@@ -117,7 +128,8 @@ public class BinaryDocument extends DocumentImpl {
                 permissions.setGroup(group.getName());
 		}
 		permissions.setPermissions(perm);
-		
+		realSize = istream.readInt();
+        
         DocumentMetadata metadata = new DocumentMetadata();
         metadata.read(istream);
         setMetadata(metadata);

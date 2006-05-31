@@ -142,7 +142,7 @@ public class Put extends AbstractWebDAVMethod {
             } else {
                 LOG.debug("storing Binary resource"); 
                 FileInputStream is = new FileInputStream(tempFile);
-                doc = collection.addBinaryResource(txn, broker, pathUri, is, contentType);
+                doc = collection.addBinaryResource(txn, broker, pathUri, is, contentType, (int) tempFile.length());
                 is.close();
                 LOG.debug("done");
             }
