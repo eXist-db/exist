@@ -25,10 +25,8 @@ import java.util.Iterator;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.dom.NodeSetHelper;
 import org.exist.dom.NodeVisitor;
 import org.exist.dom.StoredNode;
 import org.exist.dom.VirtualNodeSet;
@@ -525,7 +523,7 @@ public class LocationStep extends Step {
                 NodeId parentId = current.getNodeId().getParentId();
                 if(parentId.getTreeLevel() == 1 && current.getDocument().getCollection().isTempCollection())
                     continue;
-                StoredNode parentNode = (StoredNode) context.getBroker().objectWith(current.getOwnerDocument(), parentId);
+                StoredNode parentNode = context.getBroker().objectWith(current.getOwnerDocument(), parentId);
             	visitor.setContext(current);
             	parentNode.accept(visitor);
             }

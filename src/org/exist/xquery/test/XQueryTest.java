@@ -1507,6 +1507,7 @@ public class XQueryTest extends XMLTestCase {
 			fail(e.getMessage());
 		}
 	}
+    
 	/**
 	 * @return
 	 * @throws XMLDBException
