@@ -166,7 +166,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                     LOG.warn("IO error while writing structural index: " + e.getMessage(), e);
                 }
                 StorageAddress.write(storedNode.getInternalAddress(), os);
-            }            
+            }
+            broker.getBrokerPool().getNodeFactory().writeEndOfDocument(os);
             os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
             //Compute a key for the node
             ElementValue ref;
@@ -271,6 +272,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                                         newGIDList.add(new NodeProxy(doc, nodeId, address));
                                     }
                                 }
+                                broker.getBrokerPool().getNodeFactory().createFromStream(is);
                             }
                         }
                     } catch (EOFException e) {
@@ -296,7 +298,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                                 LOG.warn("IO error while writing structural index: " + e.getMessage(), e);
                             }
                             StorageAddress.write(storedNode.getInternalAddress(), os);
-                        }                
+                        }
+                        broker.getBrokerPool().getNodeFactory().writeEndOfDocument(os);
                         os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);    
                     }
                 }                
@@ -459,7 +462,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 }
                 while (is.available() > 0) {
                     int storedDocId = is.readInt();
-                    is.readByte();
+                    byte ordered = is.readByte();
                     int gidsCount = is.readInt();
                     //TOUNDERSTAND -pb
                     int size = is.readFixedInt();
@@ -488,6 +491,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                             	sameDocSet = false;
                         }
                     }
+                    nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
+                    result.setSorted(storedDocument, ordered == ENTRIES_ORDERED);
                 }
             } catch (EOFException e) {
                 //EOFExceptions are expected here
@@ -521,6 +526,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
      */
     public NodeSet findDescendantsByTagName(byte type, QName qname, int axis,
     		DocumentSet docs, ExtArrayNodeSet contextSet,  int contextId) {
+//        LOG.debug(contextSet.toString());
         short nodeType = getIndexType(type);
         ByDocumentIterator citer = contextSet.iterateByDocument();
         final ExtArrayNodeSet result = new ExtArrayNodeSet(docs.getLength(), 256);
@@ -575,13 +581,14 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                         continue;
                     }
                     NodeId ancestorId = ancestor.getNodeId();
-                    ((BFile.PageInputStream)is).mark();
-                    
+                    long prevPosition = ((BFile.PageInputStream)is).position();
+                    long markedPosition = prevPosition;
+                    NodeId lastMarked = ancestorId;
+                        
                     //Process the nodes for the current document
                     NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
                     long address = StorageAddress.read(is);
-                    int k = 0, marked = 0;
-                    int found = 0;
+ 
                     while (true) {
                         int relation = nodeId.computeRelation(ancestorId);
 //                        LOG.debug(ancestorId + " -> " + nodeId + ": " + relation);
@@ -602,39 +609,40 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                                     storedNode.deepCopyContext(ancestor, contextId);
                                 } else
                                     storedNode.copyContext(ancestor);
-                                found++;
                             }
-                            if (k + 1 < gidsCount) {
+                            prevPosition = ((BFile.PageInputStream)is).position();
+                            NodeId next = broker.getBrokerPool().getNodeFactory().createFromStream(is);
+                            if (next != DLN.END_OF_DOCUMENT) {
                                 // retrieve the next descendant from the stream
-                                k++;
-                                nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
+                                nodeId = next;
                                 address = StorageAddress.read(is);
                             } else {
                                 // no more descendants. check if there are more ancestors
                                 if (citer.hasNextNode()) {
-                                    ancestor = citer.nextNode();
+                                    NodeProxy nextNode = citer.peekNode();
                                     // reached the end of the input stream:
                                     // if the ancestor set has more nodes and the following ancestor
                                     // is a descendant of the previous one, we have to rescan the input stream
                                     // for further matches
-                                    if (ancestor.getNodeId().isDescendantOf(ancestorId)) {
-                                        ((BFile.PageInputStream)is).rewind();
-                                        k = marked;
+                                    if (nextNode.getNodeId().isDescendantOf(ancestorId)) {
+                                        prevPosition = markedPosition;
+                                        ((BFile.PageInputStream)is).seek(markedPosition);
                                         nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
                                         address = StorageAddress.read(is);
+                                        ancestor = citer.nextNode();
                                         ancestorId = ancestor.getNodeId();
                                     } else {
-                                        ancestorId = ancestor.getNodeId();
+//                                        ancestorId = ancestor.getNodeId();
                                         break;
                                     }
-                                } else
+                                } else {
                                     break;
+                                }
                             }
                         } else {
                             // current node is not a descendant of the ancestor node. Compare the
                             // node ids and proceed with next descendant or ancestor.
                             int cmp = ancestorId.compareTo(nodeId);
-//                            LOG.debug("cmp: " + ancestor.getNodeId() + " -> " + nodeId + ": " + cmp);
                             if (cmp < 0) {
                                 // check if we have more ancestors
                                 if (citer.hasNextNode()) {
@@ -645,32 +653,56 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                                     if (next.getNodeId().isDescendantOf(ancestorId)) {
                                         // rewind the input stream to the position from where we started
                                         // for the previous ancestor node
-                                        ((BFile.PageInputStream)is).rewind();
-                                        k = marked;
+                                        ((BFile.PageInputStream)is).seek(markedPosition);
                                         nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
                                         address = StorageAddress.read(is);
                                     } else {
                                         // mark the current position in the input stream
-                                        ((BFile.PageInputStream)is).mark();
-                                        marked = k;
+                                        if (!next.getNodeId().isDescendantOf(lastMarked)) {
+                                            lastMarked = next.getNodeId();
+                                            markedPosition = prevPosition;
+                                        }
                                     }
                                     ancestor = next;
                                     ancestorId = ancestor.getNodeId();
                                 } else {
                                     // no more ancestors: skip the remaining descendants for this document
-                                    while (++k  < gidsCount) {
-                                        broker.getBrokerPool().getNodeFactory().createFromStream(is);
+                                    while (broker.getBrokerPool().getNodeFactory().createFromStream(is) 
+                                            != DLN.END_OF_DOCUMENT) {
                                         StorageAddress.read(is);
                                     }
                                     break;
                                 }
                             } else {
                                 // load the next descendant from the input stream
-                                if (++k < gidsCount) {
-                                    nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
+                                prevPosition = ((BFile.PageInputStream)is).position();
+                                NodeId nextId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
+                                if (nextId != DLN.END_OF_DOCUMENT) {
+                                    nodeId = nextId;
                                     address = StorageAddress.read(is);
-                                } else
-                                    break;
+                                } else {
+                                    // check if we have more ancestors
+                                    if (citer.hasNextNode()) {
+                                        ancestor = citer.nextNode();
+                                        // if the ancestor set has more nodes and the following ancestor
+                                        // is a descendant of the previous one, we have to rescan the input stream
+                                        // for further matches
+                                        if (ancestor.getNodeId().isDescendantOf(ancestorId)) {
+                                            // rewind the input stream to the position from where we started
+                                            // for the previous ancestor node
+                                            prevPosition = markedPosition;
+                                            ((BFile.PageInputStream)is).seek(markedPosition);
+                                            nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
+                                            address = StorageAddress.read(is);
+                                            ancestorId = ancestor.getNodeId();
+                                        } else {
+                                            ancestorId = ancestor.getNodeId();
+                                            break;
+                                        }
+                                    } else {
+                                        break;
+                                    }
+                                }
                             }
                         }
                     }
