@@ -966,7 +966,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
     	public boolean hasNextNode() {
     		return next != null;
     	}
-    	
+        
     	public NodeProxy nextNode() {
     		if (next == null)
                 return null;
@@ -976,5 +976,9 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
             	next = currentPart.get(pos);
             return n;
     	}
+        
+    	public NodeProxy peekNode() {
+            return next;
+        }
     }
 }
