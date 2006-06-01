@@ -230,7 +230,7 @@ public class DurationValue extends ComputableValue {
 			case Type.DURATION:
 				return this;
 			case Type.YEAR_MONTH_DURATION:
-				if (duration.getField(DatatypeConstants.YEARS) != null && 
+				if (duration.getField(DatatypeConstants.YEARS) != null || 
 					duration.getField(DatatypeConstants.MONTHS) != null)
 					return new YearMonthDurationValue(TimeUtils.getInstance().newDurationYearMonth(
 						duration.getSign() >= 0,
