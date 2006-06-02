@@ -393,7 +393,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	public void read(VariableByteInput istream) throws IOException, EOFException {
 		try {
             docId = istream.readInt();
-            fileURI = XmldbURI.create(istream.readUTF());
+            fileURI = XmldbURI.createInternal(istream.readUTF());
             final SecurityManager secman = broker.getBrokerPool().getSecurityManager();
             final int uid = istream.readInt();
             final int gid = istream.readInt();
@@ -723,7 +723,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			list.add(child);
 		}
 		return list;
-	}    
+	}
     
 	protected Node getPreviousSibling(StoredNode node) {
 		NodeList cl = getChildNodes();		
