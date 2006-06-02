@@ -118,6 +118,10 @@ public class XmldbURI implements Comparable {
 		}
 	}
 	
+	public static XmldbURI createInternal(String collectionPath) {
+		return new XmldbURI(collectionPath);
+	}
+	
 	private static XmldbURI getXmldbURI(URI uri) throws URISyntaxException{
 		if(uri.getScheme()!=null || uri.getFragment()!=null || uri.getQuery()!=null) {
 			return new FullXmldbURI(uri);
@@ -137,6 +141,7 @@ public class XmldbURI implements Comparable {
 		}  
 		*/
 	}
+	
 	/**
 	 * Contructs an XmldbURI from given URI.
 	 * The provided URI must have the XMLDB_SCHEME ("xmldb")
@@ -153,6 +158,10 @@ public class XmldbURI implements Comparable {
 			hadXmldbPrefix=true;
 		}
 		parseURI(xmldbURI,hadXmldbPrefix);
+	}
+	
+	protected XmldbURI(String collectionPath) {
+		this.encodedCollectionPath = collectionPath;
 	}
 	
     /** Feeds private members.  Receives a URI with the xmldb: scheme already stripped
@@ -459,6 +468,10 @@ public class XmldbURI implements Comparable {
     	}
     }
 
+    public XmldbURI appendInternal(XmldbURI uri) {
+    	return XmldbURI.createInternal(getRawCollectionPath() + '/' + uri.getRawCollectionPath());
+    }
+    
 	/** Ugly workaround for non-URI compliant pathes
 	 * @param pseudoURI What is supposed to be a URI
 	 * @return an supposedly correctly escaped URI <strong>string representation</string>
