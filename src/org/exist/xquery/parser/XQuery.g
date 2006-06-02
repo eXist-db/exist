@@ -148,6 +148,8 @@ imaginaryTokenDefinitions
 	BEFORE 
 	AFTER 
 	MODULE_DECL 
+	MODULE_IMPORT
+	SCHEMA_IMPORT
 	ATTRIBUTE_TEST 
 	COMP_ELEM_CONSTRUCTOR
 	COMP_ATTR_CONSTRUCTOR 
@@ -208,7 +210,7 @@ prolog throws XPathException
 :
 	(
 		(
-			( "import" "module" ) => moduleImport
+			importDecl
 			|
 			( "declare" ( "default" | "xmlspace" | "ordering" | "construction" | "base-uri" ) ) =>
 			setter
@@ -231,6 +233,13 @@ prolog throws XPathException
 		)
 		SEMICOLON!
 	)*
+	;
+
+importDecl throws XPathException
+:
+	( "import" "module") => moduleImport 
+	| 
+	schemaImport
 	;
 
 versionDecl throws XPathException
@@ -285,8 +294,9 @@ varDecl throws XPathException
 :
 	decl:"declare"! "variable"! DOLLAR! varName=qName! ( typeDeclaration )?
 	(
-		LCURLY! ex:expr RCURLY! // deprecated
-		// conformant: COLON! EQ! ex:expr
+		LCURLY! e1:expr RCURLY! // deprecated
+		|
+		COLON! EQ! e2:expr
 		|
 		"external"
 	)
@@ -308,7 +318,11 @@ optionDecl
 	
 moduleImport
 :
-	"import"^ "module"! ( moduleNamespace )? STRING_LITERAL ( "at"! STRING_LITERAL )?
+	i:"import"! "module"! ( moduleNamespace )? STRING_LITERAL ( "at"! STRING_LITERAL )?
+	{
+		#moduleImport = #(#[MODULE_IMPORT, "module"], #moduleImport);
+		#moduleImport.copyLexInfo(#i);
+	}
 	;
 
 moduleNamespace
@@ -317,7 +331,26 @@ moduleNamespace
 	"namespace"! prefix=ncnameOrKeyword EQ!
 	{ #moduleNamespace = #[NCNAME, prefix]; }
 	;
-	
+
+schemaImport
+{ String prefix = null; }
+:
+	i:"import"! "schema"! ( schemaPrefix )? STRING_LITERAL ( "at"! STRING_LITERAL )?
+	{
+		#schemaImport = #(#[SCHEMA_IMPORT, "schema"], #schemaImport);
+		#schemaImport.copyLexInfo(#i);
+	}
+	;
+
+schemaPrefix
+{ String prefix = null; }
+	:
+	"namespace"! prefix=ncnameOrKeyword EQ!
+	{ #schemaPrefix = #[NCNAME, prefix]; }
+	|
+	"default" "element" "namespace"
+	;
+
 functionDecl throws XPathException
 { String name= null; }
 :
@@ -1394,6 +1427,8 @@ reservedKeywords returns [String name]
 	"case" { name = "case"; }
 	|
 	"validate" { name = "validate"; }
+	|
+	"schema" { name = "schema"; }
 	;
 
 /**
