@@ -235,7 +235,7 @@ public  class Collection extends Observable
     public void addDocument(Txn transaction, DBBroker broker, DocumentImpl doc) {
         if (doc.getDocId() == DocumentImpl.UNKNOWN_DOCUMENT_ID)
             doc.setDocId(broker.getNextResourceId(transaction, this));
-        documents.put(doc.getFileURI(), doc);
+        documents.put(doc.getFileURI().getRawCollectionPath(), doc);
     }
     
     /**
@@ -245,7 +245,7 @@ public  class Collection extends Observable
      * @param doc
      */
     public void unlinkDocument(DocumentImpl doc) {
-        documents.remove(doc.getFileURI());
+        documents.remove(doc.getFileURI().getRawCollectionPath());
     }
     
     /**
@@ -328,9 +328,9 @@ public  class Collection extends Observable
             Iterator i = subcollections.iterator();
             while (i.hasNext() ) {
                 childName = (XmldbURI) i.next();
-                child = broker.getCollection(path.append(childName));
+                child = broker.getCollection(path.appendInternal(childName));
                 if(child == null) {
-                    LOG.warn("child collection " + childName + " not found. Skipping ...");
+                    LOG.warn("child collection " + path.appendInternal(childName) + " not found. Skipping ...");
                     // we always check if we have permissions to read the child collection
                 } else if (child.permissions.validate(broker.getUser(), Permission.READ)) {
                     child.getDocuments(broker, docs, checkPermissions);
@@ -440,7 +440,7 @@ public  class Collection extends Observable
     public DocumentImpl getDocument(DBBroker broker, XmldbURI path) {
         try {
             getLock().acquire(Lock.READ_LOCK);
-            DocumentImpl doc = (DocumentImpl) documents.get(path);
+            DocumentImpl doc = (DocumentImpl) documents.get(path.getRawCollectionPath());
             if(doc == null)
                 LOG.debug("Document " + path + " not found!");
             return doc;
@@ -478,7 +478,7 @@ public  class Collection extends Observable
     throws LockException {
         try {
             getLock().acquire(Lock.READ_LOCK);
-            DocumentImpl doc = (DocumentImpl) documents.get(uri);
+            DocumentImpl doc = (DocumentImpl) documents.get(uri.getRawCollectionPath());
             if(doc == null)
                 return null;
             Lock updateLock = doc.getUpdateLock();
@@ -571,7 +571,7 @@ public  class Collection extends Observable
      *@return
      */
     public boolean hasDocument(XmldbURI uri) {
-        return documents.containsKey(uri);
+        return documents.containsKey(uri.getRawCollectionPath());
     }
     
     /**
@@ -691,7 +691,7 @@ public  class Collection extends Observable
             }
             
             broker.removeXMLResource(transaction, doc);
-            documents.remove(docUri);
+            documents.remove(docUri.getRawCollectionPath());
             
             if (trigger != null) {
                 trigger.finish(Trigger.REMOVE_DOCUMENT_EVENT, broker, transaction, doc);
@@ -757,7 +757,7 @@ public  class Collection extends Observable
                 trigger.prepare(Trigger.REMOVE_DOCUMENT_EVENT, broker, transaction, doc.getURI(), doc);
             
             broker.removeBinaryResource(transaction, (BinaryDocument) doc);
-            documents.remove(doc.getFileURI());
+            documents.remove(doc.getFileURI().getRawCollectionPath());
             
             if (trigger != null) {
                 trigger.finish(Trigger.REMOVE_DOCUMENT_EVENT, broker, transaction, null);
@@ -930,7 +930,7 @@ public  class Collection extends Observable
         boolean oldDocLocked = false;
         try {
             getLock().acquire(Lock.WRITE_LOCK);
-            oldDoc = (DocumentImpl) documents.get(docUri);
+            oldDoc = (DocumentImpl) documents.get(docUri.getRawCollectionPath());
             document = new DocumentImpl(broker, this, docUri);
             
             if (oldDoc == null) {
@@ -1105,19 +1105,19 @@ public  class Collection extends Observable
     		XmldbURI docUri, byte[] data, String mimeType, Date created, Date modified)
             throws EXistException, PermissionDeniedException, LockException, TriggerException {
         return addBinaryResource(transaction, broker, docUri, 
-                                new ByteArrayInputStream(data), mimeType, created, modified);
+                                new ByteArrayInputStream(data), mimeType, data.length, created, modified);
     }
     
     // Streaming
     public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker,
-    		XmldbURI docUri, InputStream is, String mimeType)
+    		XmldbURI docUri, InputStream is, String mimeType, int size)
             throws EXistException, PermissionDeniedException, LockException, TriggerException {
-        return addBinaryResource(transaction, broker, docUri, is, mimeType, null, null);
+        return addBinaryResource(transaction, broker, docUri, is, mimeType, size, null, null);
     }
     
     // Streaming
     public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker,
-    		XmldbURI docUri, InputStream is, String mimeType, Date created, Date modified)
+    		XmldbURI docUri, InputStream is, String mimeType, int size, Date created, Date modified)
             throws EXistException, PermissionDeniedException, LockException, TriggerException {
         if (broker.isReadOnly())
             throw new PermissionDeniedException("Database is read-only");
@@ -1159,7 +1159,7 @@ public  class Collection extends Observable
             
             if(modified != null)
             	metadata.setLastModified(modified.getTime());
-            
+            blob.setContentLength(size);
             broker.storeBinaryResource(transaction, blob, is);
             addDocument(transaction, broker, blob);
             

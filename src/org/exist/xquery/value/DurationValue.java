@@ -224,32 +224,43 @@ public class DurationValue extends ComputableValue {
 	}
 	
 	public AtomicValue convertTo(int requiredType) throws XPathException {
+		canonicalize();
 		switch(requiredType) {
 			case Type.ITEM:
 			case Type.ATOMIC:
-			case Type.DURATION:
-				return this;
+			case Type.DURATION:				
+				return new DurationValue(canonicalDuration);
 			case Type.YEAR_MONTH_DURATION:
-				return new YearMonthDurationValue(TimeUtils.getInstance().newDurationYearMonth(
-					duration.getSign() >= 0,
-					(BigInteger) duration.getField(DatatypeConstants.YEARS),
-					(BigInteger) duration.getField(DatatypeConstants.MONTHS)));
+				if (canonicalDuration.getField(DatatypeConstants.YEARS) != null || 
+						canonicalDuration.getField(DatatypeConstants.MONTHS) != null)
+					return new YearMonthDurationValue(TimeUtils.getInstance().newDurationYearMonth(
+							canonicalDuration.getSign() >= 0,
+						(BigInteger) canonicalDuration.getField(DatatypeConstants.YEARS),
+						(BigInteger) canonicalDuration.getField(DatatypeConstants.MONTHS)));
+				else 
+					return new YearMonthDurationValue(YearMonthDurationValue.CANONICAL_ZERO_DURATION);
 			case Type.DAY_TIME_DURATION:
-				return new DayTimeDurationValue(TimeUtils.getInstance().newDuration(
-					duration.getSign() >= 0,
-					null,
-					null,
-					(BigInteger) duration.getField(DatatypeConstants.DAYS),
-					(BigInteger) duration.getField(DatatypeConstants.HOURS),
-					(BigInteger) duration.getField(DatatypeConstants.MINUTES),
-					(BigDecimal) duration.getField(DatatypeConstants.SECONDS)));
+				if (canonicalDuration.isSet(DatatypeConstants.DAYS) ||
+						canonicalDuration.isSet(DatatypeConstants.HOURS) ||
+						canonicalDuration.isSet(DatatypeConstants.MINUTES) ||
+						canonicalDuration.isSet(DatatypeConstants.SECONDS))				
+					return new DayTimeDurationValue(TimeUtils.getInstance().newDuration(
+						canonicalDuration.getSign() >= 0,
+						null,
+						null,
+						(BigInteger) canonicalDuration.getField(DatatypeConstants.DAYS),
+						(BigInteger) canonicalDuration.getField(DatatypeConstants.HOURS),
+						(BigInteger) canonicalDuration.getField(DatatypeConstants.MINUTES),
+						(BigDecimal) canonicalDuration.getField(DatatypeConstants.SECONDS)));
+				else
+					return new DayTimeDurationValue(DayTimeDurationValue.CANONICAL_ZERO_DURATION);
 			case Type.STRING:
-				return new StringValue(getStringValue());
+				return new StringValue(canonicalDuration.toString());
 			case Type.UNTYPED_ATOMIC :
-				return new UntypedAtomicValue(getStringValue());
+				return new UntypedAtomicValue(canonicalDuration.toString());
 			default:
 				throw new XPathException(
-					"Type error: cannot cast xs:duration to "
+					"Type error: cannot cast ' + Type.getTypeName(getType()) 'to "
 					+ Type.getTypeName(requiredType));
 		}
 	}
