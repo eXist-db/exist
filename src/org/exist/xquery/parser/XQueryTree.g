@@ -204,12 +204,20 @@ throws PermissionDeniedException, EXistException, XPathException
 		)
 		|
 		#(
-			"xmlspace"
+			"boundary-space"
 			(
 				"preserve" { context.setStripWhitespace(false); }
 				|
 				"strip" { context.setStripWhitespace(true); }
 			)
+		)
+		|
+		#(
+			"order" ( "greatest" | "least" )	// ignored
+		)
+		|
+		#(
+			"copy-namespaces" ( "preserve" | "no-preserve" ) ( "inherit" | "no-inherit" ) // ignored
 		)
 		|
 		#(
@@ -448,6 +456,14 @@ throws XPathException
 		|
 		#(
 			"empty"
+			{
+				type.setPrimaryType(Type.EMPTY);
+				type.setCardinality(Cardinality.EMPTY);
+			}
+		)
+		|
+		#(
+			"empty-sequence"
 			{
 				type.setPrimaryType(Type.EMPTY);
 				type.setCardinality(Cardinality.EMPTY);
@@ -835,6 +851,21 @@ throws PermissionDeniedException, EXistException, XPathException
 		sequenceType [type]
 		{ 
 			step = new InstanceOfExpression(context, expr, type); 
+			path.add(step);
+		}
+	)
+	|
+	// treat as:
+	#(
+		"treat"
+		{ 
+			PathExpr expr = new PathExpr(context);
+			SequenceType type= new SequenceType(); 
+		}
+		step=expr [expr]
+		sequenceType [type]
+		{ 
+			step = new TreatAsExpression(context, expr, type); 
 			path.add(step);
 		}
 	)

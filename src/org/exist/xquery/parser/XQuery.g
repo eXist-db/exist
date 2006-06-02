@@ -212,7 +212,7 @@ prolog throws XPathException
 		(
 			importDecl
 			|
-			( "declare" ( "default" | "xmlspace" | "ordering" | "construction" | "base-uri" ) ) =>
+			( "declare" ( "default" | "boundary-space" | "ordering" | "construction" | "base-uri" | "copy-namespaces" ) ) =>
 			setter
 			{
 				if(!inSetters)
@@ -263,10 +263,12 @@ setter:
 			|
 			"function"! "namespace"! deff:STRING_LITERAL
 			{ #setter= #(#[DEF_FUNCTION_NS_DECL, "defaultFunctionNSDecl"], deff); }
+			|
+			"order"^ "empty"! ( "greatest" | "least" )
 		)
 		|
-		( "declare" "xmlspace" ) =>
-		"declare"! "xmlspace"^ ( "preserve" | "strip" )
+		( "declare" "boundary-space" ) =>
+		"declare"! "boundary-space"^ ( "preserve" | "strip" )
 		|
 		( "declare" "base-uri" ) =>
 		"declare"! "base-uri"^ STRING_LITERAL
@@ -276,9 +278,22 @@ setter:
 		|
 		( "declare" "construction" ) =>
 		"declare"! "construction"^ ( "preserve" | "strip" )
+		|
+		( "declare" "copy-namespaces" ) =>
+		"declare"! "copy-namespaces"^ preserveMode COMMA! inheritMode
 	)
 	;
-	
+
+preserveMode
+	:
+	( "preserve" | "no-preserve" )
+	;
+
+inheritMode
+	:
+	( "inherit" | "no-inherit" )
+	;
+
 namespaceDecl
 { String prefix = null; }
 :
@@ -395,7 +410,11 @@ typeDeclaration throws XPathException:
 	
 sequenceType throws XPathException
 :
-	( "empty" LPAREN ) => "empty"^ LPAREN! RPAREN! | itemType ( occurrenceIndicator )?  // deprecated
+	( "empty" LPAREN ) => "empty"^ LPAREN! RPAREN! // deprecated
+	|
+	( "empty-sequence" LPAREN ) => "empty-sequence"^ LPAREN! RPAREN!
+	|
+	itemType ( occurrenceIndicator )?
 	// conformant: ( "empty-sequence" LPAREN ) => "empty-sequence"^ LPAREN! RPAREN! | itemType ( occurrenceIndicator )?
 	;
 
@@ -587,7 +606,12 @@ andExpr throws XPathException
 
 instanceofExpr throws XPathException
 :
-	castableExpr ( "instance"^ "of"! sequenceType )?
+	treatExpr ( "instance"^ "of"! sequenceType )?
+	;
+
+treatExpr throws XPathException
+:
+	castableExpr ( "treat"^ "as"! sequenceType )?
 	;
 
 castableExpr throws XPathException
@@ -1386,7 +1410,7 @@ reservedKeywords returns [String name]
 	|
 	"collation" { name = "collation"; }
 	|
-	"xmlspace" { name = "xmlspace"; }
+	"boundary-space" { name = "boundary-space"; }
 	|
 	"preserve" { name = "preserve"; }
 	|
@@ -1429,6 +1453,14 @@ reservedKeywords returns [String name]
 	"validate" { name = "validate"; }
 	|
 	"schema" { name = "schema"; }
+	|
+	"treat" { name = "treat"; }
+	|
+	"no-preserve" { name = "no-preserve"; }
+	|
+	"inherit" { name = "inherit"; }
+	|
+	"no-inherit" { name = "no-inherit"; }
 	;
 
 /**
