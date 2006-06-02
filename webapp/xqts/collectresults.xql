@@ -1,11 +1,11 @@
+declare option exist:serialize "method=xml indent=yes";
 <test-suite-result xmlns="http://www.w3.org/2005/02/query-test-XQTSResult"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
 
-        <implementation name="eXist" version="1.0" anonymous-result-column="false">
+        <implementation name="{util:system-property("product-version")}" version="{util:system-property("product-build")}" anonymous-result-column="false">
 
-                <organization name="eXist Open Source native XML database"
-                        website="http://www.exist-db.org" anonymous="false"/>
+                <organization name="eXist Open Source native XML database"  website="http://www.exist-db.org" anonymous="false"/>
 
                 <submittor name="eXist XQTS testsuite runner" email="me@not.com"/>
 
@@ -35,16 +35,15 @@
         <syntax>XQuery</syntax>
 
         <test-run dateRun="{fn:current-dateTime()}">
-                <test-suite version="0.1"/>
+                <test-suite version="{doc('/db/XQTS/XQTSCatalog.xml')/*:test-suite/@version}"/>
                 <transformation>
                         <p>No unusual transformations.</p>
-                        <p>Really!</p>
                 </transformation>
                 <comparison>
                         <p>No unusual comparisons</p>
                 </comparison>
                 <otherComments>
-                        <p>The test run took 100 seconds.</p>
+                        <p>The test run took n seconds.</p>
                 </otherComments>
         </test-run>
 
