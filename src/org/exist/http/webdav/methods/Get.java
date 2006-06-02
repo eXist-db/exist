@@ -117,7 +117,7 @@ public class Get extends AbstractWebDAVMethod {
             response.setContentType(metadata.getMimeType());
             response.addDateHeader("Last-Modified", metadata.getLastModified());
             
-            response.setContentLength(resource.getContentLength());
+//            response.setContentLength(resource.getContentLength());
             ServletOutputStream os = response.getOutputStream();
             
             if(resource.getResourceType() == DocumentImpl.XML_FILE) {
@@ -141,7 +141,7 @@ public class Get extends AbstractWebDAVMethod {
                 os.flush();
             }
             
-            os.flush();
+//            os.flush();
             
         } catch (EXistException e) {
             throw new ServletException(SERIALIZE_ERROR + e.getMessage(), e);

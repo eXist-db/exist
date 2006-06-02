@@ -149,9 +149,9 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 			case Type.ITEM:
 			case Type.ATOMIC:
 			case Type.DAY_TIME_DURATION:
-				return this;
-			case Type.STRING:				
-				return new StringValue(getStringValue());
+				return new DayTimeDurationValue(getCanonicalDuration());
+			case Type.STRING:						
+				return new StringValue(getCanonicalDuration().toString());
 			case Type.DURATION:
 				return new DurationValue(TimeUtils.getInstance().newDuration(
 						duration.getSign() >= 0, null, null,
@@ -167,7 +167,7 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 			//case Type.DECIMAL:
 				//return new DecimalValue(monthsValueSigned().doubleValue());	
 			case Type.UNTYPED_ATOMIC :
-				return new UntypedAtomicValue(getStringValue());
+				return new UntypedAtomicValue(getCanonicalDuration().toString());
 			default:
 				throw new XPathException("XPTY0004: cannot cast '" + 
 						Type.getTypeName(this.getItemType()) + "(\"" + getStringValue() + "\")' to " +

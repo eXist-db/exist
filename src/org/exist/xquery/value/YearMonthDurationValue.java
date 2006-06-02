@@ -42,13 +42,12 @@ public class YearMonthDurationValue extends OrderedDurationValue {
 	
 	YearMonthDurationValue(Duration duration) throws XPathException {
 		super(duration);
-		if (
-				duration.isSet(DatatypeConstants.DAYS) ||
-				duration.isSet(DatatypeConstants.HOURS) ||
-				duration.isSet(DatatypeConstants.MINUTES) ||
-				duration.isSet(DatatypeConstants.SECONDS) 
-				)
-			throw new XPathException("the value '" + duration + "' is not an xdt:yearMonthDuration since it specified days, hours, minutes or seconds values");
+		if (duration.isSet(DatatypeConstants.DAYS) ||
+			duration.isSet(DatatypeConstants.HOURS) ||
+			duration.isSet(DatatypeConstants.MINUTES) ||
+			duration.isSet(DatatypeConstants.SECONDS))
+			throw new XPathException("The value '" + duration + "' is not an " + Type.getTypeName(getType()) + 
+					" since it specifies days, hours, minutes or seconds values");
 	}
 
 	public YearMonthDurationValue(String str) throws XPathException {
