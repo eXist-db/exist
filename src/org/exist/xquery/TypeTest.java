@@ -68,7 +68,7 @@ public class TypeTest implements NodeTest {
 			//TODO : what are the semantics of Type.NODE ?
 			if (this.nodeType == Type.NODE)
 				return true;	
-			return matches(proxy);
+            return isOfType(proxy.getNode().getNodeType());
 		} else
 			return isOfType(otherNodeType);
 	}
