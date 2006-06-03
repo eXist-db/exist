@@ -22,8 +22,11 @@ declare option exist:serialize "method=xml indent=yes";
                 </implementation-defined-items>
 
                 <features>
-                        <feature name="Minimum Conformance" supported="true"/>
-                </features>
+{ for $feature in doc('/db/XQTS/XQTSCatalog.xml')/*:test-suite/*:features/*:feature
+							return
+							<feature name="{$feature/@name}" supported="true"/>
+						}</features>
+
 
                 <context-properties>
                         <!--context-property name="Default collation" context-type="static"  value="not overwritten"/>
