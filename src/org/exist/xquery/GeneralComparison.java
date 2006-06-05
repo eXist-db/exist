@@ -203,9 +203,9 @@ public class GeneralComparison extends BinaryOp {
                 if(contextItem != null)
                     contextSequence = contextItem.toSequence();                                
                 
-                
-                if (!Dependency.dependsOn(getRight(), Dependency.CONTEXT_ITEM) &&
-                        Type.subTypeOf(getRight().returnsType(), Type.NODE))
+                if (!Dependency.dependsOn(getRight(), Dependency.CONTEXT_ITEM)) 
+                	// &&
+                    //    Type.subTypeOf(getRight().returnsType(), Type.NODE))
 				{
 					if (context.getProfiler().isEnabled())
 						context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "quickNodeSetCompare");
