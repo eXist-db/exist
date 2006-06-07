@@ -514,10 +514,10 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
      * @see org.exist.dom.NodeSet#getIndexType()
      */
     public int getIndexType() {
-    	if(indexType == Type.ANY_TYPE) {
-		    hasTextIndex = true;
-		    hasMixedContent = false;
-		    
+    	//Is the index type initialized ?
+    	if (indexType == Type.ANY_TYPE) {
+		    hasTextIndex = false;
+		    hasMixedContent = false;		    
 		    for (int i = 0; i < partCount; i++) {
 		    	parts[i].determineIndexType();
 		    }
@@ -790,30 +790,38 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         }
 
         void determineIndexType() {
-        	int type;
-		    NodeProxy p;
-		    for (int i = 0; i < length; i++) {
-		    	p = array[i];
-		    	if (p.getDocument().getCollection().isTempCollection()) {
-                    indexType = Type.ITEM;
-                    hasTextIndex = false;
-                    break;
-                }
-			    type = p.getIndexType();
-				if(indexType == Type.ANY_TYPE)
-				    indexType = type;
-				else if(indexType != type) {
-                    if (indexType != Type.ITEM)
-                        LOG.debug("Found: " + Type.getTypeName(type) + "; node = " + p.toString());
-				    indexType = Type.ITEM;
-				}
-				if(!p.hasTextIndex()) {
-				    hasTextIndex = false;
-				}
-				if(p.hasMixedContent()) {
-				    hasMixedContent = true;
-				}
-		    }
+        	//Is the index type initialized ?        	
+        	if (indexType == Type.ANY_TYPE) {		        	
+	        	hasTextIndex = true;
+			    hasMixedContent = true;        	
+			    for (int i = 0; i < length; i++) {
+			    	NodeProxy node = array[i];
+			    	if (node.getDocument().getCollection().isTempCollection()) {
+			    		//Temporary nodes return default values
+	                    indexType = Type.ITEM;
+	                    hasTextIndex = false;
+	                    hasMixedContent = false;
+	                    break;
+	                }
+				    int nodeIndexType = node.getIndexType();
+				    //Refine type
+				    //TODO : use common subtype
+				    if (indexType == Type.ANY_TYPE) {
+				    	indexType = nodeIndexType;
+				    } else {
+				    	//Broaden type
+				    	//TODO : use common supertype
+				    	if (indexType != nodeIndexType)             
+				    		indexType = Type.ITEM;
+				    }						
+					if(!node.hasTextIndex()) {
+					    hasTextIndex = false;
+					}
+					if(!node.hasMixedContent()) {
+					    hasMixedContent = false;
+					}
+			    }
+        	}
         }
         
         void setSelfAsContext(int contextId) {
