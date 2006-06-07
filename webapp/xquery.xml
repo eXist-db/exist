@@ -141,7 +141,7 @@
                         
                         <para>For example, if you access an XQuery via the REST server:</para>
                         
-                        <synopsis>http://localhost:8080/exist/servlet/db/modules/test.xq</synopsis>
+                        <synopsis>http://localhost:8080/exist/rest/db/modules/test.xq</synopsis>
                         
                         <para>All relative module paths will be resolved relative to the
                         <filename>/db/modules</filename> collection.</para>
@@ -261,7 +261,7 @@
 
                 <para>You can also pass a full URI to the <command>doc</command> function:</para>
 
-                <synopsis>doc("http://localhost:8080/exist/servlet/db/test.xml")</synopsis>
+                <synopsis>doc("http://localhost:8080/exist/rest/db/test.xml")</synopsis>
 
                 <para>in this case, the URI will be retrieved and the data stored into a temporary
                     document in the database.</para>
