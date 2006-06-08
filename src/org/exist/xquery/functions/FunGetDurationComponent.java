@@ -95,7 +95,7 @@ public class FunGetDurationComponent extends BasicFunction {
 			result = Sequence.EMPTY_SEQUENCE;
 		} else {
 			Sequence arg = args[0];
-			DurationValue duration = (DurationValue) arg.itemAt(0);
+			DurationValue duration = new DurationValue(((DurationValue) arg.itemAt(0)).getCanonicalDuration());
 			if (isCalledAs("days-from-duration")) {
             result = new IntegerValue(duration.getPart(DurationValue.DAY));
 			} else if (isCalledAs("hours-from-duration")) {
@@ -113,7 +113,8 @@ public class FunGetDurationComponent extends BasicFunction {
 			}
 		}
 		
-		if (context.getProfiler().isEnabled()) context.getProfiler().end(this, "", result);
+		if (context.getProfiler().isEnabled()) 
+			context.getProfiler().end(this, "", result);
 		
 		return result;
 		
