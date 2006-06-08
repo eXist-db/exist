@@ -131,7 +131,7 @@ public class ExtFulltext extends Function {
 		if (path == null || !Dependency.dependsOn(path, Dependency.CONTEXT_ITEM)) {          
 			boolean canCache = 
                 !Dependency.dependsOn(searchTerm, Dependency.CONTEXT_ITEM) &&
-                !Dependency.dependsOn(searchTerm, Dependency.VARS);
+                !Dependency.dependsOnVar(searchTerm);
 			if(	canCache && cached != null && cached.isValid(contextSequence)) {
 				return cached.getResult();
 			}
