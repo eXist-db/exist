@@ -61,17 +61,16 @@ public abstract class LogicalOp extends BinaryOp {
 	 * @see org.exist.xquery.BinaryOp#analyze(org.exist.xquery.Expression, int)
 	 */
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {		
-		super.analyze(contextInfo);		
+		super.analyze(contextInfo);	
+		//To optimize, we want nodes
 		if(Type.subTypeOf(getLeft().returnsType(), Type.NODE) &&
 				Type.subTypeOf(getRight().returnsType(), Type.NODE) &&
+				//No dependency on the context item
 				!Dependency.dependsOn(getLeft(), Dependency.CONTEXT_ITEM) &&
-				//TODO : use Dependency.VARS ?
-				!Dependency.dependsOn(getLeft(), Dependency.LOCAL_VARS) &&
-				!Dependency.dependsOn(getRight(), Dependency.CONTEXT_ITEM) &&
-				//TODO : use Dependency.VARS ?
-				!Dependency.dependsOn(getRight(), Dependency.LOCAL_VARS)				
-				//TODO: is this accurate ? -pb
-				/*&& contextInfo.getContextId() != -1*/)
+				!Dependency.dependsOn(getRight(), Dependency.CONTEXT_ITEM) &&	
+				//and no dependency on *local* variables (context variables are OK)
+				!Dependency.dependsOn(getLeft(), Dependency.LOCAL_VARS) &&							
+				!Dependency.dependsOn(getRight(), Dependency.LOCAL_VARS))
 			optimize = true;
 		else
 			optimize = false;
