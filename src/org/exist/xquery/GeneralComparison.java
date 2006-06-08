@@ -511,11 +511,11 @@ public class GeneralComparison extends BinaryOp {
 
             return(nodeSetCompare(nodes, contextSequence));
 		}
-		
+        
 		// can this result be cached? Don't cache if the result depends on local variables.
 	    boolean canCache = contextSequence instanceof NodeSet && 
-	    	!Dependency.dependsOn(getLeft(), Dependency.VARS) && 
-	    	!Dependency.dependsOn(getRight(), Dependency.VARS);
+	    	!Dependency.dependsOnVar(getLeft()) && 
+	    	!Dependency.dependsOnVar(getRight());
 		if(canCache)
 		{
 			cached = new CachedResult((NodeSet)contextSequence, result);
