@@ -134,6 +134,9 @@ public class NativeValueIndex implements ContentLoadingObserver {
      * @param content The string representation of the value
      */
     public void storeElement(int xpathType, ElementImpl node, String content) {
+    	if (doc.getDocId() != node.getDocId()) {
+    		throw new IllegalArgumentException("Document id and proxy id differ !");
+    	}    	
         AtomicValue atomic = convertToAtomic(xpathType, content);
         //Ignore if the value can't be successfully atomized
         //(this is logged elsewhere)
@@ -159,6 +162,9 @@ public class NativeValueIndex implements ContentLoadingObserver {
      * @param node The attribute
      */
     public void storeAttribute(RangeIndexSpec spec, AttrImpl node) {
+    	if (doc.getDocId() != node.getDocId()) {
+    		throw new IllegalArgumentException("Document id and proxy id differ !");
+    	}        	
         AtomicValue atomic = convertToAtomic(spec.getType(), node.getValue());
         //Ignore if the value can't be successfully atomized
         //(this is logged elsewhere)
