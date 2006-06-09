@@ -237,6 +237,10 @@ public class StoredNode extends NodeImpl {
    		this.ownerDocument = ownerDocument;
     }
     
+    public int getDocId() {
+   		return ownerDocument.getDocId();
+    }    
+    
 	/**
 	 *  Get the unique node identifier of this node's parent node.
 	 *
