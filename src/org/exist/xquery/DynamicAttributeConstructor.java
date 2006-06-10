@@ -26,6 +26,7 @@ import org.exist.dom.QName;
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
+import org.exist.util.XMLChar;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -90,7 +91,11 @@ public class DynamicAttributeConstructor extends NodeConstructor {
         
         QName qn = QName.parse(context, nameSeq.getStringValue(), null);
         
-        String value;
+		//Not in the specs but... makes sense
+		if(!XMLChar.isValidName(qn.getLocalName()))
+			throw new XPathException("XPTY0004 '" + qn.getLocalName() + "' is not a valid attribute name");
+
+		String value;
         Sequence valueSeq = valueExpr.eval(contextSequence, contextItem);
         if(valueSeq.isEmpty())
             value = "";
