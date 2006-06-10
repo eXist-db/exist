@@ -28,6 +28,7 @@ import org.exist.dom.QName;
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
+import org.exist.util.XMLChar;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -159,8 +160,13 @@ public class ElementConstructor extends NodeConstructor {
 		Sequence qnameSeq = qnameExpr.eval(contextSequence, contextItem);
 		if(!qnameSeq.hasOne())
 		    throw new XPathException("Type error: the node name should evaluate to a single string");
+		
 		QName qn = QName.parse(context, qnameSeq.getStringValue());
 		
+		//Not in the specs but... makes sense
+		if(!XMLChar.isValidName(qn.getLocalName()))
+			throw new XPathException("XPTY0004 '" + qnameSeq.getStringValue() + "' is not a valid element name");
+
 		// add namespace declaration nodes
 		int nodeNr = builder.startElement(qn, attrs);
 		if(namespaceDecls != null) {
