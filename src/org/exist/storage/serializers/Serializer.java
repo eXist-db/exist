@@ -779,7 +779,11 @@ public abstract class Serializer implements XMLReader {
      * @param doc
      * @return
      */
-	public static String hasXSLPi(Document doc) {
+	public String hasXSLPi(Document doc) {
+        boolean applyXSLPI = 
+            outputProperties.getProperty(EXistOutputKeys.PROCESS_XSL_PI, "no").equalsIgnoreCase("yes");
+        if (!applyXSLPI) return null;
+        
 		NodeList docChildren = doc.getChildNodes();
 		Node node;
 		String xsl, type, href;
@@ -794,7 +798,6 @@ public abstract class Serializer implements XMLReader {
 					href = XMLUtil.parseValue(xsl, "href");
 					if (href == null)
 						continue;
-					LOG.debug("stylesheet = " + href);
 					return href;
 				}
 			}
