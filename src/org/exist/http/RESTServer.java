@@ -408,7 +408,7 @@ public class RESTServer {
                 }
                 else
                 {
-	                if (serializer.isStylesheetApplied())
+	                if (serializer.isStylesheetApplied() || Serializer.hasXSLPi(resource) != null)
 	                {
 	                    response.setContentType("text/html; charset="+encoding);
 	                }
