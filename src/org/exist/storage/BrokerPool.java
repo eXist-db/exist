@@ -1036,6 +1036,7 @@ public class BrokerPool {
 	//TODO : make it protected ?
 	private void sync(DBBroker broker, int syncEvent) {
 		broker.sync(syncEvent);
+		User user = broker.getUser();
 		//TODO : strange that it is set *after* the sunc method has been called.
 		broker.setUser(SecurityManager.SYSTEM_USER);
 		broker.cleanUpTempResources();
@@ -1054,7 +1055,8 @@ public class BrokerPool {
         //TODO : touch this.syncEvent and syncRequired ?
 	
         //After setting the SYSTEM_USER above we must change back to the DEFAULT User to prevent a security problem
-        broker.setUser(User.DEFAULT);
+        //broker.setUser(User.DEFAULT);
+        broker.setUser(user);
 	}
 	
 	/**
