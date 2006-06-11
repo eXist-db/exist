@@ -25,6 +25,7 @@ package org.exist.xquery;
 import org.exist.dom.QName;
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
+import org.exist.util.XMLChar;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -92,6 +93,9 @@ public class DynamicPIConstructor extends NodeConstructor {
             throw new XPathException(getASTNode(), "The name expression should evaluate to a string or qname");
         
         QName qn = QName.parse(context, nameSeq.getStringValue());
+        
+		if(!XMLChar.isValidNCName(qn.getLocalName()))
+			throw new XPathException("XQDY0041 '" + qn.getLocalName() + "' is not a valid NCName");
         
         String value;
         Sequence contentSeq = content.eval(contextSequence, contextItem);
