@@ -871,28 +871,54 @@ throws PermissionDeniedException, EXistException, XPathException
 	)
 	|
 	// typeswitch
-/*	#(
+	#(
 		"typeswitch"
 		{
 			PathExpr operand = new PathExpr(context);
 		}
 		step=expr [operand]
+		{ 
+			TypeswitchExpression tswitch = new TypeswitchExpression(context, operand);
+			path.add(tswitch); 
+		}
 		(
 			{ 
 				SequenceType type = new SequenceType();
 				PathExpr returnExpr = new PathExpr(context);
+				QName qn = null;
 			}
 			#(
 				"case"
+				(
+					var:VARIABLE_BINDING
+					{ qn = QName.parse(context, var.getText()); }
+				)?
 				sequenceType [type]
 				step=expr [returnExpr]
 				{
-					System.out.println("case:" + type);
+					tswitch.addCase(type, qn, returnExpr);
 				}
 			)
 		)+
+		(
+			"default"
+			{ 
+				PathExpr returnExpr = new PathExpr(context);
+				QName qn = null;
+			}
+			(
+				dvar:VARIABLE_BINDING
+				{ qn = QName.parse(context, dvar.getText()); }
+			)?
+			step=expr [returnExpr]
+			{
+				System.out.println("default:" + returnExpr);
+				tswitch.setDefault(qn, returnExpr);
+			}
+		)
+		{ step = tswitch; }
 	)
-	|*/
+	|
 	// logical operator: or
 	#(
 		"or"
