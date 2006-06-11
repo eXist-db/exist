@@ -150,6 +150,8 @@ public class ElementConstructor extends NodeConstructor {
 				constructor = (AttributeConstructor)attributes[i];
 				attrValues = constructor.eval(contextSequence, contextItem);
 				attrQName = QName.parse(context, constructor.getQName(), "");
+				if (attrs.getIndex(attrQName.getNamespaceURI(), attrQName.getLocalName()) != -1)
+					throw new XPathException("XQST0040 '" + attrQName.getLocalName() + "' is a duplicate attribute name");
 				attrs.addAttribute(attrQName.getNamespaceURI(), attrQName.getLocalName(),
 						attrQName.toString(), "CDATA", attrValues.getStringValue());
 			}
