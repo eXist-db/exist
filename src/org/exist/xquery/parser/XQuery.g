@@ -454,7 +454,7 @@ exprSingle throws XPathException
 	( ( "for" | "let" ) DOLLAR ) => flworExpr
 	| ( ( "some" | "every" ) DOLLAR ) => quantifiedExpr
 	| ( "if" LPAREN ) => ifExpr 
-//	| ( "typeswitch" LPAREN ) => typeswitchExpr
+	| ( "typeswitch" LPAREN ) => typeswitchExpr
 	| ( "update" ( "replace" | "value" | "insert" | "delete" | "rename" )) => updateExpr
 	| orExpr
 	;
@@ -571,11 +571,11 @@ quantifiedInVarBinding throws XPathException
 
 // === Branching ===
 
-	typeswitchExpr throws XPathException
+typeswitchExpr throws XPathException
 { String varName; }:
 	"typeswitch"^ LPAREN! expr RPAREN!
 	( caseClause )+
-	"default" ( DOLLAR! varName=qName! )? "return"! exprSingle
+	"default" ( defaultVar )? "return"! exprSingle
 	;
 	
 caseClause throws XPathException
@@ -589,7 +589,13 @@ caseVar throws XPathException
 	DOLLAR! varName=qName! "as"
 	{ #caseVar = #[VARIABLE_BINDING, varName]; }
 	;
-	
+
+defaultVar throws XPathException
+{ String varName; }:
+	DOLLAR! varName=qName!
+	{ #defaultVar = #[VARIABLE_BINDING, varName]; }
+	;
+
 ifExpr throws XPathException: "if"^ LPAREN! expr RPAREN! "then"! exprSingle "else"! exprSingle ;
 
 // === Logical ===
