@@ -96,6 +96,10 @@ public class DynamicPIConstructor extends NodeConstructor {
         
 		if(!XMLChar.isValidNCName(qn.getLocalName()))
 			throw new XPathException("XQDY0041 '" + qn.getLocalName() + "' is not a valid NCName");
+		
+		if (qn.getLocalName().equalsIgnoreCase("XML")) {
+        	throw new XPathException("XQDY0064 '" + qn.getLocalName() + "' is not a valid processing intruction name");            	
+        }		
         
         String value;
         Sequence contentSeq = content.eval(contextSequence, contextItem);
@@ -112,6 +116,11 @@ public class DynamicPIConstructor extends NodeConstructor {
 	        }
 	        value = buf.toString();
         }
+        
+		if (value.contains("?>")) {
+        	throw new XPathException("XQDY0026 '" + value + "' is not a valid processing intruction");            	
+        }
+        
         int nodeNr = builder.processingInstruction(qn.getLocalName(), value);
 
         Sequence result = ((DocumentImpl)builder.getDocument()).getNode(nodeNr);
