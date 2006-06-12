@@ -22,7 +22,6 @@
  */
 package org.exist.xquery;
 
-import org.exist.dom.QName;
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.util.XMLChar;
@@ -51,11 +50,11 @@ public class DynamicPIConstructor extends NodeConstructor {
     }
 
     public void setNameExpr(Expression nameExpr) {
-        this.name = nameExpr;
+        this.name = new Atomize(context, nameExpr);
     }
     
     public void setContentExpr(Expression contentExpr) {
-        this.content = contentExpr;
+        this.content = new Atomize(context, contentExpr);
     }
 
     /* (non-Javadoc)
