@@ -65,7 +65,7 @@ public class ElementConstructor extends NodeConstructor {
 	    this.qnameExpr = new Atomize(context, expr);
 	}
 	
-	public void addAttribute(AttributeConstructor attr) {
+	public void addAttribute(AttributeConstructor attr) throws XPathException {
 		if(attr.isNamespaceDeclaration()) {
 			if(attr.getQName().equals("xmlns"))
 				addNamespaceDecl("xmlns", attr.getLiteralValue());
@@ -82,8 +82,11 @@ public class ElementConstructor extends NodeConstructor {
 		}
 	}
 	
-	public void addNamespaceDecl(String name, String uri) {
+	public void addNamespaceDecl(String name, String uri) throws XPathException {
         String prefix = "xmlns".equals(name) ? null : "xmlns";
+        if (name.equalsIgnoreCase("xml")) {
+        	throw new XPathException("XQST0070 : can not redefine 'xmlns:xml'");
+        }
 		if(namespaceDecls == null) {
 			namespaceDecls = new QName[1];
 			namespaceDecls[0] = new QName(name, uri, prefix);
@@ -169,7 +172,11 @@ public class ElementConstructor extends NodeConstructor {
 		if(!XMLChar.isValidName(qn.getLocalName()))
 			throw new XPathException("XPTY0004 '" + qnameSeq.getStringValue() + "' is not a valid element name");
 
-		// add namespace declaration nodes
+	 	if (qn.getPrefix() == null && context.inScopeNamespaces.get("xmlns") != null) {
+	 		qn.setNamespaceURI((String)context.inScopeNamespaces.get("xmlns"));
+	 	}
+	 	
+	 	// add namespace declaration nodes
 		int nodeNr = builder.startElement(qn, attrs);
 		if(namespaceDecls != null) {
 			for(int i = 0; i < namespaceDecls.length; i++) {
