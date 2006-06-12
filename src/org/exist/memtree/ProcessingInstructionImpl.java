@@ -24,6 +24,7 @@ package org.exist.memtree;
 
 import org.exist.dom.QName;
 import org.w3c.dom.DOMException;
+import org.w3c.dom.Node;
 import org.w3c.dom.ProcessingInstruction;
 
 public class ProcessingInstructionImpl
@@ -59,6 +60,11 @@ public class ProcessingInstructionImpl
 	 */
 	public void setData(String arg0) throws DOMException {
 	}
+	
+	public Node getFirstChild() {
+		//No child
+		return null;
+	}	
 	
     public String toString() {
     	StringBuffer result = new StringBuffer();
