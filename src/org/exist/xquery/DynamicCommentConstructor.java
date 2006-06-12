@@ -71,6 +71,7 @@ public class DynamicCommentConstructor extends NodeConstructor {
         
         Sequence result;
         Sequence contentSeq = content.eval(contextSequence, contextItem);
+       
         if(contentSeq.isEmpty())
             result = Sequence.EMPTY_SEQUENCE;
         else {            
@@ -85,6 +86,11 @@ public class DynamicCommentConstructor extends NodeConstructor {
                     buf.append(' ');
                 buf.append(next.toString());
             }
+            
+            if (buf.indexOf("--") != Constants.STRING_NOT_FOUND|| buf.toString().endsWith("-")) {
+            	throw new XPathException("XQDY0072 '" + buf.toString() + "' is not a valid comment");            	
+            }
+            
             int nodeNr = builder.comment(buf.toString());
             result = ((DocumentImpl)builder.getDocument()).getNode(nodeNr);
         }
