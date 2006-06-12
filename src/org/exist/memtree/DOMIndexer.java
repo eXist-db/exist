@@ -213,7 +213,7 @@ public class DOMIndexer {
             pi.clear();
             break;
         default:
-        	System.out.println("Indexing in-memory node of type " + doc.nodeKind[nodeNr]);
+        	System.out.println("Skipped indexing of in-memory node of type " + doc.nodeKind[nodeNr]);
         }
     }
 

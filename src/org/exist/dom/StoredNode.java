@@ -138,6 +138,7 @@ public class StoredNode extends NodeImpl {
 				return CommentImpl.deserialize(data, start, len, pooled);
 			default :
                 LOG.error("Unknown node type: " + type);
+				Thread.dumpStack();
 				return null;
 		}
 	}

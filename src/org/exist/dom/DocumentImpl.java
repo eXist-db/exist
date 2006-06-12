@@ -770,8 +770,9 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
             case Node.ATTRIBUTE_NODE :
                 node = new AttrImpl(gid);
                 break;
-            default :
-                LOG.error("unknown node type");
+            default :            	
+                LOG.error("Unknown node type");
+            	Thread.dumpStack();
                 node = null;
         }
         return node;
