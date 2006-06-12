@@ -181,12 +181,13 @@ public class DOMIndexer {
             if (stack.empty()) {
                 comment.setNodeId(NodeId.DOCUMENT_NODE);
                 targetDoc.appendChild(comment);
+                broker.storeNode(transaction, comment, null);
             } else {
                 last = (ElementImpl) stack.peek();
                 last.appendChildInternal(prevNode, comment);
+                broker.storeNode(transaction, comment, null);
                 setPrevious(comment);
             }
-            broker.storeNode(transaction, comment, null);
             break;
     	case Node.PROCESSING_INSTRUCTION_NODE :
             QName qn = (QName)doc.namePool.get(doc.nodeName[nodeNr]);
