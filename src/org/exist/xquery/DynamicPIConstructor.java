@@ -89,8 +89,11 @@ public class DynamicPIConstructor extends NodeConstructor {
             throw new XPathException(getASTNode(), "The name expression should evaluate to a single value");
         
         Item nameItem = nameSeq.itemAt(0);
-        if(!(nameItem.getType() == Type.STRING || nameItem.getType() == Type.QNAME))
-            throw new XPathException(getASTNode(), "The name expression should evaluate to a string or qname");
+        if(!(nameItem.getType() == Type.STRING || nameItem.getType() == Type.QNAME || 
+        		nameItem.getType() == Type.UNTYPED_ATOMIC))
+            throw new XPathException(getASTNode(), "The name expression should evaluate to a " + 
+            		Type.getTypeName(Type.STRING) + " or a " + Type.getTypeName(Type.QNAME) + 
+            		" or a " + Type.getTypeName(Type.UNTYPED_ATOMIC));
         
         QName qn = QName.parse(context, nameSeq.getStringValue());
         
