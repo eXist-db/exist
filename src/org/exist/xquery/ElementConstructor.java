@@ -24,6 +24,7 @@ package org.exist.xquery;
 
 import java.util.Iterator;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
@@ -48,6 +49,9 @@ public class ElementConstructor extends NodeConstructor {
 	private AttributeConstructor attributes[] = null;
 	private QName namespaceDecls[] = null;
 	
+	protected final static Logger LOG =
+		Logger.getLogger(ElementConstructor.class);	
+	
 	public ElementConstructor(XQueryContext context) {
 	    super(context);
 	}
@@ -68,7 +72,7 @@ public class ElementConstructor extends NodeConstructor {
 	public void addAttribute(AttributeConstructor attr) throws XPathException {
 		if(attr.isNamespaceDeclaration()) {
 			if(attr.getQName().equals("xmlns"))
-				addNamespaceDecl("xmlns", attr.getLiteralValue());
+				addNamespaceDecl("", attr.getLiteralValue());
 			else
 				addNamespaceDecl(QName.extractLocalName(attr.getQName()), attr.getLiteralValue());
 		} else	if(attributes == null) {
@@ -83,29 +87,34 @@ public class ElementConstructor extends NodeConstructor {
 	}
 	
 	public void addNamespaceDecl(String name, String uri) throws XPathException {
-        String prefix = "xmlns".equals(name) ? null : "xmlns";
-      
-        QName qn = new QName(name, uri, prefix);
+        
+        QName qn = new QName(name, uri, "xmlns");
 
         if (name.equalsIgnoreCase("xml")) {
         	throw new XPathException("XQST0070 : can not redefine '" + qn + "'");
         }
+        if (name.equalsIgnoreCase("xmlns")) {
+        	throw new XPathException("XQST0070 : can not redefine '" + qn + "'");
+        }        
         if ("".equals(uri)) {
-        	throw new XPathException("XQST0085 : empty URI for namespace '" + qn + "'");
-        }  
-        if(namespaceDecls == null) {
-			namespaceDecls = new QName[1];
-			namespaceDecls[0] = qn;
-		} else {
-			for(int i = 0; i < namespaceDecls.length; i++) {
-				if (qn.equals(namespaceDecls[i]))
-					throw new XPathException("XQST0071 : duplicate definition for '" + qn + "'");
+        	if (context.inScopeNamespaces.remove(qn.getLocalName()) == null)
+        		throw new XPathException("XQST0085 : can not undefine '" + qn + "'");
+        } else { 
+	        if(namespaceDecls == null) {
+				namespaceDecls = new QName[1];
+				namespaceDecls[0] = qn;			
+			} else {			
+				for(int i = 0; i < namespaceDecls.length; i++) {
+					if (qn.equals(namespaceDecls[i]))
+						throw new XPathException("XQST0071 : duplicate definition for '" + qn + "'");
+				}
+				QName decls[] = new QName[namespaceDecls.length + 1];
+				System.arraycopy(namespaceDecls, 0, decls, 0, namespaceDecls.length);
+				decls[namespaceDecls.length] = qn;			
+				namespaceDecls = decls;
 			}
-			QName decls[] = new QName[namespaceDecls.length + 1];
-			System.arraycopy(namespaceDecls, 0, decls, 0, namespaceDecls.length);
-			decls[namespaceDecls.length] = qn;
-			namespaceDecls = decls;
-		}
+	        context.inScopeNamespaces.put(qn.getLocalName(), qn.getNamespaceURI());
+        }
 	}
 	
     /* (non-Javadoc)
