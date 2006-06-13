@@ -101,10 +101,10 @@ public class DynamicPIConstructor extends NodeConstructor {
 		if (nameSeq.getStringValue().equalsIgnoreCase("XML"))
         	throw new XPathException("XQDY0064 '" + nameSeq.getStringValue() + "' is not a valid processing instruction name");            	
 
-		String value;
+		String contentString;
         Sequence contentSeq = content.eval(contextSequence, contextItem);
         if(contentSeq.isEmpty())
-            value = "";
+        	contentString = "";
         else {
 	        StringBuffer buf = new StringBuffer();
 	        for(SequenceIterator i = contentSeq.iterate(); i.hasNext(); ) {
@@ -114,13 +114,15 @@ public class DynamicPIConstructor extends NodeConstructor {
 	                buf.append(' ');
 	            buf.append(next.getStringValue());
 	        }
-	        value = buf.toString();
+	        while (buf.length() > 0 && Character.isWhitespace(buf.charAt(0)))
+	        	buf.deleteCharAt(0);
+	        contentString = buf.toString();	       
         }
         
-		if (value.contains("?>"))
-        	throw new XPathException("XQDY0026 '" + value + "' is not a valid processing intruction value");            	
+		if (contentString.contains("?>"))
+        	throw new XPathException("XQDY0026 '" + contentString + "' is not a valid processing intruction content");            	
         
-        int nodeNr = builder.processingInstruction(nameSeq.getStringValue(), value);
+        int nodeNr = builder.processingInstruction(nameSeq.getStringValue(), contentString);
 
         Sequence result = ((DocumentImpl)builder.getDocument()).getNode(nodeNr);
                 
