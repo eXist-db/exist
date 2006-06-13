@@ -119,7 +119,7 @@ public class DynamicPIConstructor extends NodeConstructor {
 	        contentString = buf.toString();	       
         }
         
-		if (contentString.contains("?>"))
+		if (contentString.indexOf("?>") != Constants.STRING_NOT_FOUND)
         	throw new XPathException("XQDY0026 '" + contentString + "' is not a valid processing intruction content");            	
         
         int nodeNr = builder.processingInstruction(nameSeq.getStringValue(), contentString);
