@@ -38,7 +38,11 @@ public class CommentImpl extends NodeImpl implements Comment {
     
     public Node getFirstChild() {
         return null;
-    } 
+    }
+    
+    public String getStringValue() {
+    	return getData();
+    }
 
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.CharacterData#getData()

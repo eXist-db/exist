@@ -46,6 +46,10 @@ public class ProcessingInstructionImpl
 		QName qn = (QName)document.namePool.get(document.nodeName[nodeNumber]);
 		return qn != null ? qn.getLocalName() : null;
 	}
+	
+    public String getStringValue() {
+    	return getData();
+    }	
 
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.ProcessingInstruction#getData()
