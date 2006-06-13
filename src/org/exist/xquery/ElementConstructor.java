@@ -84,16 +84,26 @@ public class ElementConstructor extends NodeConstructor {
 	
 	public void addNamespaceDecl(String name, String uri) throws XPathException {
         String prefix = "xmlns".equals(name) ? null : "xmlns";
+      
+        QName qn = new QName(name, uri, prefix);
+
         if (name.equalsIgnoreCase("xml")) {
-        	throw new XPathException("XQST0070 : can not redefine 'xmlns:xml'");
+        	throw new XPathException("XQST0070 : can not redefine '" + qn + "'");
         }
-		if(namespaceDecls == null) {
+        if ("".equals(uri)) {
+        	throw new XPathException("XQST0085 : empty URI for namespace '" + qn + "'");
+        }  
+        if(namespaceDecls == null) {
 			namespaceDecls = new QName[1];
-			namespaceDecls[0] = new QName(name, uri, prefix);
+			namespaceDecls[0] = qn;
 		} else {
+			for(int i = 0; i < namespaceDecls.length; i++) {
+				if (qn.equals(namespaceDecls[i]))
+					throw new XPathException("XQST0071 : duplicate definition for '" + qn + "'");
+			}
 			QName decls[] = new QName[namespaceDecls.length + 1];
 			System.arraycopy(namespaceDecls, 0, decls, 0, namespaceDecls.length);
-			decls[namespaceDecls.length] = new QName(name, uri, prefix);
+			decls[namespaceDecls.length] = qn;
 			namespaceDecls = decls;
 		}
 	}
@@ -171,7 +181,8 @@ public class ElementConstructor extends NodeConstructor {
 		//Not in the specs but... makes sense
 		if(!XMLChar.isValidName(qn.getLocalName()))
 			throw new XPathException("XPTY0004 '" + qnameSeq.getStringValue() + "' is not a valid element name");
-
+		
+		//Use the default namespace if specified
 	 	if (qn.getPrefix() == null && context.inScopeNamespaces.get("xmlns") != null) {
 	 		qn.setNamespaceURI((String)context.inScopeNamespaces.get("xmlns"));
 	 	}
