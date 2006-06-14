@@ -549,7 +549,24 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             final Value key = computeTypedKey((byte) type, collectionId, qname);
             try {
                 lock.acquire(Lock.READ_LOCK);
-                VariableByteInput is = dbNodes.getAsStream(key); 
+                VariableByteInput is = null;
+                /*
+                //TODO : uncomment an implement properly
+                //TODO : bewere of null NS prefix : it looks to be polysemic (none vs. all)
+                //Test for "*" prefix
+                if (qname.getPrefix() == null) {
+                	try {
+	                    final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, key);
+	                    ArrayList elements = dbNodes.findKeys(query);	                     
+                    } catch (BTreeException e) {
+                        LOG.error(e.getMessage(), e);
+                        //TODO : throw an exception ? -pb
+                    } catch (TerminatedException e) {
+                        LOG.warn(e.getMessage(), e);                        
+                    }
+                    //TODO : iterate over the keys 
+                } else */                
+                	is = dbNodes.getAsStream(key); 
                 //Does the node already has data in the index ?
                 if (is == null) {
                 	sameDocSet = false;
@@ -760,7 +777,11 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         } else {
             final SymbolTable symbols = broker.getSymbols();
             short sym = symbols.getSymbol(qname.getLocalName());
-            short nsSym = symbols.getNSSymbol(qname.getNamespaceURI());
+            //TODO : should we truncate the key ?
+            //TODO : beware of the polysemy for getPrefix == null
+            //if (qname.getPrefix() == null)
+            //    return new ElementValue(type, collectionId, sym); 
+            short nsSym = symbols.getNSSymbol(qname.getNamespaceURI());            
             return new ElementValue(type, collectionId, sym, nsSym);
         }
     }
