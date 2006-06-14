@@ -82,4 +82,23 @@ public class ElementValue extends Value {
 	short getCollectionId() {
 		return ByteConversion.byteToShort(data, 0);
 	}
+	
+	public String toString() {
+		StringBuffer buf = new StringBuffer();
+		buf.append("Collection id : " + ByteConversion.byteToShort(data, 0));
+		if (len > 2)
+			buf.append(" Type : " + type[data[2]]);		
+		
+		if (len > 7) {
+			buf.append(" idValue : " + UTF8.decode(data, 4, data.length - 3)); //untested
+		} else { 
+			//TODO : could we have a string in the cases below ?
+			if (len > 3)
+				buf.append(" Symbol id : " + ByteConversion.byteToShort(data, 3));
+			if (len > 5)
+				buf.append(" NSSymbol id : " + ByteConversion.byteToShort(data, 5));
+		}
+		
+		return buf.toString();
+	}
 }
