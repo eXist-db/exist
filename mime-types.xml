@@ -36,6 +36,10 @@
         <description>HTML document</description>
         <extensions>.html,.htm</extensions>
     </mime-type>
+    <mime-type name="application/atom+xml" type="xml">
+        <description>Atom Feed Document</description>
+        <extensions>.atom</extensions>
+    </mime-type>
     <mime-type name="image/svg+xml" type="xml">
         <description>SVG image</description>
         <extensions>.svg,.svgz</extensions>
