@@ -23,7 +23,6 @@
 package org.exist.xquery;
 
 import org.exist.memtree.DocumentBuilderReceiver;
-import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
 import org.exist.xquery.util.ExpressionDumper;
