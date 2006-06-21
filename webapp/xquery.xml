@@ -10,72 +10,76 @@
     <chapter>
         <title>XQuery</title>
         <section>
-            <title>Current Status</title>
+            <title>Overview (Current Status of XQuery Support)</title>
 
-            <para>For the core syntax, eXist implements the latest XQuery working draft as of
-                November 2005, with the exception of the XML Schema related features. Some details,
-                in particular: functions in the standard function library may still need to be
-                updated as those drafts are evolving.</para>
+            <para>eXist implements core XQuery syntax (with the exception of XML Schema-related
+                features) as specified in W3C's recommendations outlined in the <ulink
+                    url="http://www.w3.org/TR/xquery/">June 2006 candidate recommendation</ulink>.
+                Function names in the standard function library also follow recommendations in the
+                    <ulink url="http://www.w3.org/TR/xpath-functions/">June 2006</ulink> version of
+                the "XQuery 1.0 and XPath 2.0 Functions and Operators" recommendation.</para>
 
             <para>The XQuery implementation is tested against the official XQuery Test Suite (XQTS).
-                This suite contains more than 10,000 tests. As of June 2006, eXist passes &gt; 80% of
-                the test suite, but we are continuously trying to improve these results. A good part
-                of the remaining failures is caused by smaller problems with value comparisons,
-                formatting of floating point numbers and the missing schema support in eXist.</para>
+                This suite contains more than 10,000 tests. As of June 2006, eXist passes &gt;
+                80% of the test suite, but we are continuously trying to improve these results.
+                Current test results are reported on the <ulink url="http://xqts.exist-db.org/">web
+                    site</ulink>. A good part of the remaining failures is caused by smaller
+                problems with value comparisons, formatting of floating point numbers and the
+                missing schema support in eXist.</para>
 
-            <para>Basically, eXist implements all features described in the XQuery specification,
-                except the following:</para>
+            <note>
+                <para>eXist implements ALL features described in the XQuery specification with the
+                    EXCEPTION of the following unsupported features:</para>
+                <itemizedlist>
+                    <listitem>
+                        <para>Schema-related Features: <command>validate</command>, <command>import
+                                schema</command>, <command>declare validation</command>.</para>
+                        <para>Note that since XML Schema is not supported, the value of a node is
+                            always treated as <option>xs:untypedAtomic</option>. One cannot
+                            therefore specify a data type in an element or attribute test.
+                            Consequently, the node test <command>element(test-node)</command> is
+                            supported, but the test <command>element(test-node,
+                            xs:integer)</command> will result in a syntax error.</para>
+                    </listitem>
+                    <listitem>
+                        <para>Atomic Data Types: <command>xs:gYear</command>,
+                            <command>xs:gMonth</command>, etc. (These types are seldom used).</para>
+                    </listitem>
+                    <listitem>
+                        <para>XPath Axes: <command>following</command>, <command>preceding</command></para>
 
-            <itemizedlist>
-                <listitem>Unrecognized keywords: <command>typeswitch</command>.</listitem>
-                <listitem>Schema related features: <command>validate</command>, <command>import
-                        schema</command>. <command>import schema</command> will be simply ignored,
-                    though an optional namespace prefix is added to the in-scope namespace mappings. </listitem>
-
-                <listitem>Since schema support is missing, the value of a node is always treated as
-                    xs:untypedAtomic.</listitem>
-
-                <listitem>For the same reason, one cannot specify a type name in an element or
-                    attribute test. The test: element(test) works, but: element(test, xs:integer)
-                    results in a syntax error.</listitem>
-
-                <listitem>The rarely used atomic types xs:gYear, xs:gMonth etc. are not recognized.</listitem>
-                <listitem>Partially unsupported XPath axes: following, preceding. Both axes work
-                    with an explicit test for an attribute or element (e.g. following::foo will
-                    work, but following::* will not).</listitem>
-            </itemizedlist>
+                        <para> Both axes work with an explicit test for an attribute or element
+                            (e.g. following::foo will work, but following::* will not).</para>
+                    </listitem>
+                </itemizedlist>
+            </note>
 
             <para>In addition to the standard features, eXist provides extended support for
                     <emphasis>modules</emphasis> and implements the <emphasis>full axis</emphasis>
                 feature, which means you can use the <emphasis>optional axes</emphasis>: ancestor,
-                ancestor-or-self, following, following-sibling, preceding, and preceding-sibling.</para>
-
-            <note>
-                <para>The best way to learn about eXist's features is to look into the 
-                <ulink href="examples.xml">examples and
-                    web applications</ulink> provided by the standard distribution.</para>
-            </note>
-
+                ancestor-or-self, following, following-sibling, preceding, and
+            preceding-sibling.</para>
         </section>
 
         <section>
             <title>Function Library</title>
-            <para>A list of all the functions currently known to the system can be viewed <a
-                    href="xquery/functions.xq">here</a>. This list is dynamically generated by an
-                XQuery script, so the database needs to be running. The function description is
-                directly extracted from the signature provided by each class implementing the
-                    <classname>Function</classname> interface. </para>
+            <para>A complete list of eXist-supported XQuery functions can be viewed in the <ulink
+                    url="xquery/functions.xq">Built-in Functions</ulink> section. Note that this
+                list is dynamically generated using an XQuery script, so the database needs to be
+                running to view this page. Each function description is taken directly from the
+                signature provided by the class implementing the <classname>Function</classname>
+                interface. </para>
 
         </section>
-
+        
         <section>
             <title>The Module System</title>
-
+            
             <para>Using eXist, you can write entire web applications in XQuery. This may result in
                 rather complex XQuery scripts, consisting of several thousand lines of code. Being
                 able to package related functions into modules is thus an important feature. eXist allows
                 modules to be imported from a variety of sources:</para>
-                
+            
             <itemizedlist>
                 <listitem>
                     <para>an URI</para>
@@ -94,57 +98,57 @@
             <para>For example, a typical import statement in an XQuery will look like this:</para>
             
             <synopsis>import module namespace status="http://exist-db.org/xquery/admin-interface/status" 
-            at "http://exist-db.org/modules/test.xqm";</synopsis>
+                at "http://exist-db.org/modules/test.xqm";</synopsis>
             
             <para>Provided that the module namespace does not point to one of the preloaded standard
-            modules (see below), the query engine will try to locate the module source by looking at
-            the URI given after the <command>at</command> keyword. In the example above, the module was
-            specified using a full URI and the query engine will attempt to load the module source from
-            the given URI. However, the module could also be stored in a database collection:</para>  
+                modules (see below), the query engine will try to locate the module source by looking at
+                the URI given after the <command>at</command> keyword. In the example above, the module was
+                specified using a full URI and the query engine will attempt to load the module source from
+                the given URI. However, the module could also be stored in a database collection:</para>  
             
             <synopsis>import module namespace status="http://exist-db.org/xquery/admin-interface/status" 
                 at "xmldb:exist:///db/modules/test.xqm";</synopsis>
             
             <para>The query engine recognizes that the module should be stored in the local database
-            instance and tries to directly compile it from there.</para> 
+                instance and tries to directly compile it from there.</para> 
             
             <para>If the XQuery module is part of a Java application, it might also be an option,
-            to pack the module into a Java archive (.jar file) along with the Java classes and use the
-            following import to load the module from a Java package:</para>
+                to pack the module into a Java archive (.jar file) along with the Java classes and use the
+                following import to load the module from a Java package:</para>
             
             <synopsis>import module namespace status="http://exist-db.org/xquery/admin-interface/status" 
                 at "resource:org/exist/xquery/lib/test.xqm";</synopsis>
             
             <para>Finally, XQuery modules can also be implemented in Java 
-            (see <ulink url="#javamods">below</ulink>), in which case you can import them by specifying the
-            class path of the Module class:</para>
+                (see <ulink url="#javamods">below</ulink>), in which case you can import them by specifying the
+                class path of the Module class:</para>
             
             <synopsis>import module namespace xdiff="http://exist-db.org/xquery/xmldiff"
-            at "java:org.exist.xquery.modules.xmldiff.XmlDiffModule";</synopsis>
+                at "java:org.exist.xquery.modules.xmldiff.XmlDiffModule";</synopsis>
             
             <section>
                 <title>Using Relative URIs</title>
                 
                 <para>If the location specified in an import statement is a relative URI, the query
-                engine will try to load the module relativ to the current module load path. The module
-                load path is determined as follows:</para>
+                    engine will try to load the module relativ to the current module load path. The module
+                    load path is determined as follows:</para>
                 
                 <orderedlist>
                     <listitem>
                         <para>if the main XQuery was retrieved from the file system, the module load path
-                        points to that directory. This applies to queries executed through the
-                        XQueryServlet, XQueryGenerator or the Java admin client.</para>
+                            points to that directory. This applies to queries executed through the
+                            XQueryServlet, XQueryGenerator or the Java admin client.</para>
                     </listitem>
                     <listitem>
                         <para>if the main XQuery was loaded from a database collection, the module load path
-                        is the URI of that collection.</para>
+                            is the URI of that collection.</para>
                         
                         <para>For example, if you access an XQuery via the REST server:</para>
                         
-                        <synopsis>http://localhost:8080/exist/rest/db/modules/test.xq</synopsis>
+                        <synopsis>http://localhost:8080/exist/servlet/db/modules/test.xq</synopsis>
                         
                         <para>All relative module paths will be resolved relative to the
-                        <filename>/db/modules</filename> collection.</para>
+                            <filename>/db/modules</filename> collection.</para>
                     </listitem>
                 </orderedlist>
             </section>
@@ -153,16 +157,16 @@
                 <title>Builtin Modules</title>
                 
                 <para>eXist comes with a set of utility modules, which are all implemented
-                in Java. You can also write your own modules as described
-                <ulink url="#javamods">below</ulink>. Some of these utility modules are
-                frequently used in queries, so they are automatically imported into every query 
-                by default.</para>
+                    in Java. You can also write your own modules as described
+                    <ulink url="#javamods">below</ulink>. Some of these utility modules are
+                    frequently used in queries, so they are automatically imported into every query 
+                    by default.</para>
                 
                 <para>The query engine allows you to configure which modules will be
                     auto-loaded. The <sgmltag>builtin-modules</sgmltag> element in
                     <filename>conf.xml</filename> lists the namespaces and implementing
                     classes of all modules to be preloaded into queries:</para>
-                    
+                
                 <example>
                     <title>Auto-loaded Modules</title>
                     
@@ -172,7 +176,7 @@
             class="org.exist.xquery.functions.util.UtilModule"/>
         <module uri="http://exist-db.org/xquery/transform"
             class="org.exist.xquery.functions.transform.TransformModule"/>]]>
-            </programlisting>
+                    </programlisting>
                 </example>
                 
                 <para>You never need to specify a location when importing a preloaded
@@ -183,280 +187,324 @@
                 </para>
             </section>
         </section>
-
+        
         <section>
             <title>XQuery Caching</title>
             
             <para>XQuery modules executed via the REST interface, the XQueryServlet
-            or XQueryGenerator are automatically cached: the compiled expression will be added
-            to an internal pool of prepared queries. The next time a query or module is loaded
-            from the same location, it will not be compiled again. Instead, the already compiled
-            code is reused. The code will only be recompiled if eXist decides that the source was
-            modified or it wasn't used for a longer period of time.</para>
+                or XQueryGenerator are automatically cached: the compiled expression will be added
+                to an internal pool of prepared queries. The next time a query or module is loaded
+                from the same location, it will not be compiled again. Instead, the already compiled
+                code is reused. The code will only be recompiled if eXist decides that the source was
+                modified or it wasn't used for a longer period of time.</para>
             
             <para>Modules are cached along with the main query that imported them.</para>
         </section>
-
+        
         <section id="ext">
-            <title>Extensions</title>
+            <title>eXist Extension Functions</title>
 
-            <para>eXist offers a number of additional functions and two additional operators. These
-                extensions can be grouped into the following main categories:</para>
+            <para>eXist offers a number of additional functions and operators, which are discussed
+                in some detail in the following subsections.</para>
 
-            <orderedlist>
-                <listitem> Functions to specify the input document set for an expression. </listitem>
-                <listitem> Extensions for full-text searching. </listitem>
-                <listitem> XQuery Update extensions: those are described in a <ulink
-                        url="update_ext.xml">seperate document</ulink>. </listitem>
-
-                <listitem> Functions for manipulating database contents. </listitem>
-                <listitem> Utility functions. </listitem>
-                <listitem> XSL transformation functions. </listitem>
-                <listitem> HTTP related functions. </listitem>
-            </orderedlist>
-
-            <para>We start with the additional functions for specifying the input document set.</para>
-
-            <section>
+            <section id="input_doc">
                 <title>Specifying the Input Document Set</title>
-                <para>A database may contain an unlimited set of collections and documents. If you
-                    use the XML:DB API to query the db, only the documents in the current XML:DB
-                    collection are processed by default. However, there are four additional
-                    functions to change this behavior: <command>doc()</command>, <command
+                <para>A database can contain a virtually unlimited set of collections and documents.
+                    By default, database queries that use the XML:DB API will only process the
+                    documents in the current XML:DB collection. However, four additional functions
+                    are available to change this behavior: <command>doc()</command>, <command
                         moreinfo="none">document()</command>, <command moreinfo="none"
-                    >collection()</command> and <command>xcollection()</command>.</para>
-
-                <para>The <command>collection()</command> and <command>doc()</command> functions are
-                    standard XQuery/XPath functions. <command>xcollection()</command> and
-                        <command>document()</command> represent eXist-specific extensions.</para>
+                    >collection()</command> and <command>xcollection()</command>. The
+                        <command>collection()</command> and <command>doc()</command> functions are
+                    standard XQuery/XPath functions; whereas, <command>xcollection()</command> and
+                        <command>document()</command> are eXist-specific extensions.</para>
 
                 <para>Without an URI scheme, eXist interprets the arguments to
                     <command>collection</command> and <command>doc</command> as absolute or relative
                     paths, leading to some collection or document within the database. For example:</para>
-
+                
                 <synopsis>doc("/db/collection1/collection2/resource.xml)</synopsis>
-
+                
                 <para>refers to a resource stored in
                     <filename>/db/collection1/collection2</filename>.</para>
-
+                
                 <synopsis>doc("resource.xml")</synopsis>
-
+                
                 <para>references a resource relative to the base URI property defined in the static
                     XQuery context. The base URI contains an XML:DB URI pointing to the base
                     collection for the current query context, e.g.
                     <filename>xmldb:exist:///db</filename>.</para>
-
+                
                 <para>The base collection depends on how the query context was initialized. If you
                     call a query via the XML:DB API, the base collection is the collection from
                     which the query service was obtained. All relative URLs will be resolved
                     relative to that collection. If a stored query is executed via REST, the base
                     collection is the collection in which the XQuery source resides. In most other
                     cases, the base collection will point to the database root /db. </para>
-
+                
                 <note>
                     <para>As it might not always be clear what the base collection is, we recommend
                         to use an explicit path to access a document. This makes it easier to use a
                         query via different interfaces.</para>
                 </note>
-
+                
                 <para>You can also pass a full URI to the <command>doc</command> function:</para>
-
-                <synopsis>doc("http://localhost:8080/exist/rest/db/test.xml")</synopsis>
-
+                
+                <synopsis>doc("http://localhost:8080/exist/servlet/db/test.xml")</synopsis>
+                
                 <para>in this case, the URI will be retrieved and the data stored into a temporary
                     document in the database.</para>
 
-                <para>While <command>doc()</command> is restricted to a single document-URI
-                    argument, <command>document</command> accepts multiple document paths to be
-                    included into the input node set. Second, calling <command>document</command>
-                    without an argument includes <emphasis>every</emphasis> document node in the
-                    current database instance. Some examples:</para>
-
-                <synopsis format="linespecific">document()//SPEAKER</synopsis>
-                <synopsis format="linespecific">document('/db/test/abc.xml', '/db/test/def.xml')//title</synopsis>
-
-                <para>The <command moreinfo="none">collection()</command> function specifies the
-                    collection whose documents are to be included into query evaluation. By default,
-                    documents found in sub-collections of the specified collection are included.
-                    This means that for three collections, <filename moreinfo="none"
-                    >/db/test</filename>, <filename moreinfo="none">/db/test/abc</filename> and
-                        <filename moreinfo="none">/db/test/def</filename>, <command moreinfo="none"
-                        >collection('/db/test')</command> will include all resources found in
-                        <filename moreinfo="none">/db/test</filename>, <filename moreinfo="none"
-                        >/db/test/abc</filename> and <filename moreinfo="none"
-                    >/db/test/def</filename>. You may use the <command moreinfo="none"
-                    >xcollection()</command> function to change this behavior, e.g.</para>
-                <synopsis format="linespecific">xcollection('/db/test')//title</synopsis>
-                <para>will only include resources found in <filename moreinfo="none"
-                    >/db/test</filename>, but not in <filename moreinfo="none"
-                    >/db/test/abc</filename> or <filename moreinfo="none"
-                >/db/test/def</filename>.</para>
+                <variablelist>
+                    <varlistentry>
+                        <term>doc() / document()</term>
+                        <listitem>
+                            <para>While <command>doc()</command> is restricted to a single
+                                document-URI argument, <command>document()</command> accepts
+                                multiple document paths to be included into the input node set.
+                                Second, calling <command>document()</command> without an argument
+                                includes <emphasis>EVERY</emphasis> document node in the current
+                                database instance. Some examples:</para>
+                            <synopsis format="linespecific">document()//SPEAKER</synopsis>
+                            <synopsis format="linespecific">document('/db/test/abc.xml', '/db/test/def.xml')//title</synopsis>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>collection() / xcollection()</term>
+                        <listitem>
+                            <para>The <command moreinfo="none">collection()</command> function
+                                specifies the collection of documents to be included in the query
+                                evaluation. By default, documents found in subcollections of the
+                                specified collection are also included. For example, suppose we have
+                                a collection <filename moreinfo="none">/db/test</filename> that
+                                includes two subcollections <filename moreinfo="none"
+                                >/db/test/abc</filename> and <filename moreinfo="none"
+                                >/db/test/def</filename>. In this case, the function call <command
+                                    moreinfo="none">collection('/db/test')</command> will include
+                                all of the resources found in <filename moreinfo="none"
+                                >/db/test</filename>, <filename moreinfo="none"
+                                >/db/test/abc</filename> and <filename moreinfo="none"
+                                >/db/test/def</filename>.</para>
+                            <para>The function <command moreinfo="none">xcollection()</command> can
+                                be used to change the behavior of <command moreinfo="none"
+                                    >collection()</command>. For instance, the function call </para>
+                            <synopsis format="linespecific">xcollection('/db/test')//title</synopsis>
+                            <para>will ONLY include resources found in <filename moreinfo="none"
+                                    >/db/test</filename>, but NOT in <filename moreinfo="none"
+                                    >/db/test/abc</filename> or <filename moreinfo="none"
+                                    >/db/test/def</filename>.</para>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
             </section>
-            <section>
-                <title>Querying Text</title>
-                <para>The standard XPath/XQuery function library contains most of the well-known
-                    string manipulation functions provided by every programming languages. However,
-                    these functions are rather insufficient when searching for a set of keywords or
-                    a phrase inside a larger portion of text or mixed content.</para>
 
-                <para>This is a weak point if you have to work with document-centric (as opposed to
-                    data-centric) documents. For many types of documents, the provided standard
-                    functions will not yield satisfactory results. For example, you might remember
-                    to have read something about "XML" and "databases" in some chapter of a book,
-                    but you may not be sure where exactly it was. Using standard XPath, you could
-                    try a query like:</para>
-
+            <section id="query_func">
+                <title>Querying Text (Fulltext Searching)</title>
+                <para>The standard XPath/XQuery function library contains most of the common string
+                    manipulation functions provided by most programming languages. However, these
+                    functions are insufficient for conducting keyword or phrase searches inside a
+                    larger portion of text or mixed content. This is a weak point if you have to
+                    work with <emphasis>document-centric</emphasis> (i.e. mainly free-form text), as
+                    opposed to <emphasis>data-centric</emphasis> documents. For many types of
+                    documents, the standard string functions do not yield satisfactory search
+                    results.</para>
+                <para>For example, suppose upon reading a chapter in an electronic text, you
+                    encountered something about "XML" and "databases", but later you could not
+                    recall the exact section where you read it. Using standard XPath, you could try
+                    a query like:</para>
                 <synopsis format="linespecific">//chapter[contains(., 'XML') and contains(., 'databases')]</synopsis>
-
-                <para>Query execution will probably be quite slow, because the XPath engine has to
-                    scan the entire character content of all chapter nodes and their descendants.
-                    Still you can't be sure to find all matches - for example, "databases" might
-                    have been written with a capital letter at the start of the sentence.</para>
-                <para>eXist offers additional operators and extension functions for efficient,
-                    index-based access to the full-text content of nodes. With eXist, you could
-                    formulate your query as follows:</para>
+                <para>This query execution will likely be quite slow, since the XPath engine will,
+                    in this case, scan the entire character content of all chapter nodes and their
+                    descendants. And yet, there is no certainty that all possible text matches will
+                    be found - for example, "databases" might have been written with a capital
+                    letter at the start of the sentence, and so would not be included in the
+                    results.</para>
+                <para>To resolve this issue, eXist offers additional operators and extension
+                    functions for efficient, index-based access to the full-text content of nodes.
+                    With eXist, you could alternatively formulate the above query as follows:</para>
                 <synopsis format="linespecific">//chapter[near(., 'XML database?', 50)]</synopsis>
-                <para>This query will return all chapters containing both keywords in the correct
-                    order and with less than 50 words between them. Additionally, the wildcard in
-                    "database?" will match the singular as well as the plural form and the search is
-                    done case-insensitive.</para>
-                <para>Since the query is index-based, it will usually be a magnitude faster than the
-                    standard XPath query above. Let's walk through each of eXist's extensions:</para>
+                <para>This will return all chapters containing both keywords in the correct order,
+                    and as well, will find matches that have under 50 words between them.
+                    Additionally, the wildcard character <command moreinfo="none">?</command> in
+                        <command moreinfo="none">database?</command> will match the singular as well
+                    as the plural instances of "database", and the search would NOT be
+                    case-sensitive. Furthermore, since the query is index-based, it will usually be
+                    an order of magnitude faster than the standard XPath query above.</para>
                 <section>
                     <title>Operators</title>
-                    <para>In cases where the order and distance of search terms is not important,
-                        eXist offers two additional operators for simple keyword queries: <command
+                    <para>In this section, we discuss each of eXist's text-search extensions. In
+                        cases where the order and distance of search terms is not important, eXist
+                        offers two additional operators for simple keyword queries: <command
                             moreinfo="none">&amp;=</command> and <command moreinfo="none"
-                        >|=</command>. </para>
+                        >|=</command>.</para>
 
                     <variablelist>
                         <varlistentry>
                             <term>node-set &amp;= 'string of keywords'</term>
                             <listitem>
-                                <para>selects context nodes containing all of the keywords in the
-                                    right-hand argument in any order. The default tokenizer is used
-                                    to split the right-hand argument into single tokens, i.e. any
-                                    punctuation or white space is skipped. Wildcards are allowed.
-                                    Keywords are compared case-insensitive.</para>
+                                <para>This operator selects context nodes containing
+                                    <emphasis>ALL</emphasis> of the keywords in the right-hand
+                                    argument in any order. The default tokenizer is used to split
+                                    the right-hand argument into single tokens, i.e. any punctuation
+                                    or white spaces are used to separate the keywords and, after
+                                    which, are omitted. Note also that wildcards are allowed, and
+                                    keyword comparison is NOT case-sensitive.</para>
                             </listitem>
                         </varlistentry>
                         <varlistentry>
                             <term>node-set |= 'string of keywords'</term>
                             <listitem>
-                                <para>as above, but selects context nodes containing
-                                    <emphasis>any</emphasis> of the keywords in the right-hand
-                                    argument.</para>
+                                <para>Similar to above, this operator selects context nodes
+                                    containing <emphasis>ANY</emphasis> of the keywords in the
+                                    right-hand argument.</para>
                             </listitem>
                         </varlistentry>
                     </variablelist>
 
                     <note>
-                        <para>The strings are split into tokens using the default tokenizer
-                            function. The current implementation will work well for all european
-                            languages. For non-european languages, things are a bit more
-                            complicated. In these cases, eXist uses the predefined unicode
-                            codepoints to decide where the string will be split.</para>
+                        <para>With the <command moreinfo="none">&amp;=</command> and <command
+                                moreinfo="none">|=</command>operations, keyword search strings are
+                            split into tokens using the default tokenizer function. The current
+                            implementation of this operation will work well for all European
+                            languages. For non-European languages, however, eXist uses the
+                            predefined Unicode code points (0 to 10FFFF) to determine where the
+                            string will be split.</para>
                     </note>
 
-                    <para>Both operators accept simple wildcards in the keyword string. A <command
-                            moreinfo="none">?</command> matches zero or one character, <command
-                            moreinfo="none">*</command> matches zero or more characters. A character
-                        range <command moreinfo="none">[abc]</command> matches any of the characters
-                        in the range. You may use a backslash to escape wildcard characters.</para>
+                    <para>Both of the above operators accept simple wildcards in the keyword string.
+                        A <command moreinfo="none">?</command> matches zero or one character,
+                            <command moreinfo="none">*</command> matches zero or more characters. A
+                        character range <command moreinfo="none">[abc]</command> (as a regular
+                        expression) matches any of the characters in that range. You may use a
+                        backslash to escape wildcard characters.</para>
 
                     <para>To match more complex patterns, full regular expression syntax is
-                        supported through additional functions, which will be described below.</para>
+                        supported through additional functions, which are discussed below.</para>
 
-                    <para>Please note that there is an important semantic difference between the two
-                        expressions:</para>
-                    <synopsis format="linespecific">document()//SPEECH[LINE &amp;= "cursed spite"]</synopsis>
-                    <para>and</para>
-                    <synopsis format="linespecific">document()//SPEECH[LINE &amp;= "cursed" and LINE &amp;="spite"]</synopsis>
+                    <note>
+                        <para>There is an important semantic difference between the following two
+                            expressions:</para>
+                        <synopsis format="linespecific">document()//SPEECH[LINE &amp;= "cursed spite"]</synopsis>
+                        <para>and</para>
+                        <synopsis format="linespecific">document()//SPEECH[LINE &amp;= "cursed" and LINE &amp;="spite"]</synopsis>
 
-                    <para>The first expression selects all distinct LINE nodes that contain both
-                        terms. The second one selects all context nodes (SPEECH) that have line
-                        children containing either or both of the terms. The second expression is
-                        supposed to yield more results than the first one. To make both expressions
-                        select nearly the same nodes, you would have to change the first one into</para>
-                    <synopsis format="linespecific">document()//SPEECH[. &amp;= "cursed spite"]</synopsis>
-                    <para>(but this will also include, say SPEAKER or STAGEDIR children of the
-                        SPEECH parent)</para>
+                        <para>The first expression selects all distinct <option>LINE</option> nodes
+                            that contain both of the search terms. The second expression selects all
+                            context nodes (<option>SPEECH</option> nodes) that have
+                            <option>LINE</option> children containing either or both of the terms,
+                            and should yield more results than the first one. To make the first
+                            expression select the same nodes (at least, nearly the same nodes), you
+                            would have to change the first expression to:</para>
+                        <synopsis format="linespecific">document()//SPEECH[. &amp;= "cursed spite"]</synopsis>
+                        <para>Note, however, that this new expression will also include other nodes,
+                            for instance <option>SPEAKER</option> or <option>STAGEDIR</option>,
+                            which are children of the <option>SPEECH</option> parent node.</para>
+                    </note>
                 </section>
                 <section>
-                    <title>near()</title>
-                    <para>As shown above, the <command moreinfo="none">near()</command> function
-                        behaves quite similar to the <command moreinfo="none">&amp;=</command>
-                        operator, but it additionally pays attention to the order of search terms
-                        and their distance in the source document. The syntax is:</para>
-                    <synopsis format="linespecific">near(node-list, 'string of keywords' [, max-distance])</synopsis>
-                    <para>The function measures the distance between two search terms by counting
-                        the words in between them. A maximum distance of 1 is assumed by default,
-                        which means that the search terms should occur next to each other. Other
-                        values for the maximum and minimal distance may be specified in the optional
-                        third argument. As a special case, if the string in the second argument
-                        contains only one token, any distance value in the third and fourth argument
-                        are ignored, and the function performs identically to the &amp;=
-                        operator. An example:</para>
-                    <synopsis format="linespecific">document()//SPEECH[near(., 'love marriage', 25)</synopsis>
-                    <para>will return any SPEECH elements containing the words "love" and "marriage"
-                        and less than 25 words between them.</para>
-                    <para>Like <command moreinfo="none">&amp;=</command>, <command
-                            moreinfo="none">near()</command> accepts wildcards in the keyword
-                        string. As well, punctuation and whitespace will be skipped according to the
-                        default tokenization rules.</para>
-                </section>
-                <section>
-                    <title>match-all()/match-any()</title>
-                    <para>These functions are variations of the <command moreinfo="none"
-                        >&amp;=</command> and <command moreinfo="none">|=</command> operators
-                        which interpret their arguments as regular expressions.
-                        <emphasis>But</emphasis>: contrary to the <command>matches</command>
-                        function in the XQuery core library, <command>match-all</command> and
-                            <command>match-any</command> try to match the regular expression
-                        argument against the keywords contained in the full-text index, not against
-                        the entire text. Assume a document containing the following paragraph:</para>
+                    <title>Functions</title>
+                    <variablelist>
+                        <varlistentry>
+                            <term>near()</term>
+                            <listitem>
+                                <para>As shown in a previous example, the <command moreinfo="none"
+                                        >near()</command> function behaves quite similarly to the
+                                        <command moreinfo="none">&amp;=</command> operator, but
+                                    also pays attention to the order of search terms and their
+                                    distance from each other in the source document.</para>
+                                <para>The syntax for this function is as follows:</para>
+                                <synopsis format="linespecific">near(node-list, 'string of keywords' [, max-distance])</synopsis>
+                                <para>The function measures the distance between two search terms by
+                                    counting the number of words between them. A maximum distance of
+                                    1 is assumed by default, in which case the search terms occur
+                                    next to each other. Other values for the maximal and minimal
+                                    distance may be specified in the optional third argument. As a
+                                    special case, if the string in the second argument contains only
+                                    one token, any distance values in the third and fourth argument
+                                    are ignored, and the function performs identically to the
+                                    &amp;= operator. For example, with the following search
+                                    expression:</para>
+                                <synopsis format="linespecific">document()//SPEECH[near(., 'love marriage', 25)</synopsis>
+                                <para>the search engine will return any <option>SPEECH</option>
+                                    elements containing the words "love" and "marriage" within the
+                                    range of 25 words between them.</para>
+                                <para>Similar to the <command moreinfo="none">&amp;=</command>
+                                    operator, <command moreinfo="none">near()</command> accepts
+                                    wildcards in the keyword string, and punctuation and whitespace
+                                    will be skipped according to the default tokenization
+                                rules.</para>
+                            </listitem>
+                        </varlistentry>
+                        <varlistentry>
+                            <term>match-all()/match-any()</term>
+                            <listitem>
+                                <para>These two functions are variations of the <command
+                                        moreinfo="none">&amp;=</command> and <command
+                                        moreinfo="none">|=</command> operators, and interpret their
+                                    arguments as regular expressions. <emphasis>However</emphasis>,
+                                    contrary to the <command>matches()</command> function in the
+                                    XQuery core library, <command>match-all()</command> and
+                                        <command>match-any()</command> try to match the regular
+                                    expression argument against the keywords contained in the
+                                    full-text index, but NOT against the entire text.</para>
+                                <para>For example, assume you have a document that contains the
+                                    following paragraph:</para>
+                                <synopsis>&lt;para&gt;Peter lives in Frankfurt&lt;/para&gt;</synopsis>
+                                <para>Then the following expression:</para>
+                                <synopsis>match-all(para, "li[vf]e.?", "frank.*")</synopsis>
+                                <para>will match this paragraph because it contains two keywords
+                                    matching the specified regular expression patterns.</para>
 
-                    <synopsis>&lt;para&gt;Peter lives in Frankfurt&lt;/para&gt;</synopsis>
+                                <para>
+                                    <command moreinfo="none">match-all()</command> corresponds to
+                                        <command moreinfo="none">&amp;=</command> in that it
+                                    will select context nodes with keywords matching
+                                    <emphasis>ALL</emphasis> of the specified regular expressions.
+                                        <command moreinfo="none">match-any()</command> will select
+                                    nodes with keywords matching <emphasis>ANY</emphasis> of the
+                                    specified regular expression.</para>
 
-                    <para>Then the following expression:</para>
+                                <para>Since tokenization doesn't work correctly with regular
+                                    expression patterns, each keyword has to be specified as a
+                                    separate argument, so the syntax looks like:</para>
 
-                    <synopsis>match-all(para, "li[vf]e.?", "frank.*")</synopsis>
+                                <synopsis format="linespecific">match-all(node-set, 'regexp' [, 'regexp' ...])</synopsis>
 
-                    <para>will match because the paragraph contains two keywords matching the
-                        specified regular expression patterns.</para>
-
-                    <para>
-                        <command moreinfo="none">match-all()</command> corresponds to <command
-                            moreinfo="none">&amp;=</command> in that it will select context
-                        nodes with keywords matching all of the specified regular expressions.
-                            <command moreinfo="none">match-any()</command> will select nodes with
-                        keywords matching <emphasis>any</emphasis> of the specified regexp.</para>
-
-                    <para>Since tokenization doesn't work correctly with regular expression
-                        patterns, each keyword has to be specified as a separate argument, so the
-                        syntax looks like:</para>
-
-                    <synopsis format="linespecific">match-all(node-set, 'regexp' [, 'regexp' ...])</synopsis>
-
-                    <para>Please note that the functions will try to match the regexp against the
-                        entire keyword. For example, the expression</para>
-                    <synopsis format="linespecific">//SPEECH[match-all(LINE, 'li[vf]e')]</synopsis>
-                    <para>will match 'live', 'life', but not 'lives'.</para>
+                                <note>
+                                    <para>Please note that the <command moreinfo="none"
+                                        >match-all()</command> and <command moreinfo="none"
+                                            >match-any()</command> functions will try to match the
+                                        regular expression against the entire keyword. For example,
+                                        the expression</para>
+                                    <synopsis format="linespecific">//SPEECH[match-all(LINE, 'li[vf]e')]</synopsis>
+                                    <para>will match 'live', 'life', but not 'lives'.</para>
+                                    <para>eXist uses the <ulink
+                                            url="http://java.sun.com/j2se/1.4.2/docs/api/java/util/regex/package-summary.html"
+                                            >java.util.regex API</ulink> for regular expressions. A
+                                        description of the supported regexp syntax can be found on
+                                        the <ulink
+                                            url="http://java.sun.com/docs/books/tutorial/extra/regex/"
+                                            >Sun Java Tutorial</ulink>.</para>
+                                </note>
+                            </listitem>
+                        </varlistentry>
+                    </variablelist>
                 </section>
             </section>
+
             <section id="xmldb">
                 <title>Manipulating Database Contents</title>
+                <para>The XML:DB extension functions can be used to create new database collections,
+                    or to store query output into the database. To illustrate, suppose we have a
+                    large file containing several RDF metadata records, but we do not want to store
+                    the metadata records in a single file, since our application expects each record
+                    to have its own document. In this case, we must divide the document into smaller
+                    units. Using an XSLT stylesheet would be one way to accomplish this - however,
+                    it is also a memory-intensive approach. A preferable option is to use XQuery to
+                    do the job. </para>
 
-                <para>The xmldb extension functions can be used to create new database collections,
-                    or to store query output back into the database. For example, assume that
-                    someone has sent us a large file containing a number of RDF metadata records.
-                    Unfortunately, we don't want to store the metadata records as one, single file.
-                    Instead, our application expects each record to be in its own document. We thus
-                    have to transform the document and split it into smaller units.</para>
-
-                <para>Using an XSLT stylesheet would be one alternative. However, it is rather
-                    memory-intensive. So why not use XQuery to do the job? The XQuery script below
-                    shows how to split the large RDF file into a number of smaller documents:</para>
+                <para>The XQuery script below shows how to split a large RDF file into a series of
+                    smaller documents:</para>
 
                 <example>
                     <title>Splitting a Document</title>
@@ -467,7 +515,9 @@ xquery version "1.0";
 declare namespace  xdb="http://exist-db.org/xquery/xmldb";
 declare namespace util="http://exist-db.org/xquery/util";
 
-let $out := xdb:create-collection("/db", "output")
+xdb:register-database("org.exist.xmldb.DatabaseImpl", true()),
+let $root := xdb:collection("xmldb:exist:///db", "admin", ""),
+    $out := xdb:create-collection($root, "output")
 for $rec in /rdf:RDF/* return
     xdb:store($out, concat(util:md5($rec/@rdf:about), ".xml"),
         <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
@@ -477,49 +527,49 @@ for $rec in /rdf:RDF/* return
 ]]>
                     </programlisting>
                 </example>
-                <para>The script first uses <command>xdb:create-collection</command> to create a new
-                    collection, called "output".</para>
-
-                <para>The <command>for</command> expression iterates through all child elements of
+                <para>Let's look at this script in some detail. First, since the extension functions
+                    are based on the XML:DB API, we have to register a database driver with
+                        <command>xdb:register-database</command>. Then we can retrieve the root
+                    collection using <command>xdb:collection</command>. The variable
+                    <option>$root</option> returned by <command>xdb:collection</command> holds the
+                    collection as a Java object, and we can pass this variable to
+                        <command>xdb:create-collection</command> to create a new sub-collection,
+                    called "output".</para>
+                <para>Next, the <command>for</command>-loop iterates through all child elements of
                     the top RDF element. In each iteration, we use <command>xdb:store</command> to
-                    write out the current child node into a new document.</para>
-
-                <para>Obviously, a unique document name is required for each document. In this
-                    example, the URI contained in the rdf:about attribute is unique, so we simply
-                    compute an MD5 key from it, append ".xml" and use it as document name.</para>
+                    write out the current child node to a new document. Since a unique document name
+                    is required for each new document, we need a way to generate unique names. In
+                    this case, the URI contained in the <command>rdf:about</command> attribute is
+                    unique, so we simply compute an MD5 key from it, append the ".xml" extension,
+                    and use it as the document's name.</para>
             </section>
 
             <section>
                 <title>Utility Functions</title>
+                <para>The function namespace <uri>http://exist-db.org/xquery/util</uri> contains a
+                    number of common utility functions. The <command>util:md5</command> function,
+                    used in the above example, is one such function. In this subsection, we discuss
+                    a few of the important available utility functions. For a complete list, please
+                    go to the <ulink url="xquery/functions.xq">Built-in Functions</ulink> section.</para>
+                <para>However, one important function, <command>util:eval</command>, requires
+                    further explanation.</para>
 
-                <para>The function namespace http://exist-db.org/xquery/util contains a number of
-                    common utility functions. For example, the <command>util:md5</command> function
-                    used above is defined here.</para>
+                <variablelist>
+                    <varlistentry>
+                        <term>util:eval()</term>
+                        <listitem>
+                            <para>This function is used to dynamically execute a constructed XQuery
+                                expression inside a running XQuery script. This can be very handy in
+                                some cases - for example, web-based applications that dynamically
+                                generate queries based on HTTP request parameters the user has
+                                passed.</para>
+                            <para>Consider the following simple example script in which any two
+                                numbers submitted by a user are added or subtracted: </para>
+                            <example>
+                                <title>Adding/Subtracting Two Numbers</title>
 
-                <para>We will not discuss all available functions. They documented in the <a
-                        href="xquery/functions.xq">functions table</a>. However, there's one
-                    function which needs some further explanation:</para>
-
-                <para>
-                    <command>util:eval</command> is used to dynamically execute a constructed XQuery
-                    expression inside a running XQuery script. This is very handy sometimes, for
-                    example, in a web-based application, where queries are dynamically built from
-                    the request parameters the user has passed to the application.</para>
-
-                <para>In this case, there would be one XQuery script, which is responsible for
-                    evaluating the user supplied parameters. This script uses the parameters from
-                    the HTTP request to create another XQuery expression. It then passes the
-                    constructed query string to <command>util:eval</command> to evaluate the
-                    expression, post-processes the returned results and displays them to the user.
-                    More information about how to write web applications with XQuery can be found in
-                    the <ulink url="devguide.xml">Developer's Guide</ulink>. Below is a simple
-                    example to add or subtract two numbers: </para>
-
-                <example>
-                    <title>Adding/Subtracting Two Numbers</title>
-
-                    <programlisting>
-<![CDATA[xquery version "1.0";
+                                <programlisting>
+                                    <![CDATA[xquery version "1.0";
 
 declare namespace request="http://exist-db.org/xquery/request";
 declare namespace util="http://exist-db.org/xquery/util";
@@ -570,93 +620,126 @@ declare function local:do-query() as element()
 		{ local:do-query() }
 	</body>
 </html>]]>
-                    </programlisting>
-                </example>
+                                </programlisting>
+                            </example>
+                            <para>In this example, there is one XQuery script responsible for
+                                evaluating the user-supplied parameters, which uses the parameters
+                                from the HTTP request to construct another XQuery expression, which
+                                it then passes to <command>util:eval</command> for evaluation. The
+                                application would then post-process the returned results, and
+                                display them to the user. (For more information on how to write web
+                                applications using XQuery, go to our <ulink url="devguide.xml"
+                                    >Developer's Guide</ulink>.)</para>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
+
             </section>
 
             <section>
                 <title>XSL Transformations</title>
+                <para>eXist has a function for directly applying an XSL stylesheet to an XML
+                    fragment within the XQuery script. This can be very convenient, for example, if
+                    your application requirements are basic, and you do not want to install Cocoon
+                    to run the XSLT.</para>
+                <variablelist>
+                    <varlistentry>
+                        <term>transform:transform()</term>
+                        <listitem>
+                            <para>This XSL transformation function has the following signature:</para>
+                            <synopsis>transform:transform($input as node()?, $stylesheet as
+                                xs:string, $parameters as node()?) as node()?</synopsis>
+                            <para>
+                                <command>transform:transform</command> expects the node to be
+                                transformed in the first argument <option>$input</option>. If
+                                    <option>$input</option> is an empty sequence, the function
+                                returns immediately.</para>
+                            <para>The XSL stylesheet will be read from the location specified in
+                                    <option>$stylesheet</option>, which should be either an absolute
+                                URI or a relative path. If a relative path is specified, the
+                                function will first try to find a file matching the path. Failing
+                                that, <command>transform:transform</command> appends the relative
+                                path to the current base URI property from the XQuery context, and
+                                again attempts to find the file.</para>
+                            <para>The stylesheet will be compiled into a template using the standard
+                                Java APIs (<classname>javax.xml.transform</classname>). The template
+                                is shared between all instances of the function and will only be
+                                reloaded if modified since its last invocation.</para>
+                            <para>The <option>$options</option> parameter can be used to pass
+                                stylesheet parameters to the XSL processor as an XML fragment - for
+                                example:</para>
 
-                <para>eXist has a function to directly apply an XSL stylesheet to an XML fragment
-                    within the XQuery script. This can be very convenient, for example, if your
-                    requirements are simple and you don't want to install Cocoon with your web
-                    application. The function signature is as follows:</para>
-
-                <synopsis>transform:transform($input as node()?, $stylesheet as
-                    xs:string, $parameters as node()?) as node()?</synopsis>
-
-                <para>
-                    <command>transform:transform</command> expects the node to be transformed in the
-                    first argument $input. If $input is the empty sequence, the function returns
-                    immediately.</para>
-
-                <para>The XSL stylesheet will be read from the location specified in $stylesheet. It
-                    should either be an absolute URI or a relative path. If a relative path is
-                    specified, the function will first try to find a file matching the path. If this
-                    fails, <command>transform:transform</command> appends the path to the current
-                    base URI property from the XQuery context and retries.</para>
-
-                <para>The stylesheet will be compiled into a template using the standard Java APIs
-                    (javax.xml.transform). The template is shared between all instances of the
-                    function and will only be reloaded if modified since the last invocation.</para>
-
-                <para>The $options parameter can be used to pass stylesheet parameters to the XSL
-                    processor. Parameters are passed as an XML fragment:</para>
-
-                <synopsis><![CDATA[<parameters>
+                            <synopsis><![CDATA[<parameters>
     <param name="param1" value="value1"/>
     <param name="param2" value="value2"/>
 </parameters>]]></synopsis>
 
-                <para>This will set the stylesheet parameter <option>param1</option> to the string
-                    value <option>value1</option>. In the stylesheet, the parameter can then be
-                    referenced with</para>
+                            <para>This will set the stylesheet parameter <option>param1</option> to
+                                the string value <option>value1</option>, and in the XSL stylesheet,
+                                the parameter can then be referenced as follows:</para>
 
-                <synopsis><![CDATA[<xsl:param name="param1"/>]]></synopsis>
+                            <synopsis><![CDATA[<xsl:param name="param1"/>]]></synopsis>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
             </section>
 
             <section>
-                <title>HTTP Related Functions</title>
-
-                <para>The example above reads HTTP request parameters using the function
-                        <command>request:get-parameter</command>. Obviously, functions in the
-                    http://exist-db.org/xquery/request namespace are only usable if the query is
-                    executed through the XQueryGenerator or the XQueryServlet (please have a look at
-                    the <ulink url="devguide.xml">Developer's Guide</ulink> for more information).</para>
-
-                <para>
-                    <command>request:get-parameter</command> expects two arguments: the first
-                    argument denotes the name of the parameter, the second specifies a default
-                    value, which is returned if the parameter is not set. The function returns a
-                    sequence containing the values for the parameter.</para>
-
-                <para>
-                    <command>request:get-uri</command> returns the URI of the current request. You
-                    may call</para>
-
-                <synopsis>session:encode-url(request:get-uri())</synopsis>
-
-                <para>to encode the current session id into the URI.</para>
-
-                <para>There are also two functions to read and set session attributes. Any XQuery
-                    value or Java object value can be stored into a session attribute, for example,
-                    to cache query results. Please have a look at the provided <ulink
-                        url="examples.xml">examples</ulink>.</para>
-
-                <para>The function call <option>session:create()</option> will create a new HTTP
-                    session if none has been created before.</para>
+                <title>HTTP-Related Functions</title>
+                <para>eXist offers functions for handling HTTP request parameters and session
+                    variables that use the <uri>http://exist-db.org/xquery/request</uri> namespace.
+                    Functions in this namespace are only usable if the query is executed through the
+                    XQueryGenerator or the XQueryServlet (for more information consult eXist's
+                        <ulink url="devguide.xml">Developer's Guide</ulink> ).</para>
+                <variablelist>
+                    <varlistentry>
+                        <term>request:get-parameter(<emphasis>name</emphasis>, <emphasis>default
+                                value</emphasis>)</term>
+                        <listitem>
+                            <para>This HTTP function expects two arguments: the first denotes the
+                                name of the parameter, the second specifies a default value, which
+                                is returned if the parameter is not set. This function returns a
+                                sequence containing the values for the parameter. The above script
+                                (Adding/Subtracting Two Numbers) offers an example of how
+                                    <command>request:get-parameter</command> can be used to read
+                                HTTP request parameters.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>request:get-uri()</term>
+                        <listitem>
+                            <para>This function returns the URI of the current request. To encode
+                                this URI using the current session identifier, use the following
+                                function:</para>
+                            <synopsis>session:encode-url(request:get-uri())</synopsis>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>session:create()</term>
+                        <listitem>
+                            <para>This function creates a new HTTP session if none exists.</para>
+                            <para>Other session functions read and set session attributes, among
+                                other operations. For example, an XQuery or Java object value can be
+                                stored in a session attribute, to cache query results. For more
+                                example scripts, please look at our <ulink url="examples.xml"
+                                    >Examples</ulink> page, under the XQuery Examples
+                            section.</para>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
             </section>
         </section>
         <section>
             <title>Java Binding</title>
             <para>eXist supports calls to arbitrary Java methods from within XQuery. The binding
                 mechanism follows the short-cut technique introduced by <ulink
-                    url="http://saxon.sf.net">Saxon</ulink>. The class where the external function
-                will be found is identified by the namespace URI of the function call. The namespace
-                URI should start with the prefix <option>java:</option> followed by the fully
-                qualified class name of the class. For example, the following code snippet calls the
-                static method <methodname>sqrt</methodname> of class
-                <classname>java.lang.Math</classname>:</para>
+                    url="http://saxon.sf.net"> Saxon</ulink> (a collection of tools for processing
+                XML documents). The class where the external function will be found is identified by
+                the namespace URI of the function call. The namespace URI should start with the
+                prefix <option>java:</option> followed by the fully qualified class name of the
+                class. For example, the following code snippet calls the static method
+                    <methodname>sqrt</methodname> (square-root function) of class
+                    <classname>java.lang.Math</classname>:</para>
             <example>
                 <title>Calling a Static Method</title>
                 <programlisting><![CDATA[
@@ -664,9 +747,10 @@ declare namespace math="java:java.lang.Math";
 math:sqrt(2)
 				]]></programlisting>
             </example>
-            <para>If the function name contains a hyphen, the letter following the hyphen is
-                converted to upper-case and the hyphen is removed (camel case), i.e.
-                    <code>to-string()</code> will call the Java method <code>toString()</code>.</para>
+            <para>Note that if the function name contains a hyphen, the letter following the hyphen
+                is converted to upper-case and the hyphen is removed (i.e. it applies the CamelCase
+                naming convention), and so, <code>to-string()</code> will call the Java method
+                    <code>toString()</code>.</para>
             <para>If more than one method in the class matches the given name and parameter count,
                 eXist tries to select the method that best fits the passed parameter types at
                 runtime. The result of the method call can be assigned to an XQuery variable. If
@@ -701,64 +785,63 @@ declare namespace file="java:java.io.File";
 </files>       			
         		]]></programlisting>
             </example>
-
+            
             <note>
                 <para>For security reasons, the Java binding is disabled by default. To enable it,
                     the attribute <option>enable-java-binding</option> in the central configuration
                     file has to be set to <option>yes</option>: </para>
-
+                
                 <synopsis>&lt;xquery enable-java-binding="yes"&gt;</synopsis>
-
+                
                 <para>Enabling the Java binding bears some risks: if you allow users to directly
                     pass XQuery code to the database, e.g. through the sandbox application, they
                     might use Java methods to inspect your system or execute potentially destructive
                     code on the server.</para>
-
+                
                 <para>The <ulink url="xacml.xml">XACML</ulink> package therefore allows for
                     fine-grained control of the Java binding feature, e.g. restricting access to
                     certain Java classes. Please make sure you have properly set up XACML if you are
                     planning to access Java code via XQuery on a production system. </para>
             </note>
+            
         </section>
 
-        <section id="javamods">
-            <title>Writing your own Modules</title>
+        <section>
+            <title>Creating XQuery Modules</title>
+            <para>eXist supports XQuery-based library modules. These modules are simply collections
+                of function definitions and global variable declarations, of which eXist knows two
+                types: <emphasis>External Modules</emphasis>, which are themselves written in
+                XQuery, and <emphasis>Internal Modules</emphasis>, which are implemented in Java.
+                The standard XPath/XQuery functions and all extension functions described in the
+                above sections are defined through internal modules.</para>
 
-            <para>eXist supports XQuery's notion of library modules, i.e. you can declare an XQuery
-                file as a module and later import it using the <command>import module</command>
-                directive.</para>
+            <para>You can declare an XQuery file as a module and import it using the <command>import
+                    module</command> directive. The XQuery engine imports each module only once
+                during compilation. The compiled module is then made available through the static
+                XQuery context.</para>
 
-            <para>The XQuery engine imports each module only once during compilation. The compiled
-                module is then made available through the static XQuery context.</para>
+            <para>Users can also provide additional Java modules. With the current release, it is
+                relatively simple to add these modules, although the current API may change in the
+                future. To register a module, eXist requires a namespace URI by which the module is
+                identified, and the list of functions it supplies. For this, you need only to pass a
+                driver class to the XQuery engine, and this class should implement the interface
+                    <classname>org.exist.xpath.InternalModule</classname>.</para>
 
-            <para>A library module is basically just a collection of function definitions and global
-                variable declarations. eXist knows two types of modules: external modules which are
-                themselves written in XQuery, and internal modules implemented in Java. The standard
-                XPath/XQuery functions and all extension functions described above are defined
-                through internal modules.</para>
-
-            <para>Users may provide additional Java modules. This is not too difficult, though the
-                API may still change in the future. To register a module, eXist needs to know the
-                namespace URI by which the module is identified and the list of functions it
-                supplies. Basically, this works by passing a driver class to the XQuery engine. The
-                driver class should implement interface
-                <classname>org.exist.xpath.InternalModule</classname>.</para>
-
-            <para>Class <classname>org.exist.xpath.AbstractInternalModule</classname> already
-                provides an implementation skeleton. The class constructor expects an array of
-                function definitions for all functions that should be registered. A function
+            <para>Moreover, the class <classname>org.exist.xpath.AbstractInternalModule</classname>
+                already provides an implementation skeleton. The class constructor expects an array
+                of function definitions for all functions that should be registered. A function
                 definition (class <classname>FunctionDef</classname>) has two properties: the static
                 signature of the function (as an instance of
-                <classname>FunctionSignature</classname>) and the Java Class that implements the
+                <classname>FunctionSignature</classname>), and the Java Class that implements the
                 function.</para>
 
             <para>A function is a class extending <classname>org.exist.xpath.Function</classname> or
                     <classname>org.exist.xpath.BasicFunction</classname>. Functions without special
-                requirements (e.g. overloading) should subclass BasicFunction. As an example, we
-                define a simple function below:</para>
+                requirements (e.g. overloading) should subclass BasicFunction. To illustrate, the
+                following is a simple function definition:</para>
 
             <example>
-                <title>A Basic Function</title>
+                <title>A Basic Java Function</title>
                 <programlisting>
 <![CDATA[
 public class EchoFunction extends BasicFunction {
@@ -793,37 +876,35 @@ throws XPathException {
 }]]></programlisting>
             </example>
 
-            <para>First, every function class has to provide a function signature. The function
-                signature defines the QName by which the function is identified, a documentation
-                string, the sequence types of all arguments and the sequence type of the returned
-                value. In the example above, we accept a single argument of type xs:string and a
-                cardinality of ZERO_OR_MORE. In other words, we accept any sequence of strings
-                containing zero or more items.</para>
-
+            <para>In looking at this sample, first note that every function class has to provide a
+                function <emphasis>signature</emphasis>. The function signature defines the
+                    <emphasis>QName</emphasis> by which the function is identified, a documentation
+                string, the sequence types of all arguments, and the sequence type of the returned
+                value. In the example above, we accept a single argument of type
+                <option>xs:string</option> and a cardinality of <option>ZERO_OR_MORE</option>. In
+                other words, we accept any sequence of strings containing zero or more items.</para>
             <para>Next, the subclass overwrites the <command>eval</command> method, which has two
                 arguments: the first contains the values of all arguments passed to the function,
-                the second passes the current context sequence (which might be null).</para>
-
-            <para>The argument values in the array <option>args</option> have already been checked
-                to match the sequence types defined in the function signature. We thus don't have to
-                recheck the length of the array: if more or less than one argument were passed to
+                the second passes the current context sequence (which might be null). Note that the
+                argument values in the array <option>args</option> have already been checked to
+                match the sequence types defined in the function signature. We therefore do not have
+                to recheck the length of the array: if more or less than one argument were passed to
                 the function, an exception would have been thrown before eval gets called.</para>
-
-            <para>In XQuery all values are passed as sequences. A sequence consists of one or more
-                items. Every item is either an atomic value or a node. Furthermore, a single item is
-                also a sequence.</para>
-
-            <para>The function signature defines that any sequence containing zero or more strings
-                is acceptable for our method. We thus have to check if the empty sequence has been
-                passed. In this case, the function call returns immediately. Otherwise, we iterate
-                through each item in the sequence, prepend "echo: " to its string value and add it
-                to the result sequence.</para>
-
-            <para>Next, we want to add the function to a new module. We thus have to provide a
-                driver class:</para>
+            <para>In XQuery, all values are passed as sequences. A sequence consists of one or more
+                items, and every item is either an atomic value or a node. Furthermore, a single
+                item is also a sequence. The function signature specifies that any sequence
+                containing zero or more strings is acceptable for our method. We therefore have to
+                check if the empty sequence has been passed. In this case, the function call returns
+                immediately. Otherwise, we iterate through each item in the sequence, prepend
+                    <option>echo:</option>" to its string value, and add it to the result sequence.</para>
+            <para>In the next step, we want to add the function to a new module, and therefore
+                provide a driver class. The driver class defines a namespace URI and a default
+                prefix for the module. Functions are registered by passing an array of
+                    <option>FunctionDef</option> to the constructor. The following is an example
+                driver class definition:</para>
 
             <example>
-                <title>Driver Class</title>
+                <title>Creating a Driver Class</title>
                 <programlisting><![CDATA[
 public class ExampleModule extends AbstractInternalModule {
 
@@ -851,13 +932,10 @@ public String getDefaultPrefix() {
 }]]></programlisting>
             </example>
 
-            <para>The driver class defines a namespace URI and a default prefix for the module.
-                Functions are registered by passing an array of FunctionDef to the constructor.</para>
-
-            <para>Finally, we are now able to use the new module in an XQuery script:</para>
+            <para>Finally, we are able to use this newly created module in an XQuery script:</para>
 
             <example>
-                <title>Importing the Module</title>
+                <title>Importing a Module</title>
                 <programlisting>
 <![CDATA[xquery version "1.0";
 
@@ -868,49 +946,51 @@ example:echo(("Hello", "World!"))
 ]]></programlisting>
             </example>
 
-            <para>The query engine recognizes the "java:" prefix in the location URI and treats the
-                remaining part of the string as a fully qualified class name leading to the driver
-                class of the module.</para>
+            <para>The query engine recognizes the <option>java:</option> prefix in the location URI,
+                and treats the remaining part (in this case,
+                    <option>org.exist.examples.xquery.ExampleModule</option>) as a fully qualified
+                class name leading to the driver class of the module.</para>
         </section>
 
         <section>
-            <title>Collations</title>
+            <title>Using Collations</title>
 
-            <para>Collations are used to compare strings in a locale-sensitive fashion. XQuery
-                allows to specify collations at several places by means of a collation URI, for
-                example, in the <command>order by</command> clause of a FLWOR expression and all
-                string-related functions. However, the concrete form of the URI is implementation
-                defined.</para>
-
-            <para>eXist recognizes the following URIs:</para>
+            <para>Collations are used to compare strings in a <emphasis>locale-sensitive</emphasis>
+                fashion. XQuery allows one to specify collations at several places by means of a
+                collation URI. For example, a collation can be specified in the <command>order
+                by</command> clause of a XQuery FLWOR expression, as well as any string-related
+                functions. However, the concrete form of the URI is defined by the eXist
+                implementation. Specifically, eXist recognizes the following URIs:</para>
 
             <orderedlist>
                 <listitem>
                     <synopsis>http://www.w3.org/2004/07/xpath-functions/collation/codepoint</synopsis>
-                    <para>Selects the unicode codepoint collation. This is the default if no
-                        collation is specified. Basically, it means that only the standard Java
+                    <para>This URI selects the unicode codepoint collation. This is the default if
+                        no collation is specified. Basically, it means that only the standard Java
                         implementations of the comparison and string search functions are
                     used.</para>
                 </listitem>
                 <listitem>
                     <synopsis>http://exist-db.org/collation?lang=xxx&amp;strength=xxx&amp;decomposition=xxx</synopsis>
-                    <para>or just</para>
+                    <para>or, in a simpler form:</para>
                     <synopsis>?lang=xxx&amp;strength=xxx&amp;decomposition=xxx</synopsis>
-                    <para><option>lang</option> selects a locale. The parameter should have the same
-                        form as in xml:lang, for example: "de" or "de-DE" to select a german locale.</para>
-                    <para><option>strength</option> (optional): value should be one of "primary",
-                        "secondary", "tertiary" or "identical".</para>
-                    <para>decomposition (optional): one of "none", "full" or "standard".</para>
+                    <para>The <option>lang</option> parameter selects a locale, and should have the
+                        same form as in <option>xml:lang</option>. For example, we may specify "de"
+                        or "de-DE" to select a german locale.</para>
+                    <para>The <option>strength</option> parameter (optional) value should be one of
+                        "primary", "secondary", "tertiary" or "identical".</para>
+                    <para>The decomposition parameter (optional) has the value of "none", "full" or
+                        "standard".</para>
                 </listitem>
             </orderedlist>
 
-            <para>An example for selecting a german locale for sorting:</para>
+            <para>The following example selects a german locale for sorting:</para>
 
             <synopsis>for $w in ("das", "daß", "Buch", "Bücher", "Bauer", "Bäuerin", "Jagen", "Jäger") 
 				order by $w collation "?lang=de-DE" 
 				return $w</synopsis>
 
-            <para>returns:</para>
+            <para>And returns the following:</para>
 
             <synopsis>Bauer, Bäuerin, Buch, Bücher, das, daß, Jagen, Jäger</synopsis>
 
@@ -919,82 +999,124 @@ example:echo(("Hello", "World!"))
             <synopsis>declare default collation "?lang=de-DE"; 
 				"Bäuerin" &lt; "Bier"</synopsis>
 
-            <para>returns "true". If you use the default codepoint collation instead, the comparison
-                would evaluate to "false".</para>
+            <para>Which returns <option>true</option>. Note that if you use the default codepoint
+                collation instead, the comparison would evaluate to <option>false</option>.</para>
         </section>
 
         <section>
             <title>Serialization Options</title>
-
             <para>The serialization of query results into a binary stream is influenced by a number
-                of serialization parameters. They can be set within the query itself, though the
+                of parameters. These parameters can be set within the query itself, however the
                 interpretation of the parameters depends on the context in which the query is
-                called. Most output parameters do only make sense if the query is executed via the
-                XQueryGenerator, the XQueryServlet or the REST server.</para>
-            <para>Serialization parameters can either be set via pragmas (see next section below) or
-                a "declare option" statement in the query prolog. In "declare option", parameters
-                can be specified as follows:</para>
+                called. Most output parameters are applicable only if the query is executed using
+                the XQueryGenerator or XQueryServlet servlets, or the REST server.</para>
+            <para>Serialization parameters can either be set via <emphasis>pragmas</emphasis> (see
+                the following section) or a <option>declare option</option> statement in the query
+                prolog. In <option>declare option</option>, the serialization parameters can be
+                specified as follows:</para>
             <synopsis>declare option exist:serialize "method=xhtml media-type=application/xhtml+html";</synopsis>
-            <para>The option QName must be exist:serialize, where the "exist" prefix is bound to the
-                namespace URI: "http://exist.sourceforge.net/NS/exist". The namespace is declared by
-                default, you don't need to declare it explicitely.</para>
-            <para>Single options are specified within the string literal, seperated by a whitespace.</para>
-            <para>The options are the same that can be passed via XPathQueryService.setProperty()
-                and XQueryService.setProperty() in Java. They are defined in
-                javax.xml.transform.OutputKeys and <ulink
-                    url="api/org/exist/storage/serializers/EXistOutputKeys.html"
-                >EXistOutputKeys</ulink>. eXist-specific options include:</para>
+            <para>Here, single options are specified within the string literal, separated by a
+                whitespace. Note also that the option QName must be
+                <option>exist:serialize</option>, where the <option>exist</option> prefix is bound
+                to the namespace <uri>http://exist.sourceforge.net/NS/exist</uri>, which is declared
+                by default and need not be specified explicitly.</para>
+            <para/>
+            <para>Note that these same options can be passed using the
+                    <methodname>XPathQueryService.setProperty()</methodname> and
+                    <methodname>XQueryService.setProperty()</methodname> methods in Java. These
+                methods are defined in <classname>javax.xml.transform.OutputKeys</classname> and
+                    <ulink url="api/org/exist/storage/serializers/EXistOutputKeys.html"
+                    >EXistOutputKeys</ulink>. The latter eXist-specific options include the
+                following:</para>
 
             <itemizedlist>
-                <listitem>expand-xincludes=yes|no</listitem>
-                <listitem>highlight-matches=elements|attributes|both|none</listitem>
-                <listitem>process-xsl-pi=yes|no</listitem>
+                <listitem>
+                    <para>
+                        <option>expand-xincludes=yes|no</option>
+                    </para>
+                </listitem>
+                <listitem>
+                    <para>
+                        <option>highlight-matches=elements|attributes|both|none</option>
+                    </para>
+                </listitem>
+                <listitem>
+                    <para>
+                        <option>process-xsl-pi=yes|no</option>
+                    </para>
+                </listitem>
             </itemizedlist>
 
-            <para>General options are:</para>
+            <para>The general options include the following:</para>
             <itemizedlist>
-                <listitem>method=xml|xhtml|text</listitem>
-                <listitem>media-type</listitem>
-                <listitem>encoding</listitem>
-                <listitem>doctype-public</listitem>
-                <listitem>doctype-system</listitem>
-                <listitem>indent=yes|no</listitem>
-                <listitem>omit-xml-declaration=yes|no</listitem>
+                <listitem>
+                    <para>
+                        <option>method=xml|xhtml|text</option>
+                    </para>
+                </listitem>
+                <listitem>
+                    <para>
+                        <option>media-type</option>
+                    </para>
+                </listitem>
+                <listitem>
+                    <para>
+                        <option>encoding</option>
+                    </para>
+                </listitem>
+                <listitem>
+                    <para>
+                        <option>doctype-public</option>
+                    </para>
+                </listitem>
+                <listitem>
+                    <para>
+                        <option>doctype-system</option>
+                    </para>
+                </listitem>
+                <listitem>
+                    <para><option>indent</option>=yes|no</para>
+                </listitem>
+                <listitem>
+                    <para><option>omit-xml-declaration</option>=yes|no</para>
+                </listitem>
             </itemizedlist>
 
-            <para>For example, to disable XInclude expansion and indent the output you can use the
-                pragma:</para>
+            <para>For example, to disable XInclude expansion, and indent the output, you can use the
+                following pragma:</para>
 
             <synopsis>declare option exist:serialize "expand-xincludes=no";</synopsis>
 
-            <para>For the output method parameter, eXist currently recognizes three methods: xml,
-                xhtml and text. Contrary to the xml method, the xhtml setting takes care to use the
-                short form only for elements that are declared empty in the xhtml dtd. For example,
-                the <option>br</option> tag is always returned as &lt;br/&gt;. <br/> The
-                text method only returns the content of elements:
+            <para>For the output method parameter, eXist currently recognizes three methods:
+                    <option>xml</option>, <option>xhtml</option> and <option>text</option>. Note
+                that unlike the xml method, the xhtml setting uses only the short form for elements
+                that are declared empty in the xhtml DTD. For example, the <option>br</option> tag
+                is always returned as &lt;br/&gt;. On the other hand, the text method only
+                returns the contents of elements - for instance,
                 &lt;A&gt;Content&lt;/A&gt; is returned as <option>Content</option>.
-                Attributes, processing instrunctions, comments etcetera are all ignored.</para>
+                However, attribute values, processing instructions, comments, etc. are all
+            ignored.</para>
         </section>
         <section>
             <title>Other Options</title>
-
+            
             <para>To avoid that the server is blocked by a badly formulated query, eXist
-            watches all query threads. A blocking query can be killed if it takes longer
-            than a specified amount of time or consumes too many memory resources on the
-            server. There are two options to control this behaviour:</para>
-
+                watches all query threads. A blocking query can be killed if it takes longer
+                than a specified amount of time or consumes too many memory resources on the
+                server. There are two options to control this behaviour:</para>
+            
             <synopsis>declare option exist:timeout "time-in-ms";</synopsis>
-
-            <para>Specifies the maximum amount of time (in ms) a query can take before it is
-                cancelled by the XQuery engine.</para>
-
+            
+            <para>Specifies the maximum amount of query processing time (in
+                ms) before it is cancelled by the XQuery engine.</para>
+            
             <synopsis>declare option exist:output-size-limit "size-hint";</synopsis>
-
+            
             <para>Defines a limit for the max. size of a document fragment created within an XQuery.
                 The limit is just an estimation, specified in terms of the accumulated number of
                 nodes contained in all generated fragments. This can be used to prevent users from
                 consuming too much memory if they are allowed to pass in their own XQueries.</para>
-
+            
         </section>
     </chapter>
 </book>
