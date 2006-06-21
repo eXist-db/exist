@@ -15,9 +15,13 @@
             <para>eXist implements core XQuery syntax (with the exception of XML Schema-related
                 features) as specified in W3C's recommendations outlined in the <ulink
                     url="http://www.w3.org/TR/xquery/">June 2006 candidate recommendation</ulink>.
-                Function names in the standard function library also follow recommendations in the
+                Functions in the standard function library should also follow recommendations in the
                     <ulink url="http://www.w3.org/TR/xpath-functions/">June 2006</ulink> version of
-                the "XQuery 1.0 and XPath 2.0 Functions and Operators" recommendation.</para>
+                the "XQuery 1.0 and XPath 2.0 Functions and Operators" recommendation. However, the
+                function library is not yet completely aligned with the latest version of the spec.
+                Some function signatures may differ, other functions could be missing.
+                Please check against the local function library <ulink url="xquery/functions.xq"
+                    >documentation</ulink>.</para>
 
             <para>The XQuery implementation is tested against the official XQuery Test Suite (XQTS).
                 This suite contains more than 10,000 tests. As of June 2006, eXist passes &gt;
@@ -71,15 +75,15 @@
                 interface. </para>
 
         </section>
-        
+
         <section>
             <title>The Module System</title>
-            
+
             <para>Using eXist, you can write entire web applications in XQuery. This may result in
                 rather complex XQuery scripts, consisting of several thousand lines of code. Being
-                able to package related functions into modules is thus an important feature. eXist allows
-                modules to be imported from a variety of sources:</para>
-            
+                able to package related functions into modules is thus an important feature. eXist
+                allows modules to be imported from a variety of sources:</para>
+
             <itemizedlist>
                 <listitem>
                     <para>an URI</para>
@@ -94,82 +98,82 @@
                     <para>a Java class, if the module is itself implemented in Java</para>
                 </listitem>
             </itemizedlist>
-            
+
             <para>For example, a typical import statement in an XQuery will look like this:</para>
-            
+
             <synopsis>import module namespace status="http://exist-db.org/xquery/admin-interface/status" 
                 at "http://exist-db.org/modules/test.xqm";</synopsis>
-            
+
             <para>Provided that the module namespace does not point to one of the preloaded standard
-                modules (see below), the query engine will try to locate the module source by looking at
-                the URI given after the <command>at</command> keyword. In the example above, the module was
-                specified using a full URI and the query engine will attempt to load the module source from
-                the given URI. However, the module could also be stored in a database collection:</para>  
-            
+                modules (see below), the query engine will try to locate the module source by
+                looking at the URI given after the <command>at</command> keyword. In the example
+                above, the module was specified using a full URI and the query engine will attempt
+                to load the module source from the given URI. However, the module could also be
+                stored in a database collection:</para>
+
             <synopsis>import module namespace status="http://exist-db.org/xquery/admin-interface/status" 
                 at "xmldb:exist:///db/modules/test.xqm";</synopsis>
-            
+
             <para>The query engine recognizes that the module should be stored in the local database
-                instance and tries to directly compile it from there.</para> 
-            
-            <para>If the XQuery module is part of a Java application, it might also be an option,
-                to pack the module into a Java archive (.jar file) along with the Java classes and use the
-                following import to load the module from a Java package:</para>
-            
+                instance and tries to directly compile it from there.</para>
+
+            <para>If the XQuery module is part of a Java application, it might also be an option, to
+                pack the module into a Java archive (.jar file) along with the Java classes and use
+                the following import to load the module from a Java package:</para>
+
             <synopsis>import module namespace status="http://exist-db.org/xquery/admin-interface/status" 
                 at "resource:org/exist/xquery/lib/test.xqm";</synopsis>
-            
-            <para>Finally, XQuery modules can also be implemented in Java 
-                (see <ulink url="#javamods">below</ulink>), in which case you can import them by specifying the
-                class path of the Module class:</para>
-            
+
+            <para>Finally, XQuery modules can also be implemented in Java (see <ulink
+                    url="#javamods">below</ulink>), in which case you can import them by specifying
+                the class path of the Module class:</para>
+
             <synopsis>import module namespace xdiff="http://exist-db.org/xquery/xmldiff"
                 at "java:org.exist.xquery.modules.xmldiff.XmlDiffModule";</synopsis>
-            
+
             <section>
                 <title>Using Relative URIs</title>
-                
+
                 <para>If the location specified in an import statement is a relative URI, the query
-                    engine will try to load the module relativ to the current module load path. The module
-                    load path is determined as follows:</para>
-                
+                    engine will try to load the module relativ to the current module load path. The
+                    module load path is determined as follows:</para>
+
                 <orderedlist>
                     <listitem>
-                        <para>if the main XQuery was retrieved from the file system, the module load path
-                            points to that directory. This applies to queries executed through the
-                            XQueryServlet, XQueryGenerator or the Java admin client.</para>
+                        <para>if the main XQuery was retrieved from the file system, the module load
+                            path points to that directory. This applies to queries executed through
+                            the XQueryServlet, XQueryGenerator or the Java admin client.</para>
                     </listitem>
                     <listitem>
-                        <para>if the main XQuery was loaded from a database collection, the module load path
-                            is the URI of that collection.</para>
-                        
+                        <para>if the main XQuery was loaded from a database collection, the module
+                            load path is the URI of that collection.</para>
+
                         <para>For example, if you access an XQuery via the REST server:</para>
-                        
+
                         <synopsis>http://localhost:8080/exist/servlet/db/modules/test.xq</synopsis>
-                        
+
                         <para>All relative module paths will be resolved relative to the
-                            <filename>/db/modules</filename> collection.</para>
+                                <filename>/db/modules</filename> collection.</para>
                     </listitem>
                 </orderedlist>
             </section>
-            
+
             <section>
                 <title>Builtin Modules</title>
-                
-                <para>eXist comes with a set of utility modules, which are all implemented
-                    in Java. You can also write your own modules as described
-                    <ulink url="#javamods">below</ulink>. Some of these utility modules are
-                    frequently used in queries, so they are automatically imported into every query 
-                    by default.</para>
-                
-                <para>The query engine allows you to configure which modules will be
-                    auto-loaded. The <sgmltag>builtin-modules</sgmltag> element in
-                    <filename>conf.xml</filename> lists the namespaces and implementing
-                    classes of all modules to be preloaded into queries:</para>
-                
+
+                <para>eXist comes with a set of utility modules, which are all implemented in Java.
+                    You can also write your own modules as described <ulink url="#javamods"
+                    >below</ulink>. Some of these utility modules are frequently used in queries, so
+                    they are automatically imported into every query by default.</para>
+
+                <para>The query engine allows you to configure which modules will be auto-loaded.
+                    The <sgmltag>builtin-modules</sgmltag> element in <filename>conf.xml</filename>
+                    lists the namespaces and implementing classes of all modules to be preloaded
+                    into queries:</para>
+
                 <example>
                     <title>Auto-loaded Modules</title>
-                    
+
                     <programlisting><![CDATA[<xquery enable-java-binding="no">
     <builtin-modules>
         <module uri="http://exist-db.org/xquery/util"
@@ -178,29 +182,28 @@
             class="org.exist.xquery.functions.transform.TransformModule"/>]]>
                     </programlisting>
                 </example>
-                
-                <para>You never need to specify a location when importing a preloaded
-                    module. The namespace of the module is already known and eXist knows
-                    how to load it. Also, auto-loaded modules don't need to be explicitely
-                    imported into the main XQuery, though you still need to import them if
-                    you want to use them from within another XQuery module.
-                </para>
+
+                <para>You never need to specify a location when importing a preloaded module. The
+                    namespace of the module is already known and eXist knows how to load it. Also,
+                    auto-loaded modules don't need to be explicitely imported into the main XQuery,
+                    though you still need to import them if you want to use them from within another
+                    XQuery module. </para>
             </section>
         </section>
-        
+
         <section>
             <title>XQuery Caching</title>
-            
-            <para>XQuery modules executed via the REST interface, the XQueryServlet
-                or XQueryGenerator are automatically cached: the compiled expression will be added
-                to an internal pool of prepared queries. The next time a query or module is loaded
-                from the same location, it will not be compiled again. Instead, the already compiled
-                code is reused. The code will only be recompiled if eXist decides that the source was
+
+            <para>XQuery modules executed via the REST interface, the XQueryServlet or
+                XQueryGenerator are automatically cached: the compiled expression will be added to
+                an internal pool of prepared queries. The next time a query or module is loaded from
+                the same location, it will not be compiled again. Instead, the already compiled code
+                is reused. The code will only be recompiled if eXist decides that the source was
                 modified or it wasn't used for a longer period of time.</para>
-            
+
             <para>Modules are cached along with the main query that imported them.</para>
         </section>
-        
+
         <section id="ext">
             <title>eXist Extension Functions</title>
 
@@ -222,36 +225,36 @@
                 <para>Without an URI scheme, eXist interprets the arguments to
                     <command>collection</command> and <command>doc</command> as absolute or relative
                     paths, leading to some collection or document within the database. For example:</para>
-                
+
                 <synopsis>doc("/db/collection1/collection2/resource.xml)</synopsis>
-                
+
                 <para>refers to a resource stored in
                     <filename>/db/collection1/collection2</filename>.</para>
-                
+
                 <synopsis>doc("resource.xml")</synopsis>
-                
+
                 <para>references a resource relative to the base URI property defined in the static
                     XQuery context. The base URI contains an XML:DB URI pointing to the base
                     collection for the current query context, e.g.
                     <filename>xmldb:exist:///db</filename>.</para>
-                
+
                 <para>The base collection depends on how the query context was initialized. If you
                     call a query via the XML:DB API, the base collection is the collection from
                     which the query service was obtained. All relative URLs will be resolved
                     relative to that collection. If a stored query is executed via REST, the base
                     collection is the collection in which the XQuery source resides. In most other
                     cases, the base collection will point to the database root /db. </para>
-                
+
                 <note>
                     <para>As it might not always be clear what the base collection is, we recommend
                         to use an explicit path to access a document. This makes it easier to use a
                         query via different interfaces.</para>
                 </note>
-                
+
                 <para>You can also pass a full URI to the <command>doc</command> function:</para>
-                
+
                 <synopsis>doc("http://localhost:8080/exist/servlet/db/test.xml")</synopsis>
-                
+
                 <para>in this case, the URI will be retrieved and the data stored into a temporary
                     document in the database.</para>
 
@@ -785,25 +788,25 @@ declare namespace file="java:java.io.File";
 </files>       			
         		]]></programlisting>
             </example>
-            
+
             <note>
                 <para>For security reasons, the Java binding is disabled by default. To enable it,
                     the attribute <option>enable-java-binding</option> in the central configuration
                     file has to be set to <option>yes</option>: </para>
-                
+
                 <synopsis>&lt;xquery enable-java-binding="yes"&gt;</synopsis>
-                
+
                 <para>Enabling the Java binding bears some risks: if you allow users to directly
                     pass XQuery code to the database, e.g. through the sandbox application, they
                     might use Java methods to inspect your system or execute potentially destructive
                     code on the server.</para>
-                
+
                 <para>The <ulink url="xacml.xml">XACML</ulink> package therefore allows for
                     fine-grained control of the Java binding feature, e.g. restricting access to
                     certain Java classes. Please make sure you have properly set up XACML if you are
                     planning to access Java code via XQuery on a production system. </para>
             </note>
-            
+
         </section>
 
         <section>
@@ -1099,24 +1102,24 @@ example:echo(("Hello", "World!"))
         </section>
         <section>
             <title>Other Options</title>
-            
-            <para>To avoid that the server is blocked by a badly formulated query, eXist
-                watches all query threads. A blocking query can be killed if it takes longer
-                than a specified amount of time or consumes too many memory resources on the
-                server. There are two options to control this behaviour:</para>
-            
+
+            <para>To avoid that the server is blocked by a badly formulated query, eXist watches all
+                query threads. A blocking query can be killed if it takes longer than a specified
+                amount of time or consumes too many memory resources on the server. There are two
+                options to control this behaviour:</para>
+
             <synopsis>declare option exist:timeout "time-in-ms";</synopsis>
-            
-            <para>Specifies the maximum amount of query processing time (in
-                ms) before it is cancelled by the XQuery engine.</para>
-            
+
+            <para>Specifies the maximum amount of query processing time (in ms) before it is
+                cancelled by the XQuery engine.</para>
+
             <synopsis>declare option exist:output-size-limit "size-hint";</synopsis>
-            
+
             <para>Defines a limit for the max. size of a document fragment created within an XQuery.
                 The limit is just an estimation, specified in terms of the accumulated number of
                 nodes contained in all generated fragments. This can be used to prevent users from
                 consuming too much memory if they are allowed to pass in their own XQueries.</para>
-            
+
         </section>
     </chapter>
 </book>
