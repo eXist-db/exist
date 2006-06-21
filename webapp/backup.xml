@@ -43,6 +43,13 @@
                 all your users, you can simply edit the file <filename>users.xml</filename> by
                 removing the <option>password</option> attribute, or set it to a default value and
                 restore the document.</para>
+            <note>
+                <para> When migrating to a new eXist version, take care to use a version of the
+                    client corresponding to your server version. Usually, the backup process is
+                    backwards compatible. However, using a newer client version to create the backup
+                    from a server running an older version may sometimes lead to unexpected
+                    problems.</para>
+            </note>
         </section>
         <section>
             <title>Backing Up the Database</title>
