@@ -125,7 +125,7 @@ public class StandaloneServer {
         
         Properties props = new Properties(DEFAULT_PROPERTIES);
         
-        List<String> servlets = configure(props);
+        List servlets = configure(props);
         
         CLArgsParser optParser = new CLArgsParser( args, OPTIONS );
         if(optParser.getErrorString() != null) {
@@ -183,7 +183,8 @@ public class StandaloneServer {
         System.out.println("\nServer launched ...");
         System.out.println("Installed services:");
         System.out.println("-----------------------------------------------");
-        for (String name : servlets) {
+        for (int i = 0 ; i < servlets.size() ; i++) {
+        	String name  = (String) servlets.get(i);
            if (props.getProperty(name+".enabled").equalsIgnoreCase("yes")) {
               System.out.println(name+":\t"+host+":" + httpPort+props.getProperty(name+".context"));
            }
@@ -223,7 +224,7 @@ public class StandaloneServer {
      * @throws IllegalArgumentException
      * @throws MultiException
      */
-    private void startHTTPServer(int httpPort, List<String> servlets, Properties props) 
+    private void startHTTPServer(int httpPort, List servlets, Properties props) 
     throws UnknownHostException, IllegalArgumentException, MultiException {
         httpServer = new HttpServer();
         SocketListener listener = new SocketListener();
@@ -249,7 +250,7 @@ public class StandaloneServer {
         ServletHandler servletHandler = new ServletHandler();
         
         // TODO: this should be read from a configuration file
-        Map<String,ServletBootstrap> bootstrappers = new HashMap<String,ServletBootstrap>();
+        Map bootstrappers = new HashMap();
         bootstrappers.put("rest", new ServletBootstrap() {
            public void bootstrap(Properties props,ServletHandler servletHandler) {
               String path = props.getProperty("rest.context", "/*");
@@ -286,8 +287,9 @@ public class StandaloneServer {
            }
         });
         
-        for (String name : servlets) {
-           ServletBootstrap bootstrapper = bootstrappers.get(name);
+        for (int i = 0 ; i < servlets.size() ; i++) {
+        	String name = (String) servlets.get(i); 
+           ServletBootstrap bootstrapper = (ServletBootstrap)bootstrappers.get(name);
            if (bootstrapper!=null) {
               bootstrapper.bootstrap(props,servletHandler);
            } else {
@@ -343,7 +345,7 @@ public class StandaloneServer {
 		BrokerPool.stopAll(false);
 	}
     
-    private List<String> configure(Properties properties) throws ParserConfigurationException, SAXException, IOException {
+    private List configure(Properties properties) throws ParserConfigurationException, SAXException, IOException {
         // try to read configuration from file. Guess the location if
         // necessary
         InputStream is = null;
@@ -372,7 +374,7 @@ public class StandaloneServer {
         Element root = doc.getDocumentElement();
         if (!root.getLocalName().equals("server")) {
             LOG.warn("Configuration should have a root element <server>");
-            return new ArrayList<String>();
+            return new ArrayList();
         }
         String port = root.getAttribute("port");
         if (port != null && port.length() > 0)
@@ -384,7 +386,7 @@ public class StandaloneServer {
         if (address != null && address .length() > 0)
             properties.setProperty("address ",address );
 
-        List<String> configurations = new ArrayList<String>();
+        List configurations = new ArrayList();
         NodeList cl = root.getChildNodes();
         for (int i = 0; i < cl.getLength(); i++) {
             Node node = cl.item(i);
