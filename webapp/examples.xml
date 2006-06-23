@@ -54,15 +54,6 @@
                     </tr>
                     <tr>
                         <td width="30%" valign="top">
-                            <link href="xquery/xquery.xq">Basic XQuery Interface</link>
-                        </td>
-                        <td width="70%">
-                            Enter an arbitrary XQuery expression and execute it on
-                            the server.
-                        </td>
-                    </tr>
-                    <tr>
-                        <td width="30%" valign="top">
                             <link href="xquery/table.xq">Simple HTML Example</link>
                         </td>
                         <td width="70%">
@@ -118,6 +109,17 @@
                         <th align="left" colspan="2">
                             XQueryServlet
                         </th>
+                    </tr>
+                    <tr>
+                        <td width="30%" valign="top">
+                            <link href="sandbox/sandbox.xql">XQuery Sandbox</link>
+                        </td>
+                        <td width="70%">
+                            A web interface to execute XQueries on the server. Uses AJAX technology to 
+                            validate your XQuery while you type. Requires Javascript to be enabled. Demonstrates
+                            more advanced techniques for writing web applications with XQuery, XML/HTML, CSS and 
+                            Javascript.
+                        </td>
                     </tr>
                     <tr>
                         <tr>
