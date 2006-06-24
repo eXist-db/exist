@@ -39,15 +39,11 @@ public final class NodeIterator implements Iterator {
 	private Object lockKey;
 	private boolean useNodePool = false;
 
-	public NodeIterator(Object lock, DOMFile db, StoredNode node, boolean poolable)
-		throws BTreeException, IOException {
+	public NodeIterator(Object lock, DOMFile db, StoredNode node, boolean poolable) {
 		this.db = db;
 		this.doc = (DocumentImpl)node.getOwnerDocument();
 		this.useNodePool = poolable;
-		if (-1 < node.getInternalAddress())
-			startAddress = node.getInternalAddress();
-		else
-			this.node = node;
+		this.node = node;
 		lockKey = (lock == null ? this : lock);
 	}
 
@@ -216,10 +212,15 @@ public final class NodeIterator implements Iterator {
 	private boolean gotoNextPosition() throws BTreeException, IOException {
 		//	position the iterator at the start of the first value
 		if (node != null) {
-			final long addr = db.findValue(lockKey, new NodeProxy(node));
-			if (addr == BTree.KEY_NOT_FOUND)
-				return false;
-			DOMFile.RecordPos rec = db.findRecord(addr);
+            DOMFile.RecordPos rec = null;
+            if (node.getInternalAddress() != Page.NO_PAGE)
+                rec = db.findRecord(node.getInternalAddress());
+            if (rec == null) {
+    			long addr = db.findValue(lockKey, new NodeProxy(node));
+    			if (addr == BTree.KEY_NOT_FOUND)
+    				return false;
+    			rec = db.findRecord(addr);
+            }
 			page = rec.page.getPageNum();
 			p = rec.page;
 			offset = rec.offset - 2;
