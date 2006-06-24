@@ -86,6 +86,27 @@ public class DocumentUpdateTest extends TestCase {
 	    		")";
 			result = execQuery(query);
 			assertEquals(result, "2");
+
+			System.out.println("-- TEST 5: 'update replace' statement --");
+			query = "let $doc := " + 
+				"<test> " +
+					"<link href=\"features\"/> " +
+					"(: it works with only 1 link :) " +
+					"<link href=\"features/test\"/> " +
+				"</test> " +
+				"let $links := $doc/link/@href " +
+				"return " + 
+				"for $link in $links " +  
+				"return ( " +
+					"update replace $link with \"123\", " +
+					"(: without the output on the next line, it works :) " +
+					"xs:string($link) " +
+				")";
+	    	XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
+	    	ResourceSet r = service.query(query);
+	    	assertEquals(r.getSize(), 2);	    	
+			assertEquals(r.getResource(0).getContent().toString(), "123");
+			assertEquals(r.getResource(1).getContent().toString(), "123");
 		} catch (XMLDBException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
