@@ -1125,8 +1125,7 @@ public class DOMFile extends BTree implements Lockable {
 					SanityCheck.TRACE("Node " + node.getDocument().getDocId() + ":" + node.getGID() + " not found.");
 					throw new BTreeException("node " + node.getGID() + " not found.");
 				}
-				NativeBroker.NodeRef parentRef = new NativeBroker.NodeRef(doc
-						.getDocId(), id);
+				NativeBroker.NodeRef parentRef = new NativeBroker.NodeRef(doc.getDocId(), id);
 				try {
 					parentPointer = findValue(parentRef);
 				} catch (BTreeException bte) {
@@ -1273,8 +1272,8 @@ public class DOMFile extends BTree implements Lockable {
 	public Value get(long p) {
 		RecordPos rec = findRecord(p);
 		if (rec == null) {
-			SanityCheck.TRACE("object at " + StorageAddress.toString(p)
-					+ " not found.");
+//			SanityCheck.TRACE("object at " + StorageAddress.toString(p)
+//					+ " not found.");
 			return null;
 		}
 		short l = ByteConversion.byteToShort(rec.page.data, rec.offset);
@@ -1524,7 +1523,7 @@ public class DOMFile extends BTree implements Lockable {
 			rec.page = null;
 		} else {
 			rec.page.cleanUp();
-			// LOG.debug(debugPageContents(rec.page));
+//			LOG.debug(debugPageContents(rec.page));
 			dataCache.add(rec.page);
 		}
 	}
@@ -1759,16 +1758,20 @@ public class DOMFile extends BTree implements Lockable {
 	public String getNodeValue(StoredNode node, boolean addWhitespace) {
 		try {
 			long address = node.getInternalAddress();
-			if (address == StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
+            RecordPos rec = null;
+            if (address != Page.NO_PAGE)
+                rec = findRecord(address);
+			if (rec == null) {
 				address = findValue(this, new NodeProxy(node));
-			if (address == BTree.KEY_NOT_FOUND)
-				return null;
-			final RecordPos rec = findRecord(address);
-			SanityCheck.THROW_ASSERT(rec != null,
-					"Node data could not be found! Page: "
-							+ StorageAddress.pageFromPointer(address)
-							+ "; tid: "
-							+ StorageAddress.tidFromPointer(address));
+    			if (address == BTree.KEY_NOT_FOUND)
+    				return null;
+                rec = findRecord(address);
+    			SanityCheck.THROW_ASSERT(rec != null,
+    					"Node data could not be found! Page: "
+    							+ StorageAddress.pageFromPointer(address)
+    							+ "; tid: "
+    							+ StorageAddress.tidFromPointer(address));
+            }
 			final ByteArrayOutputStream os = new ByteArrayOutputStream();
 			getNodeValue(os, rec, true, addWhitespace);
 			final byte[] data = os.toByteArray();
@@ -1885,20 +1888,20 @@ public class DOMFile extends BTree implements Lockable {
 							.TRACE("circular link to next page on " + pageNr);
 					return null;
 				}
-				SanityCheck.TRACE(owner.toString() + ": tid " + targetId
-						+ " not found on " + page.page.getPageInfo()
-						+ ". Loading " + pageNr + "; contents: "
-						+ debugPageContents(page));
+//				SanityCheck.TRACE(owner.toString() + ": tid " + targetId
+//						+ " not found on " + page.page.getPageInfo()
+//						+ ". Loading " + pageNr + "; contents: "
+//						+ debugPageContents(page));
 			} else if (rec.isLink) {
 				if (!skipLinks)
 					return rec;
 				long forwardLink = ByteConversion.byteToLong(page.data,
 						rec.offset);
-				// LOG.debug("following link on " + pageNr +
-				// " to page "
-				// + StorageAddress.pageFromPointer(forwardLink)
-				// + "; tid="
-				// + StorageAddress.tidFromPointer(forwardLink));
+//				 LOG.debug("following link on " + pageNr +
+//				 " to page "
+//				 + StorageAddress.pageFromPointer(forwardLink)
+//				 + "; tid="
+//				 + StorageAddress.tidFromPointer(forwardLink));
 				// load the link page
 				pageNr = StorageAddress.pageFromPointer(forwardLink);
 				targetId = StorageAddress.tidFromPointer(forwardLink);
