@@ -95,7 +95,9 @@ public class AtomServlet extends HttpServlet {
       }
    }
    
-   private Map<String,AtomModule> modules;
+   // What I want...
+   //private Map<String,AtomModule> modules;
+   private Map modules;
    
    private String formEncoding = null;
    private BrokerPool pool = null;
@@ -183,11 +185,14 @@ public class AtomServlet extends HttpServlet {
        }
 
 
-       modules = new HashMap<String,AtomModule>();
-       modules.put("edit",new AtomProtocol());
-       modules.get("edit").init(new ModuleContext(config,"edit"));
-       modules.put("content",new AtomFeeds());
-       modules.get("content").init(new ModuleContext(config,"edit"));
+       //modules = new HashMap<String,AtomModule>();
+       modules = new HashMap();
+       AtomProtocol protocol = new AtomProtocol();
+       modules.put("edit",protocol);
+       protocol.init(new ModuleContext(config,"edit"));
+       AtomFeeds feeds = new AtomFeeds();
+       modules.put("content",feeds);
+       feeds.init(new ModuleContext(config,"edit"));
        
        
        // XML lib checks....
@@ -238,7 +243,7 @@ public class AtomServlet extends HttpServlet {
          String moduleName = path.substring(1,firstSlash);
          path = path.substring(firstSlash);
 
-         AtomModule module = modules.get(moduleName);
+         AtomModule module = (AtomModule)modules.get(moduleName);
          if (module==null) {
             response.sendError(400,"Module "+moduleName+" not found.");
             return;
