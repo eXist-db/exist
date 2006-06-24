@@ -198,6 +198,10 @@ public class SortedNodeSet extends AbstractNodeSet {
 			return ((IteratorItem) pi.next()).proxy;
 		}
 
+        public NodeProxy peekNode() {
+            return null;
+        }
+        
 		/* (non-Javadoc)
 		 * @see org.exist.xquery.value.SequenceIterator#nextItem()
 		 */

@@ -410,6 +410,13 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
             return currentNode.getData();
         }
 
+        public NodeProxy peekNode() {
+            if(nodes.isEmpty())
+                return null;
+            Node currentNode = (Node) nodes.peek();
+            return currentNode.getData();
+        }
+        
         public void setPosition(NodeProxy proxy) {
             Node n = searchData(proxy);
             nodes.clear();

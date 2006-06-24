@@ -137,6 +137,10 @@ public final class EmptyNodeSet extends AbstractNodeSet {
 			return null;
 		}
         
+        public NodeProxy peekNode() {
+            return null;
+        }
+        
         public void setPosition(NodeProxy proxy) {
         }
         
