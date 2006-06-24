@@ -97,74 +97,79 @@ public class LetExpr extends BindingExpression {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "RESULT SEQUENCE", resultSequence);
         }
         
-        // Save the local variable stack
-        LocalVariable mark = context.markLocalVariables(false);
-        
-        // evaluate input sequence
-        Sequence in = inputSequence.eval(contextSequence, null);
-        clearContext(getExpressionId(), in);
-        
-        // Declare the iteration variable
-        LocalVariable var = new LocalVariable(QName.parse(context, varName, null));
-        var.setSequenceType(sequenceType);
-        context.declareVariableBinding(var);        
-        var.setValue(in);
-        var.setContextDocs(inputSequence.getContextDocSet());
-        var.checkType();
-        
-        if (whereExpr != null) {
-            Sequence filtered = applyWhereExpression(null);
-            // TODO: don't use returnsType here
-            if (filtered.isEmpty()) {
-                if (context.getProfiler().isEnabled())
-                    context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);  
-                return Sequence.EMPTY_SEQUENCE; 
-            } else if (filtered.getItemType() == Type.BOOLEAN &&
-                       !filtered.effectiveBooleanValue()) {
-                if (context.getProfiler().isEnabled())
-                    context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);                 
-                return Sequence.EMPTY_SEQUENCE;
-            }  
-        }        
-        
-        // Check if we can speed up the processing of the "order by" clause.
-        boolean fastOrderBy = checkOrderSpecs(in);
-
-        //  PreorderedValueSequence applies the order specs to all items
-        // in one single processing step
-        if(fastOrderBy) {
-            in = new PreorderedValueSequence(orderSpecs, in.toNodeSet(), getExpressionId());
-        }
-
-        // Otherwise, if there's an order by clause, wrap the result into
-        // an OrderedValueSequence. OrderedValueSequence will compute
-        // order expressions for every item when it is added to the result sequence.
-        if(resultSequence == null) {            
+        context.pushDocumentContext();
+        try {
+            // Save the local variable stack
+            LocalVariable mark = context.markLocalVariables(false);
+            
+            // evaluate input sequence
+            Sequence in = inputSequence.eval(contextSequence, null);
+            clearContext(getExpressionId(), in);
+            
+            // Declare the iteration variable
+            LocalVariable var = new LocalVariable(QName.parse(context, varName, null));
+            var.setSequenceType(sequenceType);
+            context.declareVariableBinding(var);        
+            var.setValue(in);
+            var.setContextDocs(inputSequence.getContextDocSet());
+            var.checkType();
+            
+            if (whereExpr != null) {
+                Sequence filtered = applyWhereExpression(null);
+                // TODO: don't use returnsType here
+                if (filtered.isEmpty()) {
+                    if (context.getProfiler().isEnabled())
+                        context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);  
+                    return Sequence.EMPTY_SEQUENCE; 
+                } else if (filtered.getItemType() == Type.BOOLEAN &&
+                           !filtered.effectiveBooleanValue()) {
+                    if (context.getProfiler().isEnabled())
+                        context.getProfiler().end(this, "", Sequence.EMPTY_SEQUENCE);                 
+                    return Sequence.EMPTY_SEQUENCE;
+                }  
+            }        
+            
+            // Check if we can speed up the processing of the "order by" clause.
+            boolean fastOrderBy = checkOrderSpecs(in);
+    
+            //  PreorderedValueSequence applies the order specs to all items
+            // in one single processing step
+            if(fastOrderBy) {
+                in = new PreorderedValueSequence(orderSpecs, in.toNodeSet(), getExpressionId());
+            }
+    
+            // Otherwise, if there's an order by clause, wrap the result into
+            // an OrderedValueSequence. OrderedValueSequence will compute
+            // order expressions for every item when it is added to the result sequence.
+            if(resultSequence == null) {            
+                if(orderSpecs != null && !fastOrderBy)
+                    resultSequence = new OrderedValueSequence(orderSpecs, in.getLength());
+                else
+                    resultSequence = new ValueSequence();
+            }
+    
+            if(returnExpr instanceof BindingExpression) {
+                ((BindingExpression)returnExpr).eval(null, null, resultSequence);
+            } else {
+                in = returnExpr.eval(null);
+                resultSequence.addAll(in);
+            }
+    
             if(orderSpecs != null && !fastOrderBy)
-                resultSequence = new OrderedValueSequence(orderSpecs, in.getLength());
-            else
-                resultSequence = new ValueSequence();
+                ((OrderedValueSequence)resultSequence).sort();
+    
+            clearContext(getExpressionId(), in);
+            
+            // Restore the local variable stack
+            context.popLocalVariables(mark);
+           
+            if (context.getProfiler().isEnabled())
+                context.getProfiler().end(this, "", resultSequence);
+            
+    		return resultSequence;
+        } finally {
+            context.popDocumentContext();
         }
-
-        if(returnExpr instanceof BindingExpression) {
-            ((BindingExpression)returnExpr).eval(null, null, resultSequence);
-        } else {
-            in = returnExpr.eval(null);
-            resultSequence.addAll(in);
-        }
-
-        if(orderSpecs != null && !fastOrderBy)
-            ((OrderedValueSequence)resultSequence).sort();
-
-        clearContext(getExpressionId(), in);
-        
-        // Restore the local variable stack
-        context.popLocalVariables(mark);
-       
-        if (context.getProfiler().isEnabled())
-            context.getProfiler().end(this, "", resultSequence);
-        
-		return resultSequence;
 	}
 
 	/* (non-Javadoc)
