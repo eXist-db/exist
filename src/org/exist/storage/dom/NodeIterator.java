@@ -39,7 +39,8 @@ public final class NodeIterator implements Iterator {
 	private Object lockKey;
 	private boolean useNodePool = false;
 
-	public NodeIterator(Object lock, DOMFile db, StoredNode node, boolean poolable) {
+	public NodeIterator(Object lock, DOMFile db, StoredNode node, boolean poolable) 
+			throws BTreeException, IOException {
 		this.db = db;
 		this.doc = (DocumentImpl)node.getOwnerDocument();
 		this.useNodePool = poolable;
