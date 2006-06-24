@@ -37,13 +37,23 @@
                 <itemizedlist>
                     <listitem>
                         <para>Schema-related Features: <command>validate</command>, <command>import
-                                schema</command>, <command>declare validation</command>.</para>
-                        <para>Note that since XML Schema is not supported, the value of a node is
-                            always treated as <option>xs:untypedAtomic</option>. One cannot
-                            therefore specify a data type in an element or attribute test.
-                            Consequently, the node test <command>element(test-node)</command> is
+                                schema</command>.</para>
+                        <para>eXist's XQuery processor does currently not support the schema import and
+                        schema validation features defined as optional in the XQuery specification.
+                            The database does not store type information along with the nodes. It therefore cannot
+                            know the typed value of a node and has to assume <option>xs:untypedAtomic</option>.
+                            This is the behaviour defined by the XQuery specification.</para>
+                        <para>Also, you currently can't specify a data type in an element or attribute test.
+                            The node test <command>element(test-node)</command> is
                             supported, but the test <command>element(test-node,
                             xs:integer)</command> will result in a syntax error.</para>
+                            
+                        <important>
+                            <para>To avoid misunderstandings: eXist does nevertheless support strong typing 
+                            whenever the expected type of an expression, a function argument or function return 
+                            value is explicitely specified or can be known otherwise. Don't expect eXist to be lax 
+                            about type checks!</para>
+                        </important>
                     </listitem>
                     <listitem>
                         <para>Atomic Data Types: <command>xs:gYear</command>,
