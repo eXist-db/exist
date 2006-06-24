@@ -26,6 +26,21 @@
             XUpdate instructions to a corresponding XQuery expression. Until the
             W3C working group starts its work on an official update 
             specification, the basic syntax follows the proposal by Patrick Lehti.</para>
+        <important>
+            <para>The XQuery update extension has been designed to simplify updates on 
+                <emphasis>persistent</emphasis> documents stored in the database. However, it is 
+                not suitable for updating temporary document fragments constructed within the XQuery, 
+                i.e. you can't use it to modify the results returned by a query. For example, the following
+                query has no visible effect because it operates on an in-memory fragment:
+            </para>
+            
+            <synopsis><![CDATA[let $doc := <root><a/></root>
+return (update insert <b/> into $doc/a, $doc)]]></synopsis>
+            
+            <para>The query just ignores the update and returns the constructed root element (it would 
+                probably be less confusing if the query would just throw an exception. We may have to change 
+                that ...)</para>
+        </important>
         <para>All update statements start with the keyword "update", followed by
             an update action. Available actions are: "insert", "delete", "replace", 
             "value" and "rename". The return type of the expression is <option>empty()</option>.
@@ -63,6 +78,7 @@ return
             {$address/city, $address/email}
         </address>]]></programlisting>
         </example>
+        
         <section>
             <title>Insert</title>
             <synopsis>update insert expr ( into | following | preceding )
