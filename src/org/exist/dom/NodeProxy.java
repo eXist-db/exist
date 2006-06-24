@@ -1050,6 +1050,10 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 			return node;
 		}
 
+        public NodeProxy peekNode() {
+            return node;
+        }
+        
 		public void remove() {            
             throw new RuntimeException("Method not supported");
 		}

@@ -387,7 +387,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
     	if (al instanceof VirtualNodeSet)
     		return super.selectParentChild(al, mode, contextId);
     	NodeSet result = new ExtArrayNodeSet();
-		Iterator ia = al.iterator();
+		NodeSetIterator ia = al.iterator();
 		NodeProxy na = (NodeProxy) ia.next();
 		if (na == null || partCount == 0)
 			return NodeSet.EMPTY_SET;
@@ -395,9 +395,9 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
 		while (currentPart < partCount) {
 			// first, try to find nodes belonging to the same doc
 			if (na.getDocument().getDocId() < documentIds[currentPart]) {
-				if (ia.hasNext())
+				if (ia.hasNext()) {
 					na = (NodeProxy) ia.next();
-				else
+                } else
 					break;
 			} else if (na.getDocument().getDocId() > documentIds[currentPart]) {
 				++currentPart;
@@ -576,7 +576,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
             array = new NodeProxy[initialSize];
         }
 
-        public void selectParentChild(NodeSet result, NodeProxy na, Iterator ia, int mode, int contextId) {
+        public void selectParentChild(NodeSet result, NodeProxy na, NodeSetIterator ia, int mode, int contextId) {
         	if (length == 0)
         		return;
         	int pos = 0;
@@ -610,11 +610,11 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
     				if (++pos < length)
     					nb = array[pos];
                     else if (ia.hasNext()) {
-                        NodeProxy next = (NodeProxy) ia.next();
+                        NodeProxy next = ia.peekNode();
                         if (next.getNodeId().isDescendantOf(pa)) {
                             pos = startPos;
                             nb = array[pos];
-                            na = next;
+                            na = (NodeProxy) ia.next();
                             startPos = pos;
                         } else
                             break;
@@ -923,6 +923,10 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
             return n;
         }
 
+        public NodeProxy peekNode() {
+            return next;
+        }
+        
         /*
          * (non-Javadoc)
          * 
