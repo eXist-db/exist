@@ -30,7 +30,7 @@
     </mime-type>
     <mime-type name="application/xhtml+xml" type="xml">
         <description>XHTML document</description>
-        <extensions>.xht,.xhtml</extensions>
+        <extensions>.xhtml,.xht</extensions>
     </mime-type>
     <mime-type name="text/html" type="xml">
         <description>HTML document</description>
