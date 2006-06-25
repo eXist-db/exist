@@ -147,6 +147,11 @@ public class JournalReader {
 			            transactId + "; at: " + Lsn.dump(lsn));
 			loggable.setLsn(lsn);
 			
+			if (size + 2 > payload.capacity()) {
+				// resize the payload buffer
+				payload = ByteBuffer.allocate(size + 2);
+			}
+			
 			payload.clear().limit(size + 2);
 			fc.read(payload);
 			payload.flip();
