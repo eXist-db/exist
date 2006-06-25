@@ -1037,7 +1037,7 @@ public class RESTServer {
             for (Iterator i = collection.collectionIterator(); i.hasNext();) {
                 XmldbURI child = (XmldbURI) i.next();
                  Collection childCollection = broker.getCollection(collection.getURI().append(child));
-                if (childCollection.getPermissions().validate(broker.getUser(),
+                if (childCollection!=null && childCollection.getPermissions().validate(broker.getUser(),
                         Permission.READ)) {
                     attrs.clear();
                     attrs.addAttribute("", "name", "name", "CDATA", child.toString());
