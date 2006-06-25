@@ -312,12 +312,15 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                String created = toXSDDateTime(new Date());
                ElementImpl feedRoot = (ElementImpl)feedDoc.getDocumentElement();
                DOMDB.replaceTextElement(transaction,feedRoot,Atom.NAMESPACE_STRING,"updated",created,true);
-               DOMDB.appendChild(transaction,feedRoot,generateMediaEntry(feedDoc,created,title,filename,mime.getName()));
+               DOMDB.appendChild(transaction,feedRoot,generateMediaEntry(created,title,filename,mime.getName()));
                LOG.info("Storing change...");
                broker.storeXMLResource(transaction, feedDoc);
                transact.commit(transaction);
                LOG.info("Done!");
                response.setStatusCode(201);
+            } catch (ParserConfigurationException ex) {
+               transact.abort(transaction);
+               throw new EXistException("DOM implementation is misconfigured.",ex);
             } catch (LockException ex) {
                transact.abort(transaction);
                throw new EXistException("Cannot acquire write lock.",ex);
@@ -597,18 +600,16 @@ public class AtomProtocol extends AtomFeeds implements Atom {
             throw new BadRequestException("Entry with id "+id+" cannot be found.");
          }
          
-         // Remove the entry
-         ElementImpl feedRoot = (ElementImpl)feedDoc.getDocumentElement();
-         feedRoot.removeChild(transaction,entry);
-
          // Remove the media resource if there is one
          Element content = DOM.findChild(entry,Atom.NAMESPACE_STRING,"content");
          if (content!=null) {
             String src = content.getAttribute("src");
-            if (src!=null) {
+            LOG.info("Found content element, checking for resource "+src);
+            if (src!=null && src.indexOf('/')<0) {
                srcUri =XmldbURI.create(src);
                DocumentImpl resource = collection.getDocument(broker,srcUri);
-               if (resource.getCollection().getId()==collection.getId()) {
+               if (resource!=null) {
+                  LOG.info("Deleting resource "+src+" from "+request.getPath());
                   if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
                      collection.removeBinaryResource(transaction,broker,srcUri);
                   } else {
@@ -618,6 +619,10 @@ public class AtomProtocol extends AtomFeeds implements Atom {
             }
          }
          
+         // Remove the entry
+         ElementImpl feedRoot = (ElementImpl)feedDoc.getDocumentElement();
+         feedRoot.removeChild(transaction,entry);
+
          // Update the feed time
          DOMDB.replaceTextElement(transaction,feedRoot,Atom.NAMESPACE_STRING,"updated",currentDateTime,true);
 
@@ -708,9 +713,16 @@ public class AtomProtocol extends AtomFeeds implements Atom {
       return null;
    }
    
-   protected Element generateMediaEntry(Document owner,String created,String title,String filename,String mimeType) {
+   protected Element generateMediaEntry(String created,String title,String filename,String mimeType) 
+      throws ParserConfigurationException
+   {
+
       String id = "urn:uuid:"+UUID.randomUUID();
-      Element entry = owner.createElementNS(Atom.NAMESPACE_STRING,"entry");
+      
+      DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+      docFactory.setNamespaceAware(true);
+      Document owner = docFactory.newDocumentBuilder().getDOMImplementation().createDocument(Atom.NAMESPACE_STRING,"entry",null);
+      Element entry = owner.getDocumentElement();
       
       Element idE = owner.createElementNS(Atom.NAMESPACE_STRING,"id");
       idE.appendChild(owner.createTextNode(id));
@@ -742,8 +754,8 @@ public class AtomProtocol extends AtomFeeds implements Atom {
       
       Element contentE = owner.createElementNS(Atom.NAMESPACE_STRING,"content");
       entry.appendChild(contentE);
-      linkE.setAttribute("src",filename);
-      linkE.setAttribute("type",mimeType);
+      contentE.setAttribute("src",filename);
+      contentE.setAttribute("type",mimeType);
       
       return entry;
    }
