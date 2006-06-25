@@ -149,7 +149,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
             if (collection == null) {
                throw new BadRequestException("Collection "+request.getPath()+" does not exist.");
             }
-            LOG.info("Adding entry to "+request.getPath());
+            LOG.debug("Adding entry to "+request.getPath());
             DocumentImpl feedDoc = null;
             TransactionManager transact = broker.getBrokerPool().getTransactionManager();
             Txn transaction = transact.beginTransaction();
@@ -175,7 +175,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
             }
             try {
                // get the feed
-               LOG.info("Acquiring lock on feed document...");
+               LOG.debug("Acquiring lock on feed document...");
                feedDoc = collection.getDocument(broker,FEED_DOCUMENT_URI);
                ElementImpl feedRoot = (ElementImpl)feedDoc.getDocumentElement();
                
@@ -191,11 +191,11 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                DOMDB.replaceTextElement(transaction,feedRoot,Atom.NAMESPACE_STRING,"updated",currentDateTime,true);
 
                // Store the changes
-               LOG.info("Storing change...");
+               LOG.debug("Storing change...");
                broker.storeXMLResource(transaction, feedDoc);
                transact.commit(transaction);
                
-               LOG.info("Done!");
+               LOG.debug("Done!");
                
                response.setStatusCode(201);
                response.setHeader("Location",request.getModuleBase()+request.getPath()+"?id="+id);
@@ -302,7 +302,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
             }
             DocumentImpl feedDoc = null;
             try {
-               LOG.info("Acquiring lock on feed document...");
+               LOG.debug("Acquiring lock on feed document...");
                feedDoc = collection.getDocument(broker,FEED_DOCUMENT_URI);
                feedDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
                String title = request.getHeader("Title");
@@ -313,10 +313,10 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                ElementImpl feedRoot = (ElementImpl)feedDoc.getDocumentElement();
                DOMDB.replaceTextElement(transaction,feedRoot,Atom.NAMESPACE_STRING,"updated",created,true);
                DOMDB.appendChild(transaction,feedRoot,generateMediaEntry(created,title,filename,mime.getName()));
-               LOG.info("Storing change...");
+               LOG.debug("Storing change...");
                broker.storeXMLResource(transaction, feedDoc);
                transact.commit(transaction);
-               LOG.info("Done!");
+               LOG.debug("Done!");
                response.setStatusCode(201);
             } catch (ParserConfigurationException ex) {
                transact.abort(transaction);
@@ -447,14 +447,14 @@ public class AtomProtocol extends AtomFeeds implements Atom {
             if (id==null) {
                throw new BadRequestException("The 'id' parameter for the entry is missing.");
             }
-            LOG.info("Updating entry "+id+" in collection "+request.getPath());
+            LOG.debug("Updating entry "+id+" in collection "+request.getPath());
             DocumentImpl feedDoc = null;
             TransactionManager transact = broker.getBrokerPool().getTransactionManager();
             Txn transaction = transact.beginTransaction();
             String currentDateTime = toXSDDateTime(new Date());
             try {
                // Get the feed
-               LOG.info("Acquiring lock on feed document...");
+               LOG.debug("Acquiring lock on feed document...");
                feedDoc = collection.getDocument(broker,FEED_DOCUMENT_URI);
                feedDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
 
@@ -586,7 +586,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
       try {
          
          // Get the feed
-         LOG.info("Acquiring lock on feed document...");
+         //LOG.info("Acquiring lock on feed document...");
          feedDoc = collection.getDocument(broker,FEED_DOCUMENT_URI);
          feedDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
 
@@ -604,12 +604,12 @@ public class AtomProtocol extends AtomFeeds implements Atom {
          Element content = DOM.findChild(entry,Atom.NAMESPACE_STRING,"content");
          if (content!=null) {
             String src = content.getAttribute("src");
-            LOG.info("Found content element, checking for resource "+src);
+            LOG.debug("Found content element, checking for resource "+src);
             if (src!=null && src.indexOf('/')<0) {
                srcUri =XmldbURI.create(src);
                DocumentImpl resource = collection.getDocument(broker,srcUri);
                if (resource!=null) {
-                  LOG.info("Deleting resource "+src+" from "+request.getPath());
+                  LOG.debug("Deleting resource "+src+" from "+request.getPath());
                   if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
                      collection.removeBinaryResource(transaction,broker,srcUri);
                   } else {
@@ -627,10 +627,10 @@ public class AtomProtocol extends AtomFeeds implements Atom {
          DOMDB.replaceTextElement(transaction,feedRoot,Atom.NAMESPACE_STRING,"updated",currentDateTime,true);
 
          // Store the change on the feed
-         LOG.info("Storing change...");
+         LOG.debug("Storing change...");
          broker.storeXMLResource(transaction, feedDoc);
          transact.commit(transaction);
-         LOG.info("Done!");
+         LOG.debug("Done!");
          response.setStatusCode(200);
       } catch (TriggerException ex) {
          transact.abort(transaction);
