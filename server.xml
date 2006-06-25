@@ -21,6 +21,9 @@
         <param name="form-encoding" value="UTF-8"/>
         <param name="container-encoding" value="UTF-8"/>
     </rest>
+    <servlet enabled="no"
+             context="/atom/*"
+             class="org.exist.atom.http.AtomServlet"/>
     <!--
         Define URL forwardings
     -->
