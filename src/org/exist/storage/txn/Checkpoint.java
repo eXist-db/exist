@@ -36,6 +36,7 @@ import org.exist.storage.journal.LogEntryTypes;
 public class Checkpoint extends AbstractLoggable {
 
 	private long timestamp;
+	private long storedLsn;
 	
 	private final static DateFormat df = 
 		DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM);
@@ -53,6 +54,7 @@ public class Checkpoint extends AbstractLoggable {
      * @see org.exist.storage.log.Loggable#write(java.nio.ByteBuffer)
      */
     public void write(ByteBuffer out) {
+    	out.putLong(lsn);
 		out.putLong(timestamp);
     }
 
@@ -60,16 +62,25 @@ public class Checkpoint extends AbstractLoggable {
      * @see org.exist.storage.log.Loggable#read(java.nio.ByteBuffer)
      */
     public void read(ByteBuffer in) {
+    	storedLsn = in.getLong();
 		timestamp = in.getLong();
     }
 
+    public long getStoredLsn() {
+    	return storedLsn;
+    }
+    
     /* (non-Javadoc)
      * @see org.exist.storage.log.Loggable#getLogSize()
      */
     public int getLogSize() {
-        return 8;
+        return 16;
     }
 	
+    public String getDateString() {
+    	return df.format(new Date(timestamp));
+    }
+    
 	public String dump() {
 		return super.dump() + " - checkpoint at " + df.format(new Date(timestamp));
 	}

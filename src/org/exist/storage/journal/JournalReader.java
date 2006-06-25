@@ -25,7 +25,7 @@ package org.exist.storage.journal;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.MappedByteBuffer;
+import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
 import org.apache.log4j.Logger;
@@ -43,8 +43,10 @@ public class JournalReader {
 	
     private static final Logger LOG = Logger.getLogger(JournalReader.class);
     
-	private MappedByteBuffer mapped;
 	private FileChannel fc;
+	private ByteBuffer header = ByteBuffer.allocate(Journal.LOG_ENTRY_HEADER_LEN);
+	private ByteBuffer payload = ByteBuffer.allocate(8192);
+	
 	private int fileNumber;
 	private DBBroker broker;
     
@@ -62,12 +64,11 @@ public class JournalReader {
 		try {
 			FileInputStream is = new FileInputStream(file);
 			fc = is.getChannel();
-			mapped = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
 		} catch (IOException e) {
 			throw new LogException("Failed to read log file " + file.getAbsolutePath(), e);
 		}
 	}
-	
+    
     /**
      * Returns the next entry found from the current position.
      * 
@@ -75,9 +76,13 @@ public class JournalReader {
      * @throws LogException if an entry could not be read due to an inconsistency on disk.
      */
 	public Loggable nextEntry() throws LogException {
-		if (mapped.position() + Journal.LOG_ENTRY_BASE_LEN > mapped.capacity())
+		try {
+			if (fc.position() + Journal.LOG_ENTRY_BASE_LEN > fc.size())
+				return null;
+			return readEntry();
+		} catch (IOException e) {
 			return null;
-		return readEntry();
+		}
 	}
 	
     /**
@@ -85,20 +90,37 @@ public class JournalReader {
      * 
      * @return the previous entry
      * @throws LogException if an entry could not be read due to an inconsistency on disk.
+     * @throws IOException 
      */
     public Loggable previousEntry() throws LogException {
-        if (mapped.position() == 0)
-            return null;
-        // go back two bytes and read the back-link of the last entry
-        mapped.position(mapped.position() - 2);
-        final short prevLink = mapped.getShort();
-        // position the channel to the start of the previous entry and mark it
-        final int prevStart = mapped.position() - 2 -prevLink;
-        mapped.position(prevStart);
-        final Loggable loggable = readEntry();
-        // reset to the mark
-        mapped.position(prevStart);
-        return loggable;
+        try {
+			if (fc.position() == 0)
+			    return null;
+			// go back two bytes and read the back-link of the last entry
+			fc.position(fc.position() - 2);
+			header.clear().limit(2);
+			int bytes = fc.read(header);
+			header.flip();
+			final short prevLink = header.getShort();
+			// position the channel to the start of the previous entry and mark it
+			final long prevStart = fc.position() - 2 -prevLink;
+			fc.position(prevStart);
+			final Loggable loggable = readEntry();
+			// reset to the mark
+			fc.position(prevStart);
+			return loggable;
+		} catch (IOException e) {
+			throw new LogException("Fatal error while reading journal entry: " + e.getMessage(), e);
+		}
+    }
+    
+    public Loggable lastEntry() throws LogException {
+        try {
+			fc.position(fc.size());
+			return previousEntry();
+		} catch (IOException e) {
+			throw new LogException("Fatal error while reading journal entry: " + e.getMessage(), e);
+		}
     }
     
     /**
@@ -108,25 +130,37 @@ public class JournalReader {
      * @throws LogException
      */
     private Loggable readEntry() throws LogException {
-        final long lsn = Lsn.create(fileNumber, mapped.position() + 1);
-        final byte entryType = mapped.get();
-        final long transactId = mapped.getLong();
-        final short size = mapped.getShort();
-        if (mapped.position() + size > mapped.capacity())
-            throw new LogException("Invalid length");
-        final Loggable loggable = LogEntryTypes.create(entryType, broker, transactId);
-        if (loggable == null)
-            throw new LogException("Invalid log entry: " + entryType + "; size: " + size + "; id: " +
-                    transactId + "; at: " + Lsn.dump(lsn));
-        loggable.setLsn(lsn);
-        loggable.read(mapped);
-        final short prevLink = mapped.getShort();
-        if (prevLink != size + Journal.LOG_ENTRY_HEADER_LEN) {
-            LOG.warn("Bad pointer to previous: prevLink = " + prevLink + "; size = " + size + 
-                    "; transactId = " + transactId);
-            throw new LogException("Bad pointer to previous in entry: " + loggable.dump());
-        }
-        return loggable;
+        try {
+			final long lsn = Lsn.create(fileNumber, (int) fc.position() + 1);
+			header.clear();
+			fc.read(header);
+			header.flip();
+			final byte entryType = header.get();
+			final long transactId = header.getLong();
+			final short size = header.getShort();
+			
+			if (fc.position() + size > fc.size())
+			    throw new LogException("Invalid length");
+			final Loggable loggable = LogEntryTypes.create(entryType, broker, transactId);
+			if (loggable == null)
+			    throw new LogException("Invalid log entry: " + entryType + "; size: " + size + "; id: " +
+			            transactId + "; at: " + Lsn.dump(lsn));
+			loggable.setLsn(lsn);
+			
+			payload.clear().limit(size + 2);
+			fc.read(payload);
+			payload.flip();
+			loggable.read(payload);
+			final short prevLink = payload.getShort();
+			if (prevLink != size + Journal.LOG_ENTRY_HEADER_LEN) {
+			    LOG.warn("Bad pointer to previous: prevLink = " + prevLink + "; size = " + size + 
+			            "; transactId = " + transactId);
+			    throw new LogException("Bad pointer to previous in entry: " + loggable.dump());
+			}
+			return loggable;
+		} catch (IOException e) {
+			throw new LogException(e.getMessage(), e);
+		}
     }
     
     /**
@@ -134,9 +168,14 @@ public class JournalReader {
      * with the given LSN.
      * 
      * @param lsn
+     * @throws IOException 
      */
-    public void position(long lsn) {
-        mapped.position((int) Lsn.getOffset(lsn) - 1);
+    public void position(long lsn) throws LogException {
+        try {
+			fc.position((int) Lsn.getOffset(lsn) - 1);
+		} catch (IOException e) {
+			throw new LogException("Fatal error while reading journal: " + e.getMessage(), e);
+		}
     }
     
 	public void close() {		
@@ -144,6 +183,6 @@ public class JournalReader {
 			fc.close();
 		} catch (IOException e) {
 		}
-        mapped = null;
+        fc = null;
 	}
 }

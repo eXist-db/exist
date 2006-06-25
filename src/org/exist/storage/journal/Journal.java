@@ -183,12 +183,12 @@ public class Journal {
         if (required > currentBuffer.capacity() - currentBuffer.position())
             flushToLog(false);
         currentLsn = Lsn.create(currentFile, inFilePos + currentBuffer.position() + 1);
+        loggable.setLsn(currentLsn);
         currentBuffer.put(loggable.getLogType());
         currentBuffer.putLong(loggable.getTransactionId());
         currentBuffer.putShort((short) loggable.getLogSize());
         loggable.write(currentBuffer);
         currentBuffer.putShort((short) (size + LOG_ENTRY_HEADER_LEN));
-        loggable.setLsn(currentLsn);
     }
     
     /**
