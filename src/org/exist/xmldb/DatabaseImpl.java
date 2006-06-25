@@ -236,6 +236,8 @@ public class DatabaseImpl implements Database {
     		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
     	}
         XmldbURI[] components = path.getPathSegments();
+        if (components.length == 0)
+        	throw new XMLDBException(ErrorCodes.NO_SUCH_COLLECTION, "Could not find collection: " + path.toString());
         XmldbURI rootName = components[0];
         if (XmldbURI.RELATIVE_ROOT_COLLECTION_URI.equals(rootName))
             rootName = XmldbURI.ROOT_COLLECTION_URI;
