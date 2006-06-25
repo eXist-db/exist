@@ -120,9 +120,6 @@ public class AtomProtocol extends AtomFeeds implements Atom {
       }
       
       Collection collection = broker.getCollection(pathUri);
-      if (collection == null) {
-         throw new BadRequestException("Collection "+request.getPath()+" does not exist.");
-      }
       
       if (mime.getName().equals(Atom.MIME_TYPE)) {
          DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
@@ -149,6 +146,9 @@ public class AtomProtocol extends AtomFeeds implements Atom {
             throw new BadRequestException("Any content posted with the Atom mime type must be in the Atom namespace.");
          }
          if (root.getLocalName().equals("entry")) {
+            if (collection == null) {
+               throw new BadRequestException("Collection "+request.getPath()+" does not exist.");
+            }
             LOG.info("Adding entry to "+request.getPath());
             DocumentImpl feedDoc = null;
             TransactionManager transact = broker.getBrokerPool().getTransactionManager();
@@ -230,6 +230,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                   }
                } else {
                   collection = broker.getOrCreateCollection(transaction,pathUri);
+                  broker.saveCollection(transaction, collection);
                }
                UUID id = UUID.randomUUID();
                String currentDateTime = toXSDDateTime(new Date());
@@ -255,15 +256,14 @@ public class AtomProtocol extends AtomFeeds implements Atom {
             } catch (LockException ex) {
                transact.abort(transaction);
                throw new EXistException("Cannot acquire write lock.",ex);
-            } finally {
-               if (feedDoc!=null) {
-                  feedDoc.getUpdateLock().release();
-               }
             }
          } else {
             throw new BadRequestException("Unexpected element: {http://www.w3.org/2005/Atom}"+root.getLocalName());
          }
       } else {
+         if (collection == null) {
+            throw new BadRequestException("Collection "+request.getPath()+" does not exist.");
+         }
          String filename = request.getHeader("Slug");
          if (filename==null) {
             String ext = MimeTable.getInstance().getPreferredExtension(mime);
