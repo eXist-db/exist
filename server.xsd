@@ -13,6 +13,7 @@
         <xs:element ref="webdav"/>
         <xs:element ref="xmlrpc"/>
         <xs:element ref="rest"/>
+        <xs:element ref="servlet" minOccurs="0" maxOccurs="unbounded"/>
         <xs:element ref="forwarding" minOccurs="0" maxOccurs="1"/>
       </xs:sequence>
       <xs:attributeGroup ref="attlist.server"/>
@@ -60,6 +61,15 @@
       <xs:sequence>
         <xs:element minOccurs="0" maxOccurs="unbounded" ref="param"/>
       </xs:sequence>
+      <xs:attributeGroup ref="attlist.service"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="servlet">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="param"/>
+      </xs:sequence>
+      <xs:attribute name="class" type="xs:string" use="required"/>
       <xs:attributeGroup ref="attlist.service"/>
     </xs:complexType>
   </xs:element>
