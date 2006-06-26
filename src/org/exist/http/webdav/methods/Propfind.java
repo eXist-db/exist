@@ -420,7 +420,7 @@ public class Propfind extends AbstractWebDAVMethod {
             
             serializer.startElement(WebDAV.DAV_NS, "lockdiscovery", "D:lockdiscovery", attrs);
             if(token==null){
-                LOG.info("No lock token");
+                LOG.debug("No lock token");
             } else {               
                 
                 serializer.startElement(WebDAV.DAV_NS, "activelock", "D:activelock", attrs);
@@ -435,7 +435,7 @@ public class Propfind extends AbstractWebDAVMethod {
                 String lockScope;
                 switch(token.getScope()){
                     case LockToken.LOCK_SCOPE_EXCLUSIVE : lockScope="exclusive"; break;
-                    case LockToken.LOCK_SCOPE_SHARED : lockScope="sahred"; break;
+                    case LockToken.LOCK_SCOPE_SHARED : lockScope="shared"; break;
                     default : lockScope="none";
                 }
                 writeSimpleElement(LOCK_SCOPE_PROP, lockScope, serializer);
