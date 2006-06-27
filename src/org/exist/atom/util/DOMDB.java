@@ -41,7 +41,7 @@ public class DOMDB {
       return textE;
    }
    
-   public static void appendChild(Txn txn,ElementImpl parent,Element child) {
+   public static void appendChild(Txn txn,ElementImpl parent,Node child) {
       NodeListImpl nl = new NodeListImpl(1);
       nl.add(child);
       parent.appendChildren(txn,nl,-1);
