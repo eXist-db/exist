@@ -85,17 +85,24 @@ public class RecoveryManager {
             try {
             	// try to read the last log record to see if it is a checkpoint
             	boolean checkpointFound = false;
-    			Loggable lastLog = reader.lastEntry();
-    			if (lastLog.getLogType() == LogEntryTypes.CHECKPOINT) {
-    				Checkpoint checkpoint = (Checkpoint) lastLog;
-    				// Found a checkpoint. To be sure it is indeed a valid checkpoint
-    				// record, we compare the LSN stored in it with the current LSN.
-    				if (checkpoint.getStoredLsn() == checkpoint.getLsn()) {
-    					checkpointFound = true;
-    					LOG.debug("Database is in clean state. Last checkpoint: " + 
-    							checkpoint.getDateString());
-    				}
-    			}
+    			try {
+                    Loggable lastLog = reader.lastEntry();
+                    if (lastLog != null && lastLog.getLogType() == LogEntryTypes.CHECKPOINT) {
+                    	Checkpoint checkpoint = (Checkpoint) lastLog;
+                    	// Found a checkpoint. To be sure it is indeed a valid checkpoint
+                    	// record, we compare the LSN stored in it with the current LSN.
+                    	if (checkpoint.getStoredLsn() == checkpoint.getLsn()) {
+                    		checkpointFound = true;
+                    		LOG.debug("Database is in clean state. Last checkpoint: " + 
+                    				checkpoint.getDateString());
+                    	}
+                    }
+                } catch (LogException e) {
+                    LOG.debug("Reading last journal log entry failed: " + e.getMessage() + ". Will scan the log...");
+                    // if an exception occurs at this point, the journal file is probably incomplete,
+                    // which indicates a db crash
+                    checkpointFound = false;
+                }
     			if (!checkpointFound) {
     				reader.position(1);
     				Long2ObjectHashMap txnsStarted = new Long2ObjectHashMap();
@@ -185,7 +192,7 @@ public class RecoveryManager {
             	// transaction aborted: remove it from the transactions table
             	runningTxns.remove(next.getTransactionId());
             }
-//            LOG.debug("Redo: " + next.dump());
+            LOG.debug("Redo: " + next.dump());
             // redo the log entry
             next.redo();
 			progress.set(Lsn.getOffset(next.getLsn()));
