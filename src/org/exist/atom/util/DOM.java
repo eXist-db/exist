@@ -71,13 +71,22 @@ public class DOM {
    }
    
    public static Element replaceTextElement(Element parent,String namespaceName,String localName,String value,boolean firstChild) {
+      return DOM.replaceTextElement(parent,namespaceName,localName,value,firstChild,false);
+   }
+   public static Element replaceTextElement(Element parent,String namespaceName,String localName,String value,boolean firstChild,boolean wrap) {
       Element textE = DOM.findChild(parent,namespaceName,localName);
       if (textE==null) {
          textE = parent.getOwnerDocument().createElementNS(namespaceName,localName);
          if (firstChild) {
+            if (wrap) {
+               parent.insertBefore(parent.getOwnerDocument().createTextNode("\n"),parent.getFirstChild());
+            }
             parent.insertBefore(textE,parent.getFirstChild());
          } else {
             parent.appendChild(textE);
+            if (wrap) {
+               parent.appendChild(parent.getOwnerDocument().createTextNode("\n"));
+            }
          }
       }
       DOM.removeChildren(textE);

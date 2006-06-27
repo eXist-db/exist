@@ -14,13 +14,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 import java.util.UUID;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -155,9 +157,9 @@ public class AtomProtocol extends AtomFeeds implements Atom {
             Txn transaction = transact.beginTransaction();
             String id = "urn:uuid:"+UUID.randomUUID();
             String currentDateTime = toXSDDateTime(new Date());
-            Element publishedE = DOM.replaceTextElement(root,Atom.NAMESPACE_STRING,"published",currentDateTime,true);
-            DOM.replaceTextElement(root,Atom.NAMESPACE_STRING,"updated",currentDateTime,true);
-            DOM.replaceTextElement(root,Atom.NAMESPACE_STRING,"id",id,true);
+            Element publishedE = DOM.replaceTextElement(root,Atom.NAMESPACE_STRING,"published",currentDateTime,true,true);
+            DOM.replaceTextElement(root,Atom.NAMESPACE_STRING,"updated",currentDateTime,true,true);
+            DOM.replaceTextElement(root,Atom.NAMESPACE_STRING,"id",id,true,true);
             Element editLink = findLink(root,"edit");
             Element editLinkSrc = findLink(root,"edit-media");
             if (editLink!=null || editLinkSrc!=null) {
@@ -647,6 +649,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
    }
    
    public void mergeEntry(final Txn transaction,final ElementImpl target,Element source,final String updated) {
+      final List toRemove = new ArrayList();
       DOM.forEachChild(target,new NodeHandler() {
          public void process(Node parent, Node child) {
             if (child.getNodeType()==Node.ELEMENT_NODE) {
@@ -660,19 +663,25 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                      String rel = ((Element)child).getAttribute("rel");
                      if (!rel.equals("edit") && !rel.equals("edit-media")) {
                         // remove it
-                        target.removeChild(transaction,child);
+                        toRemove.add(child);
                      }
                   } else if (!lname.equals("id") && !lname.equals("published")) {
                      // remove it
-                     target.removeChild(transaction,child);
+                     toRemove.add(child);
                   }
                } else {
                   // remove it
-                  target.removeChild(transaction,child);
+                  toRemove.add(child);
                }
+            } else {
+               toRemove.add(child);
             }
          }
       });
+      for (Iterator childrenToRemove = toRemove.iterator(); childrenToRemove.hasNext(); ) {
+         Node child = (Node)childrenToRemove.next();
+         target.removeChild(transaction,child);
+      }
       final Document ownerDocument = target.getOwnerDocument();
       DOM.forEachChild(source,new NodeHandler() {
          public void process(Node parent,Node child) {
@@ -695,8 +704,8 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                      }
                   }
                }
-               target.appendChild(child);
-               target.appendChild(ownerDocument.createTextNode("\n"));
+               DOMDB.appendChild(transaction,target,child);
+               DOMDB.appendChild(transaction,target,ownerDocument.createTextNode("\n"));
             }
          }
       });
