@@ -18,6 +18,7 @@ import org.exist.EXistException;
 import org.exist.atom.Atom;
 import org.exist.atom.IncomingMessage;
 import org.exist.atom.OutgoingMessage;
+import org.exist.collections.Collection;
 import org.exist.http.BadRequestException;
 import org.exist.http.NotFoundException;
 import org.exist.security.PermissionDeniedException;
@@ -32,7 +33,6 @@ import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.xml.sax.SAXException;
 
@@ -56,6 +56,11 @@ public class Topics extends AtomModuleBase implements Atom {
    public void doGet(DBBroker broker,IncomingMessage request,OutgoingMessage response)
       throws BadRequestException,PermissionDeniedException,NotFoundException,EXistException
    {
+      
+      Collection collection = broker.getCollection(XmldbURI.create(request.getPath()));
+      if (collection == null) {
+         throw new BadRequestException("Collection "+request.getPath()+" does not exist.");
+      }
       
       XQuery xquery = broker.getXQueryService();
       CompiledXQuery getTopicQuery = xquery.getXQueryPool().borrowCompiledXQuery(broker,getTopicQuerySource);

@@ -19,6 +19,7 @@ import org.exist.EXistException;
 import org.exist.atom.Atom;
 import org.exist.atom.IncomingMessage;
 import org.exist.atom.OutgoingMessage;
+import org.exist.collections.Collection;
 import org.exist.http.BadRequestException;
 import org.exist.http.NotFoundException;
 import org.exist.security.PermissionDeniedException;
@@ -55,6 +56,11 @@ public class Query extends AtomModuleBase implements Atom {
    public void doPost(DBBroker broker,IncomingMessage request,OutgoingMessage response)
       throws BadRequestException,PermissionDeniedException,NotFoundException,EXistException
    {
+      
+      Collection collection = broker.getCollection(XmldbURI.create(request.getPath()));
+      if (collection == null) {
+         throw new BadRequestException("Collection "+request.getPath()+" does not exist.");
+      }
       
       XQuery xquery = broker.getXQueryService();
 
