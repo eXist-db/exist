@@ -44,8 +44,8 @@ public class JournalReader {
     private static final Logger LOG = Logger.getLogger(JournalReader.class);
     
 	private FileChannel fc;
-	private ByteBuffer header = ByteBuffer.allocate(Journal.LOG_ENTRY_HEADER_LEN);
-	private ByteBuffer payload = ByteBuffer.allocate(8192);
+	private ByteBuffer header = ByteBuffer.allocateDirect(Journal.LOG_ENTRY_HEADER_LEN);
+	private ByteBuffer payload = ByteBuffer.allocateDirect(8192);
 	
 	private int fileNumber;
 	private DBBroker broker;
@@ -100,6 +100,8 @@ public class JournalReader {
 			fc.position(fc.position() - 2);
 			header.clear().limit(2);
 			int bytes = fc.read(header);
+            if (bytes < 2)
+                throw new LogException("Incomplete log entry found!");
 			header.flip();
 			final short prevLink = header.getShort();
 			// position the channel to the start of the previous entry and mark it
@@ -133,7 +135,11 @@ public class JournalReader {
         try {
 			final long lsn = Lsn.create(fileNumber, (int) fc.position() + 1);
 			header.clear();
-			fc.read(header);
+			int bytes = fc.read(header);
+            if (bytes <= 0)
+                return null;
+            if (bytes < Journal.LOG_ENTRY_HEADER_LEN)
+                throw new LogException("Incomplete log entry header found: " + bytes);
 			header.flip();
 			final byte entryType = header.get();
 			final long transactId = header.getLong();
@@ -153,7 +159,9 @@ public class JournalReader {
 			}
 			
 			payload.clear().limit(size + 2);
-			fc.read(payload);
+			bytes = fc.read(payload);
+            if (bytes < size + 2)
+                throw new LogException("Incomplete log entry found!");
 			payload.flip();
 			loggable.read(payload);
 			final short prevLink = payload.getShort();
