@@ -241,12 +241,12 @@ public class AtomServlet extends HttpServlet {
          }
 
          int firstSlash = path.indexOf('/',1);
-         if (firstSlash<0) {
+         if (firstSlash<0 && path.length()==1) {
             response.sendError(400,"Module not specified.");
             return;
          }
-         String moduleName = path.substring(1,firstSlash);
-         path = path.substring(firstSlash);
+         String moduleName = firstSlash<0 ? path.substring(1) : path.substring(1,firstSlash);
+         path = firstSlash<0 ? "" : path.substring(firstSlash);
 
          AtomModule module = (AtomModule)modules.get(moduleName);
          if (module==null) {

@@ -10,12 +10,41 @@ xmlns:atom="http://www.w3.org/2005/Atom">
      "&#x0a;"
    }
    {
-      let $current := substring-before(base-uri(/atom:feed),'.feed.atom')
+      let $current := substring-before(base-uri(/atom:feed),'/.feed.atom'),
+           $current-path := substring-after($current,'/db')
          return (
             <link rel="alternate" href="../content{substring-after($current,'/db')}" type="application/atom+xml"/>,
            "&#x0a;",
+            let $parts := tokenize($current-path,'/')
+               for $i in (1 to count($parts)-1)
+                   let $apath := string-join(subsequence($parts,1,$i),'/'),
+                       $feed := document(concat($apath,'/.feed.atom'))/atom:feed
+                     return (<entry>
+                            {
+                                "&#x0a;",
+                                $feed/atom:id,
+                                "&#x0a;",
+                                $feed/atom:title,
+                                "&#x0a;",
+                                $feed/atom:updated,
+                                "&#x0a;",
+                                <atom scheme="http://www.smallx.com/Ontology/Atopic/2006/1/0/topic/relation" term="ancestor"/>,
+                                "&#x0a;",
+                                <link rel="alternate" href="/atom/content{$apath}" type="application/atom+xml"/>,
+                                "&#x0a;",
+                                <summary>
+                                     {
+                                         $feed/atom:subtitle/@type,
+                                         $feed/atom:subtitle/node()
+                                     }
+                                </summary>,
+                                "&#x0a;"
+                             }
+                            </entry>,
+                            "&#x0a;"
+                            ),
             for $i in (collection($current)/atom:feed) 
-               let $path :=  substring-before(base-uri($i),'.feed.atom')
+               let $path :=  substring-before(base-uri($i),'/.feed.atom')
                   return if ($current!=$path) 
                      then (<entry>
                             {
@@ -28,14 +57,14 @@ xmlns:atom="http://www.w3.org/2005/Atom">
                                 "&#x0a;",
                                 <atom scheme="http://www.smallx.com/Ontology/Atopic/2006/1/0/topic/relation" term="subtopic"/>,
                                 "&#x0a;",
-                                <link rel="alternate" href="../content{substring-after($path,'/db')}" type="application/atom+xml"/>,
+                                <link rel="alternate" href="/atom/content{substring-after($path,'/db')}" type="application/atom+xml"/>,
                                 "&#x0a;",
-                                <atom:summary>
+                                <summary>
                                      {
                                          $i/atom:subtitle/@type,
                                          $i/atom:subtitle/node()
                                      }
-                                </atom:summary>,
+                                </summary>,
                                 "&#x0a;"
                              }
                             </entry>,
