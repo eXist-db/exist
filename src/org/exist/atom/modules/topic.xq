@@ -13,7 +13,7 @@ xmlns:atom="http://www.w3.org/2005/Atom">
       let $current := substring-before(base-uri(/atom:feed),'/.feed.atom'),
            $current-path := substring-after($current,'/db')
          return (
-            <link rel="alternate" href="../content{substring-after($current,'/db')}" type="application/atom+xml"/>,
+            <link rel="alternate" href="/atom/content{substring-after($current,'/db')}" type="application/atom+xml"/>,
            "&#x0a;",
             let $parts := tokenize($current-path,'/')
                for $i in (1 to count($parts)-1)
