@@ -192,7 +192,7 @@ public class RecoveryManager {
             	// transaction aborted: remove it from the transactions table
             	runningTxns.remove(next.getTransactionId());
             }
-            LOG.debug("Redo: " + next.dump());
+//            LOG.debug("Redo: " + next.dump());
             // redo the log entry
             next.redo();
 			progress.set(Lsn.getOffset(next.getLsn()));
