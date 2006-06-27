@@ -408,37 +408,36 @@ public class AtomProtocol extends AtomFeeds implements Atom {
          }
          if (root.getLocalName().equals("feed")) {
             Collection collection = broker.getCollection(pathUri);
-            DocumentImpl feedDoc = null;
+            DocumentImpl feedDoc = collection.getDocument(broker,FEED_DOCUMENT_URI);
+            if (feedDoc==null) {
+               throw new BadRequestException("Collection at "+request.getPath()+" does not exist.");
+            }
+            
+            if (DOM.findChild(root,Atom.NAMESPACE_STRING,"title")==null) {
+               throw new BadRequestException("The feed metadata sent does not contain a title.");
+            }
+            
             TransactionManager transact = broker.getBrokerPool().getTransactionManager();
             Txn transaction = transact.beginTransaction();
-            
-            // Prepare the feed w/ the additional metadata 
-            
-            UUID id = UUID.randomUUID();
-            DOM.replaceTextElement(root,Atom.NAMESPACE_STRING,"updated",toXSDDateTime(new Date()),true);
-            DOM.replaceTextElement(root,Atom.NAMESPACE_STRING,"id","urn:uuid:"+id,true);
+
             try {
-               if (collection != null) {
-                  feedDoc = collection.getDocument(broker,FEED_DOCUMENT_URI);
-                  if (feedDoc!=null) {
-                     throw new BadRequestException("Collection at "+request.getPath()+" already exists.");
-                  }
-               } else {
-                  collection = broker.getOrCreateCollection(transaction,pathUri);
-               }
-               IndexInfo info = collection.validateXMLResource(transaction,broker,FEED_DOCUMENT_URI,doc);
-               info.getDocument().getMetadata().setMimeType(Atom.MIME_TYPE);
-               collection.store(transaction,broker,info,doc,false);
+               feedDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
+               
+               ElementImpl feedRoot = (ElementImpl)feedDoc.getDocumentElement();
+               
+               // Modify the feed by merging the new feed-level elements
+               mergeFeed(transaction,feedRoot,root,toXSDDateTime(new Date()));
+               
+               // Store the feed
+               broker.storeXMLResource(transaction, feedDoc);
                transact.commit(transaction);
-            } catch (SAXException ex) {
-               transact.abort(transaction);
-               throw new EXistException("SAX error: "+ex.getMessage(),ex);
-            } catch (TriggerException ex) {
-               transact.abort(transaction);
-               throw new EXistException("Trigger failed: "+ex.getMessage(),ex);
             } catch (LockException ex) {
                transact.abort(transaction);
                throw new EXistException("Cannot acquire write lock.",ex);
+            } finally {
+               if (feedDoc!=null) {
+                  feedDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+               }
             }
          } else if (root.getLocalName().equals("entry")) {
             Collection collection = broker.getCollection(pathUri);
@@ -709,6 +708,78 @@ public class AtomProtocol extends AtomFeeds implements Atom {
             }
          }
       });
+   }
+   
+   public void mergeFeed(final Txn transaction,final ElementImpl target,Element source,final String updated) {
+      final List toRemove = new ArrayList();
+      DOM.forEachChild(target,new NodeHandler() {
+         public void process(Node parent, Node child) {
+            if (child.getNodeType()==Node.ELEMENT_NODE) {
+               String ns = child.getNamespaceURI();
+               if (ns!=null && ns.equals(Atom.NAMESPACE_STRING)) {
+                  String lname = child.getLocalName();
+                  if (lname.equals("updated")) {
+                     // Changed updated
+                     DOMDB.replaceText(transaction,(ElementImpl)child,updated);
+                  } else if (lname.equals("link")) {
+                     Element echild = (Element)child;
+                     String rel = echild.getAttribute("rel");
+                     if (!rel.equals("edit")) {
+                        // remove it
+                        toRemove.add(child);
+                     }
+                  } else if (!lname.equals("id") && !lname.equals("published") && !lname.equals("entry")) {
+                     // remove it
+                     toRemove.add(child);
+                  }
+               } else {
+                  // remove it
+                  toRemove.add(child);
+               }
+            } else {
+               toRemove.add(child);
+            }
+         }
+      });
+      for (Iterator childrenToRemove = toRemove.iterator(); childrenToRemove.hasNext(); ) {
+         Node child = (Node)childrenToRemove.next();
+         target.removeChild(transaction,child);
+      }
+      final Document ownerDocument = target.getOwnerDocument();
+      NodeList nl = source.getChildNodes();
+      Element firstEntry = DOM.findChild(target,Atom.NAMESPACE_STRING,"entry");
+      for (int i=0; i<nl.getLength(); i++) {
+         Node child = nl.item(i);
+         if (child.getNodeType()==Node.ELEMENT_NODE) {
+            String ns = child.getNamespaceURI();
+            if (ns!=null && ns.equals(Atom.NAMESPACE_STRING)) {
+               String lname = child.getLocalName();
+
+               // Skip server controls updated, published, and id elements
+               if (lname.equals("updated") ||
+                   lname.equals("published") ||
+                   lname.equals("id")) {
+                  return;
+               }
+               // Skip the edit link relations
+               if (lname.equals("link")) {
+                  String rel = ((Element)child).getAttribute("rel");
+                  if (!rel.equals("edit")) {
+                     return;
+                  }
+               }
+            }
+            if (firstEntry==null) {
+               DOMDB.appendChild(transaction,target,child);
+               DOMDB.appendChild(transaction,target,ownerDocument.createTextNode("\n"));
+            } else {
+               DOMDB.insertBefore(transaction,target,child,firstEntry);
+               DOMDB.insertBefore(transaction,target,ownerDocument.createTextNode("\n"),firstEntry);
+               // TODO: this is a total hack.  Somehow, the insertion order is wrong due to firstEntry changing position
+               firstEntry = DOM.findChild(target,Atom.NAMESPACE_STRING,"entry");
+            }
+         }
+      }
    }
    
    protected Element findLink(Element parent,String rel) {

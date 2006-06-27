@@ -47,6 +47,13 @@ public class DOMDB {
       parent.appendChildren(txn,nl,-1);
    }
    
+   public static Node insertBefore(Txn txn,ElementImpl parent,Node child,Node refChild) {
+      NodeListImpl nl = new NodeListImpl(1);
+      nl.add(child);
+      parent.insertBefore(txn,nl,refChild);
+      return child;
+   }
+   
    public static void replaceText(Txn txn,ElementImpl textE,String value) {
       DOMDB.removeChildren(txn,textE);
       textE.appendChild(textE.getOwnerDocument().createTextNode(value));
