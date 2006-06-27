@@ -18,7 +18,6 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  * 
- *  $Id: EXistServlet.java 3640 2006-06-01 11:30:55Z deliriumsky $
  */
 package org.exist.atom.http;
 
@@ -40,6 +39,8 @@ import org.exist.EXistException;
 import org.exist.atom.AtomModule;
 import org.exist.atom.modules.AtomFeeds;
 import org.exist.atom.modules.AtomProtocol;
+import org.exist.atom.modules.Query;
+import org.exist.atom.modules.Topics;
 import org.exist.http.BadRequestException;
 import org.exist.http.NotFoundException;
 import org.exist.http.servlets.Authenticator;
@@ -58,11 +59,9 @@ import org.xmldb.api.base.Database;
 import org.xmldb.api.base.XMLDBException;
 
 /**
- * Implements the REST-style interface if eXist is running within
- * a servlet engine. The real work is done by class 
- * {@link org.exist.http.RESTServer}.
+ * Implements a rest interface for exist collections as atom feeds
  * 
- * @author wolf
+ * @author Alex Milowski
  */
 public class AtomServlet extends HttpServlet {
 
@@ -192,7 +191,13 @@ public class AtomServlet extends HttpServlet {
        protocol.init(new ModuleContext(config,"edit"));
        AtomFeeds feeds = new AtomFeeds();
        modules.put("content",feeds);
-       feeds.init(new ModuleContext(config,"edit"));
+       feeds.init(new ModuleContext(config,"content"));
+       Topics topics = new Topics();
+       modules.put("topic",topics);
+       topics.init(new ModuleContext(config,"topic"));
+       Query query = new Query();
+       modules.put("query",query);
+       query.init(new ModuleContext(config,"query"));
        
        
        // XML lib checks....
