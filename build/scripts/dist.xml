@@ -44,6 +44,9 @@
             <lib dir="${lib.optional}">
                 <include name="*.jar"/>
             </lib>
+            <lib dir="${lib.cocoon}">
+                <include name="*.jar"/>
+            </lib>
             <lib dir="${lib.user}">
                 <include name="*.jar"/>
             </lib>
@@ -179,6 +182,9 @@
         </copy>
         <copy todir="${dist.dir}/lib/optional">
             <fileset dir="${lib.optional}"/>
+        </copy>
+        <copy todir="${dist.dir}/lib/cocoon">
+            <fileset dir="${lib.cocoon}"/>
         </copy>
         <copy todir="${dist.dir}/lib/endorsed">
             <fileset dir="${lib.endorsed}"/>

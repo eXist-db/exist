@@ -18,6 +18,7 @@
     <property name="lib.core" value="./lib/core"/>
     <property name="lib.optional" value="./lib/optional"/>
     <property name="lib.endorsed" value="./lib/endorsed"/>
+    <property name="lib.cocoon" value="./lib/cocoon"/>
     <property name="lib.user" value="./lib/user"/>
 
     <property name="build" value="./build"/>
@@ -58,11 +59,13 @@
         <fileset dir="${lib.endorsed}">
             <include name="*.jar"/>
         </fileset>
+        <fileset dir="${lib.cocoon}">
+        		<include name="*.jar"/>
+        </fileset>
         <fileset dir="${lib.user}">
             <include name="*.jar"/>
         </fileset>
-        
-        <!-- DIZZ Why must these be part of classpath ? -->
+
         <fileset dir="${tools.ant}/lib">
             <include name="*.jar"/>
         </fileset>
@@ -79,7 +82,7 @@
             <include name="*.jar"/>
         </fileset>
     </path>
-
+    
     <taskdef name="java2wsdl" classname="org.apache.axis.tools.ant.wsdl.Java2WsdlAntTask">
         <classpath refid="classpath.core"/>
     </taskdef>
