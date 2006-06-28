@@ -3,7 +3,7 @@ package javax.xml.xquery;
 import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
 
-import javax.xml.stream.XMLStreamReader;
+//import javax.xml.stream.XMLStreamReader;
 import java.util.Properties;
 import java.io.Writer;
 import java.io.OutputStream;
@@ -26,7 +26,7 @@ public interface XQItemAccessor {
 
     int getInt() throws XQException;
 
-    XMLStreamReader getItemAsStream() throws XQException;
+    //XMLStreamReader getItemAsStream() throws XQException;
 
     String getItemAsString() throws XQException;
 

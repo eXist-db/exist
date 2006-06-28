@@ -21,7 +21,7 @@ public interface XQSequence extends XQItemAccessor {
 
     int getPosition() throws XQException;
 
-    javax.xml.stream.XMLStreamReader getSequenceAsStream() throws XQException;
+    //javax.xml.stream.XMLStreamReader getSequenceAsStream() throws XQException;
 
     java.lang.String getSequenceAsString(java.util.Properties props) throws XQException;
 
