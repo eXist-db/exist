@@ -11,7 +11,7 @@
     }
 }
 
-p, .synopsis, .note, .example, .important {
+p, .synopsis, .note, .example, .important, .formaltable {
     font-size: 1em;
     margin: 0 15px 1em 15px;
 }
@@ -268,18 +268,19 @@ h1 {
     padding-bottom: 5px;
 }
 h2 {
-    font-size: 1.33em;
+    font-size: 1.5em;
     font-weight: normal;
+    font-variant: small-caps;
     color: #666;
     line-height: 1.7em;
     margin: 15px 0 15px 0;
     border-bottom: 1px solid;
 }
 h3 {
-    font-size: 1em;
+    font-size: 1.33em;
     font-weight: normal;
+    font-variant: small-caps;
     color: #666666;
-    font-style: italic;
     text-align: left;
     padding-left: 15px;
     margin-right: 20px;
@@ -396,6 +397,18 @@ select.choose {
     color: black;
     border: 0;
     margin: 5px 0 0 10px;
+}
+
+.formaltable {
+}
+
+.formaltable h1 {
+    background-color: inherit;
+    color: black;
+    font-size: 1.25em;
+    font-weight: bold;
+    text-decoration: underline;
+    margin-bottom: 0;
 }
 
 .note {

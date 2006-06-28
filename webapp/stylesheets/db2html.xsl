@@ -161,10 +161,10 @@
                         <xsl:attribute name="name"><xsl:value-of select="generate-id()"/></xsl:attribute>
                     </xsl:otherwise>
                 </xsl:choose>
-                <xsl:apply-templates select="title"/>
             </a>
+            <xsl:apply-templates select="title"/>
         </h3>
-        <xsl:apply-templates/>
+        <xsl:apply-templates select="*[not(name()='title')]"/>
     </xsl:template>
 
     <xsl:template match="chapter/section/section/title|article/section/section/title">
@@ -200,7 +200,7 @@
             <xsl:apply-templates select="graphic"/>
         </div>
     </xsl:template>
-
+    
     <xsl:template match="bookinfo|articleinfo">
         <div id="page-head">
             <xsl:choose>
@@ -487,4 +487,20 @@
         </td>
     </xsl:template>
     
+    <xsl:template match="table">
+        <div class="formaltable">
+            <h1><xsl:apply-templates select="title"/></h1>
+            <table>
+                <xsl:apply-templates select="*[not(self::title)]"/>
+            </table>
+        </div>
+    </xsl:template>
+    
+    <xsl:template match="row">
+        <tr><xsl:apply-templates/></tr>
+    </xsl:template>
+    
+    <xsl:template match="entry">
+        <td><xsl:apply-templates/></td>
+    </xsl:template>
 </xsl:stylesheet>
