@@ -30,7 +30,7 @@ xmlns:atom="http://www.w3.org/2005/Atom">
                                 "&#x0a;",
                                 <category scheme="http://www.smallx.com/Ontology/Atopic/2006/1/0/topic/relation" term="ancestor"/>,
                                 "&#x0a;",
-                                <link rel="alternate" href="/atom/content{$apath}" type="application/atom+xml"/>,
+                                <link rel="alternate" href="/atom/content/{$apath}" type="application/atom+xml"/>,
                                 "&#x0a;",
                                 <summary>
                                      {
@@ -44,8 +44,9 @@ xmlns:atom="http://www.w3.org/2005/Atom">
                             "&#x0a;"
                             ),
             for $i in (collection($current)/atom:feed) 
-               let $path :=  substring-before(base-uri($i),'/.feed.atom')
-                  return if ($current!=$path) 
+               let $path :=  substring-before(base-uri($i),'/.feed.atom'),
+                   $prefix := concat($current,'/')
+                  return if ($current!=$path and not(contains(substring-after($path,$prefix),'/')))
                      then (<entry>
                             {
                                 "&#x0a;",
