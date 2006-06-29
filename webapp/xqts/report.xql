@@ -88,6 +88,7 @@ declare function xqts:display-page() as element() {
                     <li><a href="../index.xml#download">Download</a></li>
                     <li><a href="http://wiki.exist-db.org">Wiki</a></li>
                     <li><a href="../examples.xml">Demo</a></li>
+                    <li><a href="collectresults.xql">Results</a></li>
                 </ul>
                 <h1>XQuery Test Suite - Test Reports</h1>
             </div>
