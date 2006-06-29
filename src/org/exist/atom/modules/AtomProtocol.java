@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.UUID;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -52,6 +51,8 @@ import org.exist.util.LockException;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
+import org.safehaus.uuid.UUID;
+import org.safehaus.uuid.UUIDGenerator;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -155,7 +156,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
             DocumentImpl feedDoc = null;
             TransactionManager transact = broker.getBrokerPool().getTransactionManager();
             Txn transaction = transact.beginTransaction();
-            String id = "urn:uuid:"+UUID.randomUUID();
+            String id = "urn:uuid:"+UUIDGenerator.getInstance().generateRandomBasedUUID();
             String currentDateTime = toXSDDateTime(new Date());
             Element publishedE = DOM.replaceTextElement(root,Atom.NAMESPACE_STRING,"published",currentDateTime,true,true);
             DOM.replaceTextElement(root,Atom.NAMESPACE_STRING,"updated",currentDateTime,true,true);
@@ -234,7 +235,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                   collection = broker.getOrCreateCollection(transaction,pathUri);
                   broker.saveCollection(transaction, collection);
                }
-               UUID id = UUID.randomUUID();
+               UUID id = UUIDGenerator.getInstance().generateRandomBasedUUID();
                String currentDateTime = toXSDDateTime(new Date());
                DOM.replaceTextElement(root,Atom.NAMESPACE_STRING,"updated",currentDateTime,true);
                DOM.replaceTextElement(root,Atom.NAMESPACE_STRING,"id","urn:uuid:"+id,true);
@@ -797,7 +798,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
       throws ParserConfigurationException
    {
 
-      String id = "urn:uuid:"+UUID.randomUUID();
+      String id = "urn:uuid:"+UUIDGenerator.getInstance().generateRandomBasedUUID();
       
       DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
       docFactory.setNamespaceAware(true);
