@@ -122,7 +122,7 @@ public class Collations {
 
     public final static int compare(Collator collator, String s1, String s2) {
         if (collator == null)
-            return s1.compareTo(s2);
+            return s1==null ? (s2==null ? 0 : -1)  : s1.compareTo(s2);
         else
             return collator.compare(s1, s2);
     }
