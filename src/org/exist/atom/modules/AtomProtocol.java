@@ -120,6 +120,9 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                charset = param.substring(equals+1).trim();
             }
          }
+         if (mime==null) {
+            mime = MimeType.BINARY_TYPE;
+         }
       }
       
       Collection collection = broker.getCollection(pathUri);
