@@ -19,7 +19,8 @@ xmlns:atom="http://www.w3.org/2005/Atom">
                for $i in (1 to count($parts)-1)
                    let $apath := string-join(subsequence($parts,1,$i),'/'),
                        $feed := document(concat($apath,'/.feed.atom'))/atom:feed
-                     return (<entry>
+                     return if (not($feed/atom:category[@scheme='http://www.smallx.com/Ontology/Atopic/2006/1/0/display' and @term='false']))
+                       then (<entry>
                             {
                                 "&#x0a;",
                                 $feed/atom:id,
@@ -42,11 +43,13 @@ xmlns:atom="http://www.w3.org/2005/Atom">
                              }
                             </entry>,
                             "&#x0a;"
-                            ),
+                            )
+                       else (),
             for $i in (collection($current)/atom:feed) 
                let $path :=  substring-before(base-uri($i),'/.feed.atom'),
                    $prefix := concat($current,'/')
-                  return if ($current!=$path and not(contains(substring-after($path,$prefix),'/')))
+                  return if ($current!=$path and not(contains(substring-after($path,$prefix),'/'))
+                             and not($i/atom:category[@scheme='http://www.smallx.com/Ontology/Atopic/2006/1/0/display' and @term='false']))
                      then (<entry>
                             {
                                 "&#x0a;",
