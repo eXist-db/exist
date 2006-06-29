@@ -39,6 +39,7 @@ import org.exist.EXistException;
 import org.exist.atom.AtomModule;
 import org.exist.atom.modules.AtomFeeds;
 import org.exist.atom.modules.AtomProtocol;
+import org.exist.atom.modules.Introspect;
 import org.exist.atom.modules.Query;
 import org.exist.atom.modules.Topics;
 import org.exist.http.BadRequestException;
@@ -198,6 +199,9 @@ public class AtomServlet extends HttpServlet {
        Query query = new Query();
        modules.put("query",query);
        query.init(new ModuleContext(config,"query"));
+       Introspect introspect = new Introspect();
+       modules.put("introspect",introspect);
+       introspect.init(new ModuleContext(config,"introspect"));
        
        
        // XML lib checks....
