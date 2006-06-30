@@ -38,6 +38,17 @@ import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
+import org.xmldb.api.modules.XUpdateQueryService;
+
+
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.sax.TransformerHandler;
+import javax.xml.transform.sax.SAXTransformerFactory;
+
+
+
 
 /**
  * Transformer component for querying an XML database using the
@@ -61,6 +72,7 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 	public static final String CURRENT_NODE_ELEMENT = "current-node";
 	public static final String SELECT_NODE = "select-node";
 	public static final String RESULT_SET_ELEMENT = "result-set";
+  public static final String XUPDATE_ELEMENT = "update";
 
 	public static final String ERROR_ELEMENT = "error";
 	public static final String ERRMSG_ELEMENT = "message";
@@ -70,6 +82,7 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 
 	public static final String FATAL_ERROR = "fatal";
 	public static final String WARNING = "warn";
+	public static final String INFO= "info";
 
 	public static final int IN_COLLECTION = 1;
 	public static final int IN_QUERY = 2;
@@ -86,6 +99,14 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 	private XMLResource currentResource = null;
 	private HashMap namespaces = new HashMap(20);
 	private String prefix = null;
+
+
+  private StringWriter queryWriter;
+  private TransformerHandler queryHandler;
+
+   /** The trax <code>TransformerFactory</code> used by this transformer. */
+    private SAXTransformerFactory tfactory = null;
+
 	
 	/**
 	 * Setup the component. Accepts parameters "driver", "user" and
@@ -116,6 +137,12 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 
 	public void startElement(String uri, String localName, String qname, Attributes attribs)
 		throws SAXException {
+    if(queryHandler!=null) {
+      this.queryHandler.startElement(uri, localName, qname, attribs);
+    }
+    else
+    {
+    
 		if (isRecording) {
 			if (NAMESPACE.equals(uri) && FOR_EACH_ELEMENT.equals(localName))
 				++nesting;
@@ -131,6 +158,8 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 				startCurrent(attribs);
 			else if (SELECT_NODE.equals(localName))
 				startSelectNode(attribs);
+      else if(XUPDATE_ELEMENT.equals(localName))
+        startXUpdate(attribs);
 		} else {
 			if (currentResource != null) {
 				try {
@@ -154,6 +183,7 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 			} else
 				super.startElement(uri, localName, qname, attribs);
 		}
+    }
 	}
 
 	protected void startCollection(Attributes attribs) throws SAXException {
@@ -191,6 +221,54 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 		} catch (XMLDBException e) {
 		}
 	}
+
+  /**
+   * Helper for TransformerFactory.
+   */
+    protected SAXTransformerFactory getTransformerFactory() {
+        if (tfactory == null)  {
+            tfactory = (SAXTransformerFactory) TransformerFactory.newInstance();
+            //tfactory.setErrorListener(new TraxErrorHandler(getLogger()));
+        }
+        return tfactory;
+    }
+
+
+  protected void startXUpdate(Attributes attribs) throws SAXException {
+    if (collection == null) {
+      reportError(FATAL_ERROR, "no collection selected");
+      return;
+    }
+    queryWriter = new StringWriter(256);
+    try {
+      this.queryHandler = getTransformerFactory().newTransformerHandler();
+      this.queryHandler.setResult(new StreamResult(queryWriter));
+      //this.queryHandler.getTransformer().setOutputProperties(format);
+    } 
+    catch (TransformerConfigurationException e) {
+      throw new SAXException("Failed to get transformer handler", e);
+    }
+    // Start query document
+    this.queryHandler.startDocument();
+
+    Iterator i = namespaces.entrySet().iterator();
+    while (i.hasNext()) {
+      Map.Entry entry = (Map.Entry)i.next();
+      this.queryHandler.startPrefixMapping((String)entry.getKey(), (String)entry.getValue());
+    }
+
+  }
+
+  protected void endXUpdate() throws SAXException 
+  {
+    try { 
+      XUpdateQueryService service = (XUpdateQueryService) collection.getService("XUpdateQueryService", "1.0");
+      long count = service.update(queryWriter.toString());
+    }
+    catch(XMLDBException e) {
+      reportError(FATAL_ERROR, "Unable to perform update: "+e.getMessage() , e);
+    }
+  }
 
 	protected void startSelectNode(Attributes attribs) throws SAXException {
 		if (collection == null) {
@@ -412,6 +490,19 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 	 * @see org.xml.sax.ContentHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
 	 */
 	public void endElement(String uri, String loc, String raw) throws SAXException {
+    if (this.queryHandler != null  && !(NAMESPACE.equals(uri) && XUPDATE_ELEMENT.equals(loc)) )  {
+      this.queryHandler.endElement(uri, loc, raw);
+    } else if(NAMESPACE.equals(uri) && XUPDATE_ELEMENT.equals(loc)) {
+        Iterator i = namespaces.entrySet().iterator();
+        while (i.hasNext()) {
+          Map.Entry entry = (Map.Entry) i.next();
+          this.queryHandler.endPrefixMapping((String)entry.getKey());
+        }
+        endXUpdate();
+        this.queryHandler = null;
+    }
+    else
+    {
 		if (isRecording) {
 			if (NAMESPACE.equals(uri) && FOR_EACH_ELEMENT.equals(loc) && --nesting == 0)
 				endForEach();
@@ -423,10 +514,11 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 				mode = 0;
 			} else if (FOR_EACH_ELEMENT.equals(loc)) {
 				endForEach();
-			}
+      }
 			return;
 		} else
 			super.endElement(uri, loc, raw);
+    }
 	}
 
 	protected void endForEach() throws SAXException {
@@ -464,7 +556,11 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 	}
 
 	public void characters(char[] p0, int p1, int p2) throws SAXException {
-		super.characters(p0, p1, p2);
+    if(queryHandler!=null) {
+      this.queryHandler.characters(p0,p1,p2);
+    } else {
+		  super.characters(p0, p1, p2);
+    }
 	}
 
 	protected class ForEach {
