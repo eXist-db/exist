@@ -48,12 +48,11 @@
             <section>
                 <title>XQueryServlet and XQueryGenerator (Cocoon)</title>
                 <para>eXist generates HTML web pages from XQuery files in two ways: the
-                    XQueryServlet and XQueryGenerator. These are discussed in-depth in the following
-                    section.</para>
-                <para>With both the XQueryServlet and XQueryGenerator the compiled XQuery script is
-                    stored in a cache for future use. For this, eXist compiles XQuery into a tree of
-                    expression objects, which can be repeatedly executed. This code will only be
-                    recompiled if the source file has changed.</para>
+                    XQueryServlet and XQueryGenerator. With both the XQueryServlet and
+                    XQueryGenerator the compiled XQuery script is stored in a cache for future use.
+                    For this, eXist compiles XQuery into a tree of expression objects, which can be
+                    repeatedly executed. This code will only be recompiled if the source file has
+                    changed.</para>
 
                 <variablelist>
                     <varlistentry>
@@ -948,7 +947,7 @@ DatabaseManager.registerDatabase(database1);
                 using Transformers and about their basic concepts.</para>
             <para>As with other transformers, the XMLDBTransformer listens for a limited set of tags
                 that belong to the namespace <filename moreinfo="none"
-                    >http://exist-db.org/transformer/1.0</filename>. These are
+                    >http://exist-db/transformer/1.0</filename>. These are
                 <sgmltag>collection</sgmltag>, <sgmltag>for-each</sgmltag>,
                 <sgmltag>select-node</sgmltag>, <sgmltag>current-node</sgmltag>. To examine how they
                 are used, let's consider the following example (Note that the complete version of
@@ -957,7 +956,7 @@ DatabaseManager.registerDatabase(database1);
             <example>
                 <title>XMLDBTransformer Example</title>
                 <screen format="linespecific"><![CDATA[
-<xdb:collection xmlns:xdb="http://exist-db.org/transformer/1.0"
+<xdb:collection xmlns:xdb="http://exist-db/transformer/1.0"
 	uri="xdb:exist:///db">
 	<!-- iterate through all rdf:Description elements containing the
 	     term "computer" -->

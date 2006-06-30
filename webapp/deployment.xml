@@ -5,7 +5,7 @@
 <book xmlns:ci="http://apache.org/cocoon/include/1.0">
 	<bookinfo>
 		<graphic fileref="logo.jpg"/>
-        <title>Open Source Native XML Database</title>
+		<title>Open Source Native XML Database</title>
 		<author>
 			<firstname>Wolfgang M.</firstname>
 			<surname>Meier</surname>
@@ -19,267 +19,255 @@
 	<ci:include src="sidebar.xml"/>
 	<chapter>
 		<title>Server Deployment</title>
-        <para>eXist offers <emphasis>three alternatives</emphasis> to run 
-            the database. It may either run as a standalone server process, 
-            embedded into an application or in connection with a servlet engine. 
-            All three alternatives are thread-safe and allow concurrent operations 
-            by multiple users.</para>
-        <para>In <emphasis>stand-alone mode</emphasis>, eXist runs in its 
-            own Java virtual machine. Clients have to access the database 
-            through the network, either using the XML-RPC protocol or 
-            the REST-style HTTP API (see the <ulink href="devguide.xml">Developer's
-            Guide</ulink>. SOAP and WebDAV will not be available in stand-alone
-            mode.</para>
-        <para>In <emphasis>embedded mode</emphasis>, the database is 
-            controlled by the client application. It runs in the same Java 
-            virtual machine as the client, thus no network connection is 
-            needed and the client has full access to the db.</para>
-        <para>eXist may also run directly in a <emphasis>servlet 
-            context</emphasis>. In this case, the database is deployed as 
-            part of a web application. This is the default if the database has
-            been started as described in the <ulink
-            href="quickstart.xml">Quick Start Guide</ulink>.</para>
-            
-        <para>All resources used by eXist will be relative to the web 
-            application's current context. For example, eXist will store all 
-            its database files in the <filename>WEB-INF/data</filename> directory 
-            of the web application.</para>
-        <para>Servlets running in the same web application context will 
-            have direct access to the db. A Cocoon-driven application would 
-            be one example. External client applications may still use the 
-            supplied network interfaces.</para>
-		<para>As described in the <ulink url="quickstart.xml">Quick Start 
-			Guide</ulink>, the database engine may either run as a standalone 
-			server, embedded into an application, or in connection with a 
-			servlet container. The Quick Start Guide explained how to set up 
-			eXist for use with a servlet-engine. In the following sections, 
-			some additional information is provided about running eXist as a 
-			standalone server and about embedding eXist into an application. 
-			However, to understand how different servers are addressed from 
-			Java clients, we first introduce the XML:DB URI. Section 2 deals 
-			with eXist running in standalone mode. Finally, we discuss the 
-			required steps to directly embed eXist into an application.</para>
 		<section>
-			<title>Addressing different servers with the XML:DB URI</title>
-			<para>The preferred way to access eXist from Java applications is 
-				to use the XML:DB API. It provides a common Java interface to 
-				native or XML-enabled databases. The interactive command-line 
-				client as well as the Cocoon integration build upon it. eXist's 
-				XML:DB implementation supports transparent access to remote as 
-				well as embedded database servers. Since access to the database 
-				is handled transparently by the XML:DB API, applications don't 
-				have to be concerned about the way the database has been 
-				deployed.</para>
-			<para>The XML:DB API uses URIs to locate a collection of XML 
-				resources on the server. The URI identifies the database 
-				implementation, the name of the collection and optionally the 
-				location of the database server on the network. For example, 
-				the URI</para>
-			<synopsis format="linespecific">
-				xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare</synopsis>
-			<para>references the shakespeare-collection on a remote server 
-				which is running in a servlet-engine. The host part: 
-				localhost:8080/exist/xmlrpc describes the path to the XML-RPC 
-				listener (which is running as a servlet). The collection part 
-				defines the collection to retrieve: /db/shakespeare. If eXist 
-				had been started as a standalone server, the URI would change 
-				to</para>
-			<synopsis format="linespecific">
-				xmldb:exist://localhost:8088/xmlrpc/db/shakespeare</synopsis>
-			<para>Finally, to access an embedded instance of the database, we 
-				just drop the host part completely, using three slashes in 
-				front of the collection path:</para>
-			<synopsis format="linespecific">
-				xmldb:exist:///db/shakespeare</synopsis>
-			<para>You can use the command-line client to experience with these 
-				settings. The client utitlizes the XML:DB API to access the 
-				database. It is configured through a properties file called 
-				<filename moreinfo="none">client.properties</filename>. By 
-				default, the client tries to access the database engine located 
-				at the base URI</para>
-			<synopsis format="linespecific">
-				xmldb:exist://localhost:8080/exist/xmlrpc/</synopsis>
-			<para>To use the client with another server you just have to change 
-				the <option>uri</option> property. You can do this permanently 
-				by editing the properties file or temporary by passing the 
-				<option>-o</option> on the command line. For example, starting 
-				the client with</para>
-			<synopsis format="linespecific">bin/client.sh 
-				-ouri=xmldb:exist://</synopsis>
-			<para>will cause the client to start a local database instance 
-				which will run in the same Java virtual machine as the client. 
-				There's a short form for this: passing option 
-				<option>-l</option> to the client will always launch a local 
-				database instance:</para>
+			<title>Overview</title>
+
+			<para>There are <emphasis>three</emphasis> ways to deploy the eXist database server:</para>
+			<orderedlist>
+				<listitem>
+					<para>
+						<emphasis>Stand-alone Server Process</emphasis>
+					</para>
+					<para>In stand-alone mode, eXist runs in its own Java virtual machine (JVM).
+						Clients have to access the database through the network, either using the
+						XML-RPC protocol or the REST-style HTTP API (see the <ulink
+							url="devguide.xml">Developer's Guide</ulink>). Note that SOAP and WebDAV
+						are not available in stand-alone mode.</para>
+				</listitem>
+				<listitem>
+					<para>
+						<emphasis>Embedded in an Application</emphasis>
+					</para>
+					<para>In embedded mode, the database is controlled by the client application. It
+						runs in the same Java virtual machine as the client, thus no network
+						connection is needed and the client has full access to the database.</para>
+				</listitem>
+				<listitem>
+					<para>
+						<emphasis>Stand-alone in a Servlet Context</emphasis>
+					</para>
+					<para>eXist can also run in connection with a servlet engine. In this case, the
+						database is deployed as part of a web application. This is the default mode
+						established when the database has been deployed according to instructions
+						provided in the <ulink url="quickstart.xml">Quick Start Guide</ulink>. All
+						resources used by eXist in this mode will have paths relative to the web
+						application's current context. For example, eXist will store all its
+						database files in the <filename>WEB-INF/data</filename> directory of the web
+						application.</para>
+				</listitem>
+			</orderedlist>
+			<para>Note that all three deployments are thread-safe and allow concurrent operations by
+				multiple users. Also note that servlets running in the same web application context
+				will have direct access to the database - a Cocoon-driven application would be one
+				example of this. External client applications may still use the supplied network
+				interfaces.</para>
+
+			<para>As detailed instructions on how to set up eXist for use with a servlet-engine are
+				provided in the <ulink url="quickstart.xml">Quick Start Guide</ulink>, the sections
+				in this document concern the other two deployment options. In section 2, we
+				introduce the XML:DB URI and explain how different servers are addressed by Java
+				clients. Section 3 deals with running eXist as a stand-alone server, and in Section
+				4 we discuss the required steps to directly embed eXist into an application,
+				including how to embed in the <ulink url="http://titanium.dstc.edu.au"
+				>XMLdbGUI</ulink>.</para>
+		</section>
+		<section>
+			<title>Addressing Different Servers using the XML:DB URI</title>
+			<para>The preferred way to access eXist from Java applications is to use the XML:DB API.
+				This API provides a common, Java interface to native or XML-enabled databases. The
+				interactive command-line client, as well as the Cocoon integration, also offer
+				useful interface capabilities.</para>
+			<para>eXist's XML:DB API implementation supports <emphasis>transparent access</emphasis>
+				to remote as well as embedded database servers. This means the database on the
+				server is available on the client as though it were locally connected to the client
+				- i.e. the user should not have to be aware of where a resource is physically
+				located. Given this transparency, applications need not be affected by how the
+				database has been deployed.</para>
+			<para>Specifically, the XML:DB API uses URIs to locate a collection of XML resources on
+				the server. The URI identifies the database implementation, the name of the
+				collection, and optionally the location of the database server on the network. For
+				example, the URI:</para>
+			<synopsis format="linespecific">xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare</synopsis>
+			<para>points to the shakespeare-collection on a remote server which is running in a
+				servlet-engine. The host part: <filename>localhost:8080/exist/xmlrpc</filename>
+				describes the path to the XML-RPC listener, which is running as a servlet. The
+				collection part (<filename>/db/shakespeare</filename>) defines the collection to
+				retrieve. If eXist had started as a stand-alone server, the URI would change its
+				port to <option>8088</option> to become:</para>
+			<synopsis format="linespecific">xmldb:exist://localhost:8088/xmlrpc/db/shakespeare</synopsis>
+			<para>Finally, to access an embedded instance of the database, we simply drop the host
+				part altogether, and use three forward slashes (<option>///</option>) in front of
+				the collection path:</para>
+			<synopsis format="linespecific">xmldb:exist:///db/shakespeare</synopsis>
+			<para>You can also use the command-line client to experiment with these settings. The
+				client utilizes the XML:DB API to access the database, and is configured through a
+				properties-file called <filename moreinfo="none">client.properties</filename>. By
+				default, the client tries to access the database engine located at the base URI:</para>
+			<synopsis format="linespecific">xmldb:exist://localhost:8080/exist/xmlrpc/</synopsis>
+			<para>To use the client with another server, you can simply change the
+				<option>uri</option> property for the server location. For permanent changes, edit
+				the properties-file <filename moreinfo="none">client.properties</filename>. To make
+				temporary changes, pass the <option>-o</option> option on the command line. For
+				example, if you start the Admin client using the command:</para>
+			<synopsis format="linespecific">bin/client.sh -o uri=xmldb:exist://</synopsis>
+			<para>this will cause a local database instance to run in the same Java virtual machine
+				as the client. Note that the short form for this particular command uses the
+					<option>-l</option> option that causes the client to launch a local database
+				instance - i.e.:</para>
 			<synopsis format="linespecific">bin/client.sh -l</synopsis>
 		</section>
 		<section>
-			<title>Running eXist as a Standalone Server</title>
-			<para>There are many cases where it is preferable to have the 
-				database engine running in its own Java virtual machine. In 
-				general, the database will be more reliable, because there are 
-				no other threads which might cause problems. If your 
-				application doesn't need Cocoon or SOAP, you should 
-				prefer the stand-alone server.</para>
-			<para>The standalone database server offers XML-RPC, WebDAV and 
-				REST-style HTTP 
-				interfaces to the outside world. It does not support SOAP.
-				The XML-RPC and REST interfaces are explained in depth 
-                in the <ulink url="devguide.xml">Developer's Guide</ulink>.</para>
-			<para>The stand-alone server runs on port 8088 by default.</para>
+			<title>Running eXist as a Stand-alone Server</title>
+			<para>There are many cases in which it is preferable to have the database engine running
+				in its own Java virtual machine. In general, this database mode is more reliable,
+				since no other threads (simultaneously tasks) are running, which might cause
+				problems. If your application does not need Cocoon or SOAP, you should use the
+				stand-alone server.</para>
+			<para>The stand-alone database server also offers XML-RPC, WebDAV and REST-style HTTP
+				interfaces for external client access. Please note that It does not support SOAP.
+				The XML-RPC and REST interfaces are explained in-depth in the <ulink
+					url="devguide.xml">Developer's Guide</ulink>.</para>
+			<para>by default, the stand-alone server listens on port <filename>8088</filename>. You
+				can specify a different listening port using the <option>-p</option> option when
+				starting the server on the command line (see below). Note that the corresponding
+				Java class for the server is <classname>org.exist.Server</classname>.</para>
 			<section>
-				<title>Starting the stand-alone server</title>
-				<para>To start the server, you may use the <filename 
-					moreinfo="none">bin/server.sh</filename> or <filename 
-					moreinfo="none">bin\server.bat</filename> shell 
-					scripts:</para>
+				<title>Starting the Stand-alone Server</title>
+				<para>To start the server, launch either the Unix shell script:</para>
+				<synopsis format="linespecific">bin/server.sh</synopsis>
+				<para>OR the Windows/DOS batch file:</para>
 				<synopsis format="linespecific">bin\server.bat</synopsis>
-				<para>The corresponding Java class is called 
-					<classname>org.exist.Server</classname>. You may specify 
-					a different listener port with the <option>-p</option> 
-					option.</para>
-				<para>The server is multi-threaded. A server thread is assigned 
-					to each client request. If a certain maximum of threads is 
-					reached, the server will block the client until one of the 
-					server-threads is available to handle the response. By 
-					default, the maximum is set to 5. To change this, you may 
-					use option <option>-t</option>, e.g.:</para>
+				<para>The server is multi-threaded - a server thread is assigned to each client
+					request. If the specified maximum number of threads is reached, the server will
+					block the client until one of the server-threads is available to respond. By
+					default, the maximum number of threads is 5. To change this, use the
+					<option>-t</option> option, e.g.:</para>
 				<synopsis format="linespecific">bin\server.bat -t 20</synopsis>
+				<para/>
 			</section>
 			<section>
 				<title>Changing the XML:DB Server URI</title>
-				<para>To access the stand-alone server with the interactive 
-					command line client (or from your own Java classes), you 
-					have to change the XML:DB server URI as described above. 
-					Change the URI to</para>
-				<synopsis format="linespecific">
-					uri=xmldb:exist://localhost:8088/xmlrpc</synopsis>
-				<para>The same applies to Cocoon-based applications. To access 
-					the stand-alone server from one of the XSP pages you have 
-					to change the corresponding line defining the XML:DB 
-					collection URI. You may also have a look at Cocoon's 
-					site-configuration file <filename 
-					moreinfo="none">sitemap.xmap</filename> in directory 
-					<filename moreinfo="none">webapp</filename> and adjust all 
-					the xmldb:// URIs. For example,</para>
-				<synopsis format="linespecific">
-					xmldb:exist:///db/shakespeare/plays/{1}.xml</synopsis>
-				<para>should become</para>
-				<synopsis format="linespecific">
-					xmldb:exist://localhost:8088/xmlrpc/db/shakespeare/plays/{1}.xml</synopsis>
+				<para>To access the stand-alone server using the interactive command line client (or
+					by your own Java classes), you must change the XML:DB server URI set by the
+						<option>uri</option> property, as described above, to the following:</para>
+				<synopsis format="linespecific">xmldb:exist://localhost:8088/xmlrpc</synopsis>
+				<para>The same change is also required for Cocoon-based applications. To access the
+					stand-alone server from an XSP page, you have to change the corresponding line
+					of code defining the XML:DB collection URI. As well, you may be required to
+					modify the <filename>xmldb://</filename> URIs in Cocoon's <filename
+						moreinfo="none">sitemap.xmap</filename> configuration file located in the
+						<filename moreinfo="none">webapp</filename> directory. For example, the URI:</para>
+				<synopsis format="linespecific">xmldb:exist:///db/shakespeare/plays/{1}.xml</synopsis>
+				<para>should be changed to:</para>
+				<synopsis format="linespecific">xmldb:exist://localhost:8088/xmlrpc/db/shakespeare/plays/{1}.xml</synopsis>
+			</section>
+			<section>
+				<title>Shutting Down the Database</title>
+
+				<para>By default, the <filename>shutdown.bat</filename> (Windows/DOS) and
+						<filename>shutdown.sh</filename> (Unix) scripts try to connect to the
+					default server URI - i.e.:</para>
+				<synopsis format="linespecific">xmldb:exist://localhost:8080/exist/xmlrpc</synopsis>
+				<para>If your database is not running within the supplied Jetty webserver, you must
+					specify a different server URI. Specifically, to stop eXist when running in
+					stand-alone mode listening on port <option>8088</option>, use the following:</para>
+				<synopsis format="linespecific">java -jar start.jar shutdown -uri=xmldb:exist://localhost:8088/xmlrpc</synopsis>
 			</section>
 		</section>
-        <section>
-            <title>Database Shutdown</title>
-            
-            <para>By default, the <filename>shutdown.bat</filename> and
-            <filename>shutdown.sh</filename> scripts try to connect to the
-            default server URI, i.e.</para>
-            
-            <synopsis>xmldb:exist://localhost:8080/exist/xmlrpc</synopsis>
-            
-            <para>You have to specify a different server URI if your database 
-				is not running within the supplied Jetty, for example to stop 
-				eXist when running in stand-alone mode:</para>
-                
-			<synopsis format="linespecific">java -jar start.jar shutdown 
-				--uri=xmldb:exist://localhost:8088/xmlrpc</synopsis>
-        </section>
+
 		<section>
-			<title id="embedded">Embedding eXist</title>
-			<para>In embedded mode, the database runs in the same Java virtual 
-				machine as the client application. The database will not be 
-				accessible from outside the application. No network listeners 
-				are started.</para>
-			<para>You may embed eXist into any Java application that supports 
-				the XML:DB API. Internally, eXist has two different XML:DB 
-				driver implementations: the firsts talks to a remote database 
-				engine using XML-RPC calls; the second has direct access to a 
-				local instance of eXist. Which implementation will be selected 
-				depends on the XML:DB URI as described above. To access an 
-				embedded database, simply drop the host part from the URI, 
-				e.g.:</para>
+			<title id="embedded">Embedding eXist in an Application</title>
+			<para>In the embedded mode, the database runs in the same Java virtual machine as the
+				client application. The database will not be accessible by any outside application,
+				and no network listeners are started.</para>
+			<para>You can embed eXist into any Java application that supports the XML:DB API.
+				Internally, eXist has two different XML:DB driver implementations: the first
+				communicates with a remote database engine using XML-RPC calls; the second has
+				direct access to a local instance of eXist. Which implementation is selected depends
+				on the XML:DB URI as described above. To access an embedded database, simply drop
+				the host portion (i.e. <filename>localhost:8088/xmlrpc/</filename>) from the URI -
+				for instance:</para>
 			<synopsis format="linespecific">xmldb:exist:///db</synopsis>
-			<para>But how do you start an embedded database instance? 
-				Basically, all you have to do is to specify a system property 
-				<option>exist.initdb</option> and set it to "true". This tells 
-				the XML:DB driver that it should take care about configuring 
-				and starting the database if none has been started before. For 
-				example, to launch your own Java application you may 
-				type:</para>
+			<para>To start an embedded database instance, simply set the system property
+					<property>exist.initdb</property> to <option>true</option>. This will notify the
+				XML:DB driver to read the configuration settings when starting the database if none
+				has been previously started. For example, to launch your own Java application with
+				an embedded instance, you may enter the command:</para>
+			<synopsis format="linespecific">java -Dexist.initdb=true MyApp</synopsis>
+			<para>The driver will try to read the eXist configuration file, create the required
+				database files if they have not already been created, and launch the database. This
+				of course implies that the driver should be able to read the configuration file
+					<filename moreinfo="none">conf.xml</filename>. In fact, the driver looks for
+					<filename moreinfo="none">conf.xml</filename> in the directory specified by the
+					<option>exist.home</option> system property. You should therefore ensure a copy
+				of <filename moreinfo="none">conf.xml</filename> is placed in the correct directory.
+				For example, to launch your own application, while setting
+				<option>exist.home</option>, you may enter:</para>
 			<synopsis format="linespecific">java -Dexist.initdb=true 
-				MyApp</synopsis>
-			<para>The driver will try to read the eXist's configuration file, 
-				create the required database files if they have not been 
-				created before and launch the db. This implies that the driver 
-				should be able to read the configuration file <filename 
-				moreinfo="none">conf.xml</filename>. The driver expects 
-				<filename moreinfo="none">conf.xml</filename> to be in the 
-				directory specified by the system property 
-				<option>exist.home</option>. You should thus copy conf.xml to 
-				the proper location. For example, to launch your own 
-				application you may call java with:</para>
-			<synopsis format="linespecific">java -Dexist.initdb=true 
-				-Dexist.home=/home/exist/eXist-0.9 MyApp</synopsis>
-			<para>Please note that you have to edit <filename 
-				moreinfo="none">conf.xml</filename> if you copy the file to a 
-				different location. In particular, the directories containing 
-				data and log files should exist at the proper location.</para>
-			<para>As an alternative to the <option>-Dexist.initdb</option> 
-				property, you may also directly tell the database driver to 
-				create a local database instance during the initialization of 
-				the XML:DB database manager. Just set the property 
-				<option>"create-database" </option> on the created 
-				<classname>Database</classname> object to 
-				<option>"true"</option>. For example:</para>
+				-D exist.home=/home/exist/eXist-0.9 MyApp</synopsis>
+			<para>Please note that you must change the directory path settings for the data and log
+				files if <filename moreinfo="none">conf.xml</filename></para>
+			<para>Instead of using the <option>-Dexist.initdb</option> property, you can also tell
+				the database driver directly to create a local database instance during the
+				initialization of the XML:DB database manager. To do this, simply set the
+					<property>create-database</property> property on the created
+				<classname>Database</classname> object to <option>true</option> - for example:</para>
 			<example>
 				<title>Initializing a Local Database Instance</title>
-				<programlisting format="linespecific"><![CDATA[Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-Database database = (Database) cl.newInstance();
-database.setProperty("create-database", "true");
-DatabaseManager.registerDatabase(database);				]]>
-					</programlisting>
+				<programlisting format="linespecific"><![CDATA[
+  Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
+       Database database = (Database) cl.newInstance();
+       database.setProperty("create-database", "true");
+       DatabaseManager.registerDatabase(database);]]></programlisting>
 			</example>
-			<para>When running eXist in embedded mode, you also have to take 
-				care of shutting down the database before your application 
-				exits. The main reason for this is to flush all unwritten data 
-				buffers to disk. The database uses a background thread to 
-				periodically synchronize its buffers with the data files on the 
-				disk. This thread will keep running if you don't shut down the 
-				database.</para>
-			<para>There's a special XML:DB service, 
-				<classname>DatabaseInstanceManager</classname>, which contains 
-				a single method: shutdown. To gracefully shut down the database 
-				instance, retrieve the service from the /db-collection and call 
-				shutdown(). For example:</para>
-			<para></para>
+			<para>When running eXist in embedded mode, you must ensure to properly shut down the
+				database before your application exits. The main reason for this action is to flush
+				all of the unwritten data buffers to disk. The database uses a background thread to
+				periodically synchronize its buffers with the data files on the disk, and this
+				thread will keep running if you don't shut down the database.</para>
+			<para>There is a special XML:DB service, <classname>DatabaseInstanceManager</classname>,
+				which contains a single method: <methodname>shutdown</methodname>. To properly shut
+				down the database instance, retrieve the service from the
+				<filename>/db-collection</filename> and call <methodname>shutdown()</methodname>.
+				For example:</para>
+			<para/>
 			<example>
 				<title>Shutting down the Database</title>
-				<programlisting format="linespecific">DatabaseInstanceManager 
-					manager = (DatabaseInstanceManager) 
-					collection.getService("DatabaseInstanceManager", "1.0"); 
-					manager.shutdown();</programlisting>
+				<programlisting format="linespecific"><![CDATA[
+  DatabaseInstanceManager 
+       manager = (DatabaseInstanceManager) 
+       collection.getService("DatabaseInstanceManager", "1.0"); 
+       manager.shutdown();]]></programlisting>
 			</example>
-			<para>As a final example, we may try to embed eXist directly into 
-				the <ulink url="http://titanium.dstc.edu.au">XMLdbGUI</ulink> 
-				provided by the DSTC. First, <filename 
-				moreinfo="none">conf.xml</filename> should be copied to the 
-				root directory of the XMLdbGUI distribution. Second, the line 
-				calling Java in <filename moreinfo="none">run.sh</filename> or 
-				<filename moreinfo="none">run.bat</filename> should be modified 
-				to include the option 
-				<option>-Dexist.initdb=true</option>:</para>
-			<synopsis format="linespecific">$JAVA_HOME/bin/java 
-				-Dxmldbgui.home=$XMLDBGUI_HOME -Dexist.initdb=true 
-				-classpath=$_LIBJARS com.dstc.xml.xmldb.gui.XMLdbGUI 
-				"$@"</synopsis>
-			<para>Next, two sub-directories should be created, because they are 
-				required by eXist: <filename moreinfo="none">log</filename> and 
-				<filename moreinfo="none">data</filename>.</para>
-			<para>Finally, we have to copy the required eXist jars to the lib 
-				directory and change the XML:DB base URI for eXist in XMLdbGUIs 
-				configuration file <filename 
-				moreinfo="none">conf/conf.xml</filename>. That's it.</para>
+			<para>As a final example, we may try to embed eXist directly into the <ulink
+					url="http://titanium.dstc.edu.au">XMLdbGUI</ulink> provided by the DSTC. For
+				this, follow these steps:</para>
+			<procedure>
+				<step>
+					<para>Copy the <filename moreinfo="none">conf.xml</filename> file to the root
+						directory of the XMLdbGUI distribution.</para>
+				</step>
+				<step>
+					<para>Modify the line calling Java in <filename moreinfo="none"
+						>run.sh</filename> (Unix) or <filename moreinfo="none">run.bat</filename>
+						(Windows/DOS) to include the option <option>-Dexist.initdb=true</option> -
+						i.e.:</para>
+					<synopsis format="linespecific">$JAVA_HOME/bin/java 
+						-Dxmldbgui.home=$XMLDBGUI_HOME -Dexist.initdb=true 
+						-classpath=$_LIBJARS com.dstc.xml.xmldb.gui.XMLdbGUI 
+						"$@"</synopsis>
+				</step>
+				<step>
+					<para>Create two sub-directories required by eXist in the root directory called:
+							<filename moreinfo="none">log</filename> and <filename moreinfo="none"
+							>data</filename>.</para>
+				</step>
+				<step>
+					<para>Copy the required eXist jar files to the <filename>lib</filename>
+						directory and change the XML:DB base URI for eXist in XMLdbGUIs
+						configuration file <filename>conf/conf.xml</filename>. </para>
+				</step>
+			</procedure>
 		</section>
 	</chapter>
 </book>
