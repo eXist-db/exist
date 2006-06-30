@@ -55,6 +55,11 @@
                     Nifty("div.block ul", "bottom");
                     }
                 </script>
+                <style type="text/css">
+                    #xmlprague { position: absolute; top: 50px; right: 50px; }
+                    #xmlprague div { text-align: center; margin-bottom: 8px; color: #666;}
+                    #xmlprague a { color: #333; }
+                </style>
             </head>
 
             <body bgcolor="#FFFFFF">
@@ -65,6 +70,12 @@
                         <xsl:apply-templates select="sidebar:sidebar/sidebar:toolbar"/>
                         <h1><xsl:value-of select="header/title"/></h1>
                     </div>
+                </div>
+                <div id="xmlprague">
+                    <div>Join us: <a href="http://wiki.exist-db.org/space/start/2005-12-22/1#First_eXist_Workshop_in_conjunction_with_XML_Prague,_June_17/18">eXist Workshop</a> at</div>
+                    <a href="http://xmlprague.cz">
+                        <img src="resources/xmlprague2006_250x60.png" border="0"/>
+                    </a>
                 </div>
                 <xsl:apply-templates select="sidebar:sidebar"/>
                 <xsl:apply-templates select="newsblock"/>
