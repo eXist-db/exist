@@ -74,6 +74,11 @@
       <map:generator label="content,data" name="exist-cluster" src="org.exist.cluster.cocoon.ClusterGenerator"/>
 
       <map:generator label="content,data" name="cluster-info" src="org.exist.cluster.cocoon.ClusterInfoGenerator"/>
+      
+      <map:generator name="xquery" 
+        logger="sitemap.generator.xquery"
+		src="org.exist.cocoon.XQueryGenerator">
+    </map:generator>
 </map:generators>
 
   <!--+
@@ -773,26 +778,6 @@
                 <map:transform type="encodeURL"/>
                 <map:serialize type="html"/>
             </map:match>
-            
-            <!-- this is a protected resource: it uses the xmldb-login action
-            to authenticate a user against the database -->
-            <map:match pattern="xadmin.xsp">
-                <map:act src="xmldb:exist:///db" type="xmldb-login">
-                    <map:generate src="xadmin.xsp" type="serverpages"/>
-                    <map:transform type="xinclude">
-                        <map:parameter name="use-request-parameters" value="true"/>
-                    </map:transform>
-                    <map:transform src="stylesheets/doc2html-2.xsl">
-                        <map:parameter name="use-request-parameters" value="true"/>
-                    </map:transform>
-                    <map:serialize encoding="UTF-8" type="html"/>
-                </map:act>
-                <!-- no session found: display login form -->
-                <map:generate src="login.xml"/>
-                <map:transform type="xinclude"/>
-                <map:transform src="stylesheets/doc2html-2.xsl"/>
-                <map:serialize type="html"/>
-            </map:match>
 				
             <map:match pattern="request.xml">
                 <map:generate type="request">
@@ -814,6 +799,13 @@
             	<map:generate src="roadmap.xml"/>
                 <map:transform type="cinclude"/>
                 <map:transform src="stylesheets/roadmap.xsl"/>
+                <map:serialize type="html"/>
+            </map:match>
+            
+            <map:match pattern="docquery.xq">
+            	<map:generate src="docquery.xq" type="xquery"/>
+                <map:transform type="cinclude"/>
+                <map:transform src="stylesheets/db2html.xsl"/>
                 <map:serialize type="html"/>
             </map:match>
             
