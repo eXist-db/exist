@@ -6,6 +6,7 @@
 <book xmlns:ci="http://apache.org/cocoon/include/1.0">
 	<bookinfo>
 		<graphic fileref="logo.jpg"/>
+		<productname>Open Source Native XML Database</productname>
         <title>Cluster configuration</title>
 		<author>
 			<firstname>Piranha</firstname>

@@ -1,23 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet href="file://localhost/home/wolf/Java/Morphon_XML-Editor_3.1/Examples/docbook/docbook.css" type="text/css"?>
-<book xmlns:ci="http://apache.org/cocoon/include/1.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:noNamespaceSchemaLocation="file://localhost/home/wolf/Java/Morphon_XML-Editor_3.1/Examples/docbook/xsd/docbook.xsd">
+<book xmlns:ci="http://apache.org/cocoon/include/1.0">
   <bookinfo>
     <graphic fileref="logo.jpg"/>
 
-    <title>Open Source Native XML Database</title>
+    <productname>Open Source Native XML Database</productname>
+    <title>Java Admin Client</title>
     <author>
       <firstname>Wolfgang M.</firstname>
       <surname>Meier</surname>
       <affiliation>
-        <address format="linespecific"> <email>wolfgang@exist-db.org</email> </address>
+        <address format="linespecific"><email>wolfgang at exist-db.org</email></address>
       </affiliation>
     </author>
   </bookinfo>
+  
   <ci:include src="sidebar.xml"/>
+  
   <chapter id="ch01">
     <title>Java Client</title>
+    
     <para>eXist offers an integrated command-line and gui client in class
         <classname>org.exist.client.InteractiveClient</classname>. The client is entirely based on
       the XML:DB API and provides commands for most database related tasks, like creating and
