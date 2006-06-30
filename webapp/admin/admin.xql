@@ -158,7 +158,7 @@ return
                         <li><a href="{session:encode-url(request:get-uri())}?panel=status">System Status</a></li>
                         <li><a href="{session:encode-url(request:get-uri())}?panel=browse">Browse Collections</a></li>
                         <li><a href="{session:encode-url(request:get-uri())}?panel=users">Manage Users</a></li>
-                        <li><a href="{session:encode-url(request:get-uri())}?panel=setup">Examples and Documentation Setup</a></li>
+                        <li><a href="{session:encode-url(request:get-uri())}?panel=setup">Examples Setup</a></li>
                         <li><a href="{session:encode-url(request:get-uri())}?panel=shutdown">Shutdown</a></li>
                         <li><a href="{session:encode-url(request:get-uri())}?logout=yes">Logout</a></li>
                     </ul>
