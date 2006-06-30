@@ -80,7 +80,6 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 	private String xpath = null;
 	private Collection collection = null;
 	private Stack commandStack = new Stack();
-	private Request request;
 	private boolean isRecording = false;
 	private int nesting = 0;
 	private int mode = 0;
@@ -105,10 +104,10 @@ public class XMLDBTransformer extends AbstractSAXTransformer implements Poolable
 	 */
 	public void setup(SourceResolver resolver, Map map, String src, Parameters parameters)
 		throws ProcessingException, SAXException, IOException {
+		super.setup(resolver, map, src, parameters);
 		driver = parameters.getParameter("driver", DEFAULT_DRIVER);
 		user = parameters.getParameter("user", DEFAULT_USER);
-		password = parameters.getParameter("password", DEFAULT_USER);
-		request = ObjectModelHelper.getRequest(map);
+		password = parameters.getParameter("password", DEFAULT_PASSWORD);
 		if (request == null) {
 			throw new ProcessingException("no request object found");
 		}
