@@ -61,12 +61,13 @@
             <link href="../api/index.html">Javadocs</link>
         </item>
         <item>
-            <link href="http://sourceforge.net/tracker/?group_id=17691&amp;atid=117691">
-                Bug Tracker
-            </link>
+            <link href="http://sourceforge.net/tracker/?group_id=17691&amp;atid=117691">Bug Tracker</link>
         </item>
         <item>
-            <link href="http://sourceforge.net/svn/?group_id=17691">SVN</link>
+            <link href="http://sourceforge.net/svn/?group_id=17691">Subversion</link>
+        </item>
+        <item>
+            <link href="http://sourceforge.net/tracker/?atid=317691&amp;group_id=17691&amp;func=browse">Patches</link>
         </item>
     </group>
     <group name="Administration">
