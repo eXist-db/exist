@@ -36,7 +36,8 @@
                             <td>current status, supported features and extensions.</td>
                         </tr>
                         <tr>
-                            <td class="doclink"><ulink url="update_ext.xml">XQuery Update Extensions</ulink>:</td>
+                            <td class="doclink"><ulink url="update_ext.xml">XQuery Update
+                                Extensions</ulink>:</td>
                             <td>eXist provides a number of extensions to update document fragments
                                 from within an XQuery.</td>
                         </tr>
@@ -45,7 +46,8 @@
                             <td>Explains how to backup/restore your database contents.</td>
                         </tr>
                         <tr>
-                            <td class="doclink"><ulink url="indexing.xml">Configuring Indexes</ulink>:</td>
+                            <td class="doclink"><ulink url="indexing.xml">Configuring
+                                Indexes</ulink>:</td>
                             <td>how to configure specific indexes.</td>
                         </tr>
                         <tr>
@@ -70,11 +72,13 @@
                             <td>XQuery access control.</td>
                         </tr>
                         <tr>
-                            <td class="doclink"><ulink url="configuration.xml">Server Configuration</ulink>:</td>
+                            <td class="doclink"><ulink url="configuration.xml">Server
+                                Configuration</ulink>:</td>
                             <td>configuration options for the server.</td>
                         </tr>
                         <tr>
-                            <td class="doclink"><ulink url="ldap-security.xml">LDAP Security Manager</ulink>:</td>
+                            <td class="doclink"><ulink url="ldap-security.xml">LDAP Security
+                                Manager</ulink>:</td>
                             <td>configuring eXist to use LDAP for users and groups.</td>
                         </tr>
                         <tr>
@@ -82,11 +86,17 @@
                             <td>XInclude support in eXist.</td>
                         </tr>
                         <tr>
+                            <td class="doclink"><ulink url="building.xml">Building eXist</ulink>:</td>
+                            <td>Compiling and building eXist distributions, using the Subversion
+                            repository.</td>
+                        </tr>
+                        <tr>
                             <td class="doclink"><ulink url="ant-tasks.xml">Ant Tasks</ulink>:</td>
                             <td>how to automate tasks with Ant.</td>
                         </tr>
                         <tr>
-                            <td class="doclink"><ulink url="cluster.xml">Cluster configuration</ulink>:</td>
+                            <td class="doclink"><ulink url="cluster.xml">Cluster
+                                configuration</ulink>:</td>
                             <td>how to configure cluster environment.</td>
                         </tr>
                         <tr>
@@ -94,7 +104,8 @@
                             <td>how to setup your favourite webDAV enabled application.</td>
                         </tr>
                         <tr>
-                            <td class="doclink"><ulink url="developper.html">Developer's Manual</ulink>:</td>
+                            <td class="doclink"><ulink url="developper.html">Developer's
+                                Manual</ulink>:</td>
                             <td>How to use the various tools; SVN, eclipse, Ant, PMD, JDepend, ...
                             .</td>
                         </tr>
@@ -110,6 +121,15 @@
 
             <itemizedlist>
                 <listitem>
+                    <para><ulink url="http://wiki.exist-db.org/space/HowTos">Various HowTos</ulink></para>
+                </listitem>
+                <listitem>
+                    <para><ulink url="http://wiki.exist-db.org/space/FAQs">Some frequently asked questions</ulink></para>
+                </listitem>
+                <listitem>
+                    <para><ulink url="http://wiki.exist-db.org/space/XMLPrague2006">XMLPrague 2006 papers and presentations</ulink></para>
+                </listitem>
+                <listitem>
                     <para><ulink url="http://wiki.exist-db.org/space/NewSchemaValidation"> New
                             Schema Validation</ulink>.</para>
                 </listitem>
@@ -120,9 +140,17 @@
             <title>Articles</title>
 
             <para>If you would like to know more about the internal workings of eXist, you may read
-                the following article:</para>
+                the following introductory article:</para>
 
-            <para> Wolfgang Meier. <ulink url="http://exist-db.org/webdb.pdf">eXist: An Open Source
+            <para>Wolfgang Meier. <ulink url="xmlprague06.xml">Index-Driven XQuery Processing in the
+                    eXist XML Database</ulink>. Paper presented at XML Prague 2006. Presentation
+                slides can be found <ulink
+                    href="http://wiki.exist-db.org/space/XMLPrague2006/wolfgangs_talk.pdf"
+                >here</ulink> as well.</para>
+
+            <para>An older article is:</para>
+            
+            <para>Wolfgang Meier. <ulink url="http://exist-db.org/webdb.pdf">eXist: An Open Source
                     Native XML Database</ulink>. In: Akmal B. Chaudri, Mario Jeckle, Erhard Rahm,
                 Rainer Unland (Eds.): Web, Web-Services, and Database Systems. NODe 2002 Web- and
                 Database-Related Workshops, Erfurt, Germany, October 2002. Springer LNCS Series,
