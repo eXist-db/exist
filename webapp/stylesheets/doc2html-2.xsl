@@ -45,21 +45,8 @@
                     <xsl:copy-of select="header/script"/>
                 </xsl:if>
                 <script type="text/javascript" src="styles/niftycube.js"></script>
-                <script type="text/javascript">
-                    window.onload = function() {
-                    Nifty("h1.chaptertitle", "transparent");
-                    Nifty("div.note", "top transparent");
-                    Nifty("div.example", "top transparent");
-                    Nifty("div.block div.head", "top");
-                    Nifty("div.news_content", "bottom");
-                    Nifty("div.block ul", "bottom");
-                    }
-                </script>
-                <style type="text/css">
-                    #xmlprague { position: absolute; top: 50px; right: 50px; }
-                    #xmlprague div { text-align: center; margin-bottom: 8px; color: #666;}
-                    #xmlprague a { color: #333; }
-                </style>
+                <script language="Javascript" type="text/javascript" src="scripts/prototype.js"/>
+                <script language="Javascript" type="text/javascript" src="scripts/main.js"/>
             </head>
 
             <body bgcolor="#FFFFFF">
@@ -71,12 +58,6 @@
                         <h1><xsl:value-of select="header/title"/></h1>
                     </div>
                 </div>
-                <div id="xmlprague">
-                    <div>Join us: <a href="http://wiki.exist-db.org/space/start/2005-12-22/1#First_eXist_Workshop_in_conjunction_with_XML_Prague,_June_17/18">eXist Workshop</a> at</div>
-                    <a href="http://xmlprague.cz">
-                        <img src="resources/xmlprague2006_250x60.png" border="0"/>
-                    </a>
-                </div>
                 <xsl:apply-templates select="sidebar:sidebar"/>
                 <xsl:apply-templates select="newsblock"/>
                 <xsl:apply-templates select="body"/>
@@ -86,7 +67,7 @@
 
     <xsl:template match="body">
         <xsl:choose>
-            <xsl:when test="../newsblock/rss">
+            <xsl:when test="../newsblock">
                 <div id="content"><xsl:apply-templates/></div>
             </xsl:when>
             <xsl:otherwise>
@@ -453,16 +434,12 @@
 
     <xsl:template match="newsblock">
         <div id="news">
-            <xsl:apply-templates/>
-        </div>
-    </xsl:template>
-    
-    <xsl:template match="rss">
-        <div class="block">
-            <div class="head"><h3>News</h3></div>
-            <ul class="news_content">
-                <xsl:apply-templates select="channel/item[position()&lt;7]"/>
-            </ul>            
+            <div class="block">
+                <div class="head"><h3>News</h3></div>
+                <div id="news_content" class="news_content">
+                    Loading News ...
+                </div>
+            </div>
         </div>
     </xsl:template>
     
