@@ -144,17 +144,24 @@ a, a:visited {
 .block h3 {
     font-size: 1em;
     padding: 3px 0 3px 10px;
+    font-variant: normal;
 }
 .block ul {
     margin: 0;
     padding: 3px 0 5px 0;
     background-color: #f6f6f6;
 }
+
 .block .news_content {
     margin: 0;
     padding: 3px 0 5px 0;
     background-color: #fef7d6;
 }
+
+.block .news_content ul {
+    background-color: #fef7d6;
+}
+
 .block li {
     display: inline;
     list-style-type: none;
@@ -323,6 +330,7 @@ select.choose {
 .reference h3 {
     font-size: .75em;
     text-align: left;
+    font-variant: normal;
 }
 #sidebar input.search-sidebar {
     margin-left: 10px;
@@ -405,7 +413,7 @@ select.choose {
 .formaltable h1 {
     background-color: inherit;
     color: black;
-    font-size: 1.25em;
+    font-size: 1em;
     font-weight: bold;
     text-decoration: underline;
     margin-bottom: 0;

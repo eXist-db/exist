@@ -6,7 +6,7 @@
     <xi:include href="sidebar.xml"/>
 
     <newsblock>
-        <xi:include href="http://wiki.exist-db.org/exec/rss?snip=start">
+        <xi:include href="rest/db/rss/news.rss">
             <xi:fallback/>
         </xi:include>
         <div id="quotes">
@@ -18,7 +18,7 @@
             <div class="source">InfoWorld</div>
         </div>
     </newsblock>
-
+        
     <body>
         <section id="overview" title="Overview">
 
