@@ -6,9 +6,6 @@
     <xi:include href="sidebar.xml"/>
 
     <newsblock>
-        <xi:include href="rest/db/rss/news.rss">
-            <xi:fallback/>
-        </xi:include>
         <div id="quotes">
             <a href="http://www.infoworld.com/reports/01SRtoy06.html">
                 <img src="resources/TOY2006s.jpg" border="0"/>
