@@ -1,6 +1,7 @@
 declare option exist:serialize "method=xml indent=yes";
-<test-suite-result xmlns="http://www.w3.org/2005/02/query-test-XQTSResult"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<test-suite-result>
+<!-- <test-suite-result xmlns="http://www.w3.org/2005/02/query-test-XQTSResult"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"> -->
 
 
         <implementation name="{util:system-property("product-version")}" version="{util:system-property("product-build")}" anonymous-result-column="false">
@@ -50,10 +51,11 @@ declare option exist:serialize "method=xml indent=yes";
                 </otherComments>
         </test-run>
 
+				<!-- Results below here -->
 {
     for $case in fn:collection(  '/db/XQTS' )//test-case
     return <test-case name="{$case/@name}" result="{$case/@result}"  />
- }
+}
 </test-suite-result>
 
  
