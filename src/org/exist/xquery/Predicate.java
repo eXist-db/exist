@@ -341,10 +341,12 @@ public class Predicate extends PathExpr {
 				        NumericValue v = (NumericValue)j.nextItem().convertTo(Type.NUMBER);
 				        //... whereas we don't want a sorted array here
                         //TODO : rename this method as getInDocumentOrder ? -pb
-				        p = temp.getUnsorted(v.getInt() - 1);
-				        if (p != null)
+				        p = temp.getUnsorted(v.getInt() - 1);				        
+				        if (p != null) {
+				        	p.clearContext(Expression.IGNORE_CONTEXT);
 				        	result.add(p);
-                        //TODO : does null make sense here ?
+				        }
+                        //TODO : does null make sense here ? Well... sometimes ;-) 
 				    }
 				}
                 break;
