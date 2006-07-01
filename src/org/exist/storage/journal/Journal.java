@@ -26,6 +26,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
@@ -180,14 +181,18 @@ public class Journal {
         SanityCheck.ASSERT(!inRecovery, "Write to log during recovery. Should not happen!");
         final int size = loggable.getLogSize();
         final int required = size + LOG_ENTRY_BASE_LEN;
-        if (required > currentBuffer.capacity() - currentBuffer.position())
+        if (required > currentBuffer.remaining())
             flushToLog(false);
         currentLsn = Lsn.create(currentFile, inFilePos + currentBuffer.position() + 1);
-        currentBuffer.put(loggable.getLogType());
-        currentBuffer.putLong(loggable.getTransactionId());
-        currentBuffer.putShort((short) loggable.getLogSize());
-        loggable.write(currentBuffer);
-        currentBuffer.putShort((short) (size + LOG_ENTRY_HEADER_LEN));
+        try {
+			currentBuffer.put(loggable.getLogType());
+			currentBuffer.putLong(loggable.getTransactionId());
+			currentBuffer.putShort((short) loggable.getLogSize());
+			loggable.write(currentBuffer);
+			currentBuffer.putShort((short) (size + LOG_ENTRY_HEADER_LEN));
+		} catch (BufferOverflowException e) {
+			throw new TransactionException("Buffer overflow while writing log record: " + loggable.dump(), e);
+		}
         loggable.setLsn(currentLsn);
     }
     
