@@ -29,11 +29,11 @@
             </fileset>
         </xmldb:store>
 
-        <xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/XQTS/ReportingResults" createcollection="true">
+        <!-- xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/XQTS/ReportingResults" createcollection="true">
             <fileset dir=".">
                 <include name="collectresults.xql"/>
             </fileset>
-        </xmldb:store>
+        </xmldb:store-->
         
         <xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/XQTS/ReportingResults" createcollection="true">
             <fileset dir="${config.basedir}/ReportingResults">
