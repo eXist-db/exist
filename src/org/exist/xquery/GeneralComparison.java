@@ -204,8 +204,7 @@ public class GeneralComparison extends BinaryOp {
                     contextSequence = contextItem.toSequence();                                
                 
                 
-                if (!Dependency.dependsOn(getRight(), Dependency.CONTEXT_ITEM) &&
-                        Type.subTypeOf(getRight().returnsType(), Type.NODE))
+                if (!Dependency.dependsOn(getRight(), Dependency.CONTEXT_ITEM))
 				{
 					if (context.getProfiler().isEnabled())
 						context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "quickNodeSetCompare");
@@ -370,7 +369,7 @@ public class GeneralComparison extends BinaryOp {
         {
             return(Sequence.EMPTY_SEQUENCE);
         }
-    
+
         //get the Sequence on the right
 		Sequence rightSeq = getRight().eval(contextSequence);
 		if(rightSeq.isEmpty())	//nothing on the right, so nothing to do
@@ -378,12 +377,15 @@ public class GeneralComparison extends BinaryOp {
             return(Sequence.EMPTY_SEQUENCE);
 		}
         
-        
+		LOG.debug("left: " + nodes.getLength() + "; right: " + rightSeq.getLength());
+		
 		//Holds the result
 		NodeSet result = null;
 		
 		//get the type of a possible index
 		int indexType = nodes.getIndexType();
+		
+		LOG.debug("Found index type: " + indexType);
 		
 		//See if we have a range index defined on the nodes in this sequence
         //TODO : use isSubType ??? -pb
