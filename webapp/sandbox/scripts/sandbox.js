@@ -43,8 +43,8 @@ var behaviourRules = {
 			element.onclick = exportData;
 	},
 	'#query' : function (element) {
-			element.onchange = checkQuery;
-			element.onkeyup = checkQuery;
+			Event.observe(element, 'change', checkQuery, false);
+			Event.observe(element, 'keyup', checkQuery, false);
 	},
 	'#show-options' : function (element) {
 			element.onclick = function() {
