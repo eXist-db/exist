@@ -630,15 +630,18 @@
 
     <section>
       <title>Cocoon Sitemap Configuration</title>
+      
       <para>Cocoon uses a sitemap XML file called <filename moreinfo="none">sitemap.xmap</filename>
         to configure the processing pipelines it uses to process HTTP requests. eXist's integration
         with Cocoon is completely based on the XML:DB database API, however any XML:DB-enabled
         database (e.g. <emphasis>Xindice</emphasis>) can be integrated with Cocoon.</para>
+        
       <para>Beginning with Cocoon version 2.0, <emphasis>pseudo-protocols</emphasis> are supported.
         Pseudo-protocols allow you to register handlers for special URLs via so-called "source
         factories". In essence, these protocols specify resources wherever a known protocol such as
           <filename>http://</filename> or <filename>file://</filename> is specified in the sitemap.
         Currently, the distribution defines a pseudo-protocol to access XML:DB-enabled databases. </para>
+        
       <para>In eXist, pseudo-protocols are configured in Cocoon's main configuration file <filename
           moreinfo="none">WEB-INF/cocoon.xconf</filename>. To make use of these protocols, simply
         specify the correct database driver class, as in the following example:</para>
@@ -679,223 +682,6 @@ in xmldb-collection /db/shakespeare/plays -->
 
       <para>The <ulink url="sitemap.xmap">sitemap.xmap</ulink> delivered with eXist also contains
         more complex examples.</para>
-    </section>
-
-    <section>
-      <title>StandaloneServer Configuration with server.xml</title>
-
-      <para>The <filename>server.xml</filename> configuration file is only used when the server
-        operates in standalone mode, in which case, an instance of the Jetty web server is
-        configured using its settings. As for the services offered with eXist, each has its own
-        configuration element in this file. Currently, the servlet API options are
-        "<option>webdav</option>, "<option>xmlrpc</option>", and "<option>rest</option>". Any of
-        these servlets can be disabled by setting the <option>enabled</option> attribute to
-          "<option>no</option>".</para>
-
-      <para>Note that you can control the location of this document by setting the
-        <code>server.xml</code> Java system property when you start the server.</para>
-
-      <para>The server.xml document has the following basic structure:</para>
-
-      <example>
-        <title>Sample Configuration File: server.xml</title>
-
-        <programlisting><![CDATA[<!--
-    Configures the stand-alone server: the stand-alone server is a minimal
-    webserver with just three services enabled by default:
-    webdav, xmlrpc, rest.
--->
-<server port="8088">
-    <!--
-        Enable the WebDAV, XML-RPC and REST services.
-        The context attribute specifies to which context path
-        the service will be mapped. Specify an url-pattern as
-        for a servlet-mapping. Example: /xmlrpc/* forwards all
-        paths beginning with /xmlrpc to the xmlrpc service.
-    -->
-    <webdav enabled="yes" context="/webdav/*"/>
-    <xmlrpc enabled="yes" context="/xmlrpc/*"/>
-    <rest enabled="yes" context="/*">
-        <!--
-            Special params: set form-encoding and container-encoding. If they
-            are set to different encodings, eXist may need to recode form parameters.
-        -->
-        <param name="form-encoding" value="UTF-8"/>
-        <param name="container-encoding" value="UTF-8"/>
-    </rest>
-    <!--
-        Define URL forwardings
-    -->
-    <forwarding>
-        <!--
-            Other forwardings: all requests to the specified path
-            will be forwarded to the destination.
-        -->
-        <forward path="/admin" destination="/db/admin/admin.xql"/>
-    </forwarding>
-</server>]]>
-        </programlisting>
-      </example>
-
-      <section>
-        <title>Controlling the Binding Address (&lt;indexer&gt;)</title>
-        <para>You can control the binding address by using the following attributes for the
-            <sgmltag>server</sgmltag> element:</para>
-        <section>
-          <title><sgmltag>server</sgmltag> Attributes</title>
-          <variablelist>
-            <varlistentry>
-              <term>port</term>
-
-              <listitem>
-                <para>The port on which the server will listen. The Jetty web server will bind to
-                  the any address on port <filename>8088</filename> by default.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term>host</term>
-
-              <listitem>
-                <para>The hostname on which the server will respond.</para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term>address</term>
-
-              <listitem>
-                <para>The IP address on which the server should bind. This may be useful when the
-                  server has multiple addresses that serve the same hostname.</para>
-              </listitem>
-            </varlistentry>
-          </variablelist>
-        </section>
-      </section>
-
-      <section>
-        <title>WebDAV Servlet</title>
-
-        <para>The WebDAV servlet provides services at the context address specified. This servlet is
-          represented by the <sgmltag>webdav</sgmltag> element in the
-          <filename>server.xml</filename> configuration file. For this element, the
-          "<option>context</option>" attribute controls the web server context at which the WebDAV
-          services are provided. If the "<option>context</option>" attribute is not specified, it
-          defaults to <filename>/webdav/</filename>.</para>
-      </section>
-
-      <section>
-        <title>XML-RPC Servlet</title>
-
-        <para>The XML-RPC servlet provides database API services to clients like the Admin GUI
-          client. This servlet is represented by the <sgmltag>xmlrpc</sgmltag> element in the
-            <filename>server.xml</filename> configuration file. For this element, the
-            "<option>context</option>" attribute controls the web server context at which the XMLRPC
-          services are provided. If the "<option>context</option>" attribute is not specified, it
-          defaults to <filename>/xmlrpc/</filename>. Note that if you disable this servlet, you
-          effectively disable the use of the admin client.</para>
-      </section>
-
-      <section>
-        <title>REST Servlet</title>
-
-        <para>The REST servlet provides HTTP/REST-style interactions with the database. It is
-          configured by the <sgmltag>rest</sgmltag> element in the <filename>server.xml</filename>
-          configuration file. For this element, the "<option>context</option>" attribute controls
-          the web server context at which the REST services are provided. If the
-          "<option>context</option>" attribute is not specified, it defaults to
-          <filename>/</filename>.</para>
-
-        <para>The <sgmltag>rest</sgmltag> has a number of other parameters that can be set by
-          children <option>param</option> elements:</para>
-
-        <example>
-          <title>&lt;rest&gt;-&lt;param&gt; Structure</title>
-
-          <programlisting><![CDATA[ <rest enabled="yes" context="/*>
-      <param name="name" value="string-value"  />
- </rest>]]>
-          </programlisting>
-        </example>
-        <section>
-          <title>&lt;rest&gt; Parameters</title>
-          <variablelist>
-            <varlistentry>
-              <term>form-encoding</term>
-              <listitem>
-                <para>The default encoding of form POSTs.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>container-encoding</term>
-              <listitem>
-                <para>The default encoding of the servlet container for all HTTP interactions except
-                  POSTs.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>use-default-user</term>
-              <listitem>
-                <para>A boolean value (<option>true</option>/<option>false</option>) that indicates
-                  whether the <option>guest</option> user should be used for non-authenticated
-                  interactions.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>default-user-username</term>
-              <listitem>
-                <para>The username of the default user.</para>
-              </listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>default-user-password</term>
-              <listitem>
-                <para>The password of the default user (required when every users has a
-                password).</para>
-              </listitem>
-            </varlistentry>
-          </variablelist>
-        </section>
-        <section>
-          <title>Forwarding Requests</title>
-          <para>The forwarding-request settings allow you to map incoming URL requests to specific
-            resources on the server (e.g. queries). All of which are encapsulated in the
-              <sgmltag>forwarding</sgmltag> element. Inside this element is a single
-            <sgmltag>root</sgmltag> element and any number of <sgmltag>forward</sgmltag> elements.
-            Each of these latter elements specifies a specific URL path that is forwarded to
-            secondary URL path. This allows you to map a "clean" URL to an XQuery or some other
-            resource within the server. The target is always specified by a
-            <option>destination</option> attribute.</para>
-
-          <para>The <sgmltag>root</sgmltag> element maps requests to the root directory of the
-            server (i.e. the "<filename>/</filename>" path) to a specified resource. For example:</para>
-
-          <example>
-            <title>Root Map (&lt;root&gt;)</title>
-
-            <programlisting><![CDATA[<root destination="/db/admin/admin.xql" />]]></programlisting>
-          </example>
-
-          <para>The above element maps requests for the (default) server root to the XQuery resource
-              <filename>/db/admin/admin.xql</filename>.</para>
-
-          <para>The <sgmltag>forward</sgmltag>element, on the other hand, maps the request specified
-            by the <option>path</option> attribute to a resource. For example:</para>
-
-          <example>
-            <title>Forward Maps (&lt;forward&gt;)</title>
-
-            <programlisting><![CDATA[<forward path="/admin" destination="/db/admin/admin.xql"/>
-<forward path="/docs" destination="/db/products/docs.xml"/>]]></programlisting>
-          </example>
-
-          <para>In this example, the first element (&lt;forward&gt;) maps the URI path
-              <filename>/admin</filename> to the XQuery resource
-            <filename>/db/admin/admin.xql</filename>, while the second element maps the URI path
-              <filename>/docs</filename> to the document
-          <filename>/db/products/docs.xml</filename>.</para>
-        </section>
-      </section>
     </section>
   </chapter>
 </book>
