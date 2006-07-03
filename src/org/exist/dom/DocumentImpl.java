@@ -957,7 +957,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
     }    
     
     public org.w3c.dom.DOMImplementation getImplementation() {
-        throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "getImplementation not implemented on class " + getClass().getName());
+        return new StoredDOMImplementation();
     } 
 
     public boolean getStrictErrorChecking() {
