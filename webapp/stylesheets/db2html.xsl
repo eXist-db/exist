@@ -176,12 +176,22 @@
         <xsl:apply-templates/>
     </xsl:template>
 
-    <xsl:template match="chapter/section/section/section/title|chapter/section/section/section/title">
+    <xsl:template match="chapter/section/section/section/title|article/section/section/title">
         <h4>
             <xsl:apply-templates/>
         </h4>
     </xsl:template>
 
+    <xsl:template match="chapter/section/section/section/section|article/section/section/section">
+        <xsl:apply-templates/>
+    </xsl:template>
+    
+    <xsl:template match="chapter/section/section/section/section/title|article/section/section/section/title">
+        <h5>
+            <xsl:apply-templates/>
+        </h5>
+    </xsl:template>
+    
     <xsl:template match="para">
         <p>
             <xsl:apply-templates/>
