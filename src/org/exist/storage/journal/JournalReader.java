@@ -171,7 +171,7 @@ public class JournalReader {
 			    throw new LogException("Bad pointer to previous in entry: " + loggable.dump());
 			}
 			return loggable;
-		} catch (IOException e) {
+		} catch (Exception e) {
 			throw new LogException(e.getMessage(), e);
 		}
     }
