@@ -3,6 +3,26 @@
     xmlns:html="http://www.w3.org/1999/xhtml">
 
     <application>
+        <dc:creator>Giuseppe Corrarello and  Beniamino Larocca</dc:creator>
+        <creator-site/>
+        <dc:identifier>http://www.fao.org/faoterm/search</dc:identifier>
+        <dc:rights>FAO</dc:rights>
+        <dc:title>Terminology Database</dc:title>
+        <dc:subject>Terminology</dc:subject>
+        <dc:description/>
+        <dc:publisher>FAO </dc:publisher>
+        <dc:format>eXist and J2EE</dc:format>        
+        <dev-site>http://www.fao.org/faoterm/search</dev-site>
+        <production-site>http://www.fao.org/faoterm/search</production-site>
+        <status>production</status>
+        <feature-used>XQuery</feature-used>
+        <feature-used>J2EE</feature-used>
+        <database size="1Gb" documents="13" updates="daily" security='read for all' />
+        <dev-notes/>
+        <submitter>Beniamino Larocca</submitter>
+    </application>
+    
+    <application>
         <dc:creator>Jean-Marc Vanel</dc:creator>
         <creator-site>http://jmvanel.free.fr/</creator-site>
         <dc:identifier>http://wwbota.free.fr/</dc:identifier>
