@@ -133,6 +133,63 @@
 			<synopsis format="linespecific">bin/client.sh -l</synopsis>
 		</section>
 		<section>
+			<title>Deploying eXist in a Servlet Container</title>
+
+			<para>The standard distribution does by default launch eXist as a web application
+				deployed in a servlet container (if you start eXist via
+				<filename>bin/startup.sh</filename> or <filename>bin\startup.bat</filename>). The
+				container used is <ulink url="http://jetty.mortbay.org/">Jetty</ulink>.</para>
+
+			<para>In this setup, eXist runs together with Cocoon in the same web application. The
+				Jetty configuration can be found in <filename>tools/jetty/etc/jetty.xml</filename>.
+				It defines a single web application context <command>/exist</command>, mapped to the
+					<filename>webapp</filename> directory.</para>
+
+			<para>We think that Jetty is small, efficient and stable, so there's no need to switch
+				to a different servlet engine unless your server setup requires this. However, it is
+				not difficult to deploy eXist in a different servlet container, e.g. Apache's
+				Tomcat.</para>
+
+			<para>We usually provide a <filename>.war</filename> web archive for download for all
+				major releases. You may either download that or - if you already installed the
+				standard distribution - build a .war archive yourself. For building the .war, you
+				need the eXist sources. In the installer GUI, include the "source" module when
+				selecting installable packages. To build the .war file, just call the main build
+				script (<filename>build.sh</filename> or <filename>build.bat</filename>) with the
+				target <option>dist-war</option>:</para>
+
+			<synopsis>build.sh dist-war</synopsis>
+
+			<para>To install the .war, just copy it into the corresponding folder below your servlet
+				engine installation (usually <filename>webapps</filename>) and rename it to
+					<filename>exist.war</filename>. The servlet engine will normally unpack the file
+				when you restart the server. To have better control of where the file is unpacked,
+				you can also create a directory <filename>exist</filename> below the
+					<filename>webapps</filename> folder and manually extract the .war there, e.g.
+				with:</para>
+
+			<synopsis>jar xfv exist.war</synopsis>
+
+			<important>
+				<para>Please remember that the <filename>data</filename> and
+					<filename>log</filename> directories need to be writable!</para>
+			</important>
+
+			<para>There are a few differences between the standard distribution and the .war
+				install: in particular, the configuration files are found in the
+				<filename>WEB-INF</filename> directory, including the important files
+					<filename>conf.xml</filename> (eXist configuration) and
+				<filename>log4j.xml</filename> (logging). The example data is in
+				<filename>samples</filename>.</para>
+
+			<para>To start the Java admin client (described in the <ulink url="quickstart.xml"
+					>QuickStart</ulink>), use the following command line (from within the
+					<filename>exist</filename> web application root directory:</para>
+
+			<synopsis>java -jar WEB-INF/lib/start.jar client -ls</synopsis>
+		</section>
+
+		<section>
 			<title>Running eXist as a Stand-alone Server</title>
 
 			<para>There are many cases in which it is preferable to have the database engine running
@@ -554,10 +611,10 @@
        collection.getService("DatabaseInstanceManager", "1.0"); 
        manager.shutdown();]]></programlisting>
 			</example>
-			
-			<para>To summarize, a minimal working class with a single static main to start/stop 
-			the db may look like this:</para>
-			
+
+			<para>To summarize, a minimal working class with a single static main to start/stop the
+				db may look like this:</para>
+
 			<example>
 				<title>Minimal Example</title>
 				<programlisting><![CDATA[
@@ -589,10 +646,10 @@ public class TestDB {
 	}
 }]]></programlisting>
 			</example>
-			
+
 			<para>Put this code into a Java file <filename>TestDB.java</filename> and store it into
-			the target directory, which we already prepared above. Compile and run it with:</para>
-			
+				the target directory, which we already prepared above. Compile and run it with:</para>
+
 			<synopsis>javac TestDB.java
 			java -Dexist.initdb=true -Dexist.home=. TestDB</synopsis>
 		</section>
