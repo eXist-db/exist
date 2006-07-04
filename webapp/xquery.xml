@@ -717,6 +717,15 @@ declare function local:do-query() as element()
                             <synopsis><![CDATA[<xsl:param name="param1"/>]]></synopsis>
                         </listitem>
                     </varlistentry>
+                    <varlistentry>
+                        <term>transform:stream-transform()</term>
+                        <listitem>
+                            <para>Identical to the <command>transform:transform</command> function, but
+                            it directly streams the transformation result to the HTTP request output stream and
+                            doesn't return anything. The function is thus only usable in a web context.
+                            Note that the servlet output stream will be closed afterwards.</para>
+                        </listitem>
+                    </varlistentry>
                 </variablelist>
             </section>
 
