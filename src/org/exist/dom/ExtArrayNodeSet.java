@@ -384,29 +384,30 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
 
     public NodeSet selectParentChild(NodeSet al, int mode, int contextId) {
     	sort();
-    	if (al instanceof VirtualNodeSet)
-    		return super.selectParentChild(al, mode, contextId);
-    	NodeSet result = new ExtArrayNodeSet();
-		NodeSetIterator ia = al.iterator();
-		NodeProxy na = (NodeProxy) ia.next();
-		if (na == null || partCount == 0)
-			return NodeSet.EMPTY_SET;
-		int currentPart = 0;
-		while (currentPart < partCount) {
-			// first, try to find nodes belonging to the same doc
-			if (na.getDocument().getDocId() < documentIds[currentPart]) {
-				if (ia.hasNext()) {
-					na = (NodeProxy) ia.next();
-                } else
-					break;
-			} else if (na.getDocument().getDocId() > documentIds[currentPart]) {
-				++currentPart;
-			} else {
-				parts[currentPart].selectParentChild(result, na, ia, mode, contextId);
-				++currentPart;
-			}
-		}
-		return result;
+        return super.selectParentChild(al, mode, contextId);
+//    	if (al instanceof VirtualNodeSet)
+//    		return super.selectParentChild(al, mode, contextId);
+//    	NodeSet result = new ExtArrayNodeSet();
+//		NodeSetIterator ia = al.iterator();
+//		NodeProxy na = (NodeProxy) ia.next();
+//		if (na == null || partCount == 0)
+//			return NodeSet.EMPTY_SET;
+//		int currentPart = 0;
+//		while (currentPart < partCount) {
+//			// first, try to find nodes belonging to the same doc
+//			if (na.getDocument().getDocId() < documentIds[currentPart]) {
+//				if (ia.hasNext()) {
+//					na = (NodeProxy) ia.next();
+//                } else
+//					break;
+//			} else if (na.getDocument().getDocId() > documentIds[currentPart]) {
+//				++currentPart;
+//			} else {
+//				parts[currentPart].selectParentChild(result, na, ia, mode, contextId);
+//				++currentPart;
+//			}
+//		}
+//		return result;
     }
     
     private boolean isSorted() {
@@ -582,6 +583,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         	int pos = 0;
         	int startPos = 0;
         	NodeProxy nb = array[pos];
+            NodeId lastMarked = na.getNodeId();
         	while (true) {
         		// first, try to find nodes belonging to the same doc
     			if (na.getDocument().getDocId() != nb.getDocument().getDocId())
@@ -628,16 +630,28 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
     						if (next.getNodeId().isDescendantOf(pa)) {
     							pos = startPos;
     							nb = array[pos];
-    						}
+    						} else {
+    						    if (!next.getNodeId().isDescendantOf(lastMarked)) {
+                                    lastMarked = next.getNodeId();
+    						        startPos = pos;
+                                }
+                            }
     						na = next;
-    						startPos = pos;
     					} else
     						break;
     				} else {
     					if (++pos < length)
     						nb = array[pos];
-    					else
-    						break;
+    					else {
+                            if (ia.hasNext()) {
+                                NodeProxy next = (NodeProxy) ia.next();
+                                if (next.getNodeId().isDescendantOf(pa)) {
+                                    pos = startPos;
+                                    nb = array[pos];
+                                }
+                                na = next;
+                            }
+                        }
     				}
     			}
         	}
