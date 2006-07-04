@@ -331,7 +331,7 @@ Logging already initialized. Skipping...
                     <tbody>
                         <tr>
                             <td>
-                                <para>A screenshot of the client interface is shown on the right. At
+                                <para>A screenshot of the client login interface is shown on the right. At
                                     the login window, you can provide your username and password,
                                     and select a server. The client can either connect to a Remote
                                     server, or launch an Embedded database (i.e. embedded in an
