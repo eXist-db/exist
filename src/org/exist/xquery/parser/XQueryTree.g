@@ -204,7 +204,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		)
 		|
 		#(
-			"xmlspace"
+			"boundary-space"
 			(
 				"preserve" { context.setStripWhitespace(false); }
 				|
@@ -213,8 +213,16 @@ throws PermissionDeniedException, EXistException, XPathException
 		)
 		|
 		#(
+			"order" ( "greatest" | "least" )	// ignored
+		)
+		|
+		#(
+			"copy-namespaces" ( "preserve" | "no-preserve" ) ( "inherit" | "no-inherit" ) // ignored
+		)
+		|
+		#(
 			"base-uri" base:STRING_LITERAL
-			{ context.setBaseURI(base.getText(), true); }
+			{ context.setBaseURI(new AnyURIValue(base.getText()), true); }
 		)
 		|
 		#(
@@ -290,31 +298,52 @@ throws PermissionDeniedException, EXistException, XPathException
 		|
 		functionDecl [path]
 		|
-		#(
-			i:"import" 
-			{ 
-				String modulePrefix = null;
-				String location = null;
-			}
-			( pfx:NCNAME { modulePrefix = pfx.getText(); } )? 
-			moduleURI:STRING_LITERAL 
-			( at:STRING_LITERAL { location = at.getText(); } )?
-			{
-				if (modulePrefix != null) {
-    				if (declaredNamespaces.get(modulePrefix) != null)
-    					throw new XPathException(i, "err:XQST0033: Prolog contains " +
-    						"multiple declarations for namespace prefix: " + modulePrefix);
-    				declaredNamespaces.put(modulePrefix, moduleURI.getText());
-				}
-                try {
-					context.importModule(moduleURI.getText(), modulePrefix, location);
-                } catch(XPathException xpe) {
-                    xpe.prependMessage("error found while loading module " + modulePrefix + ": ");
-                    throw xpe;
-                }
-			}
-		)
+		importDecl [path]
 	)*
+	;
+
+importDecl [PathExpr path]
+throws PermissionDeniedException, EXistException, XPathException
+:
+	#(
+		i:MODULE_IMPORT
+		{ 
+			String modulePrefix = null;
+			String location = null;
+		}
+		( pfx:NCNAME { modulePrefix = pfx.getText(); } )? 
+		moduleURI:STRING_LITERAL 
+		( at:STRING_LITERAL { location = at.getText(); } )?
+		{
+			if (modulePrefix != null) {
+				if (declaredNamespaces.get(modulePrefix) != null)
+					throw new XPathException(i, "err:XQST0033: Prolog contains " +
+						"multiple declarations for namespace prefix: " + modulePrefix);
+				declaredNamespaces.put(modulePrefix, moduleURI.getText());
+			}
+            try {
+				context.importModule(moduleURI.getText(), modulePrefix, location);
+            } catch(XPathException xpe) {
+                xpe.prependMessage("error found while loading module " + modulePrefix + ": ");
+                throw xpe;
+            }
+		}
+	)
+	|
+	#(
+		SCHEMA_IMPORT
+		{
+			String nsPrefix = null;
+			String location = null;
+		}
+		( pfx1:NCNAME { nsPrefix = pfx1.getText(); } )?
+		targetURI:STRING_LITERAL
+		( at1:STRING_LITERAL { location = at1.getText(); } )?
+		{
+			context.declareNamespace(nsPrefix, targetURI.getText());
+			declaredNamespaces.put(nsPrefix, targetURI.getText());
+		}
+	)
 	;
 
 /**
@@ -427,6 +456,14 @@ throws XPathException
 		|
 		#(
 			"empty"
+			{
+				type.setPrimaryType(Type.EMPTY);
+				type.setCardinality(Cardinality.EMPTY);
+			}
+		)
+		|
+		#(
+			"empty-sequence"
 			{
 				type.setPrimaryType(Type.EMPTY);
 				type.setCardinality(Cardinality.EMPTY);
@@ -818,29 +855,70 @@ throws PermissionDeniedException, EXistException, XPathException
 		}
 	)
 	|
+	// treat as:
+	#(
+		"treat"
+		{ 
+			PathExpr expr = new PathExpr(context);
+			SequenceType type= new SequenceType(); 
+		}
+		step=expr [expr]
+		sequenceType [type]
+		{ 
+			step = new TreatAsExpression(context, expr, type); 
+			path.add(step);
+		}
+	)
+	|
 	// typeswitch
-/*	#(
+	#(
 		"typeswitch"
 		{
 			PathExpr operand = new PathExpr(context);
 		}
 		step=expr [operand]
+		{ 
+			TypeswitchExpression tswitch = new TypeswitchExpression(context, operand);
+			path.add(tswitch); 
+		}
 		(
 			{ 
 				SequenceType type = new SequenceType();
 				PathExpr returnExpr = new PathExpr(context);
+				QName qn = null;
 			}
 			#(
 				"case"
+				(
+					var:VARIABLE_BINDING
+					{ qn = QName.parse(context, var.getText()); }
+				)?
 				sequenceType [type]
 				step=expr [returnExpr]
 				{
-					System.out.println("case:" + type);
+					tswitch.addCase(type, qn, returnExpr);
 				}
 			)
 		)+
+		(
+			"default"
+			{ 
+				PathExpr returnExpr = new PathExpr(context);
+				QName qn = null;
+			}
+			(
+				dvar:VARIABLE_BINDING
+				{ qn = QName.parse(context, dvar.getText()); }
+			)?
+			step=expr [returnExpr]
+			{
+				System.out.println("default:" + returnExpr);
+				tswitch.setDefault(qn, returnExpr);
+			}
+		)
+		{ step = tswitch; }
 	)
-	|*/
+	|
 	// logical operator: or
 	#(
 		"or"

@@ -148,6 +148,8 @@ imaginaryTokenDefinitions
 	BEFORE 
 	AFTER 
 	MODULE_DECL 
+	MODULE_IMPORT
+	SCHEMA_IMPORT
 	ATTRIBUTE_TEST 
 	COMP_ELEM_CONSTRUCTOR
 	COMP_ATTR_CONSTRUCTOR 
@@ -208,9 +210,9 @@ prolog throws XPathException
 :
 	(
 		(
-			( "import" "module" ) => moduleImport
+			importDecl
 			|
-			( "declare" ( "default" | "xmlspace" | "ordering" | "construction" | "base-uri" ) ) =>
+			( "declare" ( "default" | "boundary-space" | "ordering" | "construction" | "base-uri" | "copy-namespaces" ) ) =>
 			setter
 			{
 				if(!inSetters)
@@ -231,6 +233,13 @@ prolog throws XPathException
 		)
 		SEMICOLON!
 	)*
+	;
+
+importDecl throws XPathException
+:
+	( "import" "module") => moduleImport 
+	| 
+	schemaImport
 	;
 
 versionDecl throws XPathException
@@ -254,10 +263,12 @@ setter:
 			|
 			"function"! "namespace"! deff:STRING_LITERAL
 			{ #setter= #(#[DEF_FUNCTION_NS_DECL, "defaultFunctionNSDecl"], deff); }
+			|
+			"order"^ "empty"! ( "greatest" | "least" )
 		)
 		|
-		( "declare" "xmlspace" ) =>
-		"declare"! "xmlspace"^ ( "preserve" | "strip" )
+		( "declare" "boundary-space" ) =>
+		"declare"! "boundary-space"^ ( "preserve" | "strip" )
 		|
 		( "declare" "base-uri" ) =>
 		"declare"! "base-uri"^ STRING_LITERAL
@@ -267,9 +278,22 @@ setter:
 		|
 		( "declare" "construction" ) =>
 		"declare"! "construction"^ ( "preserve" | "strip" )
+		|
+		( "declare" "copy-namespaces" ) =>
+		"declare"! "copy-namespaces"^ preserveMode COMMA! inheritMode
 	)
 	;
-	
+
+preserveMode
+	:
+	( "preserve" | "no-preserve" )
+	;
+
+inheritMode
+	:
+	( "inherit" | "no-inherit" )
+	;
+
 namespaceDecl
 { String prefix = null; }
 :
@@ -285,8 +309,9 @@ varDecl throws XPathException
 :
 	decl:"declare"! "variable"! DOLLAR! varName=qName! ( typeDeclaration )?
 	(
-		LCURLY! ex:expr RCURLY! // deprecated
-		// conformant: COLON! EQ! ex:expr
+		LCURLY! e1:expr RCURLY! // deprecated
+		|
+		COLON! EQ! e2:expr
 		|
 		"external"
 	)
@@ -308,7 +333,11 @@ optionDecl
 	
 moduleImport
 :
-	"import"^ "module"! ( moduleNamespace )? STRING_LITERAL ( "at"! STRING_LITERAL )?
+	i:"import"! "module"! ( moduleNamespace )? STRING_LITERAL ( "at"! STRING_LITERAL )?
+	{
+		#moduleImport = #(#[MODULE_IMPORT, "module"], #moduleImport);
+		#moduleImport.copyLexInfo(#i);
+	}
 	;
 
 moduleNamespace
@@ -317,7 +346,26 @@ moduleNamespace
 	"namespace"! prefix=ncnameOrKeyword EQ!
 	{ #moduleNamespace = #[NCNAME, prefix]; }
 	;
-	
+
+schemaImport
+{ String prefix = null; }
+:
+	i:"import"! "schema"! ( schemaPrefix )? STRING_LITERAL ( "at"! STRING_LITERAL )?
+	{
+		#schemaImport = #(#[SCHEMA_IMPORT, "schema"], #schemaImport);
+		#schemaImport.copyLexInfo(#i);
+	}
+	;
+
+schemaPrefix
+{ String prefix = null; }
+	:
+	"namespace"! prefix=ncnameOrKeyword EQ!
+	{ #schemaPrefix = #[NCNAME, prefix]; }
+	|
+	"default" "element" "namespace"
+	;
+
 functionDecl throws XPathException
 { String name= null; }
 :
@@ -362,7 +410,11 @@ typeDeclaration throws XPathException:
 	
 sequenceType throws XPathException
 :
-	( "empty" LPAREN ) => "empty"^ LPAREN! RPAREN! | itemType ( occurrenceIndicator )?  // deprecated
+	( "empty" LPAREN ) => "empty"^ LPAREN! RPAREN! // deprecated
+	|
+	( "empty-sequence" LPAREN ) => "empty-sequence"^ LPAREN! RPAREN!
+	|
+	itemType ( occurrenceIndicator )?
 	// conformant: ( "empty-sequence" LPAREN ) => "empty-sequence"^ LPAREN! RPAREN! | itemType ( occurrenceIndicator )?
 	;
 
@@ -402,7 +454,7 @@ exprSingle throws XPathException
 	( ( "for" | "let" ) DOLLAR ) => flworExpr
 	| ( ( "some" | "every" ) DOLLAR ) => quantifiedExpr
 	| ( "if" LPAREN ) => ifExpr 
-//	| ( "typeswitch" LPAREN ) => typeswitchExpr
+	| ( "typeswitch" LPAREN ) => typeswitchExpr
 	| ( "update" ( "replace" | "value" | "insert" | "delete" | "rename" )) => updateExpr
 	| orExpr
 	;
@@ -519,11 +571,11 @@ quantifiedInVarBinding throws XPathException
 
 // === Branching ===
 
-	typeswitchExpr throws XPathException
+typeswitchExpr throws XPathException
 { String varName; }:
 	"typeswitch"^ LPAREN! expr RPAREN!
 	( caseClause )+
-	"default" ( DOLLAR! varName=qName! )? "return"! exprSingle
+	"default" ( defaultVar )? "return"! exprSingle
 	;
 	
 caseClause throws XPathException
@@ -537,7 +589,13 @@ caseVar throws XPathException
 	DOLLAR! varName=qName! "as"
 	{ #caseVar = #[VARIABLE_BINDING, varName]; }
 	;
-	
+
+defaultVar throws XPathException
+{ String varName; }:
+	DOLLAR! varName=qName!
+	{ #defaultVar = #[VARIABLE_BINDING, varName]; }
+	;
+
 ifExpr throws XPathException: "if"^ LPAREN! expr RPAREN! "then"! exprSingle "else"! exprSingle ;
 
 // === Logical ===
@@ -554,7 +612,12 @@ andExpr throws XPathException
 
 instanceofExpr throws XPathException
 :
-	castableExpr ( "instance"^ "of"! sequenceType )?
+	treatExpr ( "instance"^ "of"! sequenceType )?
+	;
+
+treatExpr throws XPathException
+:
+	castableExpr ( "treat"^ "as"! sequenceType )?
 	;
 
 castableExpr throws XPathException
@@ -1353,7 +1416,7 @@ reservedKeywords returns [String name]
 	|
 	"collation" { name = "collation"; }
 	|
-	"xmlspace" { name = "xmlspace"; }
+	"boundary-space" { name = "boundary-space"; }
 	|
 	"preserve" { name = "preserve"; }
 	|
@@ -1394,6 +1457,16 @@ reservedKeywords returns [String name]
 	"case" { name = "case"; }
 	|
 	"validate" { name = "validate"; }
+	|
+	"schema" { name = "schema"; }
+	|
+	"treat" { name = "treat"; }
+	|
+	"no-preserve" { name = "no-preserve"; }
+	|
+	"inherit" { name = "inherit"; }
+	|
+	"no-inherit" { name = "no-inherit"; }
 	;
 
 /**
