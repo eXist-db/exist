@@ -28,8 +28,8 @@
                             <td>getting started with eXist.</td>
                         </tr>
                         <tr>
-                            <td class="doclink"><ulink url="changes.xml">Changes</ulink>:</td>
-                            <td>overview of changes in this release.</td>
+                            <td class="doclink"><ulink url="http://wiki.exist-db.org/space/Change+Log">Changes</ulink>:</td>
+                            <td>Detailed list of changes.</td>
                         </tr>
                         <tr>
                             <td class="doclink"><ulink url="xquery.xml">XQuery</ulink>:</td>
@@ -105,9 +105,9 @@
                         </tr>
                         <tr>
                             <td class="doclink"><ulink url="developper.html">Developer's
-                                Manual</ulink>:</td>
-                            <td>How to use the various tools; SVN, eclipse, Ant, PMD, JDepend, ...
-                            .</td>
+                                Notes</ulink>:</td>
+                            <td>A few notes on how to use the various tools; SVN, eclipse, Ant, PMD, JDepend, ...
+                            </td>
                         </tr>
                     </tbody>
                 </tgroup>

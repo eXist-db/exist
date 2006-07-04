@@ -17,14 +17,13 @@
   <ci:include src="sidebar.xml"/>
   
   <chapter id="ch01">
-    <title>Java Client</title>
+    <title>Using the Java Client on the Command Line</title>
     
-    <para>eXist offers an integrated command-line and gui client in class
-        <classname>org.exist.client.InteractiveClient</classname>. The client is entirely based on
-      the XML:DB API and provides commands for most database related tasks, like creating and
-      removing collections, user management, batch-loading XML data or querying.</para>
-    <para>The following sections provide a short description of the most common comand-line
-      parameters and their use:</para>
+    <para>eXist offers an integrated command-line and gui client. The <ulink url="quickstart.xml">QuickStart</ulink>
+    shows a few screenshots of the graphical interface. However, it is also possible (and sometimes faster or 
+    more convenient) to use the client on the command line. The following sections provide a quick introduction
+    to the most common command line parameters and their use:</para>
+
     <section>
       <title>Introduction</title>
       <para>Class <classname>InteractiveClient</classname> can be launched in two ways: first, you
