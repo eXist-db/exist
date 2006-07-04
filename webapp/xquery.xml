@@ -660,24 +660,47 @@ declare function local:do-query() as element()
                         <term>transform:transform()</term>
                         <listitem>
                             <para>This XSL transformation function has the following signature:</para>
+                            
                             <synopsis>transform:transform($input as node()?, $stylesheet as
-                                xs:string, $parameters as node()?) as node()?</synopsis>
+                                item(), $parameters as node()?) as node()?</synopsis>
+                                
                             <para>
                                 <command>transform:transform</command> expects the node to be
                                 transformed in the first argument <option>$input</option>. If
                                     <option>$input</option> is an empty sequence, the function
                                 returns immediately.</para>
+                                
                             <para>The XSL stylesheet will be read from the location specified in
-                                    <option>$stylesheet</option>, which should be either an absolute
-                                URI or a relative path. If a relative path is specified, the
-                                function will first try to find a file matching the path. Failing
-                                that, <command>transform:transform</command> appends the relative
-                                path to the current base URI property from the XQuery context, and
-                                again attempts to find the file.</para>
+                                    <option>$stylesheet</option>, which should be either an URI or a node. 
+                                 If $stylesheet is of type xs:anyURI, the function will attempt to load the
+                                 stylesheet from the specified location. A relative URI is interpreted as
+                                 a file path. The function then tries to locate the stylesheet in the same
+                                 way as imported XQuery modules, i.e. relative to the module load directory
+                                 determined by the static XQuery context.</para>
+                                  
+                            <para>Some examples for referencing the stylesheet:</para>
+                                
+                            <synopsis>transform:transform($root, doc("/db/styles/style.xsl"), ())</synopsis>
+                            
+                            <para>Creates the stylesheet from a document node.</para>
+                                
+                            <synopsis>transform:transform($root, xs:anyURI("style.xsl"), ())</synopsis>
+                            
+                            <para>Loads the stylesheet from the file <filename>style.xsl</filename>. The function
+                            usually expects the file to reside in the same directory as the main query.</para>
+                            
+                            <synopsis>transform:transform($root, xs:anyURI("http:exist-db.org/style.xsl"), ())</synopsis>
+                            
+                            <synopsis>transform:transform($root, xs:anyURI("xmldb:exist:///db/styles/style.xsl"), ())</synopsis>
+                            
+                            <para>The last two examples try to load the stylesheet from an URI. However, the "xmldb:" URI
+                            points to a resource stored in the database.</para>
+                            
                             <para>The stylesheet will be compiled into a template using the standard
                                 Java APIs (<classname>javax.xml.transform</classname>). The template
                                 is shared between all instances of the function and will only be
                                 reloaded if modified since its last invocation.</para>
+                                
                             <para>The <option>$options</option> parameter can be used to pass
                                 stylesheet parameters to the XSL processor as an XML fragment - for
                                 example:</para>
