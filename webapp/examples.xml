@@ -8,121 +8,118 @@
     <body>
         <section title="Examples">
 
-            <section title="XQuery Examples">
+            <p>The examples below require some XML documents to be stored in the database. If you
+                have not yet imported these files, go to <a
+                    href="admin/admin.xql?user=admin&amp;pass=&amp;panel=setup"> Examples
+                    Setup</a>.</p>
 
-                <p>The examples below require some XML documents to be stored in the database. If
-                    you have not yet imported these files, go to <a
-                        href="admin/admin.xql?user=admin&amp;pass=&amp;panel=setup">
-                        Examples Setup</a>.</p>
-
-                <section title="XQueryServlet">
-                    <table border="0" width="100%" cellspacing="10">
+            <section title="XQueryServlet">
+                <table border="0" width="100%" cellspacing="10">
+                    <tr>
+                        <td width="30%" valign="top">
+                            <link href="sandbox/sandbox.xql">XQuery Sandbox</link>
+                        </td>
+                        <td width="70%"> A web interface to execute XQueries on the server. Uses
+                            AJAX technology to validate your XQuery while you type. Requires
+                            Javascript to be enabled. Demonstrates more advanced techniques for
+                            writing web applications with XQuery, XML/HTML, CSS and Javascript.
+                        </td>
+                    </tr>
+                    <tr>
                         <tr>
                             <td width="30%" valign="top">
-                                <link href="sandbox/sandbox.xql">XQuery Sandbox</link>
+                                <link href="xquery/guess.xql">Guess a Number</link>
                             </td>
-                            <td width="70%"> A web interface to execute XQueries on the server. Uses
-                                AJAX technology to validate your XQuery while you type. Requires
-                                Javascript to be enabled. Demonstrates more advanced techniques for
-                                writing web applications with XQuery, XML/HTML, CSS and Javascript.
-                            </td>
+                            <td width="70%"> Simple number guessing game to illustrate different
+                                servlet features. </td>
                         </tr>
-                        <tr>
-                            <tr>
-                                <td width="30%" valign="top">
-                                    <link href="xquery/guess.xql">Guess a Number</link>
-                                </td>
-                                <td width="70%"> Simple number guessing game to illustrate different
-                                    servlet features. </td>
-                            </tr>
-                            <td width="30%" valign="top">
-                                <link href="xquery/transform.xql">Built-in functions</link>
-                            </td>
-                            <td width="70%"> A servlet-based version of the XQuery script above. It
-                                uses the transform function to transform XML output into HTML using
-                                an XSL stylesheet. </td>
-                        </tr>
-                        <tr>
-                            <td width="30%" valign="top">
-                                <link href="xquery/login.xql">Session example</link>
-                            </td>
-                            <td width="70%"> Presents a login page. Only valid database users can
-                                log in. User and password are stored in the HTTP session. </td>
-                        </tr>
-                        <tr>
-                            <td width="30%" valign="top">
-                                <link href="xquery/hello.xq">Basic form example</link>
-                            </td>
-                            <td width="70%"> Presents a form page. The response echoes the name
-                                entered. </td>
-                        </tr>
-                        <tr>
-                            <td width="30%" valign="top">
-                                <link href="xquery/hello-plural-db.xq">Form example with
-                                XUpdate</link>
-                            </td>
-                            <td width="70%"> Presents a form page. The response echoes all the names
-                                entered since database creation. </td>
-                        </tr>
-                        <tr>
-                            <td width="30%" valign="top">
-                                <link href="xquery/call.xql">First-class functions example</link>
-                            </td>
-                            <td width="70%"> Demonstrates the use of first-class functions.
-                                First-class functions are supported through the eXist-specific
-                                extension functions: util:function and util:call. </td>
-                        </tr>
-                    </table>
-                </section>
-
-                <section title="XQueryGenerator">
-                    <table border="0" width="100%" cellspacing="10">
-                        <tr>
-                            <td width="30%" valign="top">
-                                <link href="xquery/table.xq">Simple HTML Example</link>
-                            </td>
-                            <td width="70%"> Prints a table in HTML with 10x10 cells. </td>
-                        </tr>
-                        <tr>
-                            <td width="30%" valign="top">
-                                <link href="xquery/fibo.xq">Fibonacci</link>
-                            </td>
-                            <td width="70%"> Calculates the first 10 Fibonacci numbers. </td>
-                        </tr>
-                        <tr>
-                            <td width="30%" valign="top">
-                                <link href="xquery/functions.xq">Built-in functions</link>
-                            </td>
-                            <td width="70%"> Prints a table showing the signatures of all functions
-                                registered within the current XQuery context. </td>
-                        </tr>
-                        <tr>
-                            <td width="30%" valign="top">
-                                <link href="xquery/acronyms.xq">XML Acronyms</link>
-                            </td>
-                            <td width="70%"> Another version of the <a
-                                    href="http://www.xml-acronym-demystifier.org/"> XML Acronym
-                                    Demystifier</a>, entirely implemented in XQuery. </td>
-                        </tr>
-                        <tr>
-                            <td width="30%" valign="top">
-                                <link href="mods/">Bibliography</link>
-                            </td>
-                            <td width="70%"> A bibliographic demo, based on the MODS bibliographic
-                                format, which is maintained by the Library of Congress. Shows
-                                session handling and user authentication. </td>
-                        </tr>
-                        <tr>
-                            <td width="30%" valign="top">
-                                <link href="xquery/biblio.xml">Bibliography 2</link>
-                            </td>
-                            <td width="70%"> An XQuery-version of the old library search example
-                                from previous releases of eXist. </td>
-                        </tr>
-                    </table>
-                </section>
-
+                        <td width="30%" valign="top">
+                            <link href="xquery/transform.xql">Built-in functions</link>
+                        </td>
+                        <td width="70%"> A servlet-based version of the XQuery script above. It uses
+                            the transform function to transform XML output into HTML using an XSL
+                            stylesheet. </td>
+                    </tr>
+                    <tr>
+                        <td width="30%" valign="top">
+                            <link href="xquery/login.xql">Session example</link>
+                        </td>
+                        <td width="70%"> Presents a login page. Only valid database users can log
+                            in. User and password are stored in the HTTP session. </td>
+                    </tr>
+                    <tr>
+                        <td width="30%" valign="top">
+                            <link href="xquery/hello.xq">Basic form example</link>
+                        </td>
+                        <td width="70%"> Presents a form page. The response echoes the name entered.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td width="30%" valign="top">
+                            <link href="xquery/hello-plural-db.xq">Form example with XUpdate</link>
+                        </td>
+                        <td width="70%"> Presents a form page. The response echoes all the names
+                            entered since database creation. </td>
+                    </tr>
+                    <tr>
+                        <td width="30%" valign="top">
+                            <link href="xquery/call.xql">First-class functions example</link>
+                        </td>
+                        <td width="70%"> Demonstrates the use of first-class functions. First-class
+                            functions are supported through the eXist-specific extension functions:
+                            util:function and util:call. </td>
+                    </tr>
+                </table>
             </section>
+
+            <section title="XQueryGenerator">
+                <table border="0" width="100%" cellspacing="10">
+                    <tr>
+                        <td width="30%" valign="top">
+                            <link href="xquery/table.xq">Simple HTML Example</link>
+                        </td>
+                        <td width="70%"> Prints a table in HTML with 10x10 cells. </td>
+                    </tr>
+                    <tr>
+                        <td width="30%" valign="top">
+                            <link href="xquery/fibo.xq">Fibonacci</link>
+                        </td>
+                        <td width="70%"> Calculates the first 10 Fibonacci numbers. </td>
+                    </tr>
+                    <tr>
+                        <td width="30%" valign="top">
+                            <link href="xquery/functions.xq">Built-in functions</link>
+                        </td>
+                        <td width="70%"> Prints a table showing the signatures of all functions
+                            registered within the current XQuery context. </td>
+                    </tr>
+                    <tr>
+                        <td width="30%" valign="top">
+                            <link href="xquery/acronyms.xq">XML Acronyms</link>
+                        </td>
+                        <td width="70%"> Another version of the <a
+                                href="http://www.xml-acronym-demystifier.org/"> XML Acronym
+                                Demystifier</a>, entirely implemented in XQuery. </td>
+                    </tr>
+                    <tr>
+                        <td width="30%" valign="top">
+                            <link href="mods/">Bibliography</link>
+                        </td>
+                        <td width="70%"> A bibliographic demo, based on the MODS bibliographic
+                            format, which is maintained by the Library of Congress. Shows session
+                            handling and user authentication. </td>
+                    </tr>
+                    <tr>
+                        <td width="30%" valign="top">
+                            <link href="xquery/biblio.xml">Bibliography 2</link>
+                        </td>
+                        <td width="70%"> An XQuery-version of the old library search example from
+                            previous releases of eXist. </td>
+                    </tr>
+                </table>
+            </section>
+
+
 
             <section title="Misc Examples">
                 <table border="0" width="100%" cellspacing="10">
