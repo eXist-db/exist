@@ -3,6 +3,35 @@
     xmlns:html="http://www.w3.org/1999/xhtml">
 
     <application>
+        <dc:creator>Dr. Klaus E. Werner</dc:creator>
+        <creator-site>http://collectio.org/</creator-site>
+        <creator-site>http://hyperrecord.net/</creator-site>
+        <dc:identifier>http://museicapitolini.net/</dc:identifier>
+        <dc:rights>GPL</dc:rights>
+        <dc:title>Information System for Museums, Archives and Institutes</dc:title>
+        <dc:subject>cultural heritage</dc:subject>
+        <dc:subject>information interchange</dc:subject>
+        <dc:description>The HyperRecord system is an initiative for the interconnectivity of museums, born from EC
+            project 0760/001001 CLT CA12 (Culture2000) with partners Theological Library, Maribor, and Bibliotheca Hertziana, Rome (Max-Plank Gesellschaft). It connects different museum’s knowledge domains and provides
+            access to their information resources over the Web by defining a common format for identification via
+            Uniform Resource Names. These URNs identify the single items mentioned in the source documents - museums
+            records, inventary data, contextual archival documents stored in DocBook, TEI, or proprietary formats - and, on
+            look-up, yield one-to-many connections between the different resources.</dc:description>
+        <dc:publisher>Musei Capitolini (Rome)</dc:publisher>
+        <dc:format>eXist distribution add-on: Cocoon sub-sitemap; separate project: RelaxNG schema for recording museum
+            items</dc:format>
+        <production-site>http://museicapitolini.net/</production-site>
+        <status>production</status>
+        <feature-used>XQuery</feature-used>
+        <feature-used>Cocoon</feature-used>
+        <feature-used>RelaxNG</feature-used>
+        <feature-used>XLink</feature-used>
+        <database size="50Mb" documents="200+" updates="weekly" security="read for all"/>
+        <dev-notes>web site still in continuous development (usability issues etc.)</dev-notes>
+        <submitter/>
+    </application>
+    
+    <application>
         <dc:creator>Giuseppe Corrarello and  Beniamino Larocca</dc:creator>
         <creator-site/>
         <dc:identifier>http://www.fao.org/faoterm/search</dc:identifier>
