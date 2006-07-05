@@ -114,14 +114,12 @@
         <tstamp/>
         <filter token="version" value="${project.version}-${DSTAMP}"/>
         <filter token="database" value="native"/>
-        <copy
-        file="${src.webapp}/header.xml.tmpl"
-        tofile="${src.webapp}/header.xml" filtering="true"
-        overwrite="true" />
         <copy file="${src.webapp}/header.xml.tmpl"
-        tofile="${src.webapp}/xquery/header.xml" filtering="true"
-        overwrite="true"/>
+            tofile="${src.webapp}/header.xml" filtering="true" overwrite="true" />
+        <copy file="${src.webapp}/header.xml.tmpl"
+            tofile="${src.webapp}/xquery/header.xml" filtering="true" overwrite="true"/>
         <copy file="${basedir}/conf.xml.tmpl" tofile="${basedir}/conf.xml" filtering="true"/>
+        <copy file="${basedir}/mime-types.xml" tofile="${src}/org/exist/util/mime-types.xml" />
     </target>
 
     <!-- =================================================================== -->
