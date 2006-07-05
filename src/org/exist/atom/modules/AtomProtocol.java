@@ -253,6 +253,8 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                IndexInfo info = collection.validateXMLResource(transaction,broker,FEED_DOCUMENT_URI,doc);
                collection.store(transaction,broker,info,doc,false);
                transact.commit(transaction);
+               response.setStatusCode(204);
+               response.setHeader("Location",request.getModuleBase()+request.getPath());
             } catch (SAXException ex) {
                transact.abort(transaction);
                throw new EXistException("SAX error: "+ex.getMessage(),ex);
@@ -318,15 +320,26 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                String created = toXSDDateTime(new Date());
                ElementImpl feedRoot = (ElementImpl)feedDoc.getDocumentElement();
                DOMDB.replaceTextElement(transaction,feedRoot,Atom.NAMESPACE_STRING,"updated",created,true);
-               DOMDB.appendChild(transaction,feedRoot,generateMediaEntry(created,title,filename,mime.getName()));
+               String id = "urn:uuid:"+UUIDGenerator.getInstance().generateRandomBasedUUID();
+               Element mediaEntry = generateMediaEntry(id,created,title,filename,mime.getName());
+               DOMDB.appendChild(transaction,feedRoot,mediaEntry);
                LOG.debug("Storing change...");
                broker.storeXMLResource(transaction, feedDoc);
                transact.commit(transaction);
                LOG.debug("Done!");
                response.setStatusCode(201);
+               response.setHeader("Location",request.getModuleBase()+request.getPath()+"?id="+id);
+               response.setContentType(Atom.MIME_TYPE+"; charset="+charset);
+               OutputStreamWriter w = new OutputStreamWriter(response.getOutputStream(),charset);
+               Transformer identity = TransformerFactory.newInstance().newTransformer();
+               identity.transform(new DOMSource(mediaEntry),new StreamResult(w));
+               w.flush();
+               w.close();
             } catch (ParserConfigurationException ex) {
                transact.abort(transaction);
                throw new EXistException("DOM implementation is misconfigured.",ex);
+            } catch (TransformerException ex) {
+               throw new EXistException("Serialization error.",ex);
             } catch (LockException ex) {
                transact.abort(transaction);
                throw new EXistException("Cannot acquire write lock.",ex);
@@ -435,6 +448,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                // Store the feed
                broker.storeXMLResource(transaction, feedDoc);
                transact.commit(transaction);
+               response.setStatusCode(204);
             } catch (LockException ex) {
                transact.abort(transaction);
                throw new EXistException("Cannot acquire write lock.",ex);
@@ -536,8 +550,11 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                collection.addBinaryResource(transaction, broker, docUri, is, contentType, (int) tempFile.length());
                is.close();
             }
-            response.setStatusCode(200);
             transact.commit(transaction);
+            
+            // TODO: Change the entry updated and send back the change?
+            response.setStatusCode(200);
+            
          } catch (IOException ex) {
             transact.abort(transaction);
             throw new EXistException("I/O error while handling temporary files.",ex);
@@ -579,7 +596,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
          Txn transaction = transact.beginTransaction();
          broker.removeCollection(transaction, collection);
          transact.commit(transaction);
-         response.setStatusCode(200);
+         response.setStatusCode(204);
          return;
       }
       
@@ -636,7 +653,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
          broker.storeXMLResource(transaction, feedDoc);
          transact.commit(transaction);
          LOG.debug("Done!");
-         response.setStatusCode(200);
+         response.setStatusCode(204);
       } catch (TriggerException ex) {
          transact.abort(transaction);
          throw new EXistException("Cannot delete media resource "+srcUri,ex);
@@ -797,11 +814,10 @@ public class AtomProtocol extends AtomFeeds implements Atom {
       return null;
    }
    
-   protected Element generateMediaEntry(String created,String title,String filename,String mimeType) 
+   protected Element generateMediaEntry(String id,String created,String title,String filename,String mimeType) 
       throws ParserConfigurationException
    {
 
-      String id = "urn:uuid:"+UUIDGenerator.getInstance().generateRandomBasedUUID();
       
       DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
       docFactory.setNamespaceAware(true);
