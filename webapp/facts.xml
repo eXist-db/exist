@@ -127,8 +127,8 @@
                         defined as optional in the XQuery specification. Queries may span any
                         possible combination of collections or documents. eXist implements the full
                         axis feature, which means you can use the optional axes: ancestor,
-                        ancestor-or-self, following, following-sibling, preceding, and
-                        preceding-sibling.</p>
+                        ancestor-or-self, following-sibling, and
+                        preceding-sibling; following and preceding are supported with limitations.</p>
 
                 </topic>
 
