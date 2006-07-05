@@ -1,4 +1,4 @@
-<book xmlns:ci="http://apache.org/cocoon/include/1.0">
+<book>
     
     <bookinfo>
         <graphic fileref="logo.jpg"/>
@@ -28,7 +28,7 @@
         </style>
     </bookinfo>
     
-    <ci:include src="sidebar.xml"/>
+    <ci:include xmlns:ci="http://apache.org/cocoon/include/1.0" src="sidebar.xml"/>
     
     <chapter>
         <title>Acknowledgements</title>
@@ -37,6 +37,18 @@
         supporting and sponsoring the development of eXist:</para>
         
         <table cellspacing="0" cellpadding="15">
+            <tr>
+                <td class="description">
+                    The new indexing engine featured in eXist, for Versions 1.1 and all
+                    subsequent releases, is made possible through the agency of the
+                    <a href="http://tapor.uvic.ca/home.php">University of Victoria</a>
+                    node of the Canadian TAPoR consortium, who have
+                    made it available for general use.
+                </td>
+                <td align="center" style="font-size: 4em; font-family: Garamond, Helvetica, 'Arial Black', serif; color: #660000; font-weight: bold;">
+                    TAPoR
+                </td>
+            </tr>
             <tr>
                 <td class="description"><a href="http://www.trapezenetworks.com">Trapeze Networks</a>, 
                     headquartered in Pleasanton, Calif., has continuously sponsored improvements 
@@ -61,18 +73,6 @@
                     <a href="http://www.fritz-thyssen-stiftung.de">
                         <img border="0" src="resources/thyssen.png"/>
                     </a>
-                </td>
-            </tr>
-            <tr>
-                <td class="description">A number of features, including user management, XQuery extensions
-                and the bibliographic demo were developed within the context of the project: 
-                <a href="http://www.sozionet.org">SozioNet</a>, a German social-science portal. 
-                SozioNet has been funded by the German Federal Ministry For Education and Research.
-                Project lead: Prof. Dr. Rudi Schmiede (Institut für Soziologie, TU Darmstadt).</td>
-                <td align="center">
-                    <a href="http://www.bmbf.de">
-                        <img border="0" src="resources/bbf2.gif"/>
-                    </a>                    
                 </td>
             </tr>
             <tr>

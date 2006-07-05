@@ -15,39 +15,27 @@
             <div class="source">InfoWorld</div>
         </div>
     </newsblock>
-        
+
     <body>
         <section id="overview" title="Overview">
 
             <p> eXist is an Open Source native XML database featuring efficient, index-based <a
                     href="http://www.w3.org/TR/xquery/">XQuery</a> processing, automatic indexing,
                 extensions for full-text search, <a
-                    href="http://www.smb-tec.com/xmldb/xupdate/index.html"> XUpdate </a> support and
-                tight integration with existing XML development tools. The database implements the
-                current XQuery 1.0 working draft as of November, 2003 (for the core syntax, some
-                details already following later versions), with the exception of the XML schema
-                related features. </p>
+                    href="http://www.smb-tec.com/xmldb/xupdate/index.html">XUpdate</a> support,
+                XQuery <a href="update_ext.xml">update extensions</a> and tight integration with
+                existing XML development tools. The database implements the current XQuery 1.0
+                working drafts, with exception of the schema import and schema validation features
+                defined as optional in the XQuery specification.</p>
 
-            <p>
-                <a href="xquery.xml">XQuery support</a> in eXist makes it possible to write entire
-                web applications with just XQuery and XSLT. XQuery files can be directly passed to
-                the database, using either the XQueryServlet, the XQueryGenerator for Cocoon or the
-                REST-style API (see <a href="devguide.xml">Developer's Guide</a> ). </p>
-
-            <p> Additional features: Java binding, fulltext-search functions, modules in XQuery and
-                Java, extension modules for HTTP support, database manipulation and XSL
-                transformations. </p>
+            <p>eXist provides a powerful environment for the development of web applications
+                based on XQuery and related standards. Entire web applications can be written 
+                in XQuery, using XSLT, XHTML, CSS and maybe Javascript (for AJAX functionality). XQuery 
+                server pages can be executed from the filesystem or stored in the database.</p>
 
             <p> To avoid memory-intensive document tree traversals during query processing, eXist
                 uses an efficient index structure which is based on a numerical indexing scheme for
-                identifying XML nodes in the index. The database is lightweight, completely written
-                in Java and may be easily deployed in a number of ways, running either as a
-                stand-alone server process, inside a servlet-engine or directly embedded into an
-                application. </p>
-
-
-            <p> For a summary of eXist's features please have a look at the <link href="facts.xml"
-                    >feature sheet</link> . </p>
+                identifying XML nodes in the index.</p>
 
         </section>
 
@@ -74,7 +62,7 @@
                         "health warning above first. Do you still want to continue?");
                 }
             </script>
-            
+
             <table cellpadding="5" cellspacing="5">
                 <tr>
                     <th align="left" colspan="2"> Snapshots </th>
@@ -135,15 +123,15 @@
                 <tr>
                     <td>
                         <a onclick="return warning()"
-                           href="http://prdownloads.sourceforge.net/exist/eXist-1.0b2-build-1107.jar"
-                        > eXist-1.0b2-build-1107.jar </a>
+                            href="http://prdownloads.sourceforge.net/exist/eXist-1.0b2-build-1107.jar"
+                            > eXist-1.0b2-build-1107.jar </a>
                     </td>
                     <td> Installer based on IzPack. Highly recommended. Includes source. Run with
                             <tt>java -jar eXist-1.0b2.jar</tt> . </td>
                 </tr>
                 <tr>
                     <td>
-                        <a  onclick="return warning()"
+                        <a onclick="return warning()"
                             href="http://prdownloads.sourceforge.net/exist/eXist-1.0b2-build-1107.war"
                             > eXist-1.0b2-build-1107.war </a>
                     </td>
@@ -185,9 +173,9 @@
             </p>
 
             <p>The project also has an <b>IRC channel</b>
-                <link href="http://irc.exist-db.org">#existdb</link> at 
-                <link href="irc://irc.freenode.net/existdb">irc.freenode.net</link>. The
-                channel is open for general discussions on eXist and related subjects. </p>
+                <link href="http://irc.exist-db.org">#existdb</link> at <link
+                    href="irc://irc.freenode.net/existdb">irc.freenode.net</link>. The channel is
+                open for general discussions on eXist and related subjects. </p>
 
         </section>
     </body>

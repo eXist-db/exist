@@ -65,7 +65,7 @@
 
                 <topic name="Query Engine">
 
-                    <p>eXist has its own, optimized XQuery engine, featuring an
+                    <p>eXist has its own, optimized <a href="xquery.xml">XQuery engine</a>, featuring an
                         efficient, index-based query processing.</p>
 
                     <p>Contrary to conventional implementations, eXist's query
@@ -73,34 +73,38 @@
                         traversals. Instead, it relies on fast path join
                         algorithms to compute node relationships. Path joins can
                         be applied to the entire node sequence in one, single
-                        step.</p>
+                        step. For a description of the basic algorithms, read
+						this <a href="xmlprague06.xml">article</a>.</p>
 
                 </topic>
 
                 <topic name="Updates">
-                    <p>Document-level and node-level updates.</p>
+                    <p>Document-level and node-level updates with XUpdate and
+					XQuery <a href="update_ext.xml">update extensions</a>.</p>
                 </topic>
 
                 <topic name="Authorization Mechanism">
-                    <p>Unix-like access permissions for users/groups at
+                    <p>Unix-like <a href="security.xml">access permissions</a> for users/groups at
                         collection- and document-level.</p>
                 </topic>
 
-                <topic name="Transaction Support">
-                    <p>No. Planned for a future release.</p>
-                </topic>
-
-                <topic name="Multi-User Access">
-
-                    <p>Concurrent read/write access supported. Database manages
-                        concurrency at the level of the basic database
-                        operations (store/retrieve a single node, access an index ...) </p>
-
+				<topic name="Security">
+					<p>eXtensible Access Control Markup Language (<a href="xacml.xml">XACML</a>) for XQuery access control.</p>
+				</topic>
+				
+                <topic name="Transactions/Crash Recovery">
+                    <p>The database supports full crash recovery based on a journal in which all transactions
+					are logged. In case of a database crash, all committed transactions will be redone while 
+					incomplete transactions will be rolled back.</p>
+					
+					<p>However, transaction support is limited to the functionality needed for crash recovery.
+					This means that transactions are not yet visible or usable from application code. All transactions
+					are created automatically by the various APIs.</p>
                 </topic>
 
                 <topic name="Deployment">
 
-                    <p>eXist may be deployed as a stand-alone database server,
+                    <p>eXist may be <a href="deployment.xml">deployed</a> as a stand-alone database server,
                         as an embedded Java library or as part of a web
                         application (running in the servlet engine).</p>
 
@@ -108,8 +112,9 @@
 
                 <topic name="Backup/Restore">
 
-                    <p>Backup/restore functionality is provided via Java admin
-                        client or Ant scripts. Allows full restore of a database including
+                    <p><a href="backup.xml">Backup/restore</a> functionality is provided via Java admin
+                        client or Ant scripts. The backup contains resources as
+						readable XML. Allows full restore of a database including
                         user/group permissions.</p>
                 </topic>
 
@@ -136,8 +141,7 @@
 
                 <topic name="XQuery Modules">
 
-                    <p>XPath/XQuery standard function library (not yet
-                        complete), additional modules for manipulating database
+                    <p>XPath/XQuery standard function library, additional modules for manipulating database
                         contents, dynamic evaluation of XQuery expressions, XSL
                         transformations, HTTP related functions.</p>
 
@@ -146,7 +150,8 @@
                 </topic>
 
                 <topic name="XInclude">
-                    <p>Yes. Some features missing.</p>
+                    <p>Supported. Some features missing. Queries do not descend into
+					xincluded documents automatically.</p>
                 </topic>
 
                 <topic name="XPointer">
@@ -216,10 +221,7 @@
 
                 <topic name="WebDAV">
 
-                    <p>Limited support in version 1.0b1 through Xincon. Has been
-                    completely reimplemented for 1.0b2. The new WebDAV module is now
-                    based on the internal database API to get full access to eXist's
-                    security management.</p>
+                    <p>Complete support for all core WebDAV operations.</p>
                 </topic>
 
             </category> 
@@ -235,23 +237,12 @@
                 </topic>
 
                 <topic name="Max. Size per Document">
-                        <p>Depends on the structure of the document:
-                    	eXist uses unique object identifiers of type long for
-                        every XML node. A document may thus have 2<sup>63</sup>
-                        - x single XML-nodes per document, where x = 0 for an
-                        ideally well-balanced document tree. To keep x small,
-                        eXist does <b>not</b> balance the tree as a whole, but
-                        recomputes the ideal tree structure for every single
-                        level of the tree's node hierarchy. Thus, the long
-                        identifiers are normally more than sufficient to index
-                        large documents, because only a few identifiers are
-                        wasted for the balancing.</p>
-						
-                    <p>However, there are some documents with a very irregular
-                    structure, which cannot be mapped into the internal
-                    identifer scheme. Such documents have to be split into
-                    smaller, logical parts. We are working on an automatic
-                    splitting algorithm to simplify this.</p>
+                        <p>The eXist-1.1-newcore release drops the conceptual limits
+						present in older versions. Theoretically, documents can be arbitrary
+						large. In practice, some properties like the child count of a node
+						are limited to a 4-byte int number. There are also operating system limits,
+						e.g. the max size of a file in the filesystem, which have an influence.
+						</p>
                 
                 </topic>
             </category>
