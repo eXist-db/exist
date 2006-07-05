@@ -202,7 +202,7 @@
         <section>
           <title>&lt;recovery&gt;</title>
           <para>This element configures the journaling and recovery of the database. With recovery
-            enabled, the database is able to recover from an unclean database shutdowns due to, for
+            enabled, the database is able to recover from an unclean database shutdown due to, for
             example, power failures, OS reboots, and hanging processes. For this to work correctly,
             all database operations must be logged to a journal file. The location, size and other
             parameters for this file can be set using the <sgmltag>recovery</sgmltag> element.</para>
