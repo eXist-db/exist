@@ -7,7 +7,8 @@
     of the resource is looked up here. A resource will be 
     stored as an XML or a binary resource, depending on the 
     "type" attribute of the corresponding mime-type entry.
-    In MimeTable.java mime-types.xml is first searched in directory pointed by property "home.exist", 
+    In MimeTable.java mime-types.xml is first searched in 
+    directory pointed by property "home.exist", 
     and then as a classpath resource in org/exist/util .
     TODO : this file is duplicated in the CVS
     $Header$
@@ -15,6 +16,7 @@
 -->
 
 <mime-types>
+
     <!-- Mime types stored as XML -->
     <mime-type name="text/xml" type="xml">
         <description>XML document</description>
@@ -45,8 +47,7 @@
         <extensions>.svg,.svgz</extensions>
     </mime-type>
     
-    <!-- Binary mime types -->
-    
+    <!-- Binary mime types -->   
     <mime-type name="application/xquery" type="binary">
         <description>XQuery script</description>
         <extensions>.xq,.xql,.xqm,.xquery,.xqy,.xqws</extensions>
@@ -107,6 +108,7 @@
     	<description>OpenOffice.org Main Document</description>
     	<extensions>.odm</extensions>
     </mime-type>
+    
     <!-- OpenDocument models -->
     <mime-type name="application/vnd.oasis.opendocument.text-template" type="binary">
     	<description>OpenOffice.org formatted Text model</description>
@@ -190,7 +192,7 @@
         <extensions>.css</extensions>
     </mime-type>
 
-    <!-- bitmaps -->
+    <!-- Bitmaps -->
     <mime-type name="image/png" type="binary">
         <description>PNG image</description>
         <extensions>.png</extensions>
@@ -208,6 +210,7 @@
         <extensions>.pbm</extensions>
     </mime-type>
 
+    <!-- Misc -->
     <mime-type name="application/pdf" type="binary">
         <description>PDF (Adobe)</description>
         <extensions>.pdf</extensions>
