@@ -1,7 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet 
-	href="file://localhost/home/wolf/Java/Morphon_XML-Editor_3.1/Examples/docbook/docbook.css" 
-	type="text/css"?>
 <book xmlns:ci="http://apache.org/cocoon/include/1.0">
 	<bookinfo>
 		<graphic fileref="logo.jpg"/>
