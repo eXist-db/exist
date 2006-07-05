@@ -1,11 +1,17 @@
 package org.exist.xquery.test;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.net.BindException;
 import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
+import javax.xml.transform.stream.StreamSource;
 
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.exist.StandaloneServer;
@@ -15,7 +21,10 @@ import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XPathQueryServiceImpl;
 import org.exist.xquery.XPathException;
 import org.mortbay.util.MultiException;
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.CompiledExpression;
@@ -1065,7 +1074,7 @@ public class XPathQueryTest extends XMLTestCase {
 	
     public void testExternalVars() {
         try {
-            XQueryService service = (XQueryService)
+            XQueryService service =
                 storeXMLStringAndGetQueryService("strings.xml", strings);
             
             String query =

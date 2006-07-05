@@ -446,7 +446,7 @@ public class XmldbURI implements Comparable {
     		uri = uri.substring(0,last);
     		last = uri.lastIndexOf('/');
     	}
-    	return last==0?XmldbURI.create(""):XmldbURI.create(uri.substring(0,last));
+    	return last<=0?XmldbURI.create(""):XmldbURI.create(uri.substring(0,last));
     }
 
     public XmldbURI append(String uri) {

@@ -598,11 +598,15 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	}
 
 	public void copyTo(DBBroker broker, DocumentBuilderReceiver receiver) throws SAXException {
-	    document.copyTo(this, receiver);
+		//Null test for document nodes
+		if (document != null)
+			document.copyTo(this, receiver);
 	}
 
 	public void streamTo(Serializer serializer, Receiver receiver) throws SAXException {
-		document.streamTo(serializer, this, receiver);
+		//Null test for document nodes
+		if (document != null)
+			document.streamTo(serializer, this, receiver);
 	}
 	
 	/* (non-Javadoc)

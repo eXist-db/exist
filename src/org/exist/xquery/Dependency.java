@@ -81,4 +81,7 @@ public class Dependency {
         return ((expr.getDependencies()& dependency) == dependency);
     }
 
+    public final static boolean dependsOnVar(Expression expr) {
+        return ((expr.getDependencies() & VARS) != 0);
+    }
 }

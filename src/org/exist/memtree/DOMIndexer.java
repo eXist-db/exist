@@ -205,7 +205,7 @@ public class DOMIndexer {
             broker.storeNode(transaction, pi, null);
             break;
         default:
-        	System.out.println("Indexing in-memory node of type " + doc.nodeKind[nodeNr]);
+        	System.out.println("Skipped indexing of in-memory node of type " + doc.nodeKind[nodeNr]);
         }
     }
 

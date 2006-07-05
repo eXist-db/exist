@@ -420,6 +420,8 @@ public class StringValue extends AtomicValue {
 					}
 					if (found) {
 						buf.append(expandEntity(entityRef.toString()));
+					//TODO : does it make sens to outup such a standalone "&" ?
+					//<elem>&</elem>
 					} else {
 						buf.append('&');
 					}

@@ -250,10 +250,11 @@ public class RESTServer {
         	source = option.equals("yes");
         String stylesheet;
         if ((stylesheet = request.getParameter("_xsl")) != null) {
-            if (stylesheet.equals("no"))
-                outputProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI,
-                        stylesheet);
-            else
+            if (stylesheet.equals("no")) {
+                outputProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "no");
+                outputProperties.remove(EXistOutputKeys.STYLESHEET);
+                stylesheet = null;
+            } else
                 outputProperties.setProperty(EXistOutputKeys.STYLESHEET,
                         stylesheet);
         } else
@@ -271,7 +272,7 @@ public class RESTServer {
         XmldbURI pathUri = XmldbURI.create(path);
         try {
             // check if path leads to an XQuery resource
-            resource = (DocumentImpl) broker.getXMLResource(pathUri, Lock.READ_LOCK);
+            resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
             if (resource != null)
             {
                 if (resource.getResourceType() == DocumentImpl.BINARY_FILE && "application/xquery".equals(resource.getMetadata().getMimeType()))
@@ -408,7 +409,7 @@ public class RESTServer {
                 }
                 else
                 {
-	                if (serializer.isStylesheetApplied())
+	                if (serializer.isStylesheetApplied() || serializer.hasXSLPi(resource) != null)
 	                {
 	                    response.setContentType("text/html; charset="+encoding);
 	                }
@@ -1036,7 +1037,7 @@ public class RESTServer {
             for (Iterator i = collection.collectionIterator(); i.hasNext();) {
                 XmldbURI child = (XmldbURI) i.next();
                  Collection childCollection = broker.getCollection(collection.getURI().append(child));
-                if (childCollection.getPermissions().validate(broker.getUser(),
+                if (childCollection!=null && childCollection.getPermissions().validate(broker.getUser(),
                         Permission.READ)) {
                     attrs.clear();
                     attrs.addAttribute("", "name", "name", "CDATA", child.toString());

@@ -26,6 +26,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -78,6 +80,9 @@ import org.xmldb.api.base.Database;
  */
 public class StandaloneServer {
 
+   public interface ServletBootstrap {
+      void bootstrap(Properties properties,ServletHandler handler);
+   }
     private final static Logger LOG = Logger.getLogger(StandaloneServer.class);
     
     //  command-line options
@@ -120,7 +125,7 @@ public class StandaloneServer {
         
         Properties props = new Properties(DEFAULT_PROPERTIES);
         
-        configure(props);
+        List servlets = configure(props);
         
         CLArgsParser optParser = new CLArgsParser( args, OPTIONS );
         if(optParser.getErrorString() != null) {
@@ -169,7 +174,7 @@ public class StandaloneServer {
         BrokerPool.getInstance().registerShutdownListener(new ShutdownListenerImpl());
         initXMLDB();
             
-        startHTTPServer(httpPort, props);
+        startHTTPServer(httpPort, servlets, props);
         String host = props.getProperty("host");
         if (host==null) {
            host = "localhost";
@@ -178,12 +183,20 @@ public class StandaloneServer {
         System.out.println("\nServer launched ...");
         System.out.println("Installed services:");
         System.out.println("-----------------------------------------------");
+        for (int i = 0 ; i < servlets.size() ; i++) {
+        	String name  = (String) servlets.get(i);
+           if (props.getProperty(name+".enabled").equalsIgnoreCase("yes")) {
+              System.out.println(name+":\t"+host+":" + httpPort+props.getProperty(name+".context"));
+           }
+        }
+        /*
         if (props.getProperty("rest.enabled").equalsIgnoreCase("yes"))
         	System.out.println("REST servlet:\t"+host+":" + httpPort);
         if (props.getProperty("webdav.enabled").equalsIgnoreCase("yes"))
         	System.out.println("WebDAV:\t\t"+host+":" + httpPort + "/webdav");
         if (props.getProperty("xmlrpc.enabled").equalsIgnoreCase("yes"))
         	System.out.println("XMLRPC:\t\t"+host+":" + httpPort + "/xmlrpc");
+         */
     }
     
     public boolean isStarted() {
@@ -211,7 +224,7 @@ public class StandaloneServer {
      * @throws IllegalArgumentException
      * @throws MultiException
      */
-    private void startHTTPServer(int httpPort, Properties props) 
+    private void startHTTPServer(int httpPort, List servlets, Properties props) 
     throws UnknownHostException, IllegalArgumentException, MultiException {
         httpServer = new HttpServer();
         SocketListener listener = new SocketListener();
@@ -235,34 +248,63 @@ public class StandaloneServer {
         context.setContextPath("/");
         
         ServletHandler servletHandler = new ServletHandler();
-        if (props.getProperty("rest.enabled").equalsIgnoreCase("yes")) {
-            String path = props.getProperty("rest.context", "/*");
-        	ServletHolder restServlet = 
-        		servletHandler.addServlet("EXistServlet", path, "org.exist.http.servlets.EXistServlet");
-        	restServlet.setInitParameter("form-encoding", props.getProperty("rest.form-encoding"));
-        	restServlet.setInitParameter("container-encoding", props.getProperty("rest.container-encoding"));
-                String value = props.getProperty("rest.use-default-user");
-                if (value!=null) {
-                   restServlet.setInitParameter("use-default-user", value);
-                }
-                value = props.getProperty("rest.default-user-username");
-                if (value!=null) {
-                   restServlet.setInitParameter("user", value);
-                }
-                value = props.getProperty("rest.default-user-password");
-                if (value!=null) {
-                   restServlet.setInitParameter("password", value);
-                }
-        }
-        if (props.getProperty("webdav.enabled").equalsIgnoreCase("yes")) {
-            String path = props.getProperty("webdav.context", "/webdav/*");
-        	ServletHolder davServlet =
-        		servletHandler.addServlet("WebDAV", path, "org.exist.http.servlets.WebDAVServlet");
-        	davServlet.setInitParameter("authentication", props.getProperty("webdav.authentication"));
-        }
-        if(props.getProperty("xmlrpc.enabled").equalsIgnoreCase("yes")) {
-            String path = props.getProperty("xmlrpc.context", "/xmlrpc/*");
-            servletHandler.addServlet("RpcServlet", path, "org.exist.xmlrpc.RpcServlet");
+        
+        // TODO: this should be read from a configuration file
+        Map bootstrappers = new HashMap();
+        bootstrappers.put("rest", new ServletBootstrap() {
+           public void bootstrap(Properties props,ServletHandler servletHandler) {
+              String path = props.getProperty("rest.context", "/*");
+              ServletHolder restServlet =
+                      servletHandler.addServlet("EXistServlet", path, "org.exist.http.servlets.EXistServlet");
+              restServlet.setInitParameter("form-encoding", props.getProperty("rest.param.form-encoding"));
+              restServlet.setInitParameter("container-encoding", props.getProperty("rest.param.container-encoding"));
+              String value = props.getProperty("rest.param.use-default-user");
+              if (value!=null) {
+                 restServlet.setInitParameter("use-default-user", value);
+              }
+              value = props.getProperty("rest.param.default-user-username");
+              if (value!=null) {
+                 restServlet.setInitParameter("user", value);
+              }
+              value = props.getProperty("rest.param.default-user-password");
+              if (value!=null) {
+                 restServlet.setInitParameter("password", value);
+              }
+           }
+        });
+        bootstrappers.put("webdav", new ServletBootstrap() {
+           public void bootstrap(Properties props,ServletHandler servletHandler) {
+              String path = props.getProperty("webdav.context", "/webdav/*");
+              ServletHolder davServlet =
+                      servletHandler.addServlet("WebDAV", path, "org.exist.http.servlets.WebDAVServlet");
+              davServlet.setInitParameter("authentication", props.getProperty("webdav.param.authentication"));
+           }
+        });
+        bootstrappers.put("xmlrpc", new ServletBootstrap() {
+           public void bootstrap(Properties props,ServletHandler servletHandler) {
+              String path = props.getProperty("xmlrpc.context", "/xmlrpc/*");
+              servletHandler.addServlet("RpcServlet", path, "org.exist.xmlrpc.RpcServlet");
+           }
+        });
+        
+        for (int i = 0 ; i < servlets.size() ; i++) {
+        	String name = (String) servlets.get(i); 
+           ServletBootstrap bootstrapper = (ServletBootstrap)bootstrappers.get(name);
+           if (bootstrapper!=null) {
+              bootstrapper.bootstrap(props,servletHandler);
+           } else {
+              String path = props.getProperty(name+".context", "/"+name+"/*");
+              String sname = props.getProperty(name+".name", name);
+              ServletHolder servlet = servletHandler.addServlet(sname, path, props.getProperty(name+".class"));
+              String paramPrefix = name+".param.";
+              for (Enumeration pnames = props.propertyNames(); pnames.hasMoreElements(); ) {
+                 String pname = (String)pnames.nextElement();
+                 if (pname.startsWith(paramPrefix)) {
+                    String theName = pname.substring(paramPrefix.length());
+                    servlet.setInitParameter(theName,props.getProperty(pname));
+                 }
+              }
+           }
         }
         
         if (forwarding.size() > 0) {
@@ -303,7 +345,7 @@ public class StandaloneServer {
 		BrokerPool.stopAll(false);
 	}
     
-    private void configure(Properties properties) throws ParserConfigurationException, SAXException, IOException {
+    private List configure(Properties properties) throws ParserConfigurationException, SAXException, IOException {
         // try to read configuration from file. Guess the location if
         // necessary
         InputStream is = null;
@@ -332,7 +374,7 @@ public class StandaloneServer {
         Element root = doc.getDocumentElement();
         if (!root.getLocalName().equals("server")) {
             LOG.warn("Configuration should have a root element <server>");
-            return;
+            return new ArrayList();
         }
         String port = root.getAttribute("port");
         if (port != null && port.length() > 0)
@@ -343,24 +385,29 @@ public class StandaloneServer {
         String address = root.getAttribute("address ");
         if (address != null && address .length() > 0)
             properties.setProperty("address ",address );
-        
+
+        List configurations = new ArrayList();
         NodeList cl = root.getChildNodes();
         for (int i = 0; i < cl.getLength(); i++) {
             Node node = cl.item(i);
             if (node.getNodeType() == Node.ELEMENT_NODE) {
                 Element elem = (Element) node;
                 String name = elem.getLocalName();
-                if ("rest".equals(name)) {
-                    parseDefaultAttrs(properties, elem, "rest");
-                    parseParams(properties, elem, "rest");
-                } else if ("webdav".equals(name))
-                    parseDefaultAttrs(properties, elem, "webdav");
-                else if ("xmlrpc".equals(name))
-                    parseDefaultAttrs(properties, elem, "xmlrpc");
-                else if ("forwarding".equals(name))
+                if ("forwarding".equals(name)) {
                     configureForwards(elem);
+                } else if ("servlet".equals(name)) {
+                    String className = elem.getAttribute("class");
+                    configurations.add(className);
+                    parseDefaultAttrs(properties, elem, className);
+                    parseParams(properties, elem, className);
+                } else {
+                    configurations.add(name);
+                    parseDefaultAttrs(properties, elem, name);
+                    parseParams(properties, elem, name);
+                }
             }
         }
+        return configurations;
     }
 
     private void parseParams(Properties properties, Element root, String prefix) {
@@ -372,7 +419,7 @@ public class StandaloneServer {
                 String name = elem.getAttribute("name");
                 String value = elem.getAttribute("value");
                 if (name != null && name.length() > 0)
-                    properties.setProperty(prefix + '.' + name, value);
+                    properties.setProperty(prefix + ".param." + name, value);
             }
         }
     }
@@ -401,12 +448,13 @@ public class StandaloneServer {
      * @param elem
      */
     private void parseDefaultAttrs(Properties properties, Element elem, String prefix) {
-        String attr = elem.getAttribute("enabled");
-        if (attr != null && attr.length() > 0)
-            properties.setProperty(prefix + ".enabled", attr);
-        attr = elem.getAttribute("context");
-        if (attr != null && attr.length() > 0)
-            properties.setProperty(prefix + ".context", attr);
+       String [] names = { "enabled", "name", "context", "class" };
+       for (int i=0; i<names.length; i++) {
+          String attr = elem.getAttribute(names[i]);
+          if (attr != null && attr.length() > 0) {
+              properties.setProperty(prefix + '.' + names[i], attr);
+          }
+       }
     }
     
     class ShutdownListenerImpl implements ShutdownListener {

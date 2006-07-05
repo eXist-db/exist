@@ -349,7 +349,7 @@ public abstract class Serializer implements XMLReader {
 		if (outputProperties.getProperty(EXistOutputKeys.PROCESS_XSL_PI, "no").equals("yes")) {
 			String stylesheet = hasXSLPi(doc);
 			if (stylesheet != null)
-				setStylesheet((DocumentImpl) doc, stylesheet);
+				setStylesheet(doc, stylesheet);
 		}
 		setStylesheetFromProperties(doc);
 		if (templates != null)
@@ -593,8 +593,7 @@ public abstract class Serializer implements XMLReader {
 			LOG.debug(
 				"compiling stylesheet took " + (System.currentTimeMillis() - start));
 			if(templates != null)
-				xslHandler =
-					((SAXTransformerFactory) factory).newTransformerHandler(templates);
+				xslHandler = factory.newTransformerHandler(templates);
 //			xslHandler.getTransformer().setOutputProperties(outputProperties);
 		} catch (TransformerConfigurationException e) {
 			LOG.debug("error compiling stylesheet", e);
@@ -644,7 +643,7 @@ public abstract class Serializer implements XMLReader {
 		if (outputProperties.getProperty(EXistOutputKeys.PROCESS_XSL_PI, "no").equals("yes")) {
 			String stylesheet = hasXSLPi(doc);
 			if (stylesheet != null)
-				setStylesheet((DocumentImpl) doc, stylesheet);
+				setStylesheet(doc, stylesheet);
 		}
 		setStylesheetFromProperties(doc);
 		setXSLHandler();
@@ -774,7 +773,18 @@ public abstract class Serializer implements XMLReader {
 		return null;
 	}
 	
-	private String hasXSLPi(Document doc) {
+    /**
+     * Check if the document has an xml-stylesheet processing instruction
+     * that references an XSLT stylesheet. Return the link to the stylesheet.
+     *  
+     * @param doc
+     * @return
+     */
+	public String hasXSLPi(Document doc) {
+        boolean applyXSLPI = 
+            outputProperties.getProperty(EXistOutputKeys.PROCESS_XSL_PI, "no").equalsIgnoreCase("yes");
+        if (!applyXSLPI) return null;
+        
 		NodeList docChildren = doc.getChildNodes();
 		Node node;
 		String xsl, type, href;
@@ -782,7 +792,6 @@ public abstract class Serializer implements XMLReader {
 			node = docChildren.item(i);
 			if (node.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE
 				&& ((ProcessingInstruction) node).getTarget().equals("xml-stylesheet")) {
-				LOG.debug("Found stylesheet instruction");
 				// found <?xml-stylesheet?>
 				xsl = ((ProcessingInstruction) node).getData();
 				type = XMLUtil.parseValue(xsl, "type");
@@ -790,7 +799,6 @@ public abstract class Serializer implements XMLReader {
 					href = XMLUtil.parseValue(xsl, "href");
 					if (href == null)
 						continue;
-					LOG.debug("stylesheet = " + href);
 					return href;
 				}
 			}

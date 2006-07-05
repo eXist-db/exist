@@ -31,6 +31,11 @@ public class TextImpl extends NodeImpl implements Text {
 	public TextImpl(DocumentImpl doc, int nodeNumber) {
 		super(doc, nodeNumber);
 	}
+	
+	public String getStringValue() {
+		//Quick and (not so ?) dirty...
+		return getData();
+	}
 
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Text#splitText(int)
@@ -137,8 +142,6 @@ public class TextImpl extends NodeImpl implements Text {
 	
     public String toString() {
     	StringBuffer result = new StringBuffer();
-    	if (isPersistentSet())
-    		result.append("persistent "); 
     	result.append("in-memory#");
     	result.append("text {");    	
     	result.append(getData());

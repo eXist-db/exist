@@ -22,9 +22,9 @@
  */
 package org.exist.xquery;
 
+import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
-import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -79,47 +79,92 @@ public class DocumentConstructor extends NodeConstructor {
         MemTreeBuilder builder = context.getDocumentBuilder();
         DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
         
-        if(contentSeq.isEmpty())
-            return builder.getDocument();
-        try {
-	        StringBuffer buf = null;
-	        SequenceIterator i = contentSeq.iterate();
-	        Item next = i.nextItem();
-	        while(next != null) {
-	            context.proceed(this, builder);
-	            if(next.getType() == Type.ATTRIBUTE || 
-                   next.getType() == Type.NAMESPACE ||
-	               next.getType() == Type.DOCUMENT)
-	                throw new XPathException(getASTNode(), "Found a node of type " + Type.getTypeName(next.getType()) +
-	                        " inside a document constructor");
-	            // if item is an atomic value, collect the string values of all
-				// following atomic values and seperate them by a space. 
-				if (Type.subTypeOf(next.getType(), Type.ATOMIC)) {
-				    if(buf == null)
-				        buf = new StringBuffer();
-					else if (buf.length() > 0)
-						buf.append(' ');
-					buf.append(next.getStringValue());
-					next = i.nextItem();
-				// if item is a node, flush any collected character data and
-				//	copy the node to the target doc. 
-				} else if (Type.subTypeOf(next.getType(), Type.NODE)) {
-					if (buf != null && buf.length() > 0) {
-						receiver.characters(buf);
-						buf.setLength(0);
+        try {        
+	        if(!contentSeq.isEmpty()) {
+		        
+		        StringBuffer buf = null;
+		        SequenceIterator i = contentSeq.iterate();
+		        Item next = i.nextItem();
+		        while(next != null) {
+		            context.proceed(this, builder);
+		            if(next.getType() == Type.ATTRIBUTE || 
+	                   next.getType() == Type.NAMESPACE ||
+		               next.getType() == Type.DOCUMENT)
+		                throw new XPathException(getASTNode(), "Found a node of type " + Type.getTypeName(next.getType()) +
+		                        " inside a document constructor");
+		            // if item is an atomic value, collect the string values of all
+					// following atomic values and seperate them by a space. 
+					if (Type.subTypeOf(next.getType(), Type.ATOMIC)) {
+					    if(buf == null)
+					        buf = new StringBuffer();
+						else if (buf.length() > 0)
+							buf.append(' ');
+						buf.append(next.getStringValue());
+						next = i.nextItem();
+					// if item is a node, flush any collected character data and
+					//	copy the node to the target doc. 
+					} else if (Type.subTypeOf(next.getType(), Type.NODE)) {
+						if (buf != null && buf.length() > 0) {
+							receiver.characters(buf);
+							buf.setLength(0);
+						}
+						next.copyTo(context.getBroker(), receiver);
+						next = i.nextItem();
+					}	
+
+				//TODO : design like below ? -pb
+	           /* 		        
+		        
+		        //TODO : wondering whether we shouldn't iterate over a nodeset as the specs would tend to say. -pb	        
+		        
+		        SequenceIterator i = contentSeq.iterate();
+		        Item next = i.nextItem();
+		        while(next != null) {
+		            context.proceed(this, builder);
+		            
+					if (Type.subTypeOf(next.getType(), Type.NODE)) {
+						//flush any collected character data
+						if (buf != null && buf.length() > 0) {
+							receiver.characters(buf);
+							buf.setLength(0);
+						}					
+						// copy the node to the target doc
+						if(next.getType() == Type.ATTRIBUTE) {
+							throw new XPathException(getASTNode(), "XPTY0004 : Found a node of type " + 
+								Type.getTypeName(next.getType()) +  " inside a document constructor");							
+						} else if (next.getType() == Type.DOCUMENT) {		
+							//TODO : definitely broken, but that's the way to do
+							for (int j = 0 ; j < ((DocumentImpl)next).getChildCount(); j++) {								
+								((DocumentImpl)next).getNode(j).copyTo(context.getBroker(), receiver);
+							}							
+						} else if (Type.subTypeOf(next.getType(), Type.TEXT)) {
+							//TODO
+							buf.append("#text");
+						} else {
+							next.copyTo(context.getBroker(), receiver);
+						}
+					} else {					
+					    if(buf == null)
+					        buf = new StringBuffer();
+						//else if (buf.length() > 0)
+						//	buf.append(' ');
+						buf.append(next.getStringValue());						
 					}
-					next.copyTo(context.getBroker(), receiver);
 					next = i.nextItem();
+					*/
+		        }
+		        
+		        // flush remaining character data
+				if (buf != null && buf.length() > 0) {
+					receiver.characters(buf);
+					buf.setLength(0);
 				}
 	        }
-	        // flush remaining character data
-			if (buf != null && buf.length() > 0)
-				receiver.characters(buf);
         } catch(SAXException e) {
 			throw new XPathException(getASTNode(),
 				"Encountered SAX exception while processing document constructor: "
 					+ ExpressionDumper.dump(this));
-        }
+        }	        
         
         context.popDocumentContext();
         

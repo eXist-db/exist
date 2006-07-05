@@ -29,6 +29,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Properties;
 
 import javax.swing.JFrame;
@@ -306,18 +307,22 @@ public class Backup {
                         "mode",
                         "CDATA",
                         Integer.toOctalString(perms[i].getPermissions()));
-                attr.addAttribute(
-                        NS,
-                        "created",
-                        "created",
-                        "CDATA",
-                        ""+new DateTimeValue(ris.getCreationTime()));
-                attr.addAttribute(
-                        NS,
-                        "modified",
-                        "modified",
-                        "CDATA",
-                        ""+new DateTimeValue(ris.getLastModificationTime()));
+                Date date = ris.getCreationTime();
+                if (date != null)
+                    attr.addAttribute(
+                            NS,
+                            "created",
+                            "created",
+                            "CDATA",
+                            ""+new DateTimeValue(date));
+                date = ris.getLastModificationTime();
+                if (date != null)
+                    attr.addAttribute(
+                            NS,
+                            "modified",
+                            "modified",
+                            "CDATA",
+                            ""+new DateTimeValue(date));
                 
                 attr.addAttribute(
                         NS,

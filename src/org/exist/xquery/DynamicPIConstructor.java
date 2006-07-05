@@ -22,9 +22,9 @@
  */
 package org.exist.xquery;
 
-import org.exist.dom.QName;
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
+import org.exist.util.XMLChar;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -50,11 +50,11 @@ public class DynamicPIConstructor extends NodeConstructor {
     }
 
     public void setNameExpr(Expression nameExpr) {
-        this.name = nameExpr;
+        this.name = new Atomize(context, nameExpr);
     }
     
     public void setContentExpr(Expression contentExpr) {
-        this.content = contentExpr;
+        this.content = new Atomize(context, contentExpr);
     }
 
     /* (non-Javadoc)
@@ -88,15 +88,23 @@ public class DynamicPIConstructor extends NodeConstructor {
             throw new XPathException(getASTNode(), "The name expression should evaluate to a single value");
         
         Item nameItem = nameSeq.itemAt(0);
-        if(!(nameItem.getType() == Type.STRING || nameItem.getType() == Type.QNAME))
-            throw new XPathException(getASTNode(), "The name expression should evaluate to a string or qname");
+        if(!(nameItem.getType() == Type.STRING || nameItem.getType() == Type.NCNAME || 
+        		nameItem.getType() == Type.UNTYPED_ATOMIC))
+            throw new XPathException(getASTNode(), "The name expression should evaluate to a " + 
+            		Type.getTypeName(Type.STRING) + " or a " + Type.getTypeName(Type.NCNAME) + 
+            		" or a " + Type.getTypeName(Type.UNTYPED_ATOMIC) + ". Got: " + 
+            		Type.getTypeName(nameItem.getType()));
         
-        QName qn = QName.parse(context, nameSeq.getStringValue());
-        
-        String value;
+		if(!XMLChar.isValidNCName(nameSeq.getStringValue()))
+			throw new XPathException("XQDY0041 '" + nameSeq.getStringValue() + "' is not a valid processing instruction name");
+		
+		if (nameSeq.getStringValue().equalsIgnoreCase("XML"))
+        	throw new XPathException("XQDY0064 '" + nameSeq.getStringValue() + "' is not a valid processing instruction name");            	
+
+		String contentString;
         Sequence contentSeq = content.eval(contextSequence, contextItem);
         if(contentSeq.isEmpty())
-            value = "";
+        	contentString = "";
         else {
 	        StringBuffer buf = new StringBuffer();
 	        for(SequenceIterator i = contentSeq.iterate(); i.hasNext(); ) {
@@ -104,11 +112,17 @@ public class DynamicPIConstructor extends NodeConstructor {
 	            Item next = i.nextItem();
 	            if(buf.length() > 0)
 	                buf.append(' ');
-	            buf.append(next.toString());
+	            buf.append(next.getStringValue());
 	        }
-	        value = buf.toString();
+	        while (buf.length() > 0 && Character.isWhitespace(buf.charAt(0)))
+	        	buf.deleteCharAt(0);
+	        contentString = buf.toString();	       
         }
-        int nodeNr = builder.processingInstruction(qn.getLocalName(), value);
+        
+		if (contentString.indexOf("?>") != Constants.STRING_NOT_FOUND)
+        	throw new XPathException("XQDY0026 '" + contentString + "' is not a valid processing intruction content");            	
+        
+        int nodeNr = builder.processingInstruction(nameSeq.getStringValue(), contentString);
 
         Sequence result = ((DocumentImpl)builder.getDocument()).getNode(nodeNr);
                 

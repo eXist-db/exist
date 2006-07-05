@@ -184,6 +184,7 @@ public class Journal {
         if (required > currentBuffer.remaining())
             flushToLog(false);
         currentLsn = Lsn.create(currentFile, inFilePos + currentBuffer.position() + 1);
+        loggable.setLsn(currentLsn);
         try {
 			currentBuffer.put(loggable.getLogType());
 			currentBuffer.putLong(loggable.getTransactionId());
@@ -193,7 +194,6 @@ public class Journal {
 		} catch (BufferOverflowException e) {
 			throw new TransactionException("Buffer overflow while writing log record: " + loggable.dump(), e);
 		}
-        loggable.setLsn(currentLsn);
     }
     
     /**
