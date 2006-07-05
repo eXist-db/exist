@@ -41,118 +41,84 @@
 
         <section id="download" title="Download">
             <p> eXist is released to the public under the terms of the <link
-                    href="http://www.gnu.org/copyleft/lesser.html"> GNU LGPL </link> license. </p>
-            <p> eXist may be downloaded either as a package containing the complete distribution or
-                as a web application archive (war-file). Download the war-file if you want to
-                install eXist into an existing servlet-engine or write your own web application. To
-                get started, we suggest downloading the installer or the zip package. Both contain a
-                ready-to-run webserver (Jetty). </p>
-            <p> The distribution includes source code and all required third party libraries. The
-                current version is 1.0beta2. For instructions on starting eXist, read the <link
-                    href="quickstart.xml">Quick Start Guide</link> . </p>
-
-            <p>
-                <emphasis> If you are updating from a previous release, please read the <a
-                        href="updating.xml">update notes</a>. </emphasis>
-            </p>
-
-            <script language="Javascript" type="text/javascript">
-                function warning() {
-                    return confirm("The release you selected is old and outdated. Please read the " +
-                        "health warning above first. Do you still want to continue?");
-                }
-            </script>
-
+                    href="http://www.gnu.org/copyleft/lesser.html"> GNU LGPL </link> license.</p>
+            
+            <p><b>Even</b> release numbers indicate 'production' releases
+            whose code has been tested for a longer time but are frozen except for important bug fixes. 
+            <b>Odd</b> releases are created from the active branch of development and
+            contain all features and bug fixes.</p>
+            
+            <p>Versions <option>1.0</option> and <option>1.1</option> were published simultaneously. This situation
+            was special in the sense that there has been a real technology switch between the two releases. The
+            1.1 code replaces the old indexing scheme at the core of the database by a new one. The <b>new indexing 
+            scheme</b> fixes some limitations eXist previously had. In particular, it</p>
+            
+            <ul>
+                <li>drops the previous document size/complexity limit</li>
+                <li>removes the need to reindex a document after every node update</li>
+            </ul>
+            
+            <p>So if you ever had trouble with large documents or slow XUpdates, you should
+            definitely have a look at the 1.1 version.</p>
+            
             <table cellpadding="5" cellspacing="5">
                 <tr>
-                    <th align="left" colspan="2"> Snapshots </th>
+                    <th align="left" colspan="2">1.0</th>
+                </tr>
+                <tr>
+                    <td align="left" colspan="2">
+                        Based on the old indexing core. Incorporates all the latest code
+                        in all other areas. The old indexing core will become obsolete though.
+                        Use this version if you already have a working application running
+                        in production and want to be on the safe side.
+                    </td>
                 </tr>
                 <tr>
                     <td>
-                        <a
-                            href="http://prdownloads.sourceforge.net/exist/eXist-snapshot-20060316.jar"
-                            > eXist-snapshot-20060316.jar </a>
+                        <a href="http://prdownloads.sourceforge.net/exist/eXist-1.0rc.jar"> eXist--1.0rc.jar </a>
                     </td>
                     <td> Installer based on IzPack. Includes source. Run with <tt>java -jar
-                            eXist-snapshot-XXXXXX.jar</tt> . </td>
+                            eXist-1.0rc.jar</tt>.</td>
                 </tr>
                 <tr>
                     <td>
-                        <a href="http://prdownloads.sourceforge.net/exist/exist-20060316.war">
-                            exist-20060316.war </a>
+                        <a href="http://prdownloads.sourceforge.net/exist/exist-1.0rc.war">
+                            exist-1.0rc.war </a>
                     </td>
                     <td>Web application archive, ready to be installed into an existing
                         servlet-engine like Tomcat or Jetty. </td>
                 </tr>
                 <tr>
-                    <td colspan="2"> Development snapshots reflect the current state of development.
-                        They are released on a regular basis whenever we think the CVS code is in a
-                        stable state and important new features or bug fixes should be made
-                        available to the community. The latest snapshot release can always be found
-                        on the <a href="http://sourceforge.net/project/showfiles.php?group_id=17691"
-                            > Sourceforge file release system</a>. Concerning installation, there's
-                        no difference to a stable release. </td>
+                    <th align="left" colspan="2">1.1-newcore</th>
                 </tr>
                 <tr>
-                    <td colspan="2"> Please note that development snapshots are not necessarily less
-                        stable than the latest "stable" release. Snapshots often contain important
-                        bug fixes which are not yet available in the stable release. There's also a
-                        risk that new bugs or regressions were introduced. However, we try to keep
-                        the snapshots as stable as possible. New features, bugs or problems will be
-                        announced via the <link href="http://sourceforge.net/mail/?group_id=17691"
-                            >mailing list </link> and the <link href="http://wiki.exist-db.org"
-                        >Wiki</link>. </td>
-                </tr>
-                <tr>
-                    <th align="left" colspan="2">Last "official" stable version</th>
-                </tr>
-                <tr>
-                    <th colspan="2">
-                        <warning>
-                            <title>Health Warning</title>
-                            <p>The 1.0 beta2 release is truly ancient now. There were lots of bug
-                                fixes and feature enhancements during the past months, so using
-                                beta2 cannot be recommended any more. Please download a newer
-                                development snapshot. Recent development snapshots can be regarded
-                                as stable. A new official "stable" release is in preparation, but as
-                                usual, we lack the time to complete the documentation. Any help will
-                                be welcome!</p>
-                        </warning>
-                    </th>
+                    <td align="left" colspan="2">
+                        Based on the new indexing core. Represents a major technology switch with respect
+                        to the index system. All other areas (including most of the query engine) are identical
+                        to the 1.0 release. If you know eXist and had problems with too large/too complex documents
+                        or slow updates, try this version. If you are a new user and willing to help us testing, 
+                        you may also want to download the 1.1 release as it has less limitations.
+                    </td>
                 </tr>
                 <tr>
                     <td>
-                        <a onclick="return warning()"
-                            href="http://prdownloads.sourceforge.net/exist/eXist-1.0b2-build-1107.jar"
-                            > eXist-1.0b2-build-1107.jar </a>
+                        <a href="http://prdownloads.sourceforge.net/exist/eXist-1.1rc-newcore.jar"> eXist-1.1rc-newcore.jar </a>
                     </td>
-                    <td> Installer based on IzPack. Highly recommended. Includes source. Run with
-                            <tt>java -jar eXist-1.0b2.jar</tt> . </td>
+                    <td> Installer based on IzPack. Includes source. Run with <tt>java -jar
+                        eXist-1.1rc-newcore.jar</tt>.</td>
                 </tr>
                 <tr>
                     <td>
-                        <a onclick="return warning()"
-                            href="http://prdownloads.sourceforge.net/exist/eXist-1.0b2-build-1107.war"
-                            > eXist-1.0b2-build-1107.war </a>
+                        <a href="http://prdownloads.sourceforge.net/exist/exist-1.1rc-newcore.war">
+                            exist-1.1rc-newcore.war </a>
                     </td>
-                    <td> Web application archive, ready to be installed into an existing
+                    <td>Web application archive, ready to be installed into an existing
                         servlet-engine like Tomcat or Jetty. </td>
                 </tr>
-                <tr>
-                    <th align="left" colspan="2">Other tools</th>
-                </tr>
-                <tr>
-                    <td>
-                        <a href="http://wiki.exist-db.org/space/jEditXQueryPlugin"> jEdit XQuery
-                            Plugin Adapter </a>
-                    </td>
-                    <td> jEdit's XQuery plugin offers a comfortable interface to write and test
-                        XQueries from within jEdit. The plugin provides an adapter architecture to
-                        access different XQuery engines. Using the adapter for eXist, you can
-                        execute your XQuery directly from within jEdit. Follow the link to read
-                        more. </td>
-                </tr>
             </table>
+            
+            <p>For <a href="http://wiki.exist-db.org/space/ThirdPartyTools">other software</a> packages to be used 
+            with eXist, check the links on the Wiki.</p>
         </section>
         <section title="Community Support" id="mailing">
             <p>The primary medium for asking questions, getting help or posting bug reports or fixes
