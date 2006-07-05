@@ -359,7 +359,7 @@ public abstract class Paged {
 				return false;
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new DBException(0, "Error opening " + file.getName());
+			throw new DBException(0, "Error opening " + file.getName() + ": " + e.getMessage());
 		}
 	}
 

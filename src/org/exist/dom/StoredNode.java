@@ -130,6 +130,7 @@ public class StoredNode extends NodeImpl implements Visitable {
 				return CommentImpl.deserialize(data, start, len, doc, pooled);
 			default :
                 LOG.error("Unknown node type: " + type);
+				Thread.dumpStack();
 				return null;
 		}
 	}
@@ -217,6 +218,10 @@ public class StoredNode extends NodeImpl implements Visitable {
    		this.ownerDocument = ownerDocument;
     }
 
+    public int getDocId() {
+   		return ownerDocument.getDocId();
+    }
+    
 	/**
 	 * @see org.w3c.dom.Node#getParentNode()
 	 */

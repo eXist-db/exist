@@ -108,10 +108,13 @@ public class FunIndexOf extends BasicFunction {
     		int j = 1;
     		for (SequenceIterator i = args[0].iterate(); i.hasNext(); j++) {
     			AtomicValue next = i.nextItem().atomize();
-    			if (GeneralComparison.compareAtomic(collator, next, srch, context.isBackwardsCompatible(),
-    					Constants.TRUNC_NONE, Constants.EQ))
-                    //TODO : break here ? -pb
-    				result.add(new IntegerValue(j));
+    			try {
+	    			if (GeneralComparison.compareAtomic(collator, next, srch, context.isBackwardsCompatible(),
+	    					Constants.TRUNC_NONE, Constants.EQ))
+	    				result.add(new IntegerValue(j));
+    			} catch (XPathException e) {
+    				//Ignore me : values can not be compared
+    			}
     		}    		
         }
         

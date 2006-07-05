@@ -92,39 +92,44 @@ public class NodeComparison extends BinaryOp {
         
 		Sequence result;
 		Sequence ls = getLeft().eval(contextSequence, contextItem);
-        if(ls.isEmpty())
-            result = BooleanValue.EMPTY_SEQUENCE;
-        else {
-	        Sequence rs = getRight().eval(contextSequence, contextItem);		
-			if(rs.isEmpty()) {
-				return BooleanValue.EMPTY_SEQUENCE;
-	        } else {		
-				NodeValue sv = (NodeValue)ls.itemAt(0);
-				NodeValue rv = (NodeValue)rs.itemAt(0);
-		        
-				if(sv.getImplementationType() != rv.getImplementationType()) {
-					// different implementations
-					return BooleanValue.FALSE;
-				}
-				
+		Sequence rs = getRight().eval(contextSequence, contextItem);
+        if(!ls.isEmpty() && !rs.isEmpty()) {
+    		NodeValue lv = (NodeValue)ls.itemAt(0);
+    		NodeValue rv = (NodeValue)rs.itemAt(0);	       		
+			if(lv.getImplementationType() != rv.getImplementationType()) {
+				// different implementations : can't be the same nodes
+				result =  BooleanValue.FALSE;
+			} else {			
 				switch(relation) {
 					case Constants.IS:
-						result = sv.equals(rv) ? BooleanValue.TRUE : BooleanValue.FALSE;
+						result = lv.equals(rv) ? BooleanValue.TRUE : BooleanValue.FALSE;
 						break;
 					case Constants.ISNOT:
-						result = sv.equals(rv) ? BooleanValue.FALSE : BooleanValue.TRUE;
+						result = lv.equals(rv) ? BooleanValue.FALSE : BooleanValue.TRUE;
 						break;
 					case Constants.BEFORE:
-						result = sv.before(rv, false) ? BooleanValue.TRUE : BooleanValue.FALSE;
+						result = lv.before(rv, false) ? BooleanValue.TRUE : BooleanValue.FALSE;
 						break;
 					case Constants.AFTER:
-						result = sv.after(rv, false) ? BooleanValue.TRUE : BooleanValue.FALSE;
+						result = lv.after(rv, false) ? BooleanValue.TRUE : BooleanValue.FALSE;
 						break;
 					default:
 						throw new XPathException("Illegal argument: unknown relation");
 				}
-	        }
+			}
         }
+        else {
+        	if (ls.isEmpty() && !rs.isEmpty()) {
+        		if (!Type.subTypeOf(rs.getItemType(), Type.NODE))        	
+        			throw new XPathException("XPTY0004 : the empty sequence cant be an atomic value");
+        	}
+        	if (!ls.isEmpty() && rs.isEmpty()) {        		
+        		if (!Type.subTypeOf(ls.getItemType(), Type.NODE))        	
+        			throw new XPathException("XPTY0004 : the empty sequence cant be an atomic value");    
+        	}
+        	result = BooleanValue.EMPTY_SEQUENCE;
+        }
+        
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result);
         

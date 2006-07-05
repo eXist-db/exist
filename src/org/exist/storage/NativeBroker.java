@@ -365,17 +365,17 @@ public class NativeBroker extends DBBroker {
         }
     }
 
-    private void notifyStoreAttribute(AttrImpl attr, NodePath currentPath, boolean index) {
+    private void notifyStoreAttribute(AttrImpl attr, NodePath currentPath, boolean fullTextIndex) {
         for (int i = 0; i < contentLoadingObservers.size(); i++) {
             ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
-            observer.storeAttribute( attr, currentPath, index );
+            observer.storeAttribute( attr, currentPath, fullTextIndex );
         }	
 	}	
 
-	private void notifyStoreText(TextImpl text, NodePath currentPath, boolean index ) {
+	private void notifyStoreText(TextImpl text, NodePath currentPath, boolean fullTextIndex ) {
         for (int i = 0; i < contentLoadingObservers.size(); i++) {
             ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
-            observer.storeText(text, currentPath, index);
+            observer.storeText(text, currentPath, fullTextIndex);
         }
 	}
     
@@ -2058,7 +2058,7 @@ public class NativeBroker extends DBBroker {
             for (int i = 0; i < nodes.getLength(); i++) {
             	StoredNode node = (StoredNode) nodes.item(i);
             	Iterator iterator = getNodeIterator(node);
-                iterator.next();
+                iterator.next();                
                 copyNodes(transaction, iterator, node, new NodePath(), tempDoc, true, false);
             }
             flush();
@@ -2157,7 +2157,7 @@ public class NativeBroker extends DBBroker {
      *      the Broker to determine if a node's content should be
      *      fulltext-indexed).  @param index switch to activate fulltext indexation
      */
-    public void storeNode(final Txn transaction, final StoredNode node, NodePath currentPath, boolean index) {
+    public void storeNode(final Txn transaction, final StoredNode node, NodePath currentPath, boolean fullTextIndex) {
         checkAvailableMemory();
         
         final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
@@ -2186,7 +2186,7 @@ public class NativeBroker extends DBBroker {
         .run();
         ++nodesCount;
 
-        nodeProcessor.reset(transaction, node, currentPath, index);
+        nodeProcessor.reset(transaction, node, currentPath, fullTextIndex);
         nodeProcessor.doIndex();
     }
     
@@ -2826,7 +2826,7 @@ public class NativeBroker extends DBBroker {
         private int depth;
         private int level;        
         /** overall switch to activate fulltext indexation */
-        private boolean index = true;
+        private boolean fullTextIndex = true;
         private boolean repairMode = false;
         
         NodeProcessor() {
@@ -2849,9 +2849,9 @@ public class NativeBroker extends DBBroker {
             level = node.getNodeId().getTreeLevel();
         }
         
-        public void reset(Txn transaction, StoredNode node, NodePath currentPath, boolean index) {
+        public void reset(Txn transaction, StoredNode node, NodePath currentPath, boolean fullTextIndex) {
             reset(transaction, node, currentPath);
-            this.index = index;
+            this.fullTextIndex = fullTextIndex;
         }
 
         public void setRepairMode(boolean repair) {
@@ -2890,7 +2890,7 @@ public class NativeBroker extends DBBroker {
                     ((ElementImpl) node).setIndexType(indexType);
                     
                     // qnameValueIndex.startElement((ElementImpl)node, currentPath, index);
-                    notifyStartElement((ElementImpl)node, currentPath, index);
+                    notifyStartElement((ElementImpl)node, currentPath, fullTextIndex);
                     NodeProxy p = new NodeProxy(node);
                     p.setIndexType(indexType);
                     elementIndex.setDocument(doc);
@@ -2905,7 +2905,7 @@ public class NativeBroker extends DBBroker {
                         currentPath.addComponent(qname);
                     
                     // --move to-- NativeElementIndex NativeValueIndex NativeTextEngine
-                    if(index && (ftIdx == null || currentPath == null || ftIdx.matchAttribute(currentPath))) {
+                    if(fullTextIndex && (ftIdx == null || currentPath == null || ftIdx.matchAttribute(currentPath))) {
                         indexType |= RangeIndexSpec.TEXT;
                         indexAttribs = true;
                     }
@@ -2925,7 +2925,7 @@ public class NativeBroker extends DBBroker {
                     }
                     
                     // qnameValueIndex.storeAttribute( (AttrImpl)node, currentPath, index);
-                    notifyStoreAttribute( (AttrImpl)node, currentPath, index);
+                    notifyStoreAttribute( (AttrImpl)node, currentPath, fullTextIndex);
                     
                     // --move to-- NativeTextEngine
                     // TODO : textEngine.storeAttribute( (AttrImpl)node, currentPath, index);
@@ -2963,16 +2963,21 @@ public class NativeBroker extends DBBroker {
                     // TODO textEngine.storeText( (TextImpl) node, currentPath, index);
                     // check if this textual content should be fulltext-indexed
                     // by calling IndexPaths.match(path)
-                    boolean indexText = true;
-                    if (ftIdx != null && currentPath != null)
-                        indexText = ftIdx.match(currentPath);
-                    if (indexText && !isTemp && index ) {
-                        boolean valore = (ftIdx == null || currentPath == null ? false
-                                : ftIdx.preserveContent(currentPath));
-                        textEngine.storeText(ftIdx, (TextImpl) node, valore);
-                    }
+                	if (fullTextIndex && !isTemp) {                		
+	                    boolean indexText;
+	                    boolean preventTokenization;
+	                    if (ftIdx == null || currentPath == null) {
+	                    	indexText = true;
+	                    	preventTokenization = false;
+	                    } else {
+	                        indexText = ftIdx.match(currentPath);
+	                        preventTokenization = ftIdx.preserveContent(currentPath);
+	                    }
+	                    if (indexText)
+	                        textEngine.storeText(ftIdx, (TextImpl) node, preventTokenization);	                    
+                	}
                     
-                    notifyStoreText( (TextImpl)node, currentPath, index );
+                    notifyStoreText( (TextImpl)node, currentPath, fullTextIndex );
                     // storeText( TextImpl node, NodePath currentPath, boolean fullTextIndexSwitch );
                     break;
             }

@@ -109,7 +109,8 @@ public class CopyCollectionTest extends TestCase {
             String data = serializer.serialize(doc);
             System.out.println(data);
             doc.getUpdateLock().release(Lock.READ_LOCK);                
-	    } catch (Exception e) {            
+	    } catch (Exception e) {  
+	    	e.printStackTrace();
 	        fail(e.getMessage());              
         } finally {
             if (pool != null) pool.release(broker);
@@ -159,7 +160,8 @@ public class CopyCollectionTest extends TestCase {
 //          Don't commit...
             transact.getJournal().flushToLog(true);
             System.out.println("Transaction interrupted ...");            
-	    } catch (Exception e) {            
+	    } catch (Exception e) {    
+	    	e.printStackTrace();
 	        fail(e.getMessage());              
         } finally {
             if (pool != null) pool.release(broker);
@@ -182,7 +184,8 @@ public class CopyCollectionTest extends TestCase {
             serializer.reset();            
             DocumentImpl doc = broker.getXMLResource(XmldbURI.ROOT_COLLECTION_URI.append("destination/test3/test.xml"), Lock.READ_LOCK);
             assertNotNull("Document should be null", doc);
-	    } catch (Exception e) {            
+	    } catch (Exception e) {
+	    	e.printStackTrace();
 	        fail(e.getMessage());              
         } finally {
             pool.release(broker);

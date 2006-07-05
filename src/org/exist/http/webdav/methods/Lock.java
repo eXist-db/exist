@@ -94,6 +94,7 @@ public class Lock extends AbstractWebDAVMethod {
             DocumentImpl resource = null;
             
             LockToken lockToken = getDefaultToken(user);
+            lockToken.createOpaqueLockToken();
             
             String contentType = request.getContentType();
             txManager = pool.getTransactionManager();

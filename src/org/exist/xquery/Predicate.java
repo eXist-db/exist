@@ -296,11 +296,28 @@ public class Predicate extends PathExpr {
             case Constants.DESCENDANT_SELF_AXIS:
             case Constants.DESCENDANT_ATTRIBUTE_AXIS: 
             {
+        		
+        		NodeSet outerNodeSet;
+        		
+        		//Ugly and costly processing of VirtualNodeSEts
+        		//TODO : CORRECT THIS !!!
+        		
+        		if (outerSequence instanceof VirtualNodeSet) {
+
+        			outerNodeSet = new ExtArrayNodeSet();
+        			for (int i = 0 ; i < outerSequence.getLength() ; i++) {
+        				outerNodeSet.add(outerSequence.itemAt(i));
+        			}
+        		} else outerNodeSet = outerSequence.toNodeSet();       		
+        		
+        		//Comment the line below if you have uncommented the lines above :-)
+            	
             	//TODO: in some cases, especially with in-memory nodes, 
             	//outerSequence.toNodeSet() will generate a document
             	//which will be different from the one(s) in contextSet
             	//ancestors will thus be empty :-(
-            	NodeSet outerNodeSet = outerSequence.toNodeSet();
+            	if (outerSequence instanceof VirtualNodeSet)
+            		((VirtualNodeSet)outerSequence).realize(); 
 				Sequence ancestors = contextSet.selectAncestorDescendant(outerNodeSet,
 						NodeSet.ANCESTOR, true, getExpressionId()); 
 				if (contextSet.getDocumentSet().intersection(outerNodeSet.getDocumentSet()).getLength() == 0)
@@ -324,9 +341,11 @@ public class Predicate extends PathExpr {
 				        //... whereas we don't want a sorted array here
                         //TODO : rename this method as getInDocumentOrder ? -pb
 				        p = temp.get(v.getInt() - 1);
-				        if (p != null)
+				        if (p != null) {
+				        	p.clearContext(Expression.IGNORE_CONTEXT);
 				        	result.add(p);
-                        //TODO : does null make sense here ?
+				        }
+                        //TODO : does null make sense here ? Well... sometimes ;-) 
 				    }
 				}
                 break;

@@ -62,6 +62,12 @@ public abstract class Step extends AbstractExpression {
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.AnalyzeContextInfo)
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+    	//context.("t")
+    	if (test != null && test.getName() != null && test.getName().getPrefix() != null &&
+    			!test.getName().getPrefix().equals("") && context.inScopePrefixes !=  null && 
+    			context.getURIForPrefix(test.getName().getPrefix()) == null)
+    		throw new XPathException(getASTNode(), "XPST0081 : undeclared prefix '" + 
+    				test.getName().getPrefix() + "'");
     	inPredicate = (contextInfo.getFlags() & IN_PREDICATE) > 0;
     	this.contextId = contextInfo.getContextId();
     	contextInfo.setParent(this);

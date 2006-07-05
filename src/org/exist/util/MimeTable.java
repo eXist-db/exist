@@ -80,6 +80,7 @@ public class MimeTable {
     
     private Map mimeTypes = new TreeMap();
     private Map extensions = new TreeMap();
+    private Map preferredExtension = new TreeMap();
     
     public MimeTable() {
         load();
@@ -104,6 +105,14 @@ public class MimeTable {
     
     public MimeType getContentType(String mimeType) {
         return (MimeType) mimeTypes.get(mimeType);
+    }
+    
+    public String getPreferredExtension(String mimeType) {
+       return (String)preferredExtension.get(mimeType);
+    }
+    
+    public String getPreferredExtension(MimeType mimeType) {
+       return (String)preferredExtension.get(mimeType.getName());
     }
     
     public boolean isXMLContent(String fileName) {
@@ -226,11 +235,17 @@ public class MimeTable {
                 if (mime != null) {
                     String extList = charBuf.getNormalizedString(FastStringBuffer.SUPPRESS_BOTH);
                     StringTokenizer tok = new StringTokenizer(extList, ", ");
+                    String preferred = null;
                     while (tok.hasMoreTokens()) {
                         String ext = tok.nextToken().toLowerCase();
-                        if (!extensions.containsKey(ext))
+                        if (!extensions.containsKey(ext)) {
                             extensions.put(ext, mime);
+                        }
+                        if (preferred==null) {
+                           preferred = ext;
+                        }
                     }
+                    preferredExtension.put(mime.getName(),preferred);
                 }
             }
         }

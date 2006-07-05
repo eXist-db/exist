@@ -24,10 +24,12 @@ package org.exist.xquery;
 
 import java.util.Iterator;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
+import org.exist.util.XMLChar;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -47,6 +49,9 @@ public class ElementConstructor extends NodeConstructor {
 	private AttributeConstructor attributes[] = null;
 	private QName namespaceDecls[] = null;
 	
+	protected final static Logger LOG =
+		Logger.getLogger(ElementConstructor.class);	
+	
 	public ElementConstructor(XQueryContext context) {
 	    super(context);
 	}
@@ -64,10 +69,10 @@ public class ElementConstructor extends NodeConstructor {
 	    this.qnameExpr = new Atomize(context, expr);
 	}
 	
-	public void addAttribute(AttributeConstructor attr) {
+	public void addAttribute(AttributeConstructor attr) throws XPathException {
 		if(attr.isNamespaceDeclaration()) {
 			if(attr.getQName().equals("xmlns"))
-				addNamespaceDecl("xmlns", attr.getLiteralValue());
+				addNamespaceDecl("", attr.getLiteralValue());
 			else
 				addNamespaceDecl(QName.extractLocalName(attr.getQName()), attr.getLiteralValue());
 		} else	if(attributes == null) {
@@ -81,17 +86,35 @@ public class ElementConstructor extends NodeConstructor {
 		}
 	}
 	
-	public void addNamespaceDecl(String name, String uri) {
-        String prefix = "xmlns".equals(name) ? null : "xmlns";
-		if(namespaceDecls == null) {
-			namespaceDecls = new QName[1];
-			namespaceDecls[0] = new QName(name, uri, prefix);
-		} else {
-			QName decls[] = new QName[namespaceDecls.length + 1];
-			System.arraycopy(namespaceDecls, 0, decls, 0, namespaceDecls.length);
-			decls[namespaceDecls.length] = new QName(name, uri, prefix);
-			namespaceDecls = decls;
-		}
+	public void addNamespaceDecl(String name, String uri) throws XPathException {
+        
+        QName qn = new QName(name, uri, "xmlns");
+
+        if (name.equalsIgnoreCase("xml")) {
+        	throw new XPathException("XQST0070 : can not redefine '" + qn + "'");
+        }
+        if (name.equalsIgnoreCase("xmlns")) {
+        	throw new XPathException("XQST0070 : can not redefine '" + qn + "'");
+        }        
+        if ("".equals(uri)) {
+        	if (context.inScopeNamespaces.remove(qn.getLocalName()) == null)
+        		throw new XPathException("XQST0085 : can not undefine '" + qn + "'");
+        } else { 
+	        if(namespaceDecls == null) {
+				namespaceDecls = new QName[1];
+				namespaceDecls[0] = qn;			
+			} else {			
+				for(int i = 0; i < namespaceDecls.length; i++) {
+					if (qn.equals(namespaceDecls[i]))
+						throw new XPathException("XQST0071 : duplicate definition for '" + qn + "'");
+				}
+				QName decls[] = new QName[namespaceDecls.length + 1];
+				System.arraycopy(namespaceDecls, 0, decls, 0, namespaceDecls.length);
+				decls[namespaceDecls.length] = qn;			
+				namespaceDecls = decls;
+			}
+	        context.inScopeNamespaces.put(qn.getLocalName(), qn.getNamespaceURI());
+        }
 	}
 	
     /* (non-Javadoc)
@@ -149,6 +172,8 @@ public class ElementConstructor extends NodeConstructor {
 				constructor = (AttributeConstructor)attributes[i];
 				attrValues = constructor.eval(contextSequence, contextItem);
 				attrQName = QName.parse(context, constructor.getQName(), "");
+				if (attrs.getIndex(attrQName.getNamespaceURI(), attrQName.getLocalName()) != -1)
+					throw new XPathException("XQST0040 '" + attrQName.getLocalName() + "' is a duplicate attribute name");
 				attrs.addAttribute(attrQName.getNamespaceURI(), attrQName.getLocalName(),
 						attrQName.toString(), "CDATA", attrValues.getStringValue());
 			}
@@ -159,9 +184,19 @@ public class ElementConstructor extends NodeConstructor {
 		Sequence qnameSeq = qnameExpr.eval(contextSequence, contextItem);
 		if(!qnameSeq.hasOne())
 		    throw new XPathException("Type error: the node name should evaluate to a single string");
+		
 		QName qn = QName.parse(context, qnameSeq.getStringValue());
 		
-		// add namespace declaration nodes
+		//Not in the specs but... makes sense
+		if(!XMLChar.isValidName(qn.getLocalName()))
+			throw new XPathException("XPTY0004 '" + qnameSeq.getStringValue() + "' is not a valid element name");
+		
+		//Use the default namespace if specified
+	 	if (qn.getPrefix() == null && context.inScopeNamespaces.get("xmlns") != null) {
+	 		qn.setNamespaceURI((String)context.inScopeNamespaces.get("xmlns"));
+	 	}
+	 	
+	 	// add namespace declaration nodes
 		int nodeNr = builder.startElement(qn, attrs);
 		if(namespaceDecls != null) {
 			for(int i = 0; i < namespaceDecls.length; i++) {

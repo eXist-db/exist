@@ -1,0 +1,81 @@
+<feed xmlns="http://www.w3.org/2005/Atom" 
+xmlns:atom="http://www.w3.org/2005/Atom">
+   { 
+     "&#x0a;",
+     /atom:feed/atom:title,
+     "&#x0a;",
+     /atom:feed/atom:id,
+     "&#x0a;",
+     /atom:feed/atom:updated,
+     "&#x0a;",
+     /atom:feed/atom:entry[atom:category[@scheme='http://www.smallx.com/Ontology/Atopic/2006/1/0/topic/relation' and @term='subtopic']]
+   }
+   {
+      let $current := substring-before(base-uri(/atom:feed),'/.feed.atom'),
+           $current-path := substring-after($current,'/db')
+         return (
+            <link rel="alternate" href="/atom/content{substring-after($current,'/db')}" type="application/atom+xml"/>,
+           "&#x0a;",
+            let $parts := tokenize($current-path,'/')
+               for $i in (1 to count($parts)-1)
+                   let $apath := string-join(subsequence($parts,1,$i),'/'),
+                       $feed := document(concat($apath,'/.feed.atom'))/atom:feed
+                     return if (not($feed/atom:category[@scheme='http://www.smallx.com/Ontology/Atopic/2006/1/0/display' and @term='false']))
+                       then (<entry>
+                            {
+                                "&#x0a;",
+                                $feed/atom:id,
+                                "&#x0a;",
+                                $feed/atom:title,
+                                "&#x0a;",
+                                $feed/atom:updated,
+                                "&#x0a;",
+                                <category scheme="http://www.smallx.com/Ontology/Atopic/2006/1/0/topic/relation" term="ancestor"/>,
+                                "&#x0a;",
+                                <link rel="alternate" href="/atom/content/{$apath}" type="application/atom+xml"/>,
+                                "&#x0a;",
+                                <summary>
+                                     {
+                                         $feed/atom:subtitle/@type,
+                                         $feed/atom:subtitle/node()
+                                     }
+                                </summary>,
+                                "&#x0a;"
+                             }
+                            </entry>,
+                            "&#x0a;"
+                            )
+                       else (),
+            for $i in (collection($current)/atom:feed) 
+               let $path :=  substring-before(base-uri($i),'/.feed.atom'),
+                   $prefix := concat($current,'/')
+                  return if ($current!=$path and not(contains(substring-after($path,$prefix),'/'))
+                             and not($i/atom:category[@scheme='http://www.smallx.com/Ontology/Atopic/2006/1/0/display' and @term='false']))
+                     then (<entry>
+                            {
+                                "&#x0a;",
+                                $i/atom:id,
+                                "&#x0a;",
+                                $i/atom:title,
+                                "&#x0a;",
+                                $i/atom:updated,
+                                "&#x0a;",
+                                <category scheme="http://www.smallx.com/Ontology/Atopic/2006/1/0/topic/relation" term="subtopic"/>,
+                                "&#x0a;",
+                                <link rel="alternate" href="/atom/content{substring-after($path,'/db')}" type="application/atom+xml"/>,
+                                "&#x0a;",
+                                <summary>
+                                     {
+                                         $i/atom:subtitle/@type,
+                                         $i/atom:subtitle/node()
+                                     }
+                                </summary>,
+                                "&#x0a;"
+                             }
+                            </entry>,
+                            "&#x0a;"
+                            )
+                     else ()
+         )
+   }
+</feed>

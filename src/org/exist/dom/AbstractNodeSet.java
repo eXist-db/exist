@@ -588,32 +588,35 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * @return
 	 */
 	public int getIndexType() {
-		if(indexType == Type.ANY_TYPE) {
+		//Is the index type initialized ?
+		if (indexType == Type.ANY_TYPE) {		
 		    hasTextIndex = true;
-		    hasMixedContent = false;
-		    
-		    int type;
-		    NodeProxy p;
+		    hasMixedContent = true;
 			for (Iterator i = iterator(); i.hasNext();) {
-			    p = (NodeProxy) i.next();
-                if (p.getDocument().getCollection().isTempCollection()) {
-                    indexType = Type.ITEM;
-                    hasTextIndex = false;
-                    break;
-                }
-			    type = p.getIndexType();
-				if(indexType == Type.ANY_TYPE)
-				    indexType = type;
-				else if(indexType != type) {
-                    if (indexType != Type.ITEM)
-                        LOG.debug("Found: " + Type.getTypeName(type) + "; node = " + p.toString());
-				    indexType = Type.ITEM;
-				}
-				if(!p.hasTextIndex()) {
+			    NodeProxy node = (NodeProxy) i.next();
+	            if (node.getDocument().getCollection().isTempCollection()) {
+	            	//Temporary nodes return default values
+	                indexType = Type.ITEM;
+	                hasTextIndex = false;
+	                hasMixedContent = false;
+	                break;
+	            }
+			    int nodeIndexType = node.getIndexType();
+			    //Refine type
+			    //TODO : use common subtype
+			    if (indexType == Type.ANY_TYPE) {
+			    	indexType = nodeIndexType;
+			    } else {
+			    	//Broaden type
+			    	//TODO : use common supertype
+			    	if (indexType != nodeIndexType)             
+			    		indexType = Type.ITEM;
+			    }			    
+				if(!node.hasTextIndex()) {
 				    hasTextIndex = false;
 				}
-				if(p.hasMixedContent()) {
-				    hasMixedContent = true;
+				if(!node.hasMixedContent()) {
+				    hasMixedContent = false;
 				}
 			}
 		}
