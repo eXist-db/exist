@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 
 <!--
     ======================================================
@@ -207,5 +207,9 @@
     <mime-type name="application/pdf" type="binary">
         <description>PDF (Adobe)</description>
         <extensions>.pdf</extensions>
+    </mime-type>
+    <mime-type name="application/x-javascript" type="binary">
+        <description>JavaScript</description>
+        <extensions>.js</extensions>
     </mime-type>
 </mime-types>
