@@ -999,7 +999,7 @@ public class ClientFrame extends JFrame
                         client.current.getService("IndexQueryService", "1.0");
                         for(int i = 0; i < collections.length; i++) {
                             ResourceDescriptor next = collections[i];
-                            setStatus("Reindexing collection " + next + "...");
+                            setStatus("Reindexing collection " + next.getName() + "...");
                             service.reindexCollection(next.getName());
                         }
                         setStatus("Reindex completed.");
