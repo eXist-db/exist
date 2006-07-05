@@ -3,15 +3,15 @@
 <!--
     ======================================================
     This file lists all mime types known to eXist.      
+
     When storing a document with the Java client, the type 
     of the resource is looked up here. A resource will be 
     stored as an XML or a binary resource, depending on the 
     "type" attribute of the corresponding mime-type entry.
+
     In MimeTable.java mime-types.xml is first searched in 
     directory pointed by property "home.exist", 
     and then as a classpath resource in org/exist/util .
-    TODO : this file is duplicated in the CVS
-    $Header$
     ======================================================= 
 -->
 
