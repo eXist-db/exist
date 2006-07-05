@@ -110,7 +110,7 @@ public class DOM {
    
    public static String textContent(Node n) {
       if (n.getNodeType()==Node.ELEMENT_NODE) {
-         StringBuilder builder = new StringBuilder();
+    	 StringBuffer builder = new StringBuffer();
          Node current = n.getFirstChild();
          while (current!=null) {
             int type = current.getNodeType();
