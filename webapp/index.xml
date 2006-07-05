@@ -43,10 +43,12 @@
             <p> eXist is released to the public under the terms of the <link
                     href="http://www.gnu.org/copyleft/lesser.html"> GNU LGPL </link> license.</p>
             
-            <p><b>Even</b> release numbers indicate 'production' releases
-            whose code has been tested for a longer time but are frozen except for important bug fixes. 
-            <b>Odd</b> releases are created from the active branch of development and
-            contain all features and bug fixes.</p>
+            <note>
+                <p><b>Even</b> release numbers indicate 'production' releases
+                whose code has been tested for a longer time but are frozen except for important bug fixes. 
+                <b>Odd</b> releases are created from the active branch of development and
+                contain all features and bug fixes.</p>
+            </note>
             
             <p>Versions <option>1.0</option> and <option>1.1</option> were published simultaneously. This situation
             was special in the sense that there has been a real technology switch between the two releases. The
@@ -59,23 +61,25 @@
             </ul>
             
             <p>So if you ever had trouble with large documents or slow XUpdates, you should
-            definitely have a look at the 1.1 version.</p>
+            definitely have a look at the 1.1 version. For a discussion of the two schemes, have
+                a look at our <a href="xmlprague06.xml">XML Prague article</a> 
+                (<a href="http://wiki.exist-db.org/space/XMLPrague2006/wolfgangs_talk.pdf">slides</a>).</p>
             
             <table cellpadding="5" cellspacing="5">
                 <tr>
-                    <th align="left" colspan="2">1.0</th>
+                    <th style="background-color: #C5DAFF" align="left" colspan="2">1.0</th>
                 </tr>
                 <tr>
                     <td align="left" colspan="2">
                         Based on the old indexing core. Incorporates all the latest code
-                        in all other areas. The old indexing core will become obsolete though.
+                        in all other areas. The old indexing scheme will become obsolete though.
                         Use this version if you already have a working application running
                         in production and want to be on the safe side.
                     </td>
                 </tr>
                 <tr>
                     <td>
-                        <a href="http://prdownloads.sourceforge.net/exist/eXist-1.0rc.jar"> eXist--1.0rc.jar </a>
+                        <a href="http://prdownloads.sourceforge.net/exist/eXist-1.0rc.jar"> eXist-1.0rc.jar </a>
                     </td>
                     <td> Installer based on IzPack. Includes source. Run with <tt>java -jar
                             eXist-1.0rc.jar</tt>.</td>
@@ -89,11 +93,11 @@
                         servlet-engine like Tomcat or Jetty. </td>
                 </tr>
                 <tr>
-                    <th align="left" colspan="2">1.1-newcore</th>
+                    <th style="background-color: #C5DAFF" align="left" colspan="2">1.1-newcore</th>
                 </tr>
                 <tr>
                     <td align="left" colspan="2">
-                        Based on the new indexing core. Represents a major technology switch with respect
+                        Based on the new indexing core. Represents a major technological switch with respect
                         to the index system. All other areas (including most of the query engine) are identical
                         to the 1.0 release. If you know eXist and had problems with too large/too complex documents
                         or slow updates, try this version. If you are a new user and willing to help us testing, 
