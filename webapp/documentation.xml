@@ -28,8 +28,68 @@
                             <td>getting started with eXist.</td>
                         </tr>
                         <tr>
+                            <td class="doclink"><ulink url="ant-tasks.xml">Ant Tasks</ulink>:</td>
+                            <td>how to automate tasks with Ant.</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="backup.xml">Backup and Restore</ulink>:</td>
+                            <td>explains how to backup/restore your database contents.</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="building.xml">Building eXist</ulink>:</td>
+                            <td>compiling and building eXist distributions, using the Subversion repository.</td>
+                        </tr>
+                        <tr>
                             <td class="doclink"><ulink url="http://wiki.exist-db.org/space/Change+Log">Changes</ulink>:</td>
                             <td>detailed list of changes.</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="cluster.xml">Cluster configuration</ulink>:</td>
+                            <td>how to configure cluster environment.</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="indexing.xml">Configuring Indexes</ulink>:</td>
+                            <td>how to configure specific indexes.</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="deployment.xml">Deployment</ulink>:</td>
+                            <td>eXist supports different alternatives for server deployment.</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="devguide.xml">Developer's Guide</ulink>:</td>
+                            <td>describes the various interfaces: XML:DB API, XML-RPC, REST, SOAP.</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="developper.html">Developer's Notes</ulink>:</td>
+                            <td>a few notes on how to use the various tools; SVN, eclipse, Ant, PMD, JDepend, ...</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="client.xml">Java Admin Client</ulink>:</td>
+                            <td>manual for the GUI client.</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="ldap-security.xml">LDAP Security Manager</ulink>:</td>
+                            <td>configuring eXist to use LDAP for users and groups.</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="security.xml">Security</ulink>:</td>
+                            <td>creating/changing users, passwords and resource permissions.</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="configuration.xml">Server Configuration</ulink>:</td>
+                            <td>configuration options for the server.</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="webdav.xml">WebDAV</ulink>:</td>
+                            <td>how to setup your favourite webDAV enabled application.</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="xacml.xml">XACML</ulink>:</td>
+                            <td>xQuery access control.</td>
+                        </tr>
+                        <tr>
+                            <td class="doclink"><ulink url="xinclude.xml">XInclude</ulink>:</td>
+                            <td>xInclude support in eXist.</td>
                         </tr>
                         <tr>
                             <td class="doclink"><ulink url="xquery.xml">XQuery</ulink>:</td>
@@ -38,69 +98,6 @@
                         <tr>
                             <td class="doclink"><ulink url="update_ext.xml">XQuery Update Extensions</ulink>:</td>
                             <td>eXist provides a number of extensions to update document fragments from within an XQuery.</td>
-                        </tr>
-                        <tr>
-                            <td class="doclink"><ulink url="backup.xml">Backup and Restore</ulink>:</td>
-                            <td>explains how to backup/restore your database contents.</td>
-                        </tr>
-                        <tr>
-                            <td class="doclink"><ulink url="indexing.xml">Configuring
-                                Indexes</ulink>:</td>
-                            <td>how to configure specific indexes.</td>
-                        </tr>
-                        <tr>
-                            <td class="doclink"><ulink url="devguide.xml">Developer's Guide</ulink>:</td>
-                            <td>describes the various interfaces: XML:DB API, XML-RPC, REST,
-                            SOAP.</td>
-                        </tr>
-                        <tr>
-                            <td class="doclink"><ulink url="client.xml">Java Admin Client</ulink>:</td>
-                            <td>manual for the GUI client.</td>
-                        </tr>
-                        <tr>
-                            <td class="doclink"><ulink url="deployment.xml">Deployment</ulink>:</td>
-                            <td>eXist supports different alternatives for server deployment.</td>
-                        </tr>
-                        <tr>
-                            <td class="doclink"><ulink url="security.xml">Security</ulink>:</td>
-                            <td>creating/changing users, passwords and resource permissions.</td>
-                        </tr>
-                        <tr>
-                            <td class="doclink"><ulink url="xacml.xml">XACML</ulink>:</td>
-                            <td>xQuery access control.</td>
-                        </tr>
-                        <tr>
-                            <td class="doclink"><ulink url="configuration.xml">Server Configuration</ulink>:</td>
-                            <td>configuration options for the server.</td>
-                        </tr>
-                        <tr>
-                            <td class="doclink"><ulink url="ldap-security.xml">LDAP Security Manager</ulink>:</td>
-                            <td>configuring eXist to use LDAP for users and groups.</td>
-                        </tr>
-                        <tr>
-                            <td class="doclink"><ulink url="xinclude.xml">XInclude</ulink>:</td>
-                            <td>xInclude support in eXist.</td>
-                        </tr>
-                        <tr>
-                            <td class="doclink"><ulink url="building.xml">Building eXist</ulink>:</td>
-                            <td>compiling and building eXist distributions, using the Subversion repository.</td>
-                        </tr>
-                        <tr>
-                            <td class="doclink"><ulink url="ant-tasks.xml">Ant Tasks</ulink>:</td>
-                            <td>how to automate tasks with Ant.</td>
-                        </tr>
-                        <tr>
-                            <td class="doclink"><ulink url="cluster.xml">Cluster
-                                configuration</ulink>:</td>
-                            <td>how to configure cluster environment.</td>
-                        </tr>
-                        <tr>
-                            <td class="doclink"><ulink url="webdav.xml">WebDAV</ulink>:</td>
-                            <td>how to setup your favourite webDAV enabled application.</td>
-                        </tr>
-                        <tr>
-                            <td class="doclink"><ulink url="developper.html">Developer's Notes</ulink>:</td>
-                            <td>a few notes on how to use the various tools; SVN, eclipse, Ant, PMD, JDepend, ...</td>
                         </tr>
                     </tbody>
                 </tgroup>
