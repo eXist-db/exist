@@ -15,10 +15,14 @@
 
     <chapter>
         <title>Documentation</title>
-
+        
         <section>
             <title>Available Documentation</title>
 
+            <para>We recommend to have a look at the <ulink url="quickstart.xml">Quick Start</ulink> first, then
+            maybe continue to read about <ulink url="xquery.xml">XQuery support</ulink>, in particular eXist-specific
+            extensions and features.</para>
+            
             <table class="documentation">
                 <title/>
                 <tgroup cols="2">
@@ -65,7 +69,7 @@
                         </tr>
                         <tr>
                             <td class="doclink"><ulink url="client.xml">Java Admin Client</ulink>:</td>
-                            <td>manual for the GUI client.</td>
+                            <td>describes command-line usage of the Java client</td>
                         </tr>
                         <tr>
                             <td class="doclink"><ulink url="ldap-security.xml">LDAP Security Manager</ulink>:</td>
