@@ -28,32 +28,42 @@ declare function a:do-query() as element()
 		$term := request:get-parameter("term", "")
 	return
 		if (string-length($term) = 0) then
-			<p>Please specify one or more keywords to search for!</p>
+			<para>Please specify one or more keywords to search for!</para>
 		else
 			<entries>
 				{ util:eval(a:build-query($field, $term)) }
 			</entries>
 };
 
-<document xmlns:xi="http://www.w3.org/2001/XInclude">
-	
-	<header>
-    	<logo src="logo.jpg"/>
-    	<title>Open Source Native XML Database</title>
-		<author email="wolfgang@exist-db.org">Wolfgang M. Meier</author>
-		<style href="styles/acronyms.css"/>
-	</header>
+<book>
+  <bookinfo>
+    <graphic fileref="logo.jpg"/>
+
+    <productname>Open Source Native XML Database</productname>
+    <title>XML Acronym Demystifier</title>
+
+    <author>
+      <firstname>Wolfgang M.</firstname>
+      <surname>Meier</surname>
+      <affiliation>
+        <address format="linespecific">
+          <email>wolfgang at exist-db.org</email>
+        </address>
+      </affiliation>
+    </author>
+    <style href="styles/acronyms.css"/>
+  </bookinfo>
     
-	<xi:include href="sidebar.xml"/>
+    <ci:include xmlns:ci="http://apache.org/cocoon/include/1.0" src="sidebar.xml"/>
 
-	<body>
-		<section title="XML Acronym Demystifier Example">
+    <chapter>
+		<title>XML Acronym Demystifier Example</title>
 
-		<p>A very simple example to search for XML acronyms. The required XML 
-		source document is available from <a href="http://www.xml-acronym-demystifier.org/">The XML Acronym 
-		Demystifier</a>. There's an XQuery script to install all examples automatically. Just go to the 
-        <a href="../admin/admin.xql?user=admin&amp;password=&amp;panel=setup">Examples 
-        Setup</a> page.</p>
+		<para>A very simple example to search for XML acronyms. The required XML 
+		source document is available from <ulink url="http://www.xml-acronym-demystifier.org/">The XML Acronym 
+		Demystifier</ulink>. There's an XQuery script to install all examples automatically. Just go to the 
+        <ulink url="../admin/admin.xql?user=admin&amp;password=&amp;panel=setup">Examples 
+        Setup</ulink> page.</para>
 
 		<form method="get" action="acronyms.xq">
 			<table bgcolor="#F3F3F3" width="100%" cellpadding="5"
@@ -81,10 +91,9 @@ declare function a:do-query() as element()
 			</table>
 		</form>
 		{ a:do-query() }
-		<p>
+		<para>
 			<small>View <a href="source/acronyms.xq">source code</a>
 			</small>
-		</p>
-		</section>
-	</body>
-</document>
+		</para>
+	</chapter>
+</book>

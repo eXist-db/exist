@@ -244,7 +244,7 @@
     </xsl:template>
 
     <xsl:template
-        match="filename|classname|methodname|option|command|parameter|
+        match="filename|classname|methodname|option[not(ancestor::form)]|command|parameter|
         guimenu|guimenuitem|function|envar">
         <span class="{local-name(.)}">
             <xsl:apply-templates/>
@@ -499,7 +499,9 @@
     
     <xsl:template match="table">
         <div class="formaltable">
-            <h1><xsl:apply-templates select="title"/></h1>
+            <xsl:if test="title">
+                <h1><xsl:apply-templates select="title"/></h1>
+            </xsl:if>
             <table>
                 <xsl:apply-templates select="*[not(self::title)]"/>
             </table>

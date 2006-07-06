@@ -281,22 +281,12 @@
     </xsl:template>
 
     <xsl:template match="note">
-        <p>
-            <table width="100%" cellspacing="3" cellpadding="0" border="0">
-                <tr>
-                    <td width="28" valign="top">
-                        <img src="resources/note.gif" width="28" height="29" vspace="0" hspace="0" border="0" alt="Note"/>
-                    </td>
-                    <td valign="top">
-                        <font size="-1" face="arial,helvetica,sanserif" color="#000000">
-                            <i>
-                                <xsl:apply-templates/>
-                            </i>
-                        </font>
-                    </td>
-                </tr>
-            </table>
-        </p>
+        <div class="note">
+            <h1>Note</h1>
+            <div class="note_content">
+                <xsl:apply-templates/>
+            </div>
+        </div>
     </xsl:template>
 
     <xsl:template match="ul|ol|dl">
@@ -440,6 +430,7 @@
                     Loading News ...
                 </div>
             </div>
+            <xsl:apply-templates/>
         </div>
     </xsl:template>
     
