@@ -91,7 +91,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
      */
     public void addNode(QName qname, NodeProxy p) {      
     	if (doc.getDocId() != p.getDocument().getDocId()) {
-    		throw new IllegalArgumentException("Document id and proxy id differ !");
+    		throw new IllegalArgumentException("Document id ('" + doc.getDocId() + "') and proxy id ('" + 
+    				p.getDocument().getDocId() + "') differ !");
     	}
         //Is this qname already pending ?
         ArrayList buf = (ArrayList) pending.get(qname);
@@ -174,7 +175,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             for (int j = 0; j < gidsCount; j++) {
                 NodeProxy proxy = (NodeProxy) proxies.get(j);
             	if (doc.getDocId() != proxy.getDocument().getDocId()) {
-            		throw new IllegalArgumentException("Document id and proxy id differ !");
+            		throw new IllegalArgumentException("Document id ('" + doc.getDocId() + "') and proxy id ('" + 
+            				proxy.getDocument().getDocId() + "') differ !");
             	}
                 long delta = proxy.getGID() - previousGID;                
                 os.writeLong(delta);
@@ -283,7 +285,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                         for (int j = 0; j < proxyCount; j++) {
                             NodeProxy proxy = (NodeProxy) newProxies.get(j);
                         	if (doc.getDocId() != proxy.getDocument().getDocId()) {
-                        		throw new IllegalArgumentException("Document id and proxy id differ !");
+                        		throw new IllegalArgumentException("Document id ('" + doc.getDocId() + "') and proxy id ('" + 
+                        				proxy.getDocument().getDocId() + "') differ !");
                         	}
                             long delta = proxy.getGID() - previousGID;                        
                             os.writeLong(delta);
@@ -475,7 +478,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                     for (int j = 0; j < gidsCount; j++) {
                         NodeProxy proxy = (NodeProxy) proxies.get(j);
                     	if (doc.getDocId() != proxy.getDocument().getDocId()) {
-                    		throw new IllegalArgumentException("Document id and proxy id differ !");
+                    		throw new IllegalArgumentException("Document id ('" + doc.getDocId() + "') and proxy id ('" + 
+                    				proxy.getDocument().getDocId() + "') differ !");
                     	}
                         long delta = proxy.getGID() - previousGID;                        
                         os.writeLong(delta);

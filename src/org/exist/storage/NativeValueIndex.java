@@ -135,7 +135,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
      */
     public void storeElement(int xpathType, ElementImpl node, String content) {
     	if (doc.getDocId() != node.getDocId()) {
-    		throw new IllegalArgumentException("Document id and proxy id differ !");
+    		throw new IllegalArgumentException("Document id ('" + doc.getDocId() + "') and proxy id ('" + 
+    				node.getDocId() + "') differ !");
     	}    	
         AtomicValue atomic = convertToAtomic(xpathType, content);
         //Ignore if the value can't be successfully atomized
@@ -163,7 +164,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
      */
     public void storeAttribute(RangeIndexSpec spec, AttrImpl node) {
     	if (doc.getDocId() != node.getDocId()) {
-    		throw new IllegalArgumentException("Document id and proxy id differ !");
+    		throw new IllegalArgumentException("Document id ('" + doc.getDocId() + "') and proxy id ('" + 
+    				node.getDocId() + "') differ !");
     	}        	
         AtomicValue atomic = convertToAtomic(spec.getType(), node.getValue());
         //Ignore if the value can't be successfully atomized
