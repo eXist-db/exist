@@ -36,7 +36,7 @@
 		<div class="module">
 			<a style="color: white">
 				<xsl:attribute name="name"><xsl:value-of select="generate-id()"/></xsl:attribute>
-				<xsl:value-of select="description"/> (<xsl:value-of select="@namespace"/>)
+				<xsl:apply-templates select="description/node()"/> (<xsl:value-of select="@namespace"/>)
 			</a>
 		</div>
 		<xsl:apply-templates select="function"/>
@@ -57,13 +57,17 @@
 		<div class="prototype">
 			<div class="signature">
 				<xsl:value-of select="signature"/>
-			</div>
-			<div class="description">
-				<xsl:apply-templates select="description"/>
-			</div>
+			</div>			
+			<xsl:apply-templates select="description"/>
 		</div>
     </xsl:template>
     
+	<xsl:template match="description">
+		<div class="description">
+			<xsl:apply-templates/>
+		</div>
+	</xsl:template>
+	
     <xsl:template match="node()|@*" priority="-1">
         <xsl:copy>
             <xsl:apply-templates select="node()|@*"/>
