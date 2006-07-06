@@ -29,21 +29,19 @@
                         </tr>
                         <tr>
                             <td class="doclink"><ulink url="http://wiki.exist-db.org/space/Change+Log">Changes</ulink>:</td>
-                            <td>Detailed list of changes.</td>
+                            <td>detailed list of changes.</td>
                         </tr>
                         <tr>
                             <td class="doclink"><ulink url="xquery.xml">XQuery</ulink>:</td>
                             <td>current status, supported features and extensions.</td>
                         </tr>
                         <tr>
-                            <td class="doclink"><ulink url="update_ext.xml">XQuery Update
-                                Extensions</ulink>:</td>
-                            <td>eXist provides a number of extensions to update document fragments
-                                from within an XQuery.</td>
+                            <td class="doclink"><ulink url="update_ext.xml">XQuery Update Extensions</ulink>:</td>
+                            <td>eXist provides a number of extensions to update document fragments from within an XQuery.</td>
                         </tr>
                         <tr>
                             <td class="doclink"><ulink url="backup.xml">Backup and Restore</ulink>:</td>
-                            <td>Explains how to backup/restore your database contents.</td>
+                            <td>explains how to backup/restore your database contents.</td>
                         </tr>
                         <tr>
                             <td class="doclink"><ulink url="indexing.xml">Configuring
@@ -69,26 +67,23 @@
                         </tr>
                         <tr>
                             <td class="doclink"><ulink url="xacml.xml">XACML</ulink>:</td>
-                            <td>XQuery access control.</td>
+                            <td>xQuery access control.</td>
                         </tr>
                         <tr>
-                            <td class="doclink"><ulink url="configuration.xml">Server
-                                Configuration</ulink>:</td>
+                            <td class="doclink"><ulink url="configuration.xml">Server Configuration</ulink>:</td>
                             <td>configuration options for the server.</td>
                         </tr>
                         <tr>
-                            <td class="doclink"><ulink url="ldap-security.xml">LDAP Security
-                                Manager</ulink>:</td>
+                            <td class="doclink"><ulink url="ldap-security.xml">LDAP Security Manager</ulink>:</td>
                             <td>configuring eXist to use LDAP for users and groups.</td>
                         </tr>
                         <tr>
                             <td class="doclink"><ulink url="xinclude.xml">XInclude</ulink>:</td>
-                            <td>XInclude support in eXist.</td>
+                            <td>xInclude support in eXist.</td>
                         </tr>
                         <tr>
                             <td class="doclink"><ulink url="building.xml">Building eXist</ulink>:</td>
-                            <td>Compiling and building eXist distributions, using the Subversion
-                            repository.</td>
+                            <td>compiling and building eXist distributions, using the Subversion repository.</td>
                         </tr>
                         <tr>
                             <td class="doclink"><ulink url="ant-tasks.xml">Ant Tasks</ulink>:</td>
@@ -104,10 +99,8 @@
                             <td>how to setup your favourite webDAV enabled application.</td>
                         </tr>
                         <tr>
-                            <td class="doclink"><ulink url="developper.html">Developer's
-                                Notes</ulink>:</td>
-                            <td>A few notes on how to use the various tools; SVN, eclipse, Ant, PMD, JDepend, ...
-                            </td>
+                            <td class="doclink"><ulink url="developper.html">Developer's Notes</ulink>:</td>
+                            <td>a few notes on how to use the various tools; SVN, eclipse, Ant, PMD, JDepend, ...</td>
                         </tr>
                     </tbody>
                 </tgroup>
