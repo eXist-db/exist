@@ -21,12 +21,31 @@
         <copy file="installer/install.xml.tmpl" tofile="installer/install.xml" filtering="true"/>
     </target>
 
-    <target depends="prepare-installer" name="installer" description="Create installer">
+    <target depends="prepare-installer,commandline-installer" name="installer" description="Create installer">
         <echo message="Calling IzPack to create installer ..."/>
+        <property name="inst-jar" value="installer/${project.name}-${project.version}.jar"/>
         <izpack input="installer/install.xml"
-                output="installer/${project.name}-${project.version}.jar"
-                basedir="." izPackDir="${izpack.dir}"
-                installerType="standard"/>
+            output="installer/${project.name}-${project.version}.jar"
+            basedir="." izPackDir="${izpack.dir}"
+            installerType="standard"/>
+        
+        <mkdir dir="installer/temp"/>
+        <tstamp/>
+        <unjar src="installer/${project.name}-${project.version}.jar"
+            dest="installer/temp"/>
+        <delete>
+            <fileset dir="installer/temp">
+                <include name="META-INF/EXIST.*"/>
+            </fileset>
+        </delete>
+        <delete file="installer/${project.name}-${project.version}.jar"/>
+        <jar destfile="installer/${project.name}-${project.version}.jar"
+            basedir="installer/temp" compress="yes" update="yes">
+            <manifest>
+                <attribute name="Main-Class" value="org.exist.izpack.CommandLineInstaller"/>
+            </manifest>
+        </jar>
+        <delete dir="installer/temp"/>
     </target>
 
     <target depends="prepare-installer,commandline-installer"
