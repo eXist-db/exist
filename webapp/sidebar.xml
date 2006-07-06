@@ -29,13 +29,6 @@
             <link href="facts.xml">Feature Sheet</link>
         </item>
     </group>
-    <group name="Search in Docs">
-        <item>
-            <form method="GET" action="docquery.xq">
-                <input type="text" name="query"/>
-            </form>
-        </item>
-    </group>
     <group name="Examples">
         <item>
             <link href="sandbox/sandbox.xql">XQuery Sandbox</link>
@@ -116,6 +109,11 @@
     </banner>
     
     <reference title="Tools We Use:">
-        <link href="http://www.yourkit.com"><img src="resources/yjp.gif" border="0" alt="yourkit"/></link>
+        <link href="http://www.yourkit.com"><img src="resources/yjp.gif" border="0" alt="YourKit Java Profiler"/></link>
     </reference>
+    
+    <reference>
+        <link href="http://www.izforge.com/izpack/"><img src="resources/izpack-88x31.png" border="0" 
+            alt="IzPack Installer Generator"/></link>
+    </reference>            
 </sidebar>

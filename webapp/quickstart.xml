@@ -31,8 +31,7 @@
                     <filename>.jar</filename> (Java Archive) file, which automatically determines
                 the correct system settings (i.e. paths and environment variables) for eXist. On
                 Windows and Linux Operating Systems, the installer can also create desktop
-                shortcuts. Other installation packages are <ulink
-                    url="http://wiki.exist-db.org/space/HowTos/">also available</ulink>. </para>
+                shortcuts.</para>
             <para>Once the download has completed, start the eXist installation by doing
                     <emphasis>ONE</emphasis> of the following:</para>
             <procedure>
@@ -307,8 +306,9 @@ Logging already initialized. Skipping...
             <para>This GUI client can be used either as a graphical interface, or through a DOS or
                 Unix command-line - which uses parameter options for specific tasks. If no action is
                 specified on the command-line, the client will enter "interactive mode" and display
-                a graphical login interface. More information on the admin client, is available in
-                the <ulink url="client.xml">client documentation</ulink>.</para>
+                a graphical login interface. Additional information on using the admin client from
+                the command line, is available in the <ulink url="client.xml">client
+                documentation</ulink>.</para>
             <para>You can launch the client by doing <emphasis>ONE</emphasis> of the following:</para>
             <procedure>
                 <step>
@@ -317,15 +317,18 @@ Logging already initialized. Skipping...
                 </step>
                 <step>
                     <para>OR launch using Java WebStart:</para>
-                    
-                    <para><ulink url="webstart/exist.jnlp">
+
+                    <para>
+                        <ulink url="webstart/exist.jnlp">
                             <graphic fileref="resources/webstart.small.jpg"/>
-                        </ulink></para> 
-                        
-                        <para>You can also find the Java WebStart launch icon in the
+                        </ulink>
+                    </para>
+
+                    <para>You can also find the Java WebStart launch icon in the
                             <guimenuitem>Administration</guimenuitem> menu in the left sidebar of
                         all documentation pages. NOTE: Java WebStart needs to be found by the web
-                        browser and the eXist jars need to be signed (if you compiled them yourself)!</para>
+                        browser and the eXist jars need to be signed (if you compiled them
+                        yourself)!</para>
                 </step>
                 <step>
                     <para>OR enter the following in a Unix shell or DOS/Windows command prompt:</para>
@@ -431,7 +434,7 @@ Logging already initialized. Skipping...
                 </step>
                 <step>
                     <para>Web Admin Interface: select the <guimenuitem>Shutdown</guimenuitem> link
-                            (<ulink url="http://localhost:8080/admin.xql"
+                            (<ulink url="http://localhost:8080/exist/admin/admin.xql"
                             >http://localhost:8080/admin.xql</ulink>)</para>
                 </step>
                 <step>
