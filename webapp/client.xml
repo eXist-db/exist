@@ -26,13 +26,36 @@
 
     <section>
       <title>Introduction</title>
-      <para>Class <classname>InteractiveClient</classname> can be launched in two ways: first, you
-        may use the <command moreinfo="none">bin/client.sh</command> or <command moreinfo="none"
-          >bin\client.bat</command> skripts. Second, you may use eXist's own startup mechanism
-        contained in the <filename moreinfo="none">start.jar</filename> jar-file. To select the
-        client, pass the string "client" as first argument, e.g.</para>
-      <synopsis format="linespecific">java -jar start.jar client</synopsis>
-      <para>The shell scripts basically do the same thing.</para>
+      <para>You can launch the client by doing <emphasis>ONE</emphasis> of the following:</para>
+      <procedure>
+        <step>
+          <para>For Windows and Mac users, double-click on the desktop shortcut icon (if
+            created) or by selecting the shortcut icon from the start menu</para>
+        </step>
+        <step>
+          <para>OR launch using Java WebStart:</para>
+          
+          <para><ulink url="webstart/exist.jnlp">
+            <graphic fileref="resources/webstart.small.jpg"/>
+          </ulink></para> 
+          
+          <para>You can also find the Java WebStart launch icon in the
+            <guimenuitem>Administration</guimenuitem> menu in the left sidebar of
+            all documentation pages. NOTE: Java WebStart needs to be found by the web
+            browser and the eXist jars need to be signed (if you compiled them yourself)!</para>
+        </step>
+        <step>
+          <para>OR enter the following in a Unix shell or DOS/Windows command prompt:</para>
+          <synopsis format="linespecific">bin\client.bat (DOS/Windows)</synopsis>
+          <synopsis format="linespecific">bin\client.sh (Unix)</synopsis>
+        </step>
+        <step>
+          <para>OR if both of the above approaches fail to launch the client, you can
+            enter the following on the command-line:</para>
+          <synopsis>java -jar start.jar client</synopsis>
+        </step>
+      </procedure>
+      
       <para>The client offers three modes of operation:</para>
       <orderedlist continuation="restarts" inheritnum="ignore">
         <listitem>

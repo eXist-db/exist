@@ -29,13 +29,13 @@
             <link href="facts.xml">Feature Sheet</link>
         </item>
     </group>
-    <!--group name="Search in Docs">
+    <group name="Search in Docs">
         <item>
             <form method="GET" action="docquery.xq">
                 <input type="text" name="query"/>
             </form>
         </item>
-    </group-->
+    </group>
     <group name="Examples">
         <item>
             <link href="sandbox/sandbox.xql">XQuery Sandbox</link>
@@ -95,6 +95,11 @@
         </item>
         <item>
 			<link href="webstart/exist.jnlp">Webstart Client</link>
+        </item>
+        <item>
+            <link href="webstart/exist.jnlp">
+                <img src="resources/webstart.small.jpg" border="0"/>
+            </link>
         </item>
     </group>
     
