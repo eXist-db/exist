@@ -204,7 +204,6 @@
                 <exclude name="**/logs/*"/>
                 <exclude name="*~"/>
                 <exclude name=".*"/>
-                <exclude name="resources/*.jpg"/>
             </fileset>
         </copy>
         <copy todir="${dist.dir}/thirdparty">
