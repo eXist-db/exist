@@ -61,6 +61,9 @@
             <replacefilter token="xacml-usage.xml" value="xacml-usage.html"/>
             <replacefilter token="xacml-dev.xml" value="xacml-dev.html"/>
             <replacefilter token="webdav.xml" value="webdav.html"/>
+            <replacefilter token="backup.xml" value="backup.html"/>
+            <replacefilter token="building.xml" value="building.html"/>
+            <replacefilter token="xmlprague06.xml" value="xmlprague06.html"/>
 
             <replacefilter token="examples.xml" value="${demo.host}/examples.xml"/>
             <replacefilter token="xquery/acronyms.xq" value="${demo.host}/xquery/acronyms.xq"/>
@@ -71,6 +74,7 @@
             <replacefilter token='href="xmldb/db/' value='href="${demo.host}/xmldb/db/'/>
             <replacefilter token='="admin/admin.xql' value='="${demo.host}/admin/admin.xql'/>
             <replacefilter token='href="status"' value='href="${demo.host}/status"'/>
+            <replacefilter token='href="cluster"' value='href="${demo.host}/cluster"'/>
             <replacefilter token="xquery/functions.xq" value="${demo.host}/xquery/functions.xq"/>
             <replacefilter token='url="xquery/guess.xql' value='url="${demo.host}/xquery/guess.xql'/>
             <replacefilter token="xquery/login.xql" value="${demo.host}/xquery/login.xql"/>
@@ -101,7 +105,6 @@
                 <uri type="append" src="index.xml"/>
                 <uri type="append" src="acknowledge.xml"/>
                 <uri type="append" src="ant-tasks.xml"/>
-                <uri type="append" src="changes.xml"/>
                 <uri type="append" src="client.xml"/>
                 <uri type="append" src="cluster.xml"/>
                 <uri type="append" src="journal.xml"/>
@@ -114,13 +117,25 @@
                 <uri type="append" src="examples.xml"/>
                 <uri type="append" src="indexing.xml"/>
                 <uri type="append" src="facts.xml"/>
-                <uri type="append" src="howtos.xml"/>
-                <uri type="append" src="performance.xml"/>
+            </uris>
+        </cocoon>
+
+        <cocoon verbose="true"
+            classpathref="classpath.core"
+            precompile-only="false"
+            confirm-extensions="false"
+            context-dir="${build.docs.src}"
+            config-file="${build.docs.src}/WEB-INF/cocoon.xconf"
+            work-dir="${build}/work"
+            dest-dir="${build.docs.html}"
+            extension=".html"
+            accept="*/*">
+            <logging log-kit="${build.docs.src}/WEB-INF/logkit.xconf" logger="cli" level="DEBUG" />
+            <uris name="site" follow-links="false">
                 <uri type="append" src="quickstart.xml"/>
                 <uri type="append" src="security.xml"/>
                 <uri type="append" src="xquery.xml"/>
                 <uri type="append" src="xinclude.xml"/>
-                <uri type="append" src="updating.xml"/>
                 <uri type="append" src="update_ext.xml"/>
                 <uri type="append" src="xacml.xml"/>
                 <uri type="append" src="xacml-features.xml"/>
@@ -130,9 +145,12 @@
                 <uri type="append" src="webdav.xml"/>
                 <uri type="append" src="developper.html"/>
                 <uri type="append" src="roadmap.xml"/>
+                <uri type="append" src="backup.xml"/>
+                <uri type="append" src="building.xml"/>
+                <uri type="append" src="xmlprague06.xml"/>
             </uris>
         </cocoon>
-
+        
         <echo message="Renaming files ..."/>
         <move todir="${build.docs.html}">
             <fileset dir="${build.docs.html}">
@@ -145,11 +163,16 @@
             <fileset dir="webapp">
                 <include name="styles/**"/>
                 <include name="resources/**"/>
+                <include name="scripts/**"/>
                 <include name="*.jpg"/>
                 <include name="*.png"/>
                 <include name="*.gif"/>
             </fileset>
         </copy>
+        
+        <zip basedir="${build.docs.html}" compress="true"
+            excludes="docs.zip"
+            zipfile="docs.zip"/>
     </target>
     
     <target name="demoserver">
