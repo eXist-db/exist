@@ -29,7 +29,7 @@
 
         <echo message="Adjusting links ..."/>
         <replace dir="${build.docs.src}" summary="true"
-                includes="*.xml">
+                includes="*.xml,stylesheets/roadmap.xsl">
             <replacefilter token='="index.xml' value='="index.html'/>
             <replacefilter token='="../index.xml' value='="../index.html'/>
             <replacefilter token="acknowledge.xml" value="acknowledge.html"/>
