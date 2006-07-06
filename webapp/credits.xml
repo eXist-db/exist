@@ -12,7 +12,7 @@
             <surname>Meier</surname>
             <affiliation>
                 <address format="linespecific">
-                    <email>wolfgang@exist-db.org</email>
+                    <email>wolfgang at exist-db.org</email>
                 </address>
             </affiliation>
         </author>
@@ -50,12 +50,13 @@
             the future development of eXist. If you would like to get involved, the first step 
             is to join the <a href="http://sourceforge.net/mail/?group_id=17691">mailing list</a>. 
             You may also have a look at the 
-            <ulink href="http://wiki.exist-db.org/space/Roadmap">roadmap</ulink> to see
+            <ulink href="roadmap.xml">roadmap</ulink> to see
             the known issues that need to be addressed.</para>
 
-            <para>To become an active committer, start to post patches to the 
+            <para>Check <ulink url="building.xml">Building eXist</ulink> for documentation on how
+            to access the subversion repository. To become an active committer, start to post patches to the 
             mailing list. You should also read the doc about 
-            <ulink href="http://jmvanel.free.fr/exist/howto-test.html">bug reporting and junit
+            <ulink href="developper.html">bug reporting and junit
             tests</ulink>. You will get write access to the CVS if your patches
             are ok.</para>
         </section>

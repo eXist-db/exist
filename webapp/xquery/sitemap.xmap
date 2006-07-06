@@ -62,8 +62,8 @@
                 	<map:parameter name="create-session" value="true"/>
                 </map:generate>
                 <map:transform type="xinclude"/>
-                <map:transform src="context://stylesheets/doc2html-2.xsl"/>
                 <map:transform src="stylesheets/functions.xsl"/>
+                <map:transform src="context://stylesheets/db2html.xsl"/>
 				<map:serialize encoding="UTF-8" type="html"/>
             </map:match>
             
@@ -73,9 +73,9 @@
 						value="true"/>
 					<map:parameter name="create-session" value="true"/>
 				</map:generate>
-				<map:transform type="xinclude"/>
+				<map:transform type="cinclude"/>
 				<map:transform src="stylesheets/acronyms.xsl"/>
-				<map:transform src="context://stylesheets/doc2html-2.xsl"/>
+				<map:transform src="context://stylesheets/db2html.xsl"/>
 				<map:serialize encoding="UTF-8" type="html"/>
 			</map:match>
 
