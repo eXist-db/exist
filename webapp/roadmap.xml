@@ -11,8 +11,8 @@
             <name>File size/complexity limits</name>
             <status>Beta</status>
             <priority>Highest</priority>
-            <test_coverage>N/A</test_coverage>
-            <progress>90</progress>
+            <test_coverage>Tested</test_coverage>
+            <progress>99</progress>
             <who/>
             <remark>
                 <p> The numbering scheme at the core of eXist does currently

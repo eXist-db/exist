@@ -240,7 +240,7 @@
     </xsl:template>
 
     <xsl:template match="graphic">
-        <img src="{@fileref}"/>
+        <img src="{@fileref}" border="0"/>
     </xsl:template>
 
     <xsl:template
@@ -314,7 +314,7 @@
 
     <xsl:template match="ulink|sidebar:link">
         <a href="{@href|@url}">
-            <xsl:value-of select="."/>
+            <xsl:apply-templates/>
         </a>
     </xsl:template>
 

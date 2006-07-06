@@ -137,9 +137,9 @@ Logging already initialized. Skipping...
                 function libraries, resources, and XQuery examples.</para>
             <note>
                 <para>If the above start-up fails, ensure the <envar>EXIST_HOME</envar> and
-                    <envar>JAVA_HOME</envar> environment variables - the eXist and Java JDK
-                    root directory paths - point to the correct locations. Both variables are set in
-                    the <filename>startup.bat</filename> and <filename>startup.sh</filename>
+                        <envar>JAVA_HOME</envar> environment variables - the eXist and Java JDK root
+                    directory paths - point to the correct locations. Both variables are set in the
+                        <filename>startup.bat</filename> and <filename>startup.sh</filename>
                     scripts.</para>
                 <itemizedlist>
                     <listitem>
@@ -147,13 +147,13 @@ Logging already initialized. Skipping...
                             <envar>EXIST_HOME</envar> should point to the directory of the
                             configuration file <filename moreinfo="none">conf.xml</filename>, so
                             that the server uses the path <filename>EXIST_HOME/conf.xml</filename>.
-                            For example, if the <envar>EXIST_HOME</envar> path is <filename>C:\Program
-                            Files\eXist</filename>, the server will look for <filename>C:\Program
-                                Files\eXist\conf.xml</filename></para>
+                            For example, if the <envar>EXIST_HOME</envar> path is
+                                <filename>C:\Program Files\eXist</filename>, the server will look
+                            for <filename>C:\Program Files\eXist\conf.xml</filename></para>
                     </listitem>
                     <listitem>
-                        <para><envar>JAVA_HOME</envar> should point to the directory where the
-                            Java JDK is installed. A common problem is that the path added by the
+                        <para><envar>JAVA_HOME</envar> should point to the directory where the Java
+                            JDK is installed. A common problem is that the path added by the
                             installer points to the JRE, not the JDK.</para>
                     </listitem>
                 </itemizedlist>
@@ -316,6 +316,18 @@ Logging already initialized. Skipping...
                         created) or by selecting the shortcut icon from the start menu</para>
                 </step>
                 <step>
+                    <para>OR launch using Java WebStart:</para>
+                    
+                    <para><ulink url="webstart/exist.jnlp">
+                            <graphic fileref="resources/webstart.small.jpg"/>
+                        </ulink></para> 
+                        
+                        <para>You can also find the Java WebStart launch icon in the
+                            <guimenuitem>Administration</guimenuitem> menu in the left sidebar of
+                        all documentation pages. NOTE: Java WebStart needs to be found by the web
+                        browser and the eXist jars need to be signed (if you compiled them yourself)!</para>
+                </step>
+                <step>
                     <para>OR enter the following in a Unix shell or DOS/Windows command prompt:</para>
                     <synopsis format="linespecific">bin\client.bat (DOS/Windows)</synopsis>
                     <synopsis format="linespecific">bin\client.sh (Unix)</synopsis>
@@ -331,13 +343,14 @@ Logging already initialized. Skipping...
                     <tbody>
                         <tr>
                             <td>
-                                <para>A screenshot of the client login interface is shown on the right. At
-                                    the login window, you can provide your username and password,
-                                    and select a server. The client can either connect to a Remote
-                                    server, or launch an Embedded database (i.e. embedded in an
-                                    application), which runs in the same process as the client. This
-                                    option is useful for backup/restore or mass-uploads of data
-                                    (writing to an embedded instance avoids the network overhead).</para>
+                                <para>A screenshot of the client login interface is shown on the
+                                    right. At the login window, you can provide your username and
+                                    password, and select a server. The client can either connect to
+                                    a Remote server, or launch an Embedded database (i.e. embedded
+                                    in an application), which runs in the same process as the
+                                    client. This option is useful for backup/restore or mass-uploads
+                                    of data (writing to an embedded instance avoids the network
+                                    overhead).</para>
                                 <para>If you connect to a remote database, the URL field specifies
                                     the location of the db server. The URI scheme used here is
                                     standardized, and for standard database setups, use the
@@ -505,8 +518,8 @@ Logging already initialized. Skipping...
                 </listitem>
                 <listitem>
                     <para>
-                        <ulink url="http://wiki.exist-db.org/space/Tutorials/"
-                            >User-contributed (Wiki) Tutorials</ulink>
+                        <ulink url="http://wiki.exist-db.org/space/Tutorials/">User-contributed
+                            (Wiki) Tutorials</ulink>
                     </para>
                 </listitem>
                 <listitem>
