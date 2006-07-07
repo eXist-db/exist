@@ -322,8 +322,11 @@ public class AtomServlet extends HttpServlet {
             LOG.warn(e);
             throw new ServletException(e.getMessage());
          } catch (ParserConfigurationException e) {
-            LOG.warn(e);
-            throw new ServletException(e.getMessage());
+             LOG.warn(e);
+             throw new ServletException(e.getMessage());
+         } catch (EXistException e) {
+             LOG.warn(e);
+             throw new ServletException(e.getMessage());
          } finally {
             if (is!=null) {
                try {
