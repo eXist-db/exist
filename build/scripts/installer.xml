@@ -52,9 +52,13 @@
             name="snapshot-installer" description="Create snapshot installer">
         <echo message="Calling IzPack to create installer ..."/>
         <property name="inst-jar" value="installer/${project.name}-snapshot-${DSTAMP}.jar"/>
-        <izpack input="installer/install.xml"
-                output="installer/${project.name}-snapshot-${DSTAMP}.jar"
-                basedir="." izPackDir="${izpack.dir}"
+
+        <property name="install-input" location="installer/install.xml"/>
+        <property name="install-output" location="installer/${project.name}-snapshot-${DSTAMP}.jar"/>
+        <property name="install-basedir" location="."/>
+        <izpack input="${install-input}"
+                output="${install-output}"
+                basedir="${install-basedir}" izPackDir="${izpack.dir}"
                 installerType="standard"/>
 
         <mkdir dir="installer/temp"/>
