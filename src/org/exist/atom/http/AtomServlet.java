@@ -28,7 +28,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,6 +36,7 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -53,6 +53,7 @@ import org.exist.http.BadRequestException;
 import org.exist.http.NotFoundException;
 import org.exist.http.servlets.Authenticator;
 import org.exist.http.servlets.BasicAuthenticator;
+import org.exist.http.webdav.WebDAV;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
@@ -83,6 +84,26 @@ public class AtomServlet extends HttpServlet {
    
    protected final static Logger LOG = Logger.getLogger(AtomServlet.class);
    
+   static class UserXmldbPrincipal implements XmldbPrincipal {
+      int authMethod;
+      User user;
+      UserXmldbPrincipal(int authMethod,User user) {
+         this.authMethod = authMethod;
+         this.user = user;
+      }
+      public String getName() {
+         return user.getName();
+      }
+
+      public String getPassword() {
+         return authMethod==WebDAV.BASIC_AUTH ? user.getPassword() : user.getDigestPassword();
+      }
+
+      public boolean hasRole(String role) {
+         return user.hasGroup(role);
+      }
+   }
+   
    class ModuleContext implements AtomModule.Context {
       ServletConfig config;
       ModuleContext(ServletConfig config,String subpath) {
@@ -111,6 +132,7 @@ public class AtomServlet extends HttpServlet {
    // What I want...
    //private Map<String,AtomModule> modules;
    private Map modules;
+   private Map noAuth;
    
    private String formEncoding = null;
    private BrokerPool pool = null;
@@ -201,6 +223,7 @@ public class AtomServlet extends HttpServlet {
       
       //modules = new HashMap<String,AtomModule>();
       modules = new HashMap();
+      noAuth = new HashMap();
       
       File dbHome = new File(System.getProperty("exist.home"));
       File atomConf = new File(dbHome,"atom-services.xml");
@@ -226,6 +249,9 @@ public class AtomServlet extends HttpServlet {
                String name = moduleConf.getAttribute("name");
                if (modules.get(name)!=null) {
                   throw new ServletException("Module '"+name+"' is configured more than once ( child # "+(i+1));
+               }
+               if ("false".equals(moduleConf.getAttribute("authenticate"))) {
+                  noAuth.put(name,Boolean.TRUE);
                }
                String className = moduleConf.getAttribute("class");
                if (className!=null && className.length()>0) {
@@ -307,24 +333,28 @@ public class AtomServlet extends HttpServlet {
             }
          }
       } else {
-         AtomProtocol protocol = new AtomProtocol();
-         modules.put("edit",protocol);
-         protocol.init(new ModuleContext(config,"edit"));
-         AtomFeeds feeds = new AtomFeeds();
-         modules.put("content",feeds);
-         feeds.init(new ModuleContext(config,"content"));
-         Query query = new Query();
-         query.setQueryByPost(true);
-         modules.put("query",query);
-         query.init(new ModuleContext(config,"query"));
-         Query topics = new Query();
-         modules.put("topic",topics);
-         topics.getMethodConfiguration("GET").setQuerySource(topics.getClass().getResource("topic.xq"));
-         topics.init(new ModuleContext(config,"topic"));
-         Query introspect = new Query();
-         modules.put("introspect",introspect);
-         introspect.getMethodConfiguration("GET").setQuerySource(introspect.getClass().getResource("introspect.xq"));
-         introspect.init(new ModuleContext(config,"introspect"));
+         try {
+            AtomProtocol protocol = new AtomProtocol();
+            modules.put("edit",protocol);
+            protocol.init(new ModuleContext(config,"edit"));
+            AtomFeeds feeds = new AtomFeeds();
+            modules.put("content",feeds);
+            feeds.init(new ModuleContext(config,"content"));
+            Query query = new Query();
+            query.setQueryByPost(true);
+            modules.put("query",query);
+            query.init(new ModuleContext(config,"query"));
+            Query topics = new Query();
+            modules.put("topic",topics);
+            topics.getMethodConfiguration("GET").setQuerySource(topics.getClass().getResource("topic.xq"));
+            topics.init(new ModuleContext(config,"topic"));
+            Query introspect = new Query();
+            modules.put("introspect",introspect);
+            introspect.getMethodConfiguration("GET").setQuerySource(introspect.getClass().getResource("introspect.xq"));
+            introspect.init(new ModuleContext(config,"introspect"));
+         } catch (EXistException ex) {
+            throw new ServletException("Exception during module init(): "+ex.getMessage(),ex);
+         }
       }
       
       
@@ -360,13 +390,6 @@ public class AtomServlet extends HttpServlet {
          // Get the path
          String path = request.getPathInfo();
          
-         // Authenticate
-         User user = authenticate(request,response);
-         if (user == null) {
-            // You now get a challenge if there is no user
-            return;
-         }
-         
          int firstSlash = path.indexOf('/',1);
          if (firstSlash<0 && path.length()==1) {
             response.sendError(400,"Module not specified.");
@@ -380,6 +403,24 @@ public class AtomServlet extends HttpServlet {
             response.sendError(400,"Module "+moduleName+" not found.");
             return;
          }
+         
+         User user = null;
+         if (noAuth.get(moduleName)==null) {
+            // Authenticate
+            user = authenticate(request,response);
+            if (user == null) {
+               // You now get a challenge if there is no user
+               return;
+            }
+         }
+
+         final Principal principal = new UserXmldbPrincipal(WebDAV.BASIC_AUTH,user);
+         HttpServletRequest wrappedRequest = new HttpServletRequestWrapper(request) {
+            public Principal getUserPrincipal() {
+               return principal;
+            }
+         };
+         
          // Handle the resource
          DBBroker broker = null;
          try {
