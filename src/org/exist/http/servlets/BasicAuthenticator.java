@@ -26,6 +26,7 @@ import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.apache.log4j.Logger;
 
 import org.apache.xmlrpc.Base64;
 import org.exist.security.SecurityManager;
@@ -37,6 +38,8 @@ import org.exist.storage.BrokerPool;
  */
 public class BasicAuthenticator implements Authenticator {
 	
+   protected final static Logger LOG = Logger.getLogger(BasicAuthenticator.class);
+   
 	private BrokerPool pool;
 	
 	public BasicAuthenticator(BrokerPool pool) {
@@ -50,14 +53,16 @@ public class BasicAuthenticator implements Authenticator {
 			HttpServletResponse response) throws IOException {
 		String credentials = request.getHeader("Authorization");
 		if(credentials == null) {
+                       //LOG.debug("Sending BASIC auth challenge.");
 			sendChallenge(request, response);
 			return null;
 		}
 		byte[] c = Base64.decode(credentials.substring("Basic ".length()).getBytes());
 		String s = new String(c);
+                //LOG.debug("BASIC auth credentials: "+s);
 		int p = s.indexOf(':');
-		String username = s.substring(0, p);
-		String password = s.substring(p + 1);
+		String username = p<0 ? s : s.substring(0, p);
+		String password = p<0 ? null : s.substring(p + 1);
 		
 		SecurityManager secman = pool.getSecurityManager();
 		User user = secman.getUser(username);
