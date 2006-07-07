@@ -101,7 +101,9 @@ public class Query extends AtomModuleBase implements Atom {
       return (MethodConfiguration)methods.get(name);
    }
    
-   public void init(Context context) {
+   public void init(Context context) 
+      throws EXistException
+   {
       super.init(context);
       get = (MethodConfiguration)methods.get("GET");
       post = (MethodConfiguration)methods.get("POST");
