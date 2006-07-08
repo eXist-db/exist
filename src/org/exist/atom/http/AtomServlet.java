@@ -238,7 +238,8 @@ public class AtomServlet extends HttpServlet {
          try {
             is = new FileInputStream(atomConf);
             InputSource src = new InputSource(new InputStreamReader(is,formEncoding));
-            src.setSystemId(atomConf.toURI().toString());
+            URI docBaseURI = atomConf.toURI();
+            src.setSystemId(docBaseURI.toString());
             docBuilder = docFactory.newDocumentBuilder();
             confDoc = docBuilder.parse(src);
             
@@ -280,7 +281,9 @@ public class AtomServlet extends HttpServlet {
                         LOG.warn("No type specified for method in module "+name);
                         continue;
                      }
-                     URI baseURI = URI.create(methodConf.getBaseURI());
+                     // What I want but can't have because of JDK 1.4
+                     //URI baseURI = URI.create(methodConf.getBaseURI());
+                     URI baseURI = docBaseURI;
                      String queryRef = methodConf.getAttribute("query");
                      if (queryRef==null) {
                         LOG.warn("No query specified for method "+type+" in module "+name);
