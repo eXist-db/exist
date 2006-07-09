@@ -456,7 +456,7 @@ declare function local:main() as node()?
                     the collection <filename>/db/shakespeare</filename> with "Juliet" as the
                         <sgmltag>SPEAKER</sgmltag>. As specified, it will return ten items from the
                     result sequence, starting at position 1:</para>
-                <synopsis>http://localhost:8080/exist/rest/db/shakespeare?_query=//SPEECH[SPEAKER=%22juliet%22]&amp;_start=1&amp;_howmany=10</synopsis>
+                <synopsis>http://localhost:8080/exist/rest/db/shakespeare?_query=//SPEECH[SPEAKER=%22JULIET%22]&amp;_start=1&amp;_howmany=10</synopsis>
             </section>
             <section>
                 <title>PUT Requests</title>
