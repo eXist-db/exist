@@ -256,6 +256,8 @@ public class AtomServlet extends HttpServlet {
             confDoc = docBuilder.parse(src);
             
             confDoc.getDocumentElement();
+            
+            // Add all the modules
             NodeList moduleConfList = confDoc.getElementsByTagNameNS(CONF_NS,"module");
             for (int i=0; i<moduleConfList.getLength(); i++) {
                Element moduleConf = (Element)moduleConfList.item(i);
