@@ -84,6 +84,9 @@ public class AtomServlet extends HttpServlet {
    
    protected final static Logger LOG = Logger.getLogger(AtomServlet.class);
    
+   /**
+    * A user principal object that implements XmldbPrincipal
+    */
    static class UserXmldbPrincipal implements XmldbPrincipal {
       int authMethod;
       User user;
@@ -104,6 +107,9 @@ public class AtomServlet extends HttpServlet {
       }
    }
    
+   /**
+    * Module contexts that default to using the servlet's config
+    */
    class ModuleContext implements AtomModule.Context {
       ServletConfig config;
       ModuleContext(ServletConfig config,String subpath) {
@@ -154,6 +160,7 @@ public class AtomServlet extends HttpServlet {
          if (BrokerPool.isConfigured()) {
             LOG.info("Database already started. Skipping configuration ...");
          } else {
+            // The database isn't started, so we'll start it
             String confFile = config.getInitParameter("configuration");
             String dbHome = config.getInitParameter("basedir");
             String start = config.getInitParameter("start");
@@ -179,6 +186,8 @@ public class AtomServlet extends HttpServlet {
             }
          }
          pool = BrokerPool.getInstance();
+         
+         // The default user is used when there is no authentication
          String option = config.getInitParameter("use-default-user");
          boolean useDefaultUser = true;
          if (option != null) {
@@ -203,6 +212,8 @@ public class AtomServlet extends HttpServlet {
             LOG.info("No default user.  All requires must be authorized or will result in a BASIC AUTH challenge.");
             defaultUser = null;
          }
+         
+         // Currently, we only support basic authentication
          authenticator = new BasicAuthenticator(pool);
       } catch (EXistException e) {
          throw new ServletException("No database instance available");
@@ -220,7 +231,8 @@ public class AtomServlet extends HttpServlet {
       if (containerEncoding == null) {
          containerEncoding = DEFAULT_ENCODING;
       }
-      
+
+      // Load all the modules
       //modules = new HashMap<String,AtomModule>();
       modules = new HashMap();
       noAuth = new HashMap();
