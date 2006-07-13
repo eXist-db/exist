@@ -279,6 +279,7 @@ public class AtomServlet extends HttpServlet {
                      throw new ServletException("Cannot instantiate class "+className+" for module '"+name+"' due to exception: "+ex.getMessage(),ex);
                   }
                } else {
+                  // no class means query
                   Query query = new Query();
                   modules.put(name,query);
                   
