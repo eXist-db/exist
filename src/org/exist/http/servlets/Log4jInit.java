@@ -100,9 +100,6 @@ public class Log4jInit extends HttpServlet {
      */
     public void init() throws ServletException {
         
-        // DWES #### remove this line?
-        System.setProperty("user.dir", getServletContext().getRealPath("/"));
-        
         // We need to check how eXist is running. If eXist is started in a
         // servlet container like Tomcat, then initialization *is* needed.
         //
