@@ -124,7 +124,6 @@ public class Log4jInit extends HttpServlet {
         
         System.out.println(getTimestamp() + " - eXist logs dir="
                 + logsdir.getAbsolutePath());
-//        System.setProperty("logger.dir", logsdir.getAbsolutePath() );      
         
         // Get log4j configuration file
         File srcConfigFile = new File(existDir,file);
