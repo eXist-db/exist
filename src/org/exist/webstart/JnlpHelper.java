@@ -24,6 +24,7 @@ package org.exist.webstart;
 
 import java.io.File;
 import org.apache.log4j.Logger;
+import org.exist.util.Configuration;
 
 /**
  *  Helper class for webstart.
@@ -33,7 +34,7 @@ import org.apache.log4j.Logger;
 public class JnlpHelper {
     
     private static Logger logger = Logger.getLogger(JnlpHelper.class);
-    private String existHome=System.getProperty("exist.home");
+    private File existHome=Configuration.getExistHome();
     
     private File coreJarsFolder=null;
     private File existJarFolder=null;
@@ -54,7 +55,7 @@ public class JnlpHelper {
             // all files located in existHome/lib/core/
             logger.debug("eXist is running private jetty server.");
             coreJarsFolder= new File(existHome, "lib/core");
-            existJarFolder= new File(existHome);
+            existJarFolder= existHome;
             webappFolder= new File(existHome, "webapp");
         }
         logger.debug("CORE jars location="+coreJarsFolder.getAbsolutePath());
