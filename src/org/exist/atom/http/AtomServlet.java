@@ -158,7 +158,7 @@ public class AtomServlet extends HttpServlet {
       // Configure BrokerPool
       try {
          if (BrokerPool.isConfigured()) {
-            LOG.info("Database already started. Skipping configuration ...");
+            LOG.debug("Database already started. Skipping configuration ...");
          } else {
             // The database isn't started, so we'll start it
             String confFile = config.getInitParameter("configuration");
@@ -171,12 +171,10 @@ public class AtomServlet extends HttpServlet {
             dbHome = (dbHome == null) ? config.getServletContext().getRealPath(".") :
                config.getServletContext().getRealPath(dbHome);
             
-            // DWES #### remove
-            LOG.info("AtomServlet: exist.home=" + dbHome);
-//            System.setProperty("exist.home", dbHome);
+            LOG.debug("AtomServlet: exist.home=" + dbHome);
             
             File f = new File(dbHome + File.separator + confFile);
-            LOG.info("reading configuration from " + f.getAbsolutePath());
+            LOG.debug("reading configuration from " + f.getAbsolutePath());
             
             if (!f.canRead()) {
                throw new ServletException("configuration file " + confFile
