@@ -216,6 +216,7 @@ public class Descriptor implements ErrorHandler
             if(path.startsWith("{$EXIST_HOME}"))
             {
             	//Replace $EXIST_HOME with the actual path
+                // DWES #### use Configuration.getExistHome()
             	path = System.getProperty("exist.home") + path.substring("{$EXIST_HOME}".length());
             }
             
@@ -260,6 +261,7 @@ public class Descriptor implements ErrorHandler
             if(path.startsWith("{$EXIST_HOME}"))
             {
             	//Replace $EXIST_HOME with the actual path
+                // DWES #### use Configuration.getExistHome()
             	path = System.getProperty("exist.home") + path.substring("{$EXIST_HOME}".length());
             }
             
@@ -274,6 +276,7 @@ public class Descriptor implements ErrorHandler
             if(view.startsWith("{$EXIST_HOME}"))
             {
             	//Replace $EXIST_HOME with the actual path
+                // DWES #### use Configuration.getExistHome()
             	view = System.getProperty("exist.home") + view.substring("{$EXIST_HOME}".length());
             }
             

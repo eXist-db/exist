@@ -100,8 +100,10 @@ public class EXistServlet extends HttpServlet {
 					confFile = "conf.xml";
 				dbHome = (dbHome == null) ? config.getServletContext().getRealPath(
 						".") : config.getServletContext().getRealPath(dbHome);
+                                
+                                // DWES ##### remove not needed since COnfiguration uses file?
 				LOG.info("EXistServlet: exist.home=" + dbHome);
-				System.setProperty("exist.home", dbHome);
+//				System.setProperty("exist.home", dbHome);
 				
 				File f = new File(dbHome + File.separator + confFile);
 				LOG.info("reading configuration from " + f.getAbsolutePath());
