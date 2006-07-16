@@ -170,8 +170,10 @@ public class AtomServlet extends HttpServlet {
             }
             dbHome = (dbHome == null) ? config.getServletContext().getRealPath(".") :
                config.getServletContext().getRealPath(dbHome);
+            
+            // DWES #### remove
             LOG.info("AtomServlet: exist.home=" + dbHome);
-            System.setProperty("exist.home", dbHome);
+//            System.setProperty("exist.home", dbHome);
             
             File f = new File(dbHome + File.separator + confFile);
             LOG.info("reading configuration from " + f.getAbsolutePath());
