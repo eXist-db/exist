@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.xml.DOMConfigurator;
+import org.exist.util.Configuration;
 
 
 /**
@@ -80,7 +81,7 @@ public class Log4jInit extends HttpServlet {
      */
     public boolean isInWarFile(){
         boolean retVal =true;
-        if (new File(System.getProperty("exist.home"), "lib/core").isDirectory()) {
+        if (new File(Configuration.getExistHome(), "lib/core").isDirectory()) {
             retVal=false;
         }
         return retVal;
