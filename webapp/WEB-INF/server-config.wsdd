@@ -4,7 +4,7 @@
   <parameter name="sendMultiRefs" value="true"/>
   <parameter name="disablePrettyXML" value="true"/>
   <parameter name="adminPassword" value="admin"/>
-  <parameter name="attachments.Directory" value="/home/wolf/download/eclipse/workspace/eXist-0.8/webapp/WEB-INF/attachments"/>
+  <!-- parameter name="attachments.Directory" value="/home/wolf/download/eclipse/workspace/eXist-0.8/webapp/WEB-INF/attachments"/-->
   <parameter name="axis.sendMinimizedElements" value="true"/>
   <parameter name="enableNamespacePrefixOptimization" value="true"/>
   <parameter name="sendXMLDeclaration" value="true"/>
