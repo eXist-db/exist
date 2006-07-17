@@ -355,6 +355,8 @@
             </packageset>
             <classpath>
                 <path refid="classpath.core"/>
+                <path refid="classpath.jetty"/>
+                <fileset dir="${catalina.home}/server/lib" includes="*.jar"/>
             </classpath>
         </javadoc>
         <delete dir="${build.src}"/>
