@@ -6,7 +6,7 @@ import org.exist.xquery.util.URIUtils;
 public class TestConstants {
 
 	/**
-	 * String representing the decoded path: t[e s]t�?
+	 * String representing the decoded path: t[e s]tá열
 	 */
 	public static final String DECODED_SPECIAL_NAME = "t[e s]t\u00E0\uC5F4";
 	
@@ -16,7 +16,7 @@ public class TestConstants {
 	public static final String SPECIAL_NAME = URIUtils.urlEncodeUtf8(DECODED_SPECIAL_NAME);
 
 	/**
-	 * XmldbURI representing the decoded path: t[e s]t�?
+	 * XmldbURI representing the decoded path: t[e s]tá열
 	 */
 	public static final XmldbURI SPECIAL_URI = XmldbURI.create(SPECIAL_NAME);
 
@@ -34,7 +34,7 @@ public class TestConstants {
 	public static final XmldbURI TEST_COLLECTION_URI3 = TEST_COLLECTION_URI2.append("test3");
 	
 	/**
-	 * XmldbURI representing the decoded path: /db/t[e s]t�?
+	 * XmldbURI representing the decoded path: /db/t[e s]tá열
 	 */
 	public static final XmldbURI SPECIAL_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append(SPECIAL_NAME);
 
@@ -65,7 +65,7 @@ public class TestConstants {
 	public static final XmldbURI TEST_XML_URI3 = XmldbURI.create("test3.xml");
 	
 	/**
-	 * XmldbURI representing the decoded path: t[e s]t�?.xml
+	 * XmldbURI representing the decoded path: t[e s]tá열.xml
 	 */
 	public static final XmldbURI SPECIAL_XML_URI = XmldbURI.create(URIUtils.urlEncodeUtf8("t[es]t\u00E0\uC5F4.xml"));
 
