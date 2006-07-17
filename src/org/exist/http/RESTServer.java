@@ -199,9 +199,9 @@ public class RESTServer {
      * the returned XML.</li>
      *
      * @param broker
-     * @param parameters
+     * @param request
+     * @param response
      * @param path
-     * @return
      * @throws BadRequestException
      * @throws PermissionDeniedException
      * @throws NotFoundException
@@ -466,7 +466,6 @@ public class RESTServer {
      * @param request
      * @param response
      * @param path
-     * @return
      * @throws BadRequestException
      * @throws PermissionDeniedException
      */
@@ -707,10 +706,10 @@ public class RESTServer {
      * resource.
      *
      * @param broker
-     * @param tempFile
-     * @param contentType
-     * @param path
-     * @return
+     * @param tempFile The temp file from which the PUT will get its content
+     * @param path The path to which the file should be stored
+     * @param request
+     * @param response
      * @throws BadRequestException
      * @throws PermissionDeniedException
      */
