@@ -39,7 +39,7 @@ public interface Authenticator {
      * 
      * @param request
      * @param response
-     * @return
+     * @return The authenticated user or null if the user isn't autenticated
      * @throws IOException
      */
 	public User authenticate(HttpServletRequest request, HttpServletResponse response)
