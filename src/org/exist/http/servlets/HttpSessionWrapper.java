@@ -42,42 +42,42 @@ public class HttpSessionWrapper implements SessionWrapper {
 
 	/**
 	 * @param arg0
-	 * @return
+	 * @return Returns the session attribute object or null
 	 */
 	public Object getAttribute(String arg0) {
 		return session.getAttribute(arg0);
 	}
 
 	/**
-	 * @return
+	 * @return An enumeration of all the attribute names
 	 */
 	public Enumeration getAttributeNames() {
 		return session.getAttributeNames();
 	}
 
 	/**
-	 * @return
+	 * @return The creation time of the session
 	 */
 	public long getCreationTime() {
 		return session.getCreationTime();
 	}
 
 	/**
-	 * @return
+	 * @return The id of the session
 	 */
 	public String getId() {
 		return session.getId();
 	}
 
 	/**
-	 * @return
+	 * @return The last time the session was accessed
 	 */
 	public long getLastAccessedTime() {
 		return session.getLastAccessedTime();
 	}
 
 	/**
-	 * @return
+	 * @return The maximum inactive interval.
 	 */
 	public int getMaxInactiveInterval() {
 		return session.getMaxInactiveInterval();
@@ -91,7 +91,7 @@ public class HttpSessionWrapper implements SessionWrapper {
 	}
 
 	/**
-	 * @return
+	 * @return A boolean indicating if the session was just created
 	 */
 	public boolean isNew() {
 		return session.isNew();
