@@ -53,21 +53,21 @@ public interface ResponseWrapper {
 	 */
 	public void addIntHeader(String arg0, int arg1);
 	/**
-	 * @param arg0
-	 * @return
+	 * @param arg0 The name of the header.
+	 * @return A boolean value indicating whether it contains the header name.
 	 */
 	public boolean containsHeader(String arg0);
 	/**
 	 * @param arg0
-	 * @return
+	 * @return The encoded value
 	 */
 	public String encodeURL(String arg0);
 	/**
-	 * @return
+	 * @return Returns the default character encoding
 	 */
 	public String getCharacterEncoding();
 	/**
-	 * @return
+	 * @return Returns the default locale
 	 */
 	public Locale getLocale();
 	/**
