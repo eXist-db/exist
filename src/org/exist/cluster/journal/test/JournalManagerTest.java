@@ -23,19 +23,23 @@ public class JournalManagerTest extends TestCase{
 
     protected void setUp() {
     	try  {
-	        configuration = new Configuration("conf.xml", "." );
-	        File temp = new File("test");
+	        configuration = new Configuration("conf.xml", System.getProperty("exist.home",".") );
+                File existDir = new File(System.getProperty("exist.home","."));
+	        File temp = new File(existDir,"test");
 	        String[] files = temp.list();
-	        for( int i=0; i<files.length; i++)
-	        {
-	            String fName = files[i];
-	            if( fName.indexOf("jbx") > 0 )
-	            {
-	                File f = new File(temp, fName);
-	                f.delete();
-	            }
-	        }
+                if (files!=null) {
+                   for( int i=0; i<files.length; i++)
+                   {
+                       String fName = files[i];
+                       if( fName.indexOf("jbx") > 0 )
+                       {
+                           File f = new File(temp, fName);
+                           f.delete();
+                       }
+                   }
+                }
     	} catch (Exception e) {
+           e.printStackTrace();
     		fail(e.getMessage());    		
     	}	        
     }
