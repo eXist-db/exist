@@ -139,7 +139,9 @@ public class StorageStressTest extends TestCase {
 	            this.collection = childCollection;
 	        }
 	        
-	        File f = new File("samples/shakespeare/hamlet.xml");
+                String existHome = System.getProperty("exist.home");
+                File existDir = existHome==null ? new File(".") : new File(existHome);
+	        File f = new File(existDir,"samples/shakespeare/hamlet.xml");
 	        Resource res = collection.createResource("test1.xml", "XMLResource");
 	        res.setContent(f);
 	        collection.storeResource(res);

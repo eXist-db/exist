@@ -38,11 +38,16 @@ public class XUpdateTest {
 	private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
 	private final static String XUPDATE_COLLECTION = "xupdate_tests";
 
+        static File existDir;
+        static {
+           String existHome = System.getProperty("exist.home");
+           existDir = existHome==null ? new File(".") : new File(existHome);
+        }
 	private final static String MODIFICATION_DIR =
-		"src/org/exist/xupdate/test/modifications";
+		(new File(existDir,"src/org/exist/xupdate/test/modifications")).getAbsolutePath();
 	private final static String RESTULT_DIR =
-		"src/org/exist/xupdate/test/results";
-	private final static String SOURCE_DIR = "src/org/exist/xupdate/test/input";
+		(new File(existDir,"src/org/exist/xupdate/test/results")).getAbsolutePath();
+	private final static String SOURCE_DIR = (new File(existDir,"src/org/exist/xupdate/test/input")).getAbsolutePath();
 
 	private final static String XUPDATE_FILE = "xu.xml";       // xlm document name in eXist
 

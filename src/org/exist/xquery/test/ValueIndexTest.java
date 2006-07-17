@@ -189,7 +189,9 @@ public class ValueIndexTest extends TestCase {
             String documentName, String path) throws XMLDBException {
         XMLResource doc = (XMLResource) testCollection.createResource(
                 documentName, "XMLResource");
-        File f = new File(path);
+        String existHome = System.getProperty("exist.home");
+        File existDir = existHome==null ? new File(".") : new File(existHome);
+        File f = new File(existDir,path);
         doc.setContent(f);
         testCollection.storeResource(doc);
         XPathQueryService service = (XPathQueryService) testCollection

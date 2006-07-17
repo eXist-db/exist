@@ -78,7 +78,9 @@ public class RemoteQueryTest extends TestCase {
 			assertNotNull(testCollection);
 			
 			Resource r = testCollection.createResource("hamlet.xml", "XMLResource");
-			File f = new File("samples/shakespeare/hamlet.xml");
+                        String existHome = System.getProperty("exist.home");
+                        File existDir = existHome==null ? new File(".") : new File(existHome);
+			File f = new File(existDir,"samples/shakespeare/hamlet.xml");
 			r.setContent(f);
 			testCollection.storeResource(r);
 		} catch (ClassNotFoundException e) {

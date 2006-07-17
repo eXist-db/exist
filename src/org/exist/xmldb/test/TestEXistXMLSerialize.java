@@ -50,6 +50,12 @@ public class TestEXistXMLSerialize extends TestCase{
 		"<xsl:template match=\"para\">" +
 		"<p><xsl:value-of select=\"$testparam\"/>: <xsl:apply-templates/></p></xsl:template>" +
 		"</xsl:stylesheet>";
+    static File existDir = null;
+    static {
+      String existHome = System.getProperty("exist.home");
+      existDir = existHome==null ? new File(".") : new File(existHome);
+       
+    }
     
     /** Creates a new instance of TestEXistXMLSerialize */
     public TestEXistXMLSerialize(String name) {
@@ -58,7 +64,7 @@ public class TestEXistXMLSerialize extends TestCase{
 
     Collection c = null;
     Database database = null;
-    File testFile = new File("src/org/exist/xmldb/test/PerformanceTest.xml");
+    File testFile = new File(existDir,"src/org/exist/xmldb/test/PerformanceTest.xml");
     
     public void setUp() {
     	try {

@@ -101,7 +101,9 @@ public class CreateCollectionsTest extends TestCase {
 			System.out.println("---------------------------------------");
 			System.out.println("storing all XML files in directory " +directory+"...");
 			System.out.println("---------------------------------------");
-			File f = new File(directory);
+                        String existHome = System.getProperty("exist.home");
+                        File existDir = existHome==null ? new File(".") : new File(existHome);
+			File f = new File(existDir,directory);
 			File files[] = f.listFiles(new XMLFilenameFilter());
 
 			for (int i = 0; i < files.length; i++) {
@@ -136,11 +138,11 @@ public class CreateCollectionsTest extends TestCase {
 				testCollection.getResourceCount() == resourceCount - 1);
 			// restore the resource just removed :
 			storeResourceFromFile(
-				new File(
+				new File(existDir,
 					directory + File.separatorChar + fileToRemove),
 				testCollection);
 
-			byte[] data = storeBinaryResourceFromFile( new File( "webapp/logo.jpg"), testCollection);
+			byte[] data = storeBinaryResourceFromFile( new File( existDir,"webapp/logo.jpg"), testCollection);
 			Object content = testCollection.getResource("logo.jpg").getContent();
 			byte[] dataStored = (byte[])content;
 			assertTrue("After storing binary resource, data out==data in", 

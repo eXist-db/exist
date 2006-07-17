@@ -124,7 +124,9 @@ public class ShutdownTest extends TestCase {
 				testCol = DBUtils.addCollection(rootCol, "C1");
 				assertNotNull(testCol);
 			}
-			DBUtils.addXMLResource(rootCol, "biblio.rdf", new File("samples/biblio.rdf"));
+                        String existHome = System.getProperty("exist.home");
+                        File existDir = existHome==null ? new File(".") : new File(existHome);
+			DBUtils.addXMLResource(rootCol, "biblio.rdf", new File(existDir,"samples/biblio.rdf"));
 			wordList = DBUtils.wordList(rootCol);
 			
 			// store the data files

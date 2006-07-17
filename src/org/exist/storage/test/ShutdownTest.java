@@ -26,7 +26,12 @@ public class ShutdownTest extends TestCase {
 
 	private static String directory = "samples/shakespeare";
     
-    private static File dir = new File(directory);
+    private static File dir = null;
+    static {
+       String existHome = System.getProperty("exist.home");
+       File existDir = existHome==null ? new File(".") : new File(existHome);
+       dir = new File(existDir,directory);
+    }
     
 	public ShutdownTest(String name) {
 		super(name);

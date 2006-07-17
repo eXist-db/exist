@@ -72,7 +72,9 @@ public class MoveResourceTest extends TestCase {
 			assertNotNull(test2);
 			broker.saveCollection(transaction, test2);
 
-			File f = new File("samples/shakespeare/r_and_j.xml");
+                        String existHome = System.getProperty("exist.home");
+                        File existDir = existHome==null ? new File(".") : new File(existHome);
+			File f = new File(existDir,"samples/shakespeare/r_and_j.xml");
 			assertNotNull(f);
 			IndexInfo info = test2.validateXMLResource(transaction, broker, TestConstants.TEST_XML_URI, new InputSource(f.toURI().toASCIIString()));
 			assertNotNull(info);

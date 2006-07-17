@@ -74,7 +74,9 @@ public class RemoveCollectionTest extends TestCase {
             assertNotNull(test2);   
             broker.saveCollection(transaction, test2);
             
-            File f = new File("samples/biblio.rdf");
+            String existHome = System.getProperty("exist.home");
+            File existDir = existHome==null ? new File(".") : new File(existHome);
+            File f = new File(existDir,"samples/biblio.rdf");
             assertNotNull(f);   
             InputSource is = new InputSource(f.toURI().toASCIIString());
             assertNotNull(is);   
