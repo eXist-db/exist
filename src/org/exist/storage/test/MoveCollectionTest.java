@@ -74,7 +74,9 @@ public class MoveCollectionTest extends TestCase {
             assertNotNull(test);
             broker.saveCollection(transaction, test);
     
-            File f = new File("samples/biblio.rdf");
+            String existHome = System.getProperty("exist.home");
+            File existDir = existHome==null ? new File(".") : new File(existHome);
+            File f = new File(existDir,"samples/biblio.rdf");
             assertNotNull(f);
             IndexInfo info = test.validateXMLResource(transaction, broker, TestConstants.TEST_XML_URI, new InputSource(f.toURI().toASCIIString()));
             assertNotNull(info);
@@ -143,7 +145,9 @@ public class MoveCollectionTest extends TestCase {
             assertNotNull(test2);
             broker.saveCollection(transaction, test2);
     
-            File f = new File("samples/biblio.rdf");
+            String existHome = System.getProperty("exist.home");
+            File existDir = existHome==null ? new File(".") : new File(existHome);
+            File f = new File(existDir,"samples/biblio.rdf");
             assertNotNull(f);
             IndexInfo info = test2.validateXMLResource(transaction, broker, TestConstants.TEST_XML_URI, new InputSource(f.toURI().toASCIIString()));
             assertNotNull(info);            
@@ -214,7 +218,9 @@ public class MoveCollectionTest extends TestCase {
 	            test2 = mgr.createCollection("test2");
 	        assertNotNull(test2);
 	        
-	        File f = new File("samples/biblio.rdf");
+                String existHome = System.getProperty("exist.home");
+                File existDir = existHome==null ? new File(".") : new File(existHome);
+	        File f = new File(existDir,"samples/biblio.rdf");
 	        assertNotNull(f);
 	        Resource res = test2.createResource("test_xmldb.xml", "XMLResource");
 	        assertNotNull(res);

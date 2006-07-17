@@ -124,7 +124,9 @@ public class SAXStorageTest extends TestCase {
 				long t0 = System.currentTimeMillis();
 				LocalCollection coll = (LocalCollection)root;
 				coll.setReader(dataSource);
-				doc.setContent(new File(FILE_STORED));
+                                String existHome = System.getProperty("exist.home");
+                                File existDir = existHome==null ? new File(".") : new File(existHome);
+				doc.setContent(new File(existDir,FILE_STORED));
 				coll.storeResource(doc);
 				long t1 = System.currentTimeMillis();
 				System.out.println("Time for storing:  " + ( t1-t0) + " ms." );

@@ -72,7 +72,9 @@ public class MultiDBTest extends TestCase {
 	                test = service.createCollection("test");
 	            }
 	            
-	            File samples = new File("samples/shakespeare");
+                    String existHome = System.getProperty("exist.home");
+                    File existDir = existHome==null ? new File(".") : new File(existHome);
+	            File samples = new File(existDir,"samples/shakespeare");
 	            File[] files = samples.listFiles();
 	            MimeTable mimeTab = MimeTable.getInstance();
 	            for (int j = 0; j < files.length; j++) {

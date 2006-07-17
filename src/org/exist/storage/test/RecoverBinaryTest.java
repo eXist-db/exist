@@ -22,6 +22,7 @@
 package org.exist.storage.test;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 
 import junit.framework.TestCase;
@@ -67,7 +68,9 @@ public class RecoverBinaryTest extends TestCase {
             assertNotNull(root);
             broker.saveCollection(transaction, root);
     
-            FileInputStream is = new FileInputStream("LICENSE");
+            String existHome = System.getProperty("exist.home");
+            File existDir = existHome==null ? new File(".") : new File(existHome);
+            FileInputStream is = new FileInputStream(new File(existDir,"LICENSE"));
             assertNotNull(is);
             ByteArrayOutputStream os = new ByteArrayOutputStream();
             byte[] buf = new byte[512];

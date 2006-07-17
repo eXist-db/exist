@@ -110,7 +110,9 @@ public abstract class ConcurrentTestBase extends TestCase {
             }
             testCol = DBUtils.addCollection(rootCol, testColName);
             assertNotNull(testCol);
-            DBUtils.addXMLResource(rootCol, "biblio.rdf", new File("samples/biblio.rdf"));
+            String existHome = System.getProperty("exist.home");
+            File existDir = existHome==null ? new File(".") : new File(existHome);
+            DBUtils.addXMLResource(rootCol, "biblio.rdf", new File(existDir,"samples/biblio.rdf"));
         } catch (Exception e) {
             fail(e.getMessage());
         }

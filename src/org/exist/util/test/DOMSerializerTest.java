@@ -6,6 +6,7 @@
  */
 package org.exist.util.test;
 
+import java.io.File;
 import java.io.StringWriter;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -25,7 +26,12 @@ import junit.framework.TestCase;
  */
 public class DOMSerializerTest extends TestCase {
 
-	private final static String file = "samples/biblio.rdf";
+        static File existDir;
+        static {
+           String existHome = System.getProperty("exist.home");
+           existDir = existHome==null ? new File(".") : new File(existHome);
+        }
+	private final static String file = (new File(existDir,"samples/biblio.rdf")).getAbsolutePath();
 	
 	public static void main(String[] args) {
 		junit.textui.TestRunner.run(DOMSerializerTest.class);
