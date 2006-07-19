@@ -885,8 +885,8 @@ public class XmldbURITest extends TestCase {
             assertEquals(xmldbURI.lastSegment(),TestConstants.SPECIAL_URI);
             
             assertEquals(TestConstants.SPECIAL_URI.lastSegment(),TestConstants.SPECIAL_URI);
-            assertEquals(XmldbURI.create("").lastSegment(),XmldbURI.create(""));
-            assertEquals(XmldbURI.create("/").lastSegment(),XmldbURI.create(""));
+            assertEquals(XmldbURI.EMPTY_URI.lastSegment(),XmldbURI.EMPTY_URI);
+            assertEquals(XmldbURI.create("/").lastSegment(),XmldbURI.EMPTY_URI);
         } catch (URISyntaxException e) {
             fail(e.getMessage());
         }
@@ -920,7 +920,7 @@ public class XmldbURITest extends TestCase {
             assertEquals(xmldbURI.removeLastSegment(),XmldbURI.xmldbUriFor("/test"));
             
             xmldbURI = XmldbURI.xmldbUriFor(TestConstants.SPECIAL_NAME+"/");
-            assertEquals(xmldbURI.removeLastSegment(),XmldbURI.create(""));
+            assertEquals(xmldbURI.removeLastSegment(),XmldbURI.EMPTY_URI);
             
             assertEquals(TestConstants.SPECIAL_URI.removeLastSegment(),XmldbURI.xmldbUriFor(""));
         } catch (URISyntaxException e) {
