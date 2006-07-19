@@ -108,7 +108,7 @@ public class XQDataSource implements javax.xml.xquery.XQDataSource
 		}
 		catch(EXistException ee)
 		{
-			throw new XQException("Can not access to local database instance");
+			throw new XQException("Can not access local database instance: " + ee.getMessage());
 		}
 	}
 
