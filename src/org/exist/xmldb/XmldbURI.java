@@ -66,8 +66,6 @@ public class XmldbURI implements Comparable {
 	public final static XmldbURI CONFIG_COLLECTION_URI = create(CollectionConfigurationManager.CONFIG_COLLECTION);
 
 	public final static XmldbURI TEMP_COLLECTION_URI = create(DBBroker.TEMP_COLLECTION);
-
-	public final static XmldbURI EMPTY_URI = create("");
 		
 	public static final XmldbURI EMBEDDED_SERVER_URI = XmldbURI.create(XMLDB_URI_PREFIX+DEFAULT_INSTANCE_NAME+"://"+EMBEDDED_SERVER_AUTHORITY);
 
