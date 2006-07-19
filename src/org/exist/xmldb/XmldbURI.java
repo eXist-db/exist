@@ -85,9 +85,6 @@ public class XmldbURI implements Comparable {
 	}
 	
 	public static XmldbURI xmldbUriFor(String xmldbURI) throws URISyntaxException {
-        if (xmldbURI == null || xmldbURI.length() == 0)
-            throw new URISyntaxException(xmldbURI, "Cannot create an XmldbURI from a zero-length string");
-        
 		URI uri = new URI(AnyURIValue.escape(xmldbURI));
 		return getXmldbURI(uri);
 	}
