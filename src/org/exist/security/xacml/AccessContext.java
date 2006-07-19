@@ -44,6 +44,10 @@ public final class AccessContext
 	 */
 	public static final AccessContext XMLDB = new AccessContext("XML:DB");
 	/**
+	 * This represents when access is made through XQJ
+	 */
+	public static final AccessContext XQJ = new AccessContext("XQJ");
+	/**
 	 * The context for access through the REST-style interface. 
 	 */
 	public static final AccessContext REST = new AccessContext("REST");

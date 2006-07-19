@@ -49,7 +49,4 @@ public interface XQDataFactory {
 
     XQSequenceType createSequenceType(XQItemType item, int occurrence) throws XQException;
 
-
-
-
 }
