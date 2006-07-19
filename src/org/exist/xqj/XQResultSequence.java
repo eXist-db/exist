@@ -15,6 +15,7 @@ import javax.xml.xquery.XQItem;
 import javax.xml.xquery.XQItemType;
 import javax.xml.xquery.XQWarning;
 
+import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.w3c.dom.Node;
@@ -28,7 +29,7 @@ public class XQResultSequence implements javax.xml.xquery.XQResultSequence {
 
 	private Sequence resultSequence;
 
-	//NB First Item is 1, Java Arrays start at 0 !!!
+	//NB First Item is 1, Java Arrays start at 0!!! (before first is 0)
 	private int iLength = 0; 
 	private int iCurrent = 0;
 	
@@ -71,9 +72,18 @@ public class XQResultSequence implements javax.xml.xquery.XQResultSequence {
 	/* (non-Javadoc)
 	 * @see javax.xml.xquery.XQItemAccessor#getAtomicValue()
 	 */
-	public String getAtomicValue() throws XQException {
-		// TODO Auto-generated method stub
-		return null;
+	public String getAtomicValue() throws XQException
+	{
+		try
+		{
+			Item item = resultSequence.itemAt(iCurrent);
+		
+			return item.atomize().toString();
+		}
+		catch(XPathException xpe)
+		{
+			throw new XQException(xpe.getMessage());
+		}
 	}
 
 	/* (non-Javadoc)
@@ -277,7 +287,7 @@ public class XQResultSequence implements javax.xml.xquery.XQResultSequence {
 	 */
 	public XQItem getItem() throws XQException
 	{
-		Item item = resultSequence.itemAt(iCurrent);
+		Item item = resultSequence.itemAt(iCurrent - 1);
 		
 		return new org.exist.xqj.XQItem(item);
 	}
@@ -375,7 +385,7 @@ public class XQResultSequence implements javax.xml.xquery.XQResultSequence {
 		
 		iCurrent++;
 		
-		return (iCurrent < iLength);
+		return (iCurrent <= iLength);
 	}
 
 	/* (non-Javadoc)

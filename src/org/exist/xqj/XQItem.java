@@ -12,6 +12,7 @@ import javax.xml.xquery.XQCommonHandler;
 import javax.xml.xquery.XQException;
 import javax.xml.xquery.XQItemType;
 
+import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
 import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
@@ -40,25 +41,35 @@ public class XQItem implements javax.xml.xquery.XQItem {
 	/* (non-Javadoc)
 	 * @see javax.xml.xquery.XQItem#close()
 	 */
-	public void close() throws XQException {
-		// TODO Auto-generated method stub
-
+	public void close() throws XQException
+	{
+		item = null;
 	}
 
 	/* (non-Javadoc)
 	 * @see javax.xml.xquery.XQItem#isClosed()
 	 */
-	public boolean isClosed() {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean isClosed()
+	{
+		return item == null;
 	}
 
 	/* (non-Javadoc)
 	 * @see javax.xml.xquery.XQItemAccessor#getAtomicValue()
 	 */
-	public String getAtomicValue() throws XQException {
-		// TODO Auto-generated method stub
-		return null;
+	public String getAtomicValue() throws XQException
+	{
+		try
+		{
+			if(item != null)
+				return item.atomize().getStringValue();
+				
+			return null;
+		}
+		catch(XPathException xpe)
+		{
+			throw new XQException(xpe.getMessage());
+		}
 	}
 
 	/* (non-Javadoc)

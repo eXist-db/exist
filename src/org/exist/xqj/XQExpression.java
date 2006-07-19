@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.util.TimeZone;
+import java.nio.CharBuffer;
 
 import javax.xml.namespace.QName;
 import javax.xml.xquery.XQException;
@@ -95,17 +96,40 @@ public class XQExpression implements javax.xml.xquery.XQExpression {
 	/* (non-Javadoc)
 	 * @see javax.xml.xquery.XQExpression#executeQuery(java.io.InputStream)
 	 */
-	public XQResultSequence executeQuery(InputStream query) throws XQException {
-		// TODO Auto-generated method stub
-		return null;
+	public XQResultSequence executeQuery(InputStream query) throws XQException
+	{
+		try
+		{
+			byte[] bytQuery = new byte[query.available()];
+			
+			return executeQuery(new String(bytQuery));
+		}
+		catch(IOException ioe)
+		{
+			throw new XQException("Could not read input stream for query");
+		}
 	}
 
 	/* (non-Javadoc)
 	 * @see javax.xml.xquery.XQExpression#executeQuery(java.io.Reader)
 	 */
-	public XQResultSequence executeQuery(Reader query) throws XQException {
-		// TODO Auto-generated method stub
-		return null;
+	public XQResultSequence executeQuery(Reader query) throws XQException
+	{
+		try
+		{
+			StringBuffer bufQuery = new StringBuffer();
+			
+			while(query.ready())
+			{	
+				bufQuery.append((char)query.read());
+			}
+			
+			return executeQuery(bufQuery.toString());
+		}
+		catch(IOException ioe)
+		{
+			throw new XQException("Could not read reader for query");
+		}
 	}
 
 	/* (non-Javadoc)
