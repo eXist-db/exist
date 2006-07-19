@@ -60,7 +60,7 @@ public class RemoteResourceSet implements ResourceSet {
 				content = new String(data);
 			}
 			RemoteXMLResource res = new RemoteXMLResource( collection, handle, 0, 
-	            	XmldbURI.create(""), null );
+	            	XmldbURI.EMPTY_URI, null );
 	        res.setContent( content );
 	        res.setProperties(outputProperties);
 	        return res;

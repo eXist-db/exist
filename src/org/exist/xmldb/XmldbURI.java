@@ -66,6 +66,8 @@ public class XmldbURI implements Comparable {
 	public final static XmldbURI CONFIG_COLLECTION_URI = create(CollectionConfigurationManager.CONFIG_COLLECTION);
 
 	public final static XmldbURI TEMP_COLLECTION_URI = create(DBBroker.TEMP_COLLECTION);
+
+	public final static XmldbURI EMPTY_URI = createInternal("");
 		
 	public static final XmldbURI EMBEDDED_SERVER_URI = XmldbURI.create(XMLDB_URI_PREFIX+DEFAULT_INSTANCE_NAME+"://"+EMBEDDED_SERVER_AUTHORITY);
 
@@ -439,7 +441,7 @@ public class XmldbURI implements Comparable {
     	int last;
     	// No slash - return null!
     	if((last=uri.lastIndexOf('/'))==Constants.STRING_NOT_FOUND) {
-    		return XmldbURI.create("");
+    		return XmldbURI.EMPTY_URI;
     	}
     	// Checks against a trailing slash
     	// is this appropriate?
@@ -447,7 +449,7 @@ public class XmldbURI implements Comparable {
     		uri = uri.substring(0,last);
     		last = uri.lastIndexOf('/');
     	}
-    	return last<=0?XmldbURI.create(""):XmldbURI.create(uri.substring(0,last));
+    	return last<=0?XmldbURI.EMPTY_URI:XmldbURI.create(uri.substring(0,last));
     }
 
     public XmldbURI append(String uri) {
