@@ -41,7 +41,7 @@ import org.exist.xquery.value.Type;
  * 
  * Adjusted and Committed by Adam Retter <adam.retter@devon.gov.uk>
  */
-public class GetQueryString extends BasicFunction{
+public class GetQueryString extends BasicFunction {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(

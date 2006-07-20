@@ -40,6 +40,8 @@ public class RequestModule extends AbstractInternalModule {
 		new FunctionDef(GetCookieNames.signature, GetCookieNames.class),
 		new FunctionDef(GetCookieValue.signature, GetCookieValue.class),
 		new FunctionDef(GetData.signature, GetData.class),
+		new FunctionDef(GetHeader.signature, GetHeader.class),
+		new FunctionDef(GetHeaderNames.signature, GetHeaderNames.class),
 		new FunctionDef(GetParameter.signature, GetParameter.class),
 		new FunctionDef(GetParameterNames.signature, GetParameterNames.class),
 		new FunctionDef(GetQueryString.signature, GetQueryString.class),
