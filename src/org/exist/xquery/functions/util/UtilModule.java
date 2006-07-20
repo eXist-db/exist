@@ -70,6 +70,8 @@ public class UtilModule extends AbstractInternalModule {
         new FunctionDef(QNameIndexLookup.signature, QNameIndexLookup.class),
         new FunctionDef(Serialize.signature, Serialize.class),
         new FunctionDef(BinaryDoc.signature, BinaryDoc.class),
+        new FunctionDef(BinaryToString.signatures[0], BinaryToString.class),
+        new FunctionDef(BinaryToString.signatures[1], BinaryToString.class),
         new FunctionDef(Profile.signatures[0], Profile.class),
         new FunctionDef(Profile.signatures[1], Profile.class),
         new FunctionDef(PrologFunctions.signatures[0], PrologFunctions.class),
