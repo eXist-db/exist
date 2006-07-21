@@ -103,7 +103,7 @@ public class XQDataSource implements javax.xml.xquery.XQDataSource
 	        DBBroker broker = pool.get(user);
 	        
 	        //return the connection object
-	        return new org.exist.xqj.XQConnection(broker);
+	        return new org.exist.xqj.XQConnection(broker, handler);
 			
 		}
 		catch(EXistException ee)

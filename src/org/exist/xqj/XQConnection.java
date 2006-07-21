@@ -46,9 +46,10 @@ public class XQConnection implements javax.xml.xquery.XQConnection {
 		handler = null;
 	}
 	
-	public XQConnection(DBBroker broker)
+	public XQConnection(DBBroker broker, XQCommonHandler handler)
 	{
 		this.broker = broker;
+		this.handler = handler;
 	}
 
 	/* (non-Javadoc)
@@ -106,9 +107,9 @@ public class XQConnection implements javax.xml.xquery.XQConnection {
 	/* (non-Javadoc)
 	 * @see javax.xml.xquery.XQConnection#getMetaData()
 	 */
-	public XQMetaData getMetaData() throws XQException {
-		// TODO Auto-generated method stub
-		return null;
+	public XQMetaData getMetaData() throws XQException
+	{
+		return new org.exist.xqj.XQMetaData(this);
 	}
 
 	/* (non-Javadoc)
@@ -540,5 +541,10 @@ public class XQConnection implements javax.xml.xquery.XQConnection {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
+	
+	protected DBBroker getBroker()
+	{
+		return broker;
+	}
+	
 }
