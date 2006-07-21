@@ -72,9 +72,9 @@ public class XQExpression implements javax.xml.xquery.XQExpression {
 	/* (non-Javadoc)
 	 * @see javax.xml.xquery.XQExpression#close()
 	 */
-	public void close() {
-		// TODO Auto-generated method stub
-
+	public void close()
+	{
+		broker = null;
 	}
 
 	/* (non-Javadoc)
@@ -217,9 +217,9 @@ public class XQExpression implements javax.xml.xquery.XQExpression {
 	/* (non-Javadoc)
 	 * @see javax.xml.xquery.XQExpression#isClosed()
 	 */
-	public boolean isClosed() {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean isClosed()
+	{
+		return broker == null;
 	}
 
 	/* (non-Javadoc)
