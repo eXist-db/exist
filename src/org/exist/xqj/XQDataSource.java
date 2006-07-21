@@ -26,8 +26,6 @@ import org.exist.storage.DBBroker;
 
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
-import org.xmldb.api.base.ErrorCodes;
-import org.xmldb.api.base.XMLDBException;
 
 /**
  * @author Adam Retter <adam.retter@devon.gov.uk>
@@ -44,7 +42,11 @@ public class XQDataSource implements javax.xml.xquery.XQDataSource
 	private Properties properties;
 	private int iLoginTimeout = -1;
 	private PrintWriter pwLogWriter;
+	private XQCommonHandler handler;
 	
+	private final static String EXIST_DEFAULT_USERNAME = "guest";
+	private final static String EXIST_DEFAULT_PASSWORD = "guest";
+	private final static String EXIST_DEFAULT_CONNECTION_TIMEOUT = "0";
 	
 	/**
 	 * 
@@ -53,9 +55,9 @@ public class XQDataSource implements javax.xml.xquery.XQDataSource
 	{
 		//setup initial property values
 		Properties propsDefaults = new Properties();
-		propsDefaults.setProperty(strPropertyNames[0], "guest");	//javax.xml.xquery.property.UserName
-		propsDefaults.setProperty(strPropertyNames[0], "guest");	//javax.xml.xquery.property.Password
-		propsDefaults.setProperty(strPropertyNames[0], "0");		//javax.xml.xquery.property.MaxConnections
+		propsDefaults.setProperty(strPropertyNames[0], EXIST_DEFAULT_USERNAME);	//javax.xml.xquery.property.UserName
+		propsDefaults.setProperty(strPropertyNames[1], EXIST_DEFAULT_PASSWORD);	//javax.xml.xquery.property.Password
+		propsDefaults.setProperty(strPropertyNames[2], EXIST_DEFAULT_CONNECTION_TIMEOUT);		//javax.xml.xquery.property.MaxConnections
 		properties = new Properties(propsDefaults);
 	}
 
@@ -64,7 +66,7 @@ public class XQDataSource implements javax.xml.xquery.XQDataSource
 	 */
 	public XQConnection getConnection() throws XQException
 	{
-		return getConnection(properties.getProperty("javax.xml.xquery.property.UserName"), properties.getProperty("javax.xml.xquery.property.Password"));
+		return getConnection(properties.getProperty(strPropertyNames[0]), properties.getProperty(strPropertyNames[1]));
 	}
 
 	/* (non-Javadoc)
@@ -78,14 +80,12 @@ public class XQDataSource implements javax.xml.xquery.XQDataSource
 	/* (non-Javadoc)
 	 * @see javax.xml.xquery.XQDataSource#getConnection(java.lang.String, java.lang.String)
 	 */
-	public XQConnection getConnection(String username, String password) throws XQException {
-
-		BrokerPool pool;
-		
+	public XQConnection getConnection(String username, String password) throws XQException
+	{
 		try
 		{
 			//get the broker pool instance
-			pool = BrokerPool.getInstance();
+			BrokerPool pool = BrokerPool.getInstance();
 			
 			//get the user
 			User user = pool.getSecurityManager().getUser(username);
@@ -154,9 +154,9 @@ public class XQDataSource implements javax.xml.xquery.XQDataSource
 	/* (non-Javadoc)
 	 * @see javax.xml.xquery.XQDataSource#setCommonHandler(javax.xml.xquery.XQCommonHandler)
 	 */
-	public void setCommonHandler(XQCommonHandler handler) throws XQException {
-		// TODO Auto-generated method stub
-
+	public void setCommonHandler(XQCommonHandler handler) throws XQException
+	{
+		this.handler = handler;
 	}
 
 	/* (non-Javadoc)
@@ -200,7 +200,6 @@ public class XQDataSource implements javax.xml.xquery.XQDataSource
 		}
 		else
 		{
-		
 			throw new XQException("Invalid Property Name");
 		}
 	}
@@ -208,7 +207,8 @@ public class XQDataSource implements javax.xml.xquery.XQDataSource
 	/* (non-Javadoc)
 	 * @see javax.xml.xquery.XQDataFactory#createAtomicItemType(int)
 	 */
-	public XQItemType createAtomicItemType(int baseType) throws XQException {
+	public XQItemType createAtomicItemType(int baseType) throws XQException
+	{
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -224,8 +224,8 @@ public class XQDataSource implements javax.xml.xquery.XQDataSource
 	/* (non-Javadoc)
 	 * @see javax.xml.xquery.XQDataFactory#createItemFromAtomicValue(java.lang.String, javax.xml.xquery.XQItemType)
 	 */
-	public XQItem createItemFromAtomicValue(String value, XQItemType type)
-			throws XQException {
+	public XQItem createItemFromAtomicValue(String value, XQItemType type) throws XQException
+	{
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -233,64 +233,58 @@ public class XQDataSource implements javax.xml.xquery.XQDataSource
 	/* (non-Javadoc)
 	 * @see javax.xml.xquery.XQDataFactory#createItemFromBoolean(boolean, javax.xml.xquery.XQItemType)
 	 */
-	public XQItem createItemFromBoolean(boolean value, XQItemType type)
-			throws XQException {
-		// TODO Auto-generated method stub
-		return null;
+	public XQItem createItemFromBoolean(boolean value, XQItemType type) throws XQException
+	{
+		return new org.exist.xqj.XQItem(value, type);
 	}
 
 	/* (non-Javadoc)
 	 * @see javax.xml.xquery.XQDataFactory#createItemFromByte(byte, javax.xml.xquery.XQItemType)
 	 */
-	public XQItem createItemFromByte(byte value, XQItemType type)
-			throws XQException {
-		// TODO Auto-generated method stub
-		return null;
+	public XQItem createItemFromByte(byte value, XQItemType type) throws XQException
+	{
+		return new org.exist.xqj.XQItem(value, type);
 	}
 
 	/* (non-Javadoc)
 	 * @see javax.xml.xquery.XQDataFactory#createItemFromDocument(org.xml.sax.InputSource)
 	 */
-	public XQItem createItemFromDocument(InputSource value) throws XQException,
-			IOException {
-		// TODO Auto-generated method stub
+	public XQItem createItemFromDocument(InputSource value) throws XQException, IOException
+	{
+	
 		return null;
 	}
 
 	/* (non-Javadoc)
 	 * @see javax.xml.xquery.XQDataFactory#createItemFromDouble(double, javax.xml.xquery.XQItemType)
 	 */
-	public XQItem createItemFromDouble(double value, XQItemType type)
-			throws XQException {
-		// TODO Auto-generated method stub
-		return null;
+	public XQItem createItemFromDouble(double value, XQItemType type) throws XQException
+	{
+		return new org.exist.xqj.XQItem(value, type);
 	}
 
 	/* (non-Javadoc)
 	 * @see javax.xml.xquery.XQDataFactory#createItemFromFloat(float, javax.xml.xquery.XQItemType)
 	 */
-	public XQItem createItemFromFloat(float value, XQItemType type)
-			throws XQException {
-		// TODO Auto-generated method stub
-		return null;
+	public XQItem createItemFromFloat(float value, XQItemType type) throws XQException
+	{
+		return new org.exist.xqj.XQItem(value, type);
 	}
 
 	/* (non-Javadoc)
 	 * @see javax.xml.xquery.XQDataFactory#createItemFromInt(int, javax.xml.xquery.XQItemType)
 	 */
-	public XQItem createItemFromInt(int value, XQItemType type)
-			throws XQException {
-		// TODO Auto-generated method stub
-		return null;
+	public XQItem createItemFromInt(int value, XQItemType type) throws XQException
+	{
+		return new org.exist.xqj.XQItem(value, type);
 	}
 
 	/* (non-Javadoc)
 	 * @see javax.xml.xquery.XQDataFactory#createItemFromLong(long, javax.xml.xquery.XQItemType)
 	 */
-	public XQItem createItemFromLong(long value, XQItemType type)
-			throws XQException {
-		// TODO Auto-generated method stub
-		return null;
+	public XQItem createItemFromLong(long value, XQItemType type) throws XQException
+	{
+		return new org.exist.xqj.XQItem(value, type);
 	}
 
 	/* (non-Javadoc)
@@ -314,10 +308,9 @@ public class XQDataSource implements javax.xml.xquery.XQDataSource
 	/* (non-Javadoc)
 	 * @see javax.xml.xquery.XQDataFactory#createItemFromShort(short, javax.xml.xquery.XQItemType)
 	 */
-	public XQItem createItemFromShort(short value, XQItemType type)
-			throws XQException {
-		// TODO Auto-generated method stub
-		return null;
+	public XQItem createItemFromShort(short value, XQItemType type) throws XQException
+	{
+		return new org.exist.xqj.XQItem(value, type);
 	}
 
 	/* (non-Javadoc)
