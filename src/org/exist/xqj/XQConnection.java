@@ -38,10 +38,12 @@ public class XQConnection implements javax.xml.xquery.XQConnection {
 	 */
 	
 	private DBBroker broker;
+	private XQCommonHandler handler;
 	
 	public XQConnection()
 	{
 		broker = null;
+		handler = null;
 	}
 	
 	public XQConnection(DBBroker broker)
@@ -230,9 +232,9 @@ public class XQConnection implements javax.xml.xquery.XQConnection {
 	/* (non-Javadoc)
 	 * @see javax.xml.xquery.XQConnection#setCommonHandler(javax.xml.xquery.XQCommonHandler)
 	 */
-	public void setCommonHandler(XQCommonHandler handler) throws XQException {
-		// TODO Auto-generated method stub
-
+	public void setCommonHandler(XQCommonHandler handler) throws XQException
+	{
+		this.handler = handler;
 	}
 
 	/* (non-Javadoc)

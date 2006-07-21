@@ -18,7 +18,7 @@ public class XQItemType implements javax.xml.xquery.XQItemType
 	{
 		type = javax.xml.xquery.XQItemType.XQBASETYPE_ANYTYPE;
 	}
-
+	
 	public int getBaseType()
 	{
 			
