@@ -12,8 +12,14 @@ import javax.xml.xquery.XQCommonHandler;
 import javax.xml.xquery.XQException;
 import javax.xml.xquery.XQItemType;
 
+import org.exist.dom.QName;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.DoubleValue;
+import org.exist.xquery.value.FloatValue;
+import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
+import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
 
@@ -36,6 +42,37 @@ public class XQItem implements javax.xml.xquery.XQItem {
 	public XQItem(Item item)
 	{
 		this.item = item;
+	}
+	
+	public XQItem(boolean value, XQItemType type) throws XQException
+	{
+		item = new BooleanValue(value);
+		item = convertTo(type);
+	}
+	
+	public XQItem(byte value, XQItemType type) throws XQException
+	{
+		try
+		{
+			item = new IntegerValue(value, org.exist.xquery.value.Type.BYTE);
+			item = convertTo(type);
+		}
+		catch(XPathException xpe)
+		{
+			throw new XQException("Unable to create XQItem from byte: " + xpe.getMessage());
+		}
+	}
+	
+	public XQItem(double value, XQItemType type) throws XQException
+	{
+		item = new DoubleValue(value);
+		item = convertTo(type);
+	}
+	
+	public XQItem(float value, XQItemType type) throws XQException
+	{
+		item = new FloatValue(value);
+		item = convertTo(type);
 	}
 	
 	/* (non-Javadoc)
@@ -75,41 +112,55 @@ public class XQItem implements javax.xml.xquery.XQItem {
 	/* (non-Javadoc)
 	 * @see javax.xml.xquery.XQItemAccessor#getBoolean()
 	 */
-	public boolean getBoolean() throws XQException {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean getBoolean() throws XQException
+	{	
+		BooleanValue b = (BooleanValue)convertTo(Type.BOOLEAN);
+		return b.getValue();
 	}
 
 	/* (non-Javadoc)
 	 * @see javax.xml.xquery.XQItemAccessor#getByte()
 	 */
-	public byte getByte() throws XQException {
-		// TODO Auto-generated method stub
+	public byte getByte() throws XQException
+	{
+		IntegerValue v = (IntegerValue)convertTo(Type.BYTE);
+		//return v.getInt();
+		
 		return 0;
 	}
 
 	/* (non-Javadoc)
 	 * @see javax.xml.xquery.XQItemAccessor#getDouble()
 	 */
-	public double getDouble() throws XQException {
-		// TODO Auto-generated method stub
-		return 0;
+	public double getDouble() throws XQException
+	{
+		DoubleValue d = (DoubleValue)convertTo(Type.DOUBLE);
+		return d.getValue();
 	}
 
 	/* (non-Javadoc)
 	 * @see javax.xml.xquery.XQItemAccessor#getFloat()
 	 */
-	public float getFloat() throws XQException {
-		// TODO Auto-generated method stub
-		return 0;
+	public float getFloat() throws XQException
+	{
+		FloatValue f = (FloatValue)convertTo(Type.FLOAT);
+		return f.getValue();
 	}
 
 	/* (non-Javadoc)
 	 * @see javax.xml.xquery.XQItemAccessor#getInt()
 	 */
-	public int getInt() throws XQException {
-		// TODO Auto-generated method stub
-		return 0;
+	public int getInt() throws XQException
+	{
+		try
+		{
+			IntegerValue i = (IntegerValue)convertTo(Type.INT);
+			return i.getInt();
+		}
+		catch(XPathException xpe)
+		{
+			throw new XQException(xpe.getMessage());
+		}
 	}
 
 	/* (non-Javadoc)
@@ -123,23 +174,27 @@ public class XQItem implements javax.xml.xquery.XQItem {
 	/* (non-Javadoc)
 	 * @see javax.xml.xquery.XQItemAccessor#getItemType()
 	 */
-	public XQItemType getItemType() throws XQException {
-		// TODO Auto-generated method stub
+	public XQItemType getItemType() throws XQException
+	{
+		item.getType();
+		
 		return null;
 	}
 
 	/* (non-Javadoc)
 	 * @see javax.xml.xquery.XQItemAccessor#getLong()
 	 */
-	public long getLong() throws XQException {
-		// TODO Auto-generated method stub
-		return 0;
+	public long getLong() throws XQException
+	{
+		IntegerValue d = (IntegerValue)convertTo(Type.LONG);
+		return d.getValue();	
 	}
 
 	/* (non-Javadoc)
 	 * @see javax.xml.xquery.XQItemAccessor#getNode()
 	 */
-	public Node getNode() throws XQException {
+	public Node getNode() throws XQException
+	{
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -171,16 +226,31 @@ public class XQItem implements javax.xml.xquery.XQItem {
 	/* (non-Javadoc)
 	 * @see javax.xml.xquery.XQItemAccessor#getShort()
 	 */
-	public short getShort() throws XQException {
-		// TODO Auto-generated method stub
+	public short getShort() throws XQException
+	{
 		return 0;
 	}
 
 	/* (non-Javadoc)
 	 * @see javax.xml.xquery.XQItemAccessor#instanceOf(javax.xml.xquery.XQItemType)
 	 */
-	public boolean instanceOf(XQItemType type) throws XQException {
-		// TODO Auto-generated method stub
+	public boolean instanceOf(XQItemType type) throws XQException
+	{
+		String prefix = type.getTypeName().getPrefix();
+		String local = type.getTypeName().getLocalPart();
+		
+		try
+		{
+			if(item.getType() == Type.getType(new QName(local, null, prefix)))
+			{
+				return true;
+			}
+		}
+		catch(XPathException xpe)
+		{
+			throw new XQException(xpe.getMessage());
+		}
+		
 		return false;
 	}
 
@@ -206,6 +276,30 @@ public class XQItem implements javax.xml.xquery.XQItem {
 	public void writeItemToSAX(ContentHandler saxHandler) throws XQException {
 		// TODO Auto-generated method stub
 
+	}
+	
+	private Item convertTo(XQItemType type) throws XQException
+	{
+		try
+		{
+			return item.convertTo(Type.getType(new QName(type.getTypeName().getLocalPart(), null, type.getTypeName().getPrefix())));
+		}
+		catch(XPathException xpe)
+		{
+			throw new XQException("Could not convert value for item to: " + type.getTypeName().toString() + " " + xpe.getMessage());
+		}
+	}
+	
+	private Item convertTo(int type) throws XQException
+	{
+		try
+		{
+			return item.convertTo(type);
+		}
+		catch(XPathException xpe)
+		{
+			throw new XQException("Could not convert value for item to: " + Type.getTypeName(type) + " " + xpe.getMessage());
+		}
 	}
 
 }
