@@ -9,7 +9,7 @@
     </xsl:template>
 
     <xsl:template match="appender/param[@name='File']">
-        <param name="File" value="${{logger.dir}}/{substring-after(@value,'logs/')}"/>
+        <param name="File" value="loggerdir/{substring-after(@value,'logs/')}"/>
     </xsl:template>
 
     <xsl:template match="*|@*|node()|comment()">
