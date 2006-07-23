@@ -148,4 +148,11 @@ public class FunctionSignature {
 		buf.append(returnType.toString());
 		return buf.toString();
 	}
+    
+    public boolean equals(Object obj) {
+        FunctionSignature other = (FunctionSignature) obj;
+        if (name.equalsSimple(other.name))
+            return getArgumentCount() == other.getArgumentCount();
+        return false;
+    }
 }
