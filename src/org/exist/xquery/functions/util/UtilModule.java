@@ -67,6 +67,7 @@ public class UtilModule extends AbstractInternalModule {
         new FunctionDef(IndexKeys.signature, IndexKeys.class),
         new FunctionDef(IndexKeyOccurrences.signature, IndexKeyOccurrences.class),
         new FunctionDef(IndexKeyDocuments.signature, IndexKeyDocuments.class),
+        new FunctionDef(IndexType.signature, IndexType.class),
         new FunctionDef(QNameIndexLookup.signature, QNameIndexLookup.class),
         new FunctionDef(Serialize.signature, Serialize.class),
         new FunctionDef(BinaryDoc.signature, BinaryDoc.class),
