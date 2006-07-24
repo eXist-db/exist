@@ -34,19 +34,25 @@ import org.xml.sax.InputSource;
 public class XQDataSource implements javax.xml.xquery.XQDataSource
 {
 	
+	private final static Properties defaultProperties = new Properties();
+	static
+	{
+		defaultProperties.setProperty("javax.xml.xquery.property.UserName", "guest");
+		defaultProperties.setProperty("javax.xml.xquery.property.Password", "guest");
+		defaultProperties.setProperty("javax.xml.xquery.property.MaxConnections", "0");
+	}
+	
 	private final static String[] strPropertyNames = {
 		"javax.xml.xquery.property.UserName",
 		"javax.xml.xquery.property.Password",
 		"javax.xml.xquery.property.MaxConnections"
 	};
 	private Properties properties;
+	
+	
 	private int iLoginTimeout = -1;
 	private PrintWriter pwLogWriter;
 	private XQCommonHandler handler;
-	
-	private final static String EXIST_DEFAULT_USERNAME = "guest";
-	private final static String EXIST_DEFAULT_PASSWORD = "guest";
-	private final static String EXIST_DEFAULT_CONNECTION_TIMEOUT = "0";
 	
 	/**
 	 * 
@@ -54,11 +60,7 @@ public class XQDataSource implements javax.xml.xquery.XQDataSource
 	public XQDataSource()
 	{
 		//setup initial property values
-		Properties propsDefaults = new Properties();
-		propsDefaults.setProperty(strPropertyNames[0], EXIST_DEFAULT_USERNAME);	//javax.xml.xquery.property.UserName
-		propsDefaults.setProperty(strPropertyNames[1], EXIST_DEFAULT_PASSWORD);	//javax.xml.xquery.property.Password
-		propsDefaults.setProperty(strPropertyNames[2], EXIST_DEFAULT_CONNECTION_TIMEOUT);		//javax.xml.xquery.property.MaxConnections
-		properties = new Properties(propsDefaults);
+		properties = new Properties(defaultProperties);
 	}
 
 	/* (non-Javadoc)
