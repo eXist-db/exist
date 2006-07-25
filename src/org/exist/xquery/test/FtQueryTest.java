@@ -50,8 +50,13 @@ public class FtQueryTest extends XMLTestCase {
 	
     private final static String FILES[] = { "hamlet.xml", "macbeth.xml", "r_and_j.xml" };
     
-    private final static File SHAKES_DIR = new File("samples" + File.separator + "shakespeare");
-    private final static File MODS_DIR = new File("samples" + File.separator + "mods");
+    static File existDir;
+    static {
+      String existHome = System.getProperty("exist.home");
+      existDir = existHome==null ? new File(".") : new File(existHome);
+    }
+    private final static File SHAKES_DIR = new File(existDir,"samples" + File.separator + "shakespeare");
+    private final static File MODS_DIR = new File(existDir,"samples" + File.separator + "mods");
 
 	private static final String TEST_COLLECTION_NAME = "testft";
     private static final String TEST_COLLECTION_PATH = DBBroker.ROOT_COLLECTION + "/" + TEST_COLLECTION_NAME;

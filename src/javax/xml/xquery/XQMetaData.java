@@ -1,51 +1,53 @@
 package javax.xml.xquery;
 
+import javax.xml.xquery.XQException;
+
 /**
  * XQJ interfaces reconstructed from version 0.5 documentation
  */
 public interface XQMetaData {
 
-    int getMaxExpressionLength();
+    int getMaxExpressionLength() throws XQException;
 
-    int getMaxUserNameLength();
+    int getMaxUserNameLength() throws XQException;
 
-    int getProductMajorVersion();
+    int getProductMajorVersion() throws XQException;
 
-    int getProductMinorVersion();
+    int getProductMinorVersion() throws XQException;
 
-    java.lang.String getProductName();
+    java.lang.String getProductName() throws XQException;
 
-    java.lang.String getProductVersion();
+    java.lang.String getProductVersion() throws XQException;
 
-    java.lang.String getUserName();
+    java.lang.String getUserName() throws XQException;
 
-    int getXQJMajorVersion();
+    int getXQJMajorVersion() throws XQException;
 
-    int getXQJMinorVersion();
+    int getXQJMinorVersion() throws XQException;
 
-    java.lang.String getXQJVersion();
+    java.lang.String getXQJVersion() throws XQException;
 
-    boolean isCollectionNestingSupported();
+    boolean isCollectionNestingSupported() throws XQException;
 
-    boolean isFullAxisFeatureSupported();
+    boolean isFullAxisFeatureSupported() throws XQException;
 
-    boolean isModuleFeatureSupported();
+    boolean isModuleFeatureSupported() throws XQException;
 
-    boolean isReadOnly();
+    boolean isReadOnly() throws XQException;
 
-    boolean isSchemaImportFeatureSupported();
+    boolean isSchemaImportFeatureSupported() throws XQException;
 
-    boolean isSchemaValidationFeatureSupported();
+    boolean isSchemaValidationFeatureSupported() throws XQException;
 
-    boolean isSerializationFeatureSupported();
+    boolean isSerializationFeatureSupported() throws XQException;
 
-    boolean isStaticTypingExtensionsSupported();
+    boolean isStaticTypingExtensionsSupported() throws XQException;
 
-    boolean isStaticTypingFeatureSupported();
+    boolean isStaticTypingFeatureSupported() throws XQException;
 
-    boolean isTransactionSupported();
+    boolean isTransactionSupported() throws XQException;
 
-    boolean isXQueryXSupported();
+    boolean isXQueryXSupported() throws XQException;
 
-    boolean wasCreatedFromJDBCConnection();
+    boolean wasCreatedFromJDBCConnection() throws XQException;
 }

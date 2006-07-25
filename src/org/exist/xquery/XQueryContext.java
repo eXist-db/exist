@@ -123,6 +123,8 @@ public class XQueryContext {
 	
     protected final Stack contextStack = new Stack();
     
+    protected final Stack callStack = new Stack();
+    
 	// The current size of the variable stack
 	protected int variableStackSize = 0;
 	
@@ -698,7 +700,8 @@ public class XQueryContext {
 		staticDocuments = null;
 		lastVar = null;
 		fragmentStack = new Stack();
-		
+		callStack.clear();
+        
 		//remove the context-vars, subsequent execution of the query
 		//may generate different values for the vars based on the
 		//content of the db
@@ -1297,6 +1300,39 @@ public class XQueryContext {
 		return variableStackSize;
 	}
 
+    /* ----------------- Function call stack ------------------------ */
+    
+    /**
+     * Report the start of a function execution. Adds the reported function signature 
+     * to the function call stack.
+     */
+    public void functionStart(FunctionSignature signature) {
+        callStack.push(signature);
+    }
+    
+    /**
+     * Report the end of the currently executed function. Pops the last function
+     * signature from the function call stack.
+     *
+     */
+    public void functionEnd() {
+        callStack.pop();
+    }
+    
+    /**
+     * Check if the specified function signature is found in the current function 
+     * called stack. If yes, the function might be tail recursive and needs to be
+     * optimized. 
+     * 
+     * @param signature
+     * @return
+     */
+    public boolean tailRecursiveCall(FunctionSignature signature) {
+        return callStack.contains(signature);
+    }
+    
+    /* ----------------- Module imports ------------------------ */
+    
 	/**
 	 * Import a module and make it available in this context. The prefix and
 	 * location parameters are optional. If prefix is null, the default prefix specified

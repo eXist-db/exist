@@ -102,6 +102,7 @@ public class IndexingTest extends TestCase {
 			System.out.println("Running test " + testName + " ...");
 
 			// Tell eXist where conf.xml is :
+                        // DWES #### use Configuration.getExistHome()
 			if ( EXIST_HOME != "" )
 				System.setProperty("exist.home", EXIST_HOME );
 			

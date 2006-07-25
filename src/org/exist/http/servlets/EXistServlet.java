@@ -37,6 +37,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.collections.Collection;
 import org.exist.http.BadRequestException;
 import org.exist.http.Descriptor;
 import org.exist.http.NotFoundException;
@@ -100,8 +101,8 @@ public class EXistServlet extends HttpServlet {
 					confFile = "conf.xml";
 				dbHome = (dbHome == null) ? config.getServletContext().getRealPath(
 						".") : config.getServletContext().getRealPath(dbHome);
+                                
 				LOG.info("EXistServlet: exist.home=" + dbHome);
-				System.setProperty("exist.home", dbHome);
 				
 				File f = new File(dbHome + File.separator + confFile);
 				LOG.info("reading configuration from " + f.getAbsolutePath());
@@ -212,27 +213,34 @@ public class EXistServlet extends HttpServlet {
 			return;
 		}
 		
-		//fourth, process the request
-		ServletInputStream is = request.getInputStream();
-		int len = request.getContentLength();
-		// put may send a lot of data, so save it
-		// to a temporary file first.
-		File tempFile = File.createTempFile("existSRV", ".tmp");
-		OutputStream os = new FileOutputStream(tempFile);
-		byte[] buffer = new byte[4096];
-		int count, l = 0;
-		do {
-			count = is.read(buffer);
-			if (count > 0)
-				os.write(buffer, 0, count);
-			l += count;
-		} while (l < len);
-		os.close();
-		
 		DBBroker broker = null;
+                File tempFile = null;
 		try {
-			broker = pool.get(user);
-			srvREST.doPut(broker, tempFile, XmldbURI.create(path), request, response);
+                   XmldbURI dbpath = XmldbURI.create(path);
+                   broker = pool.get(user);
+                   Collection collection = broker.getCollection(dbpath);
+                   if (collection != null) {
+                      response.sendError(400,"A PUT request is not allowed against a plain collection path.");
+                      return;
+                   }
+                   //fourth, process the request
+                   ServletInputStream is = request.getInputStream();
+                   int len = request.getContentLength();
+                   // put may send a lot of data, so save it
+                   // to a temporary file first.
+                   tempFile = File.createTempFile("existSRV", ".tmp");
+                   OutputStream os = new FileOutputStream(tempFile);
+                   byte[] buffer = new byte[4096];
+                   int count, l = 0;
+                   do {
+                      count = is.read(buffer);
+                      if (count > 0)
+                         os.write(buffer, 0, count);
+                      l += count;
+                   } while (l < len);
+                   os.close();
+                   
+                   srvREST.doPut(broker, tempFile, dbpath, request, response);
 		} catch (BadRequestException e) {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
 		} catch (PermissionDeniedException e) {
@@ -240,9 +248,13 @@ public class EXistServlet extends HttpServlet {
 		} catch (EXistException e) {
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 		} finally {
-			pool.release(broker);
+                   if (broker!=null) {
+                      pool.release(broker);
+                   }
+                   if (tempFile!=null) {
+                      tempFile.delete();
+                   }
 		}
-        tempFile.delete();
 	}
 
     /**

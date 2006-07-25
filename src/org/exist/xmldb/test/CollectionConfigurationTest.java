@@ -137,8 +137,8 @@ public class CollectionConfigurationTest extends TestCase {
             assertEquals("3", result.getResource(0).getContent()); 
             //... but 1 string value 
             result = service.query("util:index-key-occurrences(/test/b, \"1\")"); 
-            assertEquals("1", result.getResource(0).getContent());             
-        
+            assertEquals("1", result.getResource(0).getContent());
+            
         	//3 numeric values 
             result = service.query("util:qname-index-lookup(xs:QName(\"a\"), 1 ) "); 
             assertEquals(3, result.getSize()); 
@@ -427,15 +427,31 @@ public class CollectionConfigurationTest extends TestCase {
            result = service.query("util:index-key-occurrences(/test/c, xs:dateTime(\"2002-12-07T12:20:46.275+01:00\") )");
            assertEquals(1, result.getSize());
            assertEquals("1", result.getResource(0).getContent());             
+
+           result = service.query("util:index-type(/test/c)");
+           assertEquals("xs:dateTime", result.getResource(0).getContent());            
+       
            result = service.query("util:index-key-occurrences(/test/d, xs:double(1) )");
            assertEquals(1, result.getSize());
            assertEquals("1", result.getResource(0).getContent());             
+           
+           result = service.query("util:index-type(/test/d)");
+           assertEquals("xs:double", result.getResource(0).getContent());            
+
            result = service.query("util:index-key-occurrences(/test/e, xs:float(1) )");
            assertEquals(1, result.getSize());
            assertEquals("1", result.getResource(0).getContent());             
-           result = service.query("util:index-key-occurrences(/test/f, true() )");
+
+           result = service.query("util:index-type(/test/e)");
+           assertEquals("xs:float", result.getResource(0).getContent());            
+
+           result = service.query("util:index-key-occurrences(/test/f, true())");
            assertEquals(1, result.getSize());
-           assertEquals("1", result.getResource(0).getContent());             
+           assertEquals("1", result.getResource(0).getContent());
+           
+           result = service.query("util:index-type(/test/f)");
+           assertEquals("xs:boolean", result.getResource(0).getContent());            
+           
        
        } catch(Exception e) { 
       	 	e.printStackTrace();

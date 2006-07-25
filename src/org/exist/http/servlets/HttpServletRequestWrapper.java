@@ -47,7 +47,7 @@ import javax.servlet.http.HttpSession;
 /** A wrapper for HttpServletRequest
  * - differentiates between POST parameters in the URL or Content Body
  * - keeps content Body of the POST request, making it available many times 
- * 		through {@link #getStringBufferInputStream()} .
+ * 		through {@link #getContentBodyInputStream()} .
  * 
  * A method of differentiating between POST parameters in the URL or Content Body of the request was needed.
  * The standard javax.servlet.http.HTTPServletRequest does not differentiate between URL or content body parameters,
@@ -483,7 +483,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 	}
 
 	/**
-	 * @see javax.servlet.http.HttpServletRequest#getRequestedURL
+	 * @see javax.servlet.http.HttpServletRequest#getRequestURL
 	 */
 	public StringBuffer getRequestURL()
 	{	
@@ -515,7 +515,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 	}
 
 	/**
-	 * @see javax.servlet.http.HttpServletRequest#isRequestedSessionIdValie
+	 * @see javax.servlet.http.HttpServletRequest#isRequestedSessionIdValid
 	 */
 	public boolean isRequestedSessionIdValid()
 	{

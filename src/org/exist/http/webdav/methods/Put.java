@@ -50,6 +50,7 @@ import org.exist.util.LockException;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.value.StringValue;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -118,6 +119,9 @@ public class Put extends AbstractWebDAVMethod {
                 if (mime != null)
                     contentType = mime.getName();
             } else {
+                int p = contentType.indexOf(';');
+                if (p > -1)
+                    contentType = StringValue.trimWhitespace(contentType.substring(0, p));
                 mime = MimeTable.getInstance().getContentType(contentType);
             }
             

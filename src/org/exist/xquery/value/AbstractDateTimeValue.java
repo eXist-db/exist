@@ -296,7 +296,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
         if(Type.subTypeOf(other.getType(), Type.DATE_TIME))
         	return calendar.compare((XMLGregorianCalendar)o);
         else
-            return getType() > other.getType() ? 1 : -1;
+            return getType() > other.getType() ? Constants.SUPERIOR : Constants.INFERIOR;
     }	
 
 }

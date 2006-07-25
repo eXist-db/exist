@@ -343,6 +343,7 @@ public class Main {
             // if we managed to detect exist.home, store it in system property
             if (_debug)
                 System.err.println("EXIST_HOME=" + System.getProperty("exist.home"));
+            // DWES #### can this be removed?
             System.setProperty("exist.home", _home_dir.getPath());
             System.setProperty("user.dir", _home_dir.getPath());
 
@@ -420,6 +421,8 @@ public class Main {
         //--------------------
         // detect exist.home:
         //--------------------
+        
+        // DWES #### use Configuration.getExistHome() ?
         File _home_dir = getDirectory(System.getProperty("exist.home"));
         if (_home_dir == null) {
             // if eXist is deployed as web application, try to find WEB-INF first

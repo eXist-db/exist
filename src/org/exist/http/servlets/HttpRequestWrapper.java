@@ -176,7 +176,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     }
     
     /**@see javax.servlet.http.HttpServletRequest#getCharacterEncoding()
-     * @return
+     * @return An enumeration of header names
      */
     public Enumeration getHeaderNames() {
         return servletRequest.getHeaderNames();
@@ -271,7 +271,7 @@ public class HttpRequestWrapper implements RequestWrapper {
     
     
     
-    /**@see javax.servlet.http.HttpServletRequest#getParameterNames(String)
+    /**@see javax.servlet.http.HttpServletRequest#getParameterNames()
      */
     public Enumeration getParameterNames() {
         if(params == null)

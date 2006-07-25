@@ -77,7 +77,11 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
      * @param qname The node's identity
      * @param proxy The node's proxy
      */
-    public void addNode(QName qname, NodeProxy proxy) {       
+    public void addNode(QName qname, NodeProxy proxy) {      
+    	if (doc.getDocId() != proxy.getDocument().getDocId()) {
+    		throw new IllegalArgumentException("Document id ('" + doc.getDocId() + "') and proxy id ('" + 
+    				proxy.getDocument().getDocId() + "') differ !");
+    	}
         //Is this qname already pending ?
         ArrayList buf = (ArrayList) pending.get(qname);
         if (buf == null) {
@@ -159,6 +163,10 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             //Compute the GIDs list
             for (int j = 0; j < gidsCount; j++) {
                 NodeProxy storedNode = (NodeProxy) gids.get(j);
+                if (doc.getDocId() != storedNode.getDocument().getDocId()) {
+                    throw new IllegalArgumentException("Document id ('" + doc.getDocId() + "') and proxy id ('" + 
+                            storedNode.getDocument().getDocId() + "') differ !");
+                }
                 try {
                     storedNode.getNodeId().write(os);
                 } catch (IOException e) {
@@ -274,6 +282,10 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                         os.writeFixedInt(0);
                         for (int j = 0; j < gidsCount; j++) {
                             NodeProxy storedNode = (NodeProxy) newGIDList.get(j);
+                            if (doc.getDocId() != storedNode.getDocument().getDocId()) {
+                                throw new IllegalArgumentException("Document id ('" + doc.getDocId() + "') and proxy id ('" + 
+                                        storedNode.getDocument().getDocId() + "') differ !");
+                            }
                             try {
                                 storedNode.getNodeId().write(os);
                             } catch (IOException e) {
