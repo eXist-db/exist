@@ -125,7 +125,7 @@
     document before a defragmentation run will be triggered.
 	-->
 
-	<xupdate growth-factor="20" allowed-fragmentation="20"
+	<xupdate growth-factor="20" allowed-fragmentation="5"
 		enable-consistency-checks="no"/>
 
     <xquery enable-java-binding="no">
