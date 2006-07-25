@@ -262,6 +262,28 @@ public class XQueryTest extends XMLTestCase {
 		}
 	}
 	
+    public void testRecursion() {
+        try {
+            String q1 =
+                "declare function local:append($head, $i) {\n" +
+                "   if ($i < 5000) then\n" +
+                "       local:append(($head, $i), $i + 1)\n" +
+                "   else\n" +
+                "       $head\n" +
+                "};\n" +
+                "local:append((), 0)";
+            XPathQueryService service =
+                (XPathQueryService) testCollection.getService(
+                    "XPathQueryService",
+                    "1.0");
+            ResourceSet result = service.query(q1);
+            assertEquals(result.getSize(), 5000);
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+    }
+    
 	public void testCombiningNodeSequences() {
 		ResourceSet result;
 		String query;

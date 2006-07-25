@@ -30,6 +30,7 @@ import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
 
 /**
  * @author wolf
@@ -97,7 +98,7 @@ public class UserDefinedFunction extends Function {
 		LocalVariable mark = context.markLocalVariables(true);
 		
 		QName varName;
-		LocalVariable var;		
+		LocalVariable var;
 		int j = 0;
 		for(Iterator i = parameters.iterator(); i.hasNext(); j++) {
 			varName = (QName)i.next();
@@ -106,7 +107,7 @@ public class UserDefinedFunction extends Function {
 			context.declareVariableBinding(var);
 		}
 		Sequence result = body.eval(contextSequence, contextItem);
-		
+        
 		// restore the local variable stack
 		context.popLocalVariables(mark);
 		return result;

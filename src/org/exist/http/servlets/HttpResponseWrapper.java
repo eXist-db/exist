@@ -80,7 +80,7 @@ public class HttpResponseWrapper implements ResponseWrapper {
 
 	/**
 	 * @param arg0
-	 * @return
+	 * @return a boolean indicating whether the header is present
 	 */
 	public boolean containsHeader(String arg0) {
 		return response.containsHeader(arg0);
@@ -88,21 +88,21 @@ public class HttpResponseWrapper implements ResponseWrapper {
 
 	/**
 	 * @param arg0
-	 * @return
+	 * @return the encoded value
 	 */
 	public String encodeURL(String arg0) {
 		return response.encodeURL(arg0);
 	}
 
 	/**
-	 * @return
+	 * @return returns the default character encoding
 	 */
 	public String getCharacterEncoding() {
 		return response.getCharacterEncoding();
 	}
 
 	/**
-	 * @return
+	 * @return returns the locale
 	 */
 	public Locale getLocale() {
 		return response.getLocale();

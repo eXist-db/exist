@@ -23,7 +23,14 @@
 
 package org.exist.http.servlets;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Date;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -31,6 +38,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.xml.DOMConfigurator;
+import org.exist.util.Configuration;
+import org.exist.util.DatabaseConfigurationException;
 
 
 /**
@@ -38,11 +47,58 @@ import org.apache.log4j.xml.DOMConfigurator;
  */
 public class Log4jInit extends HttpServlet {
     
+    private String getTimestamp(){
+        return new Date().toString();
+    }
+    
+    private void convertLogFile(File srcConfig, File destConfig, File logDir){
+        
+        // Step 1 read config file into memory
+        String srcDoc = "not initialized";
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            FileInputStream is = new FileInputStream(srcConfig);
+            
+            byte[] buf = new byte[1024];
+            int len;
+            while ((len = is.read(buf)) > 0) {
+                baos.write(buf, 0, len);
+            }
+            
+            is.close();
+            baos.close();
+            srcDoc = new String(baos.toByteArray());
+        } catch (FileNotFoundException ex) {
+            ex.printStackTrace();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        
+        // Step 2 ; substitute Patterns
+        String destDoc = srcDoc.replaceAll("loggerdir", logDir.getAbsolutePath().replaceAll("\\\\","/"));
+        
+        // Step 3 ; write back to file
+        try {
+            ByteArrayInputStream bais = new ByteArrayInputStream(destDoc.getBytes());
+            FileOutputStream fos =new FileOutputStream(destConfig);
+            byte[] buf = new byte[1024];
+            int len;
+            while ((len = bais.read(buf)) > 0) {
+                fos.write(buf, 0, len);
+            }
+            fos.close();
+            bais.close();
+        } catch (FileNotFoundException ex) {
+            ex.printStackTrace();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+    
     /**
      * Initialize servlet for log4j purposes in servlet container (war file).
      */
     public void init() throws ServletException {
- 	   System.setProperty("user.dir", getServletContext().getRealPath("/"));
         
         // We need to check how eXist is running. If eXist is started in a
         // servlet container like Tomcat, then initialization *is* needed.
@@ -54,6 +110,8 @@ public class Log4jInit extends HttpServlet {
             return;
         }
         
+        System.out.println("============= eXist Initialization =============" );
+        
         // Get data from web.xml
         String file = getInitParameter("log4j-init-file");
         
@@ -63,15 +121,35 @@ public class Log4jInit extends HttpServlet {
         // Define location of logfiles
         File logsdir = new File(existDir, "WEB-INF/logs" );
         logsdir.mkdirs();
-        System.out.println("eXist logs dir="+ logsdir.getAbsolutePath());
-        System.setProperty("logger.dir", logsdir.getAbsolutePath() );      
+        
+        System.out.println(getTimestamp() + " - eXist logs dir="
+                + logsdir.getAbsolutePath());
         
         // Get log4j configuration file
-        File configFile = new File(existDir,file);
-        System.out.println("eXist log4j configuration="+configFile.getAbsolutePath());
+        File srcConfigFile = new File(existDir,file);
+        
+        // Convert
+        File log4jConfigFile = new File(existDir, "WEB-INF/TMPfile.xml");
+        convertLogFile(srcConfigFile, log4jConfigFile, logsdir);
+        
+        System.out.println(getTimestamp() + " - eXist log4j configuration=" 
+                + log4jConfigFile.getAbsolutePath());
+
         
         // Configure log4j
-        DOMConfigurator.configure(configFile.getAbsolutePath());
+        DOMConfigurator.configure(log4jConfigFile.getAbsolutePath());
+
+        // Setup exist
+        File eXistConfigFile = new File(existDir, "WEB-INF/conf.xml" );
+        System.out.println(getTimestamp() + " - eXist-DB configuration=" 
+                + eXistConfigFile.getAbsolutePath());
+        try {
+            Configuration config = new Configuration(eXistConfigFile.getAbsolutePath());
+        } catch (DatabaseConfigurationException ex) {
+            ex.printStackTrace();
+        }
+        
+        System.out.println("================================================" );
     }
     
     /**
@@ -80,7 +158,7 @@ public class Log4jInit extends HttpServlet {
      */
     public boolean isInWarFile(){
         boolean retVal =true;
-        if (new File(System.getProperty("exist.home"), "lib/core").isDirectory()) {
+        if (new File(Configuration.getExistHome(), "lib/core").isDirectory()) {
             retVal=false;
         }
         return retVal;

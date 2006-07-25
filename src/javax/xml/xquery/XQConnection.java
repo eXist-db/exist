@@ -57,10 +57,4 @@ public interface XQConnection extends XQDataFactory, XQStaticContext {
     void setScrollability(int scrollability) throws XQException;
 
     void setUpdatability(int updatability) throws XQException;
-
-
-
-
-
-
 }

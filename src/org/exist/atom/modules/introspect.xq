@@ -8,7 +8,7 @@ declare namespace atom="http://www.w3.org/2005/Atom";
         for $i in (collection($current)/atom:feed) 
            let $path :=  substring-after(substring-before(base-uri($i),'/.feed.atom'),'/db')
               return ( <collection title="{$i/atom:title}" href="/atom/edit{$path}">
-                         <accept>text/*,iamge/*,application/*</accept>
+                         <accept>text/*,image/*,application/*</accept>
                        </collection>,
                        "&#x0a;"
                      )

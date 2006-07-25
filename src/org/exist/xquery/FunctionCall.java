@@ -184,21 +184,33 @@ public class FunctionCall extends Function {
 		}
 		
         functionDef.setArguments(seq);
-        LocalVariable mark = context.markLocalVariables(true);
-        try {
-			Sequence returnSeq = expression.eval(contextSequence, contextItem);
-            if (context.isProfilingEnabled())
-                context.getProfiler().end(this, "", returnSeq);            
-			return returnSeq;
-		} catch(XPathException e) {
-			if(e.getLine() == 0)
-				e.setASTNode(getASTNode());
-			// append location of the function call to the exception message:
-			e.addFunctionCall(functionDef, getASTNode());
-			throw e;
-		} finally {
-			context.popLocalVariables(mark);            
-		}
+        
+        if (context.tailRecursiveCall(functionDef.getSignature())) {
+//            LOG.warn("Tail recursive function: " + functionDef.getSignature().toString());
+            return new DeferredFunctionCallImpl(functionDef.getSignature(), contextSequence, contextItem);
+        } else {
+            context.functionStart(functionDef.getSignature());
+            LocalVariable mark = context.markLocalVariables(true);
+            try {
+    			Sequence returnSeq = expression.eval(contextSequence, contextItem);
+                if (returnSeq instanceof DeferredFunctionCall && 
+                        functionDef.getSignature().equals(((DeferredFunctionCall)returnSeq).getSignature())) {
+                    returnSeq = ((DeferredFunctionCall) returnSeq).execute();
+                }
+                if (context.isProfilingEnabled())
+                    context.getProfiler().end(this, "", returnSeq);            
+    			return returnSeq;
+    		} catch(XPathException e) {
+    			if(e.getLine() == 0)
+    				e.setASTNode(getASTNode());
+    			// append location of the function call to the exception message:
+    			e.addFunctionCall(functionDef, getASTNode());
+    			throw e;
+    		} finally {
+    			context.popLocalVariables(mark);
+                context.functionEnd();
+    		}
+        }
     }
 
 	 /* (non-Javadoc)
@@ -209,4 +221,35 @@ public class FunctionCall extends Function {
 		functionDef.resetState();
         //TODO : reset expression ?        
 	}
+    
+    private class DeferredFunctionCallImpl extends DeferredFunctionCall {
+
+        private Sequence contextSequence;
+        private Item contextItem;
+
+        public DeferredFunctionCallImpl(FunctionSignature signature, Sequence contextSequence, Item contextItem) {
+            super(signature);
+            this.contextSequence = contextSequence;
+            this.contextItem = contextItem;
+        }
+        
+        protected Sequence execute() throws XPathException {
+            context.functionStart(functionDef.getSignature());
+            LocalVariable mark = context.markLocalVariables(true);
+            try {
+                Sequence returnSeq = expression.eval(contextSequence, contextItem);            
+                return returnSeq;
+            } catch(XPathException e) {
+                if(e.getLine() == 0)
+                    e.setASTNode(getASTNode());
+                // append location of the function call to the exception message:
+                e.addFunctionCall(functionDef, getASTNode());
+                throw e;
+            } finally {
+                context.popLocalVariables(mark);
+                context.functionEnd();
+            }
+        }
+        
+    }
 }

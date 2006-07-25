@@ -38,7 +38,9 @@ public class AtomModuleBase implements AtomModule {
    public AtomModuleBase() {
    }
    
-   public void init(Context context) {
+   public void init(Context context)
+      throws EXistException
+   {
       this.context = context;
    }
    

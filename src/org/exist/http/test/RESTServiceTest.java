@@ -155,6 +155,26 @@ public class RESTServiceTest extends TestCase {
         }
     }
 
+    public void testPutFailAgainstCollection() {
+        try {
+            System.out.println("--- Storing document against collection URI - should fail ---");
+            HttpURLConnection connect = getConnection(COLLECTION_URI);
+            connect.setRequestProperty("Authorization", "Basic " + credentials);
+            connect.setRequestMethod("PUT");
+            connect.setDoOutput(true);
+            connect.setRequestProperty("ContentType", "text/xml");
+            Writer writer = new OutputStreamWriter(connect.getOutputStream(), "UTF-8");
+            writer.write(XML_DATA);
+            writer.close();
+
+            connect.connect();
+            int r = connect.getResponseCode();
+            assertEquals("Server returned response code " + r, 400, r);
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+    }
+    
     public void testPutWithCharset() {
         try {
             System.out.println("--- Storing document ---");

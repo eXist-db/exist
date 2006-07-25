@@ -20,7 +20,7 @@ xmlns:atom="http://www.w3.org/2005/Atom">
                for $i in (1 to count($parts)-1)
                    let $apath := string-join(subsequence($parts,1,$i),'/'),
                        $feed := document(concat($apath,'/.feed.atom'))/atom:feed
-                     return if (not($feed/atom:category[@scheme='http://www.smallx.com/Ontology/Atopic/2006/1/0/display' and @term='false']))
+                     return if ($feed and not($feed/atom:category[@scheme='http://www.smallx.com/Ontology/Atopic/2006/1/0/display' and @term='false']))
                        then (<entry>
                             {
                                 "&#x0a;",

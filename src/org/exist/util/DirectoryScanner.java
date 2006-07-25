@@ -27,6 +27,7 @@ public class DirectoryScanner {
 		pattern = pattern.replace('/', File.separatorChar).replace('\\',File.separatorChar);
 		String baseDir = extractBaseDir(pattern);
 		if(baseDir == null) {
+                        // Dizzzz ##### Why this dependancy?
 			baseDir = System.getProperty("user.dir");
 			pattern = baseDir + File.separator + pattern;
 		}

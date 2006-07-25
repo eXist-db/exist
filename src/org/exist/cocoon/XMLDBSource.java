@@ -182,9 +182,9 @@ public class XMLDBSource extends AbstractLogEnabled
      * The constructor.
      *
      * @param logger the Logger instance.
-     * @param credential username and password
+     * @param username
+     * @param password
      * @param srcUrl the URL being queried.
-     * @param manager component manager
      */
     public XMLDBSource(Logger logger,
                        String user, String password,
@@ -606,10 +606,11 @@ public class XMLDBSource extends AbstractLogEnabled
 
     /**
      * set content as DOM
-     * @author frederic.glorieux@ajlsm.com
-     * @see http://exist.sourceforge.net/api/org/xmldb/api/modules/XMLResource.html#setContentAsDOM(org.w3c.dom.Node) 
+     * 
+     * @see <a href="http://exist.sourceforge.net/api/org/xmldb/api/modules/XMLResource.html#setContentAsDOM(org.w3c.dom.Node)">XMLDB API</a>
      */
     public void setContentAsDOM(Node doc) throws IOException, MalformedURLException {
+       // author frederic.glorieux@ajlsm.com
         try {
             if (query != null) {
                 throw new MalformedURLException("Cannot modify a resource that includes an XPATH expression");
@@ -632,7 +633,7 @@ public class XMLDBSource extends AbstractLogEnabled
 
     /**
      * get content as DOM
-     * @see http://exist.sourceforge.net/api/org/xmldb/api/modules/XMLResource.html#setContentAsDOM(org.w3c.dom.Node) 
+     * @see <a href="http://exist.sourceforge.net/api/org/xmldb/api/modules/XMLResource.html#setContentAsDOM(org.w3c.dom.Node)">XMLDB API</a>
      */
     public Node getContentAsDOM() throws IOException, MalformedURLException {
         try {

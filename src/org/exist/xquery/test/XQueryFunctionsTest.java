@@ -623,6 +623,24 @@ public class XQueryFunctionsTest extends TestCase {
 
     }
     
+    public void testResolveQName() {
+      String query = "declare namespace a=\"aes\";" +
+        "declare namespace n=\"ns1\";" +
+        "declare variable $d {<c xmlns:x=\"ns1\"><d>x:test</d></c>};" +
+        "for $e in $d/d " +
+        "return fn:resolve-QName($e/text(), $e)";
+      
+      try {
+        ResourceSet result = service.query(query);
+        String r = (String) result.getResource(0).getContent();
+        assertEquals("n:test", r);
+      } catch (XMLDBException e) {
+        e.printStackTrace();
+        fail(e.getMessage());
+      }
+    }
+    
+    
     //ensure the test collection is removed and call collection-exists,
     //which should return false, no exception thrown
     public void testCollectionExists1() {
