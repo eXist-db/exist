@@ -27,7 +27,6 @@ import java.net.URLDecoder;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
-import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -43,7 +42,7 @@ public class FunUnEscapeURI extends BasicFunction {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("unescape-uri", Function.BUILTIN_FUNCTION_NS),
+			new QName("unescape-uri", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Returns an un-escaped URL escaped string identified by $a with the encoding scheme indicated by the string $b (e.g. \"UTF-8\"). Decodes encoded sensitive characters from a URL, for example \"%2F\" becomes \"/\", i.e. does the oposite to escape-uri()",
 			new SequenceType[]
 			{
