@@ -249,7 +249,10 @@ public class LocalCollectionManagementService implements CollectionManagementSer
     public void moveResource(XmldbURI resourcePath, XmldbURI destinationPath, XmldbURI newName) 
     		throws XMLDBException { 
     	resourcePath = parent.getPathURI().resolveCollectionPath(resourcePath);
-    	destinationPath = parent.getPathURI().resolveCollectionPath(destinationPath);
+    	if (destinationPath == null)
+    		destinationPath = resourcePath.removeLastSegment();
+    	else
+    		destinationPath = parent.getPathURI().resolveCollectionPath(destinationPath);
 
         TransactionManager transact = brokerPool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
