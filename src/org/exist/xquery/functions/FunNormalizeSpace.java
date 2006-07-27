@@ -79,6 +79,8 @@ public class FunNormalizeSpace extends Function {
 		if(contextItem != null)
 			contextSequence = contextItem.toSequence();
         
+		LOG.debug("Context: " + contextSequence.getLength());
+		
 		String value;
 		if (getSignature().getArgumentCount() == 0)
 			value = !contextSequence.isEmpty() ? contextSequence.itemAt(0).getStringValue() : "";

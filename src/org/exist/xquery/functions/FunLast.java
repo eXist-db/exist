@@ -57,9 +57,9 @@ public class FunLast extends Function {
 	 */
 	public int getDependencies() {
 		if (inPredicate)
-			return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
+			return Dependency.CONTEXT_SET;
 		else
-			return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM +
+			return Dependency.CONTEXT_SET +
 			Dependency.CONTEXT_POSITION;				
 	}
 

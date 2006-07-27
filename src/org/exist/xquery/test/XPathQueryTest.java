@@ -714,6 +714,7 @@ public class XPathQueryTest extends XMLTestCase {
             
             
         } catch (XMLDBException e) {
+        	e.printStackTrace();
             fail(e.getMessage());
         }
     }
