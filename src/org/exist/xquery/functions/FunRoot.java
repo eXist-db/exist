@@ -87,6 +87,8 @@ public class FunRoot extends Function {
         Sequence result;
         Item item;
  
+        if (contextItem != null)
+        	contextSequence = contextItem.toSequence();
 		if (contextSequence == null || contextSequence.isEmpty()) 
 			result = Sequence.EMPTY_SEQUENCE;            
         

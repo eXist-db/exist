@@ -184,8 +184,9 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 expr.setContextDocSet(contextDocs);
           
                 //DESIGN : first test the dependency then the result
-                if (Dependency.dependsOn(expr, Dependency.CONTEXT_POSITION) && 
-                		!result.isEmpty()) {
+                if ((Dependency.dependsOn(expr, Dependency.CONTEXT_ITEM) ||
+                		Dependency.dependsOn(expr, Dependency.CONTEXT_POSITION)) && 
+                		result != null && !result.isEmpty()) {
                       
                     Sequence exprResult = new ValueSequence();
                     
@@ -194,11 +195,12 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                     
                     for (SequenceIterator iterInner = result.iterate(); iterInner.hasNext(); p++) {
                         context.setContextPosition(p);
+                        LOG.debug("Pos: " + p);
                         Item current = iterInner.nextItem();   
                         //0 or 1 item
                         if (!result.hasMany())
                         	exprResult = expr.eval(result, current);
-                        else {                        	
+                        else {
                         	exprResult.addAll(expr.eval(result, current));
                         }
                     }

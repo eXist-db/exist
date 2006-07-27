@@ -52,6 +52,10 @@ public class FunCount extends Function {
 		return Type.INTEGER;
     }
 	
+    public int getDependencies() {
+    	return Dependency.CONTEXT_SET;
+    }
+    
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);       
