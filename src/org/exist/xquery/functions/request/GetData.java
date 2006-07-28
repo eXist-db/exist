@@ -66,7 +66,7 @@ public class GetData extends BasicFunction {
 				"get-data",
 				RequestModule.NAMESPACE_URI,
 				RequestModule.PREFIX),
-			"Returns the content of a POST request as an XML document or a string representaion",
+			"Returns the content of a POST request as an XML document or a string representaion. Returns an empty sequence if there is no data.",
 			null,
 			new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE));
 	
@@ -92,6 +92,12 @@ public class GetData extends BasicFunction {
 		if(value.getObject() instanceof RequestWrapper)
 		{
 			RequestWrapper request = (RequestWrapper)value.getObject();	
+			
+			//if the content length is unknown, return
+			if(request.getContentLength() == -1)
+			{
+				return Sequence.EMPTY_SEQUENCE;
+			}
 			
 			//first, get the content of the request
 			byte[] bufRequestData = null;
