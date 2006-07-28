@@ -706,6 +706,14 @@ public class XPathQueryTest extends XMLTestCase {
             result = service.queryResource("numbers.xml", query);           
             assertEquals("XPath: " + query, 2, result.getSize());               
             
+
+            query = "let $test := <test><a> a </a><a>a</a></test>" +
+            "return distinct-values($test/a/normalize-space(.))";
+            result = service.queryResource("numbers.xml", query);           
+            assertEquals("XPath: " + query, 1, result.getSize());               
+            resource = (XMLResource)result.getResource(0); 
+            assertEquals("XPath: " + query, "a", resource.getContent().toString());
+            
             
             // TODO: clarify
 //            query = "let $a := ('a', 'b', 'c') for $b in $a[position()] return <blah>{$b}</blah>";
