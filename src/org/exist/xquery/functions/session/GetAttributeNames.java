@@ -32,6 +32,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -54,6 +55,18 @@ public class GetAttributeNames extends BasicFunction {
 				+ "current HTTP session.",
 			null,
 			new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE));
+	
+	public final static FunctionSignature deprecated =
+		new FunctionSignature(
+			new QName(
+				"session-attributes",
+				RequestModule.NAMESPACE_URI,
+				RequestModule.PREFIX),
+			"Returns a sequence containing the names of all session attributes defined within the "
+				+ "current HTTP session.",
+			null,
+			new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE),
+			"Moved to session module and renamed to session:get-attribute-names.");
 
 	/**
 	 * @param context

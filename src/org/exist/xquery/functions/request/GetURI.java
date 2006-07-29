@@ -48,6 +48,14 @@ public class GetURI extends BasicFunction {
 			null,
 			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE));
 
+	public final static FunctionSignature deprecated =
+		new FunctionSignature(
+			new QName("request-uri", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
+			"Returns the URI of the current request.",
+			null,
+			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+			"Renamed to request:get-uri.");
+	
 	/**
 	 * @param context
 	 * @param signature

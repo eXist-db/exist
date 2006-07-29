@@ -70,6 +70,17 @@ public class GetData extends BasicFunction {
 			null,
 			new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE));
 	
+	public final static FunctionSignature deprecated =
+		new FunctionSignature(
+			new QName(
+				"get-request-data",
+				RequestModule.NAMESPACE_URI,
+				RequestModule.PREFIX),
+			"Returns the content of a POST request as an XML document or a string representaion. Returns an empty sequence if there is no data.",
+			null,
+			new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE),
+			"Renamed to get-data.");
+	
 	public GetData(XQueryContext context) {
 		super(context, signature);
 	}

@@ -79,6 +79,12 @@ public class FunctionSignature {
 		setDeprecated(deprecated);
 	}
 	
+	public FunctionSignature(QName name, String description, SequenceType[] arguments, SequenceType returnType,
+			boolean overloaded, String deprecated) {
+		this(name, description, arguments, returnType, overloaded);
+		setDeprecated(deprecated);
+	}
+	
 	/**
 	 * Create a new function signature.
 	 * 

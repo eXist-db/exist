@@ -57,6 +57,18 @@ public class SetCurrentUser extends BasicFunction {
 			},
 			new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE));
 	
+	public final static FunctionSignature deprecated =
+		new FunctionSignature(
+			new QName("set-current-user", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
+			"Change the user identity for the current HTTP session. Subsequent XQueries in the session will run with the " +
+			"new user identity.",
+			new SequenceType[] {
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+			},
+			new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE),
+			"Moved to session module. See session:set-current-user.");
+	
 	public SetCurrentUser(XQueryContext context) {
 		super(context, signature);
 	}

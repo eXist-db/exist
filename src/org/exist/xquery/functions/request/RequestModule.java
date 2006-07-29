@@ -26,6 +26,17 @@ import org.exist.dom.QName;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.functions.response.RedirectTo;
+import org.exist.xquery.functions.response.StreamBinary;
+import org.exist.xquery.functions.session.Create;
+import org.exist.xquery.functions.session.EncodeURL;
+import org.exist.xquery.functions.session.GetAttribute;
+import org.exist.xquery.functions.session.GetAttributeNames;
+import org.exist.xquery.functions.session.GetID;
+import org.exist.xquery.functions.session.Invalidate;
+import org.exist.xquery.functions.session.SetAttribute;
+import org.exist.xquery.functions.session.SetCurrentUser;
+import org.exist.xquery.functions.util.FunUnEscapeURI;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
@@ -51,7 +62,26 @@ public class RequestModule extends AbstractInternalModule {
 		new FunctionDef(GetURL.signature, GetURL.class),
 		new FunctionDef(GetServerName.signature, GetServerName.class),
 		new FunctionDef(GetServerPort.signature, GetServerPort.class),
-		new FunctionDef(GetHostname.signature, GetHostname.class)
+		new FunctionDef(GetHostname.signature, GetHostname.class),
+		
+		// deprecated functions:
+		new FunctionDef(Create.deprecated, Create.class),
+		new FunctionDef(EncodeURL.deprecated, EncodeURL.class),
+		new FunctionDef(GetData.deprecated, GetData.class),
+		new FunctionDef(GetAttribute.deprecated, GetAttribute.class),
+		new FunctionDef(GetID.deprecated, GetID.class),
+		new FunctionDef(Invalidate.deprecated, Invalidate.class),
+		new FunctionDef(RedirectTo.deprecated, RedirectTo.class),
+		new FunctionDef(GetHostname.deprecated, GetHostname.class),
+		new FunctionDef(GetParameter.deprecated, GetParameter.class),
+		new FunctionDef(GetServerName.deprecated, GetServerName.class),
+		new FunctionDef(GetServerPort.deprecated, GetServerPort.class),
+		new FunctionDef(GetURI.deprecated, GetURI.class),
+		new FunctionDef(GetAttributeNames.deprecated, GetAttributeNames.class),
+		new FunctionDef(SetCurrentUser.deprecated, SetCurrentUser.class),
+		new FunctionDef(SetAttribute.deprecated, SetAttribute.class),
+		new FunctionDef(StreamBinary.deprecated, StreamBinary.class),
+		new FunctionDef(FunUnEscapeURI.deprecated, FunUnEscapeURI.class)
 	};
 	
 	public RequestModule() throws XPathException {
