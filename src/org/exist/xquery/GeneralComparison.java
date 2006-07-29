@@ -283,45 +283,41 @@ public class GeneralComparison extends BinaryOp {
 
 	protected Sequence nodeSetCompare(NodeSet nodes, Sequence contextSequence) throws XPathException {
 		NodeSet result = new ExtArrayNodeSet();
-		NodeProxy current;
-		ContextItem c;
-		Sequence rs;
-		AtomicValue lv, rv;
 		Collator collator = getCollator(contextSequence);
-		if(contextSequence != null && contextSequence != Sequence.EMPTY_SEQUENCE)
+		if(contextSequence != null && !contextSequence.isEmpty())
 		{
 			for (Iterator i = nodes.iterator(); i.hasNext();)
 			{
-				current = (NodeProxy) i.next();
-				c = current.getContext();
-				if(c == null)
+				NodeProxy current = (NodeProxy) i.next();
+				ContextItem context = current.getContext();
+				if (context == null)
 					throw new XPathException(getASTNode(), "Internal error: context node missing");
-                lv = current.atomize();
+				AtomicValue lv = current.atomize();
                 //TODO : review to consider transverse context
 				do
 				{					
-                    rs = getRight().eval(c.getNode().toSequence());
+					Sequence rs = getRight().eval(context.getNode().toSequence());
 					for (SequenceIterator si = rs.iterate(); si.hasNext();)
 					{                        
-                        rv = si.nextItem().atomize();
+						AtomicValue rv = si.nextItem().atomize();
 						if (compareValues(collator, lv, rv))
 						{
 							result.add(current);
 						}
 					}
-				}while ((c = c.getNextDirect()) != null);
+				}while ((context = context.getNextDirect()) != null);
 			}
 		}
 		else
 		{
 		    for (Iterator i = nodes.iterator(); i.hasNext();)
 		    {
-				current = (NodeProxy) i.next();	
-                lv = current.atomize();
-                rs = getRight().eval(null);
+		    	NodeProxy current = (NodeProxy) i.next();	
+				AtomicValue lv = current.atomize();
+				Sequence rs = getRight().eval(null);
 				for (SequenceIterator si = rs.iterate(); si.hasNext();)
 				{
-                    rv = si.nextItem().atomize();
+					AtomicValue rv = si.nextItem().atomize();
 					if (compareValues(collator, lv, rv))
 					{
 						result.add(current);
@@ -418,7 +414,7 @@ public class GeneralComparison extends BinaryOp {
 			        	//Could not convert the key to a suitable type for the index, fallback to nodeSetCompare()
 		                if(context.getProfiler().isEnabled())
 		                {
-		                    context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION FALLBACK", "nodeSetCompare");
+		                    context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION FALLBACK", "falling back to nodeSetCompare (" + xpe.getMessage() + ")");
 		                }
 		                
 			            return nodeSetCompare(nodes, contextSequence);
@@ -469,7 +465,7 @@ public class GeneralComparison extends BinaryOp {
 		        	//implement org.exist.storage.Indexable or is not of the correct type
 	                if(context.getProfiler().isEnabled())
 	                {
-	                    context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION FALLBACK", "nodeSetCompare");
+	                    context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION FALLBACK", "falling back to nodeSetCompare (key is of type: " + Type.getTypeName(key.getType()) + ")");
 	                }
                     return(nodeSetCompare(nodes, contextSequence));
 	            }
@@ -506,7 +502,7 @@ public class GeneralComparison extends BinaryOp {
 	    	//no range index defined on the nodes in this sequence, so fallback to nodeSetCompare
             if(context.getProfiler().isEnabled())
             {
-                context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION FALLBACK", "nodeSetCompare");
+                context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION FALLBACK", "falling back to nodeSetCompare (no index available)");
             }
 
             return(nodeSetCompare(nodes, contextSequence));
