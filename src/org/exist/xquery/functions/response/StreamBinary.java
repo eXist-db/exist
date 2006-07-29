@@ -33,6 +33,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.value.Base64Binary;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
@@ -54,6 +55,22 @@ public class StreamBinary extends BasicFunction {
             },
             new SequenceType(Type.ITEM, Cardinality.EMPTY),
             true
+        );
+    
+    public final static FunctionSignature deprecated =
+        new FunctionSignature(
+            new QName("stream-binary", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
+            "Streams the binary data passed in $a to the current servlet response output stream. The ContentType " +
+            "HTTP header is set to the value given in $b. This function only works within a servlet context, not within " +
+            "Cocoon. Note: the servlet output stream will be closed afterwards and mime-type settings in the prolog " +
+            "will not be passed.",
+            new SequenceType[] {
+                new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE),
+                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+            },
+            new SequenceType(Type.ITEM, Cardinality.EMPTY),
+            true,
+            "Renamed to response:stream-binary."
         );
     
     public StreamBinary(XQueryContext context) {

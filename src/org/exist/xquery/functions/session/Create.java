@@ -49,6 +49,15 @@ public class Create extends BasicFunction {
 			null,
 			new SequenceType(Type.ITEM, Cardinality.EMPTY));
 
+	public final static FunctionSignature deprecated =
+		new FunctionSignature(
+			new QName("create-session", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
+			"Initialize an HTTP session if not already present",
+			null,
+			new SequenceType(Type.ITEM, Cardinality.EMPTY),
+			"Moved to the 'session' module. See session:create."
+		);
+	
 	/**
 	 * @param context
 	 * @param signature

@@ -30,6 +30,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
@@ -51,6 +52,18 @@ public class FunUnEscapeURI extends BasicFunction {
 			},
 			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE));
 
+	public final static FunctionSignature deprecated =
+		new FunctionSignature(
+			new QName("unescape-uri", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
+			"Returns an un-escaped URL escaped string identified by $a with the encoding scheme indicated by the string $b (e.g. \"UTF-8\"). Decodes encoded sensitive characters from a URL, for example \"%2F\" becomes \"/\", i.e. does the oposite to escape-uri()",
+			new SequenceType[]
+			{
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+			},
+			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+			"Moved to the util module. See util:unescape-uri.");
+	
 	/**
 	 * @param context
 	 * @param signature
