@@ -114,6 +114,11 @@ public class DescribeFunction extends Function {
 			builder.characters(signature.getDescription());
 			builder.endElement();
 		}
+		if (signature.getDeprecated() != null) {
+			builder.startElement("", "deprecated", "deprecated", attribs);
+			builder.characters(signature.getDeprecated());
+			builder.endElement();
+		}
 		builder.endElement();
 	}
 
