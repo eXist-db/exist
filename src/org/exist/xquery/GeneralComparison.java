@@ -414,7 +414,7 @@ public class GeneralComparison extends BinaryOp {
 			        	//Could not convert the key to a suitable type for the index, fallback to nodeSetCompare()
 		                if(context.getProfiler().isEnabled())
 		                {
-		                    context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION FALLBACK", "falling back to nodeSetCompare (" + xpe.getMessage() + ")");
+		                    context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION FALLBACK", "Falling back to nodeSetCompare (" + xpe.getMessage() + ")");
 		                }
 		                
 			            return nodeSetCompare(nodes, contextSequence);
@@ -427,30 +427,34 @@ public class GeneralComparison extends BinaryOp {
 		        	if(truncation == Constants.TRUNC_NONE)
 		        	{
 			        	//key without truncation, find key
-	                    context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "OPTIMIZATION", "Using value index to find key '" + Type.getTypeName(key.getType()) + "(" + key.getStringValue() + ")'");
+	                    context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "OPTIMIZATION", "Using value index '" + context.getBroker().getValueIndex().toString() + 
+	                    		"' to find key '" + Type.getTypeName(key.getType()) + "(" + key.getStringValue() + ")'");
 	                    
+	                    NodeSet ns = context.getBroker().getValueIndex().find(relation, docs, nodes, (Indexable)key);
 	                    if(result == null)	//if first iteration
 	                    {
-	                    	result = context.getBroker().getValueIndex().find(relation, docs, nodes, (Indexable)key);
+	                    	result = ns;
 	                    }
 	                    else
 	                    {
-	                    	result = result.union(context.getBroker().getValueIndex().find(relation, docs, nodes, (Indexable)key));
+	                    	result = result.union(ns);
 	                    }
 	                }
 		        	else
 		        	{
 			        	//key with truncation, match key
-	                    context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "OPTIMIZATION", "Using value index to match key '" + Type.getTypeName(key.getType()) + "(" + key.getStringValue() + ")'");
+	                    context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "OPTIMIZATION", "Using value index '" + context.getBroker().getValueIndex().toString() + 
+	                    		"' to match key '" + Type.getTypeName(key.getType()) + "(" + key.getStringValue() + ")'");
 						try
-						{							
+						{
+							NodeSet ns = context.getBroker().getValueIndex().match(docs, nodes, key.getStringValue().replace('%', '*'), DBBroker.MATCH_WILDCARDS);
 							if(result == null) //if first iteration
 							{
-								result = context.getBroker().getValueIndex().match(docs, nodes, key.getStringValue().replace('%', '*'), DBBroker.MATCH_WILDCARDS);
+								result = ns;
 							}
 							else
 							{
-								result = result.union(context.getBroker().getValueIndex().match(docs, nodes, key.getStringValue().replace('%', '*'), DBBroker.MATCH_WILDCARDS));
+								result = result.union(ns);
 							}
 						}
 						catch (EXistException e)
@@ -465,7 +469,7 @@ public class GeneralComparison extends BinaryOp {
 		        	//implement org.exist.storage.Indexable or is not of the correct type
 	                if(context.getProfiler().isEnabled())
 	                {
-	                    context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION FALLBACK", "falling back to nodeSetCompare (key is of type: " + Type.getTypeName(key.getType()) + ")");
+	                    context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION FALLBACK", "Falling back to nodeSetCompare (key is of type: " + Type.getTypeName(key.getType()) + ")");
 	                }
                     return(nodeSetCompare(nodes, contextSequence));
 	            }
