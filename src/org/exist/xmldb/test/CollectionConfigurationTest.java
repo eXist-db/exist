@@ -45,7 +45,7 @@ public class CollectionConfigurationTest extends TestCase {
     + "<b>1</b>" + "</test>";
 
     private final static String DOCUMENT_CONTENT2 = "<test>" + "<c>2002-12-07T12:20:46.275+01:00</c>"
-    + "<d>1</d>" + "<e>1</e>" + "<f>true</f>"
+    + "<d>1</d>" + "<e>1</e>" + "<f>true</f>" +" <g>1</g>" +"<h>1</h>" 
     + "</test>";
 
     
@@ -64,6 +64,8 @@ public class CollectionConfigurationTest extends TestCase {
         + "    <create path=\"//d\" type=\"xs:double\"/>"
         + "    <create path=\"//e\" type=\"xs:float\"/>"
         + "    <create path=\"//f\" type=\"xs:boolean\"/>"        
+        + "    <create path=\"//g\" type=\"xs:integer\"/>"        
+        + "    <create path=\"//h\" type=\"xs:string\"/>"        
         + "  </index>"
         + "</collection>";
     
@@ -451,6 +453,20 @@ public class CollectionConfigurationTest extends TestCase {
            
            result = service.query("util:index-type(/test/f)");
            assertEquals("xs:boolean", result.getResource(0).getContent());            
+
+           result = service.query("util:index-key-occurrences(/test/g, xs:integer(1))");
+           assertEquals(1, result.getSize());
+           assertEquals("1", result.getResource(0).getContent());
+           
+           result = service.query("util:index-type(/test/g)");
+           assertEquals("xs:integer", result.getResource(0).getContent());            
+
+           result = service.query("util:index-key-occurrences(/test/h, '1')");
+           assertEquals(1, result.getSize());
+           assertEquals("1", result.getResource(0).getContent());
+           
+           result = service.query("util:index-type(/test/h)");
+           assertEquals("xs:string", result.getResource(0).getContent());            
            
        
        } catch(Exception e) { 
