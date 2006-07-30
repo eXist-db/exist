@@ -376,8 +376,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                             is.copyRaw(os, size);
                         } else {
                             // data are related to our document:
-                            // skip them                           
-                            changed = true;                        
+                            // skip them          
+                            changed = true;
                             is.skipBytes(size);
                         }
                     }
@@ -404,6 +404,9 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         } finally {
             lock.release();
         }
+        if (os.size() > 512000)
+            // garbage collect the output stream if it is larger than 512k, otherwise reuse it
+            os = new VariableByteOutputStream();
     }
 
 
