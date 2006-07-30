@@ -239,7 +239,7 @@ public class FunMatches extends Function {
                 NativeValueIndex index = context.getBroker().getValueIndex(); 
                 //TODO : check index' case compatibility with flags' one ? -pb 
 		    	if (context.isProfilingEnabled())
-		    		context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "Using index " + index.toString(), "Regex: " + pattern);
+		    		context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "Using vlaue index '" + index.toString() + "'", "Regex: " + pattern);
                 result = index.match(docs, nodes, pattern, DBBroker.MATCH_REGEXP, flags, caseSensitive);
 			} catch (EXistException e) {
 				throw new XPathException(getASTNode(), e.getMessage(), e);
