@@ -245,6 +245,7 @@ public class FunctionCall extends Function {
         }
         
         protected Sequence execute() throws XPathException {
+            context.pushDocumentContext();
             context.functionStart(functionDef.getSignature());
             LocalVariable mark = context.markLocalVariables(true);
             try {
@@ -260,6 +261,7 @@ public class FunctionCall extends Function {
             } finally {
                 context.popLocalVariables(mark);
                 context.functionEnd();
+                context.popDocumentContext();
             }
         }
         
