@@ -36,6 +36,10 @@ public class VariableByteOutputStream extends OutputStream {
 		buf = null;
 	}
 
+    public int size() {
+        return buf.length();
+    }
+    
 	public void flush() throws IOException {
 	}
 
