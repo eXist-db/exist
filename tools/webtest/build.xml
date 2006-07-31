@@ -13,7 +13,7 @@
     <available property="webtest.available"
         file="webtestTaskdefs.properties" filepath="${webtest.home}"/>
     
-    <target name="all" depends="prepare,modules,style"/>
+    <target name="all" depends="prepare,modules,xinclude,style"/>
 
     <target name="prepare" depends="start-jetty,clean,store,install-webtest">
         <fail unless="webtest.available">Failed to install webtest</fail>
@@ -77,6 +77,21 @@
         </webtest>
     </target>
 
+    <target name="xinclude">
+        <webtest name="testXInclude">
+            <config host="localhost" port="8080" protocol="http" 
+                basepath="exist/rest/db/webtest"
+                summary="true" resultpath="${test.results}"
+            />
+            <steps>
+                <invoke description="XInclude: character encoding test"
+                    url="xinclude-test.html"/>
+                <verifyTitle text="XInclude Test"/>
+                <verifyElementText htmlId="xpointer-simple" text="佛"/>
+            </steps>
+        </webtest>
+    </target>
+    
     <target name="install-webtest" unless="webtest.available">
         <echo>Installing Canoo Webtest</echo>
         <echo>-------------------------</echo>
@@ -101,6 +116,8 @@
                 <include name="testmod.xq"/>
                 <include name="test-modules1.xql"/>
                 <include name="test-modules2.xql"/>
+                <include name="xinclude-test.html"/>
+                <include name="included.xml"/>
             </fileset>
         </xdb:store>
     </target>
