@@ -22,6 +22,18 @@
             classpathref="classpath.webtest"/>
         
         <mkdir dir="${test.results}"/>
+    	
+    	<path id="classpath.webtest">
+	        <fileset dir="${webtest.home}/lib">
+	            <include name="*.jar"/>
+	        </fileset>
+	        <fileset dir="${server.home}/lib/core">
+	            <include name="*.jar"/>
+	        </fileset>
+	        <fileset dir="${server.home}">
+	            <include name="*.jar"/>
+	        </fileset>
+	    </path>
     </target>
     
     <target name="modules">
