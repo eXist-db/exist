@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns:xi="http://www.w3.org/2001/XInclude">
+    <head>
+        <title>XInclude Test</title>
+    </head>
+    <body>
+        <h1>Testing XPointer URI escaping</h1>
+        <div id="xpointer-simple">
+            <xi:include href="/db/webtest#xpointer(//node[. &amp;= '佛']/text())"/>
+        </div>
+        
+        <h1>XIncluding from external URL (fails)</h1>
+        
+        <!--div id="xinclude-external">
+            <xi:include href="http://localhost:8080/exist/rest/db/webtest/included.xml"/>
+        </div-->
+    </body>
+</html>
