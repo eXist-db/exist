@@ -1363,9 +1363,10 @@ public class XQueryContext {
                     // Is the module source stored in the database?
     				try {
     					XmldbURI locationUri = XmldbURI.xmldbUriFor(location);
-    					XmldbURI moduleLoadPathUri = XmldbURI.xmldbUriFor(moduleLoadPath);
-    					locationUri = moduleLoadPathUri.resolveCollectionPath(locationUri);
-                        
+    					if (moduleLoadPath.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
+    						XmldbURI moduleLoadPathUri = XmldbURI.xmldbUriFor(moduleLoadPath);
+    						locationUri = moduleLoadPathUri.resolveCollectionPath(locationUri);
+    					}
     	                DocumentImpl sourceDoc = null;
                         try {
                             sourceDoc = broker.getXMLResource(locationUri.toCollectionPathURI(), Lock.READ_LOCK);
