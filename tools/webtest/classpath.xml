@@ -1,18 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="eXistTest" basedir="." default="all">
+<project name="webTestClasspath" basedir="." default="all">
     
-    <path id="classpath.webtest">
-        <fileset dir="${webtest.home}/lib">
+	<path id="classpath.exist">
+		<fileset dir="${server.home}/lib/core">
             <include name="*.jar"/>
         </fileset>
-        <fileset dir="${server.home}/lib/core">
+		<fileset dir="${server.home}">
             <include name="*.jar"/>
         </fileset>
-        <fileset dir="${server.home}">
-            <include name="*.jar"/>
-        </fileset>
-    </path>
-    
+	</path>
+		
     <path id="classpath.jetty">
         <fileset dir="${server.home}/lib/core">
             <include name="*.jar"/>
@@ -35,6 +32,6 @@
     </path>
     
     <typedef resource="org/exist/ant/antlib.xml" uri="http://exist-db.org/ant">
-        <classpath refid="classpath.webtest"/>
+        <classpath refid="classpath.exist"/>
     </typedef>
 </project>
