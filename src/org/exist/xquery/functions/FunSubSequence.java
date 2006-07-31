@@ -35,6 +35,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.value.DoubleValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
@@ -114,27 +115,31 @@ public class FunSubSequence extends Function {
             else
                 --start;
 
-            if (start >= seq.getLength())
-                result = Sequence.EMPTY_SEQUENCE;
-            else {
-                int length = -1;
-                if (getSignature().getArgumentCount() == 3)
-                    length = ((DoubleValue) getArgument(2).eval(
-                            contextSequence, contextItem)
-                            .convertTo(Type.DOUBLE)).getInt();
-
-                if (length < 0 || length > seq.getLength() - start)
-                    length = seq.getLength() - start;
-
-                if (seq instanceof NodeSet)
-                    result = new ExtArrayNodeSet();
-                else
-                    result = new ValueSequence();
-                
-                for (int i = 0; i < length; i++) {
-                    result.add(seq.itemAt(start + i));
-                }
+            int length = Integer.MAX_VALUE;
+            if (getSignature().getArgumentCount() == 3)
+                length = ((DoubleValue) getArgument(2).eval(
+                        contextSequence, contextItem)
+                        .convertTo(Type.DOUBLE)).getInt();
+                        
+            Sequence tmp;
+            if (seq instanceof NodeSet)
+                tmp = new ExtArrayNodeSet();
+            else
+                tmp = new ValueSequence();
+            
+            Item item;
+            SequenceIterator iterator = seq.iterate();
+            for(int i = 0; i < start; i++) {
+                item = iterator.nextItem();
+            } 
+            int i=0;
+            while (iterator.hasNext() && i < length) {
+                item = iterator.nextItem();
+                tmp.add(item);
+                i++;
             }
+            
+            result = i>0?tmp:Sequence.EMPTY_SEQUENCE;
         }
 
         if (context.getProfiler().isEnabled())
