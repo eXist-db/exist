@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="eXistTest" basedir="." default="all">
+
+    <property name="webtest.home" location="."/>
+    
+    <property name="server.home" location="../.."/>
+    <property name="test.webapp" location="${server.home}/webapp/webtest"/>
+    <property name="test.results" location="${server.home}/test/webtest"/>
+    <property name="test.results.html" location="${test.results}/html"/>
+
+    <import file="${webtest.home}/classpath.xml"/>
+
+    <available property="webtest.available"
+        file="webtestTaskdefs.properties" filepath="${webtest.home}"/>
+    
+    <target name="all" depends="prepare,modules,style"/>
+
+    <target name="prepare" depends="start-jetty,clean,store,install-webtest">
+        <fail unless="webtest.available">Failed to install webtest</fail>
+        <taskdef resource="webtest.taskdef"
+            loaderref="webtest.loader"
+            classpathref="classpath.webtest"/>
+        
+        <mkdir dir="${test.results}"/>
+    </target>
+    
+    <target name="modules">
+        <webtest name="testModuleImports1">
+            <config host="localhost" port="8080" 
+                protocol="http" basepath="exist/webtest"
+                summary="true" resultpath="${test.results}"
+            />
+            <steps>
+                <invoke description="XQueryServlet: import module from relative path" 
+                    url="test-modules1.xql"/>
+                <verifyElementText type="H1" text="PASS"/>
+
+                <invoke description="XQueryServlet: import module from database" 
+                    url="test-modules2.xql"/>
+                <verifyElementText type="H1" text="PASS"/>
+                
+                <invoke description="XQueryGenerator: import module from database" 
+                    url="test-modules3.xq"/>
+                <verifyElementText type="H1" text="PASS"/>
+                
+                <invoke description="XQueryGenerator: import module from relative path" 
+                    url="test-modules4.xq"/>
+                <verifyElementText type="H1" text="PASS"/>
+            </steps>
+        </webtest>
+        
+        <webtest name="testModuleImports2">
+            <config host="localhost" port="8080" protocol="http" 
+                basepath="exist/rest/db/webtest"
+                summary="true" resultpath="${test.results}"
+            />
+            <steps>
+                <invoke description="REST: import module from relative path"
+                    url="test-modules1.xql"/>
+                <verifyElementText type="H1" text="PASS"/>
+                <invoke description="REST: import module from database"
+                    url="test-modules2.xql"/>
+                <verifyElementText type="H1" text="PASS"/>
+            </steps>
+        </webtest>
+    </target>
+
+    <target name="install-webtest" unless="webtest.available">
+        <echo>Installing Canoo Webtest</echo>
+        <echo>-------------------------</echo>
+        <echo>Downloading webtest: this may take a few minutes ...</echo>
+        <get src="http://webtest.canoo.com/webtest/build.zip"
+            dest="${webtest.home}/build.zip" verbose="false"/>
+        <unzip src="${webtest.home}/build.zip" overwrite="true"
+            dest="${webtest.home}"/>
+        <delete file="${webtest.home}/build.zip"/>
+        <available property="webtest.available"
+            file="webtestTaskdefs.properties" filepath="${webtest.home}"/>
+    </target>
+    
+    <target name="store" xmlns:xdb="http://exist-db.org/ant">
+        <echo>Storing required files into the database</echo>
+        <echo>---------------------------------------</echo>
+        
+        <xdb:store user="admin" password=""
+            uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/webtest" createcollection="true"
+            initdb="true">
+            <fileset dir="${test.webapp}">
+                <include name="testmod.xq"/>
+                <include name="test-modules1.xql"/>
+                <include name="test-modules2.xql"/>
+            </fileset>
+        </xdb:store>
+    </target>
+    
+    <target name="style">
+        <mkdir dir="${test.results.html}"/>
+        <tstamp>
+            <format property="now" pattern="dd.MM.yyyy HH:mm" locale="en"/>
+        </tstamp>
+        <style basedir="${test.results}"
+            destdir="${test.results.html}"
+            includes="results.xml"
+            extension=".html"
+            style="${webtest.home}/resources/WebTestReport.xsl"
+            >
+            <param name="reporttime" expression="${now}"/>
+        </style>
+        <copy todir="${test.results.html}" failonerror="false" overwrite="true">
+            <fileset dir="${webtest.home}/resources">
+                <include name="*.css"/>
+                <include name="*.js"/>
+            </fileset>
+        </copy>
+    </target>
+    
+    <target name="clean">
+        <delete dir="${test.results}"/>
+    </target>
+    
+    <target name="start-jetty">
+        <echo message="---------------------------------------"/>
+        <echo message="Starting Jetty server..."/>
+        <echo message="---------------------------------------"/>
+        <java classname="org.exist.start.Main">
+            <sysproperty key="exist.home" value="${server.home}" />
+            <classpath refid="classpath.jetty"/>
+            <arg value="jetty"/>
+        </java>
+        <echo>Server started.</echo>
+    </target>
+</project>
