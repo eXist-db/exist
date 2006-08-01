@@ -101,7 +101,7 @@ public class GetHeightFunction extends BasicFunction
             return Sequence.EMPTY_SEQUENCE;
 		
 		//get the path of the image
-		AnyURIValue imgPath = (AnyURIValue)args[0];
+		AnyURIValue imgPath = (AnyURIValue)args[0].itemAt(0);
         
         //Get the image document from the db
         DBBroker dbbroker = context.getBroker();
