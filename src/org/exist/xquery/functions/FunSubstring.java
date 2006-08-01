@@ -120,7 +120,7 @@ public class FunSubstring extends Function {
 	    			if (lengthValue.isNaN())
 	    				result = StringValue.EMPTY_STRING;
 	    			else if (((NumericValue)lengthValue.plus(startValue)).isInfinite() ||
-	    					((NumericValue)lengthValue.plus(startValue)).getInt() >= string.length()) {
+	    					((NumericValue)lengthValue.plus(startValue)).getInt() > string.length()) {
 	        			if (start < 0)
 	        				start = 0;        				
 	        			result = new StringValue(string.substring(start));
