@@ -77,14 +77,19 @@ public class QNameValue extends AtomicValue {
 	 * @see org.exist.xquery.value.Sequence#getStringValue()
 	 */
 	public String getStringValue() throws XPathException {
+		String prefix = null;
 	    if(qname.needsNamespaceDecl()) {
-			String prefix = context.getPrefixForURI(qname.getNamespaceURI());
-			if (prefix == null)
-				throw new XPathException(
-					"namespace " + qname.getNamespaceURI() + " is not defined");
-			qname.setPrefix(prefix);
+	    	prefix = context.getPrefixForURI(qname.getNamespaceURI());
+			if (prefix != null)
+				qname.setPrefix(prefix);
+				//throw new XPathException(
+				//	"namespace " + qname.getNamespaceURI() + " is not defined");
+			
 	    }
-		return qname.toString();
+		if (prefix != null && prefix.length() > 0)
+			return prefix + ':' + qname.getLocalName();
+		else 
+			return qname.getLocalName();
 	}
 
 	/**
@@ -185,5 +190,13 @@ public class QNameValue extends AtomicValue {
 				+ Type.getTypeName(getType())
 				+ " to Java object of type "
 				+ target.getName());
+	}
+	
+	public String toString() {
+		try {
+			return this.getStringValue();
+		} catch (XPathException e) {
+			return super.toString();
+		}			
 	}
 }
