@@ -59,6 +59,8 @@ public class ValueComparison extends GeneralComparison {
 	}
 
 	protected Sequence genericCompare(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (context.getProfiler().isEnabled())
+            context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "genericCompare");  
 		Sequence ls = getLeft().eval(contextSequence, contextItem);
 		Sequence rs = getRight().eval(contextSequence, contextItem);
 		if(ls.isEmpty() || rs.isEmpty())
@@ -73,21 +75,21 @@ public class ValueComparison extends GeneralComparison {
         throw new XPathException(getASTNode(), "Type error: sequence with more than one item is not allowed here");
 	}
 
-	protected Sequence nodeSetCompare(NodeSet nodes, Sequence contextSequence) throws XPathException {
+	protected Sequence nodeSetCompare(NodeSet nodes, Sequence contextSequence) throws XPathException {		
+        if (context.getProfiler().isEnabled())
+            context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "nodeSetCompare");		
 		NodeSet result = new ExtArrayNodeSet();
         Collator collator = getCollator(contextSequence);
-        if (contextSequence != null && contextSequence != Sequence.EMPTY_SEQUENCE) {
+        if (contextSequence != null && !contextSequence.isEmpty()) {
             for (Iterator i = nodes.iterator(); i.hasNext();) {
                 NodeProxy current = (NodeProxy) i.next();
                 ContextItem context = current.getContext();
                 do {
                     AtomicValue lv = current.atomize();
-                    Sequence rs = getRight().eval(
-                            context.getNode().toSequence());
+                    Sequence rs = getRight().eval(context.getNode().toSequence());                    
                     if (!rs.hasOne())
                         throw new XPathException(getASTNode(),
-                                "Type error: sequence with less or more than one item is not allowed here");
-                    
+                                "Type error: sequence with less or more than one item is not allowed here");                    
                     if (compareValues(collator, lv, rs.itemAt(0).atomize()))
                         result.add(current);
                 } while ((context = context.getNextDirect()) != null);

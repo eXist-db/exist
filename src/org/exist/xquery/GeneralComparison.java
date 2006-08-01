@@ -250,8 +250,7 @@ public class GeneralComparison extends BinaryOp {
 			return BooleanValue.valueOf(compareValues(collator, lv, rv));
 		} else {
 			for (SequenceIterator i1 = ls.iterate(); i1.hasNext();) {
-				lv = i1.nextItem().atomize();
-				//TODO : get rid of getLength
+				lv = i1.nextItem().atomize();				
 				if (rs.hasOne()	&& 
                     compareValues(collator, lv, rs.itemAt(0).atomize()))
 					return BooleanValue.TRUE;
