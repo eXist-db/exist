@@ -75,8 +75,11 @@ public class Backup {
 		defaultOutputProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "no");
 	}
 		
-	
-	
+	public Properties contentsOutputProps = new Properties();
+	{
+	    contentsOutputProps.setProperty(OutputKeys.INDENT, "yes");
+    }
+    
 	public Backup(String user, String pass, String backupDir, XmldbURI rootCollection) {
 		this.user = user;
 		this.pass = pass;
@@ -226,7 +229,7 @@ public class Backup {
 					new FileOutputStream(path + File.separatorChar + "__contents__.xml"), "UTF-8"));
 		// serializer writes to __contents__.xml
 		SAXSerializer serializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
-		serializer.setOutput(contents, defaultOutputProperties);
+		serializer.setOutput(contents, contentsOutputProps);
 		
 		serializer.startDocument();
 		serializer.startPrefixMapping("", NS);
