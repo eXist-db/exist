@@ -206,6 +206,8 @@ public class Restore extends DefaultHandler {
 					 
 					
 					current = mkcol(collUri, date_created);
+                    if (current == null)
+                        throw new SAXException("Collection not found: " + collUri);
 					UserManagementService service =
 						(UserManagementService) current.getService("UserManagementService", "1.0");
 					User u = new User(owner, null, group);
@@ -372,8 +374,12 @@ public class Restore extends DefaultHandler {
 		XmldbURI[] segments = collPath.getPathSegments();
 		CollectionManagementServiceImpl mgtService;
 		Collection c;
-		XmldbURI dbUri = XmldbURI.xmldbUriFor(uri);
-		Collection current = DatabaseManager.getCollection(dbUri.append(XmldbURI.ROOT_COLLECTION_URI).toString(), username, pass);
+		XmldbURI dbUri;
+        if (!uri.endsWith(DBBroker.ROOT_COLLECTION))
+            dbUri = XmldbURI.xmldbUriFor(uri + DBBroker.ROOT_COLLECTION);
+        else
+            dbUri = XmldbURI.xmldbUriFor(uri);
+		Collection current = DatabaseManager.getCollection(dbUri.toString(), username, pass);
 		XmldbURI p = XmldbURI.ROOT_COLLECTION_URI;
 		for(int i=1;i<segments.length;i++) {
 			p = p.append(segments[i]);
