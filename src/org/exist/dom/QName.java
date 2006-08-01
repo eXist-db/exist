@@ -25,8 +25,8 @@ package org.exist.dom;
 import org.exist.storage.ElementValue;
 import org.exist.util.XMLChar;
 import org.exist.xquery.Constants;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 
 /**
  * Represents a QName, consisting of a local name, a namespace URI and a prefix.
@@ -114,11 +114,34 @@ public class QName implements Comparable {
 		return nameType_;
 	}
 
-	public String toString() {
+	public String getStringValue() {
 		if (prefix_ != null && prefix_.length() > 0)
 			return prefix_ + ':' + localName_;
-		else
+		else 
 			return localName_;
+	}
+
+	/**
+	 * @deprecated : use for debugging purpose only, 
+	 * use getStringValue() for production
+	 */
+	public String toString() {
+		//TODO : remove this copy of getStringValue()
+		if (prefix_ != null && prefix_.length() > 0)
+			return prefix_ + ':' + localName_;
+		else 
+			return localName_;
+		//TODO : replace by something like this
+		/*
+		if (prefix_ != null && prefix_.length() > 0)
+			return prefix_ + ':' + localName_;
+		if (needsNamespaceDecl()) {
+			if (prefix_ != null && prefix_.length() > 0)
+				return "{" + namespaceURI_ + "}" + prefix_ + ':' + localName_;
+			return "{" + namespaceURI_ + "}" + localName_;
+		} else 
+			return localName_;
+		*/
 	}
 
 	/**
