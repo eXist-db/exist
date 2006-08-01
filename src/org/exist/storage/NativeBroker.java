@@ -956,7 +956,7 @@ public class NativeBroker extends DBBroker {
                         LOG.warn("LockException while removing collection '" + name + "'");
                     } finally {
                         if (transaction == null)
-                            collection.getLock().release();
+                            parent.getLock().release();
                     }
                 }
             }
