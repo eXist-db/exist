@@ -58,7 +58,8 @@ public class ImageModule extends AbstractInternalModule {
 	
 	private final static FunctionDef[] functions = {
 		new FunctionDef(GetWidthFunction.signature, GetWidthFunction.class),
-		new FunctionDef(GetHeightFunction.signature, GetHeightFunction.class)
+		new FunctionDef(GetHeightFunction.signature, GetHeightFunction.class),
+		new FunctionDef(GetThumbnailsFunction.signature, GetThumbnailsFunction.class)
 	};
 	
 	public ImageModule() {
