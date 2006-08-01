@@ -32,6 +32,7 @@ import org.exist.memtree.NodeImpl;
 import org.exist.util.XMLChar;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
+import org.exist.xquery.value.QNameValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 import org.xml.sax.helpers.AttributesImpl;
@@ -66,7 +67,9 @@ public class ElementConstructor extends NodeConstructor {
 	}
 	
 	public void setNameExpr(Expression expr) {
-	    this.qnameExpr = new Atomize(context, expr);
+		//Deferred atomization (we could have a QNameValue)
+	    //this.qnameExpr = new Atomize(context, expr);
+		this.qnameExpr = expr;
 	}
 	
 	public void addAttribute(AttributeConstructor attr) throws XPathException {
@@ -175,7 +178,7 @@ public class ElementConstructor extends NodeConstructor {
 				if (attrs.getIndex(attrQName.getNamespaceURI(), attrQName.getLocalName()) != -1)
 					throw new XPathException("XQST0040 '" + attrQName.getLocalName() + "' is a duplicate attribute name");
 				attrs.addAttribute(attrQName.getNamespaceURI(), attrQName.getLocalName(),
-						attrQName.toString(), "CDATA", attrValues.getStringValue());
+						attrQName.getStringValue(), "CDATA", attrValues.getStringValue());
 			}
 		}
 		context.proceed(this, builder);
@@ -183,18 +186,23 @@ public class ElementConstructor extends NodeConstructor {
 		// create the element
 		Sequence qnameSeq = qnameExpr.eval(contextSequence, contextItem);
 		if(!qnameSeq.hasOne())
-		    throw new XPathException("Type error: the node name should evaluate to a single string");
+		    throw new XPathException("Type error: the node name should evaluate to a single item");
 		
-		QName qn = QName.parse(context, qnameSeq.getStringValue());
+		QName qn;
+		if (qnameSeq instanceof QNameValue) {
+			qn = ((QNameValue)qnameSeq).getQName();
+		} else {		
+			//Do we have the same result than Atomize there ? -pb
+			qn = QName.parse(context, qnameSeq.getStringValue());
+			//Use the default namespace if specified
+		 	if (qn.getPrefix() == null && context.inScopeNamespaces.get("xmlns") != null) {
+	 			qn.setNamespaceURI((String)context.inScopeNamespaces.get("xmlns"));
+	 		}
+	 	}
 		
 		//Not in the specs but... makes sense
 		if(!XMLChar.isValidName(qn.getLocalName()))
 			throw new XPathException("XPTY0004 '" + qnameSeq.getStringValue() + "' is not a valid element name");
-		
-		//Use the default namespace if specified
-	 	if (qn.getPrefix() == null && context.inScopeNamespaces.get("xmlns") != null) {
-	 		qn.setNamespaceURI((String)context.inScopeNamespaces.get("xmlns"));
-	 	}
 	 	
 	 	// add namespace declaration nodes
 		int nodeNr = builder.startElement(qn, attrs);
