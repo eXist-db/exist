@@ -13,7 +13,7 @@
     <available property="webtest.available"
         file="webtestTaskdefs.properties" filepath="${webtest.home}"/>
     
-    <target name="all" depends="prepare,modules,xinclude,style"/>
+    <target name="all" depends="prepare,modules,xinclude,extension-modules,style"/>
 
     <target name="prepare" depends="start-jetty,clean,store,install-webtest">
         <fail unless="webtest.available">Failed to install webtest</fail>
@@ -86,8 +86,25 @@
             <steps>
                 <invoke description="XInclude: character encoding test"
                     url="xinclude-test.html"/>
-                <verifyTitle text="XInclude Test"/>
-                <verifyElementText htmlId="xpointer-simple" text="佛"/>
+                <verifyXPath xpath="//div[@id = 'xpointer-simple']/text()" text="佛"/>
+            </steps>
+        </webtest>
+    </target>
+    
+    <target name="extension-modules">
+        <webtest name="testImageModule">
+            <config host="localhost" port="8080" protocol="http" 
+                basepath="exist/webtest"
+                summary="true" resultpath="${test.results}"
+            />
+            <steps>
+                <invoke description="Testing image manipulation module"
+                    url="image-module.xql"/>
+                <verifyTitle text="Testing image module functions"/>
+                <verifyElementText htmlId="height" text="132"/>
+                <verifyElementText htmlId="width" text="333"/>
+                <verifyElementText htmlId="thumbs-count" text="4"/>
+                <verifyImages/>
             </steps>
         </webtest>
     </target>
@@ -118,6 +135,8 @@
                 <include name="test-modules2.xql"/>
                 <include name="xinclude-test.html"/>
                 <include name="included.xml"/>
+                <include name="logo.jpg"/>
+                <include name="resources/TOY2006s.jpg"/>
             </fileset>
         </xdb:store>
     </target>
