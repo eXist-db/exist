@@ -281,7 +281,7 @@ public class ClientFrame extends JFrame
         
         url = getClass().getResource("icons/Find24.gif");
         button = new JButton(new ImageIcon(url));
-        button.setToolTipText("Query the database with XPath");
+        button.setToolTipText("Query the database with Xquery/XPath");
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 findAction(e);
