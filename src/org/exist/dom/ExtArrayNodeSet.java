@@ -369,7 +369,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         return get(pos);
     }
 
-    public NodeSet hasChildrenInSet(NodeSet al, int mode, int contextId) {
+    public NodeSet getDescendantsInSet(NodeSet al, boolean childOnly, boolean includeSelf, int mode, int contextId) {
     	NodeSet result = new ExtArrayNodeSet();
 		NodeProxy node;
 		Part part;
@@ -377,14 +377,17 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
 			node = (NodeProxy) i.next();
 			part = getPart(node.getDocument(), false, 0);
 	        if (part != null)
-	        	part.getChildrenInSet(result, node, mode, contextId);
+	        	part.getDescendantsInSet(result, node, childOnly, includeSelf, mode, contextId);
 		}
 		return result;
     }
-
+    
     public NodeSet selectParentChild(NodeSet al, int mode, int contextId) {
     	sort();
-        return super.selectParentChild(al, mode, contextId);
+    	return getDescendantsInSet(al, true, false, mode, contextId);
+//    	return hasChildrenInSet(al, mode, contextId);
+//        return super.selectParentChild(al, mode, contextId);
+    	
 //    	if (al instanceof VirtualNodeSet)
 //    		return super.selectParentChild(al, mode, contextId);
 //    	NodeSet result = new ExtArrayNodeSet();
@@ -470,8 +473,9 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
     public NodeSet selectAncestorDescendant(NodeSet al, int mode,
             boolean includeSelf, int contextId) {
         sort();
-        return super.selectAncestorDescendant(al, mode, includeSelf,
-                contextId);
+        return getDescendantsInSet(al, false, includeSelf, mode, contextId);
+//        return super.selectAncestorDescendant(al, mode, includeSelf,
+//                contextId);
     }
     
     
@@ -747,72 +751,114 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
             }
             return null;
         }
-
+        
         /**
-         * Find all nodes in the current set being children of the specified
-         * parent.
+         * Find all nodes in the current set being children or descendants of the given parent
+         * node.
          * 
-         * @param parent
+         * @param result the node set to which matching nodes will be appended.
+         * @param parent the parent node to search for.
+         * @param childOnly only include child nodes, not descendant nodes
+         * @param includeSelf include the self:: axis
          * @param mode
-         * @param rememberContext
+         * @param contextId
          * @return
          */
-        NodeSet getChildrenInSet(NodeSet result, NodeProxy parent, int mode, int contextId) {
-            // get the range of node ids reserved for children of the parent
-            // node
-            int low = 0;
-            int high = length - 1;
-            int mid = 0;
-            int cmp;
+        NodeSet getDescendantsInSet(NodeSet result, NodeProxy parent, boolean childOnly,
+        		boolean includeSelf, int mode, int contextId) {
             NodeProxy p;
             NodeId parentId = parent.getNodeId();
-            // do a binary search to pick some node in the range of valid child
-            // ids
-            while (low <= high) {
-                mid = (low + high) / 2;
-                p = array[mid];
-                if (p.getNodeId().isChildOf(parentId))
-                	break;	// found a child node, break out.
-                
-                cmp = p.getNodeId().compareTo(parentId);
-                if (cmp > 0)
-                    high = mid - 1;
-                else
-                    low = mid + 1;
-            }
-            if (low > high)
-                return result; // no node found
-            // find the first child node in the range
-            while (mid > 0 && array[mid - 1].getNodeId().compareTo(parentId) > 0)
-                --mid;
-            // walk through the range of child nodes we found
-            for (int i = mid; i < length; i++) {
-            	if (!array[i].getNodeId().isDescendantOf(parentId))
-            		break;
-            	if (array[i].getNodeId().isChildOf(parentId)) {
-	                switch (mode) {
-	                    case NodeSet.DESCENDANT :
-	                        if (Expression.NO_CONTEXT_ID != contextId)
-	                            array[i].addContextNode(contextId, parent);
-	                        else
-	                            array[i].copyContext(parent);
-	                        array[i].addMatches(parent);
-	                        result.add(array[i]);
-	                        break;
-	                    case NodeSet.ANCESTOR :
-	                        if (Expression.NO_CONTEXT_ID != contextId)
-	                            parent.addContextNode(contextId, array[i]);
-	                        else
-	                            parent.copyContext(array[i]);
-	                        parent.addMatches(array[i]);
-	                        result.add(parent, 1);
-	                        break;
-	                }
+            // document nodes are treated specially
+            if (parentId == NodeId.DOCUMENT_NODE) {
+            	for (int i = 0; i < length; i++) {
+            		boolean add = false;
+            		if (childOnly)
+            			add = array[i].getNodeId().getTreeLevel() == 1;
+            		else if (includeSelf)
+            			add = true;
+            		else
+            			add = array[i].getNodeId() != NodeId.DOCUMENT_NODE;
+            		if (add) {
+            			switch (mode) {
+            			case NodeSet.DESCENDANT :
+            				if (Expression.NO_CONTEXT_ID != contextId)
+            					array[i].addContextNode(contextId, parent);
+            				else
+            					array[i].copyContext(parent);
+            				array[i].addMatches(parent);
+            				result.add(array[i]);
+            				break;
+            			case NodeSet.ANCESTOR :
+            				if (Expression.NO_CONTEXT_ID != contextId)
+            					parent.addContextNode(contextId, array[i]);
+            				else
+            					parent.copyContext(array[i]);
+            				parent.addMatches(array[i]);
+            				result.add(parent, 1);
+            				break;
+            			}
+            		}
+            	}
+            } else {
+            	// do a binary search to pick some node in the range of valid child
+            	// ids
+            	int low = 0;
+                int high = length - 1;
+                int mid = 0;
+                int cmp;
+            	while (low <= high) {
+            		mid = (low + high) / 2;
+            		p = array[mid];
+            		if (p.getNodeId().isDescendantOrSelfOf(parentId))
+            			break;	// found a child node, break out.
+
+            		cmp = p.getNodeId().compareTo(parentId);
+            		if (cmp > 0)
+            			high = mid - 1;
+            		else
+            			low = mid + 1;
+            	}
+            	if (low > high)
+            		return result; // no node found
+            	// find the first child node in the range
+            	while (mid > 0 && array[mid - 1].getNodeId().compareTo(parentId) > 0)
+            		--mid;
+            	// walk through the range of child nodes we found
+            	for (int i = mid; i < length; i++) {
+            		cmp = array[i].getNodeId().computeRelation(parentId); 
+            		if (cmp > -1) {
+            			boolean add = true;
+                		if (childOnly)
+                			add = cmp == NodeId.IS_CHILD;
+                		else if (cmp == NodeId.IS_SELF)
+                			add = includeSelf;
+            			if (add) {
+            				switch (mode) {
+            				case NodeSet.DESCENDANT :
+            					if (Expression.NO_CONTEXT_ID != contextId)
+            						array[i].addContextNode(contextId, parent);
+            					else
+            						array[i].copyContext(parent);
+            					array[i].addMatches(parent);
+            					result.add(array[i]);
+            					break;
+            				case NodeSet.ANCESTOR :
+            					if (Expression.NO_CONTEXT_ID != contextId)
+            						parent.addContextNode(contextId, array[i]);
+            					else
+            						parent.copyContext(array[i]);
+            					parent.addMatches(array[i]);
+            					result.add(parent, 1);
+            					break;
+            				}
+            			}
+            		} else
+            			break;
             	}
             }
             return result;
         }
-
+        
         /**
          * Remove all duplicate nodes from this part.
          * 

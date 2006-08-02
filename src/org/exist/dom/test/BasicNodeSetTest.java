@@ -189,17 +189,6 @@ public class BasicNodeSetTest extends TestCase {
             assertEquals(160, result.getLength());
             System.out.println("NodeSetHelper.selectParentChild: PASS");
             
-            System.out.println("Testing AbstractNodeSet.hasChildrenInSet ...");
-            result = ((AbstractNodeSet)speakers).hasChildrenInSet(smallSet.toNodeSet(), NodeSet.DESCENDANT, -1);
-            assertEquals(1, result.getLength());
-            value = serialize(broker, result.itemAt(0));
-            System.out.println("AbstractNodeSet.hasChildrenInSet: " + value);
-            assertEquals(value, "<SPEAKER>HAMLET</SPEAKER>");
-            
-            result = ((AbstractNodeSet)speakers).hasChildrenInSet(largeSet.toNodeSet(), NodeSet.DESCENDANT, -1);
-            assertEquals(160, result.getLength());
-            System.out.println("AbstractNodeSet.hasChildrenInSet: PASS");
-            
             System.out.println("Testing AbstractNodeSet.selectAncestorDescendant ...");
             result = speakers.selectAncestorDescendant(outerSet.toNodeSet(), NodeSet.DESCENDANT, false, -1);
             assertEquals(56, result.getLength());

@@ -204,22 +204,6 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		}
 		return ds;
 	}
-	
-	/**
-	 * Get all children of the given parent node contained in this node set.
-	 * If mode is {@link #DESCENDANT}, the returned node set will contain
-	 * all children found in this node set. If mode is {@link #ANCESTOR},
-	 * the parent itself will be returned if it has child nodes in this set.
-	 * 
-	 * @param parent
-	 * @param mode
-	 * @param rememberContext
-	 * @return
-	 */
-	public NodeSet hasChildrenInSet(NodeSet al, int mode, int contextId) {
-		// just forward to selectParentChild. Subclasses may overwrite this.
-		return selectParentChild(al, mode, contextId);
-	}
 
 	/**
 	 * Check if any child nodes are found within this node set for a given
