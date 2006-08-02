@@ -388,15 +388,18 @@ public class QueryDialog extends JFrame {
 			progress.setVisible(true);
 			progress.setIndeterminate(true);
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			long tResult =0;
+			long tCompiled=0;
+			
 			try {
 				XQueryService service= (XQueryService) collection.getService("XQueryService", "1.0");
 				service.setProperty(OutputKeys.INDENT, properties.getProperty(OutputKeys.INDENT, "yes"));
 				long t0 = System.currentTimeMillis();
 				CompiledExpression compiled = service.compile(xpath);
 				long t1 = System.currentTimeMillis();
-				long tCompiled = t1 - t0;
+				tCompiled = t1 - t0;
 				ResourceSet result= service.execute(compiled);
-				long tResult = System.currentTimeMillis() - t1;
+				tResult = System.currentTimeMillis() - t1;
 				
 				StringWriter writer = new StringWriter();
 				service.dump(compiled, writer);
@@ -430,7 +433,7 @@ public class QueryDialog extends JFrame {
 				statusMessage.setText("Found " + result.getSize() + " items." + 
 					" Compilation: " + tCompiled + "ms, Execution: " + tResult+"ms");
 			} catch (Throwable e) {
-				statusMessage.setText("");
+				statusMessage.setText("Error: "+InteractiveClient.getExceptionMessage(e)+". Compilation: " + tCompiled + "ms, Execution: " + tResult+"ms");
 			    progress.setVisible(false);
 			    
 			
