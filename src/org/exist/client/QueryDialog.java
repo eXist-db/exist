@@ -430,6 +430,10 @@ public class QueryDialog extends JFrame {
 				statusMessage.setText("Found " + result.getSize() + " items." + 
 					" Compilation: " + tCompiled + "ms, Execution: " + tResult+"ms");
 			} catch (Throwable e) {
+				statusMessage.setText("");
+			    progress.setVisible(false);
+			    
+			
 				ClientFrame.showErrorMessageQuery(
 						"An exception occurred during query execution: "
 						+ InteractiveClient.getExceptionMessage(e), e);
