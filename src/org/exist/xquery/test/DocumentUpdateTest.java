@@ -41,7 +41,7 @@ public class DocumentUpdateTest extends TestCase {
 	    		"let $doc := xdb:store($col, 'test1.xml', <test><n>1</n></test>)\n" +
 	    		"let $d1 := local:get-doc($path)\n" +
 	    		"let $remove := xdb:remove('/db/testup', 'test1.xml')\n" +
-	    		"return string-join((count(local:get-doc($path)), doc-available($path)), ' ')";
+	    		"return string-join((string(count(local:get-doc($path))), string(doc-available($path))), ' ')";
 			String result = execQuery(query);
 			assertEquals(result, "0 false");
 			
@@ -54,7 +54,7 @@ public class DocumentUpdateTest extends TestCase {
 	    		"let $path := '/db/testup/test1.xml'\n" +
 	    		"let $d1 := local:get-doc($path)\n" +
 	    		"let $doc := xdb:store($col, 'test1.xml', <test><n>1</n></test>)\n" + 
-	    		"return string-join((count(local:get-doc($path)), doc-available($path)), ' ')";
+	    		"return string-join((string(count(local:get-doc($path))), string(doc-available($path))), ' ')";
 			result = execQuery(query);
 			assertEquals(result, "1 true");
 			
