@@ -2571,7 +2571,7 @@ public class RpcConnection extends Thread {
     		   Backup backup = new Backup(
     				userbackup,
                     password, 
-                    destcollection,
+                    destcollection+"-backup",
                     XmldbURI.xmldbUriFor(XmldbURI.EMBEDDED_SERVER_URI.toString() + collection));
                 backup.backup(false, null);
             } catch (Exception e) {
