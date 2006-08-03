@@ -137,6 +137,7 @@ public class FtQueryTest extends XMLTestCase {
 	        result = service.query(query);
 	        assertEquals(20, result.getSize());
 		} catch (XMLDBException e) {
+			e.printStackTrace();
 			fail(e.getMessage());
 		}	        
     }
@@ -160,6 +161,7 @@ public class FtQueryTest extends XMLTestCase {
 	        result = service.query("//SPEECH[LINE &= 'fenny snake' and SPEAKER &= 'first']");
 	        assertEquals(1, result.getSize());
 		} catch (XMLDBException e) {
+			e.printStackTrace();
 			fail(e.getMessage());
 		}	        
     }
@@ -207,6 +209,7 @@ public class FtQueryTest extends XMLTestCase {
             result = service.query(query);
             assertEquals(3, result.getSize());
     	} catch(Exception e) {
+    		e.printStackTrace();
     		fail(e.getMessage());
     	}
     }
@@ -278,7 +281,7 @@ public class FtQueryTest extends XMLTestCase {
             testCollection = null;
 	        System.out.println("tearDown PASSED");
 		} catch (XMLDBException e) {
-			fail(e.getMessage());
+			e.printStackTrace();
 		}
     }
 }
