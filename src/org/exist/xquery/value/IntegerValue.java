@@ -27,10 +27,10 @@ import java.text.Collator;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 
-/** [Definition:]   integer is �derived� from decimal by fixing the value of �fractionDigits� to be 0. 
+/** [Definition:]   integer is <i>derived</i> from decimal by fixing the value of <i>fractionDigits<i> to be 0. 
  * This results in the standard mathematical concept of the integer numbers. 
- * The �value space� of integer is the infinite set {...,-2,-1,0,1,2,...}. 
- * The �base type� of integer is decimal.
+ * The <i>value space</i> of integer is the infinite set {...,-2,-1,0,1,2,...}. 
+ * The <i>base type</i> of integer is decimal.
  * cf http://www.w3.org/TR/xmlschema-2/#integer 
  */
 public class IntegerValue extends NumericValue {
@@ -251,7 +251,8 @@ public class IntegerValue extends NumericValue {
 				return (value.compareTo(ZERO_BIGINTEGER) == 0 ) ? BooleanValue.FALSE : BooleanValue.TRUE;
 			default :
 				throw new XPathException(
-					"cannot convert integer '" + value + "' to " + requiredType);
+					"cannot convert '" +  Type.getTypeName(this.getType()) + "(" + value + ")' " +
+							Type.getTypeName(requiredType));
 		}
 	}
 
