@@ -55,7 +55,7 @@
 	<classpathentry kind="lib" path="lib/optional/axis-schema.jar"/>
 	<classpathentry kind="lib" path="lib/optional/axis.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-discovery-0.2.jar"/>
-	<classpathentry kind="lib" path="lib/optional/commons-fileupload-1.1.jar"/>
+	<classpathentry kind="lib" path="lib/optional/commons-fileupload-1.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-httpclient-3.0.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-io-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-logging-1.0.4.jar"/>
