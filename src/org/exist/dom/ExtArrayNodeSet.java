@@ -384,6 +384,8 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
     
     public NodeSet selectParentChild(NodeSet al, int mode, int contextId) {
     	sort();
+        if (al instanceof VirtualNodeSet)
+            return super.selectParentChild(al, mode, contextId);
     	return getDescendantsInSet(al, true, false, mode, contextId);
 //    	return hasChildrenInSet(al, mode, contextId);
 //        return super.selectParentChild(al, mode, contextId);
@@ -473,9 +475,10 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
     public NodeSet selectAncestorDescendant(NodeSet al, int mode,
             boolean includeSelf, int contextId) {
         sort();
+        if (al instanceof VirtualNodeSet)
+            return super.selectAncestorDescendant(al, mode, includeSelf,
+                    contextId);
         return getDescendantsInSet(al, false, includeSelf, mode, contextId);
-//        return super.selectAncestorDescendant(al, mode, includeSelf,
-//                contextId);
     }
     
     
