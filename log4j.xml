@@ -109,7 +109,7 @@
     </category>
 
     <root>
-		 <priority value="debug"/>
-        <appender-ref ref="console"/>
+		 	<priority value="debug"/>
+    	<appender-ref ref="exist.core"/>
     </root>
 </log4j:configuration>
