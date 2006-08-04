@@ -54,6 +54,16 @@ public class GetParameterNames extends BasicFunction {
 			null,
 			new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE));
 
+	public final static FunctionSignature deprecated =
+		new FunctionSignature(
+			new QName(
+				"parameter-names",
+				RequestModule.NAMESPACE_URI,
+				RequestModule.PREFIX),
+			"Returns a sequence containing the names of all parameters passed in the current request",
+			null,
+			new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE));
+	
 	/**
 	 * @param context
 	 * @param signature

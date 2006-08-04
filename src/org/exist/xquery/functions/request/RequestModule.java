@@ -74,6 +74,7 @@ public class RequestModule extends AbstractInternalModule {
 		new FunctionDef(RedirectTo.deprecated, RedirectTo.class),
 		new FunctionDef(GetHostname.deprecated, GetHostname.class),
 		new FunctionDef(GetParameter.deprecated, GetParameter.class),
+		new FunctionDef(GetParameterNames.deprecated, GetParameterNames.class),
 		new FunctionDef(GetServerName.deprecated, GetServerName.class),
 		new FunctionDef(GetServerPort.deprecated, GetServerPort.class),
 		new FunctionDef(GetURI.deprecated, GetURI.class),
@@ -82,6 +83,7 @@ public class RequestModule extends AbstractInternalModule {
 		new FunctionDef(SetAttribute.deprecated, SetAttribute.class),
 		new FunctionDef(StreamBinary.deprecated, StreamBinary.class),
 		new FunctionDef(FunUnEscapeURI.deprecated, FunUnEscapeURI.class)
+		
 	};
 	
 	public RequestModule() throws XPathException {
