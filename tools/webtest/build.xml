@@ -6,6 +6,7 @@
     <property name="server.home" location="../.."/>
     <property name="test.webapp" location="${server.home}/webapp/webtest"/>
     <property name="test.results" location="${server.home}/test/webtest"/>
+	<property name="test.temp" location="${server.home}/test/temp"/>
     <property name="test.results.html" location="${test.results}/html"/>
 
     <import file="${webtest.home}/classpath.xml"/>
@@ -13,8 +14,10 @@
     <available property="webtest.available"
         file="webtestTaskdefs.properties" filepath="${webtest.home}"/>
     
-    <target name="all" depends="prepare,modules,xinclude,extension-modules,style"/>
+    <target name="all" depends="prepare,all-tests,style"/>
 
+	<target name="all-tests" depends="modules,xinclude,extension-modules,xmldb-module"/>
+	
     <target name="prepare" depends="start-jetty,clean,store,install-webtest">
         <fail unless="webtest.available">Failed to install webtest</fail>
         <taskdef resource="webtest.taskdef"
@@ -91,6 +94,27 @@
         </webtest>
     </target>
     
+	<target name="xmldb-module">
+		<mkdir dir="${test.temp}"/>
+		<mkdir dir="${test.temp}/dir1"/>
+		<mkdir dir="${test.temp}/dir1/dir2"/>
+		<copy file="${server.home}/samples/shakespeare/hamlet.xml"
+			todir="${test.temp}/dir1/dir2"/>
+		<webtest name="testXmldbModule">
+            <config host="localhost" port="8080" protocol="http" 
+                basepath="exist/webtest"
+                summary="true" resultpath="${test.results}"
+            />
+            <steps>
+                <invoke description="XMLDB module: store-files-from-pattern test"
+                    url="xmldb-module.xql"/>
+            	<verifyTitle text="XML:DB module functions test"/>
+                <verifyElementText htmlId="count" text="1"/>
+            	<verifyElementText htmlId="stored" text="/db/webtest/dir1/dir2/hamlet.xml"/>
+            </steps>
+        </webtest>
+	</target>
+
     <target name="extension-modules">
         <webtest name="testImageModule">
             <config host="localhost" port="8080" protocol="http" 
@@ -126,7 +150,7 @@
         <echo>Storing required files into the database</echo>
         <echo>---------------------------------------</echo>
         
-        <xdb:store user="admin" password=""
+        <xdb:store user="guest" password="guest"
             uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/webtest" createcollection="true"
             initdb="true">
             <fileset dir="${test.webapp}">
@@ -135,10 +159,15 @@
                 <include name="test-modules2.xql"/>
                 <include name="xinclude-test.html"/>
                 <include name="included.xml"/>
-                <include name="logo.jpg"/>
-                <include name="resources/TOY2006s.jpg"/>
             </fileset>
         </xdb:store>
+    	<xdb:store user="guest" password="guest"
+            uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/webtest/images" createcollection="true">
+            <fileset dir="${test.webapp}/..">
+    			<include name="logo.jpg"/>
+        		<include name="resources/TOY2006s.jpg"/>
+        	</fileset>
+		</xdb:store>
     </target>
     
     <target name="style">
