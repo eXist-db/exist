@@ -37,6 +37,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -61,29 +62,38 @@ import org.xmldb.api.base.XMLDBException;
  */
 class IndexDialog extends JFrame {
 	
-	private static final String[] FULLTEXT_INDEX_ACTIONS = {"include", "exclude"};
-	private static final String[] INDEX_TYPES = {"xs:boolean","xs:integer","xs:dateTime","xs:string"};
+	private static final String[] FULLTEXT_INDEX_ACTIONS = {
+		"include",
+		"exclude"
+	};
 	
-	CollectionXConf cx = null;
+	private static final String[] INDEX_TYPES = {
+		"xs:boolean",
+		"xs:integer",
+		"xs:dateTime",
+		"xs:string"
+	};
 	
-	JCheckBox chkDefaultAll = null;
-	JCheckBox chkAlphanum = null;
-	JCheckBox chkAttributes = null;
+	private CollectionXConf cx = null;
 	
-	
-	JTextField txtXPath;
-	JComboBox cmbxsType;
-	JTable tblFullTextIndexes;
-	FullTextIndexTableModel fulltextIndexModel;
-	JTable tblRangeIndexes;
-	RangeIndexTableModel rangeIndexModel;
-	JTable tblQNameIndexes;
-	QNameIndexTableModel qnameIndexModel;
-	
-	InteractiveClient client;
+	private JCheckBox chkDefaultAll;
+	private JCheckBox chkAlphanum;
+	private JCheckBox chkAttributes;
 	
 	
-	public IndexDialog(String title, InteractiveClient client ) 
+	private JTextField txtXPath;
+	private JComboBox cmbxsType;
+	private JTable tblFullTextIndexes;
+	private FullTextIndexTableModel fulltextIndexModel;
+	private JTable tblRangeIndexes;
+	private RangeIndexTableModel rangeIndexModel;
+	private JTable tblQNameIndexes;
+	private QNameIndexTableModel qnameIndexModel;
+	
+	private InteractiveClient client;
+	
+	
+	public IndexDialog(String title, InteractiveClient client) 
 	{
 		super(title);
 		this.client = client;
@@ -136,10 +146,24 @@ class IndexDialog extends JFrame {
         //Create a combobox listing the collections
         JComboBox combo = new JComboBox(alCollections.toArray());
         combo.addActionListener(new ActionListener(){
-        		public void actionPerformed(ActionEvent e) {
-   				 JComboBox cb = (JComboBox)e.getSource();
-   				 actionGetIndexes(cb.getSelectedItem().toString());
-   			}
+        	public void actionPerformed(ActionEvent e)
+        	{
+        		//the collection has been changed
+        		if(cx.hasChanged())
+        		{
+        			//ask the user if they would like to save the changes
+        			int result = JOptionPane.showConfirmDialog(getContentPane(), "The configuration for the collection has changed, would you like to save the changes?", "Save Changes", JOptionPane.YES_NO_OPTION);
+        			
+        			if(result == JOptionPane.YES_OPTION)
+        			{
+        				//save the collection.xconf changes
+        				cx.Save();
+        			}
+        		}
+        		
+        		JComboBox cb = (JComboBox)e.getSource();
+   				actionGetIndexes(cb.getSelectedItem().toString());
+    		}
         });
         c.gridx = 1;
 		c.gridy = 0;
@@ -158,6 +182,12 @@ class IndexDialog extends JFrame {
 		
 		//fulltext default all checkbox
 		chkDefaultAll = new JCheckBox("Default All");
+		chkDefaultAll.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e)
+			{
+				cx.setFullTextIndexDefaultAll(chkDefaultAll.isSelected());
+			}
+		});
 		c.gridx = 0;
 		c.gridy = 0;
 		c.gridwidth = 1;
@@ -168,6 +198,12 @@ class IndexDialog extends JFrame {
         
 		//fulltext alphanumeric checkbox
 		chkAlphanum = new JCheckBox("Alphanumeric");
+		chkAlphanum.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e)
+			{
+				cx.setFullTextIndexAlphanum(chkAlphanum.isSelected());
+			}
+		});
 		c.gridx = 0;
 		c.gridy = 1;
 		c.gridwidth = 1;
@@ -178,6 +214,12 @@ class IndexDialog extends JFrame {
 
 		//fulltext attributes checkbox
 		chkAttributes = new JCheckBox("Attributes");
+		chkAttributes.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e)
+			{
+				cx.setFullTextIndexAttributes(chkAttributes.isSelected());
+			}
+		});
 		c.gridx = 0;
 		c.gridy = 2;
 		c.gridwidth = 1;
@@ -203,6 +245,34 @@ class IndexDialog extends JFrame {
 		c.fill = GridBagConstraints.BOTH;
 		panelFullTextIndexGrid.setConstraints(scrollFullTextIndexes, c);
 		panelFullTextIndex.add(scrollFullTextIndexes);
+		
+		//Toolbar with add/delete buttons for FullText Index
+		Box fulltextIndexToolbarBox = Box.createHorizontalBox();
+		//add button
+		JButton btnAddFullTextIndex = new JButton("Add");
+		btnAddFullTextIndex.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e)
+			{
+				actionAddFullTextIndex();
+			}
+		});
+		fulltextIndexToolbarBox.add(btnAddFullTextIndex);
+		//delete button
+		JButton btnDeleteFullTextIndex = new JButton("Delete");
+		btnDeleteFullTextIndex.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e)
+			{
+				actionDeleteFullTextIndex();
+			}
+		});
+		fulltextIndexToolbarBox.add(btnDeleteFullTextIndex);
+		c.gridx = 0;
+		c.gridy = 4;
+		c.gridwidth = 2;
+		c.anchor = GridBagConstraints.CENTER;
+		c.fill = GridBagConstraints.BOTH;
+		panelFullTextIndexGrid.setConstraints(fulltextIndexToolbarBox, c);
+		panelFullTextIndex.add(fulltextIndexToolbarBox);
 		
 		//add fulltext panel to content frame
 		c.gridx = 0;
@@ -355,6 +425,20 @@ class IndexDialog extends JFrame {
         return collectionsList;
     }
 
+	private void actionAddFullTextIndex()
+	{
+		fulltextIndexModel.addRow();
+	}
+	
+	private void actionDeleteFullTextIndex()
+	{
+		int iSelectedRow = tblFullTextIndexes.getSelectedRow();
+		if(iSelectedRow > -1 )
+		{
+			fulltextIndexModel.removeRow(iSelectedRow);
+		}
+	}
+	
 	private void actionAddRangeIndex()
 	{
 		rangeIndexModel.addRow();
@@ -367,7 +451,6 @@ class IndexDialog extends JFrame {
 		{
 			rangeIndexModel.removeRow(iSelectedRow);
 		}
-		
 	}
 	
 	private void actionAddQNameIndex()
