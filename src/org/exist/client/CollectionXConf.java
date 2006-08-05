@@ -47,10 +47,7 @@ import org.xmldb.api.base.XMLDBException;
  * @version 1.0
  */
 public class CollectionXConf
-{
-	
-	//TODO: problem with FullText defaultAll attribute - is not being stored correctly
-	
+{	
 	private String path = null;
 	Collection collection = null;
 	Resource resConfig = null;
@@ -721,7 +718,7 @@ public class CollectionXConf
 			StringBuffer fulltext = new StringBuffer();
 			
 			fulltext.append("<fulltext default=\"");
-			fulltext.append(defaultAll);
+			fulltext.append(defaultAll ? "all" : "none");
 			fulltext.append("\" attributes=\"");
 			fulltext.append(attributes);
 			fulltext.append("\" alphanum=\"");

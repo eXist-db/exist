@@ -23,11 +23,16 @@ package org.exist.client;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Event;
+import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.util.ArrayList;
 
 import javax.swing.Box;
@@ -98,8 +103,23 @@ class IndexDialog extends JFrame {
 		super(title);
 		this.client = client;
 		
+		//capture the frame's close event
+		WindowListener windowListener = new WindowAdapter()
+		{
+			public void windowClosing (WindowEvent e)
+			{
+				saveChanges();
+				
+				IndexDialog.this.setVisible(false);
+				IndexDialog.this.dispose();
+			}
+		};
+		this.addWindowListener(windowListener);
+		
+		//draw the GUI
 		setupComponents();
 		
+		//Get the indexes for the root collection
 		actionGetIndexes(DBBroker.ROOT_COLLECTION);
 	}
 
@@ -148,18 +168,8 @@ class IndexDialog extends JFrame {
         combo.addActionListener(new ActionListener(){
         	public void actionPerformed(ActionEvent e)
         	{
-        		//the collection has been changed
-        		if(cx.hasChanged())
-        		{
-        			//ask the user if they would like to save the changes
-        			int result = JOptionPane.showConfirmDialog(getContentPane(), "The configuration for the collection has changed, would you like to save the changes?", "Save Changes", JOptionPane.YES_NO_OPTION);
-        			
-        			if(result == JOptionPane.YES_OPTION)
-        			{
-        				//save the collection.xconf changes
-        				cx.Save();
-        			}
-        		}
+        		
+        		saveChanges();
         		
         		JComboBox cb = (JComboBox)e.getSource();
    				actionGetIndexes(cb.getSelectedItem().toString());
@@ -408,6 +418,22 @@ class IndexDialog extends JFrame {
 		pack();
 	}
 
+	//if changes have been made, allows the user to save them
+	private void saveChanges()
+	{
+		//the collection has been changed
+		if(cx.hasChanged())
+		{
+			//ask the user if they would like to save the changes
+			int result = JOptionPane.showConfirmDialog(getContentPane(), "The configuration for the collection has changed, would you like to save the changes?", "Save Changes", JOptionPane.YES_NO_OPTION);
+			
+			if(result == JOptionPane.YES_OPTION)
+			{
+				//save the collection.xconf changes
+				cx.Save();
+			}
+		}
+	}
 	
 	
 	//THIS IS A COPY FROM ClientFrame
