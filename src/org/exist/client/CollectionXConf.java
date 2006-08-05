@@ -49,26 +49,32 @@ import org.xmldb.api.base.XMLDBException;
 public class CollectionXConf
 {
 	
+	//TODO: problem with FullText defaultAll attribute - is not being stored correctly
+	
 	private String path = null;
+	Collection collection = null;
+	Resource resConfig = null;
 	
 	private FullTextIndex fulltextIndex = null;
 	private RangeIndex[] rangeIndexes = null;
 	private QNameIndex[] qnameIndexes;
 	private Trigger[] triggers = null;
 	
+	private boolean hasChanged = false;
+	
 	
 	CollectionXConf(String CollectionName, InteractiveClient client) throws XMLDBException
 	{
 		path = DBBroker.CONFIG_COLLECTION + CollectionName;
-		Collection collection = client.getCollection(path);
+		collection = client.getCollection(path);
 		
 		if(collection == null) //if no config collection for this collection exists, just return
 			return;
 		
 		//get the resource from the db
-		Resource resConfig = collection.getResource(DBBroker.COLLECTION_CONFIG_FILENAME);
+		resConfig = collection.getResource(DBBroker.COLLECTION_CONFIG_FILENAME);
 		
-		if(resConfig == null) //if, no config file exists for that collection, just return
+		if(resConfig == null) //if, no config file exists for that collection
 			return;
 		
 		
@@ -114,14 +120,35 @@ public class CollectionXConf
 		return fulltextIndex != null ? fulltextIndex.getDefaultAll() : false;
 	}
 	
+	public void setFullTextIndexDefaultAll(boolean defaultAll)
+	{
+		hasChanged = true;
+		
+		fulltextIndex.setDefaultAll(defaultAll);
+	}
+	
 	public boolean getFullTextIndexAttributes()
 	{
 		return fulltextIndex != null ? fulltextIndex.getAttributes() : false;
 	}
 	
+	public void setFullTextIndexAttributes(boolean attributes)
+	{
+		hasChanged = true;
+		
+		fulltextIndex.setAttributes(attributes);
+	}
+	
 	public boolean getFullTextIndexAlphanum()
 	{
 		return fulltextIndex != null ? fulltextIndex.getAlphanum() : false;
+	}
+	
+	public void setFullTextIndexAlphanum(boolean alphanum)
+	{
+		hasChanged = true;
+		
+		fulltextIndex.setAlphanum(alphanum);
 	}
 	
 	public String getFullTextIndexPath(int index)
@@ -148,11 +175,15 @@ public class CollectionXConf
 	
 	public void addFullTextIndex(String XPath, String action)
 	{
+		hasChanged = true;
+		
 		fulltextIndex.addIndex(XPath, action);
 	}
 	
 	public void updateFullTextIndex(int index, String XPath, String action)
 	{
+		hasChanged = true;
+		
 		if(XPath != null)
 			fulltextIndex.setXPath(index, XPath);
 		
@@ -162,6 +193,8 @@ public class CollectionXConf
 	
 	public void deleteFullTextIndex(int index)
 	{
+		hasChanged = true;
+		
 		fulltextIndex.deleteIndex(index);
 	}
 	
@@ -192,6 +225,8 @@ public class CollectionXConf
 		//can only remove an index which is in the array
 		if(index < rangeIndexes.length)
 		{
+			hasChanged = true;
+			
 			//if its the last item in the array just null the array 
 			if(rangeIndexes.length == 1)
 			{
@@ -217,6 +252,8 @@ public class CollectionXConf
 	
 	public void updateRangeIndex(int index, String XPath, String xsType)
 	{
+		hasChanged = true;
+		
 		if(XPath != null)
 			rangeIndexes[index].setXPath(XPath);
 		
@@ -226,6 +263,8 @@ public class CollectionXConf
 	
 	public void addRangeIndex(String XPath, String xsType)
 	{
+		hasChanged = true;
+		
 		if(rangeIndexes == null)
 		{
 			rangeIndexes = new RangeIndex[1];
@@ -267,6 +306,8 @@ public class CollectionXConf
 		//can only remove an index which is in the array
 		if(index < qnameIndexes.length)
 		{
+			hasChanged = true;
+			
 			//if its the last item in the array just null the array 
 			if(qnameIndexes.length == 1)
 			{
@@ -292,6 +333,8 @@ public class CollectionXConf
 	
 	public void updateQNameIndex(int index, String QName, String xsType)
 	{
+		hasChanged = true;
+		
 		if(QName != null)
 			qnameIndexes[index].setQName(QName);
 		
@@ -301,6 +344,8 @@ public class CollectionXConf
 	
 	public void addQNameIndex(String QName, String xsType)
 	{
+		hasChanged = true;
+		
 		if(qnameIndexes == null)
 		{
 			qnameIndexes = new QNameIndex[1];
@@ -451,6 +496,71 @@ public class CollectionXConf
 		return null;
 	}
 	
+	//has the collection.xconf been modified?
+	public boolean hasChanged()
+	{
+		return hasChanged;
+	}
+	
+	//produces a string of XML describing the collection.xconf
+	private String toXMLString()
+	{
+		StringBuffer xconf = new StringBuffer();
+		
+		xconf.append("<collection xmlns=\"http://exist-db.org/collection-config/1.0\">");
+		xconf.append(System.getProperty("line.separator"));
+		xconf.append('\t');
+		xconf.append("<index>");
+		xconf.append(System.getProperty("line.separator"));
+	
+		//fulltext indexes
+		xconf.append("\t\t");
+		xconf.append(fulltextIndex.toXMLString());
+		xconf.append(System.getProperty("line.separator"));
+		
+		//range indexes
+		for(int r = 0; r < rangeIndexes.length; r ++)
+		{
+			xconf.append("\t\t\t");
+			xconf.append(rangeIndexes[r].toXMLString());
+			xconf.append(System.getProperty("line.separator"));
+		}
+		
+		//qname indexes
+		for(int q = 0; q < qnameIndexes.length; q ++)
+		{
+			xconf.append("\t\t\t");
+			xconf.append(rangeIndexes[q].toXMLString());
+			xconf.append(System.getProperty("line.separator"));
+		}
+		
+		xconf.append('\t');
+		xconf.append("</index>");
+		xconf.append(System.getProperty("line.separator"));
+		xconf.append("</collection>");
+		
+		return xconf.toString();
+	}
+	
+	//Save the collection.xconf
+	public boolean Save()
+	{
+		try
+		{
+			//set the content of the collection.xconf
+			resConfig.setContent(toXMLString());
+			
+			//store the collection.xconf
+			collection.storeResource(resConfig);
+		}
+		catch(XMLDBException xmldbe)
+		{
+			return false;
+		}
+		
+		return true;
+	}
+	
 	//represents a path in the fulltext index in the collection.xconf
 	protected class FullTextIndexPath
 	{
@@ -511,14 +621,29 @@ public class CollectionXConf
 			return defaultAll;
 		}
 		
+		public void setDefaultAll(boolean defaultAll)
+		{
+			this.defaultAll = defaultAll;
+		}
+		
 		public boolean getAttributes()
 		{
 			return attributes;
 		}
 		
+		public void setAttributes(boolean attributes)
+		{
+			this.attributes = attributes;
+		}
+		
 		public boolean getAlphanum()
 		{
 			return alphanum;
+		}
+		
+		public void setAlphanum(boolean alphanum)
+		{
+			this.alphanum = alphanum;
 		}
 		
 		public String getXPath(int index)
@@ -589,6 +714,41 @@ public class CollectionXConf
 				}
 			}
 		}
+		
+		//produces a collection.xconf suitable string of XML describing the fulltext index
+		protected String toXMLString()
+		{
+			StringBuffer fulltext = new StringBuffer();
+			
+			fulltext.append("<fulltext default=\"");
+			fulltext.append(defaultAll);
+			fulltext.append("\" attributes=\"");
+			fulltext.append(attributes);
+			fulltext.append("\" alphanum=\"");
+			fulltext.append(alphanum);
+			fulltext.append("\">");
+			
+			fulltext.append(System.getProperty("line.separator"));
+			
+			
+			for(int i = 0; i < xpaths.length; i++)
+			{
+				fulltext.append('\t');
+				
+				fulltext.append("<");
+				fulltext.append(xpaths[i].getAction());
+				fulltext.append(" path=\"");
+				fulltext.append(xpaths[i].getXPath());
+				fulltext.append("\"/>");
+				
+				fulltext.append(System.getProperty("line.separator"));
+			}
+			
+			fulltext.append("</fulltext>");
+			
+			
+			return fulltext.toString();
+		}
 	}
 	
 	//represents a range index in the collection.xconf
@@ -622,6 +782,20 @@ public class CollectionXConf
 		{
 			this.xsType = xsType;
 		}
+		
+		//produces a collection.xconf suitable string of XML describing the range index
+		protected String toXMLString()
+		{
+			StringBuffer range = new StringBuffer();
+			
+			range.append("<create path=\"");
+			range.append(XPath);
+			range.append("\" type=\"");
+			range.append(xsType);
+			range.append("\"/>");
+			
+			return range.toString();
+		}
 	}
 	
 	//represents a qname index in the collection.xconf
@@ -654,6 +828,20 @@ public class CollectionXConf
 		public void setxsType(String xsType)
 		{
 			this.xsType = xsType;
+		}
+		
+		//produces a collection.xconf suitable string of XML describing the qname index
+		protected String toXMLString()
+		{
+			StringBuffer qname = new StringBuffer();
+			
+			qname.append("<create qname=\"");
+			qname.append(QName);
+			qname.append("\" type=\"");
+			qname.append(xsType);
+			qname.append("\"/>");
+			
+			return qname.toString();
 		}
 	}
 	
