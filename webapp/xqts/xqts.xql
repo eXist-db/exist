@@ -139,7 +139,7 @@ declare function xqts:print-result($test-name as xs:string, $passed as xs:boolea
 };
 
 declare function xqts:normalize-text($result as item()*) as xs:string {
-    let $str := string-join(string($result), " ")
+    let $str := string-join(for $i in $result return string($i), " ")
     return
         (: Remove leading and trailing whitespace :)
         replace(replace($str, "^\s+", ""), "\s+$", "")
