@@ -38,15 +38,12 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 
-
-//TODO: Configuration for Triggers need finishing
-
 /**
  * Class to represent a collection.xconf which holds the configuration data for a collection
  * 
  * @author Adam Retter <adam.retter@devon.gov.uk>
  * @serial 2006-05-04
- * @version 1.0
+ * @version 1.1
  */
 public class CollectionXConf
 {	

@@ -492,6 +492,15 @@ public class ClientFrame extends JFrame
         });
         toolsMenu.add(item);
         
+        item = new JMenuItem("Edit Triggers", KeyEvent.VK_T);
+        item.setAccelerator(KeyStroke.getKeyStroke("control T"));
+        item.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                editTriggersAction(e);
+            }
+        });
+        toolsMenu.add(item);
+        
         item = new JMenuItem("Edit Policies", KeyEvent.VK_O);
         item.setAccelerator(KeyStroke.getKeyStroke("control O"));
         item.addActionListener(new ActionListener() {
@@ -1220,6 +1229,12 @@ public class ClientFrame extends JFrame
     private void editIndexesAction(ActionEvent ev) {
             IndexDialog dialog = new IndexDialog("Edit Indexes", client);
             dialog.setVisible(true);
+    }
+    
+    
+    private void editTriggersAction(ActionEvent ev) {
+        TriggersDialog dialog = new TriggersDialog("Edit Triggers", client);
+        dialog.setVisible(true);
     }
     
     private void editPolicies() {
