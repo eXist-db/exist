@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * $Id
+ * $Id$
  */
 package org.exist.client;
 
@@ -39,8 +39,10 @@ import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 
 
+//TODO: Configuration for Triggers need finishing
+
 /**
- * Class to represent a collection.xconf 
+ * Class to represent a collection.xconf which holds the configuration data for a collection
  * 
  * @author Adam Retter <adam.retter@devon.gov.uk>
  * @serial 2006-05-04
@@ -48,20 +50,27 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class CollectionXConf
 {	
-	private String path = null;
-	Collection collection = null;
-	Resource resConfig = null;
+	private String path = null;			//path of the collection.xconf file
+	Collection collection = null;		//the configuration collection
+	Resource resConfig = null;			//the collection.xconf resource
 	
-	private FullTextIndex fulltextIndex = null;
-	private RangeIndex[] rangeIndexes = null;
-	private QNameIndex[] qnameIndexes;
-	private Trigger[] triggers = null;
+	private FullTextIndex fulltextIndex = null;		//fulltext index model
+	private RangeIndex[] rangeIndexes = null;		//range indexes model
+	private QNameIndex[] qnameIndexes;				//qname indexes model
+	private Trigger[] triggers = null;				//triggers model
 	
-	private boolean hasChanged = false;
+	private boolean hasChanged = false;	//indicates if changes have been made to the current collection configuration
 	
 	
+	/**
+	 * Constructor
+	 * 
+	 * @param collectionName	The path of the collection to retreive the collection.xconf for
+	 * @param client	The interactive client
+	 */
 	CollectionXConf(String CollectionName, InteractiveClient client) throws XMLDBException
 	{
+		//get configuration collection for the named collection
 		path = DBBroker.CONFIG_COLLECTION + CollectionName;
 		collection = client.getCollection(path);
 		
@@ -112,52 +121,121 @@ public class CollectionXConf
 		triggers = getTriggers(xconf);
 	}
 	
+	/**
+	 * Indicates whether the fulltext index defaults to indexing all nodes
+	 *
+	 * @return true indicates all nodes are indexed, false indicates no nodes are indexed by default
+	 */
 	public boolean getFullTextIndexDefaultAll()
 	{
 		return fulltextIndex != null ? fulltextIndex.getDefaultAll() : false;
 	}
 	
+	/**
+	 * Set whether all nodes should be indexed into the fulltext index
+	 * 
+	 * @param defaultAll	true indicates all nodes should be indexed, false indicates no nodes should be indexed by default
+	 */
 	public void setFullTextIndexDefaultAll(boolean defaultAll)
 	{
 		hasChanged = true;
-		
-		fulltextIndex.setDefaultAll(defaultAll);
+		if(fulltextIndex == null)
+		{
+			fulltextIndex = new FullTextIndex(true, false, false, null);
+		}
+		else
+		{
+			fulltextIndex.setDefaultAll(defaultAll);
+		}
 	}
 	
+	/**
+	 * Indicates whether the fulltext index indexes attributes
+	 *
+	 * @return true indicates attributes are indexed, false indicates attributes are not indexed
+	 */
 	public boolean getFullTextIndexAttributes()
 	{
 		return fulltextIndex != null ? fulltextIndex.getAttributes() : false;
 	}
 	
+	/**
+	 * Set whether attributes should be indexed into the fulltext index
+	 * 
+	 * @param attribues	true indicates attributes should be indexed, false indicates attributes should not be indexed
+	 */
 	public void setFullTextIndexAttributes(boolean attributes)
 	{
 		hasChanged = true;
 		
-		fulltextIndex.setAttributes(attributes);
+		if(fulltextIndex == null)
+		{
+			fulltextIndex = new FullTextIndex(false, true, false, null);
+		}
+		else
+		{
+			fulltextIndex.setAttributes(attributes);
+		}
 	}
 	
+	/**
+	 * Indicates whether the fulltext index indexes alphanumeric values
+	 *
+	 * @return true indicates alphanumeric values are indexed, false indicates alphanumeric values are not indexed
+	 */
 	public boolean getFullTextIndexAlphanum()
 	{
 		return fulltextIndex != null ? fulltextIndex.getAlphanum() : false;
 	}
 	
+	/**
+	 * Set whether alphanumeric values should be indexed into the fulltext index
+	 * 
+	 * @param alphanum	true indicates alphanumeric values should be indexed, false indicates alphanumeric values should not be indexed
+	 */
 	public void setFullTextIndexAlphanum(boolean alphanum)
 	{
 		hasChanged = true;
 		
-		fulltextIndex.setAlphanum(alphanum);
+		if(fulltextIndex == null)
+		{
+			fulltextIndex = new FullTextIndex(false, false, true, null);
+		}
+		else
+		{
+			fulltextIndex.setAlphanum(alphanum);
+		}
 	}
 	
+	/**
+	 * Returns a full text index path
+	 * 
+	 * @param index	The numeric index of the fulltext index path to retreive
+	 * 
+	 * @return The XPath
+	 */
 	public String getFullTextIndexPath(int index)
 	{
 		return fulltextIndex.getXPath(index);
 	}
 	
+	/**
+	 * Returns a full text index path action
+	 * 
+	 * @param index	The numeric index of the fulltext index path action to retreive
+	 * 
+	 * @return The Action, either "include" or "exclude"
+	 */
 	public String getFullTextIndexPathAction(int index)
 	{
 		return fulltextIndex.getAction(index);
 	}
 	
+	/**
+	 * Returns the number of full text index paths defined
+	 *  
+	 * @return The number of paths
+	 */
 	public int getFullTextPathCount()
 	{
 		if(fulltextIndex != null)
@@ -170,13 +248,32 @@ public class CollectionXConf
 		}
 	}
 	
+	/**
+	 * Add a path to the full text index
+	 *
+	 * @param XPath		The XPath to index
+	 * @param action	The action to take on the path, either "include" or "exclude"
+	 */
 	public void addFullTextIndex(String XPath, String action)
 	{
 		hasChanged = true;
 		
+		
+		if(fulltextIndex == null)
+		{
+			fulltextIndex = new FullTextIndex(false, false, false, null);
+		}
+		
 		fulltextIndex.addIndex(XPath, action);
 	}
 	
+	/**
+	 * Update the details of a full text index path
+	 *
+	 * @param index		The numeric index of the path to update
+	 * @param XPath		The new XPath, or null to just set the action
+	 * @param action	The new action, either "include" or "exclude", or null to just set the XPath
+	 */
 	public void updateFullTextIndex(int index, String XPath, String action)
 	{
 		hasChanged = true;
@@ -187,7 +284,12 @@ public class CollectionXConf
 		if(action != null)
 			fulltextIndex.setAction(index, action);
 	}
-	
+
+	/**
+	 * Delete a path from the full text index
+	 * 
+	 * @param index	The numeric index of the path to delete
+	 */
 	public void deleteFullTextIndex(int index)
 	{
 		hasChanged = true;
@@ -195,16 +297,33 @@ public class CollectionXConf
 		fulltextIndex.deleteIndex(index);
 	}
 	
+	/**
+	 * Returns an array of the Range Indexes
+	 * 
+	 * @return Array of Range Indexes
+	 */
 	public RangeIndex[] getRangeIndexes()
 	{
 		return rangeIndexes;
 	}
 	
+	/**
+	 * Returns n specific Range Index
+	 * 
+	 * @param index	The numeric index of the Range Index to return
+	 * 
+	 * @return The Range Index
+	 */
 	public RangeIndex getRangeIndex(int index)
 	{
 		return rangeIndexes[index];
 	}
 	
+	/**
+	 * Returns the number of Range Indexes defined
+	 *  
+	 * @return The number of Range indexes
+	 */
 	public int getRangeIndexCount()
 	{
 		if(rangeIndexes != null)
@@ -217,6 +336,11 @@ public class CollectionXConf
 		}
 	}
 	
+	/**
+	 * Delete a Range Index
+	 * 
+	 * @param index	The numeric index of the Range Index to delete
+	 */
 	public void deleteRangeIndex(int index)
 	{
 		//can only remove an index which is in the array
@@ -247,6 +371,13 @@ public class CollectionXConf
 		}
 	}
 	
+	/**
+	 * Update the details of a Range Index
+	 *
+	 * @param index		The numeric index of the range index to update
+	 * @param XPath		The new XPath, or null to just set the type
+	 * @param xsType	The new type of the path, a valid xs:type, or just null to set the path
+	 */
 	public void updateRangeIndex(int index, String XPath, String xsType)
 	{
 		hasChanged = true;
@@ -258,6 +389,12 @@ public class CollectionXConf
 			rangeIndexes[index].setxsType(xsType);
 	}
 	
+	/**
+	 * Add a Range Index
+	 *
+	 * @param XPath		The XPath to index
+	 * @param xsType	The type of the path, a valid xs:type
+	 */
 	public void addRangeIndex(String XPath, String xsType)
 	{
 		hasChanged = true;
@@ -276,16 +413,33 @@ public class CollectionXConf
 		}
 	}
 	
+	/**
+	 * Returns an array of the QName Indexes
+	 * 
+	 * @return Array of QName Indexes
+	 */
 	public QNameIndex[] getQNameIndexes()
 	{
 		return qnameIndexes;
 	}
 	
+	/**
+	 * Returns a specific QName Index
+	 * 
+	 * @param index	The numeric index of the QName index to return
+	 * 
+	 * @return The QName Index
+	 */
 	public QNameIndex getQNameIndex(int index)
 	{
 		return qnameIndexes[index];
 	}
 	
+	/**
+	 * Returns the number of QName Indexes defined
+	 *  
+	 * @return The number of QName indexes
+	 */
 	public int getQNameIndexCount()
 	{
 		if(qnameIndexes != null)
@@ -298,6 +452,11 @@ public class CollectionXConf
 		}
 	}
 	
+	/**
+	 * Delete a QName Index
+	 * 
+	 * @param index	The numeric index of the QName Index to delete
+	 */
 	public void deleteQNameIndex(int index)
 	{
 		//can only remove an index which is in the array
@@ -328,6 +487,13 @@ public class CollectionXConf
 		}
 	}
 	
+	/**
+	 * Update the details of a QName Index
+	 *
+	 * @param index		The numeric index of the qname index to update
+	 * @param QName		The new QName, or null to just set the type
+	 * @param xsType	The new type of the path, a valid xs:type, or just null to set the QName
+	 */
 	public void updateQNameIndex(int index, String QName, String xsType)
 	{
 		hasChanged = true;
@@ -339,6 +505,12 @@ public class CollectionXConf
 			qnameIndexes[index].setxsType(xsType);
 	}
 	
+	/**
+	 * Add a QName Index
+	 *
+	 * @param QName		The QName to index
+	 * @param xsType	The type of the QName, a valid xs:type
+	 */
 	public void addQNameIndex(String QName, String xsType)
 	{
 		hasChanged = true;
@@ -494,6 +666,11 @@ public class CollectionXConf
 	}
 	
 	//has the collection.xconf been modified?
+	/**
+	 * Indicates whether the collection configuration has changed
+	 * 
+	 * @return true if the configuration has changed, false otherwise
+	 */
 	public boolean hasChanged()
 	{
 		return hasChanged;
@@ -539,7 +716,11 @@ public class CollectionXConf
 		return xconf.toString();
 	}
 	
-	//Save the collection.xconf
+	/**
+	 * Saves the collection configuation back to the collection.xconf
+	 * 
+	 * @return true if the save succeeds, false otherwise
+	 */
 	public boolean Save()
 	{
 		try
@@ -604,6 +785,14 @@ public class CollectionXConf
 		FullTextIndexPath[] xpaths = null;
 	
 		
+		/**
+		 * Constructor
+		 * 
+		 * @param defaultAll	Should the fulltext index default to indexing all nodes
+		 * @param attributes	Should attributes be indexed into the fulltext index 
+		 * @param alphanum		Should alphanumeric values be indexed into the fulltext index
+		 * @param xpaths		Explicit fulltext index paths to include or exclude, null if there are no explicit paths		
+		 */
 		FullTextIndex(boolean defaultAll, boolean attributes, boolean alphanum, FullTextIndexPath[] xpaths)
 		{
 			this.defaultAll = defaultAll;
