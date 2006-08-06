@@ -52,6 +52,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
 import org.exist.storage.DBBroker;
+import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
@@ -78,6 +79,8 @@ class IndexDialog extends JFrame {
 	};
 	
 	private CollectionXConf cx = null;
+	
+	private JComboBox cmbCollections;
 	
 	private JCheckBox chkDefaultAll;
 	private JCheckBox chkAlphanum;
@@ -162,8 +165,8 @@ class IndexDialog extends JFrame {
         }
         
         //Create a combobox listing the collections
-        JComboBox combo = new JComboBox(alCollections.toArray());
-        combo.addActionListener(new ActionListener(){
+        cmbCollections = new JComboBox(alCollections.toArray());
+        cmbCollections.addActionListener(new ActionListener(){
         	public void actionPerformed(ActionEvent e)
         	{
         		
@@ -178,8 +181,8 @@ class IndexDialog extends JFrame {
 		c.gridwidth = 1;
 		c.anchor = GridBagConstraints.WEST;
         c.fill = GridBagConstraints.NONE;
-        grid.setConstraints(combo, c);
-        getContentPane().add(combo);
+        grid.setConstraints(cmbCollections, c);
+        getContentPane().add(cmbCollections);
 
         //Panel to hold controls relating to the FullText Index
 		JPanel panelFullTextIndex = new JPanel();
@@ -428,7 +431,46 @@ class IndexDialog extends JFrame {
 			if(result == JOptionPane.YES_OPTION)
 			{
 				//save the collection.xconf changes
-				cx.Save();
+				if(cx.Save())
+				{
+					//save ok, reindex?
+					result = JOptionPane.showConfirmDialog(getContentPane(), "Your changes have been saved, but will not take effect until the collection is reindexed!\n Would you like to reindex " + cmbCollections.getSelectedItem() + " and sub-collections now?", "Reindex", JOptionPane.YES_NO_OPTION);
+					
+					if(result == JOptionPane.YES_OPTION)
+					{
+						//reindex collection
+						Runnable reindexThread = new Runnable()
+						{
+							public void run()
+							{
+								try
+				                {
+									IndexQueryService service = (IndexQueryService)client.current.getService("IndexQueryService", "1.0");
+									
+									ArrayList subCollections = getCollections(client.getCollection((String)cmbCollections.getSelectedItem()), new ArrayList());
+									
+				                    for(int i = 0; i < subCollections.size(); i++)
+				                    {
+				                    	service.reindexCollection(((ResourceDescriptor)subCollections.get(i)).getName());
+				                    }
+				                    
+				                    //reindex done
+				                    JOptionPane.showMessageDialog(getContentPane(), "Reindex Complete");
+				                }
+								catch(XMLDBException e)
+								{
+									//reindex failed
+									JOptionPane.showMessageDialog(getContentPane(), "Reindex failed!");
+								}
+				            }
+				        };
+					}
+				}
+				else
+				{
+					//save failed
+					JOptionPane.showMessageDialog(getContentPane(), "Unable to save changes!");
+				}
 			}
 		}
 	}
