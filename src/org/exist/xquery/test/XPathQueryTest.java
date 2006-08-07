@@ -1586,6 +1586,32 @@ public class XPathQueryTest extends XMLTestCase {
         }
     }
     
+    public void testSubstring() throws XMLDBException {
+        String validQuery="substring(\"MK-1234\", 4,1)";
+        String invalidQuery="substring(\"MK-1234\", 4,4)";
+        
+        XQueryService service = getQueryService();
+        ResourceSet result;
+        
+        try {
+            result = queryAndAssert( service, validQuery, 1, validQuery);  
+            
+            assertEquals("1", result.getResource(0).getContent().toString() );
+            
+        } catch (XMLDBException e) {
+            fail(e.getMessage());
+        }
+        
+        try {
+            result = queryAndAssert( service, invalidQuery, 1, invalidQuery);    
+            
+            assertEquals("1234", result.getResource(0).getContent().toString() );
+        } catch (XMLDBException e) {
+            fail(e.getMessage());
+        }
+        
+    }
+    
 	public static void main(String[] args) {
 		junit.textui.TestRunner.run(XPathQueryTest.class);
 	}
