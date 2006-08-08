@@ -1587,15 +1587,14 @@ public class XPathQueryTest extends XMLTestCase {
     }
     
     public void testSubstring() throws XMLDBException {
-        String validQuery="substring(\"MK-1234\", 4,1)";
-        String invalidQuery="substring(\"MK-1234\", 4,4)";
-        
+
         XQueryService service = getQueryService();
         ResourceSet result;
         
+        // Testcases by MIKA
         try {
+            String validQuery="substring(\"MK-1234\", 4,1)";
             result = queryAndAssert( service, validQuery, 1, validQuery);  
-            
             assertEquals("1", result.getResource(0).getContent().toString() );
             
         } catch (XMLDBException e) {
@@ -1603,12 +1602,25 @@ public class XPathQueryTest extends XMLTestCase {
         }
         
         try {
+            String invalidQuery="substring(\"MK-1234\", 4,4)";
             result = queryAndAssert( service, invalidQuery, 1, invalidQuery);    
-            
             assertEquals("1234", result.getResource(0).getContent().toString() );
+            
         } catch (XMLDBException e) {
             fail(e.getMessage());
         }
+        
+        
+        // Testcase by Toar
+        try {
+            String toarQuery="let $num := \"2003.123\" \n return substring($num, 1, 7)";
+            result = queryAndAssert( service, toarQuery, 1, toarQuery);    
+            assertEquals("2003.12", result.getResource(0).getContent().toString() );
+            
+        } catch (XMLDBException e) {
+            fail(e.getMessage());
+        }
+ 
         
     }
     
