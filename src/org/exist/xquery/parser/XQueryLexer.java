@@ -4230,42 +4230,15 @@ tryAgain:
 				}
 			}
 			else {
-				boolean synPredMatched522 = false;
+				boolean synPredMatched513 = false;
 				if (((_tokenSet_19.member(LA(1))) && (_tokenSet_20.member(LA(2))) && (_tokenSet_21.member(LA(3))) && (true))) {
-					int _m522 = mark();
-					synPredMatched522 = true;
+					int _m513 = mark();
+					synPredMatched513 = true;
 					inputState.guessing++;
 					try {
 						{
+						match('.');
 						mINTEGER_LITERAL(false);
-						{
-						switch ( LA(1)) {
-						case '.':
-						{
-							match('.');
-							{
-							if ((_tokenSet_2.member(LA(1)))) {
-								mINTEGER_LITERAL(false);
-							}
-							else if ((LA(1)=='E'||LA(1)=='e')) {
-							}
-							else {
-								throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());
-							}
-							
-							}
-							break;
-						}
-						case 'E':  case 'e':
-						{
-							break;
-						}
-						default:
-						{
-							throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());
-						}
-						}
-						}
 						{
 						switch ( LA(1)) {
 						case 'e':
@@ -4287,232 +4260,259 @@ tryAgain:
 						}
 					}
 					catch (RecognitionException pe) {
-						synPredMatched522 = false;
+						synPredMatched513 = false;
 					}
-					rewind(_m522);
+					rewind(_m513);
 					inputState.guessing--;
 				}
-				if ( synPredMatched522 ) {
+				if ( synPredMatched513 ) {
 					mDOUBLE_LITERAL(false);
 					if ( inputState.guessing==0 ) {
 						_ttype = DOUBLE_LITERAL;
 					}
 				}
-				else if ((LA(1)=='-') && (LA(2)=='-') && (LA(3)=='>') && (true)) {
-					mXML_COMMENT_END(false);
-					if ( inputState.guessing==0 ) {
-						_ttype = XML_COMMENT_END;
-					}
-				}
-				else if ((LA(1)==']') && (LA(2)==']') && (LA(3)=='>') && (true)) {
-					mXML_CDATA_END(false);
-					if ( inputState.guessing==0 ) {
-						_ttype = XML_CDATA_END;
-					}
-				}
 				else {
-					boolean synPredMatched506 = false;
-					if (((LA(1)=='<') && (LA(2)=='?'))) {
-						int _m506 = mark();
-						synPredMatched506 = true;
+					boolean synPredMatched522 = false;
+					if (((_tokenSet_19.member(LA(1))) && (_tokenSet_20.member(LA(2))) && (_tokenSet_21.member(LA(3))) && (true))) {
+						int _m522 = mark();
+						synPredMatched522 = true;
 						inputState.guessing++;
 						try {
 							{
-							mXML_PI_START(false);
+							mINTEGER_LITERAL(false);
+							{
+							switch ( LA(1)) {
+							case '.':
+							{
+								match('.');
+								{
+								if ((_tokenSet_2.member(LA(1)))) {
+									mINTEGER_LITERAL(false);
+								}
+								else if ((LA(1)=='E'||LA(1)=='e')) {
+								}
+								else {
+									throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());
+								}
+								
+								}
+								break;
+							}
+							case 'E':  case 'e':
+							{
+								break;
+							}
+							default:
+							{
+								throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());
+							}
+							}
+							}
+							{
+							switch ( LA(1)) {
+							case 'e':
+							{
+								match('e');
+								break;
+							}
+							case 'E':
+							{
+								match('E');
+								break;
+							}
+							default:
+							{
+								throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());
+							}
+							}
+							}
 							}
 						}
 						catch (RecognitionException pe) {
-							synPredMatched506 = false;
+							synPredMatched522 = false;
 						}
-						rewind(_m506);
+						rewind(_m522);
 						inputState.guessing--;
 					}
-					if ( synPredMatched506 ) {
-						mXML_PI(false);
+					if ( synPredMatched522 ) {
+						mDOUBLE_LITERAL(false);
 						if ( inputState.guessing==0 ) {
-							_ttype = XML_PI;
+							_ttype = DOUBLE_LITERAL;
 						}
 					}
-					else if ((LA(1)=='<') && (LA(2)=='/')) {
-						mEND_TAG_START(false);
+					else if ((LA(1)=='-') && (LA(2)=='-') && (LA(3)=='>') && (true)) {
+						mXML_COMMENT_END(false);
 						if ( inputState.guessing==0 ) {
-							
-									inElementContent= false;
-									wsExplicit= false;
-									_ttype = END_TAG_START;
-								
+							_ttype = XML_COMMENT_END;
 						}
 					}
-					else if ((LA(1)=='<') && (LA(2)=='=')) {
-						mLTEQ(false);
+					else if ((LA(1)==']') && (LA(2)==']') && (LA(3)=='>') && (true)) {
+						mXML_CDATA_END(false);
 						if ( inputState.guessing==0 ) {
-							_ttype = LTEQ;
-						}
-					}
-					else if (((LA(1)=='"'||LA(1)=='\'') && ((LA(2) >= '\u0003' && LA(2) <= '\ufffe')) && (true) && (true))&&( parseStringLiterals )) {
-						mSTRING_LITERAL(false);
-						if ( inputState.guessing==0 ) {
-							_ttype = STRING_LITERAL;
+							_ttype = XML_CDATA_END;
 						}
 					}
 					else {
-						boolean synPredMatched510 = false;
-						if ((((LA(1)=='.') && (LA(2)=='.') && (true) && (true))&&( !(inAttributeContent || inElementContent) ))) {
-							int _m510 = mark();
-							synPredMatched510 = true;
+						boolean synPredMatched506 = false;
+						if (((LA(1)=='<') && (LA(2)=='?'))) {
+							int _m506 = mark();
+							synPredMatched506 = true;
 							inputState.guessing++;
 							try {
 								{
-								match('.');
-								match('.');
+								mXML_PI_START(false);
 								}
 							}
 							catch (RecognitionException pe) {
-								synPredMatched510 = false;
+								synPredMatched506 = false;
 							}
-							rewind(_m510);
+							rewind(_m506);
 							inputState.guessing--;
 						}
-						if ( synPredMatched510 ) {
-							mPARENT(false);
+						if ( synPredMatched506 ) {
+							mXML_PI(false);
 							if ( inputState.guessing==0 ) {
-								_ttype = PARENT;
+								_ttype = XML_PI;
 							}
 						}
-						else if (((LA(1)=='/') && (LA(2)=='/') && (true) && (true))&&( !(inAttributeContent || inElementContent) )) {
-							mDSLASH(false);
-							if ( inputState.guessing==0 ) {
-								_ttype = DSLASH;
-							}
-						}
-						else if (((LA(1)=='|') && (LA(2)=='=') && (true) && (true))&&( !(inAttributeContent || inElementContent) )) {
-							mOREQ(false);
-							if ( inputState.guessing==0 ) {
-								_ttype = OREQ;
-							}
-						}
-						else if (((LA(1)=='&') && (LA(2)=='=') && (true) && (true))&&( !(inAttributeContent || inElementContent) )) {
-							mANDEQ(false);
-							if ( inputState.guessing==0 ) {
-								_ttype = ANDEQ;
-							}
-						}
-						else if (((LA(1)=='!') && (LA(2)=='=') && (true) && (true))&&( !(inAttributeContent || inElementContent) )) {
-							mNEQ(false);
-							if ( inputState.guessing==0 ) {
-								_ttype = NEQ;
-							}
-						}
-						else if (((LA(1)=='>') && (LA(2)=='=') && (true) && (true))&&( !(inAttributeContent || inElementContent) )) {
-							mGTEQ(false);
-							if ( inputState.guessing==0 ) {
-								_ttype = GTEQ;
-							}
-						}
-						else if ((LA(1)=='?') && (LA(2)=='>') && (true) && (true)) {
-							mXML_PI_END(false);
-							if ( inputState.guessing==0 ) {
-								_ttype = XML_PI_END;
-							}
-						}
-						else if ((LA(1)=='<') && (true)) {
-							mLT(false);
+						else if ((LA(1)=='<') && (LA(2)=='/')) {
+							mEND_TAG_START(false);
 							if ( inputState.guessing==0 ) {
 								
 										inElementContent= false;
-										_ttype = LT;
+										wsExplicit= false;
+										_ttype = END_TAG_START;
 									
 							}
 						}
-						else if (((_tokenSet_13.member(LA(1))) && (true) && (true) && (true))&&( inAttributeContent && attrDelimChar == '"' )) {
-							mQUOT_ATTRIBUTE_CONTENT(false);
+						else if ((LA(1)=='<') && (LA(2)=='=')) {
+							mLTEQ(false);
 							if ( inputState.guessing==0 ) {
-								_ttype = QUOT_ATTRIBUTE_CONTENT;
+								_ttype = LTEQ;
 							}
 						}
-						else if (((_tokenSet_14.member(LA(1))) && (true) && (true) && (true))&&( inAttributeContent && attrDelimChar == '\'' )) {
-							mAPOS_ATTRIBUTE_CONTENT(false);
+						else if (((LA(1)=='"'||LA(1)=='\'') && ((LA(2) >= '\u0003' && LA(2) <= '\ufffe')) && (true) && (true))&&( parseStringLiterals )) {
+							mSTRING_LITERAL(false);
 							if ( inputState.guessing==0 ) {
-								_ttype = APOS_ATTRIBUTE_CONTENT;
-							}
-						}
-						else if (((LA(1)=='"') && (true) && (true) && (true))&&( !(parseStringLiterals || inElementContent) )) {
-							mQUOT(false);
-							if ( inputState.guessing==0 ) {
-								_ttype = QUOT;
-							}
-						}
-						else if (((LA(1)=='\'') && (true) && (true) && (true))&&( !(parseStringLiterals || inElementContent) )) {
-							mAPOS(false);
-							if ( inputState.guessing==0 ) {
-								_ttype = APOS;
-							}
-						}
-						else if (((_tokenSet_22.member(LA(1))) && (true) && (true) && (true))&&( inElementContent )) {
-							mELEMENT_CONTENT(false);
-							if ( inputState.guessing==0 ) {
-								_ttype = ELEMENT_CONTENT;
-							}
-						}
-						else if ((LA(1)=='\t'||LA(1)=='\n'||LA(1)=='\r'||LA(1)==' ') && (true) && (true) && (true)) {
-							mWS(false);
-							if ( inputState.guessing==0 ) {
-								
-										if (wsExplicit) {
-											_ttype = WS;
-											text.setLength(_begin); text.append("WS");
-										} else
-											_ttype = Token.SKIP;
-									
-							}
-						}
-						else if ((_tokenSet_23.member(LA(1))) && (true) && (true) && (true)) {
-							mNCNAME(true);
-							ncname=_returnToken;
-							if ( inputState.guessing==0 ) {
-								_ttype = ncname.getType();
+								_ttype = STRING_LITERAL;
 							}
 						}
 						else {
-							boolean synPredMatched513 = false;
-							if (((_tokenSet_19.member(LA(1))) && (true) && (true) && (true))) {
-								int _m513 = mark();
-								synPredMatched513 = true;
+							boolean synPredMatched510 = false;
+							if ((((LA(1)=='.') && (LA(2)=='.') && (true) && (true))&&( !(inAttributeContent || inElementContent) ))) {
+								int _m510 = mark();
+								synPredMatched510 = true;
 								inputState.guessing++;
 								try {
 									{
 									match('.');
-									mINTEGER_LITERAL(false);
-									{
-									switch ( LA(1)) {
-									case 'e':
-									{
-										match('e');
-										break;
-									}
-									case 'E':
-									{
-										match('E');
-										break;
-									}
-									default:
-									{
-										throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());
-									}
-									}
-									}
+									match('.');
 									}
 								}
 								catch (RecognitionException pe) {
-									synPredMatched513 = false;
+									synPredMatched510 = false;
 								}
-								rewind(_m513);
+								rewind(_m510);
 								inputState.guessing--;
 							}
-							if ( synPredMatched513 ) {
-								mDECIMAL_LITERAL(false);
+							if ( synPredMatched510 ) {
+								mPARENT(false);
 								if ( inputState.guessing==0 ) {
-									_ttype = DECIMAL_LITERAL;
+									_ttype = PARENT;
+								}
+							}
+							else if (((LA(1)=='/') && (LA(2)=='/') && (true) && (true))&&( !(inAttributeContent || inElementContent) )) {
+								mDSLASH(false);
+								if ( inputState.guessing==0 ) {
+									_ttype = DSLASH;
+								}
+							}
+							else if (((LA(1)=='|') && (LA(2)=='=') && (true) && (true))&&( !(inAttributeContent || inElementContent) )) {
+								mOREQ(false);
+								if ( inputState.guessing==0 ) {
+									_ttype = OREQ;
+								}
+							}
+							else if (((LA(1)=='&') && (LA(2)=='=') && (true) && (true))&&( !(inAttributeContent || inElementContent) )) {
+								mANDEQ(false);
+								if ( inputState.guessing==0 ) {
+									_ttype = ANDEQ;
+								}
+							}
+							else if (((LA(1)=='!') && (LA(2)=='=') && (true) && (true))&&( !(inAttributeContent || inElementContent) )) {
+								mNEQ(false);
+								if ( inputState.guessing==0 ) {
+									_ttype = NEQ;
+								}
+							}
+							else if (((LA(1)=='>') && (LA(2)=='=') && (true) && (true))&&( !(inAttributeContent || inElementContent) )) {
+								mGTEQ(false);
+								if ( inputState.guessing==0 ) {
+									_ttype = GTEQ;
+								}
+							}
+							else if ((LA(1)=='?') && (LA(2)=='>') && (true) && (true)) {
+								mXML_PI_END(false);
+								if ( inputState.guessing==0 ) {
+									_ttype = XML_PI_END;
+								}
+							}
+							else if ((LA(1)=='<') && (true)) {
+								mLT(false);
+								if ( inputState.guessing==0 ) {
+									
+											inElementContent= false;
+											_ttype = LT;
+										
+								}
+							}
+							else if (((_tokenSet_13.member(LA(1))) && (true) && (true) && (true))&&( inAttributeContent && attrDelimChar == '"' )) {
+								mQUOT_ATTRIBUTE_CONTENT(false);
+								if ( inputState.guessing==0 ) {
+									_ttype = QUOT_ATTRIBUTE_CONTENT;
+								}
+							}
+							else if (((_tokenSet_14.member(LA(1))) && (true) && (true) && (true))&&( inAttributeContent && attrDelimChar == '\'' )) {
+								mAPOS_ATTRIBUTE_CONTENT(false);
+								if ( inputState.guessing==0 ) {
+									_ttype = APOS_ATTRIBUTE_CONTENT;
+								}
+							}
+							else if (((LA(1)=='"') && (true) && (true) && (true))&&( !(parseStringLiterals || inElementContent) )) {
+								mQUOT(false);
+								if ( inputState.guessing==0 ) {
+									_ttype = QUOT;
+								}
+							}
+							else if (((LA(1)=='\'') && (true) && (true) && (true))&&( !(parseStringLiterals || inElementContent) )) {
+								mAPOS(false);
+								if ( inputState.guessing==0 ) {
+									_ttype = APOS;
+								}
+							}
+							else if (((_tokenSet_22.member(LA(1))) && (true) && (true) && (true))&&( inElementContent )) {
+								mELEMENT_CONTENT(false);
+								if ( inputState.guessing==0 ) {
+									_ttype = ELEMENT_CONTENT;
+								}
+							}
+							else if ((LA(1)=='\t'||LA(1)=='\n'||LA(1)=='\r'||LA(1)==' ') && (true) && (true) && (true)) {
+								mWS(false);
+								if ( inputState.guessing==0 ) {
+									
+											if (wsExplicit) {
+												_ttype = WS;
+												text.setLength(_begin); text.append("WS");
+											} else
+												_ttype = Token.SKIP;
+										
+								}
+							}
+							else if ((_tokenSet_23.member(LA(1))) && (true) && (true) && (true)) {
+								mNCNAME(true);
+								ncname=_returnToken;
+								if ( inputState.guessing==0 ) {
+									_ttype = ncname.getType();
 								}
 							}
 							else {
