@@ -319,7 +319,7 @@ public class LocationStep extends Step {
             if (context.getProfiler().isEnabled())
                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
                         "OPTIMIZATION",
-                        "using index '" + index.toString() + "'");
+                        "Using structural index '" + index.toString() + "'");
             return index.findElementsByTagName(ElementValue.ELEMENT, docs, test
                     .getName(), selector);
         }
@@ -364,7 +364,7 @@ public class LocationStep extends Step {
                 if (context.getProfiler().isEnabled())
                     context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
                             "OPTIMIZATION",
-                            "using index '" + index.toString() + "'");
+                            "Using structural index '" + index.toString() + "'");
                 // TODO : why a null selector here ? We have one below !
                 currentSet = index.findElementsByTagName(
                         ElementValue.ATTRIBUTE, docs, test.getName(), null);
@@ -401,7 +401,7 @@ public class LocationStep extends Step {
             if (context.getProfiler().isEnabled())
                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
                         "OPTIMIZATION",
-                        "using index '" + index.toString() + "'");
+                        "Using structural index '" + index.toString() + "'");
             if (contextSet instanceof ExtArrayNodeSet) {
                 return index.findDescendantsByTagName(ElementValue.ATTRIBUTE, test.getName(), axis,
                         docs, (ExtArrayNodeSet) contextSet, contextId);
@@ -427,7 +427,7 @@ public class LocationStep extends Step {
                 if (context.getProfiler().isEnabled())
                     context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
                             "OPTIMIZATION",
-                            "using index '" + index.toString() + "'");
+                            "Using structural index '" + index.toString() + "'");
                 currentSet = index.findElementsByTagName(ElementValue.ELEMENT,
                         docs, test.getName(), null);
                 currentDocs = docs;
@@ -440,7 +440,7 @@ public class LocationStep extends Step {
             if (context.getProfiler().isEnabled())
                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
                         "OPTIMIZATION",
-                        "using index '" + index.toString() + "'");
+                        "Using structural index '" + index.toString() + "'");
             DocumentSet docs = getDocumentSet(contextSet);
             if (contextSet instanceof ExtArrayNodeSet) {
             	return index.findDescendantsByTagName(ElementValue.ELEMENT, test.getName(), axis,
@@ -469,7 +469,7 @@ public class LocationStep extends Step {
                 if (context.getProfiler().isEnabled())
                     context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
                             "OPTIMIZATION",
-                            "using index '" + index.toString() + "'");
+                            "Using structural index '" + index.toString() + "'");
                 currentSet = index.findElementsByTagName(ElementValue.ELEMENT,
                         docs, test.getName(), null);
                 currentDocs = docs;
@@ -505,7 +505,7 @@ public class LocationStep extends Step {
             if (context.getProfiler().isEnabled())
                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
                         "OPTIMIZATION",
-                        "using index '" + index.toString() + "'");
+                        "Using structural index '" + index.toString() + "'");
             if (contextSet instanceof ExtArrayNodeSet) {
             	return index.findDescendantsByTagName(ElementValue.ELEMENT, test.getName(), axis,
             			docs, (ExtArrayNodeSet) contextSet, contextId);
@@ -536,7 +536,7 @@ public class LocationStep extends Step {
                 if (context.getProfiler().isEnabled())
                     context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
                             "OPTIMIZATION",
-                            "using index '" + index.toString() + "'");
+                            "Using structural index '" + index.toString() + "'");
                 currentSet = index.findElementsByTagName(ElementValue.ELEMENT,
                         docs, test.getName(), null);
                 currentDocs = docs;
@@ -603,7 +603,7 @@ public class LocationStep extends Step {
                 if (context.getProfiler().isEnabled())
                     context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
                             "OPTIMIZATION",
-                            "using index '" + index.toString() + "'");
+                            "Using structural index '" + index.toString() + "'");
                 currentSet = index.findElementsByTagName(ElementValue.ELEMENT,
                         docs, test.getName(), null);
                 currentDocs = docs;
@@ -626,7 +626,7 @@ public class LocationStep extends Step {
                 if (context.getProfiler().isEnabled())
                     context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
                             "OPTIMIZATION",
-                            "using index '" + index.toString() + "'");
+                            "Using structural index '" + index.toString() + "'");
                 currentSet = index.findElementsByTagName(ElementValue.ELEMENT,
                         docs, test.getName(), null);
                 currentDocs = docs;
@@ -686,7 +686,7 @@ public class LocationStep extends Step {
                 if (context.getProfiler().isEnabled())
                     context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
                             "OPTIMIZATION",
-                            "using index '" + index.toString() + "'");
+                            "Using structural index '" + index.toString() + "'");
                 currentSet = index.findElementsByTagName(ElementValue.ELEMENT,
                         docs, test.getName(), null);
                 currentDocs = docs;
@@ -722,7 +722,7 @@ public class LocationStep extends Step {
             if (context.getProfiler().isEnabled())
                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
                         "OPTIMIZATION",
-                        "using index '" + index.toString() + "'");
+                        "Using structural index '" + index.toString() + "'");
             return index.findElementsByTagName(ElementValue.ELEMENT, docs, test
                     .getName(), selector);
         }
@@ -747,7 +747,7 @@ public class LocationStep extends Step {
                 if (context.getProfiler().isEnabled())
                     context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
                             "OPTIMIZATION",
-                            "using index '" + index.toString() + "'");
+                            "Using structural index '" + index.toString() + "'");
                 currentSet = index.findElementsByTagName(ElementValue.ELEMENT,
                         docs, test.getName(), null);
                 currentDocs = docs;
@@ -761,7 +761,7 @@ public class LocationStep extends Step {
             if (context.getProfiler().isEnabled())
                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
                         "OPTIMIZATION",
-                        "using index '" + index.toString() + "'");
+                        "Using structural index '" + index.toString() + "'");
             return index.findElementsByTagName(ElementValue.ELEMENT, docs, test
                     .getName(), selector);
         }

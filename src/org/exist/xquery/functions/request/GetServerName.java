@@ -47,6 +47,14 @@ public class GetServerName extends BasicFunction {
 			"Returns the server nodename of the current request.",
 			null,
 			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE));
+	
+	public final static FunctionSignature deprecated =
+		new FunctionSignature(
+			new QName("request-servername", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
+			"Returns the server nodename of the current request.",
+			null,
+			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+			"Renamed to request:get-server-name.");
 
 	/**
 	 * @param context

@@ -30,6 +30,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -47,6 +48,14 @@ public class Invalidate extends BasicFunction {
 			"Invalidate (remove) the current HTTP session if present",
 			null,
 			new SequenceType(Type.ITEM, Cardinality.EMPTY));
+    
+    public final static FunctionSignature deprecated =
+		new FunctionSignature(
+			new QName("invalidate-session", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
+			"Invalidate (remove) the current HTTP session if present",
+			null,
+			new SequenceType(Type.ITEM, Cardinality.EMPTY),
+			"Moved to 'session' module and renamed to session:invalidate");
     
     /**
      * @param context

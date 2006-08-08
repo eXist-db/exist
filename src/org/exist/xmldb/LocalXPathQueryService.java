@@ -164,8 +164,9 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 			Sequence result;
 			try {
 				broker = brokerPool.get(user);
-				DocumentSet docs = collection.getCollection().allDocs(broker, new DocumentSet(), true, true);
-				
+//				DocumentSet docs = collection.getCollection().allDocs(broker, new DocumentSet(), true, true);
+				XmldbURI[] docs = new XmldbURI[] { XmldbURI.create("/db") };
+
 				XQuery xquery = broker.getXQueryService();
 				XQueryPool pool = xquery.getXQueryPool();
 				XQueryContext context;

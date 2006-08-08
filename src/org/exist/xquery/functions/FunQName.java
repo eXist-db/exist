@@ -73,7 +73,11 @@ public class FunQName extends BasicFunction {
             if (contextSequence != null)
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
         }  
-        
+
+        //TODO : currently useless (but for empty sequences) since the type is forced :-(
+        if (!args[0].isEmpty() && args[0].getItemType() != Type.STRING)
+        	throw new XPathException("XPTY0004: namespace URI is of type '" + 
+        			Type.getTypeName(args[0].getItemType()) + "', 'xs:string' expected");
         String namespace;
 		if (args[0].isEmpty())
 			namespace = "";
@@ -83,6 +87,10 @@ public class FunQName extends BasicFunction {
 		String param = args[1].getStringValue();
 		String prefix = QName.extractPrefix(param);
 		String localName = QName.extractLocalName(param);
+		
+		if ((prefix != null && prefix.length() > 0) && (namespace == null || namespace.length() == 0))
+        	throw new XPathException("FOCA0002: non-empty namespace prefix with empty namespace URI");
+			
 		QName qname = new QName(localName, namespace, prefix);
 
 		Sequence result = new QNameValue(context, qname);

@@ -215,7 +215,10 @@ public class XIncludeFilter implements Receiver {
 			//String docName = href;
 			String xpointer = docUri.getFragment();
 			if(xpointer!=null) {
-				xpointer = XMLUtil.decodeAttrMarkup(xpointer);
+				try {
+					xpointer = XMLUtil.decodeAttrMarkup(URLDecoder.decode(xpointer, "UTF-8"));
+				} catch (UnsupportedEncodingException e) {
+				}
 			}
             
             // extract possible parameters in the URI

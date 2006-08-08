@@ -31,6 +31,7 @@ import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XPathUtil;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
@@ -54,6 +55,17 @@ public class GetAttribute extends Function {
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
 			},
 			new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE));
+	
+	public final static FunctionSignature deprecated =
+		new FunctionSignature(
+			new QName("get-session-attribute", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
+			"Returns an attribute stored in the current session object or an empty sequence " +
+			"if the attribute cannot be found.",
+			new SequenceType[] {
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+			},
+			new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE),
+			"Moved to 'session' module. Renamed to session:get-attribute");
 		
 	public GetAttribute(XQueryContext context) {
 		super(context, signature);

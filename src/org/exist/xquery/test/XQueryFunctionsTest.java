@@ -299,7 +299,7 @@ public class XQueryFunctionsTest extends TestCase {
             assertTrue(message.indexOf("FOCH0002") > -1);		            
 			
 		} catch (XMLDBException e) {
-			System.out.println("testMin(): " + e);
+			e.printStackTrace();
 			fail(e.getMessage());
 		}
 	}	
@@ -346,7 +346,7 @@ public class XQueryFunctionsTest extends TestCase {
 			
 
 		} catch (XMLDBException e) {
-			System.out.println("testMax(): " + e);
+			e.printStackTrace();
 			fail(e.getMessage());
 		}
 	}	
@@ -401,7 +401,7 @@ public class XQueryFunctionsTest extends TestCase {
 			assertEquals( "<root/>", r );					
 			
 		} catch (XMLDBException e) {
-			System.out.println("testExclusiveLock(): " + e);
+			e.printStackTrace();
 			fail(e.getMessage());
 		}
 	}	
@@ -456,7 +456,7 @@ public class XQueryFunctionsTest extends TestCase {
 			assertEquals( "<root/>", r );	
 			
 		} catch (XMLDBException e) {
-			System.out.println("testSharedLock(): " + e);
+			e.printStackTrace();
 			fail(e.getMessage());
 		}
 	}	

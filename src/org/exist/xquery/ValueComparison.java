@@ -59,6 +59,8 @@ public class ValueComparison extends GeneralComparison {
 	}
 
 	protected Sequence genericCompare(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (context.getProfiler().isEnabled())
+            context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "genericCompare");  
 		Sequence ls = getLeft().eval(contextSequence, contextItem);
 		Sequence rs = getRight().eval(contextSequence, contextItem);
 		if(ls.isEmpty() || rs.isEmpty())
@@ -73,22 +75,39 @@ public class ValueComparison extends GeneralComparison {
         throw new XPathException(getASTNode(), "Type error: sequence with more than one item is not allowed here");
 	}
 
-	protected Sequence nodeSetCompare(NodeSet nodes, Sequence contextSequence) throws XPathException {
-		NodeSet result = new ExtArrayNodeSet();	
-		for (Iterator i = nodes.iterator(); i.hasNext();) {
-            NodeProxy current = (NodeProxy) i.next();			
-            ContextItem context = current.getContext();
-			do {
+	protected Sequence nodeSetCompare(NodeSet nodes, Sequence contextSequence) throws XPathException {		
+        if (context.getProfiler().isEnabled())
+            context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "nodeSetCompare");		
+		NodeSet result = new ExtArrayNodeSet();
+        Collator collator = getCollator(contextSequence);
+        if (contextSequence != null && !contextSequence.isEmpty()) {
+            for (Iterator i = nodes.iterator(); i.hasNext();) {
+                NodeProxy current = (NodeProxy) i.next();
+                ContextItem context = current.getContext();
+                do {
+                    AtomicValue lv = current.atomize();
+                    Sequence rs = getRight().eval(context.getNode().toSequence());                    
+                    if (!rs.hasOne())
+                        throw new XPathException(getASTNode(),
+                                "Type error: sequence with less or more than one item is not allowed here");                    
+                    if (compareValues(collator, lv, rs.itemAt(0).atomize()))
+                        result.add(current);
+                } while ((context = context.getNextDirect()) != null);
+            }
+        } else {
+            Sequence rs = getRight().eval(null);
+            if (!rs.hasOne())
+                throw new XPathException(getASTNode(),
+                        "Type error: sequence with less or more than one item is not allowed here");
+            AtomicValue rv = rs.itemAt(0).atomize();
+            for (Iterator i = nodes.iterator(); i.hasNext();) {
+                NodeProxy current = (NodeProxy) i.next();
                 AtomicValue lv = current.atomize();
-                Sequence rs = getRight().eval(context.getNode().toSequence());
-				if (!rs.hasOne())
-					throw new XPathException(getASTNode(), "Type error: sequence with less or more than one item is not allowed here");
-                Collator collator = getCollator(contextSequence);
-                if (compareValues(collator, lv, rs.itemAt(0).atomize()))
-					result.add(current);
-			} while ((context = context.getNextDirect()) != null);
-		}
-		return result;
+                if (compareValues(collator, lv, rv))
+                    result.add(current);
+            }
+        }
+        return result;
 	}
     
     public void dump(ExpressionDumper dumper) {

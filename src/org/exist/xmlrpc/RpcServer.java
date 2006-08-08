@@ -1812,6 +1812,22 @@ public class RpcServer implements RpcAPI {
         }
     }
 
+    public boolean backup(User user, String userbackup, String password,
+			String destcollection, String collection) throws EXistException,
+			PermissionDeniedException {
+		RpcConnection con = pool.get();
+		try {
+			con.backup(user, userbackup, password, destcollection, collection);
+			return true;
+		} catch (Exception e) {
+			handleException(e);
+			return false;
+		} finally {
+			pool.release(con);
+		}
+	}
+
+    
     /* (non-Javadoc)
      * @see org.exist.xmlrpc.RpcAPI#configureCollection(org.exist.security.User, java.lang.String, java.lang.String)
      */

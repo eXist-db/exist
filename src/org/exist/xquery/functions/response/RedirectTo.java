@@ -32,6 +32,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -49,6 +50,15 @@ public class RedirectTo extends BasicFunction {
 			"generator. Use a sitemap redirect instead.",
 			new SequenceType[] { new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE) },
 			new SequenceType(Type.ITEM, Cardinality.EMPTY));
+	
+	public final static FunctionSignature deprecated =
+		new FunctionSignature(
+			new QName("redirect-to", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
+			"Sends a HTTP redirect response (302) to the client. Note: this is not supported by the Cocooon " +
+			"generator. Use a sitemap redirect instead.",
+			new SequenceType[] { new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE) },
+			new SequenceType(Type.ITEM, Cardinality.EMPTY),
+			"Moved to 'response' module.");
 
 	/**
 	 * @param context

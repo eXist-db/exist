@@ -70,7 +70,7 @@ public class StorageStressTest extends TestCase {
 	        String[] wordList = DBUtils.wordList(collection);
 	        long start = System.currentTimeMillis();
 	        for (int i = 0; i < 30000; i++) {
-	            File f = DBUtils.generateXMLFile(50, 3, wordList, false);
+	            File f = DBUtils.generateXMLFile(6, 3, wordList, false);
 	            System.out.println("Storing file: " + f.getName() + "; size: " + (f.length() / 1024) + "kB");
 	            Resource res = collection.createResource("test_" + i, "XMLResource");
 	            res.setContent(f);
@@ -148,7 +148,7 @@ public class StorageStressTest extends TestCase {
 	        
 	        IndexQueryService idxConf = (IndexQueryService)
 	            collection.getService("IndexQueryService", "1.0");
-	        idxConf.configureCollection(CONFIG);
+//	        idxConf.configureCollection(CONFIG);
         } catch (Exception e) {            
             fail(e.getMessage()); 
         }	        

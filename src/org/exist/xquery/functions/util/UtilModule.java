@@ -26,6 +26,7 @@ import org.exist.dom.QName;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.functions.system.GetVersion;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
@@ -80,7 +81,10 @@ public class UtilModule extends AbstractInternalModule {
         new FunctionDef(PrologFunctions.signatures[2], PrologFunctions.class),
         new FunctionDef(SystemTime.signature, SystemTime.class),
         new FunctionDef(RandomFunction.signature, RandomFunction.class),
-        new FunctionDef(FunUnEscapeURI.signature, FunUnEscapeURI.class)
+        new FunctionDef(FunUnEscapeURI.signature, FunUnEscapeURI.class),
+        
+        // deprecated functions
+        new FunctionDef(GetVersion.deprecated, GetVersion.class),
 	};
 	
 	public final static QName EXCEPTION_QNAME = 

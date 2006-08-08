@@ -54,6 +54,7 @@ public class FunctionSignature {
 	private SequenceType returnType;
 	private boolean isOverloaded = false;
 	private String description = null;
+	private String deprecated = null;
 	
 	public FunctionSignature(QName name) {
 		this(name, null, DEFAULT_TYPE, false);
@@ -70,6 +71,18 @@ public class FunctionSignature {
 		
 	public FunctionSignature(QName name, String description, SequenceType[] arguments, SequenceType returnType) {
 		this(name, description, arguments, returnType, false);	
+	}
+	
+	public FunctionSignature(QName name, String description, SequenceType[] arguments, SequenceType returnType,
+			String deprecated) {
+		this(name, description, arguments, returnType, false);
+		setDeprecated(deprecated);
+	}
+	
+	public FunctionSignature(QName name, String description, SequenceType[] arguments, SequenceType returnType,
+			boolean overloaded, String deprecated) {
+		this(name, description, arguments, returnType, overloaded);
+		setDeprecated(deprecated);
 	}
 	
 	/**
@@ -125,6 +138,18 @@ public class FunctionSignature {
 	
 	public boolean isOverloaded() {
 		return isOverloaded;
+	}
+	
+	public boolean isDeprecated() {
+		return deprecated != null;
+	}
+	
+	public String getDeprecated() {
+		return deprecated;
+	}
+	
+	public void setDeprecated(String message) {
+		deprecated = message;
 	}
 	
 	public String toString() {

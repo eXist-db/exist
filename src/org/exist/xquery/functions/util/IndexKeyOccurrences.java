@@ -73,7 +73,7 @@ public class IndexKeyOccurrences extends BasicFunction {
 	        NodeSet nodes = args[0].toNodeSet();
 	        DocumentSet docs = nodes.getDocumentSet();	        
 	        ValueOccurrences occur[] = context.getBroker().getValueIndex()
-	                .scanIndexKeys(docs, nodes, (Indexable) args[1]);
+	                .scanIndexKeys(docs, nodes, (Indexable) (args[1].itemAt(0)));
 	        if (occur.length == 0)
 	        	result= Sequence.EMPTY_SEQUENCE;
 	        else

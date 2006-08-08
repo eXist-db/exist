@@ -159,14 +159,13 @@ public abstract class DeferredFunctionCall implements Sequence {
     }
 
     public boolean isEmpty() {
-        return false;
-//        try {
-//            realize();
-//            return sequence.isEmpty();
-//        } catch (XPathException e) {
-//            LOG.error("Exception in deferred function: " + e.getMessage());
-//            return false;
-//        }
+        try {
+            realize();
+            return sequence.isEmpty();
+        } catch (XPathException e) {
+            LOG.error("Exception in deferred function: " + e.getMessage());
+            return false;
+        }
     }
 
     public boolean isPersistentSet() {

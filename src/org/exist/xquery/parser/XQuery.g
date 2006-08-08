@@ -1198,6 +1198,9 @@ quotAttrValueContent throws XPathException:
 	c:QUOT_ATTRIBUTE_CONTENT
 	{ #quotAttrValueContent = #[ATTRIBUTE_CONTENT, c.getText()]; }
 	|
+	e:ESCAPE_QUOT
+	{ #quotAttrValueContent = #[ATTRIBUTE_CONTENT, "\""]; }
+	|
 	attrCommonContent
 	;
 	
@@ -1205,6 +1208,9 @@ aposAttrValueContent throws XPathException
 :
 	c:APOS_ATTRIBUTE_CONTENT
 	{ #aposAttrValueContent = #[ATTRIBUTE_CONTENT, c.getText()]; }
+	|
+	e:ESCAPE_APOS
+	{ #aposAttrValueContent = #[ATTRIBUTE_CONTENT, "'"]; }
 	|
 	attrCommonContent
 	;
@@ -1215,7 +1221,7 @@ attrCommonContent throws XPathException
 	{ 	
 		lexer.inAttributeContent= true;
 		lexer.parseStringLiterals = false;
-		#attrCommonContent= #[ATTRIBUTE_CONTENT, "{"]; 
+		#attrCommonContent= #[ATTRIBUTE_CONTENT, "{"];
 	}
 	|
 	RCURLY RCURLY
@@ -1695,6 +1701,16 @@ options {
 	( ~( '\'' | '{' | '}' | '<' ) )+
 	;
 
+protected ESCAPE_APOS
+:
+	'\'' '\''
+	;
+
+protected ESCAPE_QUOT
+:
+	'"' '"'
+	;
+
 /**
  * The following definition differs from the spec by allowing the
  * '&' character, which is handled by the constructor classes.
@@ -1780,6 +1796,12 @@ options {
 	|
 	RCURLY { $setType(RCURLY); }
 	|
+	{ inAttributeContent && attrDelimChar == '\'' }?
+	ESCAPE_APOS { $setType(ESCAPE_APOS); }
+	|
+	{ inAttributeContent && attrDelimChar == '"' }?
+	ESCAPE_QUOT { $setType(ESCAPE_QUOT); }
+	|
 	{ inAttributeContent && attrDelimChar == '"' }?
 	QUOT_ATTRIBUTE_CONTENT
 	{ $setType(QUOT_ATTRIBUTE_CONTENT); }
@@ -1823,7 +1845,7 @@ options {
 	PARENT { $setType(PARENT); }
 	|
     ( '.' INTEGER_LITERAL ( 'e' | 'E' ) )
-	=> DECIMAL_LITERAL { $setType(DECIMAL_LITERAL); }
+	=> DOUBLE_LITERAL { $setType(DOUBLE_LITERAL); }
     |
 	( '.' INTEGER_LITERAL )
 	=> DECIMAL_LITERAL { $setType(DECIMAL_LITERAL); }

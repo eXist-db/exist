@@ -206,14 +206,10 @@ public class GeneralComparison extends BinaryOp {
                 
                 if (!Dependency.dependsOn(getRight(), Dependency.CONTEXT_ITEM))
 				{
-					if (context.getProfiler().isEnabled())
-						context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "quickNodeSetCompare");
 					result = quickNodeSetCompare(contextSequence);
 				}
 				else
 				{      
-                    if (context.getProfiler().isEnabled())
-                        context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "nodeSetCompare");                    
 					result = nodeSetCompare(contextSequence);
 				}
             }            
@@ -221,9 +217,6 @@ public class GeneralComparison extends BinaryOp {
 		
         //TODO : better design. Should a (buggy) null previous result be returned, we would evaluate this !
         if(result == null) {
-            if (context.getProfiler().isEnabled())
-                context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, 
-                        "OPTIMIZATION CHOICE", "genericCompare");   
             result = genericCompare(contextSequence, contextItem);
         }
         
@@ -243,6 +236,9 @@ public class GeneralComparison extends BinaryOp {
 	 * @throws XPathException
 	 */
 	protected Sequence genericCompare(Sequence contextSequence,	Item contextItem) throws XPathException {
+        if (context.getProfiler().isEnabled())
+            context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, 
+                    "OPTIMIZATION CHOICE", "genericCompare");   
 		Sequence ls = getLeft().eval(contextSequence, contextItem);
 		Sequence rs = getRight().eval(contextSequence, contextItem);
 		Collator collator = getCollator(contextSequence);
@@ -253,8 +249,7 @@ public class GeneralComparison extends BinaryOp {
 			return BooleanValue.valueOf(compareValues(collator, lv, rv));
 		} else {
 			for (SequenceIterator i1 = ls.iterate(); i1.hasNext();) {
-				lv = i1.nextItem().atomize();
-				//TODO : get rid of getLength
+				lv = i1.nextItem().atomize();				
 				if (rs.hasOne()	&& 
                     compareValues(collator, lv, rs.itemAt(0).atomize()))
 					return BooleanValue.TRUE;
@@ -281,46 +276,44 @@ public class GeneralComparison extends BinaryOp {
 	}
 
 	protected Sequence nodeSetCompare(NodeSet nodes, Sequence contextSequence) throws XPathException {
+        if (context.getProfiler().isEnabled())
+            context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "nodeSetCompare");                    
 		NodeSet result = new ExtArrayNodeSet();
-		NodeProxy current;
-		ContextItem c;
-		Sequence rs;
-		AtomicValue lv, rv;
 		Collator collator = getCollator(contextSequence);
-		if(contextSequence != null && contextSequence != Sequence.EMPTY_SEQUENCE)
+		if(contextSequence != null && !contextSequence.isEmpty())
 		{
 			for (Iterator i = nodes.iterator(); i.hasNext();)
 			{
-				current = (NodeProxy) i.next();
-				c = current.getContext();
-				if(c == null)
+				NodeProxy current = (NodeProxy) i.next();
+				ContextItem context = current.getContext();
+				if (context == null)
 					throw new XPathException(getASTNode(), "Internal error: context node missing");
-                lv = current.atomize();
+				AtomicValue lv = current.atomize();
                 //TODO : review to consider transverse context
 				do
 				{					
-                    rs = getRight().eval(c.getNode().toSequence());
+					Sequence rs = getRight().eval(context.getNode().toSequence());
 					for (SequenceIterator si = rs.iterate(); si.hasNext();)
 					{                        
-                        rv = si.nextItem().atomize();
+						AtomicValue rv = si.nextItem().atomize();
 						if (compareValues(collator, lv, rv))
 						{
 							result.add(current);
 						}
 					}
-				}while ((c = c.getNextDirect()) != null);
+				}while ((context = context.getNextDirect()) != null);
 			}
 		}
 		else
 		{
 		    for (Iterator i = nodes.iterator(); i.hasNext();)
 		    {
-				current = (NodeProxy) i.next();	
-                lv = current.atomize();
-                rs = getRight().eval(null);
+		    	NodeProxy current = (NodeProxy) i.next();	
+				AtomicValue lv = current.atomize();
+				Sequence rs = getRight().eval(null);
 				for (SequenceIterator si = rs.iterate(); si.hasNext();)
 				{
-                    rv = si.nextItem().atomize();
+					AtomicValue rv = si.nextItem().atomize();
 					if (compareValues(collator, lv, rv))
 					{
 						result.add(current);
@@ -352,7 +345,10 @@ public class GeneralComparison extends BinaryOp {
 		 *  - deliriumsky 
 		 */
 		
-        // if the context sequence hasn't changed we can return a cached result
+		if (context.getProfiler().isEnabled())
+			context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "quickNodeSetCompare");
+
+		// if the context sequence hasn't changed we can return a cached result
 		if(cached != null && cached.isValid(contextSequence))
 		{
             if(context.getProfiler().isEnabled())
@@ -397,12 +393,13 @@ public class GeneralComparison extends BinaryOp {
 			//Iterate through the right hand sequence
 			for(SequenceIterator itRightSeq = rightSeq.iterate(); itRightSeq.hasNext();)
 	    	{
-				//Get the index Key
+				//Get the index key
 				Item key = itRightSeq.nextItem().atomize();
 				
-				//if key has truncation convert to string
+				//if key has truncation, convert it to string
 		        if(truncation != Constants.TRUNC_NONE)
 		        {
+		        	//TODO : log this conversion ? -pb
 		        	//truncation is only possible on strings
 		        	key = key.convertTo(Type.STRING);
 		        }
@@ -417,64 +414,69 @@ public class GeneralComparison extends BinaryOp {
 					}
 	            	catch(XPathException xpe)
 					{
+	            		//TODO : rethorw the exception ? -pb
+	            		
 			        	//Could not convert the key to a suitable type for the index, fallback to nodeSetCompare()
 		                if(context.getProfiler().isEnabled())
 		                {
-		                    context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION FALLBACK", "nodeSetCompare");
+		                    context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION FALLBACK", "Falling back to nodeSetCompare (" + xpe.getMessage() + ")");
 		                }
 		                
 			            return nodeSetCompare(nodes, contextSequence);
 					}
 		        }
 		        
-		        // If key implements org.exist.storage.Indexable, we can use the index
-		        if(key instanceof Indexable && Type.subTypeOf(key.getType(), indexType))
-		        {
-		        	if(truncation == Constants.TRUNC_NONE)
-		        	{
-			        	//key without truncation, find key
-	                    context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "OPTIMIZATION", "Using value index to find key '" + Type.getTypeName(key.getType()) + "(" + key.getStringValue() + ")'");
-	                    
-	                    if(result == null)	//if first iteration
-	                    {
-	                    	result = context.getBroker().getValueIndex().find(relation, docs, nodes, (Indexable)key);
-	                    }
-	                    else
-	                    {
-	                    	result = result.union(context.getBroker().getValueIndex().find(relation, docs, nodes, (Indexable)key));
-	                    }
-	                }
-		        	else
-		        	{
-			        	//key with truncation, match key
-	                    context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "OPTIMIZATION", "Using value index to match key '" + Type.getTypeName(key.getType()) + "(" + key.getStringValue() + ")'");
-						try
-						{							
-							if(result == null) //if first iteration
-							{
-								result = context.getBroker().getValueIndex().match(docs, nodes, key.getStringValue().replace('%', '*'), DBBroker.MATCH_WILDCARDS);
-							}
+
+		        if(key instanceof Indexable) {
+			        // If key implements org.exist.storage.Indexable, we can use the index
+		        	if (Type.subTypeOf(key.getType(), indexType)) {
+			        	if(truncation == Constants.TRUNC_NONE) {
+				        	//key without truncation, find key
+		                    context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "OPTIMIZATION", "Using value index '" + context.getBroker().getValueIndex().toString() + 
+		                    		"' to find key '" + Type.getTypeName(key.getType()) + "(" + key.getStringValue() + ")'");
+		                    
+		                    NodeSet ns = context.getBroker().getValueIndex().find(relation, docs, nodes, (Indexable)key);
+							if (result == null)
+								result = ns;
 							else
+								result = result.union(ns);							
+		                }
+			        	else
+			        	{
+				        	//key with truncation, match key
+		                    context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "OPTIMIZATION", "Using value index '" + context.getBroker().getValueIndex().toString() + 
+		                    		"' to match key '" + Type.getTypeName(key.getType()) + "(" + key.getStringValue() + ")'");
+							try
 							{
-								result = result.union(context.getBroker().getValueIndex().match(docs, nodes, key.getStringValue().replace('%', '*'), DBBroker.MATCH_WILDCARDS));
+								NodeSet ns = context.getBroker().getValueIndex().match(docs, nodes, key.getStringValue().replace('%', '*'), DBBroker.MATCH_WILDCARDS);
+								if (result == null)
+									result = ns;
+								else
+									result = result.union(ns);							
+							} catch (EXistException e) {
+								throw new XPathException(getASTNode(), e.getMessage(), e);
 							}
 						}
-						catch (EXistException e)
-						{
-							throw new XPathException(getASTNode(), e.getMessage(), e);
-						}
-					}
-		        }
-		        else
-		        {
-		        	//the datatype of our key does not
-		        	//implement org.exist.storage.Indexable or is not of the correct type
+			        } else {
+			        	//the datatype of our key does not
+			        	//implement org.exist.storage.Indexable or is not of the correct type
+		                if(context.getProfiler().isEnabled())
+		                {
+		                    context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION FALLBACK", "Falling back to nodeSetCompare (key is of type: " + 
+		                    		Type.getTypeName(key.getType()) + ") whereas index is of type '" + Type.getTypeName(indexType) + "'");
+		                }
+	                    return(nodeSetCompare(nodes, contextSequence));
+			        }
+		        } else {
+		        	//the datatype of our key does not implement org.exist.storage.Indexable
 	                if(context.getProfiler().isEnabled())
 	                {
-	                    context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION FALLBACK", "nodeSetCompare");
+	                    context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION FALLBACK", "Falling back to nodeSetCompare (key is not an indexable type: " + 
+	                    		key.getClass().getName());
 	                }
                     return(nodeSetCompare(nodes, contextSequence));
-	            }
+		        	
+		        }
         
 		//removed by Pierrick Brihaye
         //REMOVED : a *general* comparison should not be dependant of the settings of a fulltext index
@@ -508,7 +510,7 @@ public class GeneralComparison extends BinaryOp {
 	    	//no range index defined on the nodes in this sequence, so fallback to nodeSetCompare
             if(context.getProfiler().isEnabled())
             {
-                context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION FALLBACK", "nodeSetCompare");
+                context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION FALLBACK", "falling back to nodeSetCompare (no index available)");
             }
 
             return(nodeSetCompare(nodes, contextSequence));

@@ -32,6 +32,7 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
@@ -57,6 +58,17 @@ public class SetHeader extends Function {
 			},
 			new SequenceType(Type.ITEM, Cardinality.EMPTY));
 
+	public final static FunctionSignature deprecated =
+		new FunctionSignature(
+			new QName("set-response-header", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
+			"Set's a HTTP Header on the HTTP Response. $a is the header name, $b is the header value.",
+			new SequenceType[] {
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+			},
+			new SequenceType(Type.ITEM, Cardinality.EMPTY),
+			"Moved to response module and renamed to response:set-header.");
+	
 	public SetHeader(XQueryContext context) {
 		super(context, signature);
 	}
