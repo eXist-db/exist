@@ -2463,9 +2463,19 @@ public class BFile extends BTree {
         }
         
         public void copyRaw(VariableByteOutputStream os, int count) throws IOException {
-        	for(long i = 0; i < count; i++) {
+            for (int i = count; i != 0; ) {
                 if (offset == pageLen) advance();
-                os.writeByte(nextPage.data[offset++]);
+                int avail = pageLen - offset;
+                if (i >= avail) {
+                    os.write(nextPage.data, offset, avail);
+                    i -= avail;
+                    offset = (short) pageLen;
+                } else {
+                    os.write(nextPage.data, offset, i);
+                    offset += i;
+                    break;
+                }
+//                os.writeByte(nextPage.data[offset++]);
             }        	
         }
     }

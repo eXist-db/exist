@@ -15,7 +15,9 @@ import org.exist.util.FastByteBuffer;
 public class VariableByteOutputStream extends OutputStream {
 
 	protected FastByteBuffer buf;
-
+	
+    private final byte[] temp = new byte[4];
+    
 	public VariableByteOutputStream() {
 		super();
 		buf = new FastByteBuffer(9);
@@ -34,6 +36,10 @@ public class VariableByteOutputStream extends OutputStream {
 		buf = null;
 	}
 
+    public int size() {
+        return buf.length();
+    }
+    
 	public void flush() throws IOException {
 	}
 
@@ -80,18 +86,21 @@ public class VariableByteOutputStream extends OutputStream {
 	}
 
 	public void writeInt(int i) {
+        int count = 0;
 		while ((i & ~0177) != 0) {
-			buf.append((byte) ((i & 0177) | 0200));
+			temp[count++] = (byte) ((i & 0177) | 0200);
 			i >>>= 7;
 		}
-		buf.append((byte) i);
+        temp[count++] = (byte) i;
+		buf.append(temp, 0, count);
 	}
 
     public void writeFixedInt(int i) {
-        buf.append((byte) ( ( i >>> 0 ) & 0xff ));
-        buf.append((byte) ( ( i >>> 8 ) & 0xff ));
-        buf.append((byte) ( ( i >>> 16 ) & 0xff ));
-        buf.append((byte) ( ( i >>> 24 ) & 0xff ));
+        temp[0] = (byte) ( ( i >>> 0 ) & 0xff );
+        temp[1] = (byte) ( ( i >>> 8 ) & 0xff );
+        temp[2] = (byte) ( ( i >>> 16 ) & 0xff );
+        temp[3] = (byte) ( ( i >>> 24 ) & 0xff );
+        buf.append(temp);
     }
     
     public void writeFixedInt(int position, int i) {
