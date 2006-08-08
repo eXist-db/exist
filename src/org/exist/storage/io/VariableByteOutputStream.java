@@ -16,7 +16,7 @@ public class VariableByteOutputStream extends OutputStream {
 
 	protected FastByteBuffer buf;
 	
-    private final byte[] temp = new byte[4];
+    private final byte[] temp = new byte[5];
     
 	public VariableByteOutputStream() {
 		super();
@@ -100,7 +100,7 @@ public class VariableByteOutputStream extends OutputStream {
         temp[1] = (byte) ( ( i >>> 8 ) & 0xff );
         temp[2] = (byte) ( ( i >>> 16 ) & 0xff );
         temp[3] = (byte) ( ( i >>> 24 ) & 0xff );
-        buf.append(temp);
+        buf.append(temp, 0, 4);
     }
     
     public void writeFixedInt(int position, int i) {
