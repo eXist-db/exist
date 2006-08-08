@@ -1992,7 +1992,6 @@ public XQueryTreeParser() {
 			step=expr(_t,returnExpr);
 			_t = _retTree;
 			
-							System.out.println("default:" + returnExpr);
 							tswitch.setDefault(qn, returnExpr);
 						
 			}
