@@ -228,6 +228,13 @@ public class Eval extends BasicFunction {
             if (innerContext != this.context)
                 innerContext.reset();
 			return sequence;
+		} catch (XPathException e) {
+			try {
+				e.prependMessage("Error while evaluating expression: " + querySource.getContent() + ". ");
+			} catch (IOException e1) {
+			}
+			e.setASTNode(getASTNode());
+			throw e;
 		} catch (IOException e) {
 			throw new XPathException(getASTNode(), e.getMessage(), e);
 		} finally {
