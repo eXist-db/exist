@@ -52,6 +52,7 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -180,10 +181,10 @@ public class Eval extends BasicFunction {
         if (Type.subTypeOf(expr.getType(), Type.ANY_URI)) {
             querySource = loadQueryFromURI(expr);
         } else {
-            String queryStr = expr.getStringValue();
+            String queryStr = StringValue.expand(expr.getStringValue());
             if ("".equals(queryStr.trim()))
               return new EmptySequence();
-            querySource = new StringSource(expr.getStringValue());
+            querySource = new StringSource(queryStr);
         }
 		
 		NodeValue contextInit = null;
