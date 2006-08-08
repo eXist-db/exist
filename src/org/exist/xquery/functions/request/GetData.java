@@ -52,9 +52,20 @@ public class GetData extends BasicFunction {
 				"get-data",
 				RequestModule.NAMESPACE_URI,
 				RequestModule.PREFIX),
-			"Returns the content of a POST request as string",
+			"Returns the content of a POST request as an XML document or a string representaion. Returns an empty sequence if there is no data.",
 			null,
 			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
+	
+	public final static FunctionSignature deprecated =
+		new FunctionSignature(
+			new QName(
+				"get-request-data",
+				RequestModule.NAMESPACE_URI,
+				RequestModule.PREFIX),
+			"Returns the content of a POST request as an XML document or a string representaion. Returns an empty sequence if there is no data.",
+			null,
+			new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE),
+			"Renamed to get-data.");
 	
 	public GetData(XQueryContext context) {
 		super(context, signature);
@@ -75,9 +86,20 @@ public class GetData extends BasicFunction {
 		if (var.getValue().getItemType() != Type.JAVA_OBJECT)
 			throw new XPathException("Variable $request is not bound to an Java object.");
 		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
-		if (value.getObject() instanceof RequestWrapper) {
-			RequestWrapper request = (RequestWrapper)value.getObject();
-			try {
+		
+		if(value.getObject() instanceof RequestWrapper)
+		{
+			RequestWrapper request = (RequestWrapper)value.getObject();	
+			
+			//if the content length is unknown, return
+			if(request.getContentLength() == -1)
+			{
+				return Sequence.EMPTY_SEQUENCE;
+			}
+			
+			//first, get the content of the request
+			try
+			{
 				InputStream is = request.getInputStream();
 				ByteArrayOutputStream bos = new ByteArrayOutputStream(request
 						.getContentLength());

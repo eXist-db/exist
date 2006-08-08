@@ -30,6 +30,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
@@ -52,7 +53,15 @@ public class GetID extends Function
 			null,
 			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
 	);
-		
+	
+	public final static FunctionSignature deprecated = new FunctionSignature(
+			new QName("get-session-id", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
+			"Returns the ID of the current session or an empty sequence if there is no session.",
+			null,
+			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
+			"Moved to session module and renamed to session:get-id."
+	);
+	
 	public GetID(XQueryContext context)
 	{
 		super(context, signature);

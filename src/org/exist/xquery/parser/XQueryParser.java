@@ -8438,7 +8438,7 @@ public XQueryParser(ParserSharedInputState state) {
 			{
 			_loop342:
 			do {
-				if ((LA(1)==LCURLY||LA(1)==RCURLY||LA(1)==QUOT_ATTRIBUTE_CONTENT)) {
+				if ((_tokenSet_14.member(LA(1)))) {
 					quotAttrValueContent();
 					astFactory.addASTChild(currentAST, returnAST);
 				}
@@ -8470,7 +8470,7 @@ public XQueryParser(ParserSharedInputState state) {
 			{
 			_loop344:
 			do {
-				if ((LA(1)==LCURLY||LA(1)==RCURLY||LA(1)==APOS_ATTRIBUTE_CONTENT)) {
+				if ((_tokenSet_15.member(LA(1)))) {
 					aposAttrValueContent();
 					astFactory.addASTChild(currentAST, returnAST);
 				}
@@ -8505,6 +8505,8 @@ public XQueryParser(ParserSharedInputState state) {
 		org.exist.xquery.parser.XQueryAST quotAttrValueContent_AST = null;
 		Token  c = null;
 		org.exist.xquery.parser.XQueryAST c_AST = null;
+		Token  e = null;
+		org.exist.xquery.parser.XQueryAST e_AST = null;
 		
 		switch ( LA(1)) {
 		case QUOT_ATTRIBUTE_CONTENT:
@@ -8516,6 +8518,23 @@ public XQueryParser(ParserSharedInputState state) {
 			if ( inputState.guessing==0 ) {
 				quotAttrValueContent_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 				quotAttrValueContent_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(ATTRIBUTE_CONTENT,c.getText());
+				currentAST.root = quotAttrValueContent_AST;
+				currentAST.child = quotAttrValueContent_AST!=null &&quotAttrValueContent_AST.getFirstChild()!=null ?
+					quotAttrValueContent_AST.getFirstChild() : quotAttrValueContent_AST;
+				currentAST.advanceChildToEnd();
+			}
+			quotAttrValueContent_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
+			break;
+		}
+		case ESCAPE_QUOT:
+		{
+			e = LT(1);
+			e_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(e);
+			astFactory.addASTChild(currentAST, e_AST);
+			match(ESCAPE_QUOT);
+			if ( inputState.guessing==0 ) {
+				quotAttrValueContent_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
+				quotAttrValueContent_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(ATTRIBUTE_CONTENT,"\"");
 				currentAST.root = quotAttrValueContent_AST;
 				currentAST.child = quotAttrValueContent_AST!=null &&quotAttrValueContent_AST.getFirstChild()!=null ?
 					quotAttrValueContent_AST.getFirstChild() : quotAttrValueContent_AST;
@@ -8547,6 +8566,8 @@ public XQueryParser(ParserSharedInputState state) {
 		org.exist.xquery.parser.XQueryAST aposAttrValueContent_AST = null;
 		Token  c = null;
 		org.exist.xquery.parser.XQueryAST c_AST = null;
+		Token  e = null;
+		org.exist.xquery.parser.XQueryAST e_AST = null;
 		
 		switch ( LA(1)) {
 		case APOS_ATTRIBUTE_CONTENT:
@@ -8558,6 +8579,23 @@ public XQueryParser(ParserSharedInputState state) {
 			if ( inputState.guessing==0 ) {
 				aposAttrValueContent_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 				aposAttrValueContent_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(ATTRIBUTE_CONTENT,c.getText());
+				currentAST.root = aposAttrValueContent_AST;
+				currentAST.child = aposAttrValueContent_AST!=null &&aposAttrValueContent_AST.getFirstChild()!=null ?
+					aposAttrValueContent_AST.getFirstChild() : aposAttrValueContent_AST;
+				currentAST.advanceChildToEnd();
+			}
+			aposAttrValueContent_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
+			break;
+		}
+		case ESCAPE_APOS:
+		{
+			e = LT(1);
+			e_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(e);
+			astFactory.addASTChild(currentAST, e_AST);
+			match(ESCAPE_APOS);
+			if ( inputState.guessing==0 ) {
+				aposAttrValueContent_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
+				aposAttrValueContent_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(ATTRIBUTE_CONTENT,"'");
 				currentAST.root = aposAttrValueContent_AST;
 				currentAST.child = aposAttrValueContent_AST!=null &&aposAttrValueContent_AST.getFirstChild()!=null ?
 					aposAttrValueContent_AST.getFirstChild() : aposAttrValueContent_AST;
@@ -8619,7 +8657,7 @@ public XQueryParser(ParserSharedInputState state) {
 					
 						lexer.inAttributeContent= true;
 						lexer.parseStringLiterals = false;
-						attrCommonContent_AST= (org.exist.xquery.parser.XQueryAST)astFactory.create(ATTRIBUTE_CONTENT,"{"); 
+						attrCommonContent_AST= (org.exist.xquery.parser.XQueryAST)astFactory.create(ATTRIBUTE_CONTENT,"{");
 					
 				currentAST.root = attrCommonContent_AST;
 				currentAST.child = attrCommonContent_AST!=null &&attrCommonContent_AST.getFirstChild()!=null ?
@@ -10056,7 +10094,9 @@ public XQueryParser(ParserSharedInputState state) {
 		"double quote '\\\"'",
 		"single quote '",
 		"QUOT_ATTRIBUTE_CONTENT",
+		"ESCAPE_QUOT",
 		"APOS_ATTRIBUTE_CONTENT",
+		"ESCAPE_APOS",
 		"ELEMENT_CONTENT",
 		"end of XML comment",
 		"end of processing instruction",
@@ -10096,7 +10136,7 @@ public XQueryParser(ParserSharedInputState state) {
 		data[0]=-327636872891203584L;
 		data[1]=-263460581481394181L;
 		data[2]=72054295464869915L;
-		data[3]=6L;
+		data[3]=24L;
 		return data;
 	}
 	public static final BitSet _tokenSet_0 = new BitSet(mk_tokenSet_0());
@@ -10105,7 +10145,7 @@ public XQueryParser(ParserSharedInputState state) {
 		data[0]=-905223525101469696L;
 		data[1]=-263460594370490373L;
 		data[2]=8989726483251211L;
-		data[3]=6L;
+		data[3]=24L;
 		return data;
 	}
 	public static final BitSet _tokenSet_1 = new BitSet(mk_tokenSet_1());
@@ -10114,7 +10154,7 @@ public XQueryParser(ParserSharedInputState state) {
 		data[0]=-905223525101469696L;
 		data[1]=-263460594370490373L;
 		data[2]=8989743663120395L;
-		data[3]=6L;
+		data[3]=24L;
 		return data;
 	}
 	public static final BitSet _tokenSet_2 = new BitSet(mk_tokenSet_2());
@@ -10138,7 +10178,7 @@ public XQueryParser(ParserSharedInputState state) {
 		data[0]=-905223525101469696L;
 		data[1]=-263460590075523077L;
 		data[2]=9002937802653707L;
-		data[3]=6L;
+		data[3]=24L;
 		return data;
 	}
 	public static final BitSet _tokenSet_6 = new BitSet(mk_tokenSet_6());
@@ -10147,7 +10187,7 @@ public XQueryParser(ParserSharedInputState state) {
 		data[0]=-327636872891203584L;
 		data[1]=-263460594366296069L;
 		data[2]=72041100518981659L;
-		data[3]=6L;
+		data[3]=24L;
 		return data;
 	}
 	public static final BitSet _tokenSet_7 = new BitSet(mk_tokenSet_7());
@@ -10166,7 +10206,7 @@ public XQueryParser(ParserSharedInputState state) {
 		data[0]=-905223525101469696L;
 		data[1]=-263460590075523077L;
 		data[2]=8989726483251211L;
-		data[3]=6L;
+		data[3]=24L;
 		return data;
 	}
 	public static final BitSet _tokenSet_10 = new BitSet(mk_tokenSet_10());
@@ -10180,17 +10220,27 @@ public XQueryParser(ParserSharedInputState state) {
 		data[0]=-16L;
 		data[1]=-1L;
 		data[2]=-268435489L;
-		data[3]=33554431L;
+		data[3]=134217727L;
 		return data;
 	}
 	public static final BitSet _tokenSet_12 = new BitSet(mk_tokenSet_12());
 	private static final long[] mk_tokenSet_13() {
 		long[] data = new long[8];
 		data[1]=25165824L;
-		data[2]=2305843284091600912L;
-		data[3]=1L;
+		data[2]=-9223371761976868848L;
+		data[3]=4L;
 		return data;
 	}
 	public static final BitSet _tokenSet_13 = new BitSet(mk_tokenSet_13());
+	private static final long[] mk_tokenSet_14() {
+		long[] data = { 0L, 25165824L, 1729382256910270464L, 0L, 0L, 0L};
+		return data;
+	}
+	public static final BitSet _tokenSet_14 = new BitSet(mk_tokenSet_14());
+	private static final long[] mk_tokenSet_15() {
+		long[] data = { 0L, 25165824L, 6917529027641081856L, 0L, 0L, 0L};
+		return data;
+	}
+	public static final BitSet _tokenSet_15 = new BitSet(mk_tokenSet_15());
 	
 	}

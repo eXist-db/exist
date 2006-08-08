@@ -1992,7 +1992,6 @@ public XQueryTreeParser() {
 			step=expr(_t,returnExpr);
 			_t = _retTree;
 			
-							System.out.println("default:" + returnExpr);
 							tswitch.setDefault(qn, returnExpr);
 						
 			}
@@ -6966,7 +6965,9 @@ public XQueryTreeParser() {
 		"double quote '\\\"'",
 		"single quote '",
 		"QUOT_ATTRIBUTE_CONTENT",
+		"ESCAPE_QUOT",
 		"APOS_ATTRIBUTE_CONTENT",
+		"ESCAPE_APOS",
 		"ELEMENT_CONTENT",
 		"end of XML comment",
 		"end of processing instruction",
@@ -7002,7 +7003,7 @@ public XQueryTreeParser() {
 		data[0]=869614947687628688L;
 		data[1]=-2299646286224948736L;
 		data[2]=72054209586921470L;
-		data[3]=1L;
+		data[3]=4L;
 		return data;
 	}
 	public static final BitSet _tokenSet_0 = new BitSet(mk_tokenSet_0());
@@ -7011,7 +7012,7 @@ public XQueryTreeParser() {
 		data[0]=869614947687628696L;
 		data[1]=-2299646286224948736L;
 		data[2]=72054209586921470L;
-		data[3]=1L;
+		data[3]=4L;
 		return data;
 	}
 	public static final BitSet _tokenSet_1 = new BitSet(mk_tokenSet_1());
@@ -7020,7 +7021,7 @@ public XQueryTreeParser() {
 		data[0]=417814423273472L;
 		data[1]=8388608L;
 		data[2]=824633720832L;
-		data[3]=1L;
+		data[3]=4L;
 		return data;
 	}
 	public static final BitSet _tokenSet_2 = new BitSet(mk_tokenSet_2());

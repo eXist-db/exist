@@ -30,6 +30,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.functions.response.ResponseModule;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.JavaObjectValue;
@@ -50,6 +51,16 @@ public class EncodeURL extends BasicFunction {
 				new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE)
 			},
 			new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE));
+	
+	public final static FunctionSignature deprecated =
+		new FunctionSignature(
+			new QName("encode-url", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
+			"Encodes the specified URL with the current HTTP session-id.",
+			new SequenceType[] {
+				new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE)
+			},
+			new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE),
+			"Moved to the 'session' module. See session:encode-url.");
 	
 	public EncodeURL(XQueryContext context) {
 		super(context, signature);

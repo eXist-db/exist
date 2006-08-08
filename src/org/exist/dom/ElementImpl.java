@@ -357,10 +357,13 @@ public class ElementImpl extends NamedNode implements Element {
         NodeListImpl rest = null;
         for (int i = 0; i < nodes.getLength(); i++) {
             Node next = nodes.item(i);
+            LOG.debug(next.getNodeName());
             if (next.getNodeType() == Node.ATTRIBUTE_NODE) {
-                if (attribs == null)
-                    attribs = new NodeListImpl();
-                attribs.add(next);
+                if (!next.getNodeName().startsWith("xmlns")) {
+                    if (attribs == null)
+                        attribs = new NodeListImpl();
+                    attribs.add(next);
+                }
             } else if (attribs != null) {
                 if (rest == null) rest = new NodeListImpl();
                 rest.add(next);
@@ -444,7 +447,8 @@ public class ElementImpl extends NamedNode implements Element {
                 final NamedNodeMap attribs = child.getAttributes();
                 for (int i = 0; i < attribs.getLength(); i++) {
                     Attr attr = (Attr) attribs.item(i);
-                    ch.add(attr);
+                    if (!attr.getNodeName().startsWith("xmlns"))
+                        ch.add(attr);
                 }
 				NodeList cl = child.getChildNodes();
 				for (int i = 0; i < cl.getLength(); i++) {
@@ -481,6 +485,7 @@ public class ElementImpl extends NamedNode implements Element {
                 return text;
             case Node.ATTRIBUTE_NODE:
                 Attr attr = (Attr) child;
+                LOG.debug(child.getClass().getName() + ": " + attr.getNodeName());
                 String ns = attr.getNamespaceURI();
                 String prefix = (Namespaces.XML_NS.equals(ns) ? "xml" : attr.getPrefix());
                 String name = attr.getLocalName();

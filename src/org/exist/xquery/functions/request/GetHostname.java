@@ -47,6 +47,14 @@ public class GetHostname extends BasicFunction {
 			"Returns the hostname of the current request.",
 			null,
 			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE));
+	
+	public final static FunctionSignature deprecated =
+		new FunctionSignature(
+			new QName("request-hostname", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
+			"Returns the hostname of the current request.",
+			null,
+			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+			"Renamed to request:get-hostname.");
 
 	/**
 	 * @param context

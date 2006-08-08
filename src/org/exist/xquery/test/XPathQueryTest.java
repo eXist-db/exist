@@ -707,6 +707,14 @@ public class XPathQueryTest extends XMLTestCase {
             result = service.queryResource("numbers.xml", query);           
             assertEquals("XPath: " + query, 2, result.getSize());               
             
+
+            query = "let $test := <test><a> a </a><a>a</a></test>" +
+            "return distinct-values($test/a/normalize-space(.))";
+            result = service.queryResource("numbers.xml", query);           
+            assertEquals("XPath: " + query, 1, result.getSize());               
+            resource = (XMLResource)result.getResource(0); 
+            assertEquals("XPath: " + query, "a", resource.getContent().toString());
+            
             
             // TODO: clarify
 //            query = "let $a := ('a', 'b', 'c') for $b in $a[position()] return <blah>{$b}</blah>";
@@ -715,6 +723,7 @@ public class XPathQueryTest extends XMLTestCase {
             
             
         } catch (XMLDBException e) {
+        	e.printStackTrace();
             fail(e.getMessage());
         }
     }
@@ -1558,6 +1567,44 @@ public class XPathQueryTest extends XMLTestCase {
         } catch (XMLDBException e) {
             fail(e.getMessage());
         }
+    }
+    
+    public void testSubstring() throws XMLDBException {
+
+        XQueryService service = getQueryService();
+        ResourceSet result;
+        
+        // Testcases by MIKA
+        try {
+            String validQuery="substring(\"MK-1234\", 4,1)";
+            result = queryAndAssert( service, validQuery, 1, validQuery);  
+            assertEquals("1", result.getResource(0).getContent().toString() );
+            
+        } catch (XMLDBException e) {
+            fail(e.getMessage());
+        }
+        
+        try {
+            String invalidQuery="substring(\"MK-1234\", 4,4)";
+            result = queryAndAssert( service, invalidQuery, 1, invalidQuery);    
+            assertEquals("1234", result.getResource(0).getContent().toString() );
+            
+        } catch (XMLDBException e) {
+            fail(e.getMessage());
+        }
+        
+        
+        // Testcase by Toar
+        try {
+            String toarQuery="let $num := \"2003.123\" \n return substring($num, 1, 7)";
+            result = queryAndAssert( service, toarQuery, 1, toarQuery);    
+            assertEquals("2003.12", result.getResource(0).getContent().toString() );
+            
+        } catch (XMLDBException e) {
+            fail(e.getMessage());
+        }
+ 
+        
     }
     
 	public static void main(String[] args) {

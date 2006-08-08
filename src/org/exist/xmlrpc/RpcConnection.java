@@ -49,6 +49,7 @@ import java.util.WeakHashMap;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 
+import org.exist.backup.Backup;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
@@ -2562,6 +2563,22 @@ public class RpcConnection extends Thread {
         } finally {
             brokerPool.release(broker);
         }
+    }
+    
+    public void backup(User user, String userbackup, String password,
+	String destcollection, String collection) throws Exception,
+    PermissionDeniedException {
+    	try {
+    		   Backup backup = new Backup(
+    				userbackup,
+                    password, 
+                    destcollection+"-backup",
+                    XmldbURI.xmldbUriFor(XmldbURI.EMBEDDED_SERVER_URI.toString() + collection));
+                backup.backup(false, null);
+            } catch (Exception e) {
+             e.printStackTrace(); 
+             
+			}
     }
     
     /**

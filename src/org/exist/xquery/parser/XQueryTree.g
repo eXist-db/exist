@@ -912,7 +912,6 @@ throws PermissionDeniedException, EXistException, XPathException
 			)?
 			step=expr [returnExpr]
 			{
-				System.out.println("default:" + returnExpr);
 				tswitch.setDefault(qn, returnExpr);
 			}
 		)

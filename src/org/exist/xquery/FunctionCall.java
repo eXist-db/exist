@@ -53,6 +53,8 @@ public class FunctionCall extends Function {
 	private QName name = null;
 	private List arguments = null;
 	
+	private boolean isRecursive = false;
+	
 	private boolean analyzed = false;
 	
 	public FunctionCall(XQueryContext context, QName name, List arguments) {
@@ -91,8 +93,16 @@ public class FunctionCall extends Function {
 		contextInfo.setParent(this);
 		if (!analyzed) {
 			super.analyze(contextInfo);
-			expression.analyze(contextInfo);
-			analyzed = true;
+			if (context.tailRecursiveCall(functionDef.getSignature())) {
+				isRecursive = true;
+			}
+			context.functionStart(functionDef.getSignature());
+			try {
+				expression.analyze(contextInfo);
+				analyzed = true;
+			} finally {
+				context.functionEnd();
+			}
 		}
 	}
 	
@@ -185,7 +195,7 @@ public class FunctionCall extends Function {
 		
         functionDef.setArguments(seq);
         
-        if (context.tailRecursiveCall(functionDef.getSignature())) {
+        if (isRecursive) {
 //            LOG.warn("Tail recursive function: " + functionDef.getSignature().toString());
             return new DeferredFunctionCallImpl(functionDef.getSignature(), contextSequence, contextItem);
         } else {
@@ -193,12 +203,13 @@ public class FunctionCall extends Function {
             LocalVariable mark = context.markLocalVariables(true);
             try {
     			Sequence returnSeq = expression.eval(contextSequence, contextItem);
-                if (returnSeq instanceof DeferredFunctionCall && 
-                        functionDef.getSignature().equals(((DeferredFunctionCall)returnSeq).getSignature())) {
-                    returnSeq = ((DeferredFunctionCall) returnSeq).execute();
-                }
+    			while (returnSeq instanceof DeferredFunctionCall && 
+    					functionDef.getSignature().equals(((DeferredFunctionCall)returnSeq).getSignature())) {
+//    				 LOG.debug("Executing function: " + functionDef.getSignature());
+    				returnSeq = ((DeferredFunctionCall) returnSeq).execute();
+    			}
                 if (context.isProfilingEnabled())
-                    context.getProfiler().end(this, "", returnSeq);            
+                    context.getProfiler().end(this, "", returnSeq);
     			return returnSeq;
     		} catch(XPathException e) {
     			if(e.getLine() == 0)
@@ -234,10 +245,12 @@ public class FunctionCall extends Function {
         }
         
         protected Sequence execute() throws XPathException {
+            context.pushDocumentContext();
             context.functionStart(functionDef.getSignature());
             LocalVariable mark = context.markLocalVariables(true);
             try {
-                Sequence returnSeq = expression.eval(contextSequence, contextItem);            
+                Sequence returnSeq = expression.eval(contextSequence, contextItem);
+//                LOG.debug("Returning from execute()");
                 return returnSeq;
             } catch(XPathException e) {
                 if(e.getLine() == 0)
@@ -248,6 +261,7 @@ public class FunctionCall extends Function {
             } finally {
                 context.popLocalVariables(mark);
                 context.functionEnd();
+                context.popDocumentContext();
             }
         }
         

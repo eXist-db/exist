@@ -809,6 +809,9 @@ public interface RpcAPI {
 	boolean reindexCollection(User user, String name)
 	throws EXistException, PermissionDeniedException;
 	
+	boolean backup(User user, String userbackup, String password, String destcollection, String collection)
+	throws EXistException, PermissionDeniedException;
+	
 	boolean dataBackup(User user, String dest) throws PermissionDeniedException;
     
     /// DWES

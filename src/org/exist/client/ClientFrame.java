@@ -40,12 +40,16 @@ import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -96,6 +100,8 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.Configuration;
 import org.exist.util.MimeTable;
+import org.exist.util.serializer.SAXSerializer;
+import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.CollectionManagementServiceImpl;
 import org.exist.xmldb.DatabaseInstanceManager;
@@ -275,7 +281,7 @@ public class ClientFrame extends JFrame
         
         url = getClass().getResource("icons/Find24.gif");
         button = new JButton(new ImageIcon(url));
-        button.setToolTipText("Query the database with XPath");
+        button.setToolTipText("Query the database with Xquery/XPath");
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 findAction(e);
@@ -413,6 +419,16 @@ public class ClientFrame extends JFrame
         	}
         });
 		fileMenu.add(item);
+		
+		item = new JMenuItem("Export a resource to file ...", KeyEvent.VK_E);
+        item.setAccelerator(KeyStroke.getKeyStroke("control E"));
+        item.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+        		exportAction(e);
+        	}
+        });
+		fileMenu.add(item);
+		
         fileMenu.addSeparator();
         
         item = new JMenuItem("Reindex collection", KeyEvent.VK_I);
@@ -472,6 +488,15 @@ public class ClientFrame extends JFrame
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 editIndexesAction(e);
+            }
+        });
+        toolsMenu.add(item);
+        
+        item = new JMenuItem("Edit Triggers", KeyEvent.VK_T);
+        item.setAccelerator(KeyStroke.getKeyStroke("control T"));
+        item.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                editTriggersAction(e);
             }
         });
         toolsMenu.add(item);
@@ -1133,9 +1158,83 @@ public class ClientFrame extends JFrame
         }
     }
     
+    private void exportAction(ActionEvent ev) {
+		if (fileman.getSelectedRowCount() == 0)
+			return;
+		int row = fileman.getSelectedRow();
+		ResourceDescriptor desc = resources.getRow(row);
+		if (desc.isCollection())
+			return;
+
+		String workDir = properties.getProperty("working-dir", System
+				.getProperty("user.dir"));
+		JFileChooser chooser = new JFileChooser(workDir);
+		chooser.setMultiSelectionEnabled(false);
+		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		chooser.setSelectedFile(new File(desc.getName().toString()));
+		if (chooser.showDialog(this, "Select file for export") == JFileChooser.APPROVE_OPTION) {
+			File file = chooser.getSelectedFile();
+			if (file.exists()
+					&& JOptionPane.showConfirmDialog(this,
+							"File exists. Overwrite?", "Overwrite?",
+							JOptionPane.YES_NO_OPTION) == JOptionPane.NO_OPTION)
+				return;
+			Resource resource;
+			FileOutputStream os;
+			BufferedWriter writer;
+			SAXSerializer contentSerializer;
+			try {
+				Collection collection = client.getCollection();
+
+				try {
+					resource = collection
+							.getResource(desc.getName().toString());
+					os = new FileOutputStream(file);
+					if (resource.getResourceType().equals("BinaryResource")) {
+						byte[] bdata = (byte[]) resource.getContent();
+						os.write(bdata);
+						os.close();
+					} else {
+
+						writer = new BufferedWriter(new OutputStreamWriter(os,
+								"UTF-8"));
+						// write resource to contentSerializer
+						contentSerializer = (SAXSerializer) SerializerPool
+								.getInstance()
+								.borrowObject(SAXSerializer.class);
+						contentSerializer.setOutput(writer, properties);
+						((EXistResource) resource)
+								.setLexicalHandler(contentSerializer);
+						((XMLResource) resource)
+								.getContentAsSAX(contentSerializer);
+						SerializerPool.getInstance().returnObject(
+								contentSerializer);
+						writer.close();
+					}
+				} catch (Exception e) {
+					System.err
+							.println("An exception occurred while writing the resource: "
+									+ e.getMessage());
+					e.printStackTrace();
+
+				}
+			} catch (Exception e) {
+				System.err.println("An exception occurred" + e.getMessage());
+				e.printStackTrace();
+			}
+
+		}
+	}
+    
     private void editIndexesAction(ActionEvent ev) {
             IndexDialog dialog = new IndexDialog("Edit Indexes", client);
             dialog.setVisible(true);
+    }
+    
+    
+    private void editTriggersAction(ActionEvent ev) {
+        TriggersDialog dialog = new TriggersDialog("Edit Triggers", client);
+        dialog.setVisible(true);
     }
     
     private void editPolicies() {
