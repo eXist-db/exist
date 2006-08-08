@@ -846,7 +846,10 @@ public class XQueryContext {
 	 * @throws XPathException
 	 */
 	public void declareFunction(UserDefinedFunction function) throws XPathException {
-		declaredFunctions.put(function.getSignature().getFunctionId(), function);
+		if (declaredFunctions.get(function.getSignature().getFunctionId()) == null)
+				declaredFunctions.put(function.getSignature().getFunctionId(), function);
+		else
+			throw new XPathException("XQST0034: function " + function.getName() + " is already defined with the same arity");
 	}
 
 	/**
@@ -978,7 +981,7 @@ public class XQueryContext {
     	if (var == null) 
     	    var = (Variable) globalVariables.get(qname);
     	if (var == null)
-    	    throw new XPathException("variable $" + qname + " is not bound");
+    		throw new XPathException("variable $" + qname + " is not bound");
     	return var;
 	}
     
