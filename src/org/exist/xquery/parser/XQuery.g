@@ -1823,7 +1823,7 @@ options {
 	PARENT { $setType(PARENT); }
 	|
     ( '.' INTEGER_LITERAL ( 'e' | 'E' ) )
-	=> DECIMAL_LITERAL { $setType(DECIMAL_LITERAL); }
+	=> DOUBLE_LITERAL { $setType(DOUBLE_LITERAL); }
     |
 	( '.' INTEGER_LITERAL )
 	=> DECIMAL_LITERAL { $setType(DECIMAL_LITERAL); }
