@@ -223,7 +223,7 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 		while (++nextNode < document.size) {
 			if (document.nodeKind[nextNode] == Node.ELEMENT_NODE) {
     			QName qn = (QName) document.namePool.get(document.nodeName[nextNode]);
-    			if(qn.toString().equals(name))
+    			if(qn.getStringValue().equals(name))
     				nl.add(document.getNode(nextNode));
     		}
 			if (document.next[nextNode] <= nodeNumber) break;

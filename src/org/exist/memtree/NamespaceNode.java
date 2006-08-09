@@ -95,11 +95,11 @@ public class NamespaceNode extends NodeImpl implements Attr, QNameable {
 	 * @see org.w3c.dom.Node#getNodeName()
 	 */
 	public String getNodeName() {
-		return getQName().toString();
+		return getQName().getStringValue();
 	}
 	
 	public String getName() {
-		return getQName().toString();
+		return getQName().getStringValue();
 	}
 
 	
