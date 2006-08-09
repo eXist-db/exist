@@ -283,7 +283,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 		for(int i = 0; i < contents.length; i++) {
 			String[] pair = Pragma.parseKeyValuePair(contents[i]);
 			if(pair == null)
-				throw new XPathException("Unknown parameter found in " + pragma.getQName().toString() +
+				throw new XPathException("Unknown parameter found in " + pragma.getQName().getStringValue() +
 						": '" + contents[i] + "'");
 			LOG.debug("Setting serialization property from pragma: " + pair[0] + " = " + pair[1]);
 			properties.setProperty(pair[0], pair[1]);

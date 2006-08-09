@@ -181,12 +181,12 @@ public class FunctionFactory {
 				}
 				else
 				{
-					throw new XPathException(ast, "Java binding is currently disabled in config.xml. Call to " + qname.toString() + " denied.");
+					throw new XPathException(ast, "Java binding is currently disabled in config.xml. Call to " + qname.getStringValue() + " denied.");
 				}
 			}
 			else
 			{
-				throw new XPathException(ast, "Java binding is currently disabled in config.xml. Call to " + qname.toString() + " denied.");
+				throw new XPathException(ast, "Java binding is currently disabled in config.xml. Call to " + qname.getStringValue() + " denied.");
 			}
 		}
 		
@@ -202,13 +202,13 @@ public class FunctionFactory {
 					if (def == null) {
 						List funcs = ((InternalModule)module).getFunctionsByName(qname);
 						if (funcs.size() == 0)
-							throw new XPathException(ast, "Function " + qname.toString() + "() " + 
+							throw new XPathException(ast, "Function " + qname.getStringValue() + "() " + 
 								" is not defined in module namespace: " + qname.getNamespaceURI());
 						else {
 							StringBuffer buf = new StringBuffer();
                             buf.append("Unexpectedly received ");
                             buf.append(params.size() + " parameter(s) in call to function ");
-                            buf.append("'" + qname.toString() +  "()'. ");
+                            buf.append("'" + qname.getStringValue() +  "()'. ");
                             buf.append("Defined function signatures are:\r\n");
 							for (Iterator i = funcs.iterator(); i.hasNext(); ) {
 								FunctionSignature sig = (FunctionSignature) i.next();
@@ -224,7 +224,7 @@ public class FunctionFactory {
                     // function is from an imported XQuery module
 					UserDefinedFunction func = ((ExternalModule)module).getFunction(qname, params.size());
 					if(func == null)
-						throw new XPathException(ast, "Function " + qname.toString() + 
+						throw new XPathException(ast, "Function " + qname.getStringValue() + 
                                 "() is not defined in namespace '" + qname.getNamespaceURI() + "'");
 					FunctionCall call = new FunctionCall(context, func);
 					call.setArguments(params);
