@@ -22,9 +22,23 @@
  */
 package org.exist.xquery.functions;
 
+import javax.xml.datatype.DatatypeConstants;
+
 import org.exist.dom.QName;
-import org.exist.xquery.*;
-import org.exist.xquery.value.*;
+import org.exist.xquery.BasicFunction;
+import org.exist.xquery.Cardinality;
+import org.exist.xquery.Dependency;
+import org.exist.xquery.Function;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Profiler;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.DecimalValue;
+import org.exist.xquery.value.DurationValue;
+import org.exist.xquery.value.IntegerValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.Type;
 
 
 public class FunGetDurationComponent extends BasicFunction {
@@ -103,7 +117,7 @@ public class FunGetDurationComponent extends BasicFunction {
 			} else if (isCalledAs("minutes-from-duration")) {
             result = new IntegerValue(duration.getPart(DurationValue.MINUTE));
 			} else if (isCalledAs("seconds-from-duration")) {
-	    		result = new DecimalValue(Double.toString(duration.getSeconds()));
+	    		result = new DecimalValue(duration.getCanonicalDuration().getField(DatatypeConstants.SECONDS).doubleValue() * duration.getCanonicalDuration().getSign());
 			} else if (isCalledAs("months-from-duration")) {
             result = new IntegerValue(duration.getPart(DurationValue.MONTH));
 			} else if (isCalledAs("years-from-duration")) {
