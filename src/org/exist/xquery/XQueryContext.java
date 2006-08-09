@@ -1517,7 +1517,7 @@ public class XQueryContext {
 			UserDefinedFunction func = resolveFunction(call.getQName(), call.getArgumentCount());
 			if(func == null)
 				throw new XPathException(call.getASTNode(), 
-					"Call to undeclared function: " + call.getQName().toString());
+					"Call to undeclared function: " + call.getQName().getStringValue());
 			call.resolveForwardReference(func);
 		}
 	}

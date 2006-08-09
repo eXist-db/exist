@@ -874,7 +874,7 @@ public class ElementImpl extends NamedNode implements Element {
      * @see org.w3c.dom.Element#getTagName()
      */
     public String getTagName() {
-        return nodeName.toString();
+        return nodeName.getStringValue();
     }
 
     /**
