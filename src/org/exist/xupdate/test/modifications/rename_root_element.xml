@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xu:modifications version="1.0" xmlns:xu="http://www.xmldb.org/xupdate">
+
+  <xu:rename select="/addressbook">contacts</xu:rename>
+
+</xu:modifications>
+<?xml version="1.0" encoding="UTF-8"?>
+<xu:modifications version="1.0" xmlns:xu="http://www.xmldb.org/xupdate">
+
+  <xu:rename select="/addressbook">contacts</xu:rename>
+
+</xu:modifications>

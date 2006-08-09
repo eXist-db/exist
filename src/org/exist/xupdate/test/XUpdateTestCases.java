@@ -34,6 +34,16 @@ public class XUpdateTestCases extends TestCase {
     public void whitespace() throws Exception { test.doTest("whitespace", "address.xml"); }
     public void namespaces() throws Exception { test.doTest("namespaces", "namespaces.xml"); }
     // <add a new TestCase Method here>     
+
+    // Added by Geoff Shuetrim (geoff@galexy.net) on 15 July 2006 to highlight that root element renaming 
+    // does not currently succeed, resulting instead in a null pointer exception because the 
+    // renaming relies upon obtaining the parent element of the element being renamed and this is null
+    // for the root element.
+    public void rename_root_element() throws Exception { test.doTest("rename_root_element", "address.xml"); }
+
+    // Added by Geoff Shuetrim (geoff@galexy.net) on 15 July 2006 to highlight that renaming of an
+    // element fails when the renaming also involves a change of namespace.
+    public void rename_including_namespace() throws Exception { test.doTest("rename_including_namespace", "namespaces.xml"); }
     
     // TestCases End
     
