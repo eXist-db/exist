@@ -175,7 +175,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 							nodeA.parent.addRightChild(nodeB);
 					} else {
 						root = nodeB;
-					};
+					}
 					nodeB.addRightChild(nodeA);
 					nodeA.setHeight();
 					nodeB.setHeight();
@@ -230,7 +230,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 							nodeA.parent.addRightChild(nodeB);
 					} else {
 						root = nodeB;
-					};
+					}
 					nodeB.addLeftChild(nodeA);
 					nodeA.setHeight();
 					nodeB.setHeight();

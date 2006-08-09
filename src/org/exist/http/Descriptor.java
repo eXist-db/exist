@@ -120,7 +120,7 @@ public class Descriptor implements ErrorHandler
             // we use eXist's in-memory DOM implementation to work
             // around a bug in Xerces
             SAXParserFactory factory = SAXParserFactory.newInstance();
-            factory.setNamespaceAware(true);;
+            factory.setNamespaceAware(true);
             
             InputSource src = new InputSource(is);
             SAXParser parser = factory.newSAXParser();
