@@ -359,7 +359,7 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
     	StringBuffer result = new StringBuffer();
     	result.append("in-memory#");
     	result.append("element {");
-    	result.append(getQName().toString());
+    	result.append(getQName().getStringValue());
     	result.append("} {");        
         if(getAttributes() != null) {			
 			for(int i = 0; i < getAttributes().getLength(); i++) {

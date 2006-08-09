@@ -73,7 +73,7 @@ public class DescribeFunction extends Function {
 		
 		MemTreeBuilder builder = context.getDocumentBuilder();
 		AttributesImpl attribs = new AttributesImpl();
-		attribs.addAttribute("", "name", "name", "CDATA", qname.toString());
+		attribs.addAttribute("", "name", "name", "CDATA", qname.getStringValue());
 		attribs.addAttribute("", "module", "module", "CDATA", uri);
 		int nodeNr = builder.startElement("", "function", "function", attribs);
 		
