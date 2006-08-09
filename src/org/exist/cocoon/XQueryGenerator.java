@@ -85,6 +85,7 @@ import org.xmldb.api.modules.XMLResource;
  * the request</li>
  * <li><tt>user</tt></li>
  * <li><tt>password</tt></li>
+  *<li><tt>authen</tt></li>: if set to session, then use the user and password from the session. Otherwise use the parameter values.
  * <li><tt>create-session</tt>: if set to "true", indicates that an
  * HTTP session should be created upon the first invocation.</li>
  * <li><tt>expand-xincludes</tt></li>
@@ -103,6 +104,7 @@ import org.xmldb.api.modules.XMLResource;
  * 		password="guest"
  *		create-session="false"
  * 		expand-xincludes="false"
+ 	        authen="session"
  *		cache-validity="-1"
  *		src="org.exist.cocoon.XQueryGenerator">
  *   <parameter name="myProjectURI" value="/db/myproject"/>
@@ -154,6 +156,10 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
 	private String password;
 	private String defaultPassword = "guest";
 	private final static String PASSWORD = "password";
+        
+        private String authen;
+        private String defaultAuthen = "session";
+        private final static String AUTHEN = "authen";
 
 	private Map optionalParameters;
 	private Parameters componentParams;
@@ -201,6 +207,9 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
 		} else {
 			this.collectionURI = this.defaultCollectionURI;
 		}
+                
+              this.authen = parameters.getParameter(AUTHEN,
+				this.defaultAuthen);
 		this.user = parameters.getParameter(USER, this.defaultUser);
 		this.password = parameters.getParameter(PASSWORD, this.defaultPassword);
 		this.createSession = parameters.getParameterAsBoolean(CREATE_SESSION,
@@ -212,7 +221,7 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
 		for (int i = 0; i < paramNames.length; i++) {
 			String param = paramNames[i];
 			if (!(param.equals(COLLECTION_URI) || param.equals(USER)
-					|| param.equals(PASSWORD)
+					|| param.equals(PASSWORD) || param.equals(AUTHEN)
 					|| param.equals(CREATE_SESSION) || param
 					.equals(EXPAND_XINCLUDES) || param.equals(CACHE_VALIDITY))) {
 				this.optionalParameters.put(param, parameters
@@ -272,7 +281,7 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
 		}
 		
 		// check if user and password can be read from the session
-		if (session != null && request.isRequestedSessionIdValid()) {
+		if (session != null  && authen.equals("session") && request.isRequestedSessionIdValid()) {
             String actualUser = getSessionAttribute(session, "user");
             String actualPass = getSessionAttribute(session, "password");
 			user = actualUser == null ? null : String.valueOf(actualUser);
