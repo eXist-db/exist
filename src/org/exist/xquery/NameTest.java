@@ -64,7 +64,7 @@ public class NameTest extends TypeTest {
         if(nodeName.getLocalName() == null)
             dumper.display(nodeName.getPrefix() + ":*");
         else
-            dumper.display(nodeName.toString());        
+            dumper.display(nodeName.getStringValue());        
     }    
 
 	/* (non-Javadoc)
@@ -75,7 +75,7 @@ public class NameTest extends TypeTest {
         if(nodeName.getLocalName() == null)
             result.append(nodeName.getPrefix() + ":*");
         else
-            result.append(nodeName.toString());            
+            result.append(nodeName.getStringValue());            
         return result.toString();	    
 	}
 
