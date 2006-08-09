@@ -52,7 +52,7 @@ public class DocumentTypeImpl extends StoredNode implements DocumentType {
     
     public void clear() {
         super.clear();   
-        this.publicId = null;;
+        this.publicId = null;
         this.systemId = null;
         this.name = null;           
     }     
