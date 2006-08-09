@@ -49,14 +49,14 @@ public class AttributeImpl extends NodeImpl implements Attr, QNameable {
 	 * @see org.w3c.dom.Attr#getName()
 	 */
 	public String getName() {
-		return getQName().toString();
+		return getQName().getStringValue();
 	}
 
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getNodeName()
 	 */
 	public String getNodeName() {
-		return getQName().toString();
+		return getQName().getStringValue();
 	}
 
 	

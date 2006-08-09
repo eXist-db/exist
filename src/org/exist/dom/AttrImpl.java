@@ -149,7 +149,7 @@ public class AttrImpl extends NamedNode implements Attr {
     }
 
     public String getName() {
-        return nodeName.toString();
+        return nodeName.getStringValue();
     }
 
 	public int getType() {
