@@ -190,7 +190,7 @@ public class TypeswitchExpression extends AbstractExpression {
             dumper.display(caseClause.type);
             if (caseClause.variable != null) {
                 dumper.display('$');
-                dumper.display(caseClause.variable.toString());
+                dumper.display(caseClause.variable.getStringValue());
                 dumper.display(" as ");
             }
             dumper.display(" return ");
@@ -199,7 +199,7 @@ public class TypeswitchExpression extends AbstractExpression {
         dumper.display("default ");
         if (defaultClause.variable != null) {
             dumper.display('$');
-            dumper.display(defaultClause.variable.toString());
+            dumper.display(defaultClause.variable.getStringValue());
             dumper.display(' ');
         }
         defaultClause.returnClause.dump(dumper);
