@@ -34,13 +34,13 @@ class UploadDialog extends JFrame {
 	final JButton closeBtn;
 	
 	public UploadDialog() {
-		super("Storing files ...");
+		super(Messages.getString("UploadDialog.0")); //$NON-NLS-1$
 		GridBagLayout grid = new GridBagLayout();
 		getContentPane().setLayout(grid);
 		GridBagConstraints c = new GridBagConstraints();
 		c.insets = new Insets(5, 5, 5, 5);
 
-		JLabel label = new JLabel("Stored:");
+		JLabel label = new JLabel(Messages.getString("UploadDialog.1")); //$NON-NLS-1$
 		c.gridx = 0;
 		c.gridy = 0;
 		c.anchor = GridBagConstraints.WEST;
@@ -50,7 +50,7 @@ class UploadDialog extends JFrame {
 
 		byDirProgress = new JProgressBar();
 		byDirProgress.setStringPainted(true);
-		byDirProgress.setString("Calculating file sizes ...");
+		byDirProgress.setString(Messages.getString("UploadDialog.2")); //$NON-NLS-1$
 		byDirProgress.setIndeterminate(true);
 		c.gridx = 1;
 		c.gridy = 0;
@@ -59,7 +59,7 @@ class UploadDialog extends JFrame {
 		grid.setConstraints(byDirProgress, c);
 		getContentPane().add(byDirProgress);
 
-		label = new JLabel("Directory:");
+		label = new JLabel(Messages.getString("UploadDialog.3")); //$NON-NLS-1$
 		c.gridx = 0;
 		c.gridy = 1;
 		c.anchor = GridBagConstraints.WEST;
@@ -76,7 +76,7 @@ class UploadDialog extends JFrame {
 		grid.setConstraints(currentDir, c);
 		getContentPane().add(currentDir);
 
-		label = new JLabel("Uploading file:");
+		label = new JLabel(Messages.getString("UploadDialog.4")); //$NON-NLS-1$
 		c.gridx = 0;
 		c.gridy = 2;
 		c.anchor = GridBagConstraints.WEST;
@@ -93,7 +93,7 @@ class UploadDialog extends JFrame {
 		grid.setConstraints(currentFile, c);
 		getContentPane().add(currentFile);
 
-		label = new JLabel("Size:");
+		label = new JLabel(Messages.getString("UploadDialog.5")); //$NON-NLS-1$
 		c.gridx = 0;
 		c.gridy = 3;
 		c.anchor = GridBagConstraints.WEST;
@@ -101,7 +101,7 @@ class UploadDialog extends JFrame {
 		grid.setConstraints(label, c);
 		getContentPane().add(label);
 
-		currentSize = new JLabel("0K");
+		currentSize = new JLabel(Messages.getString("UploadDialog.6")); //$NON-NLS-1$
 		c.gridx = 1;
 		c.gridy = 3;
 		c.anchor = GridBagConstraints.EAST;
@@ -109,7 +109,7 @@ class UploadDialog extends JFrame {
 		grid.setConstraints(currentSize, c);
 		getContentPane().add(currentSize);
 
-		JLabel status = new JLabel("Progress:");
+		JLabel status = new JLabel(Messages.getString("UploadDialog.7")); //$NON-NLS-1$
 		c.gridx = 0;
 		c.gridy = 4;
 		c.anchor = GridBagConstraints.WEST;
@@ -135,7 +135,7 @@ class UploadDialog extends JFrame {
 				messages,
 				JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
 				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		scroll.setBorder(BorderFactory.createTitledBorder("Messages"));
+		scroll.setBorder(BorderFactory.createTitledBorder("Messages")); //$NON-NLS-1$
 		c.gridx = 0;
 		c.gridy = 5;
 		c.gridwidth = 2;
@@ -144,14 +144,14 @@ class UploadDialog extends JFrame {
 		grid.setConstraints(scroll, c);
 		getContentPane().add(scroll);
 
-		closeBtn = new JButton("Cancel");
+		closeBtn = new JButton(Messages.getString("UploadDialog.9")); //$NON-NLS-1$
 		closeBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if ("Close".equals(closeBtn.getText()))
+				if (Messages.getString("UploadDialog.20").equals(closeBtn.getText())) //$NON-NLS-1$
 					setVisible(false);
 				else {
 					cancelled = true;
-					closeBtn.setText("Close");
+					closeBtn.setText(Messages.getString("UploadDialog.11")); //$NON-NLS-1$
 				}
 			}
 		});
@@ -180,7 +180,7 @@ class UploadDialog extends JFrame {
 
 	public void setCurrentSize(long size) {
 		if (size >= 1024)
-			currentSize.setText(String.valueOf(size / 1024) + "K");
+			currentSize.setText(String.valueOf(size / 1024) + Messages.getString("UploadDialog.12")); //$NON-NLS-1$
 		else
 			currentSize.setText(String.valueOf(size));
 	}
@@ -202,22 +202,22 @@ class UploadDialog extends JFrame {
 	}
 	
 	public void uploadCompleted() {
-		closeBtn.setText("Close");
+		closeBtn.setText(Messages.getString("UploadDialog.13")); //$NON-NLS-1$
 		progress.setIndeterminate(false);
 		progress.setValue(100);
-		progress.setString("");
+		progress.setString(Messages.getString("UploadDialog.14")); //$NON-NLS-1$
 		byDirProgress.setIndeterminate(false);
 		byDirProgress.setString(null);
 		byDirProgress.setValue(byDirProgress.getMaximum());
 	}
 	
 	public void showMessage(String msg) {
-		messages.append(msg + "\n");
+		messages.append(msg + Messages.getString("UploadDialog.15")); //$NON-NLS-1$
 		messages.setCaretPosition(messages.getDocument().getLength());
 	}
 
 	public void reset() {
-		progress.setString("Storing ...");
+		progress.setString(Messages.getString("UploadDialog.16")); //$NON-NLS-1$
 		progress.setIndeterminate(true);
 	}
 
@@ -230,11 +230,11 @@ class UploadDialog extends JFrame {
 			ProgressIndicator ind = (ProgressIndicator) arg;
 			progress.setValue(ind.getPercentage());
 			if (o instanceof TextSearchEngine)
-				progress.setString("Storing words");
+				progress.setString(Messages.getString("UploadDialog.17")); //$NON-NLS-1$
 			else if (o instanceof ElementIndex)
-				progress.setString("Storing elements");
+				progress.setString(Messages.getString("UploadDialog.18")); //$NON-NLS-1$
 			else
-				progress.setString("Storing nodes");
+				progress.setString(Messages.getString("UploadDialog.19")); //$NON-NLS-1$
 		}
 
 	}
