@@ -285,6 +285,11 @@
                 <include name="**.xq"/>
             </fileset>
         </copy>
+    	<copy todir="${build.classes}/org/exist/client">
+    		<fileset dir="${src}/org/exist/client">
+    			<include name="*.properties"/>
+			</fileset>
+    	</copy>
         <echo message="Creating exist.jar ..."/>
         <jar basedir="${build.classes}" compress="true" jarfile="exist.jar">
             <exclude name="org/exist/start/**"/>
