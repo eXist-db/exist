@@ -91,9 +91,9 @@ class DocumentView extends JFrame {
 	
 	public DocumentView(InteractiveClient client, XmldbURI resourceName, Properties properties) throws XMLDBException
 	{
-		super("View Document ");
+		super(Messages.getString("DocumentView.0")); //$NON-NLS-1$
 		this.resourceName = resourceName;
-		this.resource = client.retrieve(resourceName, properties.getProperty(OutputKeys.INDENT, "yes"));
+		this.resource = client.retrieve(resourceName, properties.getProperty(OutputKeys.INDENT, "yes")); //$NON-NLS-1$
 		this.client = client;
 		this.collection = client.getCollection();
 		this.properties = properties;
@@ -110,21 +110,21 @@ class DocumentView extends JFrame {
 	public void viewDocument()
 	{
 		try{
-			if (resource.getResourceType().equals("XMLResource"))
+			if (resource.getResourceType().equals("XMLResource")) //$NON-NLS-1$
 	            setText((String) resource.getContent());
 	        else
 	            setText(new String((byte[]) resource.getContent()));
 	        
 	        // lock the resource for editing
 	        UserManagementService service = (UserManagementService)
-	        client.current.getService("UserManagementService", "1.0");
-	        User user = service.getUser(properties.getProperty("user"));
+	        client.current.getService("UserManagementService", "1.0"); //$NON-NLS-1$ //$NON-NLS-2$
+	        User user = service.getUser(properties.getProperty("user")); //$NON-NLS-1$
 	        String lockOwner = service.hasUserLock(resource);
 	        if(lockOwner != null) {
 	            if(JOptionPane.showConfirmDialog(this,
-	                    "Resource is already locked by user " + lockOwner +
-	                    ". Should I try to relock it?",
-	                    "Resource locked",
+	                    Messages.getString("DocumentView.6") + lockOwner + //$NON-NLS-1$
+	                    Messages.getString("DocumentView.7"), //$NON-NLS-1$
+	                    Messages.getString("DocumentView.8"), //$NON-NLS-1$
 	                    JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
 	                dispose();
 	                this.setCursor(Cursor.getDefaultCursor());
@@ -137,13 +137,13 @@ class DocumentView extends JFrame {
 	        } catch(XMLDBException ex) {
 	            System.out.println(ex.getMessage());
 	            JOptionPane.showMessageDialog(this,
-	                    "Resource cannot be locked. Opening read-only.");
+	                    Messages.getString("DocumentView.9")); //$NON-NLS-1$
 	            setReadOnly();
 	        }
 	        setVisible(true);
 		}
 		catch (XMLDBException ex) {
-			showErrorMessage("XMLDB error: " + ex.getMessage(), ex);
+			showErrorMessage(Messages.getString("DocumentView.10") + ex.getMessage(), ex); //$NON-NLS-1$
 		}
 	}
 	
@@ -151,7 +151,7 @@ class DocumentView extends JFrame {
 	private static void showErrorMessage(String message, Throwable t) {
         JScrollPane scroll = null;
         JTextArea msgArea = new JTextArea(message);
-        msgArea.setBorder(BorderFactory.createTitledBorder("Message:"));
+        msgArea.setBorder(BorderFactory.createTitledBorder("Message:")); //$NON-NLS-1$
         msgArea.setEditable(false);
         msgArea.setBackground(null);
         if (t != null) {
@@ -164,12 +164,12 @@ class DocumentView extends JFrame {
             scroll = new JScrollPane(stacktrace);
             scroll.setPreferredSize(new Dimension(250, 300));
             scroll.setBorder(BorderFactory
-                    .createTitledBorder("Exception Stacktrace:"));
+                    .createTitledBorder("Exception Stacktrace:")); //$NON-NLS-1$
         }
         JOptionPane optionPane = new JOptionPane();
         optionPane.setMessage(new Object[]{msgArea, scroll});
         optionPane.setMessageType(JOptionPane.ERROR_MESSAGE);
-        JDialog dialog = optionPane.createDialog(null, "Error");
+        JDialog dialog = optionPane.createDialog(null, Messages.getString("DocumentView.13")); //$NON-NLS-1$
         dialog.setResizable(true);
         dialog.pack();
         dialog.setVisible(true);
@@ -193,7 +193,7 @@ class DocumentView extends JFrame {
 		try
 		{
 			UserManagementService service = (UserManagementService) collection
-					.getService("UserManagementService", "1.0");
+					.getService("UserManagementService", "1.0"); //$NON-NLS-1$ //$NON-NLS-2$
 			service.unlockResource(resource);
 		}
 		catch (XMLDBException e)
@@ -207,14 +207,14 @@ class DocumentView extends JFrame {
         /* start of menubar */
         JMenuBar menubar = new JMenuBar();
 
-        JMenu fileMenu = new JMenu("File");
+        JMenu fileMenu = new JMenu(Messages.getString("DocumentView.16")); //$NON-NLS-1$
         fileMenu.setMnemonic(KeyEvent.VK_F);
         menubar.add(fileMenu); 
 
         JMenuItem item;
         // Save to database
-        item = new JMenuItem("Save", KeyEvent.VK_S);
-        item.setAccelerator(KeyStroke.getKeyStroke("control S"));
+        item = new JMenuItem(Messages.getString("DocumentView.17"), KeyEvent.VK_S); //$NON-NLS-1$
+        item.setAccelerator(KeyStroke.getKeyStroke("control S")); //$NON-NLS-1$
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 save();
@@ -245,10 +245,10 @@ class DocumentView extends JFrame {
 		JToolBar toolbar = new JToolBar();
 		
 		//Save button
-		URL url = getClass().getResource("icons/Save24.gif");
+		URL url = getClass().getResource("icons/Save24.gif"); //$NON-NLS-1$
 		saveButton = new JButton(new ImageIcon(url));
 		saveButton
-				.setToolTipText("Store the modified data back into the database.");
+				.setToolTipText(Messages.getString("DocumentView.20")); //$NON-NLS-1$
 		saveButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				save();
@@ -257,10 +257,10 @@ class DocumentView extends JFrame {
 		toolbar.add(saveButton);
 		
 		//Save As button
-		url = getClass().getResource("icons/SaveAs24.gif");
+		url = getClass().getResource("icons/SaveAs24.gif"); //$NON-NLS-1$
 		saveAsButton = new JButton(new ImageIcon(url));
 		saveAsButton
-				.setToolTipText("Store a new document into the database.");
+				.setToolTipText(Messages.getString("DocumentView.22")); //$NON-NLS-1$
 		saveAsButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				saveAs();
@@ -269,9 +269,9 @@ class DocumentView extends JFrame {
 		toolbar.add(saveAsButton);
 		
 		//Export button
-		url = getClass().getResource("icons/Export24.gif");
+		url = getClass().getResource("icons/Export24.gif"); //$NON-NLS-1$
 		JButton button = new JButton(new ImageIcon(url));
-		button.setToolTipText("Export to file.");
+		button.setToolTipText(Messages.getString("DocumentView.24")); //$NON-NLS-1$
 		button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e)  {
 			try {
@@ -286,9 +286,9 @@ class DocumentView extends JFrame {
 		toolbar.addSeparator();
 		
 		//Copy button
-		url = getClass().getResource("icons/Copy24.gif");
+		url = getClass().getResource("icons/Copy24.gif"); //$NON-NLS-1$
 		button = new JButton(new ImageIcon(url));
-		button.setToolTipText("Copy selection.");
+		button.setToolTipText(Messages.getString("DocumentView.26")); //$NON-NLS-1$
 		button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				text.copy();
@@ -297,9 +297,9 @@ class DocumentView extends JFrame {
 		toolbar.add(button);
 		
 		//Cut button
-		url = getClass().getResource("icons/Cut24.gif");
+		url = getClass().getResource("icons/Cut24.gif"); //$NON-NLS-1$
 		button = new JButton(new ImageIcon(url));
-		button.setToolTipText("Cut selection.");
+		button.setToolTipText(Messages.getString("DocumentView.28")); //$NON-NLS-1$
 		button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				text.cut();
@@ -308,9 +308,9 @@ class DocumentView extends JFrame {
 		toolbar.add(button);
 		
 		//Paste button
-		url = getClass().getResource("icons/Paste24.gif");
+		url = getClass().getResource("icons/Paste24.gif"); //$NON-NLS-1$
 		button = new JButton(new ImageIcon(url));
-		button.setToolTipText("Paste selection.");
+		button.setToolTipText(Messages.getString("DocumentView.30")); //$NON-NLS-1$
 		button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				text.paste();
@@ -321,9 +321,9 @@ class DocumentView extends JFrame {
 		toolbar.addSeparator();
 		
 		//Refresh button
-		url = getClass().getResource("icons/Refresh24.gif");
+		url = getClass().getResource("icons/Refresh24.gif"); //$NON-NLS-1$
 		button = new JButton(new ImageIcon(url));
-		button.setToolTipText("Refresh Document.");
+		button.setToolTipText(Messages.getString("DocumentView.32")); //$NON-NLS-1$
 		button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e)  {
     			try {
@@ -336,7 +336,7 @@ class DocumentView extends JFrame {
 		toolbar.add(button);
 		
 		getContentPane().add(toolbar, BorderLayout.NORTH);
-		text = new ClientTextArea(true, "XML");
+		text = new ClientTextArea(true, Messages.getString("DocumentView.33")); //$NON-NLS-1$
 		getContentPane().add(text, BorderLayout.CENTER);
 		Box statusbar = Box.createHorizontalBox();
 		statusbar.setBorder(BorderFactory
@@ -344,7 +344,7 @@ class DocumentView extends JFrame {
 		statusMessage = new JTextField(20);
 		statusMessage.setEditable(false);
 		statusMessage.setFocusable(false);
-		statusMessage.setText("Loading " + URIUtils.urlDecodeUtf8(resource.getId()) + " ...");
+		statusMessage.setText(Messages.getString("DocumentView.34") + URIUtils.urlDecodeUtf8(resource.getId()) + Messages.getString("DocumentView.35")); //$NON-NLS-1$ //$NON-NLS-2$
 		statusbar.add(statusMessage);
 		progress = new JProgressBar();
 		progress.setPreferredSize(new Dimension(200, 30));
@@ -357,7 +357,7 @@ class DocumentView extends JFrame {
 		new Thread() {
 			public void run() {
 				try {
-					statusMessage.setText("Storing " + URIUtils.urlDecodeUtf8(resource.getId()));
+					statusMessage.setText(Messages.getString("DocumentView.36") + URIUtils.urlDecodeUtf8(resource.getId())); //$NON-NLS-1$
 					if (collection instanceof Observable)
 						((Observable) collection)
 								.addObserver(new ProgressObserver());
@@ -368,7 +368,7 @@ class DocumentView extends JFrame {
 					if (collection instanceof Observable)
 						((Observable) collection).deleteObservers();
 				} catch (XMLDBException e) {
-					ClientFrame.showErrorMessage("XMLDBException: "
+					ClientFrame.showErrorMessage(Messages.getString("DocumentView.37") //$NON-NLS-1$
 							+ e.getMessage(), e);
 				} finally {
 					progress.setVisible(false);
@@ -385,13 +385,13 @@ class DocumentView extends JFrame {
 			{
 
 				//Get the name to save the resource as
-				String nameres = JOptionPane.showInputDialog(null, "Name of the XML resource (extension incluse)");
+				String nameres = JOptionPane.showInputDialog(null, Messages.getString("DocumentView.38")); //$NON-NLS-1$
 				if (nameres != null)
 				{
 					try
 					{
 						//Change status message and display a progress dialog
-						statusMessage.setText("Storing " + nameres);
+						statusMessage.setText(Messages.getString("DocumentView.39") + nameres); //$NON-NLS-1$
 						if (collection instanceof Observable)
 							((Observable) collection).addObserver(new ProgressObserver());
 						progress.setIndeterminate(true);
@@ -408,9 +408,9 @@ class DocumentView extends JFrame {
 					}
 					catch (XMLDBException e)
 					{
-						ClientFrame.showErrorMessage("XMLDBException: " + e.getMessage(), e);
+						ClientFrame.showErrorMessage(Messages.getString("DocumentView.40") + e.getMessage(), e); //$NON-NLS-1$
 					} catch (URISyntaxException e) {
-						ClientFrame.showErrorMessage("URISyntaxException: " + e.getMessage(), e);
+						ClientFrame.showErrorMessage(Messages.getString("DocumentView.41") + e.getMessage(), e); //$NON-NLS-1$
 					}
 					finally
 					{
@@ -423,32 +423,32 @@ class DocumentView extends JFrame {
 	}
 	
 	private void export() throws XMLDBException {
-		String workDir = properties.getProperty("working-dir", System
-				.getProperty("user.dir"));
+		String workDir = properties.getProperty("working-dir", System //$NON-NLS-1$
+				.getProperty("user.dir")); //$NON-NLS-1$
 		JFileChooser chooser = new JFileChooser(workDir);
 		chooser.setMultiSelectionEnabled(false);
 		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		chooser.setSelectedFile(new File(resource.getId())); 
-		if (chooser.showDialog(this, "Select file for export") == JFileChooser.APPROVE_OPTION) {
+		if (chooser.showDialog(this, Messages.getString("DocumentView.44")) == JFileChooser.APPROVE_OPTION) { //$NON-NLS-1$
 			File file = chooser.getSelectedFile();
 			if (file.exists()
 					&& JOptionPane.showConfirmDialog(this,
-							"File exists. Overwrite?", "Overwrite?",
+							Messages.getString("DocumentView.45"), Messages.getString("DocumentView.46"), //$NON-NLS-1$ //$NON-NLS-2$
 							JOptionPane.YES_NO_OPTION) == JOptionPane.NO_OPTION)
 				return;
 			try {
 				OutputStreamWriter writer = new OutputStreamWriter(
 						new FileOutputStream(file), Charset.forName(properties
-								.getProperty("encoding")));
+								.getProperty("encoding"))); //$NON-NLS-1$
 				writer.write(text.getText());
 				writer.close();
 			} catch (IOException e) {
-				ClientFrame.showErrorMessage("XMLDBException: "
+				ClientFrame.showErrorMessage(Messages.getString("DocumentView.48") //$NON-NLS-1$
 						+ e.getMessage(), e);
 			}
 			File selectedDir = chooser.getCurrentDirectory();
 			properties
-					.setProperty("working-dir", selectedDir.getAbsolutePath());
+					.setProperty("working-dir", selectedDir.getAbsolutePath()); //$NON-NLS-1$
 		}
 	}
 	
@@ -458,18 +458,18 @@ class DocumentView extends JFrame {
 		unlockView();
 		
 		//Reload the resource
-		this.resource = client.retrieve(resourceName, properties.getProperty(OutputKeys.INDENT, "yes"));
+		this.resource = client.retrieve(resourceName, properties.getProperty(OutputKeys.INDENT, "yes")); //$NON-NLS-1$
 		
 		//View and lock the resource
 		viewDocument();
 	}
 	
 	public void setText(String content) throws XMLDBException	{
-		text.setText("");
+		text.setText(""); //$NON-NLS-1$
 		text.setText(content);
 		text.setCaretPosition(0);
 		text.scrollToCaret();
-		statusMessage.setText("Loaded " + XmldbURI.create(client.getCollection().getName()).append(resourceName) +" from "+properties.getProperty("uri"));
+		statusMessage.setText(Messages.getString("DocumentView.52") + XmldbURI.create(client.getCollection().getName()).append(resourceName) +Messages.getString("DocumentView.53")+properties.getProperty("uri")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	}
 	
 	class ProgressObserver implements Observer {
@@ -479,9 +479,9 @@ class DocumentView extends JFrame {
 			ProgressIndicator ind = (ProgressIndicator) arg;
 			progress.setValue(ind.getPercentage());
 			if (o instanceof TextSearchEngine)
-				progress.setString("Storing words");
+				progress.setString("Storing words"); //$NON-NLS-1$
 			else if (o instanceof ElementIndex)
-				progress.setString("Storing elements");
+				progress.setString("Storing elements"); //$NON-NLS-1$
 		}
 	}
 }
