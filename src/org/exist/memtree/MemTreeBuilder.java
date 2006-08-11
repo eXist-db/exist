@@ -178,11 +178,18 @@ public class MemTreeBuilder {
 	 * @return the node number of the created node
 	 */
 	public int characters(char[] ch, int start, int len) {
-		int nodeNr = doc.addNode(Node.TEXT_NODE, level, null);
-		doc.addChars(nodeNr, ch, start, len);
-//		System.out.println("nodeNr = " + nodeNr + "; level = " + level);
-		linkNode(nodeNr);
-		return nodeNr;
+        int lastNode = doc.getLastNode();
+        if (doc.getNodeType(lastNode) == Node.TEXT_NODE) {
+            // if the last node is a text node, we have to append the
+            // characters to this node. XML does not allow adjacent text nodes.
+            doc.appendChars(lastNode, ch, start, len);
+            return lastNode;
+        } else {
+    		int nodeNr = doc.addNode(Node.TEXT_NODE, level, null);
+    		doc.addChars(nodeNr, ch, start, len);
+    		linkNode(nodeNr);
+    		return nodeNr;
+        }
 	}
 
 	/**
@@ -191,10 +198,18 @@ public class MemTreeBuilder {
 	 * @return the node number of the created node
 	 */
 	public int characters(CharSequence s) {
-		int nodeNr = doc.addNode(Node.TEXT_NODE, level, null);
-		doc.addChars(nodeNr, s);
-		linkNode(nodeNr);
-		return nodeNr;
+        int lastNode = doc.getLastNode();
+        if (doc.getNodeType(lastNode) == Node.TEXT_NODE) {
+            // if the last node is a text node, we have to append the
+            // characters to this node. XML does not allow adjacent text nodes.
+            doc.appendChars(lastNode, s);
+            return lastNode;
+        } else {
+    		int nodeNr = doc.addNode(Node.TEXT_NODE, level, null);
+    		doc.addChars(nodeNr, s);
+    		linkNode(nodeNr);
+    		return nodeNr;
+        }
 	}
 	
 	public int comment(CharSequence data) {
