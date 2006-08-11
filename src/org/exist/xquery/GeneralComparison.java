@@ -372,16 +372,12 @@ public class GeneralComparison extends BinaryOp {
 		{
             return(Sequence.EMPTY_SEQUENCE);
 		}
-        
-		LOG.debug("left: " + nodes.getLength() + "; right: " + rightSeq.getLength());
 		
 		//Holds the result
 		NodeSet result = null;
 		
 		//get the type of a possible index
 		int indexType = nodes.getIndexType();
-		
-		LOG.debug("Found index type: " + indexType);
 		
 		//See if we have a range index defined on the nodes in this sequence
         //TODO : use isSubType ??? -pb
