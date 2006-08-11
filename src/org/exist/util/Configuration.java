@@ -52,7 +52,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 
-public class Configuration implements ErrorHandler {
+public class Configuration implements ErrorHandler
+{
 	
 	/* FIXME:  It's not clear whether this class is meant to be a singleton (due to the static
 	 * file and existHome fields and static methods), or if we should allow many instances to
@@ -177,6 +178,12 @@ public class Configuration implements ErrorHandler {
             NodeList dbcon = doc.getElementsByTagName("db-connection");
             if (dbcon.getLength() > 0) {
                 configureBackend(existHomeDirname, dbcon);
+            }
+            
+            //transformer settings
+            NodeList transformers = doc.getElementsByTagName("transformer");
+            if(transformers.getLength() > 0) {
+                configureTransformer(transformers);
             }
             
             //serializer settings
@@ -377,6 +384,20 @@ public class Configuration implements ErrorHandler {
         if (consistencyCheck != null) {
             config.put("xupdate.consistency-checks", Boolean.valueOf(consistencyCheck.equals("yes")));
             LOG.debug("xupdate.consistency-checks: " + config.get("xupdate.consistency-checks"));
+        }
+    }
+    
+    /**
+     * @param transformer
+     */
+    private void configureTransformer(NodeList transformers)
+    {
+        Element transformer = (Element)transformers.item(0);
+        
+        String className = transformer.getAttribute("class");
+        if (className != null) {
+            config.put("transformer.class", className);
+            LOG.debug("transformer.class: " + config.get("transformer.class"));
         }
     }
     
