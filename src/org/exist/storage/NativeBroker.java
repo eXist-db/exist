@@ -1061,6 +1061,10 @@ public class NativeBroker extends DBBroker {
      * Instead, {@link #addDocument(Collection, DocumentImpl)} is called.
      */
     public void saveCollection(Txn transaction, Collection collection) throws PermissionDeniedException {
+        if (collection == null) {
+            LOG.error("NativeBroker.saveCollection called with collection == null! Aborting.");
+            return;
+        }
         if (readOnly)
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
         if (!pool.isInitializing())
