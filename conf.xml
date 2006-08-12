@@ -6,10 +6,9 @@
     the WEB-INF directory of the web application. Otherwise, the configuration
     is read from the directory specified by the exist.home system property.
     
-    For detailed information consult the eXist documentationL
-    - http://exist-db.org/configuration.html
-    - http://exist-db.org/cluster.html
-    
+    For detailed and latest information consult the eXist documentation:
+        - http://exist-db.org/configuration.html
+        - http://exist-db.org/cluster.html
 -->
 <exist>
 
@@ -74,10 +73,11 @@
         =====================================================================
         
         The settings below are very conservative to avoid out-of-memory
-	    exceptions on machines with limited memory (256MB). Increase the
-	    buffer settings for elements_buffers and words_buffers if you have
-	    some more memory to waste. If you deal with lots of collections, you 
-    	can also increase the collectionCacheSize value 
+	    exceptions on machines with limited memory (256MB).
+        
+        Increase the buffer settings for elements_buffers and words_buffers if 
+        you have some more memory to waste. If you deal with lots of 
+        collections, you can also increase the collectionCacheSize value 
     -->
     <db-connection cacheSize="96M" collectionCacheSize="128" database="native"
         files="webapp/WEB-INF/data" free_mem_min="5" pageSize="4096">
@@ -133,7 +133,7 @@
                 in all cases.
             
             - sync-on-commit:
-                ihis attribute determines whether or not to protect the journal
+                this attribute determines whether or not to protect the journal
                 during operating system failures. That is, it determines whether
                 the database forces a file-sync on the journal after every 
                 commit. 
@@ -156,7 +156,7 @@
             These limits are as follows:
             
             - output-size-limit
-                This attribute limits the size of XML fragments constructed 
+                this attribute limits the size of XML fragments constructed 
                 using XQuery, and thus sets the maximum amount of main memory a
                 query is allowed to use. This limit is expressed as the maximum
                 number of nodes allowed for an in-memory DOM tree. The purpose
@@ -165,7 +165,7 @@
                 large output fragments.
             
             - query-timeout
-                This attribute sets the maximum amount of time (expressed in 
+                this attribute sets the maximum amount of time (expressed in 
                 milliseconds) that the query can take before it is killed..
             
         -->
@@ -184,7 +184,7 @@
         </system-task-->
 
         <!--
-            Specifies the default permissions for all resources and collections
+            specifies the default permissions for all resources and collections
             in eXist (see  User Authentication and Access Control). When this is
             not configured, the default "mod" (similar to the Unix "chmod" 
             command) is set to 0775 in the resources and collections attributes.
@@ -211,12 +211,12 @@
             
                 - org.exist.security.XMLSecurityManager
             
-                    Stores the user information in the database. This is the 
+                    stores the user information in the database. This is the 
                     default manager if the <security> element is not included 
                     in <db-connection>.
             
-                - org.exist.security.LDAPSecurityManager
-                    Retrieves the user and groups from the LDAP database. This
+                - org.exist.security.LDAPSecurityManager 
+                    setrieves the user and groups from the LDAP database. This
                     requires addition configuration parameters which are 
                     described in the LDAP Security Manager documentation.
             
@@ -232,8 +232,9 @@
                 - simple-md5:
                     applies a simplified MD5 algorithm to encrypt passwords.
             
-                - password-realm:
-                    the realm to use for basic auth or http-digest password challenges.
+            - password-realm:
+                    the realm to use for basic auth or http-digest password 
+                    challenges.
         -->
         <!-- security class="org.exist.security.LDAPSecurityManager" /-->
 
@@ -245,7 +246,7 @@
         implementation:
 		
 		- class:
-			The name of the class that implements javax.xml.transform.TransformerFactory
+			the name of the class that implements javax.xml.transform.TransformerFactory
 			
 				for Saxon - net.sf.saxon.TransformerFactoryImpl
 				for Xalan - org.apache.xalan.processor.TransformerFactoryImpl
@@ -405,13 +406,13 @@
         track-term-freq="yes" validation="auto">
 
         <!-- 
-            the file for this element points to a file containing a list of 
+            The file for this element points to a file containing a list of 
             stopwords. Note that stopwords are NOT added to the fullext index.
         -->
         <stopwords file="stopword" />
 
         <!--
-            default index settings. Default settings apply if there's no 
+            Default index settings. Default settings apply if there's no 
             collection-specific configuration for a collection.
         -->
         <index>
