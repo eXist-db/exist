@@ -72,10 +72,10 @@ public class LoginPanel extends JPanel {
     public static final String URI_EMBEDDED = XmldbURI.EMBEDDED_SERVER_URI.toString();
     
     /** Default uri for remote connections */
-    public static final String URI_REMOTE = "xmldb:exist://localhost:8080/exist/xmlrpc";
+    public static final String URI_REMOTE = "xmldb:exist://localhost:8080/exist/xmlrpc"; //$NON-NLS-1$
     
     /** Name of Preference node containing favourites */
-    public static final String FAVOURITES_NODE = "favourites";
+    public static final String FAVOURITES_NODE = Messages.getString("LoginPanel.1"); //$NON-NLS-1$
     
     /** The properties modified by this panel */
     protected Properties properties;
@@ -123,7 +123,7 @@ public class LoginPanel extends JPanel {
         // y pos as a counter
         int gridy=0;
         
-        JLabel label = new JLabel("Username");
+        JLabel label = new JLabel(Messages.getString("LoginPanel.2")); //$NON-NLS-1$
         c.gridx = 0;
         c.gridy = gridy;
         c.gridwidth = 1;
@@ -143,7 +143,7 @@ public class LoginPanel extends JPanel {
         
         gridy++;
         
-        label = new JLabel("Password");
+        label = new JLabel(Messages.getString("LoginPanel.3")); //$NON-NLS-1$
         c.gridx = 0;
         c.gridy = gridy;
         c.gridwidth = 1;
@@ -164,7 +164,7 @@ public class LoginPanel extends JPanel {
         gridy++;
         
         
-        label = new JLabel("Type");
+        label = new JLabel(Messages.getString("LoginPanel.4")); //$NON-NLS-1$
         c.gridx = 0;
         c.gridy = gridy;
         c.gridwidth = 1;
@@ -174,10 +174,10 @@ public class LoginPanel extends JPanel {
         add(label);
         
         type = new JComboBox();
-        type.addItem("Remote");
-        type.addItem("Embedded");
+        type.addItem(Messages.getString("LoginPanel.5")); //$NON-NLS-1$
+        type.addItem(Messages.getString("LoginPanel.6")); //$NON-NLS-1$
         
-        final String uri=properties.getProperty("uri");
+        final String uri=properties.getProperty("uri"); //$NON-NLS-1$
         type.setSelectedIndex(uri.equals(URI_EMBEDDED) ? TYPE_EMBEDDED : TYPE_REMOTE);
         type.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -208,7 +208,7 @@ public class LoginPanel extends JPanel {
         gridy++;
         
         // File chooser for a conf file in local, active in local mode
-        label = new JLabel("Configuration");
+        label = new JLabel(Messages.getString("LoginPanel.8")); //$NON-NLS-1$
         c.gridx = 0;
         c.gridy = gridy;
         c.gridwidth = 1;
@@ -219,7 +219,7 @@ public class LoginPanel extends JPanel {
 
         configuration = new JTextField(properties.getProperty(InteractiveClient.CONFIGURATION), 40);
         // the client will run by itself the Database (needs exclusive access otherwise access is read-only)
-        configuration.setToolTipText("An eXist configuration file for an embed instance");
+        configuration.setToolTipText(Messages.getString("LoginPanel.9")); //$NON-NLS-1$
         // if type selected is remote, select a conf file should be disable
         if (type.getSelectedIndex() == TYPE_REMOTE) configuration.setEnabled(false);
         c.gridx = 1;
@@ -229,8 +229,8 @@ public class LoginPanel extends JPanel {
         grid.setConstraints(configuration, c);
         add(configuration);
 
-        selectConf = new JButton("Select");
-        selectConf.setToolTipText("Select an alternate conf file for embed mode.");
+        selectConf = new JButton(Messages.getString("LoginPanel.10")); //$NON-NLS-1$
+        selectConf.setToolTipText(Messages.getString("LoginPanel.11")); //$NON-NLS-1$
         if (type.getSelectedIndex() == TYPE_REMOTE) selectConf.setEnabled(false);
         selectConf.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -249,7 +249,7 @@ public class LoginPanel extends JPanel {
         gridy++;
         
         // URI, active in remote mode
-        label = new JLabel("URL");
+        label = new JLabel(Messages.getString("LoginPanel.12")); //$NON-NLS-1$
         c.gridx = 0;
         c.gridy = gridy;
         c.gridwidth = 1;
@@ -271,7 +271,7 @@ public class LoginPanel extends JPanel {
         gridy++;
         gridy++;
         
-        label = new JLabel("Title");
+        label = new JLabel(Messages.getString("LoginPanel.13")); //$NON-NLS-1$
         c.gridx = 0;
         c.gridy = gridy;
         c.gridwidth = 1;
@@ -304,7 +304,7 @@ public class LoginPanel extends JPanel {
         
         gridy++;
         
-        label = new JLabel("Favourites");
+        label = new JLabel(Messages.getString("LoginPanel.14")); //$NON-NLS-1$
         c.gridx = 0;
         c.gridy = gridy;
         c.gridwidth = 1;
@@ -353,8 +353,8 @@ public class LoginPanel extends JPanel {
         grid.setConstraints(scroll, c);
         add(scroll);
         
-        btnLoadFavourite = new JButton("Select");
-        btnLoadFavourite.setToolTipText("Select favourite");
+        btnLoadFavourite = new JButton(Messages.getString("LoginPanel.15")); //$NON-NLS-1$
+        btnLoadFavourite.setToolTipText(Messages.getString("LoginPanel.16")); //$NON-NLS-1$
         btnLoadFavourite.setEnabled(false);
         btnLoadFavourite.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -379,15 +379,15 @@ public class LoginPanel extends JPanel {
         
         gridy++;
         
-        btnAddFavourite = new JButton("Save");
-        btnAddFavourite.setToolTipText("Save settings");
+        btnAddFavourite = new JButton(Messages.getString("LoginPanel.17")); //$NON-NLS-1$
+        btnAddFavourite.setToolTipText(Messages.getString("LoginPanel.18")); //$NON-NLS-1$
         btnAddFavourite.setEnabled(false);
         btnAddFavourite.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String t = title.getText();
                 for (int i=0; i < favouritesModel.getSize(); i++) {
                     if (favouritesModel.elementAt(i).equals(t)) {
-                        int result = JOptionPane.showConfirmDialog(LoginPanel.this, "A connection with this name already exists. Ok to overwrite?", "Conflict", JOptionPane.YES_NO_OPTION);
+                        int result = JOptionPane.showConfirmDialog(LoginPanel.this, Messages.getString("LoginPanel.19"), Messages.getString("LoginPanel.20"), JOptionPane.YES_NO_OPTION); //$NON-NLS-1$ //$NON-NLS-2$
                         if (result == JOptionPane.NO_OPTION) {
                             return;
                         }
@@ -416,9 +416,9 @@ public class LoginPanel extends JPanel {
         grid.setConstraints(btnAddFavourite, c);
         add(btnAddFavourite);
         
-        btnRemoveFavourite = new JButton("Remove");
+        btnRemoveFavourite = new JButton(Messages.getString("LoginPanel.21")); //$NON-NLS-1$
         btnRemoveFavourite.setEnabled(false);
-        btnRemoveFavourite.setToolTipText("Remove favourite");
+        btnRemoveFavourite.setToolTipText(Messages.getString("LoginPanel.22")); //$NON-NLS-1$
         btnRemoveFavourite.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 favouritesModel.remove(favourites.getSelectedIndex());
@@ -441,13 +441,13 @@ public class LoginPanel extends JPanel {
         grid.setConstraints(btnRemoveFavourite, c);
         add(btnRemoveFavourite);
         
-        btnExportFavourite = new JButton("Export");
+        btnExportFavourite = new JButton(Messages.getString("LoginPanel.23")); //$NON-NLS-1$
         btnExportFavourite.setEnabled(true);
-        btnExportFavourite.setToolTipText("Export favourites to file");
+        btnExportFavourite.setToolTipText(Messages.getString("LoginPanel.24")); //$NON-NLS-1$
         btnExportFavourite.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 
-                File file = new File( "favourites.xml" );
+                File file = new File( Messages.getString("LoginPanel.25") ); //$NON-NLS-1$
                 JFileChooser chooser = new JFileChooser();
                 chooser.setSelectedFile(file);
                 chooser.showSaveDialog(LoginPanel.this);
@@ -455,12 +455,12 @@ public class LoginPanel extends JPanel {
                 File selectedFile = chooser.getSelectedFile();
                 
                 if(selectedFile==null){
-                    JOptionPane.showMessageDialog(LoginPanel.this, "No favourites file selected", "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(LoginPanel.this, Messages.getString("LoginPanel.26"), Messages.getString("LoginPanel.27"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
                     return;
                 }
                 
                 if(selectedFile.exists() && !selectedFile.canWrite()){
-                    JOptionPane.showMessageDialog(LoginPanel.this, "Cannot write selected file", "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(LoginPanel.this, Messages.getString("LoginPanel.28"), Messages.getString("LoginPanel.29"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
                     return;
                 }
                 exportFavourites(selectedFile);
@@ -480,13 +480,13 @@ public class LoginPanel extends JPanel {
         grid.setConstraints(btnExportFavourite, c);
         add(btnExportFavourite);
         
-        btnImportFavourite = new JButton("Import");
+        btnImportFavourite = new JButton(Messages.getString("LoginPanel.30")); //$NON-NLS-1$
         btnImportFavourite.setEnabled(true);
-        btnImportFavourite.setToolTipText("Import favourites from file");
+        btnImportFavourite.setToolTipText(Messages.getString("LoginPanel.31")); //$NON-NLS-1$
         btnImportFavourite.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 
-                File file = new File( "favourites.xml" );
+                File file = new File( "favourites.xml" ); //$NON-NLS-1$
                 JFileChooser chooser = new JFileChooser();
                 chooser.setSelectedFile(file);
                 
@@ -494,12 +494,12 @@ public class LoginPanel extends JPanel {
                 File selectedFile = chooser.getSelectedFile();
                 
                 if(selectedFile==null){
-                    JOptionPane.showMessageDialog(LoginPanel.this, "No favourites file selected", "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(LoginPanel.this, Messages.getString("LoginPanel.33"), Messages.getString("LoginPanel.34"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
                     return;
                 }
                 
                 if(!selectedFile.canRead()){
-                    JOptionPane.showMessageDialog(LoginPanel.this, "Cannot read selected file", "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(LoginPanel.this, Messages.getString("LoginPanel.35"), Messages.getString("LoginPanel.36"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
                     return;
                 }
                 
@@ -551,7 +551,7 @@ public class LoginPanel extends JPanel {
         chooser.setMultiSelectionEnabled(false);
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.setCurrentDirectory(dir);
-        if (chooser.showDialog(this, "Select an Exist instance configuration file")
+        if (chooser.showDialog(this, Messages.getString("LoginPanel.37")) //$NON-NLS-1$
             == JFileChooser.APPROVE_OPTION) {
             File f = chooser.getSelectedFile();
             configuration.setText(f.getAbsolutePath());
@@ -584,10 +584,10 @@ public class LoginPanel extends JPanel {
             
             Favourite favourite = new Favourite(
                     favouriteNodeNames[i]
-                  , node.get(Favourite.USERNAME, "")
-                  , node.get(Favourite.PASSWORD, "")
-                  , node.get(Favourite.URL, "")
-                  , node.get(Favourite.CONFIGURATION, "")
+                  , node.get(Favourite.USERNAME, "") //$NON-NLS-1$
+                  , node.get(Favourite.PASSWORD, "") //$NON-NLS-1$
+                  , node.get(Favourite.URL, "") //$NON-NLS-1$
+                  , node.get(Favourite.CONFIGURATION, "") //$NON-NLS-1$
             );
             
             favourites[i]=favourite;
@@ -691,11 +691,11 @@ public class LoginPanel extends JPanel {
      */
     static class Favourite implements Comparable {
         
-        public static final String NAME="name";
-        public static final String USERNAME="username";
-        public static final String PASSWORD="password";
-        public static final String URL="url";
-        public static final String CONFIGURATION="configuration";
+        public static final String NAME=Messages.getString("LoginPanel.42"); //$NON-NLS-1$
+        public static final String USERNAME=Messages.getString("LoginPanel.43"); //$NON-NLS-1$
+        public static final String PASSWORD=Messages.getString("LoginPanel.44"); //$NON-NLS-1$
+        public static final String URL=Messages.getString("LoginPanel.45"); //$NON-NLS-1$
+        public static final String CONFIGURATION=Messages.getString("LoginPanel.46"); //$NON-NLS-1$
         
         private String name;
         private String username;
