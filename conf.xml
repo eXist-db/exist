@@ -6,7 +6,26 @@
     the WEB-INF directory of the web application. Otherwise, the configuration
     is read from the directory specified by the exist.home system property.
     
-    For detailed and latest information consult the eXist documentation:
+    Structure of this xml document:
+    
+        exist
+            cluster
+            db-connection
+                default-permissions
+                pool
+                recovery
+                security
+                system-task
+                watchdog
+            indexer
+            serializer
+            transformer
+            xupdate
+            xquery
+    
+    
+    For detailed and latest information please consult the eXist documentation:
+    
         - http://exist-db.org/configuration.html
         - http://exist-db.org/cluster.html
 -->
@@ -81,7 +100,17 @@
     -->
     <db-connection cacheSize="96M" collectionCacheSize="128" database="native"
         files="webapp/WEB-INF/data" free_mem_min="5" pageSize="4096">
-
+        
+        <!--
+            specifies the default permissions for all resources and collections
+            in eXist (see  User Authentication and Access Control). When this is
+            not configured, the default "mod" (similar to the Unix "chmod" 
+            command) is set to 0775 in the resources and collections attributes.
+            A different default value may be set for a database instance, and 
+            local overrides are also possible.
+        -->
+        <!--default-permissions collection="0775" resource="0775" /-->
+        
         <!-- 
             Settings for the database connection pool:
             
@@ -148,29 +177,52 @@
         -->
         <recovery enabled="yes" group-commit="no"
             journal-dir="webapp/WEB-INF/data" size="100M" sync-on-commit="no" />
-
-        <!--  
-            This is the global configuration for the query watchdog. The 
-            watchdog monitors all query processes, and can terminate any 
-            long-running queries if they exceed one of the predefined limits. 
-            These limits are as follows:
+        
+        <!-- 
+            The <security> element in the <db-connection> node is used to select
+            the security manager Class and control the database of users and
+            groups.
             
-            - output-size-limit
-                this attribute limits the size of XML fragments constructed 
-                using XQuery, and thus sets the maximum amount of main memory a
-                query is allowed to use. This limit is expressed as the maximum
-                number of nodes allowed for an in-memory DOM tree. The purpose
-                of this option is to avoid memory shortages on the server in
-                cases where users are allowed to run queries that produce very
-                large output fragments.
+            - class:
+            this attribute is required, and specifies a Java class name used
+            to implement the org.exist.security.SecurityManager interface, 
+            as in the following example:
             
-            - query-timeout
-                this attribute sets the maximum amount of time (expressed in 
-                milliseconds) that the query can take before it is killed..
+            Example: <security> class Attribute (LDAP)
+            <security class="org.exist.security.LDAPSecurityManager" />
             
+            eXist is distributed with the following built-in security manager
+            implementations:
+            
+            - org.exist.security.XMLSecurityManager
+            
+            stores the user information in the database. This is the 
+            default manager if the <security> element is not included 
+            in <db-connection>.
+            
+            - org.exist.security.LDAPSecurityManager 
+            setrieves the user and groups from the LDAP database. This
+            requires addition configuration parameters which are 
+            described in the LDAP Security Manager documentation.
+            
+            - password-encoding:
+            password encoding can be set to one of the following types:
+            
+            - plain:
+            applies plain encryption.
+            
+            - md5: (default)
+            applies the MD5 algorithm to encrypt passwords.
+            
+            - simple-md5:
+            applies a simplified MD5 algorithm to encrypt passwords.
+            
+            - password-realm:
+            the realm to use for basic auth or http-digest password 
+            challenges.
         -->
-        <watchdog output-size-limit="10000" query-timeout="-1" />
-
+        <!-- security class="org.exist.security.LDAPSecurityManager" /-->
+        
         <!--
             Tasks used for system maintenance. System tasks require the database
             to be in a consistent state. All database operations will be stopped
@@ -183,77 +235,105 @@
             <parameter name="output-dir" value="backup" />
         </system-task-->
 
-        <!--
-            specifies the default permissions for all resources and collections
-            in eXist (see  User Authentication and Access Control). When this is
-            not configured, the default "mod" (similar to the Unix "chmod" 
-            command) is set to 0775 in the resources and collections attributes.
-            A different default value may be set for a database instance, and 
-            local overrides are also possible.
+        <!--  
+            This is the global configuration for the query watchdog. The 
+            watchdog monitors all query processes, and can terminate any 
+            long-running queries if they exceed one of the predefined limits. 
+            These limits are as follows:
+            
+            - output-size-limit
+            this attribute limits the size of XML fragments constructed 
+            using XQuery, and thus sets the maximum amount of main memory a
+            query is allowed to use. This limit is expressed as the maximum
+            number of nodes allowed for an in-memory DOM tree. The purpose
+            of this option is to avoid memory shortages on the server in
+            cases where users are allowed to run queries that produce very
+            large output fragments.
+            
+            - query-timeout
+            this attribute sets the maximum amount of time (expressed in 
+            milliseconds) that the query can take before it is killed..
+            
         -->
-        <!--default-permissions collection="0775" resource="0775" /-->
+        <watchdog output-size-limit="10000" query-timeout="-1" />
+        
+    </db-connection>
+   
+    <!-- 
+        Settings for the indexer:
+        
+        - caseSensitive
+        should equality comparisons between strings be case-sensitive or
+        insensitive: "yes" or "no".
+        
+        - index-depth
+        defines the maximum nesting depth of nodes which will be indexed
+        in the DOM index. Nodes below the specified nesting depth will
+        not be indexed in the DOM file. This has only an effect when 
+        retrieving query results or for some types of XPath subexpressions, 
+        like equality comparisons.
+        
+        - stemming
+        eXist includes a very simple english language stemmer, based on 
+        Porter's algorithm. Set the "stemming"-option to "true" if you 
+        would like to use stemming. This does only work for english.
+        
+        - suppress-whitespace
+        should leading or trailing whitespace be removed from a text node?
+        Set to "leading", "trailing", "both" or "none".
+        Changing the parameter will only have an effect on newly loaded 
+        files, not old ones.
+        
+        - suppress-whitespace-mixed-content
+        preserve the white space inside a mixed content node
+        
+        - tokenizer:
+        this attribute invokes the Java class used to tokenize a string into
+        a sequence of single words or tokens, which are stored to the 
+        fulltext index. Currently only the SimpleTokenizer is available.
+        
+        - track-term-freq:
+        not documented.
+        
+        - validation:
+        should XML source files be validated against a schema or DTD before
+        storing them? The setting is passed to the XML parser. The actual
+        effects depend on the parser you use. eXist comes with Xerces which 
+        can validate against both: schemas and DTDs. 
+        Possible values: "yes", "no", "auto". "auto" will leave validation 
+        to the parser.        
+    -->
+    <indexer caseSensitive="yes" index-depth="1"
+        preserve-whitespace-mixed-content="no" stemming="no"
+        suppress-whitespace="both"
+        tokenizer="org.exist.storage.analysis.SimpleTokenizer"
+        track-term-freq="yes" validation="auto">
         
         <!-- 
-            The <security> element in the <db-connection> node is used to select
-            the security manager Class and control the database of users and
-            groups.
-                        
-            - class:
-                this attribute is required, and specifies a Java class name used
-                to implement the org.exist.security.SecurityManager interface, 
-                as in the following example:
-            
-                Example: <security> class Attribute (LDAP)
-                <security class="org.exist.security.LDAPSecurityManager" />
-            
-                eXist is distributed with the following built-in security manager
-                implementations:
-            
-                - org.exist.security.XMLSecurityManager
-            
-                    stores the user information in the database. This is the 
-                    default manager if the <security> element is not included 
-                    in <db-connection>.
-            
-                - org.exist.security.LDAPSecurityManager 
-                    setrieves the user and groups from the LDAP database. This
-                    requires addition configuration parameters which are 
-                    described in the LDAP Security Manager documentation.
-            
-            - password-encoding:
-                password encoding can be set to one of the following types:
-            
-                - plain:
-                    applies plain encryption.
-            
-                - md5: (default)
-                    applies the MD5 algorithm to encrypt passwords.
-            
-                - simple-md5:
-                    applies a simplified MD5 algorithm to encrypt passwords.
-            
-            - password-realm:
-                    the realm to use for basic auth or http-digest password 
-                    challenges.
+            The file for this element points to a file containing a list of 
+            stopwords. Note that stopwords are NOT added to the fullext index.
         -->
-        <!-- security class="org.exist.security.LDAPSecurityManager" /-->
-
-    </db-connection>
-
-
-    <!-- 
-        Default settings for the XSLT Transformer. Allow's for a choice of 
-        implementation:
-		
-		- class:
-			the name of the class that implements javax.xml.transform.TransformerFactory
-			
-				for Saxon - net.sf.saxon.TransformerFactoryImpl
-				for Xalan - org.apache.xalan.processor.TransformerFactoryImpl
-	-->
-    <transformer class="org.apache.xalan.processor.TransformerFactoryImpl" />
-
-
+        <stopwords file="stopword" />
+        
+        <!--
+            Default index settings. Default settings apply if there's no 
+            collection-specific configuration for a collection.
+        -->
+        <index>
+            <fulltext attributes="true" default="all">
+                <exclude path="/auth" />
+            </fulltext>
+        </index>
+        
+        <!-- 
+            Specify the location of one or more catalog files.
+            Catalogs are used to resolve external entities in XML documents.
+        -->
+        <entity-resolver>
+            <catalog file="webapp/WEB-INF/catalog.xml" />
+        </entity-resolver>
+    </indexer>
+       
     <!-- 
         Default settings for the serializer. Most of these can be changed
         by client code:
@@ -291,7 +371,19 @@
     -->
     <serializer add-exist-id="none" enable-xinclude="yes" enable-xsl="no"
         indent="yes" match-tagging-attributes="no" match-tagging-elements="yes" />
-
+    
+    <!-- 
+        Default settings for the XSLT Transformer. Allow's for a choice of 
+        implementation:
+        
+        - class:
+        the name of the class that implements javax.xml.transform.TransformerFactory
+        
+        for Saxon - net.sf.saxon.TransformerFactoryImpl
+        for Xalan - org.apache.xalan.processor.TransformerFactoryImpl
+    -->
+    <transformer class="org.apache.xalan.processor.TransformerFactoryImpl" />
+       
     <!-- 
         During XUpdates, the database needs to do a partial reindex of the
     	document whenever the internal node-id structure has changed. Reindex
@@ -354,80 +446,5 @@
                 uri="http://exist-db.org/xquery/system" />
         </builtin-modules>
     </xquery>
-
-    <!-- 
-        Settings for the indexer:
-        
-        - caseSensitive
-            should equality comparisons between strings be case-sensitive or
-            insensitive: "yes" or "no".
-        
-        - index-depth
-            defines the maximum nesting depth of nodes which will be indexed
-            in the DOM index. Nodes below the specified nesting depth will
-            not be indexed in the DOM file. This has only an effect when 
-            retrieving query results or for some types of XPath subexpressions, 
-            like equality comparisons.
-        
-        - stemming
-            eXist includes a very simple english language stemmer, based on 
-            Porter's algorithm. Set the "stemming"-option to "true" if you 
-            would like to use stemming. This does only work for english.
-        
-        - suppress-whitespace
-            should leading or trailing whitespace be removed from a text node?
-            Set to "leading", "trailing", "both" or "none".
-            Changing the parameter will only have an effect on newly loaded 
-            files, not old ones.
-        
-        - suppress-whitespace-mixed-content
-            preserve the white space inside a mixed content node
-        
-        - tokenizer:
-            this attribute invokes the Java class used to tokenize a string into
-            a sequence of single words or tokens, which are stored to the 
-            fulltext index. Currently only the SimpleTokenizer is available.
-        
-        - track-term-freq:
-            not documented.
-        
-        - validation:
-            should XML source files be validated against a schema or DTD before
-            storing them? The setting is passed to the XML parser. The actual
-            effects depend on the parser you use. eXist comes with Xerces which 
-            can validate against both: schemas and DTDs. 
-            Possible values: "yes", "no", "auto". "auto" will leave validation 
-            to the parser.        
-    -->
-    <indexer caseSensitive="yes" index-depth="1"
-        preserve-whitespace-mixed-content="no" stemming="no"
-        suppress-whitespace="both"
-        tokenizer="org.exist.storage.analysis.SimpleTokenizer"
-        track-term-freq="yes" validation="auto">
-
-        <!-- 
-            The file for this element points to a file containing a list of 
-            stopwords. Note that stopwords are NOT added to the fullext index.
-        -->
-        <stopwords file="stopword" />
-
-        <!--
-            Default index settings. Default settings apply if there's no 
-            collection-specific configuration for a collection.
-        -->
-        <index>
-            <fulltext attributes="true" default="all">
-                <exclude path="/auth" />
-            </fulltext>
-        </index>
-
-        <!-- 
-            Specify the location of one or more catalog files.
-            Catalogs are used to resolve external entities in XML documents.
-        -->
-        <entity-resolver>
-            <catalog file="webapp/WEB-INF/catalog.xml" />
-        </entity-resolver>
-    </indexer>
 
 </exist>
