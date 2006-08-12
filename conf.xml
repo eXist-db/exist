@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-	This is the central configuration file for the database. If the database
+    This is the central configuration file for the database. If the database
     is running in a servlet-context, the configuration file will be read from
     the WEB-INF directory of the web application. Otherwise, the configuration
     is read from the directory specified by the exist.home system property.
@@ -94,7 +94,7 @@
         =====================================================================
         
         The settings below are very conservative to avoid out-of-memory
-	    exceptions on machines with limited memory (256MB).
+        exceptions on machines with limited memory (256MB).
         
         Increase the buffer settings for elements_buffers and words_buffers if 
         you have some more memory to waste. If you deal with lots of 
@@ -128,9 +128,9 @@
                 normal database operation after the specified number of 
                 milliseconds and write all dirty pages to disk.
             
-			- wait-before-shutdown:
-			    defines how long the database instance will wait for running
-			    operations to complete before it forces a shutdown.
+            - wait-before-shutdown:
+                defines how long the database instance will wait for running
+                operations to complete before it forces a shutdown.
         -->
         <pool max="20" min="1" sync-period="120000"
             wait-before-shutdown="120000" />
@@ -186,9 +186,9 @@
             groups.
             
             - class:
-            this attribute is required, and specifies a Java class name used
-            to implement the org.exist.security.SecurityManager interface, 
-            as in the following example:
+		            this attribute is required, and specifies a Java class name used
+		            to implement the org.exist.security.SecurityManager interface, 
+		            as in the following example:
             
             Example: <security> class Attribute (LDAP)
             <security class="org.exist.security.LDAPSecurityManager" />
@@ -380,29 +380,28 @@
         implementation:
         
         - class:
-        the name of the class that implements javax.xml.transform.TransformerFactory
-        
-        for Saxon - net.sf.saxon.TransformerFactoryImpl
-        for Xalan - org.apache.xalan.processor.TransformerFactoryImpl
+            the name of the class that implements javax.xml.transform.TransformerFactory
+            
+            for Saxon - net.sf.saxon.TransformerFactoryImpl
+            for Xalan - org.apache.xalan.processor.TransformerFactoryImpl
     -->
     <transformer class="org.apache.xalan.processor.TransformerFactoryImpl" />
-       
     <!-- 
         During XUpdates, the database needs to do a partial reindex of the
-    	document whenever the internal node-id structure has changed. Reindex
-    	runs can occur quite frequently and slow down the XUpdate process.
+      document whenever the internal node-id structure has changed. Reindex
+      runs can occur quite frequently and slow down the XUpdate process.
     
-    	Frequent reindex runs can be avoided by leaving some space between the
-    	numeric identifiers assigned to every node. Future insertions will first
-    	fill up these spare identifiers, so no reindex is required.
+      Frequent reindex runs can be avoided by leaving some space between the
+      numeric identifiers assigned to every node. Future insertions will first
+      fill up these spare identifiers, so no reindex is required.
 
         - allowed-fragmentation:
             defines the maximum number of page splits allowed within a document
             before a defragmentation run will be triggered.
             
-    	- enable-consistency-checks:
+      - enable-consistency-checks:
             for debugging only. If the parameter is set to "yes", a consistency
-            check will be run on every modified	document after every XUpdate 
+            check will be run on every modified document after every XUpdate 
             request. It checks if the persistent DOM is complete and all 
             pointers in the structural index point to valid storage addresses 
             containing valid nodes.
@@ -414,7 +413,7 @@
             to be aware that leaving spare ids also limits the maximum size of
             a document that can be indexed. 
         
-	-->
+  	-->
     <xupdate allowed-fragmentation="5" enable-consistency-checks="no"
         growth-factor="20" />
 
