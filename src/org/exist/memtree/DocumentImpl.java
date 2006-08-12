@@ -208,6 +208,33 @@ public class DocumentImpl extends NodeImpl implements Document {
         }
     }
 
+    public void appendChars(int nodeNr, char[] ch, int start, int len) {
+        if (nextChar + len >= characters.length) {
+            int newLen = (characters.length * 3) / 2;
+            if (newLen < nextChar + len) newLen = nextChar + len;
+            char[] nc = new char[newLen];
+            System.arraycopy(characters, 0, nc, 0, characters.length);
+            characters = nc;
+        }
+        alphaLen[nodeNr] = alphaLen[nodeNr] + len;
+        System.arraycopy(ch, start, characters, nextChar, len);
+    }
+    
+    public void appendChars(int nodeNr, CharSequence s) {
+        int len = s.length();
+        if (nextChar + len >= characters.length) {
+            int newLen = (characters.length * 3) / 2;
+            if (newLen < nextChar + len) newLen = nextChar + len;
+            char[] nc = new char[newLen];
+            System.arraycopy(characters, 0, nc, 0, characters.length);
+            characters = nc;
+        }
+        alphaLen[nodeNr] = alphaLen[nodeNr] + len;
+        for (int i = 0; i < len; i++) {
+            characters[nextChar++] = s.charAt(i);
+        }
+    }
+    
     public void addReferenceNode(int nodeNr, NodeProxy proxy) {
         if (nodeKind == null) init();
         if (nextRef == references.length) growReferences();
@@ -240,6 +267,12 @@ public class DocumentImpl extends NodeImpl implements Document {
     
     public int getLastNode() {
         return size - 1;
+    }
+    
+    public short getNodeType(int nodeNr) {
+        if (nodeNr < 0)
+            return -1;
+        return nodeKind[nodeNr];
     }
     
     private void grow() {
