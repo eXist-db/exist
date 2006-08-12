@@ -104,7 +104,7 @@
         files="webapp/WEB-INF/data" free_mem_min="5" pageSize="4096">
         
         <!--
-            specifies the default permissions for all resources and collections
+            Specifies the default permissions for all resources and collections
             in eXist (see  User Authentication and Access Control). When this is
             not configured, the default "mod" (similar to the Unix "chmod" 
             command) is set to 0775 in the resources and collections attributes.
@@ -198,30 +198,31 @@
             
             - org.exist.security.XMLSecurityManager
             
-            stores the user information in the database. This is the 
-            default manager if the <security> element is not included 
-            in <db-connection>.
+                stores the user information in the database. This is the 
+                default manager if the <security> element is not included 
+                in <db-connection>.
             
             - org.exist.security.LDAPSecurityManager 
-            setrieves the user and groups from the LDAP database. This
-            requires addition configuration parameters which are 
-            described in the LDAP Security Manager documentation.
+            
+                retrieves the user and groups from the LDAP database. This
+                requires addition configuration parameters which are 
+                described in the LDAP Security Manager documentation.
             
             - password-encoding:
-            password encoding can be set to one of the following types:
+                password encoding can be set to one of the following types:
             
-            - plain:
-            applies plain encryption.
+                - plain:
+                    applies plain encryption.
             
-            - md5: (default)
-            applies the MD5 algorithm to encrypt passwords.
+                - md5: (default)
+                    applies the MD5 algorithm to encrypt passwords.
             
-            - simple-md5:
-            applies a simplified MD5 algorithm to encrypt passwords.
+                - simple-md5:
+                    applies a simplified MD5 algorithm to encrypt passwords.
             
             - password-realm:
-            the realm to use for basic auth or http-digest password 
-            challenges.
+                the realm to use for basic auth or http-digest password 
+                challenges.
         -->
         <!-- security class="org.exist.security.LDAPSecurityManager" /-->
         
@@ -244,17 +245,17 @@
             These limits are as follows:
             
             - output-size-limit
-            this attribute limits the size of XML fragments constructed 
-            using XQuery, and thus sets the maximum amount of main memory a
-            query is allowed to use. This limit is expressed as the maximum
-            number of nodes allowed for an in-memory DOM tree. The purpose
-            of this option is to avoid memory shortages on the server in
-            cases where users are allowed to run queries that produce very
-            large output fragments.
+                this attribute limits the size of XML fragments constructed 
+                using XQuery, and thus sets the maximum amount of main memory a
+                query is allowed to use. This limit is expressed as the maximum
+                number of nodes allowed for an in-memory DOM tree. The purpose
+                of this option is to avoid memory shortages on the server in
+                cases where users are allowed to run queries that produce very
+                large output fragments.
             
             - query-timeout
-            this attribute sets the maximum amount of time (expressed in 
-            milliseconds) that the query can take before it is killed..
+                this attribute sets the maximum amount of time (expressed in 
+                milliseconds) that the query can take before it is killed..
             
         -->
         <watchdog output-size-limit="10000" query-timeout="-1" />
@@ -265,45 +266,45 @@
         Settings for the indexer:
         
         - caseSensitive
-        should equality comparisons between strings be case-sensitive or
-        insensitive: "yes" or "no".
+            should equality comparisons between strings be case-sensitive or
+            insensitive: "yes" or "no".
         
         - index-depth
-        defines the maximum nesting depth of nodes which will be indexed
-        in the DOM index. Nodes below the specified nesting depth will
-        not be indexed in the DOM file. This has only an effect when 
-        retrieving query results or for some types of XPath subexpressions, 
-        like equality comparisons.
+            defines the maximum nesting depth of nodes which will be indexed
+            in the DOM index. Nodes below the specified nesting depth will
+            not be indexed in the DOM file. This has only an effect when 
+            retrieving query results or for some types of XPath subexpressions, 
+            like equality comparisons.
         
         - stemming
-        eXist includes a very simple english language stemmer, based on 
-        Porter's algorithm. Set the "stemming"-option to "true" if you 
-        would like to use stemming. This does only work for english.
+            eXist includes a very simple english language stemmer, based on 
+            Porter's algorithm. Set the "stemming"-option to "true" if you 
+            would like to use stemming. This does only work for english.
         
         - suppress-whitespace
-        should leading or trailing whitespace be removed from a text node?
-        Set to "leading", "trailing", "both" or "none".
-        Changing the parameter will only have an effect on newly loaded 
-        files, not old ones.
+            should leading or trailing whitespace be removed from a text node?
+            Set to "leading", "trailing", "both" or "none".
+            Changing the parameter will only have an effect on newly loaded 
+            files, not old ones.
         
         - suppress-whitespace-mixed-content
-        preserve the white space inside a mixed content node
+            preserve the white space inside a mixed content node
         
         - tokenizer:
-        this attribute invokes the Java class used to tokenize a string into
-        a sequence of single words or tokens, which are stored to the 
-        fulltext index. Currently only the SimpleTokenizer is available.
+            this attribute invokes the Java class used to tokenize a string into
+            a sequence of single words or tokens, which are stored to the 
+            fulltext index. Currently only the SimpleTokenizer is available.
         
         - track-term-freq:
-        not documented.
+            not documented.
         
         - validation:
-        should XML source files be validated against a schema or DTD before
-        storing them? The setting is passed to the XML parser. The actual
-        effects depend on the parser you use. eXist comes with Xerces which 
-        can validate against both: schemas and DTDs. 
-        Possible values: "yes", "no", "auto". "auto" will leave validation 
-        to the parser.        
+            should XML source files be validated against a schema or DTD before
+            storing them? The setting is passed to the XML parser. The actual
+            effects depend on the parser you use. eXist comes with Xerces which 
+            can validate against both: schemas and DTDs. 
+            Possible values: "yes", "no", "auto". "auto" will leave validation 
+            to the parser.        
     -->
     <indexer caseSensitive="yes" index-depth="1"
         preserve-whitespace-mixed-content="no" stemming="no"
