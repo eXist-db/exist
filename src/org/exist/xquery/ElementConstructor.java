@@ -99,25 +99,19 @@ public class ElementConstructor extends NodeConstructor {
         if (name.equalsIgnoreCase("xmlns")) {
         	throw new XPathException("XQST0070 : can not redefine '" + qn + "'");
         }        
-        if ("".equals(uri)) {
-        	if (context.inScopeNamespaces.remove(qn.getLocalName()) == null)
-        		throw new XPathException("XQST0085 : can not undefine '" + qn + "'");
-        } else { 
-	        if(namespaceDecls == null) {
-				namespaceDecls = new QName[1];
-				namespaceDecls[0] = qn;			
-			} else {			
-				for(int i = 0; i < namespaceDecls.length; i++) {
-					if (qn.equals(namespaceDecls[i]))
-						throw new XPathException("XQST0071 : duplicate definition for '" + qn + "'");
-				}
-				QName decls[] = new QName[namespaceDecls.length + 1];
-				System.arraycopy(namespaceDecls, 0, decls, 0, namespaceDecls.length);
-				decls[namespaceDecls.length] = qn;			
-				namespaceDecls = decls;
+        if(namespaceDecls == null) {
+			namespaceDecls = new QName[1];
+			namespaceDecls[0] = qn;
+		} else {
+			for(int i = 0; i < namespaceDecls.length; i++) {
+				if (qn.equals(namespaceDecls[i]))
+					throw new XPathException("XQST0071 : duplicate definition for '" + qn + "'");
 			}
-	        context.inScopeNamespaces.put(qn.getLocalName(), qn.getNamespaceURI());
-        }
+			QName decls[] = new QName[namespaceDecls.length + 1];
+			System.arraycopy(namespaceDecls, 0, decls, 0, namespaceDecls.length);
+			decls[namespaceDecls.length] = qn;			
+			namespaceDecls = decls;
+		}
 	}
 	
     /* (non-Javadoc)
@@ -147,7 +141,11 @@ public class ElementConstructor extends NodeConstructor {
 		// declare namespaces
 		if(namespaceDecls != null) {
 			for(int i = 0; i < namespaceDecls.length; i++) {
-				context.declareInScopeNamespace(namespaceDecls[i].getLocalName(), namespaceDecls[i].getNamespaceURI());
+				if ("".equals(namespaceDecls[i].getNamespaceURI())) {
+					if (context.inScopeNamespaces.remove(namespaceDecls[i].getLocalName()) == null)
+		        		throw new XPathException("XQST0085 : can not undefine '" + namespaceDecls[i] + "'");
+				} else
+					context.declareInScopeNamespace(namespaceDecls[i].getLocalName(), namespaceDecls[i].getNamespaceURI());
 			}
 		}
 		// process attributes
