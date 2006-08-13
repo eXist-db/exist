@@ -6,8 +6,8 @@ let $product-version := util:system-property("product-version")
 let $product-build := util:system-property("product-build")
 let $test-suite := doc('/db/XQTS/XQTSCatalog.xml')/*:test-suite/@version
 let $dummy := response:set-header("Content-Disposition", concat( 
-	"attachment; filename='results_XQTS-" , $test-suite , "_eXist-" , 
-	$product-version , '_' , $product-build , ".xml'" ) )
+	"attachment; filename=&quot;results_XQTS-" , $test-suite , "_eXist-" , 
+	$product-version , '_' , $product-build , ".xml&quot;" ) )
 	
 return
 (: <test-suite-result xmlns="http://www.w3.org/2005/02/query-test-XQTSResult"
