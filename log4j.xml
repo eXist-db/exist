@@ -17,7 +17,7 @@
     <!-- the following appenders write to files  -->
     <appender name="exist.ehcache" class="org.apache.log4j.RollingFileAppender">
         <param name="File" value="${exist.home}/webapp/WEB-INF/logs/cocoon-ehcache.log"/>
-        <param name="MaximumFileSize" value="500000"/>
+        <param name="MaxFileSize" value="500KB"/>
         <param name="Encoding" value="UTF-8"/>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
@@ -26,7 +26,8 @@
     
     <appender name="exist.core" class="org.apache.log4j.RollingFileAppender">
         <param name="File" value="${exist.home}/webapp/WEB-INF/logs/exist.log"/>
-        <param name="MaximumFileSize" value="5000000"/>
+        <param name="MaxFileSize" value="5MB"/>
+        <param name="MaxBackupIndex" value="3"/>
         <param name="Encoding" value="UTF-8"/>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
@@ -35,7 +36,7 @@
 
     <appender name="exist.xacml" class="org.apache.log4j.RollingFileAppender">
         <param name="File" value="${exist.home}/webapp/WEB-INF/logs/xacml.log"/>
-        <param name="MaximumFileSize" value="500000"/>
+        <param name="MaxFileSize" value="500KB"/>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
         </layout>
@@ -43,7 +44,7 @@
 
     <appender name="exist.xmldb" class="org.apache.log4j.RollingFileAppender">
         <param name="File" value="${exist.home}/webapp/WEB-INF/logs/xmldb.log"/>
-        <param name="MaximumFileSize" value="500000"/>
+        <param name="MaxFileSize" value="500KB"/>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
         </layout>
@@ -51,7 +52,7 @@
 
     <appender name="exist.profiling" class="org.apache.log4j.RollingFileAppender">
         <param name="File" value="${exist.home}/webapp/WEB-INF/logs/profile.log"/>
-        <param name="MaximumFileSize" value="500000"/>
+        <param name="MaxFileSize" value="500KB"/>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
         </layout>
@@ -59,7 +60,7 @@
     
     <appender name="exist.validation" class="org.apache.log4j.RollingFileAppender">
         <param name="File" value="${exist.home}/webapp/WEB-INF/logs/validation.log"/>
-        <param name="MaximumFileSize" value="500000"/>
+        <param name="MaxFileSize" value="500KB"/>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
         </layout>
