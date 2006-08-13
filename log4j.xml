@@ -15,6 +15,15 @@
     </appender>
 
     <!-- the following appenders write to files  -->
+    <appender name="exist.ehcache" class="org.apache.log4j.RollingFileAppender">
+        <param name="File" value="${exist.home}/webapp/WEB-INF/logs/cocoon-ehcache.log"/>
+        <param name="MaximumFileSize" value="500000"/>
+        <param name="Encoding" value="UTF-8"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
+        </layout>
+    </appender>
+    
     <appender name="exist.core" class="org.apache.log4j.RollingFileAppender">
         <param name="File" value="${exist.home}/webapp/WEB-INF/logs/exist.log"/>
         <param name="MaximumFileSize" value="5000000"/>
@@ -99,6 +108,11 @@
     <category name="org.exist.validation" additivity="false">
         <priority value="debug"/>
         <appender-ref ref="exist.validation"/>
+    </category>
+    
+    <category name="net.sf.ehcache" additivity="false">
+        <priority value="debug"/>
+        <appender-ref ref="exist.ehcache"/>
     </category>
 
     <!-- Axis produces a large amount of debugging output if
