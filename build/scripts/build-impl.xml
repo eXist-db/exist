@@ -233,6 +233,9 @@
             </classpath>
         </javac>
         <jar basedir="${build.examples}" compress="true" jarfile="examples.jar">
+            <manifest>
+                <attribute name="SVN-Revision" value="${svn.revision}"/>
+            </manifest>
             <include name="org/exist/examples/**"/>
         </jar>
     </target>
@@ -243,6 +246,8 @@
     <target name="jar" depends="compile, compile-tomcat-realm" description="Create eXist unsigned jar files">
         <filter token="version" value="${project.version}"/>
         <filter token="build" value="${DSTAMP}"/>
+        <filter token="revision" value="${svn.revision}"/>
+        
         <copy file="${src}/CatalogManager.properties" todir="${build.classes}"/>
         <copy todir="${build.classes}/org/exist/client">
             <fileset dir="${src}/org/exist/client">
@@ -302,6 +307,9 @@
         
         <echo message="Creating exist.jar ..."/>
         <jar basedir="${build.classes}" compress="true" jarfile="exist.jar">
+            <manifest>
+                <attribute name="SVN-Revision" value="${svn.revision}"/>
+            </manifest>
             <exclude name="org/exist/start/**"/>
             <exclude name="org/exist/soap/**"/>
             <exclude name="org/exist/ant/**"/>
@@ -318,11 +326,15 @@
                 <attribute name="Package-Title" value="org.exist"/>
                 <attribute name="Implementation-Title" value="eXist XML Database"/>
                 <attribute name="Implementation-URL" value="http://exist-db.org"/>
+                <attribute name="SVN-Revision" value="${svn.revision}"/>
             </manifest>
             <include name="org/exist/start/**"/>
         </jar>
         <echo message="Creating exist-optional.jar ..."/>
         <jar basedir="${build.classes}" compress="true" jarfile="exist-optional.jar">
+            <manifest>
+                <attribute name="SVN-Revision" value="${svn.revision}"/>
+            </manifest>
             <include name="org/exist/soap/**"/>
             <include name="org/exist/ant/**"/>
             <include name="org/exist/http/servlets/**"/>
