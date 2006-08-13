@@ -1,10 +1,19 @@
 declare option exist:serialize "method=xml indent=yes";
 declare option exist:output-size-limit "-1";
+declare namespace response="http://exist-db.org/xquery/response";
+
+let $product-version := util:system-property("product-version")
+let $product-build := util:system-property("product-build")
+let $test-suite := doc('/db/XQTS/XQTSCatalog.xml')/*:test-suite/@version
+let $dummy := response:set-header("Content-Disposition", concat( 
+	"attachment; filename='results_XQTS-" , $test-suite , "_eXist-" , 
+	$product-version , '_' , $product-build , ".xml'" ) )
+	
+return
 <test-suite-result xmlns="http://www.w3.org/2005/02/query-test-XQTSResult"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
-
-        <implementation name="{util:system-property("product-version")}" version="{util:system-property("product-build")}" anonymous-result-column="false">
+        <implementation name="{$product-version}" version="{$product-build}" anonymous-result-column="false">
 
                 <organization name="eXist Open Source native XML database"  website="http://www.exist-db.org" anonymous="false"/>
 
@@ -39,7 +48,7 @@ declare option exist:output-size-limit "-1";
         <syntax>XQuery</syntax>
 
         <test-run dateRun="{fn:current-dateTime()}">
-                <test-suite version="{doc('/db/XQTS/XQTSCatalog.xml')/*:test-suite/@version}"/>
+                <test-suite version="{$test-suite}"/>
                 <transformation>
                         <p>No unusual transformations.</p>
                 </transformation>
