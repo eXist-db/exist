@@ -102,7 +102,7 @@ public class LDAPSecurityManager implements SecurityManager
     * but only the "OR", "|" syntax, so "(|(cn={0})(cn={0},o=myorg))" is
     * also valid. Complex search strings with &, etc are NOT supported.
     *
-    * @param userPattern The new user pattern
+    * @param pattern The new user pattern
     */
    public void setUserByNamePattern(String pattern)
    {
