@@ -21,6 +21,7 @@
  */
 package org.exist.storage.cache;
 
+import org.apache.log4j.Logger;
 import org.exist.util.hashtable.SequencedLongHashMap;
 
 /**
@@ -36,6 +37,8 @@ import org.exist.util.hashtable.SequencedLongHashMap;
  *
  */
 public class Accounting {
+    
+    private final static Logger LOG = Logger.getLogger(Accounting.class);
 
     private final static Object DUMMY = new Object();
     
@@ -163,6 +166,9 @@ public class Accounting {
     }
     
     public void stats() {
-        System.out.println("hits: " + hits + "; misses: " + misses + "; thrashing: " + getThrashing() + "; thrashing period: " + checkPeriod);
+        LOG.debug("hits: " + hits 
+                + "; misses: " + misses 
+                + "; thrashing: " + getThrashing() 
+                + "; thrashing period: " + checkPeriod);
     }
 }
