@@ -132,6 +132,7 @@ public class Insert extends Modification {
         	if (LOG.isDebugEnabled())
         		LOG.debug("Found: " + inSeq.getLength());   
             
+        	context.pushInScopeNamespaces();
             contentSeq = deepCopy(contentSeq);
         
             try {
@@ -179,6 +180,7 @@ public class Insert extends Modification {
                 throw new XPathException(getASTNode(), e.getMessage(), e);
     		} finally {
                 unlockDocuments();
+                context.popInScopeNamespaces();
             }
         }
 
@@ -189,7 +191,7 @@ public class Insert extends Modification {
         
 	}
 
-	private NodeList seq2nodeList(Sequence contentSeq) {
+	private NodeList seq2nodeList(Sequence contentSeq) throws XPathException {
         NodeListImpl nl = new NodeListImpl();
         for (SequenceIterator i = contentSeq.iterate(); i.hasNext(); ) {
             Item item = i.nextItem();
