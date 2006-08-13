@@ -118,6 +118,7 @@ public class Replace extends Modification {
 		Sequence contentSeq = value.eval(contextSequence);
 		if (contentSeq.isEmpty())
 			throw new XPathException(getASTNode(), Messages.getMessage(Error.UPDATE_EMPTY_CONTENT));
+		context.pushInScopeNamespaces();
         contentSeq = deepCopy(contentSeq);
         
 		try {
@@ -182,6 +183,7 @@ public class Replace extends Modification {
             throw new XPathException(getASTNode(), e.getMessage(), e);
         } finally {
             unlockDocuments();
+            context.popInScopeNamespaces();
         }
 
         if (context.getProfiler().isEnabled()) 
