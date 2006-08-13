@@ -72,9 +72,9 @@ public class TransformerFactoryAllocator {
         String transformerFactoryClassName =
                 (String)broker.getConfiguration().getProperty("transformer.class");
         
-        LOG.debug("transformerFactoryClassName=" + transformerFactoryClassName);
-        LOG.debug("javax.xml.transform.TransformerFactory="
-                + System.getProperty("javax.xml.transform.TransformerFactory"));
+//        LOG.debug("transformerFactoryClassName=" + transformerFactoryClassName);
+//        LOG.debug("javax.xml.transform.TransformerFactory="
+//                + System.getProperty("javax.xml.transform.TransformerFactory"));
         
         
         //was a TransformerFactory class specified
