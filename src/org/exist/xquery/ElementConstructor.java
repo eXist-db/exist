@@ -142,8 +142,10 @@ public class ElementConstructor extends NodeConstructor {
 		if(namespaceDecls != null) {
 			for(int i = 0; i < namespaceDecls.length; i++) {
 				if ("".equals(namespaceDecls[i].getNamespaceURI())) {
-					if (context.inScopeNamespaces.remove(namespaceDecls[i].getLocalName()) == null)
-		        		throw new XPathException("XQST0085 : can not undefine '" + namespaceDecls[i] + "'");
+					// TODO: the specs are unclear here: should we throw XQST0085 or not?
+					context.inScopeNamespaces.remove(namespaceDecls[i].getLocalName());
+//					if (context.inScopeNamespaces.remove(namespaceDecls[i].getLocalName()) == null)
+//		        		throw new XPathException("XQST0085 : can not undefine '" + namespaceDecls[i] + "'");
 				} else
 					context.declareInScopeNamespace(namespaceDecls[i].getLocalName(), namespaceDecls[i].getNamespaceURI());
 			}
