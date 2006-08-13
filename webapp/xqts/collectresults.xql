@@ -1,4 +1,5 @@
 declare option exist:serialize "method=xml indent=yes";
+declare option exist:output-size-limit "-1";
 <test-suite-result>
 <!-- <test-suite-result xmlns="http://www.w3.org/2005/02/query-test-XQTSResult"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"> -->
