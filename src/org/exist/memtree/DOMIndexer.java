@@ -168,6 +168,7 @@ public class DOMIndexer {
             storeAttributes(nodeNr, elem, currentPath);
             break;
     	case Node.TEXT_NODE :
+        case Node.CDATA_SECTION_NODE :
             last = (ElementImpl) stack.peek();
             text.setData(new String(doc.characters, doc.alpha[nodeNr], doc.alphaLen[nodeNr]));
             text.setOwnerDocument(targetDoc);
