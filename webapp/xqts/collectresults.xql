@@ -10,9 +10,9 @@ let $dummy := response:set-header("Content-Disposition", concat(
 	$product-version , '_' , $product-build , ".xml&quot;" ) )
 	
 return
-(: <test-suite-result xmlns="http://www.w3.org/2005/02/query-test-XQTSResult"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"> :)
-<test-suite-result>
+<test-suite-result xmlns="http://www.w3.org/2005/02/query-test-XQTSResult"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"> 
+        
         <implementation name="{$product-version}" version="{$product-build}" anonymous-result-column="false">
 
                 <organization name="eXist Open Source native XML database"  website="http://www.exist-db.org" anonymous="false"/>
