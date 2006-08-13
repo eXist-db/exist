@@ -62,7 +62,7 @@ public class ValueSequence extends AbstractSequence {
 		values = new Item[INITIAL_SIZE];
 	}
 	
-	public ValueSequence(Sequence otherSequence) {
+	public ValueSequence(Sequence otherSequence) throws XPathException {
 		values = new Item[otherSequence.getLength()];
 		addAll(otherSequence);
 	}
@@ -100,8 +100,14 @@ public class ValueSequence extends AbstractSequence {
 		noDuplicates = false;
 	}
 	
-	public void addAll(Sequence otherSequence) {
-		for(SequenceIterator iterator = otherSequence.iterate(); iterator.hasNext(); )
+	public void addAll(Sequence otherSequence) throws XPathException {
+		if (otherSequence == null)
+			return;
+		SequenceIterator iterator = otherSequence.iterate();
+		if (iterator == null) {
+			LOG.warn("Iterator == null: " + otherSequence.getClass().getName());
+		}
+		for(; iterator.hasNext(); )
 			add(iterator.nextItem());
 	}
 	
@@ -115,7 +121,7 @@ public class ValueSequence extends AbstractSequence {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Sequence#iterate()
 	 */
-	public SequenceIterator iterate() {
+	public SequenceIterator iterate() throws XPathException {
 //		removeDuplicates();
 		return new ValueSequenceIterator();
 	}
@@ -269,17 +275,21 @@ public class ValueSequence extends AbstractSequence {
     }
 
     public String toString() {
-		StringBuffer result = new StringBuffer();
-		result.append("(");
-		boolean moreThanOne = false;
-		for (SequenceIterator i = iterate(); i.hasNext(); ) {
-			Item next = i.nextItem();
-			if (moreThanOne) result.append(", ");				
-			moreThanOne = true;
-			result.append(next.toString());						
+		try {
+			StringBuffer result = new StringBuffer();
+			result.append("(");
+			boolean moreThanOne = false;
+			for (SequenceIterator i = iterate(); i.hasNext(); ) {
+				Item next = i.nextItem();
+				if (moreThanOne) result.append(", ");				
+				moreThanOne = true;
+				result.append(next.toString());						
+			}
+			result.append(")");
+			return result.toString();
+		} catch (XPathException e) {
+			return "ValueSequence.toString() failed: " + e.getMessage();
 		}
-		result.append(")");
-		return result.toString();
 		
 	}
 	

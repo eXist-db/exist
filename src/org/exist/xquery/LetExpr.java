@@ -144,15 +144,18 @@ public class LetExpr extends BindingExpression {
             if(resultSequence == null) {            
                 if(orderSpecs != null && !fastOrderBy)
                     resultSequence = new OrderedValueSequence(orderSpecs, in.getLength());
-                else
-                    resultSequence = new ValueSequence();
             }
     
             if(returnExpr instanceof BindingExpression) {
+            	if (resultSequence == null)
+            		resultSequence = new ValueSequence();
                 ((BindingExpression)returnExpr).eval(null, null, resultSequence);
             } else {
                 in = returnExpr.eval(null);
-                resultSequence.addAll(in);
+                if (resultSequence == null)
+                	resultSequence = in;
+                else
+                	resultSequence.addAll(in);
             }
     
             if(orderSpecs != null && !fastOrderBy)

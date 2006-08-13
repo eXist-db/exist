@@ -95,7 +95,7 @@ public class PreorderedValueSequence extends AbstractSequence {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AbstractSequence#iterate()
 	 */
-	public SequenceIterator iterate() {
+	public SequenceIterator iterate() throws XPathException {
 		sort();
 		return new PreorderedValueSequenceIterator();
 	}

@@ -120,7 +120,7 @@ public class TypeswitchExpression extends AbstractExpression {
         return result;
     }
 
-    private boolean checkType(SequenceType type, Sequence seq) {
+    private boolean checkType(SequenceType type, Sequence seq) throws XPathException {
         int requiredCardinality = type.getCardinality();
         int actualCardinality;
         if (seq.isEmpty()) actualCardinality = Cardinality.EMPTY;
