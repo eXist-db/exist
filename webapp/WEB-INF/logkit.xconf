@@ -31,7 +31,7 @@
     -->
 
     <cocoon id="core">
-      <filename>${context-root}/WEB-INF/logs/core.log</filename>
+      <filename>${context-root}/WEB-INF/logs/cocoon-core.log</filename>
       <format type="cocoon">
         %7.7{priority} %{time}   [%{category}] (%{uri}) %{thread}/%{class:short}: %{message}\n%{throwable}
       </format>
@@ -55,7 +55,7 @@
     </cocoon>
 
     <cocoon id="sitemap">
-      <filename>${context-root}/WEB-INF/logs/sitemap.log</filename>
+      <filename>${context-root}/WEB-INF/logs/cocoon-sitemap.log</filename>
       <format type="cocoon">
         %7.7{priority} %{time}   [%{category}] (%{uri}) %{thread}/%{class:short}: %{message}\n%{throwable}
       </format>
@@ -63,7 +63,7 @@
     </cocoon>
 
     <cocoon id="handled-errors">
-      <filename>${context-root}/WEB-INF/logs/handled-errors.log</filename>
+      <filename>${context-root}/WEB-INF/logs/cocoon-handled-errors.log</filename>
       <format type="cocoon">
         %7.7{priority} %{time}   [%{category}] (%{uri}) %{thread}/%{class:short}: %{message}\n%{throwable}
       </format>
@@ -71,7 +71,7 @@
     </cocoon>
 
     <cocoon id="access">
-      <filename>${context-root}/WEB-INF/logs/access.log</filename>
+      <filename>${context-root}/WEB-INF/logs/cocoon-access.log</filename>
       <format type="cocoon">
         %7.7{priority} %{time}   [%{category}] (%{uri}) %{thread}/%{class:short}: %{message}\n%{throwable}
       </format>
@@ -80,7 +80,7 @@
 
     <!-- The logger for the flow layer -->
     <cocoon id="flow">
-      <filename>${context-root}/WEB-INF/logs/flow.log</filename>
+      <filename>${context-root}/WEB-INF/logs/cocoon-flow.log</filename>
       <format type="cocoon">
         %7.7{priority} %{time}   [%{category}] (%{uri}) %{thread}/%{class:short}: %{message}\n%{throwable}
       </format>
@@ -92,7 +92,7 @@
     -->
     <priority-filter id="error" log-level="ERROR">
       <cocoon>
-        <filename>${context-root}/WEB-INF/logs/error.log</filename>
+        <filename>${context-root}/WEB-INF/logs/cocoon-error.log</filename>
         <format type="cocoon">
           %7.7{priority} %{time}   [%{category}] (%{uri}) %{thread}/%{class:short}: %{message}\n%{throwable}
         </format>
