@@ -99,13 +99,23 @@
         <classpath refid="classpath.core"/>
     </taskdef>
     
+    <taskdef name="svninfo" classname="nl.ow.dilemma.ant.svn.SubversionInfoTask">
+        <classpath refid="classpath.core"/>
+    </taskdef>
+    
     <!-- =================================================================== -->
     <!-- Prepare the build                                                   -->
     <!-- =================================================================== -->
     <target name="prepare">
+        
+        <svninfo file=".svn/entries"/>
+        
         <echo message="-------------------------"/>
         <echo message="eXist ${project.version} build"/>
         <echo message="-------------------------"/>
+        <echo message="SVN revision ${svn.revision} (${svn.date})"/>
+        <echo message="-------------------------"/>
+        <echo/>
         <echo message="basedir=${basedir}"/>
         
         <mkdir dir="${build.classes}"/>
