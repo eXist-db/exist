@@ -94,8 +94,9 @@ public class SequenceType {
      *  
      * @param seq
      * @return
+     * @throws XPathException 
      */
-    public boolean checkType(Sequence seq) {
+    public boolean checkType(Sequence seq) throws XPathException {
         if (nodeName != null) {
             Item next;
             for (SequenceIterator i = seq.iterate(); i.hasNext(); ) {

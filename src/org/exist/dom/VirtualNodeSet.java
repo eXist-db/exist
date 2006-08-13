@@ -26,6 +26,7 @@ import java.util.Iterator;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Expression;
 import org.exist.xquery.NodeTest;
+import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
@@ -387,7 +388,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 	/* (non-Javadoc)
 	 * @see org.exist.dom.NodeSet#iterate()
 	 */
-	public SequenceIterator iterate() {
+	public SequenceIterator iterate() throws XPathException {
 		realize();
 		return realSet.iterate();
 	}

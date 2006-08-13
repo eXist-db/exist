@@ -30,6 +30,7 @@ import org.exist.util.Configuration;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.PathExpr;
+import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
@@ -422,27 +423,31 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
         }
     }
     
-    private TreeMap scanResults(Sequence results) {
+    private TreeMap scanResults(Sequence results) throws RemoteException {
         TreeMap collections = new TreeMap();
         TreeMap documents;
         Integer hits;
-        for (SequenceIterator i = results.iterate(); i.hasNext(); ) {
-            Item item = i.nextItem();
-            if(Type.subTypeOf(item.getType(), Type.NODE)) {
-                NodeValue node = (NodeValue)item;
-                if(node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-                    NodeProxy p = (NodeProxy)node;
-                    if ((documents = (TreeMap) collections.get(p.getDocument().getCollection().getURI())) == null) {
-                        documents = new TreeMap();
-                        collections.put(p.getDocument().getCollection().getURI(), documents);
-                    }
-                    if ((hits = (Integer) documents.get(p.getDocument().getFileURI())) == null)
-                        documents.put(p.getDocument().getFileURI(), new Integer(1));
-                    else
-                        documents.put(p.getDocument().getFileURI(), new Integer(hits.intValue() + 1));
-                }
-            }
-        }
+        try {
+			for (SequenceIterator i = results.iterate(); i.hasNext(); ) {
+			    Item item = i.nextItem();
+			    if(Type.subTypeOf(item.getType(), Type.NODE)) {
+			        NodeValue node = (NodeValue)item;
+			        if(node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+			            NodeProxy p = (NodeProxy)node;
+			            if ((documents = (TreeMap) collections.get(p.getDocument().getCollection().getURI())) == null) {
+			                documents = new TreeMap();
+			                collections.put(p.getDocument().getCollection().getURI(), documents);
+			            }
+			            if ((hits = (Integer) documents.get(p.getDocument().getFileURI())) == null)
+			                documents.put(p.getDocument().getFileURI(), new Integer(1));
+			            else
+			                documents.put(p.getDocument().getFileURI(), new Integer(hits.intValue() + 1));
+			        }
+			    }
+			}
+		} catch (XPathException e) {
+			throw new RemoteException(e.getMessage());
+		}
         return collections;
     }
 }

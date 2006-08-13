@@ -61,6 +61,7 @@ import org.exist.storage.lock.Lock;
 import org.exist.util.Collations;
 import org.exist.util.Configuration;
 import org.exist.util.LockException;
+import org.exist.util.sanity.SanityCheck;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.parser.XQueryLexer;
@@ -656,8 +657,9 @@ public class XQueryContext {
      * 
      * @param seq
      * @return
+     * @throws XPathException 
      */
-	public DocumentSet releaseUnusedDocuments(Sequence seq) {
+	public DocumentSet releaseUnusedDocuments(Sequence seq) throws XPathException {
 	    if(lockedDocuments == null)
 	        return null;
 	    // determine the set of documents referenced by nodes in the sequence

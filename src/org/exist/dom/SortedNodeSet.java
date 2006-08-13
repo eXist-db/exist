@@ -169,7 +169,7 @@ public class SortedNodeSet extends AbstractNodeSet {
 	/* (non-Javadoc)
 	 * @see org.exist.dom.NodeSet#iterate()
 	 */
-	public SequenceIterator iterate() {
+	public SequenceIterator iterate() throws XPathException {
 		return new SortedNodeSetIterator(list.iterator());
 	}
 	

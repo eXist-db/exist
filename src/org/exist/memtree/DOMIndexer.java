@@ -169,6 +169,11 @@ public class DOMIndexer {
             break;
     	case Node.TEXT_NODE :
         case Node.CDATA_SECTION_NODE :
+        	if (prevNode != null && 
+        			(prevNode.getNodeType() == Node.TEXT_NODE ||
+        					prevNode.getNodeType() == Node.CDATA_SECTION_NODE)) {
+        		break;
+        	}
             last = (ElementImpl) stack.peek();
             text.setData(new String(doc.characters, doc.alpha[nodeNr], doc.alphaLen[nodeNr]));
             text.setOwnerDocument(targetDoc);
