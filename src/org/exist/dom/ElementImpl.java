@@ -406,7 +406,6 @@ public class ElementImpl extends NamedNode implements Element {
         NodeListImpl rest = null;
         for (int i = 0; i < nodes.getLength(); i++) {
             Node next = nodes.item(i);
-            LOG.debug(next.getNodeName());
             if (next.getNodeType() == Node.ATTRIBUTE_NODE) {
                 if (!next.getNodeName().startsWith("xmlns")) {
                     if (attribs == null)
@@ -554,7 +553,6 @@ public class ElementImpl extends NamedNode implements Element {
                 return text;
             case Node.ATTRIBUTE_NODE:
                 Attr attr = (Attr) child;
-                LOG.debug(child.getClass().getName() + ": " + attr.getNodeName());
                 String ns = attr.getNamespaceURI();
                 String prefix = (Namespaces.XML_NS.equals(ns) ? "xml" : attr.getPrefix());
                 String name = attr.getLocalName();

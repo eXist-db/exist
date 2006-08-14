@@ -71,7 +71,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Sequence#iterate()
 	 */
-	public abstract SequenceIterator iterate();
+	public abstract SequenceIterator iterate() throws XPathException;
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Sequence#unorderedIterator()

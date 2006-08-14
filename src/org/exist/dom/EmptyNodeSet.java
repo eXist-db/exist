@@ -21,6 +21,7 @@
  */
 package org.exist.dom;
 
+import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
 import org.w3c.dom.Node;
@@ -37,7 +38,7 @@ public final class EmptyNodeSet extends AbstractNodeSet {
     /* (non-Javadoc)
 	 * @see org.exist.dom.NodeSet#iterate()
 	 */
-	public SequenceIterator iterate() {
+	public SequenceIterator iterate() throws XPathException {
 		return SequenceIterator.EMPTY_ITERATOR;
 	}
 	

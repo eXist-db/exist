@@ -118,7 +118,7 @@ public class Update extends Modification {
         //END trap Update failure
         
         if (!inSeq.isEmpty()) {          
-
+        	context.pushInScopeNamespaces();
     		try {
     			NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
                 TransactionManager transact = context.getBroker().getBrokerPool().getTransactionManager();
@@ -188,6 +188,7 @@ public class Update extends Modification {
                 throw new XPathException(getASTNode(), e.getMessage(), e);
     		} finally {
                 unlockDocuments();
+                context.popInScopeNamespaces();
             }
         }
 

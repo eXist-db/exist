@@ -188,14 +188,9 @@ public abstract class DeferredFunctionCall implements Sequence {
         }
     }
 
-    public SequenceIterator iterate() {
-        try {
-            realize();
-            return sequence.iterate();
-        } catch (XPathException e) {
-            LOG.error("Exception in deferred function: " + e.getMessage());
-            return null;
-        }
+    public SequenceIterator iterate() throws XPathException {
+        realize();
+        return sequence.iterate();
     }
 
     public void removeDuplicates() {

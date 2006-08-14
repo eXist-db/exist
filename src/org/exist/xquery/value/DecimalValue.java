@@ -328,7 +328,6 @@ public class DecimalValue extends NumericValue {
 		if (other.getType() == Type.DECIMAL) {
 			return new DecimalValue(value.min(((DecimalValue) other).value));
 		} else {
-			System.out.println(other.getClass().getName());
 			return new DecimalValue(
 				value.min(((DecimalValue) other.convertTo(Type.DECIMAL)).value));
 		}
