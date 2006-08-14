@@ -270,7 +270,7 @@ public class DocumentImpl extends NodeImpl implements Document {
     }
     
     public short getNodeType(int nodeNr) {
-        if (nodeNr < 0)
+        if (nodeKind == null || nodeNr < 0)
             return -1;
         return nodeKind[nodeNr];
     }
