@@ -22,6 +22,8 @@
  */
 package org.exist.xmldb.test;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import org.xmldb.api.base.CompiledExpression;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.XQueryService;
@@ -54,6 +56,43 @@ public class TreeLevelOrderTest extends TestCase {
 		junit.textui.TestRunner.run(TreeLevelOrderTest.class);
 	}
 
+      static Method getTextContentMethod = null;
+      static {
+         try {
+            getTextContentMethod = Node.class.getMethod("getTextContent",null);
+         } catch (Exception ex) {
+         }
+      }
+      public static String textContent(Node n) {
+         if (getTextContentMethod!=null) {
+            try {
+               return (String)getTextContentMethod.invoke(n,null);
+            } catch (IllegalArgumentException ex) {
+               ex.printStackTrace();
+               return null;
+            } catch (InvocationTargetException ex) {
+               ex.printStackTrace();
+               return null;
+            } catch (IllegalAccessException ex) {
+               ex.printStackTrace();
+               return null;
+            }
+         } 
+         if (n.getNodeType()==Node.ELEMENT_NODE) {
+            StringBuffer builder = new StringBuffer();
+            Node current = n.getFirstChild();
+            while (current!=null) {
+               int type = current.getNodeType();
+               if (type==Node.CDATA_SECTION_NODE || type==Node.TEXT_NODE) {
+                  builder.append(current.getNodeValue());
+               }
+               current = current.getNextSibling();
+            }
+            return builder.toString();
+         } else {
+            return n.getNodeValue();
+         }
+      }
 	/**
 	 * Test for the TreeLevelOrder function. This test
 	 * <ul>
@@ -104,7 +143,8 @@ public class TreeLevelOrderTest extends TestCase {
 				{
 					Node to = rootChildren.item(r);
 					
-					strTo = to.getTextContent();
+					//strTo = to.getTextContent();
+                                        strTo = textContent(to);
 				}
 			}
 			
