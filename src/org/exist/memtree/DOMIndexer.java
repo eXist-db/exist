@@ -46,7 +46,7 @@ import org.w3c.dom.Node;
  * The class directly accesses the in-memory document structure and writes
  * it into a temporary doc on the database. This is much faster than first serializing the
  * document tree to SAX and passing it to 
- * {@link org.exist.collections.Collection#store(DBBroker, IndexInfo, InputSource, boolean)}. 
+ * {@link org.exist.collections.Collection#store(Txn, DBBroker, IndexInfo, InputSource, boolean)}. 
  * 
  * As the in-memory document fragment may not be a well-formed XML doc (having more
  * than one root element), a wrapper element is put around the content nodes.

@@ -45,7 +45,6 @@ public interface Source {
      * Returns a unique key to identify the source, usually
      * an URI.
      * 
-     * @return
      */
     public Object getKey();
     
@@ -60,7 +59,6 @@ public interface Source {
      * resources from the database.
      * 
      * @param broker
-     * @return
      */
     public int isValid(DBBroker broker);
     
@@ -74,7 +72,6 @@ public interface Source {
      * return {@link #UNKNOWN}.
      * 
      * @param other
-     * @return
      */
     public int isValid(Source other);
     
@@ -82,7 +79,6 @@ public interface Source {
      * Returns a {@link Reader} to read the contents
      * of the source.
      * 
-     * @return
      * @throws IOException
      */
     public Reader getReader() throws IOException;

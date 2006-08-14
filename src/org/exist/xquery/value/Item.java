@@ -39,21 +39,18 @@ public interface Item {
 	 * Return the type of this item according to the type constants defined in class
 	 * {@link Type}.
 	 * 
-	 * @return
 	 */
 	public int getType();
 	
 	/**
 	 * Return the string value of this item (see the definition of string value in XPath).
 	 * 
-	 * @return
 	 */
 	public String getStringValue() throws XPathException;
 	
 	/**
 	 * Convert this item into a sequence, containing only the item.
 	 *  
-	 * @return
 	 */
 	public Sequence toSequence();
 	
@@ -64,7 +61,6 @@ public interface Item {
 	 * if the conversion is impossible.
 	 * 
 	 * @param requiredType
-	 * @return
 	 * @throws XPathException
 	 */
 	public AtomicValue convertTo(int requiredType) throws XPathException;
