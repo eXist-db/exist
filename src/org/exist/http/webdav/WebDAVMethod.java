@@ -45,8 +45,7 @@ public interface WebDAVMethod {
 	 * @param user
 	 * @param request
 	 * @param response
-	 * @param collection
-	 * @param resource
+	 * @param path
 	 * @throws ServletException
 	 * @throws IOException
 	 */

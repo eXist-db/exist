@@ -68,7 +68,6 @@ public interface Query extends java.rmi.Remote {
      * surrounded by &lt;exist:match&gt; tags. For attributes, terms are
      * marked with the char sequence "||".
      * 
-     * @return
      * @throws RemoteException
      */
     public java.lang.String[] retrieve(java.lang.String sessionId, int start, int howmany, boolean indent, boolean xinclude, java.lang.String highlight) throws java.rmi.RemoteException;
@@ -123,7 +122,6 @@ public interface Query extends java.rmi.Remote {
      * surrounded by &lt;exist:match&gt; tags. For attributes, terms are
      * marked with the char sequence "||".
      * 
-     * @return
      * @throws RemoteException
      */
     public org.exist.soap.Base64BinaryArray retrieveData(java.lang.String sessionId, int start, int howmany, boolean indent, boolean xinclude, java.lang.String highlight) throws java.rmi.RemoteException;
@@ -148,7 +146,6 @@ public interface Query extends java.rmi.Remote {
 	 * surrounded by &lt;exist:match&gt; tags. For attributes, terms are
 	 * marked with the char sequence "||".
 	 * 
-	 * @return
 	 * @throws RemoteException
 	 */
     public java.lang.String[] retrieveByDocument(java.lang.String sessionId, int start, int howmany, java.lang.String path, boolean indent, boolean xinclude, java.lang.String highlight) throws java.rmi.RemoteException;
@@ -157,7 +154,6 @@ public interface Query extends java.rmi.Remote {
      * 
      * @param sessionId a valid session id as returned by connect().
      * @param path the full path to the collection.
-     * @return
      * @throws java.rmi.RemoteException
      */
     public org.exist.soap.Collection listCollection(java.lang.String sessionId, java.lang.String path) throws java.rmi.RemoteException;

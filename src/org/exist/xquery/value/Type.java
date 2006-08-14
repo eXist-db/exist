@@ -259,7 +259,6 @@ public class Type {
 	 * Get the internal name for the built-in type.
 	 * 
 	 * @param type
-	 * @return
 	 */
 	public final static String getTypeName(int type) {
 		return (String) typeNames.get(type);
@@ -269,7 +268,6 @@ public class Type {
 	 * Get the type code for a type identified by its internal name.
 	 * 
 	 * @param name
-	 * @return
 	 * @throws XPathException
 	 */
 	public final static int getType(String name) throws XPathException {
@@ -285,7 +283,6 @@ public class Type {
 	 * Get the type code for a type identified by its QName.
 	 * 
 	 * @param qname
-	 * @return
 	 * @throws XPathException
 	 */
 	public final static int getType(QName qname) throws XPathException {
@@ -313,7 +310,6 @@ public class Type {
 	 * 
 	 * @param subtype
 	 * @param supertype
-	 * @return
 	 */
 	public final static boolean subTypeOf(int subtype, int supertype) {
 		if (subtype == supertype)
@@ -333,7 +329,6 @@ public class Type {
 	 * Get the type code of the supertype of the specified subtype.
 	 * 
 	 * @param subtype
-	 * @return
 	 */
 	public final static int getSuperType(int subtype) {
 		if (subtype == ITEM)
@@ -354,7 +349,6 @@ public class Type {
 	 *  
 	 * @param type1
 	 * @param type2
-	 * @return
 	 */
 	public static int getCommonSuperType(int type1, int type2) {
 		if(type1 == type2)

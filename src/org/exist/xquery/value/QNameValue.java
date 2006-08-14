@@ -67,7 +67,6 @@ public class QNameValue extends AtomicValue {
 
     /**
      * Returns the wrapped QName object.
-     * @return
      */
 	public QName getQName() {
 		return qname;

@@ -58,7 +58,6 @@ public class MemTreeBuilder {
 	/**
 	 * Returns the created document object.
 	 * 
-	 * @return
 	 */
 	public DocumentImpl getDocument() {
 		return doc;

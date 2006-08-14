@@ -39,7 +39,7 @@ public interface Admin extends java.rmi.Remote {
 	 * Sessions are shared between the Query and Admin services. A session created
 	 * through the Query service can be used with the Admin service and vice versa.
 	 * 
-	 * @param user
+	 * @param userId
 	 * @param password
 	 * @return session-id a unique id for the created session 
 	 * @throws RemoteException if the user cannot log in
@@ -77,7 +77,6 @@ public interface Admin extends java.rmi.Remote {
 	 * 
 	 * @param sessionId a unique id for the created session.
 	 * @param path the full path to the collection.
-	 * @return
 	 * @throws RemoteException
 	 */
     public boolean createCollection(java.lang.String sessionId, java.lang.String path) throws java.rmi.RemoteException;
@@ -87,7 +86,6 @@ public interface Admin extends java.rmi.Remote {
 	 * @param sessionId a unique id for the created session.
 	 * @param collectionName the full path to the collection.
 	 * @param xupdate the XUpdate document to be applied.
-	 * @return
 	 * @throws RemoteException
 	 */
     public int xupdate(java.lang.String sessionId, java.lang.String collectionName, java.lang.String xupdate) throws java.rmi.RemoteException;
@@ -97,7 +95,6 @@ public interface Admin extends java.rmi.Remote {
 	 * @param sessionId a unique id for the created session.
 	 * @param documentName the full path to the document.
 	 * @param xupdate the XUpdate document to be applied.
-	 * @return
 	 * @throws RemoteException
 	 */
     public int xupdateResource(java.lang.String sessionId, java.lang.String documentName, java.lang.String xupdate) throws java.rmi.RemoteException;
@@ -130,7 +127,6 @@ public interface Admin extends java.rmi.Remote {
      * @param owner the new owner
      * @param ownerGroup the new group
      * @param permissions the new access permissions
-     * @return
      * @throws java.rmi.RemoteException
      */
     public void setPermissions(java.lang.String sessionId, java.lang.String resource, java.lang.String owner, java.lang.String ownerGroup, int permissions) throws java.rmi.RemoteException;
