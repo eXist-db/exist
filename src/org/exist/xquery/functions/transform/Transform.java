@@ -199,8 +199,7 @@ public class Transform extends BasicFunction {
      */
     private TransformerHandler createHandler(Item stylesheetItem, Node options) throws TransformerFactoryConfigurationError, XPathException
     {
-    	//SAXTransformerFactory factory = (SAXTransformerFactory)SAXTransformerFactory.newInstance();
-    	SAXTransformerFactory factory = (SAXTransformerFactory)TransformerFactoryAllocator.getTransformerFactory(context.getBroker()).newInstance();
+    	SAXTransformerFactory factory = (SAXTransformerFactory)TransformerFactoryAllocator.getTransformerFactory(context.getBroker());
     	
 		TransformerHandler handler;
 		try {
