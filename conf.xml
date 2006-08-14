@@ -374,18 +374,23 @@
     -->
     <serializer add-exist-id="none" enable-xinclude="yes" enable-xsl="no"
         indent="yes" match-tagging-attributes="no" match-tagging-elements="yes" />
-    
-    <!-- 
+
+	<!--
         Default settings for the XSLT Transformer. Allow's for a choice of 
         implementation:
         
         - class:
             the name of the class that implements javax.xml.transform.TransformerFactory
             
-            for Saxon - net.sf.saxon.TransformerFactoryImpl
-            for Xalan - org.apache.xalan.processor.TransformerFactoryImpl
+            for Saxon (XSLT 2.0 support) - net.sf.saxon.TransformerFactoryImpl
+            	You will need to copy saxon8.jar saxon8-dom.jar and saxon8-xpath.jar
+            	into lib/endorsed.
+            	You can get these from http://sourceforge.net/projects/saxon
+            
+            for Xalan (XSLT 1.0 support) - org.apache.xalan.processor.TransformerFactoryImpl
     -->
     <transformer class="org.apache.xalan.processor.TransformerFactoryImpl" />
+
     <!-- 
         During XUpdates, the database needs to do a partial reindex of the
       document whenever the internal node-id structure has changed. Reindex
