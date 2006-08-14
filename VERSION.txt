@@ -1,1 +1,6 @@
-RC_2006_06_06
+#eXist build info
+#Mon Aug 14 20:42:36 CEST 2006
+project.version=UNKNOWN
+project.build=UNKNOWN
+svn.revision=UNKNOWN
+svn.date=UNKNOWN
