@@ -56,8 +56,12 @@ public class ResourcePropertyDialog extends JDialog {
 
 	/**
 	 * @param owner
-	 * @param title
-	 * @param modal
+	 * @param mgt
+	 * @param res
+         * @param perm
+         * @param created
+         * @param modified
+         * @param mimeType
 	 * @throws java.awt.HeadlessException
 	 */
 	public ResourcePropertyDialog(

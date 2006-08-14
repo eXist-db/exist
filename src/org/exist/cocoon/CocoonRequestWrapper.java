@@ -60,7 +60,7 @@ public class CocoonRequestWrapper implements RequestWrapper {
 
 	/** Constructs a wrapper for the given Cocoon request.
 	 * @param cocoonRequest The request as viewed by Cocoon.
-	 * @param httpRequest The request as viewed by Cocoon's servlet
+	 * @param servletRequest The request as viewed by Cocoon's servlet
 	 */
 	public CocoonRequestWrapper(Request cocoonRequest, HttpServletRequest servletRequest) {
 		this.cocoonRequest = cocoonRequest;

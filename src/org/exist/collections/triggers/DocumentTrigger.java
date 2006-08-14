@@ -38,7 +38,7 @@ import org.xml.sax.ext.LexicalHandler;
  * Document triggers may have two roles:
  * 
  * <ol>
- *  <li>before the document is stored, updated or removed, the trigger's {@link #prepare(int, DBBroker, XmldbURI, Document) prepare} 
+ *  <li>before the document is stored, updated or removed, the trigger's {@link #prepare(int, DBBroker,Txn, XmldbURI, DocumentImpl) prepare} 
  *  method is called. The trigger code may take any action desired, for example, to ensure referential
  *  integrity on the database, issue XUpdate commands on other documents in the database...</li>
  *  <li>the trigger also functions as a filter: the trigger interface extends SAX {@link org.xml.sax.ContentHandler content handler} and
@@ -49,8 +49,8 @@ import org.xml.sax.ext.LexicalHandler;
  * </ol>
  * 
  * The DocumentTrigger interface is also called for binary resources. However, in this case, the trigger can not function as
- * a filter and the SAX-related methods are useless. Only {@link #prepare(int, DBBroker, XmldbURI, Document)} and
- * {@link #finish(int, DBBroker, Txn, Document)} will be called. To determine if the document is a binary resource,
+ * a filter and the SAX-related methods are useless. Only {@link #prepare(int, DBBroker, Txn, XmldbURI, DocumentImpl)} and
+ * {@link #finish(int, DBBroker, Txn, DocumentImpl)} will be called. To determine if the document is a binary resource,
  * call {@link org.exist.dom.DocumentImpl#getResourceType()}.
  * 
  * The general contract for a trigger is as follows:
@@ -60,7 +60,7 @@ import org.xml.sax.ext.LexicalHandler;
  *  {@link #configure(DBBroker, Collection, Map) configure} method
  *  will be called once.</li>
  *  <li>pre-parse phase: before parsing the source document, the collection will call the trigger's
- *  {@link #prepare(int, DBBroker, XmldbURI, Document) prepare} 
+ *  {@link #prepare(int, DBBroker, Txn, XmldbURI, DocumentImpl) prepare} 
  *  method once for each document to be stored, removed or updated. The trigger may
  *  throw a TriggerException if the current action should be aborted.</li>
  *  <li>validation phase: during the validation phase, the document is parsed once by the SAX parser. During this
@@ -70,7 +70,7 @@ import org.xml.sax.ext.LexicalHandler;
  *  but it is not allowed to throw an exception. Throwing an exception during the storage phase will result in an
  *  invalid document in the database. Use {@link #isValidating() isValidating} in your code to check that you're
  *  in validation phase.</li>
- *  <li>finalization: the method {@link #finish(int, DBBroker, Txn, Document)} is called. At this point, the document
+ *  <li>finalization: the method {@link #finish(int, DBBroker, Txn, DocumentImpl)} is called. At this point, the document
  *  has already been stored and is ready to be used or - for {@link #REMOVE_DOCUMENT_EVENT} - has been removed.
  *  </li>
  * </ol>
@@ -83,7 +83,7 @@ public interface DocumentTrigger extends Trigger, ContentHandler, LexicalHandler
      * This method is called once before the database will actually parse the input data. You may take any action
      * here, using the supplied broker instance.
      * 
-     * @param event the type of event that triggered this call (see the constants defined in this interface).
+     * @param event the type of event that triggered this call (see the constants defined in this interface). The ContentHandler instance for the output.
      * @param broker the database instance used to process the current action.
      * @param transaction the current transaction context
      * @param documentPath the full absolute path of the document currently processed.
@@ -148,7 +148,7 @@ public interface DocumentTrigger extends Trigger, ContentHandler, LexicalHandler
     /**
      * Returns the output handler to which SAX events should be forwarded.
      * 
-     * @return
+     * @return The ContentHandler instance for the output.
      */
     public ContentHandler getOutputHandler();
 
@@ -164,14 +164,14 @@ public interface DocumentTrigger extends Trigger, ContentHandler, LexicalHandler
     /**
      * Called by the database to set the lexical output handler for this trigger.
      * 
-     * @return
+     * @return The LexicalHandler instance for the output.
      */
     public LexicalHandler getLexicalOutputHandler();
 
     /**
-     * Returns the lexical input handler for this trigger. See {@see #getInputHandler() getInputHandler}.
+     * Returns the lexical input handler for this trigger. See {@link #getInputHandler() getInputHandler}.
      * 
-     * @return
+     * @return The LexicalHandler instance for the input.
      */
     public LexicalHandler getLexicalInputHandler();
 }

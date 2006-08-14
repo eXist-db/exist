@@ -41,7 +41,7 @@ public class XMLDBExistTask extends AbstractXMLDBTask implements Condition
   private String resource = null;
 
   /**
-   * @return
+   * @return returns true if the eval is successful. 
    * @throws BuildException
    * @see org.apache.tools.ant.taskdefs.condition.Condition#eval()
    */

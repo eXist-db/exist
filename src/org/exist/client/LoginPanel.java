@@ -102,7 +102,7 @@ public class LoginPanel extends JPanel {
     /**
      * Creates a new login panel with properties
      *
-     * @param a list of properties modified by the panel
+     * @param props a list of properties modified by the panel
      */
     public LoginPanel(Properties props) {
         super(false);

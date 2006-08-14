@@ -111,7 +111,6 @@ public interface Trigger {
 	/**
 	 * Returns a Logger object. Use this to log debugging information.
 	 * 
-	 * @return
 	 */
 	public Logger getLogger();
 }

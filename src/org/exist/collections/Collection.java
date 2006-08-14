@@ -201,7 +201,7 @@ public  class Collection extends Observable
      * Returns true if this is a temporary collection. By default,
      * the temporary collection is in /db/system/temp.
      *
-     * @return
+     * @return A boolean where true means the collection is temporary.
      */
     public boolean isTempCollection() {
         return isTempCollection;
@@ -303,9 +303,11 @@ public  class Collection extends Observable
      * If recursive is true, documents from sub-collections are
      * included.
      *
-     * @param user
+     * @param broker
+     * @param docs
      * @param recursive
-     * @return
+     * @param checkPermissions
+     * @return The set of documents.
      */
     public DocumentSet allDocs(DBBroker broker, DocumentSet docs,
             boolean recursive, boolean checkPermissions) {
@@ -370,7 +372,7 @@ public  class Collection extends Observable
      * i.e. one or more of the documents is locked for
      * write.
      *
-     * @return
+     * @return A boolean value where true indicates it may be unloaded.
      */
     public boolean allowUnload() {
         for (Iterator i = documents.values().iterator(); i.hasNext(); ) {
@@ -434,7 +436,8 @@ public  class Collection extends Observable
      * a lock on the document nor does it recognize locks held by other threads.
      * There's no guarantee that the document still exists when accessing it.
      *
-     *@param  name  The name of the document (without collection path)
+     *@param  broker
+     *@param  path  The name of the document (without collection path)
      *@return   the document
      */
     public DocumentImpl getDocument(DBBroker broker, XmldbURI path) {
@@ -458,7 +461,7 @@ public  class Collection extends Observable
      *
      * @param broker
      * @param name
-     * @return
+     * @return The document that was locked.
      * @throws LockException
      */
     public DocumentImpl getDocumentWithLock(DBBroker broker, XmldbURI name) throws LockException {
@@ -470,8 +473,9 @@ public  class Collection extends Observable
      * access to the received document object is safe.
      *
      * @param broker
-     * @param name
-     * @return
+     * @param uri
+     * @param lockMode
+     * @return The document that was locked.
      * @throws LockException
      */
     public DocumentImpl getDocumentWithLock(DBBroker broker, XmldbURI uri, int lockMode)
@@ -567,8 +571,8 @@ public  class Collection extends Observable
     /**
      *  Check if the collection has a child document.
      *
-     *@param  name  the name (without path) of the document
-     *@return
+     *@param  uri  the name (without path) of the document
+     *@return A value of true when the collection has the document identified.
      */
     public boolean hasDocument(XmldbURI uri) {
         return documents.containsKey(uri.getRawCollectionPath());
@@ -578,7 +582,7 @@ public  class Collection extends Observable
      *  Check if the collection has a sub-collection.
      *
      *@param  name  the name of the subcollection (without path).
-     *@return
+     *@return A value of true when the subcollection exists.
      */
     public boolean hasSubcollection(XmldbURI name) {
         try {
@@ -596,7 +600,7 @@ public  class Collection extends Observable
     /**
      *  Returns an iterator on the child-documents in this collection.
      *
-     *@return
+     *@return A iterator of all the documents in the collection.
      */
     public Iterator iterator(DBBroker broker) {
         return getDocuments(broker, new DocumentSet(), false).iterator();
@@ -652,7 +656,9 @@ public  class Collection extends Observable
     /**
      *  Remove the specified document from the collection.
      *
-     *@param  name
+     *@param  transaction
+     *@param  broker
+     *@param  docUri
      */
     public void removeXMLResource(Txn transaction, DBBroker broker, XmldbURI docUri)
     throws PermissionDeniedException, TriggerException, LockException {
