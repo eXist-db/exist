@@ -5,6 +5,7 @@ package org.exist.xqj;
 
 import java.io.OutputStream;
 import java.io.Writer;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Properties;
@@ -216,7 +217,16 @@ public URI getNodeUri() throws XQException
 			Document doc = n.getOwnerDocument();
 			if(doc != null)
 			{
+                           /*
 				String documentURI = n.getOwnerDocument().getDocumentURI();
+                            */
+                           String documentURI = null;
+                           try {
+                              Method method = Document.class.getMethod("getDocumentURI",null);
+                              documentURI = (String)method.invoke(n.getOwnerDocument(),null);
+                           } catch (Exception ex) {
+                              throw new XQException(ex.getMessage());
+                           }
 				if(documentURI != null)
 				{
 					return new URI(documentURI);
