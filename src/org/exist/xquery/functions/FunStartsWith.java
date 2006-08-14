@@ -1,5 +1,5 @@
 /* eXist Open Source Native XML Database
- * Copyright (C) 2000-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ * Copyright (C) 2000-2006,  The eXist team
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public License
@@ -12,8 +12,8 @@
  * GNU Library General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  * $Id$
  */
@@ -39,31 +39,38 @@ import org.exist.xquery.value.Type;
 
 public class FunStartsWith extends CollatingFunction {
 
-	public final static FunctionSignature signatures[] = {
-		new FunctionSignature (
-			new QName("starts-with", Function.BUILTIN_FUNCTION_NS),
-			new SequenceType[] {
-				 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
-				 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
-			},
-			new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE)),
-		new FunctionSignature (
-			new QName("starts-with", Function.BUILTIN_FUNCTION_NS),
-			new SequenceType[] {
-				 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
-				 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
-				 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
-			},
-			new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE))
-	};
+    public final static FunctionSignature signatures[] = {
+	new FunctionSignature (
+			       new QName("starts-with", Function.BUILTIN_FUNCTION_NS),
+			       "Returns true if the string value of $b is a prefix of the " +
+			       "string value of $a, false otherwise. If either $a or $b is the empty " +
+			       "sequence, the empty sequence is returned.",
+			       new SequenceType[] {
+				   new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
+				   new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+			       },
+			       new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE)),
+	new FunctionSignature (
+			       new QName("starts-with", Function.BUILTIN_FUNCTION_NS),
+			       "Returns true if the string value of $b is a prefix of the " +
+			       "string value of $a using collation $c, " + " false otherwise. If " +
+			       "either $a or $b is the empty sequence, the empty sequence" +
+			       " is returned.",
+			       new SequenceType[] {
+				   new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
+				   new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
+				   new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+			       },
+			       new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE))
+    };
 					
-	public FunStartsWith(XQueryContext context, FunctionSignature signature) {
-		super(context, signature);
-	}
+    public FunStartsWith(XQueryContext context, FunctionSignature signature) {
+	super(context, signature);
+    }
 	
-	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
+            context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
@@ -71,25 +78,25 @@ public class FunStartsWith extends CollatingFunction {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
         
-		if(contextItem != null)
-			contextSequence = contextItem.toSequence();
+	if(contextItem != null)
+	    contextSequence = contextItem.toSequence();
 
         Sequence result;
-		String s1 = getArgument(0).eval(contextSequence).getStringValue();
-		String s2 = getArgument(1).eval(contextSequence).getStringValue();        
-		if(s1.length() == 0 || s2.length() == 0)
+	String s1 = getArgument(0).eval(contextSequence).getStringValue();
+	String s2 = getArgument(1).eval(contextSequence).getStringValue();        
+	if(s1.length() == 0 || s2.length() == 0)
             result = Sequence.EMPTY_SEQUENCE;
         else {
-    		Collator collator = getCollator(contextSequence, contextItem, 3);
-    		if(Collations.startsWith(collator, s1, s2))
+	    Collator collator = getCollator(contextSequence, contextItem, 3);
+	    if(Collations.startsWith(collator, s1, s2))
                 result = BooleanValue.TRUE;
-    		else
+	    else
                 result = BooleanValue.FALSE;
         }
 
-        if (context.getProfiler().isEnabled()) 
+        if (context.getProfiler().isEnabled())
             context.getProfiler().end(this, "", result); 
         
-        return result;             
-	}
+        return result;
+    }
 }

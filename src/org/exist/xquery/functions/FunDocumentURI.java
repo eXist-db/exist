@@ -1,8 +1,5 @@
-/*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+/* eXist Open Source Native XML Database
+ * Copyright (C) 2001-2006 The eXist team
  *  
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
@@ -15,11 +12,12 @@
  *  GNU Lesser General Public License for more details.
  *  
  *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
  *  $Id$
  */
+
 package org.exist.xquery.functions;
 
 import org.exist.dom.NodeProxy;
@@ -47,6 +45,9 @@ public class FunDocumentURI extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("document-uri", Function.BUILTIN_FUNCTION_NS),
+			"Returns the absolute URI of the resource from which the document node $a " + 
+			"was constructed, if none such URI exists returns the empty sequence. " +
+			"If $a is the empty sequence, returns the empty sequence.",
 			new SequenceType[] {
 				 new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
 			},

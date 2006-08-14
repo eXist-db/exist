@@ -1,25 +1,23 @@
-/*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+/* eXist Open Source Native XML Database
+ * Copyright (C) 2001-2006 The eXist team
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation 
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  *  $Id$
  */
+
 package org.exist.xquery.functions;
 
 import org.exist.dom.NodeProxy;
@@ -55,6 +53,9 @@ public class FunDeepEqual extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("deep-equal", Function.BUILTIN_FUNCTION_NS),
+			"Returns true iff every item in $a is deep-equal to the item at the same position in $b, " +
+			"false otherwise. If both $a and $b are the empty sequence, returns true. " +
+			"TODO: collation as argument $c",
 			new SequenceType[] {
 					new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE), 
 					new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
