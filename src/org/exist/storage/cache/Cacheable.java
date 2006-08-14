@@ -48,7 +48,7 @@ public interface Cacheable {
 	/**
 	 * Get the current reference count.
 	 * 
-	 * @return
+	 * @return The count value. 
 	 */
 	public int getReferenceCount();
 
@@ -103,7 +103,7 @@ public interface Cacheable {
 	 * Called before an object is actually removed. Return
 	 * false to avoid being removed.
 	 * 
-	 * @return
+	 * @return A boolean where true indicates it can be unloaded.
 	 */
 	public boolean allowUnload();
 	

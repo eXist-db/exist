@@ -50,7 +50,7 @@ public class XQueryTrigger extends FilteringTrigger {
 	}
 	
 	/**
-	 * @see org.exist.collections.Trigger#configure(org.exist.storage.DBBroker, org.exist.collections.Collection, java.util.Map)
+	 * @link org.exist.collections.Trigger#configure(org.exist.storage.DBBroker, org.exist.collections.Collection, java.util.Map)
 	 */
 	public void configure(DBBroker broker, Collection parent, Map parameters)
 		throws CollectionConfigurationException {
@@ -66,7 +66,7 @@ public class XQueryTrigger extends FilteringTrigger {
 	}
 	
 	/**
-	 * @see org.exist.collections.Trigger#prepare(java.lang.String, org.w3c.dom.Document)
+	 * @link org.exist.collections.Trigger#prepare(java.lang.String, org.w3c.dom.Document)
 	 */
 	public void prepare(int event, DBBroker broker, Txn transaction, 
 			XmldbURI documentName, DocumentImpl existingDocument )
@@ -143,7 +143,7 @@ public class XQueryTrigger extends FilteringTrigger {
 	}
 	
     /**
-     * @see org.exist.collections.triggers.DocumentTrigger#finish(int, org.exist.storage.DBBroker, java.lang.String, org.w3c.dom.Document)
+     * @link org.exist.collections.triggers.DocumentTrigger#finish(int, org.exist.storage.DBBroker, java.lang.String, org.w3c.dom.Document)
      */
     public void finish(int event, DBBroker broker, Txn transaction, DocumentImpl document) {		
     	
