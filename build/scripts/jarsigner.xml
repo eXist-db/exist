@@ -100,21 +100,10 @@
          depends="jnlp-prepare,jnlp-keygen,jnlp-sign-exist,jnlp-sign-core"
      description="Perform all sign tasks."/>
 
-<!--
-    <taskdef name="unsignjars" classname="nl.ow.dilemma.ant.jar.UnsignJarTask"/>
--->
+    <property name="asocat-exist.jar" location="tools/ant/lib/asocat-exist.jar"/>
+    <taskdef name="unsignjars" classname="nl.ow.dilemma.ant.jar.UnsignJarTask" classpath="${asocat-exist.jar}"/>
 
     <target name="jnlp-unsign-all">
-<echo>
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-Help me!  I'm a broken ant task.  Where is my jar file?
-
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-</echo>
-<!--
         <unsignjars>
             <fileset dir=".">
                 <include name="exist*.jar"/>
@@ -124,6 +113,5 @@ Help me!  I'm a broken ant task.  Where is my jar file?
                 <include name="*.jar"/>
             </fileset>
         </unsignjars>
--->
     </target>
 </project>
