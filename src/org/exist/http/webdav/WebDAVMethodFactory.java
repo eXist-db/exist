@@ -43,7 +43,16 @@ import org.exist.storage.BrokerPool;
  */
 public class WebDAVMethodFactory {
 
-    public final static WebDAVMethod create(String method, BrokerPool pool) {
+    private static WebDAVMethodFactory theInstance = new WebDAVMethodFactory();
+    
+    public static WebDAVMethodFactory getInstance() {
+       return theInstance;
+    }
+    
+    protected WebDAVMethodFactory() {
+    }
+    
+    public WebDAVMethod create(String method, BrokerPool pool) {
         if(method.equals("OPTIONS"))
             return new Options();
         else if(method.equals("GET"))
