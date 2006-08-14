@@ -47,6 +47,9 @@
     <available file="${xmldb.src}" type="dir" property="has.xmldb.src"/>
     <available file="${catalina.home}/bin" property="catalina.present"/>
     <available file="key.store" property="key.store.present"/>
+    
+    <!-- additional set of ant tasks -->
+    <property name="asocat-exist.jar" location="tools/ant/lib/asocat-exist.jar"/>
 
     <!-- setup class path -->
     <path id="classpath.core">
@@ -99,10 +102,8 @@
         <classpath refid="classpath.core"/>
     </taskdef>
     
-    <taskdef name="svninfo" classname="nl.ow.dilemma.ant.svn.SubversionInfoTask">
-        <classpath refid="classpath.core"/>
-    </taskdef>
-    
+    <taskdef name="svninfo" classname="nl.ow.dilemma.ant.svn.SubversionInfoTask" classpath="${asocat-exist.jar}"/>
+
     <!-- =================================================================== -->
     <!-- Prepare the build                                                   -->
     <!-- =================================================================== -->

@@ -100,7 +100,7 @@
          depends="jnlp-prepare,jnlp-keygen,jnlp-sign-exist,jnlp-sign-core"
      description="Perform all sign tasks."/>
 
-    <property name="asocat-exist.jar" location="tools/ant/lib/asocat-exist.jar"/>
+    <!-- Special task for unsigning jar files -->
     <taskdef name="unsignjars" classname="nl.ow.dilemma.ant.jar.UnsignJarTask" classpath="${asocat-exist.jar}"/>
 
     <target name="jnlp-unsign-all">
