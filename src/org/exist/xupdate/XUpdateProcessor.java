@@ -487,24 +487,24 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				if (LOG.isDebugEnabled())
 					LOG.debug("Found " + seq.getLength() + " items for value-of");
 				Item item;
-				for (SequenceIterator i = seq.iterate(); i.hasNext();) {
-					item = i.nextItem();
-					if(Type.subTypeOf(item.getType(), Type.NODE)) { 
-						Node node = NodeSetHelper.copyNode(doc, ((NodeValue)item).getNode());
-						if (stack.isEmpty())
-							contents.add(node);
-						else {
-							Element last = (Element) stack.peek();
-							last.appendChild(node);
-						}
-					} else {
-						try {
+				try {
+					for (SequenceIterator i = seq.iterate(); i.hasNext();) {
+						item = i.nextItem();
+						if(Type.subTypeOf(item.getType(), Type.NODE)) { 
+							Node node = NodeSetHelper.copyNode(doc, ((NodeValue)item).getNode());
+							if (stack.isEmpty())
+								contents.add(node);
+							else {
+								Element last = (Element) stack.peek();
+								last.appendChild(node);
+							}
+						} else {
 							String value = item.getStringValue();
 							characters(value.toCharArray(), 0, value.length());
-						} catch(XPathException e) {
-							throw new SAXException(e.getMessage(), e);
 						}
 					}
+				} catch (XPathException e) {
+					throw new SAXException(e.getMessage(), e);
 				}
 			}
 		} else if (inModification) {

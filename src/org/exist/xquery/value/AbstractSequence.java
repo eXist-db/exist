@@ -50,7 +50,7 @@ public abstract class AbstractSequence implements Sequence {
 	
 	public abstract int getItemType();
 
-	public abstract SequenceIterator iterate();
+	public abstract SequenceIterator iterate() throws XPathException;
 
 	public abstract SequenceIterator unorderedIterator();
 	
@@ -90,17 +90,21 @@ public abstract class AbstractSequence implements Sequence {
 	}
 	
 	public String toString() {
-    	StringBuffer buf = new StringBuffer();
-    	buf.append("(");
-    	boolean gotOne = false;
-    	for(SequenceIterator i = iterate(); i.hasNext(); ) {
-    		if (gotOne)
-    			buf.append(", ");
-    		buf.append(i.nextItem());
-    		gotOne = true;
-    	}
-    	buf.append(")");
-    	return buf.toString();
+    	try {
+			StringBuffer buf = new StringBuffer();
+			buf.append("(");
+			boolean gotOne = false;
+			for(SequenceIterator i = iterate(); i.hasNext(); ) {
+				if (gotOne)
+					buf.append(", ");
+				buf.append(i.nextItem());
+				gotOne = true;
+			}
+			buf.append(")");
+			return buf.toString();
+		} catch (XPathException e) {
+			return "toString() fails: " + e.getMessage();
+		}
 	}
 	
 	/* (non-Javadoc)

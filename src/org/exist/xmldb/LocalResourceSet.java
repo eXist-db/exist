@@ -39,6 +39,7 @@ public class LocalResourceSet implements ResourceSet {
 	private User user;
 
 	private LocalResourceSet() {}
+	
 	public LocalResourceSet(
 		User user,
 		BrokerPool pool,
@@ -66,9 +67,14 @@ public class LocalResourceSet implements ResourceSet {
 			val = sorted;
 		}
 		Item item;
-		for(SequenceIterator i = val.iterate(); i.hasNext(); ) {
-			item = i.nextItem();
-			resources.add(item);
+		try {
+			for(SequenceIterator i = val.iterate(); i.hasNext(); ) {
+				item = i.nextItem();
+				resources.add(item);
+			}
+		} catch (XPathException e) {
+			throw new XMLDBException(ErrorCodes.INVALID_RESOURCE,
+					e.getMessage(), e);
 		}
 	}
 

@@ -29,6 +29,7 @@ import org.exist.util.FastQSort;
 import org.exist.util.Range;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Expression;
+import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
@@ -247,7 +248,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
      * 
      * @see org.exist.xquery.value.Sequence#iterate()
      */
-    public SequenceIterator iterate() {
+    public SequenceIterator iterate() throws XPathException {
         sortInDocumentOrder();
         return new ExtArrayIterator();
     }

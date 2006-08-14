@@ -501,7 +501,7 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Sequence#iterate()
 	 */
-	public SequenceIterator iterate() {
+	public SequenceIterator iterate() throws XPathException {
 		return new SingleNodeIterator(this);
 	}
 	
