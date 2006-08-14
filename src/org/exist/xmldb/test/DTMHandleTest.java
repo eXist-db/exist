@@ -95,7 +95,8 @@ public class DTMHandleTest extends TestCase {
 							foundFieldText = true;
 							
 							Node name = fieldChildren.item(f);
-							String nameText = name.getTextContent();
+							//String nameText = name.getTextContent();
+                                                        String nameText = TreeLevelOrderTest.textContent(name);
 							assertNotNull("Failed to read existing field[" + 1 + "]/name/text()", nameText);
 						}
 					}
