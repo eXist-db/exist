@@ -22,16 +22,15 @@
  */
 package org.exist.xmldb.test;
 
-import org.apache.xpath.XPathAPI;
 import org.xmldb.api.base.CompiledExpression;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.XQueryService;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.ResourceSet;
-import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
 import junit.framework.TestCase;
@@ -61,15 +60,17 @@ public class TreeLevelOrderTest extends TestCase {
 	 * <li>Registers a database instance</li>
 	 * <li>Writes a document to the database using the XQueryService</li>
 	 * <li>Reads the document from the database using XmlDB</li>
-	 * <li>Accesses the document using Apache's XPathAPI</li>
+	 * <li>Accesses the document using DOM</li>
 	 * </ul>
 	 */
-	public final void testTreeLevelOrder() {		
+	public final void testTreeLevelOrder()
+	{		
 		Database eXist = null;
 		String document = "survey.xml";
 		XQueryService service = null;
 
-		try {
+		try
+		{
 			eXist = registerDatabase();
 			assertNotNull(eXist);
 			// Obtain XQuery service			
@@ -92,10 +93,25 @@ public class TreeLevelOrderTest extends TestCase {
 			// read document back from database
 			Node root = load(service, document);
 			assertNotNull(root);
-			// issue xpath query		
-			Node node = XPathAPI.selectSingleNode(root, "/survey/to/text()");
-			assertNotNull(node);			
-        } catch (Exception e) {            
+			
+			//get node using DOM
+			String strTo = null;
+			
+			NodeList rootChildren = root.getChildNodes();
+			for(int r=0; r < rootChildren.getLength(); r++)
+			{
+				if(rootChildren.item(r).getLocalName().equals("to"))
+				{
+					Node to = rootChildren.item(r);
+					
+					strTo = to.getTextContent();
+				}
+			}
+			
+			assertNotNull(strTo);
+        }
+		catch(Exception e)
+        {            
             fail(e.getMessage()); 
         }
 	}

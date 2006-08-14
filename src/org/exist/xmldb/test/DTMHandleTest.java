@@ -6,8 +6,6 @@
  */
 package org.exist.xmldb.test;
 
-import org.apache.xpath.XPathAPI;
-import org.apache.xpath.objects.XObject;
 import org.xmldb.api.base.CompiledExpression;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.XQueryService;
@@ -17,7 +15,6 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.ResourceSet;
-import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
 import junit.framework.TestCase;
@@ -47,7 +44,7 @@ public class DTMHandleTest extends TestCase {
 	 * <li>Registers a database instance</li>
 	 * <li>Writes a document to the database using the XQueryService</li>
 	 * <li>Reads the document from the database using XmlDB</li>
-	 * <li>Accesses the document using Apache's XPathAPI</li>
+	 * <li>Accesses the document using DOM</li>
 	 * </ul>
 	 */
 	public final void testTreeLevelOrder() {
@@ -66,7 +63,8 @@ public class DTMHandleTest extends TestCase {
 		xmlDocument.append("</field>");
 		xmlDocument.append("</survey>");		
 
-		try {
+		try
+		{
 			eXist = registerDatabase();		
 			// Obtain XQuery service
 			XQueryService service = getXQueryService(eXist);
@@ -76,15 +74,40 @@ public class DTMHandleTest extends TestCase {
 			// read document back from database
 			Node root = load(service, document);
 			assertNotNull("Document " + document + " was not found in the database!", root);
-			NodeList fieldNodes = XPathAPI.selectNodeList(root, "field");
-			for (int i=0; i < fieldNodes.getLength(); i++) {
-				Node field = fieldNodes.item(i);
-				System.out.println("Found field node[" + 1 + "]");
-				XObject nameNode = XPathAPI.eval(field, "name/text()");
-				assertNotNull("Failed to read existing field[" + i + "]/name/text()", nameNode);
+			
+			boolean foundFieldText = false;
+			
+			NodeList rootChildren = root.getChildNodes();
+			for(int r=0; r < rootChildren.getLength(); r++)
+			{
+				if(rootChildren.item(r).getLocalName().equals("field"))
+				{
+					foundFieldText = false;
+					
+					Node field = rootChildren.item(r);
+					System.out.println("Found field node[" + 1 + "]");
+					
+					NodeList fieldChildren = field.getChildNodes();
+					for(int f=0; f < fieldChildren.getLength(); f++)
+					{
+						if(fieldChildren.item(f).getLocalName().equals("name"))
+						{
+							foundFieldText = true;
+							
+							Node name = fieldChildren.item(f);
+							String nameText = name.getTextContent();
+							assertNotNull("Failed to read existing field[" + 1 + "]/name/text()", nameText);
+						}
+					}
+					
+					assertTrue("Failed to read existing field[" + 1 + "]/name/text()", foundFieldText);
+				}
 			}
+			
 			System.out.println("Test succeeded");			
-		} catch (Exception e) {		    
+		}
+		catch (Exception e)
+		{		    
 			fail(e.getMessage());
 		}
 	}
