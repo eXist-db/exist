@@ -218,6 +218,7 @@ public class DocumentImpl extends NodeImpl implements Document {
         }
         alphaLen[nodeNr] = alphaLen[nodeNr] + len;
         System.arraycopy(ch, start, characters, nextChar, len);
+        nextChar += len;
     }
     
     public void appendChars(int nodeNr, CharSequence s) {
