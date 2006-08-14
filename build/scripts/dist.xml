@@ -91,6 +91,8 @@
                 <attribute name="Build-Timestamp" value="${DSTAMP}"/>
                 <attribute name="Project-Name" value="${project.name}"/>
                 <attribute name="Project-Version" value="${project.version}"/>
+                <attribute name="SVN-Revision" value="${svn.revision}"/>
+                <attribute name="SVN-Date" value="${svn.date}"/>
             </manifest>
 
         </war>
