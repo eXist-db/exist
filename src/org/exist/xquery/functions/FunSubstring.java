@@ -1,8 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001 Wolfgang M. Meier
- * meier@ifs.tu-darmstadt.de
- * http://exist.sourceforge.net
+ * Copyright (C) 2001-2006 The eXist team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -15,8 +13,8 @@
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  * $Id$
  */
@@ -49,6 +47,7 @@ public class FunSubstring extends Function {
 	public final static FunctionSignature signatures[] = {
 			new FunctionSignature(
 				new QName("substring", Function.BUILTIN_FUNCTION_NS),
+				"Returns the portion of the value of $a beginning at the position indicated by the value of $b and continuing to the end of $a. The characters returned do not extend beyond the end of $a. If $b is zero or negative, only those characters in positions greater than zero are returned. If the value of $a is the empty sequence, the zero-length string is returned.",
 				new SequenceType[] {
 					 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
 					 new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE)
@@ -57,6 +56,7 @@ public class FunSubstring extends Function {
 			),
 			new FunctionSignature(
 				new QName("substring", Function.BUILTIN_FUNCTION_NS),
+				"Returns the portion of the value of $a beginning at the position indicated by the value of $b and continuing for the number of characters indicated by the value of $c. The characters returned do not extend beyond the end of $a. If $b is zero or negative, only those characters in positions greater than zero are returned. If the value of $a is the empty sequence, the zero-length string is returned.",
 				new SequenceType[] {
 					 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
 					 new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE),
