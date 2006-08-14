@@ -7,8 +7,7 @@ package org.exist.dom;
 public class NullNodeIndexListener implements NodeIndexListener {
 	/** Singleton */
 	public static final NodeIndexListener INSTANCE = new NullNodeIndexListener();
-	/** @see org.exist.dom.NodeIndexListener#nodeChanged(org.exist.dom.NodeImpl) */
+	/** @see org.exist.dom.NodeIndexListener#nodeChanged(StoredNode) */
 	public void nodeChanged(StoredNode node) {	}
-	/** @see org.exist.dom.NodeIndexListener#nodeChanged(long, long) */
 	public void nodeChanged(long oldAddress, long newAddress) {	}
 }

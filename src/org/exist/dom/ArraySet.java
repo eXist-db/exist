@@ -246,8 +246,6 @@ public class ArraySet extends AbstractNodeSet {
 	 *  For a given set of potential ancestor nodes, get the
 	 * descendants in this node set
 	 *
-	 *@param  al    Description of the Parameter
-	 *@param  mode  Description of the Parameter
 	 *@return       The descendants value
 	 */
 	public NodeSet selectAncestors(NodeSet other, boolean includeSelf, int contextId) {

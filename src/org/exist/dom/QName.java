@@ -92,7 +92,6 @@ public class QName implements Comparable {
 	/**
 	 * Returns true if the QName defines a namespace URI.
 	 * 
-	 * @return
 	 */
 	public boolean needsNamespaceDecl() {
 		return namespaceURI_ != null && namespaceURI_.length() > 0;
@@ -227,7 +226,6 @@ public class QName implements Comparable {
 	 * Extract the local name from a QName string.
 	 * 
 	 * @param qname
-	 * @return
 	 * @exception IllegalArgumentException if the qname starts with a leading : or ends with a :
 	 */
 	public static String extractLocalName(String qname) {
@@ -273,7 +271,6 @@ public class QName implements Comparable {
 	 * 
 	 * @param context
 	 * @param qname
-	 * @return
 	 * @exception IllegalArgumentException if no namespace URI is mapped to the prefix
 	 */
 	public static QName parse(XQueryContext context, String qname)

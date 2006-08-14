@@ -670,7 +670,6 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
          * @param parent
          * @param mode
          * @param rememberContext
-         * @return
          */
         NodeSet getChildrenInSet(NodeSet result, NodeProxy parent, int mode, int contextId) {
             // get the range of node ids reserved for children of the parent

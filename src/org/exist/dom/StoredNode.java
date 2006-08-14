@@ -97,14 +97,13 @@ public class StoredNode extends NodeImpl {
     /**
      * Read a node from the specified byte array.
      * 
-     * This checks the node type and calls the {@link #deserialize(byte[], int, int)}
+     * This checks the node type and calls the {@link #deserialize(byte[], int, int,DocumentImpl,boolean)}
      * method of the corresponding node class.
      * 
      * @param data
      * @param start
      * @param len
      * @param doc
-     * @return
      */
     public static StoredNode deserialize(byte[] data, int start, int len, DocumentImpl doc) {
         return deserialize(data, start, len, doc, false);
@@ -113,7 +112,7 @@ public class StoredNode extends NodeImpl {
 	/**
 	 * Read a node from the specified byte array.
 	 * 
-	 * This checks the node type and calls the {@link #deserialize(byte[], int, int)}
+	 * This checks the node type and calls the deserialize(byte[], int, int,boolean)
 	 * method of the corresponding node class. The node will be allocated in the pool
 	 * and should be released once it is no longer needed.
 	 * 
@@ -121,7 +120,6 @@ public class StoredNode extends NodeImpl {
 	 * @param start
 	 * @param len
 	 * @param doc
-	 * @return
 	 */
 	public static StoredNode deserialize(byte[] data, int start, int len, DocumentImpl doc, boolean pooled) {
 	    short type = Signatures.getType(data[start]);
@@ -173,7 +171,6 @@ public class StoredNode extends NodeImpl {
 	/**
 	 * Return the broker instance used to create this node.
 	 * 
-	 * @return
 	 */
 	public DBBroker getBroker() {
 		return ownerDocument.getBroker();
@@ -182,7 +179,6 @@ public class StoredNode extends NodeImpl {
 	/**
 	 *  Get the unique identifier assigned to this node.
 	 *
-	 *@return
 	 */
 	public long getGID() {
 		return this.gid;
@@ -209,7 +205,7 @@ public class StoredNode extends NodeImpl {
     /**
      *  Set the internal storage address of this node.
      *
-     *@param  address  The new internalAddress value
+     *@param  internalAddress  The new internalAddress value
      */
     public void setInternalAddress(long internalAddress) {
         this.internalAddress = internalAddress;
@@ -232,7 +228,7 @@ public class StoredNode extends NodeImpl {
     /**
      *  Set the owner document.
      *
-     *@param  doc  The new ownerDocument value
+     *@param  ownerDocument  The new ownerDocument value
      */
     public void setOwnerDocument(DocumentImpl ownerDocument) {
    		this.ownerDocument = ownerDocument;
