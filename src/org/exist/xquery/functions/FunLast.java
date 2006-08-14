@@ -1,6 +1,5 @@
-
 /* eXist Native XML Database
- * Copyright (C) 2000-03,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
+ * Copyright (C) 2000-2003,  the eXist team
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public License
@@ -13,8 +12,8 @@
  * GNU Library General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  * $Id$
  */
@@ -45,6 +44,8 @@ public class FunLast extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("last", Function.BUILTIN_FUNCTION_NS),
+			"Returns the context size from the dynamic context. " + 
+			"If the context item is undefined, an error is raised.",
 			null,
 			new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE));
 
