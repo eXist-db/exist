@@ -33,6 +33,7 @@ import org.exist.atom.IncomingMessage;
 import org.exist.atom.OutgoingMessage;
 import org.exist.atom.util.DOM;
 import org.exist.atom.util.DOMDB;
+import org.exist.atom.util.DateFormatter;
 import org.exist.atom.util.NodeHandler;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
@@ -69,8 +70,8 @@ import org.xml.sax.SAXParseException;
 public class AtomProtocol extends AtomFeeds implements Atom {
    
    protected final static Logger LOG = Logger.getLogger(AtomProtocol.class);
-   static final String FEED_DOCUMENT_NAME = ".feed.atom";
-   static final XmldbURI FEED_DOCUMENT_URI = XmldbURI.create(FEED_DOCUMENT_NAME);
+   public static final String FEED_DOCUMENT_NAME = ".feed.atom";
+   public static final XmldbURI FEED_DOCUMENT_URI = XmldbURI.create(FEED_DOCUMENT_NAME);
    
    class FindEntry implements NodeHandler {
       String id;
@@ -160,7 +161,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
             TransactionManager transact = broker.getBrokerPool().getTransactionManager();
             Txn transaction = transact.beginTransaction();
             String id = "urn:uuid:"+UUIDGenerator.getInstance().generateRandomBasedUUID();
-            String currentDateTime = toXSDDateTime(new Date());
+            String currentDateTime = DateFormatter.toXSDDateTime(new Date());
             Element publishedE = DOM.replaceTextElement(root,Atom.NAMESPACE_STRING,"published",currentDateTime,true,true);
             DOM.replaceTextElement(root,Atom.NAMESPACE_STRING,"updated",currentDateTime,true,true);
             DOM.replaceTextElement(root,Atom.NAMESPACE_STRING,"id",id,true,true);
@@ -239,17 +240,18 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                   broker.saveCollection(transaction, collection);
                }
                UUID id = UUIDGenerator.getInstance().generateRandomBasedUUID();
-               String currentDateTime = toXSDDateTime(new Date());
+               String currentDateTime = DateFormatter.toXSDDateTime(new Date());
                DOM.replaceTextElement(root,Atom.NAMESPACE_STRING,"updated",currentDateTime,true);
                DOM.replaceTextElement(root,Atom.NAMESPACE_STRING,"id","urn:uuid:"+id,true);
                Element editLink = findLink(root,"edit");
                if (editLink!=null) {
-                  throw new BadRequestException("An edit link relation cannot be specified in the entry.");
+                  throw new BadRequestException("An edit link relation cannot be specified in the feed.");
                }
                editLink = doc.createElementNS(Atom.NAMESPACE_STRING,"link");
                editLink.setAttribute("rel","edit");
                editLink.setAttribute("type",Atom.MIME_TYPE);
                editLink.setAttribute("href","#");
+               root.appendChild(editLink);
                IndexInfo info = collection.validateXMLResource(transaction,broker,FEED_DOCUMENT_URI,doc);
                collection.store(transaction,broker,info,doc,false);
                transact.commit(transaction);
@@ -271,6 +273,10 @@ public class AtomProtocol extends AtomFeeds implements Atom {
       } else {
          if (collection == null) {
             throw new BadRequestException("Collection "+request.getPath()+" does not exist.");
+         }
+         DocumentImpl feedDoc = collection.getDocument(broker,FEED_DOCUMENT_URI);
+         if (feedDoc==null) {
+            throw new BadRequestException("Feed at "+request.getPath()+" does not exist.");
          }
          String filename = request.getHeader("Slug");
          if (filename==null) {
@@ -308,16 +314,14 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                collection.addBinaryResource(transaction, broker, docUri, is, contentType, (int) tempFile.length());
                is.close();
             }
-            DocumentImpl feedDoc = null;
             try {
                LOG.debug("Acquiring lock on feed document...");
-               feedDoc = collection.getDocument(broker,FEED_DOCUMENT_URI);
                feedDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
                String title = request.getHeader("Title");
                if (title==null) {
                   title = filename;
                }
-               String created = toXSDDateTime(new Date());
+               String created = DateFormatter.toXSDDateTime(new Date());
                ElementImpl feedRoot = (ElementImpl)feedDoc.getDocumentElement();
                DOMDB.replaceTextElement(transaction,feedRoot,Atom.NAMESPACE_STRING,"updated",created,true);
                String id = "urn:uuid:"+UUIDGenerator.getInstance().generateRandomBasedUUID();
@@ -443,7 +447,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                ElementImpl feedRoot = (ElementImpl)feedDoc.getDocumentElement();
                
                // Modify the feed by merging the new feed-level elements
-               mergeFeed(transaction,feedRoot,root,toXSDDateTime(new Date()));
+               mergeFeed(transaction,feedRoot,root,DateFormatter.toXSDDateTime(new Date()));
                
                // Store the feed
                broker.storeXMLResource(transaction, feedDoc);
@@ -470,7 +474,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
             DocumentImpl feedDoc = null;
             TransactionManager transact = broker.getBrokerPool().getTransactionManager();
             Txn transaction = transact.beginTransaction();
-            String currentDateTime = toXSDDateTime(new Date());
+            String currentDateTime = DateFormatter.toXSDDateTime(new Date());
             try {
                // Get the feed
                LOG.debug("Acquiring lock on feed document...");
@@ -604,7 +608,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
       DocumentImpl feedDoc = null;
       TransactionManager transact = broker.getBrokerPool().getTransactionManager();
       Txn transaction = transact.beginTransaction();
-      String currentDateTime = toXSDDateTime(new Date());
+      String currentDateTime = DateFormatter.toXSDDateTime(new Date());
       try {
          
          // Get the feed
@@ -780,13 +784,13 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                if (lname.equals("updated") ||
                    lname.equals("published") ||
                    lname.equals("id")) {
-                  return;
+                  continue;
                }
                // Skip the edit link relations
                if (lname.equals("link")) {
                   String rel = ((Element)child).getAttribute("rel");
-                  if (!rel.equals("edit")) {
-                     return;
+                  if (rel.equals("edit")) {
+                     continue;
                   }
                }
             }
@@ -814,7 +818,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
       return null;
    }
    
-   protected Element generateMediaEntry(String id,String created,String title,String filename,String mimeType) 
+   public static Element generateMediaEntry(String id,String created,String title,String filename,String mimeType) 
       throws ParserConfigurationException
    {
 
