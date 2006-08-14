@@ -1,20 +1,20 @@
 /* eXist Open Source Native XML Database
- * Copyright (C) 2000-03,  Wolfgang M. Meier (wolfgang@exist-db.org)
+ * Copyright (C) 2000-2006,  the eXist team
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Library General Public License
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Library General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Library General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. 
+ *
  * $Id$
  */
 
@@ -46,11 +46,17 @@ public class FunLocalName extends Function {
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("local-name", Function.BUILTIN_FUNCTION_NS),
+			"Returns the local part of the name of the context item as an xs:string " +
+			"that will either be the zero-length string or will have the lexical " +
+			"form of an xs:NCName.",
 			new SequenceType[0],
 			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
 		),
 		new FunctionSignature(
 			new QName("local-name", Function.BUILTIN_FUNCTION_NS),
+			"Returns the local part of the name of the value of $a as an xs:string " +
+			"that will either be the zero-length string or will have the lexical " +
+			"form of an xs:NCName.",
 			new SequenceType[] { new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE) },
 			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
 		)
