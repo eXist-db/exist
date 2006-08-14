@@ -1,7 +1,7 @@
 <installation version="1.0">
     <info>
         <appname>eXist</appname>
-        <appversion>1.0-dev</appversion>
+        <appversion>1.0rc</appversion>
         <url>http://exist-db.org</url>
     </info>
     <guiprefs height="450" resizable="yes" width="640">
@@ -51,6 +51,7 @@
                 <include name="log4j.xml"/>
                 <include name="LICENSE"/>
                 <include name="README"/>
+                <include name="VERSION.txt"/>
                 <include name="exist.jar"/>
                 <include name="exist-optional.jar"/>
                 <include name="exist-modules.jar"/>
@@ -85,7 +86,6 @@
                 <exclude name="xqts/**"/>
                 <exclude name="**/CVS/"/>
                 <exclude name="**/*~"/>
-                <exclude name="resources/*.jpg"/>
             </fileset>
             <fileset targetdir="$INSTALL_PATH/webapp/WEB-INF" dir="webapp/WEB-INF">
                 <include name="data/"/>
