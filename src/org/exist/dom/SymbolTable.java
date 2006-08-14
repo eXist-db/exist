@@ -99,7 +99,6 @@ public class SymbolTable {
      * @param namespaceURI
      * @param localName
      * @param prefix
-     * @return
      */
 	public synchronized QName getQName(short type, String namespaceURI, String localName, String prefix) {
         byte itype = type == Node.ATTRIBUTE_NODE ? ElementValue.ATTRIBUTE : ElementValue.ELEMENT;
@@ -110,7 +109,6 @@ public class SymbolTable {
      * Return a unique id for the local node name of the specified element.
      * 
      * @param element
-     * @return
      */
 	public synchronized short getSymbol(Element element) {
 		short id = (short) nameSymbols.get(element.getLocalName());
@@ -135,7 +133,6 @@ public class SymbolTable {
      * Return a unique id for the local node name of the specified attribute.
      * 
      * @param attr
-     * @return
      */
 	public synchronized short getSymbol(Attr attr) {
 		final String key = '@' + attr.getLocalName();
@@ -162,7 +159,6 @@ public class SymbolTable {
      * the local name of an attribute, it should start with a '@' character.
      * 
      * @param name
-     * @return
      */
 	public synchronized short getSymbol(String name) {
 		if (name.length() == 0)
@@ -181,7 +177,6 @@ public class SymbolTable {
      * Returns a unique id for the specified namespace URI.
      * 
      * @param ns
-     * @return
      */
 	public synchronized short getNSSymbol(String ns) {
 		if (ns == null || ns.length() == 0) {
@@ -203,7 +198,6 @@ public class SymbolTable {
      * if the namespace is empty.
      * 
      * @param id
-     * @return
      */
 	public synchronized String getNamespace(short id) {
 		return id == 0 ? "" : (String) namespaces.get(id);
@@ -213,7 +207,6 @@ public class SymbolTable {
      * Returns true if the symbol table needs to be saved
      * to persistent storage.
      * 
-     * @return
      */
 	public synchronized boolean hasChanged() {
 		return changed;
@@ -224,7 +217,6 @@ public class SymbolTable {
      * null if the name is not known.
      * 
      * @param id
-     * @return
      */
 	public synchronized String getName(short id) {
 		return (String) names.get(id);
@@ -235,7 +227,6 @@ public class SymbolTable {
      * a default mapping.
      * 
      * @param prefix
-     * @return
      */
 	public synchronized String getDefaultNamespace(String prefix) {
 		if (defaultMappings.containsKey(prefix))
@@ -246,7 +237,6 @@ public class SymbolTable {
     /**
      * Returns a list of default prefixes registered.
      * 
-     * @return
      */
 	public synchronized String[] defaultPrefixList() {
 		String[] prefixes = new String[defaultMappings.size()];

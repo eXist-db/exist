@@ -175,7 +175,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
      * Returns the type of this resource, either  {@link #XML_FILE} or 
      * {@link #BINARY_FILE}.
      * 
-     * @return
      */
     public byte getResourceType() {
         return XML_FILE;
@@ -267,7 +266,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	 * Returns true if the document is currently locked for
 	 * write.
 	 * 
-	 * @return
 	 */
 	public boolean isLockedForWrite() {
 		return getUpdateLock().isLockedForWrite();
@@ -277,7 +275,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
      * Returns the update lock associated with this
      * resource.
      * 
-     * @return
      */     
     public final synchronized Lock getUpdateLock() {
         if(updateLock == null)
@@ -303,7 +300,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	 * As an estimation, the number of pages occupied by the document
 	 * is multiplied with the current page size.
 	 * 
-	 * @return
 	 */
 	public int getContentLength() {
             int length = getMetadata().getPageCount() * broker.getPageSize();

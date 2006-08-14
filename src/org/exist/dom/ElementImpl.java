@@ -120,7 +120,6 @@ public class ElementImpl extends NamedNode implements Element {
     /**
      * Reset this element to its initial state.
      *
-     * @see org.exist.dom.NodeImpl#clear()
      */
     public void clear() {
         super.clear();
@@ -608,7 +607,6 @@ public class ElementImpl extends NamedNode implements Element {
     }
 
     /**
-     * @see org.exist.dom.NodeImpl#firstChildID()
      */
     public long firstChildID() {
         if (getGID() == NodeProxy.UNKNOWN_NODE_GID)
@@ -688,7 +686,6 @@ public class ElementImpl extends NamedNode implements Element {
      * DOMException if yes. Otherwise, returns the last attribute in the attribute list.
      * 
      * @param attrs
-     * @return
      * @throws DOMException
      */
     private AttrImpl getLastAttribute() throws DOMException {
@@ -709,7 +706,6 @@ public class ElementImpl extends NamedNode implements Element {
      * in the current element.
      * 
      * @param attrs
-     * @return
      * @throws DOMException
      */
     private NodeList findDupAttributes(NodeList attrs) throws DOMException {
@@ -1006,7 +1002,6 @@ public class ElementImpl extends NamedNode implements Element {
     }
 
     /**
-     * @see org.exist.dom.NodeImpl#toString(boolean)
      */
     public String toString(boolean top) {
         return toString(top, new TreeSet());
