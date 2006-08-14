@@ -74,13 +74,18 @@ public class WebDAV {
     public final static int SC_MULTI_STATUS = 207;
     
     private final static Logger LOG = Logger.getLogger(WebDAV.class);
-    
+
+    private WebDAVMethodFactory factory;
     private int defaultAuthMethod;
     private Authenticator digestAuth;
     private Authenticator basicAuth;
     private BrokerPool pool;
     
     public WebDAV(int authenticationMethod, String id) throws ServletException {
+       this(authenticationMethod,id,WebDAVMethodFactory.getInstance());
+    }
+    public WebDAV(int authenticationMethod, String id,WebDAVMethodFactory factory) throws ServletException {
+       this.factory = factory;
         if (id != null && !"".equals(id)) this.databaseid=id;
         try {
             pool = BrokerPool.getInstance(this.databaseid);
@@ -130,7 +135,7 @@ public class WebDAV {
                 + "'; Lock-Token='" + request.getHeader("Lock-Token")
                 + "'; If='"+request.getHeader("If")+"'");
                 
-        WebDAVMethod method = WebDAVMethodFactory.create(request.getMethod(), pool);
+        WebDAVMethod method = factory.create(request.getMethod(), pool);
         if(method == null) {
             response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
                     "Method is not supported: " + request.getMethod());
