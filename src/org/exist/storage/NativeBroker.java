@@ -249,7 +249,6 @@ public class NativeBroker extends DBBroker {
         user = SecurityManager.SYSTEM_USER;            
         
         readOnly = pool.isReadOnly();
-        LOG.debug("READ: " + readOnly);
 		try {
 
             // Initialize DOM storage     
@@ -277,7 +276,6 @@ public class NativeBroker extends DBBroker {
 			
 			if (readOnly)
 				LOG.info("Database runs in read-only mode");
-            LOG.debug("READ: " + readOnly);
 
 		} catch (DBException e) {
 			LOG.debug(e.getMessage(), e);
