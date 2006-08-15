@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 
 <!-- ======================================================================= -->
 <!-- eXist build file : Build installer                                      -->
@@ -51,33 +51,39 @@
     <target depends="prepare-installer,commandline-installer"
             name="snapshot-installer" description="Create snapshot installer">
         <echo message="Calling IzPack to create installer ..."/>
-        <property name="inst-jar" value="installer/${project.name}-snapshot-${DSTAMP}.jar"/>
+        <property name="inst-jar" value="installer/${project.name}-${project.version}-rev${svn.revision}.jar"/>
 
         <property name="install-input" location="installer/install.xml"/>
-        <property name="install-output" location="installer/${project.name}-snapshot-${DSTAMP}.jar"/>
+        <property name="install-output" location="${inst-jar}"/>
         <property name="install-basedir" location="."/>
         <izpack input="${install-input}"
                 output="${install-output}"
                 basedir="${install-basedir}" izPackDir="${izpack.dir}"
                 installerType="standard"/>
-
-        <mkdir dir="installer/temp"/>
-        <tstamp/>
-        <unjar src="installer/${project.name}-snapshot-${DSTAMP}.jar"
-                dest="installer/temp"/>
-        <delete>
-            <fileset dir="installer/temp">
-                <include name="META-INF/EXIST.*"/>
+    
+    		<!-- remove traces of jar signing -->
+        <taskdef name="unsignjars" classname="nl.ow.dilemma.ant.jar.UnsignJarTask">
+		        <classpath refid="classpath.core"/>
+		    </taskdef>
+        <unsignjars>
+            <fileset dir=".">
+                <include name="${inst-jar}"/>
             </fileset>
-        </delete>
-        <delete file="installer/${project.name}-snapshot-${DSTAMP}.jar"/>
-        <jar destfile="installer/${project.name}-snapshot-${DSTAMP}.jar"
-                basedir="installer/temp" compress="yes" update="yes">
+        </unsignjars>
+        
+        <!-- add main-class to jar-manifest -->
+        <jar destfile="${inst-jar}"
+                compress="yes" update="yes">
             <manifest>
                 <attribute name="Main-Class" value="org.exist.izpack.CommandLineInstaller"/>
+                <attribute name="Project-Name" value="${project.name}"/>
+                <attribute name="Project-Version" value="${project.version}"/>
+                <attribute name="Project-Build" value="${DSTAMP}"/>
+                <attribute name="SVN-Revision" value="${svn.revision}"/>
+                <attribute name="SVN-Date" value="${svn.date}"/>
             </manifest>
         </jar>
-        <delete dir="installer/temp"/>
+
     </target>
 
     <target depends="prepare-installer" name="cvs-build">
