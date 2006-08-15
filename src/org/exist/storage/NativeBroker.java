@@ -570,6 +570,9 @@ public class NativeBroker extends DBBroker {
     }
 
     public Iterator getNodeIterator(StoredNode node) {
+       if (node==null) {
+          throw new IllegalArgumentException("The node parameter cannot be null.");
+       }
 //      domDb.setOwnerObject(this);
         try {
             return new NodeIterator(this, domDb, node, false);
