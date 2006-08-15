@@ -31,6 +31,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.journal.Journal;
 import org.exist.storage.recovery.RecoveryManager;
+import org.exist.util.ReadOnlyException;
 import org.exist.xmldb.XmldbURI;
 
 /**
@@ -73,6 +74,11 @@ public class TransactionManager {
             if (LOG.isDebugEnabled())
                 LOG.debug("GroupCommits = " + groupCommit);
         }
+    }
+    
+    public void initialize() throws EXistException, ReadOnlyException {
+        if (enabled)
+            journal.initialize();
     }
     
     public void setEnabled(boolean enabled) {

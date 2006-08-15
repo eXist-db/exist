@@ -28,13 +28,16 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.text.DateFormat;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.lock.FileLock;
 import org.exist.storage.txn.Checkpoint;
 import org.exist.storage.txn.TransactionException;
 import org.exist.util.Configuration;
+import org.exist.util.ReadOnlyException;
 import org.exist.util.sanity.SanityCheck;
 
 /**
@@ -71,6 +74,8 @@ public class Journal {
     public final static String LOG_FILE_SUFFIX = "log";
     public final static String BAK_FILE_SUFFIX = ".bak";
     
+    public final static String LCK_FILE = "journal.lck";
+    
     /** the length of the header of each entry: entryType + transactionId + length */
     public final static int LOG_ENTRY_HEADER_LEN = 11;
 	
@@ -100,6 +105,8 @@ public class Journal {
     
     /** the data directory where journal files are written to */
     private File dir;
+    
+    private FileLock fileLock;
     
     /** the current file number */
     private int currentFile = 0;
@@ -160,7 +167,6 @@ public class Journal {
                 throw new EXistException("Cannot write to journal output directory: " + f.getAbsolutePath());
             }
             this.dir = f;
-            
         }
         if (LOG.isDebugEnabled())
             LOG.debug("Using directory for the journal: " + dir.getAbsolutePath());
@@ -168,6 +174,20 @@ public class Journal {
         Integer sizeOpt = (Integer) pool.getConfiguration().getProperty("db-connection.recovery.size-limit");
         if (sizeOpt != null)
         	journalSizeLimit = sizeOpt.intValue() * 1024 * 1024;
+    }
+    
+    public void initialize() throws EXistException, ReadOnlyException {
+        File lck = new File(dir, LCK_FILE);
+        fileLock = new FileLock(pool, lck.getAbsolutePath());
+        boolean locked = fileLock.tryLock();
+        if (!locked) {
+            String lastHeartbeat =
+                DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM)
+                    .format(fileLock.getLastHeartbeat());
+            throw new EXistException("The journal log directory seems to be locked by another " +
+                    "eXist process. A lock file: " + lck.getAbsolutePath() + " is present in the " +
+                    "log directory. Last access to the lock file: " + lastHeartbeat);
+        }
     }
     
     /**
@@ -328,9 +348,6 @@ public class Journal {
                 FileOutputStream os = new FileOutputStream(file, true);
 				channel = os.getChannel();
 	            
-				if (channel.tryLock() == null)
-					throw new LogException("Failed to open journal file: " + file.getAbsolutePath() +
-							". It is locked by another process.");
 	            syncThread.setChannel(channel);
 			} catch (FileNotFoundException e) {
 				throw new LogException("Failed to open new journal: " + file.getAbsolutePath(), e);
@@ -414,6 +431,7 @@ public class Journal {
 			}
 			flushBuffer();
     	}
+        fileLock.release();
         syncThread.shutdown();
         try {
 			syncThread.join();
