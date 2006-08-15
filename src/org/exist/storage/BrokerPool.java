@@ -37,6 +37,7 @@ import org.exist.collections.CollectionConfigurationManager;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
+import org.exist.storage.lock.FileLock;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.ReentrantReadWriteLock;
 import org.exist.storage.sync.Sync;
@@ -45,6 +46,7 @@ import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
+import org.exist.util.ReadOnlyException;
 import org.exist.util.XMLReaderObjectFactory;
 import org.exist.util.XMLReaderPool;
 import org.exist.xmldb.ShutdownListener;
@@ -353,6 +355,8 @@ public class BrokerPool {
     //TODO : for now, this member is used for recovery management
     private boolean isReadOnly;    
 
+    private FileLock dataLock;
+    
     /**
      * The transaction manager of the database instance.
      */
@@ -540,7 +544,7 @@ public class BrokerPool {
 		
 		//TODO : since we need one :-( (see above)	
 		this.isReadOnly = !canReadDataDir(conf);
-
+		LOG.debug("isReadOnly: " + isReadOnly);
 		//Configuration is valid, save it
 		this.conf = conf;
 		
@@ -571,7 +575,8 @@ public class BrokerPool {
                 LOG.info("Cannot create data directory '" + dir.getAbsolutePath() + "'. Switching to read-only mode.");                
                 return false;
             }
-        }        
+        }
+        
     	//Save it for further use.
         //TODO : "data-dir" has sense for *native* brokers
     	conf.setProperty("db-connection.data-dir", dataDir);
@@ -579,8 +584,23 @@ public class BrokerPool {
             LOG.info("Cannot write to data directory: " + dir.getAbsolutePath() + ". Switching to read-only mode.");
             return false;
         }
+        
+    	// try to acquire lock on the data dir
+        dataLock = new FileLock(this, dir, "dbx_dir.lck");
+        
+        try {
+            boolean locked = dataLock.tryLock();
+            if (!locked) {
+                throw new EXistException("The database directory seems to be locked by another " +
+                        "database instance. Found a valid lock file: " + dataLock.getFile());
+            }
+        } catch (ReadOnlyException e) {
+            LOG.info(e.getMessage() + ". Switching to read-only mode!!!");
+            return false;
+        }
         return true;
-    }	
+    }
+    
     protected SecurityManager newSecurityManager() 
     {
        try {
@@ -621,7 +641,13 @@ public class BrokerPool {
         //REFACTOR : construct then... configure
         //TODO : journal directory *may* be different from "db-connection.data-dir"
         transactionManager = new TransactionManager(this, new File((String) conf.getProperty("db-connection.data-dir")), isTransactional());		
-
+        try {
+            transactionManager.initialize();
+        } catch (ReadOnlyException e) {
+            LOG.warn(e.getMessage() + ". Switching to read-only mode!!!");
+            isReadOnly = true;
+        }
+        
         //TODO : replace the following code by get()/release() statements ?
         // WM: I would rather tend to keep this broker reserved as a system broker.
         // create a first broker to initialize the security manager
@@ -814,8 +840,12 @@ public class BrokerPool {
     public boolean isTransactional() {
     	//TODO : confusion between dataDir and a so-called "journalDir" !
         return !isReadOnly && transactionsEnabled;
-    }	
+    }
 	
+    public boolean isReadOnly() {
+        return isReadOnly;
+    }
+    
     public TransactionManager getTransactionManager() {
         return this.transactionManager;
     }	
@@ -1233,6 +1263,10 @@ public class BrokerPool {
 		//Clear the living instances container
 		instances.remove(instanceName);
 		
+        if (!isReadOnly)
+            // release the lock on the data directory
+            dataLock.release();
+        
 		LOG.info("shutdown complete !");
 		
 		//Last instance closes the house...
