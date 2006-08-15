@@ -40,11 +40,15 @@ import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.ElementImpl;
+import org.exist.dom.NodeIndexListener;
 import org.exist.dom.NodeListImpl;
+import org.exist.dom.StoredNode;
 import org.exist.http.BadRequestException;
 import org.exist.http.NotFoundException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
+import org.exist.storage.NativeBroker;
+import org.exist.storage.StorageAddress;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -72,6 +76,22 @@ public class AtomProtocol extends AtomFeeds implements Atom {
    protected final static Logger LOG = Logger.getLogger(AtomProtocol.class);
    public static final String FEED_DOCUMENT_NAME = ".feed.atom";
    public static final XmldbURI FEED_DOCUMENT_URI = XmldbURI.create(FEED_DOCUMENT_NAME);
+   
+   final static class NodeListener implements NodeIndexListener {
+      
+      StoredNode node;
+      
+      public NodeListener(StoredNode node) {
+         this.node = node;
+      }
+      
+      public void nodeChanged(StoredNode newNode) {
+         final long address = newNode.getInternalAddress();
+         if (StorageAddress.equals(node.getInternalAddress(), address)) {
+            node = newNode;
+         }
+      }
+   }
    
    class FindEntry implements NodeHandler {
       String id;
@@ -447,7 +467,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                ElementImpl feedRoot = (ElementImpl)feedDoc.getDocumentElement();
                
                // Modify the feed by merging the new feed-level elements
-               mergeFeed(transaction,feedRoot,root,DateFormatter.toXSDDateTime(new Date()));
+               mergeFeed(broker,transaction,feedRoot,root,DateFormatter.toXSDDateTime(new Date()));
                
                // Store the feed
                broker.storeXMLResource(transaction, feedDoc);
@@ -456,6 +476,9 @@ public class AtomProtocol extends AtomFeeds implements Atom {
             } catch (LockException ex) {
                transact.abort(transaction);
                throw new EXistException("Cannot acquire write lock.",ex);
+            } catch (RuntimeException ex) {
+               transact.abort(transaction);
+               throw ex;
             } finally {
                if (feedDoc!=null) {
                   feedDoc.getUpdateLock().release(Lock.WRITE_LOCK);
@@ -729,13 +752,13 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                   }
                }
                DOMDB.appendChild(transaction,target,child);
-               DOMDB.appendChild(transaction,target,ownerDocument.createTextNode("\n"));
             }
          }
       });
    }
    
-   public void mergeFeed(final Txn transaction,final ElementImpl target,Element source,final String updated) {
+   public void mergeFeed(final DBBroker broker,final Txn transaction,final ElementImpl target,Element source,final String updated) {
+      final DocumentImpl ownerDocument = (DocumentImpl)target.getOwnerDocument();
       final List toRemove = new ArrayList();
       DOM.forEachChild(target,new NodeHandler() {
          public void process(Node parent, Node child) {
@@ -770,9 +793,13 @@ public class AtomProtocol extends AtomFeeds implements Atom {
          Node child = (Node)childrenToRemove.next();
          target.removeChild(transaction,child);
       }
-      final Document ownerDocument = target.getOwnerDocument();
       NodeList nl = source.getChildNodes();
-      Element firstEntry = DOM.findChild(target,Atom.NAMESPACE_STRING,"entry");
+      NodeListener firstEntry = null;
+      Element theFirstEntry = DOM.findChild(target,Atom.NAMESPACE_STRING,"entry");
+      if (theFirstEntry!=null) {
+         firstEntry = new NodeListener((StoredNode)theFirstEntry);
+         ownerDocument.getMetadata().setIndexListener(firstEntry);
+      }
       for (int i=0; i<nl.getLength(); i++) {
          Node child = nl.item(i);
          if (child.getNodeType()==Node.ELEMENT_NODE) {
@@ -796,15 +823,13 @@ public class AtomProtocol extends AtomFeeds implements Atom {
             }
             if (firstEntry==null) {
                DOMDB.appendChild(transaction,target,child);
-               DOMDB.appendChild(transaction,target,ownerDocument.createTextNode("\n"));
             } else {
-               DOMDB.insertBefore(transaction,target,child,firstEntry);
-               DOMDB.insertBefore(transaction,target,ownerDocument.createTextNode("\n"),firstEntry);
-               // TODO: this is a total hack.  Somehow, the insertion order is wrong due to firstEntry changing position
-               firstEntry = DOM.findChild(target,Atom.NAMESPACE_STRING,"entry");
+               DOMDB.insertBefore(transaction,target,child,firstEntry.node);
             }
          }
       }
+      ownerDocument.getMetadata().clearIndexListener();
+      ownerDocument.getMetadata().setLastModified(System.currentTimeMillis());
    }
    
    protected Element findLink(Element parent,String rel) {
