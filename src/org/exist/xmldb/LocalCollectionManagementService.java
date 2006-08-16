@@ -214,6 +214,8 @@ public class LocalCollectionManagementService implements CollectionManagementSer
                 transact.abort(transaction);
                 throw new XMLDBException(ErrorCodes.NO_SUCH_COLLECTION, "Collection " + destinationPath + " not found");
             }
+            if (newName == null)
+                newName = collectionPath.lastSegment();
             broker.moveCollection(transaction, collection, destination, newName);
             transact.commit(transaction);
         } catch ( EXistException e ) {
