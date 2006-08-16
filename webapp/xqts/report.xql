@@ -1,5 +1,7 @@
 xquery version "1.0";
 
+declare option exist:output-size-limit "-1";
+
 import module namespace util="http://exist-db.org/xquery/util";
 import module namespace request="http://exist-db.org/xquery/request";
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
