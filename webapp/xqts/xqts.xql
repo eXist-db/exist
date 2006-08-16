@@ -263,11 +263,14 @@ declare function xqts:run-test-group($group as element(catalog:test-group)) as e
     (: Create the collection hierarchy for this group and get the results.xml doc to 
         append to. :)
     let $resultsDoc := xqts:create-collections($group)
-    let $tests := $group/catalog:test-case[
+    let $tests := $group/catalog:test-case
+(:
+[
     	not(starts-with(@name, 'Constr-inscope-10')) and 
     	not(starts-with(@name, 'Constr-inscope-12')) and 
     	not(starts-with(@name, 'Constr-namespace-22'))
-    	] 
+] 
+:)
     return (
         (: Execute the test cases :)
         for $test in $tests
