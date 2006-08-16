@@ -207,6 +207,8 @@ public class RESTServer {
     public void doGet(DBBroker broker, HttpServletRequest request, HttpServletResponse response, String path)
     throws BadRequestException, PermissionDeniedException,
             NotFoundException, IOException {
+    	
+    	//if required, set character encoding
     	if (request.getCharacterEncoding() == null)
 			request.setCharacterEncoding(formEncoding);
     	
@@ -469,6 +471,10 @@ public class RESTServer {
      */
     public void doPost(DBBroker broker, HttpServletRequest request, HttpServletResponse response, String path) throws BadRequestException, PermissionDeniedException, IOException
     {	
+    	//if required, set character encoding
+    	if (request.getCharacterEncoding() == null)
+			request.setCharacterEncoding(formEncoding);
+    
         Properties outputProperties = new Properties(defaultProperties);
         XmldbURI pathUri = XmldbURI.create(path);
         DocumentImpl resource = null;
