@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
     <!-- A file system path pointing to the base directory where you unzipped XQTS. -->
-    <basedir>d:/Data/XQTS/</basedir>
+    <basedir>d:/Data/XQTS_0_9_4/</basedir>
 </config>
