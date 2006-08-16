@@ -1,5 +1,5 @@
 @import url(tree.css);
-@import url(xml2html.css);
+@import url(container.css);
 
 body {
     font-family: Verdana, Arial, Helvetica, sans-serif;
@@ -16,7 +16,7 @@ a {
 
 #header {
     padding: 10px 0 5px 10px;
-    border-bottom: 1px solid blue;
+    border-bottom: 1px solid #1849B5;
     font-size: 75%;
 }
 
@@ -44,58 +44,66 @@ a {
 }
 
 #content {
+	position: relative;
     margin: 5px 20px 0 20px;
     font-size: 80%;
 }
 
 #messages {
+	position: absolute;
+	bottom: 2em;
+	right: 2em;
     height: 1.5em;
-    color:blue;
+    color: white;
+	background-color: #C61800;
 }
 
 #panel-left {
-    float: left;
-    background-color: rgb(248,252,255);
-    border: 1px solid rgb(78, 139, 214);
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    height: 49%;
+    background-color: #ffffff;
+    border: 1px solid #1849B5;
+    width: 40%;
 }
 
 #panel-left h1 {
     font-size: 100%;
     color: white;
-    background-color:  rgb(78, 139, 214);
+    background-color:  #1849B5;
     padding: 5px 0 5px 10px;
 }
 
 #navtree {
     overflow: auto;
-    width: 300px;
-    height: 416px;
     padding: 5px 2px 5px 2px;
 }
 
 #panel-right {
-    float: right;
-    height: 100%;
+	position: absolute;
+	top: 5px;
+	right: 5px;
+	width: 58%;
+	height: 49%;
 }
 
 #testcases {
-    overflow: auto;
-    border: 1px solid rgb(255, 138, 0);
-    height: 160px;
+    border: 1px solid #FFCF00;
 }
 
 #group-details {
 }
 
 #group-details .group-heading {
-    background-color: #FFE;
+    background-color: #FFCF00;
     padding: 6px 5px;
-    border-bottom: 1px solid rgb(255, 138, 0);
+    border-bottom: 1px solid #FFCF00;
 }
 
 .group-heading h1 {
     font-size: 100%;
-    color: rgb(255, 138, 0);
+    color: black;
 }
 
 .group-heading h2 {
@@ -106,52 +114,67 @@ a {
 
 .group-heading button {
     float: right;
-    border: 1px solid rgb(255, 138, 0);
-    background-color: white;
+    border: 1px solid #666666;
+    background-color: #EEEEEE;
+	color: #666666;
     font-size: 100%;
 }
 
-.tests {
+#tests {
+    overflow: auto;
+}
+
+#tests table {
     width: 99%;
 }
 
-.tests td {
+#tests td {
     padding-top: 3px;
     font-size: 75%;
 }
 
-.tests .even {
-    background-color: rgb(240,240,240);
+#tests .even {
+    background-color: #F5F5F5;
 }
 
-.tests .fail {
-    background-color: rgb(223, 0, 30);
-    color: rgb(255, 191, 194);
+#tests .fail {
+    background-color: #C61800;
+    color: #FFFFFF;
     text-align: center;
 }
 
-.tests .pass {
-    background-color: rgb(195,247,195);
-    color: rgb(14,158, 14);
+#tests .pass {
+    background-color: #109618;
+    color: #FFFFFF;
     text-align: center;
 }
 
 #details {
-    margin-top: 10px;
-    border: 1px solid rgb(78, 139, 214);
+    position: absolute;
+    top: 52%;
+    height: 46%;
+    left: 5px;
+    right: 5px;
+	bottom: 10px;
+    border: 1px solid #A5BDF3;
+}
+
+#details-content {
     overflow: auto;
+    clear: both;
 }
 
 #tabs {
     float: left;
-    width: 100%;
-    background: RGB(224,232,240);
+	width: 100%;
+    background: #F5F5F5;
     font-size: 75%;
-    border-bottom: 1px solid #BCD2E6;
+    border-bottom: 1px solid #A5BDF3;
     margin-bottom: 5px;
 }
 
 #tabs ul {
+    float: left;
     margin: 0;
     padding:10px 5px 0 5px;
     list-style:none;
@@ -196,7 +219,6 @@ a {
 
 #test-details {
     font-size: 100%;
-    padding: 5px;
 }
 
 #summary {
@@ -224,50 +246,102 @@ a {
     font-weight: bold;
 }
 
-#progress-dialog {
-    border: 1px solid black;
-    background-color: white;
-    font-size: 75%;
-}
-
-#progress-title {
-    background-color: rgb(78, 139, 214);
-    font-size: 100%;
-    color: white;
-    padding: 5px 0 5px 10px;
-    border-bottom: 1px solid black;
-}
-
 #progress-inner {
-    padding: 10px 10px 10px 10px;
-    width: 300px;
-    vertical-align: middle;
+	position: relative;
+	height: 200px;
     font-size: 100%;
+}
+
+#progress-inner h1 {
+	font-size: 100%;
+	text-align: center;
+	margin: 5px 0;
+	padding: 0;
 }
 
 #progress-inner table {
+	position: relative;
+	left: 25%;
+	right: 25%;
+	width: 50%;
     font-size: 100%;
-    width: 100%;
-    border: 1px solid black;
-    padding: 20px 5px;
-    background-color: rgb(248, 252, 255);
+    padding: 10px 5px;
 }
 
 #progress-inner td {
-    width: 50%;
-    text-align: left;
+    width: 30%;
+    text-align: center;
 }
 
 #progress-passed {
-    background-color: rgb(195,247,195);
-    color: rgb(14,158, 14);
+    background-color: #109618;
+    color: white;
     text-align: center;
     font-size: 160%;
 }
 
 #progress-failed {
-    background-color: rgb(223, 0, 30);
-    color: rgb(255, 191, 194);
+    background-color: #C61800;
+    color: white;
     text-align: center;
     font-size: 160%;
+}
+
+#progress-dismiss {
+	position: absolute;
+	bottom: 0px;
+	left: 10px;
+}
+
+#dhtmlgoodies_progressPane {
+	position: absolute;
+	width: 100%;
+	top: 70%;
+	margin-bottom: 10px;
+}
+
+#dhtmlgoodies_progressBar_bg{
+	position:absolute;
+	left: 50%;
+	top: 70%;
+	width:300px;
+	height:20px;
+	border:1px solid #000;
+	background-color:#EEE;
+	margin-left:-150px;	
+	margin-top:-20px;
+	text-align:center;
+}
+
+#dhtmlgoodies_progressBar_outer{
+	position:absolute;
+	left:0px;
+	top:0px;
+	width:0px;	
+	height:100%;
+	overflow:hidden;	
+}
+	
+#dhtmlgoodies_progressBar{
+	position:absolute;
+	left:0px;
+	top:0px;
+	width:300px;
+	background-color:#184EB8;
+	filter: Alpha(Opacity=0, FinishOpacity=100,Style=1,StartX=0, StartY=0, FinishX=200,FinishY=20) ;
+	height:100%;
+	z-index:5000;
+}
+
+#dhtmlgoodies_progressBar_txt{
+	color:#000;
+	z-index:10000;
+	width:100%;
+	height:100%;
+	left:0px;
+	top:0px;
+	position:absolute;		
+	font-family:arial;
+	font-size:0.8em;
+	line-height:20px;	/* Same as height of progress bar */
 }

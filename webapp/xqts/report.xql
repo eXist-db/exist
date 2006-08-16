@@ -63,9 +63,10 @@ declare function xqts:get-query($case as element(catalog:test-case)) {
    let $path := concat( xqts:path-to-uri($xqts:XQTS_HOME), "Queries/XQuery/", 
        $case/@FilePath, $query-name, ".xq" )
    let $xq-string := util:file-read($path)
-   let $tokenized := tokenize($xq-string, "\n")
+   return $xq-string
+   (: let $tokenized := tokenize($xq-string, "\n")
    for $token in $tokenized return
-       ($token, <br/>)
+       ($token, <br/>) :)
 };
 
 declare function xqts:display-page() as element() {
@@ -75,10 +76,16 @@ declare function xqts:display-page() as element() {
             <title>XQuery Test Suite - Test Reports</title>
             <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
             <link type="text/css" href="styles/report.css" rel="stylesheet"/>
-            <script language="Javascript" type="text/javascript" src="scripts/prototype.js"/>
-            <script language="Javascript" type="text/javascript" src="scripts/behaviour.js"/>
-            <script language="Javascript" type="text/javascript" src="scripts/YAHOO.js"/>
+			<link type="text/css" href="styles/SyntaxHighlighter.css" rel="stylesheet"/>
+			<script language="Javascript" type="text/javascript" src="scripts/shCore.js"/>
+			<script language="Javascript" type="text/javascript" src="scripts/shBrushXml.js"/>
+			<script language="Javascript" type="text/javascript" src="scripts/shBrushXQuery.js"/>
+            <script language="Javascript" type="text/javascript" src="scripts/yahoo.js"/>
             <script language="Javascript" type="text/javascript" src="scripts/treeview.js"/>
+			<script language="Javascript" type="text/javascript" src="scripts/dom.js"/>
+			<script language="Javascript" type="text/javascript" src="scripts/event.js"/>
+			<script language="Javascript" type="text/javascript" src="scripts/connection.js"/>
+			<script language="Javascript" type="text/javascript" src="scripts/container.js"/>
             <script language="Javascript" type="text/javascript" src="scripts/report.js"/>
         </head>
         <body>
@@ -100,18 +107,26 @@ declare function xqts:display-page() as element() {
                     <div id="navtree"></div>
                 </div>
                 <div id="panel-right">
-                    <div id="testcases"></div>
-                    <div id="details">
-                        <div id="tabs">
-                            <ul>
-                                <li><a href="#" id="summary-link"><span>Summary</span></a></li>
-                                <li><a href="#" id="query-link"><span>Query</span></a></li>
-                                <li><a href="#" id="testresult-link"><span>Test Result</span></a></li>
-                                <li><a href="#" id="testdef-link"><span>Test Definition</span></a></li>
-                            </ul>
+                    <div id="testcases">
+                        <div id="group-details">
+                            <div class="group-heading">
+                                <h1>Test Cases</h1>
+                                <h2>Select a test group to view its test cases</h2>
+                            </div>
+                            <div id="tests"></div>
                         </div>
-                        <div id="details-content"></div>
                     </div>
+                </div>
+                <div id="details">
+                    <div id="tabs">
+                        <ul>
+                            <li><a href="#" id="tab-summary" class="tab"><span>Summary</span></a></li>
+                            <li><a href="#" id="tab-query" class="tab"><span>Query</span></a></li>
+                            <li><a href="#" id="tab-testresult" class="tab"><span>Test Result</span></a></li>
+                            <li><a href="#" id="tab-testdef" class="tab"><span>Test Definition</span></a></li>
+                        </ul>
+                    </div>
+                    <div id="details-content"></div>
                 </div>
             </div>
         </body>
@@ -129,18 +144,20 @@ declare function xqts:print-tests($collection as xs:string, $name as xs:string) 
                 <h1>{$info/catalog:title/text()}</h1>
                 <h2>{$info/catalog:description/text()}</h2>
             </div>
-            <table class="tests">
-            {
-                for $case at $pos in xcollection($collection)//test-case
-                let $result := $case/@result
-                let $name := string($case/@name)
-                return
-                    <tr class="{if ($pos mod 2 = 0) then 'even' else ''}">
-                        <td><a href="#" onclick="details('{$name}')">{$name}</a></td>
-                        <td class="{$result}">{string($result)}</td>
-                    </tr>
-            }
-            </table>
+			<div id="tests">
+				<table>
+				{
+					for $case at $pos in collection($collection)//test-case
+					let $result := $case/@result
+					let $name := string($case/@name)
+					return
+						<tr class="{if ($pos mod 2 = 0) then 'even' else ''}">
+							<td><a href="#" onclick="details('{$name}')">{$name}</a></td>
+							<td class="{$result}">{string($result)}</td>
+						</tr>
+				}
+				</table>
+			</div>
         </div>
 };
 
@@ -199,17 +216,17 @@ declare function xqts:details($testName as xs:string) {
                 </tr>
             </table>
             <div id="testdef" style="display: none">
-            {
-                transform:transform($case, doc($xqts:XML_HIGHLIGHT_STYLE), ())
-            }
+                	<textarea name="code" class="xml">{ $case }</textarea>
             </div>
             <div id="query" style="display: none">
-                {xqts:get-query($case)}
+				<textarea name="code" class="xquery">
+					{xqts:get-query($case)}
+				</textarea>
             </div>
             <div id="testresult" style="display: none">
-            {
-                transform:transform($result, doc($xqts:XML_HIGHLIGHT_STYLE), ())
-            }
+				<textarea name="code" class="xml">
+				{ $result }
+				</textarea>
             </div>
         </div>
 };
