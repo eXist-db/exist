@@ -117,7 +117,7 @@ as object {
 declare function xqts:get-query($case as element(catalog:test-case)) {
    let $query-name := $case//catalog:query/@name
    let $path := concat( $xqts:XQTS_HOME, "Queries/XQuery/", $case/@FilePath, $query-name, ".xq" )
-   let $xq-string := util:file-read($path)
+   let $xq-string := util:file-read($path, "UTF-8")
    return $xq-string
 };
 
@@ -157,7 +157,7 @@ declare function xqts:check-output($query as xs:string, $result as item()*, $cas
         (: Comparison method: "Text" :)
         else if ($output/@compare eq "Text") then
             let $text := util:file-read(concat($xqts:XQTS_HOME, "ExpectedTestResults/", $case/@FilePath,
-                "/", $output/text()))
+                "/", $output/text()), "UTF-8")
             let $test := xqts:normalize-text($text) eq xqts:normalize-text($result)
             return
                 xqts:print-result($case/@name, $test, $query, $result, $text, $case)
@@ -180,7 +180,7 @@ declare function xqts:check-output($query as xs:string, $result as item()*, $cas
         else if ($output/@compare eq "Fragment") then
             util:catch("java.lang.Exception",
                 let $filePath := concat($xqts:XQTS_HOME, "ExpectedTestResults/", $case/@FilePath, $output/text())
-                let $expectedFrag := util:file-read($filePath)
+                let $expectedFrag := util:file-read($filePath, "UTF-8")
                 let $xmlFrag := concat("<f>", $expectedFrag, "</f>")
                 let $log := util:log("DEBUG", ("Frag stored: ", $xmlFrag))
                 let $expected := doc(xdb:store("/db", "temp.xml", $xmlFrag, "text/xml")) 
@@ -197,7 +197,7 @@ declare function xqts:check-output($query as xs:string, $result as item()*, $cas
         (: A text compare is sufficient in many test cases :)
         else if ($output/@compare eq "Inspect") then
             let $text := util:file-read(concat($xqts:XQTS_HOME, "ExpectedTestResults/", $case/@FilePath,
-                "/", $output/text()))
+                "/", $output/text()), "UTF-8")
             let $test := xqts:normalize-text($text) eq xqts:normalize-text($result)
             return
                 xqts:print-result($case/@name, $test, $query, $result, $text, $case)
