@@ -13,12 +13,12 @@ var PROGRESS_DIALOG =
 	'				<td id="progress-failed">0</td>' +
 	'			</tr>' +
 	'		</table>' +
-	'		<div id="dhtmlgoodies_progressPane">' +
-	'			<div id="dhtmlgoodies_progressBar_bg">' +
-	'				<div id="dhtmlgoodies_progressBar_outer">' +
-	'					<div id="dhtmlgoodies_progressBar"></div>' +
+	'		<div id="progressPane">' +
+	'			<div id="progressBar_bg">' +
+	'				<div id="progressBar_outer">' +
+	'					<div id="progressBar"></div>' +
 	'				</div>' +
-	'				<div id="dhtmlgoodies_progressBar_txt">0 %</div>' +
+	'				<div id="progressBar_txt">0 %</div>' +
 	'			</div>' +
 	'		</div>' +
 	'		<button type="button" id="progress-dismiss">Close</button>' +
@@ -26,11 +26,10 @@ var PROGRESS_DIALOG =
 			
 var timer = null;
 var progress = null;
-var progressbar_steps = 0;	// Total number of progress bar steps.
+var progressBar = null;
 var currentCollection = null;
 var currentGroup = null;
 var treeWidget = null;
-
 
 function init() {
 	resize();
@@ -156,9 +155,9 @@ function runTest(collection, group) {
 		progress.render(document.body);
 		
 		document.getElementById('progress-dismiss').disabled = true;
-//		YAHOO.util.Dom.setStyle('progress-dismiss', 'visibility', 'hidden');
 		YAHOO.util.Event.addListener('progress-dismiss', 'click', 
 			function (ev, progress) {
+				progressBar = null;
 				progress.hide();
 				progress.destroy();
 			}, progress
@@ -184,11 +183,10 @@ function testCompleted(request) {
 	displayTree();
 	loadTests(currentCollection, currentGroup);
 	clearMessages();
-	moveProgressBar();
-	progressbar_steps = false;
 	if (progress) {
 		document.getElementById('progress-dismiss').disabled = false;
-//		YAHOO.util.Dom.setStyle('progress-dismiss', 'visibility', 'visible');
+		progressBar.finish();
+		progressBar = null;
 	}
 }
 
@@ -213,10 +211,10 @@ function displayProgress(request) {
 	document.getElementById('progress-passed').innerHTML = passed;
 	document.getElementById('progress-failed').innerHTML = failed;
 	
-	if (progressbar_steps == 0) {
-		progressbar_steps = total;
+	if (progressBar == null) {
+		progressBar = new ProgressBar(total);
 	}
-	moveProgressBar(done);
+	progressBar.move(done);
 	
 	if (timer)
 		timer = setTimeout('reportProgress()', 1000);
@@ -262,31 +260,22 @@ function clearMessages() {
 	document.getElementById('messages').innerHTML = '';
 }
 
+ProgressBar = function (max) {
+	this.progressbar_steps = max;
+}
 
-	
-/* Don't change any of these variables */
-var dhtmlgoodies_progressPane = false;
-var dhtmlgoodies_progressBar_bg = false;
-var dhtmlgoodies_progressBar_outer = false;
-var dhtmlgoodies_progressBar_txt = false;
-var progressbarWidth;
+ProgressBar.prototype.move = function (steps) {
+	var progressBar_bg = document.getElementById('progressBar_bg');
+	var progressbarWidth = progressBar_bg.clientWidth;
+	var width = Math.ceil(progressbarWidth * (steps / this.progressbar_steps));
+	YAHOO.util.Dom.setStyle('progressBar_outer', 'width', width + 'px');
+	var percent = Math.ceil((steps / this.progressbar_steps)*100);
+	document.getElementById('progressBar_txt').innerHTML = percent + '%';
+}
 
-function moveProgressBar(steps){
-	if(!dhtmlgoodies_progressBar_bg){
-		dhtmlgoodies_progressPane = document.getElementById('dhtmlgoodies_progressPane');
-		dhtmlgoodies_progressBar_bg = document.getElementById('dhtmlgoodies_progressBar_bg');
-		dhtmlgoodies_progressBar_outer = document.getElementById('dhtmlgoodies_progressBar_outer');
-		dhtmlgoodies_progressBar_txt = document.getElementById('dhtmlgoodies_progressBar_txt');
-		progressbarWidth = dhtmlgoodies_progressBar_bg.clientWidth;
-	}
-	if(!steps){
-		dhtmlgoodies_progressBar_outer.style.width = progressbarWidth + 'px';
-		dhtmlgoodies_progressBar_txt.innerHTML = '100%';
-		setTimeout('document.getElementById("dhtmlgoodies_progressPane").style.display="none"',50);
-	} else {
-		var width = Math.ceil(progressbarWidth * (steps / progressbar_steps));
-		dhtmlgoodies_progressBar_outer.style.width = width + 'px';
-		var percent = Math.ceil((steps / progressbar_steps)*100);
-		dhtmlgoodies_progressBar_txt.innerHTML = percent + '%';
-	}
+ProgressBar.prototype.finish = function () {
+	var progressBar_bg = document.getElementById('progressBar_bg');
+	var progressbarWidth = progressBar_bg.clientWidth;
+	YAHOO.util.Dom.setStyle('progressBar_outer', 'width', progressbarWidth + 'px');
+	document.getElementById('progressBar_txt').innerHTML = '100%';
 }

@@ -293,14 +293,14 @@ a {
 	left: 10px;
 }
 
-#dhtmlgoodies_progressPane {
+#progressPane {
 	position: absolute;
 	width: 100%;
 	top: 70%;
 	margin-bottom: 10px;
 }
 
-#dhtmlgoodies_progressBar_bg{
+#progressBar_bg{
 	position:absolute;
 	left: 50%;
 	top: 70%;
@@ -313,7 +313,7 @@ a {
 	text-align:center;
 }
 
-#dhtmlgoodies_progressBar_outer{
+#progressBar_outer{
 	position:absolute;
 	left:0px;
 	top:0px;
@@ -322,7 +322,7 @@ a {
 	overflow:hidden;	
 }
 	
-#dhtmlgoodies_progressBar{
+#progressBar{
 	position:absolute;
 	left:0px;
 	top:0px;
@@ -333,7 +333,7 @@ a {
 	z-index:5000;
 }
 
-#dhtmlgoodies_progressBar_txt{
+#progressBar_txt{
 	color:#000;
 	z-index:10000;
 	width:100%;
