@@ -1,5 +1,15 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <config>
-    <!-- A file system path pointing to the base directory where you unzipped XQTS. -->
-    <basedir>d:/Data/XQTS_0_9_4/</basedir>
+    <!-- 
+    		A file system path pointing to the base directory where you 
+    		unzipped XQTS.
+    		
+    		Note:
+    		- basedir must end with a '/'.
+    		- please use '/' on wind32 too.
+    		- eXist 1.0 can execute upto XQTS revision 0_9_0.
+    		- eXist 1.1 can execute all XQTS versions.
+    		
+   	-->
+    <basedir>d:/Data/XQTS_0_9_0/</basedir>
 </config>
