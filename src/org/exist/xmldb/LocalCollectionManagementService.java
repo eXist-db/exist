@@ -184,7 +184,7 @@ public class LocalCollectionManagementService implements CollectionManagementSer
     public void move(String collectionPath, String destinationPath,
             String newName) throws XMLDBException {
     	try{
-    		move(XmldbURI.xmldbUriFor(collectionPath), XmldbURI.xmldbUriFor(destinationPath),XmldbURI.xmldbUriFor(newName));
+    		move(XmldbURI.xmldbUriFor(collectionPath), XmldbURI.xmldbUriFor(destinationPath),newName==null?null:XmldbURI.xmldbUriFor(newName));
     	} catch(URISyntaxException e) {
     		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
     	}
@@ -243,7 +243,7 @@ public class LocalCollectionManagementService implements CollectionManagementSer
     public void moveResource(String resourcePath, String destinationPath,
             String newName) throws XMLDBException {
     	try{
-    		moveResource(XmldbURI.xmldbUriFor(resourcePath), XmldbURI.xmldbUriFor(destinationPath),XmldbURI.xmldbUriFor(newName));
+    		moveResource(XmldbURI.xmldbUriFor(resourcePath), XmldbURI.xmldbUriFor(destinationPath),newName==null?null:XmldbURI.xmldbUriFor(newName));
     	} catch(URISyntaxException e) {
     		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
     	}
@@ -278,7 +278,8 @@ public class LocalCollectionManagementService implements CollectionManagementSer
                 transact.abort(transaction);
                 throw new XMLDBException(ErrorCodes.NO_SUCH_COLLECTION, "Collection " + destinationPath + " not found");
             }
-            
+            if (newName == null)
+                newName = resourcePath.lastSegment();
             broker.moveXMLResource(transaction, doc, destination, newName);
             transact.commit(transaction);
         } catch ( EXistException e ) {
