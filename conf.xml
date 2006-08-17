@@ -379,8 +379,9 @@
             Set the parameter to "yes" to disable this feature.
 
     -->
-    <serializer add-exist-id="none" enable-xinclude="yes" enable-xsl="no"
-        indent="yes" match-tagging-attributes="no" match-tagging-elements="yes" />
+    <serializer add-exist-id="none" compress-output="no" enable-xinclude="yes" 
+    		enable-xsl="no" indent="yes" match-tagging-attributes="no" 
+    		match-tagging-elements="yes" />
 
 	<!--
         Default settings for the XSLT Transformer. Allow's for a choice of 
