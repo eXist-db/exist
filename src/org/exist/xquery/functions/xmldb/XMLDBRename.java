@@ -19,7 +19,6 @@
  *  
  *  $Id: XMLDBRemove.java 3309 2006-04-26 14:02:17Z chrisgeorg $
  */
-
 package org.exist.xquery.functions.xmldb;
 
 import org.exist.dom.QName;
@@ -40,12 +39,12 @@ import org.xmldb.api.base.XMLDBException;
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  *
  */
-public class XMLDBMove extends XMLDBAbstractCollectionManipulator {
+public class XMLDBRename extends XMLDBAbstractCollectionManipulator {
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
-			new QName("move", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-				"Move a collection $a. The collection can be specified either as " +
+			new QName("rename", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+				"Rename a collection $a. The collection can be specified either as " +
 				"a simple collection path, an XMLDB URI or a collection object.",
 				new SequenceType[] {
 						new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
@@ -53,8 +52,8 @@ public class XMLDBMove extends XMLDBAbstractCollectionManipulator {
                        new SequenceType(Type.ITEM, Cardinality.EMPTY)
 		),
 		new FunctionSignature(
-			new QName("move", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			"Move a resource from the collection specified in $a to collection in $b. " +
+			new QName("rename", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+			"Rename a resource $b in the collection specified in $a with name in $c. " +
             "The collection can be either specified as a simple collection path, " +
             "an XMLDB URI or a collection object.",
 			new SequenceType[] {
@@ -65,7 +64,7 @@ public class XMLDBMove extends XMLDBAbstractCollectionManipulator {
 		)
 	};
 	
-	public XMLDBMove(XQueryContext context, FunctionSignature signature) {
+	public XMLDBRename(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 	
@@ -73,26 +72,27 @@ public class XMLDBMove extends XMLDBAbstractCollectionManipulator {
 	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
 	 */
 	public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence) throws XPathException {
-        String destination = new AnyURIValue(args[1].itemAt(0).getStringValue()).toXmldbURI().toString();
 		if(getSignature().getArgumentCount() == 3) {
-			String doc = new AnyURIValue(args[2].itemAt(0).getStringValue()).toXmldbURI().toString();
+			String doc = new AnyURIValue(args[1].itemAt(0).getStringValue()).toXmldbURI().toString();
 			try {
 				Resource resource = collection.getResource(doc);
 				if (resource == null)
 					throw new XPathException(getASTNode(), "Resource " + doc + " not found");
-				CollectionManagementServiceImpl service = (CollectionManagementServiceImpl)
+               String newName = args[2].itemAt(0).getStringValue();
+			   CollectionManagementServiceImpl service = (CollectionManagementServiceImpl)
 					collection.getService("CollectionManagementService", "1.0");
-				service.moveResource(doc,destination,null);
+				service.moveResource(doc,null,newName);
 			} catch (XMLDBException e) {
 				throw new XPathException(getASTNode(), "XMLDB exception caught: " + e.getMessage(), e);
 			}
 		} else {
 			try {
+                String newName = args[1].itemAt(0).getStringValue();
 				CollectionManagementServiceImpl service = (CollectionManagementServiceImpl)
 					collection.getService("CollectionManagementService", "1.0");
-				service.move(collection.getName(),destination,null);
+				service.move(collection.getName(),null,newName);
 			} catch (XMLDBException e) {
-				throw new XPathException(getASTNode(), "Cannot move collection: " + e.getMessage(), e);
+				throw new XPathException(getASTNode(), "Cannot rename collection: " + e.getMessage(), e);
 			}
 		}
 		return Sequence.EMPTY_SEQUENCE;

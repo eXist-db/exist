@@ -19,7 +19,6 @@
  *  
  *  $Id: XMLDBRemove.java 3309 2006-04-26 14:02:17Z chrisgeorg $
  */
-
 package org.exist.xquery.functions.xmldb;
 
 import org.exist.dom.QName;
@@ -40,12 +39,12 @@ import org.xmldb.api.base.XMLDBException;
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  *
  */
-public class XMLDBMove extends XMLDBAbstractCollectionManipulator {
+public class XMLDBCopy extends XMLDBAbstractCollectionManipulator {
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
-			new QName("move", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-				"Move a collection $a. The collection can be specified either as " +
+			new QName("copy", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+				"Copy a collection. The collections can be specified either as " +
 				"a simple collection path, an XMLDB URI or a collection object.",
 				new SequenceType[] {
 						new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
@@ -53,9 +52,9 @@ public class XMLDBMove extends XMLDBAbstractCollectionManipulator {
                        new SequenceType(Type.ITEM, Cardinality.EMPTY)
 		),
 		new FunctionSignature(
-			new QName("move", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-			"Move a resource from the collection specified in $a to collection in $b. " +
-            "The collection can be either specified as a simple collection path, " +
+			new QName("copy", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+			"Copy a resource from the collection specified in $a to collection in $b. " +
+            "The collections can be either specified as a simple collection path, " +
             "an XMLDB URI or a collection object.",
 			new SequenceType[] {
 					new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
@@ -65,7 +64,7 @@ public class XMLDBMove extends XMLDBAbstractCollectionManipulator {
 		)
 	};
 	
-	public XMLDBMove(XQueryContext context, FunctionSignature signature) {
+	public XMLDBCopy(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 	
@@ -82,7 +81,7 @@ public class XMLDBMove extends XMLDBAbstractCollectionManipulator {
 					throw new XPathException(getASTNode(), "Resource " + doc + " not found");
 				CollectionManagementServiceImpl service = (CollectionManagementServiceImpl)
 					collection.getService("CollectionManagementService", "1.0");
-				service.moveResource(doc,destination,null);
+				service.copyResource(doc,destination,null);
 			} catch (XMLDBException e) {
 				throw new XPathException(getASTNode(), "XMLDB exception caught: " + e.getMessage(), e);
 			}
@@ -90,9 +89,9 @@ public class XMLDBMove extends XMLDBAbstractCollectionManipulator {
 			try {
 				CollectionManagementServiceImpl service = (CollectionManagementServiceImpl)
 					collection.getService("CollectionManagementService", "1.0");
-				service.move(collection.getName(),destination,null);
+				service.copy(collection.getName(),destination,null);
 			} catch (XMLDBException e) {
-				throw new XPathException(getASTNode(), "Cannot move collection: " + e.getMessage(), e);
+				throw new XPathException(getASTNode(), "Cannot copy collection: " + e.getMessage(), e);
 			}
 		}
 		return Sequence.EMPTY_SEQUENCE;
