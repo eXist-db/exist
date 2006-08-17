@@ -133,6 +133,34 @@
         </webtest>
     </target>
     
+	 <target name="post" depends="prepare">
+        <webtest name="test POST">
+            <config host="localhost" port="8080" protocol="http" basepath="exist/webtest" summary="true" resultpath="${test.results}" saveResponse="true" savePrefix="postreceiver1"/>
+            <steps>
+                <invoke description="Testing POST for postreceiver1.xql" url="postreceiver1.xql" method="POST" contentFile="${test.webapp}/postdata.txt"/>
+                <verifyXPath xpath="/enquiry"/>
+                <verifyElement type="name" text="Adam"/>
+                <verifyElement type="address" text="Virginia"/>
+                <verifyElement type="number" text="01404"/>
+                <verifyElement type="email" text="adam.retter@exist.dom"/>
+                <verifyElement type="message" text="test"/>
+            </steps>
+        </webtest>
+        <webtest name="test POST wrapped">
+            <config host="localhost" port="8080" protocol="http" basepath="exist/webtest" summary="true" resultpath="${test.results}" saveResponse="true"  savePrefix="postreceiver2"/>
+            <steps>
+                <invoke description="Testing POST for postreceiver2.xql" url="postreceiver2.xql" method="POST" contentFile="${test.webapp}/postdata.txt"/>
+                <verifyXPath xpath="/data"/>
+                <verifyXPath xpath="/data/enquiry"/>
+                <verifyElement type="name" text="Adam"/>
+                <verifyElement type="address" text="Virginia"/>
+                <verifyElement type="number" text="01404"/>
+                <verifyElement type="email" text="adam.retter@exist.dom"/>
+                <verifyElement type="message" text="test"/>
+            </steps>
+        </webtest>
+    </target>
+
     <target name="install-webtest" unless="webtest.available">
         <echo>Installing Canoo Webtest</echo>
         <echo>-------------------------</echo>
