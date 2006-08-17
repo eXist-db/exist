@@ -1,12 +1,7 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
- *
- *  Some modifications Copyright (C) 2004 Luigi P. Bai
- *  finder@users.sf.net
- *  Licensed as below under the LGPL.
+ *  Copyright (C) 2001-2006 The eXist team
+ *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
@@ -19,8 +14,8 @@
  *  GNU Lesser General Public License for more details.
  *
  *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  along with this program; if not, write to the Free Software Foundation
+ *  Inc.,  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  *  $Id$
  */
@@ -32,6 +27,9 @@ import org.exist.xquery.FunctionDef;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
+ *
+ *  Some modifications Copyright (C) 2004 Luigi P. Bai
+ *  finder@users.sf.net
  */
 public class XMLDBModule extends AbstractInternalModule {
     
@@ -51,8 +49,12 @@ public class XMLDBModule extends AbstractInternalModule {
                 new FunctionDef(XMLDBAuthenticate.authenticateSignature, XMLDBAuthenticate.class),
                 new FunctionDef(XMLDBAuthenticate.loginSignature, XMLDBAuthenticate.class),
                 new FunctionDef(XMLDBXUpdate.signature, XMLDBXUpdate.class),
+                new FunctionDef(XMLDBCopy.signatures[0], XMLDBMove.class),
+                new FunctionDef(XMLDBCopy.signatures[1], XMLDBMove.class),
                 new FunctionDef(XMLDBMove.signatures[0], XMLDBMove.class),
                 new FunctionDef(XMLDBMove.signatures[1], XMLDBMove.class),
+                new FunctionDef(XMLDBRename.signatures[0], XMLDBMove.class),
+                new FunctionDef(XMLDBRename.signatures[1], XMLDBMove.class),
                 new FunctionDef(XMLDBRemove.signatures[0], XMLDBRemove.class),
                 new FunctionDef(XMLDBRemove.signatures[1], XMLDBRemove.class),
                 new FunctionDef(XMLDBHasLock.signature, XMLDBHasLock.class),
