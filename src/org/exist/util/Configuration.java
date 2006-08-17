@@ -424,7 +424,9 @@ public class Configuration implements ErrorHandler
             config.put("serialization.indent", indent);
             LOG.debug("serialization.indent: " + config.get("serialization.indent"));
         }
-        
+        String compress = serializer.getAttribute("compress-output");
+        if (compress != null)
+            config.put("serialization.compress-output", compress);
         String internalId = serializer.getAttribute("add-exist-id");
         if (internalId != null) {
             config.put("serialization.add-exist-id", internalId);
