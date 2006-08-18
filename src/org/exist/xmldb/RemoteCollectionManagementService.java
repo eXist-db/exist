@@ -1,3 +1,24 @@
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2006 The eXist team
+ * http://exist-db.org
+ *  
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
+ *  $Id$
+ */
 
 package org.exist.xmldb;
 
@@ -144,7 +165,7 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
     public void move(XmldbURI collectionPath, XmldbURI destinationPath,
             XmldbURI newName) throws XMLDBException {
     	collectionPath = parent.getPathURI().resolveCollectionPath(collectionPath);
-    	destinationPath = parent.getPathURI().resolveCollectionPath(destinationPath);
+    	destinationPath = destinationPath == null ? collectionPath.removeLastSegment() : parent.getPathURI().resolveCollectionPath(destinationPath);
     	
         if(newName == null) {
             newName = collectionPath.lastSegment();
@@ -177,7 +198,10 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
     public void moveResource(XmldbURI resourcePath, XmldbURI destinationPath, XmldbURI newName) 
     		throws XMLDBException { 
     	resourcePath = parent.getPathURI().resolveCollectionPath(resourcePath);
-    	destinationPath = parent.getPathURI().resolveCollectionPath(destinationPath);
+	if (destinationPath == null)
+	    destinationPath = resourcePath.removeLastSegment();
+    	else
+	    destinationPath = parent.getPathURI().resolveCollectionPath(destinationPath);
         if(newName == null) {
             newName = resourcePath.lastSegment();
         }
@@ -202,7 +226,7 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
     public void copy(String collectionPath, String destinationPath,
             String newName) throws XMLDBException {
     	try{
-    		move(XmldbURI.xmldbUriFor(collectionPath), XmldbURI.xmldbUriFor(destinationPath),XmldbURI.xmldbUriFor(newName));
+    		copy(XmldbURI.xmldbUriFor(collectionPath), XmldbURI.xmldbUriFor(destinationPath),XmldbURI.xmldbUriFor(newName));
     	} catch(URISyntaxException e) {
     		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
     	}
@@ -213,7 +237,8 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
     public void copy(XmldbURI collectionPath, XmldbURI destinationPath,
             XmldbURI newName) throws XMLDBException {
     	collectionPath = parent.getPathURI().resolveCollectionPath(collectionPath);
-    	destinationPath = parent.getPathURI().resolveCollectionPath(destinationPath);
+    	destinationPath = destinationPath == null ? collectionPath.removeLastSegment() : parent.getPathURI().resolveCollectionPath(destinationPath);
+
         if(newName == null) {
             newName = collectionPath.lastSegment();
         }
@@ -238,7 +263,7 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
     public void copyResource(String resourcePath, String destinationPath,
             String newName) throws XMLDBException {
     	try{
-    		move(XmldbURI.xmldbUriFor(resourcePath), XmldbURI.xmldbUriFor(destinationPath),XmldbURI.xmldbUriFor(newName));
+    		copyResource(XmldbURI.xmldbUriFor(resourcePath), XmldbURI.xmldbUriFor(destinationPath),XmldbURI.xmldbUriFor(newName));
     	} catch(URISyntaxException e) {
     		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
     	}
@@ -247,7 +272,10 @@ public class RemoteCollectionManagementService implements CollectionManagementSe
     public void copyResource(XmldbURI resourcePath, XmldbURI destinationPath, XmldbURI newName) 
     		throws XMLDBException { 
     	resourcePath = parent.getPathURI().resolveCollectionPath(resourcePath);
-    	destinationPath = parent.getPathURI().resolveCollectionPath(destinationPath);
+    	if (destinationPath == null)
+	    destinationPath = resourcePath.removeLastSegment();
+    	else
+	    destinationPath = parent.getPathURI().resolveCollectionPath(destinationPath);
         if(newName == null) {
             newName = resourcePath.lastSegment();
         }
