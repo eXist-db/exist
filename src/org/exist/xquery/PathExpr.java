@@ -185,7 +185,10 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
           
                 //DESIGN : first test the dependency then the result
                 if ((Dependency.dependsOn(expr, Dependency.CONTEXT_ITEM) ||
-                		Dependency.dependsOn(expr, Dependency.CONTEXT_POSITION)) && 
+                		Dependency.dependsOn(expr, Dependency.CONTEXT_POSITION)) &&
+                		//A positionnal predicate will be evaluated one time
+                		//TODO : reconsider since that may be expensive (type evaluation)
+                		!(this.inPredicate && Type.subTypeOf(this.returnsType(), Type.NUMBER)) &&
                 		result != null && !result.isEmpty()) {
                       
                     Sequence exprResult = new ValueSequence();
