@@ -1,7 +1,8 @@
 /*
  * eXist Open Source Native XML Database
  *   
- * Copyright (C) 2001-04 Wolfgang M. Meier wolfgang@exist-db.org
+ * Copyright (C) 2001-2004 The eXist team
+ * http://exist-db.org
  * 
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -15,7 +16,7 @@
  * 
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; if not, write to the Free Software Foundation,
- * Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * Inc.,  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  * $Id$
  */
@@ -195,7 +196,7 @@ public class LocalCollectionManagementService implements CollectionManagementSer
     public void move(XmldbURI collectionPath, XmldbURI destinationPath,
             XmldbURI newName) throws XMLDBException {
     	collectionPath = parent.getPathURI().resolveCollectionPath(collectionPath);
-    	destinationPath = parent.getPathURI().resolveCollectionPath(destinationPath);
+    	destinationPath = destinationPath == null ? collectionPath.removeLastSegment() : parent.getPathURI().resolveCollectionPath(destinationPath);
     	
         TransactionManager transact = brokerPool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
@@ -280,7 +281,8 @@ public class LocalCollectionManagementService implements CollectionManagementSer
             }
             if (newName == null)
                 newName = resourcePath.lastSegment();
-            broker.moveXMLResource(transaction, doc, destination, newName);
+            
+	    broker.moveXMLResource(transaction, doc, destination, newName);
             transact.commit(transaction);
         } catch ( EXistException e ) {
             transact.abort(transaction);
@@ -316,9 +318,13 @@ public class LocalCollectionManagementService implements CollectionManagementSer
     public void copyResource(XmldbURI resourcePath, XmldbURI destinationPath, XmldbURI newName) 
     		throws XMLDBException { 
     	resourcePath = parent.getPathURI().resolveCollectionPath(resourcePath);
-    	destinationPath = parent.getPathURI().resolveCollectionPath(destinationPath);
 
-		TransactionManager transact = brokerPool.getTransactionManager();
+    	if (destinationPath == null)
+	    destinationPath = resourcePath.removeLastSegment();
+    	else
+	    destinationPath = parent.getPathURI().resolveCollectionPath(destinationPath);	
+    
+    TransactionManager transact = brokerPool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
         DBBroker broker = null;
         org.exist.collections.Collection destination = null;
@@ -340,6 +346,9 @@ public class LocalCollectionManagementService implements CollectionManagementSer
                 transact.abort(transaction);
                 throw new XMLDBException(ErrorCodes.NO_SUCH_COLLECTION, "Collection " + destinationPath + " not found");
             }
+	    if (newName == null) {
+		newName = resourcePath.lastSegment();
+	    }
             broker.copyXMLResource(transaction, doc, destination, newName);
             transact.commit(transaction);
         } catch ( EXistException e ) {
@@ -376,9 +385,8 @@ public class LocalCollectionManagementService implements CollectionManagementSer
     public void copy(XmldbURI collectionPath, XmldbURI destinationPath,
             XmldbURI newName) throws XMLDBException {
     	collectionPath = parent.getPathURI().resolveCollectionPath(collectionPath);
-    	destinationPath = parent.getPathURI().resolveCollectionPath(destinationPath);
+    	destinationPath = destinationPath == null ? collectionPath.removeLastSegment() : parent.getPathURI().resolveCollectionPath(destinationPath);
 
-        System.out.println("Copying '" + collectionPath + "' to '" + destinationPath + "' as '" + newName + "'");
         TransactionManager transact = brokerPool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
         DBBroker broker = null;
@@ -396,6 +404,9 @@ public class LocalCollectionManagementService implements CollectionManagementSer
                 transact.abort(transaction);
                 throw new XMLDBException(ErrorCodes.NO_SUCH_COLLECTION, "Collection '" + destinationPath + "' not found");
             }
+	    if (newName == null) {
+		newName = collectionPath.lastSegment();
+	    }
             broker.copyCollection(transaction, collection, destination, newName);
             transact.commit(transaction);
         } catch ( EXistException e ) {
