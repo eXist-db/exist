@@ -28,6 +28,7 @@ import org.exist.dom.Match;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.dom.TextImpl;
+import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.util.FastQSort;
 import org.exist.xquery.BasicFunction;
@@ -38,6 +39,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionReference;
 import org.exist.xquery.value.IntegerValue;
+import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -45,6 +47,7 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
+import org.xml.sax.SAXException;
 
 public class KWICDisplay extends BasicFunction {
 
@@ -166,6 +169,7 @@ public class KWICDisplay extends BasicFunction {
         
         // Second step: output the text
         ValueSequence result = new ValueSequence();
+        DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
         int nodeNr;
         int currentWidth = 0;
         if (offsets == null) {
@@ -181,6 +185,7 @@ public class KWICDisplay extends BasicFunction {
             
             int nextOffset = 0;
             int pos = 0;
+            int lastNodeNr = -1;
             
             // prepare array for callback function arguments
             Sequence params[] = new Sequence[3];
@@ -199,13 +204,31 @@ public class KWICDisplay extends BasicFunction {
                     } else
                         leftWidth = firstMatch.getOffset();
                     nodeNr = builder.characters(str.substring(pos, pos + leftWidth));
-                    result.add(builder.getDocument().getNode(nodeNr));
+                    // adjacent chunks of text will be merged into one text node. we may
+                    // thus get duplicate nodes here. check the nodeNr to avoid adding
+                    // the same node twice.
+                    if (lastNodeNr != nodeNr)
+                    	result.add(builder.getDocument().getNode(nodeNr));
+                    lastNodeNr = nodeNr;
                     currentWidth += leftWidth;
                     pos += leftWidth;
                 }
     
                 params[0] = new StringValue(str.substring(firstMatch.getOffset(), firstMatch.getOffset() + firstMatch.getLength()));
-                result.addAll(callback.evalFunction(null, null, params));
+                Sequence callbackResult = callback.evalFunction(null, null, params);
+                for (SequenceIterator iter = callbackResult.iterate(); iter.hasNext(); ) {
+                	Item next = iter.nextItem();
+                	if (Type.subTypeOf(next.getType(), Type.NODE)) {
+                		nodeNr = builder.getDocument().getLastNode();
+                		try {
+							next.copyTo(context.getBroker(), receiver);
+							result.add(builder.getDocument().getNode(++nodeNr));
+							lastNodeNr = nodeNr;
+						} catch (SAXException e) {
+							throw new XPathException(getASTNode(), "Internal error while copying nodes: " + e.getMessage(), e);
+						}
+                	}
+                }
                 currentWidth += firstMatch.getLength();
                 pos += firstMatch.getLength();
             } else
@@ -220,14 +243,28 @@ public class KWICDisplay extends BasicFunction {
                     if (currentWidth + len > width)
                         len = width - currentWidth;
                     nodeNr = builder.characters(str.substring(pos, pos + len));
-                    result.add(builder.getDocument().getNode(nodeNr));
+                    if (lastNodeNr != nodeNr)
+                    	result.add(builder.getDocument().getNode(nodeNr));
                     currentWidth += len;
                     pos += len;
                 }
                 
                 if (currentWidth + offset.getLength() < width) {
-                    params[0] = new StringValue(str.substring(offset.getOffset(), offset.getOffset() + offset.getLength()));  
-                    result.addAll(callback.evalFunction(null, null, params));
+                    params[0] = new StringValue(str.substring(offset.getOffset(), offset.getOffset() + offset.getLength()));
+                    Sequence callbackResult = callback.evalFunction(null, null, params);
+                    for (SequenceIterator iter = callbackResult.iterate(); iter.hasNext(); ) {
+                    	Item next = iter.nextItem();
+                    	if (Type.subTypeOf(next.getType(), Type.NODE)) {
+                    		nodeNr = builder.getDocument().getLastNode();
+                    		try {
+    							next.copyTo(context.getBroker(), receiver);
+    							result.add(builder.getDocument().getNode(++nodeNr));
+    							lastNodeNr = nodeNr;
+    						} catch (SAXException e) {
+    							throw new XPathException(getASTNode(), "Internal error while copying nodes: " + e.getMessage(), e);
+    						}
+                    	}
+                    }
                     currentWidth += offset.getLength();
                     pos += offset.getLength();
                 } else
@@ -242,12 +279,16 @@ public class KWICDisplay extends BasicFunction {
                     len = width - currentWidth;
                 }
                 nodeNr = builder.characters(str.substring(pos, pos + len));
-                result.add(builder.getDocument().getNode(nodeNr));
+                if (lastNodeNr != nodeNr)
+                	result.add(builder.getDocument().getNode(nodeNr));
+                lastNodeNr = nodeNr;
                 currentWidth += len;
                 
                 if (truncated) {
                     nodeNr = builder.characters(" ...");
-                    result.add(builder.getDocument().getNode(nodeNr));
+                    if (lastNodeNr != nodeNr)
+                    	result.add(builder.getDocument().getNode(nodeNr));
+                    lastNodeNr = nodeNr;
                 }
             }
         }
