@@ -218,6 +218,7 @@ public class DocumentImpl extends NodeImpl implements Document {
         }
         alphaLen[nodeNr] = alphaLen[nodeNr] + len;
         System.arraycopy(ch, start, characters, nextChar, len);
+        nextChar += len;
     }
     
     public void appendChars(int nodeNr, CharSequence s) {
@@ -265,12 +266,16 @@ public class DocumentImpl extends NodeImpl implements Document {
     	return nextNamespace++;
     }
     
+    public short getTreeLevel(int nodeNr) {
+    	return treeLevel[nodeNr];
+    }
+    
     public int getLastNode() {
         return size - 1;
     }
     
     public short getNodeType(int nodeNr) {
-        if (nodeNr < 0)
+    	if (nodeKind == null || nodeNr < 0)
             return -1;
         return nodeKind[nodeNr];
     }
