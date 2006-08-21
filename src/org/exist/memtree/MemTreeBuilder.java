@@ -37,7 +37,7 @@ import org.xml.sax.Attributes;
  * @author Wolfgang <wolfgang@exist-db.org>
  */
 public class MemTreeBuilder {
-
+	
 	protected DocumentImpl doc;
 	protected short level = 1;
 	protected int[] prevNodeInLevel;
@@ -108,7 +108,6 @@ public class MemTreeBuilder {
 	 */
 	public int startElement(QName qn, Attributes attributes) {
 		int nodeNr = doc.addNode(Node.ELEMENT_NODE, level, qn);
-//		System.out.println("start: " + qn + "; nodeNr = " + nodeNr + "; level = " + level);
 		if(attributes != null) {
 			// parse attributes	
 			for (int i = 0; i < attributes.getLength(); i++) {
@@ -178,7 +177,7 @@ public class MemTreeBuilder {
 	 */
 	public int characters(char[] ch, int start, int len) {
         int lastNode = doc.getLastNode();
-        if (doc.getNodeType(lastNode) == Node.TEXT_NODE) {
+        if (doc.getNodeType(lastNode) == Node.TEXT_NODE && level == doc.getTreeLevel(lastNode)) {
             // if the last node is a text node, we have to append the
             // characters to this node. XML does not allow adjacent text nodes.
             doc.appendChars(lastNode, ch, start, len);
@@ -198,7 +197,7 @@ public class MemTreeBuilder {
 	 */
 	public int characters(CharSequence s) {
         int lastNode = doc.getLastNode();
-        if (doc.getNodeType(lastNode) == Node.TEXT_NODE) {
+        if (doc.getNodeType(lastNode) == Node.TEXT_NODE && level == doc.getTreeLevel(lastNode)) {
             // if the last node is a text node, we have to append the
             // characters to this node. XML does not allow adjacent text nodes.
             doc.appendChars(lastNode, s);

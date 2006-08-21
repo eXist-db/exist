@@ -266,6 +266,10 @@ public class DocumentImpl extends NodeImpl implements Document {
     	return nextNamespace++;
     }
     
+    public short getTreeLevel(int nodeNr) {
+    	return treeLevel[nodeNr];
+    }
+    
     public int getLastNode() {
         return size - 1;
     }
