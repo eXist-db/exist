@@ -138,25 +138,25 @@
             <config host="localhost" port="8080" protocol="http" basepath="exist/webtest" summary="true" resultpath="${test.results}" saveResponse="true" savePrefix="testPostReceiver1"/>
             <steps>
                 <invoke description="Testing POST for postreceiver1.xql" url="postreceiver1.xql" method="POST" contentFile="${test.webapp}/postdata.txt"/>
-                <verifyXPath xpath="//enquiry"/>
-            	<verifyXPath xpath="//enquiry/name" text="Adam"/>
-                <verifyXPath xpath="//enquiry/address" text="Virginia"/>
-                <verifyXPath xpath="//enquiry/number" text="01404"/>
-                <verifyXPath xpath="//enquiry/email" text="adam.retter@exist.dom"/>
-                <verifyXPath xpath="//enquiry/message" text="test"/>
+                <verifyXPath xpath="/enquiry"/>
+            	<verifyXPath xpath="/enquiry/name" text="Adam"/>
+                <verifyXPath xpath="/enquiry/address" text="Virginia"/>
+                <verifyXPath xpath="/enquiry/number" text="01404"/>
+                <verifyXPath xpath="/enquiry/email" text="adam.retter@exist.dom"/>
+                <verifyXPath xpath="/enquiry/message" text="test"/>
             </steps>
         </webtest>
         <webtest name="testPostReceiver2">
             <config host="localhost" port="8080" protocol="http" basepath="exist/webtest" summary="true" resultpath="${test.results}" saveResponse="true"  savePrefix="testPostReceiver2"/>
             <steps>
                 <invoke description="Testing POST for postreceiver2.xql" url="postreceiver2.xql" method="POST" contentFile="${test.webapp}/postdata.txt"/>
-               	<verifyXPath xpath="//data"/>
-            	<verifyXPath xpath="//data/enquiry"/>
-            	<verifyXPath xpath="//data/enquiry/name" text="Adam"/>
-                <verifyXPath xpath="//data/enquiry/address" text="Virginia"/>
-                <verifyXPath xpath="//data/enquiry/number" text="01404"/>
-                <verifyXPath xpath="//data/enquiry/email" text="adam.retter@exist.dom"/>
-                <verifyXPath xpath="//data/enquiry/message" text="test"/>
+               	<verifyXPath xpath="/data"/>
+            	<verifyXPath xpath="/data/enquiry"/>
+            	<verifyXPath xpath="/data/enquiry/name" text="Adam"/>
+                <verifyXPath xpath="/data/enquiry/address" text="Virginia"/>
+                <verifyXPath xpath="/data/enquiry/number" text="01404"/>
+                <verifyXPath xpath="/data/enquiry/email" text="adam.retter@exist.dom"/>
+                <verifyXPath xpath="/data/enquiry/message" text="test"/>
             </steps>
         </webtest>
     </target>
