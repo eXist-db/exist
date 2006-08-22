@@ -8,7 +8,9 @@ xmlns:atom="http://www.w3.org/2005/Atom">
      "&#x0a;",
      /atom:feed/atom:updated,
      "&#x0a;",
-     /atom:feed/atom:entry[atom:category[@scheme='http://www.smallx.com/Ontology/Atopic/2006/1/0/topic/relation' and @term='subtopic']]
+     /atom:feed/atom:entry[atom:category[@scheme='http://www.smallx.com/Ontology/Atopic/2006/1/0/topic/relation' and @term='subtopic']],
+     "&#x0a;",
+     /atom:feed/atom:link
    }
    {
       let $current := substring-before(base-uri(/atom:feed),'/.feed.atom'),
