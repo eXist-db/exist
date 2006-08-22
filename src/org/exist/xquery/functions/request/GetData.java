@@ -26,18 +26,15 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
-import org.exist.memtree.DocumentImpl;
-import org.exist.memtree.SAXAdapter;
+import org.exist.memtree.DocumentBuilderReceiver;
+import org.exist.memtree.MemTreeBuilder;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -45,6 +42,7 @@ import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.JavaObjectValue;
+import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
@@ -131,32 +129,23 @@ public class GetData extends BasicFunction {
 			
 			//if the POST content is not null, it may be an xml document, so we first try to return the xml document
 			if(bufRequestData != null)
-			{				
+			{
+                context.pushDocumentContext();
 				try
-				{	//TODO: code taken from DocUtils, could add a parse(byte[]) method to DocUtils to share the code? 
-					Sequence document = Sequence.EMPTY_SEQUENCE;
-					
+				{ 
 					//try and construct xml document from input stream, we use eXist's in-memory DOM implementation
-					DocumentImpl memtreeDoc = null;
 					SAXParserFactory factory = SAXParserFactory.newInstance();
 					factory.setNamespaceAware(true);	
 					//TODO : we should be able to cope with context.getBaseURI()				
 					InputSource src = new InputSource(new ByteArrayInputStream(bufRequestData));
 					SAXParser parser = factory.newSAXParser();
 					XMLReader reader = parser.getXMLReader();
-					SAXAdapter adapter = new SAXAdapter();
-					reader.setContentHandler(adapter);
-					reader.parse(src);					
-					Document doc = adapter.getDocument();
-					memtreeDoc = (org.exist.memtree.DocumentImpl)doc;
-					memtreeDoc.setContext(context);
-					document = memtreeDoc;
-					
-					if(document != Sequence.EMPTY_SEQUENCE)
-					{
-						//return the xml document
-						return document;
-					}
+                    MemTreeBuilder builder = context.getDocumentBuilder();
+                    DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
+					reader.setContentHandler(receiver);
+					reader.parse(src);
+					Document doc = receiver.getDocument();
+					return (NodeValue)doc.getDocumentElement();
 				}
 				catch (ParserConfigurationException e)
 				{				
@@ -169,7 +158,9 @@ public class GetData extends BasicFunction {
 				catch (IOException e)
 				{
 					//do nothing, we will default to trying to return a string below
-				}						
+				} finally {
+                    context.popDocumentContext();
+                }
 			}
 			
 			//else, return a string representation of the xml document
