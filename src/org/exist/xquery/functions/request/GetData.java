@@ -22,12 +22,19 @@
  */
 package org.exist.xquery.functions.request;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
 import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
+import org.exist.memtree.DocumentBuilderReceiver;
+import org.exist.memtree.MemTreeBuilder;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -35,10 +42,15 @@ import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.JavaObjectValue;
+import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 
 /**
@@ -54,7 +66,7 @@ public class GetData extends BasicFunction {
 				RequestModule.PREFIX),
 			"Returns the content of a POST request as an XML document or a string representaion. Returns an empty sequence if there is no data.",
 			null,
-			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
+			new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE));
 	
 	public final static FunctionSignature deprecated =
 		new FunctionSignature(
@@ -74,16 +86,15 @@ public class GetData extends BasicFunction {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
 	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence)
-			throws XPathException {
-		RequestModule myModule =
-			(RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
+	public Sequence eval(Sequence[] args, Sequence contextSequence)throws XPathException {
+		
+		RequestModule myModule = (RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
 
 		// request object is read from global variable $request
 		Variable var = myModule.resolveVariable(RequestModule.REQUEST_VAR);
 		if(var == null)
 			throw new XPathException("No request object found in the current XQuery context.");
-		if (var.getValue().getItemType() != Type.JAVA_OBJECT)
+		if(var.getValue().getItemType() != Type.JAVA_OBJECT)
 			throw new XPathException("Variable $request is not bound to an Java object.");
 		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
 		
@@ -98,25 +109,81 @@ public class GetData extends BasicFunction {
 			}
 			
 			//first, get the content of the request
+			byte[] bufRequestData = null;
 			try
 			{
 				InputStream is = request.getInputStream();
-				ByteArrayOutputStream bos = new ByteArrayOutputStream(request
-						.getContentLength());
+				ByteArrayOutputStream bos = new ByteArrayOutputStream(request.getContentLength());
 				byte[] buf = new byte[256];
 				int l = 0;
-				while ((l = is.read(buf)) > -1) {
+				while ((l = is.read(buf)) > -1)
+				{
 					bos.write(buf, 0, l);
 				}
-				String encoding = request.getCharacterEncoding();
-				if(encoding == null)
-					encoding = "UTF-8";
-				String s = new String(bos.toByteArray(), encoding);
+				bufRequestData = bos.toByteArray();
+			}
+			catch(IOException ioe)
+			{
+				throw new XPathException("An IO exception ocurred: " + ioe.getMessage(), ioe);
+			}
+			
+			//if the POST content is not null, it may be an xml document, so we first try to return the xml document
+			if(bufRequestData != null)
+			{
+                context.pushDocumentContext();
+				try
+				{ 
+					//try and construct xml document from input stream, we use eXist's in-memory DOM implementation
+					SAXParserFactory factory = SAXParserFactory.newInstance();
+					factory.setNamespaceAware(true);	
+					//TODO : we should be able to cope with context.getBaseURI()				
+					InputSource src = new InputSource(new ByteArrayInputStream(bufRequestData));
+					SAXParser parser = factory.newSAXParser();
+					XMLReader reader = parser.getXMLReader();
+                    MemTreeBuilder builder = context.getDocumentBuilder();
+                    DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
+					reader.setContentHandler(receiver);
+					reader.parse(src);
+					Document doc = receiver.getDocument();
+					return (NodeValue)doc.getDocumentElement();
+				}
+				catch (ParserConfigurationException e)
+				{				
+					//do nothing, we will default to trying to return a string below
+				}
+				catch (SAXException e)
+				{
+					//do nothing, we will default to trying to return a string below
+				}
+				catch (IOException e)
+				{
+					//do nothing, we will default to trying to return a string below
+				} finally {
+                    context.popDocumentContext();
+                }
+			}
+			
+			//else, return a string representation of the xml document
+			String encoding = request.getCharacterEncoding();
+			if(encoding == null)
+			{
+				encoding = "UTF-8";
+			}
+			
+			try
+			{
+				String s = new String(bufRequestData, encoding);
 				return new StringValue(s);
-			} catch (IOException e) {
+			
+			}
+			catch (IOException e)
+			{
 				throw new XPathException("An IO exception ocurred: " + e.getMessage(), e);
 			}
-		} else
+		}
+		else
+		{
 			throw new XPathException("Variable $request is not bound to a Request object.");
+		}
 	}
 }
