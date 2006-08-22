@@ -501,8 +501,13 @@ public class ElementImpl extends NamedNode implements Element {
                 final NamedNodeMap attribs = child.getAttributes();
                 for (int i = 0; i < attribs.getLength(); i++) {
                     Attr attr = (Attr) attribs.item(i);
-                    if (!attr.getNodeName().startsWith("xmlns"))
+                    if (!attr.getNodeName().startsWith("xmlns")) {
                         ch.add(attr);
+                    } else {
+                        String xmlnsDecl = attr.getNodeName();
+                        String prefix = xmlnsDecl.length()==5 ? "" : xmlnsDecl.substring(6);
+                        elem.addNamespaceMapping(prefix,attr.getNodeValue());
+                    }
                 }
 				NodeList cl = child.getChildNodes();
 				for (int i = 0; i < cl.getLength(); i++) {
