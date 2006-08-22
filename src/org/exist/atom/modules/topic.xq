@@ -32,6 +32,8 @@ xmlns:atom="http://www.w3.org/2005/Atom">
                                 "&#x0a;",
                                 $feed/atom:updated,
                                 "&#x0a;",
+                                $feed/atom:author,
+                                "&#x0a;",
                                 <category scheme="http://www.smallx.com/Ontology/Atopic/2006/1/0/topic/relation" term="ancestor"/>,
                                 "&#x0a;",
                                 <link rel="alternate" href="/atom/content/{$apath}" type="application/atom+xml"/>,
