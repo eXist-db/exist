@@ -40,6 +40,7 @@ import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -106,6 +107,7 @@ public class GetHeightFunction extends BasicFunction
         //Get the image document from the db
         DBBroker dbbroker = context.getBroker();
         DocumentImpl docImage = null;
+        
         try
         {
         	docImage = dbbroker.getXMLResource(imgPath.toXmldbURI(), Lock.READ_LOCK);
@@ -113,7 +115,7 @@ public class GetHeightFunction extends BasicFunction
         catch (PermissionDeniedException e)
         {
         	throw new XPathException(getASTNode(), imgPath + ": permission denied to read resource");
-         }
+        }
         
         //Valid document?
         if (docImage == null)
