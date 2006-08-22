@@ -106,6 +106,7 @@ public class GetWidthFunction extends BasicFunction
         //Get the image document from the db
         DBBroker dbbroker = context.getBroker();
         DocumentImpl docImage = null;
+        
         try
         {
         	docImage = dbbroker.getXMLResource(imgPath.toXmldbURI(), Lock.READ_LOCK);
