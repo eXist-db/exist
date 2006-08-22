@@ -15,6 +15,7 @@ return
     </head>
     <body>
         <p id="count">{count($stored)}</p>
+	    <p id="source">{$tempDir}</p>
         <p id="stored">{$stored}</p>
     </body>
 </html>
