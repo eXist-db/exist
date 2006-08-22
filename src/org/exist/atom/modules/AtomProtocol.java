@@ -272,6 +272,15 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                editLink.setAttribute("type",Atom.MIME_TYPE);
                editLink.setAttribute("href","#");
                root.appendChild(editLink);
+               Element selfLink = findLink(root,"self");
+               if (selfLink!=null) {
+                  throw new BadRequestException("A self link relation cannot be specified in the feed.");
+               }
+               selfLink = doc.createElementNS(Atom.NAMESPACE_STRING,"link");
+               selfLink.setAttribute("rel","self");
+               selfLink.setAttribute("type",Atom.MIME_TYPE);
+               selfLink.setAttribute("href","#");
+               root.appendChild(selfLink);
                IndexInfo info = collection.validateXMLResource(transaction,broker,FEED_DOCUMENT_URI,doc);
                collection.store(transaction,broker,info,doc,false);
                transact.commit(transaction);
