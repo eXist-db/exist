@@ -46,6 +46,7 @@ import antlr.collections.impl.ASTArray;
 public class XQueryTreeParser extends antlr.TreeParser       implements XQueryTreeParserTokenTypes
  {
 
+	private XQueryContext staticContext;
 	private XQueryContext context;
 	private ExternalModule myModule = null;
 	protected ArrayList exceptions= new ArrayList(2);
@@ -54,6 +55,7 @@ public class XQueryTreeParser extends antlr.TreeParser       implements XQueryTr
 	
 	public XQueryTreeParser(XQueryContext context) {
 		this();
+                this.staticContext = new XQueryContext(context);
 		this.context= context;
 	}
 
@@ -1830,7 +1832,7 @@ public XQueryTreeParser() {
 						var = (org.exist.xquery.parser.XQueryAST)_t;
 						match(_t,VARIABLE_BINDING);
 						_t = _t.getNextSibling();
-						qn = QName.parse(context, var.getText());
+						qn = QName.parse(staticContext, var.getText());
 						break;
 					}
 					case ATOMIC_TYPE:
@@ -1886,7 +1888,7 @@ public XQueryTreeParser() {
 				dvar = (org.exist.xquery.parser.XQueryAST)_t;
 				match(_t,VARIABLE_BINDING);
 				_t = _t.getNextSibling();
-				qn = QName.parse(context, dvar.getText());
+				qn = QName.parse(staticContext, dvar.getText());
 				break;
 			}
 			case QNAME:
@@ -2574,6 +2576,7 @@ public XQueryTreeParser() {
 			
 						myModule = new ExternalModuleImpl(uri.getText(), m.getText());
 						context.declareNamespace(m.getText(), uri.getText());
+			staticContext.declareNamespace(m.getText(), uri.getText());
 					
 			_t = __t6;
 			_t = _t.getNextSibling();
@@ -2876,6 +2879,7 @@ public XQueryTreeParser() {
 									throw new XPathException(prefix, "err:XQST0033: Prolog contains " +
 										"multiple declarations for namespace prefix: " + prefix.getText());
 								context.declareNamespace(prefix.getText(), uri.getText());
+								staticContext.declareNamespace(prefix.getText(), uri.getText());
 								declaredNamespaces.put(prefix.getText(), uri.getText());
 							
 				_t = __t11;
@@ -3096,6 +3100,8 @@ public XQueryTreeParser() {
 				match(_t,STRING_LITERAL);
 				_t = _t.getNextSibling();
 				context.declareNamespace("", defu.getText());
+				staticContext.declareNamespace("",defu.getText());
+				
 				_t = __t24;
 				_t = _t.getNextSibling();
 				break;
@@ -3109,7 +3115,9 @@ public XQueryTreeParser() {
 				deff = (org.exist.xquery.parser.XQueryAST)_t;
 				match(_t,STRING_LITERAL);
 				_t = _t.getNextSibling();
-				context.setDefaultFunctionNamespace(deff.getText());
+				context.setDefaultFunctionNamespace(deff.getText()); 
+				staticContext.setDefaultFunctionNamespace(deff.getText());
+				
 				_t = __t25;
 				_t = _t.getNextSibling();
 				break;
@@ -3359,7 +3367,7 @@ public XQueryTreeParser() {
 										decl.setASTNode(e);
 										path.add(decl);
 										if(myModule != null) {
-											QName qn = QName.parse(context, qname.getText());
+											QName qn = QName.parse(staticContext, qname.getText());
 											myModule.declareVariable(qn, decl);
 										}
 									
@@ -3453,7 +3461,7 @@ public XQueryTreeParser() {
 			match(_t,ATOMIC_TYPE);
 			_t = _t.getFirstChild();
 			
-							QName qn= QName.parse(context, t.getText());
+							QName qn= QName.parse(staticContext, t.getText());
 							int code= Type.getType(qn);
 							if(!Type.subTypeOf(code, Type.ATOMIC))
 								throw new XPathException(t, "Type " + qn.toString() + " is not an atomic type");
@@ -3536,7 +3544,7 @@ public XQueryTreeParser() {
 				match(_t,QNAME);
 				_t = _t.getNextSibling();
 				
-									QName qname= QName.parse(context, qn1.getText());
+									QName qname= QName.parse(staticContext, qn1.getText());
 									type.setNodeName(qname);
 								
 				{
@@ -3601,7 +3609,7 @@ public XQueryTreeParser() {
 				match(_t,QNAME);
 				_t = _t.getNextSibling();
 				
-									QName qname= QName.parse(context, qn2.getText());
+									QName qname= QName.parse(staticContext, qn2.getText());
 									type.setNodeName(qname);
 								
 				{
@@ -3742,7 +3750,7 @@ public XQueryTreeParser() {
 		
 					QName qn= null;
 					try {
-						qn = QName.parse(context, name.getText());
+						qn = QName.parse(staticContext, name.getText());
 					} catch(XPathException e) {
 						// throw exception with correct source location
 						e.setASTNode(name);
@@ -3996,6 +4004,7 @@ public XQueryTreeParser() {
 			}
 			
 						context.declareNamespace(nsPrefix, targetURI.getText());
+						staticContext.declareNamespace(nsPrefix, targetURI.getText());
 						declaredNamespaces.put(nsPrefix, targetURI.getText());
 					
 			_t = __t37;
@@ -4139,7 +4148,7 @@ public XQueryTreeParser() {
 			}
 			}
 			
-						QName qn= QName.parse(context, t.getText());
+						QName qn= QName.parse(staticContext, t.getText());
 						int code= Type.getType(qn);
 						CastExpression castExpr= new CastExpression(context, expr, code, cardinality);
 						castExpr.setASTNode(castAST);
@@ -4183,7 +4192,7 @@ public XQueryTreeParser() {
 			}
 			}
 			
-						QName qn= QName.parse(context, t2.getText());
+						QName qn= QName.parse(staticContext, t2.getText());
 						int code= Type.getType(qn);
 						CastableExpression castExpr= new CastableExpression(context, expr, code, cardinality);
 						castExpr.setASTNode(castAST);
@@ -4956,7 +4965,7 @@ public XQueryTreeParser() {
 				match(_t,QNAME);
 				_t = _t.getNextSibling();
 				
-							QName qname= QName.parse(context, qn.getText());
+							QName qname= QName.parse(staticContext, qn.getText());
 							test= new NameTest(Type.ELEMENT, qname);
 							if (axis == Constants.ATTRIBUTE_AXIS)
 								test.setType(Type.ATTRIBUTE);
@@ -4995,7 +5004,7 @@ public XQueryTreeParser() {
 				_t = __t139;
 				_t = _t.getNextSibling();
 				
-							String namespaceURI= context.getURIForPrefix(nc.getText());
+							String namespaceURI= staticContext.getURIForPrefix(nc.getText());
 							QName qname= new QName(null, namespaceURI, nc.getText());
 							test= new NameTest(Type.ELEMENT, qname);
 							if (axis == Constants.ATTRIBUTE_AXIS)
@@ -5060,7 +5069,7 @@ public XQueryTreeParser() {
 					match(_t,QNAME);
 					_t = _t.getNextSibling();
 					
-										QName qname= QName.parse(context, qn2.getText());
+										QName qname= QName.parse(staticContext, qn2.getText());
 										test= new NameTest(Type.ELEMENT, qname);
 									
 					break;
@@ -5102,7 +5111,7 @@ public XQueryTreeParser() {
 					match(_t,QNAME);
 					_t = _t.getNextSibling();
 					
-										QName qname= QName.parse(context, qn3.getText());
+										QName qname= QName.parse(staticContext, qn3.getText());
 										test= new NameTest(Type.ATTRIBUTE, qname);
 										axis= Constants.ATTRIBUTE_AXIS;
 									
@@ -5189,7 +5198,7 @@ public XQueryTreeParser() {
 				attr = (org.exist.xquery.parser.XQueryAST)_t;
 				match(_t,QNAME);
 				_t = _t.getNextSibling();
-				qname= QName.parse(context, attr.getText(), null);
+				qname= QName.parse(staticContext, attr.getText(), null);
 				break;
 			}
 			case WILDCARD:
@@ -5225,7 +5234,7 @@ public XQueryTreeParser() {
 				_t = __t148;
 				_t = _t.getNextSibling();
 				
-							String namespaceURI= context.getURIForPrefix(nc3.getText());
+							String namespaceURI= staticContext.getURIForPrefix(nc3.getText());
 							if (namespaceURI == null)
 								throw new EXistException("No namespace defined for prefix " + nc3.getText());
 							qname= new QName(null, namespaceURI, null);
@@ -6249,6 +6258,7 @@ public XQueryTreeParser() {
 						ElementConstructor c= new ElementConstructor(context, e.getText());
 						c.setASTNode(e);
 						step= c;
+			staticContext.pushInScopeNamespaces();
 					
 			{
 			_loop216:
@@ -6299,7 +6309,14 @@ public XQueryTreeParser() {
 						}
 					} while (true);
 					}
-					c.addAttribute(attrib);
+					c.addAttribute(attrib); 
+					if (attrib.isNamespaceDeclaration()) {
+					String nsPrefix = attrib.getQName().equals("xmlns") ?
+					"" : QName.extractLocalName(attrib.getQName());
+					staticContext.declareInScopeNamespace(nsPrefix,attrib.getLiteralValue());
+					}
+					
+					
 					_t = __t212;
 					_t = _t.getNextSibling();
 				}
@@ -6330,6 +6347,9 @@ public XQueryTreeParser() {
 				
 			} while (true);
 			}
+			
+			staticContext.popInScopeNamespaces();
+			
 			_t = __t210;
 			_t = _t.getNextSibling();
 			break;

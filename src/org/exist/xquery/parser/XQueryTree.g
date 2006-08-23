@@ -59,6 +59,7 @@ options {
 }
 
 {
+	private XQueryContext staticContext;
 	private XQueryContext context;
 	private ExternalModule myModule = null;
 	protected ArrayList exceptions= new ArrayList(2);
@@ -67,6 +68,7 @@ options {
 	
 	public XQueryTreeParser(XQueryContext context) {
 		this();
+                this.staticContext = new XQueryContext(context);
 		this.context= context;
 	}
 
@@ -169,6 +171,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		{
 			myModule = new ExternalModuleImpl(uri.getText(), m.getText());
 			context.declareNamespace(m.getText(), uri.getText());
+                        staticContext.declareNamespace(m.getText(), uri.getText());
 		}
 	)
 	prolog [path]
@@ -199,6 +202,7 @@ throws PermissionDeniedException, EXistException, XPathException
 					throw new XPathException(prefix, "err:XQST0033: Prolog contains " +
 						"multiple declarations for namespace prefix: " + prefix.getText());
 				context.declareNamespace(prefix.getText(), uri.getText());
+				staticContext.declareNamespace(prefix.getText(), uri.getText());
 				declaredNamespaces.put(prefix.getText(), uri.getText());
 			}
 		)
@@ -235,12 +239,16 @@ throws PermissionDeniedException, EXistException, XPathException
 		|
 		#(
 			DEF_NAMESPACE_DECL defu:STRING_LITERAL
-			{ context.declareNamespace("", defu.getText()); }
+			{ context.declareNamespace("", defu.getText());
+                          staticContext.declareNamespace("",defu.getText());
+                        }
 		)
 		|
 		#(
 			DEF_FUNCTION_NS_DECL deff:STRING_LITERAL
-			{ context.setDefaultFunctionNamespace(deff.getText()); }
+			{ context.setDefaultFunctionNamespace(deff.getText()); 
+                          staticContext.setDefaultFunctionNamespace(deff.getText());
+                        }
 		)
 		|
 		#(
@@ -269,7 +277,7 @@ throws PermissionDeniedException, EXistException, XPathException
 					decl.setASTNode(e);
 					path.add(decl);
 					if(myModule != null) {
-						QName qn = QName.parse(context, qname.getText());
+						QName qn = QName.parse(staticContext, qname.getText());
 						myModule.declareVariable(qn, decl);
 					}
 				}
@@ -341,6 +349,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		( at1:STRING_LITERAL { location = at1.getText(); } )?
 		{
 			context.declareNamespace(nsPrefix, targetURI.getText());
+			staticContext.declareNamespace(nsPrefix, targetURI.getText());
 			declaredNamespaces.put(nsPrefix, targetURI.getText());
 		}
 	)
@@ -357,7 +366,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		{
 			QName qn= null;
 			try {
-				qn = QName.parse(context, name.getText());
+				qn = QName.parse(staticContext, name.getText());
 			} catch(XPathException e) {
 				// throw exception with correct source location
 				e.setASTNode(name);
@@ -446,7 +455,7 @@ throws XPathException
 		#(
 			t:ATOMIC_TYPE
 			{
-				QName qn= QName.parse(context, t.getText());
+				QName qn= QName.parse(staticContext, t.getText());
 				int code= Type.getType(qn);
 				if(!Type.subTypeOf(code, Type.ATOMIC))
 					throw new XPathException(t, "Type " + qn.toString() + " is not an atomic type");
@@ -486,7 +495,7 @@ throws XPathException
 				|
 				qn1:QNAME
 				{ 
-					QName qname= QName.parse(context, qn1.getText());
+					QName qname= QName.parse(staticContext, qn1.getText());
 					type.setNodeName(qname);
 				}
 				( QNAME
@@ -505,7 +514,7 @@ throws XPathException
 				|
 				qn2:QNAME
 				{
-					QName qname= QName.parse(context, qn2.getText());
+					QName qname= QName.parse(staticContext, qn2.getText());
 					type.setNodeName(qname);
 				}
 				( QNAME
@@ -891,7 +900,7 @@ throws PermissionDeniedException, EXistException, XPathException
 				"case"
 				(
 					var:VARIABLE_BINDING
-					{ qn = QName.parse(context, var.getText()); }
+					{ qn = QName.parse(staticContext, var.getText()); }
 				)?
 				sequenceType [type]
 				step=expr [returnExpr]
@@ -908,7 +917,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			}
 			(
 				dvar:VARIABLE_BINDING
-				{ qn = QName.parse(context, dvar.getText()); }
+				{ qn = QName.parse(staticContext, dvar.getText()); }
 			)?
 			step=expr [returnExpr]
 			{
@@ -1124,7 +1133,7 @@ throws PermissionDeniedException, EXistException, XPathException
 	(
 		qn:QNAME
 		{
-			QName qname= QName.parse(context, qn.getText());
+			QName qname= QName.parse(staticContext, qn.getText());
 			test= new NameTest(Type.ELEMENT, qname);
 			if (axis == Constants.ATTRIBUTE_AXIS)
 				test.setType(Type.ATTRIBUTE);
@@ -1141,7 +1150,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		|
 		#( nc:NCNAME WILDCARD )
 		{
-			String namespaceURI= context.getURIForPrefix(nc.getText());
+			String namespaceURI= staticContext.getURIForPrefix(nc.getText());
 			QName qname= new QName(null, namespaceURI, nc.getText());
 			test= new NameTest(Type.ELEMENT, qname);
 			if (axis == Constants.ATTRIBUTE_AXIS)
@@ -1179,7 +1188,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			(
 				qn2:QNAME 
 				{ 
-					QName qname= QName.parse(context, qn2.getText());
+					QName qname= QName.parse(staticContext, qn2.getText());
 					test= new NameTest(Type.ELEMENT, qname);
 				}
 				|
@@ -1192,7 +1201,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			(
 				qn3:QNAME 
 				{ 
-					QName qname= QName.parse(context, qn3.getText());
+					QName qname= QName.parse(staticContext, qn3.getText());
 					test= new NameTest(Type.ATTRIBUTE, qname);
 					axis= Constants.ATTRIBUTE_AXIS;
 				}
@@ -1221,7 +1230,7 @@ throws PermissionDeniedException, EXistException, XPathException
 	{ QName qname= null; }
 	(
 		attr:QNAME
-		{ qname= QName.parse(context, attr.getText(), null); }
+		{ qname= QName.parse(staticContext, attr.getText(), null); }
 		|
 		WILDCARD
 		|
@@ -1230,7 +1239,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		|
 		#( nc3:NCNAME WILDCARD )
 		{
-			String namespaceURI= context.getURIForPrefix(nc3.getText());
+			String namespaceURI= staticContext.getURIForPrefix(nc3.getText());
 			if (namespaceURI == null)
 				throw new EXistException("No namespace defined for prefix " + nc3.getText());
 			qname= new QName(null, namespaceURI, null);
@@ -1791,6 +1800,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			ElementConstructor c= new ElementConstructor(context, e.getText());
 			c.setASTNode(e);
 			step= c;
+                        staticContext.pushInScopeNamespaces();
 		}
 		(
 			#(
@@ -1811,7 +1821,14 @@ throws PermissionDeniedException, EXistException, XPathException
 						{ attrib.addEnclosedExpr(enclosed); }
 					)
 				)*
-				{ c.addAttribute(attrib); }
+				{ c.addAttribute(attrib); 
+                                  if (attrib.isNamespaceDeclaration()) {
+                                     String nsPrefix = attrib.getQName().equals("xmlns") ?
+                                        "" : QName.extractLocalName(attrib.getQName());
+                                     staticContext.declareInScopeNamespace(nsPrefix,attrib.getLiteralValue());
+                                  }
+
+                                }
 			)
 		)*
 		(
@@ -1824,6 +1841,9 @@ throws PermissionDeniedException, EXistException, XPathException
 			contentExpr=constructor [elementContent]
 			{ elementContent.add(contentExpr); }
 		)*
+                {
+                   staticContext.popInScopeNamespaces();
+                }
 	)
 	|
 	#(
@@ -1923,7 +1943,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			{ cardinality= Cardinality.ZERO_OR_ONE; }
 		)?
 		{
-			QName qn= QName.parse(context, t.getText());
+			QName qn= QName.parse(staticContext, t.getText());
 			int code= Type.getType(qn);
 			CastExpression castExpr= new CastExpression(context, expr, code, cardinality);
 			castExpr.setASTNode(castAST);
@@ -1941,7 +1961,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			{ cardinality= Cardinality.ZERO_OR_ONE; }
 		)?
 		{
-			QName qn= QName.parse(context, t2.getText());
+			QName qn= QName.parse(staticContext, t2.getText());
 			int code= Type.getType(qn);
 			CastableExpression castExpr= new CastableExpression(context, expr, code, cardinality);
 			castExpr.setASTNode(castAST);
