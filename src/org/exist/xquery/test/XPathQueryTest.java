@@ -909,6 +909,18 @@ public class XPathQueryTest extends XMLTestCase {
         assertEquals("SFBUG 1460610 2nd result", "2", 
                                                 rs.getResource(1).getContent());
     }
+
+    // @see http://sourceforge.net/tracker/index.php?func=detail&aid=1537355&group_id=17691&atid=117691
+    public void testPredicatesBUG1537355() throws Exception {
+        String xQuery = "let $one := 1 return (1, 2, 3)[$one + 1]";
+        
+        XQueryService service = getQueryService();
+        ResourceSet rs = service.query(xQuery);
+        
+        assertEquals("SFBUG 1537355 nr of results", 1, rs.getSize());
+        assertEquals("SFBUG 1537355 result", "2", 
+                                                rs.getResource(0).getContent());
+    }
 	
 	public void testStrings() {
 		try {
