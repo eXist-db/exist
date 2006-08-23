@@ -936,6 +936,34 @@ public class XQueryTest extends XMLTestCase {
 			assertEquals( "XQuery: " + query, "<x:edition xmlns:x=\"http://exist.sourceforge.net/dc-ext\">place</x:edition>",
 				((XMLResource)result.getResource(0)).getContent());			
 			
+			System.out.println("testNamespace 8: ========" );
+			query = "<result xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#'>{//rdf:Description}</result>";
+			result = service.query(query);
+                        assertEquals("XQuery: "+query,
+                                "<result xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">\n"+
+                                "    <rdf:Description id=\"3\">\n" +
+                                "        <dc:title xmlns:dc=\"http://purl.org/dc/elements/1.1/\">title</dc:title>\n" +
+                                "        <dc:creator xmlns:dc=\"http://purl.org/dc/elements/1.1/\">creator</dc:creator>\n" +
+                                "        <x:place xmlns:x=\"http://exist.sourceforge.net/dc-ext\">place</x:place>\n"  +
+                                "        <x:edition xmlns:x=\"http://exist.sourceforge.net/dc-ext\">place</x:edition>\n" +
+                                "    </rdf:Description>\n" +
+                                "</result>",
+                                ((XMLResource)result.getResource(0)).getContent());
+                        
+			System.out.println("testNamespace 9: ========" );
+			query = "<result xmlns='http://www.w3.org/1999/02/22-rdf-syntax-ns#'>{//Description}</result>";
+			result = service.query(query);
+                        assertEquals("XQuery: "+query,
+                                "<result xmlns=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">\n"+
+                                "    <rdf:Description xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\" id=\"3\">\n" +
+                                "        <dc:title xmlns:dc=\"http://purl.org/dc/elements/1.1/\">title</dc:title>\n" +
+                                "        <dc:creator xmlns:dc=\"http://purl.org/dc/elements/1.1/\">creator</dc:creator>\n" +
+                                "        <x:place xmlns:x=\"http://exist.sourceforge.net/dc-ext\">place</x:place>\n"  +
+                                "        <x:edition xmlns:x=\"http://exist.sourceforge.net/dc-ext\">place</x:edition>\n" +
+                                "    </rdf:Description>\n" +
+                                "</result>",
+                                ((XMLResource)result.getResource(0)).getContent());
+                        
 			//Interesting one : let's see with XQuery gurus :-)
 			//declare namespace fn="";
 			//fn:current-time()
