@@ -111,13 +111,26 @@ public class ElementConstructor extends NodeConstructor {
             decls[namespaceDecls.length] = qn;          
             namespaceDecls = decls;
         }
-        context.inScopeNamespaces.put(qn.getLocalName(), qn.getNamespaceURI());
+        //context.inScopeNamespaces.put(qn.getLocalName(), qn.getNamespaceURI());
 	}
 	
     /* (non-Javadoc)
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.AnalyzeContextInfo)
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+       context.pushInScopeNamespaces();
+       // declare namespaces
+       if(namespaceDecls != null) {
+               for(int i = 0; i < namespaceDecls.length; i++) {
+                       if ("".equals(namespaceDecls[i].getNamespaceURI())) {
+                               // TODO: the specs are unclear here: should we throw XQST0085 or not?
+                               context.inScopeNamespaces.remove(namespaceDecls[i].getLocalName());
+//					if (context.inScopeNamespaces.remove(namespaceDecls[i].getLocalName()) == null)
+//		        		throw new XPathException("XQST0085 : can not undefine '" + namespaceDecls[i] + "'");
+                       } else
+                               context.declareInScopeNamespace(namespaceDecls[i].getLocalName(), namespaceDecls[i].getNamespaceURI());
+               }
+       }
     	contextInfo.setParent(this);
         qnameExpr.analyze(contextInfo);
         if(attributes != null) {
@@ -127,6 +140,7 @@ public class ElementConstructor extends NodeConstructor {
         }
         if(content != null)
             content.analyze(contextInfo);
+        context.popInScopeNamespaces();
     }
     
 	/* (non-Javadoc)

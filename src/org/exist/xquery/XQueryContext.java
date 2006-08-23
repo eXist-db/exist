@@ -268,6 +268,23 @@ public class XQueryContext {
 		loadDefaults(broker.getConfiguration());
 	}
 	
+	public XQueryContext(XQueryContext copyFrom) {
+           this(copyFrom.getBroker(),copyFrom.getAccessContext());
+           Iterator prefixes = copyFrom.namespaces.keySet().iterator();
+           while (prefixes.hasNext()) {
+              String prefix = (String)prefixes.next();
+              if (prefix.equals("xml") || prefix.equals("xmlns")) {
+                 continue;
+              }
+               try {
+                  declareNamespace(prefix,(String)copyFrom.namespaces.get(prefix));
+               } catch (XPathException ex) {
+                  ex.printStackTrace();
+               }
+           }
+           
+	}
+	
 	public AccessContext getAccessContext() {
 		return accessCtx;
 	}
@@ -476,6 +493,17 @@ public class XQueryContext {
 	 * @return
 	 */
 	public String getURIForPrefix(String prefix) {
+            // try in-scope namespace declarations
+           String ns =  inScopeNamespaces == null
+				? null
+				: (String) inScopeNamespaces.get(prefix);
+           if (ns==null) {
+              // Check global declarations
+              return (String)namespaces.get(prefix);
+           } else {
+              return ns;
+           }
+           /* old code checked namespaces first
 		String ns = (String) namespaces.get(prefix);
 		if (ns == null)
 			// try in-scope namespace declarations
@@ -484,6 +512,7 @@ public class XQueryContext {
 				: (String) inScopeNamespaces.get(prefix);
 		else
 			return ns;
+            */
 	}
 
 	/**
