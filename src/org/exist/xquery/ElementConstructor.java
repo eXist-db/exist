@@ -111,6 +111,7 @@ public class ElementConstructor extends NodeConstructor {
             decls[namespaceDecls.length] = qn;          
             namespaceDecls = decls;
         }
+        context.inScopeNamespaces.put(qn.getLocalName(), qn.getNamespaceURI());
 	}
 	
     /* (non-Javadoc)
