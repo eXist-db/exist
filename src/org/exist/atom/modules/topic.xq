@@ -1,5 +1,5 @@
-<feed xmlns="http://www.w3.org/2005/Atom" 
-xmlns:atom="http://www.w3.org/2005/Atom">
+declare namespace atom="http://www.w3.org/2005/Atom";
+<feed xmlns="http://www.w3.org/2005/Atom">
    { 
      "&#x0a;",
      /atom:feed/atom:title,
