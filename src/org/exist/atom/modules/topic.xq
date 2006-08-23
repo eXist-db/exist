@@ -64,6 +64,8 @@ declare namespace atom="http://www.w3.org/2005/Atom";
                                 "&#x0a;",
                                 $i/atom:updated,
                                 "&#x0a;",
+                                $i/atom:author,
+                                "&#x0a;",
                                 <category scheme="http://www.smallx.com/Ontology/Atopic/2006/1/0/topic/relation" term="subtopic"/>,
                                 "&#x0a;",
                                 <link rel="alternate" href="/atom/content{substring-after($path,'/db')}" type="application/atom+xml"/>,
