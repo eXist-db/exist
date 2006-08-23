@@ -97,7 +97,10 @@ public class ElementConstructor extends NodeConstructor {
         }
         if (name.equalsIgnoreCase("xmlns")) {
             throw new XPathException("XQST0070 : can not redefine '" + qn + "'");
-        }        
+        }
+        if (name.length()!=0 && uri.trim().length()==0) {
+           throw new XPathException("XQST0085 : cannot undeclare a prefix "+name+".");
+        }
         if(namespaceDecls == null) {
             namespaceDecls = new QName[1];
             namespaceDecls[0] = qn;
