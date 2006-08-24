@@ -340,7 +340,7 @@ class TriggersDialog extends JFrame {
 	{
         public CheckBoxCellRenderer()
         {
-            
+            setHorizontalAlignment(JLabel.CENTER);
         }
     
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column)
@@ -348,7 +348,8 @@ class TriggersDialog extends JFrame {
             if(isSelected)
             {
                 setForeground(table.getSelectionForeground());
-                super.setBackground(table.getSelectionBackground());
+                //super.setBackground(table.getSelectionBackground());
+                setBackground(table.getSelectionBackground());
             }
             else
             {
@@ -357,7 +358,7 @@ class TriggersDialog extends JFrame {
             }
     
             // Set the state
-            setSelected(isSelected);
+            setSelected((value != null && ((Boolean) value).booleanValue()));
             return this;
         }
     }
