@@ -168,6 +168,9 @@ public class ValueSequence extends AbstractSequence {
 				if(v.getImplementationType() != NodeValue.PERSISTENT_NODE) {
                     // found an in-memory document
                     DocumentImpl doc = ((NodeImpl)v).getDocument();
+                    if (doc==null) {
+                       continue;
+                    }
                     // make this document persistent: doc.makePersistent()
                     // returns a map of all root node ids mapped to the corresponding
                     // persistent node. We scan the current sequence and replace all
