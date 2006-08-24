@@ -23,6 +23,7 @@ package org.exist.client;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -523,6 +524,126 @@ public class CollectionXConf
 			System.arraycopy(qnameIndexes, 0, newQNameIndexes, 0, qnameIndexes.length);
 			newQNameIndexes[qnameIndexes.length] = new QNameIndex(QName, xsType);
 			qnameIndexes = newQNameIndexes;
+		}
+	}
+	
+	/**
+	 * Returns an array of Triggers
+	 * 
+	 * @return Array of Range Indexes
+	 */
+	public Trigger[] getTriggers()
+	{
+		return triggers;
+	}
+	
+	/**
+	 * Returns n specific Trigger
+	 * 
+	 * @param index	The numeric index of the Trigger to return
+	 * 
+	 * @return The Trigger
+	 */
+	public Trigger getTrigger(int index)
+	{
+		return triggers[index];
+	}
+	
+	/**
+	 * Returns the number of Triggers defined
+	 *  
+	 * @return The number of Triggers
+	 */
+	public int getTriggerCount()
+	{
+		if(triggers != null)
+		{
+			return triggers.length;
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	
+	/**
+	 * Delete a Trigger
+	 * 
+	 * @param index	The numeric index of the Trigger to delete
+	 */
+	public void deleteTrigger(int index)
+	{
+		//can only remove an index which is in the array
+		if(index < triggers.length)
+		{
+			hasChanged = true;
+			
+			//if its the last item in the array just null the array 
+			if(triggers.length == 1)
+			{
+				triggers = null;
+			}
+			else
+			{
+				//else remove the item at index from the array
+				Trigger newTriggers[] = new Trigger[triggers.length - 1];
+				int x = 0;
+				for(int i = 0; i < triggers.length; i++)
+				{
+					if(i != index)
+					{
+						newTriggers[x] = triggers[i];
+						x++;
+					}
+				}	
+				triggers = newTriggers;
+			}
+		}
+	}
+	
+	/**
+	 * Update the details of a Trigger
+	 *
+	 * @param index		The numeric index of the range index to update
+	 * @param triggerClass	The name of the new class for the trigger
+	 * 
+	 */
+	public void updateTrigger(int index, String triggerClass, String triggerEvents, Properties parameters)
+	{
+		//TODO: finish this!!!
+		
+		hasChanged = true;
+		
+		if(triggerClass != null)
+			triggers[index].setTriggerClass(triggerClass);
+		
+		//if(triggerEvents != null)
+			//rangeIndexes[index].setxsType(xsType);
+	}
+	
+	/**
+	 * Add a Trigger
+	 *
+	 * @param triggerClass The class for the Trigger
+	 * 
+	 */
+	public void addTrigger(String triggerClass, String triggerEvents, Properties parameters)
+	{
+		//TODO: finish this!!!
+		
+		hasChanged = true;
+		
+		if(triggers == null)
+		{
+			triggers = new Trigger[1];
+			triggers[0] = new Trigger(triggerClass, triggerEvents, parameters);
+		}
+		else
+		{
+			Trigger newTriggers[] = new Trigger[triggers.length + 1];
+			System.arraycopy(triggers, 0, newTriggers, 0, triggers.length);
+			newTriggers[triggers.length] = new Trigger(triggerClass, triggerEvents, parameters);
+			triggers = newTriggers;
 		}
 	}
 	
@@ -1031,22 +1152,57 @@ public class CollectionXConf
 	//represents a Trigger in the collection.xconf
 	protected class Trigger
 	{
-		/*public final static int EVENT_STORE_DOCUMENT = 1;
-		public final static int EVENT_UPDATE_DOCUMENT = 2;
-		public final static int EVENT_REMOVE_DOCUMENT = 3;
-		public final static int EVENT_RENAME_COLLECTION = 4;
-		public final static int EVENT_CREATE_COLLECTION = 5;
-		
-		private int triggerEvent = -1;*/
-		private String triggerEvent = null;
+		private String triggerEvents = null;
 		private String triggerClass = null;
-		Properties parameters = null;
+		private Properties parameters = null;
 		
-		Trigger(String triggerEvent, String triggerClass, Properties parameters)
+		private HashMap triggerEventNames = new HashMap();
+		
+		Trigger(String triggerClass, String triggerEvents, Properties parameters)
 		{
-			this.triggerEvent = triggerEvent;
+			//setup a mapping from org.exist.collections.triggers.Trigger events to trigger names
+			triggerEventNames.put(new Integer(org.exist.collections.triggers.Trigger.STORE_DOCUMENT_EVENT), "store");
+			triggerEventNames.put(new Integer(org.exist.collections.triggers.Trigger.UPDATE_DOCUMENT_EVENT), "update");
+			triggerEventNames.put(new Integer(org.exist.collections.triggers.Trigger.REMOVE_DOCUMENT_EVENT), "remove");
+			triggerEventNames.put(new Integer(org.exist.collections.triggers.Trigger.CREATE_COLLECTION_EVENT), "create");
+			triggerEventNames.put(new Integer(org.exist.collections.triggers.Trigger.RENAME_COLLECTION_EVENT), "rename");
+			triggerEventNames.put(new Integer(org.exist.collections.triggers.Trigger.DELETE_COLLECTION_EVENT), "delete");
+			
+			//set properties
 			this.triggerClass = triggerClass;
+			this.triggerEvents = triggerEvents;
 			this.parameters = parameters;
+		}
+		
+		public String getTriggerClass()
+		{
+			return triggerClass;
+		}
+		
+		public void setTriggerClass(String triggerClass)
+		{
+			this.triggerClass = triggerClass;
+		}
+		
+		public boolean handlesEvent(int iTriggerEvent)
+		{
+			String triggerName = (String)triggerEventNames.get(new Integer(iTriggerEvent));
+			
+			if(triggerName != null)
+			{
+				return(triggerEvents.indexOf(triggerName) > -1);
+			}
+			return false;
+		}
+		
+		private void setEvent(int iTriggerEvent)
+		{
+			if(!handlesEvent(iTriggerEvent))
+			{
+				String triggerName = (String)triggerEventNames.get(new Integer(iTriggerEvent));
+				
+				triggerEvents += "," + triggerName;
+			}
 		}
 		
 	}
