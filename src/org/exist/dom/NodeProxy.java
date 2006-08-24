@@ -38,6 +38,7 @@ import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.UntypedAtomicValue;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -584,8 +585,12 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 
     public String getNodeValue() {
         if (isDocument()) {         
-            NodeProxy root = (NodeProxy) doc.getDocumentElement();
-            return doc.getBroker().getNodeValue(new StoredNode(root), false);
+            Element e = doc.getDocumentElement();
+            if (e instanceof NodeProxy) {
+               return doc.getBroker().getNodeValue(new StoredNode((NodeProxy)e), false);
+            } else {
+               return doc.getBroker().getNodeValue((ElementImpl)e, false);
+            } 
         } else {
             return doc.getBroker().getNodeValue(new StoredNode(this), false);
         }
