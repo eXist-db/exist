@@ -1217,6 +1217,13 @@ throws PermissionDeniedException, EXistException, XPathException
 			test= new TypeTest(Type.COMMENT); 
 		}
 		|
+		"processing-instruction"
+		{
+			if (axis == Constants.ATTRIBUTE_AXIS)
+				throw new XPathException(n, "Cannot test for processing-instruction() on the attribute axis");
+			test= new TypeTest(Type.PROCESSING_INSTRUCTION); 
+		}
+		|
 		"document-node"
 		{ test= new TypeTest(Type.DOCUMENT); }
 	)
