@@ -160,6 +160,9 @@ public abstract class Serializer implements XMLReader {
 		option = (String) config.getProperty("serialization.indent");
 		if (option != null)
 			defaultProperties.setProperty(OutputKeys.INDENT, option);
+		option = (String) config.getProperty("serialization.compress-output");
+		if (option != null)
+			defaultProperties.setProperty(EXistOutputKeys.COMPRESS_OUTPUT, option);
 
 		boolean tagElements = true, tagAttributes = false;
 		if ((option =

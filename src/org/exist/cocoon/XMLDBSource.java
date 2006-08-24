@@ -182,7 +182,7 @@ public class XMLDBSource extends AbstractLogEnabled
      * The constructor.
      *
      * @param logger the Logger instance.
-     * @param username
+     * @param user
      * @param password
      * @param srcUrl the URL being queried.
      */

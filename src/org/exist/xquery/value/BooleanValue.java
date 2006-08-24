@@ -37,7 +37,6 @@ public class BooleanValue extends AtomicValue {
 	 * the value of the parameter.
 	 * 
 	 * @param bool
-	 * @return
 	 */
 	public final static BooleanValue valueOf(boolean bool) {
 		return bool ? TRUE : FALSE;

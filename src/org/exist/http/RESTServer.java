@@ -22,7 +22,6 @@
  */
 package org.exist.http;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -42,7 +41,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
 
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
@@ -209,6 +207,8 @@ public class RESTServer {
     public void doGet(DBBroker broker, HttpServletRequest request, HttpServletResponse response, String path)
     throws BadRequestException, PermissionDeniedException,
             NotFoundException, IOException {
+    	
+    	//if required, set character encoding
     	if (request.getCharacterEncoding() == null)
 			request.setCharacterEncoding(formEncoding);
     	
@@ -471,6 +471,10 @@ public class RESTServer {
      */
     public void doPost(DBBroker broker, HttpServletRequest request, HttpServletResponse response, String path) throws BadRequestException, PermissionDeniedException, IOException
     {	
+    	//if required, set character encoding
+    	if (request.getCharacterEncoding() == null)
+			request.setCharacterEncoding(formEncoding);
+    
         Properties outputProperties = new Properties(defaultProperties);
         XmldbURI pathUri = XmldbURI.create(path);
         DocumentImpl resource = null;
@@ -1005,7 +1009,7 @@ public class RESTServer {
             String[] pair = Pragma.parseKeyValuePair(contents[i]);
             if (pair == null)
                 throw new XPathException("Unknown parameter found in "
-                        + pragma.getQName().toString() + ": '" + contents[i]
+                        + pragma.getQName().getStringValue() + ": '" + contents[i]
                         + "'");
             LOG.debug("Setting serialization property from pragma: " + pair[0]
                     + " = " + pair[1]);

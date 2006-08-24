@@ -76,7 +76,6 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
      * 
      * @param collator Collator used for string comparison.
      * @param other
-     * @return
      * @throws XPathException if this is not a string.
      */
 	public boolean startsWith(Collator collator, AtomicValue other) throws XPathException {
@@ -90,7 +89,6 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
      * 
      * @param collator Collator used for string comparison.
      * @param other
-     * @return
      * @throws XPathException if this is not a string.
      */
 	public boolean endsWith(Collator collator, AtomicValue other) throws XPathException {
@@ -104,7 +102,6 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
      * 
      * @param collator Collator used for string comparison.
      * @param other
-     * @return
      * @throws XPathException if this is not a string.
      */
 	public boolean contains(Collator collator, AtomicValue other) throws XPathException {

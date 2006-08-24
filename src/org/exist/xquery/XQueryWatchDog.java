@@ -80,7 +80,7 @@ public class XQueryWatchDog {
 		try {
 			timeout = Long.parseLong(contents[0]);
 		} catch (NumberFormatException e) {
-			throw new XPathException("Error parsing timeout value in pragma " + pragma.getQName().toString());
+			throw new XPathException("Error parsing timeout value in pragma " + pragma.getQName().getStringValue());
 		}
 		LOG.debug("timeout set from pragma: " + timeout + "ms.");
     }
@@ -92,7 +92,7 @@ public class XQueryWatchDog {
 		try {
 			maxNodesLimit = Integer.parseInt(contents[0]);
 		} catch (NumberFormatException e) {
-			throw new XPathException("Error parsing size-limit value in pragma " + pragma.getQName().toString());
+			throw new XPathException("Error parsing size-limit value in pragma " + pragma.getQName().getStringValue());
 		}
 		LOG.debug("output-size-limit set from pragma: " + maxNodesLimit);
     }

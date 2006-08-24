@@ -335,7 +335,6 @@ public class StringValue extends AtomicValue {
 	 * into a single space.
 	 *  
 	 * @param in
-	 * @return
 	 */
 	public static String collapseWhitespace(CharSequence in) {
 		if (in.length() == 0) {

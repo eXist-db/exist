@@ -49,14 +49,14 @@ public class AttributeImpl extends NodeImpl implements Attr, QNameable {
 	 * @see org.w3c.dom.Attr#getName()
 	 */
 	public String getName() {
-		return getQName().toString();
+		return getQName().getStringValue();
 	}
 
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Node#getNodeName()
 	 */
 	public String getNodeName() {
-		return getQName().toString();
+		return getQName().getStringValue();
 	}
 
 	
@@ -159,7 +159,7 @@ public class AttributeImpl extends NodeImpl implements Attr, QNameable {
     	StringBuffer result = new StringBuffer();
     	result.append("in-memory#");
     	result.append("attribute {");
-    	result.append(getQName().toString());
+    	result.append(getQName().getStringValue());
     	result.append("} {");        
     	result.append(getValue().toString());        
     	result.append("} ");    	

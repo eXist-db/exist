@@ -1,20 +1,21 @@
-/* eXist Open Source Native XML Database
- * Copyright (C) 2000-03,  Wolfgang M. Meier (wolfgang@exist-db.org)
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Library General Public License
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2006 The eXist team
+ *  
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
+ *  
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Library General Public License for more details.
- *
- * You should have received a copy of the GNU Library General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * GNU Lesser General Public License for more details.
  * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
  * $Id$
  */
 
@@ -37,7 +38,7 @@ import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
 
 /**
- * xpath-library function: local-name(object)
+ * xpath-library function: namespace-uri()
  *
  */
 public class FunNamespaceURI extends Function {
@@ -45,11 +46,19 @@ public class FunNamespaceURI extends Function {
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 				new QName("namespace-uri", Function.BUILTIN_FUNCTION_NS),
+				"Returns the namespace URI of the xs:QName of the context item. " +
+				"If the context item is in no namespace or is neither an element nor attribute node, " +
+				"returns the xs:anyURI eqvivalent to the zero-length string." +
+				" Raises an error if the context item is undefined or not a node.",
 				new SequenceType[0],
 				new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE),
 				true),
 		new FunctionSignature(
 			new QName("namespace-uri", Function.BUILTIN_FUNCTION_NS),
+			"Returns the namespace URI of the xs:QName value of $a" +
+			"If $a is in no namespace or is neither an element nor attribute node, " +
+				"returns the xs:anyURI eqvivalent to the zero-length string." +
+				" Raises an error if the context item is undefined or not a node.",
 			new SequenceType[] { new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE) },
 			new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE),
 			true)
@@ -84,14 +93,14 @@ public class FunNamespaceURI extends Function {
             if(!contextSequence.isEmpty())
                 item = contextSequence.itemAt(0);
             else
-                throw new XPathException(getASTNode(), "undefined context item");
+                throw new XPathException(getASTNode(), "XPDY0002: Undefined context item");
         }
         
         if(item == null)
             result = AnyURIValue.EMPTY_URI;
         else {        	
             if(!Type.subTypeOf(item.getType(), Type.NODE))
-                throw new XPathException(getASTNode(), "context item is not a node; got: " +
+                throw new XPathException(getASTNode(), "XPDY0004: Context item is not a node; got: " +
                         Type.getTypeName(item.getType()));
             //TODO : how to improve performance ?
             Node n = ((NodeValue)item).getNode();

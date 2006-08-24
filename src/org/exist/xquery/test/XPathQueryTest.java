@@ -137,6 +137,10 @@ public class XPathQueryTest extends XMLTestCase {
 	
 	private final static String self =
 		"<test-self><a>Hello</a><b>World!</b></test-self>";
+
+	// Added by Geoff Shuetrim (geoff@galexy.net) to highlight problems with XPath queries of elements called 'xpointer'.
+	private final static String xpointerElementName =
+		"<test><xpointer/></test>";
 	
     private static String uri = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
     
@@ -707,7 +711,7 @@ public class XPathQueryTest extends XMLTestCase {
             result = service.queryResource("numbers.xml", query);           
             assertEquals("XPath: " + query, 2, result.getSize());               
             
-
+            
             query = "let $test := <test><a> a </a><a>a</a></test>" +
             "return distinct-values($test/a/normalize-space(.))";
             result = service.queryResource("numbers.xml", query);           
@@ -905,6 +909,18 @@ public class XPathQueryTest extends XMLTestCase {
                                                 rs.getResource(0).getContent());
         assertEquals("SFBUG 1460610 2nd result", "2", 
                                                 rs.getResource(1).getContent());
+    }
+
+    // @see http://sourceforge.net/tracker/index.php?func=detail&aid=1537355&group_id=17691&atid=117691
+    public void testPredicatesBUG1537355() throws Exception {
+        String xQuery = "let $one := 1 return (1, 2, 3)[$one + 1]";
+        
+        XQueryService service = getQueryService();
+        ResourceSet rs = service.query(xQuery);
+        
+        assertEquals("SFBUG 1537355 nr of results", 1, rs.getSize());
+        assertEquals("SFBUG 1537355 result", "2", 
+                                                rs.getResource(0).getContent());
     }
 	
 	public void testStrings() {
@@ -1569,6 +1585,32 @@ public class XPathQueryTest extends XMLTestCase {
         }
     }
     
+    /**
+	 * Added by Geoff Shuetrim on 15 July 2006 (geoff@galexy.net).
+	 * This test has been added following identification of a problem running
+	 * XPath queries that involved the name of elements with the name 'xpointer'.
+	 * @throws XMLDBException
+	 */
+	public void bugtestXPointerElementNameHandling() {
+		try {
+
+			XQueryService service = storeXMLStringAndGetQueryService(
+					"xpointer.xml", xpointerElementName);
+
+			ResourceSet result = service.queryResource("xpointer.xml",
+					"/test/.[local-name()='xpointer']");
+			printResult(result);
+			assertEquals(1, result.getSize());
+
+			result = service.queryResource("xpointer.xml", "/test/xpointer");
+			printResult(result);
+			assertEquals(1, result.getSize());
+
+		} catch (XMLDBException e) {
+			fail(e.getMessage());
+		}
+	}
+        
     public void testSubstring() throws XMLDBException {
 
         XQueryService service = getQueryService();

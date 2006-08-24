@@ -35,6 +35,12 @@ public class AllTests {
         suite.addTest(new XUpdateTestCases("whitespace", test));
         suite.addTest(new XUpdateTestCases("namespaces", test));
         
+        // bugtest ; fails
+//        suite.addTest(new XUpdateTestCases("rename_root_element", test));
+        
+        // butest ; fails
+//        suite.addTest(new XUpdateTestCases("rename_including_namespace", test));
+        
 //        suite.addTestSuite(RemoveAppendTest.class);
         
         /*

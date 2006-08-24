@@ -99,7 +99,6 @@ public class ElementImpl extends NamedNode implements Element {
     /**
      * Reset this element to its initial state.
      *
-     * @see org.exist.dom.NodeImpl#clear()
      */
     public void clear() {
         super.clear();
@@ -446,8 +445,13 @@ public class ElementImpl extends NamedNode implements Element {
                 final NamedNodeMap attribs = child.getAttributes();
                 for (int i = 0; i < attribs.getLength(); i++) {
                     Attr attr = (Attr) attribs.item(i);
-                    if (!attr.getNodeName().startsWith("xmlns"))
+                    if (!attr.getNodeName().startsWith("xmlns")) {
                         ch.add(attr);
+                    } else {
+                        String xmlnsDecl = attr.getNodeName();
+                        String prefix = xmlnsDecl.length()==5 ? "" : xmlnsDecl.substring(6);
+                        elem.addNamespaceMapping(prefix,attr.getNodeValue());
+                    }
                 }
 				NodeList cl = child.getChildNodes();
 				for (int i = 0; i < cl.getLength(); i++) {
@@ -728,7 +732,7 @@ public class ElementImpl extends NamedNode implements Element {
      * @see org.w3c.dom.Element#getTagName()
      */
     public String getTagName() {
-        return nodeName.toString();
+        return nodeName.getStringValue();
     }
 
     /**
@@ -835,7 +839,6 @@ public class ElementImpl extends NamedNode implements Element {
     }
 
     /**
-     * @see org.exist.dom.NodeImpl#toString(boolean)
      */
     public String toString(boolean top) {
         return toString(top, new TreeSet());

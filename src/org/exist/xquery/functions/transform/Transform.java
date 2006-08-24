@@ -75,6 +75,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
+import org.exist.xslt.TransformerFactoryAllocator;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
@@ -197,8 +198,10 @@ public class Transform extends BasicFunction {
      * @throws TransformerFactoryConfigurationError
      * @throws XPathException
      */
-    private TransformerHandler createHandler(Item stylesheetItem, Node options) throws TransformerFactoryConfigurationError, XPathException {
-        SAXTransformerFactory factory = (SAXTransformerFactory)SAXTransformerFactory.newInstance();
+    private TransformerHandler createHandler(Item stylesheetItem, Node options) throws TransformerFactoryConfigurationError, XPathException
+    {
+    	SAXTransformerFactory factory = (SAXTransformerFactory)TransformerFactoryAllocator.getTransformerFactory(context.getBroker());
+    	
 		TransformerHandler handler;
 		try {
 			Templates templates = null;

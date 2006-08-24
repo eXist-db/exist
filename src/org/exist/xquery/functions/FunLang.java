@@ -1,8 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-06 Wolfgang M. Meier
- * meier@ifs.tu-darmstadt.de
- * http://exist.sourceforge.net
+ * Copyright (C) 2001-2006 the eXist team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -15,8 +13,8 @@
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  * $Id$
  */
@@ -55,6 +53,8 @@ public class FunLang extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("lang", Function.BUILTIN_FUNCTION_NS),
+			"Returns true if the context items xml:lang attribute is equal " +
+			"to the value of $a, false otherwise.",
 			new SequenceType[] {
 				 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
 			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE));

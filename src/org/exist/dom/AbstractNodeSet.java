@@ -64,7 +64,6 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * according to the internal ordering of nodes (i.e. level first), not in document-
 	 * order.
 	 * 
-	 * @return
 	 */
 	public abstract NodeSetIterator iterator();
 
@@ -90,7 +89,6 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * node-id of the given NodeProxy object.
 	 * 
 	 * @param proxy
-	 * @return
 	 */
 	public abstract boolean contains(NodeProxy proxy);
 
@@ -98,7 +96,6 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * Check if this node set contains nodes belonging to the given document.
 	 * 
 	 * @param doc
-	 * @return
 	 */
 	public boolean containsDoc(DocumentImpl doc) {
 		return true;
@@ -182,7 +179,6 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	/**
 	 * Get the node at position pos within this node set.
 	 * @param pos
-	 * @return
 	 */
 	public abstract NodeProxy get(int pos);
 
@@ -191,7 +187,6 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * the given NodeProxy.
 	 *  
 	 * @param p
-	 * @return
 	 */
 	public abstract NodeProxy get(NodeProxy p);
 
@@ -216,7 +211,6 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 *  
 	 * @param al a node set containing potential parent nodes
 	 * @param mode selection mode
-	 * @return
 	 */
 	public NodeSet selectParentChild(NodeSet al, int mode) {
 		return selectParentChild(al, mode, Expression.NO_CONTEXT_ID);
@@ -236,7 +230,6 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * @param contextId used to track context nodes when evaluating predicate 
 	 * expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
 	 * will be added to each result of the of the selection. 
-	 * @return
 	 */
 	public NodeSet selectParentChild(NodeSet al, int mode, int contextId) {
 		return NodeSetHelper.selectParentChild(this, al, mode, contextId);
@@ -259,7 +252,6 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
 	 * will be added to each result of the of the selection. 
 	 * 
-	 * @return
 	 */
 	public NodeSet selectAncestorDescendant(NodeSet al,	int mode, boolean includeSelf, int contextId) {
 		return NodeSetHelper.selectAncestorDescendant(this, al, mode, includeSelf, contextId);
@@ -269,12 +261,10 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * For a given set of potential ancestor nodes, return all ancestors
 	 * having descendants in this node set.
 	 *
-	 * @param  al    node set containing potential ancestors
+	 * @param  dl    node set containing potential ancestors
 	 * @param includeSelf if true, check if the ancestor node itself is contained
 	 * in this node set (ancestor-or-self axis)
-	 * @param rememberContext if true, add the matching nodes to the context node
-	 * list of each returned node (this is used to track matches for predicate evaluation)
-	 * @return
+	 * @param contextId
 	 */
 	public NodeSet selectAncestors(NodeSet descendants, boolean includeSelf, int contextId) {
 		return NodeSetHelper.selectAncestors(this, descendants, includeSelf, contextId);
@@ -299,7 +289,6 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * @param contextId used to track context nodes when evaluating predicate 
 	 * expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
 	 * will be added to each result of the of the selection. 
-	 * @return
 	 */
     public NodeSet selectPrecedingSiblings(NodeSet siblings, int contextId) {
         return NodeSetHelper.selectPrecedingSiblings(this, siblings, contextId);
@@ -347,7 +336,6 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	/**
 	 * Return a new node set containing the parent nodes of all nodes in the 
 	 * current set.
-	 * @return
 	 */
 	public NodeSet getParents(int contextId) {
 		NodeSet parents = new ExtArrayNodeSet();		 
@@ -408,7 +396,6 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * size cannot be determined (the default).
 	 * 
 	 * @param doc
-	 * @return
 	 */
 	public int getSizeHint(DocumentImpl doc) {
 		return Constants.NO_SIZE_HINT;
@@ -419,7 +406,6 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * node set with the given node set.
 	 * 
 	 * @param other
-	 * @return
 	 */
 	public NodeSet intersection(NodeSet other) {
 		AVLTreeNodeSet r = new AVLTreeNodeSet();
@@ -483,7 +469,6 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * current node set and the given node set.
 	 * 
 	 * @param other
-	 * @return
 	 */
 	public NodeSet union(NodeSet other) {
         ExtArrayNodeSet result = new ExtArrayNodeSet();
@@ -508,7 +493,6 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * @param contextId used to track context nodes when evaluating predicate 
 	 * expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
 	 * will be added to each result of the of the selection. 
-	 * @return
 	 */
 	public NodeSet getContextNodes(int contextId) {
 		NodeProxy current, context;
@@ -569,7 +553,6 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * 
 	 * @see org.exist.xquery.GeneralComparison
 	 * @see org.exist.xquery.ValueComparison
-	 * @return
 	 */
 	public int getIndexType() {
 		//Is the index type initialized ?

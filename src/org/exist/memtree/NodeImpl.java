@@ -101,11 +101,12 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 			case Node.PROCESSING_INSTRUCTION_NODE :
 				QName qn = (QName)
 					document.namePool.get(document.nodeName[nodeNumber]);
-				return qn.toString();
+				//TODO : check !
+				return qn.getStringValue();
 			case Node.ATTRIBUTE_NODE:
-				return document.namePool.get(document.attrName[nodeNumber]).toString();
+				return ((QName)document.namePool.get(document.attrName[nodeNumber])).getStringValue();
 			case NodeImpl.NAMESPACE_NODE:
-				return document.namePool.get(document.namespaceCode[nodeNumber]).toString();
+				return ((QName)document.namePool.get(document.namespaceCode[nodeNumber])).getStringValue();
 			case Node.TEXT_NODE :
 				return "#text";
 			default :

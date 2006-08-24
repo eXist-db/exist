@@ -31,7 +31,6 @@ import org.exist.storage.DBBroker;
  */
 public class AtomModuleBase implements AtomModule {
 
-   static DateFormat xsdFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
    protected Context context;
    
    /** Creates a new instance of AtomModuleBase */
@@ -46,20 +45,6 @@ public class AtomModuleBase implements AtomModule {
    
    protected Context getContext() {
       return context;
-   }
-   
-   protected String toXSDDateTime(long value)
-   {
-      Date d = new Date(value);
-      return toXSDDateTime(d);
-   }
-   
-   protected String toXSDDateTime(Date d)
-   {
-      String result = xsdFormat.format(d);
-      result = result.substring(0, result.length()-2)
-               + ":" + result.substring(result.length()-2);            
-      return result;
    }
    
    public void process(DBBroker broker,IncomingMessage request,OutgoingMessage response) 

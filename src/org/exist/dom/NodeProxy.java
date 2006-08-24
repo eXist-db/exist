@@ -40,6 +40,7 @@ import org.exist.xquery.value.UntypedAtomicValue;
 
 import org.exist.numbering.NodeId;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -67,7 +68,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	/* 
 	 * Special values for nodes gid :
 	 * Chosen in order to facilitate fast arithmetic computations
-	 */	
+	 */
 	public static final int DOCUMENT_NODE_GID = -1;	
 	public static final int UNKNOWN_NODE_GID = 0;	
 	public static final int DOCUMENT_ELEMENT_GID = 1;
@@ -504,8 +505,12 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 
     public String getNodeValue() {
         if (isDocument()) {         
-            ElementImpl root = (ElementImpl) doc.getDocumentElement();
-            return doc.getBroker().getNodeValue(root, false);
+            Element e = doc.getDocumentElement();
+            if (e instanceof NodeProxy) {
+               return doc.getBroker().getNodeValue(new StoredNode((NodeProxy)e), false);
+            } else {
+               return doc.getBroker().getNodeValue((ElementImpl)e, false);
+            }
         } else {
             return doc.getBroker().getNodeValue(new StoredNode(this), false);
         }

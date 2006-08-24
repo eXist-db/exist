@@ -766,7 +766,6 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
          * @param includeSelf include the self:: axis
          * @param mode
          * @param contextId
-         * @return
          */
         NodeSet getDescendantsInSet(NodeSet result, NodeProxy parent, boolean childOnly,
         		boolean includeSelf, int mode, int contextId) {

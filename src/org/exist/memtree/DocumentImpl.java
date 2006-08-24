@@ -584,7 +584,7 @@ public class DocumentImpl extends NodeImpl implements Document {
     	for(int i = 1; i < size; i++) {
     		if (nodeKind[i] == Node.ELEMENT_NODE) {
     			QName qn = (QName) namePool.get(nodeName[i]);
-    			if(qn.toString().equals(name))
+    			if(qn.getStringValue().equals(name))
     				nl.add(getNode(i));
     		}
     	}

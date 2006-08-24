@@ -159,7 +159,7 @@ public class CollectionXConf
 	/**
 	 * Set whether attributes should be indexed into the fulltext index
 	 * 
-	 * @param attribues	true indicates attributes should be indexed, false indicates attributes should not be indexed
+	 * @param attributes	true indicates attributes should be indexed, false indicates attributes should not be indexed
 	 */
 	public void setFullTextIndexAttributes(boolean attributes)
 	{

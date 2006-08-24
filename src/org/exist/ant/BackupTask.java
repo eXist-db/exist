@@ -25,7 +25,6 @@ package org.exist.ant;
 import org.apache.tools.ant.BuildException;
 import org.exist.backup.Backup;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.util.URIUtils;
 
 /**
  * @author wolf

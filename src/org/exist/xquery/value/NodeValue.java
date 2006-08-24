@@ -45,7 +45,6 @@ public interface NodeValue extends Item, Sequence {
 	 * node. Used to implement "is" and "isnot" comparisons.
 	 * 
 	 * @param other
-	 * @return
 	 * @throws XPathException
 	 */
 	public boolean equals(NodeValue other) throws XPathException;
@@ -55,7 +54,6 @@ public interface NodeValue extends Item, Sequence {
 	 * document order.
 	 * 
 	 * @param other
-	 * @return
 	 * @throws XPathException
 	 */
 	public boolean before(NodeValue other, boolean isPreceding) throws XPathException;
@@ -65,7 +63,6 @@ public interface NodeValue extends Item, Sequence {
 	 * document order.
 	 * 
 	 * @param other
-	 * @return
 	 * @throws XPathException
 	 */
 	public boolean after(NodeValue other, boolean isFollowing) throws XPathException;
@@ -74,7 +71,6 @@ public interface NodeValue extends Item, Sequence {
 	 * Returns the implementation-type of this node, i.e. either
 	 * {@link #IN_MEMORY_NODE} or {@link #PERSISTENT_NODE}.
 	 * 
-	 * @return
 	 */
 	public int getImplementationType();
 	

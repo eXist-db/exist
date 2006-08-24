@@ -1,24 +1,23 @@
-/*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-05 The eXist Project
- *  http://exist-db.org
+/* eXist Open Source Native XML Database
+ * Copyright (C) 2001-2006 The eXist team
  *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc.,  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
  *  $Id$
  */
+
 package org.exist.xquery.functions;
 
 import org.exist.dom.QName;
@@ -41,6 +40,9 @@ public class FunEscapeHTMLURI extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("escape-html-uri", Function.BUILTIN_FUNCTION_NS),
+			"Replaces all nonprintable ASCII characters in the string value of $a by an escape sequence represented " + 
+			"as a hexadecimal octet in the form %XX. If $a is the empty sequence, " + 
+			"returns the zero-length string." ,
 			new SequenceType[] { new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE) },
 			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE));
 	

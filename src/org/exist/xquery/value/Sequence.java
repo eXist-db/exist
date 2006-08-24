@@ -77,7 +77,7 @@ public interface Sequence {
 	 * Returns an iterator over all items in the sequence. The
 	 * items are returned in document order where applicable.
 	 * 
-	 * @return
+	 * @throws XPathException TODO
 	 * @throws XPathException TODO
 	 */
 	public SequenceIterator iterate() throws XPathException;
@@ -86,7 +86,6 @@ public interface Sequence {
 	 * Returns an iterator over all items in the sequence. The returned
 	 * items may - but need not - to be in document order.
 	 * 
-	 * @return
 	 */
 	public SequenceIterator unorderedIterator();
 	
@@ -132,7 +131,6 @@ public interface Sequence {
 	 * 
 	 * @see org.exist.xquery.Cardinality
 	 * 
-	 * @return
 	 */
 	public int getCardinality();
 	
@@ -141,7 +139,6 @@ public interface Sequence {
 	 * this sequence. Items are counted beginning at 0.
 	 * 
 	 * @param pos
-	 * @return
 	 */
 	public Item itemAt(int pos);
 	
@@ -151,7 +148,6 @@ public interface Sequence {
 	 * is thrown if the conversion is impossible.
 	 * 
 	 * @param requiredType one of the type constants defined in class {@link Type}
-	 * @return
 	 * @throws XPathException
 	 */
 	public AtomicValue convertTo(int requiredType) throws XPathException;
@@ -159,7 +155,6 @@ public interface Sequence {
 	/**
 	 * Convert the sequence to a string.
 	 * 
-	 * @return
 	 */
 	public String getStringValue() throws XPathException;
 	
@@ -167,7 +162,6 @@ public interface Sequence {
 	 * Get the effective boolean value of this sequence. Will be false if the sequence is empty,
 	 * true otherwise.
 	 * 
-	 * @return
 	 * @throws XPathException
 	 */
 	public boolean effectiveBooleanValue() throws XPathException;
@@ -175,7 +169,6 @@ public interface Sequence {
 	/**
 	 * Convert the sequence into a NodeSet. If the sequence contains items
 	 * which are not nodes, an XPathException is thrown.
-	 * @return
 	 * @throws XPathException if the sequence contains items which are not nodes.
 	 */
 	public NodeSet toNodeSet() throws XPathException;
@@ -184,7 +177,6 @@ public interface Sequence {
 	 * Returns the set of documents from which the node items in this sequence
 	 * have been selected. This is for internal use only.
 	 * 
-	 * @return
 	 */
 	public DocumentSet getDocumentSet();
 	
@@ -194,7 +186,6 @@ public interface Sequence {
 	 * that the value can be easily converted into the given class.
 	 * 
 	 * @param javaClass
-	 * @return
 	 */
 	public int conversionPreference(Class javaClass);
 	
@@ -203,7 +194,6 @@ public interface Sequence {
 	 * Java class.
 	 * 
 	 * @param target
-	 * @return
 	 * @throws XPathException
 	 */
 	public Object toJavaObject(Class target) throws XPathException;
@@ -212,7 +202,6 @@ public interface Sequence {
 	 * Returns true if the sequence is the result of a previous operation
 	 * and has been cached.
 	 * 
-	 * @return
 	 */
 	public boolean isCached();
 	
