@@ -1728,7 +1728,7 @@ options {
 	paraphrase="XML comment";
 }
 :
-	"<!--"! ( ~ ( '-' ) | ( '-' ~ ( '-' ) ) => '-' )+
+	"<!--"! ( ~ ( '-' ) | ( '-' ~ ( '-' ) ) => '-' )*
 	;
 
 protected XML_PI
@@ -1737,7 +1737,7 @@ options {
 	paraphrase="processing instruction";
 }
 :
-	XML_PI_START! NCNAME ' ' ( ~ ( '?' ) | ( '?' ~ ( '>' ) ) => '?' )+
+	XML_PI_START! NCNAME (' ' ( ~ ( '?' ) | ( '?' ~ ( '>' ) ) => '?' )* )?
 	;
 
 protected XML_CDATA
