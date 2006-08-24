@@ -608,17 +608,21 @@ public class CollectionXConf
 	 * @param triggerClass	The name of the new class for the trigger
 	 * 
 	 */
-	public void updateTrigger(int index, String triggerClass, String triggerEvents, Properties parameters)
+	public void updateTrigger(int index, String triggerClass, boolean STORE_DOCUMENT_EVENT, boolean UPDATE_DOCUMENT_EVENT, boolean REMOVE_DOCUMENT_EVENT, boolean CREATE_COLLECTION_EVENT, boolean RENAME_COLLECTION_EVENT, boolean DELETE_COLLECTION_EVENT, Properties parameters)
 	{
-		//TODO: finish this!!!
+		//TODO: finish this!!! - need to add code for parameters
 		
 		hasChanged = true;
 		
 		if(triggerClass != null)
 			triggers[index].setTriggerClass(triggerClass);
 		
-		//if(triggerEvents != null)
-			//rangeIndexes[index].setxsType(xsType);
+		triggers[index].setStoreDocumentEvent(STORE_DOCUMENT_EVENT);
+		triggers[index].setUpdateDocumentEvent(UPDATE_DOCUMENT_EVENT);
+		triggers[index].setRemoveDocumentEvent(REMOVE_DOCUMENT_EVENT);
+		triggers[index].setCreateCollectionEvent(CREATE_COLLECTION_EVENT);
+		triggers[index].setRenameCollectionEvent(RENAME_COLLECTION_EVENT);
+		triggers[index].setDeleteCollectionEvent(DELETE_COLLECTION_EVENT);
 	}
 	
 	/**
@@ -629,7 +633,7 @@ public class CollectionXConf
 	 */
 	public void addTrigger(String triggerClass, String triggerEvents, Properties parameters)
 	{
-		//TODO: finish this!!!
+		//TODO: finish this!!! seee updateTrigger
 		
 		hasChanged = true;
 		
@@ -1184,7 +1188,39 @@ public class CollectionXConf
 			this.triggerClass = triggerClass;
 		}
 		
-		public boolean handlesEvent(int iTriggerEvent)
+		
+		
+		public void setStoreDocumentEvent(boolean store)
+		{
+			setEvent(org.exist.collections.triggers.Trigger.STORE_DOCUMENT_EVENT, store);
+		}
+		
+		public void setUpdateDocumentEvent(boolean update)
+		{
+			setEvent(org.exist.collections.triggers.Trigger.UPDATE_DOCUMENT_EVENT, update);
+		}
+		
+		public void setRemoveDocumentEvent(boolean remove)
+		{
+			setEvent(org.exist.collections.triggers.Trigger.REMOVE_DOCUMENT_EVENT, remove);
+		}
+		
+		public void setCreateCollectionEvent(boolean create)
+		{
+			setEvent(org.exist.collections.triggers.Trigger.CREATE_COLLECTION_EVENT, create);
+		}
+		
+		public void setRenameCollectionEvent(boolean rename)
+		{
+			setEvent(org.exist.collections.triggers.Trigger.RENAME_COLLECTION_EVENT, rename);
+		}
+		
+		public void setDeleteCollectionEvent(boolean delete)
+		{
+			setEvent(org.exist.collections.triggers.Trigger.DELETE_COLLECTION_EVENT, delete);
+		}
+		
+		private boolean handlesEvent(int iTriggerEvent)
 		{
 			String triggerName = (String)triggerEventNames.get(new Integer(iTriggerEvent));
 			
@@ -1195,15 +1231,41 @@ public class CollectionXConf
 			return false;
 		}
 		
-		private void setEvent(int iTriggerEvent)
+		private void setEvent(int iTriggerEvent, boolean doEvent)
 		{
-			if(!handlesEvent(iTriggerEvent))
+			boolean doesEvent = handlesEvent(org.exist.collections.triggers.Trigger.STORE_DOCUMENT_EVENT);
+			String triggerEventName = (String)triggerEventNames.get(new Integer(iTriggerEvent));
+			
+			if(doEvent && !doesEvent)
 			{
-				String triggerName = (String)triggerEventNames.get(new Integer(iTriggerEvent));
+				//add store
+				triggerEvents += triggerEventName;
+			}
+			else if(!doEvent && doesEvent)
+			{
+				//remove store
+			
+				int iStartPos = triggerEvents.indexOf(", " + triggerEventName);
+				int iLength = (", " + triggerEventName).length();
 				
-				triggerEvents += "," + triggerName;
+				//get the start position
+				if(iStartPos == -1)
+				{
+					iStartPos = triggerEvents.indexOf("," + triggerEventName);
+					iLength--;
+					
+					if(iStartPos == -1)
+					{
+						iStartPos = triggerEvents.indexOf(triggerEventName);
+						iLength--;
+					}
+				}
+				
+				String start = triggerEvents.substring(iStartPos, iStartPos + iLength);
+				String end = triggerEvents.substring(iStartPos + iLength);
+				
+				triggerEvents = start + end;
 			}
 		}
-		
 	}
 }

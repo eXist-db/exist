@@ -181,9 +181,24 @@ class TriggersDialog extends JFrame {
         tblTriggers = new JTable(triggersModel);
         tblTriggers.setAutoResizeMode(JTable.AUTO_RESIZE_NEXT_COLUMN);
         tblTriggers.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        TableColumn colAction = tblTriggers.getColumnModel().getColumn(1);
-        colAction.setCellEditor(new CheckBoxCellEditor());
-        colAction.setCellRenderer(new CheckBoxCellRenderer());
+        TableColumn colStoreDocument = tblTriggers.getColumnModel().getColumn(1);
+        colStoreDocument.setCellEditor(new CheckBoxCellEditor());
+        colStoreDocument.setCellRenderer(new CheckBoxCellRenderer());
+        TableColumn colUpdateDocument = tblTriggers.getColumnModel().getColumn(2);
+        colUpdateDocument.setCellEditor(new CheckBoxCellEditor());
+        colUpdateDocument.setCellRenderer(new CheckBoxCellRenderer());
+        TableColumn colRemoveDocument = tblTriggers.getColumnModel().getColumn(3);
+        colRemoveDocument.setCellEditor(new CheckBoxCellEditor());
+        colRemoveDocument.setCellRenderer(new CheckBoxCellRenderer());
+        TableColumn colCreateCollection = tblTriggers.getColumnModel().getColumn(4);
+        colCreateCollection.setCellEditor(new CheckBoxCellEditor());
+        colCreateCollection.setCellRenderer(new CheckBoxCellRenderer());
+        TableColumn colRenameCollection = tblTriggers.getColumnModel().getColumn(5);
+        colRenameCollection.setCellEditor(new CheckBoxCellEditor());
+        colRenameCollection.setCellRenderer(new CheckBoxCellRenderer());
+        TableColumn colDeleteCollection = tblTriggers.getColumnModel().getColumn(6);
+        colDeleteCollection.setCellEditor(new CheckBoxCellEditor());
+        colDeleteCollection.setCellRenderer(new CheckBoxCellRenderer());
         JScrollPane scrollFullTextIndexes = new JScrollPane(tblTriggers);
 		scrollFullTextIndexes.setPreferredSize(new Dimension(250, 150));
 		c.gridx = 0;
@@ -412,13 +427,13 @@ class TriggersDialog extends JFrame {
 		
 		public void removeRow(int rowIndex)
 		{
-			//cx.deleteTrigger(rowIndex);
+			cx.deleteTrigger(rowIndex);
 			fireTableRowsDeleted(rowIndex, rowIndex);
 		}
 		
 		public void addRow()
 		{	
-			//cx.addTrigger("", "xs:string");
+			cx.addTrigger("", "", null);
 			fireTableRowsInserted(getRowCount(), getRowCount() + 1);
 		}
 		
@@ -451,8 +466,7 @@ class TriggersDialog extends JFrame {
 		 */
 		public int getRowCount()
 		{
-				//return cx != null ? cx.getTriggerCount() : 0;
-				return 0;
+			return cx != null ? cx.getTriggerCount() : 0;
 		}
 
 		/* (non-Javadoc)
@@ -462,12 +476,18 @@ class TriggersDialog extends JFrame {
 		{
 			switch (columnIndex)
 			{
-				case 0 :	/* XPath */
-					//return cx.Trigger(rowIndex);
-					return null;
-				case 1 :	/* action */
-					//return cx.getTrigger(rowIndex);
-					return null;
+				/* class */
+				case 0:
+					return cx.getTrigger(rowIndex).getTriggerClass();
+			
+				/* events */
+				case 1 :	//store document
+				case 2 :	//update document
+				case 3 :	//remove document
+				case 4 :	//create collection
+				case 5 :	//rename collection
+				case 6 :	//delete collection
+					
 				default :
 					return null;
 			}
