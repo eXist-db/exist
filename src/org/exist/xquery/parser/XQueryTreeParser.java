@@ -5052,9 +5052,12 @@ public XQueryTreeParser() {
 				match(_t,LITERAL_node);
 				_t = _t.getNextSibling();
 				
-							if (axis == Constants.ATTRIBUTE_AXIS)
-								throw new XPathException(n, "Cannot test for node() on the attribute axis");
-							test= new AnyNodeTest(); 
+							if (axis == Constants.ATTRIBUTE_AXIS) {
+							//	throw new XPathException(n, "Cannot test for node() on the attribute axis");
+							   test= new TypeTest(Type.ATTRIBUTE);
+				} else {
+							   test= new AnyNodeTest(); 
+				}
 						
 				break;
 			}
