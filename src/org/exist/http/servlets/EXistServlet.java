@@ -159,31 +159,25 @@ public class EXistServlet extends HttpServlet {
 		//Instantiate SOAP Server
 		srvSOAP = new SOAPServer(formEncoding, containerEncoding);
 		
-		
-                // XML lib checks....
-                if( XmlLibraryChecker.isXercesVersionOK() ){
-                    LOG.info("Detected "+ XmlLibraryChecker.XERCESVERSION + ", OK.");
-                    
-                } else {
-                    LOG.warn("eXist requires '"+ XmlLibraryChecker.XERCESVERSION 
-                            + "' but detected '"+ XmlLibraryChecker.getXercesVersion()
-                            +"'. Please add the correct version to the "
-                            +"class-path, e.g. in the 'endorsed' folder of " 
-                            +"the servlet container or in the 'endorsed' folder "
-                            +"of the JRE.");
-                }
-
-                if( XmlLibraryChecker.isXalanVersionOK() ){
-                    LOG.info("Detected "+ XmlLibraryChecker.XALANVERSION + ", OK.");
-                    
-                } else {
-                    LOG.warn("eXist requires '"+ XmlLibraryChecker.XALANVERSION
-                            + "' but detected '"+ XmlLibraryChecker.getXalanVersion()
-                            +"'. Please add the correct version to the "
-                            +"class-path, e.g. in the 'endorsed' folder of " 
-                            +"the servlet container or in the 'endorsed' folder "
-                            +"of the JRE.");
-                }
+		//XML lib checks....
+		StringBuffer xmlLibMessage = new StringBuffer();
+		if(XmlLibraryChecker.hasValidParser(xmlLibMessage))
+		{
+			LOG.info(xmlLibMessage);
+		}
+		else
+		{
+			LOG.warn(xmlLibMessage);
+		}
+		xmlLibMessage.delete(0, xmlLibMessage.length());
+		if(XmlLibraryChecker.hasValidTransformer(xmlLibMessage))
+		{
+			LOG.info(xmlLibMessage);
+		}
+		else
+		{
+			LOG.warn(xmlLibMessage);
+		}
 	}
 
 	/* (non-Javadoc)
