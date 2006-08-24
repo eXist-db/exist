@@ -116,6 +116,10 @@ public class NamespaceNode extends NodeImpl implements Attr, QNameable {
 	public void setValue(String value) throws DOMException {
 	}
 
+    public String getNodeValue() throws DOMException {
+        return getQName().getNamespaceURI();
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Attr#getOwnerElement()
 	 */
