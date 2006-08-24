@@ -84,6 +84,9 @@ public class ValueComparison extends GeneralComparison {
             for (Iterator i = nodes.iterator(); i.hasNext();) {
                 NodeProxy current = (NodeProxy) i.next();
                 ContextItem context = current.getContext();
+                if (context==null) {
+                   throw new XPathException(getASTNode(),"Context is missing for node set comparison");
+                }
                 do {
                     AtomicValue lv = current.atomize();
                     Sequence rs = getRight().eval(context.getNode().toSequence());                    
