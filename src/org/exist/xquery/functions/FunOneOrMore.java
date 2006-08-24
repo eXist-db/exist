@@ -71,8 +71,7 @@ public class FunOneOrMore extends Function {
             if (contextItem != null)
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
-        
-        ;
+
 		Sequence result = getArgument(0).eval(contextSequence, contextItem);
 		if(result.isEmpty())
 			throw new XPathException("fn:one-or-more called with a sequence containing zero items");

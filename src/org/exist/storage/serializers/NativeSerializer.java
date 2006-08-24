@@ -165,6 +165,34 @@ public class NativeSerializer extends Serializer {
         	AttrList attribs = new AttrList();
         	if ((first && showId == EXIST_ID_ELEMENT) || showId == EXIST_ID_ALL) {
                 attribs.addAttribute(ID_ATTRIB, node.getNodeId().toString());
+            /* 
+             * This is a proposed fix-up that the serializer could do
+             * to make sure elements always have the namespace declarations
+             *
+            } else {
+               // This is fix-up for when the node has a namespace but there is no
+               // namespace declaration.
+               String elementNS = node.getNamespaceURI();
+               Node parent = node.getParentNode();
+               if (parent instanceof ElementImpl) {
+                  ElementImpl parentElement = (ElementImpl)parent;
+                  String declaredNS = parentElement.getNamespaceForPrefix(node.getPrefix());
+                  if (elementNS!=null && declaredNS==null) {
+                     // We need to declare the prefix as it was missed somehow
+                     receiver.startPrefixMapping(node.getPrefix(), elementNS);
+                  } else if (elementNS==null && declaredNS!=null) {
+                     // We need to declare the default namespace to be the no namespace
+                     receiver.startPrefixMapping(node.getPrefix(), elementNS);
+                  } else if (!elementNS.equals(defaultNS)) {
+                     // Same prefix but different namespace
+                     receiver.startPrefixMapping(node.getPrefix(), elementNS);
+                  }
+               } else if (elementNS!=null) {
+                  // If the parent is the document, we must have a namespace
+                  // declaration when there is a namespace URI.
+                  receiver.startPrefixMapping(node.getPrefix(), elementNS);
+               }
+             */
             }
             if (first && showId > 0) {
             	// String src = doc.getCollection().getName() + "/" + doc.getFileName();
@@ -176,7 +204,7 @@ public class NativeSerializer extends Serializer {
             StoredNode child = null;
             while (count < children) {
                 child = (StoredNode) iter.next();
-                if (child.getNodeType() == Node.ATTRIBUTE_NODE) {
+                if (child!=null && child.getNodeType() == Node.ATTRIBUTE_NODE) {
                     if ((getHighlightingMode() & TAG_ATTRIBUTE_MATCHES) > 0)
                         cdata = processAttribute(((AttrImpl) child).getValue(), node.getNodeId(), match);
                     else

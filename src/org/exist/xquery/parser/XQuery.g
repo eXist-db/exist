@@ -988,10 +988,10 @@ compElemConstructor throws XPathException
 }
 :
 	( "element" LCURLY ) =>
-	"element"! LCURLY! expr RCURLY! LCURLY! compElemBody RCURLY!
+	"element"! LCURLY! expr RCURLY! LCURLY! (compElemBody)? RCURLY!
 	{ #compElemConstructor = #(#[COMP_ELEM_CONSTRUCTOR], #compElemConstructor); }
 	|
-	"element"! qn=qName LCURLY! e3:compElemBody RCURLY!
+	"element"! qn=qName LCURLY! (e3:compElemBody)? RCURLY!
 	{ #compElemConstructor = #(#[COMP_ELEM_CONSTRUCTOR, qn], #[STRING_LITERAL, qn], #e3); }
 	;
 
@@ -1015,10 +1015,10 @@ compAttrConstructor throws XPathException
 }
 :
 	( "attribute" LCURLY ) =>
-	"attribute"! LCURLY! e1:expr RCURLY! LCURLY! e2:expr RCURLY!
+	"attribute"! LCURLY! e1:expr RCURLY! LCURLY! (e2:expr)? RCURLY!
 	{ #compAttrConstructor = #(#[COMP_ATTR_CONSTRUCTOR], #compAttrConstructor); }
 	|
-	"attribute"! qn=qName LCURLY! e3:expr RCURLY!
+	"attribute"! qn=qName LCURLY! (e3:expr)? RCURLY!
 	{ #compAttrConstructor = #(#[COMP_ATTR_CONSTRUCTOR, qn], #[STRING_LITERAL, qn], #e3); }
 	;
 
@@ -1728,7 +1728,7 @@ options {
 	paraphrase="XML comment";
 }
 :
-	"<!--"! ( ~ ( '-' ) | ( '-' ~ ( '-' ) ) => '-' )+
+	"<!--"! ( ~ ( '-' ) | ( '-' ~ ( '-' ) ) => '-' )*
 	;
 
 protected XML_PI
@@ -1737,7 +1737,7 @@ options {
 	paraphrase="processing instruction";
 }
 :
-	XML_PI_START! NCNAME ' ' ( ~ ( '?' ) | ( '?' ~ ( '>' ) ) => '?' )+
+	XML_PI_START! NCNAME (' ' ( ~ ( '?' ) | ( '?' ~ ( '>' ) ) => '?' )* )?
 	;
 
 protected XML_CDATA

@@ -1,8 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-06 Wolfgang M. Meier
- * wolfgang@exist-db.org
- * http://exist.sourceforge.net
+ * Copyright (C) 2001-2006 The eXist team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -15,9 +13,9 @@
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- * 
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
  * $Id$
  */
 
@@ -51,12 +49,24 @@ public class FunSubstringBefore extends CollatingFunction {
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("substring-before", Function.BUILTIN_FUNCTION_NS),
+			"Returns the substring of the value of $a that precedes the first occurrence " +
+			"of a sequence of the value of $b. If the value of $a or $b is the empty " +
+			"sequence it is interpreted as the zero-length string. If the value of " +
+			"$b is the zero-length string, the zero-length string is returned. " +
+			"If the value of $a does not contain a string that is equal to the value " +
+			"of $b, the zero-length string is returned.",
 			new SequenceType[] {
 				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
 				new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)},
 			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)),
 		new FunctionSignature(
 				new QName("substring-before", Function.BUILTIN_FUNCTION_NS),
+			"Returns the substring of the value of $a that precedes the first occurrence " +
+			"of a sequence of the value of $b in the collation $c. If the value of $a or $b is the empty " +
+			"sequence it is interpreted as the zero-length string. If the value of " +
+			"$b is the zero-length string, the zero-length string is returned. " +
+			"If the value of $a does not contain a string that is equal to the value " +
+			"of $b, the zero-length string is returned.",
 				new SequenceType[] {
 					new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
 					new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),

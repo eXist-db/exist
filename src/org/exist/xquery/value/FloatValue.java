@@ -78,7 +78,7 @@ public class FloatValue extends NumericValue {
 	 */
 	public String getStringValue() throws XPathException {
 		if (value == Float.POSITIVE_INFINITY)
-			return "INF"; ;
+			return "INF"; 
 		if (value == Float.NEGATIVE_INFINITY)
 			return "-INF";		
 		String s = String.valueOf(value);

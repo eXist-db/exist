@@ -50,9 +50,9 @@ public class NodeSetHelper {
      * The method returns either the matching descendant or ancestor nodes,
      * depending on the mode constant.
      * 
-     * If mode is {@link #DESCENDANT}, the returned node set will contain all
+     * If mode is {@link NodeSet#DESCENDANT}, the returned node set will contain all
      * child nodes found in this node set for each parent node. If mode is
-     * {@link #ANCESTOR}, the returned set will contain those parent nodes, for
+     * {@link NodeSet#ANCESTOR}, the returned set will contain those parent nodes, for
      * which children have been found.
      * 
      * @param dl
@@ -66,7 +66,6 @@ public class NodeSetHelper {
      *            expressions. If contextId != {@link Expression#NO_CONTEXT_ID},
      *            the current context will be added to each result of the of the
      *            selection.
-     * @return
      */
     public static NodeSet selectParentChild(NodeSet dl, NodeSet al, int mode,
             int contextId) {
@@ -126,9 +125,9 @@ public class NodeSetHelper {
      * The method returns either the matching descendant or ancestor nodes,
      * depending on the mode constant.
      * 
-     * If mode is {@link #DESCENDANT}, the returned node set will contain all
+     * If mode is {@link NodeSet#DESCENDANT}, the returned node set will contain all
      * descendant nodes found in this node set for each ancestor. If mode is
-     * {@link #ANCESTOR}, the returned set will contain those ancestor nodes,
+     * {@link NodeSet#ANCESTOR}, the returned set will contain those ancestor nodes,
      * for which descendants have been found.
      * 
      * @param dl
@@ -146,7 +145,6 @@ public class NodeSetHelper {
      *            the current context will be added to each result of the of the
      *            selection.
      * 
-     * @return
      */
     public static NodeSet selectAncestorDescendant(NodeSet dl, NodeSet al,
             int mode, boolean includeSelf, int contextId) {
@@ -215,7 +213,6 @@ public class NodeSetHelper {
      *            expressions. If contextId != {@link Expression#NO_CONTEXT_ID},
      *            the current context will be added to each result of the of the
      *            selection.
-     * @return
      */
     public static NodeSet selectAncestors(NodeSet al, NodeSet dl,
             boolean includeSelf, int contextId) {
@@ -279,7 +276,6 @@ public class NodeSetHelper {
      *            expressions. If contextId != {@link Expression#NO_CONTEXT_ID},
      *            the current context will be added to each result of the of the
      *            selection.
-     * @return
      */
     public static NodeSet selectPrecedingSiblings(NodeSet candidates,
             NodeSet references, int contextId) {
@@ -387,7 +383,6 @@ public class NodeSetHelper {
      *            expressions. If contextId != {@link Expression#NO_CONTEXT_ID},
      *            the current context will be added to each result of the of the
      *            selection.
-     * @return
      */
     public static NodeSet selectFollowingSiblings(NodeSet candidates,
             NodeSet references, int contextId) {

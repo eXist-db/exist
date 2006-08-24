@@ -52,7 +52,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 
-public class Configuration implements ErrorHandler {
+public class Configuration implements ErrorHandler
+{
 	
 	/* FIXME:  It's not clear whether this class is meant to be a singleton (due to the static
 	 * file and existHome fields and static methods), or if we should allow many instances to
@@ -177,6 +178,12 @@ public class Configuration implements ErrorHandler {
             NodeList dbcon = doc.getElementsByTagName("db-connection");
             if (dbcon.getLength() > 0) {
                 configureBackend(existHomeDirname, dbcon);
+            }
+            
+            //transformer settings
+            NodeList transformers = doc.getElementsByTagName("transformer");
+            if(transformers.getLength() > 0) {
+                configureTransformer(transformers);
             }
             
             //serializer settings
@@ -381,6 +388,20 @@ public class Configuration implements ErrorHandler {
     }
     
     /**
+     * @param transformer
+     */
+    private void configureTransformer(NodeList transformers)
+    {
+        Element transformer = (Element)transformers.item(0);
+        
+        String className = transformer.getAttribute("class");
+        if (className != null) {
+            config.put("transformer.class", className);
+            LOG.debug("transformer.class: " + config.get("transformer.class"));
+        }
+    }
+    
+    /**
      * @param serializers
      */
     private void configureSerializer(NodeList serializers) {
@@ -403,7 +424,9 @@ public class Configuration implements ErrorHandler {
             config.put("serialization.indent", indent);
             LOG.debug("serialization.indent: " + config.get("serialization.indent"));
         }
-        
+        String compress = serializer.getAttribute("compress-output");
+        if (compress != null)
+            config.put("serialization.compress-output", compress);
         String internalId = serializer.getAttribute("add-exist-id");
         if (internalId != null) {
             config.put("serialization.add-exist-id", internalId);

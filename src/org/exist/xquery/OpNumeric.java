@@ -147,6 +147,11 @@ public class OpNumeric extends BinaryOp {
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result);
         
+        //Sets the return type if not already set
+        if (returnType == Type.ATOMIC)
+        	//TODO : refine previously set type ? -pb
+        	returnType = result.getItemType();
+        
         return result;
         
 	}

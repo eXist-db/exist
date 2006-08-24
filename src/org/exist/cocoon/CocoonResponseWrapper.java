@@ -89,7 +89,6 @@ public class CocoonResponseWrapper implements ResponseWrapper {
 
 	/**
 	 * @param arg0
-	 * @return
 	 */
 	public boolean containsHeader(String arg0) {
 		return response.containsHeader(arg0);
@@ -98,7 +97,6 @@ public class CocoonResponseWrapper implements ResponseWrapper {
 	/**
 	 * @param arg0
 	 * @param arg1
-	 * @return
 	 */
 	public Cookie createCookie(String arg0, String arg1) {
 		return response.createCookie(arg0, arg1);
@@ -106,21 +104,18 @@ public class CocoonResponseWrapper implements ResponseWrapper {
 
 	/**
 	 * @param arg0
-	 * @return
 	 */
 	public String encodeURL(String arg0) {
 		return response.encodeURL(arg0);
 	}
 
 	/**
-	 * @return
 	 */
 	public String getCharacterEncoding() {
 		return response.getCharacterEncoding();
 	}
 
 	/**
-	 * @return
 	 */
 	public Locale getLocale() {
 		return response.getLocale();

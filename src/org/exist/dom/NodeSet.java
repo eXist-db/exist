@@ -52,7 +52,6 @@ public interface NodeSet extends Sequence, NodeList {
 	 * according to the internal ordering of nodes (i.e. level first), not in document-
 	 * order.
 	 * 
-	 * @return
 	 */
 	public NodeSetIterator iterator();
 	
@@ -61,7 +60,6 @@ public interface NodeSet extends Sequence, NodeList {
 	 * node-id of the given NodeProxy object.
 	 * 
 	 * @param proxy
-	 * @return
 	 */
 	public boolean contains(NodeProxy proxy);
 	
@@ -69,7 +67,6 @@ public interface NodeSet extends Sequence, NodeList {
 	 * Check if this node set contains nodes belonging to the given document.
 	 * 
 	 * @param doc
-	 * @return
 	 */
 	public boolean containsDoc(DocumentImpl doc);
 	
@@ -103,7 +100,6 @@ public interface NodeSet extends Sequence, NodeList {
 	/**
 	 * Get the node at position pos within this node set.
 	 * @param pos
-	 * @return
 	 */
 	public NodeProxy get(int pos);
 	
@@ -112,7 +108,6 @@ public interface NodeSet extends Sequence, NodeList {
 	 * the given NodeProxy.
 	 *  
 	 * @param p
-	 * @return
 	 */
 	public NodeProxy get(NodeProxy p);
 	
@@ -129,7 +124,6 @@ public interface NodeSet extends Sequence, NodeList {
 	 *  
 	 * @param al a node set containing potential parent nodes
 	 * @param mode selection mode
-	 * @return
 	 */
 	public NodeSet selectParentChild(NodeSet al, int mode);
 	
@@ -147,7 +141,6 @@ public interface NodeSet extends Sequence, NodeList {
 	 * @param contextId used to track context nodes when evaluating predicate 
 	 * expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
 	 * will be added to each result of the of the selection. 
-	 * @return
 	 */
 	
 	public NodeSet selectParentChild(NodeSet al, int mode, int contextId);
@@ -168,7 +161,6 @@ public interface NodeSet extends Sequence, NodeList {
 	 * @param contextId used to track context nodes when evaluating predicate 
 	 * expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
 	 * will be added to each result of the of the selection. 
-	 * @return
 	 */
 	public NodeSet selectAncestorDescendant(NodeSet al,	int mode, boolean includeSelf, int contextId);
 		
@@ -182,7 +174,6 @@ public interface NodeSet extends Sequence, NodeList {
 	 * @param contextId used to track context nodes when evaluating predicate 
 	 * expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
 	 * will be added to each result of the of the selection. 
-	 *@return
 	 */
 	public NodeSet selectAncestors(NodeSet descendants, boolean includeSelf,	int contextId);
 
@@ -195,7 +186,6 @@ public interface NodeSet extends Sequence, NodeList {
      * @param contextId used to track context nodes when evaluating predicate 
 	 * expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
 	 * will be added to each result of the of the selection.  
-     * @return
      */
     public NodeSet selectPrecedingSiblings(NodeSet siblings, int contextId);
 
@@ -208,7 +198,6 @@ public interface NodeSet extends Sequence, NodeList {
      * @param contextId used to track context nodes when evaluating predicate 
 	 * expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
 	 * will be added to each result of the of the selection.     
-     * @return
      */    
     public NodeSet selectFollowingSiblings(NodeSet siblings, int contextId);
 	
@@ -245,7 +234,6 @@ public interface NodeSet extends Sequence, NodeList {
     /**
 	 * Return a new node set containing the parent nodes of all nodes in the 
 	 * current set.
-	 * @return
 	 */
 	public NodeSet getParents(int contextId);
 	
@@ -259,7 +247,6 @@ public interface NodeSet extends Sequence, NodeList {
      * @param contextId used to track context nodes when evaluating predicate 
      * expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
      * will be added to each result of the of the selection. 
-     * @return
      */
     public NodeSet directSelectAttribute(QName qname, int contextId);
     
@@ -271,7 +258,6 @@ public interface NodeSet extends Sequence, NodeList {
 	 * 
 	 * @see org.exist.xquery.GeneralComparison
 	 * @see org.exist.xquery.ValueComparison
-	 * @return
 	 */
 	public int getIndexType();
 	
@@ -286,7 +272,6 @@ public interface NodeSet extends Sequence, NodeList {
 	 * size cannot be determined (the default).
 	 * 
 	 * @param doc
-	 * @return
 	 */
 	public int getSizeHint(DocumentImpl doc);
 	
@@ -295,7 +280,6 @@ public interface NodeSet extends Sequence, NodeList {
 	 * node set with the given node set.
 	 * 
 	 * @param other
-	 * @return
 	 */
 	public NodeSet intersection(NodeSet other);
 	
@@ -304,7 +288,6 @@ public interface NodeSet extends Sequence, NodeList {
 	 * are contained or have descendants in the other node set.
 	 * 
 	 * @param other
-	 * @return
 	 */
 	public NodeSet deepIntersection(NodeSet other);
 	
@@ -313,7 +296,6 @@ public interface NodeSet extends Sequence, NodeList {
 	 * current node set and the given node set.
 	 * 
 	 * @param other
-	 * @return
 	 */
 	public NodeSet union(NodeSet other);
 	
@@ -322,7 +304,6 @@ public interface NodeSet extends Sequence, NodeList {
 	 * except those nodes which are also contained in the argument node set.
 	 * 
 	 * @param other
-	 * @return
 	 */
 	public NodeSet except(NodeSet other);
 	
@@ -333,7 +314,6 @@ public interface NodeSet extends Sequence, NodeList {
 	 * @param contextId used to track context nodes when evaluating predicate 
 	 * expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
 	 * will be added to each result of the of the selection. 
-	 * @return
 	 */
 	public NodeSet getContextNodes(int contextId);
 	

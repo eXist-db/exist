@@ -1,5 +1,5 @@
 /* eXist Open Source Native XML Database
- * Copyright (C) 2001-06,  Wolfgang M. Meier (wolfgang@exist-db.org)
+ * Copyright (C) 2001-06,  the eXist team
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public License
@@ -12,8 +12,8 @@
  * GNU Library General Public License for more details.
  *
  * You should have received a copy of the GNU Library General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  * $Id$
  */
@@ -38,6 +38,8 @@ public class FunFloor extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("floor", Function.BUILTIN_FUNCTION_NS),
+			"Returns the largets number not greater than the value of $a." + 
+			"If $a is the empty sequence, returns the empty sequence.",
 			new SequenceType[] {
 				 new SequenceType(Type.NUMBER, Cardinality.ZERO_OR_MORE)},
 			new SequenceType(Type.NUMBER, Cardinality.ONE));

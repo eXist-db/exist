@@ -24,8 +24,6 @@ package org.exist.xquery.value;
 
 import java.text.Collator;
 
-import javax.xml.datatype.Duration;
-
 import org.exist.util.Collations;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;

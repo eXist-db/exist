@@ -58,7 +58,6 @@ public class MemTreeBuilder {
 	/**
 	 * Returns the created document object.
 	 * 
-	 * @return
 	 */
 	public DocumentImpl getDocument() {
 		return doc;
@@ -235,7 +234,7 @@ public class MemTreeBuilder {
 	public int processingInstruction(String target, String data) {
 		QName qn = new QName(target, null, null);
 		int nodeNr = doc.addNode(Node.PROCESSING_INSTRUCTION_NODE, level, qn);
-		doc.addChars(nodeNr, data);
+                doc.addChars(nodeNr, data==null ? "" : data);
 		linkNode(nodeNr);
 		return nodeNr;
 	}

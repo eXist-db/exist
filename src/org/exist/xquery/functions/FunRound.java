@@ -1,23 +1,24 @@
-
-/* eXist Open Source Native XML Database
- * Copyright (C) 2001-06,  Wolfgang M. Meier (meier@ifs.tu-darmstadt.de)
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Library General Public License
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2006 The eXist team
+ *  
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
+ *  
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Library General Public License for more details.
- *
- * You should have received a copy of the GNU Library General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * GNU Lesser General Public License for more details.
  * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
  * $Id$
  */
+
 package org.exist.xquery.functions;
 
 import org.exist.dom.QName;
@@ -39,6 +40,7 @@ public class FunRound extends Function {
 	public final static FunctionSignature signature =
 			new FunctionSignature(
 				new QName("round", Function.BUILTIN_FUNCTION_NS),
+				"Returns the number with no fractional part that is closest to the value of $a. Always returns the number closest to +INF if there are two such numbers.",
 				new SequenceType[] { new SequenceType(Type.NUMBER, Cardinality.ZERO_OR_ONE) },
 				new SequenceType(Type.NUMBER, Cardinality.EXACTLY_ONE)
 			);

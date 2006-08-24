@@ -1,5 +1,8 @@
 declare namespace atom="http://www.w3.org/2005/Atom";
 <service xmlns="http://purl.org/atom/app#">
+  {
+   if (/atom:feed)
+   then
    <workspace title="{/atom:feed/atom:title}">
    { 
      "&#x0a;",
@@ -14,4 +17,6 @@ declare namespace atom="http://www.w3.org/2005/Atom";
                      )
    }
    </workspace>
+   else ()
+  }
 </service>

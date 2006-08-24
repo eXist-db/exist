@@ -65,7 +65,6 @@ public class Main {
 
     /**
      * Singleton Factory Method
-     * @return
      */
     public static Main getMain(){
         if (exist==null) exist = new Main();
@@ -415,7 +414,6 @@ public class Main {
     }
 
     /**
-     * @return
      */
     public File detectHome() {
         //--------------------

@@ -240,6 +240,7 @@ public class NativeBroker extends DBBroker {
         xmlSerializer = new NativeSerializer(this, config);
         user = SecurityManager.SYSTEM_USER;            
         
+        readOnly = pool.isReadOnly();
 		try {
             // Initialize DOM storage     
             domDb = (DOMFile) config.getProperty("db-connection.dom");
@@ -249,7 +250,7 @@ public class NativeBroker extends DBBroker {
 				domDb =	new DOMFile(pool, file, pool.getCacheManager());
 				config.setProperty("db-connection.dom", domDb);				
 			}
-            readOnly = readOnly & domDb.isReadOnly();
+            readOnly = readOnly || domDb.isReadOnly();
             
 			// Initialize collections storage            
             collectionsDb = (CollectionStore) config.getProperty("db-connection.collections");
@@ -259,7 +260,7 @@ public class NativeBroker extends DBBroker {
 				collectionsDb = new CollectionStore(pool, file, pool.getCacheManager());
 				config.setProperty("db-connection.collections", collectionsDb);				
             }
-            readOnly = readOnly & collectionsDb.isReadOnly();
+            readOnly = readOnly || collectionsDb.isReadOnly();
             
             //TODO : is it necessary to create them if we are in read-only mode ?
 			createIndexFiles();
@@ -299,7 +300,7 @@ public class NativeBroker extends DBBroker {
         }
         textEngine = new NativeTextEngine(this, config, dbWords);
         addContentLoadingObserver(textEngine);
-        readOnly = readOnly & dbWords.isReadOnly();
+        readOnly = readOnly || dbWords.isReadOnly();
     }
 
     private BFile createValueIndexFile(byte id, boolean transactional, Configuration config, String dataDir, 
@@ -312,7 +313,7 @@ public class NativeBroker extends DBBroker {
             db = new BFile(pool, id, transactional, file, pool.getCacheManager(), DEFAULT_VALUE_CACHE_GROWTH, DEFAULT_VALUE_KEY_THRESHOLD, thresholdData);            
             config.setProperty(propertyName, db);            
         }
-        readOnly = readOnly & db.isReadOnly();
+        readOnly = readOnly || db.isReadOnly();
         return db;
     }
 
@@ -550,6 +551,9 @@ public class NativeBroker extends DBBroker {
     }
 
     public Iterator getNodeIterator(StoredNode node) {
+       if (node==null) {
+          throw new IllegalArgumentException("The node parameter cannot be null.");
+       }
 //      domDb.setOwnerObject(this);
         try {
             return new NodeIterator(this, domDb, node, false);
@@ -1041,6 +1045,10 @@ public class NativeBroker extends DBBroker {
      * Instead, {@link #addDocument(Collection, DocumentImpl)} is called.
      */
     public void saveCollection(Txn transaction, Collection collection) throws PermissionDeniedException {
+        if (collection == null) {
+            LOG.error("NativeBroker.saveCollection called with collection == null! Aborting.");
+            return;
+        }
         if (readOnly)
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
         if (!pool.isInitializing())

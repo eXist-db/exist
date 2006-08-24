@@ -57,7 +57,6 @@ public class SequenceType {
     /**
      * Returns the primary type as one of the
      * constants defined in {@link Type}.
-     * @return
      */
 	public int getPrimaryType() {
 		return primaryType;
@@ -71,7 +70,6 @@ public class SequenceType {
      * Returns the expected cardinality. See the constants 
      * defined in {@link Cardinality}.
      * 
-     * @return
      */
 	public int getCardinality() {
 		return cardinality;
@@ -93,7 +91,7 @@ public class SequenceType {
      * Check the specified sequence against this SequenceType.
      *  
      * @param seq
-     * @return
+     * @throws XPathException 
      * @throws XPathException 
      */
     public boolean checkType(Sequence seq) throws XPathException {
@@ -114,7 +112,6 @@ public class SequenceType {
      * Check a single item against this SequenceType.
      * 
      * @param item
-     * @return
      */
 	public boolean checkType(Item item) {
 		if(!Type.subTypeOf(item.getType(), primaryType))

@@ -1,7 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-05 The eXist Project
- *  http://exist-db.org
+ *  Copyright (C) 2001-2005 The eXist team
  *  
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
@@ -14,10 +13,10 @@
  *  GNU Lesser General Public License for more details.
  *  
  *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
- *  $Id$
+ *  $Id:$
  */
 package org.exist.xquery.functions;
 
@@ -41,6 +40,9 @@ public class FunIRIToURI extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("iri-to-uri", Function.BUILTIN_FUNCTION_NS),
+			"Returns an URI as a xs:string if the value of $a is a valid IRI. " +
+			"Invald characters are escape sequence encoded before the conversion. " + 
+			"If $a is the empty sequence, returns the zero-length string.",
 			new SequenceType[] { new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE) },
 			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE));
 	

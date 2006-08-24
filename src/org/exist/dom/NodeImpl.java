@@ -324,7 +324,7 @@ public abstract class NodeImpl implements Node, QNameable {
     public String getNodeName() {
         QName nodeName = getQName();
         //if(nodeName != null)
-            return nodeName.toString();
+            return nodeName.getStringValue();
         //return "";
     }
     

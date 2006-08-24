@@ -40,14 +40,21 @@ public class YearMonthDurationValue extends OrderedDurationValue {
 	public static final Duration CANONICAL_ZERO_DURATION =
 		TimeUtils.getInstance().newDuration(true, null, BigInteger.ZERO, null, null, null, null);
 	
-	YearMonthDurationValue(Duration duration) throws XPathException {
+	YearMonthDurationValue(Duration duration) throws XPathException {	
 		super(duration);
-		if (duration.isSet(DatatypeConstants.DAYS) ||
-			duration.isSet(DatatypeConstants.HOURS) ||
-			duration.isSet(DatatypeConstants.MINUTES) ||
-			duration.isSet(DatatypeConstants.SECONDS))
-			throw new XPathException("The value '" + duration + "' is not an " + Type.getTypeName(getType()) + 
-					" since it specifies days, hours, minutes or seconds values");
+		//Take care : not the same one than above !
+		//TODO : sort this out ! test case :
+		//xs:yearMonthDuration("P1000Y6M") + xs:yearMonthDuration("P0Y0M")  
+		if (!duration.equals(DurationValue.CANONICAL_ZERO_DURATION)) {
+			if (duration.isSet(DatatypeConstants.DAYS) ||		
+				duration.isSet(DatatypeConstants.HOURS) ||
+				duration.isSet(DatatypeConstants.MINUTES) ||
+				//Always set !
+				//!duration.getField(DatatypeConstants.SECONDS).equals(BigInteger.ZERO))
+				duration.isSet(DatatypeConstants.SECONDS))
+				throw new XPathException("The value '" + duration + "' is not an " + Type.getTypeName(getType()) + 
+						" since it specifies days, hours, minutes or seconds values");
+		}		
 	}
 
 	public YearMonthDurationValue(String str) throws XPathException {

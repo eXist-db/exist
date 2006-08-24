@@ -91,13 +91,13 @@ public class LockToken {
     public void setScope(byte scope){ this.scope=scope; }
     
     public String getOwner(){ return owner; }
-    public void setOwner(String owner){ this.owner = owner; };
+    public void setOwner(String owner){ this.owner = owner; }
     
     public long getTimeOut(){ return timeout;   }
     public void setTimeOut(long timeout){ this.timeout=timeout; }
     
     public String getOpaqueLockToken(){ return token; }
-    public void setOpaqueLockToken(String token){ this.token = token; };
+    public void setOpaqueLockToken(String token){ this.token = token; }
     
     // 
     public byte getResourceType(){  return resourceType;   }

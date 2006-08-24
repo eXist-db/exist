@@ -107,7 +107,6 @@ public class DocumentMetadata {
     /**
      * Returns the number of pages currently occupied by this document.
      *
-     * @return
      */
     public int getPageCount() {
         return pageCount;
@@ -115,7 +114,7 @@ public class DocumentMetadata {
     
     /**
      * Set the number of pages currently occupied by this document.
-     * @param count
+     * @param pageCount
      */
     public void setPageCount(int pageCount) {
         this.pageCount = pageCount;

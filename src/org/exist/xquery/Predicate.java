@@ -133,14 +133,15 @@ public class Predicate extends PathExpr {
             int recomputedExecutionMode = executionMode; 
             
             //Try to promote a boolean evaluation to a positionnal one  
-            if (executionMode == BOOLEAN && Type.subTypeOf(inner.returnsType(), Type.NUMBER)) {
-                Sequence innerSeq = inner.eval(contextSequence);   
-                //Only if we have an actual *singleton* of numeric items
-                if (innerSeq.hasOne()) { 
-                	//Atomic sequences will evaluate "." in BOOLEAN mode
-                	if (!innerExpressionDot || Type.subTypeOf(contextSequence.getItemType(), Type.NODE))
-                    	recomputedExecutionMode = POSITIONAL;
-                }
+            if (executionMode == BOOLEAN) {
+            	//Atomic sequences will keep evaluating "." in BOOLEAN mode
+            	if (!innerExpressionDot && !Type.subTypeOf(contextSequence.getItemType(), Type.NODE)) {  
+            		Sequence innerSeq = inner.eval(contextSequence); 
+	                //Only if we have an actual *singleton* of numeric items
+	                if (innerSeq.hasOne() && Type.subTypeOf(innerSeq.getItemType(), Type.NUMBER)) { 
+	                    recomputedExecutionMode = POSITIONAL;
+	            	}
+            	}
             }  
             
             if (executionMode == NODE && Type.subTypeOf(contextSequence.getItemType(), Type.ATOMIC)

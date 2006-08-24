@@ -1,8 +1,7 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ *  Copyright (C) 2006 The eXist team
+ *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
@@ -14,11 +13,12 @@
  *  GNU Lesser General Public License for more details.
  *
  *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  along with this program; if not, write to the Free Software Foundation
+ *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
- *  $Id:
+ *  $Id:$
  */
+
 package org.exist.xmldb;
 
 import java.io.UnsupportedEncodingException;
@@ -85,11 +85,13 @@ public class XmldbURI implements Comparable {
 	}
 	
 	public static XmldbURI xmldbUriFor(String xmldbURI) throws URISyntaxException {
+        if (xmldbURI==null) return null;
 		URI uri = new URI(AnyURIValue.escape(xmldbURI));
 		return getXmldbURI(uri);
 	}
 	
 	public static XmldbURI xmldbUriFor(String accessURI, String collectionPath) throws URISyntaxException {
+        if (collectionPath==null) return null;
 		URI uri = new URI(accessURI + URIUtils.iriToURI(collectionPath));
 		return getXmldbURI(uri);
 	}

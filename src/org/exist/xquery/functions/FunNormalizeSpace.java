@@ -1,8 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-06 Wolfgang M. Meier
- * meier@ifs.tu-darmstadt.de
- * http://exist.sourceforge.net
+ * Copyright (C) 2001-2006 the eXist team
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -15,8 +13,8 @@
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  * $Id$
  */
@@ -48,11 +46,18 @@ public class FunNormalizeSpace extends Function {
 	public final static FunctionSignature signatures[] = {
 			new FunctionSignature(
 				new QName("normalize-space", Function.BUILTIN_FUNCTION_NS),
+				"Returns the value of the context item with whitespace normalized by stripping leading and trailing whitespace and replacing sequences of one or more whitespace character with a single space.",
 				new SequenceType[0],
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
 			),
 			new FunctionSignature(
 				new QName("normalize-space", Function.BUILTIN_FUNCTION_NS),
+				"Returns the value of $a with whitespace normalized by stripping " + 
+				"leading and trailing whitespace and replacing sequences of one " +
+				"or more whitespace character with a single space." +
+				"If the value of $a is the empty sequence, returns the " +
+				"zero-length string. If no argument is supplied  $a defaults " +
+				"to the string value of the context item.",
 				new SequenceType[] { new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE) },
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
 			)
@@ -104,11 +109,13 @@ public class FunNormalizeSpace extends Function {
     			}
     		}
             result = new StringValue(buf.toString());
+			    // Zero-length string constant? -ljo
+
         }
         
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result); 
         
-        return result;          
+        return result;
 	}
 }

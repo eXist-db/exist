@@ -268,6 +268,23 @@ public class XQueryContext {
 		loadDefaults(broker.getConfiguration());
 	}
 	
+	public XQueryContext(XQueryContext copyFrom) {
+           this(copyFrom.getBroker(),copyFrom.getAccessContext());
+           Iterator prefixes = copyFrom.namespaces.keySet().iterator();
+           while (prefixes.hasNext()) {
+              String prefix = (String)prefixes.next();
+              if (prefix.equals("xml") || prefix.equals("xmlns")) {
+                 continue;
+              }
+               try {
+                  declareNamespace(prefix,(String)copyFrom.namespaces.get(prefix));
+               } catch (XPathException ex) {
+                  ex.printStackTrace();
+               }
+           }
+           
+	}
+	
 	public AccessContext getAccessContext() {
 		return accessCtx;
 	}
@@ -476,6 +493,17 @@ public class XQueryContext {
 	 * @return
 	 */
 	public String getURIForPrefix(String prefix) {
+            // try in-scope namespace declarations
+           String ns =  inScopeNamespaces == null
+				? null
+				: (String) inScopeNamespaces.get(prefix);
+           if (ns==null) {
+              // Check global declarations
+              return (String)namespaces.get(prefix);
+           } else {
+              return ns;
+           }
+           /* old code checked namespaces first
 		String ns = (String) namespaces.get(prefix);
 		if (ns == null)
 			// try in-scope namespace declarations
@@ -484,6 +512,7 @@ public class XQueryContext {
 				: (String) inScopeNamespaces.get(prefix);
 		else
 			return ns;
+            */
 	}
 
 	/**
@@ -848,7 +877,10 @@ public class XQueryContext {
 	 * @throws XPathException
 	 */
 	public void declareFunction(UserDefinedFunction function) throws XPathException {
-		declaredFunctions.put(function.getSignature().getFunctionId(), function);
+		if (declaredFunctions.get(function.getSignature().getFunctionId()) == null)
+				declaredFunctions.put(function.getSignature().getFunctionId(), function);
+		else
+			throw new XPathException("XQST0034: function " + function.getName() + " is already defined with the same arity");
 	}
 
 	/**
@@ -980,7 +1012,7 @@ public class XQueryContext {
     	if (var == null) 
     	    var = (Variable) globalVariables.get(qname);
     	if (var == null)
-    	    throw new XPathException("variable $" + qname + " is not bound");
+    		throw new XPathException("variable $" + qname + " is not bound");
     	return var;
 	}
     
@@ -1516,7 +1548,7 @@ public class XQueryContext {
 			UserDefinedFunction func = resolveFunction(call.getQName(), call.getArgumentCount());
 			if(func == null)
 				throw new XPathException(call.getASTNode(), 
-					"Call to undeclared function: " + call.getQName().toString());
+					"Call to undeclared function: " + call.getQName().getStringValue());
 			call.resolveForwardReference(func);
 		}
 	}

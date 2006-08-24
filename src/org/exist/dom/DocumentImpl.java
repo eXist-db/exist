@@ -81,7 +81,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	/** number of child nodes */
 	private int children = 0;
 
-	private long[] childList = null;
+	private long[] childAddress = null;
 
 	/** the collection this document belongs to */
 	private transient Collection collection = null;
@@ -145,7 +145,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
      * Returns the type of this resource, either  {@link #XML_FILE} or 
      * {@link #BINARY_FILE}.
      * 
-     * @return
      */
     public byte getResourceType() {
         return XML_FILE;
@@ -212,7 +211,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	 * @param other
 	 */
 	public void copyOf(DocumentImpl other) {
-	    childList = null;
+	    childAddress = null;
 	    children = 0;
 	    if (metadata == null)
 	    	metadata = new DocumentMetadata();
@@ -222,7 +221,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	}
 	
 	public void copyChildren(DocumentImpl other) {
-		childList = other.childList;
+		childAddress = other.childAddress;
 		children = other.children;
 	}
     
@@ -230,7 +229,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	 * Returns true if the document is currently locked for
 	 * write.
 	 * 
-	 * @return
 	 */
 	public boolean isLockedForWrite() {
 		return getUpdateLock().isLockedForWrite();
@@ -240,7 +238,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
      * Returns the update lock associated with this
      * resource.
      * 
-     * @return
      */     
     public final synchronized Lock getUpdateLock() {
         if(updateLock == null)
@@ -266,7 +263,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	 * As an estimation, the number of pages occupied by the document
 	 * is multiplied with the current page size.
 	 * 
-	 * @return
 	 */
 	public int getContentLength() {
             int length = getMetadata().getPageCount() * broker.getPageSize();
@@ -295,15 +291,15 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
     
     private void resizeChildList() {
         long[] newChildList = new long[children];
-        if(childList != null)
-            System.arraycopy(childList, 0, newChildList, 0, childList.length);
-        childList = newChildList;
+        if(childAddress != null)
+            System.arraycopy(childAddress, 0, newChildList, 0, childAddress.length);
+        childAddress = newChildList;
     }
     
 	public void appendChild(StoredNode child) throws DOMException {
 		++children;
 		resizeChildList();
-		childList[children - 1] = child.getInternalAddress();
+		childAddress[children - 1] = child.getInternalAddress();
 	}
     
 	public void write(VariableByteOutputStream ostream) throws IOException {
@@ -325,8 +321,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
             ostream.writeInt(children);
             if (children > 0) {
 			    for(int i = 0; i < children; i++) {
-					ostream.writeInt(StorageAddress.pageFromPointer(childList[i]));
-					ostream.writeShort(StorageAddress.tidFromPointer(childList[i]));
+					ostream.writeInt(StorageAddress.pageFromPointer(childAddress[i]));
+					ostream.writeShort(StorageAddress.tidFromPointer(childAddress[i]));
 			    }
 			}            
             StorageAddress.write(metadataLocation, ostream);
@@ -356,9 +352,9 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
             permissions.setPermissions(perm);
             //Should be > 0 ;-)
             children = istream.readInt();            
-			childList = new long[children];
+			childAddress = new long[children];
 			for (int i = 0; i < children; i++) { 
-				childList[i] = StorageAddress.createPointer(istream.readInt(), istream.readShort());
+				childAddress[i] = StorageAddress.createPointer(istream.readInt(), istream.readShort());
 			}
             metadataLocation = StorageAddress.read(istream);
 		} catch (IOException e) {
@@ -435,23 +431,22 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	public Node getFirstChild() {
 		if (children == 0)
 		    return null;
-		long address = childList[0];
 		return broker.objectWith(
-            new NodeProxy(this, NodeId.DOCUMENT_NODE, address)
+            new NodeProxy(this, NodeId.DOCUMENT_NODE, childAddress[0])
         );
 	}	
     
 	public long getFirstChildAddress() {
 		if (children == 0)
 			return StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;
-		return childList[0];
+		return childAddress[0];
 	}
     	
 	public NodeList getChildNodes() {
 		NodeListImpl list = new NodeListImpl();		
 		for (int i = 0; i < children; i++) {
             Node child = broker.objectWith(
-			        new NodeProxy(this, NodeId.DOCUMENT_NODE, childList[i])
+			        new NodeProxy(this, NodeId.DOCUMENT_NODE, childAddress[i])
                 );
 			list.add(child);
 		}
@@ -616,7 +611,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
     public void setChildCount(int count) {
         children = count;
         if (children == 0)
-            childList = null;
+            childAddress = null;
     }
     
     public String getEncoding() {

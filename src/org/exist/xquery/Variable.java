@@ -93,7 +93,7 @@ public class Variable {
     
 	public String toString() {
 		StringBuffer result = new StringBuffer();
-		result.append("$" + qname.toString());
+		result.append("$" + qname.getStringValue());
 		result.append(" as ");
 		result.append(Type.getTypeName(getType()));		
 		result.append(Cardinality.toString(getCardinality()));

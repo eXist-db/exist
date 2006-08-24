@@ -45,7 +45,6 @@ public class SourceFactory {
      * 
      * @param contextPath
      * @param location
-     * @return
      * @throws MalformedURLException
      * @throws IOException
      */

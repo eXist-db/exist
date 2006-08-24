@@ -1,5 +1,5 @@
-<feed xmlns="http://www.w3.org/2005/Atom" 
-xmlns:atom="http://www.w3.org/2005/Atom">
+declare namespace atom="http://www.w3.org/2005/Atom";
+<feed xmlns="http://www.w3.org/2005/Atom">
    { 
      "&#x0a;",
      /atom:feed/atom:title,
@@ -8,7 +8,9 @@ xmlns:atom="http://www.w3.org/2005/Atom">
      "&#x0a;",
      /atom:feed/atom:updated,
      "&#x0a;",
-     /atom:feed/atom:entry[atom:category[@scheme='http://www.smallx.com/Ontology/Atopic/2006/1/0/topic/relation' and @term='subtopic']]
+     /atom:feed/atom:entry[atom:category[@scheme='http://www.smallx.com/Ontology/Atopic/2006/1/0/topic/relation' and @term='subtopic']],
+     "&#x0a;",
+     /atom:feed/atom:link
    }
    {
       let $current := substring-before(base-uri(/atom:feed),'/.feed.atom'),
@@ -29,6 +31,8 @@ xmlns:atom="http://www.w3.org/2005/Atom">
                                 $feed/atom:title,
                                 "&#x0a;",
                                 $feed/atom:updated,
+                                "&#x0a;",
+                                $feed/atom:author,
                                 "&#x0a;",
                                 <category scheme="http://www.smallx.com/Ontology/Atopic/2006/1/0/topic/relation" term="ancestor"/>,
                                 "&#x0a;",
@@ -59,6 +63,8 @@ xmlns:atom="http://www.w3.org/2005/Atom">
                                 $i/atom:title,
                                 "&#x0a;",
                                 $i/atom:updated,
+                                "&#x0a;",
+                                $i/atom:author,
                                 "&#x0a;",
                                 <category scheme="http://www.smallx.com/Ontology/Atopic/2006/1/0/topic/relation" term="subtopic"/>,
                                 "&#x0a;",
