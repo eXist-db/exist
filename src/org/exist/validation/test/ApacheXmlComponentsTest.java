@@ -29,7 +29,7 @@ import junit.framework.TestSuite;
 import org.exist.validation.XmlLibraryChecker;
 
 /**
- *  Class for testing xerces and xalan configuration.
+ *  Class for testing XML Parser and XML Transformer configuration.
  *
  * @author dizzzz
  */
