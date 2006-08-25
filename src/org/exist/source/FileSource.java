@@ -108,9 +108,14 @@ public class FileSource extends AbstractSource {
     
     private void checkEncoding() throws IOException {
         if (checkEncoding) {
-            String checkedEnc = guessXQueryEncoding(new FileInputStream(filePath));
-            if (checkedEnc != null)
-                encoding = checkedEnc;
+            FileInputStream is = new FileInputStream(filePath);
+            try {
+                String checkedEnc = guessXQueryEncoding(is);
+                if (checkedEnc != null)
+                    encoding = checkedEnc;
+            } finally {
+                is.close();
+            }
         }
     }
 }
