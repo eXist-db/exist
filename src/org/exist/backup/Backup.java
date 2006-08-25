@@ -1,8 +1,7 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ *  Copyright (C) 2001-2006 The eXist team
+ *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
@@ -15,8 +14,8 @@
  *  GNU Lesser General Public License for more details.
  *
  *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  along with this program; if not, write to the Free Software Foundation
+ *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  *  $Id$
  */
@@ -37,6 +36,7 @@ import javax.xml.transform.OutputKeys;
 
 import org.exist.security.Permission;
 import org.exist.storage.NativeBroker;
+import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
@@ -88,7 +88,7 @@ public class Backup {
 	}
 
 	public Backup(String user, String pass, String backupDir) {
-		this(user, pass, backupDir, XmldbURI.create("xmldb:exist://").append(XmldbURI.ROOT_COLLECTION_URI));
+		this(user, pass, backupDir, XmldbURI.xmldbUriFor("xmldb:exist://" + DBBroker.ROOT_COLLECTION));
 	}
 	
 	public Backup(String user, String pass, String backupDir, XmldbURI rootCollection, Properties property) {
