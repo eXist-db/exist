@@ -88,7 +88,7 @@ public class Backup {
 	}
 
 	public Backup(String user, String pass, String backupDir) {
-		this(user, pass, backupDir, XmldbURI.xmldbUriFor("xmldb:exist://" + DBBroker.ROOT_COLLECTION));
+		this(user, pass, backupDir, XmldbURI.create("xmldb:exist://" + DBBroker.ROOT_COLLECTION));
 	}
 	
 	public Backup(String user, String pass, String backupDir, XmldbURI rootCollection, Properties property) {
