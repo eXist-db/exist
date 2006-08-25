@@ -46,7 +46,10 @@ public class VariableReference extends AbstractExpression {
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.AnalyzeContextInfo)
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-        getVariable();
+        Variable var = getVariable();
+        if (!var.isInitialized())
+            throw new XPathException(getASTNode(), "XQST0054: variable declaration cannot " +
+                    "be executed because of a circularity.");
     }
     
 	/* (non-Javadoc)
