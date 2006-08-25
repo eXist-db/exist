@@ -57,6 +57,8 @@ public class Variable {
     // the sequence type of this variable if known
     private SequenceType type = null;
     
+    private boolean initialized = true;
+    
 	/**
 	 * 
 	 */
@@ -89,6 +91,14 @@ public class Variable {
     
     public SequenceType getSequenceType() {
         return type;
+    }
+    
+    public boolean isInitialized() {
+        return initialized;
+    }
+    
+    public void setIsInitialized(boolean initialized) {
+        this.initialized = initialized;
     }
     
 	public String toString() {
