@@ -65,21 +65,23 @@ public class VariableDeclaration extends AbstractExpression {
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
     	contextInfo.setParent(this);
         QName qn = QName.parse(context, qname, null);
+        Variable var = new Variable(qn);
+        var.setIsInitialized(false);
 		Module myModule = context.getModule(qn.getNamespaceURI());
 		if(myModule != null) {
             if (myModule.isVarDeclared(qn))
                 throw new XPathException(getASTNode(), "err:XQST0049: It is a static error if more than one " +
                     "variable declared or imported by a module has the same expanded QName. Variable: " + qn);
-			myModule.declareVariable(qn, null);
+			myModule.declareVariable(var);
         } else {
             if(context.isVarDeclared(qn)) {
                 throw new XPathException(getASTNode(), "err:XQST0049: It is a static error if more than one " +
                         "variable declared or imported by a module has the same expanded QName. Variable: " + qn);
             }
-			Variable var = new Variable(qn);
 			context.declareGlobalVariable(var);
 		}
 		expression.analyze(contextInfo);
+        var.setIsInitialized(true);
     }
     
 	/* (non-Javadoc)
