@@ -98,8 +98,6 @@ class TriggersDialog extends JFrame {
 		};
 		this.addWindowListener(windowListener);
 		
-		this.setMinimumSize(new Dimension(500,500));
-		
 		//draw the GUI
 		setupComponents();
 		
