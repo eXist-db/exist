@@ -60,6 +60,8 @@ public class FunctionFunction extends BasicFunction {
             new SequenceType(Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE)
         );
     
+    private FunctionCall resolvedFunction = null;
+    
     /**
      * @param context
      * @param signature
@@ -96,8 +98,15 @@ public class FunctionFunction extends BasicFunction {
                 throw new XPathException(getASTNode(), "Cannot create a reference to an internal Java function");
             func = ((ExternalModule)module).getFunction(qname, arity);
         }
-        FunctionCall call = new FunctionCall(context, func);
-        call.setASTNode(getASTNode());
-        return new FunctionReference(call);
+        resolvedFunction = new FunctionCall(context, func);
+        resolvedFunction.setASTNode(getASTNode());
+        return new FunctionReference(resolvedFunction);
+    }
+    
+    public void resetState() {
+    	super.resetState();
+    	if (resolvedFunction != null)
+    		resolvedFunction.resetState();
+    	resolvedFunction = null;
     }
 }
