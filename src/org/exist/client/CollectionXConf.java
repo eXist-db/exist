@@ -23,7 +23,7 @@ package org.exist.client;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Enumeration;
 import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -43,14 +43,15 @@ import org.xmldb.api.base.XMLDBException;
  * Class to represent a collection.xconf which holds the configuration data for a collection
  * 
  * @author Adam Retter <adam.retter@devon.gov.uk>
- * @serial 2006-05-04
- * @version 1.1
+ * @serial 2006-08-25
+ * @version 1.2
  */
 public class CollectionXConf
 {	
-	private String path = null;			//path of the collection.xconf file
-	Collection collection = null;		//the configuration collection
-	Resource resConfig = null;			//the collection.xconf resource
+	private InteractiveClient client = null;	//the client
+	private String path = null;					//path of the collection.xconf file
+	Collection collection = null;				//the configuration collection
+	Resource resConfig = null;					//the collection.xconf resource
 	
 	private FullTextIndex fulltextIndex = null;		//fulltext index model
 	private RangeIndex[] rangeIndexes = null;		//range indexes model
@@ -68,6 +69,8 @@ public class CollectionXConf
 	 */
 	CollectionXConf(String CollectionName, InteractiveClient client) throws XMLDBException
 	{
+		this.client = client;
+		
 		//get configuration collection for the named collection
 		path = DBBroker.CONFIG_COLLECTION + CollectionName;
 		collection = client.getCollection(path);
@@ -80,7 +83,6 @@ public class CollectionXConf
 		
 		if(resConfig == null) //if, no config file exists for that collection
 			return;
-		
 		
 		//Parse the configuration file into a DOM
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -631,7 +633,7 @@ public class CollectionXConf
 	 * @param triggerClass The class for the Trigger
 	 * 
 	 */
-	public void addTrigger(String triggerClass, String triggerEvents, Properties parameters)
+	public void addTrigger(String triggerClass, boolean STORE_DOCUMENT_EVENT, boolean UPDATE_DOCUMENT_EVENT, boolean REMOVE_DOCUMENT_EVENT, boolean CREATE_COLLECTION_EVENT, boolean RENAME_COLLECTION_EVENT, boolean DELETE_COLLECTION_EVENT, Properties parameters)
 	{
 		//TODO: finish this!!! seee updateTrigger
 		
@@ -640,13 +642,13 @@ public class CollectionXConf
 		if(triggers == null)
 		{
 			triggers = new Trigger[1];
-			triggers[0] = new Trigger(triggerClass, triggerEvents, parameters);
+			triggers[0] = new Trigger(triggerClass, STORE_DOCUMENT_EVENT, UPDATE_DOCUMENT_EVENT, REMOVE_DOCUMENT_EVENT, CREATE_COLLECTION_EVENT, RENAME_COLLECTION_EVENT, DELETE_COLLECTION_EVENT, parameters);
 		}
 		else
 		{
 			Trigger newTriggers[] = new Trigger[triggers.length + 1];
 			System.arraycopy(triggers, 0, newTriggers, 0, triggers.length);
-			newTriggers[triggers.length] = new Trigger(triggerClass, triggerEvents, parameters);
+			newTriggers[triggers.length] = new Trigger(triggerClass, STORE_DOCUMENT_EVENT, UPDATE_DOCUMENT_EVENT, REMOVE_DOCUMENT_EVENT, CREATE_COLLECTION_EVENT, RENAME_COLLECTION_EVENT, DELETE_COLLECTION_EVENT, parameters);
 			triggers = newTriggers;
 		}
 	}
@@ -805,34 +807,67 @@ public class CollectionXConf
 		
 		xconf.append("<collection xmlns=\"http://exist-db.org/collection-config/1.0\">");
 		xconf.append(System.getProperty("line.separator"));
-		xconf.append('\t');
-		xconf.append("<index>");
-		xconf.append(System.getProperty("line.separator"));
-	
-		//fulltext indexes
-		xconf.append("\t\t");
-		xconf.append(fulltextIndex.toXMLString());
-		xconf.append(System.getProperty("line.separator"));
 		
-		//range indexes
-		for(int r = 0; r < rangeIndexes.length; r ++)
+		//index
+		if(fulltextIndex != null || rangeIndexes != null || qnameIndexes != null)
 		{
-			xconf.append("\t\t\t");
-			xconf.append(rangeIndexes[r].toXMLString());
+			xconf.append('\t');
+			xconf.append("<index>");
+			xconf.append(System.getProperty("line.separator"));
+		
+			//fulltext indexes
+			if(fulltextIndex != null)
+			{
+				xconf.append("\t\t");
+				xconf.append(fulltextIndex.toXMLString());
+				xconf.append(System.getProperty("line.separator"));
+			}
+			
+			//range indexes
+			if(rangeIndexes != null)
+			{
+				for(int r = 0; r < rangeIndexes.length; r ++)
+				{
+					xconf.append("\t\t\t");
+					xconf.append(rangeIndexes[r].toXMLString());
+					xconf.append(System.getProperty("line.separator"));
+				}
+			}
+			
+			//qname indexes
+			if(qnameIndexes != null)
+			{
+				for(int q = 0; q < qnameIndexes.length; q ++)
+				{
+					xconf.append("\t\t\t");
+					xconf.append(rangeIndexes[q].toXMLString());
+					xconf.append(System.getProperty("line.separator"));
+				}
+			}
+			
+			xconf.append('\t');
+			xconf.append("</index>");
 			xconf.append(System.getProperty("line.separator"));
 		}
 		
-		//qname indexes
-		for(int q = 0; q < qnameIndexes.length; q ++)
+		//triggers
+		if(triggers != null)
 		{
-			xconf.append("\t\t\t");
-			xconf.append(rangeIndexes[q].toXMLString());
+			xconf.append('\t');
+			xconf.append("<triggers>");
+			
+			for(int t = 0; t < triggers.length; t ++)
+			{
+				xconf.append("\t\t\t");
+				xconf.append(triggers[t].toXMLString());
+				xconf.append(System.getProperty("line.separator"));
+			}
+			
+			xconf.append('\t');
+			xconf.append("</triggers>");
 			xconf.append(System.getProperty("line.separator"));
 		}
 		
-		xconf.append('\t');
-		xconf.append("</index>");
-		xconf.append(System.getProperty("line.separator"));
 		xconf.append("</collection>");
 		
 		return xconf.toString();
@@ -847,6 +882,22 @@ public class CollectionXConf
 	{
 		try
 		{
+			//is there an existing config file?
+			if(resConfig == null)
+			{
+				//no
+				
+				//is there an existing configuration collection?
+				if(collection == null)
+				{
+					//no
+					client.process("mkcol " + path);
+					collection = client.getCollection(path);
+				}
+				
+				resConfig = collection.createResource(DBBroker.COLLECTION_CONFIG_FILENAME, "XMLResource");
+			}
+			
 			//set the content of the collection.xconf
 			resConfig.setContent(toXMLString());
 			
@@ -898,7 +949,9 @@ public class CollectionXConf
 		
 	}
 	
-	//represents the fulltext index in the collection.xconf
+	/**
+	 * Represents the Full Text Index in the collection.xconf
+	 */
 	protected class FullTextIndex
 	{	
 		boolean defaultAll = true;
@@ -906,7 +959,6 @@ public class CollectionXConf
 		boolean alphanum = false;
 		FullTextIndexPath[] xpaths = null;
 	
-		
 		/**
 		 * Constructor
 		 * 
@@ -1059,12 +1111,20 @@ public class CollectionXConf
 		}
 	}
 	
-	//represents a range index in the collection.xconf
+	/**
+	 * Represents a Range Index in the collection.xconf
+	 */
 	protected class RangeIndex
 	{
 		private String XPath = null;
 		private String xsType = null;
 		
+		/**
+		 * Constructor
+		 * 
+		 * @param XPath		The XPath to create a range index on
+		 * @param xsType	The data type pointed to by the XPath as an xs:type 
+		 */
 		RangeIndex(String XPath, String xsType)
 		{
 			this.XPath = XPath;
@@ -1106,12 +1166,20 @@ public class CollectionXConf
 		}
 	}
 	
-	//represents a qname index in the collection.xconf
+	/**
+	 * Represents a QName Index in the collection.xconf
+	 */
 	protected class QNameIndex
 	{
 		private String QName = null;
 		private String xsType = null;
 		
+		/**
+		 * Constructor
+		 * 
+		 * @param QName		The QName to create a qname index on
+		 * @param xsType	The data type of the element indicated by QName as an xs:type 
+		 */
 		QNameIndex(String QName, String xsType)
 		{
 			this.QName = QName;
@@ -1153,28 +1221,60 @@ public class CollectionXConf
 		}
 	}
 	
-	//represents a Trigger in the collection.xconf
+	/**
+	 * Represents a Trigger in the collection.xconf
+	 */
 	protected class Trigger
 	{
-		private String triggerEvents = null;
 		private String triggerClass = null;
+		private boolean STORE_DOCUMENT_EVENT = false;
+		private boolean UPDATE_DOCUMENT_EVENT = false;
+		private boolean REMOVE_DOCUMENT_EVENT = false;
+		private boolean CREATE_COLLECTION_EVENT = false;
+		private boolean RENAME_COLLECTION_EVENT = false;
+		private boolean DELETE_COLLECTION_EVENT = false;		
 		private Properties parameters = null;
 		
-		private HashMap triggerEventNames = new HashMap();
+		/**
+		 * Constructor
+		 * 
+		 * @param triggerClass				The fully qualified java class name of the trigger
+		 * @param STORE_DOCUMENT_EVENT		true indicates that the trigger should receive the Store Document Event
+		 * @param UPDATE_DOCUMENT_EVENT		true indicates that the trigger should receive the Update Document Event
+		 * @param REMOVE_DOCUMENT_EVENT		true indicates that the trigger should receive the Remove Document Event
+		 * @param CREATE_COLLECTION_EVENT	true indicates that the trigger should receive the Create Collection Event
+		 * @param RENAME_COLLECTION_EVENT	true indicates that the trigger should receive the Rename Collection Event
+		 * @param DELET_COLLECTION_EVENT	true indicates that the trigger should receive the Delete Collection Event
+		 * @param parameters				Properties describing any name=value parameters for the trigger
+		 */
+		Trigger(String triggerClass, boolean STORE_DOCUMENT_EVENT, boolean UPDATE_DOCUMENT_EVENT, boolean REMOVE_DOCUMENT_EVENT, boolean CREATE_COLLECTION_EVENT, boolean RENAME_COLLECTION_EVENT, boolean DELETE_COLLECTION_EVENT, Properties parameters)
+		{
+			//set properties
+			this.triggerClass = triggerClass;
+			this.STORE_DOCUMENT_EVENT =  STORE_DOCUMENT_EVENT;
+			this.UPDATE_DOCUMENT_EVENT =  UPDATE_DOCUMENT_EVENT;
+			this.REMOVE_DOCUMENT_EVENT =  REMOVE_DOCUMENT_EVENT;
+			this.CREATE_COLLECTION_EVENT = CREATE_COLLECTION_EVENT;
+			this.RENAME_COLLECTION_EVENT = RENAME_COLLECTION_EVENT;
+			this.DELETE_COLLECTION_EVENT = DELETE_COLLECTION_EVENT;
+			this.parameters = parameters;
+		}
 		
 		Trigger(String triggerClass, String triggerEvents, Properties parameters)
 		{
-			//setup a mapping from org.exist.collections.triggers.Trigger events to trigger names
-			triggerEventNames.put(new Integer(org.exist.collections.triggers.Trigger.STORE_DOCUMENT_EVENT), "store");
-			triggerEventNames.put(new Integer(org.exist.collections.triggers.Trigger.UPDATE_DOCUMENT_EVENT), "update");
-			triggerEventNames.put(new Integer(org.exist.collections.triggers.Trigger.REMOVE_DOCUMENT_EVENT), "remove");
-			triggerEventNames.put(new Integer(org.exist.collections.triggers.Trigger.CREATE_COLLECTION_EVENT), "create");
-			triggerEventNames.put(new Integer(org.exist.collections.triggers.Trigger.RENAME_COLLECTION_EVENT), "rename");
-			triggerEventNames.put(new Integer(org.exist.collections.triggers.Trigger.DELETE_COLLECTION_EVENT), "delete");
-			
-			//set properties
 			this.triggerClass = triggerClass;
-			this.triggerEvents = triggerEvents;
+			if(triggerEvents.indexOf("store") > -1)
+				STORE_DOCUMENT_EVENT = true;
+			if(triggerEvents.indexOf("update") > -1)
+				UPDATE_DOCUMENT_EVENT = true;
+			if(triggerEvents.indexOf("remove") > -1)
+				REMOVE_DOCUMENT_EVENT = true;
+			if(triggerEvents.indexOf("create") > -1)
+				CREATE_COLLECTION_EVENT = true;
+			if(triggerEvents.indexOf("rename") > -1)
+				RENAME_COLLECTION_EVENT = true;
+			if(triggerEvents.indexOf("delete") > -1)
+				DELETE_COLLECTION_EVENT = true;
 			this.parameters = parameters;
 		}
 		
@@ -1188,84 +1288,122 @@ public class CollectionXConf
 			this.triggerClass = triggerClass;
 		}
 		
-		
+		public boolean getStoreDocumentEvent()
+		{
+			return STORE_DOCUMENT_EVENT;
+		}
 		
 		public void setStoreDocumentEvent(boolean store)
 		{
-			setEvent(org.exist.collections.triggers.Trigger.STORE_DOCUMENT_EVENT, store);
+			STORE_DOCUMENT_EVENT = store;
+		}
+		
+		public boolean getUpdateDocumentEvent()
+		{
+			return UPDATE_DOCUMENT_EVENT;
 		}
 		
 		public void setUpdateDocumentEvent(boolean update)
 		{
-			setEvent(org.exist.collections.triggers.Trigger.UPDATE_DOCUMENT_EVENT, update);
+			UPDATE_DOCUMENT_EVENT = update;
+		}
+		
+		public boolean getRemoveDocumentEvent()
+		{
+			return REMOVE_DOCUMENT_EVENT;
 		}
 		
 		public void setRemoveDocumentEvent(boolean remove)
 		{
-			setEvent(org.exist.collections.triggers.Trigger.REMOVE_DOCUMENT_EVENT, remove);
+			REMOVE_DOCUMENT_EVENT = remove;
+		}
+		
+		public boolean getCreateCollectionEvent()
+		{
+			return CREATE_COLLECTION_EVENT;
 		}
 		
 		public void setCreateCollectionEvent(boolean create)
 		{
-			setEvent(org.exist.collections.triggers.Trigger.CREATE_COLLECTION_EVENT, create);
+			CREATE_COLLECTION_EVENT = create;
+		}
+		
+		public boolean getRenameCollectionEvent()
+		{
+			return RENAME_COLLECTION_EVENT;
 		}
 		
 		public void setRenameCollectionEvent(boolean rename)
 		{
-			setEvent(org.exist.collections.triggers.Trigger.RENAME_COLLECTION_EVENT, rename);
+			RENAME_COLLECTION_EVENT = rename;
+		}
+		
+		public boolean getDeleteCollectionEvent()
+		{
+			return DELETE_COLLECTION_EVENT;
 		}
 		
 		public void setDeleteCollectionEvent(boolean delete)
 		{
-			setEvent(org.exist.collections.triggers.Trigger.DELETE_COLLECTION_EVENT, delete);
+			DELETE_COLLECTION_EVENT = delete;
 		}
 		
-		private boolean handlesEvent(int iTriggerEvent)
+		//produces a collection.xconf suitable string of XML describing the trigger
+		protected String toXMLString()
 		{
-			String triggerName = (String)triggerEventNames.get(new Integer(iTriggerEvent));
+			StringBuffer trigger = new StringBuffer();
 			
-			if(triggerName != null)
+			if(!triggerClass.equals(""))
 			{
-				return(triggerEvents.indexOf(triggerName) > -1);
-			}
-			return false;
-		}
-		
-		private void setEvent(int iTriggerEvent, boolean doEvent)
-		{
-			boolean doesEvent = handlesEvent(org.exist.collections.triggers.Trigger.STORE_DOCUMENT_EVENT);
-			String triggerEventName = (String)triggerEventNames.get(new Integer(iTriggerEvent));
 			
-			if(doEvent && !doesEvent)
-			{
-				//add store
-				triggerEvents += triggerEventName;
-			}
-			else if(!doEvent && doesEvent)
-			{
-				//remove store
-			
-				int iStartPos = triggerEvents.indexOf(", " + triggerEventName);
-				int iLength = (", " + triggerEventName).length();
+				trigger.append("<trigger class=\"");
+				trigger.append(triggerClass);
+				trigger.append("\" event=\"");
 				
-				//get the start position
-				if(iStartPos == -1)
+				//events
+				if(STORE_DOCUMENT_EVENT)
+					trigger.append("store,");
+				if(UPDATE_DOCUMENT_EVENT)
+					trigger.append("update,");
+				if(REMOVE_DOCUMENT_EVENT)
+					trigger.append("remove,");
+				if(CREATE_COLLECTION_EVENT)
+					trigger.append("create,");
+				if(RENAME_COLLECTION_EVENT)
+					trigger.append("rename,");
+				if(DELETE_COLLECTION_EVENT)
+					trigger.append("delete,");
+				
+				//remove possible trailing comma in events attribute
+				if(trigger.charAt(trigger.length() -1 ) == ',')
 				{
-					iStartPos = triggerEvents.indexOf("," + triggerEventName);
-					iLength--;
-					
-					if(iStartPos == -1)
+					trigger.deleteCharAt(trigger.length() - 1);
+				}
+				trigger.append("\">");
+				
+				//parameters if any
+				if(parameters != null)
+				{
+					if(parameters.size() > 0)
 					{
-						iStartPos = triggerEvents.indexOf(triggerEventName);
-						iLength--;
+						Enumeration pKeys = parameters.keys();
+						while(pKeys.hasMoreElements())
+						{
+							String name = (String)pKeys.nextElement();
+							String value = parameters.getProperty(name);
+						
+							trigger.append("<parameter name=\"");
+							trigger.append(name);
+							trigger.append("\" value=\"");
+							trigger.append(value);
+							trigger.append("\"/>");
+						}
 					}
 				}
 				
-				String start = triggerEvents.substring(iStartPos, iStartPos + iLength);
-				String end = triggerEvents.substring(iStartPos + iLength);
-				
-				triggerEvents = start + end;
+				trigger.append("</trigger>");
 			}
+			return trigger.toString();
 		}
 	}
 }
