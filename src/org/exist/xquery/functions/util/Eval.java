@@ -241,6 +241,8 @@ public class Eval extends BasicFunction {
 		} finally {
 			if (cache && compiled!=null)
 				pool.returnCompiledXQuery(querySource, compiled);
+			else
+				compiled.reset();
 			if (oldDocs != null)
 				context.setStaticallyKnownDocuments(oldDocs);
 			context.popNamespaceContext();
