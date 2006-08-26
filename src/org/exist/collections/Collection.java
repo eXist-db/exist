@@ -1244,9 +1244,8 @@ public  class Collection extends Observable
             if (user==null) {
                throw new IllegalStateException("The user "+permissions.getOwner()+" for the collection cannot be found.");
             }
-            if (group==null) {
-               throw new IllegalStateException("The group "+permissions.getOwnerGroup()+" for the collection cannot be found.");
-            }
+            if (group == null)
+                group = secman.getGroup(SecurityManager.GUEST_GROUP);
             ostream.writeInt(user.getUID());
             ostream.writeInt(group.getId());
         }
