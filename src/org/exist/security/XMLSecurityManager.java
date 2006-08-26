@@ -338,8 +338,11 @@ public class XMLSecurityManager implements SecurityManager {
 	private synchronized void save(DBBroker broker, Txn transaction) throws EXistException {
 		LOG.debug("storing acl file");
 		StringBuffer buf = new StringBuffer();
+        buf.append("<!-- Central user configuration. Editing this document will cause the security " +
+                "to reload and update its internal database. Please handle with care! -->");
 		buf.append("<auth version='1.0'>");
 		// save groups
+        buf.append("<!-- Please do not remove the guest and admin groups -->");
 		buf.append("<groups last-id=\"");
 		buf.append(Integer.toString(nextGroupId));
 		buf.append("\">");
@@ -347,6 +350,7 @@ public class XMLSecurityManager implements SecurityManager {
 			buf.append(((Group) i.next()).toString());
 		buf.append("</groups>");
 		//save users
+        buf.append("<!-- Please do not remove the admin user. -->");
 		buf.append("<users last-id=\"");
 		buf.append(Integer.toString(nextUserId));
 		buf.append("\">");
