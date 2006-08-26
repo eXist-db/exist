@@ -27,6 +27,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 
 import javax.xml.transform.OutputKeys;
@@ -50,8 +53,9 @@ import org.xmldb.api.modules.XMLResource;
 
 /**
  * Ant task to execute an XQuery. <p/> The query is either passed as nested text
- * in the element, or via an attribute "query" or via a URL or via a query file
- * <p/>
+ * in the element, or via an attribute "query" or via a URL or via a query file.
+ * External variables declared in the XQuery can be set via one or more nested
+ * &lt;variable&gt; elements.
  * 
  * @author peter.klotz@blue-elephant-systems.com
  */
@@ -67,6 +71,26 @@ public class XMLDBXQueryTask extends AbstractXMLDBTask {
     private File destDir = null;
 
     private String outputproperty;
+
+    private List variables = new ArrayList();
+    
+    /** Defines a nested element to set an XQuery variable */
+    public static class Variable {
+    	
+    	private String name = null;
+    	private String value = null;
+    	
+    	public Variable() {
+    	}
+    	
+    	public void setName(String name) {
+    		this.name = name;
+    	}
+    	
+    	public void setValue(String value) {
+    		this.value = value;
+    	}
+    }
 
     /*
      * (non-Javadoc)
@@ -97,6 +121,13 @@ public class XMLDBXQueryTask extends AbstractXMLDBTask {
             service.setProperty(OutputKeys.INDENT, "yes");
             service.setProperty(OutputKeys.ENCODING, "UTF-8");
 
+            for (Iterator i = variables.iterator(); i.hasNext();) {
+            	Variable var = (Variable) i.next();
+            	System.out.println("Name: " + var.name);
+            	System.out.println("Value: " + var.value);
+            	service.declareVariable(var.name, var.value);
+            }
+            
             ResourceSet results = null;
             Source source = null;
             if (queryUri != null) {
@@ -200,6 +231,10 @@ public class XMLDBXQueryTask extends AbstractXMLDBTask {
         this.destDir = destDir;
     }
 
+    public void addVariable(Variable variable) {
+    	variables.add(variable);
+    }
+    
     public void setOutputproperty(String outputproperty) {
         this.outputproperty = outputproperty;
     }
