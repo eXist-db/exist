@@ -88,8 +88,12 @@ declare function irc:display-event($event as element()) as element() {
             <td class="message">
             {
                 let $cb := util:function("irc:highlight", 3)
+                for $node in $event/node()
                 return
-                    text:highlight-matches($event/text(), $cb, ())
+                	if ($node instance of text()) then
+                    	text:highlight-matches($node, $cb, ())
+                    else
+                    	$node
             }
             </td>
         </tr>
