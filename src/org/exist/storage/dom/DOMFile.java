@@ -2265,9 +2265,7 @@ public class DOMFile extends BTree implements Lockable {
 				}
                 ph.setLsn(loggable.getLsn());
 				writeValue(page, loggable.value);
-			} else
-				LOG.debug("Page is clean: " + Lsn.dump(loggable.getLsn())
-						+ " <= " + Lsn.dump(ph.getLsn()));
+			}
 		} catch (IOException e) {
 			LOG.warn("Failed to redo " + loggable.dump() + ": "
 					+ e.getMessage(), e);
@@ -2292,8 +2290,7 @@ public class DOMFile extends BTree implements Lockable {
 			PageHeader ph = page.getPageHeader();
 			if (ph.getLsn() > -1 && requiresRedo(loggable, page)) {
 				unlinkPages(page);
-			} else
-				LOG.debug("Page is clean: " + loggable.dump());
+			}
 		} catch (IOException e) {
 			LOG.warn("Failed to undo " + loggable.dump() + ": "
 					+ e.getMessage(), e);

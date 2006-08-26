@@ -73,6 +73,7 @@ package org.exist.storage.btree;
  */
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.text.NumberFormat;
 
@@ -86,6 +87,7 @@ import org.exist.storage.journal.Journal;
 import org.exist.storage.journal.LogEntryTypes;
 import org.exist.storage.journal.LogException;
 import org.exist.storage.journal.Loggable;
+import org.exist.storage.journal.Lsn;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.Txn;
 import org.exist.util.ByteConversion;
@@ -553,9 +555,23 @@ public class BTree extends Paged {
     
     protected void redoUpdateValue(UpdateValueLoggable loggable) throws LogException {
         BTreeNode node = getBTreeNode(loggable.pageNum);
-        if (requiresRedo(loggable, node.page)) {
+        if (node.page.getPageHeader().getLsn() != Page.NO_PAGE && 
+                requiresRedo(loggable, node.page)) {
+            if (loggable.idx > node.ptrs.length) {
+                LOG.warn(node.page.getPageInfo() +
+                        "; loggable.idx = " + loggable.idx + "; node.ptrs.length = " + node.ptrs.length);
+                StringWriter writer = new StringWriter();
+                try {
+                    dump(writer);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                LOG.warn(writer.toString());
+                throw new LogException("Critical error during recovery");
+            }
             node.ptrs[loggable.idx] = loggable.pointer;
             node.ph.setLsn(loggable.getLsn());
+            node.saved = false;
         }
     }
     
@@ -1237,6 +1253,7 @@ public class BTree extends Paged {
                 writer.write("ROOT: ");
             writer.write(page.getPageNum() + ": ");
             writer.write(ph.getStatus() == BRANCH ? "BRANCH: " : "LEAF: ");
+            writer.write(saved ? "SAVED: " : "DIRTY: ");
             for (int i = 0; i < nKeys; i++) {
                 if (i > 0)
                     writer.write(' ');
