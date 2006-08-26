@@ -332,10 +332,12 @@ public class User {
 			buf.append("\">");
 		} else
 			buf.append(">");
-        for (int i = 0; i < groups.length; i++) {
-            buf.append( "<group>" );
-            buf.append( groups[i] );
-            buf.append( "</group>" );
+        if (groups != null) {
+            for (int i = 0; i < groups.length; i++) {
+                buf.append( "<group>" );
+                buf.append( groups[i] );
+                buf.append( "</group>" );
+            }
         }
         buf.append( "</user>" );
         return buf.toString();
