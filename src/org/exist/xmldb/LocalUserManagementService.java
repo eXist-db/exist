@@ -65,6 +65,8 @@ public class LocalUserManagementService implements UserManagementService {
 						+ document.getPermissions().getOwner());
 
 			document.setPermissions(perm);
+            if (!manager.hasGroup(perm.getOwnerGroup()))
+                manager.addGroup(perm.getOwnerGroup());
             broker.storeXMLResource(transaction, document);
             transact.commit(transaction);
 		} catch (EXistException e) {
@@ -98,6 +100,8 @@ public class LocalUserManagementService implements UserManagementService {
 					ErrorCodes.PERMISSION_DENIED,
 					"you are not the owner of this collection");
             }
+            if (!manager.hasGroup(perm.getOwnerGroup()))
+                manager.addGroup(perm.getOwnerGroup());
 			coll.setPermissions(perm);
 			broker.saveCollection(transaction, coll);
             transact.commit(transaction);
@@ -311,6 +315,8 @@ public class LocalUserManagementService implements UserManagementService {
 			broker = pool.get(user);
 			coll = broker.openCollection(collection.getPathURI(), Lock.WRITE_LOCK);
 			coll.getPermissions().setOwner(u);
+            if (!manager.hasGroup(group))
+                manager.addGroup(group);
 			coll.getPermissions().setGroup(group);
 			broker.saveCollection(transaction, coll);
             transact.commit(transaction);
@@ -353,6 +359,8 @@ public class LocalUserManagementService implements UserManagementService {
 			document = ((AbstractEXistResource) res).openDocument(broker, Lock.WRITE_LOCK);
 			Permission perm = document.getPermissions();
 			perm.setOwner(u);
+            if (!manager.hasGroup(group))
+                manager.addGroup(group);
 			perm.setGroup(group);
             broker.storeXMLResource(transaction, document);
             transact.commit(transaction);
