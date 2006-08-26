@@ -22,48 +22,39 @@
 package org.exist.storage.test;
 
 import java.io.File;
-import java.io.StringWriter;
-import java.io.Writer;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.util.Date;
+import java.util.Iterator;
 
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
 
+import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.IndexInfo;
+import org.exist.collections.triggers.TriggerException;
+import org.exist.dom.BinaryDocument;
+import org.exist.dom.DocumentImpl;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.NativeBroker;
-import org.exist.storage.btree.BTree;
-import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
+import org.exist.util.LockException;
+import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
-/**
- * TestCase: add a larger number of documents into a collection,
- * crash the database, restart, remove the collection and add some
- * more documents.
- * 
- * This test needs quite a few documents to be in the collection. Change
- * the directory path below to point to a directory with at least 1000 docs.
- * 
- * @author wolf
- *
- */
-public class RecoveryTest3 extends TestCase {
+public class RecoverBinaryTest2 extends TestCase {
 
     public static void main(String[] args) {
-        TestRunner.run(RecoveryTest3.class);
+        TestRunner.run(RecoverBinaryTest2.class);
     }
     
-    private final static int RESOURCE_COUNT = 5000;
-    
-    private static String directory = "/home/wolf/xml/movies";
+    private static String directory = "webapp/resources";
     
     private static File dir = new File(directory);
     
@@ -72,8 +63,8 @@ public class RecoveryTest3 extends TestCase {
         BrokerPool pool = null;        
         DBBroker broker = null;
         try {
-        	pool = startDB();
-        	assertNotNull(pool);
+            pool = startDB();
+            assertNotNull(pool);
             broker = pool.get(SecurityManager.SYSTEM_USER);
             assertNotNull(broker);            
             TransactionManager transact = pool.getTransactionManager();
@@ -90,98 +81,48 @@ public class RecoveryTest3 extends TestCase {
             assertNotNull(test2);
             broker.saveCollection(transaction, test2);            
             
-            File files[] = dir.listFiles();
-            assertNotNull(files);
-            
-            File f;
-            IndexInfo info;
-            
-            // store some documents.
-            for (int i = 0; i < files.length && i < RESOURCE_COUNT; i++) {
-                f = files[i];
-                assertNotNull(f);
-                try {
-                    info = test2.validateXMLResource(transaction, broker, XmldbURI.create(f.getName()), new InputSource(f.toURI().toASCIIString()));
-                    assertNotNull(info);
-                    test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
-                } catch (SAXException e) {
-                	//TODO : why store invalid documents ?
-                    System.err.println("Error found while parsing document: " + f.getName() + ": " + e.getMessage());
-                }
-            }
-            
+            storeFiles(broker, transaction, test2);
             transact.commit(transaction);
             System.out.println("Transaction commited ...");
-	    } catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
-	        fail(e.getMessage());             
+            fail(e.getMessage());             
         } finally {
             pool.release(broker);
         }
     }
     
     public void testRead() {
-    	BrokerPool.FORCE_CORRUPTION = false;
+        BrokerPool.FORCE_CORRUPTION = false;
         BrokerPool pool = null;
         DBBroker broker = null;
         try {
-        	System.out.println("testRead() ...\n");
-        	pool = startDB();
-        	assertNotNull(pool);
-            
+            System.out.println("testRead2() ...\n");
+            pool = startDB();
+            assertNotNull(pool);        
             broker = pool.get(SecurityManager.SYSTEM_USER);
             assertNotNull(broker);
+
+            Collection test2 = broker.getCollection(TestConstants.TEST_COLLECTION_URI2);
+            for (Iterator i = test2.iterator(broker); i.hasNext(); ) {
+                DocumentImpl doc = (DocumentImpl) i.next();
+                System.out.println(doc.getURI().toString());
+            }
             
             BrokerPool.FORCE_CORRUPTION = true;
             TransactionManager transact = pool.getTransactionManager();
             assertNotNull(transact);
             Txn transaction = transact.beginTransaction();
-            assertNotNull(transaction);
+            assertNotNull(transaction);            
             System.out.println("Transaction started ...");
             
-            Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, Lock.WRITE_LOCK);
-            assertNotNull(root);
-            transaction.registerLock(root.getLock(), Lock.WRITE_LOCK);            
-            broker.removeCollection(transaction, root);   
-            
+            storeFiles(broker, transaction, test2);
             transact.commit(transaction);
             System.out.println("Transaction commited ...");
             
-            transaction = transact.beginTransaction();
-            System.out.println("Transaction started ...");
-            
-            root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
-            assertNotNull(root);
-            broker.saveCollection(transaction, root);
-            
-            Collection test2 = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI2);
-            assertNotNull(test2);
-            broker.saveCollection(transaction, test2);
-            
-            File files[] = dir.listFiles();
-            assertNotNull(files);
-            
-            File f;
-            IndexInfo info;
-            
-            // store some documents.
-            for (int i = 0; i < files.length && i < RESOURCE_COUNT; i++) {
-                f = files[i];
-                assertNotNull(f);
-                try {
-                    info = test2.validateXMLResource(transaction, broker, XmldbURI.create(f.getName()), new InputSource(f.toURI().toASCIIString()));
-                    assertNotNull(info);
-                    test2.store(transaction, broker, info, new InputSource(f.toURI().toASCIIString()), false);
-                } catch (SAXException e) {
-                    System.err.println("Error found while parsing document: " + f.getName() + ": " + e.getMessage());
-                }
-            }
-            
-            transact.commit(transaction);
-            System.out.println("Transaction commited ...");
-	    } catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
-	        fail(e.getMessage());              
+            fail(e.getMessage());              
         } finally {
             if (pool != null)
                 pool.release(broker);
@@ -193,20 +134,56 @@ public class RecoveryTest3 extends TestCase {
         BrokerPool pool = null;
         DBBroker broker = null;
         try {
-        	System.out.println("testRead2() ...\n");
-        	pool = startDB();
-        	assertNotNull(pool);        
+            System.out.println("testRead2() ...\n");
+            pool = startDB();
+            assertNotNull(pool);        
             broker = pool.get(SecurityManager.SYSTEM_USER);
             assertNotNull(broker);
 
-            //TODO : do something ?
+            Collection test2 = broker.getCollection(TestConstants.TEST_COLLECTION_URI2);
+            for (Iterator i = test2.iterator(broker); i.hasNext(); ) {
+                DocumentImpl doc = (DocumentImpl) i.next();
+                System.out.println(doc.getURI().toString());
+            }
             
-	    } catch (Exception e) {
+            TransactionManager transact = pool.getTransactionManager();
+            assertNotNull(transact);
+            Txn transaction = transact.beginTransaction();
+            assertNotNull(transaction);
+            System.out.println("Transaction started ...");
+            Collection test1 = broker.getCollection(TestConstants.TEST_COLLECTION_URI);
+            broker.removeCollection(transaction, test1);
+            transact.commit(transaction);
+            System.out.println("Transaction commited ...");
+        } catch (Exception e) {
             e.printStackTrace();
-	        fail(e.getMessage());              
+            fail(e.getMessage());              
         } finally {
             if (pool != null)
                 pool.release(broker);
+        }
+    }
+    
+    private void storeFiles(DBBroker broker, Txn transaction, Collection test2) throws FileNotFoundException, EXistException, PermissionDeniedException, LockException, TriggerException {
+        File files[] = dir.listFiles();
+        assertNotNull(files);
+        
+        File f;
+        
+        // store some documents.
+        for (int j = 0; j < 10; j++) {
+            for (int i = 0; i < files.length; i++) {
+                f = files[i];
+                assertNotNull(f);
+                if (f.isFile()) {
+                    XmldbURI uri = test2.getURI().append(j + "_" + f.getName());
+                    InputStream is = new FileInputStream(f);
+                    BinaryDocument doc = 
+                        test2.addBinaryResource(transaction, broker, uri, is, MimeType.BINARY_TYPE.getName(), 
+                                (int) f.length(), new Date(), new Date());
+                    assertNotNull(doc);
+                }
+            }
         }
     }
     
@@ -225,5 +202,4 @@ public class RecoveryTest3 extends TestCase {
     protected void tearDown() {
         BrokerPool.stopAll(false);
     }
-
 }

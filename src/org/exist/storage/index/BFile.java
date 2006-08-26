@@ -1160,7 +1160,7 @@ public class BFile extends BTree {
             DataPage firstPage = (DataPage) dataCache.get(loggable.pageNum);
             if (firstPage == null) {
                 final Page page = getPage(loggable.pageNum);
-                page.read();
+                byte[] data = page.read();
                 if (page.getPageHeader().getLsn() == Lsn.LSN_INVALID || requiresRedo(loggable, page)) {
                     reuseDeleted(page);
                     BFilePageHeader ph = (BFilePageHeader) page.getPageHeader();
@@ -1169,13 +1169,16 @@ public class BFile extends BTree {
 		            ph.setLastInChain(0L);
 		            ph.setDataLength(0);
 					ph.nextTID = 32;
-                    byte[] data = new byte[fileHeader.getWorkSize()];
+                    data = new byte[fileHeader.getWorkSize()];
                     firstPage = new SinglePage(page, data, true);
                     firstPage.setDirty(true);
-                }
+                } else
+                    firstPage = new SinglePage(page, data, false);
             }
-            if (firstPage.getPageHeader().getLsn() == Lsn.LSN_INVALID || requiresRedo(loggable, firstPage))
+            if (firstPage.getPageHeader().getLsn() == Lsn.LSN_INVALID || requiresRedo(loggable, firstPage)) {
                 firstPage.getPageHeader().setLsn(loggable.getLsn());
+                firstPage.setDirty(true);
+            }
             dataCache.add(firstPage);
         } catch (IOException e) {
             LOG.warn("An IOException occurred during redo: " + e.getMessage(), e);

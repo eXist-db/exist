@@ -39,6 +39,7 @@ public class AllTests {
         suite.addTestSuite(MoveResourceTest.class);
         suite.addTestSuite(CopyCollectionTest.class);
         suite.addTestSuite(RecoverBinaryTest.class);
+        suite.addTestSuite(RecoverBinaryTest2.class);
         suite.addTestSuite(RecoveryTest.class);
         suite.addTestSuite(RemoveCollectionTest.class);
         suite.addTestSuite(AppendTest.class);
