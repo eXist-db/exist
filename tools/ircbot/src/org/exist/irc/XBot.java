@@ -1,13 +1,19 @@
 package org.exist.irc;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Properties;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.exist.security.Permission;
+import org.exist.xmldb.UserManagementService;
 import org.jibble.pircbot.IrcException;
 import org.jibble.pircbot.NickAlreadyInUseException;
 import org.jibble.pircbot.PircBot;
@@ -34,11 +40,23 @@ import org.xmldb.api.modules.XUpdateQueryService;
  */
 public class XBot extends PircBot {
 
-	private final static String VERSION = "0.1";
+	private final static String VERSION = "0.2";
 	
 	private final static String URI = "xmldb:exist://localhost:8080/xmlrpc/db";
 	
 	private final static String COLLECTION = "ircbot";
+    
+    private final static Properties DEFAULTS = new Properties();
+    static {
+        DEFAULTS.setProperty("xmldb.user", "guest");
+        DEFAULTS.setProperty("xmldb.password", "guest");
+        DEFAULTS.setProperty("xmldb.uri", URI);
+        DEFAULTS.setProperty("xmldb.collection", COLLECTION);
+        DEFAULTS.setProperty("irc.server", "irc.freenode.net");
+        DEFAULTS.setProperty("irc.channel", "#existdb");
+        DEFAULTS.setProperty("irc.nickname", "XDrone");
+        DEFAULTS.setProperty("irc.password", "");
+    }
 	
 	private final static String XUPDATE_START =
 		"<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">\n" +
@@ -53,26 +71,30 @@ public class XBot extends PircBot {
 		new QuitCommand(),
 		new FunctionLookup()
 	};
-	
+
+    private Properties properties = new Properties(DEFAULTS);
+    
 	// the base collection
 	private Collection collection;
-	
-	// server and channel settings
-	private String channel;
-	private String password;
-	private String server;
 
 	private DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 	
 	private Pattern urlPattern;
 	private Matcher matcher = null;
 	
-	public XBot(String server, String channel, String nick, String password) throws IrcException {
+	public XBot() throws IrcException {
 		super();
-		this.server = server;
-		this.channel = channel;
-		this.password = password;
-		this.setName(nick);
+
+        File f = new File("xbot.properties");
+        if (f.canRead()) {
+            System.out.println("Reading properties file: " + f.getAbsolutePath());
+            try {
+                properties.load(new FileInputStream(f));
+            } catch (IOException e) {
+                System.err.println("Failed to load properties: " + e.getMessage());
+            }
+        }
+		this.setName(properties.getProperty("irc.nickname"));
 		this.setVerbose(true);
 		setupDb();
 		
@@ -86,19 +108,19 @@ public class XBot extends PircBot {
 	 * @throws IOException
 	 */
 	public void connect() throws IrcException, IOException {
-		log("Connecting to " + server);
+		log("Connecting to " + properties.getProperty("irc.server"));
 		boolean connected = false;
 		while (!connected) {
 			try {
-				connect(server);
+				connect(properties.getProperty("irc.server"));
 				connected = true;
 			} catch (NickAlreadyInUseException e) {
 				this.setName(this.getName() + '_');
 			}
 		}
-		log("Join channel: " + channel);
-		joinChannel(channel);
-		sendMessage("NickServ", "IDENTIFY " + password);
+		log("Join channel: " + properties.getProperty("irc.channel"));
+		joinChannel(properties.getProperty("irc.channel"));
+		sendMessage("NickServ", "IDENTIFY " + properties.getProperty("irc.password"));
 	}
 	
 	/**
@@ -201,6 +223,7 @@ public class XBot extends PircBot {
 			content +
 			"	</xu:append>\n" +
 			"</xu:modifications>";
+        log("XUpdate:\n" + xupdate);
 		XUpdateQueryService service = (XUpdateQueryService)
 		collection.getService("XUpdateQueryService", "1.0");
 		service.update(xupdate);
@@ -218,7 +241,7 @@ public class XBot extends PircBot {
 			matcher = urlPattern.matcher(message);
 		else
 			matcher.reset(message);
-		return matcher.replaceAll("<a href=\"$1\">$1</a>");
+		return matcher.replaceAll("]]><a href=\"$1\">$1</a><![CDATA[");
 	}
 	
 	/**
@@ -232,12 +255,21 @@ public class XBot extends PircBot {
 			Database database = (Database) cl.newInstance();
 			database.setProperty("create-database", "true");
 			DatabaseManager.registerDatabase(database);
-			collection = DatabaseManager.getCollection(URI + "/ircbot", "guest", "guest");
+            
+			collection = DatabaseManager.getCollection(properties.getProperty("xmldb.uri") + '/' + properties.getProperty("xmldb.collection"), 
+                    properties.getProperty("xmldb.user"), properties.getProperty("xmldb.password"));
+            
 			if (collection == null) {
-				Collection root = DatabaseManager.getCollection(URI, "guest", "guest");
+				Collection root = DatabaseManager.getCollection(properties.getProperty("xmldb.uri"), 
+                        properties.getProperty("xmldb.user"), properties.getProperty("xmldb.password"));
 				CollectionManagementService mgr = (CollectionManagementService)
 					root.getService("CollectionManagementService", "1.0");
+                UserManagementService umgr = (UserManagementService)
+                    root.getService("UserManagementService", "1.0");
 				collection = mgr.createCollection(COLLECTION);
+                Permission perms = umgr.getPermissions(collection);
+                perms.setPermissions(0744);
+                umgr.setPermissions(collection, perms);
 			}
 		} catch (Exception e) {
 			throw new IrcException("Failed to initialize the database: " + e.getMessage());
@@ -269,10 +301,14 @@ public class XBot extends PircBot {
 		if (res == null) {
 			// create a new log for today's date
 			String xml = 
-				"<xlog server=\"" + server + "\" channel=\"" + channel + "\" date=\"" + date + "\"/>";
+				"<xlog server=\"" + properties.getProperty("irc.server") + "\" channel=\"" + properties.getProperty("irc.channel") + "\" date=\"" + date + "\"/>";
 			res = (XMLResource) collection.createResource(resourceName, "XMLResource");
 			res.setContent(xml);
 			collection.storeResource(res);
+            UserManagementService umgr = (UserManagementService)
+                collection.getService("UserManagementService", "1.0");
+            umgr.setPermissions(res, new Permission(properties.getProperty("xmldb.user"), 
+                    properties.getProperty("xmldb.password"), 0744));
 		}
 		return resourceName;
 	}
@@ -320,7 +356,7 @@ public class XBot extends PircBot {
 				sendMessage(target, "Usage: QUIT password");
 				return;
 			}
-			if (!args[1].equals(password)) {
+			if (!args[1].equals(properties.getProperty("irc.password"))) {
 				sendMessage(target, "Wrong password specified!");
 				return;
 			}
@@ -383,10 +419,7 @@ public class XBot extends PircBot {
 	 * @throws IrcException 
 	 */
 	public static void main(String[] args) throws Exception {
-		if (args.length < 2) {
-			System.err.println("Usage: org.exist.irc.XBot nickname password");
-		}
-		XBot bot = new XBot("irc.freenode.net", "#existdb", args[0], args[1]);
+		XBot bot = new XBot();
 		bot.connect();
 	}
 }
