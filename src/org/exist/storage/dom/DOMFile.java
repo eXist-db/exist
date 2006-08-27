@@ -1171,10 +1171,8 @@ public class DOMFile extends BTree implements Lockable {
 				return KEY_NOT_FOUND;
 			} else
 				return address;
-		} else {
-			LOG.debug("Found directly");
+		} else
 			return p;
-		}
 	}
 
 	/**
