@@ -516,7 +516,7 @@ public class LocationStep extends Step {
 
     protected NodeSet getSiblings(XQueryContext context, NodeSet contextSet) {
         if (test.isWildcardTest()) {
-            NodeSet result = new ExtArrayNodeSet(contextSet.getLength());
+            ExtArrayNodeSet result = new ExtArrayNodeSet(contextSet.getLength());
             SiblingVisitor visitor = new SiblingVisitor(result);
             for (Iterator i = contextSet.iterator(); i.hasNext();) {
                 NodeProxy current = (NodeProxy) i.next();
@@ -556,10 +556,10 @@ public class LocationStep extends Step {
     
     private class SiblingVisitor implements NodeVisitor {
     	
-    	private NodeSet resultSet;
+    	private ExtArrayNodeSet resultSet;
     	private NodeProxy contextNode;
     	
-    	public SiblingVisitor(NodeSet resultSet) {
+    	public SiblingVisitor(ExtArrayNodeSet resultSet) {
     		this.resultSet = resultSet;
     	}
     	
@@ -582,6 +582,7 @@ public class LocationStep extends Step {
                         } else
                             sibling.copyContext(contextNode);
                         resultSet.add(sibling);
+                        resultSet.setSorted(sibling.getDocument(), true);
                     } else if (Expression.NO_CONTEXT_ID != contextId)
                         sibling.addContextNode(contextId, contextNode);
     			}
