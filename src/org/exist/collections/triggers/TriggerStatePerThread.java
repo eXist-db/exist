@@ -21,7 +21,7 @@ public class TriggerStatePerThread {
 	private static ThreadLocal triggerRunningState = new ThreadLocal() {
 	    protected synchronized Object initialValue() {
 	        return new TriggerState(NO_TRIGGER_RUNNING);
-	    };
+	    }
 	};
 
 	/** */
