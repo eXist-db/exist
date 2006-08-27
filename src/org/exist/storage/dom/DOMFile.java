@@ -31,6 +31,7 @@ import java.io.Writer;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Stack;
 
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
@@ -1065,7 +1066,46 @@ public class DOMFile extends BTree implements Lockable {
 		}
 		return cb.getValues();
 	}
-
+	
+	private final static class ChildNode {
+		StoredNode node;
+		int index = 0;
+		
+		public ChildNode(StoredNode node) {
+			this.node = node;
+		}
+	}
+	
+	/* TODO: Non-recursive implementation. Should be faster, but no measurable 
+	 * difference observed so far. Keep as reference for future uses. */
+	private long findNode2(StoredNode node, NodeId target, Iterator iter) {
+		Stack stack = new Stack();
+		stack.push(new ChildNode(node));
+		while(!stack.isEmpty()) {
+			StoredNode temp = ((ChildNode) stack.peek()).node;
+			int index = ((ChildNode) stack.peek()).index;
+			if (index < temp.getChildCount()) {
+				((ChildNode) stack.peek()).index++;
+				temp = (StoredNode) iter.next();
+				if (target.equals(temp.getNodeId()))
+					return ((NodeIterator) iter).currentAddress();
+				if (temp.hasChildNodes()) {
+					stack.push(new ChildNode(temp));
+					index = 0;
+				}
+			}
+			while (index == temp.getChildCount()) {
+				stack.pop();
+				if (!stack.isEmpty()) {
+					index = ((ChildNode) stack.peek()).index;
+					temp = ((ChildNode) stack.peek()).node;
+				} else
+					break;
+			}
+		}
+		return KEY_NOT_FOUND;
+	}
+	
 	private long findNode(StoredNode node, NodeId target, Iterator iter) {
 		if (node.hasChildNodes()) {
 			long p;
@@ -1073,12 +1113,9 @@ public class DOMFile extends BTree implements Lockable {
 			for (int i = 0; i < len; i++) {
 				StoredNode child = (StoredNode) iter.next();
 
-				SanityCheck.ASSERT(child != null, "Next node missing. count = "
-						+ i + "; parent= "
-						+ node.getNodeName() + "; count = "
-						+ node.getChildCount());
+				SanityCheck.ASSERT(child != null, "Next node missing.");
 
-				if (child.getNodeId().equals(target)) {
+				if (target.equals(child.getNodeId())) {
 					return ((NodeIterator) iter).currentAddress();
 				}
 				if ((p = findNode(child, target, iter)) != 0)
@@ -1134,8 +1171,10 @@ public class DOMFile extends BTree implements Lockable {
 				return KEY_NOT_FOUND;
 			} else
 				return address;
-		} else
+		} else {
+			LOG.debug("Found directly");
 			return p;
+		}
 	}
 
 	/**
