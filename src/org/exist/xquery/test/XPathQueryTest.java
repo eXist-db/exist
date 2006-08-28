@@ -1044,7 +1044,29 @@ public class XPathQueryTest extends XMLTestCase {
         
     }
     
+    /*
+     * Problem in VirtualNodeSet which return 2 attributes because it 
+     * computes every level
+     * @see http://wiki.exist-db.org/space/XQueryBugs
+     */
     
+    public void bugtestVirtualNodesetBUG_wiki_3()  {
+        String xQuery = "declare option exist:serialize \"method=xml indent=no\"; "
+                +"let $node := (<c id=\"OK\"><b id=\"cool\"/></c>)"
+                +"/descendant::*/attribute::id return <a>{$node}</a>";
+        
+        try {
+            XQueryService service = getQueryService();
+            ResourceSet rs = service.query(xQuery);
+            
+            assertEquals("VirtualNodesetBUG_wiki_3", 1, rs.getSize());
+            assertEquals("VirtualNodesetBUG_wiki_3", "<a id=\"cool\"/>",
+                    rs.getResource(0).getContent());
+        } catch (XMLDBException ex) {
+            fail( "xquery returned exception: " +ex.toString() );
+        }
+        
+    } 
     
     
     public void testStrings() {
