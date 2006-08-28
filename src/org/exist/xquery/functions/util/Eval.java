@@ -239,10 +239,12 @@ public class Eval extends BasicFunction {
 		} catch (IOException e) {
 			throw new XPathException(getASTNode(), e.getMessage(), e);
 		} finally {
-			if (cache && compiled!=null)
-				pool.returnCompiledXQuery(querySource, compiled);
-			else
-				compiled.reset();
+			if (compiled != null) {
+				if (cache)
+					pool.returnCompiledXQuery(querySource, compiled);
+				else
+					compiled.reset();
+			}
 			if (oldDocs != null)
 				context.setStaticallyKnownDocuments(oldDocs);
 			context.popNamespaceContext();
