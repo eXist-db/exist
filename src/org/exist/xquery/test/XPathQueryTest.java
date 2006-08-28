@@ -957,17 +957,48 @@ public class XPathQueryTest extends XMLTestCase {
         XQueryService service = getQueryService();
         ResourceSet rs = service.query(xQuery);
         
-        System.out.println("BUG1460791/1"+rs.getResource(0).getContent().toString().trim() );
-        System.out.println("BUG1460791/2"+rs.getResource(1).getContent().toString().trim() );
+        System.out.println("BUG1460791/1"+rs.getResource(0).getContent().toString() );
+        System.out.println("BUG1460791/2"+rs.getResource(1).getContent().toString() );
 
-        assertEquals("SFBUG 1537355 nr of results", 2, rs.getSize());
+        assertEquals("SFBUG 1460791 nr of results", 2, rs.getSize());
         
-        assertEquals("SFBUG 1537355 result part 1", "<one><z>zzz</z></one>",
+        assertEquals("SFBUG 1460791 result part 1", "<one><z>zzz</z></one>",
                 rs.getResource(0).getContent().toString());
         
-        assertEquals("SFBUG 1537355 result part 2", "<two><z>zzz</z></two>",
+        assertEquals("SFBUG 1460791 result part 2", "<two><z>zzz</z></two>",
                 rs.getResource(1).getContent().toString());
     }
+    
+    // @see http://sourceforge.net/tracker/index.php?func=detail&aid=1462120&group_id=17691&atid=117691
+    public void bugtestXpathBUG1462120() throws Exception {
+        String xQuery = "declare option exist:serialize \"method=xml indent=no\"; "
+        +"let $m:=<Units><Unit name=\"g\" size=\"1\"/>"
+        +"<Unit name=\"kg\" size=\"1000\"/></Units> "
+        +"let $list:=(<Product aaa=\"g\"/>, <Product aaa=\"kg\"/>) "
+        +"let $one:=$list[1] return ( "
+        +"$m/Unit[string(data(@name)) eq string(data($list[1]/@aaa))],"
+        +"<br/>,$m/Unit[string(data(@name)) eq string(data($one/@aaa))] )";
+        
+        XQueryService service = getQueryService();
+        ResourceSet rs = service.query(xQuery);
+        
+//        System.out.println("BUG1462120/1"+rs.getResource(0).getContent().toString() );
+//        System.out.println("BUG1462120/2"+rs.getResource(1).getContent().toString() );
+//        System.out.println("BUG1462120/3"+rs.getResource(2).getContent().toString() );
+
+        assertEquals("SFBUG 1462120 nr of results", 3, rs.getSize());
+        
+        assertEquals("SFBUG 1462120 result part 1", "<Unit name=\"g\" size=\"1\"/>",
+                rs.getResource(0).getContent().toString());
+        
+        assertEquals("SFBUG 1462120 result part 2", "<br/>",
+                rs.getResource(1).getContent().toString());
+        
+        assertEquals("SFBUG 1462120 result part 3", "<Unit name=\"g\" size=\"1\"/>",
+                rs.getResource(1).getContent().toString());
+    }
+    
+
     
     public void testStrings() {
         try {
