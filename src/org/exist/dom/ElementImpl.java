@@ -389,7 +389,6 @@ public class ElementImpl extends NamedNode implements Element {
             else {
                 if (child > 1 && child <= children) {
                     NodeList cl = getChildNodes();
-                    LOG.debug("Children: " + cl.getLength() + "; at: " + child);
                     StoredNode last = (StoredNode) cl.item(child - 2);
                     insertAfter(transaction, nodes, getLastNode(last));
                 } else {
