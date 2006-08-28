@@ -277,6 +277,8 @@ public class Main {
 					reportError(e);
 				} catch (IOException e) {
 					reportError(e);
+				} catch (URISyntaxException e) {
+					reportError(e);
 				}
 			}
 		}
