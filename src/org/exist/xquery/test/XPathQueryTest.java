@@ -921,6 +921,33 @@ public class XPathQueryTest extends XMLTestCase {
         assertEquals("SFBUG 1537355 result", "2", 
                                                 rs.getResource(0).getContent());
     }
+
+    // @see http://sourceforge.net/tracker/index.php?func=detail&aid=1488303&group_id=17691&atid=117691
+    public void bugtestPredicateBUG1488303() throws Exception {
+        XQueryService service = getQueryService();
+        ResourceSet rs=null;
+        
+        // test one 
+        String xQuery1 = "let $q := <q><t>eXist</t></q> return $q//t";      
+        rs = service.query(xQuery1);
+        assertEquals("nr of results", 1, rs.getSize());
+        assertEquals("result", "<t>eXist</t>", 
+                                                rs.getResource(0).getContent());
+        
+        // test two
+        String xQuery2 = "let $q := <q><t>eXist</t></q> return ($q//t)[1]";      
+        rs = service.query(xQuery2);
+        assertEquals("nr of results", 1, rs.getSize());
+        assertEquals("result", "<t>eXist</t>", 
+                                                rs.getResource(0).getContent());
+        
+        // This one fails http://sourceforge.net/tracker/index.php?func=detail&aid=1488303&group_id=17691&atid=117691
+        String xQuery3 = "let $q := <q><t>eXist</t></q> return $q//t[1]";      
+        rs = service.query(xQuery3);
+        assertEquals("SFBUG 1488303 nr of results", 1, rs.getSize());
+        assertEquals("SFBUG 1488303 result", "<t>eXist</t>", 
+                                                rs.getResource(0).getContent());
+    }
 	
 	public void testStrings() {
 		try {
