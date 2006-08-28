@@ -121,8 +121,8 @@ public class XMLSecurityManager implements SecurityManager {
              user = new User(GUEST_USER, GUEST_USER, GUEST_GROUP);
              user.setUID(++nextUserId);
              users.put(user.getUID(), user);
-             addGroup(DBA_GROUP);
-             addGroup(GUEST_GROUP);
+             newGroup(DBA_GROUP);
+             newGroup(GUEST_GROUP);
              txn = transact.beginTransaction();
              save(broker, txn);
              transact.commit(txn);
@@ -261,11 +261,28 @@ public class XMLSecurityManager implements SecurityManager {
 		return u;
 	}
 
-	public synchronized void addGroup(String name) {
+	protected void newGroup(String name) {
 		Group group = new Group(name, ++nextGroupId);
 		groups.put(group.getId(), group);
 	}
 
+    public synchronized void addGroup(String name) {
+        newGroup(name);
+        DBBroker broker = null;
+        TransactionManager transact = pool.getTransactionManager();
+        Txn txn = transact.beginTransaction();
+        try {
+            broker = pool.get();
+            save(broker, txn);
+            transact.commit(txn);
+        } catch (EXistException e) {
+            transact.abort(txn);
+            e.printStackTrace();
+        } finally {
+            pool.release(broker);
+        }
+    }
+    
 	public synchronized boolean hasGroup(String name) {
 		Group group;
 		for (Iterator i = groups.valueIterator(); i.hasNext();) {
@@ -367,9 +384,12 @@ public class XMLSecurityManager implements SecurityManager {
 			user.setUID(++nextUserId);
 		users.put(user.getUID(), user);
 		String[] groups = user.getGroups();
+        // if no group is specified, we automatically fall back to the guest group
+        if (groups.length == 0)
+            user.addGroup(GUEST_GROUP);
 		for (int i = 0; i < groups.length; i++) {
 			if (!hasGroup(groups[i]))
-				addGroup(groups[i]);
+				newGroup(groups[i]);
 		}
         TransactionManager transact = pool.getTransactionManager();
         Txn txn = transact.beginTransaction();
