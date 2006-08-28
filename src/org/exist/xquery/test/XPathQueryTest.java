@@ -1068,6 +1068,52 @@ public class XPathQueryTest extends XMLTestCase {
         
     } 
     
+    /*
+     * Problem in VirtualNodeSet because it computes the wrong level
+     *
+     *@see http://wiki.exist-db.org/space/XQueryBugs
+     */
+    public void bugtestVirtualNodesetBUG_wiki_4()  {
+        String xQuery = "declare option exist:serialize \"method=xml indent=no\"; "
+                +"let $node := (<c id=\"OK\">"
+                +"<b id=\"cool\"/></c>)/descendant-or-self::*/child::b "
+                +"return <a>{$node}</a>";
+        
+        try {
+            XQueryService service = getQueryService();
+            ResourceSet rs = service.query(xQuery);
+            
+            assertEquals("VirtualNodesetBUG_wiki_4", 1, rs.getSize());
+            assertEquals("VirtualNodesetBUG_wiki_4", "<a><b id=\"cool\"/></a>",
+                    rs.getResource(0).getContent());
+        } catch (XMLDBException ex) {
+            fail( "xquery returned exception: " +ex.toString() );
+        }
+        
+    } 
+    
+    /*
+     * Problem in VirtualNodeSet because it computes the wrong level
+     *
+     *@see http://wiki.exist-db.org/space/XQueryBugs
+     */
+    public void bugtestVirtualNodesetBUG_wiki_5()  {
+        String xQuery = "declare option exist:serialize \"method=xml indent=no\"; "
+                +"let $node := (<c id=\"OK\"><b id=\"cool\"/>"
+                +"</c>)/descendant-or-self::*/descendant::b return <a>{$node}</a>";
+        
+        try {
+            XQueryService service = getQueryService();
+            ResourceSet rs = service.query(xQuery);
+            
+            assertEquals("VirtualNodesetBUG_wiki_5", 1, rs.getSize());
+            assertEquals("VirtualNodesetBUG_wiki_5", "<a><b id=\"cool\"/></a>",
+                    rs.getResource(0).getContent());
+        } catch (XMLDBException ex) {
+            fail( "xquery returned exception: " +ex.toString() );
+        }
+        
+    } 
     
     public void testStrings() {
         try {
