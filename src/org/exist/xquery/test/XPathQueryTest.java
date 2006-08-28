@@ -965,7 +965,7 @@ public class XPathQueryTest extends XMLTestCase {
         
         System.out.println("BUG1460791/1"+rs.getResource(0).getContent().toString() );
         System.out.println("BUG1460791/2"+rs.getResource(1).getContent().toString() );
-
+        
         assertEquals("SFBUG 1460791 nr of results", 2, rs.getSize());
         
         assertEquals("SFBUG 1460791 result part 1", "<one><z>zzz</z></one>",
@@ -978,12 +978,12 @@ public class XPathQueryTest extends XMLTestCase {
     // @see http://sourceforge.net/tracker/index.php?func=detail&aid=1462120&group_id=17691&atid=117691
     public void bugtestXpathBUG1462120() throws Exception {
         String xQuery = "declare option exist:serialize \"method=xml indent=no\"; "
-        +"let $m:=<Units><Unit name=\"g\" size=\"1\"/>"
-        +"<Unit name=\"kg\" size=\"1000\"/></Units> "
-        +"let $list:=(<Product aaa=\"g\"/>, <Product aaa=\"kg\"/>) "
-        +"let $one:=$list[1] return ( "
-        +"$m/Unit[string(data(@name)) eq string(data($list[1]/@aaa))],"
-        +"<br/>,$m/Unit[string(data(@name)) eq string(data($one/@aaa))] )";
+                +"let $m:=<Units><Unit name=\"g\" size=\"1\"/>"
+                +"<Unit name=\"kg\" size=\"1000\"/></Units> "
+                +"let $list:=(<Product aaa=\"g\"/>, <Product aaa=\"kg\"/>) "
+                +"let $one:=$list[1] return ( "
+                +"$m/Unit[string(data(@name)) eq string(data($list[1]/@aaa))],"
+                +"<br/>,$m/Unit[string(data(@name)) eq string(data($one/@aaa))] )";
         
         XQueryService service = getQueryService();
         ResourceSet rs = service.query(xQuery);
@@ -991,7 +991,7 @@ public class XPathQueryTest extends XMLTestCase {
 //        System.out.println("BUG1462120/1"+rs.getResource(0).getContent().toString() );
 //        System.out.println("BUG1462120/2"+rs.getResource(1).getContent().toString() );
 //        System.out.println("BUG1462120/3"+rs.getResource(2).getContent().toString() );
-
+        
         assertEquals("SFBUG 1462120 nr of results", 3, rs.getSize());
         
         assertEquals("SFBUG 1462120 result part 1", "<Unit name=\"g\" size=\"1\"/>",
@@ -1004,7 +1004,48 @@ public class XPathQueryTest extends XMLTestCase {
                 rs.getResource(1).getContent().toString());
     }
     
-
+    
+    /*
+     * In Predicate.java, the contextSet and the outerSequence.toNodeSet()
+     * documents are different so that no match can occur.
+     *
+     * @see http://wiki.exist-db.org/space/XQueryBugs
+     */
+    public void bugtestPredicateBUG_wiki_1() throws Exception {
+        String xQuery = "let $dum := <dummy><el>1</el><el>2</el></dummy> return $dum/el[2]";
+        
+        XQueryService service = getQueryService();
+        ResourceSet rs = service.query(xQuery);
+        
+        assertEquals("Predicate bug wiki_1", 1, rs.getSize());
+        assertEquals("Predicate bug wiki_1", "<el>2</el>",
+                rs.getResource(0).getContent());
+    }
+    
+    /*
+     * removing Self: makes the query work OK
+     * @see http://wiki.exist-db.org/space/XQueryBugs
+     */
+    
+    public void bugtestCardinalitySelfBUG_wiki_2()  {
+        String xQuery = "let $test := <test><works><employee>a</employee><employee>b</employee></works></test> "
+                +"for $h in $test/works/employee[2] return fn:name($h/self::employee)";
+        
+        try {
+            XQueryService service = getQueryService();
+            ResourceSet rs = service.query(xQuery);
+            
+            assertEquals("CardinalitySelfBUG bug wiki_2", 1, rs.getSize());
+            assertEquals("CardinalitySelfBUG bug wiki_2", "employee",
+                    rs.getResource(0).getContent());
+        } catch (XMLDBException ex) {
+            fail( "xquery returned exception: " +ex.toString() );
+        }
+        
+    }
+    
+    
+    
     
     public void testStrings() {
         try {
