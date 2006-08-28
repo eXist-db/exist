@@ -771,6 +771,7 @@ public class XPathQueryTest extends XMLTestCase {
                     "123456789123456789123456789",
                     result.getResource(0).getContent() );
         } catch (XMLDBException e) {
+            e.printStackTrace();
             fail(e.getMessage());
         }
     }
@@ -882,11 +883,16 @@ public class XPathQueryTest extends XMLTestCase {
                     "return $doc/a[$doc/a/@b or $doc/a/@d]";
             result = queryResource(service, "numbers.xml", query, 1);
             assertXMLEqual("<a b=\"c\" d=\"e\"/>", result.getResource(0)
-            .getContent().toString());
+                    .getContent().toString());
             
             //Boolean evaluation for "." (atomic sequence)
             query = "(1,2,3)[xs:decimal(.)]";
             result = queryResource(service, "numbers.xml", query, 3);
+
+            query = " 	let $c := (<a/>,<b/>), $i := 1 return $c[$i]";
+            result = queryResource(service, "numbers.xml", query, 1);
+            assertXMLEqual("<a/>", result.getResource(0)
+                    .getContent().toString());
             
             
         } catch (XMLDBException e) {
