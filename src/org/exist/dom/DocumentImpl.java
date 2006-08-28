@@ -365,6 +365,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
             } else {
                 User user = secman.getUser(permissions.getOwner());
                 Group group = secman.getGroup(permissions.getOwnerGroup());
+                if (group == null)
+                    group = secman.getGroup(SecurityManager.GUEST_GROUP);
                 ostream.writeInt(user.getUID());
                 ostream.writeInt(group.getId());
             }
