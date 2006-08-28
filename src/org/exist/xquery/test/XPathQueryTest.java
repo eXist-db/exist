@@ -949,7 +949,25 @@ public class XPathQueryTest extends XMLTestCase {
                 rs.getResource(0).getContent());
     }
     
-    
+    // @see http://sourceforge.net/tracker/index.php?func=detail&aid=1460791&group_id=17691&atid=117691
+    public void bugtestDescendantOrSelfBUG1460791() throws Exception {
+        String xQuery = "declare option exist:serialize \"method=xml indent=no\"; let $test:=<z><a>aaa</a><z>zzz</z></z> "
+                +"return ( <one>{$test//z}</one>, <two>{$test/descendant-or-self::node()/child::z}</two> )";
+        
+        XQueryService service = getQueryService();
+        ResourceSet rs = service.query(xQuery);
+        
+        System.out.println("BUG1460791/1"+rs.getResource(0).getContent().toString().trim() );
+        System.out.println("BUG1460791/2"+rs.getResource(1).getContent().toString().trim() );
+
+        assertEquals("SFBUG 1537355 nr of results", 2, rs.getSize());
+        
+        assertEquals("SFBUG 1537355 result part 1", "<one><z>zzz</z></one>",
+                rs.getResource(0).getContent().toString());
+        
+        assertEquals("SFBUG 1537355 result part 2", "<two><z>zzz</z></two>",
+                rs.getResource(1).getContent().toString());
+    }
     
     public void testStrings() {
         try {
