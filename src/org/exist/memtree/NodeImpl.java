@@ -150,7 +150,7 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	 * @see org.w3c.dom.Node#getNodeValue()
 	 */
 	public String getNodeValue() throws DOMException {
-		throw new RuntimeException("Can not call getNodeValue() on node type " + this.getNodeType());
+		throw new RuntimeException(getClass().getName() + ": can not call getNodeValue() on node type " + this.getNodeType());
 	}
 
 	/* (non-Javadoc)

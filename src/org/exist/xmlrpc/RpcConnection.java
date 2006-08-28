@@ -1856,6 +1856,8 @@ public class RpcConnection extends Thread {
                 || manager.hasAdminPrivileges(user)) {
                     if (owner != null) {
                         perm.setOwner(owner);
+                        if (!manager.hasGroup(ownerGroup))
+                            manager.addGroup(ownerGroup);
                         perm.setGroup(ownerGroup);
                     }
                     if (permissions != null && permissions.length() > 0)
@@ -1876,6 +1878,8 @@ public class RpcConnection extends Thread {
                         perm.setPermissions(permissions);
                     if (owner != null) {
                         perm.setOwner(owner);
+                        if (!manager.hasGroup(ownerGroup))
+                            manager.addGroup(ownerGroup);
                         perm.setGroup(ownerGroup);
                     }
                     // keep the write lock in the transaction
@@ -1931,6 +1935,8 @@ public class RpcConnection extends Thread {
                 || manager.hasAdminPrivileges(user)) {
                     if (owner != null) {
                         perm.setOwner(owner);
+                        if (!manager.hasGroup(ownerGroup))
+                            manager.addGroup(ownerGroup);
                         perm.setGroup(ownerGroup);
                     }
                     perm.setPermissions(permissions);
@@ -1949,6 +1955,8 @@ public class RpcConnection extends Thread {
                 perm.setPermissions(permissions);
                 if (owner != null) {
                     perm.setOwner(owner);
+                    if (!manager.hasGroup(ownerGroup))
+                        manager.addGroup(ownerGroup);
                     perm.setGroup(ownerGroup);
                 }
                 transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
