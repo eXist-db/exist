@@ -143,6 +143,10 @@ public class TextImpl extends CharacterDataImpl implements Text {
         return super.toString();
     }
     
+    public int getChildCount() {
+    	return 0;
+    }
+    
     public boolean hasChildNodes() {
         return false;        
     }

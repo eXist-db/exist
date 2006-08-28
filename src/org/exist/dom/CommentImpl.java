@@ -79,6 +79,10 @@ public class CommentImpl extends CharacterDataImpl implements Comment {
         return false;        
     }
     
+    public int getChildCount() {
+    	return 0;
+    }
+    
     public Node getFirstChild() {   
         //bad implementations don't call hasChildNodes before
         return null;
