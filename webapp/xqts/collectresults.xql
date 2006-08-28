@@ -17,7 +17,7 @@ return
 
                 <organization name="eXist Open Source native XML database"  website="http://www.exist-db.org" anonymous="false"/>
 
-                <submittor name="eXist XQTS testsuite runner" email="me@not.com"/>
+                <submittor name="eXist XQTS testsuite runner" email="xqts@exist-db.org"/>
 
                 <description>
                         <p>eXist is an Open Source native XML database featuring efficient, 
