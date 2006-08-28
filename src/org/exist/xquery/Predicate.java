@@ -145,6 +145,15 @@ public class Predicate extends PathExpr {
             	}
             }  
             
+            //Try to promote a boolean evaluation to a positionnal one  (second case)
+            if (executionMode == BOOLEAN && !innerExpressionDot && !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM)) {
+	        	Sequence innerSeq = inner.eval(contextSequence); 
+	            //Only if we have an actual *singleton* of numeric items
+	            if (innerSeq.hasOne() && Type.subTypeOf(innerSeq.getItemType(), Type.NUMBER)) { 
+                    recomputedExecutionMode = POSITIONAL;
+	        	}
+            }
+
             if (executionMode == NODE && Type.subTypeOf(contextSequence.getItemType(), Type.ATOMIC)
                     && !(contextSequence instanceof VirtualNodeSet)) {
                 recomputedExecutionMode = BOOLEAN;
