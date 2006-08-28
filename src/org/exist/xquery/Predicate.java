@@ -179,9 +179,7 @@ public class Predicate extends PathExpr {
                     if (context.getProfiler().isEnabled())
                         context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, 
                                 "OPTIMIZATION CHOICE", "Positional evaluation");
-                    context.setEvalFlag(XQueryContext.IN_POSITIONAL_PREDICATE);
                     result = selectByPosition(outerSequence, contextSequence, mode, inner);
-                    
                     break;
     			default:
                     throw new IllegalArgumentException("Unsupported execution mode: '" + recomputedExecutionMode + "'");			    
