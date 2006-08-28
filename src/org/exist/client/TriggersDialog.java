@@ -17,7 +17,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * $Id$
+ * $Id:$
  */
 package org.exist.client;
 
@@ -44,7 +44,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.AbstractTableModel;
@@ -52,7 +51,6 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
 import org.exist.storage.DBBroker;
-import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
@@ -61,26 +59,23 @@ import org.xmldb.api.base.XMLDBException;
  * Dialog for viewing and editing Triggers in the Admin Client 
  * 
  * @author Adam Retter <adam.retter@devon.gov.uk>
- * @serial 2006-08-06
+ * @serial 2006-08-25
  * @version 1.0
  */
 class TriggersDialog extends JFrame {
-	
-	private static final String[] TRIGGER_TYPES = {
-		"xs:boolean",
-		"xs:integer",
-		"xs:dateTime",
-		"xs:string"
-	};
 	
 	private CollectionXConf cx = null;
 	
 	private JComboBox cmbCollections;
 	
-	private JTextField txtXPath;
-	private JComboBox cmbxsType;
 	private JTable tblTriggers;
 	private TriggersTableModel triggersModel;
+	private TableColumn colStoreDocument;
+	private TableColumn colUpdateDocument;
+	private TableColumn colRemoveDocument;
+	private TableColumn colCreateCollection;
+	private TableColumn colRenameCollection;
+	private TableColumn colDeleteCollection;
 	
 	private InteractiveClient client;
 	
@@ -181,9 +176,24 @@ class TriggersDialog extends JFrame {
         tblTriggers = new JTable(triggersModel);
         tblTriggers.setAutoResizeMode(JTable.AUTO_RESIZE_NEXT_COLUMN);
         tblTriggers.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        TableColumn colAction = tblTriggers.getColumnModel().getColumn(1);
-        colAction.setCellEditor(new CheckBoxCellEditor());
-        colAction.setCellRenderer(new CheckBoxCellRenderer());
+        colStoreDocument = tblTriggers.getColumnModel().getColumn(1);
+        colStoreDocument.setCellEditor(new CheckBoxCellEditor());
+        colStoreDocument.setCellRenderer(new CheckBoxCellRenderer());
+        colUpdateDocument = tblTriggers.getColumnModel().getColumn(2);
+        colUpdateDocument.setCellEditor(new CheckBoxCellEditor());
+        colUpdateDocument.setCellRenderer(new CheckBoxCellRenderer());
+        colRemoveDocument = tblTriggers.getColumnModel().getColumn(3);
+        colRemoveDocument.setCellEditor(new CheckBoxCellEditor());
+        colRemoveDocument.setCellRenderer(new CheckBoxCellRenderer());
+        colCreateCollection = tblTriggers.getColumnModel().getColumn(4);
+        colCreateCollection.setCellEditor(new CheckBoxCellEditor());
+        colCreateCollection.setCellRenderer(new CheckBoxCellRenderer());
+        colRenameCollection = tblTriggers.getColumnModel().getColumn(5);
+        colRenameCollection.setCellEditor(new CheckBoxCellEditor());
+        colRenameCollection.setCellRenderer(new CheckBoxCellRenderer());
+        colDeleteCollection = tblTriggers.getColumnModel().getColumn(6);
+        colDeleteCollection.setCellEditor(new CheckBoxCellEditor());
+        colDeleteCollection.setCellRenderer(new CheckBoxCellRenderer());
         JScrollPane scrollFullTextIndexes = new JScrollPane(tblTriggers);
 		scrollFullTextIndexes.setPreferredSize(new Dimension(250, 150));
 		c.gridx = 0;
@@ -248,38 +258,8 @@ class TriggersDialog extends JFrame {
 				//save the collection.xconf changes
 				if(cx.Save())
 				{
-					//save ok, reindex?
-					result = JOptionPane.showConfirmDialog(getContentPane(), "Your changes have been saved, but will not take effect until the collection is reindexed!\n Would you like to reindex " + cmbCollections.getSelectedItem() + " and sub-collections now?", "Reindex", JOptionPane.YES_NO_OPTION);
-					
-					if(result == JOptionPane.YES_OPTION)
-					{
-						//reindex collection
-						Runnable reindexThread = new Runnable()
-						{
-							public void run()
-							{
-								try
-				                {
-									IndexQueryService service = (IndexQueryService)client.current.getService("IndexQueryService", "1.0");
-									
-									ArrayList subCollections = getCollections(client.getCollection((String)cmbCollections.getSelectedItem()), new ArrayList());
-									
-				                    for(int i = 0; i < subCollections.size(); i++)
-				                    {
-				                    	service.reindexCollection(((ResourceDescriptor)subCollections.get(i)).getName());
-				                    }
-				                    
-				                    //reindex done
-				                    JOptionPane.showMessageDialog(getContentPane(), "Reindex Complete");
-				                }
-								catch(XMLDBException e)
-								{
-									//reindex failed
-									JOptionPane.showMessageDialog(getContentPane(), "Reindex failed!");
-								}
-				            }
-				        };
-					}
+					//save ok
+					JOptionPane.showMessageDialog(getContentPane(), "Your changes have been saved.");
 				}
 				else
 				{
@@ -340,7 +320,7 @@ class TriggersDialog extends JFrame {
 	{
         public CheckBoxCellRenderer()
         {
-            
+            setHorizontalAlignment(JLabel.CENTER);
         }
     
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column)
@@ -348,7 +328,8 @@ class TriggersDialog extends JFrame {
             if(isSelected)
             {
                 setForeground(table.getSelectionForeground());
-                super.setBackground(table.getSelectionBackground());
+                //super.setBackground(table.getSelectionBackground());
+                setBackground(table.getSelectionBackground());
             }
             else
             {
@@ -357,7 +338,7 @@ class TriggersDialog extends JFrame {
             }
     
             // Set the state
-            setSelected(isSelected);
+            setSelected((value != null && ((Boolean) value).booleanValue()));
             return this;
         }
     }
@@ -386,38 +367,33 @@ class TriggersDialog extends JFrame {
 		*/
 		public void setValueAt(Object aValue, int rowIndex, int columnIndex)
 		{
-			switch (columnIndex)
+			String triggerClass = null;
+			boolean STORE_DOCUMENT_EVENT = ((Boolean)colStoreDocument.getCellEditor().getCellEditorValue()).booleanValue();
+			boolean UPDATE_DOCUMENT_EVENT = ((Boolean)colUpdateDocument.getCellEditor().getCellEditorValue()).booleanValue();
+			boolean REMOVE_DOCUMENT_EVENT = ((Boolean)colRemoveDocument.getCellEditor().getCellEditorValue()).booleanValue();
+			boolean CREATE_COLLECTION_EVENT = ((Boolean)colCreateCollection.getCellEditor().getCellEditorValue()).booleanValue();
+			boolean RENAME_COLLECTION_EVENT = ((Boolean)colRenameCollection.getCellEditor().getCellEditorValue()).booleanValue();
+			boolean DELETE_COLLECTION_EVENT = ((Boolean)colDeleteCollection.getCellEditor().getCellEditorValue()).booleanValue();
+		
+			if(columnIndex == 0)
 			{
-				/* class */
-				case 0:
-					//cx.updateTrigger(rowIndex, aValue.toString(), null);					
-					break;
-				
-				/* events */
-				case 1 :	//store document
-				case 2 :	//update document
-				case 3 :	//remove document
-				case 4 :	//create collection
-				case 5 :	//rename collection
-				case 6 :	//delete collection
-					//cx.updateTrigger(rowIndex, null, aValue.toString());
-					break;
-				default :
-					break;
+				//trigger class name has been updated
+				triggerClass = (String)aValue;
 			}
 			
+			cx.updateTrigger(rowIndex, triggerClass, STORE_DOCUMENT_EVENT, UPDATE_DOCUMENT_EVENT, REMOVE_DOCUMENT_EVENT, CREATE_COLLECTION_EVENT, RENAME_COLLECTION_EVENT, DELETE_COLLECTION_EVENT, null);			
 			fireTableCellUpdated(rowIndex, columnIndex);
 		}
 		
 		public void removeRow(int rowIndex)
 		{
-			//cx.deleteTrigger(rowIndex);
+			cx.deleteTrigger(rowIndex);
 			fireTableRowsDeleted(rowIndex, rowIndex);
 		}
 		
 		public void addRow()
 		{	
-			//cx.addTrigger("", "xs:string");
+			cx.addTrigger("", false, false, false, false, false, false, null);
 			fireTableRowsInserted(getRowCount(), getRowCount() + 1);
 		}
 		
@@ -450,8 +426,7 @@ class TriggersDialog extends JFrame {
 		 */
 		public int getRowCount()
 		{
-				//return cx != null ? cx.getTriggerCount() : 0;
-				return 0;
+			return cx != null ? cx.getTriggerCount() : 0;
 		}
 
 		/* (non-Javadoc)
@@ -461,12 +436,22 @@ class TriggersDialog extends JFrame {
 		{
 			switch (columnIndex)
 			{
-				case 0 :	/* XPath */
-					//return cx.Trigger(rowIndex);
-					return null;
-				case 1 :	/* action */
-					//return cx.getTrigger(rowIndex);
-					return null;
+				/* class */
+				case 0:
+					return cx.getTrigger(rowIndex).getTriggerClass();
+				/* events */
+				case 1 :	//store document
+					return new Boolean(cx.getTrigger(rowIndex).getStoreDocumentEvent());
+				case 2 :	//update document
+					return new Boolean(cx.getTrigger(rowIndex).getUpdateDocumentEvent());
+				case 3 :	//remove document
+					return new Boolean(cx.getTrigger(rowIndex).getRemoveDocumentEvent());
+				case 4 :	//create collection
+					return new Boolean(cx.getTrigger(rowIndex).getCreateCollectionEvent());
+				case 5 :	//rename collection
+					return new Boolean(cx.getTrigger(rowIndex).getRenameCollectionEvent());
+				case 6 :	//delete collection
+					return new Boolean(cx.getTrigger(rowIndex).getDeleteCollectionEvent());
 				default :
 					return null;
 			}

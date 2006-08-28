@@ -83,22 +83,11 @@ public class Validator {
             this.brokerPool = pool;
         }
         
-        // Check xerces version
-        try{
-            String version = org.apache.xerces.impl.Version.getVersion();
-            
-            if( !XmlLibraryChecker.isXercesVersionOK() ){
-                logger.error("Xerces version mismatch! eXist requires '"
-                        + XmlLibraryChecker.XERCESVERSION+"' but found '"
-                        + XmlLibraryChecker.getXercesVersion()+"'. "
-                        + "Please add correct Xerces libraries to the "
-                        + "endorsed folder of your JRE or webcontainer.");
-            }
-            
-        } catch (Exception ex){
-            logger.error("Could not determine Xerces version. "
-                    + "Please add correct Xerces libraries to the "
-                    + "endorsed folder of your JRE or webcontainer.");
+        // Check xerces version        
+    	StringBuffer xmlLibMessage = new StringBuffer();
+        if(!XmlLibraryChecker.hasValidParser(xmlLibMessage))
+        {
+      	  logger.error(xmlLibMessage);
         }
         
         

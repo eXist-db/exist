@@ -406,25 +406,89 @@ public class StringValue extends AtomicValue {
 						entityRef = new StringBuffer();
 					else
 						entityRef.setLength(0);
-					boolean found = false;
-					for (int j = i + 1; j < seq.length(); j++) {
-						ch = seq.charAt(j);
-						if (ch != ';')
-							entityRef.append(ch);
-						else {
-							found = true;
-							i = j;
-							break;
-						}
-					}
-					if (found) {
-						buf.append(expandEntity(entityRef.toString()));
-					//TODO : does it make sens to outup such a standalone "&" ?
-					//<elem>&</elem>
-					} else {
-						buf.append('&');
-					}
+                                        if ((i+1)==seq.length()) {
+                                           throw new XPathException("XPST0003 : Ampersands (&) must be escaped.");
+                                        }
+                                        if ((i+2)==seq.length()) {
+                                           throw new XPathException("XPST0003 : Ampersands (&) must be escaped (missing ;).");
+                                        }
+                                        ch = seq.charAt(i+1);
+                                        if (ch!='#') {
+                                           if (!Character.isLetter(ch)) {
+                                              throw new XPathException("XPST0003 : Ampersands (&) must be escaped (following character was not a name start character).");
+                                           }
+                                           entityRef.append(ch);
+                                           boolean found = false;
+                                           for (int j = i + 2; j < seq.length(); j++) {
+                                                   ch = seq.charAt(j);
+                                                   if (ch != ';' && (ch=='.' || ch=='_' || ch=='-' || Character.isLetterOrDigit(ch))) {
+                                                           entityRef.append(ch);
+                                                   } else if (ch==';') {
+                                                           found = true;
+                                                           i = j;
+                                                           break;
+                                                   } else {
+                                                      break;
+                                                   }
+                                           }
+                                           if (found) {
+                                                   buf.append(expandEntity(entityRef.toString()));
+                                           } else {
+                                              throw new XPathException("XPST0003 : Invalid character in entity name ("+ch+") or missing ;");
+                                           }
+                                        } else {
+                                           entityRef.append(ch);
+                                           ch = seq.charAt(i+2);
+                                           boolean found = false;
+                                           if (ch=='x') {
+                                              entityRef.append(ch);
+                                              // hex number
+                                              for (int j = i + 3; j < seq.length(); j++) {
+                                                      ch = seq.charAt(j);
+                                                      if (ch != ';' && (ch=='0' || ch=='1' || ch=='2' || ch=='3' || ch=='4' || ch=='5' || ch=='6' || ch=='7' || ch=='8' || ch=='9' ||
+                                                                        ch=='a' || ch=='b' || ch=='c' || ch=='d' || ch=='e' || ch=='f' ||
+                                                                        ch=='A' || ch=='B' || ch=='C' || ch=='D' || ch=='E' || ch=='F')) {
+                                                              entityRef.append(ch);
+                                                      } else if (ch==';') {
+                                                              found = true;
+                                                              i = j;
+                                                              break;
+                                                      } else {
+                                                         break;
+                                                      }
+                                              }
+                                           } else {
+                                              // decimal number
+                                              for (int j = i + 2; j < seq.length(); j++) {
+                                                      ch = seq.charAt(j);
+                                                      if (ch != ';' && (ch=='0' || ch=='1' || ch=='2' || ch=='3' || ch=='4' || ch=='5' || ch=='6' || ch=='7' || ch=='8' || ch=='9')) {
+                                                              entityRef.append(ch);
+                                                      } else if (ch==';') {
+                                                              found = true;
+                                                              i = j;
+                                                              break;
+                                                      } else {
+                                                         break;
+                                                      }
+                                              }
+                                           }
+                                           if (found) {
+                                                   buf.append(expandEntity(entityRef.toString()));
+                                           } else {
+                                              throw new XPathException("XPST0003 : Invalid character in character reference ("+ch+") or missing ;");
+                                           }
+                                           
+                                        }
 					break;
+                                case '\r':
+                                   // drop carriage returns
+                                   if ((i+1)!=seq.length()) {
+                                      ch = seq.charAt(i+1);
+                                      if (ch!='\n') {
+                                         buf.append('\n');
+                                      }
+                                   }
+                                   break;
 				default :
 					buf.append(ch);
 			}
@@ -451,11 +515,17 @@ public class StringValue extends AtomicValue {
 
 	private final static char expandCharRef(String buf) throws XPathException {
 		try {
+                   int charNumber;
 			if (buf.length() > 1 && buf.charAt(0) == 'x') {
 				// Hex
-				return (char) Integer.parseInt(buf.substring(1), 16);
-			} else
-				return (char) Integer.parseInt(buf);
+				charNumber = Integer.parseInt(buf.substring(1), 16);
+			} else {
+				charNumber = Integer.parseInt(buf);
+                        }
+                   if (charNumber==0) {
+                      throw new XPathException("XQST0090 : Character number zero (0) is not allowed.");
+                   }
+                   return (char)charNumber;
 		} catch (NumberFormatException e) {
 			throw new XPathException("Unknown character reference: " + buf);
 		}

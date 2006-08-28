@@ -43,11 +43,16 @@ public class PIConstructor extends NodeConstructor {
 		super(context);
         //TODO : handle this from the parser -pb
 		int p = pi.indexOf(" ");
-		if(p == Constants.STRING_NOT_FOUND)
-			throw new XPathException("Syntax error in processing instruction");
-		target = pi.substring(0, p);
-		if(++p < pi.length())
+		if(p == Constants.STRING_NOT_FOUND) {
+                   target = pi;
+                } else {
+		   target = pi.substring(0, p);
+		   if(++p < pi.length())
 			data = pi.substring(p);
+                }
+                if (target.equalsIgnoreCase("xml")) {
+                    throw new XPathException("XPST0003 : The target 'xml' is not allowed in XML processing instructions.");
+                }
 	}
 	
     /* (non-Javadoc)

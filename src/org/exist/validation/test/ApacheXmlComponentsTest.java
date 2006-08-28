@@ -26,11 +26,10 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import org.exist.validation.Validator;
 import org.exist.validation.XmlLibraryChecker;
 
 /**
- *  Class for testing xerces and xalan configuration.
+ *  Class for testing XML Parser and XML Transformer configuration.
  *
  * @author dizzzz
  */
@@ -55,30 +54,21 @@ public class ApacheXmlComponentsTest extends TestCase {
     }
     
     
-     public void testXercesVersion() {
-
-         String version = org.apache.xerces.impl.Version.getVersion();
-         
-         System.out.println("Xerces");
-         System.out.println("Required version '"+XmlLibraryChecker.XERCESVERSION+"'");
-         System.out.println("Found version '"+version+"'");
-         
-         assertTrue("Incorrect Xerces version! "+
-                             "Please put correct jar in endorsed folder",
-                             XmlLibraryChecker.isXercesVersionOK() );
-         
-     }
-     
-     public void testXalanVersion() {
-         
-         String version = org.apache.xalan.Version.getVersion();
-         
-         System.out.println("Xalan");
-         System.out.println("Required version '"+ XmlLibraryChecker.XALANVERSION+"'");
-         System.out.println("Found version '"+version+"'");
-         
-         assertTrue("Incorrect Xalan version! "+
-                             "Please put correct jar in endorsed folder", 
-                             XmlLibraryChecker.isXalanVersionOK() );
-     }
+    public void testParserVersion()
+    {
+    	StringBuffer xmlLibMessage = new StringBuffer();
+    	
+    	boolean validParser = XmlLibraryChecker.hasValidParser(xmlLibMessage);
+    	
+    	assertTrue(xmlLibMessage.toString(), validParser);
+    }
+    
+    public void testTransformerVersion()
+    {
+    	StringBuffer xmlLibMessage = new StringBuffer();
+    	
+    	boolean validTransformer = XmlLibraryChecker.hasValidTransformer(xmlLibMessage);
+    	
+    	assertTrue(xmlLibMessage.toString(), validTransformer);
+    }
 }

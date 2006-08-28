@@ -48,7 +48,8 @@ public class ProcessingInstructionImpl
 	}
 	
     public String getStringValue() {
-    	return getData();
+        // TODO: this could be optimized
+    	return getData().replaceFirst("^\\s+","");
     }	
 
 	/* (non-Javadoc)
