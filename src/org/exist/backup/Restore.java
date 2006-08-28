@@ -66,9 +66,10 @@ public class Restore extends DefaultHandler {
 	/**
 	 * Constructor for Restore.
 	 * @throws XMLDBException 
+	 * @throws URISyntaxException 
 	 */
 	public Restore(String user, String pass, String newAdminPass, File contents, String uri)
-		throws ParserConfigurationException, SAXException, XMLDBException {
+		throws ParserConfigurationException, SAXException, XMLDBException, URISyntaxException {
 		this.username = user;
 		this.pass = pass;
 		this.uri = uri;
@@ -398,8 +399,13 @@ public class Restore extends DefaultHandler {
 		return (CollectionImpl)current;
 	}
     
-	private void setAdminCredentials(String adminPassword) throws XMLDBException {
-		Collection root = DatabaseManager.getCollection(uri + DBBroker.ROOT_COLLECTION, username, pass);
+	private void setAdminCredentials(String adminPassword) throws XMLDBException, URISyntaxException {
+		XmldbURI dbUri;
+		if (!uri.endsWith(DBBroker.ROOT_COLLECTION))
+            dbUri = XmldbURI.xmldbUriFor(uri + DBBroker.ROOT_COLLECTION);
+        else
+            dbUri = XmldbURI.xmldbUriFor(uri);
+		Collection root = DatabaseManager.getCollection(dbUri.toString(), username, pass);
 		UserManagementService mgmt = (UserManagementService)
 			root.getService("UserManagementService", "1.0");
 		User dba = mgmt.getUser(SecurityManager.DBA_USER);
