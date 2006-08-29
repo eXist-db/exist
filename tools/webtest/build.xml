@@ -16,7 +16,7 @@
     
     <target name="all" depends="prepare,all-tests,style"/>
 
-	<target name="all-tests" depends="post,modules,extension-modules,xmldb-module,xinclude"/>
+	<target name="all-tests" depends="post,modules,extension-modules,xmldb-module,indexes,xinclude"/>
 	
     <target name="prepare" depends="start-jetty,clean,store,install-webtest">
         <fail unless="webtest.available">Failed to install webtest</fail>
@@ -161,6 +161,39 @@
         </webtest>
     </target>
 
+	<target name="indexes" xmlns:xdb="http://exist-db.org/ant" depends="prepare">
+		<mkdir dir="${test.temp}"/>
+		<mkdir dir="${test.temp}/mondial"/>
+		<get src="http://dbis.informatik.uni-goettingen.de/Mondial/mondial-europe.xml"
+            dest="${test.temp}/mondial/mondial-europe.xml" verbose="false"/>
+		<xdb:store user="admin" password=""
+            uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/system/config/db" createcollection="true">
+            <fileset dir="${server.home}/samples">
+        		<include name="mondial.xconf"/>
+        	</fileset>
+		</xdb:store>
+    	<xdb:store user="guest" password="guest"
+            uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/webtest/mondial" createcollection="true">
+            <fileset dir="${test.temp}/mondial">
+    			<include name="mondial-europe.xml"/>
+        	</fileset>
+		</xdb:store>
+		
+		<webtest name="testIndexes">
+            <config host="localhost" port="8080" protocol="http" 
+                basepath="exist/webtest"
+                summary="true" resultpath="${test.results}"
+            	saveResponse="true" savePrefix="testIndexes"/>
+            <steps>
+                <invoke description="Testing util:index-keys to scan range index"
+                    url="scan-range-index.xql"/>
+            	<verifyXPath xpath="/entries/cities/entry[term = 'Toulouse']"/>
+            	<verifyXPath xpath="/entries/cities/entry[term = 'Tallinn']"/>
+            	<verifyXPath xpath="/entries/population/entry"/>
+            </steps>
+        </webtest>
+	</target>
+		
     <target name="install-webtest" unless="webtest.available">
         <echo>Installing Canoo Webtest</echo>
         <echo>-------------------------</echo>
