@@ -73,10 +73,12 @@ public class SelfSelector implements NodeSelector {
         if (contextNode != null) {
             if (Expression.NO_CONTEXT_ID != contextId) {
                 p.deepCopyContext(contextNode, contextId);
+            } else {
+            	p.addContextNode(contextId, p);
             }
+            return p;
         } else {
-            p.addContextNode(contextId, p);
-        }
-        return p;
+        	return null;
+        }        
 	}
 }
