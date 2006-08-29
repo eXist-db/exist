@@ -619,6 +619,7 @@ public class LocationStep extends Step {
     protected NodeSet getAncestors(XQueryContext context, NodeSet contextSet) {
         if (test.isWildcardTest()) {
             NodeSet result = new ExtArrayNodeSet();
+            result.setProcessInReverseOrder(true);
             for (Iterator i = contextSet.iterator(); i.hasNext();) {
                 NodeProxy current = (NodeProxy) i.next();
                 NodeProxy ancestor;
