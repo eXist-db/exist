@@ -65,11 +65,16 @@ public class Predicate extends PathExpr {
 	 * @see org.exist.xquery.PathExpr#getDependencies()
 	 */
 	public int getDependencies() {
+		int deps = 0;
 		if(getLength() == 1) {
-			return getExpression(0).getDependencies();
+			deps = getExpression(0).getDependencies();
 		} else {
-			return super.getDependencies();
+			deps = super.getDependencies();
         }
+		if (executionMode == POSITIONAL)
+			// in a positional predicate, remove the dependency on the context item
+			deps = deps & ~Dependency.CONTEXT_ITEM;
+		return deps;
 	}
 	
     /* (non-Javadoc)
@@ -183,7 +188,7 @@ public class Predicate extends PathExpr {
     			case POSITIONAL: 
                     if (context.getProfiler().isEnabled())
                         context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, 
-                                "OPTIMIZATION CHOICE", "Positional evaluation");                    
+                                "OPTIMIZATION CHOICE", "Positional evaluation");
                     result = selectByPosition(outerSequence, contextSequence, mode, inner);
                     break;
     			default:
