@@ -22,6 +22,7 @@
  */
 package org.exist.storage;
 
+import java.io.UnsupportedEncodingException;
 import java.util.GregorianCalendar;
 
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -55,8 +56,13 @@ public class ValueIndexFactory {
 		
 		/* xs:string */
 		if (Type.subTypeOf(type, Type.STRING))
-		{			
-			String s = new String(data, 3, data.length - 3);
+		{
+			String s;
+			try {
+				s = new String(data, start + 3, len - 3, "UTF-8");
+			} catch (UnsupportedEncodingException e) {
+				s = new String(data, start + 3, len - 3);
+			}
 			return new StringValue(s);
 		}
 		
@@ -66,7 +72,7 @@ public class ValueIndexFactory {
 			long value = ByteConversion.byteToLong(data, start + 3);			
 			//Create a GregorianCalendar from the long (normalized datetime as milliseconds since the Epoch)
 			GregorianCalendar utccal = new GregorianCalendar();
-			utccal.setTimeInMillis(value);			
+			utccal.setTimeInMillis(value);
 			//Create a XMLGregorianCalendar from the GregorianCalendar
 			try
 			{
