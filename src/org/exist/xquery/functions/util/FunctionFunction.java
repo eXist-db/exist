@@ -25,6 +25,7 @@ import org.exist.dom.QName;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Dependency;
 import org.exist.xquery.ExternalModule;
 import org.exist.xquery.FunctionCall;
 import org.exist.xquery.FunctionSignature;
@@ -77,8 +78,8 @@ public class FunctionFunction extends BasicFunction {
     	super.analyze(contextInfo);
     	String funcName = getArgument(0).eval(null).getStringValue();
     	int arity = ((NumericValue)getArgument(1).eval(null).itemAt(0)).getInt();
-    	
     	FunctionCall funcCall = lookupFunction(funcName, arity);
+    	contextInfo.addFlag(SINGLE_STEP_EXECUTION);
     	funcCall.analyze(contextInfo);
     }
 
