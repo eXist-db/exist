@@ -50,7 +50,7 @@ import org.w3c.dom.Node;
  */
 public class LocationStep extends Step {
 
-    private final int ATTR_DIRECT_SELECT_THRESHOLD = 3;
+    private final int ATTR_DIRECT_SELECT_THRESHOLD = 10;
 
     protected NodeSet currentSet = null;
 
@@ -353,6 +353,8 @@ public class LocationStep extends Step {
             if (context.getProfiler().isEnabled())
                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
                         "OPTIMIZATION", "direct attribute selection");
+            if (contextSet.getLength() == 0)
+            	return NodeSet.EMPTY_SET;
             NodeProxy proxy = contextSet.get(0);
             if (proxy != null
                     && proxy.getInternalAddress() != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
