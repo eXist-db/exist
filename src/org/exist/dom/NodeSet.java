@@ -337,6 +337,10 @@ public interface NodeSet extends Sequence, NodeList {
 	 */
 	public NodeSet except(NodeSet other);
 	
+    public void setProcessInReverseOrder(boolean inReverseOrder);
+
+    public boolean getProcessInReverseOrder();
+	
 	/**
 	 * Returns all context nodes associated with the nodes in
 	 * this node set.
