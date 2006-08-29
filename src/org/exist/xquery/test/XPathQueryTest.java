@@ -1027,7 +1027,7 @@ public class XPathQueryTest extends XMLTestCase {
      * @see http://wiki.exist-db.org/space/XQueryBugs
      */
     
-    public void bugtestCardinalitySelfBUG_wiki_2()  {
+    public void testCardinalitySelfBUG_wiki_2()  {
         String xQuery = "let $test := <test><works><employee>a</employee><employee>b</employee></works></test> "
                 +"for $h in $test/works/employee[2] return fn:name($h/self::employee)";
         
