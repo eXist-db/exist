@@ -62,6 +62,7 @@
                 <include name="client.properties"/>
                 <include name="backup.properties"/>
                 <include name="server.xml"/>
+                <include name="mime-types.xml"/>
             </webinf>
             
             <!-- Add files context root ('/') -->
