@@ -211,13 +211,28 @@ public class Predicate extends PathExpr {
 	 */
 	private Sequence evalBoolean(Sequence contextSequence, Expression inner) throws XPathException {
 		Sequence result = new ValueSequence();
-		int p = 0;
-		for (SequenceIterator i = contextSequence.iterate(); i.hasNext(); p++) {
-            context.setContextPosition(p); 
-			Item item = i.nextItem();            
-            Sequence innerSeq = inner.eval(item.toSequence(), null);
-			if(innerSeq.effectiveBooleanValue())
-				result.add(item);
+		int p;
+		if (contextSequence instanceof NodeSet && ((NodeSet)contextSequence).getProcessInReverseOrder()) {
+			//This one may be expensive...
+			p = contextSequence.getLength();
+			for (SequenceIterator i = contextSequence.iterate(); i.hasNext(); p--) {
+				//0-based
+	            context.setContextPosition(p - 1); 
+				Item item = i.nextItem();            
+	            Sequence innerSeq = inner.eval(item.toSequence(), null);
+				if(innerSeq.effectiveBooleanValue())
+					result.add(item);
+			}
+		} else {
+			//0-based
+			p = 0;
+			for (SequenceIterator i = contextSequence.iterate(); i.hasNext(); p++) {
+	            context.setContextPosition(p); 
+				Item item = i.nextItem();            
+	            Sequence innerSeq = inner.eval(item.toSequence(), null);
+				if(innerSeq.effectiveBooleanValue())
+					result.add(item);
+			}
 		}
 		return result;
 	}
