@@ -27,6 +27,7 @@ import java.util.Properties;
 
 import javax.xml.transform.TransformerException;
 
+import org.exist.memtree.NodeImpl;
 import org.w3c.dom.Attr;
 import org.w3c.dom.CharacterData;
 import org.w3c.dom.Comment;
@@ -75,7 +76,7 @@ public class DOMSerializer {
 		Node top = node;
 		while (node != null) {
 			startNode(node);
-			Node nextNode = node.getFirstChild();
+			Node nextNode = node.getNodeType() == NodeImpl.REFERENCE_NODE ? null : node.getFirstChild();
 			while (nextNode == null) {
 				endNode(node);
 				if (top != null && top.equals(node))
