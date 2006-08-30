@@ -24,8 +24,10 @@
             loaderref="webtest.loader"
             classpathref="classpath.webtest"/>
         
+    	<delete dir="${test.temp}"/>
         <mkdir dir="${test.results}"/>
-    	
+    	<mkdir dir="${test.temp}"/>
+	
     	<path id="classpath.webtest">
 	        <fileset dir="${webtest.home}/lib">
 	            <include name="*.jar"/>
