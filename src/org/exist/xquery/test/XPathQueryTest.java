@@ -1115,6 +1115,43 @@ public class XPathQueryTest extends XMLTestCase {
         
     } 
     
+    // It seems that the document builder receives events that are irrelevant.
+    public void testDocumentBuilderBUG_wiki_6()  {
+            String xQuery = "declare option exist:serialize \"method=xml indent=no\"; "
+                    +"declare function local:test() {let $results := <dummy/>"
+                    +"return \"id\" }; "
+                    +"<wrapper><string id=\"{local:test()}\"/></wrapper>";
+            
+        try {
+            XQueryService service = getQueryService();
+            ResourceSet rs = service.query(xQuery);
+            
+            assertEquals("testDocumentBuilderBUG_wiki_6", 1, rs.getSize());
+            assertEquals("testDocumentBuilderBUG_wiki_6", "<wrapper><string id=\"id\"/></wrapper>",
+                    rs.getResource(0).getContent());
+        } catch (XMLDBException ex) {
+            fail( "xquery returned exception: " +ex.toString() );
+        }
+            
+    }
+    
+     public void testCastInPredicate_wiki_7()  {
+         String xQuery = "let $number := 2, $list := (\"a\", \"b\", \"c\") return $list[xs:int($number * 2) - 1]";
+         
+        try {
+            XQueryService service = getQueryService();
+            ResourceSet rs = service.query(xQuery);
+            
+            assertEquals("testCalculationInPredicate_wiki_7", 1, rs.getSize());
+            assertEquals("testCalculationInPredicate_wiki_7", "c",
+                    rs.getResource(0).getContent());
+        } catch (XMLDBException ex) {
+            fail( "xquery returned exception: " +ex.toString() );
+        }
+         
+     }
+    
+    
     public void testStrings() {
         try {
             XQueryService service =
