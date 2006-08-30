@@ -86,7 +86,9 @@ public class GeneralComparison extends BinaryOp {
 	protected boolean inWhereClause = false;
     
     protected boolean invalidNodeEvaluation = false;
-	
+
+    protected int rightOpDeps;
+    
 	public GeneralComparison(XQueryContext context, int relation) {
 		this(context, relation, Constants.TRUNC_NONE);
 	}
@@ -137,7 +139,19 @@ public class GeneralComparison extends BinaryOp {
         // (1)[.= 1] works...
         invalidNodeEvaluation = getLeft() instanceof LocationStep && ((LocationStep)getLeft()).axis == Constants.SELF_AXIS;
         //Unfortunately, we lose the possibility to make a nodeset optimization 
-        //(we still don't know anything about the contextSequence that will be processed) 
+        //(we still don't know anything about the contextSequence that will be processed)
+
+        // check if the right-hand operand is a simple cast expression
+        // if yes, use the dependencies of the casted expression to compute
+        // optimizations
+        rightOpDeps = getRight().getDependencies();
+        getRight().accept(new BasicExpressionVisitor() {
+        	public void visitCastExpr(CastExpression expression) {
+        		if (LOG.isTraceEnabled())
+        			LOG.debug("Right operand is a cast expression");
+        		rightOpDeps = expression.getInnerExpression().getDependencies();
+        	}
+        });
     }
     
 	/* (non-Javadoc)
@@ -203,7 +217,7 @@ public class GeneralComparison extends BinaryOp {
                 if(contextItem != null)
                     contextSequence = contextItem.toSequence();                                
                 
-                if (!Dependency.dependsOn(getRight(), Dependency.CONTEXT_ITEM)) 
+                if ((rightOpDeps & Dependency.CONTEXT_ITEM) == 0) 
                 	// &&
                     //    Type.subTypeOf(getRight().returnsType(), Type.NODE))
 				{

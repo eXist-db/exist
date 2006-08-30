@@ -175,6 +175,12 @@ public interface Expression {
 	public void resetState();
 	
 	/**
+	 * Start traversing the expression tree using the specified {@link ExpressionVisitor}.
+	 * @param visitor
+	 */
+	public void accept(ExpressionVisitor visitor);
+	
+	/**
 	 * Write a diagnostic dump of the expression to the passed
 	 * {@link ExpressionDumper}.
 	 *  
