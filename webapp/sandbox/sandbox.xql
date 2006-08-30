@@ -109,10 +109,13 @@ declare function sandbox:retrieve($num as xs:integer) as element() {
 declare function sandbox:exec-query($qu as xs:string) as element() {
     let $startTime := util:system-time()
     let $results := util:eval($qu)
-    let $elapsed := seconds-from-duration(util:system-time() - $startTime)
+    let $elapsed := 
+		string(seconds-from-duration(util:system-time() - $startTime))
+	let $elapsedStr := concat(substring-before($elapsed, '.'), '.',
+			substring(substring-after($elapsed, '.'), 1, 3))
     return (
         session:set-attribute("cached", $results),
-        <result hits="{count($results)}" elapsed="{$elapsed}"/>
+        <result hits="{count($results)}" elapsed="{$elapsedStr}"/>
     )
 };
 
@@ -205,7 +208,7 @@ declare function sandbox:display-page() as element() {
                 <div id="query-output">
                     <div id="query-result"/>
                     <div id="navbar">
-                        <a id="previous" href="#">&lt;&lt;</a>
+                        <a id="previous" href="#">lt;lt;</a>
                         <a id="next" href="#">&gt;&gt;</a>
                         <div id="current">Query Result</div>
                     </div>
