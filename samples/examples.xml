@@ -6,12 +6,12 @@
 <example-queries>
     <query>
         <description>Simple fulltext query on Shakespeare plays</description>
-        <code><![CDATA[for $speech in //SPEECH[LINE &= 'love']
+        <code><![CDATA[for $speech in //SPEECH[LINE &amp;= 'love']
 return $speech]]></code>
     </query>
     <query>
         <description>Fulltext query using near</description>
-        <code><![CDATA[for $speech in //SPEECH[SPEAKER &= 'witch' and near(., 'fenny snake')]
+        <code><![CDATA[for $speech in //SPEECH[SPEAKER &amp;= 'witch' and near(., 'fenny snake')]
 return $speech]]></code>
     </query>
     <query>
@@ -31,7 +31,7 @@ let $scene := $speech/ancestor::SCENE,
     </query>
     <query>
         <description>Group hits by play</description>
-        <code><![CDATA[let $speech := //SPEECH[LINE &= "passion*"]
+        <code><![CDATA[let $speech := //SPEECH[LINE &amp;= "passion*"]
 let $plays := (for $s in $speech return root($s))
 for $play in $plays/PLAY
 let $hits := $play//$speech
@@ -71,7 +71,7 @@ declare namespace rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#";
 declare namespace dc="http://purl.org/dc/elements/1.1/";
 
 for $p in distinct-values(doc('/db/library/biblio.rdf')//dc:creator)
-let $books := //rdf:Description[dc:creator&=$p]
+let $books := //rdf:Description[dc:creator&amp;=$p]
 return
         <result>
                 <creator titles="{count($books)}">{$p}</creator>
@@ -83,7 +83,7 @@ return
 	<code><![CDATA[
 (:  This script accesses the mondial database, which can be
     found at http://dbis.informatik.uni-goettingen.de/Mondial/ :)
-for $city in /mondial//city[name&='tre*']
+for $city in /mondial//city[name&amp;='tre*']
 return
 	<result>
 		{$city}
