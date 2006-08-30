@@ -148,4 +148,8 @@ public class DynamicNameCheck extends AbstractExpression {
 		super.setContextDocSet(contextSet);
 		expression.setContextDocSet(contextSet);
 	}
+	
+	public void accept(ExpressionVisitor visitor) {
+		expression.accept(visitor);
+	}
 }

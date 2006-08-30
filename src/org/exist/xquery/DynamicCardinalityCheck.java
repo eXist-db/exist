@@ -138,4 +138,8 @@ public class DynamicCardinalityCheck extends AbstractExpression {
 		super.resetState();
 		expression.resetState();
 	}
+	
+	public void accept(ExpressionVisitor visitor) {
+		expression.accept(visitor);
+	}
 }

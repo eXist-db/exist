@@ -57,6 +57,10 @@ public class CastExpression extends AbstractExpression {
 			expression = new Atomize(context, expression);
 	}
 
+	protected Expression getInnerExpression() {
+		return expression;
+	}
+	
 	/* (non-Javadoc)
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
      */
@@ -139,7 +143,7 @@ public class CastExpression extends AbstractExpression {
 	 * @see org.exist.xquery.AbstractExpression#getDependencies()
 	 */
 	public int getDependencies() {
-		return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
+		return Dependency.CONTEXT_SET;
 	}
 	
 	/* (non-Javadoc)
@@ -161,5 +165,8 @@ public class CastExpression extends AbstractExpression {
 		super.resetState();
 		expression.resetState();
 	}
-	
+
+	public void accept(ExpressionVisitor visitor) {
+		visitor.visitCastExpr(this);
+	}
 }

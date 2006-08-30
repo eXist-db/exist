@@ -106,6 +106,10 @@ public abstract class AbstractExpression implements Expression {
         return contextDocSet;
     }
     
+    public void accept(ExpressionVisitor visitor) {
+    	visitor.visit(this);    	
+    }
+    
 	public void setASTNode(XQueryAST ast) {
 		this.astNode = ast;
 	}

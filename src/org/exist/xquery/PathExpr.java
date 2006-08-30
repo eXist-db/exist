@@ -253,6 +253,10 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
         return steps.size();
     }
 
+    public void accept(ExpressionVisitor visitor) {
+    	visitor.visitPathExpr(this);
+    }
+    
     /* (non-Javadoc)
      * @see org.exist.xquery.Expression#dump(org.exist.xquery.util.ExpressionDumper)
      */
