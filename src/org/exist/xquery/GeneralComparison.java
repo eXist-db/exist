@@ -239,7 +239,7 @@ public class GeneralComparison extends BinaryOp {
 	protected Sequence genericCompare(Sequence contextSequence,	Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled())
             context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, 
-                    "OPTIMIZATION CHOICE", "genericCompare");   
+                    "OPTIMIZATION CHOICE", "genericCompare");
 		Sequence ls = getLeft().eval(contextSequence, contextItem);
 		Sequence rs = getRight().eval(contextSequence, contextItem);
 		Collator collator = getCollator(contextSequence);
@@ -358,8 +358,8 @@ public class GeneralComparison extends BinaryOp {
             }
             
 			return(cached.getResult());
-		}		
-      
+		}
+
 		//get the NodeSet on the left
 		NodeSet nodes = (NodeSet) getLeft().eval(contextSequence);		
         if(!(nodes instanceof VirtualNodeSet) && nodes.isEmpty()) //nothing on the left, so nothing to do
@@ -380,11 +380,12 @@ public class GeneralComparison extends BinaryOp {
 		
 		//get the type of a possible index
 		int indexType = nodes.getIndexType();
-		
 		//See if we have a range index defined on the nodes in this sequence
         //TODO : use isSubType ??? -pb
 	    if(indexType != Type.ITEM)
 	    {
+	    	if (LOG.isTraceEnabled())
+	    		LOG.trace("found an index of type: " + Type.getTypeName(indexType));
 	    	//Get the documents from the node set
 			DocumentSet docs = nodes.getDocumentSet();
 	
@@ -419,6 +420,8 @@ public class GeneralComparison extends BinaryOp {
 		                {
 		                    context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION FALLBACK", "Falling back to nodeSetCompare (" + xpe.getMessage() + ")");
 		                }
+		                if (LOG.isTraceEnabled())
+		                	LOG.trace("Cannot convert key: " + Type.getTypeName(key.getType()) + " to required index type: " + Type.getTypeName(indexType));
 		                
 			            return nodeSetCompare(nodes, contextSequence);
 					}
@@ -426,9 +429,13 @@ public class GeneralComparison extends BinaryOp {
 		        
 
 		        if(key instanceof Indexable) {
+		        	if (LOG.isTraceEnabled())
+		        		LOG.trace("Checking if range index can be used for key: " + key.getStringValue());
 			        // If key implements org.exist.storage.Indexable, we can use the index
 		        	if (Type.subTypeOf(key.getType(), indexType)) {
 			        	if(truncation == Constants.TRUNC_NONE) {
+			        		if (LOG.isTraceEnabled())
+			        			LOG.trace("Using range index for key: " + key.getStringValue());
 				        	//key without truncation, find key
 		                    context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "OPTIMIZATION", "Using value index '" + context.getBroker().getValueIndex().toString() + 
 		                    		"' to find key '" + Type.getTypeName(key.getType()) + "(" + key.getStringValue() + ")'");
@@ -446,6 +453,8 @@ public class GeneralComparison extends BinaryOp {
 		                    		"' to match key '" + Type.getTypeName(key.getType()) + "(" + key.getStringValue() + ")'");
 							try
 							{
+								if (LOG.isTraceEnabled())
+				        			LOG.trace("Using range index for key: " + key.getStringValue());
 								NodeSet ns = context.getBroker().getValueIndex().match(docs, nodes, key.getStringValue().replace('%', '*'), DBBroker.MATCH_WILDCARDS);
 								if (result == null)
 									result = ns;
@@ -463,6 +472,9 @@ public class GeneralComparison extends BinaryOp {
 		                    context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION FALLBACK", "Falling back to nodeSetCompare (key is of type: " + 
 		                    		Type.getTypeName(key.getType()) + ") whereas index is of type '" + Type.getTypeName(indexType) + "'");
 		                }
+		                if (LOG.isTraceEnabled())
+		                	LOG.trace("Cannot use range index: key is of type: " + Type.getTypeName(key.getType()) + ") whereas index is of type '" + 
+		                			Type.getTypeName(indexType));
 	                    return(nodeSetCompare(nodes, contextSequence));
 			        }
 		        } else {
