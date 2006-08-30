@@ -4,10 +4,6 @@
     <property name="webtest.home" location="."/>
     
     <property name="server.home" location="../.."/>
-    <property name="test.webapp" location="${server.home}/webapp/webtest"/>
-    <property name="test.results" location="${server.home}/test/webtest"/>
-	<property name="test.temp" location="${server.home}/test/temp"/>
-    <property name="test.results.html" location="${test.results}/html"/>
 
     <import file="${webtest.home}/classpath.xml"/>
 
@@ -16,9 +12,22 @@
     
     <target name="all" depends="prepare,all-tests,style"/>
 
-	<target name="all-tests" depends="post,modules,extension-modules,xmldb-module,indexes,xinclude"/>
-	
-    <target name="prepare" depends="start-jetty,clean,store,install-webtest">
+    <target name="all-tests" depends="post,modules,extension-modules,xmldb-module,indexes,xinclude"/>
+
+    <target name="sethome" unless="exist.home">
+		<property name="exist.home" value="../.."/>
+    </target>
+ 
+    <target name="environment" depends="sethome">
+		<echo message="Using exist.home = ${exist.home}"/>
+		
+	    <property name="test.webapp" location="${exist.home}/webapp/webtest"/>
+	    <property name="test.results" location="${exist.home}/test/webtest"/>
+	    <property name="test.temp" location="${exist.home}/test/temp"/>
+	    <property name="test.results.html" location="${test.results}/html"/>
+    </target>
+
+    <target name="prepare" depends="environment,start-jetty,clean,store,install-webtest">
         <fail unless="webtest.available">Failed to install webtest</fail>
         <taskdef resource="webtest.taskdef"
             loaderref="webtest.loader"
@@ -32,10 +41,10 @@
 	        <fileset dir="${webtest.home}/lib">
 	            <include name="*.jar"/>
 	        </fileset>
-	        <fileset dir="${server.home}/lib/core">
+	        <fileset dir="${exist.home}/lib/core">
 	            <include name="*.jar"/>
 	        </fileset>
-	        <fileset dir="${server.home}">
+	        <fileset dir="${exist.home}">
 	            <include name="*.jar"/>
 	        </fileset>
 	    </path>
@@ -46,6 +55,7 @@
             <config host="localhost" port="8080" 
                 protocol="http" basepath="exist/webtest"
                 summary="true" resultpath="${test.results}"
+				haltonfailure="false" haltonerror="false"
             	saveResponse="true" savePrefix="testModuleImports1"/>
             <steps>
                 <invoke description="XQueryServlet: import module from relative path" 
@@ -70,6 +80,7 @@
             <config host="localhost" port="8080" protocol="http" 
                 basepath="exist/rest/db/webtest"
                 summary="true" resultpath="${test.results}"
+				haltonfailure="false" haltonerror="false"
             	saveResponse="true" savePrefix="testModuleImports2"/>
             <steps>
                 <invoke description="REST: import module from relative path"
@@ -87,6 +98,7 @@
             <config host="localhost" port="8080" protocol="http" 
                 basepath="exist/rest/db/webtest"
                 summary="true" resultpath="${test.results}"
+				haltonfailure="false" haltonerror="false"
             	saveResponse="true" savePrefix="testXInclude"/>
             <steps>
                 <invoke description="XInclude: character encoding test"
@@ -100,10 +112,11 @@
 		<mkdir dir="${test.temp}"/>
 		<mkdir dir="${test.temp}/dir1"/>
 		<mkdir dir="${test.temp}/dir1/dir2"/>
-		<copy file="${server.home}/samples/shakespeare/hamlet.xml"
+		<copy file="${exist.home}/samples/shakespeare/hamlet.xml"
 			todir="${test.temp}/dir1/dir2"/>
 		<webtest name="testXmldbModule">
             <config host="localhost" port="8080" protocol="http" 
+				haltonfailure="false" haltonerror="false"
                 basepath="exist/webtest"
                 summary="true" resultpath="${test.results}"
             	saveResponse="true" savePrefix="testXmldbModule"/>
@@ -119,8 +132,9 @@
 
     <target name="extension-modules">
         <webtest name="testImageModule">
-            <config host="localhost" port="8080" protocol="http" 
+            <config host="localhost" port="8080" protocol="http"
                 basepath="exist/webtest"
+				haltonfailure="false" haltonerror="false"
                 summary="true" resultpath="${test.results}"
             	saveResponse="true" savePrefix="testImageModule"/>
             <steps>
@@ -137,7 +151,9 @@
     
 	 <target name="post" depends="prepare">
         <webtest name="testPostReceiver1">
-            <config host="localhost" port="8080" protocol="http" basepath="exist/webtest" summary="true" resultpath="${test.results}" saveResponse="true" savePrefix="testPostReceiver1"/>
+            <config host="localhost" port="8080" protocol="http" basepath="exist/webtest" summary="true" 
+			resultpath="${test.results}" saveResponse="true" savePrefix="testPostReceiver1"
+			haltonfailure="false" haltonerror="false"/>
             <steps>
                 <invoke description="Testing POST for postreceiver1.xql" url="postreceiver1.xql" method="POST" contentFile="${test.webapp}/postdata.txt"/>
                 <verifyXPath xpath="/enquiry"/>
@@ -149,7 +165,9 @@
             </steps>
         </webtest>
         <webtest name="testPostReceiver2">
-            <config host="localhost" port="8080" protocol="http" basepath="exist/webtest" summary="true" resultpath="${test.results}" saveResponse="true"  savePrefix="testPostReceiver2"/>
+            <config host="localhost" port="8080" protocol="http" basepath="exist/webtest" summary="true" 
+			resultpath="${test.results}" saveResponse="true"  savePrefix="testPostReceiver2"
+			haltonfailure="false" haltonerror="false"/>
             <steps>
                 <invoke description="Testing POST for postreceiver2.xql" url="postreceiver2.xql" method="POST" contentFile="${test.webapp}/postdata.txt"/>
                	<verifyXPath xpath="/data"/>
@@ -170,11 +188,11 @@
             dest="${test.temp}/mondial/mondial-europe.xml" verbose="false"/>
 		<xdb:store user="admin" password=""
             uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/system/config/db" createcollection="true">
-            <fileset dir="${server.home}/samples">
+            <fileset dir="${exist.home}/samples">
         		<include name="mondial.xconf"/>
         	</fileset>
 		</xdb:store>
-    	<xdb:store user="guest" password="guest"
+		<xdb:store user="guest" password="guest"
             uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/webtest/mondial" createcollection="true">
             <fileset dir="${test.temp}/mondial">
     			<include name="mondial-europe.xml"/>
@@ -185,6 +203,7 @@
             <config host="localhost" port="8080" protocol="http" 
                 basepath="exist/webtest"
                 summary="true" resultpath="${test.results}"
+				haltonfailure="false" haltonerror="false"
             	saveResponse="true" savePrefix="testIndexes"/>
             <steps>
                 <invoke description="Testing util:index-keys to scan range index"
@@ -262,9 +281,9 @@
         <echo message="---------------------------------------"/>
         <echo message="Starting Jetty server..."/>
         <echo message="---------------------------------------"/>
-    	<echo message="exist.home=${server.home}"/>
+    	<echo message="exist.home=${exist.home}"/>
         <java classname="org.exist.start.Main">
-            <sysproperty key="exist.home" value="${server.home}" />
+            <sysproperty key="exist.home" value="${exist.home}" />
             <classpath refid="classpath.jetty"/>
             <arg value="jetty"/>
         </java>
