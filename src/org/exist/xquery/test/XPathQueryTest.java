@@ -1150,6 +1150,33 @@ public class XPathQueryTest extends XMLTestCase {
         }
          
      }
+     
+     /*
+      * Miscomputation of the expression context in where clause when no 
+      * wrapper expression is used. Using, e.g. where data($x/@id) eq "id" works !
+      */
+     public void bugtestComputationBug_wiki_8()  {
+         String xQuery = "declare option exist:serialize \"method=xml indent=no\"; "
+                 +"let $a := element node1 { attribute id {'id'}, "
+                 +"element node1 { '1'},element node2 { '2'} }"
+                 +"for $x in $a where $x/@id eq \"id\" return $x";
+         
+        try {
+            XQueryService service = getQueryService();
+            ResourceSet rs = service.query(xQuery);
+            
+            assertEquals("testComputationBug_wiki_8", 1, rs.getSize());
+            assertEquals("testComputationBug_wiki_8", "<node1 id=\"id\"><node1>1</node1><node2>2</node2></node1>",
+                    rs.getResource(0).getContent());
+ 
+        } catch (XMLDBException ex) {
+            fail( "xquery returned exception: " +ex.toString() );
+        }
+         
+     }
+     
+     
+
     
     
     public void testStrings() {
