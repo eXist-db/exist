@@ -144,4 +144,8 @@ public class DynamicTypeCheck extends AbstractExpression {
 	public XQueryAST getASTNode() {
 		return expression.getASTNode();
 	}
+	
+	public void accept(ExpressionVisitor visitor) {
+		expression.accept(visitor);
+	}
 }

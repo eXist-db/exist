@@ -924,6 +924,14 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
         return other.contains(this) ? NodeSet.EMPTY_SET : this;
     }
     
+    public void setProcessInReverseOrder(boolean inReverseOrder) {
+    	//Nothing to do
+    }
+
+    public boolean getProcessInReverseOrder() {
+    	return false;
+    }	
+    
     /* (non-Javadoc)
      * @see org.exist.dom.NodeSet#getParents(boolean)
      */    

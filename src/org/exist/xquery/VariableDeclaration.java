@@ -99,7 +99,8 @@ public class VariableDeclaration extends AbstractExpression {
         
 		QName qn = QName.parse(context, qname, null);
 		Module myModule = context.getModule(qn.getNamespaceURI());		
-		
+        context.pushDocumentContext();
+        context.pushDocumentContext();
 		// declare the variable
 		Sequence seq = expression.eval(null, null);
         Variable var;
@@ -118,7 +119,7 @@ public class VariableDeclaration extends AbstractExpression {
         if (context.getProfiler().isEnabled())
             //Note : that we use seq but we return Sequence.EMPTY_SEQUENCE
             context.getProfiler().end(this, "", seq);   
-        
+        context.popDocumentContext();
 		return Sequence.EMPTY_SEQUENCE;
 	}
 	

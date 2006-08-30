@@ -233,18 +233,24 @@ public class FunMatches extends Function {
         NodeSet nodes = input.toNodeSet();
         // get the type of a possible index
 		int indexType = nodes.getIndexType();
+		if (LOG.isTraceEnabled())
+    		LOG.trace("found an index of type: " + Type.getTypeName(indexType));
 		if(Type.subTypeOf(indexType, Type.STRING)) {
 		    DocumentSet docs = nodes.getDocumentSet();
-		    try {                
+		    try {
                 NativeValueIndex index = context.getBroker().getValueIndex(); 
                 //TODO : check index' case compatibility with flags' one ? -pb 
 		    	if (context.isProfilingEnabled())
 		    		context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "Using vlaue index '" + index.toString() + "'", "Regex: " + pattern);
+		    	if (LOG.isTraceEnabled())
+		    		LOG.trace("Using range index for fn:matches expression: " + pattern);
                 result = index.match(docs, nodes, pattern, DBBroker.MATCH_REGEXP, flags, caseSensitive);
 			} catch (EXistException e) {
 				throw new XPathException(getASTNode(), e.getMessage(), e);
 			}
 		} else {
+			if (LOG.isTraceEnabled())
+            	LOG.trace("fn:matches: can't use existing range index of type " + Type.getTypeName(indexType) + ". Need a string index.");
 		    result = new ExtArrayNodeSet();
 		    for(Iterator i = nodes.iterator(); i.hasNext(); ) {
 		        NodeProxy node = (NodeProxy) i.next();
