@@ -268,7 +268,8 @@
         <copy todir="${test.results.html}" failonerror="false" overwrite="true">
             <fileset dir="${webtest.home}/resources">
                 <include name="*.css"/>
-                <include name="*.js"/>
+        		<include name="*.js"/>
+		        <include name="images/*.*"/>
             </fileset>
         </copy>
     </target>
