@@ -143,7 +143,7 @@ public class CastExpression extends AbstractExpression {
 	 * @see org.exist.xquery.AbstractExpression#getDependencies()
 	 */
 	public int getDependencies() {
-		return Dependency.CONTEXT_SET;
+		return Dependency.CONTEXT_SET | Dependency.CONTEXT_ITEM;
 	}
 	
 	/* (non-Javadoc)
