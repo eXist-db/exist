@@ -93,6 +93,10 @@ public class Atomize extends AbstractExpression {
             dumper.display("]");
     }
     
+    public void accept(ExpressionVisitor visitor) {
+    	expression.accept(visitor);
+    }
+    
     public String toString() {
         StringBuffer result = new StringBuffer();
         result.append("atomize[");

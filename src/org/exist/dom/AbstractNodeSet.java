@@ -55,6 +55,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	
 	private boolean isCached = false;
 	
+    private boolean processInReverseOrder = false; 
+	
 	protected AbstractNodeSet() {
 		isEmpty = true;
 	}
@@ -463,6 +465,14 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		}
 		return r;
 	}
+	
+    public void setProcessInReverseOrder(boolean inReverseOrder) {
+    	processInReverseOrder = inReverseOrder;
+    }
+
+    public boolean getProcessInReverseOrder() {
+    	return processInReverseOrder;
+    }	
 
 	/**
 	 * Return a new node set which represents the union of the
