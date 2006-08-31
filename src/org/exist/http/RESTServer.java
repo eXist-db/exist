@@ -154,13 +154,14 @@ public class RESTServer {
     
     private String formEncoding;			//TODO: we may be able to remove this eventually, in favour of HttpServletRequestWrapper being setup in EXistServlet, currently used for doPost() but perhaps could be used for other Request Methods? - deliriumsky
     private String containerEncoding;
-    
+    private boolean useDynamicContentType;
 
     //Constructor
-    public RESTServer(String formEncoding, String containerEncoding)
+    public RESTServer(String formEncoding, String containerEncoding, boolean useDynamicContentType)
     {
         this.formEncoding = formEncoding;
         this.containerEncoding = containerEncoding;
+        this.useDynamicContentType = useDynamicContentType;
     }
     
     /**
@@ -403,6 +404,7 @@ public class RESTServer {
             try
 			{
                 serializer.setProperties(outputProperties);
+                serializer.prepareStylesheets(resource);
                 if(asMimeType != null) //was a mime-type specified?
                 {
                 	response.setContentType(asMimeType+"; charset="+encoding);
@@ -411,7 +413,11 @@ public class RESTServer {
                 {
 	                if (serializer.isStylesheetApplied() || serializer.hasXSLPi(resource) != null)
 	                {
-	                    response.setContentType("text/html; charset="+encoding);
+	                	asMimeType = serializer.getStylesheetProperty(OutputKeys.MEDIA_TYPE);
+	                	if (!useDynamicContentType || asMimeType == null)
+	                		asMimeType = "text/html";
+	                	LOG.debug("media-type: " + asMimeType);
+	                    response.setContentType(asMimeType + "; charset="+encoding);
 	                }
 	                else
 	                {
