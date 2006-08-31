@@ -143,7 +143,6 @@ public class EXistServlet extends HttpServlet {
 		} catch (DatabaseConfigurationException e) {
 			throw new ServletException("Unable to configure database instance: " + e.getMessage(), e);
 		}
-
 		
 		//get form and container encoding's
 		formEncoding = config.getInitParameter("form-encoding");
@@ -153,8 +152,14 @@ public class EXistServlet extends HttpServlet {
 		if(containerEncoding == null)
 			containerEncoding = DEFAULT_ENCODING;
 		
+		String useDynamicContentType = config.getInitParameter("dynamic-content-type");
+		if (useDynamicContentType == null)
+			useDynamicContentType = "no";
+		
 		//Instantiate REST Server
-		srvREST = new RESTServer(formEncoding, containerEncoding);
+		srvREST = new RESTServer(formEncoding, containerEncoding, 
+				useDynamicContentType.equalsIgnoreCase("yes") ||
+				useDynamicContentType.equalsIgnoreCase("true"));
                 
 		//Instantiate SOAP Server
 		srvSOAP = new SOAPServer(formEncoding, containerEncoding);
