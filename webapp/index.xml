@@ -78,15 +78,15 @@
                 </tr>
                 <tr>
                     <td>
-                        <a href="http://prdownloads.sourceforge.net/exist/eXist-1.0rc.jar"> eXist-1.0rc.jar </a>
+                        <a href="http://prdownloads.sourceforge.net/exist/eXist-1.0rc2.jar"> eXist-1.0rc2.jar </a>
                     </td>
                     <td> Installer based on IzPack. Includes source. Run with <tt>java -jar
-                            eXist-1.0rc.jar</tt>.</td>
+                            eXist-1.0rc2.jar</tt>.</td>
                 </tr>
                 <tr>
                     <td>
-                        <a href="http://prdownloads.sourceforge.net/exist/exist-1.0rc.war">
-                            exist-1.0rc.war </a>
+                        <a href="http://prdownloads.sourceforge.net/exist/exist-1.0rc2.war">
+                            exist-1.0rc2.war </a>
                     </td>
                     <td>Web application archive, ready to be installed into an existing
                         servlet-engine like Tomcat or Jetty. </td>
@@ -105,15 +105,15 @@
                 </tr>
                 <tr>
                     <td>
-                        <a href="http://prdownloads.sourceforge.net/exist/eXist-1.1rc-newcore.jar"> eXist-1.1rc-newcore.jar </a>
+                        <a href="http://prdownloads.sourceforge.net/exist/eXist-1.1rc2-newcore.jar"> eXist-1.1rc2-newcore.jar </a>
                     </td>
                     <td> Installer based on IzPack. Includes source. Run with <tt>java -jar
-                        eXist-1.1rc-newcore.jar</tt>.</td>
+                        eXist-1.1rc2-newcore.jar</tt>.</td>
                 </tr>
                 <tr>
                     <td>
                         <a href="http://prdownloads.sourceforge.net/exist/exist-1.1rc-newcore.war">
-                            exist-1.1rc-newcore.war </a>
+                            exist-1.1rc2-newcore.war </a>
                     </td>
                     <td>Web application archive, ready to be installed into an existing
                         servlet-engine like Tomcat or Jetty. </td>
