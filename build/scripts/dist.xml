@@ -70,6 +70,7 @@
                 <exclude name="**/*~"/>
                 <exclude name="WEB-INF/web.xml"/>
                 <exclude name="WEB-INF/data/*.dbx"/>
+                <exclude name="WEB-INF/data/*.lck"/>
                 <exclude name="**/*.log"/>
             </fileset>
             <zipfileset dir="samples" prefix="samples">
@@ -206,6 +207,7 @@
         <copy todir="${dist.dir}/webapp">
             <fileset dir="./webapp">
                 <exclude name="**/*.dbx"/>
+                <exclude name="**/*.lck"/>
                 <exclude name="**/logs/*"/>
                 <exclude name="*~"/>
                 <exclude name=".*"/>
