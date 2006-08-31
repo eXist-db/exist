@@ -298,6 +298,12 @@ public abstract class Serializer implements XMLReader {
 		throw new SAXNotRecognizedException(name);
 	}
 
+	public String getStylesheetProperty(String name) {
+		if (xslHandler != null)
+			return xslHandler.getTransformer().getOutputProperty(name);
+		return null;
+	}
+	
 	public void parse(InputSource input) throws IOException, SAXException {
 		// only system-ids are handled
 		String doc = input.getSystemId();
@@ -348,12 +354,13 @@ public abstract class Serializer implements XMLReader {
 	 *  Serialize a document to the supplied writer.
 	 */
 	public void serialize(DocumentImpl doc, Writer writer) throws SAXException {
-		if (outputProperties.getProperty(EXistOutputKeys.PROCESS_XSL_PI, "no").equals("yes")) {
-			String stylesheet = hasXSLPi(doc);
-			if (stylesheet != null)
-				setStylesheet(doc, stylesheet);
+		serialize(doc, writer, true);
+	}
+	
+	public void serialize(DocumentImpl doc, Writer writer, boolean prepareStylesheet) throws SAXException {
+		if (prepareStylesheet) {
+			prepareStylesheets(doc);
 		}
-		setStylesheetFromProperties(doc);
 		if (templates != null)
 			applyXSLHandler(writer);
 		else
@@ -395,6 +402,15 @@ public abstract class Serializer implements XMLReader {
 		return out.toString();
 	}
 
+	public void prepareStylesheets(DocumentImpl doc) {
+		if (outputProperties.getProperty(EXistOutputKeys.PROCESS_XSL_PI, "no").equals("yes")) {
+			String stylesheet = hasXSLPi(doc);
+			if (stylesheet != null)
+				setStylesheet(doc, stylesheet);
+		}
+		setStylesheetFromProperties(doc);
+	}
+	
 	/**
 	 *  Set the ContentHandler to be used during serialization.
 	 *
