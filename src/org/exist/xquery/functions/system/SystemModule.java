@@ -43,6 +43,7 @@ public class SystemModule extends AbstractInternalModule {
             new FunctionDef(GetVersion.signature, GetVersion.class),
             new FunctionDef(GetBuild.signature, GetBuild.class),
             new FunctionDef(GetRevision.signature, GetRevision.class),
+            new FunctionDef(GetExistHome.signature, GetExistHome.class),
             new FunctionDef(Shutdown.signatures[0], Shutdown.class),
             new FunctionDef(Shutdown.signatures[1], Shutdown.class)
 	};
