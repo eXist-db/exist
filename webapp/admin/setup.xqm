@@ -7,6 +7,7 @@ declare namespace xdb="http://exist-db.org/xquery/xmldb";
 declare namespace request="http://exist-db.org/xquery/request";
 declare namespace session="http://exist-db.org/xquery/session";
 declare namespace util="http://exist-db.org/xquery/util";
+declare namespace system="http://exist-db.org/xquery/system";
 
 declare function setup:main() as element() {
     <div class="panel">
@@ -28,7 +29,7 @@ declare function setup:main() as element() {
 };
 
 declare function setup:importLocal() as element()+ {
-	let $home := util:system-property("exist.home"),
+	let $home := system:get-exist-home(),
 		$pathSep := util:system-property("file.separator"),
 		$dir :=
 			if(ends-with($home, "WEB-INF")) then

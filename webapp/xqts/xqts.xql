@@ -8,6 +8,7 @@ import module namespace xdb="http://exist-db.org/xquery/xmldb";
 import module namespace xdiff="http://exist-db.org/xquery/xmldiff"
 at "java:org.exist.xquery.modules.xmldiff.XmlDiffModule";
 import module namespace request="http://exist-db.org/xquery/request";
+declare namespace system="http://exist-db.org/xquery/system";
 
 (:~ ----------------------------------------------------------------------------------------
      W3C XQuery Test Suite
@@ -36,7 +37,7 @@ declare variable $xqts:CONFIG { xqts:initialize() };
 declare variable $xqts:XQTS_HOME { xqts:path-to-uri($xqts:CONFIG/basedir/text()) };
 
 declare function xqts:initialize() as element() {
-    let $home := util:system-property("exist.home")
+    let $home := system:get-exist-home()
     let $path := concat($home, "/webapp/xqts")
     let $collection := xdb:create-collection("/db", "XQTS")
     let $config0 := doc("/db/XQTS")/config

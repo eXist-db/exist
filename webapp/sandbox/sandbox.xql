@@ -6,6 +6,7 @@ import module namespace util="http://exist-db.org/xquery/util";
 import module namespace request="http://exist-db.org/xquery/request";
 import module namespace session="http://exist-db.org/xquery/session";
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
+declare namespace system="http://exist-db.org/xquery/system";
 
 declare option exist:serialize "method=xhtml indent=no";
 
@@ -14,7 +15,7 @@ declare variable $sandbox:XML_HIGHLIGHT_STYLE { "/db/sandbox/xml-highlight.xsl" 
 
 (:~ The required stylesheets were not found in the db. Try to import them. :)
 declare function sandbox:import-stylesheets() as xs:string* {
-    let $home := util:system-property("exist.home")
+    let $home := system:get-exist-home()
     let $pathSep := util:system-property("file.separator")
     let $dir :=
         	if(ends-with($home, "WEB-INF")) then
