@@ -258,6 +258,7 @@ public class StandaloneServer {
                       servletHandler.addServlet("EXistServlet", path, "org.exist.http.servlets.EXistServlet");
               restServlet.setInitParameter("form-encoding", props.getProperty("rest.param.form-encoding"));
               restServlet.setInitParameter("container-encoding", props.getProperty("rest.param.container-encoding"));
+              restServlet.setInitParameter("dynamic-content-type", props.getProperty("rest.param.dynamic-content-type"));
               String value = props.getProperty("rest.param.use-default-user");
               if (value!=null) {
                  restServlet.setInitParameter("use-default-user", value);
