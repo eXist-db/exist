@@ -55,6 +55,6 @@ public class SelfSelector implements NodeSelector {
             return p;
         } else {
         	return null;
-        }        
+        }
     }
 }
