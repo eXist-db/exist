@@ -99,9 +99,9 @@ public class GetParameter extends BasicFunction {
 			if (values == null || values.length == 0)
 				return args[1];
 			if (values.length == 1)
-				return XPathUtil.javaObjectToXPath(values[0], null);
+				return XPathUtil.javaObjectToXPath(values[0], null, false);
 			else
-				return XPathUtil.javaObjectToXPath(values, null);
+				return XPathUtil.javaObjectToXPath(values, null, false);
 		} else
 			throw new XPathException("Variable $request is not bound to a Request object.");
 	}
