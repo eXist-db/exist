@@ -47,6 +47,7 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
@@ -85,6 +86,8 @@ class TriggersDialog extends JFrame {
 		super(title);
 		this.client = client;
 		
+		this.setPreferredSize(new Dimension(500, 300));
+		
 		//capture the frame's close event
 		WindowListener windowListener = new WindowAdapter()
 		{
@@ -100,6 +103,9 @@ class TriggersDialog extends JFrame {
 		
 		//draw the GUI
 		setupComponents();
+		
+		JTableHeader tblTriggersHeader = tblTriggers.getTableHeader();
+       	tblTriggersHeader.setPreferredSize(new Dimension(tblTriggersHeader.getWidth(), tblTriggersHeader.getHeight() * 2));
 		
 		//Get the indexes for the root collection
 		actionGetTriggers(DBBroker.ROOT_COLLECTION);
@@ -195,11 +201,11 @@ class TriggersDialog extends JFrame {
         colDeleteCollection.setCellEditor(new CheckBoxCellEditor());
         colDeleteCollection.setCellRenderer(new CheckBoxCellRenderer());
         JScrollPane scrollFullTextIndexes = new JScrollPane(tblTriggers);
-		scrollFullTextIndexes.setPreferredSize(new Dimension(250, 150));
+		scrollFullTextIndexes.setPreferredSize(new Dimension(350, 100));
 		c.gridx = 0;
-		c.gridy = 3;
-		c.gridwidth = 2;
-		c.anchor = GridBagConstraints.WEST;
+		c.gridy = 0;
+		c.gridwidth = 1;
+		c.anchor = GridBagConstraints.CENTER;
 		c.fill = GridBagConstraints.BOTH;
 		panelTriggersGrid.setConstraints(scrollFullTextIndexes, c);
 		panelTriggers.add(scrollFullTextIndexes);
@@ -235,7 +241,7 @@ class TriggersDialog extends JFrame {
 		//add triggers panel to content frame
 		c.gridx = 0;
 		c.gridy = 1;
-		c.gridwidth = 2;
+		c.gridwidth = 4;
 		c.anchor = GridBagConstraints.WEST;
 	    c.fill = GridBagConstraints.BOTH;
 	    grid.setConstraints(panelTriggers, c);
@@ -354,7 +360,7 @@ class TriggersDialog extends JFrame {
 	
     class TriggersTableModel extends AbstractTableModel
 	{	
-		private final String[] columnNames = new String[] { "class", "Store Document", "Update Document", "Remove Document", "Create Collection", "Rename Collection", "Delete Collection" };
+		private final String[] columnNames = new String[] { "class", "<html>Store<br>Document</html>", "<html>Update<br>Document</html>", "<html>Remove<br>Document</html>", "<html>Create<br>Collection</html>", "<html>Rename<br>Collection</html>", "<html>Delete<br>Collection</html>" };
 
 		public TriggersTableModel()
 		{
