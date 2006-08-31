@@ -86,7 +86,7 @@ class TriggersDialog extends JFrame {
 		super(title);
 		this.client = client;
 		
-		this.setPreferredSize(new Dimension(500, 300));
+		this.setSize(new Dimension(500, 300));
 		
 		//capture the frame's close event
 		WindowListener windowListener = new WindowAdapter()
