@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 
 <!-- ======================================================================= -->
 <!-- eXist build file                                                        -->
@@ -445,8 +445,7 @@
         <delete dir="${src.webapp}/WEB-INF/data/backup"/>
         <delete dir="${src.webapp}/WEB-INF/data/journal"/>
         <delete>
-            <fileset dir="${src.webapp}/WEB-INF/data"
-            includes="*.dbx,*.log" excludes=".DO_NOT_DELETE" />
+            <fileset dir="${src.webapp}/WEB-INF/data" includes="*.dbx,*.log,*.lck" excludes=".DO_NOT_DELETE" />
         </delete>
         <delete dir="samples/classes"/>
         <delete failonerror="no" file="examples.jar"/>
