@@ -20,8 +20,8 @@
             indexer
             serializer
             transformer
-            xupdate
             xquery
+            xupdate
     
     
     For detailed and latest information please consult the eXist documentation:
@@ -347,6 +347,13 @@
             Possible values are: "none", "element", "all". "all" displays the 
             node of every element node; "element" displays the id only for the 
             root nodes of the returned XML fragments.
+            
+       - compress-output:
+           should the output be compressed when serializing documents?
+           Sometimes useful with remote clients.
+           Remember to add a statement like this to your client code:
+           service.setProperty("compress-output", "yes");
+           to uncompress the retrieved result in the client too.
         
         - enable-xinclude: 
             should the database expand XInclude tags by default?
@@ -372,10 +379,11 @@
             Set the parameter to "yes" to disable this feature.
 
     -->
-    <serializer add-exist-id="none" enable-xinclude="yes" enable-xsl="no"
-        indent="yes" match-tagging-attributes="no" match-tagging-elements="yes" />
-    
-    <!--
+    <serializer add-exist-id="none" compress-output="no" enable-xinclude="yes" 
+    		enable-xsl="no" indent="yes" match-tagging-attributes="no" 
+    		match-tagging-elements="yes" />
+
+	<!--
         Default settings for the XSLT Transformer. Allow's for a choice of 
         implementation:
         
@@ -396,37 +404,6 @@
     <transformer class="org.apache.xalan.processor.TransformerFactoryImpl" />
     
     
-    <!-- 
-        During XUpdates, the database needs to do a partial reindex of the
-      document whenever the internal node-id structure has changed. Reindex
-      runs can occur quite frequently and slow down the XUpdate process.
-    
-      Frequent reindex runs can be avoided by leaving some space between the
-      numeric identifiers assigned to every node. Future insertions will first
-      fill up these spare identifiers, so no reindex is required.
-
-        - allowed-fragmentation:
-            defines the maximum number of page splits allowed within a document
-            before a defragmentation run will be triggered.
-            
-      - enable-consistency-checks:
-            for debugging only. If the parameter is set to "yes", a consistency
-            check will be run on every modified document after every XUpdate 
-            request. It checks if the persistent DOM is complete and all 
-            pointers in the structural index point to valid storage addresses 
-            containing valid nodes.
-        
-        - growth-factor: 
-            determines the number of spare ids to be inserted whenever the node
-            id scheme is recomputed after an XUpdate.
-            Increase the setting to have less reindex runs. However, you have
-            to be aware that leaving spare ids also limits the maximum size of
-            a document that can be indexed. 
-        
-  	-->
-    <xupdate allowed-fragmentation="5" enable-consistency-checks="no"
-        growth-factor="20" />
-
     <!-- 
         Define modules that contain xQuery functions.
         
@@ -458,5 +435,37 @@
                 uri="http://exist-db.org/xquery/system" />
         </builtin-modules>
     </xquery>
+
+
+    <!-- 
+        During XUpdates, the database needs to do a partial reindex of the
+      document whenever the internal node-id structure has changed. Reindex
+      runs can occur quite frequently and slow down the XUpdate process.
+    
+      Frequent reindex runs can be avoided by leaving some space between the
+      numeric identifiers assigned to every node. Future insertions will first
+      fill up these spare identifiers, so no reindex is required.
+
+        - allowed-fragmentation:
+            defines the maximum number of page splits allowed within a document
+            before a defragmentation run will be triggered.
+            
+      - enable-consistency-checks:
+            for debugging only. If the parameter is set to "yes", a consistency
+            check will be run on every modified document after every XUpdate 
+            request. It checks if the persistent DOM is complete and all 
+            pointers in the structural index point to valid storage addresses 
+            containing valid nodes.
+        
+        - growth-factor: 
+            determines the number of spare ids to be inserted whenever the node
+            id scheme is recomputed after an XUpdate.
+            Increase the setting to have less reindex runs. However, you have
+            to be aware that leaving spare ids also limits the maximum size of
+            a document that can be indexed. 
+        
+  	-->
+    <xupdate allowed-fragmentation="5" enable-consistency-checks="no"
+        growth-factor="20" />
 
 </exist>
