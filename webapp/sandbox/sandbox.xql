@@ -37,7 +37,7 @@ declare function sandbox:check-paths() as xs:string* {
                     "the database collection or the application will not work properly.")
             else ()
     else ()
-;
+};
 
 declare function sandbox:init-slots() as element()+ {
     for $i in 1 to 10 return
