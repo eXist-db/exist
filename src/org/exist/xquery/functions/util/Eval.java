@@ -181,10 +181,10 @@ public class Eval extends BasicFunction {
         if (Type.subTypeOf(expr.getType(), Type.ANY_URI)) {
             querySource = loadQueryFromURI(expr);
         } else {
-            String queryStr = StringValue.expand(expr.getStringValue());
+        	String queryStr = expr.getStringValue();
             if ("".equals(queryStr.trim()))
               return new EmptySequence();
-            querySource = new StringSource(queryStr);
+            querySource = new StringSource(expr.getStringValue());
         }
 		
 		NodeValue contextInit = null;
