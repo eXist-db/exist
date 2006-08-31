@@ -37,7 +37,7 @@ declare function sandbox:check-paths() as xs:string* {
                     "the database collection or the application will not work properly.")
             else ()
     else ()
-};
+;
 
 declare function sandbox:init-slots() as element()+ {
     for $i in 1 to 10 return
@@ -209,7 +209,7 @@ declare function sandbox:display-page() as element() {
                 <div id="query-output">
                     <div id="query-result"/>
                     <div id="navbar">
-                        <a id="previous" href="#">lt;lt;</a>
+                        <a id="previous" href="#">&lt;&lt;</a>
                         <a id="next" href="#">&gt;&gt;</a>
                         <div id="current">Query Result</div>
                     </div>
