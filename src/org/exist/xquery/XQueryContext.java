@@ -877,10 +877,13 @@ public class XQueryContext {
 	 * @throws XPathException
 	 */
 	public void declareFunction(UserDefinedFunction function) throws XPathException {
-		if (declaredFunctions.get(function.getSignature().getFunctionId()) == null)
-				declaredFunctions.put(function.getSignature().getFunctionId(), function);
-		else
-			throw new XPathException("XQST0034: function " + function.getName() + " is already defined with the same arity");
+        // TODO: redeclaring functions should be forbidden. however, throwing an
+        // exception will currently break util:eval.
+        declaredFunctions.put(function.getSignature().getFunctionId(), function);
+//		if (declaredFunctions.get(function.getSignature().getFunctionId()) == null)
+//				declaredFunctions.put(function.getSignature().getFunctionId(), function);
+//		else
+//			throw new XPathException("XQST0034: function " + function.getName() + " is already defined with the same arity");
 	}
 
 	/**
