@@ -21,6 +21,7 @@ declare function status:main() as element() {
             {
                 status:status-line("eXist Version", system:get-version()),
                 status:status-line("eXist Build", system:get-build()),
+                status:status-line("eXist Home", system:get-exist-home()),
                 status:status-line("SVN Revision", system:get-revision()),
                 status:status-line("Java Vendor", util:system-property("java.vendor")),
                 status:status-line("Java Version", util:system-property("java.version")),

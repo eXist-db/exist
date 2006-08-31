@@ -5,6 +5,7 @@ declare option exist:output-size-limit "-1";
 import module namespace util="http://exist-db.org/xquery/util";
 import module namespace request="http://exist-db.org/xquery/request";
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
+declare namespace system="http://exist-db.org/xquery/system";
 
 declare namespace xqts="http://exist-db.org/xquery/xqts";
 declare namespace catalog="http://www.w3.org/2005/02/query-test-XQTSCatalog";
@@ -20,7 +21,7 @@ declare function xqts:initialize() as element() {
         if ($config) then
             $config
         else
-            let $home := util:system-property("exist.home")
+            let $home := system:get-exist-home()
             let $path := concat($home, "webapp/xqts")
             let $stored := xdb:store-files-from-pattern("/db/XQTS", $path, "*.xml", "text/xml")
             return
@@ -29,7 +30,7 @@ declare function xqts:initialize() as element() {
 
 (:~ The required stylesheets were not found in the db. Try to import them. :)
 declare function xqts:import-stylesheet() as xs:string* {
-    let $home := util:system-property("exist.home")
+    let $home := system:get-exist-home()
     let $pathSep := util:system-property("file.separator")
     let $dir :=
         	if(ends-with($home, "WEB-INF")) then
