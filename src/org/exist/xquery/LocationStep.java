@@ -150,6 +150,12 @@ public class LocationStep extends Step {
         if ((contextInfo.getFlags() & SINGLE_STEP_EXECUTION) > 0) {
             preload = true;
         }
+        
+        // Mark ".", which is expanded as self::node() by the parser
+        //even though it may *also* be relevant with atomic sequences
+        if (this.axis == Constants.SELF_AXIS && this.test.getType()== Type.NODE)
+            contextInfo.addFlag(DOT_TEST);
+        
         // TODO : log somewhere ?
         super.analyze(contextInfo);
     }
