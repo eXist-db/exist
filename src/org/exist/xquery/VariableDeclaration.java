@@ -100,7 +100,6 @@ public class VariableDeclaration extends AbstractExpression {
 		QName qn = QName.parse(context, qname, null);
 		Module myModule = context.getModule(qn.getNamespaceURI());		
         context.pushDocumentContext();
-        context.pushDocumentContext();
 		// declare the variable
 		Sequence seq = expression.eval(null, null);
         Variable var;
