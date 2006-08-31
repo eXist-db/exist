@@ -580,8 +580,8 @@ public class ClientFrame extends JFrame
             public void actionPerformed(ActionEvent e) {
                 properties.setProperty(OutputKeys.INDENT,
                         ((JCheckBoxMenuItem) e.getSource()).isSelected()
-                        ? Messages.getString("ClientFrame.83") //$NON-NLS-1$
-                        : Messages.getString("ClientFrame.84")); //$NON-NLS-1$
+                        ? "yes" //$NON-NLS-1$
+                        : "no"); //$NON-NLS-1$
                 try {
                     client.getResources();
                 } catch (XMLDBException e1) {
@@ -596,8 +596,8 @@ public class ClientFrame extends JFrame
             public void actionPerformed(ActionEvent e) {
                 properties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES,
                         ((JCheckBoxMenuItem) e.getSource()).isSelected()
-                        ? Messages.getString("ClientFrame.87") //$NON-NLS-1$
-                        : Messages.getString("ClientFrame.88")); //$NON-NLS-1$
+                        ? "yes" //$NON-NLS-1$
+                        : "no"); //$NON-NLS-1$
                 try {
                     client.getResources();
                 } catch (XMLDBException e1) {
@@ -1063,7 +1063,7 @@ public class ClientFrame extends JFrame
             }
             File selectedDir = chooser.getCurrentDirectory();
             properties
-                    .setProperty(Messages.getString("ClientFrame.148"), selectedDir.getAbsolutePath()); //$NON-NLS-1$
+                    .setProperty("working-dir", selectedDir.getAbsolutePath()); //$NON-NLS-1$
         }
     }
     
@@ -1293,8 +1293,8 @@ public class ClientFrame extends JFrame
                     perm = service.getPermissions(res);
                 }
             } else {
-                name = XmldbURI.create(Messages.getString("ClientFrame.194")); //$NON-NLS-1$
-                perm = new Permission(Messages.getString("ClientFrame.195"), Messages.getString("ClientFrame.196"), Permission.DEFAULT_PERM); //$NON-NLS-1$ //$NON-NLS-2$
+                name = XmldbURI.create(".."); //$NON-NLS-1$
+                perm = new Permission("", "", Permission.DEFAULT_PERM); //$NON-NLS-1$ //$NON-NLS-2$
             }
             ResourcePropertyDialog dialog = new ResourcePropertyDialog(this,
                     service, name, perm, created, modified, mimeType);
@@ -1327,7 +1327,7 @@ public class ClientFrame extends JFrame
         try {
             String command = doc.getText(commandStart, end - commandStart);
             commandStart = end;
-            doc.insertString(commandStart++, Messages.getString("ClientFrame.198"), defaultAttrs); //$NON-NLS-1$
+            doc.insertString(commandStart++, "\n", defaultAttrs); //$NON-NLS-1$
             if (command != null) {
                 process.setAction(command);
                 client.console.getHistory().addToHistory(command);
@@ -1394,8 +1394,8 @@ public class ClientFrame extends JFrame
                 final ResourceDescriptor resource = resources.getRow(row);
                 if (resource.isCollection()) {
                     // cd into collection
-                    String command = Messages.getString("ClientFrame.204") + URIUtils.urlDecodeUtf8(resource.getName()) + '"'; //$NON-NLS-1$
-                    display(command + Messages.getString("ClientFrame.205")); //$NON-NLS-1$
+                    String command = "cd " + URIUtils.urlDecodeUtf8(resource.getName()) + '"'; //$NON-NLS-1$
+                    display(command + "\n"); //$NON-NLS-1$
                     process.setAction(command);
                 } else {
                     // open a document for editing
