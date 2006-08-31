@@ -47,7 +47,6 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
@@ -401,15 +400,32 @@ public class Transform extends BasicFunction {
 		/* (non-Javadoc)
 		 * @see javax.xml.transform.URIResolver#resolve(java.lang.String, java.lang.String)
 		 */
-		public Source resolve(String href, String base)
-			throws TransformerException {
-			Collection collection = doc.getCollection();
+		public Source resolve(String href, String base) throws TransformerException
+		{
+			final String backPath = "../";
+			
+			String collectionPath = doc.getCollection().getURI().toString();
 			String path;
             //TODO : use dedicated function in XmldbURI
 			if(href.startsWith("/"))
+			{
 				path = href;
+			}
 			else
-				path = collection.getURI() + "/" + href;
+			{
+				if(href.startsWith(backPath))
+				{
+					//relative ../ href so adjust the collectionPath and strip the href				
+					while(href.indexOf(backPath) > -1)
+					{
+						href = href.substring(href.indexOf(backPath) + backPath.length(), href.length());
+						collectionPath = collectionPath.substring(0, collectionPath.lastIndexOf('/'));
+					}
+				}
+				
+				path = collectionPath + "/" + href;
+			}
+			
 			DocumentImpl xslDoc;
 			try {
 				xslDoc = (DocumentImpl) context.getBroker().getXMLResource(XmldbURI.create(path));
@@ -417,7 +433,7 @@ public class Transform extends BasicFunction {
 				throw new TransformerException(e.getMessage(), e);
 			}
 			if(xslDoc == null) {
-				LOG.debug("Document " + href + " not found in collection " + collection.getURI());
+				LOG.debug("Document " + href + " not found in collection " + collectionPath);
 				return null;
 			}
 			if(!xslDoc.getPermissions().validate(context.getUser(), Permission.READ))
