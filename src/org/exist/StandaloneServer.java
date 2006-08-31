@@ -111,6 +111,7 @@ public class StandaloneServer {
     	DEFAULT_PROPERTIES.setProperty("webdav.authentication", "basic");
     	DEFAULT_PROPERTIES.setProperty("rest.form.encoding", "UTF-8");
     	DEFAULT_PROPERTIES.setProperty("rest.container.encoding", "UTF-8");
+    	DEFAULT_PROPERTIES.setProperty("rest.param.dynamic-content-type", "no");
     }
     
     private HttpServer httpServer;
