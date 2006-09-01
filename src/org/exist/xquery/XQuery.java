@@ -192,6 +192,10 @@ public class XQuery {
         	context.setBroker(broker);
         	context.getWatchDog().reset();
         }
+        
+        //do any preparation before execution
+        context.prepare();
+        
         broker.getBrokerPool().getXQueryMonitor().queryStarted(context.getWatchDog());
         try {
         	Sequence result = expression.eval(contextSequence);
@@ -213,40 +217,4 @@ public class XQuery {
 		CompiledXQuery compiled = compile(context, expression);
 		return execute(compiled, null);
     }
-	
-	/**
-	 * If there is a HTTP Session, and a User has been stored in the session then this will
-	 * return the user object from the session
-	 * 
-	 * @return The user or null if there is no session or no user
-	 */
-	private User getUserFromHttpSession(XQueryContext context)
-	{
-        SessionModule myModule = (SessionModule)context.getModule(SessionModule.NAMESPACE_URI);
-		
-		Variable var = null;
-		try
-		{
-			var = myModule.resolveVariable(SessionModule.SESSION_VAR);
-		}
-		catch(XPathException xpe)
-		{
-			return null;
-		}
-		
-		if(var != null && var.getValue() != null)
-		{
-    		if(var.getValue().getItemType() == Type.JAVA_OBJECT)
-    		{
-        		JavaObjectValue session = (JavaObjectValue) var.getValue().itemAt(0);
-        		
-        		if(session.getObject() instanceof SessionWrapper)
-        		{
-        			return (User)((SessionWrapper)session.getObject()).getAttribute(XQueryContext.HTTP_SESSIONVAR_XMLDB_USER);
-        		}
-    		}
-    	}
-		
-		return null;
-	}
 }

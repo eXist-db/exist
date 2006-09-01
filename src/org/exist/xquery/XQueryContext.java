@@ -285,6 +285,20 @@ public class XQueryContext {
            
 	}
 	
+	/**
+	 * Prepares the current context before xquery execution
+	 */
+	public void prepare()
+	{
+		//if there is an existing user in the current http session
+		//then set the DBBroker user
+		User user = getUserFromHttpSession();
+		if(user != null)
+		{
+			broker.setUser(user);
+		}
+	}
+	
 	public AccessContext getAccessContext() {
 		return accessCtx;
 	}
@@ -1086,17 +1100,8 @@ public class XQueryContext {
 	 * @return
 	 */
 	public User getUser()
-	{
-		/* if there is a user cached in the http session use that,
-		 * otherwise return the current user */
-
-		User user = getUserFromHttpSession();
-		if(user == null)
-		{
-			user = broker.getUser();
-		}	
-		
-		return user;
+	{		
+		return broker.getUser();
 	}
 	
 	/**
