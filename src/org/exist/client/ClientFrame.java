@@ -575,7 +575,7 @@ public class ClientFrame extends JFrame
         menubar.add(optionsMenu);
         
         JCheckBoxMenuItem check = new JCheckBoxMenuItem(Messages.getString("ClientFrame.81"), properties //$NON-NLS-1$
-                .getProperty(OutputKeys.INDENT).equals(Messages.getString("ClientFrame.82"))); //$NON-NLS-1$
+                .getProperty(OutputKeys.INDENT).equals("yes")); //$NON-NLS-1$
         check.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 properties.setProperty(OutputKeys.INDENT,
@@ -591,7 +591,7 @@ public class ClientFrame extends JFrame
         optionsMenu.add(check);
         
         check = new JCheckBoxMenuItem(Messages.getString("ClientFrame.85"), properties //$NON-NLS-1$
-                .getProperty(EXistOutputKeys.EXPAND_XINCLUDES).equals(Messages.getString("ClientFrame.86"))); //$NON-NLS-1$
+                .getProperty(EXistOutputKeys.EXPAND_XINCLUDES).equals("yes")); //$NON-NLS-1$
         check.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 properties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES,
