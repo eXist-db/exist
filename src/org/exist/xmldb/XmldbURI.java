@@ -366,7 +366,7 @@ public class XmldbURI implements Comparable {
 	public int compareTo(Object ob) throws ClassCastException {
 		if (!(ob instanceof XmldbURI))
 			throw new ClassCastException("The provided Object is not an XmldbURI");		
-		return getXmldbURI().compareTo(((XmldbURI)ob).getXmldbURI());
+		return getXmldbURI().compareTo((Object) ((XmldbURI)ob).getXmldbURI());
 	}
 
     /**
