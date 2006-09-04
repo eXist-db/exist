@@ -145,6 +145,19 @@ public final class FastStringBuffer implements CharSequence, Serializable {
     }
 
     /**
+     * Prepend a wide character to the buffer (as a surrogate pair if necessary)
+     */
+
+    public void prependWideChar(int ch) {
+        if (ch > 0xffff) {
+            insertCharAt(0, XMLChar.lowSurrogate(ch));
+            insertCharAt(0, XMLChar.highSurrogate(ch));
+        } else {
+            insertCharAt(0, (char)ch);
+        }
+    }
+
+    /**
      * Returns the length of this character sequence.  The length is the number
      * of 16-bit <code>char</code>s in the sequence.</p>
      *
