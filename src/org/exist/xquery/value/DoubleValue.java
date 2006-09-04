@@ -25,6 +25,7 @@ import java.text.Collator;
 import java.util.regex.Matcher;
 
 import org.exist.util.FastStringBuffer;
+import org.exist.util.FloatingPointConverter;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 
@@ -126,6 +127,7 @@ public class DoubleValue extends NumericValue {
 		}
 		*/
 		
+		/*
 		String javaString = String.valueOf(value);
 		//Copied from Saxon-B 8.6.1
         if (value==0.0) {
@@ -207,6 +209,12 @@ public class DoubleValue extends NumericValue {
             return sign + "0." + zeros(-1 - exp) + s.substring(0, 1) + s.substring(2, e);
         }
         //End of copy
+         */
+
+		FastStringBuffer sb = new FastStringBuffer(20);
+		//0 is a dummy parameter
+		FloatingPointConverter.appendDouble(sb, value).getNormalizedString(0);	
+		return sb.toString();		
 	}
 
 	static private String zeros(int n) {
