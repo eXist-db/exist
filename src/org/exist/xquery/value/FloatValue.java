@@ -25,6 +25,8 @@ package org.exist.xquery.value;
 
 import java.text.Collator;
 
+import org.exist.util.FastStringBuffer;
+import org.exist.util.FloatingPointConverter;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 
@@ -77,6 +79,7 @@ public class FloatValue extends NumericValue {
 	 * @see org.exist.xquery.value.Sequence#getStringValue()
 	 */
 	public String getStringValue() throws XPathException {
+		/*
 		if (value == Float.POSITIVE_INFINITY)
 			return "INF"; 
 		if (value == Float.NEGATIVE_INFINITY)
@@ -84,7 +87,12 @@ public class FloatValue extends NumericValue {
 		String s = String.valueOf(value);
 		s = s.replaceAll("\\.0+$", "");		
 		return s;	
-		//TODO : use Saxon's code
+		*/		
+		
+		FastStringBuffer sb = new FastStringBuffer(20);
+		//0 is a dummy parameter
+		FloatingPointConverter.appendFloat(sb, value).getNormalizedString(0);	
+		return sb.toString();
 	}
 
 	/* (non-Javadoc)
