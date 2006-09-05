@@ -2299,7 +2299,12 @@ public class InteractiveClient {
     }
     
     public void printNotice() {
-        messageln("eXist version 1.0, Copyright (C) 2001-2006 Wolfgang Meier");
+        
+        Properties sysProperties = ClientFrame.getSystemProperties();
+        
+        messageln(sysProperties.getProperty("product-name") + " version " 
+                + sysProperties.getProperty("product-version") 
+                +", Copyright (C) 2001-2006 Wolfgang Meier");
         messageln("eXist comes with ABSOLUTELY NO WARRANTY.");
         messageln("This is free software, and you are welcome to "
                 + "redistribute it\nunder certain conditions; "

@@ -1376,13 +1376,35 @@ public class ClientFrame extends JFrame
         displayPrompt();
     }
     
+    public static Properties getSystemProperties(){
+        
+        Properties sysProperties = new Properties();
+        try
+        {
+                sysProperties.load(ClientFrame.class.getClassLoader().getResourceAsStream("org/exist/system.properties"));
+        }
+        catch (IOException e)
+        {
+                System.err.println("Unable to load system.properties from class loader");
+        }
+        
+        return sysProperties;
+        
+    }
+    
     private void AboutAction() {
-        JOptionPane.showMessageDialog(this, Messages.getString("ClientFrame.199") //$NON-NLS-1$
-                + Messages.getString("ClientFrame.200") //$NON-NLS-1$
-                + Messages.getString("ClientFrame.201") //$NON-NLS-1$
-                + Messages.getString("ClientFrame.202") //$NON-NLS-1$
-                + Messages.getString("ClientFrame.203") //$NON-NLS-1$
-                );
+        
+        Properties sysProperties = ClientFrame.getSystemProperties();
+        
+        // Original text eXist version 1.0, Copyright (C) 2001-2006 Wolfgang Meier
+        JOptionPane.showMessageDialog(this, 
+                sysProperties.getProperty("product-name") + " version " 
+                + sysProperties.getProperty("product-version") 
+                + ", Copyright (C) 2001-2006 Wolfgang Meier\n\n"
+                + "eXist comes with ABSOLUTELY NO WARRANTY.\n"
+                + "This is free software, and you are welcome to\n"
+                + "redistribute it under certain conditions;\n"
+                + "for details read the license file."  );
         return;
     }
     
@@ -1566,8 +1588,13 @@ public class ClientFrame extends JFrame
      */
     
     protected static Properties getLoginData(Properties properties) {
+        
+        Properties sysProperties = ClientFrame.getSystemProperties();
+
         LoginPanel login = new LoginPanel(properties);
-        if (JOptionPane.showOptionDialog(null, login, Messages.getString("ClientFrame.213"), //$NON-NLS-1$
+        if (JOptionPane.showOptionDialog(null, login, 
+                sysProperties.getProperty("product-name") + " " 
+                + sysProperties.getProperty("product-version") + " Database Login" , 
                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
                 null, null, null) == JOptionPane.OK_OPTION) {
             return login.getProperties();
