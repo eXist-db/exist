@@ -137,7 +137,10 @@ public class Transform extends BasicFunction {
 			options = ((NodeValue)args[2].itemAt(0)).getNode();
 		
 		TransformerHandler handler = createHandler(stylesheetItem, options);
-        if (isCalledAs("transform")) {
+        if (isCalledAs("transform"))
+        {
+        	//transform:transform()
+        	
             ValueSequence seq = new ValueSequence();
     		context.pushDocumentContext();
     		MemTreeBuilder builder = context.getDocumentBuilder();
@@ -159,7 +162,11 @@ public class Transform extends BasicFunction {
             }
     		context.popDocumentContext();
     		return seq;
-        } else {
+        }
+        else
+        {
+        	//transform:stream-transform()
+        	
             ResponseModule myModule = (ResponseModule)context.getModule(ResponseModule.NAMESPACE_URI);
             // response object is read from global variable $response
             Variable respVar = myModule.resolveVariable(ResponseModule.RESPONSE_VAR);
@@ -180,6 +187,9 @@ public class Transform extends BasicFunction {
                 handler.startDocument();
                 inputNode.toSAX(context.getBroker(), handler);
                 handler.endDocument();
+                os.close();
+                //commit the response
+                response.flushBuffer();
             } catch (SAXException e) {
                 throw new XPathException(getASTNode(), "SAX exception while transforming node: " + e.getMessage(), e);
             } catch (IOException e) {
