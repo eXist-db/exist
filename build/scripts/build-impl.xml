@@ -132,7 +132,9 @@
         <echo message="-------------------------"/>
         <echo message="eXist ${project.version} build"/>
         <echo message="-------------------------"/>
-        <echo message="SVN revision ${svn.revision} (${svn.date})"/>
+        <echo message="SVN revision ${svn.revision} (${svn.date})"/>    	
+    	<echo message=""/>
+    	<echo message="${ant.version}"/>
         <echo message="-------------------------"/>
         <echo/>
         <echo message="basedir=${basedir}"/>
