@@ -94,6 +94,11 @@ public class HttpResponseWrapper implements ResponseWrapper {
 		return response.encodeURL(arg0);
 	}
 
+	public void flushBuffer() throws IOException
+	{
+		response.flushBuffer();
+	}
+	
 	/**
 	 * @return returns the default character encoding
 	 */

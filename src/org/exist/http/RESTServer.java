@@ -309,10 +309,16 @@ public class RESTServer {
 						{
                             String result = executeXQuery(broker, resource, request, response, outputProperties);
                             encoding = outputProperties.getProperty(OutputKeys.ENCODING, encoding);
-                            String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE, "text/html");
-                            if (!response.isCommitted())
-                                response.setContentType(mimeType);
-                            writeResponse(response, result, encoding);
+                            
+                        	//only write the response if it is not already committed,
+                        	//some xquery functions can write directly to the response
+                            if(!response.isCommitted())
+                            {
+                                String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE, "text/html");
+                            	response.setContentType(mimeType);
+                            	
+                            	writeResponse(response, result, encoding);
+                            }
                         }
             			catch (XPathException e)
 						{
@@ -329,9 +335,16 @@ public class RESTServer {
                 try {
                     String result = search(broker, query, path, howmany, start, outputProperties, wrap, request, response);
                     encoding = outputProperties.getProperty(OutputKeys.ENCODING, encoding);
-                    String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE, "text/html");
-                    response.setContentType(mimeType);
-                    writeResponse(response, result, encoding);
+                    
+                	//only write the response if it is not already committed,
+                	//some xquery functions can write directly to the response
+                    if(!response.isCommitted())
+                    {
+                    	String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE, "text/html");
+                    	response.setContentType(mimeType);
+                    	writeResponse(response, result, encoding);
+                    }
+                    
                 } catch (XPathException e) {
                     response.setContentType("text/html");
                     response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -1140,15 +1153,9 @@ public class RESTServer {
         }
     }
     
-    private void writeResponse(HttpServletResponse response, byte[] data)
-    throws IOException {
-        OutputStream is = response.getOutputStream();
-        is.write(data);
-    }
-    
-    private void writeResponse(HttpServletResponse response, String data, String encoding)
-    throws IOException {
-//        response.setCharacterEncoding(encoding);
+    private void writeResponse(HttpServletResponse response, String data, String encoding) throws IOException
+    {
+    	//response.setCharacterEncoding(encoding);
         
         // possible format contentType: text/xml; charset=UTF-8
         String contentType = response.getContentType();
