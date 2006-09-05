@@ -319,6 +319,13 @@ public class SOAPServer
             handler.setResult(result);
 			//END
 			
+            
+            /**
+             * TODO: Validation should be done before WSDL is sent to the client. org.exist.validation.Validator
+             * will need to make use of org.exist.validation.internal.BlockingOutputStream to connect to the Validator.
+             * 
+             */
+            
 			handler.startDocument();
 			docWebservice.toSAX(broker, handler);
 			handler.endDocument();
