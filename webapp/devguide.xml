@@ -76,17 +76,17 @@
     <description>eXist Server Setup</description>
     
     <servlet>
-        <servlet-name>org.exist.http.XQueryServlet</servlet-name>
-        <servlet-class>org.exist.http.XQueryServlet</servlet-class>
+        <servlet-name>org.exist.http.servlets.XQueryServlet</servlet-name>
+        <servlet-class>org.exist.http.servlets.XQueryServlet</servlet-class>
 
         <init-param>
-            <param-name>url</param-name>
+            <param-name>uri</param-name>
             <param-value>xmldb:exist:///db</param-value>
         </init-param>
     </servlet>
     
     <servlet-mapping>
-	  <servlet-name>org.exist.http.XQueryServlet</servlet-name>
+	  <servlet-name>org.exist.http.servlets.XQueryServlet</servlet-name>
 	  <url-pattern>*.xql</url-pattern>
     </servlet-mapping>
 </web-app>
@@ -98,7 +98,7 @@
                                 <option>.xq</option> is specifically NOT used for the
                                     <sgmltag>url-pattern</sgmltag> definition so as not to interfere
                                 with Cocoon examples, which exclusively use this file extension.
-                                Also note that the <option>url</option> parameter in
+                                Also note that the <option>uri</option> parameter in
                                     <sgmltag>init-param</sgmltag> specifies the
                                 <filename>XML:DB</filename> root collection used by the servlet. To
                                 configure this parameter to have the servlet access a remote
