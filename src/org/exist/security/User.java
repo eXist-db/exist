@@ -92,7 +92,7 @@ public class User {
 
 
     /**
-     *  Create a new user :ewith name
+     *  Create a new user with name
      *
      *@param  user  Description of the Parameter
      */
