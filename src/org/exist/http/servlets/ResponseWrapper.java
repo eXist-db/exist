@@ -62,6 +62,8 @@ public interface ResponseWrapper {
 	 * @return The encoded value
 	 */
 	public String encodeURL(String arg0);
+	/***/
+	public void flushBuffer() throws IOException;
 	/**
 	 * @return Returns the default character encoding
 	 */

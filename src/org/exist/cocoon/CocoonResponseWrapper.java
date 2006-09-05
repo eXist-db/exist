@@ -110,6 +110,13 @@ public class CocoonResponseWrapper implements ResponseWrapper {
 	}
 
 	/**
+	 * Does nothing!
+	 */
+	public void flushBuffer() throws IOException
+	{
+	}
+	
+	/**
 	 */
 	public String getCharacterEncoding() {
 		return response.getCharacterEncoding();
