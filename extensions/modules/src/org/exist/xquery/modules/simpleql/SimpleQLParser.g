@@ -54,7 +54,7 @@ returns [String arg]
 	}
 	|
 	w:WORD {
-		buf.append(". &amp;= \"");
+		buf.append(". &= \"");
 		buf.append(w.getText());
 		buf.append('"');
 		arg = buf.toString();
