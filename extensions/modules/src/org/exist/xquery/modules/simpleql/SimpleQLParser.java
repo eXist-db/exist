@@ -131,7 +131,7 @@ public SimpleQLParser(ParserSharedInputState state) {
 			w = LT(1);
 			match(WORD);
 			
-					buf.append(". &amp;= \"");
+					buf.append(". &= \"");
 					buf.append(w.getText());
 					buf.append('"');
 					arg = buf.toString();
