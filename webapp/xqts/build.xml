@@ -13,12 +13,13 @@
         <pathelement path="${server.dir}/exist.jar"/>
         <pathelement path="${server.dir}/exist-optional.jar"/>
     </path>
-
+    
     <typedef resource="org/exist/ant/antlib.xml" uri="http://exist-db.org/ant">
         <classpath refid="classpath.core"/>
     </typedef>
 
     <available file="${config.basedir}" property="xqts.present"/>
+    <available file="${server.dir}/src/org/exist/numbering/NodeId.java" property="exist.dln"/>
 
     <target name="store" xmlns:xmldb="http://exist-db.org/ant" if="xqts.present"  depends="check-files">
         
@@ -49,7 +50,7 @@
             </fileset>
         </xmldb:store>
 
-        <xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/XQTS/TestSources"  createcollection="true">
+        <xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/XQTS/TestSources" createcollection="true">
             <fileset dir="${config.basedir}/TestSources">
                 <include name="*"/>
                 <!-- This list should be not very long -->
@@ -59,8 +60,25 @@
                 <exclude name="strong-queries-results-q3.xsd"/> <!-- syntax eror -->
             </fileset>
         </xmldb:store>
+        
+        <xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/XQTS/TestSources" createcollection="true" type="xml">
+            <fileset dir="${config.basedir}/TestSources">
+                <include name="orders"/>
+            </fileset>
+        </xmldb:store>
+        
+        <antcall target="dln-add"/>
     </target>
 
+    <target name="dln-add" if="exist.dln" xmlns:xmldb="http://exist-db.org/ant">
+      <xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/XQTS/TestSources" createcollection="true">
+        <fileset dir="${config.basedir}/TestSources">
+          <include name="fsx.xml"/>
+        </fileset>
+      </xmldb:store>
+    </target>
+    
+    
     <target name="check-files" unless="xqts.present">
         <echo> The XQTS sources could not be found in directory {$config.basedir}. Please edit
             build.properties and check the path specified via the config.basedir property. </echo>
