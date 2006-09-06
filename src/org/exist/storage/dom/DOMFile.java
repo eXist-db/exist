@@ -1796,7 +1796,9 @@ public class DOMFile extends BTree implements Lockable {
 				final long nextPage = rec.page.getPageHeader()
 						.getNextDataPage();
 				if (nextPage == Page.NO_PAGE) {
-					SanityCheck.TRACE("bad link to next page");
+					SanityCheck.TRACE("bad link to next page! offset: " + rec.offset + "; len: " + 
+							rec.page.getPageHeader().getDataLength() +
+							": " + rec.page.page.getPageInfo());
 					return;
 				}
 				rec.page = getCurrentPage(nextPage);
@@ -1815,12 +1817,14 @@ public class DOMFile extends BTree implements Lockable {
 			rec.offset += 8;
 		byte[] data = rec.page.data;
 		int readOffset = rec.offset;
+		boolean inOverflow = false;
 		if (len == OVERFLOW) {
 			final long op = ByteConversion.byteToLong(data, rec.offset);
 			data = getOverflowValue(op);
+			rec.offset += 10;
 			len = data.length;
 			readOffset = 0;
-			rec.offset += 8;
+			inOverflow = true;
 		}
 		final short type = Signatures.getType(data[readOffset]);
 		switch (type) {
@@ -1856,7 +1860,7 @@ public class DOMFile extends BTree implements Lockable {
 			}
 			break;
 		}
-		if (len != OVERFLOW)
+		if (!inOverflow)
 			rec.offset += len + 2;
 	}
 
