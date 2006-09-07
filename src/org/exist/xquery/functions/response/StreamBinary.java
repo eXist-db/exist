@@ -85,7 +85,7 @@ public class StreamBinary extends BasicFunction {
         String contentType = args[1].getStringValue();
         
         ResponseModule myModule = (ResponseModule)context.getModule(ResponseModule.NAMESPACE_URI);
-        // request object is read from global variable $request
+        // request object is read from global variable $response
         Variable respVar = myModule.resolveVariable(ResponseModule.RESPONSE_VAR);
         if(respVar == null)
             throw new XPathException(getASTNode(), "No request object found in the current XQuery context.");
@@ -101,6 +101,9 @@ public class StreamBinary extends BasicFunction {
         try {
             OutputStream os = new BufferedOutputStream(response.getOutputStream());
             os.write(binary.getBinaryData());
+            os.close();
+            //commit the response
+            response.flushBuffer();
         } catch (IOException e) {
             throw new XPathException(getASTNode(), "IO exception while streaming data: " + e.getMessage(), e);
         }

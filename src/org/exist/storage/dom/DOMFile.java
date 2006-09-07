@@ -55,7 +55,6 @@ import org.exist.storage.cache.Cacheable;
 import org.exist.storage.cache.LRUCache;
 import org.exist.storage.journal.LogEntryTypes;
 import org.exist.storage.journal.Loggable;
-import org.exist.storage.journal.Lsn;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.ReentrantReadWriteLock;
 import org.exist.storage.txn.TransactionException;
@@ -1776,7 +1775,11 @@ public class DOMFile extends BTree implements Lockable {
 	}
 
 	/**
-	 * Retrieve the string value of the specified node.
+	 * Retrieve the string value of the specified node. This is an optimized low-level method
+	 * which will directly traverse the stored DOM nodes and collect the string values of
+	 * the specified root node and all its descendants. By directly scanning the stored
+	 * node data, we do not need to create a potentially large amount of node objects
+	 * and thus save memory and time for garbage collection. 
 	 * 
 	 * @param proxy
 	 * @return
@@ -1785,20 +1788,21 @@ public class DOMFile extends BTree implements Lockable {
 		try {
 			long address = node.getInternalAddress();
             RecordPos rec = null;
+            // try to directly locate the root node through its storage address
             if (address != Page.NO_PAGE)
                 rec = findRecord(address);
             if (rec == null) {
+				// fallback to a btree lookup if the node could not be found
+				// by its storage address
 				address = findValue(this, new NodeProxy(node));
     			if (address == BTree.KEY_NOT_FOUND)
     				return null;
                 rec = findRecord(address);
-    			SanityCheck.THROW_ASSERT(rec != null,
-    					"Node data could not be found! Page: "
-    							+ StorageAddress.pageFromPointer(address)
-    							+ "; tid: "
-    							+ StorageAddress.tidFromPointer(address));
+    			SanityCheck.THROW_ASSERT(rec != null, "Node data could not be found!");
             }
+			// we collect the string values in binary format and append to a ByteArrayOutputStream
 			final ByteArrayOutputStream os = new ByteArrayOutputStream();
+			// now traverse the tree
 			getNodeValue((DocumentImpl)node.getOwnerDocument(), os, rec, true, addWhitespace);
 			final byte[] data = os.toByteArray();
 			String value;
@@ -1816,15 +1820,23 @@ public class DOMFile extends BTree implements Lockable {
 		return null;
 	}
 
+	/**
+	 * Recursive method to retrieve the string values of the root node
+	 * and all its descendants.
+	 */
 	private void getNodeValue(DocumentImpl doc, ByteArrayOutputStream os, RecordPos rec,
 			boolean firstCall, boolean addWhitespace) {
+		// locate the next real node, skipping relocated nodes
 		boolean foundNext = false;
 		do {
 			if (rec.offset > rec.page.getPageHeader().getDataLength()) {
+				// end of page reached, proceed to the next page
 				final long nextPage = rec.page.getPageHeader()
 						.getNextDataPage();
 				if (nextPage == Page.NO_PAGE) {
-					SanityCheck.TRACE("bad link to next page");
+					SanityCheck.TRACE("bad link to next page! offset: " + rec.offset + "; len: " + 
+							rec.page.getPageHeader().getDataLength() +
+							": " + rec.page.page.getPageInfo());
 					return;
 				}
 				rec.page = getCurrentPage(nextPage);
@@ -1833,25 +1845,35 @@ public class DOMFile extends BTree implements Lockable {
 			}
 			rec.tid = ByteConversion.byteToShort(rec.page.data, rec.offset - 2);
 			if (ItemId.isLink(rec.tid)) {
+				// this is a link: skip it
 				rec.offset += 10;
 			} else
+				// ok: node found
 				foundNext = true;
 		} while (!foundNext);
+		// read the page len
 		int len = ByteConversion.byteToShort(rec.page.data, rec.offset);
         rec.offset += 2;
+		// check if the node was relocated
 		if (ItemId.isRelocated(rec.tid))
 			rec.offset += 8;
 		byte[] data = rec.page.data;
 		int readOffset = rec.offset;
+		boolean inOverflow = false;
 		if (len == OVERFLOW) {
+			// if we have an overflow value, load it from the overflow page
 			final long op = ByteConversion.byteToLong(data, rec.offset);
 			data = getOverflowValue(op);
+			rec.offset += 10;
 			len = data.length;
 			readOffset = 0;
-			rec.offset += 8;
+			inOverflow = true;
 		}
+
+		// check the type of the node
 		final short type = Signatures.getType(data[readOffset++]);
-        switch (type) {
+		// switch on the node type
+		switch (type) {
 		case Node.ELEMENT_NODE:
 			final int children = ByteConversion.byteToInt(data, readOffset);
             readOffset += 4;
@@ -1899,7 +1921,8 @@ public class DOMFile extends BTree implements Lockable {
 			}
 			break;
 		}
-		if (len != OVERFLOW)
+		if (!inOverflow)
+			// if it isn't an overflow value, add the value length to the current offset
 			rec.offset += len + 2;
 	}
 
@@ -2088,7 +2111,7 @@ public class DOMFile extends BTree implements Lockable {
 			RecordPos rec = page.findRecord(ItemId.getId(loggable.tid));
             SanityCheck.THROW_ASSERT(rec != null, "tid " + ItemId.getId(loggable.tid) + " not found on page " + page.getPageNum() +
                     "; contents: " + debugPageContents(page));
-			short l = ByteConversion.byteToShort(rec.page.data, rec.offset);
+			ByteConversion.byteToShort(rec.page.data, rec.offset);
 			rec.offset += 2;
 			if (ItemId.isRelocated(rec.tid))
 				rec.offset += 8;
