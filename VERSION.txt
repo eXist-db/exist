@@ -1,6 +1,6 @@
 #eXist build info
-#Mon Aug 14 20:42:36 CEST 2006
-project.version=UNKNOWN
-project.build=UNKNOWN
-svn.revision=UNKNOWN
-svn.date=UNKNOWN
+#Thu Sep 07 09:56:36 CEST 2006
+project.version=1.0rc2
+project.build=20060907
+svn.revision=4311
+svn.date=2006-09-07T02\:18\:33.843512Z
