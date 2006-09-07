@@ -504,13 +504,15 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	}
 
     public String getNodeValue() {
-        if (isDocument()) {         
+        if (isDocument()) {
             Element e = doc.getDocumentElement();
             if (e instanceof NodeProxy) {
                return doc.getBroker().getNodeValue(new StoredNode((NodeProxy)e), false);
-            } else {
+            } else if (e != null) {
                return doc.getBroker().getNodeValue((ElementImpl)e, false);
-            }
+            } else
+            	// probably a binary resource
+            	return "";
         } else {
             return doc.getBroker().getNodeValue(new StoredNode(this), false);
         }
