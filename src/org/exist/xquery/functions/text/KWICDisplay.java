@@ -65,8 +65,12 @@ public class KWICDisplay extends BasicFunction {
             "to the callback function, and the " +
             "result of the function call is inserted into the resulting node set where the matching sequence occurred. " +
             "For example, you can use this to mark all matching terms with a <span class=\"highlight\">abc</span>. " +
-            "The callback function should take 3 arguments: 1) the text sequence corresponding to the match as xs:string, " +
-            "2) the text node to which this match belongs, 3) the sequence passed as last argument to kwic-display.",
+            "The callback function should take 3 or 4 arguments: 1) the text sequence corresponding to the match as xs:string, " +
+            "2) the text node to which this match belongs, 3) the sequence passed as last argument to kwic-display. " +
+            "If the callback function accepts 4 arguments, the last argument will contain additional " + 
+            "information on the match as a sequence of 4 integers: a) the number of the match if there's more than " +
+            "one match in a text node - the first match will be numbered 1; b) the offset of the match into the original text node " +
+            "string; c) the length of the match as reported by the index.",
             new SequenceType[]{
                     new SequenceType(Type.TEXT, Cardinality.ZERO_OR_MORE),
                     new SequenceType(Type.POSITIVE_INTEGER, Cardinality.EXACTLY_ONE),
@@ -87,8 +91,12 @@ public class KWICDisplay extends BasicFunction {
                 "to the callback function, and the " +
                 "result of the function call is inserted into the resulting node set where the matching sequence occurred. " +
                 "For example, you can use this to mark all matching terms with a <span class=\"highlight\">abc</span>. " +
-                "The callback function should take 3 arguments: 1) the text sequence corresponding to the match as xs:string, " +
-                "2) the text node to which this match belongs, 3) the sequence passed as last argument to kwic-display.",
+                "The callback function should take 3 or 4 arguments: 1) the text sequence corresponding to the match as xs:string, " +
+                "2) the text node to which this match belongs, 3) the sequence passed as last argument to kwic-display. " +
+                "If the callback function accepts 4 arguments, the last argument will contain additional " + 
+                "information on the match as a sequence of 4 integers: a) the number of the match if there's more than " +
+                "one match in a text node - the first match will be numbered 1; b) the offset of the match into the original text node " +
+                "string; c) the length of the match as reported by the index.",
                 new SequenceType[]{
                         new SequenceType(Type.TEXT, Cardinality.ZERO_OR_MORE),
                         new SequenceType(Type.POSITIVE_INTEGER, Cardinality.EXACTLY_ONE),
@@ -188,7 +196,7 @@ public class KWICDisplay extends BasicFunction {
             int lastNodeNr = -1;
             
             // prepare array for callback function arguments
-            Sequence params[] = new Sequence[3];
+            Sequence params[] = new Sequence[callback.getSignature().getArgumentCount()];
             params[1] = firstProxy;
             params[2] = extraArgs;
             
@@ -214,8 +222,19 @@ public class KWICDisplay extends BasicFunction {
                     pos += leftWidth;
                 }
     
+                // put the matching term into argument 0 of the callback function
                 params[0] = new StringValue(str.substring(firstMatch.getOffset(), firstMatch.getOffset() + firstMatch.getLength()));
+                // if the callback function accepts 4 arguments, the last argument should contain additional
+                // information on the match:
+                if (callback.getSignature().getArgumentCount() == 4) {
+                	params[3] = new ValueSequence();
+                	params[3].add(new IntegerValue(nextOffset - 1));
+                	params[3].add(new IntegerValue(firstMatch.getOffset()));
+                	params[3].add(new IntegerValue(firstMatch.getLength()));
+                }
+                // now execute the callback func.
                 Sequence callbackResult = callback.evalFunction(null, null, params);
+                // iterate through the result of the callback
                 for (SequenceIterator iter = callbackResult.iterate(); iter.hasNext(); ) {
                 	Item next = iter.nextItem();
                 	if (Type.subTypeOf(next.getType(), Type.NODE)) {
@@ -250,7 +269,17 @@ public class KWICDisplay extends BasicFunction {
                 }
                 
                 if (currentWidth + offset.getLength() < width) {
+                	// put the matching term into argument 0 of the callback function
                     params[0] = new StringValue(str.substring(offset.getOffset(), offset.getOffset() + offset.getLength()));
+                    // if the callback function accepts 4 arguments, the last argument should contain additional
+                    // information on the match:
+                    if (callback.getSignature().getArgumentCount() == 4) {
+                    	params[3] = new ValueSequence();
+                    	params[3].add(new IntegerValue(i));
+                    	params[3].add(new IntegerValue(offset.getOffset()));
+                    	params[3].add(new IntegerValue(offset.getLength()));
+                    }
+                    // execute the callback function
                     Sequence callbackResult = callback.evalFunction(null, null, params);
                     for (SequenceIterator iter = callbackResult.iterate(); iter.hasNext(); ) {
                     	Item next = iter.nextItem();
@@ -293,6 +322,7 @@ public class KWICDisplay extends BasicFunction {
             }
         }
         
+        // if the user specified a result callback function, call it now
         if (resultCallback != null) {
             Sequence params[] = new Sequence[3];
             params[0] = result;
