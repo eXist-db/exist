@@ -74,7 +74,7 @@ public class RemoteValidationService implements ValidationService {
         id = remoteCollection.getPathURI().resolveCollectionPath(id);
         
         Vector params = new Vector();
-        params.addElement( id );
+        params.addElement( id.toString() );
         
         try {
             Boolean result = (Boolean) client.execute("isValid", params);

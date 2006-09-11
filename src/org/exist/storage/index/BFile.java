@@ -421,15 +421,15 @@ public class BFile extends BTree {
         if (dataCache.getBuffers() == 0 && dataCache.getUsedBuffers() == 0)
         	buf.append("N/A");
         else
-        	buf.append(nf.format(dataCache.getUsedBuffers()/dataCache.getBuffers()));
-        buf.append(" (out of " + dataCache.getBuffers() + ")");
+        	buf.append(nf.format(dataCache.getUsedBuffers()/(float)dataCache.getBuffers()));
+        buf.append(" (" + dataCache.getUsedBuffers() + " out of " + dataCache.getBuffers() + ")");
         //buf.append(dataCache.getBuffers()).append(" / ");
         //buf.append(dataCache.getUsedBuffers()).append(" / ");
         buf.append(" Cache efficiency : ");
         if (dataCache.getHits() == 0 && dataCache.getFails() == 0)
         	buf.append("N/A");
         else
-        	buf.append(nf.format(dataCache.getHits()/(dataCache.getHits() + dataCache.getFails())));        
+        	buf.append(nf.format(dataCache.getHits()/(float)(dataCache.getHits() + dataCache.getFails())));        
         //buf.append(dataCache.getHits()).append(" / ");
         //buf.append(dataCache.getFails());
         LOG.info(buf.toString());

@@ -2032,15 +2032,15 @@ public class BTree extends Paged {
         if (cache.getBuffers() == 0 && cache.getUsedBuffers() == 0)
         	buf.append("N/A");
         else
-        	buf.append(nf.format(cache.getUsedBuffers()/cache.getBuffers()));
-        buf.append(" (out of " + cache.getBuffers() + ")");		
+        	buf.append(nf.format(cache.getUsedBuffers()/(float)cache.getBuffers()));
+        buf.append(" (" + cache.getUsedBuffers() + " out of " + cache.getBuffers() + ")");		
 		//buf.append(cache.getBuffers()).append(" / ");
 		//buf.append(cache.getUsedBuffers()).append(" / ");
         buf.append(" Cache efficiency : ");
         if (cache.getHits() == 0 && cache.getFails() == 0)
         	buf.append("N/A");
         else
-        	buf.append(nf.format(cache.getHits() / (cache.getFails() + cache.getHits())));        
+        	buf.append(nf.format(cache.getHits() / (float)(cache.getFails() + cache.getHits())));        
 		//buf.append(cache.getHits()).append(" / ");
 		//buf.append(cache.getFails());
 		LOG.info(buf.toString());
