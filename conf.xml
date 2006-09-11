@@ -100,7 +100,7 @@
         you have some more memory to waste. If you deal with lots of 
         collections, you can also increase the collectionCacheSize value 
     -->
-    <db-connection cacheSize="96M" collectionCacheSize="128" database="native"
+    <db-connection cacheSize="48M" collectionCacheSize="128" database="native"
         files="webapp/WEB-INF/data" free_mem_min="5" pageSize="4096">
         
         <!--
@@ -310,7 +310,7 @@
         preserve-whitespace-mixed-content="no" stemming="no"
         suppress-whitespace="both"
         tokenizer="org.exist.storage.analysis.SimpleTokenizer"
-        track-term-freq="yes" validation="no">
+        track-term-freq="yes" validation="auto">
         
         <!-- 
             The file for this element points to a file containing a list of 
@@ -433,8 +433,6 @@
                 uri="http://exist-db.org/xquery/validation" />
             <module class="org.exist.xquery.functions.system.SystemModule"
                 uri="http://exist-db.org/xquery/system" />
-<module uri="http://exist-db.org/xquery/xmldiff"
-        class="org.exist.xquery.modules.xmldiff.XmlDiffModule"/>                
         </builtin-modules>
     </xquery>
 
