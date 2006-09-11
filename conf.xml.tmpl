@@ -70,6 +70,9 @@
             data pages. However, the memory specified via cacheSize is shared
             between all page buffers. It represents an absolute maximum, which
             would be occupied if all page buffers were completely full.
+            
+            The cacheSize should not be more than half of the size of the JVM 
+            heap size (set by the JVM -Xmx parameter).
         
         - collectionCacheSize:
             not documented.
