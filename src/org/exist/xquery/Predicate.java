@@ -81,12 +81,13 @@ public class Predicate extends PathExpr {
      * @see org.exist.xquery.PathExpr#analyze(org.exist.xquery.AnalyzeContextInfo)
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-        contextInfo.addFlag(IN_PREDICATE); // set flag to signal subexpression that we are in a predicate
-        contextInfo.removeFlag(IN_WHERE_CLAUSE);	// remove where clause flag
-        contextInfo.removeFlag(DOT_TEST);
-        outerContextId = contextInfo.getContextId();
-        contextInfo.setContextId(getExpressionId());
-        AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+    	AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+    	newContextInfo.addFlag(IN_PREDICATE); // set flag to signal subexpression that we are in a predicate
+    	newContextInfo.removeFlag(IN_WHERE_CLAUSE);	// remove where clause flag
+    	newContextInfo.removeFlag(DOT_TEST);
+        outerContextId = newContextInfo.getContextId();
+        newContextInfo.setContextId(getExpressionId());
+        
     	newContextInfo.setParent(this);
         super.analyze(newContextInfo);
       
@@ -116,9 +117,9 @@ public class Predicate extends PathExpr {
             executionMode = BOOLEAN;
         
 		if(executionMode == BOOLEAN) {
-		    contextInfo.addFlag(SINGLE_STEP_EXECUTION);
+			newContextInfo.addFlag(SINGLE_STEP_EXECUTION);
 		    // need to re-analyze:
-		    super.analyze(contextInfo);
+		    super.analyze(newContextInfo);
 		}
     }
     

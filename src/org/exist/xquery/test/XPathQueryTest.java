@@ -931,17 +931,32 @@ public class XPathQueryTest extends XMLTestCase {
     //@see http://sourceforge.net/tracker/index.php?func=detail&aid=1533053&group_id=17691&atid=117691
     public void testNestedPredicates() throws Exception {
         String xQuery = "let $doc := <objects>" +
-        	"<detail><class/><source><dynamic>false</dynamic></source></detail>" + 
-        	"<detail><class/><source><dynamic>true</dynamic></source></detail>" +
-        	"</objects> " +
-        	"let $matches := $doc/detail[source[dynamic='false'] or class] " +
-        	"return count($matches) eq 2";
-        
-        XQueryService service = getQueryService();
-        ResourceSet rs = service.query(xQuery);
-        
-        assertEquals(1, rs.getSize());
-        assertEquals("true", rs.getResource(0).getContent());
+    	"<detail><class/><source><dynamic>false</dynamic></source></detail>" + 
+    	"<detail><class/><source><dynamic>true</dynamic></source></detail>" +
+    	"</objects> " +
+    	"let $matches := $doc/detail[source[dynamic='false'] or class] " +
+    	"return count($matches) eq 2";
+    
+	    XQueryService service = getQueryService();
+	    ResourceSet rs = service.query(xQuery);
+	    
+	    assertEquals(1, rs.getSize());
+	    assertEquals("true", rs.getResource(0).getContent());
+
+	    xQuery = "let $xml := <test><element>" +
+	    	"<complexType><attribute name=\"design\" fixed=\"1\"/></complexType>" +
+        	"</element></test> " +
+        	"return $xml//element[complexType/attribute[@name eq \"design\"]/@fixed eq \"1\"]";
+
+	    service = getQueryService();
+        service.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+        service.setProperty(OutputKeys.INDENT, "no");	    
+	    rs = service.query(xQuery);
+
+	    assertEquals(1, rs.getSize());
+	    assertXMLEqual("<element><complexType><attribute name=\"design\" fixed=\"1\"/></complexType></element>", 
+	    		rs.getResource(0).getContent().toString());
+
     }
 
     
