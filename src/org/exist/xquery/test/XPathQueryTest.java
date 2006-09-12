@@ -927,6 +927,23 @@ public class XPathQueryTest extends XMLTestCase {
         assertEquals("SFBUG 1537355 result", "2",
                 rs.getResource(0).getContent());
     }
+
+    //@see http://sourceforge.net/tracker/index.php?func=detail&aid=1533053&group_id=17691&atid=117691
+    public void testNestedPredicates() throws Exception {
+        String xQuery = "let $doc := <objects>" +
+        	"<detail><class/><source><dynamic>false</dynamic></source></detail>" + 
+        	"<detail><class/><source><dynamic>true</dynamic></source></detail>" +
+        	"</objects> " +
+        	"let $matches := $doc/detail[source[dynamic='false'] or class] " +
+        	"return count($matches) eq 2";
+        
+        XQueryService service = getQueryService();
+        ResourceSet rs = service.query(xQuery);
+        
+        assertEquals(1, rs.getSize());
+        assertEquals("true", rs.getResource(0).getContent());
+    }
+
     
     // @see http://sourceforge.net/tracker/index.php?func=detail&aid=1488303&group_id=17691&atid=117691
     public void bugtestPredicateBUG1488303() throws Exception {
@@ -954,6 +971,7 @@ public class XPathQueryTest extends XMLTestCase {
         assertEquals("SFBUG 1488303 result", "<t>eXist</t>",
                 rs.getResource(0).getContent());
     }
+
     
     // @see http://sourceforge.net/tracker/index.php?func=detail&aid=1460791&group_id=17691&atid=117691
     public void bugtestDescendantOrSelfBUG1460791() throws Exception {
