@@ -142,21 +142,31 @@ public class Predicate extends PathExpr {
             if (executionMode == BOOLEAN) {
             	//Atomic sequences will keep evaluating "." in BOOLEAN mode
             	if (!innerExpressionDot && !Type.subTypeOf(contextSequence.getItemType(), Type.NODE)) {  
-            		Sequence innerSeq = inner.eval(contextSequence); 
-	                //Only if we have an actual *singleton* of numeric items
-	                if (innerSeq.hasOne() && Type.subTypeOf(innerSeq.getItemType(), Type.NUMBER)) { 
-	                    recomputedExecutionMode = POSITIONAL;
-	            	}
+            		try {
+	            		Sequence innerSeq = inner.eval(contextSequence); 
+		                //Only if we have an actual *singleton* of numeric items
+		                if (innerSeq.hasOne() && Type.subTypeOf(innerSeq.getItemType(), Type.NUMBER)) { 
+		                    recomputedExecutionMode = POSITIONAL;
+		            	}
+            		} catch (XPathException e) {
+            			//Keep in boolean mide : How ugly !!! 
+            			//innerExpressionDot is false for (1,2,3)[. lt 3]
+            		}          
             	}
             }  
             
             //Try to promote a boolean evaluation to a positionnal one  (second case)
             if (executionMode == BOOLEAN && !innerExpressionDot && !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM)) {
-	        	Sequence innerSeq = inner.eval(contextSequence); 
-	            //Only if we have an actual *singleton* of numeric items
-	            if (innerSeq.hasOne() && Type.subTypeOf(innerSeq.getItemType(), Type.NUMBER)) { 
-                    recomputedExecutionMode = POSITIONAL;
-	        	}
+		        try {
+		        	Sequence innerSeq = inner.eval(contextSequence); 
+		            //Only if we have an actual *singleton* of numeric items
+		            if (innerSeq.hasOne() && Type.subTypeOf(innerSeq.getItemType(), Type.NUMBER)) { 
+	                    recomputedExecutionMode = POSITIONAL;
+		        	}
+	    		} catch (XPathException e) {
+	    			//Keep in boolean mide : How ugly !!! 
+	    			//innerExpressionDot is false for (1,2,3)[. lt 3]
+	    		}		            
             }
 
             if (executionMode == NODE && Type.subTypeOf(contextSequence.getItemType(), Type.ATOMIC)
