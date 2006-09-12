@@ -674,7 +674,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 				if (contextNode.getContextId() == contextId) {
 					context = contextNode.getNode();
 					context.addMatches(current);
-					if (!result.contains(context)) {
+					//if (!result.contains(context)) {
 						if (Expression.NO_CONTEXT_ID != contextId)
 							context.addContextNode(contextId, context);
 						if(lastDoc != null && lastDoc.getDocId() != context.getDocument().getDocId()) {
@@ -682,7 +682,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 							result.add(context, getSizeHint(lastDoc));
 						} else
 							result.add(context);
-					}
+					//}
 				}
 				contextNode = contextNode.getNextDirect();
 			}
