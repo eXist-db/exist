@@ -22,6 +22,8 @@
  */
 package org.exist.xquery;
 
+import org.exist.xquery.value.Type;
+
 /**
  * Holds context information and execution hints for XQuery expressions.
  * Instances of this class are passed to {@link Expression#analyze(AnalyzeContextInfo)}
@@ -35,6 +37,8 @@ public class AnalyzeContextInfo {
 	private Expression parent = null;
 	private int flags = 0;
 	private int contextId = Expression.NO_CONTEXT_ID;
+	
+	private int staticType = Type.ITEM;
 	
 	public AnalyzeContextInfo() {
 	}
@@ -117,4 +121,29 @@ public class AnalyzeContextInfo {
 		this.parent = parent;
 	}
 
+	public int getStaticType() {
+		return staticType;
+	}
+
+	public void setStaticType(int staticType) {
+		this.staticType = staticType;
+	}
+	
+	public String toString() {
+		StringBuffer buf = new StringBuffer();
+		buf.append("ID: ").append(contextId);
+		buf.append(" Type: ").append(Type.getTypeName(staticType)).append(" Flags: ");
+		if ((flags & Expression.SINGLE_STEP_EXECUTION) > 0)
+			buf.append("single ");
+		if ((flags & Expression.IN_PREDICATE) > 0)
+			buf.append("in-predicate ");
+		if ((flags & Expression.IN_WHERE_CLAUSE) > 0)
+			buf.append("in-where-clause ");
+		if ((flags & Expression.IN_UPDATE) > 0)
+			buf.append("in-update ");
+		if ((flags & Expression.DOT_TEST) > 0)
+			buf.append("dot-test ");
+		buf.append('(').append(flags).append(')');
+		return buf.toString();
+	}
 }
