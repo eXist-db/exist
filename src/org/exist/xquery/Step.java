@@ -72,7 +72,7 @@ public abstract class Step extends AbstractExpression {
     	this.contextId = contextInfo.getContextId();
     	
     	if (predicates.size() > 0) {
-	    	AnalyzeContextInfo newContext = contextInfo; // new AnalyzeContextInfo(contextInfo);
+	    	AnalyzeContextInfo newContext = new AnalyzeContextInfo(contextInfo);
 	        newContext.setStaticType(this.axis == Constants.SELF_AXIS ? contextInfo.getStaticType() : Type.NODE);
 	    	newContext.setParent(this);
 	        for ( Iterator i = predicates.iterator(); i.hasNext();  ) {
