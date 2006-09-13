@@ -31,6 +31,7 @@ import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.VirtualNodeSet;
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
@@ -487,5 +488,15 @@ public class Predicate extends PathExpr {
 	public void resetState() {       
 		super.resetState();
 		cached = null;		
+	}
+	
+    public void dump(ExpressionDumper dumper) {
+    	dumper.display("[");
+  		super.dump(dumper);
+  		dumper.display("]");
+  }	
+	
+	public String toString() {
+		return "[" + super.toString() + "]";
 	}
 }
