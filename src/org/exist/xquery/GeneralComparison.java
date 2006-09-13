@@ -135,10 +135,9 @@ public class GeneralComparison extends BinaryOp {
     	contextInfo.setParent(this);
         super.analyze(contextInfo);
         inWhereClause = (contextInfo.getFlags() & IN_WHERE_CLAUSE) != 0;
-        LOG.debug(contextInfo.toString());
+
         //Ugly workaround for the polysemy of "." which is expanded as self::node() even when it is not relevant
         // (1)[.= 1] works...
-//        LOG.debug("Context: " + Type.getTypeName(contextInfo.getStaticType()));
         invalidNodeEvaluation = false;
         if (!Type.subTypeOf(contextInfo.getStaticType(), Type.NODE))
     		invalidNodeEvaluation = getLeft() instanceof LocationStep && ((LocationStep)getLeft()).axis == Constants.SELF_AXIS;
@@ -243,7 +242,6 @@ public class GeneralComparison extends BinaryOp {
         if (context.getProfiler().isEnabled())           
             context.getProfiler().end(this, "", result);
         
-        LOG.debug("Found: " + result.getLength());
         return result;
 	}
 

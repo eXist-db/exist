@@ -184,7 +184,6 @@ public class Predicate extends PathExpr {
             		Type.subTypeOf(contextSequence.getItemType(), Type.ATOMIC)) {
                 recomputedExecutionMode = BOOLEAN;
             }
-            LOG.debug("executionMode == " + recomputedExecutionMode);
     		switch(recomputedExecutionMode) {
     			case NODE: 
                     if (context.getProfiler().isEnabled())
