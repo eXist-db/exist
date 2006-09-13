@@ -70,10 +70,15 @@ public abstract class Step extends AbstractExpression {
     				test.getName().getPrefix() + "'");
     	inPredicate = (contextInfo.getFlags() & IN_PREDICATE) > 0;
     	this.contextId = contextInfo.getContextId();
-    	contextInfo.setParent(this);
-        for ( Iterator i = predicates.iterator(); i.hasNext();  ) {
-            ((Predicate) i.next()).analyze(contextInfo);
-        }
+    	
+    	if (predicates.size() > 0) {
+	    	AnalyzeContextInfo newContext = contextInfo; // new AnalyzeContextInfo(contextInfo);
+	        newContext.setStaticType(this.axis == Constants.SELF_AXIS ? contextInfo.getStaticType() : Type.NODE);
+	    	newContext.setParent(this);
+	        for ( Iterator i = predicates.iterator(); i.hasNext();  ) {
+	            ((Predicate) i.next()).analyze(newContext);
+	        }
+    	}
     }
     
     public abstract Sequence eval( Sequence contextSequence, Item contextItem ) throws XPathException;
