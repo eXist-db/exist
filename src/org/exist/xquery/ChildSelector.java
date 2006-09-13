@@ -43,7 +43,7 @@ public class ChildSelector implements NodeSelector {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.NodeSelector#match(org.exist.dom.NodeProxy)
 	 */
-	public NodeProxy match(NodeProxy proxy) {    
+	public NodeProxy match(NodeProxy proxy) {
 		switch (proxy.getNodeType()) {
 		case NodeProxy.UNKNOWN_NODE_TYPE:
 			break;
