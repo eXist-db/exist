@@ -89,6 +89,7 @@ public class Predicate extends PathExpr {
         outerContextId = newContextInfo.getContextId();
         newContextInfo.setContextId(getExpressionId());
         
+        newContextInfo.setStaticType(contextInfo.getStaticType());
     	newContextInfo.setParent(this);
         super.analyze(newContextInfo);
       
@@ -183,7 +184,7 @@ public class Predicate extends PathExpr {
             		Type.subTypeOf(contextSequence.getItemType(), Type.ATOMIC)) {
                 recomputedExecutionMode = BOOLEAN;
             }
-            
+            LOG.debug("executionMode == " + recomputedExecutionMode);
     		switch(recomputedExecutionMode) {
     			case NODE: 
                     if (context.getProfiler().isEnabled())
