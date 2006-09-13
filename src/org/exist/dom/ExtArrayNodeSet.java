@@ -701,7 +701,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
                 switch (mode) {
                     case NodeSet.DESCENDANT :
                         if (Expression.NO_CONTEXT_ID != contextId)
-                            array[i].addContextNode(contextId, parent);
+                        	array[i].deepCopyContext(parent, contextId);
                         else
                             array[i].copyContext(parent);
                         array[i].addMatches(parent);
@@ -709,7 +709,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
                         break;
                     case NodeSet.ANCESTOR :
                         if (Expression.NO_CONTEXT_ID != contextId)
-                            parent.addContextNode(contextId, array[i]);
+                            parent.deepCopyContext(array[i], contextId);
                         else
                             parent.copyContext(array[i]);
                         parent.addMatches(array[i]);

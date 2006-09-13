@@ -332,13 +332,13 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 				if(pa == pb) {
 				    if(mode == NodeSet.DESCENDANT) {
 				        if (Expression.NO_CONTEXT_ID != contextId)
-				            nb.addContextNode(contextId, na);
+				            nb.deepCopyContext(na, contextId);
 				        else
 				            nb.copyContext(na);
 				        result.add(nb);
 				    } else {
 				        if (Expression.NO_CONTEXT_ID != contextId)
-				            na.addContextNode(contextId, nb);
+				            na.deepCopyContext(nb, contextId);
 				        else
 				            na.copyContext(nb);
 				        result.add(na);
