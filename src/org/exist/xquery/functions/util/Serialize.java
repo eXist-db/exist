@@ -21,10 +21,13 @@
  */
 package org.exist.xquery.functions.util;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.util.Properties;
 
@@ -45,12 +48,13 @@ import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.xml.sax.SAXException;
 
 public class Serialize extends BasicFunction {
 
-    public final static FunctionSignature signature =
+    public final static FunctionSignature signatures[] = {
         new FunctionSignature(
             new QName("serialize", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
             "Writes the node set passed in parameter $a into a file on the file system. The " +
@@ -60,49 +64,127 @@ public class Serialize extends BasicFunction {
             "The function does NOT automatically inherit the serialization options of the XQuery it is " +
             "called from. False is returned if the " +
             "specified file can not be created or is not writable, true on success. The empty " +
-            "sequence if returned if the argument sequence is empty.",
+            "sequence is returned if the argument sequence is empty.",
             new SequenceType[] { 
                 new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
                 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
                 new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)
             },
-            new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE));
+            new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE)
+        ),
+        new FunctionSignature(
+                new QName("serialize", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+                "Returns the Serialized node set passed in parameter $a. $b contains a " +
+                "sequence of zero or more serialization parameters specified as key=value pairs. The " +
+                "serialization options are the same as those recognized by \"declare option exist:serialize\". " +
+                "The function does NOT automatically inherit the serialization options of the XQuery it is " +
+                "called from.",
+                new SequenceType[] { 
+                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
+                    new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)
+                },
+                new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+        )
+    };
+        
     
-    public Serialize(XQueryContext context) {
+    public Serialize(XQueryContext context, FunctionSignature signature)
+    {
         super(context, signature);
     }
 
-    public Sequence eval(Sequence[] args, Sequence contextSequence)
-            throws XPathException {
-        if (args[0].isEmpty())
+    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
+    {
+        if(args[0].isEmpty())
             return Sequence.EMPTY_SEQUENCE;
         
-        // check the file output path
-        String path = args[1].itemAt(0).getStringValue();
-        File file = new File(path);
-        if (file.isDirectory()) {
-            LOG.debug("Output file is a directory: " + file.getAbsolutePath());
-            return BooleanValue.FALSE;
+        
+        Properties outputProperties = null;
+        OutputStream os = null;
+        
+        if(args.length == 3)
+        {
+        	/** serialize to disk **/
+        	
+	        // check the file output path
+	        String path = args[1].itemAt(0).getStringValue();
+	        File file = new File(path);
+	        if (file.isDirectory()) {
+	            LOG.debug("Output file is a directory: " + file.getAbsolutePath());
+	            return BooleanValue.FALSE;
+	        }
+	        if (file.exists() && !file.canWrite()) {
+	            LOG.debug("Cannot write to file " + file.getAbsolutePath());
+	            return BooleanValue.FALSE;
+	        }
+	        
+	        //parse serialization options from third argument to function
+	        outputProperties = parseSerializationOptions(args[2].iterate());
+	        
+	        //setup output stream for file
+	        try
+	        {
+	        	os = new FileOutputStream(file);
+	        }
+	        catch(IOException e)
+	        {
+	        	throw new XPathException(getASTNode(), "A problem ocurred while serializing the node set: " + e.getMessage(), e);
+	        }
+	        
+	        //do the serialization
+	        serialize(args[0].iterate(), outputProperties, os);
+	    
+	        return BooleanValue.TRUE;
         }
-        if (file.exists() && !file.canWrite()) {
-            LOG.debug("Cannot write to file " + file.getAbsolutePath());
-            return BooleanValue.FALSE;
+        else
+        {
+        	/** serialize to string **/
+
+	        //parse serialization options from second argument to function        	
+        	outputProperties = parseSerializationOptions(args[1].iterate());
+        	
+        	//setup output stream for byte array
+        	os = new ByteArrayOutputStream();
+
+	        //do the serialization
+        	serialize(args[0].iterate(), outputProperties, os);
+        	
+        	try
+        	{
+        		String encoding = outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
+        		return new StringValue(new String(((ByteArrayOutputStream)os).toByteArray(), encoding));
+        	}
+        	catch(UnsupportedEncodingException e)
+        	{
+        		throw new XPathException(getASTNode(), "A problem ocurred while serializing the node set: " + e.getMessage(), e);
+        	}
         }
         
-        // parse serialization options
+    }
+    
+    private Properties parseSerializationOptions(SequenceIterator siSerializeParams) throws XPathException
+    {
+    	//parse serialization options
         Properties outputProperties = new Properties();
         outputProperties.setProperty(OutputKeys.INDENT, "yes");
         outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-        for (SequenceIterator i = args[2].iterate(); i.hasNext(); ) { 
-            String opt[] = Pragma.parseKeyValuePair(i.nextItem().getStringValue());
+        while(siSerializeParams.hasNext())
+        {
+            String opt[] = Pragma.parseKeyValuePair(siSerializeParams.nextItem().getStringValue());
             outputProperties.setProperty(opt[0], opt[1]);
         }
         
+        return outputProperties;
+    }
+    
+    private void serialize(SequenceIterator siNode, Properties outputProperties, OutputStream os) throws XPathException
+    {
         // serialize the node set
         SAXSerializer sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
-        try {
+        try
+        {
             String encoding = outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
-            Writer writer = new OutputStreamWriter(new FileOutputStream(file), encoding);
+            Writer writer = new OutputStreamWriter(os, encoding);
             sax.setOutput(writer, outputProperties);
             Serializer serializer = context.getBroker().getSerializer();
             serializer.reset();
@@ -111,20 +193,26 @@ public class Serialize extends BasicFunction {
 
             sax.startDocument();
             
-            for (SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
-                NodeValue next = (NodeValue) i.nextItem();
-                serializer.toSAX(next);
+            while(siNode.hasNext())
+            {
+        	   NodeValue next = (NodeValue)siNode.nextItem();
+               serializer.toSAX(next);	
             }
             
             sax.endDocument();
             writer.close();
-        } catch (SAXException e) {
+        }
+        catch(SAXException e)
+        {
             throw new XPathException(getASTNode(), "A problem ocurred while serializing the node set: " + e.getMessage(), e);
-        } catch (IOException e) {
+        }
+        catch (IOException e)
+        {
             throw new XPathException(getASTNode(), "A problem ocurred while serializing the node set: " + e.getMessage(), e);
-        } finally {
+        }
+        finally
+        {
             SerializerPool.getInstance().returnObject(sax);
         }
-        return BooleanValue.TRUE;
     }
 }
