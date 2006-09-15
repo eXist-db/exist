@@ -24,6 +24,7 @@ package org.exist.memtree;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
+import org.apache.log4j.Logger;
 
 import org.exist.EXistException;
 import org.exist.dom.AttrImpl;
@@ -55,7 +56,9 @@ import org.w3c.dom.Node;
  */
 public class DOMIndexer {
 
-	public final static QName ROOT_QNAME = new QName("temp", Serializer.EXIST_NS, "exist");
+    private static final Logger LOG = Logger.getLogger(DOMIndexer.class);
+    
+    public final static QName ROOT_QNAME = new QName("temp", Serializer.EXIST_NS, "exist");
 	
     private DBBroker broker;
     private Txn transaction;
@@ -213,7 +216,8 @@ public class DOMIndexer {
             pi.clear();
             break;
         default:
-        	System.out.println("Skipped indexing of in-memory node of type " + doc.nodeKind[nodeNr]);
+            LOG.debug("Skipped indexing of in-memory node of type " 
+                                                        + doc.nodeKind[nodeNr]);
         }
     }
 
