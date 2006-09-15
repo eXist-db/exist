@@ -733,7 +733,7 @@ stepExpr throws XPathException
 	=> axisStep
 	|
 	( ( "element" | "attribute" | "text" | "document" | "processing-instruction" | 
-	"comment" ) LCURLY ) => 
+	"comment" | "ordered" | "unordered" ) LCURLY ) => 
 	filterStep
 	|
 	( ( "element" | "attribute" | "processing-instruction" | "namespace" ) qName LCURLY ) => filterStep
@@ -839,6 +839,10 @@ primaryExpr throws XPathException
 	|
 	( ( "element" | "attribute" | "processing-instruction" | "namespace" ) qName LCURLY ) => computedConstructor
 	|
+	( "ordered" LCURLY ) => orderedExpr
+	|
+	( "unordered" LCURLY ) => unorderedExpr
+	|
 	directConstructor
 	|
 	functionCall
@@ -850,6 +854,16 @@ primaryExpr throws XPathException
 	varRef
 	|
 	literal
+	;
+
+orderedExpr throws XPathException
+	:
+	"ordered"! LCURLY! expr RCURLY!
+	;
+
+unorderedExpr throws XPathException
+	:
+	"unordered"! LCURLY! expr RCURLY!
 	;
 
 varRef throws XPathException

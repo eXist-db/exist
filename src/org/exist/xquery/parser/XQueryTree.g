@@ -366,7 +366,7 @@ throws PermissionDeniedException, EXistException, XPathException
 		{
 			QName qn= null;
 			try {
-				qn = QName.parse(staticContext, name.getText());
+				qn = QName.parse(staticContext, name.getText(), staticContext.getDefaultFunctionNamespace());
 			} catch(XPathException e) {
 				// throw exception with correct source location
 				e.setASTNode(name);
