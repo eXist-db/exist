@@ -575,7 +575,6 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 	 */
 	public void setCharacterEncoding(String env) throws UnsupportedEncodingException
 	{
-		System.out.println("here");
 		request.setCharacterEncoding(env);
 	}
 
