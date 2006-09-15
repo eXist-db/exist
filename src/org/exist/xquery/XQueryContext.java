@@ -61,7 +61,6 @@ import org.exist.storage.lock.Lock;
 import org.exist.util.Collations;
 import org.exist.util.Configuration;
 import org.exist.util.LockException;
-import org.exist.util.sanity.SanityCheck;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.parser.XQueryLexer;
@@ -465,7 +464,11 @@ public class XQueryContext {
 	 * 
 	 * @param uri
 	 */
-	public void setDefaultFunctionNamespace(String uri) {
+	public void setDefaultFunctionNamespace(String uri) throws XPathException  {
+		//Not sure for the 2nd clause : eXist forces the function NS as default.
+		if (defaultFunctionNamespace != null && !defaultFunctionNamespace.equals(Function.BUILTIN_FUNCTION_NS) 
+				&& !defaultFunctionNamespace.equals(uri))
+			throw new XPathException("XQST0066: default function namespace is already set to: '" + defaultFunctionNamespace + "'");
 		defaultFunctionNamespace = uri;
 	}
 
