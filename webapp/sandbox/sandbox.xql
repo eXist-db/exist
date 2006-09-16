@@ -221,7 +221,7 @@ declare function sandbox:display-page() as element() {
 };
 
 session:create(),
-let $pos := request:get-parameter("num", ())
+let $pos := xs:integer(request:get-parameter("num", ()))
 let $save := request:get-parameter("save", ())
 let $query := request:get-parameter("qu", ())
 let $check := request:get-parameter("check", ())
