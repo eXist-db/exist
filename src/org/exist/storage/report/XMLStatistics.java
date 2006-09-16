@@ -8,6 +8,7 @@ import java.util.Iterator;
 
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BufferStats;
+import org.exist.storage.NativeBroker;
 import org.exist.storage.dom.DOMFile;
 import org.exist.storage.index.BFile;
 import org.exist.util.Configuration;
@@ -68,15 +69,21 @@ public class XMLStatistics {
 		this.contentHandler.startElement(NAMESPACE, "buffers", PREFIX + ":buffers", atts);
 		
 		Configuration conf = instance.getConfiguration();
-		BFile db = (BFile) conf.getProperty("db-connection.elements");
-		genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "elements.dbx");
+		BFile db;
 		db = (BFile) conf.getProperty("db-connection.collections");
-		genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "collections.dbx");
-		db = (BFile) conf.getProperty("db-connection.words");
-		genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "words.dbx");
+		genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "Collections storage ("+ NativeBroker.COLLECTIONS_DBX + ")");
 		DOMFile dom = (DOMFile) conf.getProperty("db-connection.dom");
-		genBufferDetails(dom.getIndexBufferStats(), dom.getDataBufferStats(), "dom.dbx");
-		
+		genBufferDetails(dom.getIndexBufferStats(), dom.getDataBufferStats(), "Resource storage ("+ NativeBroker.DOM_DBX + ")");
+		db = (BFile) conf.getProperty("db-connection.elements");
+		genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "Structural index ("+ NativeBroker.ELEMENTS_DBX + ")");
+		db = (BFile) conf.getProperty("db-connection.values");
+		if (db != null)
+			genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "Values index ("+ NativeBroker.VALUES_DBX + ")");
+		db = (BFile) conf.getProperty("db-connection2.values");
+		if (db != null)
+			genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "QName values index ("+ NativeBroker.VALUES_QNAME_DBX + ")");
+		db = (BFile) conf.getProperty("db-connection.words");
+		genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "Fulltext index ("+ NativeBroker.WORDS_DBX + ")");		
 		this.contentHandler.endElement(NAMESPACE, "buffers", PREFIX + ":buffers");
 	}
 	
