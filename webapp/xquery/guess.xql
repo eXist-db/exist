@@ -36,7 +36,7 @@ declare function local:main() as node()?
 {
     session:create(),
     let $rand := session:get-attribute("random"),
-        $guess := request:get-parameter("guess", ())
+        $guess := xs:integer(request:get-parameter("guess", ()))
     return
 		if ($rand) then 
 			if ($guess) then
