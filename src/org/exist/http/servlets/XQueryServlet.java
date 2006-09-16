@@ -37,6 +37,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.xml.transform.OutputKeys;
+import org.apache.log4j.Logger;
 
 import org.exist.http.Descriptor;
 import org.exist.source.FileSource;
@@ -89,6 +90,8 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class XQueryServlet extends HttpServlet {
     
+    private static final Logger LOG = Logger.getLogger(XQueryServlet.class);
+    
     public final static String DEFAULT_USER = "guest";
     public final static String DEFAULT_PASS = "guest";
     public final static XmldbURI DEFAULT_URI = XmldbURI.EMBEDDED_SERVER_URI.append(XmldbURI.ROOT_COLLECTION_URI);
@@ -130,15 +133,15 @@ public class XQueryServlet extends HttpServlet {
         formEncoding = config.getInitParameter("form-encoding");
         if(formEncoding == null)
             formEncoding = DEFAULT_ENCODING;
-        log("form-encoding = " + formEncoding);
+        LOG.info("form-encoding = " + formEncoding);
         containerEncoding = config.getInitParameter("container-encoding");
         if(containerEncoding == null)
             containerEncoding = DEFAULT_ENCODING;
-        log("container-encoding = " + containerEncoding);
+        LOG.info("container-encoding = " + containerEncoding);
         encoding = config.getInitParameter("encoding");
         if(encoding == null)
             encoding = DEFAULT_ENCODING;
-        log("encoding = " + encoding);
+        LOG.info("encoding = " + encoding);
         contentType = config.getInitParameter("content-type");
         if(contentType == null)
             contentType = DEFAULT_CONTENT_TYPE;
@@ -149,7 +152,9 @@ public class XQueryServlet extends HttpServlet {
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);
         } catch(Exception e) {
-            throw new ServletException("Failed to initialize database driver: " + e.getMessage(), e);
+            String errorMessage="Failed to initialize database driver";
+            LOG.error(errorMessage,e);
+            throw new ServletException(errorMessage+": " + e.getMessage(), e);
         }
     }
     
@@ -319,7 +324,7 @@ public class XQueryServlet extends HttpServlet {
                 output.println(res.getContent().toString());
             }
         } catch (XMLDBException e) {
-            log(e.getMessage(), e);
+            LOG.debug(e);
             sendError(output, e.getMessage(), e);
         }
         output.flush();
