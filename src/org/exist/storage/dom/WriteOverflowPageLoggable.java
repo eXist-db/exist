@@ -43,9 +43,13 @@ public class WriteOverflowPageLoggable extends AbstractLoggable {
 	private DOMFile domDb = null;
 	
 	/**
-	 * @param type
-	 * @param transactionId
-	 */
+     * 
+     * 
+     * @param transaction 
+     * @param pageNum 
+     * @param nextPage 
+     * @param value 
+     */
 	public WriteOverflowPageLoggable(Txn transaction, long pageNum, long nextPage, Value value) {
 		super(DOMFile.LOG_WRITE_OVERFLOW, transaction.getId());
 		this.pageNum = pageNum;

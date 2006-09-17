@@ -60,7 +60,7 @@ public class FreeSpace {
     /**
      * Returns the amount of unused space in the page (in bytes).
      * 
-     * @return
+     * @return amount of unused space
      */
     public int getFree() {
         return free;
@@ -69,7 +69,7 @@ public class FreeSpace {
     /**
      * The unique page number.
      * 
-     * @return
+     * @return unique page number
      */
     public long getPage() {
         return page;

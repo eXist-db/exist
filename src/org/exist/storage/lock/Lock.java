@@ -33,7 +33,6 @@ public interface Lock {
 	/**
 	 * Acquire a lock for read.
 	 * 
-	 * @return
 	 * @throws LockException
 	 */
     public boolean acquire( ) throws LockException;
@@ -44,7 +43,6 @@ public interface Lock {
      * {@link #WRITE_LOCK}.
      * 
      * @param mode
-     * @return
      * @throws LockException
      */
 	public boolean acquire( int mode ) throws LockException;
@@ -54,7 +52,6 @@ public interface Lock {
 	 * will fail immediately if the lock cannot be acquired.
 	 *  
 	 * @param mode
-	 * @return
 	 * @throws LockException
 	 */
 	public boolean attempt( int mode );

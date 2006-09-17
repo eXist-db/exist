@@ -37,7 +37,7 @@ public interface Loggable {
 	 * {@link JournalReader} to find the correct Loggable instance
 	 * that can handle the entry. 
 	 * 
-	 * @return
+	 * @return Type id of the log entry
 	 */
     public byte getLogType();
     
@@ -45,14 +45,14 @@ public interface Loggable {
      * Returns the transaction id of the transaction to which the
      * logged operation belongs.
      * 
-     * @return
+     * @return transaction id 
      */
     public long getTransactionId();
     
     /**
      * Returns the {@link Lsn} of the entry.
      * 
-     * @return
+     * @return LSN
      */
     public long getLsn();
     
@@ -81,7 +81,7 @@ public interface Loggable {
      * Returns the size of the work load of this
      * entry.
      * 
-     * @return
+     * @return size of the work load of this entry.
      */
     public int getLogSize();
 	
@@ -104,7 +104,7 @@ public interface Loggable {
     /**
      * Returns a description of the entry for debugging purposes.
      * 
-     * @return
+     * @return description
      */
 	public String dump();
 }

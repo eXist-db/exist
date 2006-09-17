@@ -97,7 +97,7 @@ public class Accounting {
      * Returns the number of total cache hits during the
      * lifetime of the cache.
      * 
-     * @return
+     * @return number of total cache hits
      */
     public int getHits() {
         return hits;
@@ -112,7 +112,7 @@ public class Accounting {
     
     /**
      * Returns the number of total cache faults.
-     * @return
+     * @return number of total cache faults
      */
     public int getMisses() {
         return misses;
@@ -143,7 +143,7 @@ public class Accounting {
     
     /**
      * Return the current amount of trashing.
-     * @return
+     * @return current amount of trashing
      */
     public int getThrashing() {
         return thrashing;
@@ -153,7 +153,8 @@ public class Accounting {
      * Returns true if a cache resize would increase the
      * cache efficiency.
      * 
-     * @return
+     * @return True if a cache resize would increase the
+     * cache efficiency
      */
     public boolean resizeNeeded() {
         return thrashing > totalSize * thrashingFactor;

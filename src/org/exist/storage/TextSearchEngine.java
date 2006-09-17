@@ -141,7 +141,7 @@ public abstract class TextSearchEngine extends Observable {
 	 * Returns the Tokenizer used for tokenizing strings into
 	 * words.
 	 * 
-	 * @return
+	 * @return tokenizer
 	 */
 	public Tokenizer getTokenizer() {
 		return tokenizer;
@@ -180,9 +180,7 @@ public abstract class TextSearchEngine extends Observable {
 	 * 
 	 * This method uses MATCH_EXACT for comparing search terms.
 	 * 
-	 * @param doc
-	 * @param expr
-	 * @return
+	 * @return node-set of matching nodes
 	 */
 	public NodeSet getNodesContaining(XQueryContext context, DocumentSet docs, NodeSet contextSet, 
 	        String expr) throws TerminatedException {
@@ -196,10 +194,6 @@ public abstract class TextSearchEngine extends Observable {
 	 * The type-argument indicates if search terms should be compared using
 	 * a regular expression. Valid values are DBBroker.MATCH_EXACT or
 	 * DBBroker.MATCH_REGEXP.
-	 * 
-	 * @param doc
-	 * @param expr
-	 * @return
 	 */
 	public abstract NodeSet getNodesContaining(XQueryContext context, DocumentSet docs, 
 	        NodeSet contextSet, String expr, int type) throws TerminatedException;

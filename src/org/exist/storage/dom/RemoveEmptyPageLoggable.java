@@ -41,8 +41,10 @@ public class RemoveEmptyPageLoggable extends AbstractLoggable {
     protected long nextPage;
     
     /**
-     * @param type
-     * @param transactionId
+     * @param transaction 
+     * @param pageNum 
+     * @param prevPage 
+     * @param nextPage 
      */
     public RemoveEmptyPageLoggable(Txn transaction, long pageNum, long prevPage, long nextPage) {
         super(DOMFile.LOG_REMOVE_EMPTY_PAGE, transaction.getId());

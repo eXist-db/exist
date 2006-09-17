@@ -796,7 +796,7 @@ public abstract class Serializer implements XMLReader {
      * that references an XSLT stylesheet. Return the link to the stylesheet.
      *  
      * @param doc
-     * @return
+     * @return link to the stylesheet
      */
 	public String hasXSLPi(Document doc) {
         boolean applyXSLPI = 

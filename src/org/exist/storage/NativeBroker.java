@@ -1151,7 +1151,7 @@ public class NativeBroker extends DBBroker {
      * Get the next free collection id. If a collection is removed, its collection id
      * is released so it can be reused.
      * 
-     * @return
+     * @return next free collection id.
      * @throws ReadOnlyException
      */
     public short getFreeCollectionId(Txn transaction) throws ReadOnlyException {
@@ -1185,7 +1185,7 @@ public class NativeBroker extends DBBroker {
     /**
      * Get the next available unique collection id.
      * 
-     * @return
+     * @return next available unique collection id
      * @throws ReadOnlyException
      */
     public short getNextCollectionId(Txn transaction) throws ReadOnlyException {
@@ -1570,12 +1570,9 @@ public class NativeBroker extends DBBroker {
     }
     
     /**
-     *  get all the documents in this database matching the given
+     *  Get all the documents in this database matching the given
      *  document-type's name.
-     *
-     *@param  doctypeName  Description of the Parameter
-     *@param  user         Description of the Parameter
-     *@return              The documentsByDoctype value
+     * @return The documentsByDoctype value
      */
     public DocumentSet getXMLResourcesByDoctype(String doctypeName, DocumentSet result) {
         DocumentSet docs = getAllXMLResources(new DocumentSet());
@@ -1934,7 +1931,7 @@ public class NativeBroker extends DBBroker {
 	 * Get the next unused document id. If a document is removed, its doc id is
 	 * released, so it can be reused.
 	 * 
-	 * @return
+	 * @return Next unused document id
 	 * @throws ReadOnlyException
 	 */
 	public int getFreeResourceId(Txn transaction) throws ReadOnlyException {

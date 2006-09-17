@@ -39,8 +39,12 @@ public class RemoveValueLoggable extends BTAbstractLoggable {
     protected long oldPointer;
     
     /**
-     * @param type
-     * @param transaction
+     * @param fileId 
+     * @param pageNum 
+     * @param idx 
+     * @param oldValue 
+     * @param oldPointer 
+     * @param transaction 
      */
     public RemoveValueLoggable(Txn transaction, byte fileId, long pageNum, int idx, Value oldValue, long oldPointer) {
         super(BTree.LOG_REMOVE_VALUE, fileId, transaction);
@@ -51,9 +55,8 @@ public class RemoveValueLoggable extends BTAbstractLoggable {
     }
 
     /**
-     * @param type
-     * @param broker
-     * @param transactionId
+     * @param broker 
+     * @param transactionId 
      */
     public RemoveValueLoggable(DBBroker broker, long transactionId) {
         super(BTree.LOG_REMOVE_VALUE, broker, transactionId);

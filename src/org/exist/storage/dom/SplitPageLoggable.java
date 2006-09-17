@@ -51,8 +51,10 @@ public class SplitPageLoggable extends AbstractLoggable implements Loggable {
     }
     
     /**
-     * @param type
-     * @param transactionId
+     * 
+     * 
+     * @param broker 
+     * @param transactId 
      */
     public SplitPageLoggable(DBBroker broker, long transactId) {
         super(DOMFile.LOG_SPLIT_PAGE, transactId);

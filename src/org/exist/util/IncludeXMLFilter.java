@@ -7,7 +7,7 @@ import org.xml.sax.helpers.DefaultHandler;
  *  Description of the Class
  *
  *@author     wolf
- *@created    17. Juni 2002
+ *created    17. Juni 2002
  */
 public class IncludeXMLFilter extends DefaultHandler {
 

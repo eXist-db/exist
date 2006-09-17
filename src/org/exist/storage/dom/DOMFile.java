@@ -193,7 +193,7 @@ public class DOMFile extends BTree implements Lockable {
 	}
 
 	/**
-	 * @return
+	 * @return file version.
 	 */
 	public short getFileVersion() {
 		return FILE_FORMAT_VERSION_ID;
@@ -319,7 +319,6 @@ public class DOMFile extends BTree implements Lockable {
 	 * written into an overflow page.
 	 * 
 	 * @param value     Binary resource as byte array
-	 * @return
 	 */
         public long addBinary(Txn transaction, DocumentImpl doc, byte[] value) {
             OverflowDOMPage overflow = new OverflowDOMPage(transaction);
@@ -334,7 +333,6 @@ public class DOMFile extends BTree implements Lockable {
          * written into an overflow page.
          * 
          * @param is   Binary resource as stream.
-         * @return
          */
         public long addBinary(Txn transaction, DocumentImpl doc, InputStream is) {
             OverflowDOMPage overflow = new OverflowDOMPage(transaction);
@@ -347,7 +345,6 @@ public class DOMFile extends BTree implements Lockable {
 	 * Return binary data stored with {@link #addBinary(byte[])}.
 	 * 
 	 * @param pageNum
-	 * @return
 	 */
 	public byte[] getBinary(long pageNum) {
 		return getOverflowValue(pageNum);
@@ -367,7 +364,6 @@ public class DOMFile extends BTree implements Lockable {
 	 * 
 	 * @param key
 	 * @param value
-	 * @return
 	 */
 	public long insertAfter(Txn transaction, DocumentImpl doc, Value key, byte[] value) {
 		try {
@@ -397,7 +393,6 @@ public class DOMFile extends BTree implements Lockable {
 	 *                     should be inserted.
 	 * @param value
 	 *                     the value of the new node.
-	 * @return
 	 */
 	public long insertAfter(Txn transaction, DocumentImpl doc, long address, byte[] value) {
 		// check if we need an overflow page
@@ -1709,16 +1704,14 @@ public class DOMFile extends BTree implements Lockable {
 		return true;
 	}
 
-	/**
-	 * Update the key/value pair where the value is found at address p.
-	 * 
-	 * @param key
-	 *                     Description of the Parameter
-	 * @param p
-	 *                     Description of the Parameter
-	 * @param value
-	 *                     Description of the Parameter
-	 */
+    /**
+     * Update the key/value pair where the value is found at address p.
+     *
+     * @param transaction 
+     * @param p 
+     * @param value 
+     * @throws org.exist.util.ReadOnlyException 
+     */
 	public void update(Txn transaction, long p, byte[] value)
 			throws ReadOnlyException {
 		RecordPos rec = findRecord(p);
@@ -1753,8 +1746,8 @@ public class DOMFile extends BTree implements Lockable {
 	 * node data, we do not need to create a potentially large amount of node objects
 	 * and thus save memory and time for garbage collection. 
 	 * 
-	 * @param proxy
-	 * @return
+	 * @param node
+	 * @return string value of the specified node
 	 */
 	public String getNodeValue(StoredNode node, boolean addWhitespace) {
 		try {

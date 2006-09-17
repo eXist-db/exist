@@ -93,7 +93,6 @@ public class LogEntryTypes {
      * 
      * @param type
      * @param transactId the id of the current transaction.
-     * @return
      * @throws LogException
      */
 	public final static Loggable create(byte type, DBBroker broker, long transactId) throws LogException {

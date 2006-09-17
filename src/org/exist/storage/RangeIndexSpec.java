@@ -92,7 +92,7 @@ public abstract class RangeIndexSpec {
 	 * atomic XPath type (as defined in {@link org.exist.xquery.value.Type}).
 	 * 
 	 * @param type a bit set indicating the type
-	 * @return
+	 * @return atomic XPath type
 	 */
 	public static final int indexTypeToXPath(int type) {
 	    return xpathTypes[type & RANGE_INDEX_MASK];
@@ -103,7 +103,7 @@ public abstract class RangeIndexSpec {
 	 * set.
 	 * 
 	 * @param type a bit set indicating the type
-	 * @return
+	 * @return true if the index type specifier has the fulltext index flag set.
 	 */
 	public static final boolean hasFulltextIndex(int type) {
 	    return (type & TEXT) != 0;
@@ -114,7 +114,8 @@ public abstract class RangeIndexSpec {
 	 * flag set.
 	 * 
 	 * @param type a bit set indicating the type
-	 * @return
+	 * @return true if the index type specifier has the mixed content
+	 * flag set.
 	 */
 	public static final boolean hasMixedContent(int type) {
 	    return (type & MIXED_CONTENT) != 0;
@@ -124,8 +125,8 @@ public abstract class RangeIndexSpec {
 	 * Returns the index type bit mask corresponding to a given
 	 * XPath type (as defined in {@link org.exist.xquery.value.Type}).
 	 * 
-	 * @param type
-	 * @return
+	 * @param type XPath type
+	 * @return the index type bit mask
 	 */
 	public static final int xpathTypeToIndex(int type) {
 	    return indexTypes[type];
@@ -136,7 +137,7 @@ public abstract class RangeIndexSpec {
 	 * bit set.
 	 * 
 	 * @param type a bit set indicating the type
-	 * @return
+	 * @return True if the index type bit mask has a range index bit set.
 	 */
 	public static final boolean hasRangeIndex(int type) {
 		return (type & RANGE_INDEX_MASK) > 0;
@@ -159,7 +160,7 @@ public abstract class RangeIndexSpec {
 	 * Returns the XPath type code for this index
 	 * (as defined in {@link org.exist.xquery.value.Type}).
 	 * 
-	 * @return
+	 * @return XPath type code
 	 */
 	public int getType() {
 	    return type;
@@ -169,7 +170,7 @@ public abstract class RangeIndexSpec {
 	 * Returns the index type for this index, corresponding
 	 * to the constants defined in this class.
 	 * 
-	 * @return
+	 * @return index type
 	 */
 	public int getIndexType() {
 	    return indexTypes[type];

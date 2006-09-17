@@ -36,7 +36,6 @@ public interface CollectionImpl extends Collection {
     
 	/**
 	 * Returns the time of creation of the collection.
-	 * @return
 	 */
 	Date getCreationTime() throws XMLDBException;
 

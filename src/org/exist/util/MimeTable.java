@@ -69,8 +69,6 @@ public class MimeTable {
     
     /**
      * Returns the singleton.
-     * 
-     * @return
      */
     public static MimeTable getInstance() {
         if (instance == null)
@@ -87,7 +85,6 @@ public class MimeTable {
     }
     /**
      * Inform from where a mime-table is loaded
-     * @return
      */
     public String getSrc() {
         return this.src;

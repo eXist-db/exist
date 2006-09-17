@@ -44,8 +44,12 @@ public class InsertValueLoggable extends AbstractLoggable {
     protected int offset;
     
     /**
-     * @param type
-     * @param transactionId
+     * @param transaction 
+     * @param pageNum 
+     * @param isOverflow 
+     * @param tid 
+     * @param value 
+     * @param offset 
      */
     public InsertValueLoggable(Txn transaction, long pageNum, boolean isOverflow, short tid, byte[] value, int offset) {
         super(DOMFile.LOG_INSERT_RECORD, transaction.getId());

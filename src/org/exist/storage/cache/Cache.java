@@ -77,7 +77,6 @@ public interface Cache {
      * Returns true if the cache contains any dirty
      * items that need to be written to disk.
      * 
-     * @return
      */
 	public boolean hasDirtyItems();
 	
@@ -93,7 +92,7 @@ public interface Cache {
 	/**
 	 * Get the size of this cache.
 	 * 
-	 * @return
+	 * @return size
 	 */
 	public int getBuffers();
 	
@@ -106,7 +105,7 @@ public interface Cache {
      * 
      * A cache is resized by the {@link CacheManager}.
      * 
-     * @return
+     * @return growth factor
      */
     public double getGrowthFactor();
     
@@ -130,14 +129,12 @@ public interface Cache {
 	/**
 	 * Get the number of buffers currently used.
 	 * 
-	 * @return
 	 */
 	public int getUsedBuffers();
 	
 	/**
 	 * Get the number of times where an object has been successfully
 	 * loaded from the cache.
-	 * @return
 	 */
 	public int getHits();
 	
@@ -145,7 +142,8 @@ public interface Cache {
 	 * Get the number of times where an object could not be
 	 * found in the cache.
 	 * 
-	 * @return
+	 * @return number of times where an object could not be
+	 * found in the cache
 	 */
 	public int getFails();
     

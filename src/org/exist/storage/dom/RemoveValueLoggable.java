@@ -44,8 +44,13 @@ public class RemoveValueLoggable extends AbstractLoggable {
     protected long backLink;
     
     /**
-     * @param type
-     * @param transactionId
+     * @param transaction 
+     * @param pageNum 
+     * @param tid 
+     * @param offset 
+     * @param oldData 
+     * @param isOverflow 
+     * @param backLink 
      */
     public RemoveValueLoggable(Txn transaction, long pageNum, short tid, int offset, byte[] oldData, 
             boolean isOverflow, long backLink) {

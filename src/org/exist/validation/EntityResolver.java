@@ -84,7 +84,8 @@ public class EntityResolver  implements XMLEntityResolver {
     
     /**
      *  Initialize EntityResolver.
-     * @param pool  BrokerPool
+     * 
+     * @param resources 
      */
     public EntityResolver(DatabaseResources resources) {
         
