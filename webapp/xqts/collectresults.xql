@@ -1,3 +1,4 @@
+(: declare default element namespace "http://www.w3.org/2005/02/query-test-XQTSResult"; :)
 declare option exist:serialize "method=xml indent=yes";
 declare option exist:output-size-limit "-1";
 declare namespace response="http://exist-db.org/xquery/response";
@@ -10,9 +11,7 @@ let $dummy := response:set-header("Content-Disposition", concat(
 	$product-version , '_' , $product-build , ".xml&quot;" ) )
 	
 return
-<test-suite-result xmlns="http://www.w3.org/2005/02/query-test-XQTSResult"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"> 
-        
+<test-suite-result> 
         <implementation name="eXist-{$product-version}" version="{$product-build}" anonymous-result-column="false">
 
                 <organization name="eXist Open Source native XML database"  website="http://www.exist-db.org" anonymous="false"/>
@@ -64,6 +63,7 @@ return
 {
 		(: for $case in fn:collection(  '/db/XQTS' )//*:test-case :)
     for $case in fn:collection(  '/db/XQTS' )//test-case
+    order by $case/@name
     return <test-case name="{$case/@name}" result="{$case/@result}" />
 }
 </test-suite-result>
