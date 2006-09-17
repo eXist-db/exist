@@ -727,7 +727,6 @@ public class XmldbURI implements Comparable {
     /** @deprecated Legacy method used here and there in the code
      * @param fileName
      * @param parentPath
-     * @return
      */
     public static String checkPath2(String fileName, String parentPath) {
         //if (!fileName.startsWith("/"))
@@ -740,7 +739,6 @@ public class XmldbURI implements Comparable {
    
     /**@deprecated Legacy method used here and there in the code and copied as such
      * @param name
-     * @return
      */
     //TODO : changes // into /  */
     public String makeAbsolute(String name) {
@@ -770,7 +768,6 @@ public class XmldbURI implements Comparable {
     
     /**@deprecated Legacy method used here and there in the code and copied as such
      * @param name
-     * @return
      */
     //TODO : changes // into /  */
     public final static String normalizeCollectionName(String name) {

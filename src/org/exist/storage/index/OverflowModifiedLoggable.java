@@ -39,9 +39,14 @@ public class OverflowModifiedLoggable extends AbstractBFileLoggable {
     protected int oldLength;
     
     /**
-     * @param type
-     * @param fileId
-     * @param transaction
+     * 
+     * 
+     * @param pageNum 
+     * @param length 
+     * @param oldLength 
+     * @param lastInChain 
+     * @param fileId 
+     * @param transaction 
      */
     public OverflowModifiedLoggable(byte fileId, Txn transaction, long pageNum, int length, 
             int oldLength, long lastInChain) {

@@ -48,7 +48,6 @@ public interface VariableByteInput {
      * Fill the provided byte array with data from the input.
      * 
      * @param data
-     * @return
      * @throws IOException
      */
     public int read(byte[] data) throws IOException;
@@ -59,7 +58,6 @@ public interface VariableByteInput {
      * Returns a value > 0 if more bytes can be read
      * from the input.
      * 
-     * @return
      * @throws IOException
      */
     public int available() throws IOException;
@@ -68,7 +66,6 @@ public interface VariableByteInput {
      * Read a single byte. Throws EOFException if no
      * more bytes are available.
      * 
-     * @return
      * @throws IOException
      */
     public byte readByte() throws IOException;
@@ -76,7 +73,6 @@ public interface VariableByteInput {
     /**
      * Read a short value in variable byte encoding.
      * 
-     * @return
      * @throws IOException
      */
     public short readShort() throws IOException;
@@ -84,7 +80,6 @@ public interface VariableByteInput {
     /**
      * Read an integer value in variable byte encoding.
      * 
-     * @return
      * @throws IOException
      */
     public int readInt() throws IOException;
@@ -94,7 +89,6 @@ public interface VariableByteInput {
     /**
      * Read a long value in variable byte encoding.
      * 
-     * @return
      * @throws IOException
      */
     public long readLong() throws IOException;

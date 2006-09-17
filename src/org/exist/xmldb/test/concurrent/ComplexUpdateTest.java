@@ -18,10 +18,10 @@ public class ComplexUpdateTest extends ConcurrentTestBase {
 	}
 	
 	/**
-	 * @param name
-	 * @param uri
-	 * @param testCollection
-	 */
+     * 
+     * 
+     * @param name 
+     */
 	public ComplexUpdateTest(String name) {
 		super(name, URI, "complex");
 	}

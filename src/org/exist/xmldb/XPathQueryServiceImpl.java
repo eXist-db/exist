@@ -48,7 +48,6 @@ public interface XPathQueryServiceImpl extends XPathQueryService {
      * @param query the XPath query
      * @param sortExpr another XPath expression, which is executed relative to the
      * results of the primary expression.
-     * @return
      * @throws XMLDBException
      */
     public ResourceSet query( String query, String sortExpr)

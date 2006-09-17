@@ -40,9 +40,15 @@ public class OverflowRemoveLoggable extends AbstractBFileLoggable {
     protected long nextInChain;
     
     /**
-     * @param type
-     * @param fileId
-     * @param transaction
+     * 
+     * 
+     * @param status 
+     * @param pageNum 
+     * @param data 
+     * @param length 
+     * @param nextInChain 
+     * @param fileId 
+     * @param transaction 
      */
     public OverflowRemoveLoggable(byte fileId, Txn transaction, byte status, long pageNum, byte[] data, 
             int length, long nextInChain) {

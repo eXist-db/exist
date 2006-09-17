@@ -149,7 +149,6 @@ public class FreeList {
      * @param buf 
      * @param offset 
      * @throws IOException 
-     * @return 
      */
     public int read(byte[] buf, int offset) throws IOException {
         final int fsize = ByteConversion.byteToInt(buf, offset);
@@ -179,7 +178,6 @@ public class FreeList {
      * @param buf 
      * @param offset 
      * @throws IOException 
-     * @return 
      */
     public int write(byte[] buf, int offset) throws IOException {
 //       does the free-space list fit into the file header?

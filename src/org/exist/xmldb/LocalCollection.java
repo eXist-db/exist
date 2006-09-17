@@ -769,7 +769,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
     }
     
     /** set user-defined Reader
-     * @param dataSource
+     * @param reader
      */
     public void setReader(XMLReader reader){
         userReader = reader;

@@ -38,7 +38,7 @@ import org.xmldb.api.modules.XMLResource;
  * raised in {@link org/exist/dom/DocumentImpl} .
  * It creates with DOM a simple document having a branch of 16 elements depth
  * connected to the root, with width (arity) of 16 at each level.
- *  */
+ */
 public class IndexingTest extends TestCase {
 	
 	private int siblingCount;

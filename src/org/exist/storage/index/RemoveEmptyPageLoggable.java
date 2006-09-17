@@ -36,9 +36,11 @@ public class RemoveEmptyPageLoggable extends AbstractBFileLoggable {
     protected long page;
     
     /**
-     * @param type
-     * @param fileId
-     * @param transaction
+     * 
+     * 
+     * @param pageNum 
+     * @param fileId 
+     * @param transaction 
      */
     public RemoveEmptyPageLoggable(Txn transaction, byte fileId, long pageNum) {
         super(BFile.LOG_REMOVE_PAGE, fileId, transaction);

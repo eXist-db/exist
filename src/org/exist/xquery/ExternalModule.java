@@ -46,7 +46,6 @@ public interface ExternalModule extends Module {
 	 * if the function is undefined.
 	 * 
 	 * @param qname
-	 * @return
 	 */
 	public UserDefinedFunction getFunction(QName qname, int arity);
 	
@@ -78,8 +77,6 @@ public interface ExternalModule extends Module {
 	
 	/**
 	 * Is this module still valid or should it be reloaded from its source?
-	 * 
-	 * @return
 	 */
 	public boolean moduleIsValid();
 }

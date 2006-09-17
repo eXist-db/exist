@@ -30,10 +30,10 @@ public class ConcurrentAttrUpdateTest extends ConcurrentTestBase {
 	private File tempFile;
 	
 	/**
-	 * @param name
-	 * @param uri
-	 * @param testCollection
-	 */
+     * 
+     * 
+     * @param name 
+     */
 	public ConcurrentAttrUpdateTest(String name) {
 		super(name, URI, "C1");
 	}

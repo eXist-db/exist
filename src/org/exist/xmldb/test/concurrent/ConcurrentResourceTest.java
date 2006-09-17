@@ -38,10 +38,10 @@ public class ConcurrentResourceTest extends ConcurrentTestBase {
 	}
 	
 	/**
-	 * @param name
-	 * @param uri
-	 * @param testCollection
-	 */
+     * 
+     * 
+     * @param name 
+     */
 	public ConcurrentResourceTest(String name) {
 		super(name, URI, "C1");
 	}

@@ -39,10 +39,12 @@ public class XQueryAction extends Action {
 	private int called = 0;
 	
 	/**
-	 * @param name
-	 * @param uri
-	 * @param testCollection
-	 */
+     * 
+     * 
+     * @param collectionPath 
+     * @param resourceName 
+     * @param xquery 
+     */
 	public XQueryAction(String collectionPath, String resourceName, String xquery) {
 		super(collectionPath, resourceName);
 		this.xquery = xquery;
