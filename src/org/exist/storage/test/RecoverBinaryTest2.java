@@ -166,7 +166,7 @@ public class RecoverBinaryTest2 extends TestCase {
     
     private void storeFiles(DBBroker broker, Txn transaction, Collection test2) throws FileNotFoundException, EXistException, PermissionDeniedException, LockException, TriggerException {
         File files[] = dir.listFiles();
-        assertNotNull(files);
+        assertNotNull("Check directory '"+dir.getAbsolutePath()+"'.",files);
         
         File f;
         
