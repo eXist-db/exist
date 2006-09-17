@@ -40,7 +40,7 @@ public abstract class BTAbstractLoggable extends AbstractLoggable {
     
 	/**
 	 * @param type
-	 * @param transactionId
+	 * @param fileId
 	 */
 	public BTAbstractLoggable(byte type, byte fileId, Txn transaction) {
 		super(type, transaction.getId());

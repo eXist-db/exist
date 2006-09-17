@@ -47,7 +47,6 @@ public interface SystemTask {
 	/**
 	 * Execute this task.
 	 * 
-	 * @param pool the BrokerPool for this database instance.
 	 * @param broker a DBBroker object that can be used
 	 * 
 	 * @throws EXistException

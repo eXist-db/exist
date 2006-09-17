@@ -99,7 +99,6 @@ public class FreeList {
 	 * Retrieve the record stored for the given page number.
 	 * 
 	 * @param pageNum
-	 * @return
 	 */
 	public FreeSpace retrieve(long pageNum) {
 		FreeSpace next = header;
@@ -118,7 +117,6 @@ public class FreeList {
 	 * creating a new page. 
 	 * 
 	 * @param requiredSize
-	 * @return
 	 */
 	public FreeSpace find(int requiredSize) {
 		FreeSpace next = header;
@@ -147,8 +145,11 @@ public class FreeList {
     /**
      * Read the list from a {@link RandomAccessFile}.
      * 
-     * @param raf
-     * @throws IOException
+     * 
+     * @param buf 
+     * @param offset 
+     * @throws IOException 
+     * @return 
      */
     public int read(byte[] buf, int offset) throws IOException {
         final int fsize = ByteConversion.byteToInt(buf, offset);
@@ -174,8 +175,11 @@ public class FreeList {
      * rest. Usually, this should not happen very often, so it is ok to
      * waste some space.
      * 
-     * @param raf
-     * @throws IOException
+     * 
+     * @param buf 
+     * @param offset 
+     * @throws IOException 
+     * @return 
      */
     public int write(byte[] buf, int offset) throws IOException {
 //       does the free-space list fit into the file header?

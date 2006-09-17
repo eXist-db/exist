@@ -23,8 +23,6 @@ public class Occurrences implements Comparable {
     /**
      * Returns the overall frequency of this term
      * in the document set.
-     * 
-     * @return
      */
 	public int getOccurrences() {
 		return occurrences;
@@ -47,8 +45,6 @@ public class Occurrences implements Comparable {
     /**
      * Returns the number of documents from the set in
      * which the term has been found.
-     * 
-     * @return
      */
     public int getDocuments() {
         return docs.getLength();

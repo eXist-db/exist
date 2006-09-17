@@ -43,8 +43,14 @@ public class UpdateHeaderLoggable extends AbstractLoggable {
     private DOMFile domDb = null;
     
     /**
-     * @param type
-     * @param transactionId
+     * 
+     * 
+     * @param transaction 
+     * @param prevPage 
+     * @param pageNum 
+     * @param nextPage 
+     * @param oldPrev 
+     * @param oldNext 
      */
     public UpdateHeaderLoggable(Txn transaction, long prevPage, long pageNum, long nextPage,
             long oldPrev, long oldNext) {

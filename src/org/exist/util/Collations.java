@@ -46,7 +46,6 @@ public class Collations {
      * The original code is from saxon (@linkplain http://saxon.sf.net).
      * 
      * @param uri
-     * @return
      * @throws XPathException
      */
     public final static Collator getCollationFromURI(XQueryContext context,

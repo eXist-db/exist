@@ -162,7 +162,7 @@ public class BFile extends BTree {
     }
 
     /**
-     * @return
+     * @return file version
      */
     public short getFileVersion() {
         return FILE_FORMAT_VERSION_ID;
@@ -188,7 +188,6 @@ public class BFile extends BTree {
      * 
      * @param key
      * @param value
-     * @return
      * @throws ReadOnlyException
      * @throws IOException
      */
@@ -440,7 +439,6 @@ public class BFile extends BTree {
      * or null if the key could not be found.
      * 
      * @param key
-     * @return
      */
     public Value get(Value key) {
         try {
@@ -462,7 +460,6 @@ public class BFile extends BTree {
      * encoded input stream.
      * 
      * @param key
-     * @return
      * @throws IOException
      */
     public VariableByteInput getAsStream(Value key) throws IOException {
@@ -488,7 +485,6 @@ public class BFile extends BTree {
      * variable byte encoded input stream.
      * 
      * @param pointer
-     * @return
      * @throws IOException
      */
     public VariableByteInput getAsStream(long pointer) throws IOException {
@@ -517,7 +513,7 @@ public class BFile extends BTree {
      * Returns the value located at the specified address.
      * 
      * @param p
-     * @return
+     * @return value located at the specified address
      */
     public Value get(long p) {
         try {
@@ -624,12 +620,13 @@ public class BFile extends BTree {
     /**
      * Put data under given key.
      * 
+     * 
+     * @return on success the address of the stored value, else UNKNOWN_ADDRESS
      * @see {@link BFile#put(Value, ByteArray, boolean)}
-     * @param with which the data is updated
+     * @param key 
      * @param data the data (value) to update
      * @param overwrite overwrite if set to true, value will be overwritten if it already exists
-     * @return on success the address of the stored value, else UNKNOWN_ADDRESS
-     * @throws ReadOnlyException
+     * @throws ReadOnlyException 
      */
     public long put(Value key, byte[] data, boolean overwrite) throws ReadOnlyException {
         return put(null, key, data, overwrite);

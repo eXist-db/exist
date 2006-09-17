@@ -42,7 +42,7 @@ public class Lsn {
      * Returns the file number encoded in the passed LSN.
      * 
      * @param lsn
-     * @return
+     * @return file number
      */
     public static long getFileNumber(long lsn) {
         return (lsn >> 32) & INT_MASK;
@@ -52,7 +52,7 @@ public class Lsn {
      * Returns the file offset encoded in the passed LSN.
      * 
      * @param lsn
-     * @return
+     * @return file offset
      */
     public static long getOffset(long lsn) {
         return (lsn & INT_MASK);

@@ -36,8 +36,11 @@ public class CreatePageLoggable extends AbstractBFileLoggable {
     protected long newPage;
     
     /**
-     * @param type
-     * @param transactionId
+     * 
+     * 
+     * @param transaction 
+     * @param fileId 
+     * @param newPage 
      */
     public CreatePageLoggable(Txn transaction, byte fileId, long newPage) {
         super(BFile.LOG_CREATE_PAGE, fileId, transaction);

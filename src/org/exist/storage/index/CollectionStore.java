@@ -25,11 +25,13 @@ public class CollectionStore extends BFile {
     public final static String NEXT_COLLECTION_ID_KEY = "__next_collection_id";  
     
     /**
-	 * @param file
-	 * @param btreeBuffers
-	 * @param dataBuffers
-	 * @throws DBException 
-	 */
+     * 
+     * 
+     * @param pool 
+     * @param cacheManager 
+     * @param file 
+     * @throws DBException 
+     */
 	public CollectionStore(BrokerPool pool, File file, CacheManager cacheManager) throws DBException {
 		super(pool, NativeBroker.COLLECTIONS_DBX_ID, true, file, cacheManager, 1.25, 0.01, 0.03);
 	}

@@ -162,7 +162,6 @@ public class SequencedLongHashMap extends AbstractHashtable {
      * is not in the map.
      * 
      * @param key
-     * @return
      */
 	public Object get(long key) {
 		int idx = hash(key) % tabSize;
@@ -182,8 +181,6 @@ public class SequencedLongHashMap extends AbstractHashtable {
 	
     /**
      * Returns the first entry added to the map.
-     * 
-     * @return
      */
 	public Entry getFirstEntry() {
 		return first;
@@ -234,8 +231,6 @@ public class SequencedLongHashMap extends AbstractHashtable {
 	
 	/**
 	 * Remove the first entry added to the map.
-	 * 
-	 * @return
 	 */
 	public Object removeFirst() {
 		if(first == null)

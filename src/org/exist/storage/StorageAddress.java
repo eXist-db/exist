@@ -23,7 +23,7 @@ public class StorageAddress {
 	 *  Create virtual address from page number and offset (tid)
 	 *
 	 *@param  page    page number
-	 *@param  offset  offset (tid)
+	 *@param  tid     offset 
 	 *@return         new virtual address in a long
 	 */
 	public final static long createPointer(int page, short tid) {
@@ -61,7 +61,7 @@ public class StorageAddress {
 	 * in {@link org.exist.xquery.value.Type}.
 	 * 
 	 * @param pointer
-	 * @return
+	 * @return type indicator from a virtual address
 	 */
 	public final static short indexTypeFromPointer(long pointer) {
 		return (short) ((pointer >>> 16) & 0xFFFFL);
@@ -76,7 +76,7 @@ public class StorageAddress {
 	 * 
 	 * @param p0
 	 * @param p1
-	 * @return
+	 * @return true if the page number and tid of the two storage addresses is equal
 	 */
 	public final static boolean equals(long p0, long p1) {
 		return ((p0 & 0xFFFFFFFF0000FFFFL) == (p1 & 0xFFFFFFFF0000FFFFL));

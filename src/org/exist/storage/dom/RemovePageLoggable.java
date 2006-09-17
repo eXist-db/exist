@@ -45,8 +45,14 @@ public class RemovePageLoggable extends AbstractLoggable {
     protected short oldRecCnt;
     
     /**
-     * @param type
-     * @param transactionId
+     * @param transaction 
+     * @param pageNum 
+     * @param prevPage 
+     * @param nextPage 
+     * @param oldData 
+     * @param oldLen 
+     * @param oldTid 
+     * @param oldRecCnt 
      */
     public RemovePageLoggable(Txn transaction, long pageNum, long prevPage, long nextPage,
             byte[] oldData, int oldLen, short oldTid, short oldRecCnt) {

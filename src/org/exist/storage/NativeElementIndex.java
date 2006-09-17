@@ -87,7 +87,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
 
     /** Store the given node in the node index.
      * @param qname The node's identity
-     * @param proxy The node's proxy
+     * @param p     The node's proxy
      */
     public void addNode(QName qname, NodeProxy p) {      
     	if (doc.getDocId() != p.getDocument().getDocId()) {
@@ -527,12 +527,6 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
      * Find elements by their tag name. This method is comparable to the DOM's
      * method call getElementsByTagName. All elements matching tagName and
      * belonging to one of the documents in the DocumentSet docs are returned.
-     * 
-     * @param docs
-     *                  Description of the Parameter
-     * @param tagName
-     *                  Description of the Parameter
-     * @return
      */
     public NodeSet findElementsByTagName(byte type, DocumentSet docs, QName qname, NodeSelector selector) {
         short nodeType;

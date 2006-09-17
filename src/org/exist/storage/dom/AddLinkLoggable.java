@@ -41,8 +41,10 @@ public class AddLinkLoggable extends AbstractLoggable {
     private DOMFile domDb = null;
     
     /**
-     * @param type
-     * @param transactionId
+     * @param transaction 
+     * @param pageNum 
+     * @param tid 
+     * @param link 
      */
     public AddLinkLoggable(Txn transaction, long pageNum, short tid, long link) {
         super(DOMFile.LOG_ADD_LINK, transaction.getId());

@@ -38,8 +38,11 @@ public abstract class AbstractBFileLoggable extends AbstractLoggable {
     protected byte fileId;
     
     /**
-     * @param type
-     * @param transactionId
+     * 
+     * 
+     * @param fileId 
+     * @param transaction 
+     * @param type 
      */
     public AbstractBFileLoggable(byte type, byte fileId, Txn transaction) {
         super(type, transaction.getId());

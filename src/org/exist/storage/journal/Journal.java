@@ -214,7 +214,7 @@ public class Journal {
     /**
      * Returns the last LSN physically written to the journal.
      * 
-     * @return
+     * @return last written LSN
      */
     public long lastWrittenLsn() {
         return lastLsnWritten;
@@ -393,7 +393,7 @@ public class Journal {
     /**
      * Returns all journal files found in the data directory.
      * 
-     * @return
+     * @return all journal files
      */
 	public File[] getFiles() {
 		File files[] = dir.listFiles(new FilenameFilter() {
@@ -409,7 +409,6 @@ public class Journal {
      * file number.
      * 
      * @param fileNum
-     * @return
      */
 	public File getFile(int fileNum) {
 		return new File(dir, getFileName(fileNum));

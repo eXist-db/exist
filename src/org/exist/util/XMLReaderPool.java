@@ -37,9 +37,11 @@ public class XMLReaderPool extends StackObjectPool {
     private final static DefaultHandler2 DUMMY_HANDLER = new DefaultHandler2();
     
     /**
-     * @param arg0
-     * @param arg1
-     * @param arg2
+     * 
+     * 
+     * @param factory 
+     * @param maxIdle 
+     * @param initIdleCapacity 
      */
     public XMLReaderPool(PoolableObjectFactory factory, int maxIdle, int initIdleCapacity) {
         super(factory, maxIdle, initIdleCapacity);
