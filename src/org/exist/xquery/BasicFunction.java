@@ -74,7 +74,6 @@ public abstract class BasicFunction extends Function {
 	 * 
 	 * @param args
 	 * @param contextSequence
-	 * @return
 	 */
 	public abstract Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException;
 }

@@ -35,8 +35,10 @@ public class MultiResourcesAction extends Action {
     private String dirPath;
     
     /**
-     * @param collectionPath
-     * @param resourceName
+     * 
+     * 
+     * @param dirPath 
+     * @param collectionPath 
      */
     public MultiResourcesAction(String dirPath, String collectionPath) {
         super(collectionPath, "");

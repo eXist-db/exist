@@ -339,7 +339,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 	 * file's content will not be loaded into memory but directly passed to a
 	 * SAX parser.
 	 * 
-	 * @param value
+	 * @param obj
 	 *                   the content value to set for the resource.
 	 * @exception XMLDBException
 	 *                         with expected error codes. <br /><code>ErrorCodes.VENDOR_ERROR</code>

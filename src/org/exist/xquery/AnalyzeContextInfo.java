@@ -72,7 +72,7 @@ public class AnalyzeContextInfo {
 	 * expression or where-clause. The id identifies the ancestor 
 	 * expression to which the context applies.
 	 * 
-	 * @return
+	 * @return  current context id.
 	 */
 	public int getContextId() {
 		return contextId;
@@ -86,7 +86,7 @@ public class AnalyzeContextInfo {
 	 * Returns the processing flags. Every expression may pass
 	 * execution hints to its child expressions, encoded as bit flags. 
 	 * 
-	 * @return
+	 * @return processing flags
 	 */
 	public int getFlags() {
 		return flags;
@@ -111,7 +111,6 @@ public class AnalyzeContextInfo {
 	
 	/**
 	 * Returns the parent of the current expression.
-	 * @return
 	 */
 	public Expression getParent() {
 		return parent;

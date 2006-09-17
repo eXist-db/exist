@@ -41,10 +41,10 @@ public class ConcurrentQueryTest extends ConcurrentTestBase {
 	private XQueryAction action0, action1, action2;
 	
 	/**
-	 * @param name
-	 * @param uri
-	 * @param testCollection
-	 */
+     * 
+     * 
+     * @param name 
+     */
 	public ConcurrentQueryTest(String name) {
 		super(name, URI, "C1");
 	}

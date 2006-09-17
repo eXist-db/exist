@@ -40,9 +40,15 @@ public class RemoveValueLoggable extends AbstractBFileLoggable {
     protected int len;
     
     /**
-     * @param type
-     * @param fileId
-     * @param transaction
+     * 
+     * 
+     * @param page 
+     * @param tid 
+     * @param oldData 
+     * @param offset 
+     * @param len 
+     * @param fileId 
+     * @param transaction 
      */
     public RemoveValueLoggable(Txn transaction, byte fileId, long page, short tid, byte[] oldData, int offset, int len) {
         super(BFile.LOG_REMOVE_VALUE, fileId, transaction);

@@ -41,11 +41,13 @@ public class CastableExpression extends AbstractExpression {
 	private final int requiredType;
 	
 	/**
-	 * @param context
-	 * @param expr
-	 * @param requiredType
-	 * @param cardinality
-	 */
+     * 
+     * 
+     * @param requiredCardinality 
+     * @param context 
+     * @param expr 
+     * @param requiredType 
+     */
 	public CastableExpression(XQueryContext context, Expression expr, int requiredType, int requiredCardinality) {
 		super(context);
 		this.expression = expr;

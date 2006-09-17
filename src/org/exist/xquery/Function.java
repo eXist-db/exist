@@ -102,9 +102,6 @@ public abstract class Function extends PathExpr {
 	
 	/**
 	 * Create a built-in function from the specified class.
-	 * 
-	 * @param context
-	 * @param fclass
 	 * @return the created function or null if the class could not be initialized.
 	 */
 	public static Function createFunction(
@@ -159,9 +156,7 @@ public abstract class Function extends PathExpr {
 	/**
 	 * Returns the expression from which this function
 	 * gets called.
-	 * 
-	 * @return
-	 */
+         */
 	public Expression getParent() {
 		return parent;
 	}
@@ -351,7 +346,7 @@ public abstract class Function extends PathExpr {
 	/**
 	 * Get the number of arguments passed to this function.
 	 * 
-	 * @return
+	 * @return number of arguments
 	 */
 	public int getArgumentCount() {
 		return steps.size();
@@ -372,7 +367,7 @@ public abstract class Function extends PathExpr {
 	/**
 	 * Get the signature of this function.
 	 * 
-	 * @return
+	 * @return signature of this function
 	 */
 	public FunctionSignature getSignature() {
 		return mySignature;

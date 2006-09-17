@@ -72,8 +72,6 @@ public interface Lock {
     /**
      * Returns true if there are active or pending
      * write locks.
-     * 
-     * @return
      */
     public boolean isLockedForWrite();
 }

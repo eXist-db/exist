@@ -52,7 +52,6 @@ public interface CompiledXQuery extends CompiledExpression {
      * sequence as context.
      * 
      * @param contextSequence
-     * @return
      * @throws XPathException
      */
     public Sequence eval(Sequence contextSequence) throws XPathException;
@@ -60,8 +59,6 @@ public interface CompiledXQuery extends CompiledExpression {
     /**
      * Is the compiled expression still valid? Returns false if, for example,
      * the source code of one of the imported modules has changed.
-     * 
-     * @return
      */
     public boolean isValid();
     

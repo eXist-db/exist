@@ -41,9 +41,14 @@ public class OverflowAppendLoggable extends AbstractBFileLoggable {
     protected int startOffset;
     
     /**
-     * @param type
-     * @param fileId
-     * @param transaction
+     * 
+     * 
+     * @param page 
+     * @param chunk 
+     * @param startOffset 
+     * @param chunkSize 
+     * @param fileId 
+     * @param transaction 
      */
     public OverflowAppendLoggable(byte fileId, Txn transaction, long page, 
 			ByteArray chunk, int startOffset, int chunkSize) {

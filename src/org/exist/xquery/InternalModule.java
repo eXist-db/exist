@@ -42,7 +42,7 @@ public interface InternalModule extends Module {
 	 * {@link FunctionFactory}.
 	 * 
 	 * @param qname
-	 * @return
+	 * @return implementing class for the function
 	 */
 	public FunctionDef getFunctionDef(QName qname, int argCount);
 	
@@ -51,7 +51,7 @@ public interface InternalModule extends Module {
 	 * specified qname.
 	 * 
 	 * @param qname
-	 * @return
+	 * @return all functions defined in this module
 	 */
 	public List getFunctionsByName(QName qname);
 }

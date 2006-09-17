@@ -373,7 +373,6 @@ public class Journal {
      * Find the journal file with the highest file number.
      * 
      * @param files
-     * @return
      */
 	public final static int findLastFile(File files[]) {
 		File last = null;

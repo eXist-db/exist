@@ -190,7 +190,6 @@ public class SequencedLongHashMap extends AbstractHashtable {
      * Remove the entry specified by key from the map.
      * 
      * @param key
-     * @return
      */
 	public Object remove(long key) {
 		Entry entry = removeFromHashtable(key);

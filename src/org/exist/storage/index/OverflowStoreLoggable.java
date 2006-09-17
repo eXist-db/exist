@@ -41,10 +41,16 @@ public class OverflowStoreLoggable extends AbstractBFileLoggable {
 	protected int size;
 	
 	/**
-	 * @param type
-	 * @param fileId
-	 * @param transaction
-	 */
+     * 
+     * 
+     * @param page 
+     * @param prevPage 
+     * @param chunk 
+     * @param startOffset 
+     * @param chunkSize 
+     * @param fileId 
+     * @param transaction 
+     */
 	public OverflowStoreLoggable(byte fileId, Txn transaction, long page, long prevPage, 
 			byte[] chunk, int startOffset, int chunkSize) {
 		super(BFile.LOG_OVERFLOW_STORE, fileId, transaction);

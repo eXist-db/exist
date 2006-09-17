@@ -138,7 +138,6 @@ public interface RpcAPI {
 	 * @param user
 	 * @param name
 	 * @param parameters
-	 * @return
 	 * @throws EXistException
 	 * @throws PermissionDeniedException
 	 */
@@ -253,15 +252,14 @@ public interface RpcAPI {
 		throws EXistException, PermissionDeniedException;
 	
 	/**
-	 * Returns the number of resources in the collection identified by
-	 * collectionName.
-	 * 
-	 * @param user
-	 * @param collection
-	 * @return
-	 * @throws EXistException
-	 * @throws PermissionDeniedException
-	 */
+     * Returns the number of resources in the collection identified by
+     * collectionName.
+     * @param collectionName 
+     * @param user 
+     * @throws EXistException 
+     * @throws PermissionDeniedException 
+     * @return number of resources
+     */
 	int getResourceCount(User user, String collectionName)
 		throws EXistException, PermissionDeniedException;
 	
@@ -280,18 +278,16 @@ public interface RpcAPI {
 		throws EXistException, PermissionDeniedException;
 
 	/**
-	 *  Retrieve a single node from a document. The node is identified by it's
-	 *  internal id.
-	 *
-	 *@param  doc                            the document containing the node
-	 *@param  id                             the node's internal id
-	 *@param  prettyPrint                    result is pretty printed if >0
-	 *@param  encoding                       character encoding to use
-	 *@param  user                           Description of the Parameter
-	 *@return                                Description of the Return Value
-	 *@exception  EXistException             Description of the Exception
-	 *@exception  PermissionDeniedException  Description of the Exception
-	 */
+     *  Retrieve a single node from a document. The node is identified by it's
+     *  internal id.
+     * 
+     * @param parameters 
+     * @param doc the document containing the node
+     * @param id the node's internal id
+     * @param user Description of the Parameter
+     * @exception EXistException Description of the Exception
+     * @exception PermissionDeniedException Description of the Exception
+     */
 	byte[] retrieve(User user, String doc, String id, Hashtable parameters)
 		throws EXistException, PermissionDeniedException;
 
@@ -326,8 +322,7 @@ public interface RpcAPI {
 	 *@return                                Description of the Return Value
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
-	 *@depreceated                           use Vector query() or int
-	 *      executeQuery() instead
+	 *@deprecated                            use Vector query() or int  executeQuery() instead
 	 */
 	byte[] query(
 		User user,
@@ -338,73 +333,73 @@ public interface RpcAPI {
 		throws EXistException, PermissionDeniedException;
 
 	/**
-	 *  execute XPath query and return a summary of hits per document and hits
-	 *  per doctype. This method returns a struct with the following fields:
-	 *
-	 *  <table border="1">
-	 *
-	 *    <tr>
-	 *
-	 *      <td>
-	 *        "queryTime"
-	 *      </td>
-	 *
-	 *      <td>
-	 *        int
-	 *      </td>
-	 *
-	 *    </tr>
-	 *
-	 *    <tr>
-	 *
-	 *      <td>
-	 *        "hits"
-	 *      </td>
-	 *
-	 *      <td>
-	 *        int
-	 *      </td>
-	 *
-	 *    </tr>
-	 *
-	 *    <tr>
-	 *
-	 *      <td>
-	 *        "documents"
-	 *      </td>
-	 *
-	 *      <td>
-	 *        array of array: Object[][3]
-	 *      </td>
-	 *
-	 *    </tr>
-	 *
-	 *    <tr>
-	 *
-	 *      <td>
-	 *        "doctypes"
-	 *      </td>
-	 *
-	 *      <td>
-	 *        array of array: Object[][2]
-	 *      </td>
-	 *
-	 *    </tr>
-	 *
-	 *  </table>
-	 *  Documents and doctypes represent tables where each row describes one
-	 *  document or doctype for which hits were found. Each document entry has
-	 *  the following structure: docId (int), docName (string), hits (int) The
-	 *  doctype entry has this structure: doctypeName (string), hits (int)
-	 *
-	 *@param  xpath                          Description of the Parameter
-	 *@param  user                           Description of the Parameter
-	 *@return                                Description of the Return Value
-	 *@exception  EXistException             Description of the Exception
-	 *@exception  PermissionDeniedException  Description of the Exception
-	 *@depreceated                           use Vector query() or int
-	 *      executeQuery() instead
-	 */
+     *  execute XPath query and return a summary of hits per document and hits
+     *  per doctype. This method returns a struct with the following fields:
+     * 
+     *  <table border="1">
+     * 
+     *    <tr>
+     * 
+     *      <td>
+     *        "queryTime"
+     *      </td>
+     * 
+     *      <td>
+     *        int
+     *      </td>
+     * 
+     *    </tr>
+     * 
+     *    <tr>
+     * 
+     *      <td>
+     *        "hits"
+     *      </td>
+     * 
+     *      <td>
+     *        int
+     *      </td>
+     * 
+     *    </tr>
+     * 
+     *    <tr>
+     * 
+     *      <td>
+     *        "documents"
+     *      </td>
+     * 
+     *      <td>
+     *        array of array: Object[][3]
+     *      </td>
+     * 
+     *    </tr>
+     * 
+     *    <tr>
+     * 
+     *      <td>
+     *        "doctypes"
+     *      </td>
+     * 
+     *      <td>
+     *        array of array: Object[][2]
+     *      </td>
+     * 
+     *    </tr>
+     * 
+     *  </table>
+     *  Documents and doctypes represent tables where each row describes one
+     *  document or doctype for which hits were found. Each document entry has
+     *  the following structure: docId (int), docName (string), hits (int) The
+     *  doctype entry has this structure: doctypeName (string), hits (int)
+     * 
+     * 
+     
+     * @param xquery 
+     * @param user Description of the Parameter
+     * @exception EXistException Description of the Exception
+     * @exception PermissionDeniedException Description of the Exception
+     * @deprecated use Vector query() or int executeQuery() instead
+     */
 	Hashtable querySummary(User user, String xquery)
 		throws EXistException, PermissionDeniedException;
 
@@ -415,7 +410,6 @@ public interface RpcAPI {
 	 * 
 	 * @param user
 	 * @param query
-	 * @return
 	 * @throws EXistException
 	 */
 	public String printDiagnostics(User user, String query, Hashtable parameters) 
@@ -434,7 +428,6 @@ public interface RpcAPI {
 	 *
 	 *@param  xmlData                        The document data
 	 *@param  docName                      The path where the document will be stored 
-	 *@return                                		
 	 *@exception  EXistException
 	 *@exception  PermissionDeniedException
 	 */
@@ -452,7 +445,6 @@ public interface RpcAPI {
 	 *@param  xmlData                        The document data
 	 *@param  docName                      The path where the document will be stored 
 	 *@param  overwrite                      Overwrite an existing document with the same path?
-	 *@return                                		
 	 *@exception  EXistException
 	 *@exception  PermissionDeniedException
 	 */
@@ -529,7 +521,6 @@ public interface RpcAPI {
 	 * @param data the data to be stored
 	 * @param docName the path to the new document
 	 * @param replace if true, an old document with the same path will be overwritten
-	 * @return
 	 * @throws EXistException
 	 * @throws PermissionDeniedException
 	 */
@@ -555,7 +546,6 @@ public interface RpcAPI {
 	 *
 	 *@param  name path to the collection to be removed.
 	 *@param  user
-	 *@return
 	 *@exception  EXistException             
 	 *@exception  PermissionDeniedException 
 	 */
@@ -567,7 +557,6 @@ public interface RpcAPI {
 	 * 
 	 * @param user
 	 * @param name the path to the new collection.
-	 * @return
 	 * @throws EXistException
 	 * @throws PermissionDeniedException
 	 */

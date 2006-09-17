@@ -47,7 +47,6 @@ public interface XQueryService extends org.xmldb.api.modules.XQueryService {
 	 * Execute the specified query and return the results as a {@link ResourceSet}.
 	 * 
 	 * @param query
-	 * @return
 	 * @throws XMLDBException
 	 */
 	public ResourceSet query(String query) throws XMLDBException;
@@ -79,7 +78,6 @@ public interface XQueryService extends org.xmldb.api.modules.XQueryService {
      * If a static error is detected, an {@link XPathException} will be thrown.
      * 
      * @param query
-     * @return
      */
 	public CompiledExpression compileAndCheck(String query) throws XMLDBException, XPathException;
     
@@ -92,7 +90,6 @@ public interface XQueryService extends org.xmldb.api.modules.XQueryService {
 	 * {@link XQueryService} to the compiled XQuery code.
 	 * 
 	 * @param expression
-	 * @return
 	 * @throws XMLDBException
 	 */
 	public ResourceSet execute(CompiledExpression expression) throws XMLDBException;
@@ -122,7 +119,7 @@ public interface XQueryService extends org.xmldb.api.modules.XQueryService {
 	* @param prefix The prefix to set in the map. If
 	*  <code>prefix</code> is empty or null the
 	*  default namespace will be associated with the provided URI.
-	* @param uri The URI for the namespace to be associated with prefix.
+	* @param namespace The URI for the namespace to be associated with prefix.
 	* @exception XMLDBException with expected error codes.<br />
 	*  <code>ErrorCodes.VENDOR_ERROR</code> for any vendor
 	*  specific errors that occur.<br />
@@ -135,7 +132,7 @@ public interface XQueryService extends org.xmldb.api.modules.XQueryService {
 	* the internal namespace map. If <code>prefix</code> is null or empty the
 	* mapping for the default namespace will be removed.
 	*
-	* @param prefix The prefix to remove from the namespace map. If
+	* @param ns The prefix to remove from the namespace map. If
 	*  <code>prefix</code> is null or empty the mapping for the default
 	*  namespace will be removed.
 	* @exception XMLDBException with expected error codes.<br />
