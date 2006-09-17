@@ -90,7 +90,7 @@ public interface ContentLoadingObserver {
 	/**
      * Reindexes all pending items for the specified document. Similar to the normal index process,
      * items to be reindexed are added to the internal pending list via methods 
-     * {@link #addNode(QName, NodeProxy)}, {@link #storeElement(int, ElementImpl, String),
+     * {@link #addNode(QName, NodeProxy)}, {@link #storeElement(int, ElementImpl, String)},
      * and {@link #storeAttribute(RangeIndexSpec, AttrImpl)}. Method reindex then scans this
      * list and updates the items in the index to reflect the reindexed document.
      * 

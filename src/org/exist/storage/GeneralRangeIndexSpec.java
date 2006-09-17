@@ -52,8 +52,6 @@ public class GeneralRangeIndexSpec extends RangeIndexSpec {
     
     /**
      * Returns the path corresponding to this index.
-     * 
-     * @return
      */
     public NodePath getPath() {
         return path;

@@ -63,7 +63,7 @@ public class FulltextIndexSpec {
     /**
      * Constructor for the IndexPaths object
      *
-     * @param def if set to true, include everything by default. In this case
+     * param def if set to true, include everything by default. In this case
      * use exclude elements to specify the excluded parts.
      */
     public FulltextIndexSpec(Map namespaces, Element node) {
@@ -107,10 +107,7 @@ public class FulltextIndexSpec {
     }
 
 	/**
-	 * Returns false if all elements are indexed, true 
-	 * if indexation is selective.
-	 * 
-	 * @return
+	 * @return False if all elements are indexed, True if indexation is selective.
 	 */
 	public boolean isSelective() {
 		if((includeByDefault && excludePath.length > 0) ||
@@ -130,8 +127,6 @@ public class FulltextIndexSpec {
 
     /**
      * Include alpha-numeric data?
-     *
-     * @return 
      */
     public boolean getIncludeAlphaNum(  ) {
         return includeAlphaNum;

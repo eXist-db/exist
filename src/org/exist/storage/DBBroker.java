@@ -216,18 +216,14 @@ public abstract class DBBroker extends Observable {
 	}
 	
 	/**
-	 * Get the user that is currently using this DBBroker object.
-	 * 
-	 * @return
+	 * @return The user that is currently using this DBBroker object
 	 */
 	public User getUser() {
 		return user;
 	}
 	
 	/**
-	 * Returns a reference to the global {@link XQuery} service.
-	 * 
-	 * @return
+	 * @return A reference to the global {@link XQuery} service.
 	 */
 	public XQuery getXQueryService() {
 	    return xqueryService;
@@ -286,7 +282,7 @@ public abstract class DBBroker extends Observable {
 	 * The storage address is used to locate the collection without
 	 * looking up the path in the btree.
 	 * 
-	 * @return
+	 * @return Database collection
 	 */
 	public abstract Collection getCollection(XmldbURI uri, long address);
 	
@@ -313,7 +309,7 @@ public abstract class DBBroker extends Observable {
 	 * 
 	 * The caller should take care to release the collection lock properly.
 	 * 
-	 * @param name the collection path
+	 * @param uri The collection path
 	 * @param lockMode one of the modes specified in class {@link org.exist.storage.lock.Lock}
 	 * @return collection or null if no collection matches the path
 	 */
@@ -377,8 +373,8 @@ public abstract class DBBroker extends Observable {
 	 * Return a {@link org.exist.storage.dom.NodeIterator} starting
 	 * at the specified node.
 	 * 
-	 * @param proxy
-	 * @return
+	 * @param node
+	 * @return NodeIterator of node.
 	 */
 	public Iterator getNodeIterator(StoredNode node) {
 		throw new RuntimeException("not implemented for this storage backend");
@@ -685,7 +681,7 @@ public abstract class DBBroker extends Observable {
 	 * 
 	 * @param doc the resource to move
 	 * @param destination the destination collection
-	 * @param new Name the new name the resource should have in the destination collection
+	 * @param newName the new name the resource should have in the destination collection
 	 */
 	public abstract void moveXMLResource(Txn transaction, DocumentImpl doc, Collection destination, XmldbURI newName)
 	throws PermissionDeniedException, LockException;
@@ -705,9 +701,9 @@ public abstract class DBBroker extends Observable {
 	/**
 	 * Copy a collection to the destination collection and rename it.
 	 * 
-	 * @param doc the resource to move
+	 * @param collection the resource to move
 	 * @param destination the destination collection
-	 * @param new Name the new name the resource should have in the destination collection
+	 * @param newName the new name the resource should have in the destination collection
 	 */
 	public abstract void copyCollection(Txn transaction, Collection collection, Collection destination, XmldbURI newName)
 	throws PermissionDeniedException, LockException;
@@ -809,8 +805,7 @@ public abstract class DBBroker extends Observable {
 	 * Create a temporary document in the temp collection and store the
 	 * supplied data.
 	 * 
-	 * @param data
-	 * @return
+	 * @param doc
 	 * @throws EXistException
 	 * @throws PermissionDeniedException
 	 * @throws LockException

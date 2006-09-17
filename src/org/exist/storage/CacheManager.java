@@ -150,7 +150,7 @@ public class CacheManager {
      * growthFactor: {@link Cache#getGrowthFactor()}.
      * 
      * @param cache
-     * @return
+     * @return new cache size, or -1 if no free pages available.
      */
     public int requestMem(Cache cache) {
         if (currentPageCount >= totalPageCount) {
@@ -242,7 +242,7 @@ public class CacheManager {
     /**
      * Returns the default initial size for all caches.
      * 
-     * @return
+     * @return Default initial size 64.
      */
     public int getDefaultInitialSize() {
         return 64;
