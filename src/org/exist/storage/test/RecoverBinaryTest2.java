@@ -56,7 +56,7 @@ public class RecoverBinaryTest2 extends TestCase {
     
     private static String directory = "webapp/resources";
     
-    private static File dir = new File(directory);
+    //private static File dir = new File(directory);
     
     public void testStore() {
         BrokerPool.FORCE_CORRUPTION = true;
@@ -165,6 +165,11 @@ public class RecoverBinaryTest2 extends TestCase {
     }
     
     private void storeFiles(DBBroker broker, Txn transaction, Collection test2) throws FileNotFoundException, EXistException, PermissionDeniedException, LockException, TriggerException {
+        
+        // Get absolute path
+        File dir = new File(Configuration.getExistHome(), directory);
+        
+        // Get files in directory
         File files[] = dir.listFiles();
         assertNotNull("Check directory '"+dir.getAbsolutePath()+"'.",files);
         
