@@ -26,7 +26,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
@@ -34,18 +36,16 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Logger;
-
 import org.exist.memtree.SAXAdapter;
 import org.exist.security.User;
 import org.exist.security.xacml.XACMLConstants;
+import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NativeBroker;
 import org.exist.validation.resolver.eXistCatalogResolver;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -370,20 +370,23 @@ public class Configuration implements ErrorHandler
         
         String growth = xupdate.getAttribute("growth-factor");
         if (growth != null) {
-            config.put("xupdate.growth-factor", new Integer(growth));
-            LOG.debug("xupdate.growth-factor: " + config.get("xupdate.growth-factor"));    
+            config.put(DBBroker.PROPERTY_XUPDATE_GROWTH_FACTOR, new Integer(growth));
+            LOG.debug(DBBroker.PROPERTY_XUPDATE_GROWTH_FACTOR + ": " 
+            		+ config.get(DBBroker.PROPERTY_XUPDATE_GROWTH_FACTOR));    
         }
         
         String fragmentation = xupdate.getAttribute("allowed-fragmentation");
         if (fragmentation != null) {
-        	config.put("xupdate.fragmentation", new Integer(fragmentation));
-        	LOG.debug("xupdate.fragmentation: " + config.get("xupdate.fragmentation"));
+        	config.put(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR, new Integer(fragmentation));
+        	LOG.debug(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR + ": " 
+        			+ config.get(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR));
         }
         
         String consistencyCheck = xupdate.getAttribute("enable-consistency-checks");
         if (consistencyCheck != null) {
-            config.put("xupdate.consistency-checks", Boolean.valueOf(consistencyCheck.equals("yes")));
-            LOG.debug("xupdate.consistency-checks: " + config.get("xupdate.consistency-checks"));
+            config.put(DBBroker.PROPERTY_XUPDATE_CONSISTENCY_CHECKS, Boolean.valueOf(consistencyCheck.equals("yes")));
+            LOG.debug(DBBroker.PROPERTY_XUPDATE_CONSISTENCY_CHECKS + ": " 
+            		+ config.get(DBBroker.PROPERTY_XUPDATE_CONSISTENCY_CHECKS));
         }
     }
     
