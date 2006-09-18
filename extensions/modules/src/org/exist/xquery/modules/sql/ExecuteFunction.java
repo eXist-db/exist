@@ -28,22 +28,36 @@
 
 package org.exist.xquery.modules.sql;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
 import org.exist.dom.QName;
+import org.exist.memtree.DocumentBuilderReceiver;
+import org.exist.memtree.MemTreeBuilder;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.IntegerValue;
+import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 /**
  * eXist SQL Module Extension ExecuteFunction 
@@ -120,16 +134,75 @@ public class ExecuteFunction extends BasicFunction
 			ResultSet rs = stmt.executeQuery(sql);
 			
 			//iterate through the result set building an xml document
+			StringBuffer xmlBuf = new StringBuffer();
+			xmlBuf.append("<sql:table xmlns=\"" + SQLModule.NAMESPACE_URI + "\">");
+			
+			ResultSetMetaData rsmd = rs.getMetaData();
+			int iColumns = rsmd.getColumnCount();
+			
 			while(rs.next())
 			{
+				xmlBuf.append("<sql:row index=\"" + rs.getRow() + "\">");
+				
+				//get each tuple in the row
+				for(int i = 0; i < iColumns; i++)
+				{
+					String columnName = rsmd.getColumnName(i);
+					if(columnName != null)
+					{
+						xmlBuf.append("<" + columnName + ">");
+						xmlBuf.append(rs.getString(columnName));
+						xmlBuf.append("</" + columnName + ">");
+					}
+				}
+				
+				xmlBuf.append("</sql:row>");
 			}
+			xmlBuf.append("</sql:table>");
 			
-			//temp
-			return Sequence.EMPTY_SEQUENCE;
+			//return the xml result set
+			return stringToXML(xmlBuf.toString());
 		}
 		catch(SQLException e)
 		{
 			throw new XPathException(e.getMessage());
+		}
+	}
+	
+	private NodeValue stringToXML(String xml) throws XPathException
+	{
+		context.pushDocumentContext();
+		try
+		{ 
+			//try and construct xml document from input stream, we use eXist's in-memory DOM implementation
+			SAXParserFactory factory = SAXParserFactory.newInstance();
+			factory.setNamespaceAware(true);	
+			//TODO : we should be able to cope with context.getBaseURI()				
+			InputSource src = new InputSource(new ByteArrayInputStream(xml.getBytes()));
+			SAXParser parser = factory.newSAXParser();
+			XMLReader reader = parser.getXMLReader();
+			MemTreeBuilder builder = context.getDocumentBuilder();
+			DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
+			reader.setContentHandler(receiver);
+			reader.parse(src);
+			Document doc = receiver.getDocument();
+			return (NodeValue)doc.getDocumentElement();
+		}
+		catch (ParserConfigurationException e)
+		{				
+			throw new XPathException(e.getMessage());
+		}
+		catch (SAXException e)
+		{
+			throw new XPathException(e.getMessage());
+		}
+		catch (IOException e)
+		{
+			throw new XPathException(e.getMessage());
+		}
+		finally
+		{
+         context.popDocumentContext();
 		}
 	}
 }
