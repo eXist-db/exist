@@ -204,8 +204,8 @@ public abstract class TextSearchEngine extends Observable {
 	/**
 	 * Queries the fulltext index to retrieve information on indexed words contained
 	 * in the index for the current collection. Returns a list of {@link Occurrences} for all 
-	 * words contained in the index. If {@param end} is null, all words starting with 
-	 * the string sequence {@param start} are returned. Otherwise, the method 
+	 * words contained in the index. If param end is null, all words starting with 
+	 * the string sequence param start are returned. Otherwise, the method 
 	 * returns all words that come after start and before end in lexical order.
 	 */
 	public abstract Occurrences[] scanIndexTerms(

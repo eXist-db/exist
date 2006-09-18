@@ -224,7 +224,7 @@ public class Journal {
      * Flush the current buffer to disk. If fsync is true, a sync will
      * be called on the file to force all changes to disk.
      * 
-     * @param fsync forces all changes to disk if true and syncMode is set to {@link #SYNC_ON_COMMIT}.
+     * @param fsync forces all changes to disk if true and syncMode is set to SYNC_ON_COMMIT.
      * @throws TransactionException
      */
     public void flushToLog(boolean fsync) {
@@ -235,7 +235,7 @@ public class Journal {
      * Flush the current buffer to disk. If fsync is true, a sync will
      * be called on the file to force all changes to disk.
      * 
-     * @param fsync forces all changes to disk if true and syncMode is set to {@link #SYNC_ON_COMMIT}.
+     * @param fsync forces all changes to disk if true and syncMode is set to SYNC_ON_COMMIT.
      * @param forceSync force changes to disk even if syncMode doesn't require it.
      * @throws TransactionException
      */

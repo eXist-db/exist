@@ -48,8 +48,7 @@ import org.exist.xquery.value.Type;
 /**
  * near() function.
  * 
- * @author Wolfgang Meier <wolfgang@exist-db.org>
- * @created July 31, 2002
+ * @author Wolfgang Meier <wolfgang@exist-db.org> (July 31, 2002)
  */
 public class ExtNear extends ExtFulltext {
 

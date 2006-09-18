@@ -31,7 +31,7 @@ import org.exist.util.Configuration;
  * Interface to be implemented by tasks used for system
  * maintenance. System tasks require the database to be in
  * a consistent state. All database operations will be stopped 
- * until the {@link #execute(BrokerPool)} method returned
+ * until the {@link #execute(DBBroker)} method returned
  * or throws an exception. Any exception will be caught and a warning
  * written to the log.
  * 

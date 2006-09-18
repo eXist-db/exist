@@ -600,8 +600,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
     }
     
 	/** Regular expression search
-	 * @param type  like type argument for {@link RegexMatcher} constructor
-	 * @param flags like flags argument for {@link RegexMatcher} constructor
+	 * @param type  like type argument for {@link org.exist.storage.RegexMatcher} constructor
+	 * @param flags like flags argument for {@link org.exist.storage.RegexMatcher} constructor
 	 *  */
     public NodeSet match(DocumentSet docs, NodeSet contextSet, String expr, int type, int flags, boolean caseSensitiveQuery)
         throws TerminatedException, EXistException {        

@@ -72,8 +72,8 @@ public interface IndexQueryService extends Service {
 	/**
 	 * Queries the fulltext index to retrieve information on indexed words contained
 	 * in the index for the current collection. Returns a list of {@link Occurrences} for all 
-	 * words contained in the index. If {@param end} is null, all words starting with 
-	 * the string sequence {@param start} are returned. Otherwise, the method 
+	 * words contained in the index. If param end is null, all words starting with 
+	 * the string sequence param start are returned. Otherwise, the method 
 	 * returns all words that come after start and before end in lexical order.
 	 * 
 	 * @param start
@@ -87,8 +87,8 @@ public interface IndexQueryService extends Service {
 	/**
      * Queries the fulltext index to retrieve information on indexed words occurring within
      * the set of nodes identified by a given XPath expression. Returns a list of {@link Occurrences} for all 
-     * words contained in the index. If {@param end} is null, all words starting with 
-     * the string sequence {@param start} are returned. Otherwise, the method 
+     * words contained in the index. If param end is null, all words starting with 
+     * the string sequence param start are returned. Otherwise, the method 
      * returns all words that come after start and before end in lexical order.
      * 
      * 

@@ -112,7 +112,7 @@ public class URIUtils {
 	}
 	
 	/**
-	 * This method is a wrapper for {@link java.net.URLEncoder.encode(java.lang.String,java.lang.String)}
+	 * This method is a wrapper for {@link java.net.URLEncoder#encode(java.lang.String,java.lang.String)}
 	 * It calls this method, suppying the url parameter as
 	 * the first parameter, and "UTF-8" (the W3C recommended
 	 * encoding) as the second.  UnsupportedEncodingExceptions
@@ -122,7 +122,7 @@ public class URIUtils {
 	 * as a "+".  The proper method of encoding spaces in the path of
 	 * a URI is with "%20", so this method will replace all instances of "+"
 	 * in the encoded string with "%20" before returning.  This means that
-	 * XmldbURIs constructed from java.net.URLEncoder.encoded strings
+	 * XmldbURIs constructed from java.net.URLEncoder#encoded strings
 	 * will not be String equivalents of XmldbURIs created with the result of
 	 * calls to this function.
 	 * 

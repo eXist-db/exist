@@ -48,8 +48,7 @@ import org.exist.xquery.value.Sequence;
 /**
  *  phrase() function : search an exact phrase in a NodeSet
  *
- *@author     Bruno Chatel <bcha@chadocs.com>
- *@created    March 30, 2005
+ *@author     Bruno Chatel <bcha@chadocs.com> (March 30, 2005)
  */
 public class ExtPhrase extends ExtFulltext {
 

@@ -166,7 +166,6 @@ public class ArrayUtils {
      *         elements in the list are less than the specified key.  Note
      *         that this guarantees that the return value will be &gt;= 0 if
      *         and only if the key is found.
-     * @see #sort(int[])
      */
     public static int binarySearch(int[] a, int key, int size) {
         int low = 0;

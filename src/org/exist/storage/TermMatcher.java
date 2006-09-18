@@ -25,7 +25,7 @@ package org.exist.storage;
 
 /**
  * Implementations of this interface can be passed to method
- * {@link org.exist.storage.TextSearchEngine#getNodes(DocumentSet, NodeSet, TermMatcher, CharSequence)} 
+* {@link org.exist.storage.TextSearchEngine#getNodes(XQueryContext, DocumentSet, NodeSet, TermMatcher, CharSequence)} 
  * to check if an index entry matches a given search term.
  * 
  * @author Wolfgang Meier (wolfgang@exist-db.org)

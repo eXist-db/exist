@@ -282,7 +282,7 @@ public class XmldbURI implements Comparable {
 	 * other fields will be populated as would be expected from a heirarchical
 	 * URI
 	 * 
-	 * @see getXmldbURI
+	 * @see #getXmldbURI
 	 */
 	public URI getURI() { 			
 		return URI.create(encodedCollectionPath); 
