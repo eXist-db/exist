@@ -115,8 +115,11 @@ public class FunctionFactory {
 				if (p1.getLength() == 0)
 					throw new XPathException(ast, "Second argument to starts-with is empty");
 				GeneralComparison op = 
-					new GeneralComparison(context, p0, p1, Constants.EQ, Constants.TRUNC_RIGHT);
+					new GeneralComparison(context, p0, p1, Constants.EQ, Constants.TRUNC_RIGHT);				
 				op.setASTNode(ast);
+				//TODO : not sure for parent -pb
+	            context.getProfiler().message(parent, Profiler.OPTIMIZATIONS, "OPTIMIZATION",  
+	            "Rewritten start-with as a general comparison with a right truncature");				
 				if (params.size() == 3)
 					op.setCollation((Expression)params.get(2));
 				step = op;
@@ -132,6 +135,9 @@ public class FunctionFactory {
 					throw new XPathException(ast, "Second argument to ends-with is empty");
 				GeneralComparison op =
 					new GeneralComparison(context, p0, p1, Constants.EQ, Constants.TRUNC_LEFT);
+				//TODO : not sure for parent -pb
+	            context.getProfiler().message(parent, Profiler.OPTIMIZATIONS, "OPTIMIZATION",  
+	            "Rewritten ends-with as a general comparison with a left truncature");				
 				op.setASTNode(ast);
 				if (params.size() == 3)
 					op.setCollation((Expression)params.get(2));
@@ -148,6 +154,9 @@ public class FunctionFactory {
 					throw new XPathException(ast, "Second argument to contains is empty");
 				GeneralComparison op =
 					new GeneralComparison(context, p0, p1, Constants.EQ, Constants.TRUNC_BOTH);
+				//TODO : not sure for parent -pb
+	            context.getProfiler().message(parent, Profiler.OPTIMIZATIONS, "OPTIMIZATION",  
+	            "Rewritten contains as a general comparison with left and right truncatures");				
 				op.setASTNode(ast);
 				if (params.size() == 3)
 					op.setCollation((Expression)params.get(2));
