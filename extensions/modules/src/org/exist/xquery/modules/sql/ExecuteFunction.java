@@ -135,7 +135,7 @@ public class ExecuteFunction extends BasicFunction
 			
 			//iterate through the result set building an xml document
 			StringBuffer xmlBuf = new StringBuffer();
-			xmlBuf.append("<sql:table xmlns=\"" + SQLModule.NAMESPACE_URI + "\">");
+			xmlBuf.append("<sql:table xmlns:sql=\"" + SQLModule.NAMESPACE_URI + "\">");
 			
 			ResultSetMetaData rsmd = rs.getMetaData();
 			int iColumns = rsmd.getColumnCount();
