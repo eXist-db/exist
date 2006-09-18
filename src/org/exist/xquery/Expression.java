@@ -30,7 +30,7 @@ import org.exist.xquery.value.Sequence;
 /**
  * Base interface implemented by all classes which are part
  * of an XQuery/XPath expression. The main method is 
- * {@link #eval(StaticContext, DocumentSet, Sequence, Item)}. Please
+ * {@link #eval(Sequence, Item)}. Please
  * read the description there.
  */
 public interface Expression {

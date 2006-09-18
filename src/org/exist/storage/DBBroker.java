@@ -839,7 +839,7 @@ public abstract class DBBroker extends Observable {
 
 	/**
 	 * Sync dom and collection state data (pages) to disk. In case of
-	 * {@link org.exist.storage.sync.Sync.MAJOR_SYNC}, sync all states (dom,
+	 * {@link org.exist.storage.sync.Sync#MAJOR_SYNC}, sync all states (dom,
 	 * collection, text and element) to disk.
 	 * 
 	 * @param syncEvent

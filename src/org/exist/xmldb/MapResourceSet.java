@@ -13,8 +13,7 @@ import org.xmldb.api.base.*;
  *  Implementation of ResourceSet (a container of Resource objects), using internally both a Map and a Vector.
  *  The Map is keyed by the Id of each resource.
  * 
- *@author     Jean-Marc Vanel
- *@created    2 April 2003
+ *@author     Jean-Marc Vanel (2 April 2003)
  */
 public class MapResourceSet implements ResourceSet 
 {

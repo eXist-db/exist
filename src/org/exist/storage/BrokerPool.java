@@ -1096,7 +1096,8 @@ public class BrokerPool {
 	 * Schedules a cache synchronization for the database instance. If the database instance is idle,
 	 * the cache synchronization will be run immediately. Otherwise, the task will be deffered 
 	 * until all running threads have returned.
-	 * @param syncEvent One of {@link org.exist.storage.Sync#MINOR_SYNC} or {@link org.exist.storage.Sync#MINOR_SYNC}   
+	 * @param syncEvent One of {@link org.exist.storage.sync.Sync#MINOR_SYNC} or 
+         * {@link org.exist.storage.sync.Sync#MINOR_SYNC}   
 	 */
 	public void triggerSync(int syncEvent) {
 		//TOUNDERSTAND (pb) : synchronized, so... "schedules" or, rather, "executes" ? "schedules" (WM)

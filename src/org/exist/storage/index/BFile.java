@@ -620,9 +620,8 @@ public class BFile extends BTree {
     /**
      * Put data under given key.
      * 
-     * 
      * @return on success the address of the stored value, else UNKNOWN_ADDRESS
-     * @see {@link BFile#put(Value, ByteArray, boolean)}
+     * @see BFile#put(Value,byte[],boolean)
      * @param key 
      * @param data the data (value) to update
      * @param overwrite overwrite if set to true, value will be overwritten if it already exists
@@ -639,7 +638,7 @@ public class BFile extends BTree {
     }
     
     /**
-     * Convinience method for {@link BFile#put(Value, byte[], true)}.
+     * Convinience method for {@link BFile#put(Value, byte[], boolean)}, overwrite is true.
      * 
      * @param key with which the data is updated
      * @param value value to update

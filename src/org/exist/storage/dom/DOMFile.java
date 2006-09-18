@@ -99,7 +99,7 @@ import org.w3c.dom.Node;
  * 
  * tid and length each use two bytes (short), address pointers 8 bytes (long).
  * The upper two bits of the tid are used to indicate the type of the record
- * (see {@see org.exist.storage.store.ItemId}).
+ * (see {@link org.exist.storage.dom.ItemId}).
  * 
  * @author Wolfgang Meier <wolfgang@exist-db.org>
  */

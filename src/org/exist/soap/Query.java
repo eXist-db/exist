@@ -43,7 +43,7 @@ public interface Query extends java.rmi.Remote {
 	 * Sessions are shared between the Query and Admin services. A session created
 	 * through the Query service can be used with the Admin service and vice versa.
 	 * 
-	 * @param user
+	 * @param userId
 	 * @param password
 	 * @return session-id a unique id for the created session 
 	 * @throws RemoteException if the user cannot log in
@@ -98,7 +98,7 @@ public interface Query extends java.rmi.Remote {
      * 
      * @param sessionId a valid session id as returned by connect().
      * @param xquery the XQuery script in binary encoding.
-     * @return
+     * @return query response
      * @throws RemoteException
      */
     public org.exist.soap.QueryResponse xquery(java.lang.String sessionId, byte[] xquery) throws java.rmi.RemoteException;

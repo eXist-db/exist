@@ -23,8 +23,7 @@
 package org.exist.util.serializer.encodings;
 
 /**
- * Latin2 character set. Adopted from Saxon {@link http://saxon.sourceforge.net}.
- * 
+ * Latin2 character set. Adopted from Saxon (http://saxon.sourceforge.net).
  */
 public class Latin2CharSet extends CharacterSet {
 

@@ -140,8 +140,9 @@ public class IndexSpec {
 	}
 	
     /**
-     * Set the current index depth {@see #getIndexDepth()}.
+     * Set the current index depth.
      * 
+     * @see #getIndexDepth()
      * @param depth Current index depth
      */
 	public void setIndexDepth( int depth ) {
