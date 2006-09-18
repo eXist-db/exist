@@ -50,9 +50,11 @@ import org.w3c.dom.NodeList;
 public class Update extends Modification {
 
     /**
-     * @param pool
-     * @param user
-     * @param selectStmt
+     * @param broker 
+     * @param docs 
+     * @param namespaces 
+     * @param variables 
+     * @param selectStmt 
      */
     public Update(DBBroker broker, DocumentSet docs, String selectStmt,
             Map namespaces, Map variables) {
