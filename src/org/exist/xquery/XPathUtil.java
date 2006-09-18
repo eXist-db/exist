@@ -64,7 +64,7 @@ public class XPathUtil {
      * internal types.
      * 
      * @param obj
-     * @return
+     * @return XQuery sequence
      * @throws XPathException
      */
 	public final static Sequence javaObjectToXPath(Object obj, XQueryContext context)

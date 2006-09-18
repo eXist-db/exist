@@ -93,7 +93,6 @@ public class FunEscapeURI extends BasicFunction {
      * 
      * @param s
      * @param escapeReserved
-     * @return
      */
     public static String escape(CharSequence s, boolean escapeReserved) {
         //TODO : use dedidated URIUtils... -pb

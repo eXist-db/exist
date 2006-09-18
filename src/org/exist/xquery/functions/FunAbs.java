@@ -52,7 +52,6 @@ public class FunAbs extends Function {
 				
 	/**
 	 * @param context
-	 * @param signature
 	 */
 	public FunAbs(XQueryContext context) {
 		super(context, signature);

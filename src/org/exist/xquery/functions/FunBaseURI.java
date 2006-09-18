@@ -61,9 +61,12 @@ public class FunBaseURI extends BasicFunction {
             )
     };
 			
-	/**
-	 * @param name
-	 */
+    /**
+     * 
+     * 
+     * @param context 
+     * @param signature 
+     */
 	public FunBaseURI(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}

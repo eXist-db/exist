@@ -58,7 +58,6 @@ public class FunNodeName extends Function {
     
     /**
      * @param context
-     * @param signature
      */
     public FunNodeName(XQueryContext context) {
         super(context, signature);

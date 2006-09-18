@@ -54,7 +54,6 @@ public class FunAvg extends Function {
 
 	/**
 	 * @param context
-	 * @param signature
 	 */
 	public FunAvg(XQueryContext context) {
 		super(context, signature);

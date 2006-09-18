@@ -50,7 +50,6 @@ public class GetMethod extends BasicFunction {
 
 	/**
 	 * @param context
-	 * @param signature
 	 */
 	public GetMethod(XQueryContext context) {
 		super(context, signature);

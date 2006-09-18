@@ -54,7 +54,6 @@ public class Clear extends BasicFunction {
 
 	/**
 	 * @param context
-	 * @param signature
 	 */
 	public Clear(XQueryContext context) {
 		super(context, signature);

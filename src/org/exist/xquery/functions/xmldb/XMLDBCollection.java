@@ -66,7 +66,6 @@ public class XMLDBCollection extends BasicFunction {
 
 	/**
 	 * @param context
-	 * @param signature
 	 */
 	public XMLDBCollection(XQueryContext context) {
 		super(context, signature);

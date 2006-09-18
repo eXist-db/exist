@@ -55,7 +55,6 @@ public class XMLDBRegisterDatabase extends BasicFunction {
 
 	/**
 	 * @param context
-	 * @param signature
 	 */
 	public XMLDBRegisterDatabase(XQueryContext context) {
 		super(context, signature);

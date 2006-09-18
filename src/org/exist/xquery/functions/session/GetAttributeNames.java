@@ -70,7 +70,6 @@ public class GetAttributeNames extends BasicFunction {
 
 	/**
 	 * @param context
-	 * @param signature
 	 */
 	public GetAttributeNames(XQueryContext context) {
 		super(context, signature);

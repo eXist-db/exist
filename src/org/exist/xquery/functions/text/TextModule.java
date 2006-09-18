@@ -51,7 +51,7 @@ public class TextModule extends AbstractInternalModule {
     };
     
     /**
-     * @param functions
+     * 
      */
     public TextModule() {
         super(functions);

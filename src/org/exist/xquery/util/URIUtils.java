@@ -144,7 +144,7 @@ public class URIUtils {
 	 * method simply wraps URLDecoder.decode(uri,"UTF-8).  It is places here
 	 * to provide a friendly way to decode URIs encoded by urlEncodeUtf8()
 	 * 
-	 * @param url The uri to decode
+	 * @param uri The uri to decode
 	 * @return The decoded value of the supplied uri
 	 */
 	public static String urlDecodeUtf8(String uri) {
@@ -161,7 +161,7 @@ public class URIUtils {
 	 * method simply wraps URLDecoder.decode(uri,"UTF-8).  It is places here
 	 * to provide a friendly way to decode URIs encoded by urlEncodeUtf8()
 	 * 
-	 * @param url The uri to decode
+	 * @param uri The uri to decode
 	 * @return The decoded value of the supplied uri
 	 */
 	public static String urlDecodeUtf8(XmldbURI uri) {
@@ -179,7 +179,7 @@ public class URIUtils {
 	 * a URL encoded version of the passed url, leaving any
 	 * occurrence of '/' as it is.
 	 * 
-	 * @param path The path to encode
+	 * @param url The path to encode
 	 * @return A UTF-8 URL encoded string
 	 */
 	public static String urlEncodePartsUtf8(String url) {

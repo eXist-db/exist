@@ -337,7 +337,6 @@ public abstract class Function extends PathExpr {
 	 * argument list.
 	 * 
 	 * @param pos
-	 * @return
 	 */
 	public Expression getArgument(int pos) {
 		return getExpression(pos);
@@ -358,7 +357,7 @@ public abstract class Function extends PathExpr {
 	/**
 	 * Return the name of this function.
 	 * 
-	 * @return
+	 * @return name of this function
 	 */
 	public QName getName() {
 		return mySignature.getName();
