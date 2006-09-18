@@ -57,7 +57,6 @@ public class FunTranslate extends Function {
 				
 	/**
 	 * @param context
-	 * @param signature
 	 */
 	public FunTranslate(XQueryContext context) {
 		super(context, signature);

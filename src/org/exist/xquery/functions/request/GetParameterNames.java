@@ -66,7 +66,6 @@ public class GetParameterNames extends BasicFunction {
 	
 	/**
 	 * @param context
-	 * @param signature
 	 */
 	public GetParameterNames(XQueryContext context) {
 		super(context, signature);

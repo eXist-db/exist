@@ -67,7 +67,6 @@ public class FunDoc extends Function {
 	
 	/**
 	 * @param context
-	 * @param signature
 	 */
 	public FunDoc(XQueryContext context) {
 		super(context, signature);

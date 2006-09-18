@@ -40,7 +40,6 @@ public class XMLDBPermissionsToString extends BasicFunction {
 	
 	/**
 	 * @param context
-	 * @param signature
 	 */
 	public XMLDBPermissionsToString(XQueryContext context) {
 		super(context, signature);

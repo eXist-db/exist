@@ -306,24 +306,19 @@ public interface RpcAPI {
 		throws EXistException, PermissionDeniedException;
 	
 	/**
-	 *  execute XPath query and return howmany nodes from the result set,
-	 *  starting at position <code>start</code>. If <code>prettyPrint</code> is
-	 *  set to >0 (true), results are pretty printed.
-	 *
-	 *@param  xpath                          the XPath query to execute
-	 *@param  howmany                        maximum number of results to
-	 *      return.
-	 *@param  start                          item in the result set to start
-	 *      with.
-	 *@param  prettyPrint                    turn on pretty printing if >0.
-	 *@param  encoding                       the character encoding to use.
-	 *@param  sortExpr                       Description of the Parameter
-	 *@param  user                           Description of the Parameter
-	 *@return                                Description of the Return Value
-	 *@exception  EXistException             Description of the Exception
-	 *@exception  PermissionDeniedException  Description of the Exception
-	 *@deprecated                            use Vector query() or int  executeQuery() instead
-	 */
+     *  execute XPath query and return howmany nodes from the result set,
+     *  starting at position <code>start</code>. If <code>prettyPrint</code> is
+     *  set to >0 (true), results are pretty printed.
+     * 
+     * @param xquery 
+     * @param parameters 
+     * @param howmany maximum number of results to return.
+     * @param start item in the result set to start  with.
+     * @param user 
+     * @exception EXistException
+     * @exception PermissionDeniedException 
+     * @deprecated use Vector query() or int  executeQuery() instead
+     */
 	byte[] query(
 		User user,
 		byte[] xquery,
@@ -681,18 +676,18 @@ public interface RpcAPI {
 	int getHits(User user, int resultId) throws EXistException, PermissionDeniedException;
 
 	/**
-	 *  Retrieve a single result from the result-set identified by resultId. The
-	 *  XML fragment at position num in the result set is returned.
-	 *
-	 *@param  resultId                       Description of the Parameter
-	 *@param  num                            Description of the Parameter
-	 *@param  prettyPrint                    Description of the Parameter
-	 *@param  encoding                       Description of the Parameter
-	 *@param  user                           Description of the Parameter
-	 *@return                                Description of the Return Value
-	 *@exception  EXistException             Description of the Exception
-	 *@exception  PermissionDeniedException  Description of the Exception
-	 */
+     *  Retrieve a single result from the result-set identified by resultId. The
+     *  XML fragment at position num in the result set is returned.
+     * 
+     * 
+     * @return Description of the Return Value
+     * @param parameters 
+     * @param resultId 
+     * @param num 
+     * @param user 
+     * @exception EXistException 
+     * @exception PermissionDeniedException 
+     */
 	byte[] retrieve(User user, int resultId, int num, Hashtable parameters)
 		throws EXistException, PermissionDeniedException;
 

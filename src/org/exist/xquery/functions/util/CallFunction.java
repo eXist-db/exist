@@ -59,7 +59,6 @@ public class CallFunction extends Function {
     
     /**
      * @param context
-     * @param signature
      */
     public CallFunction(XQueryContext context) {
         super(context, signature);

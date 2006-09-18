@@ -123,15 +123,15 @@ public abstract class Modification {
 	}
 	
 	/**
-	 * Process the modification. This is the main method that has to be implemented 
-	 * by all subclasses.
-	 * 
-	 * @return
-	 * @throws PermissionDeniedException
-	 * @throws LockException
-	 * @throws EXistException
-	 * @throws XPathException
-	 */
+     * Process the modification. This is the main method that has to be implemented 
+     * by all subclasses.
+     * 
+     * @param transaction 
+     * @throws PermissionDeniedException 
+     * @throws LockException 
+     * @throws EXistException 
+     * @throws XPathException 
+     */
 	public abstract long process(Txn transaction) throws PermissionDeniedException, LockException, 
 		EXistException, XPathException;
 

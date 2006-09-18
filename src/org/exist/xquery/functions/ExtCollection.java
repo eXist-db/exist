@@ -81,7 +81,6 @@ public class ExtCollection extends Function {
 	
 	/**
 	 * @param context
-	 * @param signature
 	 */
 	public ExtCollection(XQueryContext context) {
 		this(context, signature, true);

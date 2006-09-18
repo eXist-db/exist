@@ -65,7 +65,6 @@ public class ExtPhrase extends ExtFulltext {
      * 
      * @param searchArg
      * @param nodes 
-     * @return 
      */
     public Sequence evalQuery(String searchArg,	NodeSet nodes) throws XPathException {
 		try {
@@ -88,7 +87,6 @@ public class ExtPhrase extends ExtFulltext {
 	 * 
 	 * @param context
 	 * @param result
-	 * @return
 	 */
 	private Sequence exactMatch(XQueryContext context, NodeSet result) {
 		TextToken token;

@@ -67,7 +67,6 @@ public interface XQueryService extends org.xmldb.api.modules.XQueryService {
 	 * code, which can then be passed to {@link #execute(CompiledExpression)}.
 	 *  
 	 * @param query
-	 * @return
 	 * @throws XMLDBException
 	 */
 	public CompiledExpression compile(String query) throws XMLDBException;

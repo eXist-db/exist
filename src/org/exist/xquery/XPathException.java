@@ -111,7 +111,7 @@ public class XPathException extends Exception {
      * Returns just the error message, not including
      * line numbers or the call stack.
      * 
-     * @return
+     * @return error message
      */
     public String getDetailMessage() {
         return message;

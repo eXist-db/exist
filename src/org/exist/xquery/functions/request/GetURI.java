@@ -58,7 +58,6 @@ public class GetURI extends BasicFunction {
 	
 	/**
 	 * @param context
-	 * @param signature
 	 */
 	public GetURI(XQueryContext context) {
 		super(context, signature);

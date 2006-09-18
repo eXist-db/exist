@@ -55,7 +55,6 @@ public class FunExists extends Function {
 				
 	/**
 	 * @param context
-	 * @param signature
 	 */
 	public FunExists(XQueryContext context) {
 		super(context, signature);

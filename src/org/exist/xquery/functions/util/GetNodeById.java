@@ -59,7 +59,6 @@ public class GetNodeById extends BasicFunction {
 	
 	/**
 	 * @param context
-	 * @param signature
 	 */
 	public GetNodeById(XQueryContext context) {
 		super(context, signature);

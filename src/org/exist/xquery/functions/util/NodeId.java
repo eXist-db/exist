@@ -53,7 +53,6 @@ public class NodeId extends BasicFunction {
 	
 	/**
 	 * @param context
-	 * @param signature
 	 */
 	public NodeId(XQueryContext context) {
 		super(context, signature);

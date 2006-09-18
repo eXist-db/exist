@@ -55,7 +55,6 @@ public class XUpdateTest {
 
 	/**
 	 * Constructor for xupdate.
-	 * @param arg0
 	 */
 	public XUpdateTest() {
 		setUp();

@@ -38,7 +38,6 @@ public class Collations extends BasicFunction {
 	
 	/**
 	 * @param context
-	 * @param signature
 	 */
 	public Collations(XQueryContext context) {
 		super(context, signature);

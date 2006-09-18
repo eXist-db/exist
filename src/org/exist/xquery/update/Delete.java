@@ -57,10 +57,11 @@ import org.w3c.dom.Node;
 public class Delete extends Modification {
 
 	/**
-	 * @param context
-	 * @param select
-	 * @param value
-	 */
+     * 
+     * 
+     * @param context 
+     * @param select 
+     */
 	public Delete(XQueryContext context, Expression select) {
 		super(context, select, null);
 	}

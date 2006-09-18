@@ -53,7 +53,6 @@ public class MatchCount extends BasicFunction {
     
     /**
      * @param context
-     * @param signature
      */
     public MatchCount(XQueryContext context) {
         super(context, signature);

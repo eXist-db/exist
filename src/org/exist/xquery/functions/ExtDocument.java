@@ -83,7 +83,6 @@ public class ExtDocument extends Function {
 	
 	/**
 	 * @param context
-	 * @param signature
 	 */
 	public ExtDocument(XQueryContext context) {
 		super(context, signature);

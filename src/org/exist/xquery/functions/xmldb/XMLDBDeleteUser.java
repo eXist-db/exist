@@ -60,7 +60,6 @@ public class XMLDBDeleteUser extends BasicFunction {
 
 	/**
 	 * @param context
-	 * @param signature
 	 */
 	public XMLDBDeleteUser(XQueryContext context) {
 		super(context, signature);

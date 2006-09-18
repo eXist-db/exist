@@ -59,7 +59,6 @@ public class Invalidate extends BasicFunction {
     
     /**
      * @param context
-     * @param signature
      */
     public Invalidate(XQueryContext context) {
         super(context, signature);

@@ -51,7 +51,6 @@ public class IndexType extends BasicFunction {
 
     /**
      * @param context
-     * @param signature
      */
     public IndexType(XQueryContext context) {
         super(context, signature);

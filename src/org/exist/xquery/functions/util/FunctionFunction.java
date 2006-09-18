@@ -68,7 +68,6 @@ public class FunctionFunction extends BasicFunction {
     
     /**
      * @param context
-     * @param signature
      */
     public FunctionFunction(XQueryContext context) {
         super(context, signature);
