@@ -60,7 +60,7 @@ public class Remove extends Modification {
 	}
 
 	/**
-	 * @see org.exist.xupdate.Modification#process(org.exist.dom.DocumentSet)
+	 * @see org.exist.xupdate.Modification#process(org.exist.storage.txn.Txn)
 	 */
 	public long process(Txn transaction) throws PermissionDeniedException,
 			LockException, EXistException, XPathException {

@@ -37,7 +37,7 @@ import org.exist.xquery.value.Type;
 
 /**
  * Represents a call to a user-defined function 
- * {@link org.exist.xquery.functions.UserDefinedFunction}.
+ * {@link org.exist.xquery.UserDefinedFunction}.
  * 
  * FunctionCall wraps around a user-defined function. It makes sure that all function parameters
  * are checked against the signature of the function. 
