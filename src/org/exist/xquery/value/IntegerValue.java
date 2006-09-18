@@ -350,7 +350,7 @@ public class IntegerValue extends NumericValue {
 	}
 
 	/** The div operator performs floating-point division according to IEEE 754.
-	 * @see org.exist.xquery.value.NumericValue#div(org.exist.xquery.value.NumericValue)
+	 * @see org.exist.xquery.value.NumericValue#idiv(org.exist.xquery.value.NumericValue)
 	 */
 	public ComputableValue div(ComputableValue other) throws XPathException {
 		if (other instanceof IntegerValue) {
