@@ -319,9 +319,12 @@ public abstract class Modification {
 	 * @param docs
 	 */
 	protected void checkFragmentation(Txn transaction, DocumentSet docs) throws EXistException {
+        int fragmentationLimit = -1;
+        if (broker.customProperties.get(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR) != null)
+        	fragmentationLimit = ((Integer)broker.customProperties.get(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR)).intValue();		
 	    for(Iterator i = docs.iterator(); i.hasNext(); ) {
 	        DocumentImpl next = (DocumentImpl) i.next();
-	        if(next.getMetadata().getSplitCount() > broker.getFragmentationLimit())
+	        if(next.getMetadata().getSplitCount() > fragmentationLimit)
 	            broker.defragXMLResource(transaction, next);
 	        broker.checkXMLResourceConsistency(next);
 	    }

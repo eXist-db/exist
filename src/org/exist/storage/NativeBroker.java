@@ -2203,6 +2203,9 @@ public class NativeBroker extends DBBroker {
     /** consistency Check of the database; useful after XUpdates;
      * called if xupdate.consistency-checks is true in configuration */ 
     public void checkXMLResourceConsistency(DocumentImpl doc) throws EXistException {
+        boolean xupdateConsistencyChecks = false;
+        if (customProperties.get(PROPERTY_XUPDATE_CONSISTENCY_CHECKS) != null)
+        	xupdateConsistencyChecks = ((Boolean)customProperties.get(PROPERTY_XUPDATE_CONSISTENCY_CHECKS)).booleanValue();
         if(xupdateConsistencyChecks) {
             LOG.debug("Checking document " + doc.getFileURI());
             checkXMLResourceTree(doc);
@@ -2214,6 +2217,9 @@ public class NativeBroker extends DBBroker {
      * called by {@link #checkResourceConsistency()} */
     public void checkXMLResourceTree(final DocumentImpl doc) {
         LOG.debug("Checking DOM tree for document " + doc.getFileURI());
+        boolean xupdateConsistencyChecks = false;
+        if (customProperties.get(PROPERTY_XUPDATE_CONSISTENCY_CHECKS) != null)
+        	xupdateConsistencyChecks = ((Boolean)customProperties.get(PROPERTY_XUPDATE_CONSISTENCY_CHECKS)).booleanValue();
         if(xupdateConsistencyChecks) {
             new DOMTransaction(this, domDb, Lock.READ_LOCK) {
                 public Object start() throws ReadOnlyException {

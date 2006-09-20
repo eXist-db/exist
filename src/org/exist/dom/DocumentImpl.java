@@ -306,8 +306,12 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	    return (length<0) ? 0 : length;
 	}
     
-	public void triggerDefrag() {
-		getMetadata().setSplitCount(broker.getFragmentationLimit());
+	public void triggerDefrag() {		
+        int fragmentationLimit = -1;
+        if (broker.customProperties.get(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR) != null)
+        	fragmentationLimit = ((Integer)broker.customProperties.get(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR)).intValue();
+        if (fragmentationLimit != -1)
+        	getMetadata().setSplitCount(fragmentationLimit);
 	}  
     
     public NodeList getRange(long first, long last) {

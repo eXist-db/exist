@@ -35,6 +35,7 @@ import java.util.TreeSet;
 
 import org.exist.EXistException;
 import org.exist.Namespaces;
+import org.exist.storage.DBBroker;
 import org.exist.storage.GeneralRangeIndexSpec;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NodePath;
@@ -361,9 +362,14 @@ public class ElementImpl extends NamedNode implements Element {
             owner.incMaxDepth();
             LOG.debug("Incrementing maxDepth to '" + owner.getMaxDepth() + "'");
         }
+        
+        int XUpdateGrowthFactor = -1;
+        if (getBroker().customProperties.get(DBBroker.PROPERTY_XUPDATE_GROWTH_FACTOR) != null)
+        	XUpdateGrowthFactor = ((Integer)getBroker().customProperties.get(DBBroker.PROPERTY_XUPDATE_GROWTH_FACTOR)).intValue();   
+        
         if (owner.getTreeLevelOrder(level + 1) < children + size) {
             // recompute the order of the tree
-            owner.setTreeLevelOrder(level + 1, children + size + getBroker().getXUpdateGrowthFactor());
+            owner.setTreeLevelOrder(level + 1, children + size + XUpdateGrowthFactor);
             owner.calculateTreeLevelStartPoints(false);
             int reindex = owner.getMetadata().reindexRequired();
             if (reindex == DocumentMetadata.REINDEX_ALL || reindex > level + 1) {
