@@ -71,8 +71,7 @@ import org.w3c.dom.Node;
  * thread to avoid conflicting writes. The page structure is as follows:
  *  | page header | (tid1 node-data, tid2 node-data, ..., tidn node-data) |
  * 
- * node-data contains the raw binary data of the node as returned by
- * {@link org.exist.dom.NodeImpl#serialize()}. Within a page, a node is
+ * node-data contains the raw binary data of the node. Within a page, a node is
  * identified by a unique id, called tuple id (tid). Every node can thus be
  * located by a virtual address pointer, which consists of the page id and the
  * tid. Both components are encoded in a long value (with additional bits used
@@ -342,7 +341,7 @@ public class DOMFile extends BTree implements Lockable {
         }
 
 	/**
-	 * Return binary data stored with {@link #addBinary(byte[])}.
+	 * Return binary data stored with {@link #addBinary(Txn, DocumentImpl, byte[])}.
 	 * 
 	 * @param pageNum
 	 */

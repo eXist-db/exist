@@ -16,7 +16,7 @@
  * along with this program; if not, write to the Free Software Foundation
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
- *  $Id:$
+ *  $Id$
  */
 
 package org.exist.xquery.functions;
@@ -68,7 +68,7 @@ public class FunId extends Function {
 	}
 
 	/**
-	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.dom.NodeSet, org.exist.dom.NodeProxy)
+	 * @see org.exist.xquery.Expression#eval(Sequence, Item)
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {

@@ -87,12 +87,8 @@ public interface ContentLoadingObserver {
 	 */
 	public abstract void dropIndex(DocumentImpl doc) throws ReadOnlyException;
 
-	/**
-     * Reindexes all pending items for the specified document. Similar to the normal index process,
-     * items to be reindexed are added to the internal pending list via methods 
-     * {@link #addNode(QName, NodeProxy)}, {@link #storeElement(int, ElementImpl, String)},
-     * and {@link #storeAttribute(RangeIndexSpec, AttrImpl)}. Method reindex then scans this
-     * list and updates the items in the index to reflect the reindexed document.
+    /**
+     * Reindexes all pending items for the specified document. 
      * 
      * @param oldDoc the document to be reindexed.
      * @param node if != null, only nodes being descendants of the specified node will be

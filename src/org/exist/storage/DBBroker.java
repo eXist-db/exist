@@ -560,15 +560,15 @@ public abstract class DBBroker extends Observable {
 	public abstract void repair() throws PermissionDeniedException;
 
 	/**
-	 * Saves the specified collection to storage. Collections are usually cached
-	 * in memory. If a collection is modified, this method needs to be called to
-	 * make the changes persistent. Note: appending a new document to a
-	 * collection does not require a save. Instead,
-	 * {@link #addDocument(Collection, DocumentImpl)} is called.
-	 * 
-	 * @param collection
-	 *            to store
-	 */
+     * Saves the specified collection to storage. Collections are usually cached
+     * in memory. If a collection is modified, this method needs to be called to
+     * make the changes persistent. Note: appending a new document to a
+     * collection does not require a save. 
+     * 
+     * @param transaction 
+     * @param collection Collection to store
+     * @throws org.exist.security.PermissionDeniedException 
+     */
 	public abstract void saveCollection(Txn transaction, Collection collection)
 			throws PermissionDeniedException;
 
@@ -627,8 +627,7 @@ public abstract class DBBroker extends Observable {
 			NodePath currentPath, String content, long oldAddress);
 
 	/**
-	 * Store a document (descriptor) into the database (all metadata information
-	 * which is returned by {@link org.exist.dom.DocumentImpl#serialize()}).
+	 * Store a document (descriptor) into the database.
 	 * 
 	 * @param doc
 	 *            the document's metadata to store.
