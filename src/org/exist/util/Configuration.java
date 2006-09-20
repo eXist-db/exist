@@ -39,6 +39,7 @@ import org.apache.log4j.Logger;
 import org.exist.memtree.SAXAdapter;
 import org.exist.security.User;
 import org.exist.security.xacml.XACMLConstants;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NativeBroker;
@@ -805,8 +806,8 @@ public class Configuration implements ErrorHandler
         String min = pool.getAttribute("min");
         if (min != null) {
             try {
-                config.put("db-connection.pool.min", new Integer(min));
-                LOG.debug("db-connection.pool.min: " + config.get("db-connection.pool.min"));
+                config.put(BrokerPool.PROPERTY_MIN_CONNECTIONS, new Integer(min));
+                LOG.debug(BrokerPool.PROPERTY_MIN_CONNECTIONS + ": " + config.get(BrokerPool.PROPERTY_MIN_CONNECTIONS));
             } catch (NumberFormatException e) {
             	LOG.warn(e);
             }
@@ -815,8 +816,8 @@ public class Configuration implements ErrorHandler
         String max = pool.getAttribute("max");
         if (max != null) {
 	        try {
-	            config.put("db-connection.pool.max", new Integer(max));
-	            LOG.debug("db-connection.pool.max: " + config.get("db-connection.pool.max"));
+	            config.put(BrokerPool.PROPERTY_MAX_CONNECTIONS, new Integer(max));
+	            LOG.debug(BrokerPool.PROPERTY_MAX_CONNECTIONS + ": " + config.get(BrokerPool.PROPERTY_MAX_CONNECTIONS));
 	        } catch (NumberFormatException e) {
 	        	LOG.warn(e);
 	        }
@@ -825,18 +826,18 @@ public class Configuration implements ErrorHandler
         String sync = pool.getAttribute("sync-period");
         if (sync != null) {
             try {
-                config.put("db-connection.pool.sync-period", new Long(sync));
-                LOG.debug("db-connection.pool.sync-period: " + config.get("db-connection.pool.sync-period"));
+                config.put(BrokerPool.PROPERTY_SYNC_PERIOD, new Long(sync));
+                LOG.debug(BrokerPool.PROPERTY_SYNC_PERIOD + ": " + config.get(BrokerPool.PROPERTY_SYNC_PERIOD));
             } catch (NumberFormatException e) {
             	LOG.warn(e);
             }
         }
         
-        String maxShutdownWait = pool.getAttribute("wait-before-shutdown");
+        String maxShutdownWait = pool.getAttribute(BrokerPool.PROPERTY_SHUTDOWN_DELAY);
         if (maxShutdownWait != null) {
             try {
-                config.put("wait-before-shutdown", new Long(maxShutdownWait));
-                LOG.debug("wait-before-shutdown: " + config.get("wait-before-shutdown"));
+                config.put(BrokerPool.PROPERTY_SHUTDOWN_DELAY, new Long(maxShutdownWait));
+                LOG.debug(BrokerPool.PROPERTY_SHUTDOWN_DELAY + ": " + config.get(BrokerPool.PROPERTY_SHUTDOWN_DELAY));
             } catch (NumberFormatException e) {
             	LOG.warn(e);
             }

@@ -74,6 +74,12 @@ public class BrokerPool {
 	 */	
 	public final static String DEFAULT_INSTANCE_NAME = "exist";		
 	
+	//Various configuration property keys (set by the configuration manager)
+	public final static String PROPERTY_MIN_CONNECTIONS = "db-connection.pool.min";
+	public final static String PROPERTY_MAX_CONNECTIONS = "db-connection.pool.min";
+	public final static String PROPERTY_SYNC_PERIOD = "db-connection.pool.sync-period";
+	public final static String PROPERTY_SHUTDOWN_DELAY = "wait-before-shutdown";
+	
 	//TODO : inline the class ? or... make it configurable ?
     // WM: inline. I don't think users need to be able to overwrite this.
     // They can register their own shutdown hooks any time.
@@ -477,10 +483,10 @@ public class BrokerPool {
 		 * by the ones *explicitely* provided by the constructor
 		 * TODO : consider a private constructor BrokerPool(String instanceName) then configure(int minBrokers, int maxBrokers, Configuration config)
 		 */		
-		anInteger = (Integer) conf.getProperty("db-connection.pool.min");
+		anInteger = (Integer) conf.getProperty(PROPERTY_MIN_CONNECTIONS);
 		if (anInteger != null)
 			this.minBrokers = anInteger.intValue();		
-		anInteger = (Integer) conf.getProperty("db-connection.pool.max"); 
+		anInteger = (Integer) conf.getProperty(PROPERTY_MAX_CONNECTIONS); 
 		if (anInteger != null)
 			this.maxBrokers = anInteger.intValue();		
 		//TODO : sanity check : minBrokers shall be lesser than or equal to maxBrokers
@@ -488,7 +494,7 @@ public class BrokerPool {
 		LOG.info("database instance '" + instanceName + "' will have between " + this.minBrokers + " and " + this.maxBrokers + " brokers");
 		
 		//TODO : use the periodicity of a SystemTask (see below)
-		aLong = (Long) conf.getProperty("db-connection.pool.sync-period");
+		aLong = (Long) conf.getProperty(PROPERTY_SYNC_PERIOD);
 		if (aLong != null)
 			/*this.*/syncPeriod = aLong.longValue();
 		//TODO : sanity check : the synch period should be reasonible
