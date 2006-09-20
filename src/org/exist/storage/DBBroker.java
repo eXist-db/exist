@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.Collator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
@@ -109,18 +110,18 @@ public abstract class DBBroker extends Observable {
 	private int referenceCount = 0;
 
 	//TODO : move elsewhere
-	public static String PROPERTY_XUPDATE_GROWTH_FACTOR = "xupdate.growth-factor";
-	protected int xupdateGrowthFactor = 1;
+	public static String PROPERTY_XUPDATE_GROWTH_FACTOR = "xupdate.growth-factor";	
 
 	//TODO : move elsewhere
-	public static String PROPERTY_XUPDATE_FRAGMENTATION_FACTOR = "xupdate.fragmentation";
-	protected int docFragmentationLimit = 25;
+	public static String PROPERTY_XUPDATE_FRAGMENTATION_FACTOR = "xupdate.fragmentation";	
 
 	//TODO : move elsewhere
-	public static String PROPERTY_XUPDATE_CONSISTENCY_CHECKS = "xupdate.consistency-checks";
-	protected boolean xupdateConsistencyChecks = false;
+	public static String PROPERTY_XUPDATE_CONSISTENCY_CHECKS = "xupdate.consistency-checks";	
 
 	protected String id;
+	
+	//TODO : use a property object
+	public HashMap customProperties = new HashMap();
 
 	/**
 	 * Save the global symbol table. The global symbol table stores QNames and
@@ -202,15 +203,18 @@ public abstract class DBBroker extends Observable {
 			} else
 				loadSymbols();
 			config.setProperty("db-connection.symbol-table", symbols);
-		}
-		if ((xupdateGrowthFactor = config.getInteger(PROPERTY_XUPDATE_GROWTH_FACTOR)) == -1)
-			xupdateGrowthFactor = 1;
-		if ((docFragmentationLimit = config.getInteger(PROPERTY_XUPDATE_FRAGMENTATION_FACTOR)) == -1)
-			docFragmentationLimit = 50;
-		if ((temp = (Boolean) config.getProperty(PROPERTY_XUPDATE_CONSISTENCY_CHECKS)) != null)
-			xupdateConsistencyChecks = temp.booleanValue();
+		}		
 
-		LOG.debug("fragmentation = " + docFragmentationLimit);
+		//Copy specific properties 
+		//TODO : think about an automatic copy
+		customProperties.put(PROPERTY_XUPDATE_GROWTH_FACTOR, 
+				new Integer(config.getInteger(PROPERTY_XUPDATE_GROWTH_FACTOR)));
+		customProperties.put(PROPERTY_XUPDATE_FRAGMENTATION_FACTOR, 
+				new Integer(config.getInteger(PROPERTY_XUPDATE_FRAGMENTATION_FACTOR)));		
+		if ((temp = (Boolean) config.getProperty(PROPERTY_XUPDATE_CONSISTENCY_CHECKS)) != null)
+			customProperties.put(PROPERTY_XUPDATE_CONSISTENCY_CHECKS, 
+					new Boolean(temp.booleanValue()));
+
 		this.pool = pool;
 		xqueryService = new XQuery(this);
 	}
@@ -941,19 +945,7 @@ public abstract class DBBroker extends Observable {
 	public void decReferenceCount() {
 		--referenceCount;
 	}
-
-	public int getXUpdateGrowthFactor() {
-		return xupdateGrowthFactor;
-	}
-
-	public int getFragmentationLimit() {
-		return docFragmentationLimit;
-	}
-
-	public boolean consistencyChecksEnabled() {
-		return xupdateConsistencyChecks;
-	}
-
+	
 	public abstract int getPageSize();
 
 	public abstract IndexSpec getIndexConfiguration();
