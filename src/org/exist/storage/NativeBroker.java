@@ -486,7 +486,7 @@ public class NativeBroker extends DBBroker {
     }    
     
     /** Takes care of actually remove entries from the indices;
-     * must be called after one or more call to {@link #removeNode()}. */
+     * must be called after one or more call to {@link #removeNode(Txn, StoredNode, NodePath, String)}. */
     public void endRemove() {
         notifyRemove();
     }
@@ -1062,7 +1062,6 @@ public class NativeBroker extends DBBroker {
      * the changes persistent.
      * 
      * Note: appending a new document to a collection does not require a save.
-     * Instead, {@link #addDocument(Collection, DocumentImpl)} is called.
      */
     public void saveCollection(Txn transaction, Collection collection) throws PermissionDeniedException {
         if (collection == null) {
@@ -2214,7 +2213,7 @@ public class NativeBroker extends DBBroker {
     }
     
     /** consistency Check of the database; useful after XUpdates;
-     * called by {@link #checkResourceConsistency()} */
+     * called by {@link #checkXMLResourceConsistency(DocumentImpl)} */
     public void checkXMLResourceTree(final DocumentImpl doc) {
         LOG.debug("Checking DOM tree for document " + doc.getFileURI());
         boolean xupdateConsistencyChecks = false;

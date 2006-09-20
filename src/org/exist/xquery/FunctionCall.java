@@ -138,7 +138,7 @@ public class FunctionCall extends Function {
 	 * The return value of the user-defined function will be checked against the
 	 * provided function signature.
 	 * 
-	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+	 * @see org.exist.xquery.Expression#eval(Sequence, Item)
 	 */
 	public Sequence eval(
 		Sequence contextSequence,
