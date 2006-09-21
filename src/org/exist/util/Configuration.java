@@ -44,6 +44,7 @@ import org.exist.storage.CacheManager;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NativeBroker;
+import org.exist.storage.XQueryPool;
 import org.exist.validation.resolver.eXistCatalogResolver;
 import org.exist.xquery.XQueryWatchDog;
 import org.w3c.dom.Document;
@@ -761,8 +762,8 @@ public class Configuration implements ErrorHandler
         String maxStackSize = queryPool.getAttribute("max-stack-size");
         if (maxStackSize != null) {
             try {
-                config.put("db-connection.query-pool.max-stack-size", new Integer(maxStackSize));
-                LOG.debug("db-connection.query-pool.max-stack-size: " + config.get("db-connection.query-pool.max-stack-size"));
+                config.put(XQueryPool.PROPERTY_MAX_STACK_SIZE, new Integer(maxStackSize));
+                LOG.debug(XQueryPool.PROPERTY_MAX_STACK_SIZE + ": " + config.get(XQueryPool.PROPERTY_MAX_STACK_SIZE));
             } catch (NumberFormatException e) {
             	LOG.warn(e);
             }
@@ -771,8 +772,8 @@ public class Configuration implements ErrorHandler
         String maxPoolSize = queryPool.getAttribute("size");
         if (maxPoolSize != null) {
         	try {
-        		config.put("db-connection.query-pool.size", new Integer(maxPoolSize));
-        		LOG.debug("db-connection.query-pool.size: " + config.get("db-connection.query-pool.size"));
+        		config.put(XQueryPool.PROPERTY_POOL_SIZE, new Integer(maxPoolSize));
+        		LOG.debug(XQueryPool.PROPERTY_POOL_SIZE + ": " + config.get(XQueryPool.PROPERTY_POOL_SIZE));
         	} catch (NumberFormatException e) {
         		LOG.warn(e);
         	}
@@ -781,8 +782,8 @@ public class Configuration implements ErrorHandler
         String timeout = queryPool.getAttribute("timeout");
         if (timeout != null) {
             try {
-                config.put("db-connection.query-pool.timeout", new Long(timeout));
-                LOG.debug("db-connection.query-pool.timeout: " + config.get("db-connection.query-pool.timeout"));
+                config.put(XQueryPool.PROPERTY_TIMEOUT, new Long(timeout));
+                LOG.debug(XQueryPool.PROPERTY_TIMEOUT + ": " + config.get(XQueryPool.PROPERTY_TIMEOUT));
             } catch (NumberFormatException e) {
             	LOG.warn(e);
             }
@@ -791,8 +792,8 @@ public class Configuration implements ErrorHandler
         String timeoutCheckInterval = queryPool.getAttribute("timeout-check-interval");           
         if (timeoutCheckInterval != null) {
             try {
-                config.put("db-connection.query-pool.timeout-check-interval", new Long(timeoutCheckInterval));
-                LOG.debug("db-connection.query-pool.timeout-check-interval: " + config.get("db-connection.query-pool.timeout-check-interval"));
+                config.put(XQueryPool.PROPERTY_TIMEOUT_CHECK_INTERVAL, new Long(timeoutCheckInterval));
+                LOG.debug(XQueryPool.PROPERTY_TIMEOUT_CHECK_INTERVAL + ": " + config.get(XQueryPool.PROPERTY_TIMEOUT_CHECK_INTERVAL));
             } catch (NumberFormatException e) {
             	LOG.warn(e);
             }

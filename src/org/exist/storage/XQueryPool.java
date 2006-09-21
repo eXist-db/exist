@@ -63,6 +63,12 @@ public class XQueryPool extends Object2ObjectHashMap {
     private long timeout;
 
     private long timeoutCheckInterval;
+    
+    public static final String PROPERTY_MAX_STACK_SIZE = "db-connection.query-pool.max-stack-size";
+    public static final String PROPERTY_POOL_SIZE = "db-connection.query-pool.size";
+    public static final String PROPERTY_TIMEOUT = "db-connection.query-pool.timeout";
+    public static final String PROPERTY_TIMEOUT_CHECK_INTERVAL = 
+    	"db-connection.query-pool.timeout-check-interval";
 
     /**
      * @param conf
@@ -71,12 +77,10 @@ public class XQueryPool extends Object2ObjectHashMap {
         super(27);
         lastTimeOutCheck = System.currentTimeMillis();
 
-        Integer maxStSz = (Integer) conf
-                .getProperty("db-connection.query-pool.max-stack-size");
-        Integer maxPoolSz = (Integer) conf.getProperty("db-connection.query-pool.size");
-        Long t = (Long) conf.getProperty("db-connection.query-pool.timeout");
-        Long tci = (Long) conf
-                .getProperty("db-connection.query-pool.timeout-check-interval");
+        Integer maxStSz = (Integer) conf.getProperty(PROPERTY_MAX_STACK_SIZE);
+        Integer maxPoolSz = (Integer) conf.getProperty(PROPERTY_POOL_SIZE);
+        Long t = (Long) conf.getProperty(PROPERTY_TIMEOUT);
+        Long tci = (Long) conf.getProperty(PROPERTY_TIMEOUT_CHECK_INTERVAL);
 
         if (maxPoolSz != null)
         	maxPoolSize = maxPoolSz.intValue();
@@ -93,6 +97,7 @@ public class XQueryPool extends Object2ObjectHashMap {
         else
             timeout = TIMEOUT;
 
+        //TODO : check that it is inferior to t
         if (tci != null)
             timeoutCheckInterval = tci.longValue();
         else
