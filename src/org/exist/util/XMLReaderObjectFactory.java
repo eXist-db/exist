@@ -43,6 +43,8 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
 	private final static int VALIDATION_AUTO = 1;
 	private final static int VALIDATION_DISABLED = 2;
 	
+	public static String PROPERTY_VALIDATION = "indexer.validation";
+	
 	private BrokerPool pool;
 	
 	/**
@@ -60,7 +62,7 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
 		Configuration config = pool.getConfiguration();
 		// get validation settings
 		int validation = VALIDATION_AUTO;
-		String option = (String) config.getProperty("indexer.validation");
+		String option = (String) config.getProperty(PROPERTY_VALIDATION);
 		if (option != null) {
 			if (option.equals("true") || option.equals("yes"))
 				validation = VALIDATION_ENABLED;
