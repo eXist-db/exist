@@ -36,6 +36,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Logger;
+import org.exist.Indexer;
 import org.exist.memtree.SAXAdapter;
 import org.exist.security.User;
 import org.exist.security.xacml.XACMLConstants;
@@ -44,6 +45,8 @@ import org.exist.storage.CacheManager;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NativeBroker;
+import org.exist.storage.NativeValueIndex;
+import org.exist.storage.TextSearchEngine;
 import org.exist.storage.XQueryPool;
 import org.exist.validation.resolver.eXistCatalogResolver;
 import org.exist.xquery.XQueryWatchDog;
@@ -866,32 +869,32 @@ public class Configuration implements ErrorHandler
 
         String parseNum = p.getAttribute("parseNumbers");
         if (parseNum != null) {
-            config.put("indexer.indexNumbers", Boolean.valueOf(parseNum.equals("yes")));
-            LOG.debug("indexer.indexNumbers: " + config.get("indexer.indexNumbers"));
+            config.put(TextSearchEngine.PROPERTY_INDEX_NUMBERS, Boolean.valueOf(parseNum.equals("yes")));
+            LOG.debug(TextSearchEngine.PROPERTY_INDEX_NUMBERS + ": " + config.get(TextSearchEngine.PROPERTY_INDEX_NUMBERS));
         }
 
         String stemming = p.getAttribute("stemming");
         if (stemming != null) {
-            config.put("indexer.stem", Boolean.valueOf(stemming.equals("yes")));
-            LOG.debug("indexer.stem: " + config.get("indexer.stem"));
+            config.put(TextSearchEngine.PROPERTY_STEM, Boolean.valueOf(stemming.equals("yes")));
+            LOG.debug(TextSearchEngine.PROPERTY_STEM + ": " + config.get(TextSearchEngine.PROPERTY_STEM));
         }
 
         String termFreq = p.getAttribute("track-term-freq");
         if (termFreq != null) {
-            config.put("indexer.store-term-freq", Boolean.valueOf(termFreq.equals("yes")));
-            LOG.debug("indexer.store-term-freq: " + config.get("indexer.store-term-freq"));
+            config.put(TextSearchEngine.PROPERTY_STORE_TERM_FREQUENCY, Boolean.valueOf(termFreq.equals("yes")));
+            LOG.debug(TextSearchEngine.PROPERTY_STORE_TERM_FREQUENCY + ": " + config.get(TextSearchEngine.PROPERTY_STORE_TERM_FREQUENCY));
         }
 
         String caseSensitive = p.getAttribute("caseSensitive");
         if (caseSensitive != null) {
-            config.put("indexer.case-sensitive", Boolean.valueOf(caseSensitive.equals("yes")));
-            LOG.debug("indexer.case-sensitive: " + config.get("indexer.case-sensitive"));
+            config.put(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE, Boolean.valueOf(caseSensitive.equals("yes")));
+            LOG.debug(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE + ": " + config.get(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE));
         }
 
         String suppressWS = p.getAttribute("suppress-whitespace");
         if (suppressWS != null) {
-            config.put("indexer.suppress-whitespace", suppressWS);
-            LOG.debug("indexer.suppress-whitespace: " + config.get("indexer.suppress-whitespace"));
+            config.put(Indexer.PROPERTY_SUPPRESS_WHITESPACE, suppressWS);
+            LOG.debug(Indexer.PROPERTY_SUPPRESS_WHITESPACE + ": " + config.get(Indexer.PROPERTY_SUPPRESS_WHITESPACE));
         }
 
         String validation = p.getAttribute("validation");         

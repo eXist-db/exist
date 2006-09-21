@@ -101,7 +101,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 	protected String ignorePrefix = null;
 	protected ProgressIndicator progress;
 	
-	protected boolean suppressWSmixed =false;
+	protected boolean suppressWSmixed = false;
 
     /* used to record the number of children of an element during 
      * validation phase. later, when storing the nodes, we already
@@ -116,6 +116,8 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 	// reusable fields
 	private TextImpl text = new TextImpl();
 	private Stack usedElements = new Stack();
+	
+	public static String PROPERTY_SUPPRESS_WHITESPACE = "indexer.suppress-whitespace";
 	
 	/**
 	 *  Create a new parser using the given database broker and
@@ -142,15 +144,15 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 	public Indexer(DBBroker broker, Txn transaction, boolean priv) throws EXistException {
 		this.broker = broker;
         this.transaction = transaction;
+        //TODO : move the configuration in the constructor or in a dedicated method
 		Configuration config = broker.getConfiguration();
-		String suppressWS =
-			(String) config.getProperty("indexer.suppress-whitespace");
+		String suppressWS =	(String) config.getProperty(PROPERTY_SUPPRESS_WHITESPACE);
 		if (suppressWS != null) {
-			if (suppressWS.equals("leading"))
+			if ("leading".equals(suppressWS))
 				normalize = XMLString.SUPPRESS_LEADING_WS;
-			else if (suppressWS.equals("trailing"))
+			else if ("trailing".equals(suppressWS))
 				normalize = XMLString.SUPPRESS_TRAILING_WS;
-			else if (suppressWS.equals("none"))
+			else if ("none".equals(suppressWS))
 				normalize = 0;
 		}
 		
