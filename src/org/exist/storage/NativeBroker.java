@@ -141,6 +141,9 @@ public class NativeBroker extends DBBroker {
     public static final String COLLECTIONS_DBX = "collections.dbx";
     public static final String WORDS_DBX = "words.dbx";
     
+    public static final String PROPERTY_PAGE_SIZE = "db-connection.page-size";
+    public static final String PROPERTY_MIN_FREE_MEMORY = "db-connection.min_free_memory";
+    
     private static final byte[] ALL_STORAGE_FILES = {
     	COLLECTIONS_DBX_ID, ELEMENTS_DBX_ID, VALUES_DBX_ID,
     	VALUES_QNAME_DBX_ID, WORDS_DBX_ID, DOM_DBX_ID
@@ -231,7 +234,7 @@ public class NativeBroker extends DBBroker {
 		if (dataDir == null)
             dataDir = DEFAULT_DATA_DIR;
 
-        pageSize = config.getInteger("db-connection.page-size");
+        pageSize = config.getInteger(PROPERTY_PAGE_SIZE);
 		if (pageSize < 0)
             pageSize = DEFAULT_PAGE_SIZE;
         Paged.setPageSize(pageSize);
@@ -240,7 +243,7 @@ public class NativeBroker extends DBBroker {
 		if (defaultIndexDepth < 0)
 			defaultIndexDepth = DEFAULT_INDEX_DEPTH;
         
-        memMinFree = config.getInteger("db-connection.min_free_memory");
+        memMinFree = config.getInteger(PROPERTY_MIN_FREE_MEMORY);
 		if (memMinFree < 0)
 			memMinFree = DEFAULT_MIN_MEMORY;
         
