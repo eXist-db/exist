@@ -67,12 +67,12 @@ public class Configuration implements ErrorHandler
 	 * I vote for a Singleton (like Descriptor.java) - deliriumsky
 	 */
     
-    private final static Logger LOG = Logger.getLogger(Configuration.class);	//Logger
-    protected static String file = null;												//config file (conf.xml by default)
+    private final static Logger LOG = Logger.getLogger(Configuration.class); //Logger
+    protected static String file = null; //config file (conf.xml by default)
     protected static File existHome = null;
 
     protected DocumentBuilder builder = null;									
-    protected HashMap config = new HashMap();									//Configuration						
+    protected HashMap config = new HashMap(); //Configuration						
     
     public static final class SystemTaskConfig {
         
@@ -126,7 +126,7 @@ public class Configuration implements ErrorHandler
 				LOG.debug(e);
 			}
 
-            // otherise, secondly try to read configuration from file. Guess the
+            // otherwise, secondly try to read configuration from file. Guess the
             // location if necessary
             if (is == null) {
                 Configuration.existHome = (existHomeDirname != null) ? new File(existHomeDirname) : getExistHome(existHomeDirname);
@@ -491,6 +491,7 @@ public class Configuration implements ErrorHandler
             }
         }
         
+        //Unused !
         String buffers = con.getAttribute("buffers");
         if (buffers != null) {
             try {
@@ -511,6 +512,7 @@ public class Configuration implements ErrorHandler
             }
         }  
             
+        //Unused !
         String collBuffers = con.getAttribute("collection_buffers");            
         if (collBuffers != null) {
             try {
@@ -521,6 +523,7 @@ public class Configuration implements ErrorHandler
             }
         }
 
+        //Unused !
         String wordBuffers = con.getAttribute("words_buffers");
         if (wordBuffers != null)
         try {
@@ -530,6 +533,7 @@ public class Configuration implements ErrorHandler
         	LOG.warn(nfe);
         }
 
+        //Unused !
         String elementBuffers = con.getAttribute("elements_buffers");
         if (elementBuffers != null) {
             try {
@@ -550,11 +554,12 @@ public class Configuration implements ErrorHandler
             }
         }
         
+        //Not clear : rather looks like a buffers count
         String collCacheSize = con.getAttribute("collectionCacheSize");
         if (collCacheSize != null) {
             try {
-                config.put("db-connection.collection-cache-size", new Integer(collCacheSize));
-                LOG.debug("db-connection.collection-cache-size: " + config.get("db-connection.collection-cache-size"));
+                config.put(BrokerPool.PROPERTY_COLLECTION_CACHE_SIZE, new Integer(collCacheSize));
+                LOG.debug(BrokerPool.PROPERTY_COLLECTION_CACHE_SIZE + ": " + config.get(BrokerPool.PROPERTY_COLLECTION_CACHE_SIZE));
             } catch (NumberFormatException nfe) {
             	LOG.warn(nfe);
             }
