@@ -187,7 +187,7 @@ public abstract class DBBroker extends Observable {
 			throws EXistException {
 		this.config = config;
 		Boolean temp;
-		if ((temp = (Boolean) config.getProperty("indexer.case-sensitive")) != null)
+		if ((temp = (Boolean) config.getProperty(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE)) != null)
 			caseSensitive = temp.booleanValue();
 		String dataDir;
 		if ((dataDir = (String) config.getProperty("db-connection.data-dir")) == null)

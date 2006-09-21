@@ -69,6 +69,10 @@ public abstract class TextSearchEngine extends Observable {
 	protected PorterStemmer stemmer = null;
 	protected int trackMatches = Serializer.TAG_ELEMENT_MATCHES;
 	
+	public static String PROPERTY_INDEX_NUMBERS = "indexer.indexNumbers";
+	public static String PROPERTY_STEM = "indexer.stem";
+	public static String PROPERTY_STORE_TERM_FREQUENCY = "indexer.store-term-freq";
+	
 	/**
 	 * Construct a new instance and configure it.
 	 * 
@@ -80,12 +84,11 @@ public abstract class TextSearchEngine extends Observable {
 		this.config = conf;
 		String stopword, tokenizerClass;
 		Boolean num, stemming, termFrequencies;
-		if ((num = (Boolean) config.getProperty("indexer.indexNumbers"))
-			!= null)
+		if ((num = (Boolean) config.getProperty(PROPERTY_INDEX_NUMBERS)) != null)
 			indexNumbers = num.booleanValue();
-		if ((stemming = (Boolean) config.getProperty("indexer.stem")) != null)
+		if ((stemming = (Boolean) config.getProperty(PROPERTY_STEM)) != null)
 			stem = stemming.booleanValue();
-		if((termFrequencies = (Boolean) config.getProperty("indexer.store-term-freq")) != null)
+		if((termFrequencies = (Boolean) config.getProperty(PROPERTY_STORE_TERM_FREQUENCY)) != null)
 			termFreq = termFrequencies.booleanValue();
 		String track = (String) config.getProperty("serialization.match-tagging-elements");
 		if (track != null)
