@@ -74,6 +74,9 @@ public class CacheManager {
      */
     public final static int SHRINK_THRESHOLD = 10000;
     
+    public static int DEFAULT_CACHE_SIZE = 64;
+    public static final String PROPERTY_CACHE_SIZE = "db-connection.cache-size";
+    
     /** Caches maintained by this class */
     private List caches = new ArrayList();
     
@@ -105,9 +108,10 @@ public class CacheManager {
     public CacheManager(Configuration config) {
         int pageSize, cacheSize;
         if ((pageSize = config.getInteger(NativeBroker.PROPERTY_PAGE_SIZE)) < 0)
-            pageSize = 4096;
-        if ((cacheSize = config.getInteger(NativeBroker.PROPERTY_PAGE_SIZE)) < 0) {
-            cacheSize = 64;
+        	//TODO : should we share the page size with the native broker ?
+            pageSize = NativeBroker.DEFAULT_PAGE_SIZE;
+        if ((cacheSize = config.getInteger(PROPERTY_CACHE_SIZE)) < 0) {
+            cacheSize = DEFAULT_CACHE_SIZE;
         }
         long totalMem = cacheSize * 1024 * 1024;
         int buffers = (int) (totalMem / pageSize);
@@ -245,6 +249,6 @@ public class CacheManager {
      * @return Default initial size 64.
      */
     public int getDefaultInitialSize() {
-        return 64;
+        return DEFAULT_CACHE_SIZE;
     }
 }
