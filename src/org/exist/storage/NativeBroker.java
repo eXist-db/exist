@@ -159,23 +159,21 @@ public class NativeBroker extends DBBroker {
      */
     private static final Logger LOG = Logger.getLogger(NativeBroker.class);
     
-    public final String DEFAULT_DATA_DIR = "data";
-    public final int DEFAULT_PAGE_SIZE = 4096;
-    public final int DEFAULT_INDEX_DEPTH = 1;
-    public final int DEFAULT_MIN_MEMORY = 5000000;
+    public static final String DEFAULT_DATA_DIR = "data";
+    public static final int DEFAULT_PAGE_SIZE = 4096;
+    public static final int DEFAULT_INDEX_DEPTH = 1;
+    public static final int DEFAULT_MIN_MEMORY = 5000000;
     public static final long TEMP_FRAGMENT_TIMEOUT = 300000;
     /** default buffer size setting */
-    public final static int BUFFERS = 256;
+    public static final int BUFFERS = 256;
     /** check available memory after storing DEFAULT_NODES_BEFORE_MEMORY_CHECK nodes */
-    public final static int DEFAULT_NODES_BEFORE_MEMORY_CHECK = 10000;     
-    public final double DEFAULT_VALUE_CACHE_GROWTH = 1.25;
-    public final double DEFAULT_VALUE_KEY_THRESHOLD = 0.01;
-    public final double DEFAULT_VALUE_VALUE_THRESHOLD = 0.04;
-    public final double DEFAULT_WORD_CACHE_GROWTH = 1.4;
-    public final double DEFAULT_WORD_KEY_THRESHOLD = 0.01;  
-    public final double DEFAULT_WORD_VALUE_THRESHOLD = 0.015;
-    
-    
+    public static final int DEFAULT_NODES_BEFORE_MEMORY_CHECK = 10000;     
+    public static final double DEFAULT_VALUE_CACHE_GROWTH = 1.25;
+    public static final double DEFAULT_VALUE_KEY_THRESHOLD = 0.01;
+    public static final double DEFAULT_VALUE_VALUE_THRESHOLD = 0.04;
+    public static final double DEFAULT_WORD_CACHE_GROWTH = 1.4;
+    public static final double DEFAULT_WORD_KEY_THRESHOLD = 0.01;  
+    public static final double DEFAULT_WORD_VALUE_THRESHOLD = 0.015;
 
 	/** the database files */
 	protected CollectionStore collectionsDb;

@@ -40,6 +40,7 @@ import org.exist.memtree.SAXAdapter;
 import org.exist.security.User;
 import org.exist.security.xacml.XACMLConstants;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.CacheManager;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NativeBroker;
@@ -481,8 +482,8 @@ public class Configuration implements ErrorHandler
             if (cacheMem.endsWith("M") || cacheMem.endsWith("m"))
                 cacheMem = cacheMem.substring(0, cacheMem.length() - 1);
             try {
-                config.put("db-connection.cache-size", new Integer(cacheMem));
-                LOG.debug("db-connection.cache-size: " + config.get("db-connection.cache-size") + "m");
+                config.put(CacheManager.PROPERTY_CACHE_SIZE, new Integer(cacheMem));
+                LOG.debug(CacheManager.PROPERTY_CACHE_SIZE + ": " + config.get(CacheManager.PROPERTY_CACHE_SIZE) + "m");
             } catch (NumberFormatException nfe) {
             	LOG.warn(nfe);
             }
