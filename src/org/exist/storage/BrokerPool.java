@@ -79,6 +79,7 @@ public class BrokerPool {
 	public final static String PROPERTY_MAX_CONNECTIONS = "db-connection.pool.min";
 	public final static String PROPERTY_SYNC_PERIOD = "db-connection.pool.sync-period";
 	public final static String PROPERTY_SHUTDOWN_DELAY = "wait-before-shutdown";
+	public final static String PROPERTY_COLLECTION_CACHE_SIZE = "db-connection.collection-cache-size";
 	
 	//TODO : inline the class ? or... make it configurable ?
     // WM: inline. I don't think users need to be able to overwrite this.
@@ -637,8 +638,8 @@ public class BrokerPool {
         //REFACTOR : construct then... configure
         xmlReaderPool = new XMLReaderPool(new XMLReaderObjectFactory(this), 5, 0);
         //REFACTOR : construct then... configure
-        int bufferSize = conf.getInteger("db-connection.collection-cache-size");
-        if(bufferSize==-1)
+        int bufferSize = conf.getInteger(PROPERTY_COLLECTION_CACHE_SIZE);
+        if(bufferSize == -1)
         	bufferSize = DEFAULT_COLLECTION_BUFFER_SIZE;
         collectionCache = new CollectionCache(this, bufferSize, 0.9);
         
