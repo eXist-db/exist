@@ -45,6 +45,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NativeBroker;
 import org.exist.validation.resolver.eXistCatalogResolver;
+import org.exist.xquery.XQueryWatchDog;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -733,8 +734,8 @@ public class Configuration implements ErrorHandler
         String timeout = watchDog.getAttribute("query-timeout");
         if (timeout != null) {
             try {
-                config.put("db-connection.watchdog.query-timeout", new Long(timeout));
-                LOG.debug("db-connection.watchdog.query-timeout: " + config.get("db-connection.watchdog.query-timeout"));
+                config.put(XQueryWatchDog.PROPERTY_QUERY_TIMEOUT, new Long(timeout));
+                LOG.debug(XQueryWatchDog.PROPERTY_QUERY_TIMEOUT + ": " + config.get(XQueryWatchDog.PROPERTY_QUERY_TIMEOUT));
             } catch (NumberFormatException e) {
             	LOG.warn(e);
             }
@@ -743,8 +744,8 @@ public class Configuration implements ErrorHandler
         String maxOutput = watchDog.getAttribute("output-size-limit");
         if (maxOutput != null) {
             try {
-                config.put("db-connection.watchdog.output-size-limit", new Integer(maxOutput));
-                LOG.debug("db-connection.watchdog.output-size-limit: " + config.get("db-connection.watchdog.output-size-limit"));
+                config.put(XQueryWatchDog.PROPERTY_OUTPUT_SIZE_LIMIT, new Integer(maxOutput));
+                LOG.debug(XQueryWatchDog.PROPERTY_OUTPUT_SIZE_LIMIT + ": " + config.get(XQueryWatchDog.PROPERTY_OUTPUT_SIZE_LIMIT));
             } catch (NumberFormatException e) {
             	LOG.warn(e);
             }
@@ -987,7 +988,7 @@ public class Configuration implements ErrorHandler
     }
     
     /**
-     * Returns the absolut path to the configuration file.
+     * Returns the absolute path to the configuration file.
      * 
      * @return the path to the configuration file
      */
