@@ -104,9 +104,9 @@ public class CacheManager {
     
     public CacheManager(Configuration config) {
         int pageSize, cacheSize;
-        if ((pageSize = config.getInteger("db-connection.page-size")) < 0)
+        if ((pageSize = config.getInteger(NativeBroker.PROPERTY_PAGE_SIZE)) < 0)
             pageSize = 4096;
-        if ((cacheSize = config.getInteger("db-connection.cache-size")) < 0) {
+        if ((cacheSize = config.getInteger(NativeBroker.PROPERTY_PAGE_SIZE)) < 0) {
             cacheSize = 64;
         }
         long totalMem = cacheSize * 1024 * 1024;

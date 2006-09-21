@@ -501,8 +501,8 @@ public class Configuration implements ErrorHandler
         String pageSize = con.getAttribute("pageSize");
         if (pageSize != null) {
             try {
-                config.put("db-connection.page-size", new Integer(pageSize));
-                LOG.debug("db-connection.page-size: " + config.get("db-connection.page-size"));
+                config.put(NativeBroker.PROPERTY_PAGE_SIZE, new Integer(pageSize));
+                LOG.debug(NativeBroker.PROPERTY_PAGE_SIZE + ": " + config.get(NativeBroker.PROPERTY_PAGE_SIZE));
             } catch (NumberFormatException nfe) {
             	LOG.warn(nfe);
             }
@@ -540,8 +540,8 @@ public class Configuration implements ErrorHandler
         String freeMem = con.getAttribute("free_mem_min");
         if (freeMem != null) {
             try {
-                config.put("db-connection.min_free_memory", new Integer(freeMem));
-                LOG.debug("db-connection.min_free_memory: " + config.get("db-connection.min_free_memory"));
+                config.put(NativeBroker.PROPERTY_MIN_FREE_MEMORY, new Integer(freeMem));
+                LOG.debug(NativeBroker.PROPERTY_MIN_FREE_MEMORY + ": " + config.get(NativeBroker.PROPERTY_MIN_FREE_MEMORY));
             } catch (NumberFormatException nfe) {
             	LOG.warn(nfe);
             }
