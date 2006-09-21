@@ -72,6 +72,7 @@ public abstract class TextSearchEngine extends Observable {
 	public static String PROPERTY_INDEX_NUMBERS = "indexer.indexNumbers";
 	public static String PROPERTY_STEM = "indexer.stem";
 	public static String PROPERTY_STORE_TERM_FREQUENCY = "indexer.store-term-freq";
+	public static String PROPERTY_TOKENIZER = "indexer.tokenizer";
 	
 	/**
 	 * Construct a new instance and configure it.
@@ -99,8 +100,7 @@ public abstract class TextSearchEngine extends Observable {
 		if (track != null && track.equalsIgnoreCase("yes"))
 			trackMatches = trackMatches | Serializer.TAG_ATTRIBUTE_MATCHES;
 		
-		if ((tokenizerClass = (String) config.getProperty("indexer.tokenizer"))
-			!= null) {
+		if ((tokenizerClass = (String) config.getProperty(PROPERTY_TOKENIZER)) != null) {
 			try {
 				Class tokClass = Class.forName(tokenizerClass);
 				tokenizer = (Tokenizer) tokClass.newInstance();

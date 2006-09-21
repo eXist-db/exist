@@ -143,6 +143,7 @@ public class NativeBroker extends DBBroker {
     
     public static final String PROPERTY_PAGE_SIZE = "db-connection.page-size";
     public static final String PROPERTY_MIN_FREE_MEMORY = "db-connection.min_free_memory";
+    public static final String PROPERTY_INDEX_DEPTH = "indexer.index-depth";
     
     private static final byte[] ALL_STORAGE_FILES = {
     	COLLECTIONS_DBX_ID, ELEMENTS_DBX_ID, VALUES_DBX_ID,
@@ -237,7 +238,7 @@ public class NativeBroker extends DBBroker {
             pageSize = DEFAULT_PAGE_SIZE;
         Paged.setPageSize(pageSize);
 
-        defaultIndexDepth = config.getInteger("indexer.index-depth");
+        defaultIndexDepth = config.getInteger(PROPERTY_INDEX_DEPTH);
 		if (defaultIndexDepth < 0)
 			defaultIndexDepth = DEFAULT_INDEX_DEPTH;
         

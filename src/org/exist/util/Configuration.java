@@ -899,22 +899,22 @@ public class Configuration implements ErrorHandler
 
         String validation = p.getAttribute("validation");         
         if (validation != null) {
-            config.put("indexer.validation", validation);
-            LOG.debug("indexer.validation: " + config.get("indexer.validation"));
+            config.put(XMLReaderObjectFactory.PROPERTY_VALIDATION, validation);
+            LOG.debug(XMLReaderObjectFactory.PROPERTY_VALIDATION + ": " + config.get(XMLReaderObjectFactory.PROPERTY_VALIDATION));
         }
         
         String tokenizer = p.getAttribute("tokenizer");
         if (tokenizer != null) {
-            config.put("indexer.tokenizer", tokenizer);
-            LOG.debug("indexer.tokenizer: " + config.get("indexer.tokenizer"));
+            config.put(TextSearchEngine.PROPERTY_TOKENIZER, tokenizer);
+            LOG.debug(TextSearchEngine.PROPERTY_TOKENIZER + ": " + config.get(TextSearchEngine.PROPERTY_TOKENIZER));
         }
 
         String indexDepth = p.getAttribute("index-depth");
         if (indexDepth != null) {
             try {
                 int depth = Integer.parseInt(indexDepth);
-                config.put("indexer.index-depth", new Integer(depth));
-                LOG.debug("indexer.index-depth: " + config.get("indexer.index-depth"));
+                config.put(NativeBroker.PROPERTY_INDEX_DEPTH, new Integer(depth));
+                LOG.debug(NativeBroker.PROPERTY_INDEX_DEPTH + ": " + config.get(NativeBroker.PROPERTY_INDEX_DEPTH));
             } catch (NumberFormatException e) {
             	LOG.warn(e);
             }
