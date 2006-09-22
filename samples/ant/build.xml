@@ -1,15 +1,13 @@
 <?xml version="1.0"?>
 <project default="all" basedir="." xmlns:xdb="http://exist-db.org/ant">
-  <description>
-    eXist ant task test
-  </description>
+  <description> eXist ant task test </description>
 
   <typedef resource="org/exist/ant/antlib.xml" uri="http://exist-db.org/ant">
     <classpath>
       <fileset dir="../../lib/core">
         <include name="*.jar"/>
       </fileset>
- <!--     <fileset dir="../../lib/endorsed">
+      <!--     <fileset dir="../../lib/endorsed">
         <include name="*.jar"/>
       </fileset>
       <fileset dir="../../lib/optional">
@@ -20,13 +18,13 @@
     </classpath>
   </typedef>
 
-  
+
   <property name="xmldb.host" value="localhost"/>
   <property name="xmldb.port" value="8080"/>
   <property name="xmldb.user" value="admin"/>
   <property name="xmldb.passwd" value="admin"/>
   <property name="xmldb.url" value="xmldb:exist://${xmldb.host}:${xmldb.port}/exist/xmlrpc/db"/>
-  
+
   <target name="all">
     <antcall target="store"/>
     <antcall target="create"/>
@@ -52,18 +50,23 @@
     <copy todir="data">
       <fileset dir="../mods" includes="*.xml"/>
     </copy>
-    <xdb:store user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test" createcollection="true">
+    <xdb:store user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test"
+      createcollection="true">
       <fileset dir="data">
         <include name="*.xml"/>
       </fileset>
     </xdb:store>
-    <xdb:store user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test" createcollection="true" srcfile="../examples.xml"/>
+    <xdb:store user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test"
+      createcollection="true" srcfile="../examples.xml"/>
   </target>
 
   <target name="create" description="test create task">
-    <xdb:create user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test" collection="sub1"/>
-    <xdb:create user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test/sub1" collection="sub11"/>
-    <xdb:create user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test" collection="sub2"/>
+    <xdb:create user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test"
+      collection="sub1"/>
+    <xdb:create user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test/sub1"
+      collection="sub11"/>
+    <xdb:create user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test"
+      collection="sub2"/>
   </target>
 
   <target name="exist">
@@ -74,7 +77,8 @@
     <xdb:exist user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test"/>
   </condition>
   <condition property="res.exist">
-    <xdb:exist user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test" resource="examples.xml"/>
+    <xdb:exist user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test"
+      resource="examples.xml"/>
   </condition>
   <target name="exist_col" description="test exist condition for collection" if="col.exist">
     <echo message="collection exists"/>
@@ -84,65 +88,82 @@
   </target>
 
   <target name="list" description="test list task">
-    <xdb:list user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}" collections="true" outputproperty="cols"/>
+    <xdb:list user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}" collections="true"
+      outputproperty="cols"/>
     <echo message="cols=${cols}/test"/>
-    <xdb:list user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test" resources="true" outputproperty="res"/>
+    <xdb:list user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test"
+      resources="true" outputproperty="res"/>
     <echo message="cols=${res}"/>
-    <xdb:list user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test" collections="true" resources="true" outputproperty="colsnres"/>
+    <xdb:list user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test"
+      collections="true" resources="true" outputproperty="colsnres"/>
     <echo message="cols=${colsnres}"/>
   </target>
 
   <target name="extract" description="test extract task">
     <mkdir dir="tmp"/>
-    <xdb:extract user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test" destdir="tmp"/>
-    <xdb:extract user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test" resource="examples.xml" destfile="tmp/test.xml"/>
+    <xdb:extract user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test"
+      destdir="tmp"/>
+    <xdb:extract user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test"
+      resource="examples.xml" destfile="tmp/test.xml"/>
   </target>
 
   <target name="xpath" description="test query task">
     <mkdir dir="tmp"/>
-    <xdb:xpath user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}" query="/example-queries/query" count="true" outputproperty="count"/>
+    <xdb:xpath user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}"
+      query="/example-queries/query" count="true" outputproperty="count"/>
     <echo message="Found ${count} results"/>
-    <xdb:xpath user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}" query="/example-queries/query[0]/description" outputproperty="descr"/>
+    <xdb:xpath user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}"
+      query="/example-queries/query[0]/description" outputproperty="descr"/>
     <echo message="Query result: ${descr}"/>
-    <xdb:xpath user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}" query="/example-queries/query" destDir="tmp"/>
-    <xdb:xpath user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}" query="/mods/titleInfo" namespace="http://www.loc.gov/mods/v3" destDir="tmp"/>
-    <xdb:xpath user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test" resource="examples.xml" query="/example-queries/query" destDir="tmp"/>
+    <xdb:xpath user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}"
+      query="/example-queries/query" destDir="tmp"/>
+    <xdb:xpath user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}"
+      query="/mods/titleInfo" namespace="http://www.loc.gov/mods/v3" destDir="tmp"/>
+    <xdb:xpath user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test"
+      resource="examples.xml" query="/example-queries/query" destDir="tmp"/>
   </target>
 
   <target name="copy" description="test copy task">
-    <xdb:copy user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test" resource="examples.xml" destination="sub1" name="new.xml"/>
-    <xdb:copy user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test" collection="sub1" destination="sub2" name="new"/>
+    <xdb:copy user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test"
+      resource="examples.xml" destination="sub1" name="new.xml"/>
+    <xdb:copy user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test"
+      collection="sub1" destination="sub2" name="new"/>
   </target>
 
   <target name="move" description="test move task">
-    <xdb:move user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test/sub1" resource="new.xml" destination="sub11" name="moved.xml"/>
-    <xdb:move user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test" collection="sub2" destination="sub1" name="moved"/>
+    <xdb:move user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test/sub1"
+      resource="new.xml" destination="sub11" name="moved.xml"/>
+    <xdb:move user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test"
+      collection="sub2" destination="sub1" name="moved"/>
   </target>
 
   <target name="xquery" description="test xquery task">
     <xdb:xquery user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test" query=""/>
-    <xdb:xquery user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test">
-
-    </xdb:xquery>
-    <xdb:xquery user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test" queryFile="../xquery/"/>
+    <xdb:xquery user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test"> </xdb:xquery>
+    <xdb:xquery user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test"
+      queryFile="../xquery/"/>
   </target>
 
   <target name="xupdate" description="test xupdate task">
-    <xdb:xupdate user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test" />
+    <xdb:xupdate user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test"/>
   </target>
 
   <target name="remove" description="test remove task">
-    <xdb:remove user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test" resource="examples.xml"/>
-    <xdb:remove user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}" collection="test"/>
+    <xdb:remove user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test"
+      resource="examples.xml"/>
+    <xdb:remove user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}" collection="test"
+    />
   </target>
 
   <target name="backup" description="test backup task">
     <mkdir dir="backup"/>
-    <xdb:backup user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test" dir="backup"/>
+    <xdb:backup user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test" dir="backup"
+    />
   </target>
 
   <target name="restore" description="test restore task">
-    <xdb:restore user="${xmldb.user}" password="${xmldb.passwd}" uri="xmldb:exist://${xmldb.host}:${xmldb.port}/exist/xmlrpc/" dir="backup/db/test"/>
+    <xdb:restore user="${xmldb.user}" password="${xmldb.passwd}"
+      uri="xmldb:exist://${xmldb.host}:${xmldb.port}/exist/xmlrpc/" dir="backup/db/test"/>
     <!--xdb:restore user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}">
       <dirset dir="backup/db">
         <include name="*"/>
@@ -151,15 +172,18 @@
   </target>
 
   <target name="groups" description="test groups task">
-    <xdb:groups user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}" outputproperty="groups"/>
+    <xdb:groups user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}"
+      outputproperty="groups"/>
     <echo message="groups=${groups}"/>
   </target>
   <target name="users" description="test users task">
-    <xdb:users user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}" outputproperty="users"/>
+    <xdb:users user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}"
+      outputproperty="users"/>
     <echo message="users=${users}"/>
   </target>
   <target name="adduser" description="test add user task">
-    <xdb:adduser user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}" name="test" secret="test" primarygroup="guest"/>
+    <xdb:adduser user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}" name="test"
+      secret="test" primarygroup="guest"/>
   </target>
   <target name="rmuser" description="test remove user task">
     <xdb:rmuser user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}" name="test"/>
@@ -169,6 +193,3 @@
     <xdb:shutdown user="${xmldb.user}" password="${xmldb.passwd}" uri="${xmldb.url}/test"/>
   </target>
 </project>
-
-
-
