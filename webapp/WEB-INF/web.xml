@@ -1,16 +1,18 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml version="1.0" encoding="UTF-8"?>
+
 <!--+
     | Configuration file for the web application. 
     |
     | Provides XMLRPC + SOAP access to eXist and configures Cocoon2. If you don't need
     | XMLRPC or SOAP or Cocoon, remove the corresponding servlets and servlet-mappings.
     +-->
-<!DOCTYPE web-app PUBLIC 
-    "-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN"
-    "http://java.sun.com/j2ee/dtds/web-app_2_2.dtd">
-<web-app>
-    <display-name>eXist XML Database</display-name>
-    <description>eXist Open Source Native XML Database</description>
+
+<web-app xmlns="http://java.sun.com/xml/ns/j2ee"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd" version="2.4">
+    
+    <display-name>eXist Server</display-name>
+    <description>eXist Server Setup</description>
 
     <!-- 
         Initialize Log4j using a servlet.
@@ -119,17 +121,14 @@
     -->
     <servlet>
         <servlet-name>AxisServlet</servlet-name>
-        <display-name>Apache-Axis Servlet</display-name>
         <servlet-class>org.apache.axis.transport.http.AxisServlet</servlet-class>
     </servlet>
 
     <servlet>
         <servlet-name>AdminServlet</servlet-name>
-        <display-name>Axis Admin Servlet</display-name>
         <servlet-class>org.apache.axis.transport.http.AdminServlet</servlet-class>
         <load-on-startup>100</load-on-startup>
     </servlet>
-	
     
     <!-- 
         ================ Cocoon2 Configuration starts here ================ 
@@ -137,8 +136,6 @@
 
     <servlet>
         <servlet-name>Cocoon</servlet-name>
-        <display-name>Cocoon</display-name>
-        <description>Cocoon</description>
 
         <!--
             The regular servlet class (trusts the servlet container classloader)
@@ -451,7 +448,6 @@
     -->
     <servlet>
         <servlet-name>jnlp</servlet-name>
-        <description>Webstart</description>
         <servlet-class>org.exist.webstart.JnlpServlet</servlet-class>
     </servlet>
     
@@ -513,7 +509,6 @@
         <servlet-name>AdminServlet</servlet-name>
         <url-pattern>/axis-servlet/AdminServlet</url-pattern>
     </servlet-mapping>
-  
     
     <!-- 
         Finally, we establish the main mapping for Cocoon  
@@ -588,8 +583,11 @@
         <mime-type>text/plain</mime-type>
     </mime-mapping>
 
-    <taglib>
-        <taglib-uri>http://exist-db.org/exist</taglib-uri>
-        <taglib-location>/WEB-INF/exist.tld</taglib-location>
-    </taglib>
+    <jsp-config>
+        <taglib>
+            <taglib-uri>http://exist-db.org/exist</taglib-uri>
+            <taglib-location>/WEB-INF/exist.tld</taglib-location>
+        </taglib>
+    </jsp-config>
+    
 </web-app>
