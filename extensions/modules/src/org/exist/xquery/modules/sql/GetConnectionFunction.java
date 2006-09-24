@@ -30,7 +30,6 @@ package org.exist.xquery.modules.sql;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.HashMap;
 
 import org.exist.dom.QName;
@@ -47,10 +46,10 @@ import org.exist.xquery.value.Type;
 /**
  * eXist SQL Module Extension GetConnectionFunction 
  * 
- * Get a connection to an sql db
+ * Get a connection to a SQL Database
  * 
  * @author Adam Retter <adam.retter@devon.gov.uk>
- * @serial 2006-09-18
+ * @serial 2006-09-24
  * @version 1.0
  *
  * @see org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext, org.exist.xquery.FunctionSignature)
@@ -63,9 +62,10 @@ public class GetConnectionFunction extends BasicFunction
 	{
 		new FunctionSignature(
 			new QName("get-connection", SQLModule.NAMESPACE_URI, SQLModule.PREFIX),
-			"Open's a connection to a SQL Database. Expects a JDBC Style URL in $a. Returns an xs:long representing the connection handle.",
+			"Open's a connection to a SQL Database. Expects a JDBC Driver class name in $a and a JDBC URL in $b. Returns an xs:long representing the connection handle.",
 			new SequenceType[]
 			{
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
 			},
 			new SequenceType(Type.LONG, Cardinality.ZERO_OR_ONE)
@@ -73,9 +73,10 @@ public class GetConnectionFunction extends BasicFunction
 		
 		new FunctionSignature(
 				new QName("get-connection", SQLModule.NAMESPACE_URI, SQLModule.PREFIX),
-				"Open's a connection to a SQL Database. Expects a JDBC Style URL in $a, a username in $b and a password in $c. Returns an xs:long representing the connection handle.",
+				"Open's a connection to a SQL Database. Expects a JDBC Driver class name in $a, a JDBC URL in $b, a username in $c and a password in $d. Returns an xs:long representing the connection handle.",
 				new SequenceType[]
 				{
+					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
@@ -105,8 +106,8 @@ public class GetConnectionFunction extends BasicFunction
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
-		//was a db url specified?
-		if (args[0].isEmpty())
+		//was a db driver and url specified?
+		if (args[0].isEmpty() || args[1].isEmpty())
             return Sequence.EMPTY_SEQUENCE;
 		
 		try
@@ -114,13 +115,17 @@ public class GetConnectionFunction extends BasicFunction
 			Connection con = null;
 			
 			//get the db connection details
-			String dbURL = args[0].getStringValue();
+			String dbDriver = args[0].getStringValue();
+			String dbURL = args[1].getStringValue();
 			
-			if(args.length > 1)
+			//load the driver
+			Class.forName(dbDriver).newInstance();
+			
+			if(args.length > 2)
 			{
-				String dbUser = args[1].getStringValue();
-				String dbPassword = args[2].getStringValue();
-
+				String dbUser = args[2].getStringValue();
+				String dbPassword = args[3].getStringValue();
+				
 				//try and get the connection
 				con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
 			}
@@ -150,13 +155,17 @@ public class GetConnectionFunction extends BasicFunction
 			//return the uid handle of the connection
 			return new IntegerValue(conID);
 		}
-		catch(SQLException e)
+		catch(Exception e)
 		{
 			throw new XPathException(e.getMessage());
 		}
 	}
 	
-	//return a unique id
+	/**
+	 * Returns a Unique ID based on the System Time
+	 * 
+	 * @return The Unique ID
+	 */
 	private static synchronized long getUID()
 	{
 	    return current++;
