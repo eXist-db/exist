@@ -38,7 +38,7 @@ import org.exist.xquery.FunctionDef;
  * against SQL Databases, returning an XML representation of the result set.
  * 
  * @author Adam Retter <adam.retter@devon.gov.uk>
- * @serial 2006-09-18
+ * @serial 2006-09-24
  * @version 1.0
  *
  * @see org.exist.xquery.AbstractInternalModule#AbstractInternalModule(org.exist.xquery.FunctionDef[])
@@ -55,7 +55,8 @@ public class SQLModule extends AbstractInternalModule {
 	
 	private final static FunctionDef[] functions = {
 		new FunctionDef(GetConnectionFunction.signatures[0], GetConnectionFunction.class),
-		new FunctionDef(GetConnectionFunction.signatures[1], GetConnectionFunction.class)
+		new FunctionDef(GetConnectionFunction.signatures[1], GetConnectionFunction.class),
+		new FunctionDef(ExecuteFunction.signatures[0], ExecuteFunction.class)
 	};
 	
 	public SQLModule() {
@@ -71,6 +72,6 @@ public class SQLModule extends AbstractInternalModule {
 	}
 
 	public String getDescription() {
-		return "A module for performing SQL queries against Databases, returning XML representations of the result sets. JDBC drivers must be placed in lib/user or exist on the CLASSPATH.";
+		return "A module for performing SQL queries against Databases, returning XML representations of the result sets.";
 	}
 }
