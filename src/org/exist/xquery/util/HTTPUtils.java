@@ -63,10 +63,11 @@ public class HTTPUtils {
 			if (mostRecentDocumentTime > 0) {
 				ResponseModule myModule = (ResponseModule) context
 						.getModule(ResponseModule.NAMESPACE_URI);
-				
+				if (myModule == null)
+					return;
 				// response servlet object is read from global variable $response
-				Variable var = myModule
-						.resolveVariable(ResponseModule.RESPONSE_VAR);
+				Variable var = myModule.resolveVariable(ResponseModule.RESPONSE_VAR);
+				
 				if (var != null) {
 					JavaObjectValue value = (JavaObjectValue) var.getValue()
 							.itemAt(0);
