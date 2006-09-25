@@ -38,7 +38,7 @@ import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
 import org.xmldb.api.modules.XQueryService;
 
-public class EntitiesTest extends XMLTestCase {
+public class SpecialNamesTest extends XMLTestCase {
     
     private static String uri = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
     
@@ -208,20 +208,13 @@ public class EntitiesTest extends XMLTestCase {
         }
     }
     
-    public void testAttributeConstructor() {
+    public void testAttributes() {
         try {
             XQueryService service = getQueryService();
             ResourceSet result;
             
             result = queryAndAssert( service,
-                    "<foo "+
-                    " ampEntity=\"{('&amp;')}\"" +
-                    " string=\"{(string('&amp;'))}\"" +
-                    " ltEntity=\"{('&lt;')}\"" +
-                    " gtEntity=\"{('&gt;')}\"" +
-                    " aposEntity=\"{('&apos;')}\"" +
-                    " quotEntity=\"{('&quot;')}\"" +
-                    "/>",
+                    "<foo amp='x' lt='x' gt='x' apos='x' quot='x'/>",
                     1,  null );
             // TODO: could check result
             
@@ -230,24 +223,7 @@ public class EntitiesTest extends XMLTestCase {
         }
     }
     
-    public void testStringConstructor() {
-        try {
-            XQueryService service = getQueryService();
-            ResourceSet result;
-            
-            result = queryAndAssert( service, "'&amp;'",1,null);
-            result = queryAndAssert( service, "'&lt;'",1,null);
-            result = queryAndAssert( service, "'&gt;'",1,null);
-            result = queryAndAssert( service, "'&apos;'",1,null);
-            result = queryAndAssert( service, "'&quot;'",1,null);
-            // TODO: could check result
-            
-        } catch (XMLDBException e) {
-            fail(e.getMessage());
-        }
-    }
-    
     public static void main(String[] args) {
-        junit.textui.TestRunner.run(EntitiesTest.class);
+        junit.textui.TestRunner.run(SpecialNamesTest.class);
     }
 }
