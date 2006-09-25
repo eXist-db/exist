@@ -46,6 +46,7 @@ public class AllTests {
         suite.addTestSuite(XPathQueryTest.class);
         suite.addTestSuite(XQueryTest.class);
         suite.addTestSuite(EntitiesTest.class);
+        suite.addTestSuite(SpecialNamesTest.class);
         suite.addTestSuite(ValueIndexTest.class);
         suite.addTestSuite(LexerTest.class); // jmv: Note: LexerTest needs /db/test created by XPathQueryTest
         suite.addTestSuite(DeepEqualTest.class);
