@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 
 <!--
     ======================================================
@@ -20,7 +20,7 @@
     <!-- Mime types stored as XML -->
     <mime-type name="text/xml" type="xml">
         <description>XML document</description>
-        <extensions>.xml,.xsl,.xslt,.xsd,.rng,.mods,.xmp,.xmi,.xconf,.xmap,.xsp,.wsdl,.x3d,.rdf,.owl,.dbx,.tei,.ead,.xqx,.xform</extensions>
+        <extensions>.xml,.xsl,.xslt,.xsd,.rng,.mods,.xmp,.xmi,.xconf,.xmap,.xsp,.wsdl,.x3d,.rdf,.owl,.dbx,.tei,.xces,.ead,.xqx,.xform</extensions>
     </mime-type>
     <mime-type name="application/xml" type="xml">
         <description>XML document</description>
