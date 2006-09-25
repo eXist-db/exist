@@ -96,7 +96,9 @@ public class AttributeConstructor extends NodeConstructor {
 				buf.append(next);
 		}
 		StringValue result = new StringValue(buf.toString());
-		result.expand();
+                // String values as expressions are already expanded by
+                // the parser -- Alex
+		//result.expand();
 		return result;
 	}
 
