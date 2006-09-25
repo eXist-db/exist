@@ -1822,7 +1822,7 @@ throws PermissionDeniedException, EXistException, XPathException
 				(
 					attrVal:ATTRIBUTE_CONTENT
 					{
-						attrib.addValue(attrVal.getText()); 
+						attrib.addValue(StringValue.expand(attrVal.getText())); 
 					}
 					|
 					#(
