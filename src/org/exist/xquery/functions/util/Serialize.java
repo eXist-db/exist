@@ -44,6 +44,7 @@ import org.exist.xquery.Pragma;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -66,7 +67,7 @@ public class Serialize extends BasicFunction {
             "specified file can not be created or is not writable, true on success. The empty " +
             "sequence is returned if the argument sequence is empty.",
             new SequenceType[] { 
-                new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
+                new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE),
                 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
                 new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)
             },
@@ -80,7 +81,7 @@ public class Serialize extends BasicFunction {
                 "The function does NOT automatically inherit the serialization options of the XQuery it is " +
                 "called from.",
                 new SequenceType[] { 
-                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
+                    new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE),
                     new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)
                 },
                 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
@@ -195,8 +196,14 @@ public class Serialize extends BasicFunction {
             
             while(siNode.hasNext())
             {
-        	   NodeValue next = (NodeValue)siNode.nextItem();
-               serializer.toSAX(next);	
+            	Item item = siNode.nextItem();
+            	if (Type.subTypeOf(item.getType(), Type.NODE)) {
+	            	NodeValue next = (NodeValue)item;
+	            	serializer.toSAX(next);
+            	}
+            	//TODO : improve, we have a dedicated method !
+            	else
+            		serializer.toSAX(item.toSequence(), 1, 1, false);
             }
             
             sax.endDocument();
