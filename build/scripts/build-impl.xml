@@ -112,7 +112,12 @@
      -->
     <target name="svn-prepare" if="svn-present">
       <tstamp/>
-      <svninfo file="${svn.entries}"/>
+      
+      <!-- temporary fix -->
+      <property name="svn.revision" value="00000"/>
+      <property name="svn.date" value="2001-10-10T10:00:00.00001Z"/>     
+      <!--svninfo file="${svn.entries}"/-->
+      
       <propertyfile file="VERSION.txt" comment="eXist build info">
         <entry  key="project.version" value="${project.version}"/>
         <entry  key="project.build" value="${DSTAMP}"/>          
