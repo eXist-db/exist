@@ -1487,6 +1487,18 @@ reservedKeywords returns [String name]
 	"inherit" { name = "inherit"; }
 	|
 	"no-inherit" { name = "no-inherit"; }
+	|
+	"eq" { name="eq"; }
+	|
+	"ne" { name = "ne"; }
+	|
+	"lt" { name = "lt"; }
+	|
+	"le" { name = "le"; }
+	|
+	"gt" { name = "gt"; }
+	|
+	"ge" { name = "ge"; }
 	;
 
 /**
