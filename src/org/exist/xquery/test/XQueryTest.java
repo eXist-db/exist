@@ -1312,10 +1312,14 @@ public class XQueryTest extends XMLTestCase {
 			 XPathQueryService service = (XPathQueryService)testCollection.getService("XPathQueryService", "1.0");
 			 ResourceSet result = service.query(query);
 			 printResult(result);
-			 Resource res = result.getResource(0);
-			 String textResult = res.getContent().toString();
+			 Resource res1 = result.getResource(0);
+			 String textResult1 = res1.getContent().toString();
 			 
-			 assertEquals("XQuery: " + query, "ab", textResult);
+			 //check the result is correct
+			 assertEquals("XQuery: " + query, "ab", textResult1);
+			 
+			 //check there is only one result
+			 assertEquals("XQuery: " + query, 1, result.getSize());
 		 }
 		 catch (XMLDBException e)
 		 {
