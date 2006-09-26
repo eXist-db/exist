@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ======================================================================= -->
+<!-- eXist build file : Subversion                                            -->
+<!-- ======================================================================= -->
+
+<project basedir="../.." name="SubVersion">
+
+    <description>Subversion tasks</description>
+
+    <target name="svn-download">
+    
+      <get src="http://www.ibiblio.org/maven2/org/tmate/javasvn/1.0.4/javasvn-1.0.4.jar"
+                  dest="${tools.ant}/lib/javasvn-1.0.4.jar" verbose="true" />
+
+    </target>
+
+</project>
