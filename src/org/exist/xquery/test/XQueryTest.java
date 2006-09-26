@@ -1305,7 +1305,7 @@ public class XQueryTest extends XMLTestCase {
 	public void testTextConstructor() {
 		 System.out.println("testTextConstructor 1: ========" );
 		 
-		 String query = "text{ \"a\" }, text{ \"b\" }";
+		 String query = "text{ \"a\" }, text{ \"b\" }, text{ \"c\" }, text{ \"d\" }";
 		 
 		 try
 		 {
@@ -1316,7 +1316,7 @@ public class XQueryTest extends XMLTestCase {
 			 String textResult1 = res1.getContent().toString();
 			 
 			 //check the result is correct
-			 assertEquals("XQuery: " + query, "ab", textResult1);
+			 assertEquals("XQuery: " + query, "abcd", textResult1);
 			 
 			 //check there is only one result
 			 assertEquals("XQuery: " + query, 1, result.getSize());
