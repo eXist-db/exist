@@ -478,6 +478,12 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_treat:
 		case LITERAL_cast:
 		case LT:
+		case LITERAL_eq:
+		case LITERAL_ne:
+		case LITERAL_lt:
+		case LITERAL_le:
+		case LITERAL_gt:
+		case LITERAL_ge:
 		case LITERAL_is:
 		case LITERAL_isnot:
 		case LITERAL_to:
@@ -1881,6 +1887,12 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_of:
 		case LITERAL_treat:
 		case LITERAL_cast:
+		case LITERAL_eq:
+		case LITERAL_ne:
+		case LITERAL_lt:
+		case LITERAL_le:
+		case LITERAL_gt:
+		case LITERAL_ge:
 		case LITERAL_is:
 		case LITERAL_isnot:
 		case LITERAL_to:
@@ -3659,6 +3671,12 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_of:
 		case LITERAL_treat:
 		case LITERAL_cast:
+		case LITERAL_eq:
+		case LITERAL_ne:
+		case LITERAL_lt:
+		case LITERAL_le:
+		case LITERAL_gt:
+		case LITERAL_ge:
 		case LITERAL_is:
 		case LITERAL_isnot:
 		case LITERAL_to:
@@ -4657,6 +4675,12 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_treat:
 		case LITERAL_cast:
 		case LT:
+		case LITERAL_eq:
+		case LITERAL_ne:
+		case LITERAL_lt:
+		case LITERAL_le:
+		case LITERAL_gt:
+		case LITERAL_ge:
 		case LITERAL_is:
 		case LITERAL_isnot:
 		case LITERAL_to:
@@ -4940,6 +4964,12 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_treat:
 		case LITERAL_cast:
 		case LT:
+		case LITERAL_eq:
+		case LITERAL_ne:
+		case LITERAL_lt:
+		case LITERAL_le:
+		case LITERAL_gt:
+		case LITERAL_ge:
 		case LITERAL_is:
 		case LITERAL_isnot:
 		case LITERAL_to:
@@ -5371,6 +5401,12 @@ public XQueryParser(ParserSharedInputState state) {
 							case LITERAL_of:
 							case LITERAL_treat:
 							case LITERAL_cast:
+							case LITERAL_eq:
+							case LITERAL_ne:
+							case LITERAL_lt:
+							case LITERAL_le:
+							case LITERAL_gt:
+							case LITERAL_ge:
 							case LITERAL_is:
 							case LITERAL_isnot:
 							case LITERAL_to:
@@ -5916,6 +5952,12 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_of:
 		case LITERAL_treat:
 		case LITERAL_cast:
+		case LITERAL_eq:
+		case LITERAL_ne:
+		case LITERAL_lt:
+		case LITERAL_le:
+		case LITERAL_gt:
+		case LITERAL_ge:
 		case LITERAL_is:
 		case LITERAL_isnot:
 		case LITERAL_to:
@@ -6014,6 +6056,12 @@ public XQueryParser(ParserSharedInputState state) {
 			case LITERAL_of:
 			case LITERAL_treat:
 			case LITERAL_cast:
+			case LITERAL_eq:
+			case LITERAL_ne:
+			case LITERAL_lt:
+			case LITERAL_le:
+			case LITERAL_gt:
+			case LITERAL_ge:
 			case LITERAL_is:
 			case LITERAL_isnot:
 			case LITERAL_to:
@@ -6145,6 +6193,12 @@ public XQueryParser(ParserSharedInputState state) {
 				case LITERAL_of:
 				case LITERAL_treat:
 				case LITERAL_cast:
+				case LITERAL_eq:
+				case LITERAL_ne:
+				case LITERAL_lt:
+				case LITERAL_le:
+				case LITERAL_gt:
+				case LITERAL_ge:
 				case LITERAL_is:
 				case LITERAL_isnot:
 				case LITERAL_to:
@@ -6734,6 +6788,12 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_treat:
 		case LITERAL_cast:
 		case LT:
+		case LITERAL_eq:
+		case LITERAL_ne:
+		case LITERAL_lt:
+		case LITERAL_le:
+		case LITERAL_gt:
+		case LITERAL_ge:
 		case LITERAL_is:
 		case LITERAL_isnot:
 		case LITERAL_to:
@@ -6893,6 +6953,12 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_treat:
 		case LITERAL_cast:
 		case LT:
+		case LITERAL_eq:
+		case LITERAL_ne:
+		case LITERAL_lt:
+		case LITERAL_le:
+		case LITERAL_gt:
+		case LITERAL_ge:
 		case LITERAL_is:
 		case LITERAL_isnot:
 		case LITERAL_to:
@@ -7159,6 +7225,12 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_of:
 		case LITERAL_treat:
 		case LITERAL_cast:
+		case LITERAL_eq:
+		case LITERAL_ne:
+		case LITERAL_lt:
+		case LITERAL_le:
+		case LITERAL_gt:
+		case LITERAL_ge:
 		case LITERAL_is:
 		case LITERAL_isnot:
 		case LITERAL_to:
@@ -7313,6 +7385,12 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_of:
 		case LITERAL_treat:
 		case LITERAL_cast:
+		case LITERAL_eq:
+		case LITERAL_ne:
+		case LITERAL_lt:
+		case LITERAL_le:
+		case LITERAL_gt:
+		case LITERAL_ge:
 		case LITERAL_is:
 		case LITERAL_isnot:
 		case LITERAL_to:
@@ -7537,6 +7615,12 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_of:
 		case LITERAL_treat:
 		case LITERAL_cast:
+		case LITERAL_eq:
+		case LITERAL_ne:
+		case LITERAL_lt:
+		case LITERAL_le:
+		case LITERAL_gt:
+		case LITERAL_ge:
 		case LITERAL_is:
 		case LITERAL_isnot:
 		case LITERAL_to:
@@ -7689,6 +7773,12 @@ public XQueryParser(ParserSharedInputState state) {
 		case LITERAL_of:
 		case LITERAL_treat:
 		case LITERAL_cast:
+		case LITERAL_eq:
+		case LITERAL_ne:
+		case LITERAL_lt:
+		case LITERAL_le:
+		case LITERAL_gt:
+		case LITERAL_ge:
 		case LITERAL_is:
 		case LITERAL_isnot:
 		case LITERAL_to:
@@ -7913,6 +8003,12 @@ public XQueryParser(ParserSharedInputState state) {
 			case LITERAL_treat:
 			case LITERAL_cast:
 			case LT:
+			case LITERAL_eq:
+			case LITERAL_ne:
+			case LITERAL_lt:
+			case LITERAL_le:
+			case LITERAL_gt:
+			case LITERAL_ge:
 			case LITERAL_is:
 			case LITERAL_isnot:
 			case LITERAL_to:
@@ -8048,6 +8144,12 @@ public XQueryParser(ParserSharedInputState state) {
 			case LITERAL_treat:
 			case LITERAL_cast:
 			case LT:
+			case LITERAL_eq:
+			case LITERAL_ne:
+			case LITERAL_lt:
+			case LITERAL_le:
+			case LITERAL_gt:
+			case LITERAL_ge:
 			case LITERAL_is:
 			case LITERAL_isnot:
 			case LITERAL_to:
@@ -8223,6 +8325,12 @@ public XQueryParser(ParserSharedInputState state) {
 			case LITERAL_treat:
 			case LITERAL_cast:
 			case LT:
+			case LITERAL_eq:
+			case LITERAL_ne:
+			case LITERAL_lt:
+			case LITERAL_le:
+			case LITERAL_gt:
+			case LITERAL_ge:
 			case LITERAL_is:
 			case LITERAL_isnot:
 			case LITERAL_to:
@@ -8359,6 +8467,12 @@ public XQueryParser(ParserSharedInputState state) {
 			case LITERAL_treat:
 			case LITERAL_cast:
 			case LT:
+			case LITERAL_eq:
+			case LITERAL_ne:
+			case LITERAL_lt:
+			case LITERAL_le:
+			case LITERAL_gt:
+			case LITERAL_ge:
 			case LITERAL_is:
 			case LITERAL_isnot:
 			case LITERAL_to:
@@ -10449,6 +10563,78 @@ public XQueryParser(ParserSharedInputState state) {
 			reservedKeywords_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
 			break;
 		}
+		case LITERAL_eq:
+		{
+			org.exist.xquery.parser.XQueryAST tmp466_AST = null;
+			tmp466_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp466_AST);
+			match(LITERAL_eq);
+			if ( inputState.guessing==0 ) {
+				name="eq";
+			}
+			reservedKeywords_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
+			break;
+		}
+		case LITERAL_ne:
+		{
+			org.exist.xquery.parser.XQueryAST tmp467_AST = null;
+			tmp467_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp467_AST);
+			match(LITERAL_ne);
+			if ( inputState.guessing==0 ) {
+				name = "ne";
+			}
+			reservedKeywords_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
+			break;
+		}
+		case LITERAL_lt:
+		{
+			org.exist.xquery.parser.XQueryAST tmp468_AST = null;
+			tmp468_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp468_AST);
+			match(LITERAL_lt);
+			if ( inputState.guessing==0 ) {
+				name = "lt";
+			}
+			reservedKeywords_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
+			break;
+		}
+		case LITERAL_le:
+		{
+			org.exist.xquery.parser.XQueryAST tmp469_AST = null;
+			tmp469_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp469_AST);
+			match(LITERAL_le);
+			if ( inputState.guessing==0 ) {
+				name = "le";
+			}
+			reservedKeywords_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
+			break;
+		}
+		case LITERAL_gt:
+		{
+			org.exist.xquery.parser.XQueryAST tmp470_AST = null;
+			tmp470_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp470_AST);
+			match(LITERAL_gt);
+			if ( inputState.guessing==0 ) {
+				name = "gt";
+			}
+			reservedKeywords_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
+			break;
+		}
+		case LITERAL_ge:
+		{
+			org.exist.xquery.parser.XQueryAST tmp471_AST = null;
+			tmp471_AST = (org.exist.xquery.parser.XQueryAST)astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp471_AST);
+			match(LITERAL_ge);
+			if ( inputState.guessing==0 ) {
+				name = "ge";
+			}
+			reservedKeywords_AST = (org.exist.xquery.parser.XQueryAST)currentAST.root;
+			break;
+		}
 		default:
 		{
 			throw new NoViableAltException(LT(1), getFilename());
@@ -10689,7 +10875,7 @@ public XQueryParser(ParserSharedInputState state) {
 		long[] data = new long[8];
 		data[0]=-327636872891203584L;
 		data[1]=-263460581481394181L;
-		data[2]=72054295464869915L;
+		data[2]=72054295464873947L;
 		data[3]=24L;
 		return data;
 	}
@@ -10698,7 +10884,7 @@ public XQueryParser(ParserSharedInputState state) {
 		long[] data = new long[8];
 		data[0]=-905223525101469696L;
 		data[1]=-263460594370490373L;
-		data[2]=8989726483251211L;
+		data[2]=8989726483255243L;
 		data[3]=24L;
 		return data;
 	}
@@ -10707,7 +10893,7 @@ public XQueryParser(ParserSharedInputState state) {
 		long[] data = new long[8];
 		data[0]=-905223525101469696L;
 		data[1]=-263460594370490373L;
-		data[2]=8989743663120395L;
+		data[2]=8989743663124427L;
 		data[3]=24L;
 		return data;
 	}
@@ -10731,7 +10917,7 @@ public XQueryParser(ParserSharedInputState state) {
 		long[] data = new long[8];
 		data[0]=-905223525101469696L;
 		data[1]=-263460590075523077L;
-		data[2]=9002937802653707L;
+		data[2]=9002937802657739L;
 		data[3]=24L;
 		return data;
 	}
@@ -10740,7 +10926,7 @@ public XQueryParser(ParserSharedInputState state) {
 		long[] data = new long[8];
 		data[0]=-327636872891203584L;
 		data[1]=-263460594366296069L;
-		data[2]=72041100518981659L;
+		data[2]=72041100518985691L;
 		data[3]=24L;
 		return data;
 	}
@@ -10759,7 +10945,7 @@ public XQueryParser(ParserSharedInputState state) {
 		long[] data = new long[8];
 		data[0]=-905223525101469696L;
 		data[1]=-263460590075523077L;
-		data[2]=8989726483251211L;
+		data[2]=8989726483255243L;
 		data[3]=24L;
 		return data;
 	}
