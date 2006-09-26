@@ -121,8 +121,9 @@ public class FunDeepEqual extends Function {
 			if (a.getType() != b.getType()) return false;
 			NodeValue nva = (NodeValue) a, nvb = (NodeValue) b;
 			if (nva == nvb) return true;
-			try {
-				if (nva.equals(nvb)) return true;		// shortcut!
+			try {				
+				//Don't use this shortcut for in-memory nodes since the symbol table is ignored.
+				if (nva.getImplementationType() != NodeValue.IN_MEMORY_NODE && nva.equals(nvb)) return true;		// shortcut!
 			} catch (XPathException e) {
 				// apparently incompatible values, do manual comparison
 			}
