@@ -82,7 +82,7 @@ public class SequenceConstructor extends PathExpr {
 					previous.appendData(((org.w3c.dom.Text)temp).getData());
 				} else
 					result.addAll(temp);
-				lastWasTextNode = (temp instanceof org.w3c.dom.Text);				
+				lastWasTextNode = (temp instanceof org.w3c.dom.Text || Type.subTypeOf(temp.getItemType(), Type.TEXT));				
 			}			
 		}
 		
