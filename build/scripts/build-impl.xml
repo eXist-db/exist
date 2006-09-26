@@ -49,9 +49,9 @@
     <available file="key.store" property="key.store.present"/>
     
     <!-- additional set of ant tasks -->
-    <property name="asocat-exist.jar" location="tools/ant/lib/asocat-exist.jar"/>
-    <property name="svn.entries" location=".svn/entries"/>
-    <available file="${svn.entries}" property="svn-present" />
+    <property name="asocat-exist.jar" location="${tools.ant}/lib/asocat-exist.jar"/>
+    <property name="javasvn.jar" location="${tools.ant}/lib/javasvn-1.0.4.jar"/>
+    <available file="${javasvn.jar}" property="svn-present" />
 
     <!-- setup class path -->
     <path id="classpath.core">
@@ -103,20 +103,19 @@
     <taskdef name="cocoon" classname="org.apache.cocoon.CocoonTask">
         <classpath refid="classpath.core"/>
     </taskdef>
-    
-    <taskdef name="svninfo" classname="nl.ow.dilemma.ant.svn.SubversionInfoTask" classpath="${asocat-exist.jar}"/>
 
     <!-- 
           Try to read SVN info from entries-file (if file exist).
           Fallback to VERSION.txt if subversion is not available.
      -->
     <target name="svn-prepare" if="svn-present">
+      <taskdef name="svninfo" classname="nl.ow.dilemma.ant.svn.SubversionInfoTask" classpath="${asocat-exist.jar}"/>
+    
       <tstamp/>
       
       <!-- temporary fix -->
-      <property name="svn.revision" value="00000"/>
       <property name="svn.date" value="2001-10-10T10:00:00.00001Z"/>     
-      <!--svninfo file="${svn.entries}"/-->
+      <svninfo url="https://svn.sourceforge.net/svnroot/exist/trunk/eXist-1.0" username="anonymous" password="anonymous" />
       
       <propertyfile file="VERSION.txt" comment="eXist build info">
         <entry  key="project.version" value="${project.version}"/>
