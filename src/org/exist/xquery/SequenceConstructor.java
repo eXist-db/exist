@@ -27,6 +27,7 @@ import java.util.Iterator;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
@@ -69,22 +70,14 @@ public class SequenceConstructor extends PathExpr {
             if (contextItem != null)
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
-
         
-		boolean lastWasTextNode = false;
-		ValueSequence result = new ValueSequence();
-		for(Iterator i = steps.iterator(); i.hasNext(); ) {
-			Sequence temp = ((Expression)i.next()).eval(contextSequence, contextItem);
-			if(temp != null && !temp.isEmpty()) {
-				//Costly operation to coalesce text nodes
-				if (lastWasTextNode) {
-					org.w3c.dom.Text previous = (org.w3c.dom.Text)result.itemAt(result.getLength() - 1);
-					previous.appendData(((org.w3c.dom.Text)temp).getData());
-				} else
-					result.addAll(temp);
-				lastWasTextNode = (temp instanceof org.w3c.dom.Text || Type.subTypeOf(temp.getItemType(), Type.TEXT));				
-			}			
-		}
+        ValueSequence result = new ValueSequence();
+        for(Iterator i = steps.iterator(); i.hasNext(); ) {
+            Sequence temp = ((Expression)i.next()).eval(contextSequence, contextItem);
+            if(temp != null && !temp.isEmpty()) {               
+                  result.addAll(temp);                   
+            }           
+        } 
 		
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result);
