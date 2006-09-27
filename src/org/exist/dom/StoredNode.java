@@ -318,6 +318,7 @@ public class StoredNode extends NodeImpl implements Visitable {
 	 * Release all memory resources hold by this node. 
 	 */
 	public void release() {
+        ownerDocument = null;
 		clear();
 		NodeObjectPool.getInstance().returnNode(this);
 	}
