@@ -208,18 +208,34 @@ declare function xqts:check-output($query as xs:string, $result as item()*, $cas
             <error test="{$case/@name}">Unknown comparison method: {$output/@compare}.</error>
 };
 
+declare function xqts:get-variable($case as element(catalog:test-case), 
+	$name as xs:string) as item()* {
+	let $path := concat( $xqts:XQTS_HOME, "Queries/XQuery/", $case/@FilePath, $name, ".xq" )
+	let $xq-string := util:file-read($path, "UTF-8")
+	return
+		if (empty($xq-string)) then
+			()
+		else
+			util:eval($xq-string)
+};
+
 declare function xqts:run-test-case( $case as element(catalog:test-case)) as item()* {
    let $query := xqts:get-query($case)
-   let $context :=
-       <static-context>
-       {
-           for $input in $case/catalog:input-file
-           return
-               <variable name="{$input/@variable}">{xqts:get-input-value($input)}</variable>
-       }
-       </static-context>
    let $result := 
        util:catch("java.lang.Exception",
+			let $context :=
+				<static-context>
+       			{
+           			for $input in $case/catalog:input-file
+           			return
+               			<variable name="{$input/@variable}">{xqts:get-input-value($input)}</variable>,
+            		for $var in $case/catalog:input-query
+            		return
+                		<variable name="{$var/@variable}">
+                    		{xqts:get-variable($case, $var/@name)}
+                		</variable>
+       			}
+       			</static-context>
            let $result :=
                util:eval-with-context($query, $context, false())
            return
