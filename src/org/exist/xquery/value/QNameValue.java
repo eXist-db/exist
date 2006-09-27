@@ -109,7 +109,7 @@ public class QNameValue extends AtomicValue {
 	}
 
 	/**
-	 * @see org.exist.xquery.value.AtomicValue#compareTo(int, org.exist.xquery.value.AtomicValue)
+	 * @see org.exist.xquery.value.AtomicValue#compareTo(Collator, int, AtomicValue)
 	 */
 	public boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException {
 		if (other.getType() == Type.QNAME) {
@@ -137,7 +137,7 @@ public class QNameValue extends AtomicValue {
 	}
 
 	/**
-	 * @see org.exist.xquery.value.AtomicValue#compareTo(org.exist.xquery.value.AtomicValue)
+	 * @see org.exist.xquery.value.AtomicValue#compareTo(Collator, AtomicValue)
 	 */
 	public int compareTo(Collator collator, AtomicValue other) throws XPathException {
 		if (other.getType() == Type.QNAME) {
@@ -149,7 +149,7 @@ public class QNameValue extends AtomicValue {
 	}
 
 	/**
-	 * @see org.exist.xquery.value.AtomicValue#max(org.exist.xquery.value.AtomicValue)
+	 * @see org.exist.xquery.value.AtomicValue#max(Collator, AtomicValue)
 	 */
 	public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
 		throw new XPathException("Invalid argument to aggregate function: QName");

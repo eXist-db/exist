@@ -416,7 +416,8 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
     }
     
     public void deepCopyContext(NodeProxy node, int addContextId) {
-        deepCopyContext(node);
+        if (context == null)
+            deepCopyContext(node);
         addContextNode(addContextId, node);
     }
     

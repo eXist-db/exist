@@ -62,7 +62,6 @@ public class RedirectTo extends BasicFunction {
 
 	/**
 	 * @param context
-	 * @param signature
 	 */
 	public RedirectTo(XQueryContext context) {
 		super(context, signature);

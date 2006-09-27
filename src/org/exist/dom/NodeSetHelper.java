@@ -84,7 +84,7 @@ public class NodeSetHelper {
                         NodeProxy.UNKNOWN_NODE_LEVEL);
                 if (parent != null) {
                     if (Expression.NO_CONTEXT_ID != contextId)
-                        child.addContextNode(contextId, parent);
+                        child.deepCopyContext(parent, contextId);
                     else
                         child.copyContext(parent);
                     result.add(child, sizeHint);
@@ -103,7 +103,7 @@ public class NodeSetHelper {
                         NodeProxy.UNKNOWN_NODE_LEVEL);
                 if (parent != null) {
                     if (Expression.NO_CONTEXT_ID != contextId)
-                        parent.addContextNode(contextId, child);
+                        parent.deepCopyContext(child, contextId);
                     else
                         parent.copyContext(child);
                     result.add(parent, sizeHint);

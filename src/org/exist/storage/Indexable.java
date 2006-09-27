@@ -45,7 +45,6 @@ public interface Indexable extends Comparable {
      * @param collectionId the collection id to use
      * @param caseSensitive only relevant for string values: if set to false,
      * strings should be serialized in lower case
-     * @return
      */
 	//TODO : better exception ?
     public byte[] serialize(short collectionId, boolean caseSensitive) throws EXistException;
@@ -56,7 +55,7 @@ public interface Indexable extends Comparable {
      * 
      * (offset-1 free bytes, byte type, byte[] value)
      * 
-     * @param offset, starting index for writing in array data
+     * @param offset starting index for writing in array data
      * @return the size actually writen in the array argument
      */
     //TODO : better exception ?
@@ -66,7 +65,7 @@ public interface Indexable extends Comparable {
      * Returns the type of the Indexable as one of the constants defined
      * in {@link org.exist.xquery.value.Type}.
      * 
-     * @return
+     * @return Type of the Indexable
      */
     int getType();
 }

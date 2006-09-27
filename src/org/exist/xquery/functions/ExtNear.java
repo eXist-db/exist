@@ -1,0 +1,272 @@
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2005 Wolfgang M. Meier
+ * wolfgang@exist-db.org
+ * http://exist.sourceforge.net
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * $Id$
+ */
+package org.exist.xquery.functions;
+
+import java.util.Iterator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
+import org.exist.EXistException;
+import org.exist.dom.ExtArrayNodeSet;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
+import org.exist.storage.NativeTextEngine;
+import org.exist.storage.analysis.TextToken;
+import org.exist.storage.analysis.Tokenizer;
+import org.exist.util.GlobToRegex;
+import org.exist.xquery.AnalyzeContextInfo;
+import org.exist.xquery.Constants;
+import org.exist.xquery.Expression;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.util.ExpressionDumper;
+import org.exist.xquery.value.IntegerValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.Type;
+
+/**
+ * near() function.
+ * 
+ * @author Wolfgang Meier <wolfgang@exist-db.org> (July 31, 2002)
+ */
+public class ExtNear extends ExtFulltext {
+
+	private int min_distance = 1;
+	private int max_distance = 1;
+	private Expression minDistance = null;
+	private Expression maxDistance = null;
+
+	public ExtNear(XQueryContext context) {
+		super(context, Constants.FULLTEXT_AND);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xquery.functions.ExtFulltext#analyze(org.exist.xquery.AnalyzeContextInfo)
+	 */
+	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+		super.analyze(contextInfo);
+
+		if (maxDistance != null) {
+			maxDistance.analyze(contextInfo);
+		}
+		if (minDistance != null) {
+			minDistance.analyze(contextInfo);
+		}
+	}
+
+	public Sequence evalQuery(String searchArg, NodeSet nodes) throws XPathException {
+		if (maxDistance != null) {
+			max_distance = ((IntegerValue) maxDistance.eval(nodes).convertTo(Type.INTEGER)).getInt();
+		}
+		if (minDistance != null) {
+			min_distance = ((IntegerValue) minDistance.eval(nodes).convertTo(Type.INTEGER)).getInt();
+		}
+        
+		try {
+			getSearchTerms(context, searchArg);
+		} catch (EXistException e) {
+			throw new XPathException(e.getMessage(), e);
+		}
+		NodeSet hits = processQuery(nodes);
+		if (hits == null)
+			return Sequence.EMPTY_SEQUENCE;
+		if (terms.length == 1)
+			return hits;
+        
+		boolean hasWildcards = false;
+		for (int i = 0; i < terms.length; i++) {
+			hasWildcards |= NativeTextEngine.containsWildcards(terms[i]);
+		}
+		return hasWildcards ? patternMatch(context, hits) : exactMatch(context,	hits);
+	}
+
+	private Sequence exactMatch(XQueryContext context, NodeSet result) {
+		// walk through hits and calculate term-distances
+		
+		
+		
+		
+		 
+		NodeSet r = new ExtArrayNodeSet();
+		final Tokenizer tok = context.getBroker().getTextEngine().getTokenizer();
+        String term;
+		for (Iterator i = result.iterator(); i.hasNext();) {
+            NodeProxy current = (NodeProxy) i.next();
+            String value = current.getNodeValueSeparated();
+			tok.setText(value);
+            int j = 0;
+			if (j < terms.length) {
+				term = terms[j];
+			} else {
+				break;
+			}
+
+			int current_distance = -1;
+            TextToken token;
+			while ((token = tok.nextToken()) != null) {
+                String word = token.getText().toLowerCase();
+				if (current_distance > max_distance) {
+					// reset
+					j = 0;
+					term = terms[j];
+					current_distance = -1;
+				} // that else would cause some words to be ignored in the
+					// matching
+				if (word.equalsIgnoreCase(term)) {
+					boolean withIn = current_distance >= min_distance ? true : false;
+					current_distance = 0;
+					j++;
+					if (j == terms.length) {
+						// all terms found
+						if (withIn) {
+							r.add(current);
+						}
+						break;
+					} else {
+						term = terms[j];
+					}
+				} else if (j > 0 && word.equalsIgnoreCase(terms[0])) {
+					// first search term found: start again
+					j = 1;
+					term = terms[j];
+					current_distance = 0;
+					continue;
+				} // that else MAY cause the distance counts to be off by one
+					// but i'm not sure
+				if (-1 < current_distance) {
+					++current_distance;
+				}
+			}
+		}
+		// LOG.debug("found " + r.getLength());
+		return r;
+	}
+
+	private Sequence patternMatch(XQueryContext context, NodeSet result) {
+		// generate list of search term patterns
+		Pattern patterns[] = new Pattern[terms.length];
+		Matcher matchers[] = new Matcher[terms.length];
+		for (int i = 0; i < patterns.length; i++) {
+			try {
+				patterns[i] = Pattern.compile(GlobToRegex.globToRegexp(terms[i]), 
+                        Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+				matchers[i] = patterns[i].matcher("");
+			} catch (PatternSyntaxException e) {
+                //TODO : error ? -pb
+				LOG.warn("malformed pattern", e);
+				return Sequence.EMPTY_SEQUENCE;
+			}
+        }
+
+		// walk through hits and calculate term-distances
+		ExtArrayNodeSet r = new ExtArrayNodeSet(100);		
+		Tokenizer tok = context.getBroker().getTextEngine().getTokenizer();
+        Matcher matcher;
+        TextToken token;    
+		for (Iterator i = result.iterator(); i.hasNext();) {
+            NodeProxy current = (NodeProxy) i.next();
+            String value = current.getNodeValueSeparated();
+			tok.setText(value);
+            int j = 0;
+			if (j < patterns.length) {
+                Pattern term = patterns[j];
+				matcher = matchers[j];
+			} else {
+				break;
+			}
+
+			int current_distance = -1;
+			while ((token = tok.nextToken()) != null) {
+                String word = token.getText().toLowerCase();
+				if (current_distance > max_distance) {
+					// reset
+					j = 0;
+                    Pattern term = patterns[j];
+					matcher = matchers[j];
+					current_distance = -1;
+				}
+				matcher.reset(word);
+				matchers[0].reset(word);
+				if (matcher.matches()) {
+					boolean withIn = current_distance >= min_distance ? true
+							: false;
+					current_distance = 0;
+					j++;
+					if (j == patterns.length) {
+						// all terms found
+						if (withIn) {
+							r.add(current);
+						}
+						break;
+					} else {
+                        Pattern term = patterns[j];
+						matcher = matchers[j];
+					}
+				} else if (j > 0 && matchers[0].matches()) {
+					// first search term found: start again
+					j = 1;
+                    Pattern term = patterns[j];
+					matcher = matchers[j];
+					current_distance = 0;
+					continue;
+				} 
+				if (-1 < current_distance) {
+					++current_distance;
+				}
+			}
+		}
+		return r;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.exist.xquery.functions.ExtFulltext#dump(org.exist.xquery.util.ExpressionDumper)
+	 */
+    public void dump(ExpressionDumper dumper) {
+        dumper.display("near(");
+        path.dump(dumper);
+        dumper.display(", ");
+        searchTerm.dump(dumper);
+        dumper.display(")");
+    }
+    
+    public String tosTring() {
+        StringBuffer buf = new StringBuffer();
+        buf.append("near(");
+        buf.append(path);
+        buf.append(", ");
+        buf.append(searchTerm);
+        buf.append(")");
+        return buf.toString();
+    }    
+
+	public void setMaxDistance(Expression expr) {
+		maxDistance = expr;
+	}
+
+	public void setMinDistance(Expression expr) {
+		minDistance = expr;
+	}
+}

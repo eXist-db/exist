@@ -52,7 +52,7 @@ public class DescribeFunction extends Function {
 			"Describes a built-in function. Returns an element describing the " +
 			"function signature.",
 			new SequenceType[] {
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+				new SequenceType(Type.QNAME, Cardinality.EXACTLY_ONE),
 			},
 			new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE));
 			

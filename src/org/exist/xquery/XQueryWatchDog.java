@@ -40,6 +40,9 @@ public class XQueryWatchDog {
      * Log4J Logger for this class
      */
     private static final Logger LOG = Logger.getLogger(XQueryWatchDog.class);
+    
+    public static String PROPERTY_QUERY_TIMEOUT = "db-connection.watchdog.query-timeout";
+    public static String PROPERTY_OUTPUT_SIZE_LIMIT = "db-connection.watchdog.output-size-limit";
 
     private final XQueryContext context;
     
@@ -63,12 +66,12 @@ public class XQueryWatchDog {
     
     private void configureDefaults() {
         Configuration conf = context.broker.getBrokerPool().getConfiguration();
-        Object option = conf.getProperty("db-connection.watchdog.query-timeout");
+        Object option = conf.getProperty(PROPERTY_QUERY_TIMEOUT);
         if(option != null)
             timeout = ((Long)option).longValue();
         if(timeout <= 0)
             timeout = Long.MAX_VALUE;
-        option = conf.getProperty("db-connection.watchdog.output-size-limit");
+        option = conf.getProperty(PROPERTY_OUTPUT_SIZE_LIMIT);
         if(option != null)
             maxNodesLimit = ((Integer)option).intValue();
     }

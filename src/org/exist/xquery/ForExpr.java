@@ -116,7 +116,7 @@ public class ForExpr extends BindingExpression {
 	 * step. This is possible if the input sequence is a node set and the where expression
 	 * has no dependencies on other variables than those declared in this "for" statement.
 	 * 
-	 * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+	 * @see org.exist.xquery.Expression#eval(Sequence, Item)
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem, Sequence resultSequence)
         throws XPathException {

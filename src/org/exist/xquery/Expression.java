@@ -30,7 +30,7 @@ import org.exist.xquery.value.Sequence;
 /**
  * Base interface implemented by all classes which are part
  * of an XQuery/XPath expression. The main method is 
- * {@link #eval(StaticContext, DocumentSet, Sequence, Item)}. Please
+ * {@link #eval(Sequence, Item)}. Please
  * read the description there.
  */
 public interface Expression {
@@ -119,7 +119,6 @@ public interface Expression {
 	 * The context sequence might be a node set, a sequence of atomic values or a single
 	 * node or atomic value. 
 	 * 
-	 * @param docs the set of documents all nodes belong to.
 	 * @param contextSequence the current context sequence.
 	 * @param contextItem a single item, taken from context. This defines the item,
 	 * the expression should work on.
@@ -131,9 +130,6 @@ public interface Expression {
 	 *
 	 * An overloaded method which just passes the context sequence depending on the
 	 * expression context.
-	 *
-	 * @param docs the set of documents all nodes belong to.
-	 * @param contextSet the node-set which defines the current context node-set.
 	 */
 	public Sequence eval(Sequence contextSequence)
 		throws XPathException;
@@ -161,7 +157,7 @@ public interface Expression {
 	 * on which this expression depends. The flags are defined in
 	 * {@link Dependency}.
 	 * 
-	 * @return
+	 * @return set of bit-flags
 	 */
 	public int getDependencies();
 
@@ -199,7 +195,7 @@ public interface Expression {
 	 * has been constructed by the parser. This node contains location information
 	 * (line number and column) important for error reports.
 	 * 
-	 * @return
+	 * @return XQueryAST node
 	 */
 	public XQueryAST getASTNode();
 	

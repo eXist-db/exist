@@ -57,7 +57,6 @@ public class FunQName extends BasicFunction {
 	
 	/**
 	 * @param context
-	 * @param signature
 	 */
 	public FunQName(XQueryContext context) {
 		super(context, signature);

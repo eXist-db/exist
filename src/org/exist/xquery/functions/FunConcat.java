@@ -77,7 +77,7 @@ public class FunConcat extends Function {
 	/**
 	 * Overloaded function: no static type checking.
 	 * 
-	 * @see org.exist.xquery.functions.Function#setArguments(java.util.List)
+	 * @see org.exist.xquery.Function#setArguments(java.util.List)
 	 */
 	public void setArguments(List arguments) throws XPathException {
 		for(Iterator i = arguments.iterator(); i.hasNext(); ) {

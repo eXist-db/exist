@@ -52,7 +52,6 @@ public class FunData extends Function {
 
 	/**
 	 * @param context
-	 * @param signature
 	 */
 	public FunData(XQueryContext context) {
 		super(context, signature);

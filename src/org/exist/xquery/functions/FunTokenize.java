@@ -40,7 +40,8 @@ import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
-/** @see http://www.w3.org/TR/xpath-functions/#func-tokenize
+/** 
+ * @see <a href="http://www.w3.org/TR/xpath-functions/#func-tokenize">http://www.w3.org/TR/xpath-functions/#func-tokenize</a>
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
 public class FunTokenize extends FunMatches {
@@ -77,7 +78,7 @@ public class FunTokenize extends FunMatches {
 	}
 
 	/**
-	 * @see org.exist.xquery.AbstractExpression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence)
+	 * @see org.exist.xquery.Expression#eval(Sequence, Item)
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {

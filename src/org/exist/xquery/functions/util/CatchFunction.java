@@ -57,7 +57,6 @@ public class CatchFunction extends Function {
     
     /**
      * @param context
-     * @param signature
      */
     public CatchFunction(XQueryContext context) {
         super(context, signature);

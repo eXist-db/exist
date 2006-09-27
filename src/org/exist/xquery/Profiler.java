@@ -127,7 +127,7 @@ public class Profiler {
     /**
      * Is profiling enabled?
      * 
-     * @return
+     * @return True if profiling is enabled
      */
     public final boolean isEnabled() {
         return enabled;
@@ -273,8 +273,11 @@ public class Profiler {
      * Print out a single profiling message for the given 
      * expression object.
      * 
-     * @param expr
-     * @param message
+     * 
+     * @param level 
+     * @param title 
+     * @param sequence 
+     * @param expr 
      */
     public final void message(Expression expr, int level, String title, Sequence sequence) {
     	if (!enabled)

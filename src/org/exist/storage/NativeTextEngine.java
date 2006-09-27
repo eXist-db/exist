@@ -393,13 +393,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	}
 
 
-	/** Get all nodes whose content exactly matches the give expression.
-	 * @param context
-	 * @param docs
-	 * @param contextSet
-	 * @param expr
-	 * @return
-	 * @throws TerminatedException
+	/** 
+         * Get all nodes whose content exactly matches the give expression.
 	 */
 	public NodeSet getNodesExact(XQueryContext context, DocumentSet docs, NodeSet contextSet, String expr) 
 	    throws TerminatedException {

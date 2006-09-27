@@ -3768,7 +3768,7 @@ public XQueryTreeParser() {
 		
 					QName qn= null;
 					try {
-						qn = QName.parse(staticContext, name.getText());
+						qn = QName.parse(staticContext, name.getText(), staticContext.getDefaultFunctionNamespace());
 					} catch(XPathException e) {
 						// throw exception with correct source location
 						e.setASTNode(name);
@@ -6324,7 +6324,7 @@ public XQueryTreeParser() {
 							match(_t,ATTRIBUTE_CONTENT);
 							_t = _t.getNextSibling();
 							
-													attrib.addValue(attrVal.getText()); 
+													attrib.addValue(StringValue.expand(attrVal.getText())); 
 												
 							break;
 						}

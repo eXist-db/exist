@@ -75,7 +75,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
  
     /** Store the given node in the node index.
      * @param qname The node's identity
-     * @param proxy The node's proxy
+     * @param p     The node's proxy
      */
     public void addNode(QName qname, NodeProxy proxy) {      
     	if (doc.getDocId() != proxy.getDocument().getDocId()) {

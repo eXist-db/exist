@@ -280,7 +280,6 @@ public class DatabaseResources {
     /**
      *  Get document from database.
      *
-     * @param isBinary      Indicate wether resource is binary.
      * @param documentPath  Path to the resource.
      * @return              Byte array of resource, null if not found.
      */

@@ -49,9 +49,11 @@ import org.w3c.dom.NodeList;
 public class Rename extends Modification {
 
     /**
-     * @param pool
-     * @param user
-     * @param selectStmt
+     * @param broker 
+     * @param docs 
+     * @param namespaces 
+     * @param variables 
+     * @param selectStmt 
      */
     public Rename(DBBroker broker, DocumentSet docs, String selectStmt,
             Map namespaces, Map variables) {

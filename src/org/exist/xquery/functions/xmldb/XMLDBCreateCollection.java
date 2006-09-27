@@ -56,7 +56,6 @@ public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
 
 	/**
 	 * @param context
-	 * @param signature
 	 */
 	public XMLDBCreateCollection(XQueryContext context) {
 		super(context, signature);

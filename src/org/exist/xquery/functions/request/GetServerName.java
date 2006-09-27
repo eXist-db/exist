@@ -58,7 +58,6 @@ public class GetServerName extends BasicFunction {
 
 	/**
 	 * @param context
-	 * @param signature
 	 */
 	public GetServerName(XQueryContext context) {
 		super(context, signature);

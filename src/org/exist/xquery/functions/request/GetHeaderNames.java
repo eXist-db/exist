@@ -59,7 +59,6 @@ public class GetHeaderNames extends BasicFunction {
 
         /**
          * @param context
-         * @param signature
          */
         public GetHeaderNames(XQueryContext context) {
                 super(context, signature);

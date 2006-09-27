@@ -96,7 +96,7 @@ public class XMLWriter {
 	/**
 	 * Set the output properties.
 	 * 
-	 * @param outputProperties
+	 * @param properties outputProperties
 	 */
 	public void setOutputProperties(Properties properties) {
 		if (properties == null)

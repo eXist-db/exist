@@ -101,7 +101,6 @@ public class TransactionManager {
      * Create a new transaction. Creates a new transaction id that will
      * be logged to disk immediately. 
      * 
-     * @return
      * @throws TransactionException
      */
     public Txn beginTransaction() {

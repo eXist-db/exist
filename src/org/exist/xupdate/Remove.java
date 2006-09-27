@@ -44,20 +44,23 @@ import org.w3c.dom.Node;
  */
 public class Remove extends Modification {
 
-	/**
-	 * Constructor for Remove.
-	 * 
-	 * @param pool
-	 * @param user
-	 * @param selectStmt
-	 */
+    /**
+     * Constructor for Remove.
+     * 
+     * 
+     * @param broker 
+     * @param docs 
+     * @param namespaces 
+     * @param variables 
+     * @param selectStmt 
+     */
 	public Remove(DBBroker broker, DocumentSet docs, String selectStmt,
 			Map namespaces, Map variables) {
 		super(broker, docs, selectStmt, namespaces, variables);
 	}
 
 	/**
-	 * @see org.exist.xupdate.Modification#process(org.exist.dom.DocumentSet)
+	 * @see org.exist.xupdate.Modification#process(org.exist.storage.txn.Txn)
 	 */
 	public long process(Txn transaction) throws PermissionDeniedException,
 			LockException, EXistException, XPathException {

@@ -138,6 +138,10 @@ public class NativeBroker extends DBBroker {
     public static final String COLLECTIONS_DBX = "collections.dbx";
     public static final String WORDS_DBX = "words.dbx";
     
+    public static final String PROPERTY_PAGE_SIZE = "db-connection.page-size";
+    public static final String PROPERTY_MIN_FREE_MEMORY = "db-connection.min_free_memory";
+    public static final String PROPERTY_INDEX_DEPTH = "indexer.index-depth";
+    
     private static final byte[] ALL_STORAGE_FILES = {
     	COLLECTIONS_DBX_ID, ELEMENTS_DBX_ID, VALUES_DBX_ID,
     	VALUES_QNAME_DBX_ID, WORDS_DBX_ID, DOM_DBX_ID
@@ -148,23 +152,21 @@ public class NativeBroker extends DBBroker {
 	private static final String EXCEPTION_DURING_REINDEX = "exception during reindex";
 	private static final String DATABASE_IS_READ_ONLY = "database is read-only";
     
-    public final String DEFAULT_DATA_DIR = "data";
-    public final int DEFAULT_PAGE_SIZE = 4096;
-    public final int DEFAULT_INDEX_DEPTH = 1;
-    public final int DEFAULT_MIN_MEMORY = 5000000;
+    public static final String DEFAULT_DATA_DIR = "data";
+    public static final int DEFAULT_PAGE_SIZE = 4096;
+    public static final int DEFAULT_INDEX_DEPTH = 1;
+    public static final int DEFAULT_MIN_MEMORY = 5000000;
     public static final long TEMP_FRAGMENT_TIMEOUT = 300000;
     /** default buffer size setting */
-    public final static int BUFFERS = 256;
+    public static final int BUFFERS = 256;
     /** check available memory after storing DEFAULT_NODES_BEFORE_MEMORY_CHECK nodes */
-    public final static int DEFAULT_NODES_BEFORE_MEMORY_CHECK = 10000;     
-    public final double DEFAULT_VALUE_CACHE_GROWTH = 1.25;
-    public final double DEFAULT_VALUE_KEY_THRESHOLD = 0.01;
-    public final double DEFAULT_VALUE_VALUE_THRESHOLD = 0.04;
-    public final double DEFAULT_WORD_CACHE_GROWTH = 1.4;
-    public final double DEFAULT_WORD_KEY_THRESHOLD = 0.01;  
-    public final double DEFAULT_WORD_VALUE_THRESHOLD = 0.015;
-    
-    
+    public static final int DEFAULT_NODES_BEFORE_MEMORY_CHECK = 10000;     
+    public static final double DEFAULT_VALUE_CACHE_GROWTH = 1.25;
+    public static final double DEFAULT_VALUE_KEY_THRESHOLD = 0.01;
+    public static final double DEFAULT_VALUE_VALUE_THRESHOLD = 0.04;
+    public static final double DEFAULT_WORD_CACHE_GROWTH = 1.4;
+    public static final double DEFAULT_WORD_KEY_THRESHOLD = 0.01;  
+    public static final double DEFAULT_WORD_VALUE_THRESHOLD = 0.015;
 
 	/** the database files */
 	protected CollectionStore collectionsDb;
@@ -223,16 +225,16 @@ public class NativeBroker extends DBBroker {
 		if (dataDir == null)
             dataDir = DEFAULT_DATA_DIR;
 
-        pageSize = config.getInteger("db-connection.page-size");
+        pageSize = config.getInteger(PROPERTY_PAGE_SIZE);
 		if (pageSize < 0)
             pageSize = DEFAULT_PAGE_SIZE;
         Paged.setPageSize(pageSize);
 
-        defaultIndexDepth = config.getInteger("indexer.index-depth");
+        defaultIndexDepth = config.getInteger(PROPERTY_INDEX_DEPTH);
 		if (defaultIndexDepth < 0)
 			defaultIndexDepth = DEFAULT_INDEX_DEPTH;
         
-        memMinFree = config.getInteger("db-connection.min_free_memory");
+        memMinFree = config.getInteger(PROPERTY_MIN_FREE_MEMORY);
 		if (memMinFree < 0)
 			memMinFree = DEFAULT_MIN_MEMORY;
         
@@ -466,7 +468,7 @@ public class NativeBroker extends DBBroker {
     }    
     
     /** Takes care of actually remove entries from the indices;
-     * must be called after one or more call to {@link #removeNode()}. */
+     * must be called after one or more call to {@link #removeNode(Txn, StoredNode, NodePath, String)}. */
     public void endRemove() {
         notifyRemove();
     }
@@ -1042,7 +1044,6 @@ public class NativeBroker extends DBBroker {
      * the changes persistent.
      * 
      * Note: appending a new document to a collection does not require a save.
-     * Instead, {@link #addDocument(Collection, DocumentImpl)} is called.
      */
     public void saveCollection(Txn transaction, Collection collection) throws PermissionDeniedException {
         if (collection == null) {
@@ -1131,7 +1132,7 @@ public class NativeBroker extends DBBroker {
      * Get the next free collection id. If a collection is removed, its collection id
      * is released so it can be reused.
      * 
-     * @return
+     * @return next free collection id.
      * @throws ReadOnlyException
      */
     public short getFreeCollectionId(Txn transaction) throws ReadOnlyException {
@@ -1165,7 +1166,7 @@ public class NativeBroker extends DBBroker {
     /**
      * Get the next available unique collection id.
      * 
-     * @return
+     * @return next available unique collection id
      * @throws ReadOnlyException
      */
     public short getNextCollectionId(Txn transaction) throws ReadOnlyException {
@@ -1550,12 +1551,9 @@ public class NativeBroker extends DBBroker {
     }
     
     /**
-     *  get all the documents in this database matching the given
+     *  Get all the documents in this database matching the given
      *  document-type's name.
-     *
-     *@param  doctypeName  Description of the Parameter
-     *@param  user         Description of the Parameter
-     *@return              The documentsByDoctype value
+     * @return The documentsByDoctype value
      */
     public DocumentSet getXMLResourcesByDoctype(String doctypeName, DocumentSet result) {
         DocumentSet docs = getAllXMLResources(new DocumentSet());
@@ -1914,7 +1912,7 @@ public class NativeBroker extends DBBroker {
 	 * Get the next unused document id. If a document is removed, its doc id is
 	 * released, so it can be reused.
 	 * 
-	 * @return
+	 * @return Next unused document id
 	 * @throws ReadOnlyException
 	 */
 	public int getFreeResourceId(Txn transaction) throws ReadOnlyException {
@@ -2116,6 +2114,9 @@ public class NativeBroker extends DBBroker {
     /** consistency Check of the database; useful after XUpdates;
      * called if xupdate.consistency-checks is true in configuration */ 
     public void checkXMLResourceConsistency(DocumentImpl doc) throws EXistException {
+        boolean xupdateConsistencyChecks = false;
+        if (customProperties.get(PROPERTY_XUPDATE_CONSISTENCY_CHECKS) != null)
+        	xupdateConsistencyChecks = ((Boolean)customProperties.get(PROPERTY_XUPDATE_CONSISTENCY_CHECKS)).booleanValue();
         if(xupdateConsistencyChecks) {
             LOG.debug("Checking document " + doc.getFileURI());
             checkXMLResourceTree(doc);
@@ -2124,9 +2125,12 @@ public class NativeBroker extends DBBroker {
     }
     
     /** consistency Check of the database; useful after XUpdates;
-     * called by {@link #checkResourceConsistency()} */
+     * called by {@link #checkXMLResourceConsistency(DocumentImpl)} */
     public void checkXMLResourceTree(final DocumentImpl doc) {
         LOG.debug("Checking DOM tree for document " + doc.getFileURI());
+        boolean xupdateConsistencyChecks = false;
+        if (customProperties.get(PROPERTY_XUPDATE_CONSISTENCY_CHECKS) != null)
+        	xupdateConsistencyChecks = ((Boolean)customProperties.get(PROPERTY_XUPDATE_CONSISTENCY_CHECKS)).booleanValue();
         if(xupdateConsistencyChecks) {
             new DOMTransaction(this, domDb, Lock.READ_LOCK) {
                 public Object start() throws ReadOnlyException {

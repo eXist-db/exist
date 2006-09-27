@@ -36,6 +36,7 @@ import org.exist.xquery.Dependency;
 import org.exist.xquery.Expression;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Profiler;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.RegexTranslator;
@@ -96,18 +97,31 @@ public class ExtRegexp extends Function {
 		return deps;
 	}
 	
-	public Sequence eval(
-		Sequence contextSequence,
-		Item contextItem)
-		throws XPathException {
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+		
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        }
+        
 		if(getArgumentCount() < 2)
 			throw new XPathException(getASTNode(), "function requires at least two arguments");
+		
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
+		
 		Expression path = getArgument(0);
+		Sequence result;
+		
 		if (!Dependency.dependsOn(path, Dependency.CONTEXT_ITEM)) {
+			
 			boolean canCache = (getTermDependencies() & Dependency.CONTEXT_ITEM)
 				== Dependency.NO_DEPENDENCY;
+			
 			if(	canCache && cached != null && cached.isValid(contextSequence)) {
 				return cached.getResult();
 			}
@@ -117,38 +131,29 @@ public class ExtRegexp extends Function {
 					? contextSequence.toNodeSet()
 					: path.eval(contextSequence).toNodeSet();
 			List terms = getSearchTerms(contextSequence);
-			Sequence result = evalQuery(nodes, terms);
+			result = evalQuery(nodes, terms);
+			
 			if(canCache && contextSequence instanceof NodeSet)
 				cached = new CachedResult((NodeSet)contextSequence, result);
-			return result;
-		} else {
-			Item current;			
-			NodeSet nodes;
-			NodeSet result = new ExtArrayNodeSet();
-			Sequence temp;
-			for (SequenceIterator i = contextSequence.iterate();
-				i.hasNext();
-				) {
-				current = i.nextItem();
+			
+		} else {			
+			result = new ExtArrayNodeSet();
+			for (SequenceIterator i = contextSequence.iterate(); i.hasNext();) {
+				Item current = i.nextItem();
 				List terms = getSearchTerms(current.toSequence());
-				long start = System.currentTimeMillis();
-				nodes =
+				NodeSet nodes =
 					path == null
 						? contextSequence.toNodeSet()
-						: path
-							.eval(current.toSequence())
-							.toNodeSet();
-				temp = evalQuery(nodes, terms);
+						: path.eval(current.toSequence()).toNodeSet();
+				Sequence temp = evalQuery(nodes, terms);
 				result.addAll(temp);
-				if (LOG.isDebugEnabled())
-					LOG.debug(
-						"found "
-							+ temp.getLength()
-							+ " in "
-							+ (System.currentTimeMillis() - start));
 			}
-			return result;
 		}
+		
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result); 
+
+		return result;
 	}
 	
 	/* (non-Javadoc)

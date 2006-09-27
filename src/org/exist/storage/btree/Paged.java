@@ -139,7 +139,7 @@ public abstract class Paged {
     /**
      * Close the underlying files.
      * 
-     * @return
+     * @return TRUE if closed.
      * @throws DBException
      */
 	public boolean close() throws DBException {
@@ -1112,7 +1112,7 @@ public abstract class Paged {
          * failure. Otherwise, the modification is not yet reflected in the page
          * and the operation needs to be redone.
          * 
-         * @return
+         * @return log sequence number of the last operation that modified this page.
          */
         public final long getLsn() {
             return lsn;

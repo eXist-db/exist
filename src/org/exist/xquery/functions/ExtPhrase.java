@@ -49,8 +49,7 @@ import org.exist.xquery.value.Sequence;
 /**
  *  phrase() function : search an exact phrase in a NodeSet
  *
- *@author     Bruno Chatel <bcha@chadocs.com>
- *@created    March 30, 2005
+ *@author     Bruno Chatel <bcha@chadocs.com> (March 30, 2005)
  */
 public class ExtPhrase extends ExtFulltext {
 
@@ -66,7 +65,6 @@ public class ExtPhrase extends ExtFulltext {
      * 
      * @param searchArg
      * @param nodes 
-     * @return 
      */
     public Sequence evalQuery(String searchArg,	NodeSet nodes) throws XPathException {
 		try {
@@ -89,7 +87,6 @@ public class ExtPhrase extends ExtFulltext {
 	 * 
 	 * @param context
 	 * @param result
-	 * @return
 	 */
 	private Sequence exactMatch(XQueryContext context, NodeSet result) {
 		TextToken token;

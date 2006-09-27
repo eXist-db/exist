@@ -73,8 +73,7 @@ import org.w3c.dom.Node;
  * thread to avoid conflicting writes. The page structure is as follows:
  *  | page header | (tid1 node-data, tid2 node-data, ..., tidn node-data) |
  * 
- * node-data contains the raw binary data of the node as returned by
- * {@link org.exist.dom.NodeImpl#serialize()}. Within a page, a node is
+ * node-data contains the raw binary data of the node. Within a page, a node is
  * identified by a unique id, called tuple id (tid). Every node can thus be
  * located by a virtual address pointer, which consists of the page id and the
  * tid. Both components are encoded in a long value (with additional bits used
@@ -101,7 +100,7 @@ import org.w3c.dom.Node;
  * 
  * tid and length each use two bytes (short), address pointers 8 bytes (long).
  * The upper two bits of the tid are used to indicate the type of the record
- * (see {@see org.exist.storage.store.ItemId}).
+ * (see {@link org.exist.storage.dom.ItemId}).
  * 
  * @author Wolfgang Meier <wolfgang@exist-db.org>
  */
@@ -195,7 +194,7 @@ public class DOMFile extends BTree implements Lockable {
 	}
 
 	/**
-	 * @return
+	 * @return file version.
 	 */
 	public short getFileVersion() {
 		return FILE_FORMAT_VERSION_ID;
@@ -321,7 +320,6 @@ public class DOMFile extends BTree implements Lockable {
 	 * written into an overflow page.
 	 * 
 	 * @param value     Binary resource as byte array
-	 * @return
 	 */
         public long addBinary(Txn transaction, DocumentImpl doc, byte[] value) {
             OverflowDOMPage overflow = new OverflowDOMPage(transaction);
@@ -336,7 +334,6 @@ public class DOMFile extends BTree implements Lockable {
          * written into an overflow page.
          * 
          * @param is   Binary resource as stream.
-         * @return
          */
         public long addBinary(Txn transaction, DocumentImpl doc, InputStream is) {
             OverflowDOMPage overflow = new OverflowDOMPage(transaction);
@@ -346,10 +343,9 @@ public class DOMFile extends BTree implements Lockable {
         }
 
 	/**
-	 * Return binary data stored with {@link #addBinary(byte[])}.
+	 * Return binary data stored with {@link #addBinary(Txn, DocumentImpl, byte[])}.
 	 * 
 	 * @param pageNum
-	 * @return
 	 */
 	public byte[] getBinary(long pageNum) {
 		return getOverflowValue(pageNum);
@@ -369,7 +365,6 @@ public class DOMFile extends BTree implements Lockable {
 	 * 
 	 * @param key
 	 * @param value
-	 * @return
 	 */
 	public long insertAfter(Txn transaction, DocumentImpl doc, Value key, byte[] value) {
 		try {
@@ -399,7 +394,6 @@ public class DOMFile extends BTree implements Lockable {
 	 *                     should be inserted.
 	 * @param value
 	 *                     the value of the new node.
-	 * @return
 	 */
 	public long insertAfter(Txn transaction, DocumentImpl doc, long address, byte[] value) {
 		// check if we need an overflow page
@@ -1737,16 +1731,14 @@ public class DOMFile extends BTree implements Lockable {
 		return true;
 	}
 
-	/**
-	 * Update the key/value pair where the value is found at address p.
-	 * 
-	 * @param key
-	 *                     Description of the Parameter
-	 * @param p
-	 *                     Description of the Parameter
-	 * @param value
-	 *                     Description of the Parameter
-	 */
+    /**
+     * Update the key/value pair where the value is found at address p.
+     *
+     * @param transaction 
+     * @param p 
+     * @param value 
+     * @throws org.exist.util.ReadOnlyException 
+     */
 	public void update(Txn transaction, long p, byte[] value)
 			throws ReadOnlyException {
 		RecordPos rec = findRecord(p);
@@ -1781,8 +1773,8 @@ public class DOMFile extends BTree implements Lockable {
 	 * node data, we do not need to create a potentially large amount of node objects
 	 * and thus save memory and time for garbage collection. 
 	 * 
-	 * @param proxy
-	 * @return
+	 * @param node
+	 * @return string value of the specified node
 	 */
 	public String getNodeValue(StoredNode node, boolean addWhitespace) {
 		try {

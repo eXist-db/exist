@@ -68,7 +68,6 @@ public class IndexKeys extends BasicFunction {
 
     /**
      * @param context
-     * @param signature
      */
     public IndexKeys(XQueryContext context) {
         super(context, signature);

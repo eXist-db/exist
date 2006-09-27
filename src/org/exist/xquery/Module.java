@@ -95,7 +95,7 @@ public interface Module {
 	/**
 	 * Returns the namespace URI that uniquely identifies this module.
 	 * 
-	 * @return
+	 * @return namespace URI 
 	 */
 	public String getNamespaceURI();
 	
@@ -103,28 +103,28 @@ public interface Module {
 	 * Returns an optional default prefix (used if no prefix is supplied with
 	 * the "import module" directive).
 	 * 
-	 * @return
+	 * @return optional default prefix 
 	 */
 	public String getDefaultPrefix();
 	
 	/**
 	 * Return a short description of this module to be displayed to a user.
 	 * 
-	 * @return
+	 * @return short description of this module
 	 */
 	public String getDescription();
 	
 	/**
 	 * Is this an internal module?
 	 * 
-	 * @return
+	 * @return True if is internal module.
 	 */
 	public boolean isInternalModule();
 	
 	/**
 	 * Returns the signatures of all functions defined within this module.
 	 * 
-	 * @return
+	 * @return signatures of all functions
 	 */
 	public FunctionSignature[] listFunctions();
 	

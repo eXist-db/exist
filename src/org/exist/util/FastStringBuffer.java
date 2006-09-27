@@ -405,7 +405,7 @@ public final class FastStringBuffer implements CharSequence, Serializable {
      *  normalize-to-SAX is called for the first chunk of a multi-chunk output,
      *  or one following unsuppressed whitespace in a previous chunk.
      *
-     *@see    sendNormalizedSAXcharacters(char[],int,int,org.xml.sax.ContentHandler,int)
+     *  see    #sendNormalizedSAXcharacters(char[],int,int,org.xml.sax.ContentHandler,int)
      */
     public final static int SUPPRESS_LEADING_WS = 0x01;
 
@@ -421,7 +421,7 @@ public final class FastStringBuffer implements CharSequence, Serializable {
      *  should be used when normalize-to-SAX is called for a complete string.
      *  (I'm not wild about the name of this one. Ideas welcome.)
      *
-     *@see    sendNormalizedSAXcharacters(char[],int,int,org.xml.sax.ContentHandler,int)
+     * see    sendNormalizedSAXcharacters(char[],int,int,org.xml.sax.ContentHandler,int)
      */
     public final static int SUPPRESS_BOTH
              = SUPPRESS_LEADING_WS | SUPPRESS_TRAILING_WS;

@@ -26,7 +26,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
@@ -34,18 +36,23 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Logger;
-
+import org.exist.Indexer;
 import org.exist.memtree.SAXAdapter;
 import org.exist.security.User;
 import org.exist.security.xacml.XACMLConstants;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.CacheManager;
+import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NativeBroker;
+import org.exist.storage.NativeValueIndex;
+import org.exist.storage.TextSearchEngine;
+import org.exist.storage.XQueryPool;
 import org.exist.validation.resolver.eXistCatalogResolver;
-
+import org.exist.xquery.XQueryWatchDog;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -63,12 +70,12 @@ public class Configuration implements ErrorHandler
 	 * I vote for a Singleton (like Descriptor.java) - deliriumsky
 	 */
     
-    private final static Logger LOG = Logger.getLogger(Configuration.class);	//Logger
-    protected static String file = null;												//config file (conf.xml by default)
+    private final static Logger LOG = Logger.getLogger(Configuration.class); //Logger
+    protected static String file = null; //config file (conf.xml by default)
     protected static File existHome = null;
 
     protected DocumentBuilder builder = null;									
-    protected HashMap config = new HashMap();									//Configuration						
+    protected HashMap config = new HashMap(); //Configuration						
     
     public static final class SystemTaskConfig {
         
@@ -122,7 +129,7 @@ public class Configuration implements ErrorHandler
 				LOG.debug(e);
 			}
 
-            // otherise, secondly try to read configuration from file. Guess the
+            // otherwise, secondly try to read configuration from file. Guess the
             // location if necessary
             if (is == null) {
                 Configuration.existHome = (existHomeDirname != null) ? new File(existHomeDirname) : getExistHome(existHomeDirname);
@@ -370,20 +377,23 @@ public class Configuration implements ErrorHandler
         
         String growth = xupdate.getAttribute("growth-factor");
         if (growth != null) {
-            config.put("xupdate.growth-factor", new Integer(growth));
-            LOG.debug("xupdate.growth-factor: " + config.get("xupdate.growth-factor"));    
+            config.put(DBBroker.PROPERTY_XUPDATE_GROWTH_FACTOR, new Integer(growth));
+            LOG.debug(DBBroker.PROPERTY_XUPDATE_GROWTH_FACTOR + ": " 
+            		+ config.get(DBBroker.PROPERTY_XUPDATE_GROWTH_FACTOR));    
         }
         
         String fragmentation = xupdate.getAttribute("allowed-fragmentation");
         if (fragmentation != null) {
-        	config.put("xupdate.fragmentation", new Integer(fragmentation));
-        	LOG.debug("xupdate.fragmentation: " + config.get("xupdate.fragmentation"));
+        	config.put(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR, new Integer(fragmentation));
+        	LOG.debug(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR + ": " 
+        			+ config.get(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR));
         }
         
         String consistencyCheck = xupdate.getAttribute("enable-consistency-checks");
         if (consistencyCheck != null) {
-            config.put("xupdate.consistency-checks", Boolean.valueOf(consistencyCheck.equals("yes")));
-            LOG.debug("xupdate.consistency-checks: " + config.get("xupdate.consistency-checks"));
+            config.put(DBBroker.PROPERTY_XUPDATE_CONSISTENCY_CHECKS, Boolean.valueOf(consistencyCheck.equals("yes")));
+            LOG.debug(DBBroker.PROPERTY_XUPDATE_CONSISTENCY_CHECKS + ": " 
+            		+ config.get(DBBroker.PROPERTY_XUPDATE_CONSISTENCY_CHECKS));
         }
     }
     
@@ -477,13 +487,14 @@ public class Configuration implements ErrorHandler
             if (cacheMem.endsWith("M") || cacheMem.endsWith("m"))
                 cacheMem = cacheMem.substring(0, cacheMem.length() - 1);
             try {
-                config.put("db-connection.cache-size", new Integer(cacheMem));
-                LOG.debug("db-connection.cache-size: " + config.get("db-connection.cache-size") + "m");
+                config.put(CacheManager.PROPERTY_CACHE_SIZE, new Integer(cacheMem));
+                LOG.debug(CacheManager.PROPERTY_CACHE_SIZE + ": " + config.get(CacheManager.PROPERTY_CACHE_SIZE) + "m");
             } catch (NumberFormatException nfe) {
             	LOG.warn(nfe);
             }
         }
         
+        //Unused !
         String buffers = con.getAttribute("buffers");
         if (buffers != null) {
             try {
@@ -497,13 +508,14 @@ public class Configuration implements ErrorHandler
         String pageSize = con.getAttribute("pageSize");
         if (pageSize != null) {
             try {
-                config.put("db-connection.page-size", new Integer(pageSize));
-                LOG.debug("db-connection.page-size: " + config.get("db-connection.page-size"));
+                config.put(NativeBroker.PROPERTY_PAGE_SIZE, new Integer(pageSize));
+                LOG.debug(NativeBroker.PROPERTY_PAGE_SIZE + ": " + config.get(NativeBroker.PROPERTY_PAGE_SIZE));
             } catch (NumberFormatException nfe) {
             	LOG.warn(nfe);
             }
         }  
             
+        //Unused !
         String collBuffers = con.getAttribute("collection_buffers");            
         if (collBuffers != null) {
             try {
@@ -514,6 +526,7 @@ public class Configuration implements ErrorHandler
             }
         }
 
+        //Unused !
         String wordBuffers = con.getAttribute("words_buffers");
         if (wordBuffers != null)
         try {
@@ -523,6 +536,7 @@ public class Configuration implements ErrorHandler
         	LOG.warn(nfe);
         }
 
+        //Unused !
         String elementBuffers = con.getAttribute("elements_buffers");
         if (elementBuffers != null) {
             try {
@@ -536,18 +550,19 @@ public class Configuration implements ErrorHandler
         String freeMem = con.getAttribute("free_mem_min");
         if (freeMem != null) {
             try {
-                config.put("db-connection.min_free_memory", new Integer(freeMem));
-                LOG.debug("db-connection.min_free_memory: " + config.get("db-connection.min_free_memory"));
+                config.put(NativeBroker.PROPERTY_MIN_FREE_MEMORY, new Integer(freeMem));
+                LOG.debug(NativeBroker.PROPERTY_MIN_FREE_MEMORY + ": " + config.get(NativeBroker.PROPERTY_MIN_FREE_MEMORY));
             } catch (NumberFormatException nfe) {
             	LOG.warn(nfe);
             }
         }
         
+        //Not clear : rather looks like a buffers count
         String collCacheSize = con.getAttribute("collectionCacheSize");
         if (collCacheSize != null) {
             try {
-                config.put("db-connection.collection-cache-size", new Integer(collCacheSize));
-                LOG.debug("db-connection.collection-cache-size: " + config.get("db-connection.collection-cache-size"));
+                config.put(BrokerPool.PROPERTY_COLLECTION_CACHE_SIZE, new Integer(collCacheSize));
+                LOG.debug(BrokerPool.PROPERTY_COLLECTION_CACHE_SIZE + ": " + config.get(BrokerPool.PROPERTY_COLLECTION_CACHE_SIZE));
             } catch (NumberFormatException nfe) {
             	LOG.warn(nfe);
             }
@@ -728,8 +743,8 @@ public class Configuration implements ErrorHandler
         String timeout = watchDog.getAttribute("query-timeout");
         if (timeout != null) {
             try {
-                config.put("db-connection.watchdog.query-timeout", new Long(timeout));
-                LOG.debug("db-connection.watchdog.query-timeout: " + config.get("db-connection.watchdog.query-timeout"));
+                config.put(XQueryWatchDog.PROPERTY_QUERY_TIMEOUT, new Long(timeout));
+                LOG.debug(XQueryWatchDog.PROPERTY_QUERY_TIMEOUT + ": " + config.get(XQueryWatchDog.PROPERTY_QUERY_TIMEOUT));
             } catch (NumberFormatException e) {
             	LOG.warn(e);
             }
@@ -738,8 +753,8 @@ public class Configuration implements ErrorHandler
         String maxOutput = watchDog.getAttribute("output-size-limit");
         if (maxOutput != null) {
             try {
-                config.put("db-connection.watchdog.output-size-limit", new Integer(maxOutput));
-                LOG.debug("db-connection.watchdog.output-size-limit: " + config.get("db-connection.watchdog.output-size-limit"));
+                config.put(XQueryWatchDog.PROPERTY_OUTPUT_SIZE_LIMIT, new Integer(maxOutput));
+                LOG.debug(XQueryWatchDog.PROPERTY_OUTPUT_SIZE_LIMIT + ": " + config.get(XQueryWatchDog.PROPERTY_OUTPUT_SIZE_LIMIT));
             } catch (NumberFormatException e) {
             	LOG.warn(e);
             }
@@ -755,8 +770,8 @@ public class Configuration implements ErrorHandler
         String maxStackSize = queryPool.getAttribute("max-stack-size");
         if (maxStackSize != null) {
             try {
-                config.put("db-connection.query-pool.max-stack-size", new Integer(maxStackSize));
-                LOG.debug("db-connection.query-pool.max-stack-size: " + config.get("db-connection.query-pool.max-stack-size"));
+                config.put(XQueryPool.PROPERTY_MAX_STACK_SIZE, new Integer(maxStackSize));
+                LOG.debug(XQueryPool.PROPERTY_MAX_STACK_SIZE + ": " + config.get(XQueryPool.PROPERTY_MAX_STACK_SIZE));
             } catch (NumberFormatException e) {
             	LOG.warn(e);
             }
@@ -765,8 +780,8 @@ public class Configuration implements ErrorHandler
         String maxPoolSize = queryPool.getAttribute("size");
         if (maxPoolSize != null) {
         	try {
-        		config.put("db-connection.query-pool.size", new Integer(maxPoolSize));
-        		LOG.debug("db-connection.query-pool.size: " + config.get("db-connection.query-pool.size"));
+        		config.put(XQueryPool.PROPERTY_POOL_SIZE, new Integer(maxPoolSize));
+        		LOG.debug(XQueryPool.PROPERTY_POOL_SIZE + ": " + config.get(XQueryPool.PROPERTY_POOL_SIZE));
         	} catch (NumberFormatException e) {
         		LOG.warn(e);
         	}
@@ -775,8 +790,8 @@ public class Configuration implements ErrorHandler
         String timeout = queryPool.getAttribute("timeout");
         if (timeout != null) {
             try {
-                config.put("db-connection.query-pool.timeout", new Long(timeout));
-                LOG.debug("db-connection.query-pool.timeout: " + config.get("db-connection.query-pool.timeout"));
+                config.put(XQueryPool.PROPERTY_TIMEOUT, new Long(timeout));
+                LOG.debug(XQueryPool.PROPERTY_TIMEOUT + ": " + config.get(XQueryPool.PROPERTY_TIMEOUT));
             } catch (NumberFormatException e) {
             	LOG.warn(e);
             }
@@ -785,8 +800,8 @@ public class Configuration implements ErrorHandler
         String timeoutCheckInterval = queryPool.getAttribute("timeout-check-interval");           
         if (timeoutCheckInterval != null) {
             try {
-                config.put("db-connection.query-pool.timeout-check-interval", new Long(timeoutCheckInterval));
-                LOG.debug("db-connection.query-pool.timeout-check-interval: " + config.get("db-connection.query-pool.timeout-check-interval"));
+                config.put(XQueryPool.PROPERTY_TIMEOUT_CHECK_INTERVAL, new Long(timeoutCheckInterval));
+                LOG.debug(XQueryPool.PROPERTY_TIMEOUT_CHECK_INTERVAL + ": " + config.get(XQueryPool.PROPERTY_TIMEOUT_CHECK_INTERVAL));
             } catch (NumberFormatException e) {
             	LOG.warn(e);
             }
@@ -802,8 +817,8 @@ public class Configuration implements ErrorHandler
         String min = pool.getAttribute("min");
         if (min != null) {
             try {
-                config.put("db-connection.pool.min", new Integer(min));
-                LOG.debug("db-connection.pool.min: " + config.get("db-connection.pool.min"));
+                config.put(BrokerPool.PROPERTY_MIN_CONNECTIONS, new Integer(min));
+                LOG.debug(BrokerPool.PROPERTY_MIN_CONNECTIONS + ": " + config.get(BrokerPool.PROPERTY_MIN_CONNECTIONS));
             } catch (NumberFormatException e) {
             	LOG.warn(e);
             }
@@ -812,8 +827,8 @@ public class Configuration implements ErrorHandler
         String max = pool.getAttribute("max");
         if (max != null) {
 	        try {
-	            config.put("db-connection.pool.max", new Integer(max));
-	            LOG.debug("db-connection.pool.max: " + config.get("db-connection.pool.max"));
+	            config.put(BrokerPool.PROPERTY_MAX_CONNECTIONS, new Integer(max));
+	            LOG.debug(BrokerPool.PROPERTY_MAX_CONNECTIONS + ": " + config.get(BrokerPool.PROPERTY_MAX_CONNECTIONS));
 	        } catch (NumberFormatException e) {
 	        	LOG.warn(e);
 	        }
@@ -822,18 +837,18 @@ public class Configuration implements ErrorHandler
         String sync = pool.getAttribute("sync-period");
         if (sync != null) {
             try {
-                config.put("db-connection.pool.sync-period", new Long(sync));
-                LOG.debug("db-connection.pool.sync-period: " + config.get("db-connection.pool.sync-period"));
+                config.put(BrokerPool.PROPERTY_SYNC_PERIOD, new Long(sync));
+                LOG.debug(BrokerPool.PROPERTY_SYNC_PERIOD + ": " + config.get(BrokerPool.PROPERTY_SYNC_PERIOD));
             } catch (NumberFormatException e) {
             	LOG.warn(e);
             }
         }
         
-        String maxShutdownWait = pool.getAttribute("wait-before-shutdown");
+        String maxShutdownWait = pool.getAttribute(BrokerPool.PROPERTY_SHUTDOWN_DELAY);
         if (maxShutdownWait != null) {
             try {
-                config.put("wait-before-shutdown", new Long(maxShutdownWait));
-                LOG.debug("wait-before-shutdown: " + config.get("wait-before-shutdown"));
+                config.put(BrokerPool.PROPERTY_SHUTDOWN_DELAY, new Long(maxShutdownWait));
+                LOG.debug(BrokerPool.PROPERTY_SHUTDOWN_DELAY + ": " + config.get(BrokerPool.PROPERTY_SHUTDOWN_DELAY));
             } catch (NumberFormatException e) {
             	LOG.warn(e);
             }
@@ -854,44 +869,44 @@ public class Configuration implements ErrorHandler
 
         String parseNum = p.getAttribute("parseNumbers");
         if (parseNum != null) {
-            config.put("indexer.indexNumbers", Boolean.valueOf(parseNum.equals("yes")));
-            LOG.debug("indexer.indexNumbers: " + config.get("indexer.indexNumbers"));
+            config.put(TextSearchEngine.PROPERTY_INDEX_NUMBERS, Boolean.valueOf(parseNum.equals("yes")));
+            LOG.debug(TextSearchEngine.PROPERTY_INDEX_NUMBERS + ": " + config.get(TextSearchEngine.PROPERTY_INDEX_NUMBERS));
         }
 
         String stemming = p.getAttribute("stemming");
         if (stemming != null) {
-            config.put("indexer.stem", Boolean.valueOf(stemming.equals("yes")));
-            LOG.debug("indexer.stem: " + config.get("indexer.stem"));
+            config.put(TextSearchEngine.PROPERTY_STEM, Boolean.valueOf(stemming.equals("yes")));
+            LOG.debug(TextSearchEngine.PROPERTY_STEM + ": " + config.get(TextSearchEngine.PROPERTY_STEM));
         }
 
         String termFreq = p.getAttribute("track-term-freq");
         if (termFreq != null) {
-            config.put("indexer.store-term-freq", Boolean.valueOf(termFreq.equals("yes")));
-            LOG.debug("indexer.store-term-freq: " + config.get("indexer.store-term-freq"));
+            config.put(TextSearchEngine.PROPERTY_STORE_TERM_FREQUENCY, Boolean.valueOf(termFreq.equals("yes")));
+            LOG.debug(TextSearchEngine.PROPERTY_STORE_TERM_FREQUENCY + ": " + config.get(TextSearchEngine.PROPERTY_STORE_TERM_FREQUENCY));
         }
 
         String caseSensitive = p.getAttribute("caseSensitive");
         if (caseSensitive != null) {
-            config.put("indexer.case-sensitive", Boolean.valueOf(caseSensitive.equals("yes")));
-            LOG.debug("indexer.case-sensitive: " + config.get("indexer.case-sensitive"));
+            config.put(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE, Boolean.valueOf(caseSensitive.equals("yes")));
+            LOG.debug(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE + ": " + config.get(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE));
         }
 
         String suppressWS = p.getAttribute("suppress-whitespace");
         if (suppressWS != null) {
-            config.put("indexer.suppress-whitespace", suppressWS);
-            LOG.debug("indexer.suppress-whitespace: " + config.get("indexer.suppress-whitespace"));
+            config.put(Indexer.PROPERTY_SUPPRESS_WHITESPACE, suppressWS);
+            LOG.debug(Indexer.PROPERTY_SUPPRESS_WHITESPACE + ": " + config.get(Indexer.PROPERTY_SUPPRESS_WHITESPACE));
         }
 
         String validation = p.getAttribute("validation");         
         if (validation != null) {
-            config.put("indexer.validation", validation);
-            LOG.debug("indexer.validation: " + config.get("indexer.validation"));
+            config.put(XMLReaderObjectFactory.PROPERTY_VALIDATION, validation);
+            LOG.debug(XMLReaderObjectFactory.PROPERTY_VALIDATION + ": " + config.get(XMLReaderObjectFactory.PROPERTY_VALIDATION));
         }
         
         String tokenizer = p.getAttribute("tokenizer");
         if (tokenizer != null) {
-            config.put("indexer.tokenizer", tokenizer);
-            LOG.debug("indexer.tokenizer: " + config.get("indexer.tokenizer"));
+            config.put(TextSearchEngine.PROPERTY_TOKENIZER, tokenizer);
+            LOG.debug(TextSearchEngine.PROPERTY_TOKENIZER + ": " + config.get(TextSearchEngine.PROPERTY_TOKENIZER));
         }
         int depth = 2;
         String indexDepth = p.getAttribute("index-depth");
@@ -903,8 +918,8 @@ public class Configuration implements ErrorHandler
                 			"performance loss for node updates (XUpdate or XQuery update extensions)");
                 	depth = 3;
                 }
-                config.put("indexer.index-depth", new Integer(depth));
-                LOG.debug("indexer.index-depth: " + config.get("indexer.index-depth"));
+                config.put(NativeBroker.PROPERTY_INDEX_DEPTH, new Integer(depth));
+                LOG.debug(NativeBroker.PROPERTY_INDEX_DEPTH + ": " + config.get(NativeBroker.PROPERTY_INDEX_DEPTH));
             } catch (NumberFormatException e) {
             	LOG.warn(e);
             }
@@ -988,7 +1003,7 @@ public class Configuration implements ErrorHandler
     }
     
     /**
-     * Returns the absolut path to the configuration file.
+     * Returns the absolute path to the configuration file.
      * 
      * @return the path to the configuration file
      */

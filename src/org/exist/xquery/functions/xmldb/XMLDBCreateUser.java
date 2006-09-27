@@ -63,7 +63,6 @@ public class XMLDBCreateUser extends BasicFunction {
 	
 	/**
 	 * @param context
-	 * @param signature
 	 */
 	public XMLDBCreateUser(XQueryContext context) {
 		super(context, signature);

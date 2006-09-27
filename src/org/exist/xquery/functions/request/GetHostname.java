@@ -58,7 +58,6 @@ public class GetHostname extends BasicFunction {
 
 	/**
 	 * @param context
-	 * @param signature
 	 */
 	public GetHostname(XQueryContext context) {
 		super(context, signature);

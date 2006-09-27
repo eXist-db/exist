@@ -96,7 +96,9 @@ public class AttributeConstructor extends NodeConstructor {
 				buf.append(next);
 		}
 		StringValue result = new StringValue(buf.toString());
-		result.expand();
+                // String values as expressions are already expanded by
+                // the parser -- Alex
+		//result.expand();
 		return result;
 	}
 
@@ -115,8 +117,6 @@ public class AttributeConstructor extends NodeConstructor {
 	/**
 	 * If this is a namespace declaration attribute, return
 	 * the single string value of the attribute.
-	 * 
-	 * @return
 	 */
 	public String getLiteralValue() {
 		if(contents.size() == 0)
