@@ -66,6 +66,7 @@ public class Type {
 	public final static int QNAME = 24;
 	public final static int ANY_URI = 25;
 	public final static int BASE64_BINARY = 26;
+    public final static int HEX_BINARY = 27;
     
 	public final static int NUMBER = 30;
 	public final static int INTEGER = 31;
@@ -139,6 +140,7 @@ public class Type {
 		defineSubType(ATOMIC, TIME);
 		defineSubType(ATOMIC, DURATION);
 		defineSubType(ATOMIC, BASE64_BINARY);
+        defineSubType(ATOMIC, HEX_BINARY);
         
 		defineSubType(DURATION, YEAR_MONTH_DURATION);
 		defineSubType(DURATION, DAY_TIME_DURATION);
@@ -227,6 +229,7 @@ public class Type {
 		defineBuiltInType(QNAME, "xs:QName");
 		defineBuiltInType(ANY_URI, "xs:anyURI");
 		defineBuiltInType(BASE64_BINARY, "xs:base64Binary");
+        defineBuiltInType(HEX_BINARY, "xs:hexBinary");
         
 		defineBuiltInType(DATE_TIME, "xs:dateTime");
 		defineBuiltInType(DATE, "xs:date");
