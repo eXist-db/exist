@@ -82,8 +82,13 @@ function displayGroup(node, treeNode, oldTree) {
             var errors = child.getAttribute('errors');
 			var total = child.getAttribute('total');
 			var path = child.getAttribute('collection');
+			var percentage = 0.0;
+			if (total > 0.0)
+				percentage = passed / (total / 100);
+			
 			var display = child.getAttribute('title') + ' [' + passed +
-					'/' + failed + "/" + errors +']';
+					'/' + failed + "/" + percentage.toFixed(1) + 
+					'%]';
 			var obj = {
 				label: display, 
 				href: "javascript:loadTests('" + path + "', '" + name + "')",
