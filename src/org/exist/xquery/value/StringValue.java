@@ -167,6 +167,8 @@ public class StringValue extends AtomicValue {
 				return new IntegerValue(value, requiredType);
 			case Type.BASE64_BINARY :
 				return new Base64Binary(value);
+            case Type.HEX_BINARY :
+                return new HexBinary(value);
 			case Type.DATE_TIME :
 				return new DateTimeValue(value);
 			case Type.TIME :
