@@ -30,6 +30,7 @@ import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.VirtualNodeSet;
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
@@ -80,12 +81,14 @@ public class Predicate extends PathExpr {
      * @see org.exist.xquery.PathExpr#analyze(org.exist.xquery.AnalyzeContextInfo)
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-        contextInfo.addFlag(IN_PREDICATE); // set flag to signal subexpression that we are in a predicate
-        contextInfo.removeFlag(IN_WHERE_CLAUSE);	// remove where clause flag
-        contextInfo.removeFlag(DOT_TEST);
-        outerContextId = contextInfo.getContextId();
-        contextInfo.setContextId(getExpressionId());
-        AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+    	AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+    	newContextInfo.addFlag(IN_PREDICATE); // set flag to signal subexpression that we are in a predicate
+    	newContextInfo.removeFlag(IN_WHERE_CLAUSE);	// remove where clause flag
+    	newContextInfo.removeFlag(DOT_TEST);
+        outerContextId = newContextInfo.getContextId();
+        newContextInfo.setContextId(getExpressionId());
+        
+        newContextInfo.setStaticType(contextInfo.getStaticType());
     	newContextInfo.setParent(this);
         super.analyze(newContextInfo);
       
@@ -115,9 +118,9 @@ public class Predicate extends PathExpr {
             executionMode = BOOLEAN;
         
 		if(executionMode == BOOLEAN) {
-		    contextInfo.addFlag(SINGLE_STEP_EXECUTION);
+			newContextInfo.addFlag(SINGLE_STEP_EXECUTION);
 		    // need to re-analyze:
-		    super.analyze(contextInfo);
+		    super.analyze(newContextInfo);
 		}
     }
     
@@ -141,21 +144,31 @@ public class Predicate extends PathExpr {
             if (executionMode == BOOLEAN) {
             	//Atomic sequences will keep evaluating "." in BOOLEAN mode
             	if (!innerExpressionDot && !Type.subTypeOf(contextSequence.getItemType(), Type.NODE)) {  
-            		Sequence innerSeq = inner.eval(contextSequence); 
-	                //Only if we have an actual *singleton* of numeric items
-	                if (innerSeq.hasOne() && Type.subTypeOf(innerSeq.getItemType(), Type.NUMBER)) { 
-	                    recomputedExecutionMode = POSITIONAL;
-	            	}
+            		try {
+	            		Sequence innerSeq = inner.eval(contextSequence); 
+		                //Only if we have an actual *singleton* of numeric items
+		                if (innerSeq.hasOne() && Type.subTypeOf(innerSeq.getItemType(), Type.NUMBER)) { 
+		                    recomputedExecutionMode = POSITIONAL;
+		            	}
+            		} catch (XPathException e) {
+            			//Keep in boolean mide : How ugly !!! 
+            			//innerExpressionDot is false for (1,2,3)[. lt 3]
+            		}          
             	}
             }  
             
             //Try to promote a boolean evaluation to a positionnal one  (second case)
             if (executionMode == BOOLEAN && !innerExpressionDot && !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM)) {
-	        	Sequence innerSeq = inner.eval(contextSequence); 
-	            //Only if we have an actual *singleton* of numeric items
-	            if (innerSeq.hasOne() && Type.subTypeOf(innerSeq.getItemType(), Type.NUMBER)) { 
-                    recomputedExecutionMode = POSITIONAL;
-	        	}
+		        try {
+		        	Sequence innerSeq = inner.eval(contextSequence); 
+		            //Only if we have an actual *singleton* of numeric items
+		            if (innerSeq.hasOne() && Type.subTypeOf(innerSeq.getItemType(), Type.NUMBER)) { 
+	                    recomputedExecutionMode = POSITIONAL;
+		        	}
+	    		} catch (XPathException e) {
+	    			//Keep in boolean mide : How ugly !!! 
+	    			//innerExpressionDot is false for (1,2,3)[. lt 3]
+	    		}		            
             }
 
             if (executionMode == NODE && Type.subTypeOf(contextSequence.getItemType(), Type.ATOMIC)
@@ -170,7 +183,6 @@ public class Predicate extends PathExpr {
             		Type.subTypeOf(contextSequence.getItemType(), Type.ATOMIC)) {
                 recomputedExecutionMode = BOOLEAN;
             }
-            
     		switch(recomputedExecutionMode) {
     			case NODE: 
                     if (context.getProfiler().isEnabled())
@@ -475,5 +487,15 @@ public class Predicate extends PathExpr {
 	public void resetState() {       
 		super.resetState();
 		cached = null;		
+	}
+	
+    public void dump(ExpressionDumper dumper) {
+    	dumper.display("[");
+  		super.dump(dumper);
+  		dumper.display("]");
+  }	
+	
+	public String toString() {
+		return "[" + super.toString() + "]";
 	}
 }

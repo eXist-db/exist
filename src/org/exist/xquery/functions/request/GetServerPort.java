@@ -58,7 +58,6 @@ public class GetServerPort extends BasicFunction {
 	
 	/**
 	 * @param context
-	 * @param signature
 	 */
 	public GetServerPort(XQueryContext context) {
 		super(context, signature);

@@ -37,7 +37,7 @@ import org.exist.xquery.value.Type;
 
 /**
  * Represents a call to a user-defined function 
- * {@link org.exist.xquery.functions.UserDefinedFunction}.
+ * {@link org.exist.xquery.UserDefinedFunction}.
  * 
  * FunctionCall wraps around a user-defined function. It makes sure that all function parameters
  * are checked against the signature of the function. 
@@ -138,7 +138,7 @@ public class FunctionCall extends Function {
 	 * The return value of the user-defined function will be checked against the
 	 * provided function signature.
 	 * 
-	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+	 * @see org.exist.xquery.Expression#eval(Sequence, Item)
 	 */
 	public Sequence eval(
 		Sequence contextSequence,
@@ -164,7 +164,6 @@ public class FunctionCall extends Function {
      * @param contextSequence
      * @param contextItem
      * @param seq
-     * @return
      * @throws XPathException
      */
     public Sequence evalFunction(Sequence contextSequence, Item contextItem, Sequence[] seq) throws XPathException {

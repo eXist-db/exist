@@ -66,7 +66,6 @@ public class FunUnEscapeURI extends BasicFunction {
 	
 	/**
 	 * @param context
-	 * @param signature
 	 */
 	public FunUnEscapeURI(XQueryContext context)
 	{

@@ -1,0 +1,76 @@
+/*
+*  eXist Open Source Native XML Database
+*  Copyright (C) 2001-04 Wolfgang M. Meier (wolfgang@exist-db.org) 
+*  and others (see http://exist-db.org)
+*
+*  This program is free software; you can redistribute it and/or
+*  modify it under the terms of the GNU Lesser General Public License
+*  as published by the Free Software Foundation; either version 2
+*  of the License, or (at your option) any later version.
+*
+*  This program is distributed in the hope that it will be useful,
+*  but WITHOUT ANY WARRANTY; without even the implied warranty of
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*  GNU Lesser General Public License for more details.
+*
+*  You should have received a copy of the GNU Lesser General Public License
+*  along with this program; if not, write to the Free Software
+*  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+* 
+*  $Id$
+*/
+package org.exist.xmldb.test.concurrent;
+
+import org.exist.storage.DBBroker;
+import org.xmldb.api.base.Collection;
+
+/**
+ * Test concurrent acess to resources.
+ * 
+ * @author wolf
+ */
+public class ConcurrentResourceTest extends ConcurrentTestBase {
+
+	private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
+	
+	public static void main(String[] args) {
+		junit.textui.TestRunner.run(ConcurrentResourceTest.class);
+	}
+	
+	/**
+     * 
+     * 
+     * @param name 
+     */
+	public ConcurrentResourceTest(String name) {
+		super(name, URI, "C1");
+	}
+
+	/* (non-Javadoc)
+	 * @see org.exist.xmldb.test.concurrent.ConcurrentTestBase#setUp()
+	 */
+	protected void setUp() {
+		try {
+			super.setUp();		
+			Collection c1 = DBUtils.addCollection(getTestCollection(), "C1-C2");
+			assertNotNull(c1);
+			DBUtils.addXMLResource(c1, "R1.xml", ReplaceResourceAction.XML);		
+	        //String query0 = "//user[email = 'sam@email.com']";
+	        //String query1 = "distinct-values(//user/@id)";	        
+			addAction(new ReplaceResourceAction(URI + "/C1/C1-C2", "R1.xml"), 100, 0, 100);
+	        addAction(new ReplaceResourceAction(URI + "/C1/C1-C2", "R2.xml"), 100, 0, 100);
+			addAction(new RetrieveResourceAction(URI + "/C1/C1-C2", "R1.xml"), 150, 500, 100);
+			//addAction(new XQueryAction(URI + "/C1", "R1.xml", query0), 100, 1000, 100);
+			//addAction(new XQueryAction(URI + "/C1", "R1.xml", query1), 100, 1000, 100);
+		} catch (Exception e) {            
+            fail(e.getMessage()); 
+        }				
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.exist.xmldb.test.concurrent.ConcurrentTestBase#tearDown()
+	 */
+	protected void tearDown() {
+		super.tearDown();
+	}
+}

@@ -59,7 +59,6 @@ public class ExtDoctype extends Function {
 
 	/**
 	 * @param context
-	 * @param signature
 	 */
 	public ExtDoctype(XQueryContext context) {
 		super(context, signature);

@@ -61,7 +61,6 @@ import org.exist.storage.lock.Lock;
 import org.exist.util.Collations;
 import org.exist.util.Configuration;
 import org.exist.util.LockException;
-import org.exist.util.sanity.SanityCheck;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.parser.XQueryLexer;
@@ -339,7 +338,7 @@ public class XQueryContext {
 	 * Returns the root expression of the XQuery associated with
 	 * this context.
 	 * 
-	 * @return
+	 * @return root expression
 	 */
 	public Expression getRootExpression() {
 		return rootExpression;
@@ -361,7 +360,7 @@ public class XQueryContext {
      * representation of the query. Used to estimate the size
      * of the query.
      * 
-     * @return
+     * @return number of expression objects 
      */
     public int getExpressionCount() {
         return expressionCounter;
@@ -453,7 +452,7 @@ public class XQueryContext {
 	/**
 	 * Returns the current default function namespace.
 	 * 
-	 * @return
+	 * @return current default function namespace
 	 */
 	public String getDefaultFunctionNamespace() {
 		return defaultFunctionNamespace;
@@ -465,7 +464,11 @@ public class XQueryContext {
 	 * 
 	 * @param uri
 	 */
-	public void setDefaultFunctionNamespace(String uri) {
+	public void setDefaultFunctionNamespace(String uri) throws XPathException  {
+		//Not sure for the 2nd clause : eXist forces the function NS as default.
+		if (defaultFunctionNamespace != null && !defaultFunctionNamespace.equals(Function.BUILTIN_FUNCTION_NS) 
+				&& !defaultFunctionNamespace.equals(uri))
+			throw new XPathException("XQST0066: default function namespace is already set to: '" + defaultFunctionNamespace + "'");
 		defaultFunctionNamespace = uri;
 	}
 
@@ -504,7 +507,7 @@ public class XQueryContext {
 	 * or null if the prefix is not registered.
 	 * 
 	 * @param prefix
-	 * @return
+	 * @return namespace
 	 */
 	public String getURIForPrefix(String prefix) {
             // try in-scope namespace declarations
@@ -530,11 +533,9 @@ public class XQueryContext {
 	}
 
 	/**
-	 * Return the prefix mapped to the registered URI or
-	 * null if the URI is not registered.
-	 * 
 	 * @param uri
-	 * @return
+         * @return the prefix mapped to the registered URI or null if the URI 
+         * is not registered.
 	 */
 	public String getPrefixForURI(String uri) {
 		String prefix = (String) prefixes.get(uri);
@@ -599,9 +600,7 @@ public class XQueryContext {
 	}
 	
 	/**
-	 * Get the set of statically known documents.
-	 * 
-	 * @return
+	 * @return set of statically known documents.
 	 */
 	public DocumentSet getStaticallyKnownDocuments() throws XPathException {
 		if(staticDocuments != null)
@@ -641,9 +640,8 @@ public class XQueryContext {
 	/**
 	 * Should loaded documents be locked?
 	 * 
-     * @see #setLockDocumentsOnLoad(boolean)
-     * 
-	 * @return
+         * @see #setLockDocumentsOnLoad(boolean)
+         * 
 	 */
 	public boolean lockDocumentsOnLoad() {
 	    return lockDocumentsOnLoad;
@@ -671,9 +669,9 @@ public class XQueryContext {
 	 * Returns the set of documents that have been loaded and
 	 * locked during query execution.
 	 * 
-     * @see #setLockDocumentsOnLoad(boolean)
-     * 
-	 * @return
+         * @see #setLockDocumentsOnLoad(boolean)
+         * 
+	 * @return set of loaded and locked documents
 	 */
 	public DocumentSet getLockedDocuments() {
 	    return lockedDocuments;
@@ -699,7 +697,6 @@ public class XQueryContext {
      * locks are released as they are no longer needed.
      * 
      * @param seq
-     * @return
      * @throws XPathException 
      */
 	public DocumentSet releaseUnusedDocuments(Sequence seq) throws XPathException {
@@ -764,8 +761,6 @@ public class XQueryContext {
 	/**
 	 * Returns true if whitespace between constructed element nodes
 	 * should be stripped by default.
-	 * 
-	 * @return
 	 */
 	public boolean stripWhitespace() {
 		return stripWhitespace;
@@ -776,10 +771,8 @@ public class XQueryContext {
 	}
 
 	/**
-	 * Return an iterator over all built-in modules currently
+	 * @return iterator over all built-in modules currently
 	 * registered.
-	 * 
-	 * @return
 	 */
 	public Iterator getModules() {
 		return modules.values().iterator();
@@ -790,7 +783,7 @@ public class XQueryContext {
 	 * URI.
 	 * 
 	 * @param namespaceURI
-	 * @return
+	 * @return built-in module
 	 */
 	public Module getModule(String namespaceURI) {
 		return (Module) modules.get(namespaceURI);
@@ -800,8 +793,6 @@ public class XQueryContext {
 	 * For compiled expressions: check if the source of any
 	 * module imported by the current query has changed since
 	 * compilation.
-	 * 
-	 * @return
 	 */
 	public boolean checkModulesValid() {
 		for(Iterator i = modules.values().iterator(); i.hasNext(); ) {
@@ -904,7 +895,7 @@ public class XQueryContext {
 	 * Resolve a user-defined function.
 	 * 
 	 * @param name
-	 * @return
+	 * @return user-defined function
 	 * @throws XPathException
 	 */
 	public UserDefinedFunction resolveFunction(QName name, int argCount) throws XPathException {
@@ -932,7 +923,6 @@ public class XQueryContext {
 	 * "let" and "for".
 	 * 
 	 * @param var
-	 * @return
 	 * @throws XPathException
 	 */
 	public LocalVariable declareVariableBinding(LocalVariable var) throws XPathException {
@@ -949,9 +939,7 @@ public class XQueryContext {
 	/**
 	 * Declare a global variable as by "declare variable".
 	 * 
-	 * @param qname
-	 * @param value
-	 * @return
+	 * @param var
 	 * @throws XPathException
 	 */
 	public Variable declareGlobalVariable(Variable var) throws XPathException {
@@ -995,7 +983,7 @@ public class XQueryContext {
 	/**
 	 * Try to resolve a variable.
 	 * 
-	 * @param qname the qualified name of the variable as string
+	 * @param name the qualified name of the variable as string
 	 * @return the declared Variable object
 	 * @throws XPathException if the variable is unknown
 	 */
@@ -1072,7 +1060,6 @@ public class XQueryContext {
 	 * In XPath 1.0 compatible mode, additional conversions
 	 * will be applied to values if a numeric value is expected.
 	 *  
-	 * @return
 	 */
 	public boolean isBackwardsCompatible() {
 		return this.backwardsCompatible;
@@ -1084,7 +1071,7 @@ public class XQueryContext {
 	 * The DBBroker is the main database access object, providing
 	 * access to all internal database functions.
 	 * 
-	 * @return
+	 * @return DBBroker instance
 	 */
 	public DBBroker getBroker() {
 		return broker;
@@ -1097,7 +1084,7 @@ public class XQueryContext {
 	/**
 	 * Get the user which executes the current query.
 	 * 
-	 * @return
+	 * @return user
 	 */
 	public User getUser()
 	{		
@@ -1145,7 +1132,7 @@ public class XQueryContext {
 	 * temporary document fragments. A new document builder
 	 * will be created on demand.
 	 * 
-	 * @return
+	 * @return document builder
 	 */
 	public MemTreeBuilder getDocumentBuilder() {
 		if (builder == null) {
@@ -1247,7 +1234,7 @@ public class XQueryContext {
 	 * 
 	 * This is the URI returned by the fn:base-uri() function.
 	 * 
-	 * @return
+	 * @return base URI of the evaluation context
 	 */
 	public AnyURIValue getBaseURI() {
 		return baseURI;
@@ -1268,7 +1255,7 @@ public class XQueryContext {
 	 * Get the current context position, i.e. the position of
 	 * the currently processed item in the context sequence.
 	 *  
-	 * @return
+	 * @return current context position
 	 */
 	public int getContextPosition() {
 		return contextPosition;
@@ -1306,7 +1293,7 @@ public class XQueryContext {
 	 * The current variable context can be restored by passing
 	 * the return value to {@link #popLocalVariables(LocalVariable)}.
 	 * 
-	 * @return
+	 * @return last variable on the local variable stack
 	 */
 	public LocalVariable markLocalVariables(boolean newContext) {
         if (newContext)
@@ -1336,7 +1323,7 @@ public class XQueryContext {
 	 * Returns the current size of the stack. This is used to determine
 	 * where a variable has been declared.
 	 * 
-	 * @return
+	 * @return current size of the stack
 	 */
 	public int getCurrentStackSize() {
 		return variableStackSize;
@@ -1367,7 +1354,6 @@ public class XQueryContext {
      * optimized. 
      * 
      * @param signature
-     * @return
      */
     public boolean tailRecursiveCall(FunctionSignature signature) {
         return callStack.contains(signature);
@@ -1614,8 +1600,7 @@ public class XQueryContext {
 	/**
 	 * Store the supplied data to a temporary document fragment.
 	 * 
-	 * @param data
-	 * @return
+	 * @param doc
 	 * @throws XPathException
 	 */
 	public DocumentImpl storeTemporaryDoc(org.exist.memtree.DocumentImpl doc) throws XPathException {
@@ -1640,7 +1625,7 @@ public class XQueryContext {
 	 * Used by the context extension module; called by context:set-var().
 	 * 
 	 * @param name The variable name
-	 * @param XQVar The variable value, may be of any xs: type 
+	 * @param XQvar The variable value, may be of any xs: type 
 	 */
     public void setXQueryContextVar(String name, Object XQvar)
     {

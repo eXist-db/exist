@@ -123,15 +123,15 @@ public abstract class Modification {
 	}
 	
 	/**
-	 * Process the modification. This is the main method that has to be implemented 
-	 * by all subclasses.
-	 * 
-	 * @return
-	 * @throws PermissionDeniedException
-	 * @throws LockException
-	 * @throws EXistException
-	 * @throws XPathException
-	 */
+     * Process the modification. This is the main method that has to be implemented 
+     * by all subclasses.
+     * 
+     * @param transaction 
+     * @throws PermissionDeniedException 
+     * @throws LockException 
+     * @throws EXistException 
+     * @throws XPathException 
+     */
 	public abstract long process(Txn transaction) throws PermissionDeniedException, LockException, 
 		EXistException, XPathException;
 
@@ -319,9 +319,12 @@ public abstract class Modification {
 	 * @param docs
 	 */
 	protected void checkFragmentation(Txn transaction, DocumentSet docs) throws EXistException {
+        int fragmentationLimit = -1;
+        if (broker.customProperties.get(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR) != null)
+        	fragmentationLimit = ((Integer)broker.customProperties.get(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR)).intValue();		
 	    for(Iterator i = docs.iterator(); i.hasNext(); ) {
 	        DocumentImpl next = (DocumentImpl) i.next();
-	        if(next.getMetadata().getSplitCount() > broker.getFragmentationLimit())
+	        if(next.getMetadata().getSplitCount() > fragmentationLimit)
 	            broker.defragXMLResource(transaction, next);
 	        broker.checkXMLResourceConsistency(next);
 	    }

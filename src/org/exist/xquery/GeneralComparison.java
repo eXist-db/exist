@@ -134,10 +134,14 @@ public class GeneralComparison extends BinaryOp {
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
     	contextInfo.setParent(this);
         super.analyze(contextInfo);
-        inWhereClause = (contextInfo.getFlags() & IN_WHERE_CLAUSE) != 0; 
+        inWhereClause = (contextInfo.getFlags() & IN_WHERE_CLAUSE) != 0;
+
         //Ugly workaround for the polysemy of "." which is expanded as self::node() even when it is not relevant
         // (1)[.= 1] works...
-        invalidNodeEvaluation = getLeft() instanceof LocationStep && ((LocationStep)getLeft()).axis == Constants.SELF_AXIS;
+        invalidNodeEvaluation = false;
+        if (!Type.subTypeOf(contextInfo.getStaticType(), Type.NODE))
+    		invalidNodeEvaluation = getLeft() instanceof LocationStep && ((LocationStep)getLeft()).axis == Constants.SELF_AXIS;
+        
         //Unfortunately, we lose the possibility to make a nodeset optimization 
         //(we still don't know anything about the contextSequence that will be processed)
 
@@ -292,7 +296,9 @@ public class GeneralComparison extends BinaryOp {
 
 	protected Sequence nodeSetCompare(NodeSet nodes, Sequence contextSequence) throws XPathException {
         if (context.getProfiler().isEnabled())
-            context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "nodeSetCompare");                    
+            context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "nodeSetCompare");
+        if (LOG.isTraceEnabled())
+        	LOG.trace("No index: fall back to nodeSetCompare");
 		NodeSet result = new ExtArrayNodeSet();
 		Collator collator = getCollator(contextSequence);
 		if(contextSequence != null && !contextSequence.isEmpty())
@@ -530,6 +536,8 @@ public class GeneralComparison extends BinaryOp {
 		}
 	    else
 	    {
+	    	if (LOG.isTraceEnabled())
+	    		LOG.trace("No suitable index found for key: " + rightSeq.getStringValue());
 	    	//no range index defined on the nodes in this sequence, so fallback to nodeSetCompare
             if(context.getProfiler().isEnabled())
             {

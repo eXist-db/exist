@@ -613,7 +613,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	}
 
 	/**
-	 * @see org.xml.sax.ContentHandler#characters(char, int, int)
+	 * @see org.xml.sax.ContentHandler#characters(char[], int, int)
 	 */
 	public void characters(char[] ch, int start, int length)
 		throws SAXException {
@@ -633,7 +633,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	}
 
 	/**
-	 * @see org.xml.sax.ContentHandler#ignorableWhitespace(char, int, int)
+	 * @see org.xml.sax.ContentHandler#ignorableWhitespace(char[], int, int)
 	 */
 	public void ignorableWhitespace(char[] ch, int start, int length)
 		throws SAXException {

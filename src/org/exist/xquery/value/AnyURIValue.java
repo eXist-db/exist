@@ -120,9 +120,10 @@ public class AnyURIValue extends AtomicValue {
 
 	/**
 	 * This function accepts a String representation of an xs:anyURI and applies
-	 * the escaping method described in Section 5.4 of XML Linking ({@link http://www.w3.org/TR/2000/PR-xlink-20001220/#link-locators})
+	 * the escaping method described in Section 5.4 of XML Linking (http://www.w3.org/TR/2000/PR-xlink-20001220/#link-locators)
 	 * to turn it into a valid URI
 	 * 
+         * @see <a href="http://www.w3.org/TR/2000/PR-xlink-20001220/#link-locators">http://www.w3.org/TR/2000/PR-xlink-20001220/#link-locators</A>
 	 * @param uri The xs:anyURI to escape into a valid URI
 	 * @return An escaped string representation of the provided xs:anyURI
 	 */

@@ -48,7 +48,7 @@ public class ResourceInputStream extends InputStream {
      * Creates a new instance of ResourceInputStream.
      * 
      * @param brokerPool          BrokerPool
-     * @param resourceId    XML resource that must be streamed.
+     * @param docUri    XML resource that must be streamed.
      */
     public ResourceInputStream(BrokerPool brokerPool, XmldbURI docUri) {
         

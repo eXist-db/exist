@@ -112,11 +112,13 @@ public class NativeValueIndex implements ContentLoadingObserver {
     //TODO : reconsider this. Case sensitivity have nothing to do with atomic values -pb
     protected boolean caseSensitive = true;
     
+    public static String PROPERTY_INDEX_CASE_SENSITIVE = "indexer.case-sensitive";
+    
     public NativeValueIndex(DBBroker broker, BFile dbValues) {
         this.broker = broker;
         this.dbValues = dbValues;
         //TODO : reconsider this. Case sensitivity have nothing to do with atomic values -pb
-        Boolean caseOpt = (Boolean) broker.getConfiguration().getProperty("indexer.case-sensitive");
+        Boolean caseOpt = (Boolean) broker.getConfiguration().getProperty(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE);
         if (caseOpt != null)
             caseSensitive = caseOpt.booleanValue();
     }
@@ -509,8 +511,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
     }
     
 	/** Regular expression search
-	 * @param type  like type argument for {@link RegexMatcher} constructor
-	 * @param flags like flags argument for {@link RegexMatcher} constructor
+	 * @param type  like type argument for {@link org.exist.storage.RegexMatcher} constructor
+	 * @param flags like flags argument for {@link org.exist.storage.RegexMatcher} constructor
 	 *  */
     public NodeSet match(DocumentSet docs, NodeSet contextSet, String expr, int type, int flags, boolean caseSensitiveQuery)
         throws TerminatedException, EXistException {        

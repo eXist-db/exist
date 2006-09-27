@@ -67,7 +67,6 @@ public class FunDoc extends Function {
 	
 	/**
 	 * @param context
-	 * @param signature
 	 */
 	public FunDoc(XQueryContext context) {
 		super(context, signature);
@@ -81,7 +80,7 @@ public class FunDoc extends Function {
 	}
 
 	/**
-	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+	 * @see org.exist.xquery.Expression#eval(Sequence, Item)
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {

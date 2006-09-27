@@ -86,7 +86,6 @@ public class IndexSpec {
      * add a {@link GeneralRangeIndexSpec} to the current configuration.
      *  
      * @param index
-     * @param namespaces
      * @throws DatabaseConfigurationException
      */
     public void read(Element index) throws DatabaseConfigurationException {
@@ -134,16 +133,17 @@ public class IndexSpec {
      * there. Nodes in lower levels of the tree can be retrieved via their parent
      * nodes.
      * 
-     * @return
+     * @return Current index depth.
      */
     public int getIndexDepth() {
 		return depth;
 	}
 	
     /**
-     * Set the current index depth {@see #getIndexDepth()}.
+     * Set the current index depth.
      * 
-     * @param depth
+     * @see #getIndexDepth()
+     * @param depth Current index depth
      */
 	public void setIndexDepth( int depth ) {
 		if (depth < 3) {
@@ -157,8 +157,6 @@ public class IndexSpec {
     /**
      * Returns the fulltext index configuration object for the current
      * configuration.
-     * 
-     * @return
      */
     public FulltextIndexSpec getFulltextIndexSpec() {
         return ftSpec;
@@ -169,7 +167,6 @@ public class IndexSpec {
      * node path or null if no index has been configured.
      * 
      * @param path
-     * @return
      */
     public GeneralRangeIndexSpec getIndexByPath(NodePath path) {
         if(specs != null) {

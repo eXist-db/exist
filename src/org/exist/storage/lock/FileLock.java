@@ -154,7 +154,7 @@ public class FileLock {
     /**
      * Returns the last heartbeat written to the lock file.
      * 
-     * @return
+     * @return last heartbeat
      */
     public Date getLastHeartbeat() {
         return new Date(lastHeartbeat);
@@ -164,7 +164,7 @@ public class FileLock {
      * Returns the lock file that represents the active lock held by
      * the FileLock.
      * 
-     * @return
+     * @return lock file
      */
     public File getFile() {
         return lockFile;

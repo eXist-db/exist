@@ -61,12 +61,12 @@ public class XMLDBHasLock extends XMLDBAbstractCollectionManipulator {
 	}
 	
 	/**
-	 * @param collection
-	 * @param args
-	 * @return
-	 * @throws XMLDBException
-	 * @throws XPathException
-	 */
+     * 
+     * @param contextSequence 
+     * @param collection 
+     * @param args 
+     * @throws XPathException 
+     */
 	public Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
 	throws XPathException {
 		try {

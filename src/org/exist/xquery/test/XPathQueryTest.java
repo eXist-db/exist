@@ -490,21 +490,21 @@ public class XPathQueryTest extends XMLTestCase {
             queryResource(service, "nested2.xml", "/RootElement/ChildA/parent::*/ChildA/ChildB", 1);
             
             service =
-                    storeXMLStringAndGetQueryService("numbers.xml", numbers2);
+                    storeXMLStringAndGetQueryService("numbers2.xml", numbers2);
             service.setNamespace("n", "http://numbers.org");
-            queryResource(service, "numbers.xml", "//n:price[. = 18.4]/parent::*[@id = '3']", 1);
-            queryResource(service, "numbers.xml", "//n:price[. = 18.4]/parent::n:item[@id = '3']", 1);
-            queryResource(service, "numbers.xml", "//n:price/parent::n:item[@id = '3']", 1);
+            queryResource(service, "numbers2.xml", "//n:price[. = 18.4]/parent::*[@id = '3']", 1);
+            queryResource(service, "numbers2.xml", "//n:price[. = 18.4]/parent::n:item[@id = '3']", 1);
+            queryResource(service, "numbers2.xml", "//n:price/parent::n:item[@id = '3']", 1);
             ResourceSet result =
-                    queryResource(service, "numbers.xml", "//n:price[. = 18.4]/parent::n:*/string(@id)", 1);
+                    queryResource(service, "numbers2.xml", "//n:price[. = 18.4]/parent::n:*/string(@id)", 1);
             assertEquals(result.getResource(0).getContent().toString(), "3");
-            result = queryResource(service, "numbers.xml", "//n:price[. = 18.4]/parent::*:item/string(@id)", 1);
+            result = queryResource(service, "numbers2.xml", "//n:price[. = 18.4]/parent::*:item/string(@id)", 1);
             assertEquals(result.getResource(0).getContent().toString(), "3");
-            result = queryResource(service, "numbers.xml", "//n:price[. = 18.4]/../string(@id)", 1);
+            result = queryResource(service, "numbers2.xml", "//n:price[. = 18.4]/../string(@id)", 1);
             assertEquals(result.getResource(0).getContent().toString(), "3");
-            result = queryResource(service, "numbers.xml", "//n:price[. = 18.4]/parent::n:item/string(@id)", 1);
+            result = queryResource(service, "numbers2.xml", "//n:price[. = 18.4]/parent::n:item/string(@id)", 1);
             assertEquals(result.getResource(0).getContent().toString(), "3");
-            queryResource(service, "numbers.xml",
+            queryResource(service, "numbers2.xml",
                     "for $price in //n:price where $price/parent::*[@id = '3']/n:stock = '5' return $price", 1);
         } catch (XMLDBException e) {
             e.printStackTrace();
@@ -928,6 +928,38 @@ public class XPathQueryTest extends XMLTestCase {
         assertEquals("SFBUG 1537355 result", "2",
                 rs.getResource(0).getContent());
     }
+
+    //@see http://sourceforge.net/tracker/index.php?func=detail&aid=1533053&group_id=17691&atid=117691
+    public void testNestedPredicates() throws Exception {
+        String xQuery = "let $doc := <objects>" +
+    	"<detail><class/><source><dynamic>false</dynamic></source></detail>" + 
+    	"<detail><class/><source><dynamic>true</dynamic></source></detail>" +
+    	"</objects> " +
+    	"let $matches := $doc/detail[source[dynamic='false'] or class] " +
+    	"return count($matches) eq 2";
+    
+	    XQueryService service = getQueryService();
+	    ResourceSet rs = service.query(xQuery);
+	    
+	    assertEquals(1, rs.getSize());
+	    assertEquals("true", rs.getResource(0).getContent());
+
+	    xQuery = "let $xml := <test><element>" +
+	    	"<complexType><attribute name=\"design\" fixed=\"1\"/></complexType>" +
+        	"</element></test> " +
+        	"return $xml//element[complexType/attribute[@name eq \"design\"]/@fixed eq \"1\"]";
+
+	    service = getQueryService();
+        service.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+        service.setProperty(OutputKeys.INDENT, "no");	    
+	    rs = service.query(xQuery);
+
+	    assertEquals(1, rs.getSize());
+	    assertXMLEqual("<element><complexType><attribute name=\"design\" fixed=\"1\"/></complexType></element>", 
+	    		rs.getResource(0).getContent().toString());
+
+    }
+
     
     // @see http://sourceforge.net/tracker/index.php?func=detail&aid=1488303&group_id=17691&atid=117691
     public void bugtestPredicateBUG1488303() throws Exception {
@@ -955,6 +987,7 @@ public class XPathQueryTest extends XMLTestCase {
         assertEquals("SFBUG 1488303 result", "<t>eXist</t>",
                 rs.getResource(0).getContent());
     }
+
     
     // @see http://sourceforge.net/tracker/index.php?func=detail&aid=1460791&group_id=17691&atid=117691
     public void bugtestDescendantOrSelfBUG1460791() throws Exception {
@@ -1374,6 +1407,24 @@ public class XPathQueryTest extends XMLTestCase {
             assertEquals("string", node.getNodeName());
         } catch (XMLDBException e) {
             System.out.println("testExternalVars(): XMLDBException");
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+    }
+    
+    public void bugtestExternalVars2() {
+        try {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            InputSource source = new InputSource(new StringReader(strings));
+            Document doc = builder.parse(source);
+            
+            XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
+            CompiledExpression expr = service.compile("declare variable $local:node external; $local:node//string");
+            service.declareVariable("local:node", doc.getDocumentElement());
+            ResourceSet result = service.execute(expr);
+            assertEquals(result.getSize(), 3);
+        } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
         }

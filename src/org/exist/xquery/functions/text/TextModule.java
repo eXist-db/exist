@@ -47,11 +47,12 @@ public class TextModule extends AbstractInternalModule {
         new FunctionDef(KWICDisplay.signatures[1], KWICDisplay.class),
         new FunctionDef(RegexpFilter.signatures[0], RegexpFilter.class),
         new FunctionDef(RegexpFilter.signatures[1], RegexpFilter.class),
-        new FunctionDef(RegexpFilter.signatures[2], RegexpFilter.class)
+        new FunctionDef(RegexpFilter.signatures[2], RegexpFilter.class),
+        new FunctionDef(Tokenize.signature, Tokenize.class)
     };
     
     /**
-     * @param functions
+     * 
      */
     public TextModule() {
         super(functions);

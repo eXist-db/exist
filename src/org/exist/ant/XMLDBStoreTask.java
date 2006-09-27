@@ -91,7 +91,7 @@ public class XMLDBStoreTask extends AbstractXMLDBTask
       Collection root = null;
       if (createCollection)
       {
-        root = DatabaseManager.getCollection(baseURI + DBBroker.ROOT_COLLECTION);
+        root = DatabaseManager.getCollection(baseURI + DBBroker.ROOT_COLLECTION, user, password);
         root = mkcol(root, baseURI, DBBroker.ROOT_COLLECTION, path);
       } else
         root = DatabaseManager.getCollection(uri, user, password);

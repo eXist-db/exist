@@ -76,6 +76,13 @@ public class BrokerPool {
 	 */	
 	public final static String DEFAULT_INSTANCE_NAME = "exist";		
 	
+	//Various configuration property keys (set by the configuration manager)
+	public final static String PROPERTY_MIN_CONNECTIONS = "db-connection.pool.min";
+	public final static String PROPERTY_MAX_CONNECTIONS = "db-connection.pool.min";
+	public final static String PROPERTY_SYNC_PERIOD = "db-connection.pool.sync-period";
+	public final static String PROPERTY_SHUTDOWN_DELAY = "wait-before-shutdown";
+	public final static String PROPERTY_COLLECTION_CACHE_SIZE = "db-connection.collection-cache-size";
+	
 	//TODO : inline the class ? or... make it configurable ?
     // WM: inline. I don't think users need to be able to overwrite this.
     // They can register their own shutdown hooks any time.
@@ -481,10 +488,10 @@ public class BrokerPool {
 		 * by the ones *explicitely* provided by the constructor
 		 * TODO : consider a private constructor BrokerPool(String instanceName) then configure(int minBrokers, int maxBrokers, Configuration config)
 		 */		
-		anInteger = (Integer) conf.getProperty("db-connection.pool.min");
+		anInteger = (Integer) conf.getProperty(PROPERTY_MIN_CONNECTIONS);
 		if (anInteger != null)
 			this.minBrokers = anInteger.intValue();		
-		anInteger = (Integer) conf.getProperty("db-connection.pool.max"); 
+		anInteger = (Integer) conf.getProperty(PROPERTY_MAX_CONNECTIONS); 
 		if (anInteger != null)
 			this.maxBrokers = anInteger.intValue();		
 		//TODO : sanity check : minBrokers shall be lesser than or equal to maxBrokers
@@ -492,7 +499,7 @@ public class BrokerPool {
 		LOG.info("database instance '" + instanceName + "' will have between " + this.minBrokers + " and " + this.maxBrokers + " brokers");
 		
 		//TODO : use the periodicity of a SystemTask (see below)
-		aLong = (Long) conf.getProperty("db-connection.pool.sync-period");
+		aLong = (Long) conf.getProperty(PROPERTY_SYNC_PERIOD);
 		if (aLong != null)
 			/*this.*/syncPeriod = aLong.longValue();
 		//TODO : sanity check : the synch period should be reasonible
@@ -635,8 +642,8 @@ public class BrokerPool {
         //REFACTOR : construct then... configure
         xmlReaderPool = new XMLReaderPool(new XMLReaderObjectFactory(this), 5, 0);
         //REFACTOR : construct then... configure
-        int bufferSize = conf.getInteger("db-connection.collection-cache-size");
-        if(bufferSize==-1)
+        int bufferSize = conf.getInteger(PROPERTY_COLLECTION_CACHE_SIZE);
+        if(bufferSize == -1)
         	bufferSize = DEFAULT_COLLECTION_BUFFER_SIZE;
         collectionCache = new CollectionCache(this, bufferSize, 0.9);
         
@@ -1047,14 +1054,17 @@ public class BrokerPool {
 	}
 
 	/**
-	 * Reloads the security manager of the database instance. This method is called for example when the
-	 * <code>users.xml</code> file has been changed.
+	 * Reloads the security manager of the database instance. This method is 
+         * called for example when the <code>users.xml</code> file has been changed.
 	 * 
-	 * @param A broker responsible for executing the job
-	 */
-	//TOUNDERSTAND (pb) : why do we need a broker here ? Why not get and release one when we're done?
-    // WM: this is called from the Collection.store() methods to signal that /db/system/users.xml has changed.
-    // A broker is already available in these methods, so we use it here.
+	 * @param broker A broker responsible for executing the job
+         *
+         *  TOUNDERSTAND (pb) : why do we need a broker here ? Why not get and 
+         *  release one when we're done?
+         *  WM: this is called from the Collection.store() methods to signal 
+         *  that /db/system/users.xml has changed.
+         *  A broker is already available in these methods, so we use it here.
+         */
 	public void reloadSecurityManager(DBBroker broker) {
 		securityManager = newSecurityManager();
 		securityManager.attach(this, broker);
@@ -1101,7 +1111,8 @@ public class BrokerPool {
 	 * Schedules a cache synchronization for the database instance. If the database instance is idle,
 	 * the cache synchronization will be run immediately. Otherwise, the task will be deffered 
 	 * until all running threads have returned.
-	 * @param syncEvent One of {@link org.exist.storage.Sync#MINOR_SYNC} or {@link org.exist.storage.Sync#MINOR_SYNC}   
+	 * @param syncEvent One of {@link org.exist.storage.sync.Sync#MINOR_SYNC} or 
+         * {@link org.exist.storage.sync.Sync#MINOR_SYNC}   
 	 */
 	public void triggerSync(int syncEvent) {
 		//TOUNDERSTAND (pb) : synchronized, so... "schedules" or, rather, "executes" ? "schedules" (WM)

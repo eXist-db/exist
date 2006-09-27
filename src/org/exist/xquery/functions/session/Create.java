@@ -60,7 +60,6 @@ public class Create extends BasicFunction {
 	
 	/**
 	 * @param context
-	 * @param signature
 	 */
 	public Create(XQueryContext context) {
 		super(context, signature);

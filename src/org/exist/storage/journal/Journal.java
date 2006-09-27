@@ -219,7 +219,7 @@ public class Journal {
     /**
      * Returns the last LSN physically written to the journal.
      * 
-     * @return
+     * @return last written LSN
      */
     public long lastWrittenLsn() {
         return lastLsnWritten;
@@ -229,7 +229,7 @@ public class Journal {
      * Flush the current buffer to disk. If fsync is true, a sync will
      * be called on the file to force all changes to disk.
      * 
-     * @param fsync forces all changes to disk if true and syncMode is set to {@link #SYNC_ON_COMMIT}.
+     * @param fsync forces all changes to disk if true and syncMode is set to SYNC_ON_COMMIT.
      * @throws TransactionException
      */
     public void flushToLog(boolean fsync) {
@@ -240,7 +240,7 @@ public class Journal {
      * Flush the current buffer to disk. If fsync is true, a sync will
      * be called on the file to force all changes to disk.
      * 
-     * @param fsync forces all changes to disk if true and syncMode is set to {@link #SYNC_ON_COMMIT}.
+     * @param fsync forces all changes to disk if true and syncMode is set to SYNC_ON_COMMIT.
      * @param forceSync force changes to disk even if syncMode doesn't require it.
      * @throws TransactionException
      */
@@ -378,7 +378,6 @@ public class Journal {
      * Find the journal file with the highest file number.
      * 
      * @param files
-     * @return
      */
 	public final static int findLastFile(File files[]) {
 		File last = null;
@@ -398,7 +397,7 @@ public class Journal {
     /**
      * Returns all journal files found in the data directory.
      * 
-     * @return
+     * @return all journal files
      */
 	public File[] getFiles() {
 		File files[] = dir.listFiles(new FilenameFilter() {
@@ -414,7 +413,6 @@ public class Journal {
      * file number.
      * 
      * @param fileNum
-     * @return
      */
 	public File getFile(int fileNum) {
 		return new File(dir, getFileName(fileNum));
