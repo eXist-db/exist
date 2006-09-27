@@ -113,15 +113,12 @@
     
       <tstamp/>
       
-      <!-- temporary fix -->
-      <property name="svn.date" value="2001-10-10T10:00:00.00001Z"/>     
       <svninfo url="https://svn.sourceforge.net/svnroot/exist/trunk/eXist-1.0" username="anonymous" password="anonymous" />
       
       <propertyfile file="VERSION.txt" comment="eXist build info">
         <entry  key="project.version" value="${project.version}"/>
         <entry  key="project.build" value="${DSTAMP}"/>          
         <entry  key="svn.revision" value="${svn.revision}"/>
-        <entry  key="svn.date" value="${svn.date}"/>
       </propertyfile>
     </target>
     
@@ -136,9 +133,9 @@
         <echo message="-------------------------"/>
         <echo message="eXist ${project.version} build"/>
         <echo message="-------------------------"/>
-        <echo message="SVN revision ${svn.revision} (${svn.date})"/>    	
-    	<echo message=""/>
-    	<echo message="${ant.version}"/>
+        <echo message="SVN revision ${svn.revision}"/>    	
+        <echo message=""/>
+        <echo message="${ant.version}"/>
         <echo message="-------------------------"/>
         <echo/>
         <echo message="basedir=${basedir}"/>
@@ -259,6 +256,9 @@
         </javac>
         <jar basedir="${build.examples}" compress="true" jarfile="examples.jar">
             <manifest>
+                <attribute name="Project-Name" value="${project.name}"/>
+                <attribute name="Project-Version" value="${project.version}"/>
+                <attribute name="Project-Build" value="${DSTAMP}"/>
                 <attribute name="SVN-Revision" value="${svn.revision}"/>
             </manifest>
             <include name="org/exist/examples/**"/>
@@ -333,6 +333,9 @@
         <echo message="Creating exist.jar ..."/>
         <jar basedir="${build.classes}" compress="true" jarfile="exist.jar">
             <manifest>
+                <attribute name="Project-Name" value="${project.name}"/>
+                <attribute name="Project-Version" value="${project.version}"/>
+                <attribute name="Project-Build" value="${DSTAMP}"/>
                 <attribute name="SVN-Revision" value="${svn.revision}"/>
             </manifest>
             <exclude name="org/exist/start/**"/>
@@ -351,6 +354,9 @@
                 <attribute name="Package-Title" value="org.exist"/>
                 <attribute name="Implementation-Title" value="eXist XML Database"/>
                 <attribute name="Implementation-URL" value="http://exist-db.org"/>
+                <attribute name="Project-Name" value="${project.name}"/>
+                <attribute name="Project-Version" value="${project.version}"/>
+                <attribute name="Project-Build" value="${DSTAMP}"/>
                 <attribute name="SVN-Revision" value="${svn.revision}"/>
             </manifest>
             <include name="org/exist/start/**"/>
@@ -358,6 +364,9 @@
         <echo message="Creating exist-optional.jar ..."/>
         <jar basedir="${build.classes}" compress="true" jarfile="exist-optional.jar">
             <manifest>
+                <attribute name="Project-Name" value="${project.name}"/>
+                <attribute name="Project-Version" value="${project.version}"/>
+                <attribute name="Project-Build" value="${DSTAMP}"/>
                 <attribute name="SVN-Revision" value="${svn.revision}"/>
             </manifest>
             <include name="org/exist/soap/**"/>
