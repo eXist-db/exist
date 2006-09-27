@@ -23,17 +23,15 @@ package org.exist.xquery.value;
 
 import java.io.UnsupportedEncodingException;
 import java.text.Collator;
+import java.util.Arrays;
 
 import org.apache.xmlrpc.Base64;
 import org.exist.xquery.XPathException;
 
-public class Base64Binary extends AtomicValue {
+public class Base64Binary extends BinaryValue {
 
-    private byte[] data;
-    
     public Base64Binary(byte[] data) {
-        super();
-        this.data = data;
+        super(data);
     }
 
     public Base64Binary(String str) throws XPathException {
@@ -48,10 +46,6 @@ public class Base64Binary extends AtomicValue {
         return Type.BASE64_BINARY;
     }
     
-    public byte[] getBinaryData() {
-        return data;
-    }
-    
     public String getStringValue() throws XPathException {
         try {
 			return new String(Base64.encode(data), "UTF-8");
@@ -64,6 +58,8 @@ public class Base64Binary extends AtomicValue {
     	switch (requiredType) {
     	case Type.BASE64_BINARY: 
     		return this;
+        case Type.HEX_BINARY:
+            return new HexBinary(data);
     	case Type.UNTYPED_ATOMIC:
     		try {
     			//Added trim() since it looks like a new line character is added
@@ -82,31 +78,6 @@ public class Base64Binary extends AtomicValue {
     	default:
     		throw new XPathException("cannot convert " + Type.getTypeName(getType()) + " to " + Type.getTypeName(requiredType));
     	}
-    }
-
-    public boolean compareTo(Collator collator, int operator, AtomicValue other)
-            throws XPathException {
-        throw new XPathException("Cannot compare values of type xs:base64Binary");
-    }
-
-    public int compareTo(Collator collator, AtomicValue other)
-            throws XPathException {
-        throw new XPathException("Cannot compare values of type xs:base64Binary");
-    }
-
-    public AtomicValue max(Collator collator, AtomicValue other)
-            throws XPathException {
-        throw new XPathException("Cannot compare values of type xs:base64Binary");
-    }
-
-    public AtomicValue min(Collator collator, AtomicValue other)
-            throws XPathException {
-        throw new XPathException("Cannot compare values of type xs:base64Binary");
-    }    
-    public int conversionPreference(Class javaClass) {
-        if (javaClass.isArray() && javaClass.isInstance(Byte.class))
-            return 0;
-        return Integer.MAX_VALUE;
     }
     
     public Object toJavaObject(Class target) throws XPathException {
