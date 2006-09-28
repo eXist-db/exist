@@ -1362,7 +1362,7 @@ public class XPathQueryTest extends XMLTestCase {
                     storeXMLStringAndGetQueryService("ids.xml", ids);
             
             queryResource(service, "ids.xml", "//a/id(@ref)", 1);
-            queryResource(service, "ids.xml", "id(//a/@ref)", 1);
+            queryResource(service, "ids.xml", "/test/id(//a/@ref)", 1);
             
             ResourceSet result = queryResource(service, "ids.xml", "//a/id(@ref)/name", 1);
             Resource r = result.getResource(0);
@@ -1375,11 +1375,11 @@ public class XPathQueryTest extends XMLTestCase {
             String update = "update insert <t xml:id=\"id3\">Hello</t> into /test";
             queryResource(service, "ids.xml", update, 0);
             
-            queryResource(service, "ids.xml", "id('id3')", 1);
+            queryResource(service, "ids.xml", "/test/id('id3')", 1);
             
             update = "update value //t/@xml:id with 'id4'";
             queryResource(service, "ids.xml", update, 0);
-            queryResource(service, "ids.xml", "id('id4')", 1);
+            queryResource(service, "ids.xml", "id('id4', /test)", 1);
         } catch (XMLDBException e) {
             System.out.println("testIds(): XMLDBException: "+e);
             e.printStackTrace();
