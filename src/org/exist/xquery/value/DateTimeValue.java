@@ -98,6 +98,16 @@ public class DateTimeValue extends AbstractDateTimeValue {
 				return new DateValue(calendar);
 			case Type.TIME :
 				return new TimeValue(calendar);
+            case Type.GYEAR :
+                return new GYearValue(calendar);
+            case Type.GYEARMONTH :
+                return new GYearMonthValue(calendar);
+            case Type.GMONTHDAY :
+                return new GMonthDayValue(calendar);
+            case Type.GDAY :
+                return new GDayValue(calendar);
+            case Type.GMONTH :
+                return new GMonthValue(calendar);
 			case Type.STRING :
 				return new StringValue(getStringValue());
 			case Type.UNTYPED_ATOMIC :
