@@ -691,7 +691,7 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	/** ? @see org.w3c.dom.Node#getBaseURI()
 	 */
 	public String getBaseURI() {
-		throw new RuntimeException("Can not call getBaseURI() on node type " + this.getNodeType());
+        return null;
 	}
 
 	/** ? @see org.w3c.dom.Node#compareDocumentPosition(org.w3c.dom.Node)
