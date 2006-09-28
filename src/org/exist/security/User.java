@@ -10,6 +10,8 @@ import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.exist.storage.BrokerPool;
+import org.exist.EXistException;
 
 /**
  *  Represents a user within the database.
@@ -339,12 +341,31 @@ public class User {
     }
 
     public final boolean validate( String passwd ) {
+       SecurityManager sm;
        if (password==null && digestPassword==null) {
             return true;
        }
        if ( passwd == null ) {
             return false;
        }
+
+       //Try to authenticate using LDAP
+       try {
+          sm=BrokerPool.getInstance().getSecurityManager();
+       }
+       catch (EXistException e)
+       {
+          LOG.warn("Failed to get security manager in validate: ",e);
+          return false;
+       }
+       if(sm instanceof LDAPbindSecurityManager )
+       {
+          if( ((LDAPbindSecurityManager)sm).bind(user,passwd))
+             return true;
+          else
+             return false;
+       }
+
        if (password!=null) {
           if (MD5.md(passwd,true).equals( password )) {
              return true;
@@ -394,4 +415,5 @@ public class User {
 		}
 	}
 }
+
 
