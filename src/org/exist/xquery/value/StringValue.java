@@ -181,6 +181,16 @@ public class StringValue extends AtomicValue {
 				return new YearMonthDurationValue(value);
 			case Type.DAY_TIME_DURATION :	
 				return new DayTimeDurationValue(value);
+            case Type.GYEAR :
+                return new GYearValue(value);
+            case Type.GMONTH :
+                return new GMonthValue(value);
+            case Type.GDAY :
+                return new GDayValue(value);
+            case Type.GYEARMONTH :
+                return new GYearMonthValue(value);
+            case Type.GMONTHDAY :
+                return new GMonthDayValue(value);
 			case Type.UNTYPED_ATOMIC :
 				return new UntypedAtomicValue(getStringValue());
 			default :

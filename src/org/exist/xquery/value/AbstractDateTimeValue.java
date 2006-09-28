@@ -66,10 +66,11 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 	}
 	
 	protected AbstractDateTimeValue(String lexicalValue) throws XPathException {
+        lexicalValue = StringValue.trimWhitespace(lexicalValue);
 		try {
 			this.calendar = TimeUtils.getInstance().newXMLGregorianCalendar(lexicalValue);
 		} catch (IllegalArgumentException e) {
-			throw new XPathException("illegal lexical form for date-time-like value '" + lexicalValue + "'", e);
+			throw new XPathException("illegal lexical form for date-time-like value '" + lexicalValue + "' " + e.getMessage(), e);
 		}
 	}
 	
