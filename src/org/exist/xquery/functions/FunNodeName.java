@@ -93,10 +93,11 @@ public class FunNodeName extends Function {
                     QName qname = ((QNameable) n).getQName();
                     result = new QNameValue(context, qname);
                     break;
-                //TODO : what kind of default do we expect here ? -pb
                 default:
-                	LOG.warn("Tried to obtain node name for node type " + n.getNodeType());
-                    result = new QNameValue(context, QName.EMPTY_QNAME);
+                    // return empty sequence for all other nodes
+                    result = Sequence.EMPTY_SEQUENCE;
+//                	LOG.warn("Tried to obtain node name for node type " + n.getNodeType());
+//                    result = new QNameValue(context, QName.EMPTY_QNAME);
             }
         }
         
