@@ -62,6 +62,13 @@ public class FunBaseURI extends BasicFunction {
                 "sequence, the empty sequence is returned.",
                 new SequenceType[] { new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE) },
                 new SequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE)
+            ),
+            new FunctionSignature(
+                new QName("static-base-uri", Function.BUILTIN_FUNCTION_NS),
+                "Returns the value of the Base URI property from the static context. " +
+                "If the Base URI property is undefined, the empty sequence is returned.",
+                null,
+                new SequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE)
             )
     };
 			
@@ -88,18 +95,22 @@ public class FunBaseURI extends BasicFunction {
         
         Sequence result = null;
         NodeValue node = null;
-        if (args.length == 0) {
-            if (contextSequence.getLength() == 0)
-                throw new XPathException(getASTNode(), "XPDY0002: context sequence is empty and no argument specified");
-            Item item = contextSequence.itemAt(0);
-            if (!Type.subTypeOf(item.getType(), Type.NODE))
-                throw new XPathException(getASTNode(), "XPTY0004: context item is not a node");
-            node = (NodeValue) item;
+        if (isCalledAs("static-base-uri")) {
+            result = context.getBaseURI();
         } else {
-            if (args[0].isEmpty())
-                result = Sequence.EMPTY_SEQUENCE;
-            else
-                node = (NodeValue) args[0].itemAt(0);
+            if (args.length == 0) {
+                if (contextSequence.getLength() == 0)
+                    throw new XPathException(getASTNode(), "XPDY0002: context sequence is empty and no argument specified");
+                Item item = contextSequence.itemAt(0);
+                if (!Type.subTypeOf(item.getType(), Type.NODE))
+                    throw new XPathException(getASTNode(), "XPTY0004: context item is not a node");
+                node = (NodeValue) item;
+            } else {
+                if (args[0].isEmpty())
+                    result = Sequence.EMPTY_SEQUENCE;
+                else
+                    node = (NodeValue) args[0].itemAt(0);
+            }
         }
         if (result == null && node != null) {
             if (node.getImplementationType() == NodeValue.IN_MEMORY_NODE) {
