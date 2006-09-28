@@ -61,7 +61,7 @@ public class GYearValue extends AbstractDateTimeValue {
     
     public AtomicValue convertTo(int requiredType) throws XPathException {
         switch (requiredType) {
-            case Type.TIME :
+            case Type.GYEAR :
             case Type.ATOMIC :
             case Type.ITEM :
                 return this;

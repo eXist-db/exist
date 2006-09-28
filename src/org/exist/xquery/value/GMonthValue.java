@@ -61,7 +61,7 @@ public class GMonthValue extends AbstractDateTimeValue {
     
     public AtomicValue convertTo(int requiredType) throws XPathException {
         switch (requiredType) {
-            case Type.TIME :
+            case Type.GMONTH :
             case Type.ATOMIC :
             case Type.ITEM :
                 return this;
