@@ -42,6 +42,7 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
@@ -50,20 +51,30 @@ import org.w3c.dom.Node;
 
 public class FunId extends Function {
 
-	public final static FunctionSignature signature =
+	public final static FunctionSignature signature[] = {
 			new FunctionSignature(
 				new QName("id", Function.BUILTIN_FUNCTION_NS),
 				"Returns the sequence of element nodes that have an ID value " +
 				"matching the value of one or more of the IDREF values supplied in $a. " +
-				"If none is matching or $ is the empty sequence, returns the empty sequence.",
+				"If none is matching or $a is the empty sequence, returns the empty sequence.",
 				new SequenceType[] {
 					 new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)},
-				new SequenceType(Type.ELEMENT, Cardinality.ZERO_OR_MORE));
+				new SequenceType(Type.ELEMENT, Cardinality.ZERO_OR_MORE)),
+            new FunctionSignature(
+                    new QName("id", Function.BUILTIN_FUNCTION_NS),
+                    "Returns the sequence of element nodes that have an ID value " +
+                    "matching the value of one or more of the IDREF values supplied in $a. " +
+                    "If none is matching or $a is the empty sequence, returns the empty sequence.",
+                    new SequenceType[] {
+                         new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE),
+                         new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)},
+                    new SequenceType(Type.ELEMENT, Cardinality.ZERO_OR_MORE))
+    };
 				
 	/**
 	 * Constructor for FunId.
 	 */
-	public FunId(XQueryContext context) {
+	public FunId(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 
@@ -95,27 +106,44 @@ public class FunId extends Function {
     		result = new ExtArrayNodeSet();
     		String nextId;
     		DocumentSet docs;
-    		if(contextSequence == null || !(contextSequence instanceof NodeSet))
-    			docs = context.getStaticallyKnownDocuments();
+            if (getArgumentCount() == 2) {
+                // second argument should be a node, whose owner document will be
+                // searched for the id
+                Sequence nodes = getArgument(1).eval(contextSequence);
+                if (nodes.getLength() == 0)
+                    throw new XPathException(getASTNode(), 
+                            "XPDY0002: no node or context item for fn:id");
+                NodeValue node = (NodeValue)nodes.itemAt(0);
+                if (node.getImplementationType() == NodeValue.IN_MEMORY_NODE)
+                    throw new XPathException(getASTNode(), "FODC0001: supplied node is not from a persistent document");
+                docs = new DocumentSet();
+                docs.add(((NodeProxy)node).getDocument());
+            } else if (contextSequence == null)
+                throw new XPathException(getASTNode(), "XPDY0002: no context item specified");
+            else if(!Type.subTypeOf(contextSequence.getItemType(), Type.NODE))
+    			throw new XPathException(getASTNode(), "XPTY0004: context item is not a node");
     		else
-    			docs = contextSequence.toNodeSet().getDocumentSet(); 
+    			docs = contextSequence.toNodeSet().getDocumentSet();
+            
     		for(SequenceIterator i = idval.iterate(); i.hasNext(); ) {
     			nextId = i.nextItem().getStringValue();
+                if (nextId.length() == 0)
+                    continue;
     			if(nextId.indexOf(" ") != Constants.STRING_NOT_FOUND) {
     				// parse idrefs
     				StringTokenizer tok = new StringTokenizer(nextId, " ");
     				while(tok.hasMoreTokens()) {
     					nextId = tok.nextToken();
-    					if(!XMLChar.isValidNCName(nextId))
-    						throw new XPathException(nextId + " is not a valid NCName");
-    					QName id = new QName(nextId, "", null);
-    					getId((NodeSet)result, docs, id);
+    					if(XMLChar.isValidNCName(nextId)) {
+        					QName id = new QName(nextId, "", null);
+        					getId((NodeSet)result, docs, id);
+                        }
     				}
     			} else {
-    				if(!XMLChar.isValidNCName(nextId))
-    					throw new XPathException(nextId + " is not a valid NCName");
-    				QName id = new QName(nextId, "", null);
-    				getId((NodeSet)result, docs, id);
+    				if(XMLChar.isValidNCName(nextId)) {
+        				QName id = new QName(nextId, "", null);
+        				getId((NodeSet)result, docs, id);
+                    }
     			}
     		}
         }
