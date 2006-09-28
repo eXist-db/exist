@@ -263,7 +263,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	 * For a given set of potential ancestor nodes, return all ancestors
 	 * having descendants in this node set.
 	 *
-	 * @param  dl    node set containing potential ancestors
+	 * @param  descendants    node set containing potential ancestors
 	 * @param includeSelf if true, check if the ancestor node itself is contained
 	 * in this node set (ancestor-or-self axis)
 	 * @param contextId

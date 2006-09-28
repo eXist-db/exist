@@ -75,7 +75,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
  
     /** Store the given node in the node index.
      * @param qname The node's identity
-     * @param p     The node's proxy
+     * @param proxy     The node's proxy
      */
     public void addNode(QName qname, NodeProxy proxy) {      
     	if (doc.getDocId() != proxy.getDocument().getDocId()) {
@@ -427,8 +427,6 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
      * @param docs the set of documents to look up in the index
      * @param qname the QName of the attribute or element
      * @param selector an (optional) NodeSelector
-     * 
-     * @return
      */
     public NodeSet findElementsByTagName(byte type, DocumentSet docs, QName qname, NodeSelector selector) {
         short nodeType = getIndexType(type);
