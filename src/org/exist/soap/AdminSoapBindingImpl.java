@@ -145,7 +145,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
     
     public boolean removeDocument(java.lang.String sessionId, java.lang.String path) throws java.rmi.RemoteException {
     	try {
-    		return removeCollection(sessionId,XmldbURI.xmldbUriFor(path));
+    		return removeDocument(sessionId,XmldbURI.xmldbUriFor(path));
     	} catch(URISyntaxException e) {
     		throw new RemoteException("Invalid document URI",e);
     	}
