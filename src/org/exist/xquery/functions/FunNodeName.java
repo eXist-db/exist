@@ -96,7 +96,7 @@ public class FunNodeName extends Function {
                 //TODO : what kind of default do we expect here ? -pb
                 default:
                 	LOG.warn("Tried to obtain node name for node type " + n.getNodeType());
-                    result = new QNameValue(context, "");
+                    result = new QNameValue(context, QName.EMPTY_QNAME);
             }
         }
         
