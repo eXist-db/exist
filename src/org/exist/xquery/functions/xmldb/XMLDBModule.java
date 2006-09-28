@@ -48,6 +48,7 @@ public class XMLDBModule extends AbstractInternalModule {
                 new FunctionDef(XMLDBLoadFromPattern.signatures[2], XMLDBLoadFromPattern.class),
                 new FunctionDef(XMLDBAuthenticate.authenticateSignature, XMLDBAuthenticate.class),
                 new FunctionDef(XMLDBAuthenticate.loginSignature, XMLDBAuthenticate.class),
+                new FunctionDef(XMLDBGetCurrentUser.signature, XMLDBGetCurrentUser.class),
                 new FunctionDef(XMLDBXUpdate.signature, XMLDBXUpdate.class),
                 new FunctionDef(XMLDBCopy.signatures[0], XMLDBMove.class),
                 new FunctionDef(XMLDBCopy.signatures[1], XMLDBMove.class),

@@ -76,6 +76,7 @@ public class DynamicTextConstructor extends NodeConstructor {
             result = Sequence.EMPTY_SEQUENCE;
         else {        
             MemTreeBuilder builder = context.getDocumentBuilder();
+            builder.startDocument();
     		context.proceed(this, builder);
     		StringBuffer buf = new StringBuffer();
             for(SequenceIterator i = contentSeq.iterate(); i.hasNext(); ) {

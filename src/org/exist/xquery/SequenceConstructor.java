@@ -27,6 +27,7 @@ import java.util.Iterator;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
@@ -60,17 +61,27 @@ public class SequenceConstructor extends PathExpr {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
-	public Sequence eval(
-		Sequence contextSequence,
-		Item contextItem)
-		throws XPathException {
-		ValueSequence result = new ValueSequence();
-		Sequence temp;
-		for(Iterator i = steps.iterator(); i.hasNext(); ) {
-			temp = ((Expression)i.next()).eval(contextSequence, contextItem);
-			if(temp != null && !temp.isEmpty())
-				result.addAll(temp);
-		}
+	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);       
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            if (contextItem != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        }
+        
+        ValueSequence result = new ValueSequence();
+        for(Iterator i = steps.iterator(); i.hasNext(); ) {
+            Sequence temp = ((Expression)i.next()).eval(contextSequence, contextItem);
+            if(temp != null && !temp.isEmpty()) {               
+                  result.addAll(temp);                   
+            }           
+        } 
+		
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result);
+        
 		return result;
 	}
 
