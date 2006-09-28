@@ -1304,6 +1304,31 @@ public class XQueryTest extends XMLTestCase {
 		return b.toString();
 	}
     
+	public void testTextConstructor() {
+		 System.out.println("testTextConstructor 1: ========" );
+		 
+		 String query = "text{ \"a\" }, text{ \"b\" }, text{ \"c\" }, text{ \"d\" }";
+		 
+		 try
+		 {
+			 XPathQueryService service = (XPathQueryService)testCollection.getService("XPathQueryService", "1.0");
+			 ResourceSet result = service.query(query);
+			 printResult(result);
+			 assertEquals("XQuery: " + query, 4, result.getSize());
+
+			 assertEquals("XQuery: " + query, "a", result.getResource(0).getContent().toString());
+			 assertEquals("XQuery: " + query, "b", result.getResource(1).getContent().toString());
+			 assertEquals("XQuery: " + query, "c", result.getResource(2).getContent().toString());
+			 assertEquals("XQuery: " + query, "d", result.getResource(3).getContent().toString());
+			 
+		 }
+		 catch (XMLDBException e)
+		 {
+			 System.out.println("testAttributeAxis(): XMLDBException: "+e);
+			 fail(e.getMessage());
+		 }
+	}
+	
     public void testAttributeAxis() {
         ResourceSet result;
         String query;

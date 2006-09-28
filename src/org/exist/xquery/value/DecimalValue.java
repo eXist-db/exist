@@ -48,6 +48,7 @@ public class DecimalValue extends NumericValue {
 	}
 
 	public DecimalValue(String str) throws XPathException {
+        str = StringValue.trimWhitespace(str);
 		try {
 			if (!decimalPattern.matcher(str).matches()) {
 				throw new XPathException("FORG0001: cannot construct " + Type.getTypeName(this.getItemType()) +
