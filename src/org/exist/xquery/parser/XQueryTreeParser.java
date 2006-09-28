@@ -146,7 +146,7 @@ public XQueryTreeParser() {
 				_t = __t3;
 				_t = _t.getNextSibling();
 				
-						Function fun= new FunId(context);
+						Function fun= new FunId(context, FunId.signature[0]);
 						List params= new ArrayList(1);
 						params.add(new LiteralValue(context, new StringValue(nc.getText())));
 						fun.setArguments(params);
