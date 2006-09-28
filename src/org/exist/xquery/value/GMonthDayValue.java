@@ -60,7 +60,7 @@ public class GMonthDayValue extends AbstractDateTimeValue {
     
     public AtomicValue convertTo(int requiredType) throws XPathException {
         switch (requiredType) {
-            case Type.TIME :
+            case Type.GMONTHDAY :
             case Type.ATOMIC :
             case Type.ITEM :
                 return this;
