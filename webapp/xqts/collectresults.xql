@@ -31,10 +31,19 @@ return
                 </implementation-defined-items>
 
                 <features>
-{ for $feature in doc('/db/XQTS/XQTSCatalog.xml')/*:test-suite/*:features/*:feature
+<!-- { for $feature in doc('/db/XQTS/XQTSCatalog.xml')/*:test-suite/*:features/*:feature
 							return
-							<feature name="{$feature/@name}" supported="true"/>
-						}</features>
+							<feature name="{$feature/@name}" supported="true"/> } -->
+                <feature name="Minimal Conformance" supported="true"/>
+                <feature name="Schema Import" supported="false"/>
+                <feature name="Schema Validation" supported="false"/>
+                <feature name="Static Typing" supported="false"/>
+                <feature name="Static Typing Extensions" supported="false"/>
+                <feature name="Full Axis" supported="true"/>
+                <feature name="Module" supported="true"/>
+                <feature name="Serialization" supported="true"/>
+                <feature name="Trivial XML Embedding" supported="false"/>
+						  </features>
 
 
                 <context-properties>
