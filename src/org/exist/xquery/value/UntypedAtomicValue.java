@@ -104,12 +104,24 @@ public class UntypedAtomicValue extends AtomicValue {
 				return new IntegerValue(value, requiredType);
 			case Type.BASE64_BINARY :
 				return new Base64Binary(value);
+            case Type.HEX_BINARY :
+                return new HexBinary(value);
 			case Type.DATE_TIME :
 				return new DateTimeValue(value);
 			case Type.TIME :
 				return new TimeValue(value);
 			case Type.DATE :
 				return new DateValue(value);
+            case Type.GYEAR :
+                return new GYearValue(value);
+            case Type.GMONTH :
+                return new GMonthValue(value);
+            case Type.GDAY :
+                return new GDayValue(value);
+            case Type.GYEARMONTH :
+                return new GYearMonthValue(value);
+            case Type.GMONTHDAY :
+                return new GMonthDayValue(value);
 			case Type.DURATION :
 				return new DurationValue(value);
 			case Type.YEAR_MONTH_DURATION :

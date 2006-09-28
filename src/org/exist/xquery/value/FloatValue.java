@@ -277,14 +277,14 @@ public class FloatValue extends NumericValue {
 		if (Type.subTypeOf(other.getType(), Type.FLOAT))
 			return new FloatValue(Math.max(value, ((FloatValue) other).value));
 		else
-			return ((FloatValue) convertTo(other.getType())).max(collator, other);
+			return convertTo(other.getType()).max(collator, other);
 	}
 
 	public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
 		if (Type.subTypeOf(other.getType(), Type.FLOAT))
 			return new FloatValue(Math.min(value, ((FloatValue) other).value));
 		else
-			return ((FloatValue) convertTo(other.getType())).min(collator, other);
+			return convertTo(other.getType()).min(collator, other);
 	}
 
 	/* (non-Javadoc)

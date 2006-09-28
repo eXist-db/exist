@@ -49,6 +49,8 @@ public class QNameValue extends AtomicValue {
      * @throws XPathException
      */
 	public QNameValue(XQueryContext context, String name) throws XPathException {
+        if (name.length() == 0)
+            throw new XPathException("FORG0001: An empty string is not a valid lexical representation of xs:QName.");
 	    this.context = context;
         this.qname = QName.parse(context, name, context.getURIForPrefix(""));
     }
@@ -102,6 +104,8 @@ public class QNameValue extends AtomicValue {
 				return this;
 			case Type.STRING :
 				return new StringValue( getStringValue() );
+            case Type.UNTYPED_ATOMIC :
+                return new UntypedAtomicValue(getStringValue());
 			default :
 				throw new XPathException(
 					"A QName cannot be converted to " + Type.getTypeName(requiredType));
