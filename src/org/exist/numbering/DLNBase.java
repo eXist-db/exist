@@ -285,7 +285,7 @@ public class DLNBase {
      * can be inserted.
      * 
      * @param startOffset
-     * @return
+     * @return number of sub-levels
      */
     public int getSubLevelCount(int startOffset) {
         int bit = startOffset;
@@ -468,7 +468,6 @@ public class DLNBase {
      * to test ancestor-descendant relationships.
      * 
      * @param other
-     * @return
      */
     public boolean startsWith(DLNBase other) {
     	if (other.bitIndex > bitIndex)

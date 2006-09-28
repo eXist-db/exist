@@ -37,8 +37,6 @@ public interface NodeSetIterator extends Iterator {
     /**
      * Look ahead: returns the node at the iterator's current position but
      * does not move the iterator to the next node.
-     * 
-     * @return
      */
     public NodeProxy peekNode();
     

@@ -505,7 +505,7 @@ public abstract class DBBroker extends Observable {
 	 * 
 	 * @param doc
 	 *            the document the node belongs to
-	 * @param gid
+	 * @param nodeId
 	 *            the node's unique identifier
 	 */
 	public abstract StoredNode objectWith(Document doc, NodeId nodeId);

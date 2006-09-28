@@ -49,7 +49,7 @@ public interface NodeIdFactory {
      * base id.
      * 
      * @param id
-     * @return
+     * @return nodeId
      */
     NodeId createInstance(int id);
     
@@ -80,7 +80,7 @@ public interface NodeIdFactory {
      * 
      * @param string the string representation of the node id as returned
      * by {@link Object#toString()}
-     * @return
+     * @return nodeId
      */
     NodeId createFromString(String string);
     
@@ -93,7 +93,7 @@ public interface NodeIdFactory {
      * @param units
      * @param data
      * @param startOffset
-     * @return
+     * @return number of bytes
      */
     int lengthInBytes(int units, byte[] data, int startOffset);
 

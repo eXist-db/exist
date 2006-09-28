@@ -256,8 +256,6 @@ public class DLN extends DLNBase implements NodeId {
     /**
      * Returns the level within the document tree at which
      * this node occurs.
-     *
-     * @return
      */
     public int getTreeLevel() {
         return getLevelCount(0);

@@ -90,7 +90,6 @@ public interface NodeId extends Comparable {
      *  
      * @param other
      * @param isFollowing
-     * @return
      */
     boolean after(NodeId other, boolean isFollowing);
     
@@ -101,8 +100,7 @@ public interface NodeId extends Comparable {
      * returns false for ancestors of the current node. 
      *  
      * @param other
-     * @param isFollowing
-     * @return
+     * @param isPreceding
      */
     boolean before(NodeId other, boolean isPreceding);
     
@@ -120,7 +118,6 @@ public interface NodeId extends Comparable {
      * Is the current node a child node of the specified parent?
      * 
      * @param parent the parent node
-     * @return
      */
     boolean isChildOf(NodeId parent);
 
@@ -141,8 +138,6 @@ public interface NodeId extends Comparable {
     /**
      * Returns the level within the document tree at which
      * this node occurs.
-     *
-     * @return
      */
     int getTreeLevel();
 
@@ -154,7 +149,7 @@ public interface NodeId extends Comparable {
      * Returns the size (in bytes) of this node id. Depends on
      * the concrete implementation.
      *
-     * @return
+     * @return size
      */
     int size();
 

@@ -47,8 +47,11 @@ public class NamedNode extends StoredNode implements QNameable {
     }
 
     /**
-     * @param nodeType
-     * @param gid
+     * 
+     * 
+     * @param nodeId 
+     * @param qname 
+     * @param nodeType 
      */
     public NamedNode(short nodeType, NodeId nodeId, QName qname) {
         super(nodeType, nodeId);
