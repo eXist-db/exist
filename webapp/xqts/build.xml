@@ -22,7 +22,14 @@
     <available file="${server.dir}/src/org/exist/numbering/NodeId.java" property="exist.dln"/>
 
     <target name="store" xmlns:xmldb="http://exist-db.org/ant" if="xqts.present"  depends="check-files">
-        
+    	<xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/system/config/db/XQTS"
+    		user="admin" password=""
+    		createcollection="true">
+            <fileset dir="${config.basedir}">
+                <include name="xqts.xconf"/>
+            </fileset>
+        </xmldb:store>
+    	
         <xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/XQTS" createcollection="true">
             <fileset dir=".">
                 <include name="config.xml"/>
@@ -54,7 +61,7 @@
             <fileset dir="${config.basedir}/TestSources">
                 <include name="*"/>
                 <!-- This list should be not very long -->
-                <exclude name="fsx.xml"/> <!-- Irregular file --> 
+                <!--exclude name="fsx.xml"/--> <!-- Irregular file --> 
                 <exclude name="orders"/>  <!-- No Mime type   -->
                 <exclude name="strong-queries-results-q2.xsd"/> <!-- syntax eror -->
                 <exclude name="strong-queries-results-q3.xsd"/> <!-- syntax eror -->
