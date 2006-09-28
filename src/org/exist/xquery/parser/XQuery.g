@@ -607,7 +607,7 @@ orExpr throws XPathException
 
 andExpr throws XPathException
 :
-	instanceofExpr ( "and"^ instanceofExpr )*
+	comparisonExpr ( "and"^ comparisonExpr )*
 	;
 
 instanceofExpr throws XPathException
@@ -627,7 +627,7 @@ castableExpr throws XPathException
 	
 castExpr throws XPathException
 :
-	comparisonExpr ( "cast"^ "as"! singleType )?
+	unaryExpr ( "cast"^ "as"! singleType )?
 	;
 
 comparisonExpr throws XPathException
@@ -663,26 +663,26 @@ additiveExpr throws XPathException
 
 multiplicativeExpr throws XPathException
 :
-	unaryExpr ( ( STAR^ | "div"^ | "idiv"^ | "mod"^ ) unaryExpr )*
+	unionExpr ( ( STAR^ | "div"^ | "idiv"^ | "mod"^ ) unionExpr )*
 	;
 
 unaryExpr throws XPathException
 :
 	// TODO: XPath 2.0 allows an arbitrary number of +/-, 
 	// we restrict it to one
-	m:MINUS expr:unionExpr
+	m:MINUS expr:pathExpr
 	{ 
         #unaryExpr= #(#[UNARY_MINUS, "-"], #expr);
         #unaryExpr.copyLexInfo(#m);
     }
 	|
-	p:PLUS expr2:unionExpr
+	p:PLUS expr2:pathExpr
 	{ 
         #unaryExpr= #(#[UNARY_PLUS, "+"], #expr2);
         #unaryExpr.copyLexInfo(#p);
     }
 	|
-	unionExpr
+	pathExpr
 	;
 
 unionExpr throws XPathException
@@ -698,9 +698,9 @@ unionExpr throws XPathException
 
 intersectExceptExpr throws XPathException
 :
-	pathExpr
+	instanceofExpr
 	(
-		( "intersect"^ | "except"^ ) pathExpr
+		( "intersect"^ | "except"^ ) instanceofExpr
 	)*
 	;
 
