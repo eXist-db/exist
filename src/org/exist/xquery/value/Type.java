@@ -93,7 +93,12 @@ public class Type {
 	public final static int DURATION = 53;
 	public final static int YEAR_MONTH_DURATION = 54;
 	public final static int DAY_TIME_DURATION = 55;
-	
+	public final static int GYEAR = 56;
+    public final static int GMONTH = 57;
+    public final static int GDAY = 58;
+    public final static int GYEARMONTH = 59;
+    public final static int GMONTHDAY = 71;
+    
 	public final static int TOKEN = 60;
 	public final static int NORMALIZED_STRING = 61;
 	public final static int LANGUAGE = 62;
@@ -139,6 +144,11 @@ public class Type {
 		defineSubType(ATOMIC, DATE);
 		defineSubType(ATOMIC, TIME);
 		defineSubType(ATOMIC, DURATION);
+        defineSubType(ATOMIC, GYEAR);
+        defineSubType(ATOMIC, GMONTH);
+        defineSubType(ATOMIC, GDAY);
+        defineSubType(ATOMIC, GYEARMONTH);
+        defineSubType(ATOMIC, GMONTHDAY);
 		defineSubType(ATOMIC, BASE64_BINARY);
         defineSubType(ATOMIC, HEX_BINARY);
         
@@ -235,6 +245,12 @@ public class Type {
 		defineBuiltInType(DATE, "xs:date");
 		defineBuiltInType(TIME, "xs:time");
 		defineBuiltInType(DURATION, "xs:duration");
+        defineBuiltInType(GYEAR, "xs:gYear");
+        defineBuiltInType(GMONTH, "xs:gMonth");
+        defineBuiltInType(GDAY, "xs:gDay");
+        defineBuiltInType(GYEARMONTH, "xs:gYearMonth");
+        defineBuiltInType(GMONTHDAY, "xs:gMonthDay");
+        
 		//Duplicate definition : new one first
 		defineBuiltInType(YEAR_MONTH_DURATION, "xs:yearMonthDuration");
 		defineBuiltInType(YEAR_MONTH_DURATION, "xdt:yearMonthDuration");		
