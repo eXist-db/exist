@@ -1340,17 +1340,16 @@ public class NativeBroker extends DBBroker {
             flush();
             transact.commit(transaction);
             
-            //restore the user
-            user = currentUser;
-            
             return targetDoc;
         } catch (Exception e) {
             LOG.debug(e);
             transact.abort(transaction);
         }
-        
-        //restore the user
-        user = currentUser;
+        finally
+        {
+            //restore the user
+            user = currentUser;
+        }
         
         return null;
     }
