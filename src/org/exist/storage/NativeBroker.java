@@ -1307,7 +1307,12 @@ public class NativeBroker extends DBBroker {
         TransactionManager transact = pool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
         
+        //store the currentUser
+        User currentUser = user;
+        
+        //elevate user to DBA_USER
         user = pool.getSecurityManager().getUser(SecurityManager.DBA_USER);
+        
         XmldbURI docName = XmldbURI.create(MD5.md(Thread.currentThread().getName() + Long.toString(System.currentTimeMillis()),false) +
             ".xml");
         Collection temp = openCollection(XmldbURI.TEMP_COLLECTION_URI, Lock.WRITE_LOCK);
@@ -1334,11 +1339,19 @@ public class NativeBroker extends DBBroker {
             closeDocument();
             flush();
             transact.commit(transaction);
+            
+            //restore the user
+            user = currentUser;
+            
             return targetDoc;
         } catch (Exception e) {
             LOG.debug(e);
             transact.abort(transaction);
         }
+        
+        //restore the user
+        user = currentUser;
+        
         return null;
     }
     
