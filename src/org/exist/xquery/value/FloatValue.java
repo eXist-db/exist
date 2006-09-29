@@ -183,7 +183,20 @@ public class FloatValue extends NumericValue {
 	 * @see org.exist.xquery.value.NumericValue#round()
 	 */
 	public NumericValue round() throws XPathException {
-		return new FloatValue((float) Math.round(value));
+		//Copied from Saxon
+		if (Float.isNaN(value)) return this;
+        if (Float.isInfinite(value)) return this;
+        if (value==0.0) return this;    // handles the negative zero case
+        if (value > -0.5 && value < 0.0) return new DoubleValue(-0.0);
+        if (value > Integer.MIN_VALUE && value < Integer.MAX_VALUE) {
+            return new FloatValue((float)Math.round(value));
+        }
+
+        // if the float is larger than the maximum int, then
+        // it can't have any significant digits after the decimal
+        // point, so return it unchanged
+
+        return this;
 	}
 	
 	/* (non-Javadoc)
