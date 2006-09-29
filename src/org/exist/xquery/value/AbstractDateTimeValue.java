@@ -25,8 +25,11 @@ package org.exist.xquery.value;
 
 import java.math.BigDecimal;
 import java.text.Collator;
+import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.Duration;
@@ -45,6 +48,8 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 	//Provisionally public
 	public final XMLGregorianCalendar calendar;
 	private XMLGregorianCalendar implicitCalendar, canonicalCalendar, trimmedCalendar;
+	
+	protected static Pattern negativeDateStart = Pattern.compile("^\\d-(\\d+)-(.*)"); 
 
 	public final static int YEAR = 0;
 	public final static int MONTH = 1;
@@ -140,6 +145,27 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 		String r = getTrimmedCalendar().toXMLFormat();
 		// hacked to match the format mandated in XPath 2 17.1.2, which is different from the XML Schema canonical format
 		//if (r.charAt(r.length()-1) == 'Z') r = r.substring(0, r.length()-1) + "+00:00";
+		
+		//Let's try these lexical transformations...		
+		boolean startsWithDashDash = r.startsWith("--");
+		r = r.replaceAll("--", "");
+		if (startsWithDashDash)
+			r = "--" + r;
+		
+		Matcher m = negativeDateStart.matcher(r);
+		if (m.matches()) {
+			//TODO : refactor this -1 shift :
+			//OK for : 
+			//(xs:dateTime("0001-01-01T01:01:01Z") + xs:yearMonthDuration("-P20Y07M"))			
+			//which goes from "0-20-06-01T01:01:01Z" to correct "-0021-06-01T01:01:01Z"
+			//not OK for : 
+			//xs:string("-0012-05:00") cast as xs:gYear
+			//which goes from "0-12-05:00" to incorrectly shifted "-0013-05:00"
+			int year = Integer.valueOf(m.group(1)).intValue() + 1;
+			DecimalFormat df = new DecimalFormat("0000");
+			r = "-" + df.format(year) + "-" + m.group(2);
+		}
+		
 		return r;
 	}
 
