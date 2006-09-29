@@ -770,6 +770,17 @@ public class XPathQueryTest extends XMLTestCase {
             assertEquals("minimum of big integers",
                     "123456789123456789123456789",
                     result.getResource(0).getContent() );
+            
+            boolean exceptionThrown = false;
+            String message = "";
+            try {
+                result = queryResource(service, "numbers.xml", "empty(() + (1, 2))", 1);
+            } catch (XMLDBException e) {
+                exceptionThrown = true;
+                message = e.getMessage();
+            }
+            assertTrue(message.indexOf("XPTY0004") > -1);
+            
         } catch (XMLDBException e) {
             e.printStackTrace();
             fail(e.getMessage());
