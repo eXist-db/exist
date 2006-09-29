@@ -49,6 +49,7 @@ public class DeadlockTest extends TestCase {
 	        Thread[] writerThreads = new Thread[threads];
 	        for (int i = 0; i < threads; i++) {
 	            writerThreads[i] = new WriterThread(rootCollection, resources);
+                writerThreads[i].setName("T" + i);
 	            writerThreads[i].start();
 	        }
 	        for (int i = 0; i < threads; i++) {
@@ -104,7 +105,7 @@ public class DeadlockTest extends TestCase {
                 for (int i = 0; i < resources; i++) {
                     XMLResource document = (XMLResource) collection
                             .createResource(Thread.currentThread().getName()
-                                    + "#" + i, "XMLResource");
+                                    + "_" + i, "XMLResource");
                     document.setContent(DOCUMENT_CONTENT);
                     System.out.print("storing document " + document.getId()
                             + "\n");

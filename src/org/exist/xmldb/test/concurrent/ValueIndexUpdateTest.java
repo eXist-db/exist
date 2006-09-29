@@ -23,6 +23,7 @@ package org.exist.xmldb.test.concurrent;
 
 import org.exist.collections.CollectionConfiguration;
 import org.exist.storage.DBBroker;
+import org.exist.xmldb.test.concurrent.action.ValueAppendAction;
 
 
 

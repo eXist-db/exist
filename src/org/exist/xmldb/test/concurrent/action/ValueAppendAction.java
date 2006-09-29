@@ -19,7 +19,7 @@
  *  
  *  $Id$
  */
-package org.exist.xmldb.test.concurrent;
+package org.exist.xmldb.test.concurrent.action;
 
 import junit.framework.Assert;
 

@@ -19,12 +19,13 @@
 * 
 *  $Id$
 */
-package org.exist.xmldb.test.concurrent;
+package org.exist.xmldb.test.concurrent.action;
 
 import java.io.File;
 
 import junit.framework.Assert;
 
+import org.exist.xmldb.test.concurrent.DBUtils;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
@@ -36,7 +37,7 @@ import org.xmldb.api.base.ResourceSet;
  */
 public class ReplaceResourceAction extends Action {
 
-	protected final static String XML =
+	public final static String XML =
 		"<config>" +
 		"<user id=\"george\">" +
 		"<phone>+49 69 888478</phone>" +
@@ -56,7 +57,6 @@ public class ReplaceResourceAction extends Action {
 	private final static String TEST_QUERY2 = "//user[@id = 'sam']/customer-id[. = '993834']";
 	private final static String TEST_QUERY3 = "//user[email = 'sam@email.com']";
 	
-	private File tempFile;
 	private int count = 0;
 	
 	/**

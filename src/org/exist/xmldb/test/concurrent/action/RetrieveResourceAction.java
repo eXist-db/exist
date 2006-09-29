@@ -18,7 +18,7 @@
  * 
  *  $Id$
  */
-package org.exist.xmldb.test.concurrent;
+package org.exist.xmldb.test.concurrent.action;
 
 import org.xml.sax.helpers.DefaultHandler;
 import org.xmldb.api.DatabaseManager;
@@ -26,7 +26,7 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.modules.XMLResource;
 
 
-class RetrieveResourceAction extends Action {
+public class RetrieveResourceAction extends Action {
 	
 	/**
 	 * 

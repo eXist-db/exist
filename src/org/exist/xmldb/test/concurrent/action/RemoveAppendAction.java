@@ -18,8 +18,9 @@
  * 
  *  $Id$
  */
-package org.exist.xmldb.test.concurrent;
+package org.exist.xmldb.test.concurrent.action;
 
+import org.exist.xmldb.test.concurrent.XMLGenerator;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
@@ -31,7 +32,7 @@ import org.xmldb.api.modules.XUpdateQueryService;
  * 
  * @author wolf
  */
-class RemoveAppendAction extends Action {
+public class RemoveAppendAction extends Action {
 	
 	private static final String REMOVE =
         "<xu:modifications xmlns:xu=\"http://www.xmldb.org/xupdate\" version=\"1.0\">"
