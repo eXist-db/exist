@@ -3,6 +3,7 @@ package org.exist.xmldb.test.concurrent;
 import java.io.File;
 
 import org.exist.storage.DBBroker;
+import org.exist.xmldb.test.concurrent.action.XQueryUpdateAction;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.modules.XMLResource;

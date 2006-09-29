@@ -18,7 +18,7 @@
  * 
  *  $Id$
  */
-package org.exist.xmldb.test.concurrent;
+package org.exist.xmldb.test.concurrent.action;
 
 
 /**

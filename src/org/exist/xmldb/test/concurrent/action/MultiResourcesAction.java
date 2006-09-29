@@ -19,10 +19,11 @@
  *  
  *  $Id$
  */
-package org.exist.xmldb.test.concurrent;
+package org.exist.xmldb.test.concurrent.action;
 
 import java.io.File;
 
+import org.exist.xmldb.test.concurrent.DBUtils;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;

@@ -1,4 +1,4 @@
-package org.exist.xmldb.test.concurrent;
+package org.exist.xmldb.test.concurrent.action;
 
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;

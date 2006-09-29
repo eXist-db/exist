@@ -1,6 +1,7 @@
 package org.exist.xmldb.test.concurrent;
 
 import org.exist.storage.DBBroker;
+import org.exist.xmldb.test.concurrent.action.ComplexUpdateAction;
 import org.xmldb.api.modules.XMLResource;
 
 /**

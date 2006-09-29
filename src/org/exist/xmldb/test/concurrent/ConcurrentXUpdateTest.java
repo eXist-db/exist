@@ -24,6 +24,7 @@ import java.io.File;
 
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.IndexQueryService;
+import org.exist.xmldb.test.concurrent.action.RemoveAppendAction;
 
 
 /**
