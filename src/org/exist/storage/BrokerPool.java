@@ -76,7 +76,7 @@ public class BrokerPool {
 	
 	//Various configuration property keys (set by the configuration manager)
 	public final static String PROPERTY_MIN_CONNECTIONS = "db-connection.pool.min";
-	public final static String PROPERTY_MAX_CONNECTIONS = "db-connection.pool.min";
+	public final static String PROPERTY_MAX_CONNECTIONS = "db-connection.pool.max";
 	public final static String PROPERTY_SYNC_PERIOD = "db-connection.pool.sync-period";
 	public final static String PROPERTY_SHUTDOWN_DELAY = "wait-before-shutdown";
 	public final static String PROPERTY_COLLECTION_CACHE_SIZE = "db-connection.collection-cache-size";
