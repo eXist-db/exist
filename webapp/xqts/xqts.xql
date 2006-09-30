@@ -146,6 +146,11 @@ declare function xqts:normalize-text($result as item()*) as xs:string {
         replace(replace($str, "^\s+", ""), "\s+$", "")
 };
 
+declare function xqts:normalize-and-expand($text as item()*) as xs:string {
+	replace(replace(replace(xqts:normalize-text($text), "&amp;amp;", "&amp;", "m"), "&amp;lt;", "&lt;"),
+		"&amp;gt;", "&gt;")
+};
+
 declare function xqts:check-output($query as xs:string, $result as item()*, $case as element(catalog:test-case)) {
     let $output := $case/catalog:output-file[last()]
     return
@@ -159,7 +164,7 @@ declare function xqts:check-output($query as xs:string, $result as item()*, $cas
         else if ($output/@compare eq "Text") then
             let $text := util:file-read(concat($xqts:XQTS_HOME, "ExpectedTestResults/", $case/@FilePath,
                 "/", $output/text()), "UTF-8")
-            let $test := xqts:normalize-text($text) eq xqts:normalize-text($result)
+            let $test := xqts:normalize-and-expand($text) eq xqts:normalize-text($result)
             return
                 xqts:print-result($case/@name, $test, $query, $result, $text, $case)
         (: Comparison method: "XML" :)
