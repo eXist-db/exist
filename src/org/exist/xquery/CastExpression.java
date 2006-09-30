@@ -95,7 +95,9 @@ public class CastExpression extends AbstractExpression {
             try {
                 // casting to QName needs special treatment
                 if(requiredType == Type.QNAME) {
-                    if(item.getType() == Type.ATOMIC || Type.subTypeOf(item.getType(), Type.STRING)) {
+                    if (item.getType() == Type.QNAME)
+                        result = item.toSequence();
+                    else if(item.getType() == Type.ATOMIC || Type.subTypeOf(item.getType(), Type.STRING)) {
                         result = new QNameValue(context, item.getStringValue());
                     } else {
                         throw new XPathException(getASTNode(), "Cannot cast " + Type.getTypeName(item.getType()) + 
