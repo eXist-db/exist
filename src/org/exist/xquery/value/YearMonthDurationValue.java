@@ -63,7 +63,7 @@ public class YearMonthDurationValue extends OrderedDurationValue {
 	
 	private static Duration createDurationYearMonth(String str) throws XPathException {
 		try {
-			return TimeUtils.getInstance().newDurationYearMonth(str);
+			return TimeUtils.getInstance().newDurationYearMonth(StringValue.trimWhitespace(str));
 		} catch (IllegalArgumentException e) {
 			throw new XPathException("FORG0001: cannot construct " + Type.getTypeName(Type.YEAR_MONTH_DURATION) +
 					" from \"" + str + "\"");            
@@ -176,4 +176,8 @@ public class YearMonthDurationValue extends OrderedDurationValue {
 				x.signum() >= 0, null, x.toBigInteger()));
 	}
 	
+    public boolean effectiveBooleanValue() throws XPathException {
+        throw new XPathException("FORG0006: value of type " + Type.getTypeName(getType()) +
+            " has no boolean value.");
+    }
 }

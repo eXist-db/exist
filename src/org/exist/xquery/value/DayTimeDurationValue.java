@@ -221,4 +221,8 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 				x.signum() >= 0, null, null, null, null, null, x));
 	}
 
+    public boolean effectiveBooleanValue() throws XPathException {
+        throw new XPathException("FORG0006: value of type " + Type.getTypeName(getType()) +
+            " has no boolean value.");
+    }
 }
