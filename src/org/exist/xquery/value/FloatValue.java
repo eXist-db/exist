@@ -50,6 +50,8 @@ public class FloatValue extends NumericValue {
 				value = Float.POSITIVE_INFINITY;
 			else if (stringValue.equals("-INF"))
 				value = Float.NEGATIVE_INFINITY;
+            else if (stringValue.equals("NaN"))
+                value = Float.NaN;
 			else
 				value = Float.parseFloat(stringValue);
 		} catch (NumberFormatException e) {
@@ -277,14 +279,14 @@ public class FloatValue extends NumericValue {
 		if (Type.subTypeOf(other.getType(), Type.FLOAT))
 			return new FloatValue(Math.max(value, ((FloatValue) other).value));
 		else
-			return convertTo(other.getType()).max(collator, other);
+            return other.convertTo(Type.FLOAT).max(collator, this);
 	}
 
 	public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
 		if (Type.subTypeOf(other.getType(), Type.FLOAT))
 			return new FloatValue(Math.min(value, ((FloatValue) other).value));
 		else
-			return convertTo(other.getType()).min(collator, other);
+            return other.convertTo(Type.FLOAT).min(collator, this);
 	}
 
 	/* (non-Javadoc)
