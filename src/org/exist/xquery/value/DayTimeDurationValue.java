@@ -50,7 +50,7 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 	}
 	
 	public DayTimeDurationValue(String str) throws XPathException {
-		this(createDurationDayTime(str));
+		this(createDurationDayTime(StringValue.trimWhitespace(str)));
 	}
 
 	private static Duration createDurationDayTime(String str) throws XPathException {

@@ -34,6 +34,7 @@ public class HexBinary extends BinaryValue {
     }
     
     public HexBinary(String in) throws XPathException {
+        in = StringValue.trimWhitespace(in);
         if ((in.length() & 1) != 0) {
             throw new XPathException("FORG0001: A hexBinary value must contain an even " +
                     "number of characters");

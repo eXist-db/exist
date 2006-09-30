@@ -104,7 +104,7 @@ public class AnyURIValue extends AtomicValue {
 		this.uri = uri.toString();
 	}
 	public AnyURIValue(String s) throws XPathException {
-		String escapedString = escape(s);
+		String escapedString = escape(StringValue.trimWhitespace(s));
 		try {
 			new URI(escapedString);
 		} catch (URISyntaxException e) {
