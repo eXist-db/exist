@@ -102,4 +102,8 @@ public class HexBinary extends BinaryValue {
             " to Java object of type " + target.getName());
     }
 
+    public boolean effectiveBooleanValue() throws XPathException {
+        throw new XPathException("FORG0006: value of type " + Type.getTypeName(getType()) +
+            " has no boolean value.");
+    }
 }

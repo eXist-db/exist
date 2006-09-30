@@ -137,9 +137,10 @@ public class StringValue extends AtomicValue {
 			case Type.ANY_URI :
 				return new AnyURIValue(value);
 			case Type.BOOLEAN :
-				if (value.equals("0") || value.equals("false"))
+                String trimmed = trimWhitespace(value);
+				if (trimmed.equals("0") || trimmed.equals("false"))
 					return BooleanValue.FALSE;
-				else if (value.equals("1") || value.equals("true"))
+				else if (trimmed.equals("1") || trimmed.equals("true"))
 					return BooleanValue.TRUE;
 				else
 					throw new XPathException(

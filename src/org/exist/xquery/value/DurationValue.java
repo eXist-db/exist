@@ -83,7 +83,7 @@ public class DurationValue extends ComputableValue {
 	
 	public DurationValue(String str) throws XPathException {
 		try {
-			this.duration = TimeUtils.getInstance().newDuration(str);
+			this.duration = TimeUtils.getInstance().newDuration(StringValue.trimWhitespace(str));
 		} catch (IllegalArgumentException e) {
 			throw new XPathException("FORG0001: cannot construct " + Type.getTypeName(this.getItemType()) +
 					" from \"" + str + "\"");            
@@ -329,4 +329,9 @@ public class DurationValue extends ComputableValue {
 		if (target.isAssignableFrom(Duration.class)) return duration;
 		throw new XPathException("cannot convert value of type " + Type.getTypeName(getType()) + " to Java object of type " + target.getName());
 	}
+    
+    public boolean effectiveBooleanValue() throws XPathException {
+        throw new XPathException("FORG0006: value of type " + Type.getTypeName(getType()) +
+            " has no boolean value.");
+    }
 }
