@@ -466,7 +466,7 @@ public class DoubleValue extends NumericValue {
 			return new DoubleValue(Math.max(value, ((DoubleValue) other).value));
 		else
 			return new DoubleValue(
-				Math.max(value, ((DoubleValue) other.convertTo(getType())).value));
+				Math.max(value, ((DoubleValue) other.convertTo(Type.DOUBLE)).value));
 	}
 
 	public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
@@ -474,7 +474,7 @@ public class DoubleValue extends NumericValue {
 			return new DoubleValue(Math.min(value, ((DoubleValue) other).value));
 		else
 			return new DoubleValue(
-				Math.min(value, ((DoubleValue) other.convertTo(getType())).value));
+				Math.min(value, ((DoubleValue) other.convertTo(Type.DOUBLE)).value));
 	}
 
 	/* (non-Javadoc)
