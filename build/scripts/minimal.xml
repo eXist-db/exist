@@ -47,6 +47,7 @@ highlight-matches=none
 
 </echo>
   <xslt in="${src.dir}/conf.xml" out="${dist.minimal}/conf.xml" style="${build.scripts}/minimal-fix-conf.xsl"/>
+  <copy file="${src.dir}/descriptor.xml" todir="${dist.minimal}"/>
   <copy file="${src.dir}/exist.jar" todir="${dist.minimal}"/>
   <copy file="${src.dir}/exist-modules.jar" todir="${dist.minimal}"/>
   <copy file="${src.dir}/exist-optional.jar" todir="${dist.minimal}"/>
