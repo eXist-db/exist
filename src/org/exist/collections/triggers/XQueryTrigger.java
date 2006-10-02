@@ -29,6 +29,7 @@ import org.xml.sax.SAXException;
  * A trigger that executes a user XQuery statement when invoked.
  * The XQuery source executed is the value of the context parameter named "query".
  * These external variables are accessible to the user XQuery statement :
+ * <code>xxx:eventType</code> : the type of event for the Trigger. Either "prepare" or "finish"
  * <code>xxx:collectionName</code> : the name of the collection from which the event is triggered
  * <code>xxx:documentName</code> : the name of the document from wich the event is triggered
  * <code>xxx:triggeredEvent</code> : the kind of triggered event
@@ -109,7 +110,8 @@ public class XQueryTrigger extends FilteringTrigger {
 	        globalVar.setValue(new NodeProxy((DocumentImpl)existingDocument));
 	        context.declareGlobalVariable(globalVar);
 	        */
-        	
+
+        	context.declareVariable(bindingPrefix + "eventType", new StringValue("prepare"));
         	context.declareVariable(bindingPrefix + "collectionName", new AnyURIValue(collection.getURI()));
         	context.declareVariable(bindingPrefix + "documentName", new AnyURIValue(documentName));
         	context.declareVariable(bindingPrefix + "triggerEvent", new StringValue(eventToString(event))); 
@@ -183,7 +185,8 @@ public class XQueryTrigger extends FilteringTrigger {
 	        globalVar.setValue(new NodeProxy((DocumentImpl)document));
 	        context.declareGlobalVariable(globalVar);
 	        */
-        	      	
+        	
+        	context.declareVariable(bindingPrefix + "eventType", new StringValue("finish"));
         	context.declareVariable(bindingPrefix + "collectionName", new AnyURIValue(collection.getURI()));
         	context.declareVariable(bindingPrefix + "documentName", new AnyURIValue(document.getURI()));
         	context.declareVariable(bindingPrefix + "triggerEvent", new StringValue(eventToString(event)));

@@ -121,6 +121,7 @@ public class XQueryTriggerTest extends XMLTestCase {
     private final static String MODULE =
     	"module namespace log='log'; " +
     	"import module namespace xmldb='http://exist-db.org/xquery/xmldb'; " +
+    	"declare variable $log:eventType external;" +
     	"declare variable $log:collectionName external;" +    	
     	"declare variable $log:documentName external;" +
     	"declare variable $log:triggerEvent external;" +
@@ -133,6 +134,7 @@ public class XQueryTriggerTest extends XMLTestCase {
                 "<xu:element name='event'>" +
                   "<xu:attribute name='id'>{$id}</xu:attribute>" +
                   "<xu:attribute name='time'>{current-dateTime()}</xu:attribute>" +
+                  "<xu:attribute name='type'>{$log:eventType}</xu:attribute>" +
                   "<xu:element name='collectionName'>{$log:collectionName}</xu:element>" +
                   "<xu:element name='documentName'>{$log:documentName}</xu:element>" +
                   "<xu:element name='triggerEvent'>{$log:triggerEvent}</xu:element>" +                 
@@ -243,7 +245,7 @@ public class XQueryTriggerTest extends XMLTestCase {
     }
 
     /** test a trigger fired by a Document Update */
-    public void bugtestUpdateDocument() {
+    public void testUpdateDocument() {
     	
     	ResourceSet result;
     	
@@ -327,9 +329,7 @@ public class XQueryTriggerTest extends XMLTestCase {
 	        //TODO : consistent URI !	        
 	        result = service.query("/events/event[@id = 'trigger3']/document/test");
 	        assertEquals(1, result.getSize());
-	        assertXMLEqual(DOCUMENT_CONTENT, result.getResource(0).getContent().toString());
-	        //TODO : use when we have working update triggers
-	        //assertXMLEqual(MODIFIED_DOCUMENT_CONTENT, result.getResource(0).getContent().toString());        
+	        assertXMLEqual(MODIFIED_DOCUMENT_CONTENT, result.getResource(0).getContent().toString());        
 			
     	} catch (Exception e) {
     		fail(e.getMessage());    		
