@@ -31,7 +31,6 @@ import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.collections.triggers.DocumentTrigger;
 import org.exist.collections.triggers.Trigger;
@@ -88,9 +87,7 @@ public abstract class Modification {
 	protected Map namespaces;
 	protected Map variables;
 	protected DocumentSet lockedDocuments = null;
-	
-	/** "null" design pattern */
-	final static NullDocumentTrigger nullDocumentTrigger = new NullDocumentTrigger();
+	protected DocumentSet modifiedDocuments = new DocumentSet();
 	
 	private AccessContext accessCtx;
 
@@ -248,36 +245,14 @@ public abstract class Modification {
 				
 				// call the eventual triggers
 				// TODO -jmv separate loop on docs and not on nodes
-				
-				if (!CollectionConfiguration.isCollectionConfigDocument(doc)) {
-					DocumentTrigger trigger = getTrigger(doc);
-					try {
-						if( trigger != null )
-							trigger.prepare(Trigger.UPDATE_DOCUMENT_EVENT, broker,
-								TriggerStatePerThread.getTransaction(),
-								doc.getURI(), doc);
-					} catch (TriggerException e) {
-						throw new EXistException(
-								"Error in calling user trigger", e);
-			}
-				}
+			
+				//prepare Trigger
+				prepareTrigger(TriggerStatePerThread.getTransaction(), doc);
 			}
 			return ql;
 	    } finally {
 	        globalLock.release();
 	    }
-	}
-	
-	/** get applicable trigger according to Collection Configuration */
-	private DocumentTrigger getTrigger(DocumentImpl doc) {
-		DocumentTrigger result = nullDocumentTrigger;
-		Collection coll = doc.getCollection();
-        CollectionConfiguration config = coll.getConfiguration(broker);
-        if (config != null) {
-        	result = (DocumentTrigger) 
-				config.getTrigger(Trigger.UPDATE_DOCUMENT_EVENT);
-        }
-		return result;
 	}
 	
 	/**
@@ -287,27 +262,24 @@ public abstract class Modification {
 	 * database modification to call the eventual triggers
 	 * @param transaction
 	 */
-	protected final void unlockDocuments() {
-
-		// do the job
+	protected final void unlockDocuments()
+	{
+		if(lockedDocuments == null)
+			return;
 		
-		if (lockedDocuments != null)
-	    lockedDocuments.unlock(true);
-
-		// and then call eventual triggers
-		
-		Iterator iterator = lockedDocuments.iterator();
+		//finish Trigger
+		Iterator iterator = modifiedDocuments.iterator();
 		DocumentImpl doc;
-		while (iterator.hasNext()) {
+		while (iterator.hasNext())
+		{
 			doc = (DocumentImpl) iterator.next();
-			if ( ! CollectionConfiguration.isCollectionConfigDocument(doc) ) {
-				DocumentTrigger trigger = getTrigger(doc);			
-				if( trigger != null )
-					trigger.finish( // event, broker, transaction, document)
-							Trigger.UPDATE_DOCUMENT_EVENT, broker, 
-							TriggerStatePerThread.getTransaction(), doc);
-	}
+			finishTrigger(TriggerStatePerThread.getTransaction(), doc);
 		}
+		modifiedDocuments.clear();
+		
+		//unlock documents
+	    lockedDocuments.unlock(true);
+	    lockedDocuments = null;
 	}
 	
 	/**
@@ -328,6 +300,65 @@ public abstract class Modification {
 	            broker.defragXMLResource(transaction, next);
 	        broker.checkXMLResourceConsistency(next);
 	    }
+	}
+	
+	/**
+	 *  Fires the prepare function for the UPDATE_DOCUMENT_EVENT trigger for the Document doc
+	 *  
+	 *  @param transaction	The transaction
+	 *  @param doc	The document to trigger for
+	 */
+	private void prepareTrigger(Txn transaction, DocumentImpl doc)
+	{
+		CollectionConfiguration config = doc.getCollection().getConfiguration(doc.getBroker());
+        DocumentTrigger trigger = null;
+        if(config != null)
+        {
+        	//get the UPDATE_DOCUMENT_EVENT trigger
+        	trigger = (DocumentTrigger)config.getTrigger(Trigger.UPDATE_DOCUMENT_EVENT);
+        
+        	if(trigger != null)
+        	{
+	            try
+	            {
+	            	//fire trigger prepare
+	            	trigger.prepare(Trigger.UPDATE_DOCUMENT_EVENT, doc.getBroker(), transaction, doc.getURI(), doc);
+	            }
+	            catch(TriggerException te)
+	            {
+	            	LOG.debug("Unable to prepare trigger for event UPDATE_DOCUMENT_EVENT: " + te.getMessage());
+	            }
+	            catch(Exception e)
+        		{
+        			LOG.debug("Trigger event UPDATE_DOCUMENT_EVENT for collection: " + doc.getCollection().getURI() + " with: " + doc.getURI() + " " + e.getMessage());
+        		}
+        	}
+        }
+	}
+	
+	/** Fires the finish function for UPDATE_DOCUMENT_EVENT for the documents trigger
+	 * 
+	 * @param transaction	The transaction
+	 * @param doc	The document to trigger for
+	 */
+	private void finishTrigger(Txn transaction, DocumentImpl doc)
+	{
+        CollectionConfiguration config = doc.getCollection().getConfiguration(doc.getBroker());
+        if (config != null)
+        {
+        	DocumentTrigger trigger = (DocumentTrigger)config.getTrigger(Trigger.UPDATE_DOCUMENT_EVENT);
+        	if(trigger != null)
+        	{
+				try
+				{
+					trigger.finish(Trigger.UPDATE_DOCUMENT_EVENT, doc.getBroker(), transaction, doc);
+				}
+				catch(Exception e)
+        		{
+        			LOG.debug("Trigger event UPDATE_DOCUMENT_EVENT for collection: " + doc.getCollection().getURI() + " with: " + doc.getURI() + " " + e.getMessage());
+        		}
+        	}
+        }
 	}
 	
 	public String toString() {
