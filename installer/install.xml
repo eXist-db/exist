@@ -58,6 +58,8 @@
                 <include name="start.jar"/>
                 <include name="examples.jar"/>
                 <include name="mime-types.xml"/>
+                <include name="atom-example.xq"/>
+                <include name="atom-services.xml"/>
                 <include name="lib/"/>
                 <include name="samples/**"/>
                 <include name="thirdparty/"/>
