@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.exist.dom.DocumentSet;
-import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;

@@ -1657,7 +1657,7 @@ options {
 	paraphrase="XQuery comment";
 }
 :
-	"(:" ( CHAR | ( ':' ~( ')' ) ) => ':' )* ":)"
+	"(:" ( options { greedy=false; }: ( . | EXPR_COMMENT ) )* ":)"
 	;
 	
 protected INTEGER_LITERAL :
