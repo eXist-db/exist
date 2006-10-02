@@ -24,7 +24,6 @@ package org.exist.xquery.update;
 
 import org.exist.EXistException;
 import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.StoredNode;
 import org.exist.security.Permission;
@@ -116,13 +115,14 @@ public class Delete extends Modification {
         
 		if (!inSeq.isEmpty()) {
             TransactionManager transact = context.getBroker().getBrokerPool().getTransactionManager();
+            
+            //start a transaction
             Txn transaction = transact.beginTransaction();
     		try {
     			NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
                 StoredNode[] ql = selectAndLock(inSeq.toNodeSet());
                 IndexListener listener = new IndexListener(ql);
                 NodeImpl parent;
-                DocumentSet modifiedDocs = new DocumentSet();
                 for (int i = 0; i < ql.length; i++) {
                     StoredNode node = ql[i];
                     DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
@@ -132,7 +132,8 @@ public class Delete extends Modification {
                         throw new XPathException(getASTNode(), "permission to update document denied");
                     }
                     doc.getMetadata().setIndexListener(listener);
-                    modifiedDocs.add(doc);
+                    
+                    //update the document
                     parent = (StoredNode) node.getParentNode();
                     if (parent.getNodeType() != Node.ELEMENT_NODE) {
                         LOG.debug("parent = " + parent.getNodeType() + "; " + parent.getNodeName());
@@ -144,10 +145,13 @@ public class Delete extends Modification {
                         parent.removeChild(transaction, node);
                     doc.getMetadata().clearIndexListener();
                     doc.getMetadata().setLastModified(System.currentTimeMillis());
+                    modifiedDocuments.add(doc);
                     context.getBroker().storeXMLResource(transaction, doc);
                     notifier.notifyUpdate(doc, UpdateListener.UPDATE);
                 }
-                checkFragmentation(transaction, modifiedDocs);
+                checkFragmentation(transaction, modifiedDocuments);
+                
+                //commit the transaction
                 transact.commit(transaction);
             } catch (EXistException e) {
                 transact.abort(transaction);

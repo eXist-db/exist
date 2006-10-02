@@ -25,7 +25,6 @@ package org.exist.xquery.update;
 import org.exist.EXistException;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.StoredNode;
 import org.exist.dom.TextImpl;
@@ -123,6 +122,8 @@ public class Replace extends Modification {
         
 		try {
             TransactionManager transact = context.getBroker().getBrokerPool().getTransactionManager();
+
+            //start a transaction
             Txn transaction = transact.beginTransaction();
             StoredNode ql[] = selectAndLock(inSeq.toNodeSet());
             IndexListener listener = new IndexListener(ql);
@@ -130,17 +131,17 @@ public class Replace extends Modification {
             Item temp;
             TextImpl text;
             AttrImpl attribute;
-            ElementImpl parent;            
-            DocumentSet modifiedDocs = new DocumentSet();
+            ElementImpl parent;
             for (int i = 0; i < ql.length; i++) {
                 StoredNode node = ql[i];
                 DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
-                doc.getMetadata().setIndexListener(listener);
-                modifiedDocs.add(doc);
                 if (!doc.getPermissions().validate(context.getUser(),
                         Permission.UPDATE))
                         throw new PermissionDeniedException(
                                 "permission to update document denied");
+                doc.getMetadata().setIndexListener(listener);
+                
+                //update the document
                 parent = (ElementImpl) node.getParentNode();
                 if (parent == null)
                     throw new XPathException(getASTNode(), "The root element of a document can not be replaced with 'update replace'. " +
@@ -170,10 +171,13 @@ public class Replace extends Modification {
                 }
                 doc.getMetadata().clearIndexListener();
                 doc.getMetadata().setLastModified(System.currentTimeMillis());
+                modifiedDocuments.add(doc);
                 context.getBroker().storeXMLResource(transaction, doc);
                 notifier.notifyUpdate(doc, UpdateListener.UPDATE);
             }
-            checkFragmentation(transaction, modifiedDocs);
+            checkFragmentation(transaction, modifiedDocuments);
+            
+            //commit the transaction
             transact.commit(transaction);
         } catch (LockException e) {
             throw new XPathException(getASTNode(), e.getMessage(), e);
