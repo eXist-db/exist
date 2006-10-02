@@ -259,7 +259,7 @@ public class QName implements Comparable {
 		if (prefix != null) {
 			namespaceURI = context.getURIForPrefix(prefix);
 			if (namespaceURI == null)
-				throw new XPathException("No namespace defined for prefix " + prefix);
+				throw new XPathException("XPST0081: No namespace defined for prefix " + prefix);
 		} else
 			namespaceURI = defaultNS;
 		if (namespaceURI == null)

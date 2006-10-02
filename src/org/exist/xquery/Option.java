@@ -29,15 +29,11 @@ import org.exist.Namespaces;
 import org.exist.dom.QName;
 
 /**
- * Represents an XQuery pragma. Pragmas are used to pass 
- * vendor-specific information to the XQuery engine. They may
- * occur anywhere inside the query. The specified pragmas can
- * be accessed through method 
- * {@link org.exist.xquery.XQueryContext#getPragma(QName)}.
+ * Represents an XQuery option declared via "declare option".
  * 
  * @author wolf
  */
-public class Pragma {
+public class Option {
 
 	public final static QName TIMEOUT_QNAME = new QName("timeout", Namespaces.EXIST_NS);
 	public final static QName OUTPUT_SIZE_QNAME = new QName("output-size-limit", Namespaces.EXIST_NS);
@@ -53,7 +49,7 @@ public class Pragma {
 	private final QName qname;
 	private final String contents;
 	
-	public Pragma(QName qname, String contents) {
+	public Option(QName qname, String contents) {
 		this.qname = qname;
 		this.contents = contents;
 	}
@@ -89,8 +85,8 @@ public class Pragma {
 	}
 	
 	public boolean equals(Object other) {
-		if (other instanceof Pragma) {
-			return qname.equalsSimple(((Pragma)other).qname);
+		if (other instanceof Option) {
+			return qname.equalsSimple(((Option)other).qname);
 		}
 		return false;
 	}

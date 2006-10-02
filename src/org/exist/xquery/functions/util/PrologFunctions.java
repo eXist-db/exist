@@ -79,6 +79,6 @@ public class PrologFunctions extends BasicFunction {
 	private void declareOption(Sequence[] args) throws XPathException {
 		String qname = args[0].getStringValue();
 		String options = args[1].getStringValue();
-		context.addPragma(qname, options);
+		context.addOption(qname, options);
 	}
 }
