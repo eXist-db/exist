@@ -76,21 +76,20 @@ public class Append extends Modification {
 	        StoredNode ql[] = selectAndLock();
 			IndexListener listener = new IndexListener(ql);
 			NotificationService notifier = broker.getBrokerPool().getNotificationService();
-			DocumentSet modifiedDocs = new DocumentSet();
 			for(int i = 0; i < ql.length; i++) {
 				StoredNode node = ql[i];
 				DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
 				doc.getMetadata().setIndexListener(listener);
-				modifiedDocs.add(doc);
 				if (!doc.getPermissions().validate(broker.getUser(), Permission.UPDATE))
 					throw new PermissionDeniedException("permission to update document denied");
                 node.appendChildren(transaction, children, child);
                 doc.getMetadata().clearIndexListener();
                 doc.getMetadata().setLastModified(System.currentTimeMillis());
+                modifiedDocuments.add(doc);
                 broker.storeXMLResource(transaction, doc);
                 notifier.notifyUpdate(doc, UpdateListener.UPDATE);
 			}
-			checkFragmentation(transaction, modifiedDocs);
+			checkFragmentation(transaction, modifiedDocuments);
 			return ql.length;
 	    } finally {
 	        // release all acquired locks

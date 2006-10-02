@@ -83,7 +83,6 @@ public class Insert extends Modification {
             IndexListener listener = new IndexListener(ql);
             NotificationService notifier = broker.getBrokerPool().getNotificationService();       
             NodeImpl parent;             
-            DocumentSet modifiedDocs = new DocumentSet();
             int len = children.getLength();
             if (LOG.isDebugEnabled())
                 LOG.debug("found " + len + " nodes to insert");
@@ -95,7 +94,6 @@ public class Insert extends Modification {
                         Permission.UPDATE))
                         throw new PermissionDeniedException(
                         "permission to update document denied");
-                modifiedDocs.add(doc);
                 parent = (NodeImpl) node.getParentNode();
                 switch (mode) {
                     case INSERT_BEFORE:
@@ -107,10 +105,11 @@ public class Insert extends Modification {
                 }
                 doc.getMetadata().clearIndexListener();
                 doc.getMetadata().setLastModified(System.currentTimeMillis());
+                modifiedDocuments.add(doc);
                 broker.storeXMLResource(transaction, doc);
                 notifier.notifyUpdate(doc, UpdateListener.UPDATE);
             }
-            checkFragmentation(transaction, modifiedDocs);
+            checkFragmentation(transaction, modifiedDocuments);
             return ql.length;
         } finally {
             unlockDocuments();
