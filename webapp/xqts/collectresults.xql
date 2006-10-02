@@ -1,7 +1,7 @@
-(: declare default element namespace "http://www.w3.org/2005/02/query-test-XQTSResult"; :)
 declare option exist:serialize "method=xml indent=yes";
 declare option exist:output-size-limit "-1";
 declare namespace response="http://exist-db.org/xquery/response";
+declare namespace empty="";
 
 let $product-version := util:system-property("product-version")
 let $product-build := util:system-property("product-build")
@@ -9,9 +9,10 @@ let $test-suite := doc('/db/XQTS/XQTSCatalog.xml')/*:test-suite/@version
 let $dummy := response:set-header("Content-Disposition", concat( 
 	"attachment; filename=&quot;results_XQTS-" , $test-suite , "_eXist-" , 
 	$product-version , '_' , $product-build , ".xml&quot;" ) )
-	
+
+let $cases := fn:collection(  '/db/XQTS' )//test-case
 return
-<test-suite-result> 
+<test-suite-result xmlns="http://www.w3.org/2005/02/query-test-XQTSResult">
         <implementation name="eXist-{$product-version}" version="{$product-build}" anonymous-result-column="false">
 
                 <organization name="eXist Open Source native XML database"  website="http://www.exist-db.org" anonymous="false"/>
@@ -71,7 +72,7 @@ return
 				<!-- Results below here -->
 {
 		(: for $case in fn:collection(  '/db/XQTS' )//*:test-case :)
-    for $case in fn:collection(  '/db/XQTS' )//test-case
+    for $case in $cases
     order by $case/@name
     return <test-case name="{$case/@name}" result="{$case/@result}" />
 }
