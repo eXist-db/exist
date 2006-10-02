@@ -264,7 +264,8 @@ public abstract class Modification extends AbstractExpression
 	
 	/** Fires the finish function for UPDATE_DOCUMENT_EVENT for the documents trigger
 	 * 
-	 * @param doc	The document
+	 * @param transaction	The transaction
+	 * @param doc	The document to trigger for
 	 */
 	private void finishTrigger(Txn transaction, DocumentImpl doc)
 	{
