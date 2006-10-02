@@ -200,7 +200,7 @@ public abstract class Modification extends AbstractExpression
 			doc = (DocumentImpl) iterator.next();
 			finishTrigger(TriggerStatePerThread.getTransaction(), doc);
 		}
-		modifiedDocuments = null;
+		modifiedDocuments.clear();
 	    
 		//unlock documents
 	    lockedDocuments.unlock(true);
@@ -254,6 +254,10 @@ public abstract class Modification extends AbstractExpression
 	            {
 	            	LOG.debug("Unable to prepare trigger for event UPDATE_DOCUMENT_EVENT: " + te.getMessage());
 	            }
+	            catch(Exception e)
+        		{
+        			LOG.debug("Trigger event UPDATE_DOCUMENT_EVENT for collection: " + doc.getCollection().getURI() + " with: " + doc.getURI() + " " + e.getMessage());
+        		}
         	}
         }
 	}
@@ -270,7 +274,14 @@ public abstract class Modification extends AbstractExpression
         	DocumentTrigger trigger = (DocumentTrigger)config.getTrigger(Trigger.UPDATE_DOCUMENT_EVENT);
         	if(trigger != null)
         	{
-				trigger.finish(Trigger.UPDATE_DOCUMENT_EVENT, doc.getBroker(), transaction, doc);
+        		try
+        		{
+        			trigger.finish(Trigger.UPDATE_DOCUMENT_EVENT, doc.getBroker(), transaction, doc);
+        		}
+        		catch(Exception e)
+        		{
+        			LOG.debug("Trigger event UPDATE_DOCUMENT_EVENT for collection: " + doc.getCollection().getURI() + " with: " + doc.getURI() + " " + e.getMessage());
+        		}
         	}
         }
 	}
