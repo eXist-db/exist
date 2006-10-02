@@ -26,6 +26,11 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.collections.CollectionConfiguration;
+import org.exist.collections.triggers.DocumentTrigger;
+import org.exist.collections.triggers.Trigger;
+import org.exist.collections.triggers.TriggerException;
+import org.exist.collections.triggers.TriggerStatePerThread;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeIndexListener;
@@ -59,7 +64,8 @@ import org.xml.sax.SAXException;
  * @author wolf
  *
  */
-public abstract class Modification extends AbstractExpression {
+public abstract class Modification extends AbstractExpression
+{
 
 	protected final static Logger LOG =
 		Logger.getLogger(Modification.class);
@@ -68,7 +74,8 @@ public abstract class Modification extends AbstractExpression {
 	protected final Expression value;
 	
 	protected DocumentSet lockedDocuments = null;
-	
+	protected DocumentSet modifiedDocuments = new DocumentSet();
+
 	/**
 	 * @param context
 	 */
@@ -137,6 +144,8 @@ public abstract class Modification extends AbstractExpression {
 				ql[i] = (StoredNode)nodes.item(i);
 				DocumentImpl doc = (DocumentImpl)ql[i].getOwnerDocument();
 				doc.setBroker(context.getBroker());
+				//prepare Trigger
+				prepareTrigger(TriggerStatePerThread.getTransaction(), doc);
 			}
 			return ql;
 	    } finally {
@@ -178,9 +187,22 @@ public abstract class Modification extends AbstractExpression {
 	/**
 	 * Release all acquired document locks.
 	 */
-	protected void unlockDocuments() {
+	protected void unlockDocuments()
+	{
 	    if(lockedDocuments == null)
 	        return;
+	    
+	    //finish Trigger
+	    Iterator iterator = modifiedDocuments.iterator();
+		DocumentImpl doc;
+		while(iterator.hasNext())
+		{
+			doc = (DocumentImpl) iterator.next();
+			finishTrigger(TriggerStatePerThread.getTransaction(), doc);
+		}
+		modifiedDocuments = null;
+	    
+		//unlock documents
 	    lockedDocuments.unlock(true);
         lockedDocuments = null;
 	}
@@ -204,6 +226,53 @@ public abstract class Modification extends AbstractExpression {
 	            broker.defragXMLResource(transaction, next);
 	        broker.checkXMLResourceConsistency(next);
 	    }
+	}
+	
+	/**
+	 *  Fires the prepare function for the UPDATE_DOCUMENT_EVENT trigger for the Document doc
+	 *  
+	 *  @param transaction	The transaction
+	 *  @param doc	The document to trigger for
+	 */
+	private void prepareTrigger(Txn transaction, DocumentImpl doc)
+	{
+		CollectionConfiguration config = doc.getCollection().getConfiguration(doc.getBroker());
+        DocumentTrigger trigger = null;
+        if(config != null)
+        {
+        	//get the UPDATE_DOCUMENT_EVENT trigger
+        	trigger = (DocumentTrigger)config.getTrigger(Trigger.UPDATE_DOCUMENT_EVENT);
+        
+        	if(trigger != null)
+        	{
+	            try
+	            {
+	            	//fire trigger prepare
+	            	trigger.prepare(Trigger.UPDATE_DOCUMENT_EVENT, doc.getBroker(), transaction, doc.getURI(), doc);
+	            }
+	            catch(TriggerException te)
+	            {
+	            	LOG.debug("Unable to prepare trigger for event UPDATE_DOCUMENT_EVENT: " + te.getMessage());
+	            }
+        	}
+        }
+	}
+	
+	/** Fires the finish function for UPDATE_DOCUMENT_EVENT for the documents trigger
+	 * 
+	 * @param doc	The document
+	 */
+	private void finishTrigger(Txn transaction, DocumentImpl doc)
+	{
+        CollectionConfiguration config = doc.getCollection().getConfiguration(doc.getBroker());
+        if (config != null)
+        {
+        	DocumentTrigger trigger = (DocumentTrigger)config.getTrigger(Trigger.UPDATE_DOCUMENT_EVENT);
+        	if(trigger != null)
+        	{
+				trigger.finish(Trigger.UPDATE_DOCUMENT_EVENT, doc.getBroker(), transaction, doc);
+        	}
+        }
 	}
 	
     final static class IndexListener implements NodeIndexListener {
