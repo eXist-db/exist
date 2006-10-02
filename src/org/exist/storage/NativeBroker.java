@@ -1807,10 +1807,6 @@ public class NativeBroker extends DBBroker {
             collection.unlinkDocument(doc);
             removeResourceMetadata(transaction, doc);
             
-            // Remove all (webdav) Lock token data when document is removed.
-            // [ 1509776 ] webDAV : Lock retains after MOVE
-            doc.getMetadata().setLockToken(null);
-            
             doc.setFileURI(newName);
             doc.setCollection(destination);
             if (doc.getResourceType() == DocumentImpl.XML_FILE) {
