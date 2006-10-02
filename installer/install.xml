@@ -47,6 +47,7 @@
                 <include name="server.xml"/>
                 <include name="conf.xml"/>
                 <include name="conf.xml.tmpl"/>
+                <include name="descriptor.xml"/>
                 <include name="build.xml"/>
                 <include name="log4j.xml"/>
                 <include name="LICENSE"/>
