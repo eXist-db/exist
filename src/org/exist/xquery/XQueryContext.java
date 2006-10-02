@@ -131,8 +131,8 @@ public class XQueryContext {
 	// Unresolved references to user defined functions
 	protected final Stack forwardReferences = new Stack();
 	
-	// List of pragmas declared for this query
-	protected List pragmas = null;
+	// List of options declared for this query
+	protected List options = null;
 	
     /**
      * the watchdog object assigned to this query
@@ -1553,56 +1553,66 @@ public class XQueryContext {
 		}
 	}
 	
-	public void addPragma(String qnameString, String contents) throws XPathException {
+	public void addOption(String qnameString, String contents) throws XPathException {
 		QName qn;
 		try {
 			qn = QName.parse(this, qnameString, defaultFunctionNamespace);
 		} catch (XPathException e) {
-			// unknown pragma: just ignore it
-			LOG.debug("Ignoring unknown pragma: " + qnameString);
+			// unknown option: just ignore it
+			LOG.debug("Ignoring unknown option: " + qnameString);
 			return;
 		}
-		Pragma pragma = new Pragma(qn, contents);
-		if(pragmas == null)
-			pragmas = new ArrayList();
+		Option option = new Option(qn, contents);
+		if(options == null)
+			options = new ArrayList();
 		
-		// check if this overwrites an already existing pragma
+		// check if this overwrites an already existing option
 		boolean added = false;
-		Pragma old;
-		for (int i = 0; i < pragmas.size(); i++) {
-			old = (Pragma) pragmas.get(i);
-			if (old.equals(pragma)) {
-				pragmas.add(i, pragma);
+		Option old;
+		for (int i = 0; i < options.size(); i++) {
+			old = (Option) options.get(i);
+			if (old.equals(option)) {
+				options.add(i, option);
 				added = true;
 				break;
 			}
 		}
-		// add the pragma to the list if it does not yet exist
+		// add the option to the list if it does not yet exist
 		if (!added)
-			pragmas.add(pragma);
+			options.add(option);
 		
-		// check predefined pragmas
-        if (Pragma.PROFILE_QNAME.compareTo(qn) == 0) {
+		// check predefined options
+        if (Option.PROFILE_QNAME.compareTo(qn) == 0) {
             // configure profiling
-            profiler.configure(pragma);
-        } else if(Pragma.TIMEOUT_QNAME.compareTo(qn) == 0)
-			watchdog.setTimeoutFromPragma(pragma);
-        else if(Pragma.OUTPUT_SIZE_QNAME.compareTo(qn) == 0)
-			watchdog.setMaxNodesFromPragma(pragma);
+            profiler.configure(option);
+        } else if(Option.TIMEOUT_QNAME.compareTo(qn) == 0)
+			watchdog.setTimeoutFromOption(option);
+        else if(Option.OUTPUT_SIZE_QNAME.compareTo(qn) == 0)
+			watchdog.setMaxNodesFromOption(option);
 	}
 	
-	public Pragma getPragma(QName qname) {
-		if(pragmas != null) {
-			Pragma pragma;
-			for(int i = 0; i < pragmas.size(); i++) {
-				pragma = (Pragma)pragmas.get(i);
-				if(qname.compareTo(pragma.getQName()) == 0)
-					return pragma;
+	public Option getOption(QName qname) {
+		if(options != null) {
+			Option option;
+			for(int i = 0; i < options.size(); i++) {
+				option = (Option)options.get(i);
+				if(qname.compareTo(option.getQName()) == 0)
+					return option;
 			}
 		}
 		return null;
 	}
 	
+    public Pragma getPragma(String name, String contents) throws XPathException {
+        QName qname = QName.parse(this, name);
+        if (Namespaces.EXIST_NS.equals(qname.getNamespaceURI())) {
+            if (TimerPragma.TIMER_PRAGMA.equalsSimple(qname)) {
+                return new TimerPragma(qname, contents);
+            }
+        }
+        return null;
+    }
+    
 	/**
 	 * Store the supplied data to a temporary document fragment.
 	 * 
@@ -1660,16 +1670,16 @@ public class XQueryContext {
 	 */
     public void setXQuerySerializer(String name, boolean indent, boolean omitxmldeclaration) throws XPathException
     {
-    	Pragma pragma;
+    	Option option;
 
-    	//Has a exist:serialize pragma already been set?
-    	for(int i = 0; i < pragmas.size(); i++)
+    	//Has a exist:serialize option already been set?
+    	for(int i = 0; i < options.size(); i++)
     	{
-    		pragma = (Pragma)pragmas.get(i);
-    		if((pragma.getQName().equals("exist:serialize")) /*&& (pragma.getContents().indexOf("method") != Constants.STRING_NOT_FOUND)*/ )
+    		option = (Option)options.get(i);
+    		if(option.getQName().equals("exist:serialize"))
     		{
-    			//yes, so modify the content from the existing pragma
-    			String content = pragma.getContents();
+    			//yes, so modify the content from the existing option
+    			String content = option.getContents();
     			if(content.indexOf("method=") != Constants.STRING_NOT_FOUND)
     			{
     				content = content.replaceFirst("method=[^/ ]*", "method=" + name);
@@ -1695,18 +1705,18 @@ public class XQueryContext {
     				content += " omit-xml-declaration" +  (omitxmldeclaration ? "yes":"no");
     			}
     			
-    			//Delete the existing serialize pragma
-    			pragmas.remove(i);
+    			//Delete the existing serialize option
+    			options.remove(i);
     			
-    			//Add the new serialize pragma
-    			addPragma("exist:serialize", content);
+    			//Add the new serialize option
+    			addOption("exist:serialize", content);
     			
     			return; //done
     		}
     	}
     	
-    	//no, so set a pragma for serialization
-    	addPragma("exist:serialize", "method=" + name + " indent=" + (indent ? "yes":"no") + " omit-xml-declaration=" + (omitxmldeclaration ? "yes":"no"));
+    	//no, so set a option for serialization
+    	addOption("exist:serialize", "method=" + name + " indent=" + (indent ? "yes":"no") + " omit-xml-declaration=" + (omitxmldeclaration ? "yes":"no"));
     	
     }
     

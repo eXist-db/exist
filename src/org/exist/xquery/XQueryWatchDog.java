@@ -76,28 +76,28 @@ public class XQueryWatchDog {
             maxNodesLimit = ((Integer)option).intValue();
     }
     
-    public void setTimeoutFromPragma(Pragma pragma) throws XPathException {
-    	String[] contents = pragma.tokenizeContents();
+    public void setTimeoutFromOption(Option option) throws XPathException {
+    	String[] contents = option.tokenizeContents();
     	if(contents.length != 1)
-    		throw new XPathException("Pragma 'timeout' should have exactly one parameter: the timeout value.");
+    		throw new XPathException("Option 'timeout' should have exactly one parameter: the timeout value.");
 		try {
 			timeout = Long.parseLong(contents[0]);
 		} catch (NumberFormatException e) {
-			throw new XPathException("Error parsing timeout value in pragma " + pragma.getQName().getStringValue());
+			throw new XPathException("Error parsing timeout value in option " + option.getQName().getStringValue());
 		}
-		LOG.debug("timeout set from pragma: " + timeout + "ms.");
+		LOG.debug("timeout set from option: " + timeout + "ms.");
     }
     
-    public void setMaxNodesFromPragma(Pragma pragma) throws XPathException {
-    	String[] contents = pragma.tokenizeContents();
+    public void setMaxNodesFromOption(Option option) throws XPathException {
+    	String[] contents = option.tokenizeContents();
     	if(contents.length != 1)
-    		throw new XPathException("Pragma 'output-size-limit' should have exactly one parameter: the timeout value.");
+    		throw new XPathException("Option 'output-size-limit' should have exactly one parameter: the timeout value.");
 		try {
 			maxNodesLimit = Integer.parseInt(contents[0]);
 		} catch (NumberFormatException e) {
-			throw new XPathException("Error parsing size-limit value in pragma " + pragma.getQName().getStringValue());
+			throw new XPathException("Error parsing size-limit value in option " + option.getQName().getStringValue());
 		}
-		LOG.debug("output-size-limit set from pragma: " + maxNodesLimit);
+		LOG.debug("output-size-limit set from option: " + maxNodesLimit);
     }
     
     public void proceed(Expression expr) throws TerminatedException {

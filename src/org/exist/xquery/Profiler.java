@@ -83,11 +83,11 @@ public class Profiler {
      * </ul>
      * @param pragma
      */
-    public final void configure(Pragma pragma) {
+    public final void configure(Option pragma) {
         String options[] = pragma.tokenizeContents();
         String params[];
         for (int i = 0; i < options.length; i++) {
-            params = Pragma.parseKeyValuePair(options[i]);
+            params = Option.parseKeyValuePair(options[i]);
             if (params != null) {
                 if (params[0].equals("logger"))
                     log = Logger.getLogger(params[1]);
