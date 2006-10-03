@@ -69,6 +69,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
     protected Txn transaction;
     
 	protected XMLString charBuf = new XMLString();
+    protected boolean inCDATASection = false;
 	protected int currentLine = 0;  
 	protected NodePath currentPath = new NodePath();
 	
@@ -228,6 +229,26 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 	}
 
 	public void endCDATA() {
+        if (!stack.isEmpty()) {
+            ElementImpl last = (ElementImpl) stack.peek();
+            if (charBuf != null && charBuf.length() > 0) {
+                CDATASectionImpl cdata = new CDATASectionImpl(charBuf);
+                cdata.setOwnerDocument(document);
+                last.appendChildInternal(prevNode, cdata);
+                if (!validate)
+                    broker.storeNode(transaction, cdata, currentPath);
+                setPrevious(cdata);
+                
+                if (!nodeContentStack.isEmpty()) {
+                    for (int i = 0; i < nodeContentStack.size(); i++) {
+                        XMLString next = (XMLString) nodeContentStack.get(i);
+                        next.append(charBuf);
+                    }
+                }
+                charBuf.reset();
+            }
+        }
+        inCDATASection = false;
 	}
 
 	public void endDTD() {
@@ -394,6 +415,19 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 	}
 
 	public void startCDATA() {
+        if (!stack.isEmpty()) {
+            ElementImpl last = (ElementImpl) stack.peek();
+            if (charBuf != null && charBuf.length() > 0) {
+                text.setData(charBuf);
+                text.setOwnerDocument(document);
+                last.appendChildInternal(prevNode, text);
+                if (!validate)
+                    storeText();
+                setPrevious(text);
+                charBuf.reset();
+            }
+        }
+        inCDATASection = true;        
 	}
 
 	// Methods of interface LexicalHandler
@@ -576,7 +610,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 		}
 		broker.storeNode(transaction, text, currentPath);
 	}
-
+    
 	private void storeElement(ElementImpl node) {
 		broker.storeNode(transaction, node, currentPath);
         node.setChildCount(0);

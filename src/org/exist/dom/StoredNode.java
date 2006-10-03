@@ -136,6 +136,8 @@ public class StoredNode extends NodeImpl implements Visitable {
 				return ProcessingInstructionImpl.deserialize(data, start, len, doc, pooled);
 			case Node.COMMENT_NODE :
 				return CommentImpl.deserialize(data, start, len, doc, pooled);
+            case Node.CDATA_SECTION_NODE :
+                return CDATASectionImpl.deserialize(data, start, len, doc, pooled);
 			default :
                 LOG.error("Unknown node type: " + type);
 				Thread.dumpStack();

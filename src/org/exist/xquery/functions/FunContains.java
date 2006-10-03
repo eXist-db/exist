@@ -95,7 +95,7 @@ public class FunContains extends CollatingFunction {
 
 		//s2 takes precedence over s1
 		String s2 = getArgument(1).eval(contextSequence).getStringValue();
-		if ("".equals(s2))		
+		if ("".equals(s2))
 			result = BooleanValue.TRUE;
 		else {
 			String s1 = getArgument(0).eval(contextSequence).getStringValue();

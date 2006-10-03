@@ -27,11 +27,14 @@ import java.util.Stack;
 import org.apache.log4j.Logger;
 
 import org.exist.EXistException;
-import org.exist.dom.*;
+import org.exist.dom.AttrImpl;
 import org.exist.dom.CommentImpl;
+import org.exist.dom.DocumentTypeImpl;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.ProcessingInstructionImpl;
+import org.exist.dom.QName;
+import org.exist.dom.StoredNode;
 import org.exist.dom.TextImpl;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
@@ -171,7 +174,6 @@ public class DOMIndexer {
             storeAttributes(nodeNr, elem, currentPath);
             break;
     	case Node.TEXT_NODE :
-        case Node.CDATA_SECTION_NODE :
         	if (prevNode != null && 
         			(prevNode.getNodeType() == Node.TEXT_NODE ||
         					prevNode.getNodeType() == Node.CDATA_SECTION_NODE)) {
@@ -183,6 +185,15 @@ public class DOMIndexer {
             last.appendChildInternal(prevNode, text);
             setPrevious(text);
             broker.storeNode(transaction, text, null);
+            break;
+        case Node.CDATA_SECTION_NODE :
+            last = (ElementImpl) stack.peek();
+            org.exist.dom.CDATASectionImpl cdata = new org.exist.dom.CDATASectionImpl();
+            cdata.setData(doc.characters, doc.alpha[nodeNr], doc.alphaLen[nodeNr]);
+            cdata.setOwnerDocument(targetDoc);
+            last.appendChildInternal(prevNode, cdata);
+            setPrevious(cdata);
+            broker.storeNode(transaction, cdata, null);
             break;
     	case Node.COMMENT_NODE :            
             comment.setData(doc.characters, doc.alpha[nodeNr], doc.alphaLen[nodeNr]);
