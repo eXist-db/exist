@@ -303,7 +303,15 @@ public class DeepEqualTest extends TestCase {
                     "deep-equal($one, $two)";
             assertQuery(false,query);
         }
-        
+
+        public void testReferenceNode() {
+                    String query =
+                    "let $expr1 := <Value>Hello</Value> "+
+                    "return "+
+                    "deep-equal( <Result><Value>Hello</Value></Result>,"+
+                    "<Result><Value>{$expr1/node()}</Value></Result> )";
+            assertQuery(true,query);    
+	}
         
 	
 	public void testNSElements1() {
@@ -315,6 +323,8 @@ public class DeepEqualTest extends TestCase {
 		createDocument("test", "<test xmlns:p='urn:foo' xmlns:q='urn:bar'><p:a/><q:a/></test>");
 		assertQuery(false, "deep-equal(/test/*[1], /test/*[2])");
 	}
+        
+
 	
 	public void testForLoop() {
 		try {
