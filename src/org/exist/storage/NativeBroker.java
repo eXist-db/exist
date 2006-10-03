@@ -2187,6 +2187,7 @@ public class NativeBroker extends DBBroker {
                 final byte data[] = node.serialize();
                 if (nodeType == Node.TEXT_NODE
                     || nodeType == Node.ATTRIBUTE_NODE
+                    || nodeType == Node.CDATA_SECTION_NODE
                     || node.getNodeId().getTreeLevel() > depth + 1)
                     address = domDb.add(transaction, data);
                 else {
