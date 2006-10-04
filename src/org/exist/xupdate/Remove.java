@@ -70,7 +70,6 @@ public class Remove extends Modification {
 			NotificationService notifier = broker.getBrokerPool()
 					.getNotificationService();
 			NodeImpl parent;
-			DocumentSet modifiedDocs = new DocumentSet();
 			for (int i = 0; i < ql.length; i++) {
 				StoredNode node = ql[i];
 				DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
@@ -79,7 +78,6 @@ public class Remove extends Modification {
 					throw new PermissionDeniedException(
 							"permission to update document denied");
 				doc.getMetadata().setIndexListener(listener);
-				modifiedDocs.add(doc);
 				parent = (NodeImpl) node.getParentNode();				
 				if (parent.getNodeType() != Node.ELEMENT_NODE) {
 					LOG.debug("parent = " + parent.getNodeType() + "; "
@@ -91,10 +89,11 @@ public class Remove extends Modification {
 					parent.removeChild(transaction, node);
 				doc.getMetadata().clearIndexListener();
 				doc.getMetadata().setLastModified(System.currentTimeMillis());
+				modifiedDocuments.add(doc);
 				broker.storeXMLResource(transaction, doc);
 				notifier.notifyUpdate(doc, UpdateListener.UPDATE);
 			}
-			checkFragmentation(transaction, modifiedDocs);
+			checkFragmentation(transaction, modifiedDocuments);
 			return ql.length;
 		} finally {
 			unlockDocuments();

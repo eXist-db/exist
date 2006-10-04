@@ -25,7 +25,6 @@ package org.exist.xquery.update;
 import org.exist.EXistException;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.QName;
@@ -133,9 +132,10 @@ public class Rename extends Modification {
     
     		try {
                 TransactionManager transact = context.getBroker().getBrokerPool().getTransactionManager();
+                
+                //start a transaction
                 Txn transaction = transact.beginTransaction();
                 StoredNode[] ql = selectAndLock(inSeq.toNodeSet());
-                DocumentSet modifiedDocs = new DocumentSet();
                 NodeImpl parent;
                 IndexListener listener = new IndexListener(ql);
                 NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
@@ -147,7 +147,8 @@ public class Rename extends Modification {
                             throw new XPathException(getASTNode(),
                                     "permission denied to update document");
                     doc.getMetadata().setIndexListener(listener);
-                    modifiedDocs.add(doc);
+                    
+                    //update the document
                     parent = (NodeImpl) node.getParentNode();
                     switch (node.getNodeType()) {
                         case Node.ELEMENT_NODE:
@@ -166,10 +167,13 @@ public class Rename extends Modification {
     
                     doc.getMetadata().clearIndexListener();
                     doc.getMetadata().setLastModified(System.currentTimeMillis());
+                    modifiedDocuments.add(doc);
                     context.getBroker().storeXMLResource(transaction, doc);
                     notifier.notifyUpdate(doc, UpdateListener.UPDATE);
                 }
-                checkFragmentation(transaction, modifiedDocs);
+                checkFragmentation(transaction, modifiedDocuments);
+                
+                //commit the transaction
                 transact.commit(transaction);
             } catch (PermissionDeniedException e) {
                 throw new XPathException(getASTNode(), e.getMessage(), e);

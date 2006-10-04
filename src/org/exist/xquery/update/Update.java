@@ -22,10 +22,10 @@
  */
 package org.exist.xquery.update;
 
+import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.NodeListImpl;
 import org.exist.dom.StoredNode;
@@ -61,6 +61,8 @@ import org.w3c.dom.Node;
  */
 public class Update extends Modification {
 
+	private final static Logger LOG = Logger.getLogger(Update.class);
+	
 	public Update(XQueryContext context, Expression select, Expression value) {
 		super(context, select, value);
 	}
@@ -122,23 +124,26 @@ public class Update extends Modification {
     		try {
     			NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
                 TransactionManager transact = context.getBroker().getBrokerPool().getTransactionManager();
+                
+                //start a transaction
                 Txn transaction = transact.beginTransaction();
                 StoredNode ql[] = selectAndLock(inSeq.toNodeSet());
                 IndexListener listener = new IndexListener(ql);
                 TextImpl text;
                 AttrImpl attribute;
                 ElementImpl parent;
-                DocumentSet modifiedDocs = new DocumentSet();
                 for (int i = 0; i < ql.length; i++) {
                     StoredNode node = ql[i];
                     DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
-                    doc.getMetadata().setIndexListener(listener);
-                    modifiedDocs.add(doc);
                     if (!doc.getPermissions().validate(context.getUser(),
                             Permission.UPDATE))
                             throw new XPathException(getASTNode(),
                                     "permission to update document denied");
-                    switch (node.getNodeType()) {
+                    doc.getMetadata().setIndexListener(listener);
+                                        
+                    //update the document
+                    switch (node.getNodeType())
+                    {
                         case Node.ELEMENT_NODE:
     						NodeListImpl content = new NodeListImpl();
     						for (SequenceIterator j = contentSeq.iterate(); j.hasNext(); ) {
@@ -175,10 +180,13 @@ public class Update extends Modification {
                     }
                     doc.getMetadata().clearIndexListener();
                     doc.getMetadata().setLastModified(System.currentTimeMillis());
+                    modifiedDocuments.add(doc);
                     context.getBroker().storeXMLResource(transaction, doc);
                     notifier.notifyUpdate(doc, UpdateListener.UPDATE);
                 }
-                checkFragmentation(transaction, modifiedDocs);
+                checkFragmentation(transaction, modifiedDocuments);
+                
+                //commit the transaction
                 transact.commit(transaction);
             } catch (LockException e) {
                 throw new XPathException(getASTNode(), e.getMessage(), e);

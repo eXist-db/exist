@@ -176,7 +176,10 @@ public class FunDeepEqual extends Function {
 			if (nodeTypeA != nodeTypeB) return false;
 			switch (nodeTypeA) {
 				case Node.TEXT_NODE:
-					if (!safeEquals(a.getNodeValue(), b.getNodeValue())) return false;
+					if (b.getNodeType() == NodeImpl.REFERENCE_NODE) {
+						if (!safeEquals(a.getNodeValue(), ((ReferenceNode)b).getReference().getNodeValue())) return false;
+					} else
+						if (!safeEquals(a.getNodeValue(), b.getNodeValue())) return false;
 					break;
 				case Node.ELEMENT_NODE:
 					if (!compareElements(a, b)) return false;

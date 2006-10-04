@@ -185,7 +185,20 @@ public class FloatValue extends NumericValue {
 	 * @see org.exist.xquery.value.NumericValue#round()
 	 */
 	public NumericValue round() throws XPathException {
-		return new FloatValue((float) Math.round(value));
+		//Copied from Saxon
+		if (Float.isNaN(value)) return this;
+        if (Float.isInfinite(value)) return this;
+        if (value==0.0) return this;    // handles the negative zero case
+        if (value > -0.5 && value < 0.0) return new DoubleValue(-0.0);
+        if (value > Integer.MIN_VALUE && value < Integer.MAX_VALUE) {
+            return new FloatValue((float)Math.round(value));
+        }
+
+        // if the float is larger than the maximum int, then
+        // it can't have any significant digits after the decimal
+        // point, so return it unchanged
+
+        return this;
 	}
 	
 	/* (non-Javadoc)
@@ -279,14 +292,14 @@ public class FloatValue extends NumericValue {
 		if (Type.subTypeOf(other.getType(), Type.FLOAT))
 			return new FloatValue(Math.max(value, ((FloatValue) other).value));
 		else
-            return other.convertTo(Type.FLOAT).max(collator, this);
+			return convertTo(other.getType()).max(collator, other);
 	}
 
 	public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
 		if (Type.subTypeOf(other.getType(), Type.FLOAT))
 			return new FloatValue(Math.min(value, ((FloatValue) other).value));
 		else
-            return other.convertTo(Type.FLOAT).min(collator, this);
+			return convertTo(other.getType()).min(collator, other);
 	}
 
 	/* (non-Javadoc)

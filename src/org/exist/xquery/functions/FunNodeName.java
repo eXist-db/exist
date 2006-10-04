@@ -100,10 +100,8 @@ public class FunNodeName extends Function {
                     result = new QNameValue(context, qname);
                     break;
                 default:
-                    // return empty sequence for all other nodes
-                    result = Sequence.EMPTY_SEQUENCE;
-//                	LOG.warn("Tried to obtain node name for node type " + n.getNodeType());
-//                    result = new QNameValue(context, QName.EMPTY_QNAME);
+                	LOG.warn("Tried to obtain node name for node type " + n.getNodeType());
+                    result = new QNameValue(context, QName.EMPTY_QNAME);
             }
         }
         

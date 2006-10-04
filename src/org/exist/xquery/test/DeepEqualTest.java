@@ -293,6 +293,26 @@ public class DeepEqualTest extends TestCase {
                     "deep-equal($funVers2, ve:functionVerifications($par1))";
             assertQuery(true,query);
         }
+        
+        public void testElements17() {
+            // Test deep-equal is used with in-memory nodes 
+            String query =
+                    "let $one := <foo/> "+
+                    "let $two := <bar/> "+
+                    "return "+
+                    "deep-equal($one, $two)";
+            assertQuery(false,query);
+        }
+
+        public void testReferenceNode() {
+                    String query =
+                    "let $expr1 := <Value>Hello</Value> "+
+                    "return "+
+                    "deep-equal( <Result><Value>Hello</Value></Result>,"+
+                    "<Result><Value>{$expr1/node()}</Value></Result> )";
+            assertQuery(true,query);    
+	}
+        
 	
 	public void testNSElements1() {
 		createDocument("test", "<test xmlns:p='urn:foo' xmlns:q='urn:foo'><p:a/><q:a/></test>");
@@ -303,6 +323,8 @@ public class DeepEqualTest extends TestCase {
 		createDocument("test", "<test xmlns:p='urn:foo' xmlns:q='urn:bar'><p:a/><q:a/></test>");
 		assertQuery(false, "deep-equal(/test/*[1], /test/*[2])");
 	}
+        
+
 	
 	public void testForLoop() {
 		try {

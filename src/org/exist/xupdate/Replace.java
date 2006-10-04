@@ -61,7 +61,6 @@ public class Replace extends Modification {
             TextImpl text;
             AttrImpl attribute;
             ElementImpl parent;
-            DocumentSet modifiedDocs = new DocumentSet();
             for (int i = 0; i < ql.length; i++) {
                 StoredNode node = ql[i];
                 if (node == null) {
@@ -70,7 +69,6 @@ public class Replace extends Modification {
                 }
                 DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
                 doc.getMetadata().setIndexListener(listener);
-                modifiedDocs.add(doc);
                 if (!doc.getPermissions().validate(broker.getUser(),
                         Permission.UPDATE))
                         throw new PermissionDeniedException(
@@ -104,10 +102,11 @@ public class Replace extends Modification {
                 }
                 doc.getMetadata().clearIndexListener();
                 doc.getMetadata().setLastModified(System.currentTimeMillis());
+                modifiedDocuments.add(doc);
                 broker.storeXMLResource(transaction, doc);
                 notifier.notifyUpdate(doc, UpdateListener.UPDATE);
             }
-            checkFragmentation(transaction, modifiedDocs);
+            checkFragmentation(transaction, modifiedDocuments);
         } finally {
             unlockDocuments();
         }

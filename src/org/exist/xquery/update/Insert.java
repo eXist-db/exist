@@ -24,7 +24,6 @@ package org.exist.xquery.update;
 
 import org.exist.EXistException;
 import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeImpl;
 import org.exist.dom.NodeListImpl;
 import org.exist.dom.StoredNode;
@@ -137,20 +136,22 @@ public class Insert extends Modification {
         
             try {
                 TransactionManager transact = context.getBroker().getBrokerPool().getTransactionManager();
+
+                //start a transaction
                 Txn transaction = transact.beginTransaction();
                 StoredNode[] ql = selectAndLock(inSeq.toNodeSet());
                 NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
                 IndexListener listener = new IndexListener(ql);
-                NodeImpl parent;           
-                DocumentSet modifiedDocs = new DocumentSet();
+                NodeImpl parent;
                 NodeList contentList = seq2nodeList(contentSeq);
                 for (int i = 0; i < ql.length; i++) {
                     StoredNode node = ql[i];
                     DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
-                    doc.getMetadata().setIndexListener(listener);
                     if (!doc.getPermissions().validate(context.getUser(), Permission.UPDATE))
                         throw new XPathException(getASTNode(), "permission to remove document denied");
-                    modifiedDocs.add(doc);
+                    doc.getMetadata().setIndexListener(listener);
+                    
+                    //update the document
     				if (mode == INSERT_APPEND) {
     					node.appendChildren(transaction, contentList, -1);
     				} else {
@@ -166,11 +167,13 @@ public class Insert extends Modification {
     				}
                     doc.getMetadata().clearIndexListener();
                     doc.getMetadata().setLastModified(System.currentTimeMillis());
+                    modifiedDocuments.add(doc);
                     context.getBroker().storeXMLResource(transaction, doc);
                     notifier.notifyUpdate(doc, UpdateListener.UPDATE);
                 }
-                checkFragmentation(transaction, modifiedDocs);
+                checkFragmentation(transaction, modifiedDocuments);
     
+                //commit the transaction
                 transact.commit(transaction);
             } catch (PermissionDeniedException e) {
     			throw new XPathException(getASTNode(), e.getMessage(), e);

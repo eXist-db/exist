@@ -24,6 +24,7 @@ package org.exist.xmldb.test.concurrent;
 import java.io.File;
 
 import org.exist.storage.DBBroker;
+import org.exist.xmldb.test.concurrent.action.XQueryAction;
 
 /**
  * @author wolf
