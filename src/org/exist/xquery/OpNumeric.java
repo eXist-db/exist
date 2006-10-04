@@ -102,20 +102,20 @@ public class OpNumeric extends BinaryOp {
         
 		Sequence lseq = getLeft().eval(contextSequence);		
 		Sequence rseq = getRight().eval(contextSequence);
-		Item lvalue = lseq.itemAt(0);
-        Item rvalue = rseq.itemAt(0);
+        
+        if (lseq.hasMany()) 
+        	throw new XPathException("XPTY0004: too many operands at the left of " + Constants.OPS[operator]);
+        if (rseq.hasMany()) 
+        	throw new XPathException("XPTY0004: too many operands at the right of " + Constants.OPS[operator]);
 		
         Sequence result;
-        
-        if (lseq.isEmpty()) 
+        if (rseq.isEmpty()) 
             result = Sequence.EMPTY_SEQUENCE;
-        else if (lseq.hasMany()) 
-        	throw new XPathException("XPTY0004: too many operands at the left of " + Constants.OPS[operator]);
-        else if (rseq.isEmpty()) 
+        else if (lseq.isEmpty()) 
             result = Sequence.EMPTY_SEQUENCE;
-        else if (rseq.hasMany()) 
-        	throw new XPathException("XPTY0004: too many operands at the right of " + Constants.OPS[operator]);
         else {
+    		Item lvalue = lseq.itemAt(0);
+            Item rvalue = rseq.itemAt(0);
     		try {
     			if (lvalue.getType() == Type.UNTYPED_ATOMIC || lvalue.getType() == Type.ATOMIC) 
     				lvalue = lvalue.convertTo(Type.NUMBER);

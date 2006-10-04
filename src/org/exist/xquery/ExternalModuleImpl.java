@@ -155,8 +155,8 @@ public class ExternalModuleImpl implements ExternalModule {
 	 */
 	public Variable resolveVariable(QName qname) throws XPathException {
 		VariableDeclaration decl = (VariableDeclaration)mGlobalVariables.get(qname);
-		if(decl != null) {
-			decl.eval(null);
+		if(decl != null && !mStaticVariables.containsKey(qname)) {
+            decl.eval(null);
 		}
 		return (Variable) mStaticVariables.get(qname);
 	}

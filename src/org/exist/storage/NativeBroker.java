@@ -1282,21 +1282,39 @@ public class NativeBroker extends DBBroker {
     }    
     
     /** store into the temporary collection of the database a given in-memory Document */
-    public DocumentImpl storeTempResource(org.exist.memtree.DocumentImpl doc) 
-    throws EXistException, PermissionDeniedException, LockException {
-        TransactionManager transact = pool.getTransactionManager();
+    public DocumentImpl storeTempResource(org.exist.memtree.DocumentImpl doc) throws EXistException, PermissionDeniedException, LockException
+    {
+        //store the currentUser
+        User currentUser = user;
+        
+        //elevate user to DBA_USER
+        user = pool.getSecurityManager().getUser(SecurityManager.DBA_USER);
+    	
+        //start a transaction
+    	TransactionManager transact = pool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
         
-        user = pool.getSecurityManager().getUser(SecurityManager.DBA_USER);
-        XmldbURI docName = XmldbURI.create(MD5.md(Thread.currentThread().getName() + Long.toString(System.currentTimeMillis()),false) +
-            ".xml");
+        //create a name for the temporary document
+        XmldbURI docName = XmldbURI.create(MD5.md(Thread.currentThread().getName() + Long.toString(System.currentTimeMillis()),false) + ".xml");
+        
+        //get the temp collection
         Collection temp = openCollection(XmldbURI.TEMP_COLLECTION_URI, Lock.WRITE_LOCK);
         
-        try {
+        try
+        {
+        	//if no temp collection
             if(temp == null)
+            {
+            	//creates temp collection with lock
                 temp = createTempCollection(transaction);
+            }
             else
+            {
+            	//lock the temp collection
                 transaction.registerLock(temp.getLock(), Lock.WRITE_LOCK);
+            }
+            
+            //create a temporary document
             DocumentImpl targetDoc = new DocumentImpl(this, temp, docName);
             targetDoc.setPermissions(0771);
             long now = System.currentTimeMillis();
@@ -1306,19 +1324,35 @@ public class NativeBroker extends DBBroker {
             targetDoc.setMetadata(metadata);
             targetDoc.setDocId(getNextResourceId(transaction, temp));
 
+            //index the temporary document
             DOMIndexer indexer = new DOMIndexer(this, transaction, doc, targetDoc);
             indexer.scan();
             indexer.store();
+
+            //store the temporary document
             temp.addDocument(transaction, this, targetDoc);
             storeXMLResource(transaction, targetDoc);
             closeDocument();
             flush();
+        
+            //commit the transaction
             transact.commit(transaction);
+            
             return targetDoc;
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             LOG.warn("Failed to store temporary fragment: " + e.getMessage(), e);
+         
+            //abort the transaction
             transact.abort(transaction);
         }
+        finally
+        {
+            //restore the user
+            user = currentUser;
+        }
+        
         return null;
     }
     
@@ -1752,10 +1786,6 @@ public class NativeBroker extends DBBroker {
             boolean renameOnly = collection.getId() == destination.getId();
             collection.unlinkDocument(doc);
             removeResourceMetadata(transaction, doc);
-            
-            // Remove all (webdav) Lock token data when document is removed.
-            // [ 1509776 ] webDAV : Lock retains after MOVE
-            doc.getMetadata().setLockToken(null);
             
             doc.setFileURI(newName);
             doc.setCollection(destination);

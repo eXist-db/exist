@@ -72,7 +72,6 @@ public class Rename extends Modification {
         int modificationCount = 0;
         try {
             StoredNode[] ql = selectAndLock();
-            DocumentSet modifiedDocs = new DocumentSet();
             NodeImpl parent;
             IndexListener listener = new IndexListener(ql);
             NotificationService notifier = broker.getBrokerPool().getNotificationService();
@@ -85,7 +84,6 @@ public class Rename extends Modification {
                         throw new PermissionDeniedException(
                         "permission to update document denied");
                 doc.getMetadata().setIndexListener(listener);
-                modifiedDocs.add(doc);
                 parent = (NodeImpl) node.getParentNode();
                 switch (node.getNodeType()) {
                     case Node.ELEMENT_NODE:
@@ -106,10 +104,11 @@ public class Rename extends Modification {
 
                 doc.getMetadata().clearIndexListener();
                 doc.getMetadata().setLastModified(System.currentTimeMillis());
+                modifiedDocuments.add(doc);
                 broker.storeXMLResource(transaction, doc);
                 notifier.notifyUpdate(doc, UpdateListener.UPDATE);
             }
-            checkFragmentation(transaction, modifiedDocs);
+            checkFragmentation(transaction, modifiedDocuments);
         } finally {
             unlockDocuments();
         }

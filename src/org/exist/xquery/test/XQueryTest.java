@@ -1329,6 +1329,38 @@ public class XQueryTest extends XMLTestCase {
 		 }
 	}
 	
+	public void testUserEscalationForInMemoryNodes()
+	{
+		System.out.println("testUserEscalationForInMemoryNodes 1: ========" );
+		 
+		String query = "xmldb:login(\"xmldb:exist:///db\", \"guest\", \"guest\"), xmldb:get-current-user(), let $node := <node id=\"1\">value</node>, $null := $node[@id eq 1] return xmldb:get-current-user()";
+
+		try
+		 {
+			 XPathQueryService service = (XPathQueryService)testCollection.getService("XPathQueryService", "1.0");
+			 ResourceSet result = service.query(query);
+			 printResult(result);
+			 
+			 Resource loggedIn = result.getResource(0);
+			 Resource currentUser = result.getResource(1);
+			 Resource currentUserAfterInMemoryOp = result.getResource(2);
+			 
+			 //check the login as guest worked
+			 assertEquals("Logged in as quest: " + loggedIn.getContent().toString(), "true", loggedIn.getContent().toString());
+
+			 //check that we are guest
+			 assertEquals("After Login as guest, User should be guest and is: " + currentUser.getContent().toString(), "guest", currentUser.getContent().toString());
+			 
+			 //check that we are still guest
+			 assertEquals("After Query, User should still be guest and is: " + currentUserAfterInMemoryOp.getContent().toString(), "guest", currentUserAfterInMemoryOp.getContent().toString());
+		 }
+		 catch (XMLDBException e)
+		 {
+			 System.out.println("testUserEscalationForInMemoryNodes(): XMLDBException: "+e);
+			 fail(e.getMessage());
+		 }
+	}
+	
     public void testAttributeAxis() {
         ResourceSet result;
         String query;

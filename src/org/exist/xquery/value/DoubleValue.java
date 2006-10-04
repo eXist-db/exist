@@ -22,7 +22,6 @@ package org.exist.xquery.value;
 
 import java.math.BigDecimal;
 import java.text.Collator;
-import java.util.regex.Matcher;
 
 import org.exist.util.FastStringBuffer;
 import org.exist.util.FloatingPointConverter;
@@ -357,13 +356,29 @@ public class DoubleValue extends NumericValue {
 	 * @see org.exist.xquery.value.NumericValue#round()
 	 */
 	public NumericValue round() throws XPathException {
-		if (isNaN())
-			return DoubleValue.NaN;
-		if (isInfinite() && value > 0)
-			return DoubleValue.POSITIVE_INFINITY;
-		if (isInfinite() && value < 0)
-			return DoubleValue.POSITIVE_INFINITY;		
-		return new DoubleValue(Math.round(value));
+		//Copied from Saxon
+        if (Double.isNaN(value)) {
+            return this;
+        }
+        if (Double.isInfinite(value)) {
+            return this;
+        }
+        if (value == 0.0) {
+            return this;    // handles the negative zero case
+        }
+        if (value > -0.5 && value < 0.0) {
+            return new DoubleValue(-0.0);
+        }
+        if (value > Long.MIN_VALUE && value < Long.MAX_VALUE) {
+            return new DoubleValue(Math.round(value));
+        }
+
+        // A double holds fewer significant digits than a long. Therefore,
+        // if the double is outside the range of a long, it cannot have
+        // any signficant digits after the decimal point. So in this
+        // case, we return the original value unchanged
+
+        return this;
 	}
 	
 	/* (non-Javadoc)

@@ -256,7 +256,7 @@ public class StringValue extends AtomicValue {
 	 * @see org.exist.xquery.value.AtomicValue#compareTo(int, org.exist.xquery.value.AtomicValue)
 	 */
 	public boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException {
-		if (Type.subTypeOf(other.getType(), Type.STRING)) {
+		//if (Type.subTypeOf(other.getType(), Type.STRING)) {
 			int cmp = Collations.compare(collator, value, other.getStringValue());
 			switch (operator) {
 				case Constants.EQ :
@@ -274,10 +274,10 @@ public class StringValue extends AtomicValue {
 				default :
 					throw new XPathException("Type error: cannot apply operand to string value");
 			}
-		}
-		throw new XPathException(
-			"Type error: operands are not comparable; expected xs:string; got "
-				+ Type.getTypeName(other.getType()));
+		//}
+		//throw new XPathException(
+		//	"Type error: operands are not comparable; expected xs:string; got "
+		//		+ Type.getTypeName(other.getType()));
 	}
 
 	/* (non-Javadoc)

@@ -50,7 +50,7 @@ public class JavaFunctionsTest extends TestCase {
 		catch (XMLDBException e)
 		{
 			//if exception is a java binding exception and java binding is disabled then this is a success
-			if(e.getMessage().indexOf("Java binding is currently disabled") > -1 && !javabindingenabled)
+			if(e.getMessage().indexOf("Java binding is disabled in the current configuration") > -1 && !javabindingenabled)
 			{
 				return;
 			}

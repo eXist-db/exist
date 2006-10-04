@@ -771,11 +771,43 @@ public class XPathQueryTest extends XMLTestCase {
             assertEquals("minimum of big integers",
                     "123456789123456789123456789",
                     result.getResource(0).getContent() );
+            
+            boolean exceptionThrown = false;
+            String message = "";
+            try {
+                result = queryResource(service, "numbers.xml", "empty(() + (1, 2))", 1);
+            } catch (XMLDBException e) {
+                exceptionThrown = true;
+                message = e.getMessage();
+            }
+            assertTrue(message.indexOf("XPTY0004") > -1);
+            
         } catch (XMLDBException e) {
             e.printStackTrace();
             fail(e.getMessage());
         }
     }
+    
+    public void testDates() {
+        try {
+            XQueryService service =
+                    storeXMLStringAndGetQueryService("numbers.xml", numbers);
+            
+            String query = "xs:untypedAtomic(\"--12-05:00\") cast as xs:gMonth";
+            ResourceSet  result = service.queryResource("numbers.xml", query);
+            XMLResource resource = (XMLResource)result.getResource(0);
+            assertEquals("XPath: " + query, "--12-05:00", resource.getContent().toString());
+            
+            query = "(xs:dateTime(\"0001-01-01T01:01:01Z\") + xs:yearMonthDuration(\"-P20Y07M\"))";
+            result = service.queryResource("numbers.xml", query);
+            resource = (XMLResource)result.getResource(0);
+            assertEquals("XPath: " + query, "-0021-06-01T01:01:01Z", resource.getContent().toString());            
+            
+        } catch (XMLDBException e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+    }    
     
     public void testGeneralComparison() {
         try {

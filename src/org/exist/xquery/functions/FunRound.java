@@ -50,7 +50,7 @@ public class FunRound extends Function {
 	}
 
 	public int returnsType() {
-		return Type.DOUBLE;
+		return Type.NUMBER;
 	}
 
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
