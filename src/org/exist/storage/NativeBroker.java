@@ -450,8 +450,7 @@ public class NativeBroker extends DBBroker {
         final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
         final int indexType = ((ElementImpl) node).getIndexType();
 
-        NodeProxy p = new NodeProxy(node);
-        p.setIndexType(indexType);        
+        NodeProxy p = new NodeProxy(node);        
         
         // TODO move_to NativeValueIndex
         if (RangeIndexSpec.hasRangeIndex(indexType)) {
@@ -480,6 +479,8 @@ public class NativeBroker extends DBBroker {
             if (qnameValueIndex != null)
                 qnameValueIndex.endElement((ElementImpl) node, currentPath, content);
         }
+        
+        p.setIndexType(indexType);
         
         // TODO move_to NativeElementIndex; name change (See ContentLoadingObserver ): addRow() --> endElement()
         // save element by calling ElementIndex
