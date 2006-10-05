@@ -82,17 +82,17 @@ public class ExtensionExpression extends AbstractExpression {
         return result;
     }
 
-    private void callAfter() {
+    private void callAfter() throws XPathException {
         for (int i = 0; i < pragmas.size(); i++) {
             Pragma pragma = (Pragma) pragmas.get(i);
-            pragma.after(innerExpression);
+            pragma.after(context, innerExpression);
         }
     }
 
-    private void callBefore() {
+    private void callBefore() throws XPathException {
         for (int i = 0; i < pragmas.size(); i++) {
             Pragma pragma = (Pragma) pragmas.get(i);
-            pragma.before(innerExpression);
+            pragma.before(context, innerExpression);
         }
     }
 

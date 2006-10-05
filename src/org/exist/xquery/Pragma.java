@@ -40,9 +40,9 @@ public abstract class Pragma {
         return null;
     }
     
-    public abstract void before(Expression expression);
+    public abstract void before(XQueryContext context, Expression expression) throws XPathException;
     
-    public abstract void after(Expression expression);
+    public abstract void after(XQueryContext context, Expression expression) throws XPathException;
 
     protected String getContents() {
         return contents;
