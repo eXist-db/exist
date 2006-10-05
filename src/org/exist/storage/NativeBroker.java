@@ -164,7 +164,7 @@ public class NativeBroker extends DBBroker {
     public static final int DEFAULT_PAGE_SIZE = 4096;
     public static final int DEFAULT_INDEX_DEPTH = 1;
     public static final int DEFAULT_MIN_MEMORY = 5000000;
-    public static final long TEMP_FRAGMENT_TIMEOUT = 300000;
+    public static final long TEMP_FRAGMENT_TIMEOUT = 60000;
     /** default buffer size setting */
     public static final int BUFFERS = 256;
     /** check available memory after storing DEFAULT_NODES_BEFORE_MEMORY_CHECK nodes */
@@ -983,6 +983,11 @@ public class NativeBroker extends DBBroker {
             Lock lock = collectionsDb.getLock();
             try {
                 lock.acquire(Lock.WRITE_LOCK);
+                // remove the metadata of all documents in the collection
+                Value docKey = new DocumentKey(collection.getId());
+                IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, docKey);
+                collectionsDb.removeAll(transaction, query);
+                
                 // if this is not the root collection remove it...
                 if (!isRoot) {
                     Value key;
@@ -1004,11 +1009,15 @@ public class NativeBroker extends DBBroker {
                     //It will remain cached
                     //and its id well never be made available 
                     saveCollection(transaction, collection);
-                }                
+                }
             } catch (LockException e) {
                 LOG.warn("Failed to acquire lock on '" + collectionsDb.getFile().getName() + "'");
             } catch (ReadOnlyException e) {
                 throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+            } catch (BTreeException e) {
+                LOG.warn("Exception while removing collection: " + e.getMessage(), e);
+            } catch (IOException e) {
+                LOG.warn("Exception while removing collection: " + e.getMessage(), e);
             } finally {
                 lock.release();
             }
@@ -1017,7 +1026,8 @@ public class NativeBroker extends DBBroker {
             for (Iterator i = collection.iterator(this); i.hasNext();) {
                 final DocumentImpl doc = (DocumentImpl) i.next();
                 //Remove doc's metadata
-                removeResourceMetadata(transaction, doc);
+                // WM: now removed in one step. see above.
+//                removeResourceMetadata(transaction, doc);
                 //Remove document nodes' index entries
                 new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
                     public Object start() {
@@ -1914,6 +1924,7 @@ public class NativeBroker extends DBBroker {
         Lock lock = collectionsDb.getLock();
         try {
             lock.acquire();            
+            LOG.debug("Removing resource metadata for " + document.getDocId());
             Value key = new DocumentKey(document.getCollection().getId(), document.getResourceType(), document.getDocId());
             collectionsDb.remove(transaction, key);
         } catch (ReadOnlyException e) {
@@ -2316,6 +2327,7 @@ public class NativeBroker extends DBBroker {
                 final byte data[] = node.serialize();
                 if (nodeType == Node.TEXT_NODE
                     || nodeType == Node.ATTRIBUTE_NODE
+                    || nodeType == Node.CDATA_SECTION_NODE
                     || doc.getTreeLevel(gid) > depth)
                     address = domDb.add(transaction, data);
                 else {

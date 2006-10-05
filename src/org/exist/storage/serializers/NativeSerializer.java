@@ -31,6 +31,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.exist.dom.AttrImpl;
+import org.exist.dom.CDATASectionImpl;
 import org.exist.dom.CommentImpl;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentTypeImpl;
@@ -297,6 +298,13 @@ public class NativeSerializer extends Serializer {
             comment.getChars(0, data.length, data, 0);
             receiver.comment(data, 0, data.length);
             node.release();
+            break;
+        case Node.CDATA_SECTION_NODE:
+            String str = ((CDATASectionImpl)node).getData();
+            LOG.debug("CDATA section found: " + str);
+            data = new char[str.length()];
+            str.getChars(0,str.length(), data, 0);
+            receiver.cdataSection(data, 0, data.length);
             break;
         //TODO : how to process other types ? -pb
         }

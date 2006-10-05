@@ -40,7 +40,7 @@ import org.exist.util.serializer.SerializerPool;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Pragma;
+import org.exist.xquery.Option;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
@@ -171,7 +171,7 @@ public class Serialize extends BasicFunction {
         outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
         while(siSerializeParams.hasNext())
         {
-            String opt[] = Pragma.parseKeyValuePair(siSerializeParams.nextItem().getStringValue());
+            String opt[] = Option.parseKeyValuePair(siSerializeParams.nextItem().getStringValue());
             outputProperties.setProperty(opt[0], opt[1]);
         }
         

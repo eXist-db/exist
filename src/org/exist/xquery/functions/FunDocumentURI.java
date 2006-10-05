@@ -33,6 +33,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -49,7 +50,7 @@ public class FunDocumentURI extends Function {
 			"was constructed, if none such URI exists returns the empty sequence. " +
 			"If $a is the empty sequence, returns the empty sequence.",
 			new SequenceType[] {
-				 new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
+				 new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
 			},
 			new SequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE));
 			
@@ -72,13 +73,20 @@ public class FunDocumentURI extends Function {
             if (contextItem != null)
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }          
+        if (contextItem != null)
+            contextSequence = contextItem.toSequence();
         
 		Expression arg = getArgument(0);
-		Sequence s = arg.eval(contextSequence, contextItem);
-		NodeProxy node = (NodeProxy) s.itemAt(0);
- 		XmldbURI path = node.getDocument().getURI(); 
-		Sequence result = new AnyURIValue(path);
-        
+		Sequence s = arg.eval(contextSequence);
+        Sequence result = Sequence.EMPTY_SEQUENCE;
+        if (!s.isEmpty()) {
+            NodeValue value = (NodeValue) s.itemAt(0);
+            if (value.getImplementationType() == NodeValue.PERSISTENT_NODE) { 
+        		NodeProxy node = (NodeProxy) value;
+         		XmldbURI path = node.getDocument().getURI(); 
+        		result = new AnyURIValue(path);
+            }
+        }
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result); 
         

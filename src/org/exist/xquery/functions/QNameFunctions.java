@@ -108,11 +108,10 @@ public class QNameFunctions extends BasicFunction {
     		} else if (isCalledAs("local-name-from-QName"))
                 result = new StringValue(qname.getLocalName(), Type.NCNAME);
     		else {
+                // fn:namespace-uri-from-QName
     			String uri = qname.getNamespaceURI();
     			if (uri == null)
-    				uri = "";
-    			if ("".equals(uri))
-    				return Sequence.EMPTY_SEQUENCE;    			
+    				uri = "";    			
                 result = new AnyURIValue(uri);
     		}
         }

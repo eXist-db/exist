@@ -300,7 +300,7 @@ throws PermissionDeniedException, EXistException, XPathException
 			qname2:OPTION
 			content:STRING_LITERAL
 			{
-				context.addPragma(qname2.getText(), content.getText());
+				context.addOption(qname2.getText(), content.getText());
 			}
 		)
 		|
@@ -1072,6 +1072,8 @@ throws PermissionDeniedException, EXistException, XPathException
 	step=primaryExpr [path]
 	|
 	step=pathExpr [path]
+	|
+	step=extensionExpr [path]
 	|
 	step=numericExpr [path]
 	|
@@ -1981,6 +1983,41 @@ throws PermissionDeniedException, EXistException, XPathException
 	)
 	;
 	
+extensionExpr [PathExpr path]
+returns [Expression step]
+throws XPathException, PermissionDeniedException, EXistException
+{
+	step = null;
+	PathExpr pathExpr = new PathExpr(context);
+	ExtensionExpression ext = null;
+}:
+	(
+		#(
+			p:PRAGMA
+			( c:PRAGMA_END )?
+			{
+				Pragma pragma = context.getPragma(p.getText(), c.getText());
+				if (pragma != null) {
+					if (ext == null)
+						ext = new ExtensionExpression(context);
+					ext.addPragma(pragma);
+				}
+			}
+		)
+	)+
+	expr [pathExpr]
+	{
+		if (ext != null) {
+			ext.setExpression(pathExpr);
+			path.add(ext);
+			step = ext;
+		} else {
+			path.add(pathExpr);
+			step = pathExpr;
+		}
+	}
+	;
+
 updateExpr [PathExpr path]
 returns [Expression step]
 throws XPathException, PermissionDeniedException, EXistException

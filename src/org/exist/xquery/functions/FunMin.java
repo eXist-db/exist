@@ -36,6 +36,7 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.ComputableValue;
 import org.exist.xquery.value.DoubleValue;
+import org.exist.xquery.value.FloatValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
@@ -120,22 +121,29 @@ public class FunMin extends CollatingFunction {
                     if (value.getType() == Type.ATOMIC) 
                     	value = value.convertTo(Type.DOUBLE);
                 	//Ugly test
-	                if (value instanceof NumericValue) {	                	
+	                if (value instanceof NumericValue) {
 	                	if (((NumericValue) value).isNaN()) {
-                           result = DoubleValue.NaN;
+                           if (value.getType() == Type.FLOAT)
+                               min = FloatValue.NaN;
+                           else
+                               min = DoubleValue.NaN;
                            break;
-                       } 
+	                	} 
+	                	min = min.promote(value);
 	                }
 	                //Ugly test
-	                if (value instanceof ComputableValue) {		                	
-	                    min = (ComputableValue) min.min(collator, value);
+	                if (value instanceof ComputableValue) {
+                        if (!(min instanceof ComputableValue))
+                            throw new XPathException("FORG0006: Cannot compare " + Type.getTypeName(min.getType()) + 
+                                    " and " + Type.getTypeName(value.getType()));
+	                    min = min.min(collator, value);
 	                    computableProcessing = true;
                 	} else {
 	                	if (computableProcessing)
 	                		throw new XPathException("FORG0006: Cannot compare " + Type.getTypeName(min.getType()) + 
-	                				" and " + Type.getTypeName(value.getType()));	                		
+	                				" and " + Type.getTypeName(value.getType()));
 	                	if (Collations.compare(collator, value.getStringValue(), min.getStringValue()) < 0)	               
-	                		min = value;	                	
+	                		min = value;
 	                }
                 }
             }           

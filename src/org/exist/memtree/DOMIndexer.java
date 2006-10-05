@@ -24,9 +24,10 @@ package org.exist.memtree;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
-import org.apache.log4j.Logger;
 
+import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.collections.IndexInfo;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.CommentImpl;
 import org.exist.dom.DocumentTypeImpl;
@@ -41,6 +42,7 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.Txn;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
+import org.xml.sax.InputSource;
 
 /**
  * Helper class to make a in-memory document fragment persistent.
@@ -186,6 +188,14 @@ public class DOMIndexer {
             last.appendChildInternal(text);
             broker.storeNode(transaction, text, null);
             text.clear();
+            break;
+        case Node.CDATA_SECTION_NODE :
+            last = (ElementImpl) stack.peek();
+            org.exist.dom.CDATASectionImpl cdata = new org.exist.dom.CDATASectionImpl();
+            cdata.setData(doc.characters, doc.alpha[nodeNr], doc.alphaLen[nodeNr]);
+            cdata.setOwnerDocument(targetDoc);
+            last.appendChildInternal(cdata);
+            broker.storeNode(transaction, cdata, null);
             break;
     	case Node.COMMENT_NODE :            
             comment.setData(doc.characters, doc.alpha[nodeNr], doc.alphaLen[nodeNr]);

@@ -377,5 +377,5 @@ public class Type {
 			return type1;
 		else
 			return getCommonSuperType(type1, getSuperType(type2));
-	}
+	} 
 }

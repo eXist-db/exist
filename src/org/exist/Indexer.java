@@ -33,6 +33,7 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.AttrImpl;
+import org.exist.dom.CDATASectionImpl;
 import org.exist.dom.CommentImpl;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentTypeImpl;
@@ -82,7 +83,8 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
     protected Txn transaction;
     
 	protected XMLString charBuf = new XMLString();
-	protected int currentLine = 0;
+    protected boolean inCDATASection = false;
+	protected int currentLine = 0;  
 	protected NodePath currentPath = new NodePath();
 	
 	protected DocumentImpl document = null;
@@ -97,7 +99,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 	
 	protected Stack stack = new Stack();
 	protected Stack nodeContentStack = new Stack();
-	
+    
 	protected String ignorePrefix = null;
 	protected ProgressIndicator progress;
 	
@@ -235,6 +237,25 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 	}
 
 	public void endCDATA() {
+        if (!stack.isEmpty()) {
+            ElementImpl last = (ElementImpl) stack.peek();
+            if (charBuf != null && charBuf.length() > 0) {
+                CDATASectionImpl cdata = new CDATASectionImpl(charBuf);
+                cdata.setOwnerDocument(document);
+                last.appendChildInternal(cdata);
+                if (!validate)
+                    broker.storeNode(transaction, cdata, currentPath);
+                
+                if (!nodeContentStack.isEmpty()) {
+                    for (int i = 0; i < nodeContentStack.size(); i++) {
+                        XMLString next = (XMLString) nodeContentStack.get(i);
+                        next.append(charBuf);
+                    }
+                }
+                charBuf.reset();
+            }
+        }
+        inCDATASection = false;
 	}
 
 	public void endDTD() {
@@ -404,6 +425,18 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 	}
 
 	public void startCDATA() {
+        if (!stack.isEmpty()) {
+            ElementImpl last = (ElementImpl) stack.peek();
+            if (charBuf != null && charBuf.length() > 0) {
+                text.setData(charBuf);
+                text.setOwnerDocument(document);
+                last.appendChildInternal(text);
+                if (!validate)
+                    storeText();
+                charBuf.reset();
+            }
+        }
+        inCDATASection = true;        
 	}
 
 	// Methods of interface LexicalHandler
@@ -586,7 +619,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 		}
 		broker.storeNode(transaction, text, currentPath);
 	}
-
+    
 	private void storeElement(ElementImpl node) {
 		broker.storeNode(transaction, node, currentPath);
         node.setChildCount(0);

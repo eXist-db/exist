@@ -22,6 +22,7 @@
  */
 package org.exist.memtree;
 
+import org.exist.Namespaces;
 import org.exist.dom.NamedNodeMapImpl;
 import org.exist.dom.NodeListImpl;
 import org.exist.dom.QName;
@@ -327,6 +328,10 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 		return getAttributeNS(namespaceURI, localName) != null;
 	}
 
+    public String getBaseURI() {
+        return getAttributeNS(Namespaces.XML_NS, "base");
+    }
+    
 	/** ? @see org.w3c.dom.Element#getSchemaTypeInfo()
 	 */
 	public TypeInfo getSchemaTypeInfo() {

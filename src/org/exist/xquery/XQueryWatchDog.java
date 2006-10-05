@@ -22,13 +22,9 @@
  */
 package org.exist.xquery;
 
-import java.util.LinkedList;
-import java.util.List;
-
 import org.apache.log4j.Logger;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.util.Configuration;
-import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.util.ExpressionDumper;
 
 
@@ -53,8 +49,6 @@ public class XQueryWatchDog {
     
     private boolean terminate = false;
     
-    private List tempFragments = null;
-    
     /**
      * 
      */
@@ -76,28 +70,28 @@ public class XQueryWatchDog {
             maxNodesLimit = ((Integer)option).intValue();
     }
     
-    public void setTimeoutFromPragma(Pragma pragma) throws XPathException {
-    	String[] contents = pragma.tokenizeContents();
+    public void setTimeoutFromOption(Option option) throws XPathException {
+    	String[] contents = option.tokenizeContents();
     	if(contents.length != 1)
-    		throw new XPathException("Pragma 'timeout' should have exactly one parameter: the timeout value.");
+    		throw new XPathException("Option 'timeout' should have exactly one parameter: the timeout value.");
 		try {
 			timeout = Long.parseLong(contents[0]);
 		} catch (NumberFormatException e) {
-			throw new XPathException("Error parsing timeout value in pragma " + pragma.getQName().getStringValue());
+			throw new XPathException("Error parsing timeout value in option " + option.getQName().getStringValue());
 		}
-		LOG.debug("timeout set from pragma: " + timeout + "ms.");
+		LOG.debug("timeout set from option: " + timeout + "ms.");
     }
     
-    public void setMaxNodesFromPragma(Pragma pragma) throws XPathException {
-    	String[] contents = pragma.tokenizeContents();
+    public void setMaxNodesFromOption(Option option) throws XPathException {
+    	String[] contents = option.tokenizeContents();
     	if(contents.length != 1)
-    		throw new XPathException("Pragma 'output-size-limit' should have exactly one parameter: the timeout value.");
+    		throw new XPathException("Option 'output-size-limit' should have exactly one parameter: the timeout value.");
 		try {
 			maxNodesLimit = Integer.parseInt(contents[0]);
 		} catch (NumberFormatException e) {
-			throw new XPathException("Error parsing size-limit value in pragma " + pragma.getQName().getStringValue());
+			throw new XPathException("Error parsing size-limit value in option " + option.getQName().getStringValue());
 		}
-		LOG.debug("output-size-limit set from pragma: " + maxNodesLimit);
+		LOG.debug("output-size-limit set from option: " + maxNodesLimit);
     }
     
     public void proceed(Expression expr) throws TerminatedException {
@@ -135,27 +129,7 @@ public class XQueryWatchDog {
         }
     }
     
-    /**
-     * 
-     * @param docName
-     * @deprecated Use xmldbURI instead
-     */
-    //TODO: remove this
-    public void addTemporaryFragment(String docName) {
-    	if(tempFragments == null)
-    		tempFragments = new LinkedList();
-    	tempFragments.add(docName);
-    }
-    
-    public void addTemporaryFragment(XmldbURI docName) {
-    	addTemporaryFragment(docName.toString());
-    }
-    
     public void cleanUp() {
-    	if(tempFragments == null)
-    		return;
-    	context.getBroker().cleanUpTempResources(tempFragments);
-    	tempFragments = null;
     }
     
     public void kill(long waitTime) {

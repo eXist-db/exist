@@ -19,26 +19,32 @@
  *  
  *  $Id$
  */
-package org.exist.storage;
+package org.exist.xquery;
 
-import org.exist.storage.btree.Value;
-import org.exist.util.ByteConversion;
+import org.apache.log4j.Logger;
+import org.exist.Namespaces;
+import org.exist.dom.QName;
+import org.exist.xquery.util.ExpressionDumper;
 
-public class DocumentKey extends Value {
+public class TimerPragma extends Pragma {
 
-    public DocumentKey(short collectionId) {
-        data = new byte[2];
-        ByteConversion.shortToByte(collectionId, data, 0);
-        len = 2;
-        pos = 0;
-    }
+    public  final static QName TIMER_PRAGMA = new QName("timer", Namespaces.EXIST_NS, "exist");
     
-    public DocumentKey(short collectionId, byte type, int docId) {
-        data = new byte[7];
-        ByteConversion.shortToByte(collectionId, data, 0);
-        data[2] = type;
-        ByteConversion.intToByte(docId, data, 3);
-        len = 7;
-        pos = 0;
+    private final static Logger LOG = Logger.getLogger(TimerPragma.class);
+    
+    private long start;
+    
+    public TimerPragma(QName qname, String contents) throws XPathException {
+        super(qname, contents);
+    }
+
+    public void after(Expression expression) {
+        long elapsed = System.currentTimeMillis() - start;
+        if (LOG.isTraceEnabled())
+            LOG.trace("Elapsed: " + elapsed + "ms. for expression:\n" + ExpressionDumper.dump(expression));
+    }
+
+    public void before(Expression expression) {
+        start = System.currentTimeMillis();
     }
 }

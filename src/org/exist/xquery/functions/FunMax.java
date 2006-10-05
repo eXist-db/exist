@@ -36,6 +36,7 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.ComputableValue;
 import org.exist.xquery.value.DoubleValue;
+import org.exist.xquery.value.FloatValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
@@ -126,9 +127,13 @@ public class FunMax extends CollatingFunction {
                 	//Ugly test
 	                if (value instanceof NumericValue) {	                	
 	                	if (((NumericValue) value).isNaN()) {
-                           result = DoubleValue.NaN;
+                            if (value.getType() == Type.FLOAT)
+                                   max = FloatValue.NaN;
+                               else
+                                   max = DoubleValue.NaN;
                            break;
-                       } 
+	                	}
+	                	max = max.promote(value);
 	                }
 	                //Ugly test
 	                if (value instanceof ComputableValue) {		                	

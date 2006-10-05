@@ -24,6 +24,7 @@ package org.exist.xquery.functions;
 
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.memtree.NodeImpl;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
@@ -33,10 +34,13 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
+import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
+import org.w3c.dom.Node;
 
 /**
  * @author wolf
@@ -57,6 +61,13 @@ public class FunBaseURI extends BasicFunction {
                 "Returns the value of the base-uri property for $a. If $a is the empty " +
                 "sequence, the empty sequence is returned.",
                 new SequenceType[] { new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE) },
+                new SequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE)
+            ),
+            new FunctionSignature(
+                new QName("static-base-uri", Function.BUILTIN_FUNCTION_NS),
+                "Returns the value of the Base URI property from the static context. " +
+                "If the Base URI property is undefined, the empty sequence is returned.",
+                null,
                 new SequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE)
             )
     };
@@ -82,18 +93,42 @@ public class FunBaseURI extends BasicFunction {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
         }
         
-        Sequence result;
-        if (args.length == 0)
+        Sequence result = null;
+        NodeValue node = null;
+        if (isCalledAs("static-base-uri")) {
             result = context.getBaseURI();
-        else if (args[0].isEmpty())
-            result = Sequence.EMPTY_SEQUENCE;
-        else {
-            NodeValue node = (NodeValue) args[0].itemAt(0);
-            if (node.getImplementationType() == NodeValue.IN_MEMORY_NODE)
-                result = context.getBaseURI();
-            else {
+        } else {
+            if (args.length == 0) {
+                if (contextSequence.getLength() == 0)
+                    throw new XPathException(getASTNode(), "XPDY0002: context sequence is empty and no argument specified");
+                Item item = contextSequence.itemAt(0);
+                if (!Type.subTypeOf(item.getType(), Type.NODE))
+                    throw new XPathException(getASTNode(), "XPTY0004: context item is not a node");
+                node = (NodeValue) item;
+            } else {
+                if (args[0].isEmpty())
+                    result = Sequence.EMPTY_SEQUENCE;
+                else
+                    node = (NodeValue) args[0].itemAt(0);
+            }
+        }
+        if (result == null && node != null) {
+            if (node.getImplementationType() == NodeValue.IN_MEMORY_NODE) {
+                NodeImpl domNode = (NodeImpl) node.getNode();
+                String base = domNode.getBaseURI();
+                if (base == null)
+                    result = Sequence.EMPTY_SEQUENCE;
+                else
+                    result = new StringValue(base);
+            } else {
                 NodeProxy proxy = (NodeProxy) node;
-                result = new AnyURIValue(proxy.getDocument().getURI());
+                short type = proxy.getNodeType();
+                // Only elements, document nodes and processing instructions have a base-uri
+                if (type == Node.ELEMENT_NODE || type == Node.DOCUMENT_NODE ||
+                        type == Node.PROCESSING_INSTRUCTION_NODE)
+                    result = new AnyURIValue(proxy.getDocument().getURI());
+                else
+                    result = Sequence.EMPTY_SEQUENCE;
             }
         }
         

@@ -59,6 +59,7 @@ public class XQueryLexer extends antlr.CharScanner implements XQueryTokenTypes, 
 	protected boolean inAttributeContent= false;
 	protected char attrDelimChar = '"';
 	protected boolean inComment= false;
+	protected boolean inPragma = false;
 	
 	protected XQueryContext context = null;
 	
@@ -89,108 +90,108 @@ public XQueryLexer(LexerSharedInputState state) {
 	caseSensitiveLiterals = true;
 	setCaseSensitive(true);
 	literals = new Hashtable();
-	literals.put(new ANTLRHashString("treat", this), new Integer(129));
-	literals.put(new ANTLRHashString("typeswitch", this), new Integer(104));
-	literals.put(new ANTLRHashString("copy-namespaces", this), new Integer(66));
-	literals.put(new ANTLRHashString("xpointer", this), new Integer(49));
-	literals.put(new ANTLRHashString("namespace", this), new Integer(57));
-	literals.put(new ANTLRHashString("no-preserve", this), new Integer(83));
-	literals.put(new ANTLRHashString("comment", this), new Integer(161));
-	literals.put(new ANTLRHashString("case", this), new Integer(122));
-	literals.put(new ANTLRHashString("option", this), new Integer(67));
-	literals.put(new ANTLRHashString("delete", this), new Integer(109));
-	literals.put(new ANTLRHashString("ne", this), new Integer(135));
-	literals.put(new ANTLRHashString("validate", this), new Integer(196));
-	literals.put(new ANTLRHashString("le", this), new Integer(137));
-	literals.put(new ANTLRHashString("greatest", this), new Integer(76));
-	literals.put(new ANTLRHashString("ancestor-or-self", this), new Integer(179));
-	literals.put(new ANTLRHashString("descendant-or-self", this), new Integer(175));
-	literals.put(new ANTLRHashString("insert", this), new Integer(108));
-	literals.put(new ANTLRHashString("variable", this), new Integer(69));
-	literals.put(new ANTLRHashString("where", this), new Integer(115));
-	literals.put(new ANTLRHashString("construction", this), new Integer(64));
-	literals.put(new ANTLRHashString("then", this), new Integer(123));
-	literals.put(new ANTLRHashString("preceding", this), new Integer(113));
-	literals.put(new ANTLRHashString("document-node", this), new Integer(163));
-	literals.put(new ANTLRHashString("collation", this), new Integer(72));
-	literals.put(new ANTLRHashString("to", this), new Integer(147));
-	literals.put(new ANTLRHashString("and", this), new Integer(126));
-	literals.put(new ANTLRHashString("module", this), new Integer(56));
-	literals.put(new ANTLRHashString("strip", this), new Integer(79));
-	literals.put(new ANTLRHashString("return", this), new Integer(116));
-	literals.put(new ANTLRHashString("inherit", this), new Integer(84));
-	literals.put(new ANTLRHashString("schema", this), new Integer(92));
-	literals.put(new ANTLRHashString("external", this), new Integer(90));
-	literals.put(new ANTLRHashString("unordered", this), new Integer(81));
-	literals.put(new ANTLRHashString("ordered", this), new Integer(80));
-	literals.put(new ANTLRHashString("mod", this), new Integer(151));
-	literals.put(new ANTLRHashString("following", this), new Integer(114));
-	literals.put(new ANTLRHashString("except", this), new Integer(155));
-	literals.put(new ANTLRHashString("text", this), new Integer(158));
-	literals.put(new ANTLRHashString("preserve", this), new Integer(78));
-	literals.put(new ANTLRHashString("function", this), new Integer(68));
-	literals.put(new ANTLRHashString("with", this), new Integer(111));
-	literals.put(new ANTLRHashString("gt", this), new Integer(138));
-	literals.put(new ANTLRHashString("preceding-sibling", this), new Integer(180));
-	literals.put(new ANTLRHashString("intersect", this), new Integer(154));
-	literals.put(new ANTLRHashString("version", this), new Integer(54));
-	literals.put(new ANTLRHashString("at", this), new Integer(91));
-	literals.put(new ANTLRHashString("of", this), new Integer(128));
-	literals.put(new ANTLRHashString("is", this), new Integer(143));
-	literals.put(new ANTLRHashString("empty-sequence", this), new Integer(94));
-	literals.put(new ANTLRHashString("or", this), new Integer(125));
-	literals.put(new ANTLRHashString("if", this), new Integer(103));
-	literals.put(new ANTLRHashString("least", this), new Integer(77));
-	literals.put(new ANTLRHashString("as", this), new Integer(93));
-	literals.put(new ANTLRHashString("by", this), new Integer(118));
-	literals.put(new ANTLRHashString("union", this), new Integer(152));
-	literals.put(new ANTLRHashString("order", this), new Integer(74));
-	literals.put(new ANTLRHashString("xquery", this), new Integer(53));
-	literals.put(new ANTLRHashString("following-sibling", this), new Integer(176));
-	literals.put(new ANTLRHashString("node", this), new Integer(159));
-	literals.put(new ANTLRHashString("collection", this), new Integer(195));
-	literals.put(new ANTLRHashString("some", this), new Integer(101));
-	literals.put(new ANTLRHashString("ge", this), new Integer(139));
-	literals.put(new ANTLRHashString("declare", this), new Integer(60));
-	literals.put(new ANTLRHashString("for", this), new Integer(99));
-	literals.put(new ANTLRHashString("ascending", this), new Integer(119));
-	literals.put(new ANTLRHashString("eq", this), new Integer(134));
-	literals.put(new ANTLRHashString("isnot", this), new Integer(144));
-	literals.put(new ANTLRHashString("element", this), new Integer(73));
-	literals.put(new ANTLRHashString("default", this), new Integer(61));
-	literals.put(new ANTLRHashString("descending", this), new Integer(120));
-	literals.put(new ANTLRHashString("castable", this), new Integer(130));
-	literals.put(new ANTLRHashString("idiv", this), new Integer(150));
-	literals.put(new ANTLRHashString("boundary-space", this), new Integer(62));
-	literals.put(new ANTLRHashString("ancestor", this), new Integer(178));
-	literals.put(new ANTLRHashString("ordering", this), new Integer(63));
-	literals.put(new ANTLRHashString("instance", this), new Integer(127));
-	literals.put(new ANTLRHashString("replace", this), new Integer(106));
-	literals.put(new ANTLRHashString("no-inherit", this), new Integer(85));
-	literals.put(new ANTLRHashString("attribute", this), new Integer(160));
-	literals.put(new ANTLRHashString("empty", this), new Integer(75));
-	literals.put(new ANTLRHashString("cast", this), new Integer(131));
-	literals.put(new ANTLRHashString("value", this), new Integer(107));
-	literals.put(new ANTLRHashString("encoding", this), new Integer(71));
-	literals.put(new ANTLRHashString("into", this), new Integer(112));
-	literals.put(new ANTLRHashString("rename", this), new Integer(110));
-	literals.put(new ANTLRHashString("else", this), new Integer(124));
-	literals.put(new ANTLRHashString("import", this), new Integer(70));
-	literals.put(new ANTLRHashString("lt", this), new Integer(136));
-	literals.put(new ANTLRHashString("document", this), new Integer(164));
-	literals.put(new ANTLRHashString("self", this), new Integer(173));
-	literals.put(new ANTLRHashString("in", this), new Integer(117));
-	literals.put(new ANTLRHashString("let", this), new Integer(100));
-	literals.put(new ANTLRHashString("base-uri", this), new Integer(65));
-	literals.put(new ANTLRHashString("processing-instruction", this), new Integer(162));
-	literals.put(new ANTLRHashString("parent", this), new Integer(177));
-	literals.put(new ANTLRHashString("descendant", this), new Integer(174));
-	literals.put(new ANTLRHashString("update", this), new Integer(105));
-	literals.put(new ANTLRHashString("every", this), new Integer(102));
-	literals.put(new ANTLRHashString("satisfies", this), new Integer(121));
-	literals.put(new ANTLRHashString("div", this), new Integer(149));
-	literals.put(new ANTLRHashString("item", this), new Integer(98));
-	literals.put(new ANTLRHashString("child", this), new Integer(172));
+	literals.put(new ANTLRHashString("treat", this), new Integer(130));
+	literals.put(new ANTLRHashString("typeswitch", this), new Integer(105));
+	literals.put(new ANTLRHashString("copy-namespaces", this), new Integer(67));
+	literals.put(new ANTLRHashString("xpointer", this), new Integer(50));
+	literals.put(new ANTLRHashString("namespace", this), new Integer(58));
+	literals.put(new ANTLRHashString("no-preserve", this), new Integer(84));
+	literals.put(new ANTLRHashString("comment", this), new Integer(164));
+	literals.put(new ANTLRHashString("case", this), new Integer(123));
+	literals.put(new ANTLRHashString("option", this), new Integer(68));
+	literals.put(new ANTLRHashString("delete", this), new Integer(110));
+	literals.put(new ANTLRHashString("ne", this), new Integer(136));
+	literals.put(new ANTLRHashString("validate", this), new Integer(199));
+	literals.put(new ANTLRHashString("le", this), new Integer(138));
+	literals.put(new ANTLRHashString("greatest", this), new Integer(77));
+	literals.put(new ANTLRHashString("ancestor-or-self", this), new Integer(182));
+	literals.put(new ANTLRHashString("descendant-or-self", this), new Integer(178));
+	literals.put(new ANTLRHashString("insert", this), new Integer(109));
+	literals.put(new ANTLRHashString("variable", this), new Integer(70));
+	literals.put(new ANTLRHashString("where", this), new Integer(116));
+	literals.put(new ANTLRHashString("construction", this), new Integer(65));
+	literals.put(new ANTLRHashString("then", this), new Integer(124));
+	literals.put(new ANTLRHashString("preceding", this), new Integer(114));
+	literals.put(new ANTLRHashString("document-node", this), new Integer(166));
+	literals.put(new ANTLRHashString("collation", this), new Integer(73));
+	literals.put(new ANTLRHashString("to", this), new Integer(148));
+	literals.put(new ANTLRHashString("and", this), new Integer(127));
+	literals.put(new ANTLRHashString("module", this), new Integer(57));
+	literals.put(new ANTLRHashString("strip", this), new Integer(80));
+	literals.put(new ANTLRHashString("return", this), new Integer(117));
+	literals.put(new ANTLRHashString("inherit", this), new Integer(85));
+	literals.put(new ANTLRHashString("schema", this), new Integer(93));
+	literals.put(new ANTLRHashString("external", this), new Integer(91));
+	literals.put(new ANTLRHashString("unordered", this), new Integer(82));
+	literals.put(new ANTLRHashString("ordered", this), new Integer(81));
+	literals.put(new ANTLRHashString("mod", this), new Integer(152));
+	literals.put(new ANTLRHashString("following", this), new Integer(115));
+	literals.put(new ANTLRHashString("except", this), new Integer(158));
+	literals.put(new ANTLRHashString("text", this), new Integer(161));
+	literals.put(new ANTLRHashString("preserve", this), new Integer(79));
+	literals.put(new ANTLRHashString("function", this), new Integer(69));
+	literals.put(new ANTLRHashString("with", this), new Integer(112));
+	literals.put(new ANTLRHashString("gt", this), new Integer(139));
+	literals.put(new ANTLRHashString("preceding-sibling", this), new Integer(183));
+	literals.put(new ANTLRHashString("intersect", this), new Integer(157));
+	literals.put(new ANTLRHashString("version", this), new Integer(55));
+	literals.put(new ANTLRHashString("at", this), new Integer(92));
+	literals.put(new ANTLRHashString("of", this), new Integer(129));
+	literals.put(new ANTLRHashString("is", this), new Integer(144));
+	literals.put(new ANTLRHashString("empty-sequence", this), new Integer(95));
+	literals.put(new ANTLRHashString("or", this), new Integer(126));
+	literals.put(new ANTLRHashString("if", this), new Integer(104));
+	literals.put(new ANTLRHashString("least", this), new Integer(78));
+	literals.put(new ANTLRHashString("as", this), new Integer(94));
+	literals.put(new ANTLRHashString("by", this), new Integer(119));
+	literals.put(new ANTLRHashString("union", this), new Integer(155));
+	literals.put(new ANTLRHashString("order", this), new Integer(75));
+	literals.put(new ANTLRHashString("xquery", this), new Integer(54));
+	literals.put(new ANTLRHashString("following-sibling", this), new Integer(179));
+	literals.put(new ANTLRHashString("node", this), new Integer(162));
+	literals.put(new ANTLRHashString("collection", this), new Integer(198));
+	literals.put(new ANTLRHashString("some", this), new Integer(102));
+	literals.put(new ANTLRHashString("ge", this), new Integer(140));
+	literals.put(new ANTLRHashString("declare", this), new Integer(61));
+	literals.put(new ANTLRHashString("for", this), new Integer(100));
+	literals.put(new ANTLRHashString("ascending", this), new Integer(120));
+	literals.put(new ANTLRHashString("eq", this), new Integer(135));
+	literals.put(new ANTLRHashString("isnot", this), new Integer(145));
+	literals.put(new ANTLRHashString("element", this), new Integer(74));
+	literals.put(new ANTLRHashString("default", this), new Integer(62));
+	literals.put(new ANTLRHashString("descending", this), new Integer(121));
+	literals.put(new ANTLRHashString("castable", this), new Integer(131));
+	literals.put(new ANTLRHashString("idiv", this), new Integer(151));
+	literals.put(new ANTLRHashString("boundary-space", this), new Integer(63));
+	literals.put(new ANTLRHashString("ancestor", this), new Integer(181));
+	literals.put(new ANTLRHashString("ordering", this), new Integer(64));
+	literals.put(new ANTLRHashString("instance", this), new Integer(128));
+	literals.put(new ANTLRHashString("replace", this), new Integer(107));
+	literals.put(new ANTLRHashString("no-inherit", this), new Integer(86));
+	literals.put(new ANTLRHashString("attribute", this), new Integer(163));
+	literals.put(new ANTLRHashString("empty", this), new Integer(76));
+	literals.put(new ANTLRHashString("cast", this), new Integer(132));
+	literals.put(new ANTLRHashString("value", this), new Integer(108));
+	literals.put(new ANTLRHashString("encoding", this), new Integer(72));
+	literals.put(new ANTLRHashString("into", this), new Integer(113));
+	literals.put(new ANTLRHashString("rename", this), new Integer(111));
+	literals.put(new ANTLRHashString("else", this), new Integer(125));
+	literals.put(new ANTLRHashString("import", this), new Integer(71));
+	literals.put(new ANTLRHashString("lt", this), new Integer(137));
+	literals.put(new ANTLRHashString("document", this), new Integer(167));
+	literals.put(new ANTLRHashString("self", this), new Integer(176));
+	literals.put(new ANTLRHashString("in", this), new Integer(118));
+	literals.put(new ANTLRHashString("let", this), new Integer(101));
+	literals.put(new ANTLRHashString("base-uri", this), new Integer(66));
+	literals.put(new ANTLRHashString("processing-instruction", this), new Integer(165));
+	literals.put(new ANTLRHashString("parent", this), new Integer(180));
+	literals.put(new ANTLRHashString("descendant", this), new Integer(177));
+	literals.put(new ANTLRHashString("update", this), new Integer(106));
+	literals.put(new ANTLRHashString("every", this), new Integer(103));
+	literals.put(new ANTLRHashString("satisfies", this), new Integer(122));
+	literals.put(new ANTLRHashString("div", this), new Integer(150));
+	literals.put(new ANTLRHashString("item", this), new Integer(99));
+	literals.put(new ANTLRHashString("child", this), new Integer(175));
 }
 
 public Token nextToken() throws TokenStreamException {
@@ -2251,17 +2252,17 @@ tryAgain:
 		int _saveIndex;
 		
 		{
-		int _cnt413=0;
-		_loop413:
+		int _cnt418=0;
+		_loop418:
 		do {
 			if ((_tokenSet_2.member(LA(1)))) {
 				mDIGIT(false);
 			}
 			else {
-				if ( _cnt413>=1 ) { break _loop413; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+				if ( _cnt418>=1 ) { break _loop418; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 			}
 			
-			_cnt413++;
+			_cnt418++;
 		} while (true);
 		}
 		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
@@ -2402,8 +2403,8 @@ tryAgain:
 		int _saveIndex;
 		
 		{
-		int _cnt416=0;
-		_loop416:
+		int _cnt421=0;
+		_loop421:
 		do {
 			switch ( LA(1)) {
 			case '0':  case '1':  case '2':  case '3':
@@ -2427,10 +2428,10 @@ tryAgain:
 			}
 			default:
 			{
-				if ( _cnt416>=1 ) { break _loop416; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+				if ( _cnt421>=1 ) { break _loop421; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 			}
 			}
-			_cnt416++;
+			_cnt421++;
 		} while (true);
 		}
 		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
@@ -3154,13 +3155,13 @@ tryAgain:
 		
 		mNMSTART(false);
 		{
-		_loop423:
+		_loop428:
 		do {
 			if ((_tokenSet_5.member(LA(1)))) {
 				mNMCHAR(false);
 			}
 			else {
-				break _loop423;
+				break _loop428;
 			}
 			
 		} while (true);
@@ -3179,39 +3180,29 @@ tryAgain:
 		int _saveIndex;
 		
 		{
-		int _cnt426=0;
-		_loop426:
+		int _cnt431=0;
+		_loop431:
 		do {
-			switch ( LA(1)) {
-			case ' ':
-			{
+			if ((LA(1)==' ') && (true) && (true) && (true)) {
 				match(' ');
-				break;
 			}
-			case '\t':
-			{
+			else if ((LA(1)=='\t') && (true) && (true) && (true)) {
 				match('\t');
-				break;
 			}
-			case '\n':
-			{
+			else if ((LA(1)=='\n') && (true) && (true) && (true)) {
 				match('\n');
 				if ( inputState.guessing==0 ) {
 					newline();
 				}
-				break;
 			}
-			case '\r':
-			{
+			else if ((LA(1)=='\r') && (true) && (true) && (true)) {
 				match('\r');
-				break;
 			}
-			default:
-			{
-				if ( _cnt426>=1 ) { break _loop426; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+			else {
+				if ( _cnt431>=1 ) { break _loop431; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 			}
-			}
-			_cnt426++;
+			
+			_cnt431++;
 		} while (true);
 		}
 		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
@@ -3228,35 +3219,26 @@ tryAgain:
 		
 		match("(:");
 		{
-		_loop432:
+		_loop435:
 		do {
-			boolean synPredMatched431 = false;
-			if (((LA(1)==':') && (_tokenSet_6.member(LA(2))) && (_tokenSet_6.member(LA(3))))) {
-				int _m431 = mark();
-				synPredMatched431 = true;
-				inputState.guessing++;
-				try {
-					{
-					match(':');
-					{
-					match(_tokenSet_7);
-					}
-					}
+			// nongreedy exit test
+			if ((LA(1)==':') && (LA(2)==')') && (true) && (true)) break _loop435;
+			if (((LA(1) >= '\u0003' && LA(1) <= '\ufffe')) && ((LA(2) >= '\u0003' && LA(2) <= '\ufffe')) && ((LA(3) >= '\u0003' && LA(3) <= '\ufffe')) && (true)) {
+				{
+				if ((LA(1)=='(') && (LA(2)==':') && ((LA(3) >= '\u0003' && LA(3) <= '\ufffe')) && ((LA(4) >= '\u0003' && LA(4) <= '\ufffe'))) {
+					mEXPR_COMMENT(false);
 				}
-				catch (RecognitionException pe) {
-					synPredMatched431 = false;
+				else if (((LA(1) >= '\u0003' && LA(1) <= '\ufffe')) && ((LA(2) >= '\u0003' && LA(2) <= '\ufffe')) && ((LA(3) >= '\u0003' && LA(3) <= '\ufffe')) && (true)) {
+					matchNot(EOF_CHAR);
 				}
-				rewind(_m431);
-				inputState.guessing--;
-			}
-			if ( synPredMatched431 ) {
-				match(':');
-			}
-			else if ((_tokenSet_8.member(LA(1)))) {
-				mCHAR(false);
+				else {
+					throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());
+				}
+				
+				}
 			}
 			else {
-				break _loop432;
+				break _loop435;
 			}
 			
 		} while (true);
@@ -3269,220 +3251,6 @@ tryAgain:
 		_returnToken = _token;
 	}
 	
-	protected final void mCHAR(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
-		int _ttype; Token _token=null; int _begin=text.length();
-		_ttype = CHAR;
-		int _saveIndex;
-		
-		{
-		switch ( LA(1)) {
-		case '\t':
-		{
-			match('\t');
-			break;
-		}
-		case '\n':
-		{
-			match('\n');
-			if ( inputState.guessing==0 ) {
-				newline();
-			}
-			break;
-		}
-		case '\r':
-		{
-			match('\r');
-			break;
-		}
-		case ' ':  case '!':  case '"':  case '#':
-		case '$':  case '%':  case '&':  case '\'':
-		case '(':  case ')':  case '*':  case '+':
-		case ',':  case '-':  case '.':  case '/':
-		case '0':  case '1':  case '2':  case '3':
-		case '4':  case '5':  case '6':  case '7':
-		case '8':  case '9':
-		{
-			matchRange('\u0020','\u0039');
-			break;
-		}
-		default:
-			if (((LA(1) >= ';' && LA(1) <= '\ud7ff'))) {
-				matchRange('\u003B','\uD7FF');
-			}
-			else if (((LA(1) >= '\ue000' && LA(1) <= '\ufffd'))) {
-				matchRange('\uE000','\uFFFD');
-			}
-		else {
-			throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());
-		}
-		}
-		}
-		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
-			_token = makeToken(_ttype);
-			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
-		}
-		_returnToken = _token;
-	}
-	
-	protected final void mPRAGMA(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
-		int _ttype; Token _token=null; int _begin=text.length();
-		_ttype = PRAGMA;
-		int _saveIndex;
-		Token qn=null;
-		Token c=null;
-		String content = null;
-		
-		match("(::");
-		match("pragma");
-		mWS(false);
-		mPRAGMA_QNAME(true);
-		qn=_returnToken;
-		mWS(false);
-		{
-		if ((_tokenSet_9.member(LA(1))) && (_tokenSet_6.member(LA(2))) && (_tokenSet_6.member(LA(3))) && (_tokenSet_6.member(LA(4)))) {
-			mPRAGMA_CONTENT(true);
-			c=_returnToken;
-			if ( inputState.guessing==0 ) {
-				content = c.getText();
-			}
-		}
-		else if ((LA(1)==':') && (LA(2)==':') && (LA(3)==')') && (true)) {
-		}
-		else {
-			throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());
-		}
-		
-		}
-		match(':');
-		match(':');
-		match(')');
-		if ( inputState.guessing==0 ) {
-			
-					if (context != null) {
-						try {
-							context.addPragma(qn.getText(), content);
-						} catch(XPathException e) {
-							throw new RecognitionException(e.getMessage());
-						}
-					}
-				
-		}
-		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
-			_token = makeToken(_ttype);
-			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
-		}
-		_returnToken = _token;
-	}
-	
-	protected final void mPRAGMA_QNAME(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
-		int _ttype; Token _token=null; int _begin=text.length();
-		_ttype = PRAGMA_QNAME;
-		int _saveIndex;
-		
-		mNCNAME(false);
-		{
-		switch ( LA(1)) {
-		case ':':
-		{
-			match(':');
-			mNCNAME(false);
-			break;
-		}
-		case '\t':  case '\n':  case '\r':  case ' ':
-		{
-			break;
-		}
-		default:
-		{
-			throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());
-		}
-		}
-		}
-		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
-			_token = makeToken(_ttype);
-			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
-		}
-		_returnToken = _token;
-	}
-	
-	protected final void mPRAGMA_CONTENT(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
-		int _ttype; Token _token=null; int _begin=text.length();
-		_ttype = PRAGMA_CONTENT;
-		int _saveIndex;
-		
-		{
-		{
-		match(_tokenSet_9);
-		}
-		}
-		{
-		int _cnt445=0;
-		_loop445:
-		do {
-			boolean synPredMatched441 = false;
-			if (((LA(1)==':') && (_tokenSet_6.member(LA(2))) && (_tokenSet_6.member(LA(3))) && (_tokenSet_6.member(LA(4))))) {
-				int _m441 = mark();
-				synPredMatched441 = true;
-				inputState.guessing++;
-				try {
-					{
-					match(':');
-					{
-					match(_tokenSet_10);
-					}
-					}
-				}
-				catch (RecognitionException pe) {
-					synPredMatched441 = false;
-				}
-				rewind(_m441);
-				inputState.guessing--;
-			}
-			if ( synPredMatched441 ) {
-				match(':');
-			}
-			else {
-				boolean synPredMatched444 = false;
-				if (((LA(1)==':') && (LA(2)==':') && (_tokenSet_6.member(LA(3))) && (_tokenSet_6.member(LA(4))))) {
-					int _m444 = mark();
-					synPredMatched444 = true;
-					inputState.guessing++;
-					try {
-						{
-						match(':');
-						match(':');
-						{
-						match(_tokenSet_7);
-						}
-						}
-					}
-					catch (RecognitionException pe) {
-						synPredMatched444 = false;
-					}
-					rewind(_m444);
-					inputState.guessing--;
-				}
-				if ( synPredMatched444 ) {
-					match(':');
-					match(':');
-				}
-				else if ((_tokenSet_8.member(LA(1)))) {
-					mCHAR(false);
-				}
-				else {
-					if ( _cnt445>=1 ) { break _loop445; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
-				}
-				}
-				_cnt445++;
-			} while (true);
-			}
-			if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
-				_token = makeToken(_ttype);
-				_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
-			}
-			_returnToken = _token;
-		}
-		
 	protected final void mINTEGER_LITERAL(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
 		int _ttype; Token _token=null; int _begin=text.length();
 		_ttype = INTEGER_LITERAL;
@@ -3521,13 +3289,13 @@ tryAgain:
 			{
 				match('.');
 				{
-				_loop455:
+				_loop443:
 				do {
 					if ((_tokenSet_2.member(LA(1)))) {
 						mDIGIT(false);
 					}
 					else {
-						break _loop455;
+						break _loop443;
 					}
 					
 				} while (true);
@@ -3615,13 +3383,13 @@ tryAgain:
 			if ((LA(1)=='.')) {
 				match('.');
 				{
-				_loop463:
+				_loop451:
 				do {
 					if ((_tokenSet_2.member(LA(1)))) {
 						mDIGIT(false);
 					}
 					else {
-						break _loop463;
+						break _loop451;
 					}
 					
 				} while (true);
@@ -3729,7 +3497,7 @@ tryAgain:
 			match('"');
 			text.setLength(_saveIndex);
 			{
-			_loop473:
+			_loop461:
 			do {
 				if ((LA(1)=='&') && (LA(2)=='a'||LA(2)=='g'||LA(2)=='l'||LA(2)=='q')) {
 					mPREDEFINED_ENTITY_REF(false);
@@ -3745,13 +3513,13 @@ tryAgain:
 					match('"');
 					}
 				}
-				else if ((_tokenSet_11.member(LA(1)))) {
+				else if ((_tokenSet_6.member(LA(1)))) {
 					{
-					match(_tokenSet_11);
+					match(_tokenSet_6);
 					}
 				}
 				else {
-					break _loop473;
+					break _loop461;
 				}
 				
 			} while (true);
@@ -3767,7 +3535,7 @@ tryAgain:
 			match('\'');
 			text.setLength(_saveIndex);
 			{
-			_loop477:
+			_loop465:
 			do {
 				if ((LA(1)=='&') && (LA(2)=='a'||LA(2)=='g'||LA(2)=='l'||LA(2)=='q')) {
 					mPREDEFINED_ENTITY_REF(false);
@@ -3783,13 +3551,13 @@ tryAgain:
 					match('\'');
 					}
 				}
-				else if ((_tokenSet_12.member(LA(1)))) {
+				else if ((_tokenSet_7.member(LA(1)))) {
 					{
-					match(_tokenSet_12);
+					match(_tokenSet_7);
 					}
 				}
 				else {
-					break _loop477;
+					break _loop465;
 				}
 				
 			} while (true);
@@ -3817,19 +3585,19 @@ tryAgain:
 		int _saveIndex;
 		
 		{
-		int _cnt481=0;
-		_loop481:
+		int _cnt469=0;
+		_loop469:
 		do {
-			if ((_tokenSet_13.member(LA(1)))) {
+			if ((_tokenSet_8.member(LA(1)))) {
 				{
-				match(_tokenSet_13);
+				match(_tokenSet_8);
 				}
 			}
 			else {
-				if ( _cnt481>=1 ) { break _loop481; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+				if ( _cnt469>=1 ) { break _loop469; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 			}
 			
-			_cnt481++;
+			_cnt469++;
 		} while (true);
 		}
 		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
@@ -3851,19 +3619,19 @@ tryAgain:
 		int _saveIndex;
 		
 		{
-		int _cnt485=0;
-		_loop485:
+		int _cnt473=0;
+		_loop473:
 		do {
-			if ((_tokenSet_14.member(LA(1)))) {
+			if ((_tokenSet_9.member(LA(1)))) {
 				{
-				match(_tokenSet_14);
+				match(_tokenSet_9);
 				}
 			}
 			else {
-				if ( _cnt485>=1 ) { break _loop485; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+				if ( _cnt473>=1 ) { break _loop473; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 			}
 			
-			_cnt485++;
+			_cnt473++;
 		} while (true);
 		}
 		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
@@ -3913,8 +3681,8 @@ tryAgain:
 		int _saveIndex;
 		
 		{
-		int _cnt490=0;
-		_loop490:
+		int _cnt478=0;
+		_loop478:
 		do {
 			switch ( LA(1)) {
 			case '\t':
@@ -3976,10 +3744,10 @@ tryAgain:
 					matchRange('\u007e','\uFFFD');
 				}
 			else {
-				if ( _cnt490>=1 ) { break _loop490; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+				if ( _cnt478>=1 ) { break _loop478; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 			}
 			}
-			_cnt490++;
+			_cnt478++;
 		} while (true);
 		}
 		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
@@ -3998,38 +3766,38 @@ tryAgain:
 		match("<!--");
 		text.setLength(_saveIndex);
 		{
-		_loop497:
+		_loop485:
 		do {
-			if ((_tokenSet_15.member(LA(1)))) {
+			if ((_tokenSet_10.member(LA(1)))) {
 				{
-				match(_tokenSet_15);
+				match(_tokenSet_10);
 				}
 			}
 			else {
-				boolean synPredMatched496 = false;
+				boolean synPredMatched484 = false;
 				if (((LA(1)=='-'))) {
-					int _m496 = mark();
-					synPredMatched496 = true;
+					int _m484 = mark();
+					synPredMatched484 = true;
 					inputState.guessing++;
 					try {
 						{
 						match('-');
 						{
-						match(_tokenSet_15);
+						match(_tokenSet_10);
 						}
 						}
 					}
 					catch (RecognitionException pe) {
-						synPredMatched496 = false;
+						synPredMatched484 = false;
 					}
-					rewind(_m496);
+					rewind(_m484);
 					inputState.guessing--;
 				}
-				if ( synPredMatched496 ) {
+				if ( synPredMatched484 ) {
 					match('-');
 				}
 				else {
-					break _loop497;
+					break _loop485;
 				}
 				}
 			} while (true);
@@ -4054,38 +3822,38 @@ tryAgain:
 		if ((LA(1)==' ')) {
 			match(' ');
 			{
-			_loop505:
+			_loop493:
 			do {
-				if ((_tokenSet_16.member(LA(1)))) {
+				if ((_tokenSet_11.member(LA(1)))) {
 					{
-					match(_tokenSet_16);
+					match(_tokenSet_11);
 					}
 				}
 				else {
-					boolean synPredMatched504 = false;
+					boolean synPredMatched492 = false;
 					if (((LA(1)=='?'))) {
-						int _m504 = mark();
-						synPredMatched504 = true;
+						int _m492 = mark();
+						synPredMatched492 = true;
 						inputState.guessing++;
 						try {
 							{
 							match('?');
 							{
-							match(_tokenSet_17);
+							match(_tokenSet_12);
 							}
 							}
 						}
 						catch (RecognitionException pe) {
-							synPredMatched504 = false;
+							synPredMatched492 = false;
 						}
-						rewind(_m504);
+						rewind(_m492);
 						inputState.guessing--;
 					}
-					if ( synPredMatched504 ) {
+					if ( synPredMatched492 ) {
 						match('?');
 					}
 					else {
-						break _loop505;
+						break _loop493;
 					}
 					}
 				} while (true);
@@ -4111,64 +3879,64 @@ tryAgain:
 		mXML_CDATA_START(false);
 		text.setLength(_saveIndex);
 		{
-		_loop516:
+		_loop504:
 		do {
-			boolean synPredMatched511 = false;
+			boolean synPredMatched499 = false;
 			if (((LA(1)==']') && ((LA(2) >= '\u0003' && LA(2) <= '\ufffe')) && ((LA(3) >= '\u0003' && LA(3) <= '\ufffe')) && ((LA(4) >= '\u0003' && LA(4) <= '\ufffe')))) {
-				int _m511 = mark();
-				synPredMatched511 = true;
+				int _m499 = mark();
+				synPredMatched499 = true;
 				inputState.guessing++;
 				try {
 					{
 					match(']');
 					{
-					match(_tokenSet_18);
+					match(_tokenSet_13);
 					}
 					}
 				}
 				catch (RecognitionException pe) {
-					synPredMatched511 = false;
+					synPredMatched499 = false;
 				}
-				rewind(_m511);
+				rewind(_m499);
 				inputState.guessing--;
 			}
-			if ( synPredMatched511 ) {
+			if ( synPredMatched499 ) {
 				match(']');
 			}
 			else {
-				boolean synPredMatched514 = false;
+				boolean synPredMatched502 = false;
 				if (((LA(1)==']') && (LA(2)==']') && ((LA(3) >= '\u0003' && LA(3) <= '\ufffe')) && ((LA(4) >= '\u0003' && LA(4) <= '\ufffe')))) {
-					int _m514 = mark();
-					synPredMatched514 = true;
+					int _m502 = mark();
+					synPredMatched502 = true;
 					inputState.guessing++;
 					try {
 						{
 						match(']');
 						match(']');
 						{
-						match(_tokenSet_17);
+						match(_tokenSet_12);
 						}
 						}
 					}
 					catch (RecognitionException pe) {
-						synPredMatched514 = false;
+						synPredMatched502 = false;
 					}
-					rewind(_m514);
+					rewind(_m502);
 					inputState.guessing--;
 				}
-				if ( synPredMatched514 ) {
+				if ( synPredMatched502 ) {
 					{
 					match(']');
 					match(']');
 					}
 				}
-				else if ((_tokenSet_18.member(LA(1)))) {
+				else if ((_tokenSet_13.member(LA(1)))) {
 					{
-					match(_tokenSet_18);
+					match(_tokenSet_13);
 					}
 				}
 				else {
-					break _loop516;
+					break _loop504;
 				}
 				}
 			} while (true);
@@ -4183,6 +3951,131 @@ tryAgain:
 			_returnToken = _token;
 		}
 		
+	protected final void mS(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
+		int _ttype; Token _token=null; int _begin=text.length();
+		_ttype = S;
+		int _saveIndex;
+		
+		{
+		int _cnt508=0;
+		_loop508:
+		do {
+			if ((LA(1)=='\t'||LA(1)=='\n'||LA(1)=='\r'||LA(1)==' ')) {
+				{
+				switch ( LA(1)) {
+				case ' ':
+				{
+					match(' ');
+					break;
+				}
+				case '\n':
+				{
+					match('\n');
+					break;
+				}
+				case '\r':
+				{
+					match('\r');
+					break;
+				}
+				case '\t':
+				{
+					match('\t');
+					break;
+				}
+				default:
+				{
+					throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());
+				}
+				}
+				}
+			}
+			else {
+				if ( _cnt508>=1 ) { break _loop508; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+			}
+			
+			_cnt508++;
+		} while (true);
+		}
+		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
+			_token = makeToken(_ttype);
+			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
+		}
+		_returnToken = _token;
+	}
+	
+	protected final void mPRAGMA_START(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
+		int _ttype; Token _token=null; int _begin=text.length();
+		_ttype = PRAGMA_START;
+		int _saveIndex;
+		
+		match("(#");
+		{
+		if ((LA(1)=='\t'||LA(1)=='\n'||LA(1)=='\r'||LA(1)==' ')) {
+			mWS(false);
+		}
+		else {
+		}
+		
+		}
+		if ( inputState.guessing==0 ) {
+			inPragma = true;
+		}
+		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
+			_token = makeToken(_ttype);
+			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
+		}
+		_returnToken = _token;
+	}
+	
+	protected final void mPRAGMA_END(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
+		int _ttype; Token _token=null; int _begin=text.length();
+		_ttype = PRAGMA_END;
+		int _saveIndex;
+		
+		{
+		switch ( LA(1)) {
+		case '\t':  case '\n':  case '\r':  case ' ':
+		{
+			_saveIndex=text.length();
+			mWS(false);
+			text.setLength(_saveIndex);
+			{
+			_loop514:
+			do {
+				// nongreedy exit test
+				if ((LA(1)=='#') && (LA(2)==')') && (true)) break _loop514;
+				if (((LA(1) >= '\u0003' && LA(1) <= '\ufffe')) && ((LA(2) >= '\u0003' && LA(2) <= '\ufffe')) && ((LA(3) >= '\u0003' && LA(3) <= '\ufffe'))) {
+					matchNot(EOF_CHAR);
+				}
+				else {
+					break _loop514;
+				}
+				
+			} while (true);
+			}
+			break;
+		}
+		case '#':
+		{
+			break;
+		}
+		default:
+		{
+			throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());
+		}
+		}
+		}
+		_saveIndex=text.length();
+		match("#)");
+		text.setLength(_saveIndex);
+		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
+			_token = makeToken(_ttype);
+			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
+		}
+		_returnToken = _token;
+	}
+	
 /**
  * Main method that decides which token to return next.
  * We need this as many things depend on the current
@@ -4216,29 +4109,7 @@ tryAgain:
 			break;
 		}
 		default:
-			boolean synPredMatched521 = false;
-			if (((LA(1)=='(') && (LA(2)==':') && (LA(3)==':') && (LA(4)=='p'))) {
-				int _m521 = mark();
-				synPredMatched521 = true;
-				inputState.guessing++;
-				try {
-					{
-					match("(::");
-					}
-				}
-				catch (RecognitionException pe) {
-					synPredMatched521 = false;
-				}
-				rewind(_m521);
-				inputState.guessing--;
-			}
-			if ( synPredMatched521 ) {
-				mPRAGMA(false);
-				if ( inputState.guessing==0 ) {
-					_ttype = Token.SKIP;
-				}
-			}
-			else if ((LA(1)=='(') && (LA(2)==':') && (_tokenSet_6.member(LA(3))) && (_tokenSet_6.member(LA(4)))) {
+			if ((LA(1)=='(') && (LA(2)==':') && ((LA(3) >= '\u0003' && LA(3) <= '\ufffe')) && ((LA(4) >= '\u0003' && LA(4) <= '\ufffe'))) {
 				mEXPR_COMMENT(false);
 				if ( inputState.guessing==0 ) {
 					_ttype = Token.SKIP;
@@ -4261,10 +4132,10 @@ tryAgain:
 				}
 			}
 			else {
-				boolean synPredMatched526 = false;
-				if (((_tokenSet_19.member(LA(1))) && (_tokenSet_20.member(LA(2))) && (_tokenSet_21.member(LA(3))) && (true))) {
-					int _m526 = mark();
-					synPredMatched526 = true;
+				boolean synPredMatched522 = false;
+				if (((_tokenSet_14.member(LA(1))) && (_tokenSet_15.member(LA(2))) && (_tokenSet_16.member(LA(3))) && (true))) {
+					int _m522 = mark();
+					synPredMatched522 = true;
 					inputState.guessing++;
 					try {
 						{
@@ -4291,22 +4162,22 @@ tryAgain:
 						}
 					}
 					catch (RecognitionException pe) {
-						synPredMatched526 = false;
+						synPredMatched522 = false;
 					}
-					rewind(_m526);
+					rewind(_m522);
 					inputState.guessing--;
 				}
-				if ( synPredMatched526 ) {
+				if ( synPredMatched522 ) {
 					mDOUBLE_LITERAL(false);
 					if ( inputState.guessing==0 ) {
 						_ttype = DOUBLE_LITERAL;
 					}
 				}
 				else {
-					boolean synPredMatched535 = false;
-					if (((_tokenSet_19.member(LA(1))) && (_tokenSet_20.member(LA(2))) && (_tokenSet_21.member(LA(3))) && (true))) {
-						int _m535 = mark();
-						synPredMatched535 = true;
+					boolean synPredMatched531 = false;
+					if (((_tokenSet_14.member(LA(1))) && (_tokenSet_15.member(LA(2))) && (_tokenSet_16.member(LA(3))) && (true))) {
+						int _m531 = mark();
+						synPredMatched531 = true;
 						inputState.guessing++;
 						try {
 							{
@@ -4360,12 +4231,12 @@ tryAgain:
 							}
 						}
 						catch (RecognitionException pe) {
-							synPredMatched535 = false;
+							synPredMatched531 = false;
 						}
-						rewind(_m535);
+						rewind(_m531);
 						inputState.guessing--;
 					}
-					if ( synPredMatched535 ) {
+					if ( synPredMatched531 ) {
 						mDOUBLE_LITERAL(false);
 						if ( inputState.guessing==0 ) {
 							_ttype = DOUBLE_LITERAL;
@@ -4384,10 +4255,10 @@ tryAgain:
 						}
 					}
 					else {
-						boolean synPredMatched519 = false;
+						boolean synPredMatched517 = false;
 						if (((LA(1)=='<') && (LA(2)=='?'))) {
-							int _m519 = mark();
-							synPredMatched519 = true;
+							int _m517 = mark();
+							synPredMatched517 = true;
 							inputState.guessing++;
 							try {
 								{
@@ -4395,12 +4266,12 @@ tryAgain:
 								}
 							}
 							catch (RecognitionException pe) {
-								synPredMatched519 = false;
+								synPredMatched517 = false;
 							}
-							rewind(_m519);
+							rewind(_m517);
 							inputState.guessing--;
 						}
-						if ( synPredMatched519 ) {
+						if ( synPredMatched517 ) {
 							mXML_PI(false);
 							if ( inputState.guessing==0 ) {
 								_ttype = XML_PI;
@@ -4441,10 +4312,10 @@ tryAgain:
 							}
 						}
 						else {
-							boolean synPredMatched523 = false;
+							boolean synPredMatched519 = false;
 							if ((((LA(1)=='.') && (LA(2)=='.') && (true) && (true))&&( !(inAttributeContent || inElementContent) ))) {
-								int _m523 = mark();
-								synPredMatched523 = true;
+								int _m519 = mark();
+								synPredMatched519 = true;
 								inputState.guessing++;
 								try {
 									{
@@ -4453,12 +4324,12 @@ tryAgain:
 									}
 								}
 								catch (RecognitionException pe) {
-									synPredMatched523 = false;
+									synPredMatched519 = false;
 								}
-								rewind(_m523);
+								rewind(_m519);
 								inputState.guessing--;
 							}
-							if ( synPredMatched523 ) {
+							if ( synPredMatched519 ) {
 								mPARENT(false);
 								if ( inputState.guessing==0 ) {
 									_ttype = PARENT;
@@ -4500,6 +4371,23 @@ tryAgain:
 									_ttype = XML_PI_END;
 								}
 							}
+							else if ((LA(1)=='(') && (LA(2)=='#') && (true) && (true)) {
+								mPRAGMA_START(false);
+								if ( inputState.guessing==0 ) {
+									
+											_ttype = PRAGMA_START;
+										
+								}
+							}
+							else if (((LA(1)=='\t'||LA(1)=='\n'||LA(1)=='\r'||LA(1)==' '||LA(1)=='#') && ((LA(2) >= '\u0003' && LA(2) <= '\ufffe')) && (true) && (true))&&( inPragma )) {
+								mPRAGMA_END(false);
+								if ( inputState.guessing==0 ) {
+									
+											inPragma = false; 
+											_ttype = PRAGMA_END; 
+										
+								}
+							}
 							else if ((LA(1)=='<') && (true)) {
 								mLT(false);
 								if ( inputState.guessing==0 ) {
@@ -4509,13 +4397,13 @@ tryAgain:
 										
 								}
 							}
-							else if (((_tokenSet_13.member(LA(1))) && (true) && (true) && (true))&&( inAttributeContent && attrDelimChar == '"' )) {
+							else if (((_tokenSet_8.member(LA(1))) && (true) && (true) && (true))&&( inAttributeContent && attrDelimChar == '"' )) {
 								mQUOT_ATTRIBUTE_CONTENT(false);
 								if ( inputState.guessing==0 ) {
 									_ttype = QUOT_ATTRIBUTE_CONTENT;
 								}
 							}
-							else if (((_tokenSet_14.member(LA(1))) && (true) && (true) && (true))&&( inAttributeContent && attrDelimChar == '\'' )) {
+							else if (((_tokenSet_9.member(LA(1))) && (true) && (true) && (true))&&( inAttributeContent && attrDelimChar == '\'' )) {
 								mAPOS_ATTRIBUTE_CONTENT(false);
 								if ( inputState.guessing==0 ) {
 									_ttype = APOS_ATTRIBUTE_CONTENT;
@@ -4533,13 +4421,13 @@ tryAgain:
 									_ttype = APOS;
 								}
 							}
-							else if (((_tokenSet_22.member(LA(1))) && (true) && (true) && (true))&&( inElementContent )) {
+							else if (((_tokenSet_17.member(LA(1))) && (true) && (true) && (true))&&( inElementContent )) {
 								mELEMENT_CONTENT(false);
 								if ( inputState.guessing==0 ) {
 									_ttype = ELEMENT_CONTENT;
 								}
 							}
-							else if ((LA(1)=='\t'||LA(1)=='\n'||LA(1)=='\r'||LA(1)==' ') && (true) && (true) && (true)) {
+							else if (((LA(1)=='\t'||LA(1)=='\n'||LA(1)=='\r'||LA(1)==' ') && (true) && (true) && (true))&&( !inPragma )) {
 								mWS(false);
 								if ( inputState.guessing==0 ) {
 									
@@ -4551,7 +4439,7 @@ tryAgain:
 										
 								}
 							}
-							else if ((_tokenSet_23.member(LA(1))) && (true) && (true) && (true)) {
+							else if ((_tokenSet_18.member(LA(1))) && (true) && (true) && (true)) {
 								mNCNAME(true);
 								ncname=_returnToken;
 								if ( inputState.guessing==0 ) {
@@ -4559,10 +4447,10 @@ tryAgain:
 								}
 							}
 							else {
-								boolean synPredMatched528 = false;
-								if (((_tokenSet_19.member(LA(1))) && (true) && (true) && (true))) {
-									int _m528 = mark();
-									synPredMatched528 = true;
+								boolean synPredMatched524 = false;
+								if (((_tokenSet_14.member(LA(1))) && (true) && (true) && (true))) {
+									int _m524 = mark();
+									synPredMatched524 = true;
 									inputState.guessing++;
 									try {
 										{
@@ -4571,22 +4459,22 @@ tryAgain:
 										}
 									}
 									catch (RecognitionException pe) {
-										synPredMatched528 = false;
+										synPredMatched524 = false;
 									}
-									rewind(_m528);
+									rewind(_m524);
 									inputState.guessing--;
 								}
-								if ( synPredMatched528 ) {
+								if ( synPredMatched524 ) {
 									mDECIMAL_LITERAL(false);
 									if ( inputState.guessing==0 ) {
 										_ttype = DECIMAL_LITERAL;
 									}
 								}
 								else {
-									boolean synPredMatched530 = false;
+									boolean synPredMatched526 = false;
 									if (((LA(1)=='.') && (true) && (true) && (true))) {
-										int _m530 = mark();
-										synPredMatched530 = true;
+										int _m526 = mark();
+										synPredMatched526 = true;
 										inputState.guessing++;
 										try {
 											{
@@ -4594,22 +4482,22 @@ tryAgain:
 											}
 										}
 										catch (RecognitionException pe) {
-											synPredMatched530 = false;
+											synPredMatched526 = false;
 										}
-										rewind(_m530);
+										rewind(_m526);
 										inputState.guessing--;
 									}
-									if ( synPredMatched530 ) {
+									if ( synPredMatched526 ) {
 										mSELF(false);
 										if ( inputState.guessing==0 ) {
 											_ttype = SELF;
 										}
 									}
 									else {
-										boolean synPredMatched537 = false;
-										if (((_tokenSet_19.member(LA(1))) && (true) && (true) && (true))) {
-											int _m537 = mark();
-											synPredMatched537 = true;
+										boolean synPredMatched533 = false;
+										if (((_tokenSet_14.member(LA(1))) && (true) && (true) && (true))) {
+											int _m533 = mark();
+											synPredMatched533 = true;
 											inputState.guessing++;
 											try {
 												{
@@ -4618,12 +4506,12 @@ tryAgain:
 												}
 											}
 											catch (RecognitionException pe) {
-												synPredMatched537 = false;
+												synPredMatched533 = false;
 											}
-											rewind(_m537);
+											rewind(_m533);
 											inputState.guessing--;
 										}
-										if ( synPredMatched537 ) {
+										if ( synPredMatched533 ) {
 											mDECIMAL_LITERAL(false);
 											if ( inputState.guessing==0 ) {
 												_ttype = DECIMAL_LITERAL;
@@ -4748,559 +4636,572 @@ tryAgain:
 									_returnToken = _token;
 								}
 								
-								
-								private static final long[] mk_tokenSet_0() {
-									long[] data = new long[2756];
-									data[1]=576460743847706622L;
-									data[3]=-36028797027352577L;
-									data[4]=9219994337134247935L;
-									data[5]=9223372036854775294L;
-									data[6]=-1L;
-									data[7]=-274156627316187121L;
-									data[8]=16777215L;
-									data[9]=-65536L;
-									data[10]=-576458553280167937L;
-									data[11]=3L;
-									data[14]=-17179879616L;
-									data[15]=4503588160110591L;
-									data[16]=-8194L;
-									data[17]=-536936449L;
-									data[18]=-65533L;
-									data[19]=234134404065073567L;
-									data[20]=-562949953421312L;
-									data[21]=-8547991553L;
-									data[22]=127L;
-									data[23]=1979120929931264L;
-									data[24]=576460743713488896L;
-									data[25]=-562949953419266L;
-									data[26]=9007199254740991999L;
-									data[27]=412319973375L;
-									data[36]=2594073385365405664L;
-									data[37]=17163091968L;
-									data[38]=271902628478820320L;
-									data[39]=844440767823872L;
-									data[40]=247132830528276448L;
-									data[41]=7881300924956672L;
-									data[42]=2589004636761075680L;
-									data[43]=4294967296L;
-									data[44]=2579997437506199520L;
-									data[45]=15837691904L;
-									data[46]=270153412153034720L;
-									data[48]=283724577500946400L;
-									data[49]=12884901888L;
-									data[50]=283724577500946400L;
-									data[51]=13958643712L;
-									data[52]=288228177128316896L;
-									data[53]=12884901888L;
-									data[56]=3799912185593854L;
-									data[57]=63L;
-									data[58]=2309621682768192918L;
-									data[59]=31L;
-									data[61]=4398046510847L;
-									data[66]=-4294967296L;
-									data[67]=36028797018898495L;
-									data[68]=5764607523034749677L;
-									data[69]=12493387738468353L;
-									data[70]=-756383734487318528L;
-									data[71]=144405459145588743L;
-									for (int i = 120; i<=121; i++) { data[i]=-1L; }
-									data[122]=-4026531841L;
-									data[123]=288230376151711743L;
-									data[124]=-3233808385L;
-									data[125]=4611686017001275199L;
-									data[126]=6908521828386340863L;
-									data[127]=2295745090394464220L;
-									data[132]=83837761617920L;
-									data[134]=7L;
-									data[193]=-2L;
-									data[194]=-8587837441L;
-									data[195]=576460752303423487L;
-									data[196]=35184372088800L;
-									for (int i = 688; i<=861; i++) { data[i]=-1L; }
-									data[862]=68719476735L;
-									return data;
-								}
-								public static final BitSet _tokenSet_0 = new BitSet(mk_tokenSet_0());
-								private static final long[] mk_tokenSet_1() {
-									long[] data = new long[2504];
-									data[192]=4389456576640L;
-									for (int i = 312; i<=637; i++) { data[i]=-1L; }
-									data[638]=274877906943L;
-									return data;
-								}
-								public static final BitSet _tokenSet_1 = new BitSet(mk_tokenSet_1());
-								private static final long[] mk_tokenSet_2() {
-									long[] data = new long[1025];
-									data[0]=287948901175001088L;
-									data[25]=4393751543808L;
-									data[27]=287948901175001088L;
-									data[37]=281200098803712L;
-									data[39]=281200098803712L;
-									data[41]=281200098803712L;
-									data[43]=281200098803712L;
-									data[45]=281200098803712L;
-									data[47]=280925220896768L;
-									data[49]=281200098803712L;
-									data[51]=281200098803712L;
-									data[53]=281200098803712L;
-									data[57]=67043328L;
-									data[59]=67043328L;
-									data[60]=4393751543808L;
-									return data;
-								}
-								public static final BitSet _tokenSet_2 = new BitSet(mk_tokenSet_2());
-								private static final long[] mk_tokenSet_3() {
-									long[] data = new long[2756];
-									data[1]=576460743847706622L;
-									data[3]=-36028797027352577L;
-									data[4]=9219994337134247935L;
-									data[5]=9223372036854775294L;
-									data[6]=-1L;
-									data[7]=-274156627316187121L;
-									data[8]=16777215L;
-									data[9]=-65536L;
-									data[10]=-576458553280167937L;
-									data[11]=3L;
-									data[14]=-17179879616L;
-									data[15]=4503588160110591L;
-									data[16]=-8194L;
-									data[17]=-536936449L;
-									data[18]=-65533L;
-									data[19]=234134404065073567L;
-									data[20]=-562949953421312L;
-									data[21]=-8547991553L;
-									data[22]=127L;
-									data[23]=1979120929931264L;
-									data[24]=576460743713488896L;
-									data[25]=-562949953419266L;
-									data[26]=9007199254740991999L;
-									data[27]=412319973375L;
-									data[36]=2594073385365405664L;
-									data[37]=17163091968L;
-									data[38]=271902628478820320L;
-									data[39]=844440767823872L;
-									data[40]=247132830528276448L;
-									data[41]=7881300924956672L;
-									data[42]=2589004636761075680L;
-									data[43]=4294967296L;
-									data[44]=2579997437506199520L;
-									data[45]=15837691904L;
-									data[46]=270153412153034720L;
-									data[48]=283724577500946400L;
-									data[49]=12884901888L;
-									data[50]=283724577500946400L;
-									data[51]=13958643712L;
-									data[52]=288228177128316896L;
-									data[53]=12884901888L;
-									data[56]=3799912185593854L;
-									data[57]=63L;
-									data[58]=2309621682768192918L;
-									data[59]=31L;
-									data[61]=4398046510847L;
-									data[66]=-4294967296L;
-									data[67]=36028797018898495L;
-									data[68]=5764607523034749677L;
-									data[69]=12493387738468353L;
-									data[70]=-756383734487318528L;
-									data[71]=144405459145588743L;
-									for (int i = 120; i<=121; i++) { data[i]=-1L; }
-									data[122]=-4026531841L;
-									data[123]=288230376151711743L;
-									data[124]=-3233808385L;
-									data[125]=4611686017001275199L;
-									data[126]=6908521828386340863L;
-									data[127]=2295745090394464220L;
-									data[132]=83837761617920L;
-									data[134]=7L;
-									data[192]=4389456576640L;
-									data[193]=-2L;
-									data[194]=-8587837441L;
-									data[195]=576460752303423487L;
-									data[196]=35184372088800L;
-									for (int i = 312; i<=637; i++) { data[i]=-1L; }
-									data[638]=274877906943L;
-									for (int i = 688; i<=861; i++) { data[i]=-1L; }
-									data[862]=68719476735L;
-									return data;
-								}
-								public static final BitSet _tokenSet_3 = new BitSet(mk_tokenSet_3());
-								private static final long[] mk_tokenSet_4() {
-									long[] data = new long[1025];
-									data[12]=-1L;
-									data[13]=12884901951L;
-									data[18]=120L;
-									data[22]=-4899916411759099904L;
-									data[23]=22L;
-									data[25]=281474977232896L;
-									data[27]=67757399867392L;
-									data[36]=-3458764513820540914L;
-									data[37]=51541590015L;
-									data[38]=-3458764513820540914L;
-									data[39]=51548010911L;
-									data[40]=-3458764513820540924L;
-									data[41]=844424930146695L;
-									data[42]=-3458764513820540914L;
-									data[43]=15295L;
-									data[44]=-3458764513820540914L;
-									data[45]=12597647L;
-									data[46]=-4611686018427387892L;
-									data[47]=8404423L;
-									data[48]=-4611686018427387890L;
-									data[49]=6307295L;
-									data[50]=-4611686018427387892L;
-									data[51]=6307295L;
-									data[52]=-4611686018427387892L;
-									data[53]=8404431L;
-									data[56]=572520102629474304L;
-									data[57]=32640L;
-									data[58]=2013671983388033024L;
-									data[59]=16128L;
-									data[60]=-4422534834027495424L;
-									data[61]=-562949953421312L;
-									data[62]=215680200883507167L;
-									data[131]=9126739968L;
-									data[192]=277076930199552L;
-									data[194]=100663296L;
-									return data;
-								}
-								public static final BitSet _tokenSet_4 = new BitSet(mk_tokenSet_4());
-								private static final long[] mk_tokenSet_5() {
-									long[] data = new long[2756];
-									data[0]=288054454291267584L;
-									data[1]=576460745995190270L;
-									data[2]=36028797018963968L;
-									data[3]=-36028797027352577L;
-									data[4]=9219994337134247935L;
-									data[5]=9223372036854775294L;
-									data[6]=-1L;
-									data[7]=-274156627316187121L;
-									data[8]=16777215L;
-									data[9]=-65536L;
-									data[10]=-576458553280167937L;
-									data[11]=196611L;
-									data[12]=-1L;
-									data[13]=12884901951L;
-									data[14]=-17179879488L;
-									data[15]=4503588160110591L;
-									data[16]=-8194L;
-									data[17]=-536936449L;
-									data[18]=-65413L;
-									data[19]=234134404065073567L;
-									data[20]=-562949953421312L;
-									data[21]=-8547991553L;
-									data[22]=-4899916411759099777L;
-									data[23]=1979120929931286L;
-									data[24]=576460743713488896L;
-									data[25]=-277081224642561L;
-									data[26]=9007199254740991999L;
-									data[27]=288017070894841855L;
-									data[36]=-864691128455135250L;
-									data[37]=281268803485695L;
-									data[38]=-3186861885341720594L;
-									data[39]=1125692414638495L;
-									data[40]=-3211631683292264476L;
-									data[41]=9006925953907079L;
-									data[42]=-869759877059465234L;
-									data[43]=281204393786303L;
-									data[44]=-878767076314341394L;
-									data[45]=281215949093263L;
-									data[46]=-4341532606274353172L;
-									data[47]=280925229301191L;
-									data[48]=-4327961440926441490L;
-									data[49]=281212990012895L;
-									data[50]=-4327961440926441492L;
-									data[51]=281214063754719L;
-									data[52]=-4323457841299070996L;
-									data[53]=281212992110031L;
-									data[56]=576320014815068158L;
-									data[57]=67076095L;
-									data[58]=4323293666156225942L;
-									data[59]=67059551L;
-									data[60]=-4422530440275951616L;
-									data[61]=-558551906910465L;
-									data[62]=215680200883507167L;
-									data[66]=-4294967296L;
-									data[67]=36028797018898495L;
-									data[68]=5764607523034749677L;
-									data[69]=12493387738468353L;
-									data[70]=-756383734487318528L;
-									data[71]=144405459145588743L;
-									for (int i = 120; i<=121; i++) { data[i]=-1L; }
-									data[122]=-4026531841L;
-									data[123]=288230376151711743L;
-									data[124]=-3233808385L;
-									data[125]=4611686017001275199L;
-									data[126]=6908521828386340863L;
-									data[127]=2295745090394464220L;
-									data[131]=9126739968L;
-									data[132]=83837761617920L;
-									data[134]=7L;
-									data[192]=17732914942836896L;
-									data[193]=-2L;
-									data[194]=-6876561409L;
-									data[195]=8646911284551352319L;
-									data[196]=35184372088800L;
-									for (int i = 312; i<=637; i++) { data[i]=-1L; }
-									data[638]=274877906943L;
-									for (int i = 688; i<=861; i++) { data[i]=-1L; }
-									data[862]=68719476735L;
-									return data;
-								}
-								public static final BitSet _tokenSet_5 = new BitSet(mk_tokenSet_5());
-								private static final long[] mk_tokenSet_6() {
-									long[] data = new long[3588];
-									data[0]=-4294957568L;
-									for (int i = 1; i<=863; i++) { data[i]=-1L; }
-									for (int i = 896; i<=1022; i++) { data[i]=-1L; }
-									data[1023]=4611686018427387903L;
-									return data;
-								}
-								public static final BitSet _tokenSet_6 = new BitSet(mk_tokenSet_6());
-								private static final long[] mk_tokenSet_7() {
-									long[] data = new long[2048];
-									data[0]=-2199023255560L;
-									for (int i = 1; i<=1022; i++) { data[i]=-1L; }
-									data[1023]=9223372036854775807L;
-									return data;
-								}
-								public static final BitSet _tokenSet_7 = new BitSet(mk_tokenSet_7());
-								private static final long[] mk_tokenSet_8() {
-									long[] data = new long[3588];
-									data[0]=-288230380446669312L;
-									for (int i = 1; i<=863; i++) { data[i]=-1L; }
-									for (int i = 896; i<=1022; i++) { data[i]=-1L; }
-									data[1023]=4611686018427387903L;
-									return data;
-								}
-								public static final BitSet _tokenSet_8 = new BitSet(mk_tokenSet_8());
-								private static final long[] mk_tokenSet_9() {
-									long[] data = new long[2048];
-									data[0]=-4294977032L;
-									for (int i = 1; i<=1022; i++) { data[i]=-1L; }
-									data[1023]=9223372036854775807L;
-									return data;
-								}
-								public static final BitSet _tokenSet_9 = new BitSet(mk_tokenSet_9());
-								private static final long[] mk_tokenSet_10() {
-									long[] data = new long[2048];
-									data[0]=-288230376151711752L;
-									for (int i = 1; i<=1022; i++) { data[i]=-1L; }
-									data[1023]=9223372036854775807L;
-									return data;
-								}
-								public static final BitSet _tokenSet_10 = new BitSet(mk_tokenSet_10());
-								private static final long[] mk_tokenSet_11() {
-									long[] data = new long[2048];
-									data[0]=-292057776136L;
-									for (int i = 1; i<=1022; i++) { data[i]=-1L; }
-									data[1023]=9223372036854775807L;
-									return data;
-								}
-								public static final BitSet _tokenSet_11 = new BitSet(mk_tokenSet_11());
-								private static final long[] mk_tokenSet_12() {
-									long[] data = new long[2048];
-									data[0]=-824633720840L;
-									for (int i = 1; i<=1022; i++) { data[i]=-1L; }
-									data[1023]=9223372036854775807L;
-									return data;
-								}
-								public static final BitSet _tokenSet_12 = new BitSet(mk_tokenSet_12());
-								private static final long[] mk_tokenSet_13() {
-									long[] data = new long[2048];
-									data[0]=-1152921521786716168L;
-									data[1]=-2882303761517117441L;
-									for (int i = 2; i<=1022; i++) { data[i]=-1L; }
-									data[1023]=9223372036854775807L;
-									return data;
-								}
-								public static final BitSet _tokenSet_13 = new BitSet(mk_tokenSet_13());
-								private static final long[] mk_tokenSet_14() {
-									long[] data = new long[2048];
-									data[0]=-1152922054362660872L;
-									data[1]=-2882303761517117441L;
-									for (int i = 2; i<=1022; i++) { data[i]=-1L; }
-									data[1023]=9223372036854775807L;
-									return data;
-								}
-								public static final BitSet _tokenSet_14 = new BitSet(mk_tokenSet_14());
-								private static final long[] mk_tokenSet_15() {
-									long[] data = new long[2048];
-									data[0]=-35184372088840L;
-									for (int i = 1; i<=1022; i++) { data[i]=-1L; }
-									data[1023]=9223372036854775807L;
-									return data;
-								}
-								public static final BitSet _tokenSet_15 = new BitSet(mk_tokenSet_15());
-								private static final long[] mk_tokenSet_16() {
-									long[] data = new long[2048];
-									data[0]=9223372036854775800L;
-									for (int i = 1; i<=1022; i++) { data[i]=-1L; }
-									data[1023]=9223372036854775807L;
-									return data;
-								}
-								public static final BitSet _tokenSet_16 = new BitSet(mk_tokenSet_16());
-								private static final long[] mk_tokenSet_17() {
-									long[] data = new long[2048];
-									data[0]=-4611686018427387912L;
-									for (int i = 1; i<=1022; i++) { data[i]=-1L; }
-									data[1023]=9223372036854775807L;
-									return data;
-								}
-								public static final BitSet _tokenSet_17 = new BitSet(mk_tokenSet_17());
-								private static final long[] mk_tokenSet_18() {
-									long[] data = new long[2048];
-									data[0]=-8L;
-									data[1]=-536870913L;
-									for (int i = 2; i<=1022; i++) { data[i]=-1L; }
-									data[1023]=9223372036854775807L;
-									return data;
-								}
-								public static final BitSet _tokenSet_18 = new BitSet(mk_tokenSet_18());
-								private static final long[] mk_tokenSet_19() {
-									long[] data = new long[1025];
-									data[0]=288019269919178752L;
-									data[25]=4393751543808L;
-									data[27]=287948901175001088L;
-									data[37]=281200098803712L;
-									data[39]=281200098803712L;
-									data[41]=281200098803712L;
-									data[43]=281200098803712L;
-									data[45]=281200098803712L;
-									data[47]=280925220896768L;
-									data[49]=281200098803712L;
-									data[51]=281200098803712L;
-									data[53]=281200098803712L;
-									data[57]=67043328L;
-									data[59]=67043328L;
-									data[60]=4393751543808L;
-									return data;
-								}
-								public static final BitSet _tokenSet_19 = new BitSet(mk_tokenSet_19());
-								private static final long[] mk_tokenSet_20() {
-									long[] data = new long[1025];
-									data[0]=288019269919178752L;
-									data[1]=137438953504L;
-									data[25]=4393751543808L;
-									data[27]=287948901175001088L;
-									data[37]=281200098803712L;
-									data[39]=281200098803712L;
-									data[41]=281200098803712L;
-									data[43]=281200098803712L;
-									data[45]=281200098803712L;
-									data[47]=280925220896768L;
-									data[49]=281200098803712L;
-									data[51]=281200098803712L;
-									data[53]=281200098803712L;
-									data[57]=67043328L;
-									data[59]=67043328L;
-									data[60]=4393751543808L;
-									return data;
-								}
-								public static final BitSet _tokenSet_20 = new BitSet(mk_tokenSet_20());
-								private static final long[] mk_tokenSet_21() {
-									long[] data = new long[1025];
-									data[0]=288063250384289792L;
-									data[1]=137438953504L;
-									data[25]=4393751543808L;
-									data[27]=287948901175001088L;
-									data[37]=281200098803712L;
-									data[39]=281200098803712L;
-									data[41]=281200098803712L;
-									data[43]=281200098803712L;
-									data[45]=281200098803712L;
-									data[47]=280925220896768L;
-									data[49]=281200098803712L;
-									data[51]=281200098803712L;
-									data[53]=281200098803712L;
-									data[57]=67043328L;
-									data[59]=67043328L;
-									data[60]=4393751543808L;
-									return data;
-								}
-								public static final BitSet _tokenSet_21 = new BitSet(mk_tokenSet_21());
-								private static final long[] mk_tokenSet_22() {
-									long[] data = new long[2048];
-									data[0]=-1152921508901804544L;
-									data[1]=-2882303761517117441L;
-									for (int i = 2; i<=1022; i++) { data[i]=-1L; }
-									data[1023]=4611686018427387903L;
-									return data;
-								}
-								public static final BitSet _tokenSet_22 = new BitSet(mk_tokenSet_22());
-								private static final long[] mk_tokenSet_23() {
-									long[] data = new long[2756];
-									data[1]=576460745995190270L;
-									data[3]=-36028797027352577L;
-									data[4]=9219994337134247935L;
-									data[5]=9223372036854775294L;
-									data[6]=-1L;
-									data[7]=-274156627316187121L;
-									data[8]=16777215L;
-									data[9]=-65536L;
-									data[10]=-576458553280167937L;
-									data[11]=3L;
-									data[14]=-17179879616L;
-									data[15]=4503588160110591L;
-									data[16]=-8194L;
-									data[17]=-536936449L;
-									data[18]=-65533L;
-									data[19]=234134404065073567L;
-									data[20]=-562949953421312L;
-									data[21]=-8547991553L;
-									data[22]=127L;
-									data[23]=1979120929931264L;
-									data[24]=576460743713488896L;
-									data[25]=-562949953419266L;
-									data[26]=9007199254740991999L;
-									data[27]=412319973375L;
-									data[36]=2594073385365405664L;
-									data[37]=17163091968L;
-									data[38]=271902628478820320L;
-									data[39]=844440767823872L;
-									data[40]=247132830528276448L;
-									data[41]=7881300924956672L;
-									data[42]=2589004636761075680L;
-									data[43]=4294967296L;
-									data[44]=2579997437506199520L;
-									data[45]=15837691904L;
-									data[46]=270153412153034720L;
-									data[48]=283724577500946400L;
-									data[49]=12884901888L;
-									data[50]=283724577500946400L;
-									data[51]=13958643712L;
-									data[52]=288228177128316896L;
-									data[53]=12884901888L;
-									data[56]=3799912185593854L;
-									data[57]=63L;
-									data[58]=2309621682768192918L;
-									data[59]=31L;
-									data[61]=4398046510847L;
-									data[66]=-4294967296L;
-									data[67]=36028797018898495L;
-									data[68]=5764607523034749677L;
-									data[69]=12493387738468353L;
-									data[70]=-756383734487318528L;
-									data[71]=144405459145588743L;
-									for (int i = 120; i<=121; i++) { data[i]=-1L; }
-									data[122]=-4026531841L;
-									data[123]=288230376151711743L;
-									data[124]=-3233808385L;
-									data[125]=4611686017001275199L;
-									data[126]=6908521828386340863L;
-									data[127]=2295745090394464220L;
-									data[132]=83837761617920L;
-									data[134]=7L;
-									data[192]=4389456576640L;
-									data[193]=-2L;
-									data[194]=-8587837441L;
-									data[195]=576460752303423487L;
-									data[196]=35184372088800L;
-									for (int i = 312; i<=637; i++) { data[i]=-1L; }
-									data[638]=274877906943L;
-									for (int i = 688; i<=861; i++) { data[i]=-1L; }
-									data[862]=68719476735L;
-									return data;
-								}
-								public static final BitSet _tokenSet_23 = new BitSet(mk_tokenSet_23());
-								
-								}
+	protected final void mCHAR(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
+		int _ttype; Token _token=null; int _begin=text.length();
+		_ttype = CHAR;
+		int _saveIndex;
+		
+		{
+		switch ( LA(1)) {
+		case '\t':
+		{
+			match('\t');
+			break;
+		}
+		case '\n':
+		{
+			match('\n');
+			if ( inputState.guessing==0 ) {
+				newline();
+			}
+			break;
+		}
+		case '\r':
+		{
+			match('\r');
+			break;
+		}
+		case ' ':  case '!':  case '"':  case '#':
+		case '$':  case '%':  case '&':  case '\'':
+		case '(':  case ')':  case '*':  case '+':
+		case ',':  case '-':  case '.':  case '/':
+		case '0':  case '1':  case '2':  case '3':
+		case '4':  case '5':  case '6':  case '7':
+		case '8':  case '9':
+		{
+			matchRange('\u0020','\u0039');
+			break;
+		}
+		default:
+			if (((LA(1) >= ';' && LA(1) <= '\ud7ff'))) {
+				matchRange('\u003B','\uD7FF');
+			}
+			else if (((LA(1) >= '\ue000' && LA(1) <= '\ufffd'))) {
+				matchRange('\uE000','\uFFFD');
+			}
+		else {
+			throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());
+		}
+		}
+		}
+		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
+			_token = makeToken(_ttype);
+			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
+		}
+		_returnToken = _token;
+	}
+	
+	
+	private static final long[] mk_tokenSet_0() {
+		long[] data = new long[2756];
+		data[1]=576460743847706622L;
+		data[3]=-36028797027352577L;
+		data[4]=9219994337134247935L;
+		data[5]=9223372036854775294L;
+		data[6]=-1L;
+		data[7]=-274156627316187121L;
+		data[8]=16777215L;
+		data[9]=-65536L;
+		data[10]=-576458553280167937L;
+		data[11]=3L;
+		data[14]=-17179879616L;
+		data[15]=4503588160110591L;
+		data[16]=-8194L;
+		data[17]=-536936449L;
+		data[18]=-65533L;
+		data[19]=234134404065073567L;
+		data[20]=-562949953421312L;
+		data[21]=-8547991553L;
+		data[22]=127L;
+		data[23]=1979120929931264L;
+		data[24]=576460743713488896L;
+		data[25]=-562949953419266L;
+		data[26]=9007199254740991999L;
+		data[27]=412319973375L;
+		data[36]=2594073385365405664L;
+		data[37]=17163091968L;
+		data[38]=271902628478820320L;
+		data[39]=844440767823872L;
+		data[40]=247132830528276448L;
+		data[41]=7881300924956672L;
+		data[42]=2589004636761075680L;
+		data[43]=4294967296L;
+		data[44]=2579997437506199520L;
+		data[45]=15837691904L;
+		data[46]=270153412153034720L;
+		data[48]=283724577500946400L;
+		data[49]=12884901888L;
+		data[50]=283724577500946400L;
+		data[51]=13958643712L;
+		data[52]=288228177128316896L;
+		data[53]=12884901888L;
+		data[56]=3799912185593854L;
+		data[57]=63L;
+		data[58]=2309621682768192918L;
+		data[59]=31L;
+		data[61]=4398046510847L;
+		data[66]=-4294967296L;
+		data[67]=36028797018898495L;
+		data[68]=5764607523034749677L;
+		data[69]=12493387738468353L;
+		data[70]=-756383734487318528L;
+		data[71]=144405459145588743L;
+		for (int i = 120; i<=121; i++) { data[i]=-1L; }
+		data[122]=-4026531841L;
+		data[123]=288230376151711743L;
+		data[124]=-3233808385L;
+		data[125]=4611686017001275199L;
+		data[126]=6908521828386340863L;
+		data[127]=2295745090394464220L;
+		data[132]=83837761617920L;
+		data[134]=7L;
+		data[193]=-2L;
+		data[194]=-8587837441L;
+		data[195]=576460752303423487L;
+		data[196]=35184372088800L;
+		for (int i = 688; i<=861; i++) { data[i]=-1L; }
+		data[862]=68719476735L;
+		return data;
+	}
+	public static final BitSet _tokenSet_0 = new BitSet(mk_tokenSet_0());
+	private static final long[] mk_tokenSet_1() {
+		long[] data = new long[2504];
+		data[192]=4389456576640L;
+		for (int i = 312; i<=637; i++) { data[i]=-1L; }
+		data[638]=274877906943L;
+		return data;
+	}
+	public static final BitSet _tokenSet_1 = new BitSet(mk_tokenSet_1());
+	private static final long[] mk_tokenSet_2() {
+		long[] data = new long[1025];
+		data[0]=287948901175001088L;
+		data[25]=4393751543808L;
+		data[27]=287948901175001088L;
+		data[37]=281200098803712L;
+		data[39]=281200098803712L;
+		data[41]=281200098803712L;
+		data[43]=281200098803712L;
+		data[45]=281200098803712L;
+		data[47]=280925220896768L;
+		data[49]=281200098803712L;
+		data[51]=281200098803712L;
+		data[53]=281200098803712L;
+		data[57]=67043328L;
+		data[59]=67043328L;
+		data[60]=4393751543808L;
+		return data;
+	}
+	public static final BitSet _tokenSet_2 = new BitSet(mk_tokenSet_2());
+	private static final long[] mk_tokenSet_3() {
+		long[] data = new long[2756];
+		data[1]=576460743847706622L;
+		data[3]=-36028797027352577L;
+		data[4]=9219994337134247935L;
+		data[5]=9223372036854775294L;
+		data[6]=-1L;
+		data[7]=-274156627316187121L;
+		data[8]=16777215L;
+		data[9]=-65536L;
+		data[10]=-576458553280167937L;
+		data[11]=3L;
+		data[14]=-17179879616L;
+		data[15]=4503588160110591L;
+		data[16]=-8194L;
+		data[17]=-536936449L;
+		data[18]=-65533L;
+		data[19]=234134404065073567L;
+		data[20]=-562949953421312L;
+		data[21]=-8547991553L;
+		data[22]=127L;
+		data[23]=1979120929931264L;
+		data[24]=576460743713488896L;
+		data[25]=-562949953419266L;
+		data[26]=9007199254740991999L;
+		data[27]=412319973375L;
+		data[36]=2594073385365405664L;
+		data[37]=17163091968L;
+		data[38]=271902628478820320L;
+		data[39]=844440767823872L;
+		data[40]=247132830528276448L;
+		data[41]=7881300924956672L;
+		data[42]=2589004636761075680L;
+		data[43]=4294967296L;
+		data[44]=2579997437506199520L;
+		data[45]=15837691904L;
+		data[46]=270153412153034720L;
+		data[48]=283724577500946400L;
+		data[49]=12884901888L;
+		data[50]=283724577500946400L;
+		data[51]=13958643712L;
+		data[52]=288228177128316896L;
+		data[53]=12884901888L;
+		data[56]=3799912185593854L;
+		data[57]=63L;
+		data[58]=2309621682768192918L;
+		data[59]=31L;
+		data[61]=4398046510847L;
+		data[66]=-4294967296L;
+		data[67]=36028797018898495L;
+		data[68]=5764607523034749677L;
+		data[69]=12493387738468353L;
+		data[70]=-756383734487318528L;
+		data[71]=144405459145588743L;
+		for (int i = 120; i<=121; i++) { data[i]=-1L; }
+		data[122]=-4026531841L;
+		data[123]=288230376151711743L;
+		data[124]=-3233808385L;
+		data[125]=4611686017001275199L;
+		data[126]=6908521828386340863L;
+		data[127]=2295745090394464220L;
+		data[132]=83837761617920L;
+		data[134]=7L;
+		data[192]=4389456576640L;
+		data[193]=-2L;
+		data[194]=-8587837441L;
+		data[195]=576460752303423487L;
+		data[196]=35184372088800L;
+		for (int i = 312; i<=637; i++) { data[i]=-1L; }
+		data[638]=274877906943L;
+		for (int i = 688; i<=861; i++) { data[i]=-1L; }
+		data[862]=68719476735L;
+		return data;
+	}
+	public static final BitSet _tokenSet_3 = new BitSet(mk_tokenSet_3());
+	private static final long[] mk_tokenSet_4() {
+		long[] data = new long[1025];
+		data[12]=-1L;
+		data[13]=12884901951L;
+		data[18]=120L;
+		data[22]=-4899916411759099904L;
+		data[23]=22L;
+		data[25]=281474977232896L;
+		data[27]=67757399867392L;
+		data[36]=-3458764513820540914L;
+		data[37]=51541590015L;
+		data[38]=-3458764513820540914L;
+		data[39]=51548010911L;
+		data[40]=-3458764513820540924L;
+		data[41]=844424930146695L;
+		data[42]=-3458764513820540914L;
+		data[43]=15295L;
+		data[44]=-3458764513820540914L;
+		data[45]=12597647L;
+		data[46]=-4611686018427387892L;
+		data[47]=8404423L;
+		data[48]=-4611686018427387890L;
+		data[49]=6307295L;
+		data[50]=-4611686018427387892L;
+		data[51]=6307295L;
+		data[52]=-4611686018427387892L;
+		data[53]=8404431L;
+		data[56]=572520102629474304L;
+		data[57]=32640L;
+		data[58]=2013671983388033024L;
+		data[59]=16128L;
+		data[60]=-4422534834027495424L;
+		data[61]=-562949953421312L;
+		data[62]=215680200883507167L;
+		data[131]=9126739968L;
+		data[192]=277076930199552L;
+		data[194]=100663296L;
+		return data;
+	}
+	public static final BitSet _tokenSet_4 = new BitSet(mk_tokenSet_4());
+	private static final long[] mk_tokenSet_5() {
+		long[] data = new long[2756];
+		data[0]=288054454291267584L;
+		data[1]=576460745995190270L;
+		data[2]=36028797018963968L;
+		data[3]=-36028797027352577L;
+		data[4]=9219994337134247935L;
+		data[5]=9223372036854775294L;
+		data[6]=-1L;
+		data[7]=-274156627316187121L;
+		data[8]=16777215L;
+		data[9]=-65536L;
+		data[10]=-576458553280167937L;
+		data[11]=196611L;
+		data[12]=-1L;
+		data[13]=12884901951L;
+		data[14]=-17179879488L;
+		data[15]=4503588160110591L;
+		data[16]=-8194L;
+		data[17]=-536936449L;
+		data[18]=-65413L;
+		data[19]=234134404065073567L;
+		data[20]=-562949953421312L;
+		data[21]=-8547991553L;
+		data[22]=-4899916411759099777L;
+		data[23]=1979120929931286L;
+		data[24]=576460743713488896L;
+		data[25]=-277081224642561L;
+		data[26]=9007199254740991999L;
+		data[27]=288017070894841855L;
+		data[36]=-864691128455135250L;
+		data[37]=281268803485695L;
+		data[38]=-3186861885341720594L;
+		data[39]=1125692414638495L;
+		data[40]=-3211631683292264476L;
+		data[41]=9006925953907079L;
+		data[42]=-869759877059465234L;
+		data[43]=281204393786303L;
+		data[44]=-878767076314341394L;
+		data[45]=281215949093263L;
+		data[46]=-4341532606274353172L;
+		data[47]=280925229301191L;
+		data[48]=-4327961440926441490L;
+		data[49]=281212990012895L;
+		data[50]=-4327961440926441492L;
+		data[51]=281214063754719L;
+		data[52]=-4323457841299070996L;
+		data[53]=281212992110031L;
+		data[56]=576320014815068158L;
+		data[57]=67076095L;
+		data[58]=4323293666156225942L;
+		data[59]=67059551L;
+		data[60]=-4422530440275951616L;
+		data[61]=-558551906910465L;
+		data[62]=215680200883507167L;
+		data[66]=-4294967296L;
+		data[67]=36028797018898495L;
+		data[68]=5764607523034749677L;
+		data[69]=12493387738468353L;
+		data[70]=-756383734487318528L;
+		data[71]=144405459145588743L;
+		for (int i = 120; i<=121; i++) { data[i]=-1L; }
+		data[122]=-4026531841L;
+		data[123]=288230376151711743L;
+		data[124]=-3233808385L;
+		data[125]=4611686017001275199L;
+		data[126]=6908521828386340863L;
+		data[127]=2295745090394464220L;
+		data[131]=9126739968L;
+		data[132]=83837761617920L;
+		data[134]=7L;
+		data[192]=17732914942836896L;
+		data[193]=-2L;
+		data[194]=-6876561409L;
+		data[195]=8646911284551352319L;
+		data[196]=35184372088800L;
+		for (int i = 312; i<=637; i++) { data[i]=-1L; }
+		data[638]=274877906943L;
+		for (int i = 688; i<=861; i++) { data[i]=-1L; }
+		data[862]=68719476735L;
+		return data;
+	}
+	public static final BitSet _tokenSet_5 = new BitSet(mk_tokenSet_5());
+	private static final long[] mk_tokenSet_6() {
+		long[] data = new long[2048];
+		data[0]=-292057776136L;
+		for (int i = 1; i<=1022; i++) { data[i]=-1L; }
+		data[1023]=9223372036854775807L;
+		return data;
+	}
+	public static final BitSet _tokenSet_6 = new BitSet(mk_tokenSet_6());
+	private static final long[] mk_tokenSet_7() {
+		long[] data = new long[2048];
+		data[0]=-824633720840L;
+		for (int i = 1; i<=1022; i++) { data[i]=-1L; }
+		data[1023]=9223372036854775807L;
+		return data;
+	}
+	public static final BitSet _tokenSet_7 = new BitSet(mk_tokenSet_7());
+	private static final long[] mk_tokenSet_8() {
+		long[] data = new long[2048];
+		data[0]=-1152921521786716168L;
+		data[1]=-2882303761517117441L;
+		for (int i = 2; i<=1022; i++) { data[i]=-1L; }
+		data[1023]=9223372036854775807L;
+		return data;
+	}
+	public static final BitSet _tokenSet_8 = new BitSet(mk_tokenSet_8());
+	private static final long[] mk_tokenSet_9() {
+		long[] data = new long[2048];
+		data[0]=-1152922054362660872L;
+		data[1]=-2882303761517117441L;
+		for (int i = 2; i<=1022; i++) { data[i]=-1L; }
+		data[1023]=9223372036854775807L;
+		return data;
+	}
+	public static final BitSet _tokenSet_9 = new BitSet(mk_tokenSet_9());
+	private static final long[] mk_tokenSet_10() {
+		long[] data = new long[2048];
+		data[0]=-35184372088840L;
+		for (int i = 1; i<=1022; i++) { data[i]=-1L; }
+		data[1023]=9223372036854775807L;
+		return data;
+	}
+	public static final BitSet _tokenSet_10 = new BitSet(mk_tokenSet_10());
+	private static final long[] mk_tokenSet_11() {
+		long[] data = new long[2048];
+		data[0]=9223372036854775800L;
+		for (int i = 1; i<=1022; i++) { data[i]=-1L; }
+		data[1023]=9223372036854775807L;
+		return data;
+	}
+	public static final BitSet _tokenSet_11 = new BitSet(mk_tokenSet_11());
+	private static final long[] mk_tokenSet_12() {
+		long[] data = new long[2048];
+		data[0]=-4611686018427387912L;
+		for (int i = 1; i<=1022; i++) { data[i]=-1L; }
+		data[1023]=9223372036854775807L;
+		return data;
+	}
+	public static final BitSet _tokenSet_12 = new BitSet(mk_tokenSet_12());
+	private static final long[] mk_tokenSet_13() {
+		long[] data = new long[2048];
+		data[0]=-8L;
+		data[1]=-536870913L;
+		for (int i = 2; i<=1022; i++) { data[i]=-1L; }
+		data[1023]=9223372036854775807L;
+		return data;
+	}
+	public static final BitSet _tokenSet_13 = new BitSet(mk_tokenSet_13());
+	private static final long[] mk_tokenSet_14() {
+		long[] data = new long[1025];
+		data[0]=288019269919178752L;
+		data[25]=4393751543808L;
+		data[27]=287948901175001088L;
+		data[37]=281200098803712L;
+		data[39]=281200098803712L;
+		data[41]=281200098803712L;
+		data[43]=281200098803712L;
+		data[45]=281200098803712L;
+		data[47]=280925220896768L;
+		data[49]=281200098803712L;
+		data[51]=281200098803712L;
+		data[53]=281200098803712L;
+		data[57]=67043328L;
+		data[59]=67043328L;
+		data[60]=4393751543808L;
+		return data;
+	}
+	public static final BitSet _tokenSet_14 = new BitSet(mk_tokenSet_14());
+	private static final long[] mk_tokenSet_15() {
+		long[] data = new long[1025];
+		data[0]=288019269919178752L;
+		data[1]=137438953504L;
+		data[25]=4393751543808L;
+		data[27]=287948901175001088L;
+		data[37]=281200098803712L;
+		data[39]=281200098803712L;
+		data[41]=281200098803712L;
+		data[43]=281200098803712L;
+		data[45]=281200098803712L;
+		data[47]=280925220896768L;
+		data[49]=281200098803712L;
+		data[51]=281200098803712L;
+		data[53]=281200098803712L;
+		data[57]=67043328L;
+		data[59]=67043328L;
+		data[60]=4393751543808L;
+		return data;
+	}
+	public static final BitSet _tokenSet_15 = new BitSet(mk_tokenSet_15());
+	private static final long[] mk_tokenSet_16() {
+		long[] data = new long[1025];
+		data[0]=288063250384289792L;
+		data[1]=137438953504L;
+		data[25]=4393751543808L;
+		data[27]=287948901175001088L;
+		data[37]=281200098803712L;
+		data[39]=281200098803712L;
+		data[41]=281200098803712L;
+		data[43]=281200098803712L;
+		data[45]=281200098803712L;
+		data[47]=280925220896768L;
+		data[49]=281200098803712L;
+		data[51]=281200098803712L;
+		data[53]=281200098803712L;
+		data[57]=67043328L;
+		data[59]=67043328L;
+		data[60]=4393751543808L;
+		return data;
+	}
+	public static final BitSet _tokenSet_16 = new BitSet(mk_tokenSet_16());
+	private static final long[] mk_tokenSet_17() {
+		long[] data = new long[2048];
+		data[0]=-1152921508901804544L;
+		data[1]=-2882303761517117441L;
+		for (int i = 2; i<=1022; i++) { data[i]=-1L; }
+		data[1023]=4611686018427387903L;
+		return data;
+	}
+	public static final BitSet _tokenSet_17 = new BitSet(mk_tokenSet_17());
+	private static final long[] mk_tokenSet_18() {
+		long[] data = new long[2756];
+		data[1]=576460745995190270L;
+		data[3]=-36028797027352577L;
+		data[4]=9219994337134247935L;
+		data[5]=9223372036854775294L;
+		data[6]=-1L;
+		data[7]=-274156627316187121L;
+		data[8]=16777215L;
+		data[9]=-65536L;
+		data[10]=-576458553280167937L;
+		data[11]=3L;
+		data[14]=-17179879616L;
+		data[15]=4503588160110591L;
+		data[16]=-8194L;
+		data[17]=-536936449L;
+		data[18]=-65533L;
+		data[19]=234134404065073567L;
+		data[20]=-562949953421312L;
+		data[21]=-8547991553L;
+		data[22]=127L;
+		data[23]=1979120929931264L;
+		data[24]=576460743713488896L;
+		data[25]=-562949953419266L;
+		data[26]=9007199254740991999L;
+		data[27]=412319973375L;
+		data[36]=2594073385365405664L;
+		data[37]=17163091968L;
+		data[38]=271902628478820320L;
+		data[39]=844440767823872L;
+		data[40]=247132830528276448L;
+		data[41]=7881300924956672L;
+		data[42]=2589004636761075680L;
+		data[43]=4294967296L;
+		data[44]=2579997437506199520L;
+		data[45]=15837691904L;
+		data[46]=270153412153034720L;
+		data[48]=283724577500946400L;
+		data[49]=12884901888L;
+		data[50]=283724577500946400L;
+		data[51]=13958643712L;
+		data[52]=288228177128316896L;
+		data[53]=12884901888L;
+		data[56]=3799912185593854L;
+		data[57]=63L;
+		data[58]=2309621682768192918L;
+		data[59]=31L;
+		data[61]=4398046510847L;
+		data[66]=-4294967296L;
+		data[67]=36028797018898495L;
+		data[68]=5764607523034749677L;
+		data[69]=12493387738468353L;
+		data[70]=-756383734487318528L;
+		data[71]=144405459145588743L;
+		for (int i = 120; i<=121; i++) { data[i]=-1L; }
+		data[122]=-4026531841L;
+		data[123]=288230376151711743L;
+		data[124]=-3233808385L;
+		data[125]=4611686017001275199L;
+		data[126]=6908521828386340863L;
+		data[127]=2295745090394464220L;
+		data[132]=83837761617920L;
+		data[134]=7L;
+		data[192]=4389456576640L;
+		data[193]=-2L;
+		data[194]=-8587837441L;
+		data[195]=576460752303423487L;
+		data[196]=35184372088800L;
+		for (int i = 312; i<=637; i++) { data[i]=-1L; }
+		data[638]=274877906943L;
+		for (int i = 688; i<=861; i++) { data[i]=-1L; }
+		data[862]=68719476735L;
+		return data;
+	}
+	public static final BitSet _tokenSet_18 = new BitSet(mk_tokenSet_18());
+	
+	}
