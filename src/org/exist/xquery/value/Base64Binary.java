@@ -88,4 +88,9 @@ public class Base64Binary extends BinaryValue {
         throw new XPathException("cannot convert value of type " + Type.getTypeName(getType()) +
             " to Java object of type " + target.getName());
     }
+    
+    public boolean effectiveBooleanValue() throws XPathException {
+        throw new XPathException("FORG0006: value of type " + Type.getTypeName(getType()) +
+            " has no boolean value.");
+    }
 }

@@ -332,19 +332,19 @@ public class BFile extends BTree {
      * @throws IOException
      * @throws BTreeException
      */
-    public void removeAll(IndexQuery query) throws IOException, BTreeException {
+    public void removeAll(Txn transaction, IndexQuery query) throws IOException, BTreeException {
         // first collect the values to remove, then sort them by their page number
         // and remove them.
         try {
             RemoveCallback cb = new RemoveCallback(); 
-            remove(query, cb);
+            remove(transaction, query, cb);
             LOG.debug("Found " + cb.count + " items to remove.");
             if (cb.count == 0)
                 return;
             Arrays.sort(cb.pointers, 0, cb.count - 1);
             for (int i = 0; i < cb.count; i++) {
                 try {
-                    remove(cb.pointers[i]);
+                    remove(transaction, cb.pointers[i]);
                 } catch (ReadOnlyException e) {
                     LOG.warn("Database is read-only. Cannot remove items.");
                     throw new IOException("Database is read-only");
@@ -733,11 +733,11 @@ public class BFile extends BTree {
         }
     }
 
-    public void remove(long p) throws ReadOnlyException {
+    public void remove(Txn transaction, long p) throws ReadOnlyException {
         try {
             long pos = StorageAddress.pageFromPointer(p);
             DataPage page = getDataPage(pos);
-            remove(null, page, p);
+            remove(transaction, page, p);
         } catch (BTreeException e) {
             LOG.debug("btree problem", e);
         } catch (IOException e) {

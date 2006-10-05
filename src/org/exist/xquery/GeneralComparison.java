@@ -685,6 +685,10 @@ public class GeneralComparison extends BinaryOp {
 				}
 			}
 		}
+        // if truncation is set, we always do a string comparison
+        if (truncation != Constants.TRUNC_NONE) {
+            lv = lv.convertTo(Type.STRING);
+        }
 //			System.out.println(
 //				lv.getStringValue() + Constants.OPS[relation] + rv.getStringValue());
 		switch(truncation) {

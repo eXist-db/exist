@@ -134,6 +134,8 @@ public class StoredNode extends NodeImpl {
 				return ProcessingInstructionImpl.deserialize(data, start, len, pooled);
 			case Node.COMMENT_NODE :
 				return CommentImpl.deserialize(data, start, len, pooled);
+            case Node.CDATA_SECTION_NODE :
+                return CDATASectionImpl.deserialize(data, start, len, doc, pooled);
 			default :
                 LOG.error("Unknown node type: " + type);
 				Thread.dumpStack();

@@ -77,6 +77,8 @@ public class CatchFunction extends Function {
             }
         } catch(Exception e) {
         	LOG.debug("Caught exception in util:catch: " + e.getMessage());
+            if (!(e instanceof XPathException))
+                LOG.warn("Exception: " + e.getMessage(), e);
 //            context.popDocumentContext();
             context.getWatchDog().reset();
             for(SequenceIterator i = exceptionClasses.iterate(); i.hasNext(); ) {

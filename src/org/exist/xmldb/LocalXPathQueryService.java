@@ -43,7 +43,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
 import org.exist.xquery.CompiledXQuery;
-import org.exist.xquery.Pragma;
+import org.exist.xquery.Option;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
@@ -276,12 +276,12 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	 * @param context
 	 */
 	private void checkPragmas(XQueryContext context) throws XPathException {
-		Pragma pragma = context.getPragma(Pragma.SERIALIZE_QNAME);
+		Option pragma = context.getOption(Option.SERIALIZE_QNAME);
 		if(pragma == null)
 			return;
 		String[] contents = pragma.tokenizeContents();
 		for(int i = 0; i < contents.length; i++) {
-			String[] pair = Pragma.parseKeyValuePair(contents[i]);
+			String[] pair = Option.parseKeyValuePair(contents[i]);
 			if(pair == null)
 				throw new XPathException("Unknown parameter found in " + pragma.getQName().getStringValue() +
 						": '" + contents[i] + "'");

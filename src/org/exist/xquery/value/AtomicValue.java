@@ -227,8 +227,7 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 				+ Type.getTypeName(getType())
 				+ " to a node set");
 	}
-
-	
+    
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#getDocumentSet()
      */
@@ -236,6 +235,24 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
         return DocumentSet.EMPTY_DOCUMENT_SET;
     }
 
+    public AtomicValue promote(AtomicValue otherValue) throws XPathException {
+        if (getType() != otherValue.getType()) {
+            if (Type.subTypeOf(getType(), Type.DECIMAL) && 
+                    (Type.subTypeOf(otherValue.getType(), Type.DOUBLE) 
+                        || Type.subTypeOf(otherValue.getType(), Type.FLOAT)))
+                    return convertTo(otherValue.getType());
+    
+            if (Type.subTypeOf(getType(), Type.FLOAT) &&
+                    Type.subTypeOf(otherValue.getType(), Type.DOUBLE))
+                return convertTo(Type.DOUBLE);
+    
+            if (Type.subTypeOf(getType(), Type.ANY_URI) &&
+                    Type.subTypeOf(otherValue.getType(), Type.STRING))
+                return convertTo(Type.STRING);
+        }
+        return this;
+    }
+    
 	/**
      * Dump a string representation of this value to the given 
      * ExpressionDumper.

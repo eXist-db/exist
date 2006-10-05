@@ -98,6 +98,7 @@ public class VariableDeclaration extends AbstractExpression {
         }            
         
 		QName qn = QName.parse(context, qname, null);
+        
 		Module myModule = context.getModule(qn.getNamespaceURI());		
         context.pushDocumentContext();
 		// declare the variable

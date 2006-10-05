@@ -7,13 +7,25 @@ import org.exist.util.*;
 /**
  *  Static methods to deal with the signature of a node stored
  *  in the first byte of the node data in the persistent dom.
+ *  
+ *  The bits in the signature are used as follows:
+ *  
+ *  <pre>
+ *  8 4 2 1 8 4 2 1
+ *  T T T N 0 0 I I
+ *  </pre>
+ *  
+ *   where T = node type, N = has-namespace flag, I = no of bytes used to store
+ *   the name of the node (local name for elements and attributes).
  */
 public final class Signatures {
-    public final static int Attr = 0x4;
-	public final static int Proc = 0x2;
+    
     public final static int Char = 0x0;
-    public final static int Comm = 0x3;
     public final static int Elem = 0x1;
+	public final static int Proc = 0x2;
+    public final static int Comm = 0x3;
+    public final static int Attr = 0x4;
+    public final static int Cdata = 0x5;
     
     public final static int IntContent = 0x1;
 	public final static int ByteContent = 0x3;
@@ -72,6 +84,8 @@ public final class Signatures {
                 return Node.PROCESSING_INSTRUCTION_NODE;
             case Comm:
                 return Node.COMMENT_NODE;
+            case Cdata:
+                return Node.CDATA_SECTION_NODE;
         }
         System.err.println( "unknown node type" );
         return -1;

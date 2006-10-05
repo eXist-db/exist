@@ -67,7 +67,7 @@ public class IntegerValue extends NumericValue {
 
 	public IntegerValue(String stringValue) throws XPathException {
 		try {
-			value = new BigInteger(stringValue); // Long.parseLong(stringValue);
+			value = new BigInteger(StringValue.trimWhitespace(stringValue)); // Long.parseLong(stringValue);
 		} catch (NumberFormatException e) {
 				throw new XPathException(
 					"failed to convert '" + stringValue + "' to an integer: " + e.getMessage(), e);
@@ -78,7 +78,7 @@ public class IntegerValue extends NumericValue {
 	public IntegerValue(String stringValue, int requiredType) throws XPathException {
 		this.type = requiredType;
 		try {
-			value =  new BigInteger(stringValue); // Long.parseLong(stringValue);
+			value =  new BigInteger(StringValue.trimWhitespace(stringValue)); // Long.parseLong(stringValue);
 			if (!(checkType(value, type)))
 					throw new XPathException("FORG0001: can not convert '" + 
 							stringValue + "' to " + Type.getTypeName(type));

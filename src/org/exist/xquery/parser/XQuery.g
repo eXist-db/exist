@@ -158,6 +158,7 @@ imaginaryTokenDefinitions
 	COMP_PI_CONSTRUCTOR 
 	COMP_NS_CONSTRUCTOR
 	COMP_DOC_CONSTRUCTOR
+	PRAGMA
 	;
 
 // === XPointer ===
@@ -466,7 +467,7 @@ updateExpr throws XPathException
 	"update"^
 	(
 		replaceExpr
-		| valueExpr
+		| updateValueExpr
 		| insertExpr
 		| deleteExpr
 		| ( "rename" . "as" ) => renameExpr
@@ -478,7 +479,7 @@ replaceExpr throws XPathException
 	"replace" expr "with"! exprSingle
 	;
 
-valueExpr throws XPathException
+updateValueExpr throws XPathException
 :
 	"value" expr "with"! exprSingle
 	;
@@ -670,19 +671,40 @@ unaryExpr throws XPathException
 :
 	// TODO: XPath 2.0 allows an arbitrary number of +/-, 
 	// we restrict it to one
-	m:MINUS expr:pathExpr
+	m:MINUS expr:valueExpr
 	{ 
         #unaryExpr= #(#[UNARY_MINUS, "-"], #expr);
         #unaryExpr.copyLexInfo(#m);
     }
 	|
-	p:PLUS expr2:pathExpr
+	p:PLUS expr2:valueExpr
 	{ 
         #unaryExpr= #(#[UNARY_PLUS, "+"], #expr2);
         #unaryExpr.copyLexInfo(#p);
     }
 	|
+	valueExpr
+	;
+
+valueExpr throws XPathException
+:
 	pathExpr
+	|
+	extensionExpr
+	;
+
+extensionExpr throws XPathException
+:
+	( pragma )+ LCURLY! expr RCURLY!
+	;
+
+pragma throws XPathException
+{ String name = null; }
+:
+	PRAGMA_START! name=qName! PRAGMA_END
+	{
+		#pragma = #(#[PRAGMA, name], #pragma);
+	}
 	;
 
 unionExpr throws XPathException
@@ -1521,6 +1543,7 @@ options {
 	protected boolean inAttributeContent= false;
 	protected char attrDelimChar = '"';
 	protected boolean inComment= false;
+	protected boolean inPragma = false;
 	
 	protected XQueryContext context = null;
 	
@@ -1617,6 +1640,7 @@ options {
 protected WS
 :
 	(
+		options { greedy=true; }:
 		' '
 		|
 		'\t'
@@ -1633,38 +1657,7 @@ options {
 	paraphrase="XQuery comment";
 }
 :
-	"(:" ( CHAR | ( ':' ~( ')' ) ) => ':' )* ":)"
-	;
-
-protected PRAGMA
-options {
-	testLiterals=false;
-	paraphrase="XQuery pragma";
-}
-{ String content = null; }:
-	"(::" "pragma"
-	WS qn:PRAGMA_QNAME WS 
-	( c:PRAGMA_CONTENT { content = c.getText(); } )? ':' ':' ')'
-	{
-		if (context != null) {
-			try {
-				context.addPragma(qn.getText(), content);
-			} catch(XPathException e) {
-				throw new RecognitionException(e.getMessage());
-			}
-		}
-	}
-	;
-
-protected PRAGMA_CONTENT
-:
-	( ~( ' ' | '\t' | '\n' | '\r' ) ) 
-	( CHAR | (':' ~( ':' )) => ':' | (':' ':' ~(')') ) => ':' ':' )+
-	;
-
-protected PRAGMA_QNAME
-:
-	NCNAME ( ':' NCNAME )?
+	"(:" ( options { greedy=false; }: ( . | EXPR_COMMENT ) )* ":)"
 	;
 	
 protected INTEGER_LITERAL :
@@ -1775,7 +1768,26 @@ options {
 	( ~ ( ']' ) | ( ']' ~ ( ']' ) ) => ']' | ( ']' ']' ~ ( '>' ) ) => ( ']' ']' ) )* 
 	XML_CDATA_END!
 	;
-	
+
+protected S: ( options { greedy=true; }: ( ' ' | '\n' | '\r' | '\t' ) )+
+	;
+
+protected PRAGMA_START : 
+	"(#" ( WS )?
+	{ inPragma = true; };
+
+protected PRAGMA_END
+options { 
+	paraphrase="pragma expression";
+	testLiterals=false;
+}: 
+		(
+			WS!
+			( options { greedy=false; }: . )*
+		)?
+	"#)"!
+	;
+
 /**
  * Main method that decides which token to return next.
  * We need this as many things depend on the current
@@ -1846,6 +1858,7 @@ options {
 	ELEMENT_CONTENT
 	{ $setType(ELEMENT_CONTENT); }
 	|
+	{ !inPragma }?
 	WS
 	{
 		if (wsExplicit) {
@@ -1854,9 +1867,6 @@ options {
 		} else
 			$setType(Token.SKIP);
 	}
-	|
-	( "(::" ) => PRAGMA
-	{ $setType(Token.SKIP); }
 	|
 	EXPR_COMMENT
 	{ $setType(Token.SKIP); }
@@ -1943,6 +1953,18 @@ options {
 	XML_PI_END { $setType(XML_PI_END); }
 	|
 	XML_CDATA_END { $setType(XML_CDATA_END); }
+	|
+	PRAGMA_START 
+	{
+		$setType(PRAGMA_START);
+	}
+	|
+	{ inPragma }?
+	PRAGMA_END
+	{
+		inPragma = false; 
+		$setType(PRAGMA_END); 
+	}
 	;
 
 protected CHAR

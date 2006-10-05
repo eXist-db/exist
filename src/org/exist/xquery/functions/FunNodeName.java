@@ -38,6 +38,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
+import org.w3c.dom.ProcessingInstruction;
 
 
 /**
@@ -87,16 +88,22 @@ public class FunNodeName extends Function {
                         Type.getTypeName(item.getType()));
             //TODO : how to improve performance ?
             Node n = ((NodeValue)item).getNode();
+            QName qname;
             switch(n.getNodeType()) {
                 case Node.ELEMENT_NODE:
                 case Node.ATTRIBUTE_NODE:
-                    QName qname = ((QNameable) n).getQName();
+                    qname = ((QNameable) n).getQName();
                     result = new QNameValue(context, qname);
                     break;
-                //TODO : what kind of default do we expect here ? -pb
+                case Node.PROCESSING_INSTRUCTION_NODE :
+                    qname = new QName(((ProcessingInstruction)n).getTarget(), "", "");
+                    result = new QNameValue(context, qname);
+                    break;
                 default:
-                	LOG.warn("Tried to obtain node name for node type " + n.getNodeType());
-                    result = new QNameValue(context, QName.EMPTY_QNAME);
+                    // return empty sequence for all other nodes
+                    result = Sequence.EMPTY_SEQUENCE;
+//                	LOG.warn("Tried to obtain node name for node type " + n.getNodeType());
+//                    result = new QNameValue(context, QName.EMPTY_QNAME);
             }
         }
         

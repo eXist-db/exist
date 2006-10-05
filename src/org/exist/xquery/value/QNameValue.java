@@ -202,4 +202,9 @@ public class QNameValue extends AtomicValue {
 			return super.toString();
 		}			
 	}
+    
+    public boolean effectiveBooleanValue() throws XPathException {
+        throw new XPathException("FORG0006: value of type " + Type.getTypeName(getType()) +
+            " has no boolean value.");
+    }
 }
