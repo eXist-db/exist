@@ -330,7 +330,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         try {
             lock.acquire(Lock.WRITE_LOCK);
             //TODO : flush ? -pb
-            dbNodes.removeAll(query);
+            dbNodes.removeAll(null, query);
         } catch (LockException e) {
             LOG.warn("Failed to acquire lock for '" + dbNodes.getFile().getName() + "'", e);
         } catch (BTreeException e) {

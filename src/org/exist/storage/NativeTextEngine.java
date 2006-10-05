@@ -292,7 +292,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         final Lock lock = dbTokens.getLock();
         try {
             lock.acquire(Lock.WRITE_LOCK);
-            dbTokens.removeAll(query);
+            dbTokens.removeAll(null, query);
         } catch (LockException e) {
             LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
         } catch (BTreeException e) {
