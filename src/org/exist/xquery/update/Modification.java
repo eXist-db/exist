@@ -44,6 +44,8 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.StorageAddress;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
+import org.exist.storage.txn.TransactionException;
+import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.xquery.AbstractExpression;
@@ -236,6 +238,21 @@ public abstract class Modification extends AbstractExpression
 	 */
 	private void prepareTrigger(Txn transaction, DocumentImpl doc)
 	{
+		//if we are doing a batch update then only call prepare for the first update to that document
+		if(context.hasBatchTransaction())
+		{
+			Iterator itTrigDoc = modifiedDocuments.iterator();
+	    	while(itTrigDoc.hasNext())
+	    	{
+	    		DocumentImpl trigDoc = (DocumentImpl)itTrigDoc.next();
+	    		if(trigDoc.getURI().equals(doc.getURI()))
+	    		{
+	    			return;
+	    		}
+	    	}
+		}
+
+		//prepare the trigger
 		CollectionConfiguration config = doc.getCollection().getConfiguration(doc.getBroker());
         DocumentTrigger trigger = null;
         if(config != null)
@@ -269,22 +286,65 @@ public abstract class Modification extends AbstractExpression
 	 */
 	private void finishTrigger(Txn transaction, DocumentImpl doc)
 	{
-        CollectionConfiguration config = doc.getCollection().getConfiguration(doc.getBroker());
-        if (config != null)
-        {
-        	DocumentTrigger trigger = (DocumentTrigger)config.getTrigger(Trigger.UPDATE_DOCUMENT_EVENT);
-        	if(trigger != null)
-        	{
-        		try
-        		{
-        			trigger.finish(Trigger.UPDATE_DOCUMENT_EVENT, doc.getBroker(), transaction, doc);
-        		}
-        		catch(Exception e)
-        		{
-        			LOG.debug("Trigger event UPDATE_DOCUMENT_EVENT for collection: " + doc.getCollection().getURI() + " with: " + doc.getURI() + " " + e.getMessage());
-        		}
-        	}
-        }
+		//if this is part of a batch transaction, defer the trigger
+		if(context.hasBatchTransaction())
+		{
+			context.setBatchTransactionTrigger(doc);
+		}
+		else
+		{
+			//finish the trigger
+	        CollectionConfiguration config = doc.getCollection().getConfiguration(doc.getBroker());
+	        if (config != null)
+	        {
+	        	DocumentTrigger trigger = (DocumentTrigger)config.getTrigger(Trigger.UPDATE_DOCUMENT_EVENT);
+	        	if(trigger != null)
+	        	{
+	        		try
+	        		{
+	        			trigger.finish(Trigger.UPDATE_DOCUMENT_EVENT, doc.getBroker(), transaction, doc);
+	        		}
+	        		catch(Exception e)
+	        		{
+	        			LOG.debug("Trigger event UPDATE_DOCUMENT_EVENT for collection: " + doc.getCollection().getURI() + " with: " + doc.getURI() + " " + e.getMessage());
+	        		}
+	        	}
+	        }
+		}
+	}
+	
+	/**
+	 * Gets the Transaction to use for the update (can be batch or individual)
+	 * 
+	 * @return The transaction
+	 */
+	public Txn getTransaction()
+	{
+		Txn transaction = context.getBatchTransaction();
+		
+		//if there is no batch update transaction, start a new individual transaction
+		if(transaction == null)
+		{
+			TransactionManager txnMgr = context.getBroker().getBrokerPool().getTransactionManager();
+			transaction = txnMgr.beginTransaction();
+		}
+		
+		return transaction;
+	}
+	
+	/**
+	 * Commit's the transaction for the update unless it is a batch update and then the commit is defered
+	 * 
+	 * @param transaction The Transaction to commit
+	 */
+	public void commitTransaction(Txn transaction) throws TransactionException
+	{
+		//only commit the transaction, if its not a batch update transaction
+		if(!context.hasBatchTransaction())
+		{
+			TransactionManager txnMgr = context.getBroker().getBrokerPool().getTransactionManager();
+			txnMgr.commit(transaction);
+		}
 	}
 	
     final static class IndexListener implements NodeIndexListener {

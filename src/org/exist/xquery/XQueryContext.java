@@ -39,6 +39,10 @@ import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.collections.Collection;
+import org.exist.collections.CollectionConfiguration;
+import org.exist.collections.triggers.DocumentTrigger;
+import org.exist.collections.triggers.Trigger;
+import org.exist.collections.triggers.TriggerStatePerThread;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
@@ -58,6 +62,9 @@ import org.exist.source.SourceFactory;
 import org.exist.storage.DBBroker;
 import org.exist.storage.UpdateListener;
 import org.exist.storage.lock.Lock;
+import org.exist.storage.txn.TransactionException;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
 import org.exist.util.Collations;
 import org.exist.util.Configuration;
 import org.exist.util.LockException;
@@ -246,6 +253,10 @@ public class XQueryContext {
     HashMap XQueryContextVars = new HashMap();
     public static final String XQUERY_CONTEXTVAR_XQUERY_UPDATE_ERROR = "_eXist_xquery_update_error";
     public static final String HTTP_SESSIONVAR_XMLDB_USER = "_eXist_xmldb_user";
+
+    //Transaction for  batched xquery updates
+    private Txn batchTransaction = null;
+    private DocumentSet batchTransactionTriggers = new DocumentSet();
     
 	private AccessContext accessCtx;
     
@@ -1609,6 +1620,9 @@ public class XQueryContext {
             if (TimerPragma.TIMER_PRAGMA.equalsSimple(qname)) {
                 return new TimerPragma(qname, contents);
             }
+            if (BatchTransactionPragma.BATCH_TRANSACTION_PRAGMA.equalsSimple(qname)) {
+                return new BatchTransactionPragma(qname, contents);
+            }
         }
         return null;
     }
@@ -1656,6 +1670,105 @@ public class XQueryContext {
     public Object getXQueryContextVar(String name)
     {
     	return(XQueryContextVars.get(name));
+    }
+    
+    
+    /**
+     *	Starts a batch Transaction 
+     */
+    public void startBatchTransaction() throws TransactionException
+    {
+    	//only allow one batch to exist at once, if there is a current batch then commit them
+    	if(batchTransaction != null)
+    		finishBatchTransaction();
+    	
+    	TransactionManager txnMgr = getBroker().getBrokerPool().getTransactionManager();
+    	batchTransaction = txnMgr.beginTransaction();
+    }
+
+    /**
+     *	Determines if a batch transaction should be performed
+     *
+     * 	@return true if a batch update transaction should be performed
+     */
+    public boolean hasBatchTransaction()
+    {
+    	return(batchTransaction != null);
+    }
+    
+    /**
+     * Get the Transaction for the batch
+     * 
+     * @return The Transaction
+     */
+    public Txn getBatchTransaction()
+    {
+    	return batchTransaction;
+    }
+    
+    /**
+     * Set's that a trigger should be executed for the provided document as part of the batch transaction
+     * 
+     * @param	doc	The document to trigger for
+     */
+    public void setBatchTransactionTrigger(DocumentImpl doc)
+    {
+    	//we want the last updated version of the document, so remove any previous version (matched by xmldburi)
+    	Iterator itTrigDoc = batchTransactionTriggers.iterator();
+    	while(itTrigDoc.hasNext())
+    	{
+    		DocumentImpl trigDoc = (DocumentImpl)itTrigDoc.next();
+    		if(trigDoc.getURI().equals(doc.getURI()))
+    		{
+    			itTrigDoc.remove();
+    			break;
+    		}
+    	}
+    
+    	//store the document so we can later finish the trigger
+    	batchTransactionTriggers.add(doc);
+    }
+    
+    /**
+     * Completes a batch transaction, by committing the transaction and calling finish on any triggers
+     * set by setBatchTransactionTrigger()
+     * */
+    public void finishBatchTransaction() throws TransactionException
+    {
+    	if(batchTransaction != null)
+    	{
+    		//commit the transaction batch
+    		TransactionManager txnMgr = getBroker().getBrokerPool().getTransactionManager();
+    		txnMgr.commit(batchTransaction);
+    	
+    		//finish any triggers
+    		Iterator itDoc = batchTransactionTriggers.iterator();
+    		while(itDoc.hasNext())
+    		{
+    			DocumentImpl doc = (DocumentImpl)itDoc.next();
+    			
+    			//finish the trigger
+    	        CollectionConfiguration config = doc.getCollection().getConfiguration(doc.getBroker());
+    	        if(config != null)
+    	        {
+    	        	DocumentTrigger trigger = (DocumentTrigger)config.getTrigger(Trigger.UPDATE_DOCUMENT_EVENT);
+    	        	if(trigger != null)
+    	        	{
+    	        		try
+    	        		{
+    	        			trigger.finish(Trigger.UPDATE_DOCUMENT_EVENT, doc.getBroker(), TriggerStatePerThread.getTransaction(), doc);
+    	        		}
+    	        		catch(Exception e)
+    	        		{
+    	        			LOG.debug("Trigger event UPDATE_DOCUMENT_EVENT for collection: " + doc.getCollection().getURI() + " with: " + doc.getURI() + " " + e.getMessage());
+    	        		}
+    	        	}
+    	        }
+    		}
+    		batchTransactionTriggers.clear();
+    		
+    		batchTransaction = null;
+    	}
     }
     
     /**
