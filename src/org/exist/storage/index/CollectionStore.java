@@ -6,11 +6,15 @@
 package org.exist.storage.index;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.Writer;
 
 import org.exist.storage.BrokerPool;
 import org.exist.storage.CacheManager;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.btree.DBException;
+import org.exist.storage.btree.Value;
+import org.exist.util.ByteConversion;
 
 /**
  * Handles access to the central collection storage file (collections.dbx). 
@@ -59,5 +63,23 @@ public class CollectionStore extends BFile {
             flushed = flushed | super.flush();
         }
         return flushed;
+    }
+    
+    protected void dumpValue(Writer writer, Value value) throws IOException {
+        if (value.getLength() == 7) {
+            short collectionId = ByteConversion.byteToShort(value.data(), value.start());
+            int docId = ByteConversion.byteToInt(value.data(), value.start() + 3);
+            writer.write('[');
+            writer.write("Document: collection = ");
+            writer.write(collectionId);
+            writer.write(", docId = ");
+            writer.write(docId);
+            writer.write(']');
+        } else {
+            writer.write('[');
+            writer.write("Collection: ");
+            writer.write(new String(value.data(), value.start(), value.getLength(), "UTF-8"));
+            writer.write(']');
+        }
     }
 }

@@ -313,6 +313,12 @@ public class BrokerPool {
 	//TODO : let's be positive and rename it as initialized ? 
 	private boolean initializing = true;
 	
+    private final static int OPERATING = 0;
+    private final static int INITIALIZING = 1;
+    private final static int SHUTDOWN = 2;
+    
+    private int status = OPERATING;
+    
 	/**
 	 * The number of brokers for the database instance 
 	 */
@@ -631,7 +637,7 @@ public class BrokerPool {
             LOG.debug("initializing database instance '" + instanceName + "'...");
         
         //Flag to indicate that we are initializing
-		initializing = true;
+        status = INITIALIZING;
         
 		//REFACTOR : construct then configure
         cacheManager = new CacheManager(conf);
@@ -707,7 +713,7 @@ public class BrokerPool {
 		securityManager = null;
 		localSecurityManager.attach(this, broker);
 		securityManager = localSecurityManager;
-		initializing = false;
+		status = OPERATING;
 		//have to do this after initializing = false
 		// so that the policies collection is saved
 		if(securityManager.isXACMLEnabled())
@@ -758,7 +764,7 @@ public class BrokerPool {
 	 */
 	//	TODO : let's be positive and rename it as isInitialized ? 
 	public boolean isInitializing() {
-		return initializing;
+		return status == INITIALIZING;
 	}	
 
     /** Returns the database instance's name.
@@ -1087,7 +1093,8 @@ public class BrokerPool {
 		User user = broker.getUser();
 		//TODO : strange that it is set *after* the sunc method has been called.
 		broker.setUser(SecurityManager.SYSTEM_USER);
-		broker.cleanUpTempResources();
+        if (status != SHUTDOWN)
+            broker.cleanUpTempResources();
         if (syncEvent == Sync.MAJOR_SYNC) {
             try {
                 if (!FORCE_CORRUPTION)
@@ -1225,6 +1232,8 @@ public class BrokerPool {
 	 * @param killed <code>true</code> when the JVM is (cleanly) exiting
 	 */
 	public synchronized void shutdown(boolean killed) {
+        status = SHUTDOWN;
+        
 		notificationService.debug();
 		
 		//Notify all running tasks that we are shutting down
@@ -1297,6 +1306,8 @@ public class BrokerPool {
 		}
 		if (shutdownListener != null)
 			shutdownListener.shutdown(instanceName, instances.size());
+        
+        status = OPERATING;
 	}
 
 	//TODO : move this elsewhere

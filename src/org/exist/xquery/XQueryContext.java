@@ -1624,7 +1624,6 @@ public class XQueryContext {
 			DocumentImpl targetDoc = broker.storeTempResource(doc);
             if (targetDoc == null)
                 throw new XPathException("Internal error: failed to store temporary doc fragment");
-			watchdog.addTemporaryFragment(targetDoc.getFileURI());
             LOG.debug("Stored: " + targetDoc.getDocId() + ": " + targetDoc.getURI());
 			return targetDoc;
 		} catch (EXistException e) {
