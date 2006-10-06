@@ -313,7 +313,7 @@ public class DeepEqualTest extends TestCase {
             assertQuery(true,query);    
 	}
         
-        public void bugtestReferenceNode2() {
+        public void testReferenceNode2() {
                     String query = "declare namespace dst = \"http://www.test.com/DeeperEqualTest\"; "
                             + "declare function dst:value($value as element(Value), "
                             + "$result as element(Result)) as element(Result) { "
