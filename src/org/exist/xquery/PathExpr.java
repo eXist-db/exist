@@ -145,8 +145,11 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
             if (contextItem != null)
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
+
+        if (contextItem != null)
+            contextSequence = contextItem.toSequence();
         
-        Sequence result = null;        
+        Sequence result = null;
         if (steps.size() == 0) {
             result = Sequence.EMPTY_SEQUENCE;
         } else {
