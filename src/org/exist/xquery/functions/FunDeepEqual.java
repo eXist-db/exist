@@ -176,8 +176,12 @@ public class FunDeepEqual extends Function {
 			if (nodeTypeA != nodeTypeB) return false;
 			switch (nodeTypeA) {
 				case Node.TEXT_NODE:
-					if (b.getNodeType() == NodeImpl.REFERENCE_NODE) {
-						if (!safeEquals(a.getNodeValue(), ((ReferenceNode)b).getReference().getNodeValue())) return false;
+					if (a.getNodeType() == NodeImpl.REFERENCE_NODE && b.getNodeType() == NodeImpl.REFERENCE_NODE) {
+						if (!safeEquals(((ReferenceNode)a).getReference().getNodeValue(), ((ReferenceNode)b).getReference().getNodeValue())) return false;
+					} else if (a.getNodeType() == NodeImpl.REFERENCE_NODE) {
+						if (!safeEquals(((ReferenceNode)a).getReference().getNodeValue(), b.getNodeValue())) return false;						
+					} else if (b.getNodeType() == NodeImpl.REFERENCE_NODE) {
+						if (!safeEquals(a.getNodeValue(), ((ReferenceNode)b).getReference().getNodeValue())) return false;						
 					} else
 						if (!safeEquals(a.getNodeValue(), b.getNodeValue())) return false;
 					break;

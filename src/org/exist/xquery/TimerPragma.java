@@ -38,13 +38,13 @@ public class TimerPragma extends Pragma {
         super(qname, contents);
     }
 
-    public void after(Expression expression) {
+    public void after(XQueryContext context, Expression expression) throws XPathException {
         long elapsed = System.currentTimeMillis() - start;
         if (LOG.isTraceEnabled())
             LOG.trace("Elapsed: " + elapsed + "ms. for expression:\n" + ExpressionDumper.dump(expression));
     }
 
-    public void before(Expression expression) {
+    public void before(XQueryContext context, Expression expression) throws XPathException {
         start = System.currentTimeMillis();
     }
 }

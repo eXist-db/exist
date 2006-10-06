@@ -34,7 +34,6 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.NotificationService;
 import org.exist.storage.UpdateListener;
-import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.xquery.Dependency;
@@ -123,10 +122,9 @@ public class Update extends Modification {
         	context.pushInScopeNamespaces();
     		try {
     			NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
-                TransactionManager transact = context.getBroker().getBrokerPool().getTransactionManager();
                 
                 //start a transaction
-                Txn transaction = transact.beginTransaction();
+                Txn transaction = getTransaction();
                 StoredNode ql[] = selectAndLock(inSeq.toNodeSet());
                 IndexListener listener = new IndexListener(ql);
                 TextImpl text;
@@ -187,7 +185,7 @@ public class Update extends Modification {
                 checkFragmentation(transaction, modifiedDocuments);
                 
                 //commit the transaction
-                transact.commit(transaction);
+                commitTransaction(transaction);
             } catch (LockException e) {
                 throw new XPathException(getASTNode(), e.getMessage(), e);
     		} catch (PermissionDeniedException e) {
