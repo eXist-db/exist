@@ -138,7 +138,7 @@ declare function setup:page2() as element() {
         I can try to download the corresponding data. Do you want me to do so?</p>
         
         <input type="checkbox" name="xmlad" checked="true"/>
-        <a href="http://www.xml-acronym-demystifier.org">The XML Acronym Demystifier</a>
+        <a href="http://sourceforge.net/projects/xmlad/">The XML Acronym Demystifier</a>
         (approx. 384K)<br/>
         
         <input type="checkbox" name="mondial"/>
