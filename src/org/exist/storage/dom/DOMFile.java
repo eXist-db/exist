@@ -1884,6 +1884,7 @@ public class DOMFile extends BTree implements Lockable {
 			}
 			return;
 		case Node.TEXT_NODE:
+        case Node.CDATA_SECTION_NODE:
             dlnLen = ByteConversion.byteToShort(data, readOffset);
             readOffset += 2;
             int nodeIdLen =
