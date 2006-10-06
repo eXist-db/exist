@@ -23,13 +23,23 @@
                    <email>peter.klotz@blue-elephant-systems.com</email>
                </address>
            </affiliation>
-       </author>
+      </author><author>
+          <firstname>Sabine</firstname>
+          <surname>Meier</surname>
+          <affiliation>
+              <address format="linespecific">
+                  <email>sabine@exist-db.org</email>
+              </address>
+          </affiliation>
+      </author>
+        
+        
     </bookinfo>
     <ci:include src="sidebar.xml"/>
     <chapter>
         <title>Ant Tasks</title>
 
-      <para>eXist provides a taskdef library for the
+      <para>eXist provides a library for the
         <ulink url="http://ant.apache.org">Ant</ulink> build tool to automate common
         tasks like backup/restore or importing a bunch of files. To use this library
         you need at least Ant 1.6, which is included in the eXist distribution (if you
@@ -42,10 +52,30 @@
             <title>Import the Tasks</title>
             
             <screen>
-<![CDATA[<taskdef resource="org/exist/ant/antlib.xml">
-    <classpath refid="classpath.core"/>
-</typedef>]]></screen>
+                <![CDATA[
+   <typedef resource="org/exist/ant/antlib.xml" uri="http://exist-db.org/ant">
+        <classpath refid="classpath.core"/>
+    </typedef>]]></screen>
         </example>
+        
+        <para> The classpath has to be defined before as follows</para>
+        <example>
+            <title>Definition of Classpath</title>
+        
+        <screen><![CDATA[ 
+        <path id="classpath.core">
+        <fileset dir="${server.dir}/lib/core">
+            <include name="*.jar"/>
+        </fileset>
+        <pathelement path="${server.dir}/exist.jar"/>
+        <pathelement path="${server.dir}/exist-optional.jar"/>
+    </path>]]></screen>
+        </example>
+        
+        <note><para>For a working example have a look into the file
+            <filename>webapp/xqts/build.xml </filename>, 
+            which is used to prepare the database for running the xquery testsuite.</para></note>
+        
         
         <para>All tasks share the following common attributes:</para>
 
@@ -95,15 +125,17 @@
                 <title>Storing Documents</title>
 
                 <screen>
-<![CDATA[<xdbstore uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare/plays"
+                    <![CDATA[<xdb:store xmlns:xdb="http://exist-db.org/ant"
+                    uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare/plays"
     createcollection="true">
     <fileset dir="samples/shakespeare"> 
         <include name="*.xml"/>
         <include name="*.xsl"/>
     </fileset>
-</xdbstore>]]></screen>
+</xdb:store>]]></screen>
               <screen>
-<![CDATA[<xdbstore uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare/plays"
+                  <![CDATA[<xdb:store xmlns:xdb="http://exist-db.org/ant"
+                  uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare/plays"
   createcollection="true" srcfile="samples/shakespeare/hamlet.xml"/>]]></screen>
             </example>
 
@@ -145,12 +177,14 @@
           <example>
               <title>Remove a Resource</title>
               <screen>
-<![CDATA[<xdbremove uri="xmldb:exist:///db/shakespeare/plays" resource="hamlet.xml"/>]]></screen>
+                  <![CDATA[<xdb:remove xmlns:xdb="http://exist-db.org/ant"
+                  uri="xmldb:exist:///db/shakespeare/plays" resource="hamlet.xml"/>]]></screen>
           </example>
           <example>
               <title>Remove a Collection</title>
               <screen>
-<![CDATA[<xdbremove uri="xmldb:exist:///db/shakespeare" collection="plays"/>]]></screen>
+                  <![CDATA[<xdb:remove xmlns:xdb="http://exist-db.org/ant"
+                  uri="xmldb:exist:///db/shakespeare" collection="plays"/>]]></screen>
           </example>
 
             <variablelist>
@@ -176,7 +210,8 @@
         <example>
             <title>Create a Collection</title>
             <screen>
-<![CDATA[<xdbcreate uri="xmldb:exist:///db/shakespeare" collection="plays"/>]]></screen>
+                <![CDATA[<xdb:create xmlns:xdb="http://exist-db.org/ant"
+                uri="xmldb:exist:///db/shakespeare" collection="plays"/>]]></screen>
         </example>
 
           <variablelist>
@@ -200,7 +235,8 @@
             <title>Check a Collection</title>
             <screen>
 <![CDATA[<condition property="exists">
-<xdbexist uri="xmldb:exist:///db/shakespeare/plays" resource="hamlet.xml"/>
+<xdb:exist xmlns:xdb="http://exist-db.org/ant"
+                uri="xmldb:exist:///db/shakespeare/plays" resource="hamlet.xml"/>
  </condition>]]></screen>
         </example>
 
@@ -221,12 +257,14 @@
         <example>
             <title>List Resources</title>
             <screen>
-<![CDATA[<xdblist uri="xmldb:exist:///db/shakespeare/plays" resources="true" outputproperty="resources"/>]]></screen>
+                <![CDATA[<xdb:list xmlns:xdb="http://exist-db.org/ant"
+                uri="xmldb:exist:///db/shakespeare/plays" resources="true" outputproperty="resources"/>]]></screen>
         </example>
         <example>
             <title>List Collections</title>
             <screen>
-<![CDATA[<xdblist uri="xmldb:exist:///db/shakespeare" collections="true" outputproperty="collections"/>]]></screen>
+                <![CDATA[<xdb:list xmlns:xdb="http://exist-db.org/ant"
+                uri="xmldb:exist:///db/shakespeare" collections="true" outputproperty="collections"/>]]></screen>
         </example>
 
           <variablelist>
@@ -263,12 +301,14 @@
         <example>
             <title>Copy a Resource</title>
             <screen>
-<![CDATA[<xdbcopy uri="xmldb:exist:///db/shakespeare/plays" resource="hamlet.xml" destination="sub"/>]]></screen>
+                <![CDATA[<xdb:copy  xmlns:xdb="http://exist-db.org/ant"
+                uri="xmldb:exist:///db/shakespeare/plays" resource="hamlet.xml" destination="sub"/>]]></screen>
         </example>
         <example>
             <title>Copy a Collection</title>
             <screen>
-<![CDATA[<xdbcopy uri="xmldb:exist:///db/shakespeare" collection="plays" destination="sub"/>]]></screen>
+                <![CDATA[<xdb:copy  xmlns:xdb="http://exist-db.org/ant"
+                uri="xmldb:exist:///db/shakespeare" collection="plays" destination="sub"/>]]></screen>
         </example>
 
           <variablelist>
@@ -305,12 +345,14 @@
         <example>
             <title>Move a Resource</title>
             <screen>
-<![CDATA[<xdbmove uri="xmldb:exist:///db/shakespeare/plays" resource="hamlet.xml" destination="sub"/>]]></screen>
+                <![CDATA[<xdb:move xmlns:xdb="http://exist-db.org/ant"
+                uri="xmldb:exist:///db/shakespeare/plays" resource="hamlet.xml" destination="sub"/>]]></screen>
         </example>
         <example>
             <title>Move a Collection</title>
             <screen>
-<![CDATA[<xdbmove uri="xmldb:exist:///db/shakespeare" collection="plays" destination="sub"/>]]></screen>
+                <![CDATA[<xdb:move xmlns:xdb="http://exist-db.org/ant"
+                uri="xmldb:exist:///db/shakespeare" collection="plays" destination="sub"/>]]></screen>
         </example>
 
           <variablelist>
@@ -354,7 +396,8 @@
            <example>
                <title>Process an XPath</title>
                <screen>
- <![CDATA[<xdbxpath uri="xmldb:exist:///db" query="/example-queries/query"/>]]></screen>
+                   <![CDATA[<xdb:xpath xmlns:xdb="http://exist-db.org/ant"
+                   uri="xmldb:exist:///db" query="/example-queries/query"/>]]></screen>
            </example>
            <para>The query task accepts the following attributes:</para>
            <variablelist>
@@ -416,7 +459,8 @@
                 <title>Process an XQuery</title>
                 <screen>
 <![CDATA[<loadfile property="xquery" srcFile="wzb.xq"/>
-<xdbxquery uri="xmldb:exist:///db" query="${xquery}"/>]]></screen>
+<xdb:xquery  xmlns:xdb="http://exist-db.org/ant"
+                    uri="xmldb:exist:///db" query="${xquery}"/>]]></screen>
             </example>
             <para>The query task accepts the following attributes:</para>
             <variablelist>
@@ -459,12 +503,14 @@
         <example>
             <title>Extract a Resource</title>
             <screen>
-<![CDATA[<xdbextract uri="xmldb:exist:///db/shakespeare/plays" resource="hamlet.xml" destfile="/tmp/hamlet.xml"/>]]></screen>
+                <![CDATA[<xdb:extract xmlns:xdb="http://exist-db.org/ant"
+                uri="xmldb:exist:///db/shakespeare/plays" resource="hamlet.xml" destfile="/tmp/hamlet.xml"/>]]></screen>
         </example>
         <example>
             <title>Extract a Collection</title>
             <screen>
-<![CDATA[<xdbextract uri="xmldb:exist:///db/shakespeare/plays" destdir="/tmp" subcollections="true" createdirectories="true"/>]]></screen>
+                <![CDATA[<xdb:extract xmlns:xdb="http://exist-db.org/ant"
+                uri="xmldb:exist:///db/shakespeare/plays" destdir="/tmp" subcollections="true" createdirectories="true"/>]]></screen>
         </example>
 
           <variablelist>
@@ -526,7 +572,8 @@
             <example>
                 <title>Backing up the System Collection</title>
                 <screen>
-<![CDATA[<xdbbackup uri="${backup.uri}/db/system"
+                    <![CDATA[<xdb:backup xmlns:xdb="http://exist-db.org/ant"
+                    uri="${backup.uri}/db/system"
     dir="${backup.dir}" user="${backup.user}" password="${backup.pass}"/>]]></screen>
             </example>
             
@@ -565,7 +612,8 @@
             <example>
                 <title>Restore a Collection</title>
                 <screen>
-<![CDATA[<xdbrestore uri="xmldb:exist://" user="admin" password=""
+                    <![CDATA[<xdb:restore xmlns:xdb="http://exist-db.org/ant"
+                    uri="xmldb:exist://" user="admin" password=""
     dir="${backup.dir}/db/home"/>]]></screen>
             </example>
         </section>
@@ -578,7 +626,8 @@
           <example>
               <title>Write list of groups to output property</title>
               <screen>
-<![CDATA[<xdbgroups uri="${backup.uri}/db/system" outputproperty="groups"/>]]></screen>
+                  <![CDATA[<xdb:groups xmlns:xdb="http://exist-db.org/ant"
+                  uri="${backup.uri}/db/system" outputproperty="groups"/>]]></screen>
           </example>
 
           <variablelist>
@@ -605,7 +654,8 @@
            <example>
                <title>Write list of users to output property</title>
                <screen>
- <![CDATA[<xdbusers uri="${backup.uri}/db/system" outputproperty="users"/>]]></screen>
+                   <![CDATA[<xdb:users xmlns:xdb="http://exist-db.org/ant"
+                   uri="${backup.uri}/db/system" outputproperty="users"/>]]></screen>
            </example>
 
            <variablelist>
@@ -632,7 +682,8 @@
             <example>
                 <title>Lock Resource</title>
                 <screen>
-  <![CDATA[<xdblock uri="${backup.uri}/db/shakespeare/plays" resource="hamlet.xml" name="guest"/>]]></screen>
+                    <![CDATA[<xdb:lock  xmlns:xdb="http://exist-db.org/ant"
+                    uri="${backup.uri}/db/shakespeare/plays" resource="hamlet.xml" name="guest"/>]]></screen>
             </example>
 
             <variablelist>
@@ -659,7 +710,8 @@
             <example>
                 <title>Add User</title>
                 <screen>
-  <![CDATA[<xdbadduser uri="${backup.uri}/db" name="guest"/>]]></screen>
+                    <![CDATA[<xdb:adduser xmlns:xdb="http://exist-db.org/ant"
+                    uri="${backup.uri}/db" name="guest"/>]]></screen>
             </example>
 
             <variablelist>
@@ -690,7 +742,7 @@
             </variablelist>
 
            <note>
-             This task does not seem to work currently!
+            <para> This task does not seem to work currently!</para>
            </note>
         </section>
       <section>
@@ -702,7 +754,8 @@
             <example>
                 <title>Remove User</title>
                 <screen>
-  <![CDATA[<xdbrmuser uri="${backup.uri}/db" name="guest"/>]]></screen>
+                    <![CDATA[<xdb:rmuser xmlns:xdb="http://exist-db.org/ant"
+                    uri="${backup.uri}/db" name="guest"/>]]></screen>
             </example>
 
             <variablelist>
@@ -723,7 +776,8 @@
             <example>
                 <title>Chmod</title>
                 <screen>
-  <![CDATA[<xdbchmod uri="${backup.uri}/db/shakespear/plays" resource="hamlet.xml" mod=""/>]]></screen>
+                    <![CDATA[<xdb:chmod xmlns:xdb="http://exist-db.org/ant"
+                    uri="${backup.uri}/db/shakespear/plays" resource="hamlet.xml" mod=""/>]]></screen>
             </example>
 
         <variablelist>
@@ -750,7 +804,8 @@
             <example>
                 <title>Chown</title>
                 <screen>
-  <![CDATA[<xdbchown uri="${backup.uri}/db/shakespear/plays" resource="hamlet.xml" name="guest" group="guest"/>]]></screen>
+                    <![CDATA[<xdb:chown xmlns:xdb="http://exist-db.org/ant"
+                    uri="${backup.uri}/db/shakespear/plays" resource="hamlet.xml" name="guest" group="guest"/>]]></screen>
             </example>
 
             <variablelist>
