@@ -101,14 +101,15 @@ public class Predicate extends PathExpr {
         // Check the returned node set against the context set 
         // and return all nodes from the context, for which the
 		// predicate expression returns a non-empty sequence.
-        if (Type.subTypeOf(inner.returnsType(), Type.NODE)) {
+        final int innerType = inner.returnsType();
+        if (Type.subTypeOf(innerType, Type.NODE)) {
             if(!Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM))
                 executionMode = NODE;
             else
                 executionMode = BOOLEAN;
             
         // Case 2: predicate expression returns a number.
-        } else if (Type.subTypeOf(inner.returnsType(), Type.NUMBER) && (inner.getCardinality() == Cardinality.EXACTLY_ONE
+        } else if (Type.subTypeOf(innerType, Type.NUMBER) && (inner.getCardinality() == Cardinality.EXACTLY_ONE
         		|| inner.getCardinality() == Cardinality.ZERO_OR_ONE)) {
             //Just a hint : inner's cardinality may still be potential
             executionMode = POSITIONAL;
