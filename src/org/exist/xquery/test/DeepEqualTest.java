@@ -313,6 +313,21 @@ public class DeepEqualTest extends TestCase {
             assertQuery(true,query);    
 	}
         
+        public void testReferenceNode2() {
+                    String query = "declare namespace dst = \"http://www.test.com/DeeperEqualTest\"; "
+                            + "declare function dst:value($value as element(Value), "
+                            + "$result as element(Result)) as element(Result) { "
+                            + "<Result><Value>{($result/Value/node(), $value/node())}</Value> </Result>}; "
+                            + "let $value1 := <Value>hello</Value> "
+                            + "let $result0 := <Result><Value/></Result> "
+                            + "let $result1 := dst:value($value1, $result0) "
+                            + "let $value2 := <Value/> "
+                            + "let $result2 := dst:value($value2, $result1) "
+                            + "return deep-equal($result1, $result2)";
+            assertQuery(true,query);    
+	}
+        
+        
 	
 	public void testNSElements1() {
 		createDocument("test", "<test xmlns:p='urn:foo' xmlns:q='urn:foo'><p:a/><q:a/></test>");

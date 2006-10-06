@@ -30,7 +30,6 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.NotificationService;
 import org.exist.storage.UpdateListener;
-import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.xquery.Dependency;
@@ -53,6 +52,9 @@ import org.w3c.dom.Node;
  * @author wolf
  *
  */
+
+//TODO: this is the only update function that uses transaction.abort() do we really need to use it and if so shouldnt the others use it as well?!?
+
 public class Delete extends Modification {
 
 	/**
@@ -114,10 +116,8 @@ public class Delete extends Modification {
         //END trap Delete failure
         
 		if (!inSeq.isEmpty()) {
-            TransactionManager transact = context.getBroker().getBrokerPool().getTransactionManager();
-            
             //start a transaction
-            Txn transaction = transact.beginTransaction();
+            Txn transaction = getTransaction();
     		try {
     			NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
                 StoredNode[] ql = selectAndLock(inSeq.toNodeSet());
@@ -128,7 +128,7 @@ public class Delete extends Modification {
                     DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
                     if (!doc.getPermissions().validate(context.getUser(),
                             Permission.UPDATE)) {
-                        transact.abort(transaction);    
+                        //transact.abort(transaction);    
                         throw new XPathException(getASTNode(), "permission to update document denied");
                     }
                     doc.getMetadata().setIndexListener(listener);
@@ -137,7 +137,7 @@ public class Delete extends Modification {
                     parent = (StoredNode) node.getParentNode();
                     if (parent.getNodeType() != Node.ELEMENT_NODE) {
                         LOG.debug("parent = " + parent.getNodeType() + "; " + parent.getNodeName());
-                        transact.abort(transaction);
+                        //transact.abort(transaction);
                         throw new XPathException(getASTNode(),
                                 "you cannot remove the document element. Use update "
                                         + "instead");
@@ -152,15 +152,15 @@ public class Delete extends Modification {
                 checkFragmentation(transaction, modifiedDocuments);
                 
                 //commit the transaction
-                transact.commit(transaction);
+                commitTransaction(transaction);
             } catch (EXistException e) {
-                transact.abort(transaction);
+                //transact.abort(transaction);
                 throw new XPathException(getASTNode(), e.getMessage(), e);
     		} catch (PermissionDeniedException e) {
-                transact.abort(transaction);
+                //transact.abort(transaction);
                 throw new XPathException(getASTNode(), e.getMessage(), e);
     		} catch (LockException e) {
-                transact.abort(transaction);
+                //transact.abort(transaction);
                 throw new XPathException(getASTNode(), e.getMessage(), e);
     		} finally {
                 unlockDocuments();

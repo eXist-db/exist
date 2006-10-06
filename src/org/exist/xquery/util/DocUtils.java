@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.util;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -81,9 +82,13 @@ public class DocUtils {
 				URLConnection con = url.openConnection();
 				if (con instanceof HttpURLConnection) {
 					HttpURLConnection httpConnection = (HttpURLConnection)con;
-					if (httpConnection.getResponseCode() != HttpURLConnection.HTTP_OK)
-						//TODO : return another type 
-						throw new PermissionDeniedException("Server returned code " + httpConnection.getResponseCode());	
+                                        if(httpConnection.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND){
+                                            // Special case: '404'
+                                            return Sequence.EMPTY_SEQUENCE;
+                                        } else if (httpConnection.getResponseCode() != HttpURLConnection.HTTP_OK){
+                                            //TODO : return another type 
+                                            throw new PermissionDeniedException("Server returned code " + httpConnection.getResponseCode());	
+                                        }
 				}
 				
 				//TODO : process pseudo-protocols URLs more efficiently.
@@ -109,7 +114,12 @@ public class DocUtils {
 			} catch (SAXException e) {
 				throw new XPathException(e.getMessage(), e);	
 			} catch (IOException e) {
+                            // Special case: FileNotFoundException
+                            if(e instanceof FileNotFoundException){
+                                return Sequence.EMPTY_SEQUENCE;
+                            } else {
 				throw new XPathException(e.getMessage(), e);	
+                            }
 			}			
 		//Database documents
 		} else {
