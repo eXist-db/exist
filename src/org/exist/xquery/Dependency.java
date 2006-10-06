@@ -81,6 +81,10 @@ public class Dependency {
         return ((expr.getDependencies()& dependency) == dependency);
     }
 
+    public static final boolean dependsOn(int expressionDep, int dependency) {
+        return ((expressionDep & dependency) == dependency);
+    }
+
     public final static boolean dependsOnVar(Expression expr) {
         return ((expr.getDependencies() & VARS) != 0);
     }
