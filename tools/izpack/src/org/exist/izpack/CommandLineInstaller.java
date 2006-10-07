@@ -63,7 +63,9 @@ public class CommandLineInstaller {
 			System.out.println("------------------------");
 			System.out.println("Using GUI mode ...");
 			System.out.println("On a headless system, add parameter -p install-path");
-			System.out.println("to install without GUI.\n");
+			System.out.println("to install without GUI. If you are running JDK 1.4, you may");
+			System.out.println("also try to pass: -Djava.awt.headless=true -p install-path");
+			System.out.println("as arguments to the Java executable.");
  			
  			// can't load the GUIInstaller class on headless machines,
  			// so we use Class.forName to force lazy loading.
