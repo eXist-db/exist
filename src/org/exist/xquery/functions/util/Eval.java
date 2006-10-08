@@ -190,7 +190,7 @@ public class Eval extends BasicFunction {
 		NodeValue contextInit = null;
 		if (isCalledAs("eval-with-context")) {
 			// set the context initialization param for later use
-			contextInit = (NodeValue) args[argCount++];
+			contextInit = (NodeValue) args[argCount++].itemAt(0);
 		}
 		
 		// should the compiled query be cached?
@@ -255,7 +255,6 @@ public class Eval extends BasicFunction {
 
     /**
      * @param expr
-     * @param querySource
      * @return
      * @throws XPathException
      * @throws NullPointerException
