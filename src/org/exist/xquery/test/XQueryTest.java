@@ -1229,7 +1229,6 @@ public class XQueryTest extends XMLTestCase {
 		boolean hasInternetAccess = false;
 		ResourceSet result;
 		String query;
-		boolean exceptionThrown;
 		String message;		
 		
 		//Checking that we have an Internet Aceess
@@ -1262,14 +1261,8 @@ public class XQueryTest extends XMLTestCase {
 			
 			System.out.println("testFunctionDocExternal 2: ========" );		
 			query ="doc(\"http://www.w3.org/RDF/dummy\")";	
-			try {
-				exceptionThrown = false;
-				result = service.query(query);		
-			} catch (XMLDBException e) {
-				exceptionThrown = true;
-				message = e.getMessage();
-			}
-			assertTrue(exceptionThrown);		
+			result = service.query(query);		
+                        assertEquals( "XQuery: " + query, 0, result.getSize() );
 			
 			System.out.println("testFunctionDocExternal 3: ========" );				
 			query ="doc-available(\"http://www.w3.org/RDF/\")";	
@@ -1287,7 +1280,18 @@ public class XQueryTest extends XMLTestCase {
 			//A redirected 404
 			query ="doc-available(\"http://java.sun.com/404\")";	
 			assertEquals( "XQuery: " + query, 1, result.getSize() );
-			assertEquals( "XQuery: " + query, "false", result.getResource(0).getContent());		
+			assertEquals( "XQuery: " + query, "false", result.getResource(0).getContent());	
+                        
+			System.out.println("testFunctionDocExternal 6: ========" );		
+			query ="doc(\"file:////doesnotexist.xml\")";	
+			result = service.query(query);		
+                        assertEquals( "XQuery: " + query, 0, result.getSize() );
+                        
+			System.out.println("testFunctionDocExternal 7: ========" );		
+			query ="doc-available(\"file:////doesnotexist.xml\")";	
+			result = service.query(query);
+			assertEquals( "XQuery: " + query, 1, result.getSize() );
+			assertEquals( "XQuery: " + query, "false", result.getResource(0).getContent());	
 			
 		} catch (XMLDBException e) {
 			System.out.println("testFunctionDoc : XMLDBException: "+e);

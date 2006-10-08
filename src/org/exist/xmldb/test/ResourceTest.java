@@ -302,8 +302,11 @@ public class ResourceTest extends TestCase {
             Collection testCollection = service.createCollection("test");
             assertNotNull(testCollection);
             
-            File f = new File("samples/shakespeare");
-            File files[] = f.listFiles(new XMLFilenameFilter());
+            String directory = "samples/shakespeare";
+            String existHome = System.getProperty("exist.home");
+            File existDir = existHome==null ? new File(".") : new File(existHome);
+            File dir = new File(existDir,directory);
+            File files[] = dir.listFiles(new XMLFilenameFilter());
 
             for (int i = 0; i < files.length; i++) {
                 XMLResource res = (XMLResource) testCollection.createResource(files[i].getName(), "XMLResource");
