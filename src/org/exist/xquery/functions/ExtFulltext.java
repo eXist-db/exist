@@ -29,6 +29,7 @@ import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.storage.analysis.Tokenizer;
+import org.exist.storage.DBBroker;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.CachedResult;
 import org.exist.xquery.Cardinality;
@@ -220,12 +221,13 @@ public class ExtFulltext extends Function {
 			return NodeSet.EMPTY_SET;
 		NodeSet hits[] = new NodeSet[terms.length];
 		for (int k = 0; k < terms.length; k++) {
-			hits[k] =
-				context.getBroker().getTextEngine().getNodesContaining(
-						context,
-						contextSet.getDocumentSet(),
-						contextSet,
-						terms[k]);
+            hits[k] =
+                    context.getBroker().getTextEngine().getNodesContaining(
+                            context,
+                            contextSet.getDocumentSet(),
+                            contextSet,
+                            terms[k],
+                            DBBroker.MATCH_EXACT);
 		}
 		NodeSet result = hits[0];
 		if(result != null) {
