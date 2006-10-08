@@ -48,7 +48,11 @@ public class TextModule extends AbstractInternalModule {
         new FunctionDef(RegexpFilter.signatures[0], RegexpFilter.class),
         new FunctionDef(RegexpFilter.signatures[1], RegexpFilter.class),
         new FunctionDef(RegexpFilter.signatures[2], RegexpFilter.class),
-        new FunctionDef(Tokenize.signature, Tokenize.class)
+        new FunctionDef(Tokenize.signature, Tokenize.class),
+        new FunctionDef(MatchRegexp.signatures[0], MatchRegexp.class),
+        new FunctionDef(MatchRegexp.signatures[1], MatchRegexp.class),
+        new FunctionDef(MatchRegexp.signatures[2], MatchRegexp.class),
+        new FunctionDef(MatchRegexp.signatures[3], MatchRegexp.class),
     };
     
     /**

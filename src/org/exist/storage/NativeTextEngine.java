@@ -390,7 +390,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     }    
 
 	public NodeSet getNodesContaining(XQueryContext context, DocumentSet docs, NodeSet contextSet,
-	        String expr, int type) throws TerminatedException {
+	        String expr, int type, boolean matchAll) throws TerminatedException {
 		if (type == DBBroker.MATCH_EXACT && containsWildcards(expr)) {
             //TODO : log this fallback ? -pb
 			type = DBBroker.MATCH_WILDCARDS;
@@ -400,7 +400,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 				return getNodesExact(context, docs, contextSet, expr);
                 //TODO : stricter control -pb
 			default :
-				return getNodesRegexp(context, docs, contextSet, expr, type);
+				return getNodesRegexp(context, docs, contextSet, expr, type, matchAll);
 		}
 	}
 
@@ -525,7 +525,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	}
     
     private NodeSet getNodesRegexp(XQueryContext context, DocumentSet docs, NodeSet contextSet,
-            String expr, int type) throws TerminatedException {
+            String expr, int type, boolean matchAll) throws TerminatedException {
         //Return early
         if (expr == null)
             return null;
@@ -536,16 +536,21 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 
         // if the regexp starts with a char sequence, we restrict the index scan to entries starting with
         // the same sequence. Otherwise, we have to scan the whole index.
-        final StringBuffer token = new StringBuffer();
-        for (int i = 0; i < expr.length(); i++) {
-            if (Character.isLetterOrDigit(expr.charAt(i)))
-                token.append(expr.charAt(i));
-            else
-                break;
+        CharSequence start = "";
+        if (matchAll) {
+            StringBuffer buf = new StringBuffer();
+            for (int i = 0; i < expr.length(); i++) {
+                if (Character.isLetterOrDigit(expr.charAt(i)))
+                    buf.append(expr.charAt(i));
+                else
+                    break;
+            }
+            start = buf;
         }
         try {
-            TermMatcher comparator = new RegexMatcher(expr, type, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-            return getNodes(context, docs, contextSet, comparator, token);
+            TermMatcher comparator = new RegexMatcher(expr, type, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE,
+                    matchAll);
+            return getNodes(context, docs, contextSet, comparator, start);
         } catch (EXistException e) {
             return null;
         }
