@@ -43,6 +43,7 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.util.Configuration;
 import org.exist.util.Occurrences;
 import org.exist.util.PorterStemmer;
+import org.exist.util.XMLString;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XQueryContext;
 
@@ -157,8 +158,10 @@ public abstract class TextSearchEngine extends Observable {
 	 * @param text
 	 */
 	public abstract void storeText(FulltextIndexSpec idx, TextImpl text, boolean onetoken);
-	
-	/**
+
+    public abstract void storeText(FulltextIndexSpec indexSpec, StoredNode parent, String text);
+
+    /**
 	 * Tokenize and index the given attribute node.
 	 * 
 	 * @param idx

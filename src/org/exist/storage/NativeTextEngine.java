@@ -38,18 +38,7 @@ import java.util.regex.Pattern;
 import org.exist.EXistException;
 import org.exist.numbering.NodeId;
 import org.exist.collections.Collection;
-import org.exist.dom.AttrImpl;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.Match;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.NodeSetHelper;
-import org.exist.dom.StoredNode;
-import org.exist.dom.TextImpl;
-import org.exist.dom.VirtualNodeSet;
+import org.exist.dom.*;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.analysis.TextToken;
 import org.exist.storage.btree.BTreeCallback;
@@ -198,12 +187,12 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     public void storeText(FulltextIndexSpec indexSpec, TextImpl text, boolean noTokenizing) {
         final DocumentImpl doc = (DocumentImpl)text.getOwnerDocument();
         //TODO : case conversion should be handled by the tokenizer -pb
-        final XMLString t = text.getXMLString().transformToLower();        
-        TextToken token;        
+        final XMLString t = text.getXMLString().transformToLower();
+        TextToken token;
         if (noTokenizing) {            
             token = new TextToken(TextToken.ALPHA, t, 0, t.length());
             invertedIndex.setDocument(doc);
-            invertedIndex.addText(t, token, text.getNodeId());
+            invertedIndex.addText(token, text.getNodeId());
         } else {
             tokenizer.setText(t);
             while (null != (token = tokenizer.nextToken())) {
@@ -220,11 +209,34 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     }
                 }                
                 invertedIndex.setDocument(doc);
-                invertedIndex.addText(t, token, text.getNodeId());
+                invertedIndex.addText(token, text.getNodeId());
             }
         }
     } 
-    
+
+    public void storeText(FulltextIndexSpec indexSpec, StoredNode parent, String text) {
+        final DocumentImpl doc = (DocumentImpl)parent.getOwnerDocument();
+        //TODO : case conversion should be handled by the tokenizer -pb
+        TextToken token;
+        tokenizer.setText(text);
+        while (null != (token = tokenizer.nextToken())) {
+            if (token.length() > MAX_TOKEN_LENGTH) {
+                continue;
+            }
+            if (stoplist.contains(token)) {
+                continue;
+            }
+            if (indexSpec != null) {
+                //TODO : the tokenizer should strip unwanted token types itself -pb
+                if (!indexSpec.getIncludeAlphaNum() && !token.isAlpha()) {
+                    continue;
+                }
+            }
+            invertedIndex.setDocument(doc);
+            invertedIndex.addText(token, parent.getNodeId());
+        }
+    }
+
     public void storeAttribute(RangeIndexSpec spec, AttrImpl node) {
         // TODO Auto-generated method stub  
     }
@@ -767,7 +779,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             this.doc = document;
         }        
 
-		public void addText(XMLString text, TextToken token, NodeId nodeId) {
+		public void addText(TextToken token, NodeId nodeId) {
             //Is this token already pending ?
             OccurrenceList list = (OccurrenceList) words[0].get(token);
             //Create a GIDs list

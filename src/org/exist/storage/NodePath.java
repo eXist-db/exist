@@ -44,7 +44,7 @@ public class NodePath {
     private QName[] components = new QName[5];
     private int pos = 0;
     private boolean includeDescendants = true;
-    
+
     public NodePath() {
     }
     

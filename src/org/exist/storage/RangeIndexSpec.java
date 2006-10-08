@@ -42,14 +42,16 @@ public abstract class RangeIndexSpec {
 	public static final int FLOAT = 4;
 	public static final int BOOLEAN = 5;
 	public static final int DATE_TIME = 6;
-	
-	/** 
+
+    /**
 	 * Indicates that the node has a qname-value index defined
 	 * on it.
 	 */
-	public static final int QNAME_INDEX = 0x20;
-	
-	/**
+	public static final int QNAME_INDEX = 0x10;
+
+    public static final int TEXT_MIXED_CONTENT = 0x20;
+
+    /**
 	 * Bit is set if the node has mixed content.
 	 */
 	public static final int MIXED_CONTENT = 0x40;
@@ -62,11 +64,13 @@ public abstract class RangeIndexSpec {
 	/**
 	 * Bit mask to extract the type of the range index.
 	 */
-	public static final int RANGE_INDEX_MASK = 0x1F;
+	public static final int RANGE_INDEX_MASK = 0x0F;
 	
-	public static final int HAS_VALUE_INDEX_MASK = 0x3F;
-	
-	private static final int[] xpathTypes = {
+	public static final int HAS_VALUE_INDEX_MASK = 0x1F;
+
+    public static final int HAS_VALUE_OR_MIXED_INDEX_MASK = 0x3F;
+
+    private static final int[] xpathTypes = {
             Type.ITEM,
             Type.STRING,
             Type.INTEGER,
@@ -148,10 +152,14 @@ public abstract class RangeIndexSpec {
 	}
 	
 	public static final boolean hasQNameOrValueIndex(int type) {
-		return (type & HAS_VALUE_INDEX_MASK) > 0;
+		return (type & HAS_VALUE_OR_MIXED_INDEX_MASK) > 0;
 	}
-	
-	protected int type;
+
+    public static final boolean hasMixedTextIndex(int type) {
+        return (type & TEXT_MIXED_CONTENT) > 0;
+    }
+    
+    protected int type;
 
 	protected RangeIndexSpec() {
 	}

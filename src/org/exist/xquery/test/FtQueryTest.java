@@ -47,7 +47,14 @@ public class FtQueryTest extends XMLTestCase {
 			"<test-elem id=\"3\" attribute1=\"test some text\"/>" +
 			"<test-elem id=\"4\" attribute3=\"test some text\"/>" +
 		"</test-doc>";
-	
+
+    private final static String NESTED_XML =
+            "<root>\n" +
+            "    <nested><s>un</s>even</nested>\n" +
+            "    <nested>un<s>suitable</s></nested>\n" +
+            "    <nested><s>in</s><s>ap</s><s>pro</s><s>pri</s><s>ate</s></nested>\n" +
+            "</root>";
+
     private final static String FILES[] = { "hamlet.xml", "macbeth.xml", "r_and_j.xml" };
     
     static File existDir;
@@ -199,11 +206,11 @@ public class FtQueryTest extends XMLTestCase {
             // check attributes="true"
             config =
     			"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
-		    	"    <index>" +
-		    	"        <fulltext default=\"all\" attributes=\"true\" alphanum=\"true\">" +
-		    	"					<exclude path=\"//test-elem/@attribute2\"/>" +
-		    	"				</fulltext>" +
-		    	"    </index>" +
+		    	"   <index>" +
+		    	"       <fulltext default=\"all\" attributes=\"true\" alphanum=\"true\">" +
+		    	"           <exclude path=\"//test-elem/@attribute2\"/>" +
+		    	"       </fulltext>" +
+		    	"   </index>" +
 		    	"</collection>";
             idxConf.configureCollection(config);
             idxConf.reindexCollection();
@@ -215,7 +222,56 @@ public class FtQueryTest extends XMLTestCase {
     		fail(e.getMessage());
     	}
     }
-    
+
+    public void testMixedConfiguration() {
+        System.out.println("----- testMixedConfiguration -----");
+    	try {
+    		String config =
+    			"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">\n" +
+                "    <index>\n" +
+                "        <fulltext default=\"all\" attributes=\"no\">\n" +
+                "            <include path=\"//nested\" content=\"mixed\"/>\n" +
+                "        </fulltext>\n" +
+                "    </index>\n" +
+                "</collection>";
+
+            IndexQueryService idxConf = (IndexQueryService)
+				testCollection.getService("IndexQueryService", "1.0");
+    		idxConf.configureCollection(config);
+
+    		XMLResource doc =
+                (XMLResource) testCollection.createResource(
+                        "test-mixed.xml", "XMLResource");
+            doc.setContent(NESTED_XML);
+            testCollection.storeResource(doc);
+
+            XQueryService service = (XQueryService)
+            	testCollection.getService("XQueryService", "1.0");
+            String query = "//nested[. &= 'inappropriate']";
+            ResourceSet result = service.query(query);
+            assertEquals(1, result.getSize());
+
+            query = "//nested[. &= 'pro']";
+            result = service.query(query);
+            assertEquals(1, result.getSize());
+
+            query = "//nested[. &= 'unsuitable']";
+            result = service.query(query);
+            assertEquals(1, result.getSize());
+
+            query = "//nested[. &= 'uneven']";
+            result = service.query(query);
+            assertEquals(1, result.getSize());
+
+            query = "//nested[. &= 'suitable']";
+            result = service.query(query);
+            assertEquals(1, result.getSize());
+        } catch(Exception e) {
+    		e.printStackTrace();
+    		fail(e.getMessage());
+    	}
+    }
+
     protected void setUp() {
         try {
             // initialize driver
