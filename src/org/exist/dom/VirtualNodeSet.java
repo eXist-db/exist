@@ -139,8 +139,18 @@ public class VirtualNodeSet extends AbstractNodeSet {
             }
             first = new NodeProxy(node.getDocument(), pid, Node.ELEMENT_NODE, 
                     StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
-            if (test.getType() == Type.ATTRIBUTE)
-            	return first;
+            // if we are on the self axis, check if the first parent can be selected
+            if (axis == Constants.DESCENDANT_SELF_AXIS && test.matches(first)) {
+                parent = context.get(first.getDocument(), pid);
+                if (parent != null) {
+                    first.copyContext(parent);
+                    if (useSelfAsContext && inPredicate) {
+						first.addContextNode(contextId, first);
+					} else if (inPredicate)
+						first.addContextNode(contextId, parent);
+                    return first;
+                }
+            }
             // Timo Boehme: we need a real parent (child from context)
             return getFirstParent(first, first, false, directParent, recursions + 1);
         }
@@ -294,7 +304,8 @@ public class VirtualNodeSet extends AbstractNodeSet {
 	public final void realize() {
 		if (realSet != null && realSetIsComplete)
 			return;
-		realSet = getNodes();
+        Thread.dumpStack();
+        realSet = getNodes();
 		realSetIsComplete = true;
 	}
 
@@ -416,6 +427,8 @@ public class VirtualNodeSet extends AbstractNodeSet {
 	}
     
     public String toString() {
+        if (realSet == null)
+            return "Virtual#unknown";
         StringBuffer result = new StringBuffer();
         result.append("Virtual#").append(super.toString());
         return result.toString();
