@@ -597,6 +597,9 @@
                             <para>The following includes the values of all <option>id</option>
                                 attributes for all <sgmltag>article</sgmltag> elements.</para>
                             <synopsis format="linespecific"><sgmltag>include path="//article/@id" /</sgmltag></synopsis>
+                            <para>The optional attribute <option>content</option> can be used to create an additional
+                                index on the mixed content of a node (see description above):</para>
+                            <synopsis><sgmltag>include path="//mixed" content="mixed"/</sgmltag></synopsis>
                         </listitem>
                     </varlistentry>
                     <varlistentry>
@@ -661,6 +664,24 @@
                     </varlistentry>
                 </variablelist>
             </section>
+        </section>
+        <section>
+            <title>Debugging the Range Index</title>
+            <para>It is sometimes a bit difficult to see if a range index is correctly defined or not. The simplest way to get
+                some information on index usage is to set the priority for eXist's standard logger to <option>TRACE</option>.
+                For example, change the <sgmltag>root</sgmltag> category in <filename>log4j.xml</filename> as follows:</para>
+            <example>
+                <title>Configure the Fulltext Index for a Mixed Content Element</title>
+                <programlisting>
+                    <markup><![CDATA[<root>
+    <priority value="trace"/>
+    <appender-ref ref="console"/>
+</root>]]></markup>
+                </programlisting>
+            </example>
+            <para>This enables trace and sends all log output to the console instead of the log files. For expressions that can
+                benefit from a range index, you should now see messages like "Checking if range index can be used ..." or
+                "Using range index for key...".</para>
         </section>
     </chapter>
 </book>
