@@ -54,7 +54,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
 
 	protected int axis = Constants.UNKNOWN_AXIS;
 	protected NodeTest test;
-	protected NodeSet context;
+    protected NodeSet context;
 	protected NodeSet realSet = null;
 	protected boolean realSetIsComplete = false;
 	protected boolean inPredicate = false;
@@ -66,10 +66,6 @@ public class VirtualNodeSet extends AbstractNodeSet {
 		this.test = test;
 		this.context = context;
         this.contextId = contextId;
-	}
-	
-	public void setNodeTest(NodeTest test) {
-		this.test = test;
 	}
 
 	public boolean contains(NodeProxy p) {
@@ -140,10 +136,10 @@ public class VirtualNodeSet extends AbstractNodeSet {
             first = new NodeProxy(node.getDocument(), pid, Node.ELEMENT_NODE, 
                     StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
             // if we are on the self axis, check if the first parent can be selected
-            if (axis == Constants.DESCENDANT_SELF_AXIS &&
-                    node.getNodeType() == Node.ATTRIBUTE_NODE && test.matches(first)) {
+            if (axis == Constants.DESCENDANT_SELF_AXIS)
+            {
                 parent = context.get(first.getDocument(), pid);
-                if (parent != null) {
+                if (parent != null && test.matches(parent)) {
                     first.copyContext(parent);
                     if (useSelfAsContext && inPredicate) {
 						first.addContextNode(contextId, first);
