@@ -430,8 +430,8 @@ public class NativeBroker extends DBBroker {
         final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
         final int indexType = ((ElementImpl) node).getIndexType();
 
-        NodeProxy p = new NodeProxy(node);        
-        
+        NodeProxy p = new NodeProxy(node);
+
         // TODO move_to NativeValueIndex
         if (RangeIndexSpec.hasRangeIndex(indexType)) {
             if (content == null) {
@@ -472,9 +472,7 @@ public class NativeBroker extends DBBroker {
             textEngine.storeText(null, node, content);
         }
         p.setIndexType(indexType);
-        elementIndex.setDocument(doc);
-        elementIndex.addNode(node.getQName(), p);
-    }    
+    }
     
     /** Takes care of actually remove entries from the indices;
      * must be called after one or more call to {@link #removeNode(Txn, StoredNode, NodePath, String)}. */
@@ -2961,6 +2959,10 @@ public class NativeBroker extends DBBroker {
                     
                     // qnameValueIndex.startElement((ElementImpl)node, currentPath, index);
                     notifyStartElement((ElementImpl)node, currentPath, fullTextIndex);
+                    NodeProxy p = new NodeProxy(node);
+                    p.setIndexType(indexType);
+                    elementIndex.setDocument(doc);
+                    elementIndex.addNode(node.getQName(), p);
                     break;
                     
                 case Node.ATTRIBUTE_NODE :
