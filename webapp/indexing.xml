@@ -440,6 +440,28 @@
                     indexing would be "uneven". In contrast, the fulltext index would (by default)
                     add the strings "un" and "even".</para>
 
+                <para>However, you can configure the fulltext index to treat mixed content in the same way as the
+                    range index. For this, we use a special type of &lt;include&gt;:</para>
+                
+                <example>
+                    <title>Configure the Fulltext Index for a Mixed Content Element</title>
+                    <programlisting>
+                        <markup><![CDATA[
+                            <fulltext default="none" attributes="false" alphanum="false">
+			<include path="//mixed" content="mixed"/>
+		        </fulltext>]]></markup>
+                    </programlisting>
+                </example>
+                
+                <para>The concatenated text nodes of element mixed and all its descendants will be passed to the indexer
+                    as one single string. The indexer thus sees and indexes "uneven" as a single token. Accordingly, using 
+                    this definition, the expression:</para>
+                
+                <synopsis>//mixed[. &amp;= 'uneven']</synopsis>
+                
+                <para>will return the mixed node. You can still explicitely query for child and descendant nodes (unless
+                you excluded them from the index).</para> 
+                    
                 <para>Although the syntax of index paths appears similar to XPath syntax, it is not
                     the same. Index path syntax is in fact much simpler than XPath, and uses the
                     following components to construct paths:</para>
