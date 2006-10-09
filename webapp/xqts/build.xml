@@ -22,10 +22,14 @@
     <available file="${server.dir}/src/org/exist/numbering/NodeId.java" property="exist.dln"/>
 
     <target name="store" xmlns:xmldb="http://exist-db.org/ant" if="xqts.present"  depends="check-files">
-    	<xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/system/config/db/XQTS"
+        <echo message="XQuery Test Suite (XQTS) Setup"/>
+        <echo message="---------------------------------"/>
+        <echo message="Loading XQTS sources from directory: ${config.basedir}"/>
+        
+        <xmldb:store uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/system/config/db"
     		user="admin" password=""
     		createcollection="true">
-            <fileset dir="${config.basedir}">
+            <fileset dir=".">
                 <include name="xqts.xconf"/>
             </fileset>
         </xmldb:store>
@@ -95,7 +99,8 @@
     
     
     <target name="check-files" unless="xqts.present">
-        <echo> The XQTS sources could not be found in directory {$config.basedir}. Please edit
-            build.properties and check the path specified via the config.basedir property. </echo>
+        <echo message="The XQTS sources could not be found in directory {$config.basedir}. Please edit"/>
+        <echo message="webapp/xqts/config.xml and check the path specified via the"/>
+        <echo message="&lt;basedir&gt; element."/>
     </target>
 </project>
