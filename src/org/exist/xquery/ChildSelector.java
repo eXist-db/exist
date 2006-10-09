@@ -50,6 +50,6 @@ public class ChildSelector implements NodeSelector {
             p.deepCopyContext(contextNode, contextId);
         } else
             p.copyContext(contextNode);
-         return p;
+        return p;
     }
 }
