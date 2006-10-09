@@ -152,6 +152,9 @@
             tofile="${src.webapp}/xquery/header.xml" filtering="true" overwrite="true"/>
         <copy file="${basedir}/conf.xml.tmpl" tofile="${basedir}/conf.xml" filtering="true"/>
         <copy file="${basedir}/client.properties.tmpl" tofile="${basedir}/client.properties" filtering="true"/>
+        <copy file="${basedir}/server.xml.tmpl" tofile="${basedir}/server.xml" filtering="true"/>
+        <copy file="${basedir}/descriptor.xml.tmpl" tofile="${basedir}/descriptor.xml" filtering="true"/>
+        <copy file="${basedir}/mime-types.xml.tmpl" tofile="${basedir}/mime-types.xml" filtering="true"/>
         <copy file="${basedir}/mime-types.xml" tofile="${src}/org/exist/util/mime-types.xml" />
     </target>
 
