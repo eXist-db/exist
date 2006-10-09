@@ -157,7 +157,8 @@ declare function xqts:check-output($query as xs:string, $result as item()*, $cas
         (: Expected an error, but got a result :)
         if (exists($case/catalog:expected-error)) then
             <test-case name="{$case/@name}" result="fail">
-                   <expected-error>{$case/catalog:expected-error/text()}</expected-error>
+                   <expected-error>{string-join($case/catalog:expected-error/text(), ";")}</expected-error>
+                   <result>{$result}</result>
                    <query>{$query}</query>
             </test-case>
         (: Comparison method: "Text" :)
@@ -248,7 +249,7 @@ declare function xqts:run-test-case( $case as element(catalog:test-case)) as ite
            if ($case//catalog:expected-error) then
                <test-case name="{$case/@name}" result="pass">
                    <exception>{$util:exception-message}</exception>
-                   <expected-error>{$case//catalog:expected-error/text()}</expected-error>
+                   <expected-error>{string-join($case//catalog:expected-error/text(),";")}</expected-error>
                    <query>{$query}</query>
                </test-case>
            else
