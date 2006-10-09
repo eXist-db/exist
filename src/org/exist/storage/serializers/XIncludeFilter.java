@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -179,161 +180,170 @@ public class XIncludeFilter implements Receiver {
 	throws SAXException {
 		receiver.documentType(name, publicId, systemId);
 	}
-	
-	protected void processXInclude(String href) throws SAXException {
-		if(href == null)
-			throw new SAXException("No href attribute found in XInclude include element");
-		// save some settings
-		DocumentImpl prevDoc = document;
-		boolean createContainerElements = serializer.createContainerElements;
-		serializer.createContainerElements = false;
 
-		//The following comments are the basis for possible external documents
-		XmldbURI docUri = null;
-		//URI externalUri = null;
-		try {
-			docUri = XmldbURI.xmldbUriFor(href);
-			/*
-			if(!stylesheetUri.toCollectionPathURI().equals(stylesheetUri)) {
-				externalUri = stylesheetUri.getXmldbURI();
-			}
-			*/
-		} catch (URISyntaxException e) {
-			//could be an external URI!
-			/*
-			try {
-				externalUri = new URI(href);
-			} catch (URISyntaxException ee) {
-			*/
-				throw new IllegalArgumentException("Stylesheet URI could not be parsed: "+e.getMessage());
-			//}
-		}
+    protected void processXInclude(String href) throws SAXException {
+        if(href == null)
+            throw new SAXException("No href attribute found in XInclude include element");
+        // save some settings
+        DocumentImpl prevDoc = document;
+        boolean createContainerElements = serializer.createContainerElements;
+        serializer.createContainerElements = false;
 
-		// parse the href attribute
-			LOG.debug("found href=\"" + href + "\"");
-			//String xpointer = null;
-			//String docName = href;
-			String xpointer = docUri.getFragment();
-			if(xpointer!=null) {
-				try {
-					xpointer = XMLUtil.decodeAttrMarkup(URLDecoder.decode(xpointer, "UTF-8"));
-				} catch (UnsupportedEncodingException e) {
-				}
-			}
-            
-            // extract possible parameters in the URI
-            Map params = null;
-            String paramStr = docUri.getQuery();
-            if(paramStr!=null) {
-            	params = processParameters(paramStr);
+        //The following comments are the basis for possible external documents
+        XmldbURI docUri = null;
+        //URI externalUri = null;
+        try {
+            docUri = XmldbURI.xmldbUriFor(href);
+            /*
+               if(!stylesheetUri.toCollectionPathURI().equals(stylesheetUri)) {
+                   externalUri = stylesheetUri.getXmldbURI();
+               }
+               */
+        } catch (URISyntaxException e) {
+            //could be an external URI!
+            /*
+               try {
+                   externalUri = new URI(href);
+               } catch (URISyntaxException ee) {
+               */
+            throw new IllegalArgumentException("Stylesheet URI could not be parsed: "+e.getMessage());
+            //}
+        }
+
+        // parse the href attribute
+        LOG.debug("found href=\"" + href + "\"");
+        //String xpointer = null;
+        //String docName = href;
+        String xpointer = docUri.getFragment();
+        if(xpointer!=null) {
+            try {
+                xpointer = XMLUtil.decodeAttrMarkup(URLDecoder.decode(xpointer, "UTF-8"));
+            } catch (UnsupportedEncodingException e) {
             }
-            
-			// if docName has no collection specified, assume
-			// current collection 
-            if(docUri.numSegments()==1)
-            	docUri = document.getCollection().getURI().append(docUri);
+        }
 
-			// retrieve the document
-			DocumentImpl doc = null;
-			try {
-				doc = (DocumentImpl) serializer.broker.getXMLResource(docUri);
-				if(doc != null && !doc.getPermissions().validate(serializer.broker.getUser(), Permission.READ))
-					throw new PermissionDeniedException("Permission denied to read xincluded resource");
-			} catch (PermissionDeniedException e) {
-				LOG.warn("permission denied", e);
-				throw new SAXException(e);
-			}
-			/* if document has not been found and xpointer is
-			 * null, throw an exception. If xpointer != null
-			 * we retry below and interpret docName as
-			 * a collection.
-			 */
-			if (doc == null && xpointer == null)
-				throw new SAXException("document " + docUri + " not found");
-            
-            /* Check if the document is a stored XQuery */
-            boolean xqueryDoc = false;
-            if (doc != null && doc.getResourceType() == DocumentImpl.BINARY_FILE) {
-                xqueryDoc = "application/xquery".equals(doc.getMetadata().getMimeType());
-            }
-            
-			if (xpointer == null && !xqueryDoc)
-				// no xpointer found - just serialize the doc
-				serializer.serializeToReceiver(doc, false);
-			else {
-				// process the xpointer or the stored XQuery
-				try { 
-                    Source source;
-                    if (xpointer == null)
-                        source = new DBSource(serializer.broker, (BinaryDocument) doc, true);
-                    else {
-                        xpointer = checkNamespaces(xpointer);
-                        source = new StringSource(xpointer);
-                    }
-                    XQuery xquery = serializer.broker.getXQueryService();
-                    XQueryPool pool = xquery.getXQueryPool();
-                    XQueryContext context;
-                    CompiledXQuery compiled = pool.borrowCompiledXQuery(serializer.broker, source);
-                    if (compiled != null)
-                        context = compiled.getContext();
+        // extract possible parameters in the URI
+        Map params = null;
+        String paramStr = docUri.getQuery();
+        if (paramStr != null) {
+            params = processParameters(paramStr);
+        }
+
+        // if docName has no collection specified, assume
+        // current collection
+
+        // Patch 1520454 start
+        String base = document.getCollection().getURI() + "/";
+        String child = "./" + docUri.toString();
+
+        URI baseUri = URI.create(base);
+        URI childUri = URI.create(child);
+
+        URI uri = baseUri.resolve(childUri);
+        docUri = XmldbURI.create(uri);
+        // Patch 1520454 end
+
+        // retrieve the document
+        DocumentImpl doc = null;
+        try {
+            doc = (DocumentImpl) serializer.broker.getXMLResource(docUri);
+            if(doc != null && !doc.getPermissions().validate(serializer.broker.getUser(), Permission.READ))
+                throw new PermissionDeniedException("Permission denied to read xincluded resource");
+        } catch (PermissionDeniedException e) {
+            LOG.warn("permission denied", e);
+            throw new SAXException(e);
+        }
+        /* if document has not been found and xpointer is
+               * null, throw an exception. If xpointer != null
+               * we retry below and interpret docName as
+               * a collection.
+               */
+        if (doc == null && xpointer == null)
+            throw new SAXException("document " + docUri + " not found");
+
+        /* Check if the document is a stored XQuery */
+        boolean xqueryDoc = false;
+        if (doc != null && doc.getResourceType() == DocumentImpl.BINARY_FILE) {
+            xqueryDoc = "application/xquery".equals(doc.getMetadata().getMimeType());
+        }
+
+        if (xpointer == null && !xqueryDoc)
+            // no xpointer found - just serialize the doc
+            serializer.serializeToReceiver(doc, false);
+        else {
+            // process the xpointer or the stored XQuery
+            try {
+                Source source;
+                if (xpointer == null)
+                    source = new DBSource(serializer.broker, (BinaryDocument) doc, true);
+                else {
+                    xpointer = checkNamespaces(xpointer);
+                    source = new StringSource(xpointer);
+                }
+                XQuery xquery = serializer.broker.getXQueryService();
+                XQueryPool pool = xquery.getXQueryPool();
+                XQueryContext context;
+                CompiledXQuery compiled = pool.borrowCompiledXQuery(serializer.broker, source);
+                if (compiled != null)
+                    context = compiled.getContext();
+                else
+                    context = xquery.newContext(AccessContext.XINCLUDE);
+                context.declareNamespaces(namespaces);
+                context.declareNamespace("xinclude", XINCLUDE_NS);
+                //TODO: change these to putting the XmldbURI in, but we need to warn users!
+                context.declareVariable("xinclude:current-doc", document.getFileURI().toString());
+                context.declareVariable("xinclude:current-collection", document.getCollection().getURI().toString());
+                if (xpointer != null) {
+                    if(doc != null)
+                        context.setStaticallyKnownDocuments(new XmldbURI[] { doc.getURI() } );
                     else
-                        context = xquery.newContext(AccessContext.XINCLUDE);
-                    context.declareNamespaces(namespaces);
-                    context.declareNamespace("xinclude", XINCLUDE_NS);
-                    //TODO: change these to putting the XmldbURI in, but we need to warn users!
-                    context.declareVariable("xinclude:current-doc", document.getFileURI().toString());
-                    context.declareVariable("xinclude:current-collection", document.getCollection().getURI().toString());
-                    if (xpointer != null) {
-    					if(doc != null)
-    						context.setStaticallyKnownDocuments(new XmldbURI[] { doc.getURI() } );
-    					else
-    						context.setStaticallyKnownDocuments(new XmldbURI[] { docUri });
-                    }
-                    
-                    // pass parameters as variables
-					if (params != null) {
-                        for (Iterator i = params.entrySet().iterator(); i.hasNext(); ) {
-                            Map.Entry entry = (Map.Entry) i.next();
-                            context.declareVariable(entry.getKey().toString(), entry.getValue());
-                        }
-                    }
-                    
-                    if(compiled == null) {
-                        try {
-                            compiled = xquery.compile(context, source, xpointer != null);
-                        } catch (IOException e) {
-                            throw new SAXException("I/O error while reading query for xinclude: " + e.getMessage(), e);
-                        }
-                    }
-                    LOG.info("xpointer query: " + ExpressionDumper.dump((Expression) compiled));
-                    Sequence seq = xquery.execute(compiled, null);
-                    
-					if(Type.subTypeOf(seq.getItemType(), Type.NODE)) {
-						if (LOG.isDebugEnabled())
-							LOG.debug("xpointer found: " + seq.getLength());
-						
-						NodeValue node;
-						for (SequenceIterator i = seq.iterate(); i.hasNext();) {
-							node = (NodeValue) i.nextItem();
-							serializer.serializeToReceiver(node, false);
-						}
-					} else {
-						String val;
-						for (int i = 0; i < seq.getLength(); i++) {
-							val = seq.itemAt(i).getStringValue();
-							characters(val);
-						}
-					}
+                        context.setStaticallyKnownDocuments(new XmldbURI[] { docUri });
+                }
 
-				} catch (XPathException e) {
-					LOG.warn("xpointer error", e);
-					throw new SAXException("Error while processing XInclude expression: " + e.getMessage(), e);
-				}
-			}
-		// restore settings
-		document = prevDoc;
-		serializer.createContainerElements = createContainerElements;
-	}
+                // pass parameters as variables
+                if (params != null) {
+                    for (Iterator i = params.entrySet().iterator(); i.hasNext(); ) {
+                        Map.Entry entry = (Map.Entry) i.next();
+                        context.declareVariable(entry.getKey().toString(), entry.getValue());
+                    }
+                }
+
+                if(compiled == null) {
+                    try {
+                        compiled = xquery.compile(context, source, xpointer != null);
+                    } catch (IOException e) {
+                        throw new SAXException("I/O error while reading query for xinclude: " + e.getMessage(), e);
+                    }
+                }
+                LOG.info("xpointer query: " + ExpressionDumper.dump((Expression) compiled));
+                Sequence seq = xquery.execute(compiled, null);
+
+                if(Type.subTypeOf(seq.getItemType(), Type.NODE)) {
+                    if (LOG.isDebugEnabled())
+                        LOG.debug("xpointer found: " + seq.getLength());
+
+                    NodeValue node;
+                    for (SequenceIterator i = seq.iterate(); i.hasNext();) {
+                        node = (NodeValue) i.nextItem();
+                        serializer.serializeToReceiver(node, false);
+                    }
+                } else {
+                    String val;
+                    for (int i = 0; i < seq.getLength(); i++) {
+                        val = seq.itemAt(i).getStringValue();
+                        characters(val);
+                    }
+                }
+
+            } catch (XPathException e) {
+                LOG.warn("xpointer error", e);
+                throw new SAXException("Error while processing XInclude expression: " + e.getMessage(), e);
+            }
+        }
+        // restore settings
+        document = prevDoc;
+        serializer.createContainerElements = createContainerElements;
+    }
 
 	/**
 	 * @see org.xml.sax.ContentHandler#startPrefixMapping(java.lang.String, java.lang.String)
