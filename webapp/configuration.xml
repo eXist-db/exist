@@ -137,6 +137,8 @@
                   (i.e. assuming all page buffers are at full capacity). The database uses this
                   parameter to calculate the maximum size of each internal cache. You can increase
                   this value if your system allows for greater memory use.</para>
+                <para>The cacheSize should not be more than half of the size of the JVM 
+            heap size (set by the JVM -Xmx parameter).</para>
               </listitem>
             </varlistentry>
             <varlistentry>
