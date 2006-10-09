@@ -682,6 +682,19 @@
             <para>This enables trace and sends all log output to the console instead of the log files. For expressions that can
                 benefit from a range index, you should now see messages like "Checking if range index can be used ..." or
                 "Using range index for key...".</para>
+            
+            <para>Another possibility to see what's in your index is to use the util:index-keys function:</para>
+            
+            <example>
+                <title>Query to List Index Contents</title>
+                <programlisting><![CDATA[declare namespace f="http://exist-db.org/xquery/test";
+declare function f:term-callback($term as xs:string, $data as xs:int+) as element() {
+   <entry><term>{$term}</term></entry>
+};
+util:index-keys(//city/name, "T", util:function("f:term-callback", 2), 1000)]]></programlisting>
+            </example>
+            <para>This query will show you all keys (starting with the letter 'T') indexed for the element selected by the 
+                path expression <option>//city/name</option>.</para>
         </section>
     </chapter>
 </book>
