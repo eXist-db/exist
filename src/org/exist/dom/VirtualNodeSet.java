@@ -140,7 +140,8 @@ public class VirtualNodeSet extends AbstractNodeSet {
             first = new NodeProxy(node.getDocument(), pid, Node.ELEMENT_NODE, 
                     StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
             // if we are on the self axis, check if the first parent can be selected
-            if (axis == Constants.DESCENDANT_SELF_AXIS && test.matches(first)) {
+            if (axis == Constants.DESCENDANT_SELF_AXIS &&
+                    node.getNodeType() == Node.ATTRIBUTE_NODE && test.matches(first)) {
                 parent = context.get(first.getDocument(), pid);
                 if (parent != null) {
                     first.copyContext(parent);
