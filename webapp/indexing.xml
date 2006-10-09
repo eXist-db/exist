@@ -424,11 +424,10 @@
                 <example>
                     <title>Mixed Content Element</title>
                     <programlisting>
-                        <markup><![CDATA[
-                            <mixed>
-                               <span>un</span>
-                               <span>even</span>
-                            </mixed>]]></markup>
+                        <markup><![CDATA[<mixed>
+    <span>un</span>
+    <span>even</span>
+</mixed>]]></markup>
                     </programlisting>
                 </example>
 
@@ -446,10 +445,9 @@
                 <example>
                     <title>Configure the Fulltext Index for a Mixed Content Element</title>
                     <programlisting>
-                        <markup><![CDATA[
-                            <fulltext default="none" attributes="false" alphanum="false">
-			<include path="//mixed" content="mixed"/>
-		        </fulltext>]]></markup>
+                        <markup><![CDATA[<fulltext default="none" attributes="false" alphanum="false">
+    <include path="//mixed" content="mixed"/>
+</fulltext>]]></markup>
                     </programlisting>
                 </example>
                 
