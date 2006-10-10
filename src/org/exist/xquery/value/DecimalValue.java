@@ -240,12 +240,12 @@ public class DecimalValue extends NumericValue {
 	 */
 	public ComputableValue plus(ComputableValue other) throws XPathException {
 		switch(other.getType()) {
-			case Type.DECIMAL:
-				return new DecimalValue(value.add(((DecimalValue) other).value));
-			case Type.INTEGER:
-				return plus((ComputableValue) other.convertTo(getType()));
-			default:
-				return ((ComputableValue) convertTo(other.getType())).plus(other);
+		case Type.DECIMAL:
+			return new DecimalValue(value.add(((DecimalValue) other).value));
+		case Type.INTEGER:
+			return plus((ComputableValue) other.convertTo(getType()));
+		default:
+			return ((ComputableValue) convertTo(other.getType())).plus(other);
 		}
 	}
 
@@ -285,12 +285,11 @@ public class DecimalValue extends NumericValue {
 	}
 
 	public IntegerValue idiv(NumericValue other) throws XPathException {
-		//Copied from Saxon 8.6.1	
-		if (((DecimalValue)other).value.signum() == 0)
+		DecimalValue dv = (DecimalValue)other.convertTo(Type.DECIMAL);
+		if (dv.value.signum() == 0)
 			throw new XPathException("FOAR0001: division by zero");
-        BigInteger quot = value.divide(((DecimalValue)other).value, 0, BigDecimal.ROUND_DOWN).toBigInteger();
+        BigInteger quot = value.divide(dv.value, 0, BigDecimal.ROUND_DOWN).toBigInteger();
         return new IntegerValue(quot);
-        //End of copy
 	}
 
 	/* (non-Javadoc)
