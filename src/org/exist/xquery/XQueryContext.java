@@ -360,7 +360,7 @@ public class XQueryContext {
 	 * in the XQuery is identified by a unique id. During compilation,
 	 * expressions are assigned their id by calling this method.
 	 *  
-	 * @return
+	 * @return The next unique expression id.
 	 */
 	protected int nextExpressionId() {
 		return expressionCounter++;
@@ -1458,7 +1458,7 @@ public class XQueryContext {
      * @param location
      * @param module
      * @param source
-     * @return
+     * @return The compiled module.
      * @throws XPathException
      */
     private Module compileModule(String namespaceURI, String location, Module module, Source source) throws XPathException {
@@ -1565,14 +1565,8 @@ public class XQueryContext {
 	}
 	
 	public void addOption(String qnameString, String contents) throws XPathException {
-		QName qn;
-		try {
-			qn = QName.parse(this, qnameString, defaultFunctionNamespace);
-		} catch (XPathException e) {
-			// unknown option: just ignore it
-			LOG.debug("Ignoring unknown option: " + qnameString);
-			return;
-		}
+		QName qn = QName.parse(this, qnameString, defaultFunctionNamespace);
+
 		Option option = new Option(qn, contents);
 		if(options == null)
 			options = new ArrayList();
@@ -1600,6 +1594,7 @@ public class XQueryContext {
 			watchdog.setTimeoutFromOption(option);
         else if(Option.OUTPUT_SIZE_QNAME.compareTo(qn) == 0)
 			watchdog.setMaxNodesFromOption(option);
+        else LOG.debug("Ignored option : " + qn + " = '" + contents + "';");
 	}
 	
 	public Option getOption(QName qname) {
