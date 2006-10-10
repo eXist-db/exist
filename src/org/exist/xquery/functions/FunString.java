@@ -79,8 +79,11 @@ public class FunString extends Function {
         
 		if(getArgumentCount() == 1)
 			contextSequence = getArgument(0).eval(contextSequence);
+		
+		if (contextSequence == null)
+			throw new XPathException(getASTNode(), "XPDY0002 : undefined context sequence for '" + this.toString() + "'");
         
-        Sequence result;
+        Sequence result;        
 		if(contextSequence.isEmpty())
 			result = StringValue.EMPTY_STRING;
         else
