@@ -671,7 +671,7 @@
                 some information on index usage is to set the priority for eXist's standard logger to <option>TRACE</option>.
                 For example, change the <sgmltag>root</sgmltag> category in <filename>log4j.xml</filename> as follows:</para>
             <example>
-                <title>Configure the Fulltext Index for a Mixed Content Element</title>
+                <title>Configure log4j to Display Trace Output</title>
                 <programlisting>
                     <markup><![CDATA[<root>
     <priority value="trace"/>

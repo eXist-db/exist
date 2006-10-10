@@ -1163,5 +1163,37 @@ example:echo(("Hello", "World!"))
                 consuming too much memory if they are allowed to pass in their own XQueries.</para>
 
         </section>
+        
+        <section>
+            <title>Pragmas</title>
+            
+            <para>XQuery pragmas are a way to pass implementation-specific information to the query engine
+                from within a XQuery. The syntax for pragmas has changed between the different drafts of the XQuery 
+                specification. In earlier eXist releases, pragmas were used similar to what is now the "declare option"
+                prolog expression. The new syntax is quite different: pragmas can now be wrapped around an arbitrary
+                XQuery expression 
+                (see the <ulink url="http://www.w3.org/TR/xquery/#id-extension-expressions">specificiation</ulink>).
+            </para>
+            <para>Currently, eXist recognizes only one pragma: <option>exist:timer</option>. This pragma provides a
+                simple way to measure the time for executing a given expression. For example:</para>
+            
+            <synopsis>(# exist:timer #) { //some/path/expression }</synopsis>
+            
+            <para>creates a timer for the expression enclosed in curly braces and prints timing information to the trace 
+                logger. Please note that trace needs to be enabled in <filename>log4j.xml</filename>:</para>
+            
+            <example>
+                <title>Configure log4j to Display Trace Output</title>
+                <programlisting>
+                    <markup><![CDATA[<root>
+    <priority value="trace"/>
+    <appender-ref ref="console"/>
+</root>]]></markup>
+                </programlisting>
+            </example>
+            
+            <para>We will certainly add more pragma expressions in the near future. Among other things, pragmas are a 
+                good way to pass optimization hints to the query engine.</para>
+        </section>
     </chapter>
 </book>
