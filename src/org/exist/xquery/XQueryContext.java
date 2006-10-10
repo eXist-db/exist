@@ -1594,7 +1594,6 @@ public class XQueryContext {
 			watchdog.setTimeoutFromOption(option);
         else if(Option.OUTPUT_SIZE_QNAME.compareTo(qn) == 0)
 			watchdog.setMaxNodesFromOption(option);
-        else LOG.debug("Ignored option : " + qn + " = '" + contents + "';");
 	}
 	
 	public Option getOption(QName qname) {
