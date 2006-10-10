@@ -254,7 +254,8 @@ declare function xqts:run-test-case( $case as element(catalog:test-case)) as ite
                </test-case>
            else
                <test-case name="{$case/@name}" result="fail">
-                   <exception>{$util:exception-message}</exception>
+                   <exception>{$util:exception-message}</exception>                  
+					(: TODO : insert expected result here :)    
                    <query>{$query}</query>
                </test-case>
        )
