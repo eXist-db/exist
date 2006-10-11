@@ -59,8 +59,7 @@ class RegexMatcher implements TermMatcher {
         } catch(PatternSyntaxException e) {
             throw new EXistException("Invalid regular expression: " + e.getMessage());
         }
-        this.matchAll = matchAll;
-        System.out.println("matchAll: " + matchAll);
+        this.matchAll = matchAll;        
     }
 
 	/*
