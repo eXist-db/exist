@@ -1010,7 +1010,6 @@ public  class Collection extends Observable
     
     /** If an old document exists, keep information  about  the document.
      * @param broker
-     * @param docUri
      * @param document
      */
     private void manageDocumentInformation(DBBroker broker, DocumentImpl oldDoc,
