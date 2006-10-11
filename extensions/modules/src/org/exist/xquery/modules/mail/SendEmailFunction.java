@@ -675,8 +675,23 @@ public class SendEmailFunction extends BasicFunction
 		dateString += " ";
 		
 		//Time
-		dateString += rightNow.get(Calendar.HOUR_OF_DAY) + ":" + rightNow.get(Calendar.MINUTE) + ":" + rightNow.get(Calendar.SECOND);
-		dateString += " ";
+		String tHour = Integer.toString(rightNow.get(Calendar.HOUR_OF_DAY));
+		if(tHour.length() == 1)
+		{
+			tHour = "0" + tHour;
+		}
+		String tMinute = Integer.toString(rightNow.get(Calendar.MINUTE));
+		if(tMinute.length() == 1)
+		{
+			tMinute = "0" + tMinute;
+		}
+		String tSecond = Integer.toString(rightNow.get(Calendar.SECOND));
+		if(tSecond.length() == 1)
+		{
+			tSecond = "0" + tSecond;
+		}
+		
+		dateString += tHour + ":" + tMinute + ":" + tSecond + " ";
 		
 		//TimeZone Correction
 		String tzSign = new String();
