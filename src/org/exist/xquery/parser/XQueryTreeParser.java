@@ -3979,6 +3979,7 @@ public XQueryTreeParser() {
 						}
 			try {
 							context.importModule(moduleURI.getText(), modulePrefix, location);
+			staticContext.declareNamespace(modulePrefix, moduleURI.getText());
 			} catch(XPathException xpe) {
 			xpe.prependMessage("error found while loading module " + modulePrefix + ": ");
 			throw xpe;
