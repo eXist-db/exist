@@ -109,7 +109,9 @@
           Fallback to VERSION.txt if subversion is not available.
      -->
     <target name="svn-prepare" if="svn-present">
-      <taskdef name="svninfo" classname="nl.ow.dilemma.ant.svn.SubversionInfoTask" classpath="${asocat-exist.jar}"/>
+        <taskdef name="svninfo" classname="nl.ow.dilemma.ant.svn.SubversionInfoTask">
+            <classpath refid="classpath.core"/>
+        </taskdef>
     
       <tstamp/>
       
