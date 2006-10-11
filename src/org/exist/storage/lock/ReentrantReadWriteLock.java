@@ -170,12 +170,13 @@ public class ReentrantReadWriteLock implements Lock {
 	 * or has fewer than N holds on the lock
 	 **/
 	public synchronized void release(long n) {
-		if (Thread.currentThread() != owner_ || n > holds_)
+		if (Thread.currentThread() != owner_ || n > holds_) {
             log.warn("Possible lock problem: thread " + Thread.currentThread() +
                     " released a lock it didn't hold. Either the " +
                     "thread was interrupted or it never acquired the lock. The lock was owned by: "
                     + owner_);
-
+            return;
+        }
 		holds_ -= n;
 		if (holds_ == 0) {
 			owner_ = null;
