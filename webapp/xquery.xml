@@ -1174,24 +1174,34 @@ example:echo(("Hello", "World!"))
                 XQuery expression 
                 (see the <ulink url="http://www.w3.org/TR/xquery/#id-extension-expressions">specificiation</ulink>).
             </para>
-            <para>Currently, eXist recognizes only one pragma: <option>exist:timer</option>. This pragma provides a
-                simple way to measure the time for executing a given expression. For example:</para>
-            
-            <synopsis>(# exist:timer #) { //some/path/expression }</synopsis>
-            
-            <para>creates a timer for the expression enclosed in curly braces and prints timing information to the trace 
-                logger. Please note that trace needs to be enabled in <filename>log4j.xml</filename>:</para>
-            
-            <example>
-                <title>Configure log4j to Display Trace Output</title>
-                <programlisting>
-                    <markup><![CDATA[<root>
-    <priority value="trace"/>
-    <appender-ref ref="console"/>
-</root>]]></markup>
-                </programlisting>
-            </example>
-            
+            <para>Currently, eXist recognizes only two pragmas: <option>exist:timer</option> and <option>exist:batch-transaction</option>.</para>
+            <section id="pragma_timer">
+	            <title>exist:timer</title>
+				<para>Provides a simple way to measure the time for executing a given expression. For example:</para>
+	            <synopsis>(# exist:timer #) { //some/path/expression }</synopsis>
+	            <para>creates a timer for the expression enclosed in curly braces and prints timing information to the trace 
+	                logger. Please note that trace needs to be enabled in <filename>log4j.xml</filename>:</para>
+	            <example>
+	                <title>Configure log4j to Display Trace Output</title>
+	                <programlisting>
+	                    <markup><![CDATA[<root>
+	    <priority value="trace"/>
+	    <appender-ref ref="console"/>
+	</root>]]></markup>
+	                </programlisting>
+	            </example>
+            </section>
+			<section id="pragma_batch-transaction">
+	            <title>exist:batch-transaction</title>
+				<para><b>Currently only for XQuery Update Extensions.</b> Provides a method for batching updates on the database into a single Transaction,
+				allowing a set of updates to be atomically guaranteed. Also for each affected document or collection, any configured Triggers will only be called once, the prepare()
+				method will be fired before the first update to the configured resource and the finish() method fired after the last update to the configured resource.</para>
+	            <synopsis>(# exist:batch-transaction #) {
+	            	update value //some/path/expressionA width "valueA",
+            		update value //some/path/expressionB width "valueB"
+	             }</synopsis>
+	            <para>Uses a single Transaction and Trigger events for the expressions enclosed in curly braces.</para>
+            </section>
             <para>We will certainly add more pragma expressions in the near future. Among other things, pragmas are a 
                 good way to pass optimization hints to the query engine.</para>
         </section>
