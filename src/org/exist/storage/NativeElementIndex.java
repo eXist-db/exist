@@ -438,7 +438,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             //Compute a key for the node
             Collection collection = (Collection) i.next();
             short collectionId = collection.getId();
-            final Value key = computeTypedKey((byte) type, collectionId, qname);
+            final Value key = computeTypedKey(type, collectionId, qname);
             try {
                 lock.acquire(Lock.READ_LOCK);
                 VariableByteInput is = dbNodes.getAsStream(key); 
@@ -524,10 +524,10 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             //Compute a key for the node
             Collection collection = (Collection) i.next();
             short collectionId = collection.getId();
-            final Value key = computeTypedKey((byte) type, collectionId, qname);
+            final Value key = computeTypedKey(type, collectionId, qname);
             try {
                 lock.acquire(Lock.READ_LOCK);
-                VariableByteInput is = null;
+                VariableByteInput is;
                 /*
                 //TODO : uncomment an implement properly
                 //TODO : bewere of null NS prefix : it looks to be polysemic (none vs. all)
@@ -576,18 +576,20 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                     	is.skipBytes(size);
                         continue;
                     }
+
                     NodeId ancestorId = ancestor.getNodeId();
                     long prevPosition = ((BFile.PageInputStream)is).position();
                     long markedPosition = prevPosition;
                     NodeId lastMarked = ancestorId;
-                        
-                    //Process the nodes for the current document
+                    NodeProxy lastAncestor = null;
+
+                    // Process the nodes for the current document
                     NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
                     long address = StorageAddress.read(is);
  
                     while (true) {
                         int relation = nodeId.computeRelation(ancestorId);
-//                        LOG.debug(ancestorId + " -> " + nodeId + ": " + relation);
+//                        System.out.println(ancestorId + " -> " + nodeId + ": " + relation);
                         if (relation != -1) {
                             // current node is a descendant. walk through the descendants
                             // and add them to the result
@@ -596,10 +598,6 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                             		axis == Constants.DESCENDANT_SELF_AXIS || axis == Constants.DESCENDANT_ATTRIBUTE_AXIS
                         		) {
                                 NodeProxy storedNode = new NodeProxy(storedDocument, nodeId, nodeType, address);
-                                if (Expression.NO_CONTEXT_ID != contextId)
-                                    storedNode.addContextNode(contextId, ancestor);
-                                else
-                                    storedNode.copyContext(ancestor);
                                 result.add(storedNode, gidsCount);
                                 if (Expression.NO_CONTEXT_ID != contextId) {
                                     storedNode.deepCopyContext(ancestor, contextId);
@@ -677,6 +675,11 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                                     nodeId = nextId;
                                     address = StorageAddress.read(is);
                                 } else {
+                                    // We need to remember the last ancestor in case there are more docs to process.
+                                    // Next document should start with this ancestor.
+                                    if (lastAncestor == null)
+                                        lastAncestor = ancestor;
+                                    
                                     // check if we have more ancestors
                                     if (citer.hasNextNode()) {
                                         ancestor = citer.nextNode();
@@ -703,6 +706,10 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                         }
                     }
                     result.setSorted(storedDocument, ordered == ENTRIES_ORDERED);
+                    if (lastAncestor != null) {
+                        ancestor = lastAncestor;
+                        citer.setPosition(ancestor);
+                    }
                 }
             } catch (EOFException e) {
                 //EOFExceptions are expected here
@@ -837,10 +844,10 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 try {
                     while (is.available() > 0) {
                         int storedDocId = is.readInt();
-                        byte ordered = is.readByte();
+                        is.readByte();
                         int gidsCount = is.readInt();
                         //TOUNDERSTAND -pb
-                        int size = is.readFixedInt(); //unused                       
+                        is.readFixedInt(); //unused
                         if (storedDocId != document.getDocId()) {
                             // data are related to another document:
                             // ignore them 
@@ -911,7 +918,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         }
     }
     
-    private final static boolean containsNode(List list, NodeId nodeId) {
+    private static boolean containsNode(List list, NodeId nodeId) {
         for (int i = 0; i < list.size(); i++) {
             if (((NodeProxy) list.get(i)).getNodeId().equals(nodeId)) 
                 return true;
