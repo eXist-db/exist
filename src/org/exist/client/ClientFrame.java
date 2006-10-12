@@ -1399,8 +1399,9 @@ public class ClientFrame extends JFrame
         // Original text eXist version 1.0, Copyright (C) 2001-2006 Wolfgang Meier
         JOptionPane.showMessageDialog(this, 
                 sysProperties.getProperty("product-name") + " version " 
-                + sysProperties.getProperty("product-version") 
-                + ", Copyright (C) 2001-2006 Wolfgang Meier\n\n"
+                + sysProperties.getProperty("product-version")
+                + " (revision " + sysProperties.getProperty("svn-revision") + ") \n\n"
+                + "Copyright (C) 2001-2006 Wolfgang Meier\n\n"
                 + "eXist comes with ABSOLUTELY NO WARRANTY.\n"
                 + "This is free software, and you are welcome to\n"
                 + "redistribute it under certain conditions;\n"

@@ -926,8 +926,11 @@ public class XPathQueryTest extends XMLTestCase {
             result = queryResource(service, "numbers.xml", query, 1);
             assertXMLEqual("<a/>", result.getResource(0)
                     .getContent().toString());
-            
-            
+
+            query = "(1,2,3)[position() = last()]";
+            result = queryResource(service, "numbers.xml", query, 1);
+            assertEquals("3", result.getResource(0).getContent().toString());
+
         } catch (XMLDBException e) {
             e.printStackTrace();
             fail(e.getMessage());
