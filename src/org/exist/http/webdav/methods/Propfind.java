@@ -420,7 +420,7 @@ public class Propfind extends AbstractWebDAVMethod {
             
             serializer.startElement(WebDAV.DAV_NS, "lockdiscovery", "D:lockdiscovery", attrs);
             if(token==null){
-                LOG.debug("No lock token");
+//                LOG.debug("No lock token");
             } else {               
                 
                 serializer.startElement(WebDAV.DAV_NS, "activelock", "D:activelock", attrs);
