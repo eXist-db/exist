@@ -9,4 +9,6 @@ public interface ByDocumentIterator {
 	public NodeProxy nextNode();
     
     public NodeProxy peekNode();
+
+    public void setPosition(NodeProxy node);
 }
