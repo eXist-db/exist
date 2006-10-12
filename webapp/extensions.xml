@@ -1,0 +1,113 @@
+<book xmlns:dc="http://purl.org/dc/elements/1.1/">
+	<bookinfo>
+    	<graphic fileref="logo.jpg"/>
+	    <productname>Open Source Native XML Database</productname>
+    	<title>XQuery Extension Modules Documentation</title>
+	    <author>
+			<firstname>Adam</firstname>
+			<surname>Retter</surname>
+			<affiliation>
+			<address format="linespecific">
+				<email>adam dot retter at devon.gov.uk</email>
+			</address>
+			</affiliation>
+		</author>
+	</bookinfo>
+  
+    <ci:include xmlns:ci="http://apache.org/cocoon/include/1.0" src="sidebar.xml"/>
+
+	<chapter>
+		<title>XQuery Extension Modules Documentation</title>
+		    <para>eXist provides a pluggable module interface that allows extension modules to be easily
+		    developed in Java. These extension modules can provide additional XQuery functions through a custom namespace.
+		    The extension modules have full access to the eXist db, its internal API, the context of the executing XQuery and the HTTP Session (if appropriate).</para>
+			<para>The source code for extension modules should be placed in their own folder inside $EXIST_HOME/extensions/modules/src/org/exist/xquery/modules. They may then be compiled in place using either "$EXIST_HOME/build.sh extensions" or "%EXIST_HOME%\build.bat extensions"</para>
+			<para>eXist must also be told which modules to load, this is done in conf.xml and the Class name and Namespace for each module is listed below. Note - eXist will require a restart to load the new module.</para>
+	    	<section id="module_example">
+	    		<title>Example Module</title>
+	    		<para>Demonstrates the simplest example of an Extension module with a single function. A good place to start if you wish to develop your own Extension Module.</para> 		    		
+				<para>
+					<command>Creator:</command>&#160;<dc:creator>Wolfgang Meier</dc:creator><br/>
+		    		<command>Licence:</command>&#160;LGPL<br/>
+		    		<command>Status:</command>&#160;production
+		    	</para>
+		    	<para>
+		    		<command>Class:</command>&#160;org.exist.xquery.modules.example.ExampleModule<br/>
+					<command>Namespace:</command>&#160;http://exist-db.org/xquery/examples
+				</para>
+	    	</section>
+
+	    	<section id="module_image">
+	    		<title>Image Module</title>
+	    		<para>This modules provides operations on images stored in the db, including: Retreiving Image Dimensions, Creating Thumbnails and Resizing Images</para> 		    		
+				<para>
+					<command>Creator:</command>&#160;<dc:creator>Adam Retter</dc:creator><br/>
+					<command>Contributors:</command>&#160;<dc:contributor>Wolfgang Meier</dc:contributor><br/>
+		    		<command>Licence:</command>&#160;LGPL<br/>
+		    		<command>Status:</command>&#160;production
+		    	</para>
+		    	<para>
+		    		<command>Class:</command>&#160;org.exist.xquery.modules.image.ImageModule<br/>
+					<command>Namespace:</command>&#160;http://exist-db.org/xquery/image
+				</para>
+	    	</section>
+	    	
+	    	<section id="module_mail">
+	    		<title>Mail Module</title>
+	    		<para>This modules provides facilities for sending text and/or HTML emails from XQuery using either SMTP or a local Sendmail binary</para> 		    		
+				<para>
+					<command>Creator:</command>&#160;<dc:creator>Adam Retter</dc:creator><br/>
+		    		<command>Licence:</command>&#160;LGPL<br/>
+		    		<command>Status:</command>&#160;production
+		    	</para>
+		    	<para>
+		    		<command>Class:</command>&#160;org.exist.xquery.modules.mail.MailModule<br/>
+					<command>Namespace:</command>&#160;http://exist-db.org/xquery/mail
+				</para>
+	    	</section>
+	    	
+	    	<section id="module_simpleql">
+	    		<title>Simple Query Language Module</title>
+	    		<para>This modules implements a Simple custom Query Language which is then converted to XPath and executed against the db</para> 		    		
+				<para>
+					<command>Creator:</command>&#160;<dc:creator>Wolfgang Meier</dc:creator><br/>
+		    		<command>Licence:</command>&#160;LGPL<br/>
+		    		<command>Status:</command>&#160;production
+		    	</para>
+		    	<para>
+		    		<command>Class:</command>&#160;org.exist.xquery.modules.simpleql.SimpleQLModule<br/>
+					<command>Namespace:</command>&#160;http://exist-db.org/xquery/simple-ql
+				</para>
+	    	</section>
+	    	
+	    	<section id="module_sql">
+	    		<title>SQL Module</title>
+	    		<para>This modules provides facilities for performing SQL operations against traditional databases from XQuery and returning the results as XML nodes</para> 		    		
+				<para>
+					<command>Creator:</command>&#160;<dc:creator>Adam Retter</dc:creator><br/>
+		    		<command>Licence:</command>&#160;LGPL<br/>
+		    		<command>Features Used:</command>&#160;JDBC<br/>
+		    		<command>Status:</command>&#160;production
+		    	</para>
+		    	<para>
+		    		<command>Class:</command>&#160;org.exist.xquery.modules.sql.SQLModule<br/>
+					<command>Namespace:</command>&#160;http://exist-db.org/xquery/sql
+				</para>
+	    	</section>
+	    	
+	    	<section id="module_xmldiff">
+	    		<title>XML Differencing Module</title>
+	    		<para>This module provides facilities for determining the differences between XML nodes</para>
+				<para>
+					<command>Creator:</command>&#160;<dc:creator>Dannes Wessels</dc:creator><br/>
+					<command>Contributors:</command>&#160;<dc:contributor>Pierrick Brihayne</dc:contributor><br/>
+		    		<command>Licence:</command>&#160;LGPL<br/>
+		    		<command>Status:</command>&#160;production
+		    	</para>
+		    	<para>
+		    		<command>Class:</command>&#160;org.exist.xquery.modules.xmldiff.XmlDiffModule<br/>
+					<command>Namespace:</command>&#160;http://exist-db.org/xquery/xmldiff
+				</para>
+	    	</section>
+	</chapter>
+</book>
