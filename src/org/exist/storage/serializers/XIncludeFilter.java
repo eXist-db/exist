@@ -220,6 +220,14 @@ public class XIncludeFilter implements Receiver {
                 xpointer = XMLUtil.decodeAttrMarkup(URLDecoder.decode(xpointer, "UTF-8"));
             } catch (UnsupportedEncodingException e) {
             }
+            // remove the fragment part from the URI for further processing
+            URI u = docUri.getURI();
+            try {
+                u = new URI(u.getScheme(), u.getUserInfo(), u.getHost(), u.getPort(), u.getPath(), u.getQuery(), null);
+                docUri = XmldbURI.xmldbUriFor(u);
+            } catch (URISyntaxException e) {
+                throw new IllegalArgumentException("Stylesheet URI could not be parsed: " + e.getMessage());
+            }
         }
 
         // extract possible parameters in the URI
