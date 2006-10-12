@@ -1,6 +1,7 @@
 .settings
 build
 dist
+test
 exist-modules.jar
 exist-optional.jar
 exist.jar
