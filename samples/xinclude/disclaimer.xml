@@ -1,13 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE disclaimer [
-	<!ELEMENT disclaimer (#PCDATA | p | comment)*>
-	<!ELEMENT p (#PCDATA)>
-	<!ATTLIST p name CDATA #IMPLIED>
-	<!ELEMENT comment (#PCDATA)>
-	<!ATTLIST comment xmlns CDATA #IMPLIED>
-]>
 <disclaimer>
-	<p name="statement">The opinions presented herein represent those 
+	<p xml:id="statement">The opinions presented herein represent those 
 	of the individual and should not be interpreted as the official 
 	policy endorsed by this organization.</p>
 
