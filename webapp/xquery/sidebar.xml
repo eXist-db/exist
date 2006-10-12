@@ -23,6 +23,9 @@
             <link href="functions.xq">Function Library</link>
         </item>
         <item>
+            <link href="../extensions.xml">Extension Modules</link>
+        </item>
+        <item>
             <link href="../documentation.xml">Main Documentation</link>
         </item>
     </group>
