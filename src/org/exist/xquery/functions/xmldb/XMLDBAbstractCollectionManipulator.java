@@ -66,7 +66,7 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
         if (0 == args.length)
             throw new XPathException("Expected a collection as the first argument.");
         
-        boolean collectionNeedsClose = true;
+        boolean collectionNeedsClose = false;
         
         // If the incoming is a collection object, use it:
         Collection collection = null;

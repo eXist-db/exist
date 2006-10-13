@@ -99,16 +99,21 @@ public class CastableExpression extends AbstractExpression {
         Sequence result;
 		Sequence seq = expression.eval(contextSequence, contextItem);
 		if(seq.isEmpty()) {
+			//If ? is specified after the target type, the result of the cast expression is an empty sequence.
 			if (Cardinality.checkCardinality(requiredCardinality, Cardinality.ZERO))
-                result = BooleanValue.FALSE;
-			else
                 result = BooleanValue.TRUE;
+			//If ? is not specified after the target type, a type error is raised [err:XPTY0004].
+			else
+				//TODO : raise the error ?
+                result = BooleanValue.FALSE;
 		}
         else {
     		try {
     			seq.itemAt(0).convertTo(requiredType);
+    			//If ? is specified after the target type, the result of the cast expression is an empty sequence.
     			if (Cardinality.checkCardinality(requiredCardinality, seq.getCardinality()))
     				result = BooleanValue.TRUE;
+    			//If ? is not specified after the target type, a type error is raised [err:XPTY0004].
     			else
     				result = BooleanValue.FALSE;
             //TODO : improve by *not* using a costly exception ?

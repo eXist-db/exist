@@ -11,6 +11,7 @@
 package org.exist.storage.lock;
 
 import org.exist.util.LockException;
+import org.apache.log4j.Logger;
 
 /**
  * A lock with the same semantics as builtin
@@ -25,7 +26,9 @@ import org.exist.util.LockException;
 
 public class ReentrantReadWriteLock implements Lock {
 
-	protected String id_ = null;
+    private final static Logger log = Logger.getLogger(ReentrantReadWriteLock.class);
+
+    protected String id_ = null;
 	protected Thread owner_ = null;
 	protected long holds_ = 0;
 	protected int mode_ = Lock.READ_LOCK;
@@ -140,10 +143,13 @@ public class ReentrantReadWriteLock implements Lock {
 	 * @exception Error thrown if not current owner of lock
 	 **/
 	public synchronized void release() {
-		if (Thread.currentThread() != owner_)
-			throw new Error("Illegal lock usage. Thread " + 
-				Thread.currentThread() + " tried to release lock on " + id_ + " but owner is " + owner_);
-
+        if (Thread.currentThread() != owner_) {
+            log.warn("Possible lock problem: thread " + Thread.currentThread() +
+                    " released a lock it didn't hold. Either the " +
+                    "thread was interrupted or it never acquired the lock. The lock was owned by: "
+                    + owner_);
+            return;
+        }
 		if (--holds_ == 0) {
 //			System.out.println("thread " + owner_.getName() + " released lock on " + id_ +
 //				"; locks held = " + holds_);
@@ -164,9 +170,13 @@ public class ReentrantReadWriteLock implements Lock {
 	 * or has fewer than N holds on the lock
 	 **/
 	public synchronized void release(long n) {
-		if (Thread.currentThread() != owner_ || n > holds_)
-			throw new Error("Illegal Lock usage");
-
+		if (Thread.currentThread() != owner_ || n > holds_) {
+            log.warn("Possible lock problem: thread " + Thread.currentThread() +
+                    " released a lock it didn't hold. Either the " +
+                    "thread was interrupted or it never acquired the lock. The lock was owned by: "
+                    + owner_);
+            return;
+        }
 		holds_ -= n;
 		if (holds_ == 0) {
 			owner_ = null;

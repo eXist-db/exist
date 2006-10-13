@@ -52,8 +52,7 @@ import org.exist.util.LockException;
  */
 public class MultiReadReentrantLock implements Lock {
 
-    private final static Logger log = Logger
-            .getLogger(MultiReadReentrantLock.class);
+    private final static Logger log = Logger.getLogger(MultiReadReentrantLock.class);
 
     /** Number of threads waiting to read. */
     private int waitingForReadLock = 0;
@@ -236,8 +235,8 @@ public class MultiReadReentrantLock implements Lock {
                 }
             }
         } else {
-            log.warn("Illegal lock usage: thread does not hold the write lock");
-            throw new IllegalStateException("Thread does not have lock");
+            log.warn("Possible lock problem: a thread released a write lock it didn't hold. Either the " +
+                    "thread was interrupted or it never acquired the lock.");
         }
 //        log.debug("writeLock released: " + outstandingWriteLocks +
 //                "; thread: " + Thread.currentThread().getName());
@@ -274,8 +273,10 @@ public class MultiReadReentrantLock implements Lock {
                 //                }
             }
             return;
-        } else
-            throw new IllegalStateException("Attempt to release a non-existing read lock.");
+        } else {
+            log.warn("Possible lock problem: a thread released a read lock it didn't hold. Either the " +
+                    "thread was interrupted or it never acquired the lock.");
+        }
     }
 
     public synchronized boolean isLockedForWrite() {
