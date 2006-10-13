@@ -1,8 +1,7 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ *  Copyright (C) 2001-06 The eXist Project
+ *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
@@ -14,16 +13,16 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.xquery.modules.math;
 
 import org.exist.dom.QName;
+import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
-import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
@@ -38,7 +37,7 @@ import org.exist.xquery.value.Type;
 /**
  * @author Dannes Wessels
  */
-public class ComplexFunctions extends Function {
+public class ComplexFunctions extends BasicFunction {
     
     public final static FunctionSignature signature[] = {
         // Functions, two parameters
@@ -69,30 +68,26 @@ public class ComplexFunctions extends Function {
         super(context, signature);
     }
     
-        /* (non-Javadoc)
-         * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-         */
-    public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+     */
+    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
-            if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
         
-        if(contextItem != null)
-            contextSequence = contextItem.toSequence();
-        
+       
         Sequence result;
         double calcValue=0;
         String functionName = getSignature().getName().getLocalName();
         
-        Sequence seqA = getArgument(0).eval(contextSequence, contextItem);
+        Sequence seqA = args[0].convertTo(Type.DOUBLE);
         NumericValue valueA = (NumericValue)seqA.itemAt(0).convertTo(Type.DOUBLE);
         
-        Sequence seqB = getArgument(1).eval(contextSequence, contextItem);
+        Sequence seqB = args[1].convertTo(Type.DOUBLE);
         NumericValue valueB = (NumericValue)seqB.itemAt(0).convertTo(Type.DOUBLE);
         
         if("atan2".equals(functionName)) {
