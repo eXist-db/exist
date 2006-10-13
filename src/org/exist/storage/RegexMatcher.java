@@ -40,8 +40,13 @@ import org.exist.util.GlobToRegex;
 class RegexMatcher implements TermMatcher {
 	
 	private Matcher matcher;
+    private boolean matchAll = false;
+
+    public RegexMatcher(String expr, int type, int flags) throws EXistException {
+        this(expr, type, flags, false);
+    }
     
-	public RegexMatcher(String expr, int type, int flags) throws EXistException {
+    public RegexMatcher(String expr, int type, int flags, boolean matchAll) throws EXistException {
         try {
             // if expr is a file glob, translate it to a regular expression first
             if (type == DBBroker.MATCH_WILDCARDS) {
@@ -54,7 +59,9 @@ class RegexMatcher implements TermMatcher {
         } catch(PatternSyntaxException e) {
             throw new EXistException("Invalid regular expression: " + e.getMessage());
         }
-	}
+        this.matchAll = matchAll;
+        System.out.println("matchAll: " + matchAll);
+    }
 
 	/*
 	 * (non-Javadoc)
@@ -63,6 +70,6 @@ class RegexMatcher implements TermMatcher {
 	 */
 	public boolean matches(CharSequence term) {
         matcher.reset(term);
-        return matcher.find();
+        return matchAll ? matcher.matches() : matcher.find();
 	}
 }

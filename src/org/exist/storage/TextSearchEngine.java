@@ -179,21 +179,13 @@ public abstract class TextSearchEngine extends Observable {
 	public void setTrackMatches(int flags) {
 		trackMatches = flags;
 	}
-	
-	/**
-	 * For each of the given search terms and each of the documents in the
-	 * document set, return a node-set of matching nodes. 
-	 * 
-	 * This method uses MATCH_EXACT for comparing search terms.
-	 * 
-	 * @return node-set of matching nodes
-	 */
-	public NodeSet getNodesContaining(XQueryContext context, DocumentSet docs, NodeSet contextSet, 
-	        String expr) throws TerminatedException {
-		return getNodesContaining(context, docs, contextSet, expr, DBBroker.MATCH_EXACT);
-	}
 
-	/**
+    public NodeSet getNodesContaining(XQueryContext context, DocumentSet docs,
+	        NodeSet contextSet, String expr, int type) throws TerminatedException {
+        return getNodesContaining(context, docs, contextSet, expr, type, true);
+    }
+
+    /**
 	 * For each of the given search terms and each of the documents in the
 	 * document set, return a node-set of matching nodes. 
 	 * 
@@ -202,7 +194,7 @@ public abstract class TextSearchEngine extends Observable {
 	 * DBBroker.MATCH_REGEXP.
 	 */
 	public abstract NodeSet getNodesContaining(XQueryContext context, DocumentSet docs, 
-	        NodeSet contextSet, String expr, int type) throws TerminatedException;
+	        NodeSet contextSet, String expr, int type, boolean matchAll) throws TerminatedException;
 	
 	public abstract NodeSet getNodes(XQueryContext context, DocumentSet docs, NodeSet contextSet, 
 	        TermMatcher matcher, CharSequence startTerm) throws TerminatedException;

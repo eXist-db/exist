@@ -27,6 +27,7 @@ import java.util.List;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.storage.analysis.Tokenizer;
+import org.exist.storage.DBBroker;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
@@ -107,11 +108,12 @@ public class FtIndexLookup extends Function {
         NodeSet contextSet = contextSequence.toNodeSet();
         for (int k = 0; k < terms.length; k++) {
             hits[k] =
-                context.getBroker().getTextEngine().getNodesContaining(
-                        context,
-                        contextSet.getDocumentSet(),
-                        null,
-                        terms[k]);
+                    context.getBroker().getTextEngine().getNodesContaining(
+                            context,
+                            contextSet.getDocumentSet(),
+                            null,
+                            terms[k],
+                            DBBroker.MATCH_EXACT);
             hits[k] = getArgument(0).eval(hits[k]).toNodeSet();
         }
         

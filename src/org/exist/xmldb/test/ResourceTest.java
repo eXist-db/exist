@@ -2,6 +2,7 @@ package org.exist.xmldb.test;
 
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.File;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -13,6 +14,7 @@ import junit.framework.TestCase;
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
 import org.exist.storage.DBBroker;
+import org.exist.util.XMLFilenameFilter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -29,6 +31,7 @@ import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
+import org.xmldb.api.modules.CollectionManagementService;
 
 public class ResourceTest extends TestCase {
 
@@ -286,6 +289,26 @@ public class ResourceTest extends TestCase {
 			Database database = (Database) cl.newInstance();
 			database.setProperty("create-database", "true");
 			DatabaseManager.registerDatabase(database);
+            Collection root = DatabaseManager.getCollection(URI);
+            CollectionManagementService service =
+                (CollectionManagementService) root.getService(
+                    "CollectionManagementService",
+                    "1.0");
+            assertNotNull(service);
+            Collection testCollection = service.createCollection("test");
+            assertNotNull(testCollection);
+            
+            String directory = "samples/shakespeare";
+            String existHome = System.getProperty("exist.home");
+            File existDir = existHome==null ? new File(".") : new File(existHome);
+            File dir = new File(existDir,directory);
+            File files[] = dir.listFiles(new XMLFilenameFilter());
+
+            for (int i = 0; i < files.length; i++) {
+                XMLResource res = (XMLResource) testCollection.createResource(files[i].getName(), "XMLResource");
+                res.setContent(files[i]);
+                testCollection.storeResource(res);
+            }
 		} catch (Exception e) {
 			fail(e.getMessage());
 		}

@@ -361,8 +361,6 @@ public class LocationStep extends Step {
                 return contextSet.directSelectAttribute(test.getName(),
                         contextId);
         }
-        if (contextSet instanceof VirtualNodeSet)
-        	((VirtualNodeSet)contextSet).setNodeTest(test);
         if (preloadNodeSets()) {
             DocumentSet docs = getDocumentSet(contextSet);
             if (currentSet == null || currentDocs == null
