@@ -1869,7 +1869,14 @@ options {
 	}
 	|
 	EXPR_COMMENT
-	{ $setType(Token.SKIP); }
+	{ 
+		String comment = $getText;
+		for (int i = 0; i < comment.length(); i++) {
+			if (comment.charAt(i) == '\n')
+				newline();
+		}
+		$setType(Token.SKIP);
+	}
 	|
 	ncname:NCNAME { $setType(ncname.getType()); }
 	|
