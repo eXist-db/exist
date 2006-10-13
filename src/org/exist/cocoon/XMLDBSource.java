@@ -48,6 +48,8 @@ import org.apache.excalibur.source.SourceUtil;
 import org.apache.excalibur.source.SourceValidity;
 import org.apache.excalibur.source.impl.validity.TimeStampValidity;
 import org.apache.excalibur.xml.sax.XMLizable;
+import org.exist.xmldb.CollectionImpl;
+import org.exist.xmldb.EXistResource;
 import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -508,12 +510,40 @@ public class XMLDBSource extends AbstractLogEnabled
         return url;
     }
 
-    public long getContentLength() {
-        return -1;
+    public long getContentLength() {        
+    	long result=-1;
+    	try {
+    		setup();
+    		result = new Integer(((EXistResource)this.resource).getContentLength()).longValue();
+          } catch (Exception e){
+         	if (getLogger().isDebugEnabled()) {
+                getLogger().debug("getContentLength() for " + resName + " from collection " + url + " failed: " + e.getMessage());
+            }
+          }
+          finally {
+              cleanup();
+          }
+          return result;
     }
 
     public long getLastModified() {
-        return 0;
+    	long result=0;
+        try {
+        	setup();
+            if (this.status == ST_COLLECTION){
+                result = ((CollectionImpl)this.collection).getCreationTime().getTime();
+            }else if(this.status == ST_RESOURCE){
+                result = ((EXistResource)this.resource).getLastModificationTime().getTime();
+            }
+        } catch (Exception e){
+         	if (getLogger().isDebugEnabled()) {
+                getLogger().debug("getLastModified() for " + resName + " from collection " + url + " failed: " + e.getMessage());
+            }
+        }
+        finally {
+        	cleanup();
+        }
+        return result;
     }
 
     public boolean exists() {
