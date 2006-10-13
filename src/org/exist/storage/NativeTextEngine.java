@@ -204,7 +204,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         if (noTokenizing) {            
             token = new TextToken(TextToken.ALPHA, t, 0, t.length());
             invertedIndex.setDocument(doc);
-            invertedIndex.addText(t, token, gid);           
+            invertedIndex.addText(token, gid);
         } else {
             tokenizer.setText(t);
             while (null != (token = tokenizer.nextToken())) {
@@ -221,11 +221,34 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     }
                 }                
                 invertedIndex.setDocument(doc);
-                invertedIndex.addText(t, token, gid);
+                invertedIndex.addText(token, gid);
             }
         }
     } 
-    
+
+    public void storeText(FulltextIndexSpec indexSpec, StoredNode parent, String text) {
+        final DocumentImpl doc = (DocumentImpl)parent.getOwnerDocument();
+        //TODO : case conversion should be handled by the tokenizer -pb
+        TextToken token;
+        tokenizer.setText(text);
+        while (null != (token = tokenizer.nextToken())) {
+            if (token.length() > MAX_TOKEN_LENGTH) {
+                continue;
+            }
+            if (stoplist.contains(token)) {
+                continue;
+            }
+            if (indexSpec != null) {
+                //TODO : the tokenizer should strip unwanted token types itself -pb
+                if (!indexSpec.getIncludeAlphaNum() && !token.isAlpha()) {
+                    continue;
+                }
+            }
+            invertedIndex.setDocument(doc);
+            invertedIndex.addText(token, parent.getGID());
+        }
+    }
+
     public void storeAttribute(RangeIndexSpec spec, AttrImpl node) {
         // TODO Auto-generated method stub  
     }
@@ -759,7 +782,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             this.doc = document;
         }        
 
-		public void addText(XMLString text, TextToken token, long gid) {
+		public void addText(TextToken token, long gid) {
             //Is this token already pending ?
             OccurrenceList list = (OccurrenceList) words[0].get(token);
             //Create a GIDs list

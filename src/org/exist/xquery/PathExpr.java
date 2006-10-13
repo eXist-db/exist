@@ -145,8 +145,11 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
             if (contextItem != null)
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
+
+        if (contextItem != null)
+            contextSequence = contextItem.toSequence();
         
-        Sequence result = null;        
+        Sequence result = null;
         if (steps.size() == 0) {
             result = Sequence.EMPTY_SEQUENCE;
         } else {
@@ -184,8 +187,9 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 expr.setContextDocSet(contextDocs);
           
                 //DESIGN : first test the dependency then the result
-                if ((Dependency.dependsOn(expr, Dependency.CONTEXT_ITEM) ||
-                		Dependency.dependsOn(expr, Dependency.CONTEXT_POSITION)) &&
+                final int exprDeps = expr.getDependencies();
+                if ((Dependency.dependsOn(exprDeps, Dependency.CONTEXT_ITEM) ||
+                		Dependency.dependsOn(exprDeps, Dependency.CONTEXT_POSITION)) &&
                 		//A positionnal predicate will be evaluated one time
                 		//TODO : reconsider since that may be expensive (type evaluation)
                 		!(this.inPredicate && Type.subTypeOf(this.returnsType(), Type.NUMBER)) &&

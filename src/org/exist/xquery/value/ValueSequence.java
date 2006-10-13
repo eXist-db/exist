@@ -34,6 +34,7 @@ import org.exist.memtree.NodeImpl;
 import org.exist.util.FastQSort;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.Variable;
 
 /**
  * A sequence that may contain a mixture of atomic values and nodes.
@@ -57,8 +58,10 @@ public class ValueSequence extends AbstractSequence {
 	private int itemType = Type.ANY_TYPE;
 	
 	private boolean noDuplicates = false;
-	
-	public ValueSequence() {
+
+    private Variable holderVar = null;
+
+    public ValueSequence() {
 		this(INITIAL_SIZE);
 	}
 	
@@ -149,8 +152,12 @@ public class ValueSequence extends AbstractSequence {
 	public Item itemAt(int pos) {
 		return values[pos];
 	}
-	
-	/**
+
+    public void setHolderVariable(Variable var) {
+        this.holderVar = var;
+    }
+    
+    /**
      * Makes all in-memory nodes in this sequence persistent,
      * so they can be handled like other node sets.
      * 
@@ -194,7 +201,9 @@ public class ValueSequence extends AbstractSequence {
 					set.add((NodeProxy)v);
 				}
 			}
-			return set;
+            if (holderVar != null)
+                holderVar.setValue(set);
+            return set;
 		} else
 			throw new XPathException("Type error: the sequence cannot be converted into" +
 				" a node set. Item type is " + Type.getTypeName(itemType));

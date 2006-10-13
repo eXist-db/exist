@@ -32,6 +32,7 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
+import org.exist.memtree.NodeImpl;
 
 /**
  * An XQuery/XPath variable, consisting of a QName and a value.
@@ -66,9 +67,17 @@ public class Variable {
 		this.qname = qname;
 	}
     
-	public void setValue(Sequence value) {
-		this.value = value;
-	}
+	public void setValue(Sequence val) {
+		this.value = val;
+        if (val instanceof NodeImpl) {
+            ValueSequence newSeq = new ValueSequence(1);
+            newSeq.add((Item) val);
+            newSeq.setHolderVariable(this);
+            this.value = newSeq;
+        } else if (val instanceof ValueSequence) {
+            ((ValueSequence) this.value).setHolderVariable(this);
+        }
+    }
 
     public Sequence getValue() {
 		return value;
