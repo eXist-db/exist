@@ -1574,7 +1574,7 @@ sub process {
                                 </listitem>
                             </varlistentry>
                             <varlistentry>
-                                <term>overwrite</term>
+                                <term>replace</term>
                                 <listitem>
                                     <para>Set this to <option>true</option> if an existing document
                                         with the same name should be automatically
