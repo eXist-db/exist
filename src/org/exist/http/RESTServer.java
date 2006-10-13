@@ -35,8 +35,6 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.URI;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
@@ -90,6 +88,7 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.functions.response.ResponseModule;
 import org.exist.xquery.functions.session.SessionModule;
+import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
@@ -124,9 +123,6 @@ public class RESTServer {
         defaultProperties.setProperty(EXistOutputKeys.HIGHLIGHT_MATCHES, "elements");
         defaultProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "yes");
     }
-    
-    private final static DateFormat dateFormat = new SimpleDateFormat(
-            "MMM d, yyyy hh:mm:ss");
     
     private final static String QUERY_ERROR_HEAD =
             "<html>" +
@@ -1063,10 +1059,19 @@ public class RESTServer {
                         Permission.READ)) {
                     attrs.clear();
                     attrs.addAttribute("", "name", "name", "CDATA", child.toString());
+                   
+                    //add an attribute for the creation date as an xs:dateTime 
+                    try
+                    {
+                    	DateTimeValue dtCreated = new DateTimeValue(new Date(childCollection.getCreationTime()));
+                    	attrs.addAttribute("", "created", "created", "CDATA", dtCreated.getStringValue());
+                    }
+                    catch(XPathException e)
+                    {
+                    	//fallback to long value
+                    	attrs.addAttribute("", "created", "created", "CDATA", String.valueOf(childCollection.getCreationTime()));
+                    }
                     
-                    attrs.addAttribute("", "created", "created", "CDATA",
-                            dateFormat.format(new Date(childCollection
-                            .getCreationTime())));
                     printPermissions(attrs, childCollection.getPermissions());
                     serializer.startElement(NS, "collection",
                             "exist:collection", attrs);
@@ -1082,10 +1087,31 @@ public class RESTServer {
                     DocumentMetadata metadata = doc.getMetadata();
                     attrs.clear();
                     attrs.addAttribute("", "name", "name", "CDATA", resource.toString());
-                    attrs.addAttribute("", "created", "created", "CDATA",
-                            dateFormat.format(new Date(metadata.getCreated())));
-                    attrs.addAttribute("", "last-modified", "last-modified",
-                            "CDATA", dateFormat.format(new Date(metadata.getLastModified())));
+                    
+                    //add an attribute for the creation date as an xs:dateTime 
+                    try
+                    {
+                    	DateTimeValue dtCreated = new DateTimeValue(new Date(metadata.getCreated()));
+                    	attrs.addAttribute("", "created", "created", "CDATA", dtCreated.getStringValue());
+                    }
+                    catch(XPathException e)
+                    {
+                    	//fallback to long value
+                    	attrs.addAttribute("", "created", "created", "CDATA", String.valueOf(metadata.getCreated()));
+                    }
+                    
+                    //add an attribute for the last modified date as an xs:dateTime 
+                    try
+                    {
+                    	DateTimeValue dtLastModified = new DateTimeValue(new Date(metadata.getLastModified()));
+                    	attrs.addAttribute("", "last-mofified", "last-modified", "CDATA", dtLastModified.getStringValue());
+                    }
+                    catch(XPathException e)
+                    {
+                    	//fallback to long value
+                    	attrs.addAttribute("", "last-modified", "last-modified", "CDATA", String.valueOf(metadata.getLastModified()));
+                    }
+                   
                     printPermissions(attrs, doc.getPermissions());
                     serializer.startElement(NS, "resource", "exist:resource",
                             attrs);
