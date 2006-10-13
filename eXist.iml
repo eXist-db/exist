@@ -8,7 +8,7 @@
       <sourceFolder url="file://$MODULE_DIR$/extensions/modules/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
     </content>
-    <orderEntry type="jdk" jdkName="IDEA 5784" jdkType="IDEA JDK" />
+    <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="optional libs" level="project" />
     <orderEntry type="library" name="core libs" level="project" />
