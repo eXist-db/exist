@@ -22,10 +22,9 @@
 package org.exist.xquery.value;
 
 import java.io.UnsupportedEncodingException;
-import java.text.Collator;
-import java.util.Arrays;
 
 import org.apache.xmlrpc.Base64;
+import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 
 public class Base64Binary extends BinaryValue {
@@ -35,7 +34,11 @@ public class Base64Binary extends BinaryValue {
     }
 
     public Base64Binary(String str) throws XPathException {
-    	try {
+    	try { 
+    		if (!Base64.isBase64(str)) 
+    			throw new XPathException("cannot build " + Type.getTypeName(getType()) + " from '" + str + "'");    		
+    		if (str.indexOf("=") != Constants.STRING_NOT_FOUND && str.indexOf("=") != str.length()) 
+    			throw new XPathException("cannot build " + Type.getTypeName(getType()) + " from '" + str + "', '=' must be at the end");    		
 			this.data = Base64.decode(str.getBytes("UTF-8"));
 		} catch (UnsupportedEncodingException e) {
 			throw new XPathException("cannot build UTF-8 " + Type.getTypeName(getType()) + " from '" + str + "'");

@@ -43,7 +43,7 @@ public class Compile extends BasicFunction {
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
 		// get the query expression
-		String expr = StringValue.expand(args[0].getStringValue());
+		String expr = args[0].getStringValue();
 		if ("".equals(expr.trim()))
 		  return new EmptySequence();
 		context.pushNamespaceContext();
