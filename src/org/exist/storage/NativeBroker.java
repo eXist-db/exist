@@ -479,7 +479,17 @@ public class NativeBroker extends DBBroker {
             if (qnameValueIndex != null)
                 qnameValueIndex.endElement((ElementImpl) node, currentPath, content);
         }
-        
+        if (RangeIndexSpec.hasMixedTextIndex(indexType)) {
+            if (content == null) {
+                if (oldAddress != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
+                    p.setInternalAddress(oldAddress);
+                content = getNodeValue(node, false);
+                //Curious...
+                p.setInternalAddress(node.getInternalAddress());
+            }
+            textEngine.setDocument(doc);
+            textEngine.storeText(null, node, content);
+        }
         p.setIndexType(indexType);
         
         // TODO move_to NativeElementIndex; name change (See ContentLoadingObserver ): addRow() --> endElement()
@@ -3129,6 +3139,8 @@ public class NativeBroker extends DBBroker {
                     // --move to-- NativeTextEngine
                     if(ftIdx == null || currentPath == null || ftIdx.match(currentPath))
                         indexType |= RangeIndexSpec.TEXT;
+                    if (currentPath != null && ftIdx != null && ftIdx.matchMixedElement(currentPath))
+                        indexType |= RangeIndexSpec.TEXT_MIXED_CONTENT;
                     if(node.getChildCount() - node.getAttributesCount() > 1) {
                         indexType |= RangeIndexSpec.MIXED_CONTENT;
                     }

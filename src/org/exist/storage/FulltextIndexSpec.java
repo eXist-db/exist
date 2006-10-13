@@ -41,6 +41,8 @@ import org.w3c.dom.NodeList;
 public class FulltextIndexSpec {
 	
     private static final String PATH_ATTRIB = "path";
+    private static final String CONTENT_ATTRIB = "content";
+    private static final String CONTENT_MIXED = "mixed";
     private static final String PRESERVE_CONTENT_ELEMENT = "preserveContent";
     private static final String EXCLUDE_INTERFACE = "exclude";
     private static final String INCLUDE_ELEMENT = "include";
@@ -54,12 +56,13 @@ public class FulltextIndexSpec {
     
     protected NodePath[] includePath;
     protected NodePath[] excludePath;
+    protected NodePath[] mixedPath;
     protected NodePath[] preserveContent;
     
     protected boolean includeByDefault = true;
     protected boolean includeAttributes = true;
     protected boolean includeAlphaNum = true;
-	
+
     /**
      * Constructor for the IndexPaths object
      *
@@ -68,9 +71,12 @@ public class FulltextIndexSpec {
      */
     public FulltextIndexSpec(Map namespaces, Element node) {
         includeByDefault = true;
-        ArrayList includeList = new ArrayList(  );
-        ArrayList excludeList = new ArrayList(  );
-        ArrayList preserveList = new ArrayList(  );
+        ArrayList includeList = new ArrayList();
+        ArrayList excludeList = new ArrayList();
+        ArrayList preserveList = new ArrayList();
+        ArrayList mixedList = new ArrayList();
+
+        // check default settings
         String def = node.getAttribute(DEFAULT_ATTRIB);
         if(def != null && def.length() > 0) {
             includeByDefault = def.equals("all");
@@ -86,14 +92,21 @@ public class FulltextIndexSpec {
 
 		// check paths to include/exclude
 		NodeList children = node.getChildNodes();
-		String ps;
+		String ps, content;
 		Node next;
-		for(int j = 0; j < children.getLength(); j++) {
+        Element elem;
+        for(int j = 0; j < children.getLength(); j++) {
 		    next = children.item(j);
 		    if(INCLUDE_ELEMENT.equals(next.getLocalName())) {
-		        ps = ((Element) next).getAttribute(PATH_ATTRIB);
-                includeList.add( new NodePath(namespaces, ps) );
-		    } else if(EXCLUDE_INTERFACE.equals(next.getLocalName())) {
+                elem = (Element) next;
+                content = elem.getAttribute(CONTENT_ATTRIB);
+                ps = elem.getAttribute(PATH_ATTRIB);
+                if (content != null && content.length() != 0 && CONTENT_MIXED.equals(content)) {
+                    mixedList.add(new NodePath(namespaces, ps, false));
+                } else {
+                    includeList.add( new NodePath(namespaces, ps) );
+                }
+            } else if(EXCLUDE_INTERFACE.equals(next.getLocalName())) {
 		        ps = ((Element) next).getAttribute(PATH_ATTRIB);
                 excludeList.add( new NodePath(namespaces, ps) );
 		    } else if(PRESERVE_CONTENT_ELEMENT.equals(next.getLocalName())) {
@@ -104,6 +117,7 @@ public class FulltextIndexSpec {
         includePath = (NodePath[]) includeList.toArray(ARRAY_TYPE);
         excludePath = (NodePath[]) excludeList.toArray(ARRAY_TYPE);
         preserveContent = (NodePath[]) preserveList.toArray(ARRAY_TYPE);
+        mixedPath = (NodePath[]) mixedList.toArray(ARRAY_TYPE); 
     }
 
 	/**
@@ -179,7 +193,28 @@ public class FulltextIndexSpec {
         }
         return false;
     }
-	
+
+    /**
+     * Check if the element corresponding to the given path
+     * should be indexed as an element with mixed content,
+     * i.e. the string value of the element will be indexed
+     * as a single text sequence. Descendant elements will be ignored and
+     * will not break the text into chunks.
+     *
+     * Example: a mixed content index on the element
+     * <![CDATA[<mixed><s>un</s>even</mixed>]]> 
+     *
+     * @param path
+     * @return
+     */
+    public boolean matchMixedElement(NodePath path) {
+        for (int i = 0; i < mixedPath.length; i++) {
+            if( mixedPath[i].match(path) )
+                return true;
+        }
+        return false;
+    }
+
     /**
      * Check if a given path should be preserveContent.
      *

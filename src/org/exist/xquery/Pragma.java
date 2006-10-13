@@ -17,7 +17,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id$
+ *  $Id: Pragma.java 4488 2006-10-05 17:40:20 +0200 (Thu, 05 Oct 2006) deliriumsky $
  */
 package org.exist.xquery;
 
@@ -50,5 +50,10 @@ public abstract class Pragma {
 
     protected QName getQName() {
         return qname;
+    }
+
+
+    public String toString() {
+        return "(# " + qname + ' ' + contents + "#)";
     }
 }

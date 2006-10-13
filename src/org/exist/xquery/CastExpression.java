@@ -24,11 +24,7 @@ package org.exist.xquery;
 
 import org.exist.dom.DocumentSet;
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.AtomicValue;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.QNameValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 /**
  * CastExpression represents cast expressions as well as all type 
@@ -37,12 +33,12 @@ import org.exist.xquery.value.Type;
  * @author wolf
  */
 public class CastExpression extends AbstractExpression {
-
-	private Expression expression;	
+    
+    private Expression expression;
 	private int cardinality = Cardinality.EXACTLY_ONE;
 	private final int requiredType;
-	
-	/**
+
+    /**
 	 * Constructor. When calling {@link #eval(Sequence, Item)} 
 	 * the passed expression will be cast into the required type and cardinality.
 	 * 
@@ -82,7 +78,6 @@ public class CastExpression extends AbstractExpression {
             if (contextItem != null)
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
-        
         Sequence result;
 		Sequence seq = expression.eval(contextSequence, contextItem);
 		if (seq.isEmpty()) {
@@ -104,7 +99,7 @@ public class CastExpression extends AbstractExpression {
                                 " to xs:QName");
                     }
                 } else
-                    result = (AtomicValue)item.convertTo(requiredType);
+                    result = item.convertTo(requiredType);
     		} catch(XPathException e) {
     			e.setASTNode(getASTNode());
     			throw e;

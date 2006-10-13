@@ -1849,9 +1849,10 @@ public class DOMFile extends BTree implements Lockable {
 					os.write((byte) ' ');
 			}
 			return;
-		case Node.TEXT_NODE:
+        case Node.CDATA_SECTION_NODE:
+        case Node.TEXT_NODE:
 			os.write(data, readOffset + 1, len - 1);
-			break;
+            break;
 		case Node.ATTRIBUTE_NODE:
 			// use attribute value if the context node is an attribute, i.e.
 			// if this is the first call to the method
