@@ -162,6 +162,7 @@
             <test fork="yes" name="org.exist.xmldb.test.RemoteTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.xquery.test.RemoteTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.http.test.RESTServiceTest" todir="${junit.reports.dat}"/>
+            <test fork="yes" name="org.exist.storage.test.XIncludeSerializerTest" todir="${junit.reports.dat}"/>
         </junit>
     </target>
 
