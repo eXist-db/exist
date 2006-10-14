@@ -46,7 +46,7 @@ import org.mortbay.util.MultiException;
  * 
  * Test XInclude Serialiser via REST/XMLRPC/WEBDAV/SOAP interfaces
  * 
- * @todo: need to refacotr to avoid catching unexpected exceptions
+ * TODO: need to refacotr to avoid catching unexpected exceptions
  * 
  * 
  */
