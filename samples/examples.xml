@@ -125,11 +125,11 @@ return
         <code><![CDATA[
     (:  This script accesses the mondial database, which can be
         found at http://dbis.informatik.uni-goettingen.de/Mondial/ :)
-        id(/mondial/country[@car_code="D"]/@memberships)]]></code>
+        /mondial/id(/mondial/country[@car_code="D"]/@memberships)]]></code>
     </query>
     <query>
         <description>Countries having a common border with Austria</description>
-        <code><![CDATA[id(/mondial/country[name = "Austria"]/border/@country)/name
+        <code><![CDATA[/mondial/id(/mondial/country[name = "Austria"]/border/@country)/name
         ]]></code>
     </query>
     <query>
