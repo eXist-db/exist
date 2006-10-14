@@ -201,6 +201,7 @@
             <fileset dir="tools">
                 <exclude name="**/work/**/*"/>
                 <exclude name="**/logs/*"/>
+                <exclude name="**/javasvn*jar"/>
             </fileset>
         </copy>
         <copy todir="${dist.dir}/webapp">
