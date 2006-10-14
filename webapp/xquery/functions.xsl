@@ -6,9 +6,13 @@
 		<html>
 			<head>
 				<title>XQuery Available Functions</title>
-				<link rel="stylesheet" type="text/css" 
-					href="styles/functions.css"/>
-			</head>
+				<link rel="stylesheet" type="text/css" href="styles/functions.css"/>
+                <link rel="stylesheet" type="text/css">
+                    body {
+                        margin: 45px 70px;
+                    }
+                </link>
+            </head>
 			<body>
 				<h1>Available XQuery Functions</h1>
 				<xsl:apply-templates select="builtin-functions"/>

@@ -225,35 +225,35 @@ declare function xqts:get-variable($case as element(catalog:test-case),
 			util:eval($xq-string)
 };
 
-declare function xqts:run-test-case( $case as element(catalog:test-case)) as item()* {
-   let $query := xqts:get-query($case)
+declare function xqts:run-test-case( $testCase as element(catalog:test-case)) as item()* {
+   let $query := xqts:get-query($testCase)
    let $result := 
        util:catch("java.lang.Exception",
 			let $context :=
 				<static-context>
        			{
-           			for $input in $case/catalog:input-file
+           			for $input in $testCase/catalog:input-file
            			return
                			<variable name="{$input/@variable}">{xqts:get-input-value($input)}</variable>,
-            		for $var in $case/catalog:input-query
+            		for $var in $testCase/catalog:input-query
             		return
                 		<variable name="{$var/@variable}">
-                    		{xqts:get-variable($case, $var/@name)}
+                    		{xqts:get-variable($testCase, $var/@name)}
                 		</variable>
        			}
        			</static-context>
            let $result :=
                util:eval-with-context($query, $context, false())
            return
-               xqts:check-output($query, $result, $case),
-           if ($case//catalog:expected-error) then
-               <test-case name="{$case/@name}" result="pass">
+               xqts:check-output($query, $result, $testCase),
+           if ($testCase//catalog:expected-error) then
+               <test-case name="{$testCase/@name}" result="pass">
                    <exception>{$util:exception-message}</exception>
-                   <expected-error>{string-join($case//catalog:expected-error/text(),";")}</expected-error>
+                   <expected-error>{string-join($testCase//catalog:expected-error/text(),";")}</expected-error>
                    <query>{$query}</query>
                </test-case>
            else
-               <test-case name="{$case/@name}" result="fail">
+               <test-case name="{$testCase/@name}" result="fail">
                    <exception>{$util:exception-message}</exception>                  
 					(: TODO : insert expected result here :)    
                    <query>{$query}</query>
