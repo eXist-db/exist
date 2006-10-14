@@ -147,8 +147,9 @@ public class OneParamFunctions extends BasicFunction {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null)
+            if (contextSequence != null){
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            }
         }
         
         Sequence result;
@@ -211,8 +212,9 @@ public class OneParamFunctions extends BasicFunction {
             result=new DoubleValue(calcValue);
         }
         
-        if (context.getProfiler().isEnabled())
+        if (context.getProfiler().isEnabled()){
             context.getProfiler().end(this, "", result);
+        }
         
         return result;
     }

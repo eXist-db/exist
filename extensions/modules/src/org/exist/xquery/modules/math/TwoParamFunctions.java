@@ -28,7 +28,6 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.DoubleValue;
-import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -76,8 +75,9 @@ public class TwoParamFunctions extends BasicFunction {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null)
+            if (contextSequence != null){
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+            }
         }
         
        
@@ -103,8 +103,9 @@ public class TwoParamFunctions extends BasicFunction {
         result=new DoubleValue(calcValue);
         
         
-        if (context.getProfiler().isEnabled())
+        if (context.getProfiler().isEnabled()){
             context.getProfiler().end(this, "", result);
+        }
         
         return result;
     }
