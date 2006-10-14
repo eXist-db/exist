@@ -11,5 +11,5 @@
     		- eXist 1.1 can execute all XQTS versions.
     		
    	-->
-    <basedir>d:/Data/XQTS_1.0/</basedir>
+    <basedir>/home/wolf/xml/XQTS_1.0.1/</basedir>
 </config>

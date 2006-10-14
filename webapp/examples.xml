@@ -186,16 +186,6 @@
                             Demystifier</link>
                         </td>
                     </tr>
-                    <tr>
-                        <th align="left" colspan="2"> XML:DB Transformer </th>
-                    </tr>
-                    <tr>
-                        <td width="30%" valign="top">
-                            <link href="library/biblio.xml">Bibliography</link>
-                        </td>
-                        <td width="70%"> Older library demo, which is still included too demonstrate
-                            the XML:DB transformer. </td>
-                    </tr>
                 </table>
             </section>
         </section>
