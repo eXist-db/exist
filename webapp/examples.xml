@@ -69,6 +69,15 @@
                             functions are supported through the eXist-specific extension functions:
                             util:function and util:call. </td>
                     </tr>
+                    <tr>
+                        <td width="30%" valign="top">
+                            <link href="xqts/report.xql">W3C XQuery Test suite (XQTS)</link>
+                        </td>
+                        <td width="70%"> Using this web application you can run the official XQuery test
+                        suite on eXist. You will need to download the test suite data (read
+                        the notice shown when you first access the page). The test runner is entirely written
+                        in XQuery and is a good example for a complex script using lots of AJAX.</td>
+                    </tr>
                 </table>
             </section>
 

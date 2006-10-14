@@ -345,3 +345,20 @@ a {
 	font-size:0.8em;
 	line-height:20px;	/* Same as height of progress bar */
 }
+
+#installation .bd {
+    margin: 10px 15px;
+    overflow: auto;
+}
+
+#installation li {
+    margin: 10px 10px;
+}
+
+#installation b {
+    color:#184EB8;
+}
+
+.filename {
+    font-family: monospace;
+}
