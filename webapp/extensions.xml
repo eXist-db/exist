@@ -113,7 +113,7 @@
         
         <section id="module_math">
             <title>Math Module</title>
-            <para>This module provides mathematical functions.</para>
+            <para>This module provides mathematical functions from the java Math class.</para>
             <para>
                 <command>Creator:</command>&#160;<dc:creator>Dannes Wessels</dc:creator><br/>
                 <command>Licence:</command>&#160;LGPL<br/>
