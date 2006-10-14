@@ -33,12 +33,13 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 /**
+ * Class containing math functions that accept no parameters.
+ *
  * @author Dannes Wessels
  */
-public class Constants extends BasicFunction {
+public class NoParamFunctions extends BasicFunction {
     
     public final static FunctionSignature signature[] = {
-        //Constant values
         new FunctionSignature(
                 new QName("e", MathModule.NAMESPACE_URI),
                 "Returns base of the natural logarithms, e.",
@@ -62,7 +63,7 @@ public class Constants extends BasicFunction {
     /**
      * @param context
      */
-    public Constants(XQueryContext context, FunctionSignature signature) {
+    public NoParamFunctions(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }
     
@@ -90,8 +91,7 @@ public class Constants extends BasicFunction {
             result=new DoubleValue(Math.random());
             
         } else {
-            // DWES: can this be thrown here?
-            throw new XPathException("Function not found.");
+            throw new XPathException("Function "+functionName+" not found.");
         }
         
         

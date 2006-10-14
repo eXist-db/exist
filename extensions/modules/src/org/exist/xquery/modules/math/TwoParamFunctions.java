@@ -35,12 +35,13 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 /**
+ *  Class containing math functions that accept two parameters.
+ *
  * @author Dannes Wessels
  */
-public class ComplexFunctions extends BasicFunction {
+public class TwoParamFunctions extends BasicFunction {
     
     public final static FunctionSignature signature[] = {
-        // Functions, two parameters
         new FunctionSignature(
                 new QName("atan2", MathModule.NAMESPACE_URI),
                 "Returns the angle (radians) from the X axis to a point ($b,$a).",
@@ -64,7 +65,7 @@ public class ComplexFunctions extends BasicFunction {
     /**
      * @param context
      */
-    public ComplexFunctions(XQueryContext context, FunctionSignature signature) {
+    public TwoParamFunctions(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }
     
@@ -97,8 +98,7 @@ public class ComplexFunctions extends BasicFunction {
             calcValue=Math.pow(valueA.getDouble(), valueB.getDouble());
             
         } else {
-            // DWES: can this be thrown here?
-            throw new XPathException("Function not found.");
+            throw new XPathException("Function "+functionName+" not found.");
         }
         result=new DoubleValue(calcValue);
         

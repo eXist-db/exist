@@ -32,26 +32,26 @@ public class MathModule extends AbstractInternalModule {
     public final static String PREFIX = "math";
     
     private final static FunctionDef functions[] = {
-        new FunctionDef(SimpleFunctions.signature[0], SimpleFunctions.class),
-        new FunctionDef(SimpleFunctions.signature[1], SimpleFunctions.class),
-        new FunctionDef(SimpleFunctions.signature[2], SimpleFunctions.class),
-        new FunctionDef(SimpleFunctions.signature[3], SimpleFunctions.class),
-        new FunctionDef(SimpleFunctions.signature[4], SimpleFunctions.class),
-        new FunctionDef(SimpleFunctions.signature[5], SimpleFunctions.class),
-        new FunctionDef(SimpleFunctions.signature[6], SimpleFunctions.class),
-        new FunctionDef(SimpleFunctions.signature[7], SimpleFunctions.class),
-        new FunctionDef(SimpleFunctions.signature[8], SimpleFunctions.class),
-        new FunctionDef(SimpleFunctions.signature[9], SimpleFunctions.class),
-        new FunctionDef(SimpleFunctions.signature[10], SimpleFunctions.class),
-        new FunctionDef(SimpleFunctions.signature[11], SimpleFunctions.class),
-        new FunctionDef(SimpleFunctions.signature[12], SimpleFunctions.class),
-        new FunctionDef(SimpleFunctions.signature[13], SimpleFunctions.class),
-        new FunctionDef(SimpleFunctions.signature[14], SimpleFunctions.class),
-        new FunctionDef(Constants.signature[0], Constants.class),
-        new FunctionDef(Constants.signature[1], Constants.class),
-        new FunctionDef(Constants.signature[2], Constants.class),
-        new FunctionDef(ComplexFunctions.signature[0], ComplexFunctions.class),
-        new FunctionDef(ComplexFunctions.signature[1], ComplexFunctions.class)
+        new FunctionDef(OneParamFunctions.signature[0], OneParamFunctions.class),
+        new FunctionDef(OneParamFunctions.signature[1], OneParamFunctions.class),
+        new FunctionDef(OneParamFunctions.signature[2], OneParamFunctions.class),
+        new FunctionDef(OneParamFunctions.signature[3], OneParamFunctions.class),
+        new FunctionDef(OneParamFunctions.signature[4], OneParamFunctions.class),
+        new FunctionDef(OneParamFunctions.signature[5], OneParamFunctions.class),
+        new FunctionDef(OneParamFunctions.signature[6], OneParamFunctions.class),
+        new FunctionDef(OneParamFunctions.signature[7], OneParamFunctions.class),
+        new FunctionDef(OneParamFunctions.signature[8], OneParamFunctions.class),
+        new FunctionDef(OneParamFunctions.signature[9], OneParamFunctions.class),
+        new FunctionDef(OneParamFunctions.signature[10], OneParamFunctions.class),
+        new FunctionDef(OneParamFunctions.signature[11], OneParamFunctions.class),
+        new FunctionDef(OneParamFunctions.signature[12], OneParamFunctions.class),
+        new FunctionDef(OneParamFunctions.signature[13], OneParamFunctions.class),
+        new FunctionDef(OneParamFunctions.signature[14], OneParamFunctions.class),
+        new FunctionDef(NoParamFunctions.signature[0], NoParamFunctions.class),
+        new FunctionDef(NoParamFunctions.signature[1], NoParamFunctions.class),
+        new FunctionDef(NoParamFunctions.signature[2], NoParamFunctions.class),
+        new FunctionDef(TwoParamFunctions.signature[0], TwoParamFunctions.class),
+        new FunctionDef(TwoParamFunctions.signature[1], TwoParamFunctions.class)
     };
     
     public MathModule() {
@@ -67,6 +67,6 @@ public class MathModule extends AbstractInternalModule {
     }
     
     public String getDescription() {
-        return "Module containing mathematical functions.";
+        return "Functions for mathematical operations.";
     }
 }

@@ -34,12 +34,13 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 /**
+ * Class containing math functions that accept one parameter.
+ *
  * @author Dannes Wessels
  */
-public class SimpleFunctions extends BasicFunction {
+public class OneParamFunctions extends BasicFunction {
     
     public final static FunctionSignature signature[] = {
-        // Functions, one parameter
         new FunctionSignature(
                 new QName("abs", MathModule.NAMESPACE_URI),
                 "Returns the absolute value of a number.",
@@ -135,13 +136,13 @@ public class SimpleFunctions extends BasicFunction {
     /**
      * @param context
      */
-    public SimpleFunctions(XQueryContext context, FunctionSignature signature) {
+    public OneParamFunctions(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }
     
-        /* (non-Javadoc)
-         * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-         */
+    /* (non-Javadoc)
+     * @see org.exist.xquery.Expression#eval(org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
+     */
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);
@@ -205,8 +206,7 @@ public class SimpleFunctions extends BasicFunction {
                 calcValue=Math.toRadians(value.getDouble());
                 
             } else {
-                // DWES: can this be thrown here?
-                throw new XPathException("Function not found.");
+                throw new XPathException("Function "+functionName+" not found.");
             }
             result=new DoubleValue(calcValue);
         }
