@@ -23,6 +23,8 @@ import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
 /**
+ *  eXist module for mathematical operations.
+ *
  * @author Dannes Wessels
  */
 public class MathModule extends AbstractInternalModule {
