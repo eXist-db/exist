@@ -13,7 +13,7 @@
                     href="admin/admin.xql?user=admin&amp;pass=&amp;panel=setup"> Examples
                     Setup</a>.</p>
 
-            <section title="XQueryServlet">
+            <section title="XQueryServlet (just eXist, no Cocoon)">
                 <table border="0" width="100%" cellspacing="10">
                     <tr>
                         <td width="30%" valign="top">
@@ -81,7 +81,7 @@
                 </table>
             </section>
 
-            <section title="XQueryGenerator">
+            <section title="XQueryGenerator (using Cocoon)">
                 <table border="0" width="100%" cellspacing="10">
                     <tr>
                         <td width="30%" valign="top">
