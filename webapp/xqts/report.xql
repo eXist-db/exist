@@ -10,19 +10,20 @@ declare namespace system="http://exist-db.org/xquery/system";
 declare namespace xqts="http://exist-db.org/xquery/xqts";
 declare namespace catalog="http://www.w3.org/2005/02/query-test-XQTSCatalog";
 
-declare variable $xqts:XML_HIGHLIGHT_STYLE { "/db/XQTS/xml-highlight.xsl" };
-declare variable $xqts:CONFIG { xqts:initialize() };
-declare variable $xqts:XQTS_HOME { $xqts:CONFIG/basedir/text() };
+declare variable $xqts:XML_HIGHLIGHT_STYLE := "/db/XQTS/xml-highlight.xsl";
+declare variable $xqts:CONFIG := xqts:initialize();
+declare variable $xqts:XQTS_HOME := $xqts:CONFIG/basedir/text();
 
 declare function xqts:initialize() as element() {
     let $collection := xdb:create-collection("/db", "XQTS")
     let $config := doc("/db/XQTS/config.xml")/config
     return
-        if ($config) then
+        if (exists($config)) then
             $config
         else
             let $home := system:get-exist-home()
-            let $path := concat($home, "webapp/xqts")
+            let $pathSep := util:system-property("file.separator")
+            let $path := concat($home, concat($pathSep, "webapp", $pathSep, "xqts"))
             let $stored := xdb:store-files-from-pattern("/db/XQTS", $path, "*.xml", "text/xml")
             return
                 doc("/db/XQTS/config.xml")/config
@@ -131,6 +132,30 @@ declare function xqts:display-page() as element() {
                     </div>
                     <div id="details-content"></div>
                 </div>
+            </div>
+            <div id="installation">
+                <div class="hd">XQTS Data Not Found</div>
+                <div class="bd">
+                    <p>In order to run the XQuery Test Suite (XQTS), you need to download and install the
+                    XQTS data from the W3C web site. To install and run the XQTS, read the following
+                    instructions:</p>
+                    
+                    <ul>
+                        <li>Get latest XQTS test suite ZIP file from the 
+                            <a href="http://www.w3.org/XML/Query/test-suite/" target="_new">W3C site</a>. 
+                            <b>Please note</b>: eXist 1.0 will only work with XQTS version 0.9.0. It won't run 
+                            with later versions. eXist 1.1 can run all versions!</li>
+                        <li>Extract the file to a location remembered as "XQTS_HOME" on your local drive (not needed to create an 
+                            environment variable).</li>
+                        <li>Modify the file <span class="filename">EXIST_HOME/webapp/xqts/config.xml</span> to match your 
+                            local setup (XQTS_HOME)</li>
+                        <li>Modify <span class="filename">EXIST_HOME/conf.xml</span>, change <b>validation="no"</b></li>
+                        <li>Start eXist as full server in EXIST_HOME : <span class="filename">bin/startup.sh</span></li>
+                        <li>Start data upload : <span class="filename">build.[.sh|bat] -f webapp/xqts/build.xml</span></li>
+                        <li>Reload this page!</li>
+                    </ul>
+                </div>
+                <div class="ft"></div>
             </div>
         </body>
     </html>

@@ -33,8 +33,8 @@ declare namespace system="http://exist-db.org/xquery/system";
      
      * Run this script with the client.
      ------------------------------------------------------------------------------------------- :)
-declare variable $xqts:CONFIG { xqts:initialize() };
-declare variable $xqts:XQTS_HOME { xqts:path-to-uri($xqts:CONFIG/basedir/text()) };
+declare variable $xqts:CONFIG := xqts:initialize();
+declare variable $xqts:XQTS_HOME := xqts:path-to-uri($xqts:CONFIG/basedir/text());
 
 declare function xqts:initialize() as element() {
     let $home := system:get-exist-home()

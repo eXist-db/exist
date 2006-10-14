@@ -30,6 +30,7 @@ var progressBar = null;
 var currentCollection = null;
 var currentGroup = null;
 var treeWidget = null;
+var installWarning;
 
 function init() {
 	resize();
@@ -47,6 +48,17 @@ function init() {
 			}, tabs[i]
 		);
 	}
+
+    installWarning = new YAHOO.widget.Panel('installation', {
+        height: (YAHOO.util.Dom.getViewportHeight() - 200) + 'px',
+        width: (YAHOO.util.Dom.getViewportWidth() - 200) + 'px',
+        modal: true,
+        underlay: 'shadow',
+        fixedcenter: true,
+        close: false,
+        visible: false,
+        draggable: false
+    });
 }
 
 function displayTree() {
@@ -73,7 +85,12 @@ function treeLoaded(request) {
 }
 
 function displayGroup(node, treeNode, oldTree) {
-	for (var i = 0; i < node.childNodes.length; i++) {
+    if (!node.hasChildNodes()) {
+        installWarning.render(document.body);
+        installWarning.show();
+        return;
+    }
+    for (var i = 0; i < node.childNodes.length; i++) {
 		var child = node.childNodes[i];
 		if (child.nodeName == 'group') {
 			var name = child.getAttribute('name');
