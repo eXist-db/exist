@@ -222,6 +222,9 @@
     <section>
       <title>Articles</title>
 
+      <para>An up-to-date list of articles can be found
+          <ulink url="http://wiki.exist-db.org/space/Articles">on the wiki</ulink>.</para>
+        
       <para>If you would like to know more about the internal workings of
       eXist, you may read the following introductory article:</para>
 
