@@ -4114,9 +4114,12 @@ tryAgain:
 				if ( inputState.guessing==0 ) {
 					
 							String comment = new String(text.getBuffer(),_begin,text.length()-_begin);
+							System.out.println("Comment: " + comment);
 							for (int i = 0; i < comment.length(); i++) {
-								if (comment.charAt(i) == '\n')
+								if (comment.charAt(i) == '\n') {
+									System.out.println("Found newline");
 									newline();
+								}
 							}
 							_ttype = Token.SKIP;
 						
