@@ -93,7 +93,7 @@ declare function setup:importFromURLs() as element()+ {
                     if($includeMondial) then (
                         setup:create-collection("/db", "mondial"),
                         setup:load-URL("/db/mondial",
-                            "http://dbis.informatik.uni-goettingen.de/Mondial/mondial-europe.xml",
+                            "http://www.dbis.informatik.uni-goettingen.de/Mondial/mondial-europe.xml",
                             "mondial.xml")
                     ) else ()
                 )
