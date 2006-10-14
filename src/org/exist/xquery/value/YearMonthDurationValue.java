@@ -161,6 +161,14 @@ public class YearMonthDurationValue extends OrderedDurationValue {
 		if (other.getType() == Type.YEAR_MONTH_DURATION) {
 			return new IntegerValue(getValue()).div(new IntegerValue(((YearMonthDurationValue) other).getValue()));
 		}
+		if (other instanceof NumericValue) {
+			if (((NumericValue)other).isNaN()) {
+				throw new XPathException("FOCA0005: Operand is not a number");				
+			}
+			if (((NumericValue)other).isInfinite()) {
+				return new YearMonthDurationValue("P0M");
+			}
+		}
 		BigDecimal divisor = numberToBigDecimal(other, "Can not divide xdt:yearMonthDuration by '" + Type.getTypeName(other.getType())+ "'");
 		boolean isDivisorNegative = divisor.signum() < 0;
 		YearMonthDurationValue quotient = fromDecimalMonths(

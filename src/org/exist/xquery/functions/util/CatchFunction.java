@@ -23,11 +23,7 @@
 package org.exist.xquery.functions.util;
 
 import org.exist.dom.QName;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -69,11 +65,12 @@ public class CatchFunction extends Function {
         Sequence exceptionClasses = getArgument(0).eval(contextSequence, contextItem);
         try {
 //            context.pushDocumentContext();
+            LocalVariable mark = context.markLocalVariables(false);
             try {
-                Sequence result = getArgument(1).eval(contextSequence, contextItem);
-                return result;
+                return getArgument(1).eval(contextSequence, contextItem);
             } finally {
 //                context.popDocumentContext();
+                context.popLocalVariables(mark);
             }
         } catch(Exception e) {
         	LOG.debug("Caught exception in util:catch: " + e.getMessage());
@@ -94,7 +91,10 @@ public class CatchFunction extends Function {
                         return getArgument(2).eval(contextSequence, contextItem);
                     }
                 } catch (Exception e2) {
-                    LOG.warn("Exception in handler: " + e2.getMessage());
+                    if (e2 instanceof XPathException)
+                        throw (XPathException) e2;
+                    else
+                        throw new XPathException(getASTNode(), "Error in exception handler: " + e2.getMessage(), e);
                 }
             }
             // this type of exception is not caught: throw again

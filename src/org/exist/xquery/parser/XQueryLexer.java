@@ -4112,7 +4112,14 @@ tryAgain:
 			if ((LA(1)=='(') && (LA(2)==':') && ((LA(3) >= '\u0003' && LA(3) <= '\ufffe')) && ((LA(4) >= '\u0003' && LA(4) <= '\ufffe'))) {
 				mEXPR_COMMENT(false);
 				if ( inputState.guessing==0 ) {
-					_ttype = Token.SKIP;
+					
+							String comment = new String(text.getBuffer(),_begin,text.length()-_begin);
+							for (int i = 0; i < comment.length(); i++) {
+								if (comment.charAt(i) == '\n')
+									newline();
+							}
+							_ttype = Token.SKIP;
+						
 				}
 			}
 			else if ((LA(1)=='<') && (LA(2)=='!') && (LA(3)=='-')) {

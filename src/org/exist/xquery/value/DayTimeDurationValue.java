@@ -207,6 +207,14 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 			DecimalValue b = new DecimalValue(((DayTimeDurationValue)other).secondsValueSigned());
 			return new DecimalValue(a.value.divide(b.value, 20, BigDecimal.ROUND_HALF_UP));
 		}		
+		if (other instanceof NumericValue) {
+			if (((NumericValue)other).isNaN()) {
+				throw new XPathException("FOCA0005: Operand is not a number");				
+			}
+			if (((NumericValue)other).isInfinite()) {
+				return new DayTimeDurationValue("PT0S");
+			}
+		}
 		BigDecimal divisor = numberToBigDecimal(other, "Operand to div should be of xdt:dayTimeDuration or numeric type; got: ");
 		boolean isDivisorNegative = divisor.signum() < 0;
 		BigDecimal secondsValueSigned = secondsValueSigned();
