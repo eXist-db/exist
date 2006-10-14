@@ -205,7 +205,6 @@ public class FulltextIndexSpec {
      * <![CDATA[<mixed><s>un</s>even</mixed>]]> 
      *
      * @param path
-     * @return
      */
     public boolean matchMixedElement(NodePath path) {
         for (int i = 0; i < mixedPath.length; i++) {
