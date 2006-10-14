@@ -88,6 +88,10 @@
             <para>If these scripts do not launch eXist, you can load it directly with the bootstrap
                 loader by entering the following into the console:</para>
             <synopsis>java -Xmx128M -Djava.endorsed.dirs=lib/endorsed -jar start.jar jetty</synopsis>
+            <note>
+                <para>If you have problems understanding or running the shell/batch scripts, read
+                <ulink url="#appendix">Running Executable Files</ulink> below.</para>
+            </note>
             <para>While eXist starts up, log output might appear in the console. If eXist was
                 launched properly, you should see the following:</para>
             <example>
@@ -117,11 +121,11 @@ Logging already initialized. Skipping...
         </section>
 
         <section id="sect4">
-            <title>Running the Server</title>
-            <para>Once you have launched eXist, the server will also have started (this is an
-                ordinary web server called <emphasis>Jetty</emphasis>). This server has the XML
-                database running in its process and provides the required interfaces to eXist. To
-                test that the server is running, enter the following URL in a web browser:</para>
+            <title>Accessing the Server</title>
+            <para>In the default setup, eXist is running inside a web application served by
+            a pre-configured <ulink url="http://jetty.mortbay.com/">Jetty</ulink> webserver. All interfaces are provided
+            as servlets. To test that the server is running, enter the following URL in a web
+                browser:</para>
             <para>
                 <ulink url="http://localhost:8080/exist/index.xml"
                     >http://localhost:8080/exist/index.xml</ulink>
@@ -160,74 +164,6 @@ Logging already initialized. Skipping...
                         moreinfo="none">data</filename> directory located in <filename
                         moreinfo="none">webapp/WEB-INF/</filename>.</para>
             </note>
-        </section>
-        <section id="sect5">
-            <title>Running Executable Files</title>
-            <para>Included in the distribution are a number of useful <filename>.sh</filename> (Unix
-                Shell) and <filename>.bat</filename> (DOS batch) programs located in the
-                    <filename>bin</filename> directory. If you installed the source distribution or
-                used the installer, you can find this directory in the root directory of the
-                distribution. If you installed the <filename>exist.war</filename> file (Web
-                Application Archive), you will find the <filename>bin</filename> directory in the
-                location the <filename>.war</filename> file was unpacked.</para>
-            <para>These shell and batch scripts are simply wrappers (interfaces between the
-                executable Java programs) around the bootstrap loader contained in the jar file
-                    <filename>start.jar</filename>.</para>
-            <para>If you find the programs do not launch, you can also manually launch these files
-                on the command-line, and specify which application you would like to start.</para>
-            <para>To manually launch these scripts:</para>
-            <variablelist>
-                <varlistentry>
-                    <term>startup.sh (Unix) / startup.bat (Windows)</term>
-                    <listitem>
-                        <para>Enter on the command-line:</para>
-                        <synopsis>java -jar start.jar jetty</synopsis>
-                        <para>Description: Starts the included Jetty web server at port 8080. eXist
-                            and Cocoon (a web development framework) are installed as a web
-                            application, located at <ulink url="http://localhost:8080/exist/"
-                                >http://localhost:8080/exist/</ulink>. </para>
-                    </listitem>
-                </varlistentry>
-                <varlistentry>
-                    <term>shutdown.sh (Unix) / shutdown.bat (Windows)</term>
-                    <listitem>
-                        <para>Enter on the command-line:</para>
-                        <synopsis>java -jar start.jar shutdown</synopsis>
-                        <para>Description: Closes running instance of eXist. If eXist has been
-                            started with <filename>startup.sh</filename>, calling
-                                <filename>shutdown.sh</filename> will also stop the Jetty web
-                            server. Otherwise, only the database is stopped by this call, since
-                            eXist has no control over the environment in which it is running.
-                            However, you should <emphasis>always</emphasis> call
-                            <filename>shutdown</filename> before killing the server process. This
-                            issue is discussed in detail in the succeeding section
-                                <emphasis>Shutting Down the Database</emphasis>.</para>
-                    </listitem>
-                </varlistentry>
-                <varlistentry>
-                    <term>server.sh (Unix) / server.bat (Windows)</term>
-                    <listitem>
-                        <para>Enter on the command-line:</para>
-                        <synopsis>java -jar start.jar server</synopsis>
-                        <para>Description: Launches eXist as a stand-alone server process. In this
-                            setup, eXist is only accessible through the XMLRPC and the simple,
-                            built-in HTTP interface.</para>
-                    </listitem>
-                </varlistentry>
-                <varlistentry>
-                    <term>client.sh (Unix) / client.bat (Windows)</term>
-                    <listitem>
-                        <para>Enter on the command-line:</para>
-                        <synopsis>java -jar start.jar client</synopsis>
-                        <para>Description: Launches the Java Administration Client - a graphical
-                            database interface. By default, this application is also launched if no
-                            application is selected on the command-line:</para>
-                        <synopsis>java -jar start.jar</synopsis>
-                        <para>The Java Admin Client is discussed in detail the succeeding section
-                                <emphasis>Java Admin Client</emphasis></para>
-                    </listitem>
-                </varlistentry>
-            </variablelist>
         </section>
         <section id="sect6">
             <title>Using the Admin Database Interface</title>
@@ -473,6 +409,13 @@ Logging already initialized. Skipping...
                 start menu. You can also call <filename>tools/wrapper/bin/install.bat</filename>
                 instead. This will install eXist and Jetty as a Windows service.</para>
 
+            <para>After executing the install.bat script, you should find eXist listed in the
+            list of services currently registered with Windows:</para>
+
+            <screenshot>
+                <graphic fileref="resources/services.png"/>
+            </screenshot>
+
             <para>For Linux, all of the start/shutdown scripts can be found in
                     <filename>tools/wrapper/bin/exist.sh</filename>. You can create a link to this
                 file from the <filename>init.d</filename> directory of your distribution (where all
@@ -532,6 +475,74 @@ Logging already initialized. Skipping...
                     </para>
                 </listitem>
             </itemizedlist>
+        </section>
+        <section id="appendix">
+            <title>Running Executable Files</title>
+            <para>Included in the distribution are a number of useful <filename>.sh</filename> (Unix
+                Shell) and <filename>.bat</filename> (DOS batch) programs located in the
+                    <filename>bin</filename> directory. If you installed the source distribution or
+                used the installer, you can find this directory in the root directory of the
+                distribution. If you installed the <filename>exist.war</filename> file (Web
+                Application Archive), you will find the <filename>bin</filename> directory in the
+                location the <filename>.war</filename> file was unpacked.</para>
+            <para>These shell and batch scripts are simply wrappers (interfaces between the
+                executable Java programs) around the bootstrap loader contained in the jar file
+                    <filename>start.jar</filename>.</para>
+            <para>If you find the programs do not launch, you can also manually launch these files
+                on the command-line, and specify which application you would like to start.</para>
+            <para>To manually launch these scripts:</para>
+            <variablelist>
+                <varlistentry>
+                    <term>startup.sh (Unix) / startup.bat (Windows)</term>
+                    <listitem>
+                        <para>Enter on the command-line:</para>
+                        <synopsis>java -jar start.jar jetty</synopsis>
+                        <para>Description: Starts the included Jetty web server at port 8080. eXist
+                            and Cocoon (a web development framework) are installed as a web
+                            application, located at <ulink url="http://localhost:8080/exist/"
+                                >http://localhost:8080/exist/</ulink>. </para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>shutdown.sh (Unix) / shutdown.bat (Windows)</term>
+                    <listitem>
+                        <para>Enter on the command-line:</para>
+                        <synopsis>java -jar start.jar shutdown</synopsis>
+                        <para>Description: Closes running instance of eXist. If eXist has been
+                            started with <filename>startup.sh</filename>, calling
+                                <filename>shutdown.sh</filename> will also stop the Jetty web
+                            server. Otherwise, only the database is stopped by this call, since
+                            eXist has no control over the environment in which it is running.
+                            However, you should <emphasis>always</emphasis> call
+                            <filename>shutdown</filename> before killing the server process. This
+                            issue is discussed in detail in the succeeding section
+                                <emphasis>Shutting Down the Database</emphasis>.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>server.sh (Unix) / server.bat (Windows)</term>
+                    <listitem>
+                        <para>Enter on the command-line:</para>
+                        <synopsis>java -jar start.jar server</synopsis>
+                        <para>Description: Launches eXist as a stand-alone server process. In this
+                            setup, eXist is only accessible through the XMLRPC and the simple,
+                            built-in HTTP interface.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>client.sh (Unix) / client.bat (Windows)</term>
+                    <listitem>
+                        <para>Enter on the command-line:</para>
+                        <synopsis>java -jar start.jar client</synopsis>
+                        <para>Description: Launches the Java Administration Client - a graphical
+                            database interface. By default, this application is also launched if no
+                            application is selected on the command-line:</para>
+                        <synopsis>java -jar start.jar</synopsis>
+                        <para>The Java Admin Client is discussed in detail the succeeding section
+                                <emphasis>Java Admin Client</emphasis></para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
         </section>
     </chapter>
 </book>
