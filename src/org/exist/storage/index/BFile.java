@@ -1105,7 +1105,7 @@ public class BFile extends BTree {
                 }
                 wp = new SinglePage(page, data, true);
             }
-            if (wp.ph.getLsn() > -1 && requiresRedo(loggable, wp)) {
+            if (wp.ph.getLsn() != Page.NO_PAGE && requiresRedo(loggable, wp)) {
                 removeValueHelper(loggable, loggable.tid, wp);
             }
         } catch (IOException e) {
@@ -1171,7 +1171,7 @@ public class BFile extends BTree {
                 } else
                     firstPage = new SinglePage(page, data, false);
             }
-            if (firstPage.getPageHeader().getLsn() == Lsn.LSN_INVALID || requiresRedo(loggable, firstPage)) {
+            if (firstPage.getPageHeader().getLsn() != Page.NO_PAGE && requiresRedo(loggable, firstPage)) {
                 firstPage.getPageHeader().setLsn(loggable.getLsn());
                 firstPage.setDirty(true);
             }
@@ -1441,7 +1441,7 @@ public class BFile extends BTree {
                     dp = new SinglePage(page, data, true);
                 }
             }
-            if ((dp.getPageHeader().getLsn() == Lsn.LSN_INVALID || requiresRedo(loggable, dp)) && loggable != null)
+            if ((dp.getPageHeader().getLsn() != Page.NO_PAGE && requiresRedo(loggable, dp)) && loggable != null)
                 dp.getPageHeader().setLsn(loggable.getLsn());
             dp.setDirty(true);
             dataCache.add(dp);
