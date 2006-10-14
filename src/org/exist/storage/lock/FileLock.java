@@ -28,6 +28,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
 import java.util.Date;
+import java.text.DateFormat;
 
 import org.apache.log4j.Logger;
 import org.exist.storage.BrokerPool;
@@ -83,7 +84,7 @@ public class FileLock {
     private final ByteBuffer buf = ByteBuffer.allocate(MAGIC.length + 8);
     
     /** The time (in milliseconds) of the last heartbeat written to the lock file */ 
-    private long lastHeartbeat = 0L;
+    private long lastHeartbeat = -1L;
     
     public FileLock(BrokerPool pool, String path) {
         this.pool = pool;
@@ -172,7 +173,7 @@ public class FileLock {
     
     private boolean checkHeartbeat() {
         long now = System.currentTimeMillis();
-        if (now - lastHeartbeat > HEARTBEAT) {
+        if (lastHeartbeat < 0 || now - lastHeartbeat > HEARTBEAT) {
             message("Found a stale lockfile. Trying to remove it: ", null);
             release();
             return false;
@@ -204,12 +205,19 @@ public class FileLock {
             open();
         channel.read(buf);
         buf.flip();
+        if (buf.limit() < 16) {
+            buf.clear();
+            throw new IOException(message("Could not read file lock.", null));
+        }
         byte[] magic = new byte[8];
         buf.get(magic);
         if (!Arrays.equals(magic, MAGIC))
             throw new IOException(message("Bad signature in lock file. It does not seem to be an eXist lock file", null));
         lastHeartbeat = buf.getLong();
         buf.clear();
+
+        DateFormat df = DateFormat.getDateInstance();
+        message("File lock last access timestamp: " + df.format(getLastHeartbeat()), null);
     }
     
     private String message(String message, Exception e) {

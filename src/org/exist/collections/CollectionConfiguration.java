@@ -277,10 +277,10 @@ public class CollectionConfiguration {
                     parameters.put(name, value);  
                 }
                 trigger.configure(broker, collection, parameters);            
-            } /* else {
-                throw new CollectionConfigurationException("Expected '" + PARAM_NAME_ATTRIBUTE +
-                        "' elements in namespace '" + NAMESPACE + "' in trigger's configuration.");     
-            } */			
+            } else { // Params do not need to be passed to invoke a trigger
+		trigger.configure(broker, collection, null);
+	    }
+
             return trigger;
 		} catch (ClassNotFoundException e) {
 			throw new CollectionConfigurationException(e.getMessage(), e);
