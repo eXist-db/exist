@@ -7,11 +7,11 @@
 			<head>
 				<title>XQuery Available Functions</title>
 				<link rel="stylesheet" type="text/css" href="styles/functions.css"/>
-                <link rel="stylesheet" type="text/css">
+                <style>
                     body {
                         margin: 45px 70px;
                     }
-                </link>
+                </style>
             </head>
 			<body>
 				<h1>Available XQuery Functions</h1>
