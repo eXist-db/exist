@@ -314,7 +314,7 @@ public class DeepEqualTest extends TestCase {
 	}
         
         public void testReferenceNode2() {
-                    String query = "declare namespace dst = \"http://www.test.com/DeeperEqualTest\"; "
+        	String query = "declare namespace dst = \"http://www.test.com/DeeperEqualTest\"; "
                             + "declare function dst:value($value as element(Value), "
                             + "$result as element(Result)) as element(Result) { "
                             + "<Result><Value>{($result/Value/node(), $value/node())}</Value> </Result>}; "
@@ -324,10 +324,51 @@ public class DeepEqualTest extends TestCase {
                             + "let $value2 := <Value/> "
                             + "let $result2 := dst:value($value2, $result1) "
                             + "return deep-equal($result1, $result2)";
-            assertQuery(true,query);    
+        	assertQuery(true,query);    
 	}
         
-        
+        public void testsiblingCornerCase() {
+        	String query = "declare  namespace ve = 'http://www.test.com/deepestEqualError'; " +
+            "declare function ve:functionVerifications() as element(FunctionVerifications) { " +
+            "let $parVers := " + 
+            "<ParameterVerifications> " +
+            "  <Parameter/> " +
+            "  <PassedLevel>ATP</PassedLevel> " +
+            "  <PassedLevel>PE</PassedLevel> " +
+            "  <PassedLevel>SPC</PassedLevel> " +
+            "  <Specification>ATP</Specification> " +
+            "  <Specification>PE</Specification> " +
+            "  <Specification>SPC</Specification> " +
+            "</ParameterVerifications> " +
+            "let $dummy := $parVers/PassedLevel  (: cause deep-equal bug!!! :) " +
+            "return " +
+            "<FunctionVerifications> " +
+            "  <PassedLevel>ATP</PassedLevel> " +
+            "  <PassedLevel>PE</PassedLevel> " +
+            "  <PassedLevel>SPC</PassedLevel> " +
+            "  {$parVers} " +
+            "</FunctionVerifications> " +
+          "}; " +
+          "let $expected := " +
+          "  <FunctionVerifications> " +
+          "    <PassedLevel>ATP</PassedLevel> " +
+          "    <PassedLevel>PE</PassedLevel> " +
+          "    <PassedLevel>SPC</PassedLevel> " +
+          "    <ParameterVerifications> " +
+          "      <Parameter/> " +
+          "      <PassedLevel>ATP</PassedLevel> " +
+          "      <PassedLevel>PE</PassedLevel> " +
+          "      <PassedLevel>SPC</PassedLevel> " +
+          "      <Specification>ATP</Specification> " +
+          "      <Specification>PE</Specification> " +
+          "      <Specification>SPC</Specification> " +
+          "    </ParameterVerifications> " +
+          "  </FunctionVerifications> " +
+          "let $got := ve:functionVerifications() " +
+          "return deep-equal($expected, $got)";
+        	assertQuery(true,query);
+        }
+
 	
 	public void testNSElements1() {
 		createDocument("test", "<test xmlns:p='urn:foo' xmlns:q='urn:foo'><p:a/><q:a/></test>");
