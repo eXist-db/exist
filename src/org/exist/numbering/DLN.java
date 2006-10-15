@@ -244,13 +244,10 @@ public class DLN extends DLNBase implements NodeId {
         return -1;
     }
     
-    public int isSiblingOf(NodeId sibling) {
+    public boolean isSiblingOf(NodeId sibling) {
         DLN other = (DLN) sibling;
-        int last = lastLevelOffset();
-        if (last == other.lastLevelOffset())
-            return compareBits(other, last);
-        else
-            return compareTo(other);
+        NodeId parent = getParentId();
+        return sibling.isChildOf(parent);
     }
     
     /**
@@ -320,14 +317,18 @@ public class DLN extends DLNBase implements NodeId {
     }
 
     public static void main(String[] args) {
-        DLN id0 = new DLN("1.1");
-        DLN id1 = new DLN("1.1/1.3");
-        System.out.println("Descendant: " + id1.computeRelation(id0));
-        
-        id0 = new DLN("1.1/1");
-        System.out.println("Descendant:\n" + id1.toBitString() + "\n" + id0.toBitString() + "\n: " + id1.isDescendantOf(id0));
-        
-        System.out.println("Doc node: " + DOCUMENT_NODE.toString() + " - " + 
-                ((DLN)DOCUMENT_NODE).bitIndex);
+        DLN id0 = new DLN("1.1.7");
+        DLN id1 = new DLN("1.1.6");
+        DLN id2 = new DLN("1.1.7.1");
+        DLN id3 = new DLN("1.1.7/1");
+
+        System.out.println(id0.debug());
+        System.out.println(id1.debug());
+        System.out.println(id0.toString() + " -> " + id1.toString() + ": " + id0.isSiblingOf(id1));
+        System.out.println(id1.toString() + " -> " + id0.toString() + ": " + id1.isSiblingOf(id0));
+        System.out.println(id2.toString() + " -> " + id0.toString() + ": " + id2.isSiblingOf(id0));
+        System.out.println(id0.toString() + " -> " + id2.toString() + ": " + id0.isSiblingOf(id2));
+        System.out.println(id3.toString() + " -> " + id0.toString() + ": " + id3.isSiblingOf(id0));
+        System.out.println(id0.toString() + " -> " + id3.toString() + ": " + id0.isSiblingOf(id3));
     }
 }

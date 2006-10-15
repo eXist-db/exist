@@ -133,7 +133,7 @@ public interface NodeId extends Comparable {
      */
     int computeRelation(NodeId ancestor);
     
-    int isSiblingOf(NodeId sibling);
+    boolean isSiblingOf(NodeId sibling);
     
     /**
      * Returns the level within the document tree at which
