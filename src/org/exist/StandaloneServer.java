@@ -351,13 +351,15 @@ public class StandaloneServer {
         // try to read configuration from file. Guess the location if
         // necessary
         InputStream is = null;
-        String file = "server.xml";        
+        String file = System.getProperty("server.xml", "server.xml");
         File f = Configuration.lookup(file);
         if (!f.canRead()) {
             is = StandaloneServer.class.getClassLoader().getResourceAsStream("org/exist/server.xml");
             if (is == null)
                 throw new IOException("Server configuration not found!");
+            System.out.println("Reading server configuration from exist.jar");
         } else {
+            System.out.println("Reading server configuration from: " + f.getAbsolutePath());
             is = new FileInputStream(f);
         }
         
