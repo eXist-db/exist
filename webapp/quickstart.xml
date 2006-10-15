@@ -416,6 +416,14 @@ Logging already initialized. Skipping...
                 <graphic fileref="resources/services.png"/>
             </screenshot>
 
+            <para>Once the service is registered, you can launch it via the service manager as
+            shown in the screenshot or from the command line:</para>
+
+            <synopsis>
+                cd tools\wrapper\bin
+                wrapper.exe --start ..\conf\wrapper.conf
+            </synopsis>
+            
             <para>For Linux, all of the start/shutdown scripts can be found in
                     <filename>tools/wrapper/bin/exist.sh</filename>. You can create a link to this
                 file from the <filename>init.d</filename> directory of your distribution (where all
