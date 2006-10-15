@@ -184,7 +184,7 @@
 	<target name="indexes" xmlns:xdb="http://exist-db.org/ant" depends="prepare">
 		<mkdir dir="${test.temp}"/>
 		<mkdir dir="${test.temp}/mondial"/>
-		<get src="http://dbis.informatik.uni-goettingen.de/Mondial/mondial-europe.xml"
+		<get src="http://www.dbis.informatik.uni-goettingen.de/Mondial/mondial-europe.xml"
             dest="${test.temp}/mondial/mondial-europe.xml" verbose="false"/>
 		<xdb:store user="admin" password=""
             uri="xmldb:exist://localhost:8080/exist/xmlrpc/db/system/config/db" createcollection="true">
