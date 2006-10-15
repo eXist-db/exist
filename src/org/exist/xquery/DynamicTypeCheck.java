@@ -76,10 +76,31 @@ public class DynamicTypeCheck extends AbstractExpression {
 					//Retrieve the actual node
 					type= ((NodeProxy) item).getNode().getNodeType();
 			}
-			if(!Type.subTypeOf(type, requiredType)) {
-				throw new XPathException(expression.getASTNode(), "Type error in expression" +
-					": required type is " + Type.getTypeName(requiredType) +
-					"; got: " + Type.getTypeName(item.getType()) + ": " + item.getStringValue());
+			if(type != requiredType && !Type.subTypeOf(type, requiredType)) {
+				//TODO : how to make this block more generic ? -pb				
+				if (type == Type.UNTYPED_ATOMIC) {	
+					try {
+						item = item.convertTo(requiredType);
+					//No way
+					} catch (XPathException e) {
+						throw new XPathException(expression.getASTNode(), "FOCH0002: Required type is " + 
+								Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
+								item.getStringValue() + ")'");
+					}
+				//Then, if numeric, try to refine the type					
+				} else if (Type.subTypeOf(requiredType, Type.NUMBER) && Type.subTypeOf(type, Type.NUMBER)) {
+					try {
+						item = item.convertTo(requiredType);
+					//No way
+					} catch (XPathException e) {
+						throw new XPathException(expression.getASTNode(), "FOCH0002: Required type is " + 
+								Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
+								item.getStringValue() + ")'");
+					}
+				} else
+					throw new XPathException(expression.getASTNode(), "FOCH0002: Required type is " + 
+							Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
+							item.getStringValue() + ")'");
 			}
 		}
 		return seq;
