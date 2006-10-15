@@ -190,12 +190,12 @@ public class FunctionFactory {
 				}
 				else
 				{
-					throw new XPathException(ast, "Java binding is disabled in the current configuration. Call to " + qname.getStringValue() + " denied.");
+					throw new XPathException(ast, "Java binding is disabled in the current configuration (see conf.xml). Call to " + qname.getStringValue() + " denied.");
 				}
 			}
 			else
 			{
-				throw new XPathException(ast, "Java binding is disabled in the current configuration . Call to " + qname.getStringValue() + " denied.");
+				throw new XPathException(ast, "Java binding is disabled in the current configuration (see conf.xml). Call to " + qname.getStringValue() + " denied.");
 			}
 		}
 		
