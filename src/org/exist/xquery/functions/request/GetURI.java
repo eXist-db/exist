@@ -30,10 +30,10 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
 /**
@@ -46,14 +46,14 @@ public class GetURI extends BasicFunction {
 			new QName("get-uri", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
 			"Returns the URI of the current request.",
 			null,
-			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE));
+			new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE));
 
 	public final static FunctionSignature deprecated =
 		new FunctionSignature(
 			new QName("request-uri", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
 			"Returns the URI of the current request.",
 			null,
-			new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+			new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE),
 			"Renamed to request:get-uri.");
 	
 	/**
@@ -80,7 +80,7 @@ public class GetURI extends BasicFunction {
 		JavaObjectValue value = (JavaObjectValue) var.getValue().itemAt(0);
 		
 		if (value.getObject() instanceof RequestWrapper)
-			return new StringValue(((RequestWrapper) value.getObject()).getRequestURI());
+			return new AnyURIValue(((RequestWrapper) value.getObject()).getRequestURI());
 		else
 			throw new XPathException("Variable $request is not bound to a Request object.");
 	}
