@@ -82,13 +82,17 @@ public class UntypedValueCheck extends AbstractExpression {
 		for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
 			item = i.nextItem();
 			//System.out.println(item.getStringValue() + " converting to " + Type.getTypeName(requiredType));
-			try {
-				result.add(item.convertTo(requiredType));
-			} catch (XPathException e) {
-                error.addArgs(ExpressionDumper.dump(expression), Type.getTypeName(requiredType),
-                        Type.getTypeName(item.getType()));
-                throw new XPathException(expression.getASTNode(), error.toString());
+			//Type untyped values or... refine existing type
+			if (item.getType() == Type.UNTYPED_ATOMIC || Type.subTypeOf(requiredType, Type.NUMBER) && Type.subTypeOf(item.getType(), Type.NUMBER)) {
+				try {
+					item = item.convertTo(requiredType);
+				} catch (XPathException e) {
+	                error.addArgs(ExpressionDumper.dump(expression), Type.getTypeName(requiredType),
+	                        Type.getTypeName(item.getType()));
+	                throw new XPathException(expression.getASTNode(), error.toString());
+				}
 			}
+			result.add(item);			
 		}
 
         if (context.getProfiler().isEnabled()) 
