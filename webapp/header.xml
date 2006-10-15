@@ -1,8 +1,0 @@
-<?xml version="1.0"?>
-
-<header>
-    <logo src="logo.jpg"/>
-    <title>Open Source Native XML Database</title>
-	<author email="wolfgang@exist-db.org">Wolfgang M. Meier</author>
-    <version>1.1rc2-20061014</version>
-</header>
