@@ -40,13 +40,15 @@
             <description>Everything needed for the database core, including
                 Jetty + Cocoon</description>
             <fileset targetdir="$INSTALL_PATH" dir=".">
+                <include name="client.properties.tmpl"/>
                 <include name="client.properties"/>
                 <include name="backup.properties"/>
                 <include name="build.properties"/>
-                <include name="server.properties"/>
+                <include name="server.xml.tmpl"/>
                 <include name="server.xml"/>
                 <include name="conf.xml"/>
                 <include name="conf.xml.tmpl"/>
+                <include name="descriptor.xml.tmpl"/>
                 <include name="descriptor.xml"/>
                 <include name="build.xml"/>
                 <include name="log4j.xml"/>
@@ -58,6 +60,7 @@
                 <include name="exist-modules.jar"/>
                 <include name="start.jar"/>
                 <include name="examples.jar"/>
+                <include name="mime-types.xml.tmpl"/>
                 <include name="mime-types.xml"/>
                 <include name="atom-example.xq"/>
                 <include name="atom-services.xml"/>
