@@ -12,31 +12,17 @@
             <status>Beta</status>
             <priority>Highest</priority>
             <test_coverage>Tested</test_coverage>
-            <progress>99</progress>
+            <progress>100</progress>
             <who/>
             <remark>
-                <p> The numbering scheme at the core of eXist does currently
+                <p> The numbering scheme at the core of eXist 1.0 did
                     limit the maximum size of a document to be stored within the
-                    database. This is a well-known problem. The limit is not a
-                    question of the document size alone, but also depends on the
-                    overall number of nodes and how deep elements are nested
-                    within the document. The actual limit thus differs from
-                    document to document and is difficult to compute in advance.
-                    This poses a major problem for many users. </p>
-                <p>"Dynamic Level Numbering" (DLN) as proposed by Böhme and Rahm
-                    seems to be most promising. This numbering scheme avoids to
-                    put a conceptual limit on the size of documents to be
-                    indexed. It also has a number of positive side-effects,
-                    including, for example: fast node-level updates. Re indexing
-                    parts of the node tree after a major update would no longer
-                    be necessary.</p>
-                <p>As of May 2006, the switch to DLN is nearly complete and the
-                    DLN branch is ready for testing. For a report on the
-                    implementation, check the <a
-                        href="http://wiki.exist-db.org/space/NewIndexArchitecture"
-                        >wiki</a>. The code is available in SVN branch <a
-                        href="http://svn.sourceforge.net/viewcvs.cgi/exist/branches/DLN/eXist-1.0/"
-                        >DLN</a>. </p>
+                    database. The limit was not a
+                    question of the document size alone, but also depended on the
+                    overall number of nodes and how deep elements were nested
+                    within the document. The actual limit thus differed from
+                    document to document and was difficult to compute in advance.
+                    eXist 1.1 fixes this.</p>
             </remark>
         </part>
         <part>
@@ -164,11 +150,7 @@
             <test_coverage>Partially tested</test_coverage>
             <progress>100</progress>
             <who/>
-            <remark>
-                <p>It is currently difficult to check if a range index has been
-                    actually used by a query. More profiling needed. See comment
-                    Indexing</p>
-            </remark>
+            <remark></remark>
         </part>
         <part>
             <name>Combined range and qname index</name>
@@ -322,6 +304,15 @@
             <test_coverage>Tested</test_coverage>
             <progress>100</progress>
             <who/>
+            <remark></remark>
+        </part>
+        <part>
+            <name>XQuery Update Extensions</name>
+            <status>Stable_redesign</status>
+            <priority>x</priority>
+            <test_coverage>Tested</test_coverage>
+            <progress>50</progress>
+            <who/>
             <remark>
                 <p>W3C is working on an update extension, but no draft released
                     so far.</p>
@@ -391,7 +382,7 @@
             <status>Beta</status>
             <priority>High</priority>
             <test_coverage>N/A</test_coverage>
-            <progress>90</progress>
+            <progress>100</progress>
             <who/>
             <remark></remark>
         </part>
@@ -493,7 +484,7 @@
             <progress>100</progress>
             <who/>
             <remark>
-                <p>Update to latest Candidate Recommendation. Stable, excluding
+                <p>Updated to latest Candidate Recommendation. Stable, excluding
                     schema-related features</p>
             </remark>
         </part>
@@ -505,7 +496,7 @@
             <progress>60</progress>
             <who/>
             <remark>
-                <p>Add gregorian dates, hexBinary and NOTATION</p>
+                <p>Add gregorian dates and NOTATION</p>
             </remark>
         </part>
         <part>
@@ -516,7 +507,7 @@
             <progress>100</progress>
             <who></who>
             <remark>
-                <p>Update to latest Candidate Recommendation. Stable, excluding
+                <p>Updated to latest Candidate Recommendation. Stable, excluding
                     schema-related features.</p>
             </remark>
         </part>
@@ -528,7 +519,7 @@
             <progress>100</progress>
             <who/>
             <remark>
-                <p>Update to latest Candidate Recommendation</p>
+                <p>Updated to latest Candidate Recommendation</p>
             </remark>
         </part>
         <part>
@@ -547,10 +538,10 @@
         </part>
         <part>
             <name>XQTS XQuery test suite</name>
-            <status>Alpha</status>
+            <status>Beta</status>
             <priority>High</priority>
             <test_coverage>N/A</test_coverage>
-            <progress>70</progress>
+            <progress>93</progress>
             <who/>
             <remark>
                 <p>Should be implemented to avoid future regressions and ensure
@@ -606,10 +597,10 @@
         </part>
         <part>
             <name>Make function calls tail-recursive</name>
-            <status>Open</status>
+            <status>Stable</status>
             <priority>High</priority>
-            <test_coverage>N/A</test_coverage>
-            <progress>0</progress>
+            <test_coverage>70</test_coverage>
+            <progress>100</progress>
             <who/>
             <remark>
                 <p>Recursive functions may trigger a StackOverflowException. We
@@ -679,14 +670,11 @@
         </part>
         <part>
             <name>SOAP</name>
-            <status>Stable_redesign</status>
+            <status>Stable</status>
             <priority>Low</priority>
             <test_coverage>No tests</test_coverage>
-            <progress>75</progress>
+            <progress>90</progress>
             <who/>
-            <remark>
-                <p>Currently instable, needs rewrite</p>
-            </remark>
         </part>
         <part>
             <name>Cocoon Integration </name>
@@ -704,7 +692,7 @@
             <status>Open</status>
             <priority>Low</priority>
             <test_coverage>N/A</test_coverage>
-            <progress>0</progress>
+            <progress>10</progress>
             <who/>
             <remark>
                 <p>Could be a simpler alternative to the now somewhat bloated
@@ -719,7 +707,7 @@
             <status>Open</status>
             <priority>Low</priority>
             <test_coverage>N/A</test_coverage>
-            <progress>0</progress>
+            <progress>20</progress>
             <who/>
             <remark>
                 <p>Provide translations for error messages, console outputs etc.
@@ -756,10 +744,10 @@
         </part>
         <part>
             <name>XQuery stored modules</name>
-            <status>Open</status>
+            <status>Partial</status>
             <priority>High</priority>
             <test_coverage>N/A</test_coverage>
-            <progress>0</progress>
+            <progress>60</progress>
             <who/>
             <remark>
                 <p>calling XQuery scripts stored in the DB; import stored
@@ -780,7 +768,7 @@
             <status>Stable_redesign</status>
             <priority>High</priority>
             <test_coverage>N/A</test_coverage>
-            <progress>75</progress>
+            <progress>90</progress>
             <who/>
             <remark>
                 <p>Integration with a servlet engine, Cocoon, stand-alone
