@@ -35,6 +35,7 @@
             <replacefilter token="acknowledge.xml" value="acknowledge.html"/>
             <replacefilter token="ant-tasks.xml" value="ant-tasks.html"/>
             <replacefilter token="changes.xml" value="changes.html"/>
+            <replacefilter token="extensions.xml" value="extensions.html"/>
             <replacefilter token="client.xml" value="client.html"/>
             <replacefilter token="cluster.xml" value="cluster.html"/>
             <replacefilter token="journal.xml" value="journal.html"/>
@@ -119,6 +120,7 @@
                 <uri type="append" src="examples.xml"/>
                 <uri type="append" src="indexing.xml"/>
                 <uri type="append" src="facts.xml"/>
+                <uri type="append" src="extensions.xml"/>
             </uris>
         </cocoon>
 
@@ -196,6 +198,8 @@
         <replace dir="${build.docs.src}" summary="true"
             includes="sidebar.xml">
             <replacefilter token="index.xml" value="${host}/index.html"/>
+            <replacefilter token="extensions.xml" value="${host}/extensions.html"/>
+            <replacefilter token="roadmap.xml" value="${host}/roadmap.html"/>
             <replacefilter token="acknowledge.xml" value="${host}/acknowledge.html"/>
             <replacefilter token="credits.xml" value="${host}/credits.html"/>
             <replacefilter token="facts.xml" value="${host}/facts.html"/>
@@ -211,6 +215,8 @@
             <include name="library/sidebar.xml"/>
             <include name="xquery/sidebar.xml"/>
             <replacefilter token="../index.xml" value="${host}/index.html"/>
+            <replacefilter token="../extensions.xml" value="${host}/extensions.html"/>
+            <replacefilter token="../roadmap.xml" value="${host}/roadmap.html"/>
             <replacefilter token="../acknowledge.xml" value="${host}/acknowledge.html"/>
             <replacefilter token="../credits.xml" value="${host}/credits.html"/>
             <replacefilter token="../quickstart.xml" value="${host}/quickstart.html"/>
