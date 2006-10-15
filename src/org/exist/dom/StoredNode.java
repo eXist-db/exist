@@ -267,7 +267,7 @@ public class StoredNode extends NodeImpl implements Visitable {
         getLastNode(iterator, this);
         if (iterator.hasNext()) {
             StoredNode sibling = (StoredNode) iterator.next();
-            return sibling.nodeId.isSiblingOf(nodeId) == 0 ? sibling : null;
+            return sibling.nodeId.isSiblingOf(nodeId) ? sibling : null;
         }
         return null;
 	}

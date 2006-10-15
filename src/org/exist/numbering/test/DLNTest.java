@@ -297,8 +297,21 @@ public class DLNTest extends TestCase {
     	assertTrue(left.compareTo(dln) < 0);
     	assertTrue(right.compareTo(dln) > 0);
     	assertTrue(left.compareTo(right) < 0);
-    	
-    	System.out.println("------ testLevelRelations: PASSED ------");
+
+        System.out.println("Testing isSiblingOf ...");
+        DLN id0 = new DLN("1.1.7");
+        DLN id1 = new DLN("1.1.6");
+        DLN id2 = new DLN("1.1.7.1");
+        DLN id3 = new DLN("1.1.7/1");
+
+        assertTrue(id0.isSiblingOf(id1));
+        assertTrue(id1.isSiblingOf(id0));
+        assertFalse(id0.isSiblingOf(id2));
+        assertFalse(id2.isSiblingOf(id0));
+        assertTrue(id3.isSiblingOf(id0));
+        assertTrue(id0.isSiblingOf(id3));
+        
+        System.out.println("------ testLevelRelations: PASSED ------");
     }
     
     public void testInsertion() {
