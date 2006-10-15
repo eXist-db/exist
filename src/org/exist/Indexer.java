@@ -209,18 +209,15 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 			document.appendChild(comment);
 		} else {
 			ElementImpl last = (ElementImpl) stack.peek();
-			if (charBuf != null && charBuf.length() > 0) {
-				final XMLString normalized = charBuf.normalize(normalize);
-				if (normalized.length() > 0) {
-					text.setData(normalized);
-					text.setOwnerDocument(document);
-					last.appendChildInternal(prevNode, text);
-					if (!validate)
-						storeText();
-                    setPrevious(text);
-				}
-				charBuf.reset();
-			}
+            if (charBuf != null && charBuf.length() > 0) {
+                text.setData(charBuf);
+                text.setOwnerDocument(document);
+                last.appendChildInternal(prevNode, text);
+                if (!validate)
+                    storeText();
+                setPrevious(text);
+                charBuf.reset();
+            }
 			last.appendChildInternal(prevNode, comment);
             setPrevious(comment);
 			if (!validate)
@@ -271,11 +268,12 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 				// remove whitespace if the node has just a single text child,
 				// keep whitespace for mixed content.
 				final XMLString normalized;
-				if (!last.preserveSpace()) {
+                if((charBuf.isWhitespaceOnly() && suppressWSmixed) || last.preserveSpace()) {
+                    normalized = charBuf;
+                } else {
 					normalized = last.getChildCount() == 0 ? charBuf.normalize(normalize) : 
 						(charBuf.isWhitespaceOnly() ? null : charBuf);
-				} else
-					normalized = charBuf;
+				}
 				if (normalized != null && normalized.length() > 0) {
 				    text.setData(normalized);
 				    text.setOwnerDocument(document);
@@ -484,7 +482,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
                             setPrevious(text);
 					   }
 					}
-					
+
 				} else if(charBuf.length() > 0) {
 					// mixed element content: don't normalize the text node, just check
 					// if there is any text at all
