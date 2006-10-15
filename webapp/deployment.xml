@@ -294,9 +294,13 @@
         setting the <option>enabled</option> attribute to
         "<option>no</option>".</para>
 
-        <para>Note that you can control the location of this document by
-        setting the <code>server.xml</code> Java system property when you
-        start the server.</para>
+        <note>
+            <para>Note that you can control the location of this document by
+            setting the <code>server.xml</code> Java system property when you
+            start the server, e.g.:</para>
+
+            <synopsis>java -Dserver.xml=server2.xml -jar start.jar standalone</synopsis>
+        </note>
 
         <para>The server.xml document has the following basic
         structure:</para>
