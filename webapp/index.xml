@@ -21,7 +21,7 @@
             <p> eXist is an Open Source native XML database featuring efficient, index-based <a
                     href="http://www.w3.org/TR/xquery/">XQuery</a> processing, automatic indexing,
                 extensions for full-text search, <a
-                    href="http://www.smb-tec.com/xmldb/xupdate/index.html">XUpdate</a> support,
+                    href="http://xmldb-org.sourceforge.net/xupdate/">XUpdate</a> support,
                 XQuery <a href="update_ext.xml">update extensions</a> and tight integration with
                 existing XML development tools. The database implements the current XQuery 1.0
                 working drafts, with exception of the schema import and schema validation features
