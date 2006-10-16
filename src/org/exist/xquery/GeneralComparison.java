@@ -468,17 +468,19 @@ public class GeneralComparison extends BinaryOp {
 			        	else
 			        	{
 				        	//key with truncation, match key
-		                    context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "OPTIMIZATION", "Using value index '" + context.getBroker().getValueIndex().toString() + 
+                            if (LOG.isTraceEnabled())
+                                context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "OPTIMIZATION", "Using value index '" + context.getBroker().getValueIndex().toString() +
 		                    		"' to match key '" + Type.getTypeName(key.getType()) + "(" + key.getStringValue() + ")'");
 							try
 							{
 								if (LOG.isTraceEnabled())
 				        			LOG.trace("Using range index for key: " + key.getStringValue());
-								NodeSet ns = context.getBroker().getValueIndex().match(docs, nodes, key.getStringValue().replace('%', '*'), DBBroker.MATCH_WILDCARDS);
+								NodeSet ns = context.getBroker().getValueIndex().match(docs, nodes,
+                                        getRegexp(key.getStringValue()).toString(), DBBroker.MATCH_REGEXP);
 								if (result == null)
 									result = ns;
 								else
-									result = result.union(ns);							
+									result = result.union(ns);
 							} catch (EXistException e) {
 								throw new XPathException(getASTNode(), e.getMessage(), e);
 							}
@@ -506,32 +508,8 @@ public class GeneralComparison extends BinaryOp {
                     return(nodeSetCompare(nodes, contextSequence));
 		        	
 		        }
-        
-		//removed by Pierrick Brihaye
-        //REMOVED : a *general* comparison should not be dependant of the settings of a fulltext index
-        /*
-	    } else if (key.getType() == Type.ATOMIC || Type.subTypeOf(key.getType(), Type.STRING)) {
-	        if (!nodes.hasMixedContent() && relation == Constants.EQ 
-	            && nodes.hasTextIndex()) {
-		        // we can use the fulltext index
-		        String cmp = rightSeq.getStringValue();
-		        if(cmp.length() < NativeTextEngine.MAX_WORD_LENGTH)
-		            nodes = useFulltextIndex(cmp, nodes, docs);
-		        
-		        // now compare the input node set to the search expression
-				result =
-					context.getBroker().getNodesEqualTo(nodes, docs, relation, truncation, cmp, getCollator(contextSequence));
-	
-			} else {
-			    
-			    // no usable index found. Fall back to a sequential scan of the nodes
-			    result =
-					context.getBroker().getNodesEqualTo(nodes, docs, relation, truncation, rightSeq.getStringValue(), 
-					        getCollator(contextSequence));
-			}
-        */
-	    	
-/* end */	}
+
+            }
 
 		}
 	    else
@@ -560,60 +538,16 @@ public class GeneralComparison extends BinaryOp {
 		return result;
 	}
 
-	//removed by Pierrick Brihaye
-    /*
-    protected NodeSet useFulltextIndex(String cmp, NodeSet nodes, DocumentSet docs) throws XPathException {
-//	    LOG.debug("Using fulltext index for expression " + ExpressionDumper.dump(this));
-	    String cmpCopy = cmp;
-		// try to use a fulltext search expression to reduce the number
-		// of potential nodes to scan through
-		SimpleTokenizer tokenizer = new SimpleTokenizer();
-		tokenizer.setText(cmp);
-
-		TextToken token;
-		String term;
-		boolean foundNumeric = false;
-		// setup up an &= expression using the fulltext index
-		ExtFulltext containsExpr = new ExtFulltext(context, Constants.FULLTEXT_AND);
-		containsExpr.setASTNode(getASTNode());
-		// disable default match highlighting
-		int oldFlags = context.getBroker().getTextEngine().getTrackMatches();
-		context.getBroker().getTextEngine().setTrackMatches(Serializer.TAG_NONE);
-		
-		int i = 0;
-		for (; i < 5 && (token = tokenizer.nextToken(false)) != null; i++) {
-			// remember if we find an alphanumeric token
-			if (token.getType() == TextToken.ALPHANUM)
-				foundNumeric = true;
-		}
-		// check if all elements are indexed. If not, we can't use the
-		// fulltext index.
-		if (foundNumeric)
-			foundNumeric = checkArgumentTypes(context, docs);
-		if ((!foundNumeric) && i > 0) {
-			// all elements are indexed: use the fulltext index
-			cmp = handleTruncation(cmp);
-			containsExpr.addTerm(new LiteralValue(context, new StringValue(cmp)));
-			nodes = (NodeSet) containsExpr.eval(nodes, null);
-		}
-		context.getBroker().getTextEngine().setTrackMatches(oldFlags);
-		cmp = cmpCopy;
-		return nodes;
-	}    
-	
-	private String handleTruncation(String cmp) {
-		switch (truncation) {
-			case Constants.TRUNC_RIGHT:
-				return cmp + '*';
-			case Constants.TRUNC_LEFT:
-				return '*' + cmp;
-			case Constants.TRUNC_BOTH:
-				return '*' + cmp + '*';
-			default:
-				return cmp;
-		}
-	}
-    */
+    private CharSequence getRegexp(String expr) {
+        switch (truncation) {
+            case Constants.TRUNC_LEFT :
+                return new StringBuffer().append(expr).append('$');
+            case Constants.TRUNC_RIGHT :
+                return new StringBuffer().append('^').append(expr);
+            default :
+                return expr;
+        }
+    }
 	
 	/**
 	 * Cast the atomic operands into a comparable type
