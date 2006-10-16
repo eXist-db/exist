@@ -77,7 +77,7 @@
     <!--  XForms Filter -->
     <filter>
       <filter-name>XForms Filter</filter-name>
-      <filter-class>uk.gov.devonline.www.XForms.XFormsFilter</filter-class>
+      <filter-class>uk.gov.devonline.www.xforms.XFormsFilter</filter-class>
       <init-param>
 	      <param-name>CHIBA_DEBUG</param-name>
 	      <param-value>false</param-value>
