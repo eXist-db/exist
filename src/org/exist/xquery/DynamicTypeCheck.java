@@ -64,11 +64,9 @@ public class DynamicTypeCheck extends AbstractExpression {
 		Item contextItem)
 		throws XPathException {
 		Sequence seq = expression.eval(contextSequence, contextItem);
-		Item item;
-		int type;
 		for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
-			item = i.nextItem();
-			type = item.getType();
+			Item item = i.nextItem();
+			int type = item.getType();
 			if (type == Type.NODE &&
 					((NodeValue) item).getImplementationType() == NodeValue.PERSISTENT_NODE) {
 				type = ((NodeProxy) item).getNodeType();
@@ -97,6 +95,17 @@ public class DynamicTypeCheck extends AbstractExpression {
 								Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
 								item.getStringValue() + ")'");
 					}
+				//Then, if duration, try to refine the type					
+				} else if (Type.subTypeOf(requiredType, Type.DURATION) && Type.subTypeOf(type, Type.DURATION)) {
+					try {
+						item = item.convertTo(requiredType);
+					//No way
+					} catch (XPathException e) {
+						throw new XPathException(expression.getASTNode(), "FOCH0002: Required type is " + 
+								Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
+								item.getStringValue() + ")'");
+					}
+					
 				} else
 					throw new XPathException(expression.getASTNode(), "FOCH0002: Required type is " + 
 							Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
