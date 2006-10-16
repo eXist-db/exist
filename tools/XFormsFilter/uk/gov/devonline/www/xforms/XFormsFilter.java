@@ -76,18 +76,18 @@ public class XFormsFilter implements Filter
 	private static FilterConfig filterConfig = null;
 	
 	private final static boolean DEFAULT_CHIBA_DEBUG = true;
-	private final static String DEFAULT_CHIBA_CONFIG = "/usr/local/tomcat5/webapps/chiba2/WEB-INF/default.xml";
+	private final static String DEFAULT_CHIBA_CONFIG = "/eXist/tools/XFormsFilter/chiba.default.xml";
 	private final static String DEFAULT_CHIBA_TEMP_UPLOAD_DESTINATION = "/tmp";
-	private final static String DEFAULT_CHIBA_STYLESHEET_PATH = "/usr/local/tomcat5/webapps/chiba2/forms/xslt.adam";
+	private final static String DEFAULT_CHIBA_STYLESHEET_PATH = "/exist/tools/XFormsFilter/xslt";
 	private final static String DEFAULT_CHIBA_STYLESHEET_FILE = "xhtml.xsl";
 	private final static String DEFAULT_CHIBA_CSS = "/exist/servlet/db/xforms-test/xforms.css";
 	
-	private static boolean CHIBA_DEBUG = DEFAULT_CHIBA_DEBUG;
-	private static String CHIBA_CONFIG = DEFAULT_CHIBA_CONFIG;
-	private static String CHIBA_TEMP_UPLOAD_DESTINATION = DEFAULT_CHIBA_TEMP_UPLOAD_DESTINATION;
-	private static String CHIBA_STYLESHEET_PATH = DEFAULT_CHIBA_STYLESHEET_PATH;
-	private static String CHIBA_STYLESHEET_FILE = DEFAULT_CHIBA_STYLESHEET_FILE;
-	private static String CHIBA_CSS = DEFAULT_CHIBA_CSS;
+	private boolean CHIBA_DEBUG = DEFAULT_CHIBA_DEBUG;
+	private String CHIBA_CONFIG = DEFAULT_CHIBA_CONFIG;
+	private String CHIBA_TEMP_UPLOAD_DESTINATION = DEFAULT_CHIBA_TEMP_UPLOAD_DESTINATION;
+	private String CHIBA_STYLESHEET_PATH = DEFAULT_CHIBA_STYLESHEET_PATH;
+	private String CHIBA_STYLESHEET_FILE = DEFAULT_CHIBA_STYLESHEET_FILE;
+	private String CHIBA_CSS = DEFAULT_CHIBA_CSS;
 	
 	private final static String SESSION_CHIBA_ADAPTER = "chiba.adapter";
 	private final static String SESSION_CHIBA_UIGENERATOR = "chiba.uiGenerator";
