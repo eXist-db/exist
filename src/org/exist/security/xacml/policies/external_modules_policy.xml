@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Policy PolicyId="ExternalPolicy" RuleCombiningAlgId="urn:oasis:names:tc:xacml:1.0:rule-combining-algorithm:ordered-permit-overrides" xmlns="urn:oasis:names:tc:xacml:1.0:policy" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+	<Description>
+		A sample policy that applies to all external library modules.  It allows everything.
+	</Description>
+	
+	<Target>
+		<Resources>
+			<Resource>
+				<ResourceMatch MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
+					<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">external library</AttributeValue>
+					<ResourceAttributeDesignator AttributeId="http://exist-db.org/xacml#module-category" DataType="http://www.w3.org/2001/XMLSchema#string"/>
+				</ResourceMatch>
+			</Resource>
+		</Resources>
+	</Target>
+	
+	<!--<Rule RuleId="DenyAll" Effect="Deny">
+		<Description>
+			Deny all external modules.
+		</Description>
+	</Rule>-->
+	
+	<Rule RuleId="PermitAll" Effect="Permit">
+		<Description>
+			Allow all external modules.
+		</Description>
+	</Rule>
+</Policy>

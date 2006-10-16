@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xu:modifications version="1.0" xmlns:xu="http://www.xmldb.org/xupdate">
+    
+    <xu:insert-before select="//address[lname |= 'Hyde']/company">
+        <xu:element name="email">
+            <xu:attribute name="type">home</xu:attribute>
+            <xu:text>useless@home.com</xu:text>
+        </xu:element>
+    </xu:insert-before>
+    
+</xu:modifications>

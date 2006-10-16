@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xu:modifications version="1.0" xmlns:xu="http://www.xmldb.org/xupdate">
+    
+    <xu:insert-after select="//address/lname[. |= 'Hyde']">
+    
+        <email type="work">spencer@nulldevices.com</email>
+        <phone type="home">(0) 666 777</phone>
+        
+    </xu:insert-after>
+    
+</xu:modifications>

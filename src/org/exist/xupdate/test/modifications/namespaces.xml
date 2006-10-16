@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xu:modifications version="1.0" xmlns:xu="http://www.xmldb.org/xupdate">
+
+    <!-- update a node value -->
+    <xu:update xmlns:t="http://test.com" select="/t:root/t:node">Hello World!</xu:update>
+    
+</xu:modifications>
