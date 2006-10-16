@@ -321,7 +321,14 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
     {
         final AtomicValue other = (AtomicValue)o;
         if(Type.subTypeOf(other.getType(), Type.DATE_TIME))
-        	return calendar.compare((XMLGregorianCalendar)o);
+        	try {
+        		//TODO : find something that will consume less resources
+        		return calendar.compare(TimeUtils.getInstance().newXMLGregorianCalendar(other.getStringValue()));
+        	} catch (XPathException e) {
+        		System.out.println("Failed to get string value of '" + other + "'");
+        		//Why not ?
+        		return Constants.SUPERIOR;
+        	}
         else
             return getType() > other.getType() ? Constants.SUPERIOR : Constants.INFERIOR;
     }	
