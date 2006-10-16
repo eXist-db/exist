@@ -317,56 +317,64 @@
         <dev-notes>fully integrated into Cocoon using the XMLDBTransformer</dev-notes>
         <submitter>meinl@cs.fau.de</submitter>
     </application>
-    <applications xmlns="http://exist-db.org/" using="http://exist-db.org/"
-        xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:html="http://www.w3.org/1999/xhtml">
-
-        <application>
-
-            <dc:creator>Igor Barma</dc:creator>
-            <dc:creator>Steve giraud</dc:creator>
-
-            <creator-site>http://www.pentila.com</creator-site>
-
-            <dc:identifier>http://www.pentila.com/produits</dc:identifier>
-
-            <dc:rights>ZPL2.1 and GPL products</dc:rights>
-
-            <dc:title>Metadata TK, ZOpenArchives and XMLFinder</dc:title>
-
-            <dc:subject>Metadata creation</dc:subject>
-
-            <dc:subject>OAI metadata harvesting</dc:subject>
-
-            <dc:subject>Ressources finder and retrieval</dc:subject>
-
-            <dc:description> Three Plone/Zope products that allow you to turn your eXistDB into an
-                OAI aggregator and repository, perform eXist search from a plone site or create new
-                metadata entries and store them. Visit our site for more informations and downloads. </dc:description>
-
-            <dc:publisher> Pentila </dc:publisher>
-
-            <dc:format>Plone or Zope products</dc:format>
-
-            <dev-site>http://www.pentila.com/produits/</dev-site>
-
-            <status>beta</status>
-
-            <feature-used>XQuery</feature-used>
-
-            <feature-used>XUpdate</feature-used>
-            <feature-used>OAI-PMH</feature-used>
-            <feature-used>XSLT</feature-used>
-            <feature-used>python</feature-used>
-            <feature-used>Plone</feature-used>
-            <feature-used>Zope</feature-used>
-
-            <dev-notes> XQuery, XUpdate, OAI-PMH, XSLT, Plone/Zope and python </dev-notes>
-
-            <submitter/>
-
-        </application>
-
-    </applications>
-
-
+    
+	<application>
+		<dc:creator>Igor Barma</dc:creator>
+		<dc:creator>Steve giraud</dc:creator>
+		<creator-site>http://www.pentila.com</creator-site>
+		<dc:identifier>http://www.pentila.com/produits</dc:identifier>
+		<dc:rights>ZPL2.1 and GPL products</dc:rights>
+		<dc:title>Metadata TK, ZOpenArchives and XMLFinder</dc:title>
+		<dc:subject>Metadata creation</dc:subject>
+		<dc:subject>OAI metadata harvesting</dc:subject>
+		<dc:subject>Ressources finder and retrieval</dc:subject>
+		<dc:description> Three Plone/Zope products that allow you to turn your eXistDB into an
+            OAI aggregator and repository, perform eXist search from a plone site or create new
+            metadata entries and store them. Visit our site for more informations and downloads. </dc:description>
+		<dc:publisher> Pentila </dc:publisher>
+		<dc:format>Plone or Zope products</dc:format>
+		<dev-site>http://www.pentila.com/produits/</dev-site>
+		<status>beta</status>
+		<feature-used>XQuery</feature-used>
+		<feature-used>XUpdate</feature-used>
+		<feature-used>OAI-PMH</feature-used>
+		<feature-used>XSLT</feature-used>
+		<feature-used>python</feature-used>
+		<feature-used>Plone</feature-used>
+		<feature-used>Zope</feature-used>
+		<dev-notes> XQuery, XUpdate, OAI-PMH, XSLT, Plone/Zope and python </dev-notes>
+		<submitter/>
+	</application>
+	
+	<application>
+        <production-site>http://www.devonline.gov.uk/community</production-site>        
+        <dc:creator>Adam Retter, Devon Portal Project</dc:creator>
+        <dc:creator>Robert Walpole, Devon Portal Project</dc:creator>
+        <creator-site>http://www.devonline.gov.uk/</creator-site>
+        <dc:title>Devon Community Directory</dc:title>
+        <dc:subject>IPSV</dc:subject>
+        <dc:format>eXist + Chiba + Lucene</dc:format>
+        <dc:description>
+            <br/>A web directory of community organisations and services in Devon, UK.
+            <br/>Searchable by keyword or category, results can be filtered in several ways, e.g. by area served.
+            <br/>An administrator interface provides group management - add / edit / suspend / delete / validate.
+            <br/>Each Community Group is an XML document. All business processing is done in XQuery and XSLT is used for presentation.
+            <br/>Makes use of the UK e-Government Integrated Public Services Volcabulary (IPSV) for categorisation.
+        </dc:description>
+        <dc:publisher>Devon Portal Project</dc:publisher>       
+        <status>production</status>
+        <feature-used>XQuery</feature-used>
+   	    <feature-used>XQuery Update Extensions</feature-used>
+        <feature-used>XSLT 2.0</feature-used>
+        <feature-used>DocumentTrigger</feature-used>
+        <feature-used>XFormsFilter</feature-used>
+        <feature-used>IPSV</feature-used>
+        <feature-used>Jetty</feature-used>
+		<third-party-feature-used>Chiba</third-party-feature-used>
+		<third-party-feature-used>Lucene</third-party-feature-used>
+		<third-party-feature-used>Saxon</third-party-feature-used>
+        <database size="40Mb" documents="3000" updates="frequest" security='read for all' />
+        <dev-notes>90% XQuery, 5% XSLT 2.0, 3% Java, 1% Javascript, 1% CSS.</dev-notes>
+        <submitter>Adam Retter</submitter>
+    </application>
 </applications>
