@@ -86,8 +86,8 @@
                 </td>
             </tr>
             <tr>
-                <td class="description">The <a href="http://www.devonline.gov.uk">Devon Portal Project</a> sponsored development of several small
-                bug fixes mainly in XHTML serialization and donated the mail and context extension modules. The Devon Portal is a partnership of Local Authorities in Devon, UK.</td>
+                <td class="description">The <a href="http://www.devonline.gov.uk">Devon Portal Project</a> sponsored development of various 
+                bug fixes and donated the mail, context and sql extension modules. The Devon Portal is a partnership of Local Authorities in Devon, UK.</td>
                 <td align="center">
                     <a href="http://www.devonline.gov.uk/">
                         <img border="0" src="resources/devonline.png"/>
