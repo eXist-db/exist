@@ -22,6 +22,7 @@
 package org.exist.xquery.test;
 
 import java.io.File;
+import java.util.Properties;
 
 import junit.framework.TestCase;
 
@@ -40,6 +41,8 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
 import org.xmldb.api.modules.XUpdateQueryService;
+import org.apache.log4j.PropertyConfigurator;
+import org.apache.log4j.BasicConfigurator;
 
 /**
  * @author wolf
@@ -174,7 +177,7 @@ public class ValueIndexTest extends TestCase {
             queryResource(service, "mondial-test.xml", "//city[matches(name, 'Berlin', 'i')]", 1);
             queryResource(service, "mondial-test.xml", "//city[matches(name, 'berlin', 'i')]", 1);
             queryResource(service, "mondial-test.xml", "//city[matches(name, 'berlin')]", 0);
-            queryResource(service, "mondial-test.xml", "//city[matches(name, '^Berlin$', 'i')]", 1);
+            queryResource(service, "mondial-test.xml", "//city[matches(name, '^Berlin$')]", 1);
             queryResource(service, "mondial-test.xml", "//city[matches(name, 'lin$', 'i')]", 1);
             queryResource(service, "mondial-test.xml", "//city[matches(name, '.*lin$', 'i')]", 1);
             queryResource(service, "mondial-test.xml", "//city[matches(name, '^lin$', 'i')]", 0);
@@ -279,7 +282,7 @@ public class ValueIndexTest extends TestCase {
     }
     
     public static void main(String[] args) {
-		junit.textui.TestRunner.run(ValueIndexTest.class);
+        junit.textui.TestRunner.run(ValueIndexTest.class);
 	}
 
 	/**
