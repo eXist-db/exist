@@ -32,13 +32,17 @@ declare function setup:importLocal() as element()+ {
 	let $home := system:get-exist-home(),
 		$pathSep := util:system-property("file.separator"),
 		$dir :=
-			if(ends-with($home, "WEB-INF")) then
+			if (doc-available(concat("file:///", $home, "/exist-samples/examples.xml")))
+			then
+				concat($home, $pathSep, "exist-samples")
+			else if(ends-with($home, "WEB-INF")) then
 				concat(substring-before($home, "WEB-INF"), "samples")
 			else
 				concat($home, $pathSep, "samples")
     return (
         setup:page2(),
         <div class="process">
+			<p>Loading from directory: {$dir}.</p>
             <h3>Actions:</h3>
             <ul>
             {

@@ -23,8 +23,15 @@ declare function xqts:initialize() as element() {
         else
             let $home := system:get-exist-home()
             let $pathSep := util:system-property("file.separator")
-            let $path := concat($home, concat($pathSep, "webapp", $pathSep, "xqts"))
-            let $stored := xdb:store-files-from-pattern("/db/XQTS", $path, "*.xml", "text/xml")
+    		let $dir :=
+				if (doc-available(concat("file:///", system:module-load-path(), "/config.xml")))
+				then
+					system:module-load-path()
+        		else if(ends-with($home, "WEB-INF")) then
+        	    	concat(substring-before($home, "WEB-INF"), "xqts")
+        		else
+               		concat($home, $pathSep, "webapp", $pathSep, "xqts")
+            let $stored := xdb:store-files-from-pattern("/db/XQTS", $dir, "*.xml", "text/xml")
             return
                 doc("/db/XQTS/config.xml")/config
 };
@@ -34,10 +41,13 @@ declare function xqts:import-stylesheet() as xs:string* {
     let $home := system:get-exist-home()
     let $pathSep := util:system-property("file.separator")
     let $dir :=
-        	if(ends-with($home, "WEB-INF")) then
-        	    concat(substring-before($home, "WEB-INF"), "xqts", $pathSep, "stylesheets")
+			if (doc-available(concat("file:///", system:module-load-path(), "config.xml")))
+			then
+				concat(system:module-load-path())
+        	else if(ends-with($home, "WEB-INF")) then
+        	    concat(substring-before($home, "WEB-INF"), "xqts")
         	else
-               concat($home, $pathSep, "webapp", $pathSep, "xqts", $pathSep, "stylesheets")
+               concat($home, $pathSep, "webapp", $pathSep, "xqts")
     let $col := xdb:create-collection("/db", "XQTS")
     return
         concat("Imported: ", xdb:store-files-from-pattern($col, $dir, "*.xsl", "text/xml"))
@@ -105,7 +115,7 @@ declare function xqts:display-page() as element() {
             </div>
             
             <div id="content">
-                <div id="messages">{xqts:check-paths()}</div>
+                <div id="messages"></div>
                 <div id="panel-left">
                     <h1>Test Groups</h1>
                     <div id="navtree"></div>
