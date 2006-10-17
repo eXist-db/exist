@@ -215,9 +215,8 @@ public class SOAPServer
         }
         catch (XPathException e)
 		{
-            response.setContentType("text/html");
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            writeResponse(response, formatXPathException(null, path, e), ENCODING);
+            writeResponse(response, formatXPathException(null, path, e), "text/html", ENCODING);
         }
         
         //store the compiled xqws for use later 
@@ -332,15 +331,13 @@ public class SOAPServer
 		}
         catch(TransformerConfigurationException tce)
         {
-        	response.setContentType("text/html");
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            writeResponse(response, formatXPathException(null, path, new XPathException(null, "SAX exception while transforming node: " + tce.getMessage(), tce)), ENCODING);
+            writeResponse(response, formatXPathException(null, path, new XPathException(null, "SAX exception while transforming node: " + tce.getMessage(), tce)), "text/html", ENCODING);
         }
 		catch (SAXException e)
 		{
-			response.setContentType("text/html");
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            writeResponse(response, formatXPathException(null, path, new XPathException(null, "SAX exception while transforming node: " + e.getMessage(), e)), ENCODING);
+            writeResponse(response, formatXPathException(null, path, new XPathException(null, "SAX exception while transforming node: " + e.getMessage(), e)), "text/html", ENCODING);
 		}
 		
         //close the Stylesheet Document and release the read lock
@@ -488,12 +485,11 @@ public class SOAPServer
     }
     
     //TODO: SHARE THIS FUNCTION WITH RESTServer (copied at the moment)
-    private void writeResponse(HttpServletResponse response, String data, String encoding) throws IOException
+    private void writeResponse(HttpServletResponse response, String data, String contentType, String encoding) throws IOException
     {
 //        response.setCharacterEncoding(encoding);
         
         // possible format contentType: text/xml; charset=UTF-8
-        String contentType = response.getContentType();
         if ( contentType != null && !response.isCommitted() ) {
             
             int semicolon = contentType.indexOf(';');

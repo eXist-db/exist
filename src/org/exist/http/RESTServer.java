@@ -311,16 +311,14 @@ public class RESTServer {
                             if(!response.isCommitted())
                             {
                                 String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE, "text/html");
-                            	response.setContentType(mimeType);
                             	
-                            	writeResponse(response, result, encoding);
+                            	writeResponse(response, result, mimeType, encoding);
                             }
                         }
             			catch (XPathException e)
 						{
-                            response.setContentType("text/html");
                             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                            writeResponse(response, formatXPathException(query, path, e), encoding);
+                            writeResponse(response, formatXPathException(query, path, e), "text/html", encoding);
                         }
             		}
                     return;
@@ -337,14 +335,12 @@ public class RESTServer {
                     if(!response.isCommitted())
                     {
                     	String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE, "text/html");
-                    	response.setContentType(mimeType);
-                    	writeResponse(response, result, encoding);
+                    	writeResponse(response, result, mimeType, encoding);
                     }
                     
                 } catch (XPathException e) {
-                    response.setContentType("text/html");
                     response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    writeResponse(response, formatXPathException(query, path, e), encoding);
+                    writeResponse(response, formatXPathException(query, path, e), "text/html", encoding);
                 }
             } else {
                 // no query parameter: try to load a document from the specified
@@ -358,8 +354,7 @@ public class RESTServer {
                             throw new PermissionDeniedException(
                                     "Not allowed to read collection");
                         // return a listing of the collection contents
-                        response.setContentType("text/xml");
-                        writeResponse(response, printCollection(broker, collection), encoding);
+                        writeResponse(response, printCollection(broker, collection), "text/xml", encoding);
                     } else {
                         throw new NotFoundException("Document " + path
                                 + " not found");
@@ -505,12 +500,10 @@ public class RESTServer {
                         String result = executeXQuery(broker, resource, request, response, outputProperties);
                         String encoding = outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
                         String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE, "text/html");
-                        response.setContentType(mimeType);
-                        writeResponse(response, result, encoding);
+                        writeResponse(response, result, mimeType, encoding);
                     } catch (XPathException e) {
-                        response.setContentType("text/html");
                         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                        writeResponse(response, formatXPathException(null, path, e), "UTF-8");
+                        writeResponse(response, formatXPathException(null, path, e), "text/html", "UTF-8");
                     }
                     return;
                 }
@@ -616,9 +609,8 @@ public class RESTServer {
                 }
                 // execute query
                 if (query != null) {
-                    response.setContentType(mime);
                     writeResponse(response, search(broker, query, path, howmany,
-                            start, outputProperties, enclose, request, response),
+                            start, outputProperties, enclose, request, response), mime,
                             outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8"));
                 } else {
                     transact.abort(transaction);
@@ -660,7 +652,7 @@ public class RESTServer {
                         + "<exist:modifications xmlns:exist='" + NS
                         + "' count='" + mods + "'>" + mods
                         + "modifications processed.</exist:modifications>",
-                        "UTF-8");
+                        "text/xml", "UTF-8");
                 // END FD
             } else {
                 transact.abort(transaction);
@@ -1179,12 +1171,10 @@ public class RESTServer {
         }
     }
     
-    private void writeResponse(HttpServletResponse response, String data, String encoding) throws IOException
+    private void writeResponse(HttpServletResponse response, String data, String contentType, String encoding) throws IOException
     {
     	//response.setCharacterEncoding(encoding);
-        
         // possible format contentType: text/xml; charset=UTF-8
-        String contentType = response.getContentType();
         if ( contentType != null && !response.isCommitted() ) {
             
             int semicolon = contentType.indexOf(';');
