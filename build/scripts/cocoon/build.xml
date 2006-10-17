@@ -15,7 +15,7 @@
 
     <property name="exist.home" value="../.."/>
 
-    <property name="cocoon.libs" value="${cocoon.home}/lib/optional"/>
+    <property name="cocoon.libs" value="${cocoon.home}/lib"/>
     <property name="cocoon.blocks" value="${cocoon.home}/src/blocks"/>
     <property name="cocoon.tasks" value="${cocoon.home}/tools/anttasks"/>
 
@@ -66,11 +66,8 @@
                 <include name="*.xmap"/>
             </fileset>
         </copy>
-        <copy todir="${exist.deploy}/WEB-INF">
-            <fileset dir=".">
-                <include name="conf.xml"/>
-            </fileset>
-        </copy>
+        <xslt in="${exist.home}/conf.xml"  out="${exist.deploy}/WEB-INF/conf.xml"
+              style="../dist-war-conf.xsl"/>
     </target>
 
     <target description="Copy jars" name="copy-jars">
@@ -79,9 +76,10 @@
         <delete file="${cocoon.home}/lib/optional/xmldb-common-20030701.jar"/>
         <delete file="${cocoon.home}/lib/optional/xmldb-xupdate-20040205.jar"/>
         <delete file="${cocoon.home}/lib/optional/xmlrpc-1.1.jar"/>
+        <delete file="${cocoon.home}/lib/core/log4j-1.2.13.jar"/>
 
         <!-- Copy eXist jars to Cocoon lib dir -->
-        <copy todir="${cocoon.libs}" overwrite="yes">
+        <copy todir="${cocoon.libs}/optional" overwrite="yes">
             <fileset dir="${exist.home}">
                 <include name="exist.jar"/>
                 <include name="exist-optional.jar"/>
@@ -97,9 +95,16 @@
                 <include name="jEdit-syntax*.jar"/>
                 <include name="jgroups-all*.jar"/>
                 <include name="excalibur-cli*.jar"/>
+                <include name="commons-pool*.jar"/>
+                <include name="antlr*.jar"/>
             </fileset>
             <fileset dir="${exist.home}/lib/optional">
                 <include name="commons-fileupload*.jar"/>
+            </fileset>
+        </copy>
+        <copy todir="${cocoon.libs}/core" overwrite="yes">
+            <fileset dir="${exist.home}/lib/core">
+                <include name="log4j*.jar"/>
             </fileset>
         </copy>
         <copy todir="${exist.deploy}/samples/WEB-INF/exist-samples">
@@ -129,13 +134,13 @@
     <target description="Fix links in eXist webapp" name="prepare-samples"
             depends="copy-samples">
         <replace dir="${exist.deploy}/samples" summary="true"
-            includes="*.xml">
+            includes="*.xml *.xmap">
             <replacefilter token="webstart/exist.jnlp" value="../../../webstart/exist.jnlp"/>
             <replacefilter token='="status' value='="../../../status'/>
             <replacefilter token='="cluster' value='="../../../cluster'/>
             <replacefilter token="rest/db" value="../../../rest/db"/>
-            <replacefilter token='redirect-to uri="/exist/index.xml'
-                           value='redirect-to uri="index.xml'/>
+            <replacefilter token='uri="/exist/index.xml'
+                           value='uri="index.xml'/>
             <replacefilter token="context:/" value=".."/>
         </replace>
     </target>
