@@ -2252,7 +2252,7 @@ public class GetDocument {
                     </listitem>
                 </varlistentry>
                 <varlistentry>
-                    <term>antlr.jar</term>
+                    <term>antlr-x.x.x.jar</term>
                     <listitem>
                         <para>The ANTLR parser generator used by the XQuery engine.</para>
                     </listitem>
