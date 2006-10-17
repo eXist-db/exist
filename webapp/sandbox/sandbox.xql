@@ -18,7 +18,10 @@ declare function sandbox:import-stylesheets() as xs:string* {
     let $home := system:get-exist-home()
     let $pathSep := util:system-property("file.separator")
     let $dir :=
-        	if(ends-with($home, "WEB-INF")) then
+			if (doc-available(concat("file:///", system:module-load-path(), "/stylesheets/xml-highlight.xsl")))
+			then
+				concat(system:module-load-path(), $pathSep, "stylesheets")
+        	else if(ends-with($home, "WEB-INF")) then
         	    concat(substring-before($home, "WEB-INF"), "sandbox", $pathSep, "stylesheets")
         	else
                concat($home, $pathSep, "webapp", $pathSep, "sandbox", $pathSep, "stylesheets")
