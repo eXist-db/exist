@@ -1,3 +1,14 @@
+<!--
+    Inject eXist as a Cocoon block into the Cocoon source distribution.
+    Execute this script with
+
+    build.sh -f build/scripts/cocoon/build.xml
+
+    BEFORE compiling Cocoon.
+
+    Based on the original exist-as-block distribution created by
+    Bruce Robertson (http://heml.mta.ca)
+-->
 <project name="exist_block" default="all" basedir=".">
 
     <property file="build.properties"/>
