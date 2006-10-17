@@ -30,10 +30,10 @@ public class SystemModule extends AbstractInternalModule {
 	public static final String NAMESPACE_URI = "http://exist-db.org/xquery/system";
 	
 	public static final String PREFIX = "system";
-	
-	public static final FunctionDef[] functions = {
+
+    public static final FunctionDef[] functions = {
             new FunctionDef(FtIndexLookup.signature, FtIndexLookup.class),
-            
+
             new FunctionDef(CountInstances.countInstancesMax, CountInstances.class),
             new FunctionDef(CountInstances.countInstancesActive, CountInstances.class),
             new FunctionDef(CountInstances.countInstancesAvailable, CountInstances.class),
@@ -45,8 +45,9 @@ public class SystemModule extends AbstractInternalModule {
             new FunctionDef(GetRevision.signature, GetRevision.class),
             new FunctionDef(GetExistHome.signature, GetExistHome.class),
             new FunctionDef(Shutdown.signatures[0], Shutdown.class),
-            new FunctionDef(Shutdown.signatures[1], Shutdown.class)
-	};
+            new FunctionDef(Shutdown.signatures[1], Shutdown.class),
+            new FunctionDef(GetModuleLoadPath.signature, GetModuleLoadPath.class)
+    };
 	
 	public SystemModule() {
 		super(functions);
