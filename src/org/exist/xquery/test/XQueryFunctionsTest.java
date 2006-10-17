@@ -14,8 +14,14 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XPathQueryService;
+
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.text.*;
 import java.util.*;
 
@@ -705,6 +711,50 @@ public class XQueryFunctionsTest extends TestCase {
     		fail(xe.getMessage());
     	}
     }
+    
+    public void bugtestBase64BinaryCast()
+	{
+    	final String TEST_BINARY_COLLECTION = "testBinary";
+    	final String TEST_COLLECTION = "/db/" + TEST_BINARY_COLLECTION;
+    	final String BINARY_RESOURCE_FILENAME = "logo.jpg";
+    	final String XML_RESOURCE_FILENAME = "logo.xml";
+    	
+    	try
+    	{
+    		//create a test collection
+	    	CollectionManagementService colService = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
+			Collection testCollection = colService.createCollection(TEST_BINARY_COLLECTION);
+			assertNotNull(testCollection);
+			
+			//store the eXist logo in the test collection
+			File fLogo = new File("webapp/" + BINARY_RESOURCE_FILENAME);
+			BinaryResource br = (BinaryResource)testCollection.createResource(BINARY_RESOURCE_FILENAME, "BinaryResource");
+			br.setContent(fLogo);
+			testCollection.storeResource(br);
+	    	
+			//create an XML resource with the logo base64 embedded in it
+			String queryStore = "xquery version \"1.0\";\n\n"
+			+ "let $embedded := <logo><image>{util:binary-doc(\"" + TEST_COLLECTION + "/" + BINARY_RESOURCE_FILENAME + "\")}</image></logo> return\n"
+			+ "xmldb:store(\"" + TEST_COLLECTION + "\", \""+ XML_RESOURCE_FILENAME + "\", $embedded)";
+		
+			ResourceSet resultStore = service.query(queryStore);
+			assertEquals("store, Expect single result", 1, resultStore.getSize());
+			assertEquals("Expect stored filename as result", TEST_COLLECTION + "/" + XML_RESOURCE_FILENAME, resultStore.getResource(0).getContent().toString());
+		
+			//retreive the base64 image from the XML resource and try to cast to xs:base64Binary
+			String queryRetreive = "xquery version \"1.0\";\n\n"
+			+ "let $image := doc(\"" + TEST_COLLECTION +"/" + XML_RESOURCE_FILENAME + "\")/logo/image return\n"
+			+ "$image/text() cast as xs:base64Binary";
+		
+			ResourceSet resultRetreive = service.query(queryRetreive);
+			assertEquals("retreive, Expect single result", 1, resultRetreive.getSize());
+		}
+		catch(XMLDBException e)
+		{
+			System.out.println("testBase64Binary: XMLDBException: "+e);
+			fail(e.getMessage());
+		}
+	}
     
 	
 	/*
