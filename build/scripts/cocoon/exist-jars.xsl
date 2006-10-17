@@ -100,7 +100,12 @@
     <xsl:template match="file[title = 'XML-RPC']/lib">
         <lib>optional/xmlrpc-1.2-patched.jar</lib>
     </xsl:template>
-    
+
+    <!-- Use patched jar for XML-RPC -->
+    <xsl:template match="file[title = 'Log4j']/lib">
+        <lib>core/log4j-1.2.14.jar</lib>
+    </xsl:template>
+
     <xsl:template match="*|@*|node()|comment()">
         <xsl:copy>
             <xsl:apply-templates select="@*|node()|comment()"/>
