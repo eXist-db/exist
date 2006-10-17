@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+
+<xconf xpath="/cocoon/source-factories"
+       unless="component-instance[@name='xmldb']">
+    <!-- xmldb pseudo protocol -->
+    <component-instance class="org.apache.cocoon.components.source.impl.XMLDBSourceFactory" name="xmldb">
+        <driver class="org.exist.xmldb.DatabaseImpl" type="exist"/>
+<!--   Add here other XML:DB compliant databases drivers -->
+    </component-instance>
+</xconf>

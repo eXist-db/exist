@@ -1,0 +1,98 @@
+<xweb xpath="/web-app"
+      unless="comment()[contains(., 'Definition and configuration of eXist')]"
+      insert-after="servlet[servlet-name = 'Cocoon']">
+
+    <!-- Definition and configuration of eXist servlets. -->
+
+    <!--
+        RpcServlet provides XML-RPC access to eXist
+    -->
+    <servlet>
+        <servlet-name>org.exist.xmlrpc.RpcServlet</servlet-name>
+        <servlet-class>org.exist.xmlrpc.RpcServlet</servlet-class>
+    </servlet>
+
+    <!--
+        DatabaseAdminServlet: this servlet can be used to ensure that
+        eXist is running in the background. Just set the start-parameter
+        to true and load-on-startup to 1
+    -->
+    <servlet>
+        <servlet-name>EXistServlet</servlet-name>
+        <servlet-class>org.exist.http.servlets.EXistServlet</servlet-class>
+
+        <!--
+            where to find eXist's configuration file relative to the basedir
+            of the web-application.
+        -->
+        <init-param>
+            <param-name>configuration</param-name>
+            <param-value>conf.xml</param-value>
+        </init-param>
+
+        <!--
+            eXist's home directory. All file names in the configuration file
+            will be relative to this directory.
+        -->
+        <init-param>
+            <param-name>basedir</param-name>
+            <param-value>WEB-INF/</param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>start</param-name>
+            <param-value>true</param-value>
+        </init-param>
+
+        <load-on-startup>2</load-on-startup>
+    </servlet>
+
+    <!--
+        Servlet that enables webDAV
+    -->
+    <servlet>
+        <servlet-name>WebDAVServlet</servlet-name>
+        <servlet-class>org.exist.http.servlets.WebDAVServlet</servlet-class>
+
+        <init-param>
+            <param-name>authentication</param-name>
+            <param-value>basic</param-value>
+        </init-param>
+    </servlet>
+
+    <!--
+        XQueryServlet generates HTML from an XQuery file.
+    -->
+    <servlet>
+        <servlet-name>XQueryServlet</servlet-name>
+        <servlet-class>org.exist.http.servlets.XQueryServlet</servlet-class>
+
+        <init-param>
+            <param-name>uri</param-name>
+            <param-value>xmldb:exist:///db</param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>form-encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>container-encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+    </servlet>
+
+    <!--
+        Register Webstart servlet
+    -->
+    <servlet>
+        <servlet-name>jnlp</servlet-name>
+        <servlet-class>org.exist.webstart.JnlpServlet</servlet-class>
+    </servlet>
+</xweb>

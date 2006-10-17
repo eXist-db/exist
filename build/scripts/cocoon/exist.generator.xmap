@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+
+<xmap xpath="/sitemap/components/generators" unless="generator[@name='exist']">
+    <map:generator name="xquery" src="org.exist.cocoon.XQueryGenerator" label="content"/>
+</xmap>

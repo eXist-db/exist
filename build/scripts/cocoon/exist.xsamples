@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+
+<xsamples xpath="/samples" unless="group[@name='exist']">
+
+  <group name="exist">
+    <sample name="exist" href="exist/">
+      The eXist XML database
+    </sample>
+  </group>
+  
+</xsamples>

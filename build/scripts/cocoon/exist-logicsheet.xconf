@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+
+<xconf xpath="/cocoon/markup-languages/xsp-language[@name='xsp']/target-language[@name='java']"
+       unless="builtin-logicsheet/parameter[@value='resource://org/exist/xmldb.xsl']">
+  <builtin-logicsheet>
+    <parameter name="prefix" value="xmldb"/>
+    <parameter name="uri" value="http://exist-db.org/xmldb/1.0"/>
+    <parameter name="href" value="resource://org/exist/xmldb.xsl"/>
+  </builtin-logicsheet>
+</xconf>

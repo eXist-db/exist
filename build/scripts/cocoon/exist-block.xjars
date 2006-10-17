@@ -1,0 +1,38 @@
+<xjars xpath="/jars" unless="file[title = 'exist-optional']">
+    <file>
+        <title>exist</title>
+        <description>
+            Core libraries for the eXist native XML db
+        </description>
+        <used-by>exist</used-by>
+        <lib>optional/exist.jar</lib>
+        <homepage>http://exist-db.org</homepage>
+    </file>
+    <file>
+        <title>exist-optional</title>
+        <description>
+            Optional libraries for the eXist native XML db
+        </description>
+        <used-by>exist</used-by>
+        <lib>optional/exist-optional.jar</lib>
+        <homepage>http://exist-db.org</homepage>
+    </file>
+    <file>
+        <title>exist-modules</title>
+        <description>
+            XQuery extension modules for the eXist native XML db
+        </description>
+        <used-by>exist</used-by>
+        <lib>optional/exist-modules.jar</lib>
+        <homepage>http://exist-db.org</homepage>
+    </file>
+    <file>
+        <title>xmldb</title>
+        <description>
+            The XML:DB APIs
+        </description>
+        <used-by>exist</used-by>
+        <lib>optional/xmldb.jar</lib>
+        <homepage>http://exist-db.org</homepage>
+    </file>
+</xjars>

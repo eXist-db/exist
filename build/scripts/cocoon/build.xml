@@ -1,0 +1,137 @@
+<project name="exist_block" default="all" basedir=".">
+
+    <property file="build.properties"/>
+
+    <property name="exist.home" value="../.."/>
+
+    <property name="cocoon.libs" value="${cocoon.home}/lib/optional"/>
+    <property name="cocoon.blocks" value="${cocoon.home}/src/blocks"/>
+    <property name="cocoon.tasks" value="${cocoon.home}/tools/anttasks"/>
+
+    <property name="exist.deploy" value="${cocoon.blocks}/exist"/>
+
+    <property name="backup.dir" value="backup"/>
+
+    <available file="${cocoon.home}" property="cocoon.present"/>
+
+    <target name="all" if="cocoon.present" depends="check-cocoon">
+        <echo message="-----------------------------------------------"/>
+        <echo message="Preparing eXist as Cocoon block"/>
+        <echo message="-----------------------------------------------"/>
+        <echo message="Cocoon directory: ${cocoon.home}"/>
+        <echo message="Installing block into: ${exist.deploy}"/>
+ 
+        <antcall target="prepare"/>
+
+        <echo message="-----------------------------------------------"/>
+        <echo message="Cocoon has been prepared. You may now change to"/>
+        <echo message="${cocoon.home}"/>
+        <echo message="and call build.sh or build.bat to build Cocoon."/>
+    </target>
+
+    <target description="Prepare the src/blocks/exist directory, copy jars and patch cocoon files"
+            name="prepare" depends="prepare-dirs, xpatch_gump, xpatch_jars">
+        <mkdir dir="${backup.dir}"/>
+        <mkdir dir="${exist.deploy}"/>
+        <mkdir dir="${exist.deploy}/conf"/>
+        <mkdir dir="${exist.deploy}/java"/>
+        <mkdir dir="${exist.deploy}/samples"/>
+        <mkdir dir="${exist.deploy}/WEB-INF"/>
+        <mkdir dir="${exist.deploy}/WEB-INF/data"/>
+        <mkdir dir="${exist.deploy}/WEB-INF/data/journal"/>
+        <mkdir dir="${exist.deploy}/WEB-INF/exist-samples"/>
+    </target>
+
+    <target description="Prepare the src/blocks/exist directory"
+            name="prepare-dirs" depends="prepare-conf,copy-jars, prepare-samples"/>
+
+    <target description="Copy configuration files"
+            name="prepare-conf">
+        <copy todir="${exist.deploy}/conf">
+            <fileset dir=".">
+                <include name="*.xweb"/>
+                <include name="*.xsamples"/>
+                <include name="*.xconf"/>
+                <include name="*.xmap"/>
+            </fileset>
+        </copy>
+        <copy todir="${exist.deploy}/WEB-INF">
+            <fileset dir=".">
+                <include name="conf.xml"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target description="Copy jars" name="copy-jars">
+        <!-- Delete conflicting jars from Cocoon lib dir -->
+        <delete file="${cocoon.home}/lib/optional/xmldb-api-20030701.jar"/>
+        <delete file="${cocoon.home}/lib/optional/xmldb-common-20030701.jar"/>
+        <delete file="${cocoon.home}/lib/optional/xmldb-xupdate-20040205.jar"/>
+        <delete file="${cocoon.home}/lib/optional/xmlrpc-1.1.jar"/>
+
+        <!-- Copy eXist jars to Cocoon lib dir -->
+        <copy todir="${cocoon.libs}" overwrite="yes">
+            <fileset dir="${exist.home}">
+                <include name="exist.jar"/>
+                <include name="exist-optional.jar"/>
+                <include name="exist-modules.jar"/>
+                <include name="exist-modules.jar"/>
+                <include name="start.jar"/>
+            </fileset>
+            <fileset dir="${exist.home}/lib/core">
+                <include name="xmlrpc*.jar"/>
+                <include name="xmldb.jar"/>
+                <include name="resolver.jar"/>
+                <include name="jline*.jar"/>
+                <include name="jEdit-syntax*.jar"/>
+                <include name="jgroups-all*.jar"/>
+                <include name="excalibur-cli*.jar"/>
+            </fileset>
+            <fileset dir="${exist.home}/lib/optional">
+                <include name="commons-fileupload*.jar"/>
+            </fileset>
+        </copy>
+        <copy todir="${exist.deploy}/samples/WEB-INF/exist-samples">
+            <fileset dir="${exist.home}/samples">
+            </fileset>
+        </copy>
+    </target>
+
+    <target description="Patch the main gump.xml in Cocoon" name="xpatch_gump">
+        <copy todir="${backup.dir}" file="${cocoon.home}/gump.xml" overwrite="yes"/>
+        <xslt in="${backup.dir}/gump.xml" out="${cocoon.home}/gump.xml" style="exist-gump.xsl"/>
+    </target>
+
+    <target description="Patch lib/jars.xml in Cocoon" name="xpatch_jars">
+        <copy file="${cocoon.home}/lib/jars.xml" todir="${backup.dir}" overwrite="yes"/>
+        <xslt in="${backup.dir}/jars.xml" out="${cocoon.home}/lib/jars.xml" style="exist-jars.xsl"/>
+    </target>
+
+    <target description="Copy eXist's webapp dir to samples" name="copy-samples">
+        <copy todir="${exist.deploy}/samples">
+            <fileset dir="${exist.home}/webapp">
+                <exclude name="WEB-INF/**"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target description="Fix links in eXist webapp" name="prepare-samples"
+            depends="copy-samples">
+        <replace dir="${exist.deploy}/samples" summary="true"
+            includes="*.xml">
+            <replacefilter token="webstart/exist.jnlp" value="../../../webstart/exist.jnlp"/>
+            <replacefilter token='="status' value='="../../../status'/>
+            <replacefilter token='="cluster' value='="../../../cluster'/>
+            <replacefilter token="rest/db" value="../../../rest/db"/>
+            <replacefilter token='redirect-to uri="/exist/index.xml'
+                           value='redirect-to uri="index.xml'/>
+            <replacefilter token="context:/" value=".."/>
+        </replace>
+    </target>
+
+    <target name="check-cocoon" unless="cocoon.present">
+        <echo message="The Cocoon sources could not be found in directory ${cocoon.home}. Please edit"/>
+        <echo message="build/scripts/cocoon/build.properties and check the path specified via the"/>
+        <echo message="cocoon.home property."/>
+    </target>
+</project>
