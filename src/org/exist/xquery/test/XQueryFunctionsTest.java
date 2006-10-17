@@ -37,10 +37,6 @@ public class XQueryFunctionsTest extends TestCase {
 	private Collection root = null;
 	private Database database = null;
 	
-	private final static String TEST_COLLECTION = "/db/test";
-	private final static String BINARY_RESOURCE_FILENAME = "logo.jpg";
-	private final static String XML_RESOURCE_FILENAME = "logo.xml";
-	
 	public static void main(String[] args) throws XPathException {
 		TestRunner.run(XQueryFunctionsTest.class);
 	}
@@ -748,24 +744,23 @@ public class XQueryFunctionsTest extends TestCase {
     
     public void bugtestBase64BinaryCast()
 	{
+    	final String TEST_BINARY_COLLECTION = "testBinary";
+    	final String TEST_COLLECTION = "/db/" + TEST_BINARY_COLLECTION;
+    	final String BINARY_RESOURCE_FILENAME = "logo.jpg";
+    	final String XML_RESOURCE_FILENAME = "logo.xml";
+    	
     	try
     	{
     		//create a test collection
 	    	CollectionManagementService colService = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
-			Collection testCollection = colService.createCollection("test");
+			Collection testCollection = colService.createCollection(TEST_BINARY_COLLECTION);
 			assertNotNull(testCollection);
 			
 			//store the eXist logo in the test collection
 			File fLogo = new File("webapp/" + BINARY_RESOURCE_FILENAME);
-			/*BufferedInputStream is = new BufferedInputStream(new FileInputStream(fLogo));
-			int logoSize = is.available();
-			byte[] bufLogo = new byte[logoSize];
-			is.read(bufLogo);
-			is.close();*/
 			BinaryResource br = (BinaryResource)testCollection.createResource(BINARY_RESOURCE_FILENAME, "BinaryResource");
-			//br.setContent(bufLogo);
 			br.setContent(fLogo);
-			root.storeResource(br);
+			testCollection.storeResource(br);
 	    	
 			//create an XML resource with the logo base64 embedded in it
 			String queryStore = "xquery version \"1.0\";\n\n"
@@ -789,11 +784,6 @@ public class XQueryFunctionsTest extends TestCase {
 			System.out.println("testBase64Binary: XMLDBException: "+e);
 			fail(e.getMessage());
 		}
-		/*catch(IOException e)
-		{
-			System.out.println("testBase64Binary: XMLDBException: "+e);
-			fail(e.getMessage());
-		}*/
 	}
     
 	
