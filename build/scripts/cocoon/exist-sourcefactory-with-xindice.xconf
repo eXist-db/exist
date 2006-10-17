@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+
+<xconf xpath="/cocoon/source-factories/component-instance[@name='xmldb']"
+       unless="driver[@type='xmldb']">
+        <driver class="org.exist.xmldb.DatabaseImpl" type="exist"/>
+</xconf>

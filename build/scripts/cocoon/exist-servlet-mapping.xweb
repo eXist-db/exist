@@ -1,0 +1,47 @@
+<xweb xpath="/web-app"
+      unless="comment()[contains(., 'Servlet mapping for eXist')]"
+      insert-after="servlet-mapping[position() = 1]">
+
+    <!-- Servlet mapping for eXist -->
+    
+    <!-- XMLRPC -->
+    <servlet-mapping>
+        <servlet-name>org.exist.xmlrpc.RpcServlet</servlet-name>
+        <url-pattern>/xmlrpc</url-pattern>
+    </servlet-mapping>
+
+    <!-- REST new mapping-->
+    <servlet-mapping>
+        <servlet-name>EXistServlet</servlet-name>
+        <url-pattern>/rest/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- REST original mapping-->
+    <servlet-mapping>
+        <servlet-name>EXistServlet</servlet-name>
+        <url-pattern>/servlet/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- webDAV -->
+    <servlet-mapping>
+        <servlet-name>WebDAVServlet</servlet-name>
+        <url-pattern>/webdav/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- XQuery (not for database stored queries) -->
+    <servlet-mapping>
+        <servlet-name>XQueryServlet</servlet-name>
+        <url-pattern>*.xql</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>XQueryServlet</servlet-name>
+        <url-pattern>*.xqy</url-pattern>
+    </servlet-mapping>
+
+    <!-- Java Webstart -->
+    <servlet-mapping>
+        <servlet-name>jnlp</servlet-name>
+        <url-pattern>/webstart/*</url-pattern>
+    </servlet-mapping>
+</xweb>
