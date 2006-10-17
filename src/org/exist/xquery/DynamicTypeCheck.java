@@ -86,7 +86,8 @@ public class DynamicTypeCheck extends AbstractExpression {
 								item.getStringValue() + ")'");
 					}
 				//Then, if numeric, try to refine the type					
-				} else if (Type.subTypeOf(requiredType, Type.NUMBER) && Type.subTypeOf(type, Type.NUMBER)) {
+				//xs:decimal(3) treat as xs:integer 
+				} else if (Type.subTypeOf(requiredType, Type.NUMBER) && Type.subTypeOf(type, requiredType)) {
 					try {
 						item = item.convertTo(requiredType);
 					//No way
@@ -96,7 +97,10 @@ public class DynamicTypeCheck extends AbstractExpression {
 								item.getStringValue() + ")'");
 					}
 				//Then, if duration, try to refine the type					
-				} else if (Type.subTypeOf(requiredType, Type.DURATION) && Type.subTypeOf(type, Type.DURATION)) {
+				//No test on the type hierarchy ; this has to pass :
+				//fn:months-from-duration(xs:duration("P1Y2M3DT10H30M"))
+				//TODO : find a way to enforce the test (by making a difference between casting and treating as ?)
+				} else if (Type.subTypeOf(requiredType, Type.DURATION) /*&& Type.subTypeOf(type, requiredType)*/) {
 					try {
 						item = item.convertTo(requiredType);
 					//No way
@@ -107,7 +111,13 @@ public class DynamicTypeCheck extends AbstractExpression {
 					}
 					
 				} else
-					throw new XPathException(expression.getASTNode(), "FOCH0002: Required type is " + 
+					if (!(Type.subTypeOf(type, requiredType))) {
+						throw new XPathException(expression.getASTNode(), "FORG0001: " + 
+								Type.getTypeName(item.getType()) + "(" + item.getStringValue() + 
+								") is not a sub-type of " + Type.getTypeName(requiredType));
+						
+					} else
+						throw new XPathException(expression.getASTNode(), "FOCH0002: Required type is " + 
 							Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
 							item.getStringValue() + ")'");
 			}
