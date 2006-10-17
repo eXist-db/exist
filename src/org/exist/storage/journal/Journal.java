@@ -264,6 +264,8 @@ public class Journal {
      * 
      */
     private void flushBuffer() {
+        if (currentBuffer == null)
+            return; // the db has probably shut down already
         synchronized (latch) {
             try {
                 if (currentBuffer.position() > 0) {
@@ -426,7 +428,9 @@ public class Journal {
 	 * @param txnId
 	 */
     public void shutdown(long txnId) {
-    	if (!BrokerPool.FORCE_CORRUPTION) {
+        if (currentBuffer == null)
+            return; // the db has probably shut down already
+        if (!BrokerPool.FORCE_CORRUPTION) {
 	    	try {
 				writeToLog(new Checkpoint(txnId));
 			} catch (TransactionException e) {

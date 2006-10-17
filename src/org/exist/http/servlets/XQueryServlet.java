@@ -275,14 +275,14 @@ public class XQueryServlet extends HttpServlet {
         
         //-------------------------------
         
-        URI baseUri;
-        try {
-            baseUri = new URI(request.getScheme(),
-                    null/*user info?*/, request.getLocalName(), request.getLocalPort(),
-                    request.getRequestURI(), null, null);
-        } catch(URISyntaxException e) {
-            baseUri = null;
-        }
+//        URI baseUri;
+//        try {
+//            baseUri = new URI(request.getScheme(),
+//                    null/*user info?*/, request.getLocalName(), request.getLocalPort(),
+//                    request.getRequestURI(), null, null);
+//        } catch(URISyntaxException e) {
+//            baseUri = null;
+//        }
         
         String requestPath = request.getRequestURI();
         int p = requestPath.lastIndexOf("/");

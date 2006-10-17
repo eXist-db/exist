@@ -43,7 +43,7 @@ public class JnlpJarFiles {
     // Names of core jar files sans ".jar" extension.
     // Use %latest% token in place of a version string.
     private String jars[] = new String[]{
-                "antlr", 
+                "antlr-%latest%", 
                 "commons-pool-%latest%",
                 "excalibur-cli-%latest%", 
                 "jEdit-syntax",

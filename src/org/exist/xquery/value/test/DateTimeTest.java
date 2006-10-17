@@ -251,6 +251,12 @@ public class DateTimeTest extends AbstractTimeRelatedTestCase {
 		assertFalse(v1.compareTo(null, Constants.GTEQ, v2));
 		assertTrue(v1.compareTo(null, Constants.LTEQ, v2));
 	}
+	
+	public void testCompare8() throws XPathException {
+		AbstractDateTimeValue v1 = new DateTimeValue("2006-09-14T04:15:16.559+04:00"), v2 = new DateTimeValue("2006-10-14T04:15:16.559+04:00");
+		assertEquals(Constants.INFERIOR, v1.compareTo(v2));
+	}
+	
 	public void testMinMax1() throws XPathException {
 		AbstractDateTimeValue v1 = new DateTimeValue("2002-04-02T12:00:00"), v2 = new DateTimeValue("2002-04-02T17:00:00");
 		assertDateEquals(v2, v1.max(null, v2));
