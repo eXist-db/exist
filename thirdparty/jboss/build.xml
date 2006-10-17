@@ -62,7 +62,7 @@
             <fileset dir="${build}" includes="org/exist/jboss/**" />
 
             <zipfileset dir="${server.lib}/core"
-                      includes="antlr.jar,
+                      includes="antlr-*.jar,
                                 commons-pool-*.jar,
                                 resolver.jar,
                                 xmlrpc-*.jar,
