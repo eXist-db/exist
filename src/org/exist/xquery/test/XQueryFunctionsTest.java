@@ -332,7 +332,7 @@ public class XQueryFunctionsTest extends TestCase {
             } catch (XMLDBException e) {
                 message = e.getMessage();
             }
-            assertTrue(message.indexOf("FOCH0002") > -1);		            
+            assertTrue(message.indexOf("FORG0001") > -1);		            
 			
 		} catch (XMLDBException e) {
 			e.printStackTrace();
@@ -378,7 +378,7 @@ public class XQueryFunctionsTest extends TestCase {
             } catch (XMLDBException e) {
                 message = e.getMessage();
             }
-            assertTrue(message.indexOf("FOCH0002") > -1);				
+            assertTrue(message.indexOf("FORG0001") > -1);				
 			
 
 		} catch (XMLDBException e) {
