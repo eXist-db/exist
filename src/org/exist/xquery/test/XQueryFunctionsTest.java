@@ -742,7 +742,7 @@ public class XQueryFunctionsTest extends TestCase {
     	}
     }
     
-    public void bugtestBase64BinaryCast()
+    public void testBase64BinaryCast()
 	{
     	final String TEST_BINARY_COLLECTION = "testBinary";
     	final String TEST_COLLECTION = "/db/" + TEST_BINARY_COLLECTION;
