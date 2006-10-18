@@ -60,11 +60,14 @@ public class EnclosedExpr extends PathExpr {
             if (contextItem != null)
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
-        
-		// evaluate the expression
+
+        if (contextItem != null) {
+            contextSequence = contextItem.toSequence();
+        }
+        // evaluate the expression
 		context.pushDocumentContext();
-		Sequence result = super.eval(null, null);
-		context.popDocumentContext();
+		Sequence result = super.eval(contextSequence, null);
+        context.popDocumentContext();
         
 		// create the output
 		MemTreeBuilder builder = context.getDocumentBuilder();
