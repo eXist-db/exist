@@ -7,6 +7,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
+import javax.xml.transform.OutputKeys;
+
 import org.custommonkey.xmlunit.DetailedDiff;
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.exist.storage.DBBroker;
@@ -369,7 +371,7 @@ public class XQueryTest extends XMLTestCase {
 			assertEquals( "XQuery: " + query, "a", ((XMLResource)result.getResource(1)).getContent());
 			
             System.out.println("testVariable 3: ========" );
-			query = "declare variable $foo {\"foo1\"};\n"				
+            query = "declare variable $foo {\"foo1\"};\n"				
 				+ "let $foo := \"foo2\" \n"
 				+ "for $bar in (1 to 1) \n"
 				+ "  let $foo := \"foo3\" \n"
@@ -431,6 +433,75 @@ public class XQueryTest extends XMLTestCase {
             fail(e.getMessage());
         }
 	}			
+	
+	public void testVirtualNodesets() {
+		ResourceSet result;
+		String query;
+		XMLResource resu;
+		boolean exceptionThrown;
+		String message;				
+		try {
+			XPathQueryService service =
+				(XPathQueryService) testCollection.getService(
+					"XPathQueryService",
+					"1.0");
+			service.setProperty(OutputKeys.INDENT, "no");
+
+			query = "let $node := (<c id='OK'><b id='cool'/></c>)/descendant::*/attribute::id " +
+			"return <a>{$node}</a>";
+		    result = service.queryResource(NUMBERS_XML, query );
+		    assertEquals( "XQuery: " + query, 1, result.getSize() );
+		    assertXMLEqual("<a id='cool'/>", ((XMLResource)result.getResource(0)).getContent().toString());    
+
+			query = "let $node := (<c id='OK'><b id='cool'/></c>)/descendant-or-self::*/child::b " +
+			"return <a>{$node}</a>";
+		    result = service.queryResource(NUMBERS_XML, query );
+		    assertEquals( "XQuery: " + query, 1, result.getSize() );
+		    assertXMLEqual("<a><b id='cool'/></a>", ((XMLResource)result.getResource(0)).getContent().toString());    
+
+			query = "let $node := (<c id='OK'><b id='cool'/></c>)/descendant-or-self::*/descendant::b " +
+				"return <a>{$node}</a>";
+		    result = service.queryResource(NUMBERS_XML, query );
+		    assertEquals( "XQuery: " + query, 1, result.getSize() );
+		    assertXMLEqual("<a><b id='cool'/></a>", ((XMLResource)result.getResource(0)).getContent().toString());    
+	    
+	    } catch (Exception e) {
+	        System.out.println("testVirtualNodesets : XMLDBException: "+e);
+	        fail(e.getMessage());
+	    }
+	}
+
+	public void testWhereClause() {
+		ResourceSet result;
+		String query;
+		XMLResource resu;
+		boolean exceptionThrown;
+		String message;				
+		try {
+			XPathQueryService service =
+				(XPathQueryService) testCollection.getService(
+					"XPathQueryService",
+					"1.0");
+			service.setProperty(OutputKeys.INDENT, "no");
+
+			query = "let $a := element node1 { " +
+			"attribute id {'id'}, "+
+			"element node1 {'1'}, "+
+			"element node2 {'2'} "+
+			"} " +
+			"for $x in $a "+
+			"where $x/@id eq 'id' " +
+			"return $x";		
+		    result = service.queryResource(NUMBERS_XML, query );
+		    assertEquals( "XQuery: " + query, 1, result.getSize() );
+		    assertXMLEqual("<node1 id='id'><node1>1</node1><node2>2</node2></node1>", 
+		    		((XMLResource)result.getResource(0)).getContent().toString());    
+		
+	    } catch (Exception e) {
+	        System.out.println("testWhereClause : XMLDBException: "+e);
+	        fail(e.getMessage());
+	    }
+	}
 	
 	public void testTypedVariables() {
 		ResourceSet result;
