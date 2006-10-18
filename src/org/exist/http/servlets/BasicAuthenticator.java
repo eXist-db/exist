@@ -28,10 +28,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 
-import org.apache.xmlrpc.Base64;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
+import org.exist.util.Base64Decoder;
 
 /**
  * @author wolf
@@ -57,7 +57,9 @@ public class BasicAuthenticator implements Authenticator {
 			sendChallenge(request, response);
 			return null;
 		}
-		byte[] c = Base64.decode(credentials.substring("Basic ".length()).getBytes());
+		Base64Decoder dec = new Base64Decoder();
+		dec.translate(credentials.substring("Basic ".length()));
+		byte[] c = dec.getByteArray();
 		String s = new String(c);
                 //LOG.debug("BASIC auth credentials: "+s);
 		int p = s.indexOf(':');
