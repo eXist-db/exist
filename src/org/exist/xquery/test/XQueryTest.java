@@ -460,10 +460,16 @@ public class XQueryTest extends XMLTestCase {
 		    assertXMLEqual("<a><b id='cool'/></a>", ((XMLResource)result.getResource(0)).getContent().toString());    
 
 			query = "let $node := (<c id='OK'><b id='cool'/></c>)/descendant-or-self::*/descendant::b " +
-				"return <a>{$node}</a>";
+			"return <a>{$node}</a>";
 		    result = service.queryResource(NUMBERS_XML, query );
 		    assertEquals( "XQuery: " + query, 1, result.getSize() );
 		    assertXMLEqual("<a><b id='cool'/></a>", ((XMLResource)result.getResource(0)).getContent().toString());    
+
+			query = "let $doc := <a id='a'><b id='b'/></a> " +
+			"return $doc/*/(<id>{@id}</id>)";
+		    result = service.queryResource(NUMBERS_XML, query );
+		    assertEquals( "XQuery: " + query, 1, result.getSize() );
+		    assertXMLEqual("<id id='b' />", ((XMLResource)result.getResource(0)).getContent().toString());    
 	    
 	    } catch (Exception e) {
 	        System.out.println("testVirtualNodesets : XMLDBException: "+e);
