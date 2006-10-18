@@ -21,10 +21,6 @@
  */
 package org.exist.xquery.value;
 
-import java.io.UnsupportedEncodingException;
-import java.text.Collator;
-
-import org.apache.xmlrpc.Base64;
 import org.exist.xquery.XPathException;
 
 public class HexBinary extends BinaryValue {

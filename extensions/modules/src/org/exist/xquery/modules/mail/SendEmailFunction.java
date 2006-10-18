@@ -57,7 +57,7 @@ import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Type;
 
 //send-email specific imports
-import org.apache.xmlrpc.Base64;
+import org.exist.util.Base64Encoder;
 import org.w3c.dom.Node;
 
 /**
@@ -747,7 +747,9 @@ public class SendEmailFunction extends BasicFunction
 	 */
 	private String encode64 (String str) throws java.io.UnsupportedEncodingException
 	{
-        String result = new String(Base64.encode(str.getBytes(charset)));
+		Base64Encoder enc = new Base64Encoder();
+		enc.translate(str.getBytes(charset));
+		String result = new String(enc.getCharArray());
         result = result.substring(0,result.length()-1);
         result = result.replaceAll("\n","?=\n =?UTF-8?B?");
         result = "=?"+charset+"?B?" + result + "?=";
