@@ -249,7 +249,8 @@ public abstract class Function extends PathExpr {
 						new NameTest(type.getPrimaryType(), type.getNodeName()), expr);
 			return expr;
 		}
-		
+	
+		//Loose argument check : we may move this, or a part hereof, to UntypedValueCheck
 		if (context.isBackwardsCompatible()) {
 			if (Type.subTypeOf(type.getPrimaryType(), Type.STRING)) {
 				if (!Type.subTypeOf(returnType, Type.ATOMIC)) {
@@ -269,17 +270,28 @@ public abstract class Function extends PathExpr {
                             new Error(Error.FUNC_PARAM_TYPE, String.valueOf(argPosition), mySignature));
 				returnType = type.getPrimaryType();
 			}
-		}
-
-		// if the required type is an atomic type, convert the argument to an atomic 
-		if (Type.subTypeOf(type.getPrimaryType(), Type.ATOMIC)) {
-			if(!Type.subTypeOf(returnType, Type.ATOMIC))
-				expr = new Atomize(context, expr);
-			if (!(type.getPrimaryType() == Type.ATOMIC))
-				expr =
-					new UntypedValueCheck(context, type.getPrimaryType(), expr, 
-                            new Error(Error.FUNC_PARAM_TYPE, String.valueOf(argPosition), mySignature));
-			returnType = expr.returnsType();
+			// if the required type is an atomic type, convert the argument to an atomic 
+			if (Type.subTypeOf(type.getPrimaryType(), Type.ATOMIC)) {
+				if(!Type.subTypeOf(returnType, Type.ATOMIC))
+					expr = new Atomize(context, expr);
+				if (!(type.getPrimaryType() == Type.ATOMIC))
+					expr =
+						new UntypedValueCheck(context, type.getPrimaryType(), expr, 
+	                            new Error(Error.FUNC_PARAM_TYPE, String.valueOf(argPosition), mySignature));
+				returnType = expr.returnsType();
+			}
+		//Strict argument check : we may move this, or a part hereof, to UntypedValueCheck
+		} else {
+			// if the required type is an atomic type, convert the argument to an atomic 
+			if (Type.subTypeOf(type.getPrimaryType(), Type.ATOMIC)) {
+				if(!Type.subTypeOf(returnType, Type.ATOMIC))
+					expr = new Atomize(context, expr);
+				//if (!(type.getPrimaryType() == Type.ATOMIC))
+					expr =
+						new UntypedValueCheck(context, type.getPrimaryType(), expr, 
+	                            new Error(Error.FUNC_PARAM_TYPE, String.valueOf(argPosition), mySignature));
+				returnType = expr.returnsType();
+			}
 		}
 
 		if (returnType != Type.ITEM && !Type.subTypeOf(returnType, type.getPrimaryType())) {
