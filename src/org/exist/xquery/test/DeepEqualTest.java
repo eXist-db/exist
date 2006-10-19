@@ -368,6 +368,21 @@ public class DeepEqualTest extends TestCase {
           "return deep-equal($expected, $got)";
         	assertQuery(true,query);
         }
+        
+         public void testSequenceError1() {
+        	String query = "declare namespace ds = \"http://www.test.com/SequenceError\"; "
+                        +"declare function ds:result(  $current as element(Result)?, "
+                        +"$value  as element(Value)?) as element(Result) {"
+                        +"<Result> <Value>{ ($current/Value/node(), $value/node()) }</Value> </Result> };"
+                        +"let $v1 := <Value>1234</Value> " 
+                        +"let $result1 := ds:result((), $v1) "
+                        +"let $v2 := <Value>abcd</Value> "
+                        +"let $expected := <Value>{($v1, $v2)/node()}</Value> "
+                        +"let $result2 := ds:result($result1, $v2) "
+                        +"return deep-equal($expected, $result2/Value)";
+                assertQuery(true,query);
+        };
+
 
 	
 	public void testNSElements1() {
