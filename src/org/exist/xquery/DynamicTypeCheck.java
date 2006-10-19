@@ -109,7 +109,18 @@ public class DynamicTypeCheck extends AbstractExpression {
 								Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
 								item.getStringValue() + ")'");
 					}
-					
+				//Then, if date, try to refine the type					
+				//No test on the type hierarchy
+				//TODO : find a way to enforce the test (by making a difference between casting and treating as ?)
+				} else if (Type.subTypeOf(requiredType, Type.DATE) /*&& Type.subTypeOf(type, requiredType)*/) {
+					try {
+						item = item.convertTo(requiredType);
+					//No way
+					} catch (XPathException e) {
+						throw new XPathException(expression.getASTNode(), "FOCH0002: Required type is " + 
+								Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
+								item.getStringValue() + ")'");
+					}					
 				} else
 					if (!(Type.subTypeOf(type, requiredType))) {
 						throw new XPathException(expression.getASTNode(), "FORG0001: " + 
