@@ -643,9 +643,19 @@
                                             </para>
                                         </listitem>
                                         <listitem>
-                                            <para><option>xs:integer </option> (NOTE: integers are
+                                            <para>
+                                                <option>xs:dateTime</option>
+                                            </para>
+                                        </listitem>
+                                        <listitem>
+                                            <para><option>xs:integer</option> (NOTE: integers are
                                                 limited to the range of values that can be
                                                 represented by a Java signed long).</para>
+                                        </listitem>
+                                        <listitem>
+                                            <para>
+                                                <option>xs:double</option>
+                                            </para>
                                         </listitem>
                                         <listitem>
                                             <para>
@@ -689,12 +699,17 @@
                 <title>Query to List Index Contents</title>
                 <programlisting><![CDATA[declare namespace f="http://exist-db.org/xquery/test";
 declare function f:term-callback($term as xs:string, $data as xs:int+) as element() {
-   <entry><term>{$term}</term></entry>
+   <entry>
+     <term>{$term}</term>
+     <frequency>{$data[1]}</frequency>
+     <documents>{$data[2]}</documents>
+     <position>{$data[3]}</position>     
+   </entry>
 };
 util:index-keys(//city/name, "T", util:function("f:term-callback", 2), 1000)]]></programlisting>
             </example>
             <para>This query will show you all keys (starting with the letter 'T') indexed for the element selected by the 
-                path expression <option>//city/name</option>.</para>
+                path expression <option>//city/name</option> together with some information about this key.</para>
         </section>
     </chapter>
 </book>
