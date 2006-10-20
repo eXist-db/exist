@@ -121,7 +121,7 @@ public class DocumentUpdateTest extends TestCase {
                 +"let $xxx := update delete $doc//@*"
                 +"return $doc";
 
-        String query2="let $doc := doc(\"/db/data/docs/test/marktest7.xml\") "
+        String query2="let $doc := doc(\"/db/marktest7.xml\") "
                 +"return "
                 +"( for $elem in $doc//* "
                 +"return update insert attribute AAA {\"BBB\"} into $elem, $doc) ";
