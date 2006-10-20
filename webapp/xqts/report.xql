@@ -24,9 +24,9 @@ declare function xqts:initialize() as element() {
             let $home := system:get-exist-home()
             let $pathSep := util:system-property("file.separator")
     		let $dir :=
-				if (doc-available(concat("file:///", system:module-load-path(), "/config.xml")))
+				if (doc-available(concat("file:///", system:get-module-load-path(), "/config.xml")))
 				then
-					system:module-load-path()
+					system:get-module-load-path()
         		else if(ends-with($home, "WEB-INF")) then
         	    	concat(substring-before($home, "WEB-INF"), "xqts")
         		else
@@ -41,9 +41,9 @@ declare function xqts:import-stylesheet() as xs:string* {
     let $home := system:get-exist-home()
     let $pathSep := util:system-property("file.separator")
     let $dir :=
-			if (doc-available(concat("file:///", system:module-load-path(), "config.xml")))
+			if (doc-available(concat("file:///", system:get-module-load-path(), "config.xml")))
 			then
-				concat(system:module-load-path())
+				concat(system:get-module-load-path())
         	else if(ends-with($home, "WEB-INF")) then
         	    concat(substring-before($home, "WEB-INF"), "xqts")
         	else
