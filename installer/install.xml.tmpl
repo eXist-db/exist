@@ -20,7 +20,7 @@
     </resources>
 
 	<jar src="tools/izpack/clinstaller.jar" stage="install"/>
-	<jar src="lib/core/excalibur-cli-1.0.jar" stage="install"/>
+	<!--jar src="lib/core/excalibur-cli-1.0.jar" stage="install"/-->
 
     <native type="izpack" name="ShellLink.dll"/>
     <variables>
@@ -33,7 +33,7 @@
         <panel classname="InstallPanel"/>
         <panel classname="ShortcutPanel"/>
         <panel classname="HTMLInfoPanel"/>
-        <!--panel classname="FinishPanel"/-->
+        <panel classname="FinishPanel"/>
     </panels>
     <packs>
         <pack name="core" required="yes">
