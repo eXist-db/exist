@@ -26,12 +26,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.Writer;
-import java.util.List;
-
-import org.apache.avalon.excalibur.cli.CLArgsParser;
-import org.apache.avalon.excalibur.cli.CLOption;
-import org.apache.avalon.excalibur.cli.CLOptionDescriptor;
-import org.apache.avalon.excalibur.cli.CLUtil;
 
 import com.izforge.izpack.installer.AutomatedInstaller;
 
@@ -43,13 +37,6 @@ public class CommandLineInstaller {
 
 	private final static int HELP_OPT = 'h';
 	private final static int PATH_OPT = 'p';
-	
-	private final static CLOptionDescriptor OPTIONS[] = new CLOptionDescriptor[] {
-        new CLOptionDescriptor( "help", CLOptionDescriptor.ARGUMENT_DISALLOWED,
-				HELP_OPT, "print help on command line options and exit." ),
-        new CLOptionDescriptor( "path", CLOptionDescriptor.ARGUMENT_REQUIRED,
-				PATH_OPT, "the directory where eXist should be installed.")
-	};
 	
 	/**
 	 * 
@@ -71,55 +58,57 @@ public class CommandLineInstaller {
  			// so we use Class.forName to force lazy loading.
  			Class.forName("com.izforge.izpack.installer.GUIInstaller").newInstance();
  		} else {
-			CLArgsParser optParser = new CLArgsParser( args, OPTIONS );
-			if(optParser.getErrorString() != null) {
-	            System.err.println( "ERROR: " + optParser.getErrorString());
-	            return;
-	        }
-	        List opt = optParser.getArguments();
-			int size = opt.size();
-			String installPath = System.getProperty("user.home") + "/eXist";
-	        CLOption option;
-			for(int i = 0; i < size; i++) {
-	            option = (CLOption)opt.get(i);
-	            switch(option.getId()) {
-	                case HELP_OPT :
-	                    printHelp();
-	                    return;
-	                case PATH_OPT :
-						installPath = option.getArgument();
-						break;
-	            }
-			}
-			
-			String filename = File.createTempFile("inst", ".xml").toString();
-			Writer w = new BufferedWriter(new FileWriter(filename));
-			w.write("<AutomatedInstallation langpack=\"eng\">\n");
-			w.write("<com.izforge.izpack.panels.HelloPanel/>\n" + 
-					"    <com.izforge.izpack.panels.PacksPanel>\n" + 
-					"        <selected>\n" + 
-					"            <pack index=\"0\"/>\n" + 
-					"            <pack index=\"1\"/>\n" + 
-					"            <pack index=\"2\"/>\n" + 
-					"        </selected>\n" + 
-					"    </com.izforge.izpack.panels.PacksPanel>\n");
-			w.write("<com.izforge.izpack.panels.TargetPanel>\n" + 
-					"        <installpath>" + installPath + "</installpath>\n" + 
-					"    </com.izforge.izpack.panels.TargetPanel>\n");
-			w.write("<com.izforge.izpack.panels.InstallPanel/>\n");
-			w.write("<com.izforge.izpack.panels.FinishPanel/>\n");
-			w.write("</AutomatedInstallation>");
+            String installPath = System.getProperty("user.home") + "/eXist";
+            for(int i = 0; i < args.length; i++) {
+                if (args[i].equals("-h")) {
+                    printHelp();
+                    return;
+                } else if (args[i].equals("-p")) {
+                    if (++i == args.length) {
+                        System.out.println("Option -p requires an argument: the path to the directory " +
+                                "where you want to have eXist installed.");
+                        return;
+                    }
+                    installPath = args[i];
+                }
+            }
+			System.out.println("Installing into directory: " + installPath);
+            
+            String filename = File.createTempFile("inst", ".xml").getAbsolutePath();
+            Writer w = new FileWriter(filename);
+            w.write(
+                    "<?xml version=\"1.0\"?>" +
+                    "<AutomatedInstallation langpack=\"en\">" +
+                    "    <com.izforge.izpack.panels.HelloPanel/>" +
+                    "    <com.izforge.izpack.panels.PacksPanel>" +
+                    "        <pack name=\"core\" index=\"0\" selected=\"true\"/>" +
+                    "        <pack name=\"sources\" index=\"1\" selected=\"true\"/>" +
+                    "        <pack name=\"javadoc\" index=\"2\" selected=\"true\"/>" +
+                    "    </com.izforge.izpack.panels.PacksPanel>" +
+                    "    <com.izforge.izpack.panels.TargetPanel>" +
+                    "        <installpath>" + installPath + "</installpath>" +
+                    "    </com.izforge.izpack.panels.TargetPanel>" +
+                    "    <com.izforge.izpack.panels.InstallPanel/>" +
+                    "    <com.izforge.izpack.panels.ShortcutPanel/>" +
+                    "    <com.izforge.izpack.panels.HTMLInfoPanel/>" +
+                    "    <com.izforge.izpack.panels.FinishPanel/>" +
+                    "</AutomatedInstallation>"
+            );
 			w.close();
 			
 			new AutomatedInstaller(filename);
-			
-			new File(filename).delete();
+
+            new File(filename).delete();
  		}
 	}
 	
 	private static void printHelp() {
         System.out.println("Usage: java " + CommandLineInstaller.class.getName() + " [options]");
-        System.out.println(CLUtil.describeOptions(OPTIONS).toString());
+        System.out.println("Options:");
+        System.out.println("    -p install-path");
+        System.out.println("        Install eXist with default options and no GUI into directory 'install-path'");
+        System.out.println("    -h");
+        System.out.println("        Print this help message and exit");
     }
 	
 	/**
