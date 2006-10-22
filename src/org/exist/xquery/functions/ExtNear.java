@@ -65,7 +65,7 @@ public class ExtNear extends ExtFulltext {
 	 * @see org.exist.xquery.functions.ExtFulltext#analyze(org.exist.xquery.AnalyzeContextInfo)
 	 */
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-		super.analyze(contextInfo);
+		super.analyze(new AnalyzeContextInfo(contextInfo));
 
 		if (maxDistance != null) {
 			maxDistance.analyze(contextInfo);
@@ -103,11 +103,6 @@ public class ExtNear extends ExtFulltext {
 
 	private Sequence exactMatch(XQueryContext context, NodeSet result) {
 		// walk through hits and calculate term-distances
-		
-		
-		
-		
-		 
 		NodeSet r = new ExtArrayNodeSet();
 		final Tokenizer tok = context.getBroker().getTextEngine().getTokenizer();
         String term;
