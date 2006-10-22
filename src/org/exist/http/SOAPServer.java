@@ -24,15 +24,22 @@ package org.exist.http;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
+import java.util.Enumeration;
+import java.util.Properties;
+import java.util.HashMap;
 
+
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TemplatesHandler;
@@ -46,8 +53,8 @@ import org.exist.http.servlets.HttpRequestWrapper;
 import org.exist.http.servlets.HttpResponseWrapper;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.http.servlets.ResponseWrapper;
-import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.memtree.MemTreeBuilder;
+import org.exist.memtree.SAXAdapter;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.Source;
@@ -71,6 +78,7 @@ import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
@@ -89,10 +97,11 @@ public class SOAPServer
 	private final static String ENCODING = "UTF-8";
 	private final static String SEPERATOR = System.getProperty("line.separator");
 	private final static String XSLT_WEBSERVICE_WSDL = "/db/system/webservice/wsdl.xslt";
-	private final static String XSLT_WEBSERVICE_DESCRIPTION = "/db/system/webservice/description.xslt";
-	private final static String XSLT_WEBSERVICE_FUNCTION = "/db/system/webservice/function.xslt";
+	private final static String XSLT_WEBSERVICE_HUMAN_DESCRIPTION = "/db/system/webservice/human.description.xslt";
+	private final static String XSLT_WEBSERVICE_FUNCTION_DESCRIPTION = "/db/system/webservice/function.description.xslt";
 	public final static String WEBSERVICE_MODULE_EXTENSION = ".xqws";
 
+	private HashMap XQWSDescriptionsCache = new HashMap();
 	
     //TODO: SHARE THIS FUNCTION WITH RESTServer (copied at the moment)
 	private final static String QUERY_ERROR_HEAD =
@@ -119,7 +128,12 @@ public class SOAPServer
         "<body>" +
         "<h1>XQuery Error</h1>";
 	
-	//Constructor
+	/**
+	 * Constructor
+	 * 
+	 * @param formEncoding	The character encoding method to be used for form data
+	 * @param containerEncoding	The character encoding method to be used for the container  
+	 */
     public SOAPServer(String formEncoding, String containerEncoding)
     {
         this.formEncoding = formEncoding;
@@ -131,7 +145,6 @@ public class SOAPServer
      * 
      * @param broker 	The Database Broker to use
      * @param path		The Path to the XQWS
-     * @param docXQWS	A reference to a Binary Document, will be the XQWS file when the function returns
      * 
      * @return	The XQWS BinaryDocument
      */
@@ -148,6 +161,11 @@ public class SOAPServer
     
     /**
      * Gets the data from an XQWS Binary Document
+     * 
+     * @param broker	The Database Broker to use
+     * @param docXQWS	The XQWS Binary Document
+     * 
+     * @return	byte array containing the content of the XQWS Binary document
      */
     private byte[] getXQWSData(DBBroker broker, BinaryDocument docXQWS)
     {
@@ -164,7 +182,8 @@ public class SOAPServer
      * @return The namespace QName
      */
     private QName getXQWSNamespace(byte[] xqwsData)
-    {        
+    {   
+    	//move through the xqws char by char checking if a line contains the module namespace declaration     
         StringBuffer sbNamespace = new StringBuffer();
         ByteArrayInputStream bis = new ByteArrayInputStream(xqwsData);
         while(bis.available() > 0)
@@ -193,7 +212,19 @@ public class SOAPServer
         //return the XQWS namespace
         return new QName(namespaceName, namespaceURL);
     }
-    
+
+    /**
+     * Compiles an XQuery or returns a cached version if one exists
+     * 
+     * @param broker	The Database Broker to use
+     * @param xqSource	The XQuery source
+     * @param staticallyKnownDocuments	An array of XmldbURI's for documents that should be considered statically known by the XQuery
+     * @param xqwsCollectionUri	The XmldbUri of the collection where the XQWS resides
+     * @param request	The HttpServletRequest for the XQWS
+     * @param response	The HttpServletResponse for the XQWS
+     * 
+     * @return The compiled XQuery
+     */
     private CompiledXQuery compileXQuery(DBBroker broker, Source xqSource, XmldbURI[] staticallyKnownDocuments, XmldbURI xqwsCollectionUri, HttpServletRequest request, HttpServletResponse response) throws XPathException
     {
     	//Get the xquery service
@@ -242,7 +273,17 @@ public class SOAPServer
         return compiled;
     }
     
-    private CompiledXQuery SimpleXQueryIncludeModule(DBBroker broker, XmldbURI xqwsFileUri, QName xqwsNamespace, XmldbURI xqwsCollectionUri, HttpServletRequest request, HttpServletResponse response) throws XPathException
+    /**
+     * Creates a simple XQuery to include an XQWS
+     * 
+     * @param broker	The Database Broker to use
+     * @param xqwsFileUri	The XmldbURI of the XQWS file
+     * @param xqwsNamespace	The namespace of the xqws
+     * @param xqwsCollectionUri	The XmldbUri of the collection where the XQWS resides
+     * 
+     * @return The compiled XQuery
+     */
+    private CompiledXQuery SimpleXQueryIncludeXQWS(DBBroker broker, XmldbURI xqwsFileUri, QName xqwsNamespace, XmldbURI xqwsCollectionUri) throws XPathException
     {
         //Create a simple XQuery wrapper to access the module
         String query = "xquery version \"1.0\";" + SEPERATOR;
@@ -250,6 +291,30 @@ public class SOAPServer
         query += "import module namespace " + xqwsNamespace.getLocalName() + "=\"" + xqwsNamespace.getNamespaceURI() + "\" at \"" + xqwsFileUri.toString() + "\";" + SEPERATOR;
         query += SEPERATOR;
         query += "()";
+        
+        //compile the query
+        return compileXQuery(broker, new StringSource(query), new XmldbURI[] { xqwsCollectionUri}, xqwsCollectionUri, null, null);
+    }
+    
+
+    private CompiledXQuery XQueryExecuteXQWSFunction(DBBroker broker, XmldbURI xqwsFileUri, QName xqwsNamespace, XmldbURI xqwsCollectionUri, Node xqwsSOAPFunction, HttpServletRequest request, HttpServletResponse response) throws XPathException
+    {
+    	String query = "xquery version \"1.0\";" + SEPERATOR;
+        query += SEPERATOR;
+        query += "import module namespace " + xqwsNamespace.getLocalName() + "=\"" + xqwsNamespace.getNamespaceURI() + "\" at \"" + xqwsFileUri.toString() + "\";" + SEPERATOR;
+        query += SEPERATOR;
+        //query += "()";
+        
+        String functionName = xqwsSOAPFunction.getNodeName();
+        query += xqwsNamespace.getLocalName() + ":" + functionName + "(";
+        
+        NodeList functionArgs = xqwsSOAPFunction.getChildNodes();
+        for(int i=0; i < functionArgs.getLength(); i++)
+        {
+        	
+        }
+        
+        query += ")";
         
         //compile the query
         return compileXQuery(broker, new StringSource(query), new XmldbURI[] { xqwsCollectionUri}, xqwsCollectionUri, request, response);
@@ -268,8 +333,6 @@ public class SOAPServer
     private void StreamTransform(DBBroker broker, org.exist.memtree.DocumentImpl docWebService, DocumentImpl docStyleSheet, HttpServletRequest request, HttpServletResponse response, String path) throws IOException
     {
         //Transform docWebservice with the stylesheet
-        MemTreeBuilder outputBuilder = new MemTreeBuilder();
-        outputBuilder.startDocument();
         try
 		{
         	/*
@@ -322,32 +385,175 @@ public class SOAPServer
 		}
     }
     
-    //proceses requests for description documents (WSDL, human readable, human readable specific function)
-	public void doGet(DBBroker broker, HttpServletRequest request, HttpServletResponse response, String path) throws BadRequestException, PermissionDeniedException, NotFoundException, IOException
+    /**
+     * Get's an XQWS Description from the cache.
+     * If the description in the cache is out of date it will be refreshed.
+     * If there is no cached description a new one is created and added
+     * to the cache.
+     * 
+     * @param broker	The Database Broker to use
+     * @param path	The path of the http request
+     * @param request	The HttpServletRequest for the XQWS
+     * 
+     * @return An object describing the XQWS
+     */
+    private XQWSDescription getXQWSDescription(DBBroker broker, String path, HttpServletRequest request) throws PermissionDeniedException, XPathException
+    {
+    	XQWSDescription description;
+    	
+    	//is there a description for this path
+    	if(XQWSDescriptionsCache.containsKey(path))
+    	{
+    		//get the description from the cache
+    		description = (XQWSDescription)XQWSDescriptionsCache.get(path);
+    		
+    		//is the description is invalid, refresh it
+    		if(!description.isValid())
+    		{
+    			description.update(request);
+    		}
+    	}
+    	else
+    	{
+        	//create a new description
+    		description = new XQWSDescription(broker, path, request);
+    	}
+    	
+    	//store description in the cache
+    	XQWSDescriptionsCache.put(path, description);
+    	
+    	//return the description
+    	return description;
+    }
+    
+	/**
+	 * HTTP GET
+	 * Processes requests for description documents - WSDL, Human Readable and Human Readable for a specific function
+	 * 
+	 * TODO: I think simple webservices can also be called using GET, so we may need to cater for that as well
+	 * but first it would be best to write the doPost() method, split the code out into functions and also use it for this.
+	 */
+    public void doGet(DBBroker broker, HttpServletRequest request, HttpServletResponse response, String path) throws BadRequestException, PermissionDeniedException, NotFoundException, IOException
 	{
     	//set the encoding
 		if (request.getCharacterEncoding() == null)
 			request.setCharacterEncoding(formEncoding);
     	
-		/* Process the request */
-		
+		/* Process the request */		
+		try
+		{
+			//Get a Description of the XQWS
+			XQWSDescription description = getXQWSDescription(broker, path, request);
+			
+			//Get the approriate description for the user
+			byte[] result = null;
+	        if(request.getParameter("WSDL") != null || request.getParameter("wsdl") != null)
+	        {
+	        	//WSDL
+	        	result = description.getWSDL();
+
+	        	//set output content type for wsdl
+	            response.setContentType("text/xml");
+	        }
+	        else if(request.getParameter("function") != null)
+	        {
+	        	//Specific Function Description
+	        	result = description.getFunctionDescription(request.getParameter("function"));
+	        }
+	        else
+	        {
+	        	//Human Readable Description
+	        	result = description.getHumanDescription();
+	        }
+			
+	        //send the description to the http servlet response
+			ServletOutputStream os = response.getOutputStream();
+			BufferedOutputStream bos = new BufferedOutputStream(os);
+			bos.write(result);
+			bos.close();
+			os.close();
+		}
+		catch(XPathException xpe)
+		{
+			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+			writeResponse(response, formatXPathException(null, path, xpe), "text/html", ENCODING);
+		}
+		catch(SAXException saxe)
+		{
+			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+			writeResponse(response, formatXPathException(null, path, new XPathException(null, "SAX exception while transforming node: " + saxe.getMessage(), saxe)), "text/html", ENCODING);
+		}
+		catch(TransformerConfigurationException tce)
+		{
+			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+			writeResponse(response, formatXPathException(null, path, new XPathException(null, "SAX exception while transforming node: " + tce.getMessage(), tce)), "text/html", ENCODING);
+		}
+    }
+	
+	//process incomoing SOAP requests
+	public void doPost(DBBroker broker, HttpServletRequest request, HttpServletResponse response, String path) throws BadRequestException, PermissionDeniedException, IOException
+    {	
 		/*
-		 * TODO: I think simple webservices can also be called using GET, so we may need to cater for that as well
-		 * but first it would be best to write the doPost() method, split the code out into functions and also use it for this.
+		 * Example incoming SOAP Request
+		 * 
+			<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+    			<SOAP-ENV:Header/>
+    			<SOAP-ENV:Body>
+        			<echo xmlns="http://localhost:8080/exist/servlet/db/echo.xqws">
+            			<arg1>adam</arg1>
+        			</echo>
+    			</SOAP-ENV:Body>
+			</SOAP-ENV:Envelope>
 		 */
 		
-		// 1) Get the xqws
+		// 1) Read the incoming SOAP request
+		java.io.BufferedInputStream is = new java.io.BufferedInputStream(request.getInputStream());
+		byte[] buf = new byte[is.available()];
+		is.read(buf);
+		
+		/*** TEMP ***/
+		System.out.println(new String(buf, "UTF-8"));
+		/*** end TEMP ***/
+		
+		// 2) Create an XML Document from the SOAP Request
+		Document soapRequest = BuildXMLDocument(buf);
+		
+		// 3) Validate the SOAP Request 
+		//TODO: validate the SOAP Request
+		
+		// 4) Extract the function call from the SOAP Request
+		NodeList nlBody = soapRequest.getElementsByTagNameNS("http://schemas.xmlsoap.org/soap/envelope/", "Body");
+		Node nBody = nlBody.item(0);
+		Node nFunction = nBody.getFirstChild();
+		
+		// 5) Check the namespace for the function in the SOAP document is the same as the request path?
+		NamedNodeMap attrs = nFunction.getAttributes();
+		String funcNamespace = attrs.getNamedItem("xmlns").getNodeValue();
+		if(!funcNamespace.equals(path))
+		{
+			//function in SOAP request has an invalid namespace
+			//TODO: suitable exception
+			System.err.println("invalid namespace");
+			return;
+		}
+		
+		/** NOTE to adam: maybe we can cache the xml
+		 * that describes the webservice so we dont
+		 * have to generate it again **/
+
+/*** start: replace with cache ***/		
+		// 6) Get the XQWS
 		BinaryDocument docXQWS = getXQWS(broker, path);
 		byte[] xqwsData = getXQWSData(broker, docXQWS);
-        
-        // 2) move through the xqws char by char checking if a line contains the module namespace declaration
+		
+        // 7) Get the XQWS Namespace
         QName xqwsNamespace = getXQWSNamespace(xqwsData);
         
-        // 3) Compile a Simple XQuery to access the module
+        // 8) Compile a Simple XQuery to access the module
         CompiledXQuery compiled;
         try
         {
-        	compiled = SimpleXQueryIncludeModule(broker, docXQWS.getFileURI(), xqwsNamespace, docXQWS.getCollection().getURI(), request, response);
+        	compiled = SimpleXQueryIncludeXQWS(broker, docXQWS.getFileURI(), xqwsNamespace, docXQWS.getCollection().getURI());
         }
         catch(XPathException e)
         {
@@ -356,83 +562,26 @@ public class SOAPServer
         	return;
         }
         
-        // 5) Inspect the XQWS and its function signatures and create a small XML document to represent it
+        // 9) Inspect the XQWS and its function signatures and create a small XML document to represent it
         Module modXQWS = compiled.getContext().getModule(xqwsNamespace.getNamespaceURI());
         org.exist.memtree.DocumentImpl docWebService = describeWebService(modXQWS, docXQWS.getFileURI(), request, path);
-        
-        // 6) Transform the XML document to either a human readable description, description of a specific function or WSDL
-		DocumentImpl docStyleSheet = null;
-		
-		//get the appropraite stylesheet
-        if(request.getParameter("WSDL") != null || request.getParameter("wsdl") != null)
-        {
-        	//WSDL
-        	docStyleSheet = broker.getXMLResource(XmldbURI.create(XSLT_WEBSERVICE_WSDL), Lock.READ_LOCK);
 
-        	//set output content type for wsdl
-            response.setContentType("text/xml");
-        }
-        else if(request.getParameter("function") != null)
-        {
-        	//Specific Function Description
-        	docStyleSheet = broker.getXMLResource(XmldbURI.create(XSLT_WEBSERVICE_FUNCTION), Lock.READ_LOCK);
-        }
-        else
-        {
-        	//Human Readable Description
-        	docStyleSheet = broker.getXMLResource(XmldbURI.create(XSLT_WEBSERVICE_DESCRIPTION), Lock.READ_LOCK);
-        }
-
-        //do the transformation to the response
-        StreamTransform(broker, docWebService, docStyleSheet, request, response, path);        
-    }   
-	 
-	//returns the node with the name "definitions" from the NodeList or its children (recursively)
-	public Node getDefinitionsNode(NodeList nl)
-    {
-		Node result = null;
-		
-        for(int i = 0; i < nl.getLength(); i ++)
-        {
-        	Node n = nl.item(i);
-        	
-        	if(n.getNodeType() == Type.ELEMENT)
-        	{
-            	if(n.getNodeName().equals("definitions"))
-            	{
-            		//found node
-            		result = n;
-            		break;
-            	}
-            	
-            	if(n.hasChildNodes())
-            	{
-            		result = getDefinitionsNode(n.getChildNodes());
-            	}
-        	}
-        }
+/*** end: replace with cache ***/        
         
-        return result;
+		// 10) Create an XQuery to call the XQWS function
+		
+		
+		
     }
 	
-	//process incomoing SOAP requests
-	public void doPost(DBBroker broker, HttpServletRequest request, HttpServletResponse response, String path) throws BadRequestException, PermissionDeniedException, IOException
-    {	
-		//read the incoming SOAP request
-		java.io.BufferedInputStream is = new java.io.BufferedInputStream(request.getInputStream());
-		byte[] buf = new byte[is.available()];
-		is.read(buf);
-		
-		//create an XML Document from the SOAP Request
-		Document soapRequest = BuildXMLDocument(buf);
-		
-		//Examine the SOAP Request
-		
-		System.out.println(new String(buf, "UTF-8"));
-    }
-	
-
-	private Document BuildXMLDocument(byte[] strXML)
+	/**
+	 * Builds an XML Document from a string representation
+	 * 
+	 * @param buf	The XML Document content
+	 * 
+	 * @return	DOM XML Document
+	 */
+	private Document BuildXMLDocument(byte[] buf)
 	{
 		try
 		{ 
@@ -440,14 +589,16 @@ public class SOAPServer
 			SAXParserFactory factory = SAXParserFactory.newInstance();
 			factory.setNamespaceAware(true);	
 			//TODO : we should be able to cope with context.getBaseURI()				
-			InputSource src = new InputSource(new ByteArrayInputStream(strXML));
+			InputSource src = new InputSource(new ByteArrayInputStream(buf));
 			SAXParser parser = factory.newSAXParser();
 			XMLReader reader = parser.getXMLReader();
-            MemTreeBuilder builder = new MemTreeBuilder();
-            DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
-			reader.setContentHandler(receiver);
+			SAXAdapter adapter = new SAXAdapter();
+            reader.setContentHandler(adapter);
+			reader.setContentHandler(adapter);
 			reader.parse(src);
-			return receiver.getDocument();
+			
+			//return receiver.getDocument();
+			return adapter.getDocument();
 		}
 		catch (ParserConfigurationException e)
 		{				
@@ -510,20 +661,8 @@ public class SOAPServer
 		builderWebserviceDoc.startElement(new QName("functions", null, null), null);
 		for(int f = 0; f < xqwsFunctions.length; f++)
         {
-			if(request.getParameter("function") != null)
-			{
-				//Specific Function Description
-				if(xqwsFunctions[f].getName().getLocalName().equals(request.getParameter("function")))
-				{
-					describeFunction(xqwsFunctions[f], builderWebserviceDoc);
-					break;
-				}
-			}
-			else
-			{
-				//All Function Descriptions
-				describeFunction(xqwsFunctions[f], builderWebserviceDoc);
-			}
+			//All Function Descriptions
+			describeFunction(xqwsFunctions[f], builderWebserviceDoc);
         }
 		builderWebserviceDoc.endElement();
 		builderWebserviceDoc.endElement();
@@ -607,12 +746,19 @@ public class SOAPServer
      */
     private void declareVariables(XQueryContext context, HttpServletRequest request, HttpServletResponse response) throws XPathException
     {
-        RequestWrapper reqw = new HttpRequestWrapper(request, formEncoding, containerEncoding);
-        ResponseWrapper respw = new HttpResponseWrapper(response);
-        //context.declareNamespace(RequestModule.PREFIX, RequestModule.NAMESPACE_URI);
-        context.declareVariable(RequestModule.PREFIX + ":request", reqw);
-        context.declareVariable(ResponseModule.PREFIX + ":response", respw);
-        context.declareVariable(SessionModule.PREFIX + ":session", reqw.getSession());
+    	if(request != null)
+    	{
+	    	RequestWrapper reqw = new HttpRequestWrapper(request, formEncoding, containerEncoding);
+	        context.declareVariable(RequestModule.PREFIX + ":request", reqw);
+	        context.declareVariable(SessionModule.PREFIX + ":session", reqw.getSession());
+    	}
+        
+    	if(response != null)
+    	{
+    		ResponseWrapper respw = new HttpResponseWrapper(response);
+    		context.declareVariable(ResponseModule.PREFIX + ":response", respw);
+    	}
+        
     }
     
     //TODO: SHARE THIS FUNCTION WITH RESTServer (copied at the moment)
@@ -662,4 +808,257 @@ public class SOAPServer
         is.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n".getBytes());
         is.write(data.getBytes(encoding));
     }
+    
+    private class XQWSDescription
+    {
+    	private DBBroker broker = null;
+    	private String HttpServletRequestURL = null;
+    	private String XQWSPath = null;
+    	
+    	//cache for internal Description of an XQWS
+    	private long lastModifiedXQWS = 0;
+    	private org.exist.memtree.DocumentImpl docXQWSDescription = null;
+    	
+    	//cache for XQWS WSDL
+    	private long lastModifiedWSDL = 0;
+    	private byte[] descriptionWSDL = null;
+    	
+    	//cache for XQWS Human Readable description
+    	private long lastModifiedHuman = 0;
+    	private byte[] descriptionHuman = null;
+    	
+    	//Cache for XQWS (Human Readable) Function description
+    	private long lastModifiedFunction = 0;
+    	HashMap descriptionFunction = new HashMap(); //key: functionName as String, value: byte[]
+    	
+    	
+    	public XQWSDescription(DBBroker broker, String XQWSPath, HttpServletRequest request) throws XPathException, PermissionDeniedException
+    	{
+    		this.broker = broker;
+    		this.HttpServletRequestURL = request.getRequestURL().toString();
+    		this.XQWSPath = XQWSPath;
+    		
+    		createInternalDescription(request);
+    	}
+    	
+    	/**
+    	 * Determines if this description of the XQWS is valid
+    	 * 
+    	 * @return true if the description is valid, false otherwise
+    	 */
+    	public boolean isValid()
+    	{
+    		BinaryDocument docXQWS = null;
+    		
+    		try
+    		{
+    			docXQWS = getXQWS(broker, XQWSPath);
+    			return (docXQWS.getMetadata().getLastModified() == lastModifiedXQWS);
+    		}
+    		catch(PermissionDeniedException e)
+    		{
+    			//TODO: log message
+    			return false;
+    		}
+    		finally
+    		{
+    			if(docXQWS != null)
+    			{
+    				docXQWS.getUpdateLock().release();
+    			}
+    		}
+    	}
+    	
+    	/**
+    	 * Updates an XQWS Description by re-reading the XQWS
+    	 * Should be called if isValid() returns false and an XQWS description is needed further 
+    	 * 
+    	 * @param request	The HttpServletRequest to update for
+    	 */
+    	public void update(HttpServletRequest request) throws XPathException, PermissionDeniedException
+    	{
+    		createInternalDescription(request);
+    	}
+
+    	/**
+    	 * Returns the WSDL for the XQWS Description
+    	 * Caches the result, however the cache is regenerated if
+    	 * the StyleSheet used for the transformation changes
+    	 * 
+    	 * @return byte array containing the WSDL
+    	 */
+    	public byte[] getWSDL() throws PermissionDeniedException, TransformerConfigurationException, SAXException 
+    	{
+    		//get the WSDL StyleSheet
+    		DocumentImpl docStyleSheet = broker.getXMLResource(XmldbURI.create(XSLT_WEBSERVICE_WSDL), Lock.READ_LOCK);
+    		
+    		//has the stylesheet changed, or is this the first call for this version
+    		if(docStyleSheet.getMetadata().getLastModified() != lastModifiedWSDL || descriptionWSDL == null)
+    		{
+    			//yes, so re-run the transformation
+    			descriptionWSDL = Transform(docStyleSheet, null);
+    			lastModifiedWSDL = docStyleSheet.getMetadata().getLastModified();
+    		}
+    		
+    		//close the Stylesheet Document and release the read lock
+			docStyleSheet.getUpdateLock().release();
+			
+			//return the result of the transformation
+			return descriptionWSDL;
+    	}
+    	
+    	/**
+    	 * Returns the Human Readable description for the XQWS Description
+    	 * Caches the result, however the cache is regenerated if
+    	 * the StyleSheet used for the transformation changes
+    	 * 
+    	 * @return byte array containing the WSDL
+    	 */
+    	public byte[] getHumanDescription() throws PermissionDeniedException, TransformerConfigurationException, SAXException 
+    	{
+    		//get the WSDL StyleSheet
+    		DocumentImpl docStyleSheet = broker.getXMLResource(XmldbURI.create(XSLT_WEBSERVICE_HUMAN_DESCRIPTION), Lock.READ_LOCK);
+    		
+    		//has the stylesheet changed, or is this the first call for this version
+    		if(docStyleSheet.getMetadata().getLastModified() != lastModifiedHuman || descriptionHuman == null)
+    		{
+    			//yes, so re-run the transformation
+    			descriptionHuman = Transform(docStyleSheet, null);
+    			lastModifiedHuman = docStyleSheet.getMetadata().getLastModified();
+    		}
+    		
+    		//close the Stylesheet Document and release the read lock
+			docStyleSheet.getUpdateLock().release();
+			
+			//return the result of the transformation
+			return descriptionHuman;
+    	}
+    	    	
+    	/**
+    	 * Returns the (Human Readable) description of a Function for the XQWS Description
+    	 * Caches the result, however the cache is regenerated if
+    	 * the StyleSheet used for the transformation changes
+    	 * 
+    	 * @param functionName The name of the function to describe
+    	 * 
+    	 * @return byte array containing the Function Description
+    	 */
+    	public byte[] getFunctionDescription(String functionName) throws PermissionDeniedException, TransformerConfigurationException, SAXException 
+    	{
+    		//get the WSDL StyleSheet
+    		DocumentImpl docStyleSheet = broker.getXMLResource(XmldbURI.create(XSLT_WEBSERVICE_FUNCTION_DESCRIPTION), Lock.READ_LOCK);
+    		
+    		//has the stylesheet changed?
+    		if(docStyleSheet.getMetadata().getLastModified() != lastModifiedFunction)
+    		{
+    			//yes, so empty the cache
+    			descriptionFunction.clear();
+    			
+    			//change the last modified date
+    			lastModifiedFunction = docStyleSheet.getMetadata().getLastModified();
+    		}
+    		
+    		//if there is not a pre-trasformed description in the cache
+    		if(!descriptionFunction.containsKey(functionName))
+    		{
+    			//do the transformation and store in the cache
+    			Properties params = new Properties();
+    			params.put("function", functionName);
+    			descriptionFunction.put(functionName, Transform(docStyleSheet, params));
+    		}
+    		
+    		//close the Stylesheet Document and release the read lock
+			docStyleSheet.getUpdateLock().release();
+			
+			//return the result of the transformation from the cache
+			return (byte[])descriptionFunction.get(functionName);
+    	}
+
+    	/**
+    	 * Creates the internal Description of the XQWS
+    	 * 
+    	 * @param request The HttpServletRequest for which the description should be created
+    	 */
+    	private void createInternalDescription(HttpServletRequest request) throws XPathException, PermissionDeniedException
+    	{
+    		// 1) Get the XQWS
+    		BinaryDocument docXQWS = getXQWS(broker, XQWSPath);
+    		byte[] xqwsData = getXQWSData(broker, docXQWS);
+            
+    		// 2) Store last modified date
+    		lastModifiedXQWS = docXQWS.getMetadata().getLastModified();
+    		
+            // 3) Get the XQWS Namespace
+            QName xqwsNamespace = getXQWSNamespace(xqwsData);
+            
+            // 4) Compile a Simple XQuery to access the module
+            CompiledXQuery compiled = SimpleXQueryIncludeXQWS(broker, docXQWS.getFileURI(), xqwsNamespace, docXQWS.getCollection().getURI());
+            
+            // 5) Inspect the XQWS and its function signatures and create a small XML document to represent it
+            Module modXQWS = compiled.getContext().getModule(xqwsNamespace.getNamespaceURI());
+            docXQWSDescription = describeWebService(modXQWS, docXQWS.getFileURI(), request, XQWSPath);
+    	}
+    	
+    	/**
+         * Transforms a document with a stylesheet
+         * 
+         * @param docStyleSheet	A stylesheet document from the db
+         * @param parameters	Any parameters to be passed to the stylesheet
+         * 
+         * @return byte array containing the result of the transformation
+         */
+        private byte[] Transform(DocumentImpl docStyleSheet, Properties parameters) throws  TransformerConfigurationException, SAXException
+        {
+            //Transform docXQWSDescription with the stylesheet
+        	
+        	/*
+        	 * TODO: the code in this try statement (apart from the WSDLFilter use) was mostly extracted from
+        	 * transform:stream-transform(), it would be better to be able to share that code somehow
+        	 */
+        	
+	        SAXTransformerFactory factory = (SAXTransformerFactory)SAXTransformerFactory.newInstance();
+			TemplatesHandler templatesHandler = factory.newTemplatesHandler();
+			templatesHandler.startDocument();
+			Serializer serializer = broker.getSerializer();
+			serializer.reset();
+			WSDLFilter wsdlfilter = new WSDLFilter(templatesHandler, HttpServletRequestURL);
+			serializer.setSAXHandlers(wsdlfilter, null);
+			serializer.toSAX(docStyleSheet);
+			templatesHandler.endDocument();
+			
+			TransformerHandler handler = factory.newTransformerHandler(templatesHandler.getTemplates());
+			
+			//set parameters, if any
+			if(parameters != null)
+			{
+				Transformer transformer = handler.getTransformer();
+				Enumeration parameterKeys = parameters.keys();
+				while(parameterKeys.hasMoreElements())
+				{
+					String paramName = (String)parameterKeys.nextElement();
+					Object paramValue = parameters.get(paramName);
+					transformer.setParameter(paramName, paramValue);
+				}
+			}
+			
+			//START send result of transformation directly to response
+			ByteArrayOutputStream os = new ByteArrayOutputStream();
+            StreamResult result = new StreamResult(os);
+            handler.setResult(result);
+			//END		
+            
+            /**
+             * TODO: Validation should be done before WSDL is sent to the client. org.exist.validation.Validator
+             * will need to make use of org.exist.validation.internal.BlockingOutputStream to connect to the Validator.
+             * 
+             */
+            
+			handler.startDocument();
+			docXQWSDescription.toSAX(broker, handler);
+			handler.endDocument();
+			
+			return os.toByteArray();
+        }
+    }
+    
 }

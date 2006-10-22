@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="2.0">
     <xsl:output method="xml" version="1.0" encoding="UTF-8" indent="yes" doctype-public="-//W3C//DTD XHTML 1.1//EN" doctype-system="http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd" media-type="text/xhtml" omit-xml-declaration="no"/>
+    <xsl:param name="function" as="xs:string"/>
     <xsl:template match="/webservice">
         <xsl:variable name="webserviceName" select="name" as="xs:string"/>
         <xsl:variable name="webserviceURL" select="URL" as="xs:string"/>
@@ -42,10 +43,10 @@
                     <span>
                         <p class="intro">Click <a href="{$webserviceURL}">here</a> for a complete list of operations.</p>
                         <h2>
-                            <xsl:value-of select="functions/function/name"/>
+                            <xsl:value-of select="functions/function[name = $function]/name"/>
                         </h2>
                         <p class="intro">
-                            <xsl:value-of select="function/function/description"/>
+                            <xsl:value-of select="function/function[name = $function]/description"/>
                         </p>
                         <p>The following is a sample SOAP request and response.  The <font class="value">placeholders</font> shown need to be replaced with actual values.</p>
                         <pre>POST <xsl:value-of select="path"/> HTTP/1.1
@@ -57,17 +58,19 @@ SOAPAction: ""
 &lt;?xml version="1.0" encoding="utf-8"?&gt;
 &lt;soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"&gt;
     &lt;soap:Body&gt;
-        &lt;<xsl:value-of select="functions/function/name"/> xmlns="<xsl:value-of select="$webserviceURL"/>"&gt;
-            <xsl:for-each select="functions/function/parameters/parameter">
-                <xsl:choose>
-                    <xsl:when test="name =''">&lt;arg<xsl:value-of select="position()"/>&gt;</xsl:when><xsl:otherwise>&lt;<xsl:value-of select="name"/>&gt;</xsl:otherwise>
-                </xsl:choose>
-                <xsl:value-of select="type"/>
-                <xsl:choose>
-                    <xsl:when test="name = ''">&lt;/arg<xsl:value-of select="position()"/>&gt;</xsl:when><xsl:otherwise>&lt;/<xsl:value-of select="name"/>&gt;</xsl:otherwise>
-                </xsl:choose>                
-            </xsl:for-each>
-        &lt;/<xsl:value-of select="functions/function/name"/>&gt;
+        &lt;<xsl:value-of select="functions/function[name = $function]/name"/> xmlns="<xsl:value-of select="$webserviceURL"/>"&gt;
+            <xsl:for-each select="functions/function[name = $function]/parameters/parameter">
+                                <xsl:choose>
+                                    <xsl:when test="name =''">&lt;arg<xsl:value-of select="position()"/>&gt;</xsl:when>
+                                    <xsl:otherwise>&lt;<xsl:value-of select="name"/>&gt;</xsl:otherwise>
+                                </xsl:choose>
+                                <xsl:value-of select="type"/>
+                                <xsl:choose>
+                                    <xsl:when test="name = ''">&lt;/arg<xsl:value-of select="position()"/>&gt;</xsl:when>
+                                    <xsl:otherwise>&lt;/<xsl:value-of select="name"/>&gt;</xsl:otherwise>
+                                </xsl:choose>
+                            </xsl:for-each>
+        &lt;/<xsl:value-of select="functions/function[name = $function]/name"/>&gt;
     &lt;/soap:Body&gt;
 &lt;/soap:Envelope&gt;</pre>
                         <pre>HTTP/1.1 200 OK
@@ -77,9 +80,9 @@ Content-Length: <font class="value">length</font>
 &lt;?xml version="1.0" encoding="utf-8"?&gt;
 &lt;soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"&gt;
     &lt;soap:Body&gt;
-        &lt;<xsl:value-of select="functions/function/name"/>Response xmlns="<xsl:value-of select="$webserviceURL"/>"&gt;
-            &lt;<xsl:value-of select="functions/function/name"/>Result&gt;<xsl:value-of select="functions/function/return/type"/>&lt;/<xsl:value-of select="functions/function/name"/>Result&gt;
-        &lt;/<xsl:value-of select="functions/function/name"/>Response&gt;
+        &lt;<xsl:value-of select="functions/function[name = $function]/name"/>Response xmlns="<xsl:value-of select="$webserviceURL"/>"&gt;
+            &lt;<xsl:value-of select="functions/function[name = $function]/name"/>Result&gt;<xsl:value-of select="functions/function[name = $function]/return/type"/>&lt;/<xsl:value-of select="functions/function[name = $function]/name"/>Result&gt;
+        &lt;/<xsl:value-of select="functions/function[name = $function]/name"/>Response&gt;
     &lt;/soap:Body&gt;
 &lt;/soap:Envelope&gt;</pre>
                     </span>
