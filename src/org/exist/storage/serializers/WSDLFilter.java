@@ -9,7 +9,7 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 
 /**
- * Add the xmlns:tns namespace to the definitions element of the WSDL stylesheet
+ * Add the xmlns:tns and xmlns:soapenc namespaces to the definitions element of the WSDL stylesheet
  * we do this here as a workaround for Xalan, Xalan has no easy
  * way to declare additional dynamic namespaces.
  * There are two possible known Xalan hacks to do this -
@@ -31,6 +31,8 @@ public class WSDLFilter implements ContentHandler
 {
 	protected ContentHandler outputHandler = null;
 	protected String tnsNamespaceUri = null;
+	protected final static String soapencNamespaceUri = "http://schemas.xmlsoap.org/soap/encoding/";
+	
 	
 	public WSDLFilter(ContentHandler outputHandler, String tnsNamespaceUri)
 	{
@@ -86,6 +88,7 @@ public class WSDLFilter implements ContentHandler
 		if(qName.equals("definitions"))
 		{
 			outputHandler.startPrefixMapping("tns", tnsNamespaceUri);
+			outputHandler.startPrefixMapping("soapenc", soapencNamespaceUri);
 		}
 		outputHandler.startElement(uri, localName, qName, atts);
 	}
@@ -98,6 +101,7 @@ public class WSDLFilter implements ContentHandler
 		if(qName.equals("definitions"))
 		{
 			outputHandler.endPrefixMapping("tns");
+			outputHandler.endPrefixMapping("soapenc");
 		}
 		outputHandler.endElement(uri, localName, qName);
 	}
