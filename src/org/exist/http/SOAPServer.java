@@ -86,7 +86,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 /**
- *
  * @author Adam Retter (adam.retter@devon.gov.uk)
  */
 public class SOAPServer
@@ -283,7 +282,7 @@ public class SOAPServer
      * 
      * @return The compiled XQuery
      */
-    private CompiledXQuery SimpleXQueryIncludeXQWS(DBBroker broker, XmldbURI xqwsFileUri, QName xqwsNamespace, XmldbURI xqwsCollectionUri) throws XPathException
+    private CompiledXQuery XQueryIncludeXQWS(DBBroker broker, XmldbURI xqwsFileUri, QName xqwsNamespace, XmldbURI xqwsCollectionUri) throws XPathException
     {
         //Create a simple XQuery wrapper to access the module
         String query = "xquery version \"1.0\";" + SEPERATOR;
@@ -296,28 +295,96 @@ public class SOAPServer
         return compileXQuery(broker, new StringSource(query), new XmldbURI[] { xqwsCollectionUri}, xqwsCollectionUri, null, null);
     }
     
-
-    private CompiledXQuery XQueryExecuteXQWSFunction(DBBroker broker, XmldbURI xqwsFileUri, QName xqwsNamespace, XmldbURI xqwsCollectionUri, Node xqwsSOAPFunction, HttpServletRequest request, HttpServletResponse response) throws XPathException
-    {
+    /**
+     * Creates an XQuery to call an XQWS function from a SOAP Request
+     * 
+     * @param broker	The Database Broker to use
+     * @param xqwsFileUri	The XmldbURI of the XQWS file
+     * @param xqwsNamespace	The namespace of the xqws
+     * @param xqwsCollectionUri	The XmldbUri of the collection where the XQWS resides
+     * @param xqwsSOAPFunction	The Node from the SOAP request for the Function call from the Http Request
+     * @param xqwsDescription	The internal description of the XQWS
+     * @param request	The Http Servlet Request
+     * @param response The Http Servlet Response
+     * 
+     * @return The compiled XQuery
+     */
+    private CompiledXQuery XQueryExecuteXQWSFunction(DBBroker broker, Node xqwsSOAPFunction, XQWSDescription xqwsDescription, HttpServletRequest request, HttpServletResponse response) throws XPathException
+    {	
     	String query = "xquery version \"1.0\";" + SEPERATOR;
         query += SEPERATOR;
-        query += "import module namespace " + xqwsNamespace.getLocalName() + "=\"" + xqwsNamespace.getNamespaceURI() + "\" at \"" + xqwsFileUri.toString() + "\";" + SEPERATOR;
+        query += "import module namespace " + xqwsDescription.getNamespace().getLocalName() + "=\"" + xqwsDescription.getNamespace().getNamespaceURI() + "\" at \"" + xqwsDescription.getFileURI().toString() + "\";" + SEPERATOR;
         query += SEPERATOR;
-        //query += "()";
         
+        //add the function call to the xquery
         String functionName = xqwsSOAPFunction.getNodeName();
-        query += xqwsNamespace.getLocalName() + ":" + functionName + "(";
+        query += xqwsDescription.getNamespace().getLocalName() + ":" + functionName + "(";
         
-        NodeList functionArgs = xqwsSOAPFunction.getChildNodes();
-        for(int i=0; i < functionArgs.getLength(); i++)
+        //add the arguments for the function call if any
+        NodeList xqwsSOAPFunctionParams = xqwsSOAPFunction.getChildNodes();
+        Node nInternalFunction = xqwsDescription.getFunction(functionName);
+        NodeList nlInternalFunctionParams = xqwsDescription.getFunctionParameters(functionName);
+        
+        for(int i = 0; i < xqwsSOAPFunctionParams.getLength(); i++)
         {
+        	query += writeXQueryFunctionParameter(xqwsDescription.getFunctionParameterType(nlInternalFunctionParams.item(i)), xqwsDescription.getFunctionParameterCardinality(nlInternalFunctionParams.item(i)), xqwsSOAPFunctionParams.item(i));
         	
+        	//add a comma if this isnt the last parameter
+        	if(i != xqwsSOAPFunctionParams.getLength()-1)
+        	{
+        		query += ",";
+        	}
         }
         
         query += ")";
         
         //compile the query
-        return compileXQuery(broker, new StringSource(query), new XmldbURI[] { xqwsCollectionUri}, xqwsCollectionUri, request, response);
+        return compileXQuery(broker, new StringSource(query), new XmldbURI[] { xqwsDescription.getCollectionURI() }, xqwsDescription.getCollectionURI(), request, response);
+    }
+    
+    /**
+     * Writes a parameter for an XQuery function call
+     * 
+     * @param paramType	The type of the Parameter (from the internal description of the XQWS)
+     * @param paramCardinality The cardinality of the Parameter (from the internal description of the XQWS)
+     * @param SOAPParam	The Node from the SOAP request for the Paremeter of the Function call from the Http Request 
+     * 
+     * @return A String representation of the parameter, suitable for use in the function call 
+     */
+    private String writeXQueryFunctionParameter(String paramType, int paramCardinality, Node SOAPParam) throws XPathException
+    {
+    	String prefix = new String();
+    	String postfix = new String();
+    	
+    	//determine the type of the parameter
+    	int type = Type.getType(paramType);
+    	
+    	switch(type)
+    	{
+    		case Type.BASE64_BINARY:
+    			prefix ="xs:base64Binary(\"";
+    			postfix = "\")";
+    		break;
+    		
+    		case Type.STRING:
+    			prefix = "\"";
+    			postfix = "\"";
+    		break;
+    		
+    		case Type.DATE:
+    			prefix = "xs:date(\"";
+    			postfix = "\")";
+    		break;
+    		
+    		case Type.DATE_TIME:
+    			prefix = "xs:dateTime(\"";
+    			postfix = "\")";
+    		break;
+    		
+    		default:
+    	}
+    	
+    	return prefix +  SOAPParam.getNodeValue() + postfix;
     }
     
     /**
@@ -522,54 +589,67 @@ public class SOAPServer
 		//TODO: validate the SOAP Request
 		
 		// 4) Extract the function call from the SOAP Request
-		NodeList nlBody = soapRequest.getElementsByTagNameNS("http://schemas.xmlsoap.org/soap/envelope/", "Body");
-		Node nBody = nlBody.item(0);
-		Node nFunction = nBody.getFirstChild();
-		
-		// 5) Check the namespace for the function in the SOAP document is the same as the request path?
-		NamedNodeMap attrs = nFunction.getAttributes();
-		String funcNamespace = attrs.getNamedItem("xmlns").getNodeValue();
-		if(!funcNamespace.equals(path))
+		//NodeList nlBody = soapRequest.getElementsByTagNameNS("http://schemas.xmlsoap.org/soap/envelope/", "Body");
+		NodeList nlBody = soapRequest.getElementsByTagName("SOAP-ENV:Body");
+		Node nSOAPBody = nlBody.item(0);
+		NodeList nlBodyChildren = nSOAPBody.getChildNodes();
+		Node nSOAPFunction = null;
+		for(int i = 0; i < nlBodyChildren.getLength(); i++)
 		{
-			//function in SOAP request has an invalid namespace
+			Node bodyChild = nlBodyChildren.item(i);
+			if(bodyChild.getNodeType() == Node.ELEMENT_NODE)
+			{
+				nSOAPFunction = bodyChild;
+				break;
+			}
+		}
+		
+		// Check the namespace for the function in the SOAP document is the same as the request path?
+		NamedNodeMap attrsSOAPFunction = nSOAPFunction.getAttributes();
+		String funcNamespace =  null;
+		for(int i = 0; i < attrsSOAPFunction.getLength(); i++)
+		{
+			Node attr = attrsSOAPFunction.item(i);
+			if(attr.getNodeName().equals("xmlns:"))
+			{
+				funcNamespace = attr.getNodeValue();
+				break;
+			}
+		}
+		
+		if(funcNamespace != null)
+		{
+			if(!funcNamespace.equals(request.getRequestURL().toString()))
+			{
+				//function in SOAP request has an invalid namespace
+				//TODO: suitable exception
+				System.err.println("invalid namespace");
+				return;
+			}
+		}
+		else
+		{
+			//function in SOAP request has no namespace
 			//TODO: suitable exception
 			System.err.println("invalid namespace");
 			return;
 		}
 		
-		/** NOTE to adam: maybe we can cache the xml
-		 * that describes the webservice so we dont
-		 * have to generate it again **/
-
-/*** start: replace with cache ***/		
-		// 6) Get the XQWS
-		BinaryDocument docXQWS = getXQWS(broker, path);
-		byte[] xqwsData = getXQWSData(broker, docXQWS);
-		
-        // 7) Get the XQWS Namespace
-        QName xqwsNamespace = getXQWSNamespace(xqwsData);
-        
-        // 8) Compile a Simple XQuery to access the module
-        CompiledXQuery compiled;
-        try
-        {
-        	compiled = SimpleXQueryIncludeXQWS(broker, docXQWS.getFileURI(), xqwsNamespace, docXQWS.getCollection().getURI());
-        }
-        catch(XPathException e)
-        {
-        	response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            writeResponse(response, formatXPathException(null, path, new XPathException(null, "XPath exception while compiling xquery: " + e.getMessage(), e)), "text/html", ENCODING);
-        	return;
-        }
-        
-        // 9) Inspect the XQWS and its function signatures and create a small XML document to represent it
-        Module modXQWS = compiled.getContext().getModule(xqwsNamespace.getNamespaceURI());
-        org.exist.memtree.DocumentImpl docWebService = describeWebService(modXQWS, docXQWS.getFileURI(), request, path);
-
-/*** end: replace with cache ***/        
-        
-		// 10) Create an XQuery to call the XQWS function
-		
+		// 5) Execute the XQWS function indicated by the SOAP request  
+		try
+		{
+			//Get the internal description for the function requested by SOAP (should be in the cache)
+			XQWSDescription description = getXQWSDescription(broker, path, request);
+			
+			//Create an XQuery to call the XQWS function
+			CompiledXQuery xqCallXQWS = XQueryExecuteXQWSFunction(broker, nSOAPFunction, description, request, response);
+		}
+		catch(XPathException xpe)
+		{
+			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+			writeResponse(response, formatXPathException(null, path, xpe), "text/html", ENCODING);
+			return;
+		}
 		
 		
     }
@@ -626,7 +706,7 @@ public class SOAPServer
 	 * 	<path/>
 	 * 	<URL/>
 	 * 	<functions>
-	 * 		@see org.exist.http.SOAPServer#describeFunction(org.exist.xquery.FunctionSignature, org.exist.memtree.MemTreeBuilder)
+	 * 		@see org.exist.http.SOAPServer#describeWebServiceFunction(org.exist.xquery.FunctionSignature, org.exist.memtree.MemTreeBuilder)
 	 * 	</functions>
 	 * </webservice>
 	 *
@@ -662,7 +742,7 @@ public class SOAPServer
 		for(int f = 0; f < xqwsFunctions.length; f++)
         {
 			//All Function Descriptions
-			describeFunction(xqwsFunctions[f], builderWebserviceDoc);
+			describeWebServiceFunction(xqwsFunctions[f], builderWebserviceDoc);
         }
 		builderWebserviceDoc.endElement();
 		builderWebserviceDoc.endElement();
@@ -693,7 +773,7 @@ public class SOAPServer
 	 * @param signature	The function signature to describe
 	 * @param builderFunction	The MemTreeBuilder to write the description to
 	 */
-	private void describeFunction(FunctionSignature signature, MemTreeBuilder builderFunction)
+	private void describeWebServiceFunction(FunctionSignature signature, MemTreeBuilder builderFunction)
 	{
 		//Generate an XML snippet for each function
     	builderFunction.startElement(new QName("function", null, null), null);
@@ -814,6 +894,9 @@ public class SOAPServer
     	private DBBroker broker = null;
     	private String HttpServletRequestURL = null;
     	private String XQWSPath = null;
+    	private XmldbURI xqwsFileURI = null;
+    	private XmldbURI xqwsCollectionURI = null;
+    	private QName xqwsNamespace = null;
     	
     	//cache for internal Description of an XQWS
     	private long lastModifiedXQWS = 0;
@@ -839,6 +922,36 @@ public class SOAPServer
     		this.XQWSPath = XQWSPath;
     		
     		createInternalDescription(request);
+    	}
+    	
+    	/**
+    	 * Returns the URI of the XQWS file
+    	 * 
+    	 * @return The XmldbURI of the XQWS file
+    	 */
+    	public XmldbURI getFileURI()
+    	{
+    		return xqwsFileURI;
+    	}
+    	
+    	/**
+    	 * Returns the URI of the Collection containing the XQWS file
+    	 * 
+    	 * @return The XmldbURI of the Collection containing the XQWS file
+    	 */
+    	public XmldbURI getCollectionURI()
+    	{
+    		return xqwsCollectionURI;
+    	}
+    	
+    	/**
+    	 * Returns the Namespace of the XQWS
+    	 * 
+    	 * @return The QName for the Namespace of the XQWS
+    	 */
+    	public QName getNamespace()
+    	{
+    		return xqwsNamespace;
     	}
     	
     	/**
@@ -975,6 +1088,93 @@ public class SOAPServer
     	}
 
     	/**
+    	 * Returns the function node from the internal description
+    	 * 
+    	 * @param functionName	The name of the function to return
+    	 * 
+    	 * @return the node from the internal description
+    	 */
+    	public Node getFunction(String functionName)
+    	{
+    		//iterate through all the function nodes
+    		NodeList nlFunctions = docXQWSDescription.getElementsByTagName("function");
+    		for(int i = 0; i < nlFunctions.getLength(); i++)
+    		{
+    			//get the function node
+    			Node nFunction = nlFunctions.item(i);
+    			//first child of function should be name
+    			Node nFunctionName = nFunction.getFirstChild();
+    			
+    			//is this the function node we are looking for?
+    			if(nFunctionName.getNodeValue().equals(functionName))
+    			{
+    				//yes so return it
+    				return nFunction;
+    			}
+    		}
+    		
+    		return null;
+    	}
+    	
+    	/**
+    	 * Returns the parameters for a function from the internal description
+    	 * 
+    	 * @param functionName	The name of the function to return parameters for
+    	 * 
+    	 * @return NodeList of parameter's
+    	 */
+    	public NodeList getFunctionParameters(String functionName)
+    	{
+    		Node internalFunction = getFunction(functionName);
+    		if(internalFunction != null)
+    		{
+    			return getFunctionParameters(internalFunction);
+    		}
+    		return null;
+    	}
+    	
+    	/**
+    	 * Returns the parameters for a function from the internal description
+    	 * 
+    	 * @param internalFunction The internal function to return parameters for
+    	 * 
+    	 * @return NodeList of parameter's
+    	 */
+    	public NodeList getFunctionParameters(Node internalFunction)
+    	{
+    		NodeList nlChildren = internalFunction.getChildNodes();
+    		for(int i = 0; i < nlChildren.getLength(); i++)
+    		{
+    			Node child = nlChildren.item(i);
+    			if(child.getNodeName() == "parameters")
+    			{
+    				return child.getChildNodes();
+    			}
+    		}
+    		
+    		return null;
+    	}
+    	
+    	public String getFunctionParameterName(Node internalFunctionParameter)
+    	{
+    		//first child of <parameter> is <name>
+    		return internalFunctionParameter.getFirstChild().getNodeValue();
+    	}
+    	
+    	public String getFunctionParameterType(Node internalFunctionParameter)
+    	{
+    		//second child of <parameter> is <type>
+    		return internalFunctionParameter.getChildNodes().item(1).getNodeValue();
+    	}
+    	
+    	public int getFunctionParameterCardinality(Node internalFunctionParameter)
+    	{
+    		//last child of <parameter> is <cardinality>
+    		String strCardinality = internalFunctionParameter.getLastChild().getNodeValue();
+    		return Integer.valueOf(strCardinality).intValue();
+    	}
+    	
+    	/**
     	 * Creates the internal Description of the XQWS
     	 * 
     	 * @param request The HttpServletRequest for which the description should be created
@@ -983,16 +1183,18 @@ public class SOAPServer
     	{
     		// 1) Get the XQWS
     		BinaryDocument docXQWS = getXQWS(broker, XQWSPath);
+    		xqwsFileURI = docXQWS.getFileURI();
+    		xqwsCollectionURI = docXQWS.getCollection().getURI();
     		byte[] xqwsData = getXQWSData(broker, docXQWS);
             
     		// 2) Store last modified date
     		lastModifiedXQWS = docXQWS.getMetadata().getLastModified();
     		
             // 3) Get the XQWS Namespace
-            QName xqwsNamespace = getXQWSNamespace(xqwsData);
+            xqwsNamespace = getXQWSNamespace(xqwsData);
             
             // 4) Compile a Simple XQuery to access the module
-            CompiledXQuery compiled = SimpleXQueryIncludeXQWS(broker, docXQWS.getFileURI(), xqwsNamespace, docXQWS.getCollection().getURI());
+            CompiledXQuery compiled = XQueryIncludeXQWS(broker, docXQWS.getFileURI(), xqwsNamespace, docXQWS.getCollection().getURI());
             
             // 5) Inspect the XQWS and its function signatures and create a small XML document to represent it
             Module modXQWS = compiled.getContext().getModule(xqwsNamespace.getNamespaceURI());
