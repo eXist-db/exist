@@ -25,13 +25,13 @@ package org.exist.http;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.HashMap;
-
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -65,6 +65,7 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.serializers.WSDLFilter;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.Cardinality;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.Constants;
 import org.exist.xquery.FunctionSignature;
@@ -325,14 +326,20 @@ public class SOAPServer
         Node nInternalFunction = xqwsDescription.getFunction(functionName);
         NodeList nlInternalFunctionParams = xqwsDescription.getFunctionParameters(nInternalFunction);
         
+        int j = 0;
         for(int i = 0; i < xqwsSOAPFunctionParams.getLength(); i++)
         {
-        	query += writeXQueryFunctionParameter(xqwsDescription.getFunctionParameterType(nlInternalFunctionParams.item(i)), xqwsDescription.getFunctionParameterCardinality(nlInternalFunctionParams.item(i)), xqwsSOAPFunctionParams.item(i));
-        	
-        	//add a comma if this isnt the last parameter
-        	if(i != xqwsSOAPFunctionParams.getLength()-1)
+        	Node nSOAPFunctionParam = xqwsSOAPFunctionParams.item(i);
+        	if(nSOAPFunctionParam.getNodeType() == Node.ELEMENT_NODE)
         	{
-        		query += ",";
+	        	query += writeXQueryFunctionParameter(xqwsDescription.getFunctionParameterType(nlInternalFunctionParams.item(j)), xqwsDescription.getFunctionParameterCardinality(nlInternalFunctionParams.item(j)), nSOAPFunctionParam.getFirstChild().getNodeValue());
+	        	
+	        	//add a comma if this isnt the last parameter
+	        	if(j != nlInternalFunctionParams.getLength()-1)
+	        	{
+	        		query += ",";
+	        	}
+	        	j++;
         	}
         }
         
@@ -351,7 +358,7 @@ public class SOAPServer
      * 
      * @return A String representation of the parameter, suitable for use in the function call 
      */
-    private String writeXQueryFunctionParameter(String paramType, int paramCardinality, Node SOAPParam) throws XPathException
+    private String writeXQueryFunctionParameter(String paramType, int paramCardinality, String strSOAPParamValue) throws XPathException
     {
     	String prefix = new String();
     	String postfix = new String();
@@ -384,7 +391,7 @@ public class SOAPServer
     		default:
     	}
     	
-    	return prefix +  SOAPParam.getNodeValue() + postfix;
+    	return prefix +  strSOAPParamValue + postfix;
     }
     
     /**
@@ -574,9 +581,16 @@ public class SOAPServer
 		 */
 		
 		// 1) Read the incoming SOAP request
-		java.io.BufferedInputStream is = new java.io.BufferedInputStream(request.getInputStream());
-		byte[] buf = new byte[is.available()];
-		is.read(buf);
+		InputStream is = request.getInputStream();
+		byte[] buf = new byte[request.getContentLength()];
+		int bytes = 0;
+		int offset = 0;
+		int max = 4096;
+	    while((bytes = is.read(buf, offset, max)) != -1)
+	    {
+			offset += bytes;
+	    }
+		
 		
 		/*** TEMP ***/
 		System.out.println(new String(buf, "UTF-8"));
@@ -643,6 +657,8 @@ public class SOAPServer
 			
 			//Create an XQuery to call the XQWS function
 			CompiledXQuery xqCallXQWS = XQueryExecuteXQWSFunction(broker, nSOAPFunction, description, request, response);
+			
+			System.out.println("YAY :-)");
 		}
 		catch(XPathException xpe)
 		{
@@ -1164,21 +1180,60 @@ public class SOAPServer
     	
     	public String getFunctionParameterName(Node internalFunctionParameter)
     	{
-    		//first child of <parameter> is <name>
-    		return internalFunctionParameter.getFirstChild().getNodeValue();
+    		//first element child of <parameter> is <name>
+    		NodeList nlParamArgs = internalFunctionParameter.getChildNodes(); 
+    		for(int i = 0; i < nlParamArgs.getLength(); i++)
+    		{
+    			Node nArg = nlParamArgs.item(i);
+    			if(nArg.getNodeType() == Node.ELEMENT_NODE)
+    			{
+    				if(nArg.getNodeName().equals("name"))
+    				{
+    					return nArg.getFirstChild().getNodeValue();
+    				}
+    			}
+    		}
+    		
+    		return null;
     	}
     	
     	public String getFunctionParameterType(Node internalFunctionParameter)
     	{
-    		//second child of <parameter> is <type>
-    		return internalFunctionParameter.getChildNodes().item(1).getNodeValue();
+    		//second element child of <parameter> is <type>
+    		NodeList nlParamArgs = internalFunctionParameter.getChildNodes(); 
+    		for(int i = 0; i < nlParamArgs.getLength(); i++)
+    		{
+    			Node nArg = nlParamArgs.item(i);
+    			if(nArg.getNodeType() == Node.ELEMENT_NODE)
+    			{
+    				if(nArg.getNodeName().equals("type"))
+    				{
+    					return nArg.getFirstChild().getNodeValue();
+    				}
+    			}
+    		}
+    		
+    		return null;
     	}
     	
     	public int getFunctionParameterCardinality(Node internalFunctionParameter)
     	{
-    		//last child of <parameter> is <cardinality>
-    		String strCardinality = internalFunctionParameter.getLastChild().getNodeValue();
-    		return Integer.valueOf(strCardinality).intValue();
+    		//third element child of <parameter> is <cardinality>
+    		NodeList nlParamArgs = internalFunctionParameter.getChildNodes(); 
+    		for(int i = 0; i < nlParamArgs.getLength(); i++)
+    		{
+    			Node nArg = nlParamArgs.item(i);
+    			if(nArg.getNodeType() == Node.ELEMENT_NODE)
+    			{
+    				if(nArg.getNodeName().equals("cardinality"))
+    				{
+    					return Integer.valueOf(nArg.getFirstChild().getNodeValue()).intValue();
+    				}
+    			}
+    		}
+    		
+    		//default cardinality
+    		return Cardinality.EXACTLY_ONE;
     	}
     	
     	/**
