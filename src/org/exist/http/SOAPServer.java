@@ -141,79 +141,6 @@ public class SOAPServer
         this.formEncoding = formEncoding;
         this.containerEncoding = containerEncoding;
     }
-	
-    /**
-     * Gets XQWS file from the db
-     * 
-     * @param broker 	The Database Broker to use
-     * @param path		The Path to the XQWS
-     * 
-     * @return	The XQWS BinaryDocument
-     */
-    private BinaryDocument getXQWS(DBBroker broker, String path) throws PermissionDeniedException
-    {
-        XmldbURI pathUri = XmldbURI.create(path);        
-        BinaryDocument docXQWS = (BinaryDocument) broker.getXMLResource(pathUri, Lock.READ_LOCK);
-        
-        //close the XQWS Document and release the read lock
-        docXQWS.getUpdateLock().release();
-        
-        return docXQWS;
-    }
-    
-    /**
-     * Gets the data from an XQWS Binary Document
-     * 
-     * @param broker	The Database Broker to use
-     * @param docXQWS	The XQWS Binary Document
-     * 
-     * @return	byte array containing the content of the XQWS Binary document
-     */
-    private byte[] getXQWSData(DBBroker broker, BinaryDocument docXQWS)
-    {
-    	byte[] data = broker.getBinaryResource(docXQWS);
-    	
-    	return data;
-    }
-    
-    /**
-     * Get's the namespace of the XQWS form the content of an XQWS
-     *
-     * @param xqwsData	The content of an XQWS file
-     * 
-     * @return The namespace QName
-     */
-    private QName getXQWSNamespace(byte[] xqwsData)
-    {   
-    	//move through the xqws char by char checking if a line contains the module namespace declaration     
-        StringBuffer sbNamespace = new StringBuffer();
-        ByteArrayInputStream bis = new ByteArrayInputStream(xqwsData);
-        while(bis.available() > 0)
-        {
-        	char c = (char)bis.read();	//TODO: do we need encoding here?
-        	sbNamespace.append(c);
-        	if(c == SEPERATOR.charAt(SEPERATOR.length() -1))
-        	{
-        		if(sbNamespace.toString().startsWith("module namespace"))
-        		{
-        			//break out of the while loop, sbNamespace should now contain our namespace
-        			break;
-        		}
-        		else
-        		{
-        			//empty the namespace buffer
-        			sbNamespace.delete(0, sbNamespace.length());
-        		}
-        	}
-        }
-        
-        //seperate the name and url
-        String namespaceName = sbNamespace.substring("module namespace".length(), sbNamespace.indexOf("=")).trim();
-        String namespaceURL = sbNamespace.substring(sbNamespace.indexOf("\"")+1, sbNamespace.lastIndexOf("\""));
-        
-        //return the XQWS namespace
-        return new QName(namespaceName, namespaceURL);
-    }
 
     /**
      * Compiles an XQuery or returns a cached version if one exists
@@ -271,29 +198,6 @@ public class SOAPServer
         pool.returnCompiledXQuery(xqSource, compiled);
         
         return compiled;
-    }
-    
-    /**
-     * Creates a simple XQuery to include an XQWS
-     * 
-     * @param broker	The Database Broker to use
-     * @param xqwsFileUri	The XmldbURI of the XQWS file
-     * @param xqwsNamespace	The namespace of the xqws
-     * @param xqwsCollectionUri	The XmldbUri of the collection where the XQWS resides
-     * 
-     * @return The compiled XQuery
-     */
-    private CompiledXQuery XQueryIncludeXQWS(DBBroker broker, XmldbURI xqwsFileUri, QName xqwsNamespace, XmldbURI xqwsCollectionUri) throws XPathException
-    {
-        //Create a simple XQuery wrapper to access the module
-        String query = "xquery version \"1.0\";" + SEPERATOR;
-        query += SEPERATOR;
-        query += "import module namespace " + xqwsNamespace.getLocalName() + "=\"" + xqwsNamespace.getNamespaceURI() + "\" at \"" + xqwsFileUri.toString() + "\";" + SEPERATOR;
-        query += SEPERATOR;
-        query += "()";
-        
-        //compile the query
-        return compileXQuery(broker, new StringSource(query), new XmldbURI[] { xqwsCollectionUri}, xqwsCollectionUri, null, null);
     }
     
     /**
@@ -655,148 +559,6 @@ public class SOAPServer
 		return adapter.getDocument();
 	}
 	
-	/**
-	 * Describes an XQWS by building an XML node representation of the XQWS module
-	 * 
-	 * <webservice>
-	 * 	<name/>
-	 * 	<description/>
-	 * 	<host/>
-	 * 	<path/>
-	 * 	<URL/>
-	 * 	<functions>
-	 * 		@see org.exist.http.SOAPServer#describeWebServiceFunction(org.exist.xquery.FunctionSignature, org.exist.memtree.MemTreeBuilder)
-	 * 	</functions>
-	 * </webservice>
-	 *
-	 * @param modXQWS	The XQWS XQuery module
-	 * @param xqwsFileUri	The File URI of the XQWS
-	 * @param request	The Http Servlet request for this webservice
-	 * @param path	The request path
-	 * @param functionName	Used when only a single function should be described, linked to functionResult
-	 * @param functionResult For writting out the results of a function call, should be used with functionName 
-	 * @return	An in-memory document describing the webservice
-	 */
-	private org.exist.memtree.DocumentImpl describeWebService(Module modXQWS, XmldbURI xqwsFileUri, HttpServletRequest request, String path, String functionName, Sequence functionResult) throws XPathException
-	{
-		FunctionSignature[] xqwsFunctions = modXQWS.listFunctions();
-        MemTreeBuilder builderWebserviceDoc = new MemTreeBuilder();
-		builderWebserviceDoc.startDocument();
-		builderWebserviceDoc.startElement(new QName("webservice", null, null), null);
-		builderWebserviceDoc.startElement(new QName("name", null, null), null);
-		builderWebserviceDoc.characters(xqwsFileUri.toString().substring(0, xqwsFileUri.toString().indexOf(WEBSERVICE_MODULE_EXTENSION)));
-		builderWebserviceDoc.endElement();
-		builderWebserviceDoc.startElement(new QName("description", null, null), null);
-		builderWebserviceDoc.characters(modXQWS.getDescription());
-		builderWebserviceDoc.endElement();
-		builderWebserviceDoc.startElement(new QName("host", null, null), null);
-		builderWebserviceDoc.characters(request.getServerName() + ":" + request.getServerPort());
-		builderWebserviceDoc.endElement();
-		builderWebserviceDoc.startElement(new QName("path", null, null), null);
-		builderWebserviceDoc.characters(path);
-		builderWebserviceDoc.endElement();
-		builderWebserviceDoc.startElement(new QName("URL", null, null), null);
-		builderWebserviceDoc.characters(request.getRequestURL());
-		builderWebserviceDoc.endElement();
-		builderWebserviceDoc.startElement(new QName("functions", null, null), null);
-		for(int f = 0; f < xqwsFunctions.length; f++)
-        {
-			if(functionName == null)
-			{
-				//All Function Descriptions
-				describeWebServiceFunction(xqwsFunctions[f], builderWebserviceDoc, null);
-			}
-			else
-			{
-				//Only a Single Function Description for showing function call results
-				if(xqwsFunctions[f].getName().getLocalName().equals(functionName))
-				{
-					describeWebServiceFunction(xqwsFunctions[f], builderWebserviceDoc, functionResult);
-					break;
-				}
-			}
-        }
-		builderWebserviceDoc.endElement();
-		builderWebserviceDoc.endElement();
-		builderWebserviceDoc.endDocument();
-		
-		return builderWebserviceDoc.getDocument();
-	}
-	
-	/**
-	 * Describes an XQWS function by building an XML node representation of the function signature
-	 * 
-	 * 	<function>
-	 * 		<name/>
-	 * 		<description/>
-	 * 		<parameters>
-	 * 			<parameter>
-	 * 				<name/>
-	 * 				<type/>
-	 * 				<cardinality/>
-	 * 			</parameter>
-	 * 		</parameters>
-	 * 		<return>
-	 * 			<type/>
-	 * 			<cardinality/>
-	 * 			<result/>		//Only displayed if this is after the function has been executed
-	 * 		</return>
-	 * 	</function>
-	 * 
-	 * @param signature	The function signature to describe
-	 * @param builderFunction	The MemTreeBuilder to write the description to
-	 * @param functionResult	A Sequence containing the function results or null if the function has not yet been executed
-	 */
-	private void describeWebServiceFunction(FunctionSignature signature, MemTreeBuilder builderFunction, Sequence functionResult) throws XPathException
-	{
-		//Generate an XML snippet for each function
-    	builderFunction.startElement(new QName("function", null, null), null);
-    	builderFunction.startElement(new QName("name", null, null), null);
-    	builderFunction.characters(signature.getName().getLocalName());
-    	builderFunction.endElement();
-    	if(signature.getDescription() != null)
-    	{
-    		builderFunction.startElement(new QName("description", null, null), null);
-    		builderFunction.characters(signature.getDescription());
-    		builderFunction.endElement();
-    	}
-    	SequenceType[] xqwsArguments = signature.getArgumentTypes();
-    	builderFunction.startElement(new QName("parameters", null, null), null);
-    	for(int a = 0; a < xqwsArguments.length; a++)
-    	{
-    		builderFunction.startElement(new QName("parameter",null, null), null);
-    		builderFunction.startElement(new QName("name",null, null), null);
-    		//builderFunction.characters(xqwsArguments[a].getNodeName().getLocalName()); //TODO: how to get parameter name?
-    		builderFunction.endElement();
-    		builderFunction.startElement(new QName("type",null, null), null);
-    		builderFunction.characters(Type.getTypeName(xqwsArguments[a].getPrimaryType()));
-    		builderFunction.endElement();
-    		builderFunction.startElement(new QName("cardinality",null, null), null);
-    		builderFunction.characters(Integer.toString(xqwsArguments[a].getCardinality()));
-    		builderFunction.endElement();
-    		builderFunction.endElement();
-    	}
-    	builderFunction.endElement();
-    	builderFunction.startElement(new QName("return",null, null), null);
-    	builderFunction.startElement(new QName("type",null, null), null);
-    	builderFunction.characters(Type.getTypeName(signature.getReturnType().getPrimaryType()));
-    	builderFunction.endElement();
-    	builderFunction.startElement(new QName("cardinality",null, null), null);
-    	builderFunction.characters(Integer.toString(signature.getReturnType().getCardinality()));
-    	builderFunction.endElement();
-    	if(functionResult != null)
-    	{
-    		builderFunction.startElement(new QName("result", null, null), null);
-
-    		//TODO: this will work for a single string result, but need to add much more logic for other types and complex cardinalities
-    		builderFunction.characters(functionResult.itemAt(0).getStringValue());
-    		
-    		builderFunction.endElement();
-    	}
-    	builderFunction.endElement();
-    	builderFunction.endElement();
-	}
-	
     /**
      * Pass the request, response and session objects to the XQuery
      * context.
@@ -903,7 +665,7 @@ public class SOAPServer
     	
     	//Cache for XQWS (Human Readable) Function description
     	private long lastModifiedFunction = 0;
-    	HashMap descriptionFunction = new HashMap(); //key: functionName as String, value: byte[]
+    	private HashMap descriptionFunction = new HashMap(); //key: functionName as String, value: byte[]
     	
     	
     	/**
@@ -1291,6 +1053,244 @@ public class SOAPServer
             docXQWSDescription = describeWebService(modXQWS, xqwsFileURI, request, XQWSPath, null, null);
     	}
     	
+    	/**
+         * Gets XQWS file from the db
+         * 
+         * @param broker 	The Database Broker to use
+         * @param path		The Path to the XQWS
+         * 
+         * @return	The XQWS BinaryDocument
+         */
+        private BinaryDocument getXQWS(DBBroker broker, String path) throws PermissionDeniedException
+        {
+            XmldbURI pathUri = XmldbURI.create(path);        
+            BinaryDocument docXQWS = (BinaryDocument) broker.getXMLResource(pathUri, Lock.READ_LOCK);
+            
+            //close the XQWS Document and release the read lock
+            docXQWS.getUpdateLock().release();
+            
+            return docXQWS;
+        }
+        
+        /**
+         * Gets the data from an XQWS Binary Document
+         * 
+         * @param broker	The Database Broker to use
+         * @param docXQWS	The XQWS Binary Document
+         * 
+         * @return	byte array containing the content of the XQWS Binary document
+         */
+        private byte[] getXQWSData(DBBroker broker, BinaryDocument docXQWS)
+        {
+        	byte[] data = broker.getBinaryResource(docXQWS);
+        	
+        	return data;
+        }
+        
+        /**
+         * Get's the namespace of the XQWS form the content of an XQWS
+         *
+         * @param xqwsData	The content of an XQWS file
+         * 
+         * @return The namespace QName
+         */
+        private QName getXQWSNamespace(byte[] xqwsData)
+        {   
+        	//move through the xqws char by char checking if a line contains the module namespace declaration     
+            StringBuffer sbNamespace = new StringBuffer();
+            ByteArrayInputStream bis = new ByteArrayInputStream(xqwsData);
+            while(bis.available() > 0)
+            {
+            	char c = (char)bis.read();	//TODO: do we need encoding here?
+            	sbNamespace.append(c);
+            	if(c == SEPERATOR.charAt(SEPERATOR.length() -1))
+            	{
+            		if(sbNamespace.toString().startsWith("module namespace"))
+            		{
+            			//break out of the while loop, sbNamespace should now contain our namespace
+            			break;
+            		}
+            		else
+            		{
+            			//empty the namespace buffer
+            			sbNamespace.delete(0, sbNamespace.length());
+            		}
+            	}
+            }
+            
+            //seperate the name and url
+            String namespaceName = sbNamespace.substring("module namespace".length(), sbNamespace.indexOf("=")).trim();
+            String namespaceURL = sbNamespace.substring(sbNamespace.indexOf("\"")+1, sbNamespace.lastIndexOf("\""));
+            
+            //return the XQWS namespace
+            return new QName(namespaceName, namespaceURL);
+        }
+    	
+        /**
+         * Creates a simple XQuery to include an XQWS
+         * 
+         * @param broker	The Database Broker to use
+         * @param xqwsFileUri	The XmldbURI of the XQWS file
+         * @param xqwsNamespace	The namespace of the xqws
+         * @param xqwsCollectionUri	The XmldbUri of the collection where the XQWS resides
+         * 
+         * @return The compiled XQuery
+         */
+        private CompiledXQuery XQueryIncludeXQWS(DBBroker broker, XmldbURI xqwsFileUri, QName xqwsNamespace, XmldbURI xqwsCollectionUri) throws XPathException
+        {
+            //Create a simple XQuery wrapper to access the module
+            String query = "xquery version \"1.0\";" + SEPERATOR;
+            query += SEPERATOR;
+            query += "import module namespace " + xqwsNamespace.getLocalName() + "=\"" + xqwsNamespace.getNamespaceURI() + "\" at \"" + xqwsFileUri.toString() + "\";" + SEPERATOR;
+            query += SEPERATOR;
+            query += "()";
+            
+            //compile the query
+            return compileXQuery(broker, new StringSource(query), new XmldbURI[] { xqwsCollectionUri}, xqwsCollectionUri, null, null);
+        }
+        
+        /**
+    	 * Describes an XQWS by building an XML node representation of the XQWS module
+    	 * 
+    	 * <webservice>
+    	 * 	<name/>
+    	 * 	<description/>
+    	 * 	<host/>
+    	 * 	<path/>
+    	 * 	<URL/>
+    	 * 	<functions>
+    	 * 		@see org.exist.http.SOAPServer#describeWebServiceFunction(org.exist.xquery.FunctionSignature, org.exist.memtree.MemTreeBuilder)
+    	 * 	</functions>
+    	 * </webservice>
+    	 *
+    	 * @param modXQWS	The XQWS XQuery module
+    	 * @param xqwsFileUri	The File URI of the XQWS
+    	 * @param request	The Http Servlet request for this webservice
+    	 * @param path	The request path
+    	 * @param functionName	Used when only a single function should be described, linked to functionResult
+    	 * @param functionResult For writting out the results of a function call, should be used with functionName 
+    	 * @return	An in-memory document describing the webservice
+    	 */
+    	private org.exist.memtree.DocumentImpl describeWebService(Module modXQWS, XmldbURI xqwsFileUri, HttpServletRequest request, String path, String functionName, Sequence functionResult) throws XPathException
+    	{
+    		FunctionSignature[] xqwsFunctions = modXQWS.listFunctions();
+            MemTreeBuilder builderWebserviceDoc = new MemTreeBuilder();
+    		builderWebserviceDoc.startDocument();
+    		builderWebserviceDoc.startElement(new QName("webservice", null, null), null);
+    		builderWebserviceDoc.startElement(new QName("name", null, null), null);
+    		builderWebserviceDoc.characters(xqwsFileUri.toString().substring(0, xqwsFileUri.toString().indexOf(WEBSERVICE_MODULE_EXTENSION)));
+    		builderWebserviceDoc.endElement();
+    		builderWebserviceDoc.startElement(new QName("description", null, null), null);
+    		builderWebserviceDoc.characters(modXQWS.getDescription());
+    		builderWebserviceDoc.endElement();
+    		builderWebserviceDoc.startElement(new QName("host", null, null), null);
+    		builderWebserviceDoc.characters(request.getServerName() + ":" + request.getServerPort());
+    		builderWebserviceDoc.endElement();
+    		builderWebserviceDoc.startElement(new QName("path", null, null), null);
+    		builderWebserviceDoc.characters(path);
+    		builderWebserviceDoc.endElement();
+    		builderWebserviceDoc.startElement(new QName("URL", null, null), null);
+    		builderWebserviceDoc.characters(request.getRequestURL());
+    		builderWebserviceDoc.endElement();
+    		builderWebserviceDoc.startElement(new QName("functions", null, null), null);
+    		for(int f = 0; f < xqwsFunctions.length; f++)
+            {
+    			if(functionName == null)
+    			{
+    				//All Function Descriptions
+    				describeWebServiceFunction(xqwsFunctions[f], builderWebserviceDoc, null);
+    			}
+    			else
+    			{
+    				//Only a Single Function Description for showing function call results
+    				if(xqwsFunctions[f].getName().getLocalName().equals(functionName))
+    				{
+    					describeWebServiceFunction(xqwsFunctions[f], builderWebserviceDoc, functionResult);
+    					break;
+    				}
+    			}
+            }
+    		builderWebserviceDoc.endElement();
+    		builderWebserviceDoc.endElement();
+    		builderWebserviceDoc.endDocument();
+    		
+    		return builderWebserviceDoc.getDocument();
+    	}
+    	
+    	/**
+    	 * Describes an XQWS function by building an XML node representation of the function signature
+    	 * 
+    	 * 	<function>
+    	 * 		<name/>
+    	 * 		<description/>
+    	 * 		<parameters>
+    	 * 			<parameter>
+    	 * 				<name/>
+    	 * 				<type/>
+    	 * 				<cardinality/>
+    	 * 			</parameter>
+    	 * 		</parameters>
+    	 * 		<return>
+    	 * 			<type/>
+    	 * 			<cardinality/>
+    	 * 			<result/>		//Only displayed if this is after the function has been executed
+    	 * 		</return>
+    	 * 	</function>
+    	 * 
+    	 * @param signature	The function signature to describe
+    	 * @param builderFunction	The MemTreeBuilder to write the description to
+    	 * @param functionResult	A Sequence containing the function results or null if the function has not yet been executed
+    	 */
+    	private void describeWebServiceFunction(FunctionSignature signature, MemTreeBuilder builderFunction, Sequence functionResult) throws XPathException
+    	{
+    		//Generate an XML snippet for each function
+        	builderFunction.startElement(new QName("function", null, null), null);
+        	builderFunction.startElement(new QName("name", null, null), null);
+        	builderFunction.characters(signature.getName().getLocalName());
+        	builderFunction.endElement();
+        	if(signature.getDescription() != null)
+        	{
+        		builderFunction.startElement(new QName("description", null, null), null);
+        		builderFunction.characters(signature.getDescription());
+        		builderFunction.endElement();
+        	}
+        	SequenceType[] xqwsArguments = signature.getArgumentTypes();
+        	builderFunction.startElement(new QName("parameters", null, null), null);
+        	for(int a = 0; a < xqwsArguments.length; a++)
+        	{
+        		builderFunction.startElement(new QName("parameter",null, null), null);
+        		builderFunction.startElement(new QName("name",null, null), null);
+        		//builderFunction.characters(xqwsArguments[a].getNodeName().getLocalName()); //TODO: how to get parameter name?
+        		builderFunction.endElement();
+        		builderFunction.startElement(new QName("type",null, null), null);
+        		builderFunction.characters(Type.getTypeName(xqwsArguments[a].getPrimaryType()));
+        		builderFunction.endElement();
+        		builderFunction.startElement(new QName("cardinality",null, null), null);
+        		builderFunction.characters(Integer.toString(xqwsArguments[a].getCardinality()));
+        		builderFunction.endElement();
+        		builderFunction.endElement();
+        	}
+        	builderFunction.endElement();
+        	builderFunction.startElement(new QName("return",null, null), null);
+        	builderFunction.startElement(new QName("type",null, null), null);
+        	builderFunction.characters(Type.getTypeName(signature.getReturnType().getPrimaryType()));
+        	builderFunction.endElement();
+        	builderFunction.startElement(new QName("cardinality",null, null), null);
+        	builderFunction.characters(Integer.toString(signature.getReturnType().getCardinality()));
+        	builderFunction.endElement();
+        	if(functionResult != null)
+        	{
+        		builderFunction.startElement(new QName("result", null, null), null);
+
+        		//TODO: this will work for a single string result, but need to add much more logic for other types and complex cardinalities
+        		builderFunction.characters(functionResult.itemAt(0).getStringValue());
+        		
+        		builderFunction.endElement();
+        	}
+        	builderFunction.endElement();
+        	builderFunction.endElement();
+    	}
+        
     	/**
          * Transforms a document with a stylesheet
          * 
