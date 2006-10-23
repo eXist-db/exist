@@ -1,0 +1,12 @@
+module namespace echo = "http://exist-db.org/CommunityDirectory/echo";
+
+declare function echo:echo($value as xs:string) as xs:string
+{
+    $value
+};
+
+
+declare function echo:echoWithDate($value as xs:string) as xs:string
+{
+    concat(current-dateTime(), ": ", $value)
+};

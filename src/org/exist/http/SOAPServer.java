@@ -76,6 +76,7 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.functions.response.ResponseModule;
 import org.exist.xquery.functions.session.SessionModule;
+import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Document;
@@ -99,6 +100,7 @@ public class SOAPServer
 	private final static String XSLT_WEBSERVICE_WSDL = "/db/system/webservice/wsdl.xslt";
 	private final static String XSLT_WEBSERVICE_HUMAN_DESCRIPTION = "/db/system/webservice/human.description.xslt";
 	private final static String XSLT_WEBSERVICE_FUNCTION_DESCRIPTION = "/db/system/webservice/function.description.xslt";
+	private final static String XSLT_WEBSERVICE_SOAP_RESPONSE = "/db/system/webservice/soap.response.xslt";
 	public final static String WEBSERVICE_MODULE_EXTENSION = ".xqws";
 
 	private HashMap XQWSDescriptionsCache = new HashMap();
@@ -249,9 +251,7 @@ public class SOAPServer
         
         //Setup the context
         declareVariables(context, request, response);
-        //context.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI.append(docXQWS.getCollection().getURI()).toString());
         context.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI.append(xqwsCollectionUri).toString());
-        //context.setStaticallyKnownDocuments(new XmldbURI[] { docXQWS.getCollection().getURI() });
         context.setStaticallyKnownDocuments(staticallyKnownDocuments);
         
         //no pre-compiled XQuery, so compile, it
@@ -395,71 +395,6 @@ public class SOAPServer
     }
     
     /**
-     * Transforms a document with a stylesheet and streams the result to the http response
-     * 
-     * @param broker	The DBBroker to use
-     * @param docWebService	An in-memory document describing the webservice
-     * @param docStyleSheet	A stylesheet document from the db
-     * @param request	The Http Servlets request for this webservice
-     * @param response The Http Servlets response to the request for this webservice
-     * @param path	The request path
-     */
-    private void StreamTransform(DBBroker broker, org.exist.memtree.DocumentImpl docWebService, DocumentImpl docStyleSheet, HttpServletRequest request, HttpServletResponse response, String path) throws IOException
-    {
-        //Transform docWebservice with the stylesheet
-        try
-		{
-        	/*
-        	 * TODO: the code in this try statement (apart from the WSDLFilter use) was mostly extracted from
-        	 * transform:stream-transform(), it would be better to be able to share that code somehow
-        	 */
-        	
-	        SAXTransformerFactory factory = (SAXTransformerFactory)SAXTransformerFactory.newInstance();
-			TemplatesHandler templatesHandler = factory.newTemplatesHandler();
-			templatesHandler.startDocument();
-			Serializer serializer = broker.getSerializer();
-			serializer.reset();
-			WSDLFilter wsdlfilter = new WSDLFilter(templatesHandler, request.getRequestURL().toString());
-			serializer.setSAXHandlers(wsdlfilter, null);
-			serializer.toSAX(docStyleSheet);
-			templatesHandler.endDocument();
-			
-			TransformerHandler handler = factory.newTransformerHandler(templatesHandler.getTemplates());
-			
-			//START send result of transformation directly to response
-			OutputStream os = new BufferedOutputStream(response.getOutputStream());
-            StreamResult result = new StreamResult(os);
-            handler.setResult(result);
-			//END		
-            
-            /**
-             * TODO: Validation should be done before WSDL is sent to the client. org.exist.validation.Validator
-             * will need to make use of org.exist.validation.internal.BlockingOutputStream to connect to the Validator.
-             * 
-             */
-            
-			handler.startDocument();
-			docWebService.toSAX(broker, handler);
-			handler.endDocument();
-		}
-        catch(TransformerConfigurationException tce)
-        {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            writeResponse(response, formatXPathException(null, path, new XPathException(null, "SAX exception while transforming node: " + tce.getMessage(), tce)), "text/html", ENCODING);
-        }
-		catch (SAXException saxe)
-		{
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            writeResponse(response, formatXPathException(null, path, new XPathException(null, "SAX exception while transforming node: " + saxe.getMessage(), saxe)), "text/html", ENCODING);
-		}
-		finally
-		{
-			//close the Stylesheet Document and release the read lock
-			docStyleSheet.getUpdateLock().release();
-		}
-    }
-    
-    /**
      * Get's an XQWS Description from the cache.
      * If the description in the cache is out of date it will be refreshed.
      * If there is no cached description a new one is created and added
@@ -484,7 +419,7 @@ public class SOAPServer
     		//is the description is invalid, refresh it
     		if(!description.isValid())
     		{
-    			description.update(request);
+    			description.refresh(request);
     		}
     	}
     	else
@@ -591,13 +526,18 @@ public class SOAPServer
 			offset += bytes;
 	    }
 		
-		
-		/*** TEMP ***/
-		System.out.println(new String(buf, "UTF-8"));
-		/*** end TEMP ***/
-		
 		// 2) Create an XML Document from the SOAP Request
-		Document soapRequest = BuildXMLDocument(buf);
+	    Document soapRequest = null;
+		try
+		{
+			soapRequest = BuildXMLDocument(buf);
+		}
+		catch(Exception e)
+		{
+			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+			writeResponse(response, formatXPathException(null, path, new XPathException(null, "Unable to construct an XML document from the SOAP Request, probably an invalid request: " + e.getMessage(), e)), "text/html", ENCODING);
+			return;
+		}
 		
 		// 3) Validate the SOAP Request 
 		//TODO: validate the SOAP Request
@@ -636,16 +576,16 @@ public class SOAPServer
 			if(!funcNamespace.equals(request.getRequestURL().toString()))
 			{
 				//function in SOAP request has an invalid namespace
-				//TODO: suitable exception
-				System.err.println("invalid namespace");
+				response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+				writeResponse(response, "SOAP Function call has invalid namespace, got: " + funcNamespace + " but expected: " + request.getRequestURL().toString(), "text/html", ENCODING);
 				return;
 			}
 		}
 		else
 		{
 			//function in SOAP request has no namespace
-			//TODO: suitable exception
-			System.err.println("invalid namespace");
+			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+			writeResponse(response, "SOAP Function call has no namespace, expected: " + request.getRequestURL().toString(), "text/html", ENCODING);
 			return;
 		}
 		
@@ -658,16 +598,36 @@ public class SOAPServer
 			//Create an XQuery to call the XQWS function
 			CompiledXQuery xqCallXQWS = XQueryExecuteXQWSFunction(broker, nSOAPFunction, description, request, response);
 			
-			System.out.println("YAY :-)");
+			//xqCallXQWS
+			XQuery xqueryService = broker.getXQueryService();
+			Sequence xqwsResult = xqueryService.execute(xqCallXQWS, null);
+			
+			// 6) Create a SOAP Response describing the Result
+        	byte[] result = description.getSOAPResponse(nSOAPFunction.getNodeName(), xqwsResult, request);
+
+        	// 7) Send the SOAP Response to the http servlet response
+        	response.setContentType("text/xml");
+			ServletOutputStream os = response.getOutputStream();
+			BufferedOutputStream bos = new BufferedOutputStream(os);
+			bos.write(result);
+			bos.close();
+			os.close();
 		}
 		catch(XPathException xpe)
 		{
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 			writeResponse(response, formatXPathException(null, path, xpe), "text/html", ENCODING);
-			return;
 		}
-		
-		
+		catch(SAXException saxe)
+		{
+			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+			writeResponse(response, formatXPathException(null, path, new XPathException(null, "SAX exception while transforming node: " + saxe.getMessage(), saxe)), "text/html", ENCODING);
+		}
+		catch(TransformerConfigurationException tce)
+		{
+			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+			writeResponse(response, formatXPathException(null, path, new XPathException(null, "SAX exception while transforming node: " + tce.getMessage(), tce)), "text/html", ENCODING);
+		}
     }
 	
 	/**
@@ -677,39 +637,22 @@ public class SOAPServer
 	 * 
 	 * @return	DOM XML Document
 	 */
-	private Document BuildXMLDocument(byte[] buf)
+	private Document BuildXMLDocument(byte[] buf) throws SAXException, ParserConfigurationException, IOException
 	{
-		try
-		{ 
-			//try and construct xml document from input stream, we use eXist's in-memory DOM implementation
-			SAXParserFactory factory = SAXParserFactory.newInstance();
-			factory.setNamespaceAware(true);	
-			//TODO : we should be able to cope with context.getBaseURI()				
-			InputSource src = new InputSource(new ByteArrayInputStream(buf));
-			SAXParser parser = factory.newSAXParser();
-			XMLReader reader = parser.getXMLReader();
-			SAXAdapter adapter = new SAXAdapter();
-            reader.setContentHandler(adapter);
-			reader.setContentHandler(adapter);
-			reader.parse(src);
-			
-			//return receiver.getDocument();
-			return adapter.getDocument();
-		}
-		catch (ParserConfigurationException e)
-		{				
-			//do nothing, we will default to trying to return a string below
-		}
-		catch (SAXException e)
-		{
-			//do nothing, we will default to trying to return a string below
-		}
-		catch (IOException e)
-		{
-			//do nothing, we will default to trying to return a string below
-		}
+		//try and construct xml document from input stream, we use eXist's in-memory DOM implementation
+		SAXParserFactory factory = SAXParserFactory.newInstance();
+		factory.setNamespaceAware(true);	
+		//TODO we should be able to cope with context.getBaseURI()				
+		InputSource src = new InputSource(new ByteArrayInputStream(buf));
+		SAXParser parser = factory.newSAXParser();
+		XMLReader reader = parser.getXMLReader();
+		SAXAdapter adapter = new SAXAdapter();
+        reader.setContentHandler(adapter);
+		reader.setContentHandler(adapter);
+		reader.parse(src);
 		
-		return null;
+		//return receiver.getDocument();
+		return adapter.getDocument();
 	}
 	
 	/**
@@ -730,10 +673,11 @@ public class SOAPServer
 	 * @param xqwsFileUri	The File URI of the XQWS
 	 * @param request	The Http Servlet request for this webservice
 	 * @param path	The request path
-	 *  
+	 * @param functionName	Used when only a single function should be described, linked to functionResult
+	 * @param functionResult For writting out the results of a function call, should be used with functionName 
 	 * @return	An in-memory document describing the webservice
 	 */
-	private org.exist.memtree.DocumentImpl describeWebService(Module modXQWS, XmldbURI xqwsFileUri, HttpServletRequest request, String path)
+	private org.exist.memtree.DocumentImpl describeWebService(Module modXQWS, XmldbURI xqwsFileUri, HttpServletRequest request, String path, String functionName, Sequence functionResult) throws XPathException
 	{
 		FunctionSignature[] xqwsFunctions = modXQWS.listFunctions();
         MemTreeBuilder builderWebserviceDoc = new MemTreeBuilder();
@@ -757,8 +701,20 @@ public class SOAPServer
 		builderWebserviceDoc.startElement(new QName("functions", null, null), null);
 		for(int f = 0; f < xqwsFunctions.length; f++)
         {
-			//All Function Descriptions
-			describeWebServiceFunction(xqwsFunctions[f], builderWebserviceDoc);
+			if(functionName == null)
+			{
+				//All Function Descriptions
+				describeWebServiceFunction(xqwsFunctions[f], builderWebserviceDoc, null);
+			}
+			else
+			{
+				//Only a Single Function Description for showing function call results
+				if(xqwsFunctions[f].getName().getLocalName().equals(functionName))
+				{
+					describeWebServiceFunction(xqwsFunctions[f], builderWebserviceDoc, functionResult);
+					break;
+				}
+			}
         }
 		builderWebserviceDoc.endElement();
 		builderWebserviceDoc.endElement();
@@ -783,13 +739,15 @@ public class SOAPServer
 	 * 		<return>
 	 * 			<type/>
 	 * 			<cardinality/>
+	 * 			<result/>		//Only displayed if this is after the function has been executed
 	 * 		</return>
 	 * 	</function>
 	 * 
 	 * @param signature	The function signature to describe
 	 * @param builderFunction	The MemTreeBuilder to write the description to
+	 * @param functionResult	A Sequence containing the function results or null if the function has not yet been executed
 	 */
-	private void describeWebServiceFunction(FunctionSignature signature, MemTreeBuilder builderFunction)
+	private void describeWebServiceFunction(FunctionSignature signature, MemTreeBuilder builderFunction, Sequence functionResult) throws XPathException
 	{
 		//Generate an XML snippet for each function
     	builderFunction.startElement(new QName("function", null, null), null);
@@ -826,11 +784,19 @@ public class SOAPServer
     	builderFunction.startElement(new QName("cardinality",null, null), null);
     	builderFunction.characters(Integer.toString(signature.getReturnType().getCardinality()));
     	builderFunction.endElement();
+    	if(functionResult != null)
+    	{
+    		builderFunction.startElement(new QName("result", null, null), null);
+
+    		//TODO: this will work for a single string result, but need to add much more logic for other types and complex cardinalities
+    		builderFunction.characters(functionResult.itemAt(0).getStringValue());
+    		
+    		builderFunction.endElement();
+    	}
     	builderFunction.endElement();
     	builderFunction.endElement();
 	}
 	
-    //TODO: SHARE THIS FUNCTION WITH RESTServer (copied at the moment)
     /**
      * Pass the request, response and session objects to the XQuery
      * context.
@@ -905,8 +871,16 @@ public class SOAPServer
         is.write(data.getBytes(encoding));
     }
     
+    
     private class XQWSDescription
     {
+    	/**
+    	 * Class describes an XQWS using an Internal XML Representation
+    	 * 
+    	 * @author Adam Retter <adam.retter@devon.gov.uk>
+    	 * @serial 20061023T19:23:00
+    	 */
+    	
     	private DBBroker broker = null;
     	private String HttpServletRequestURL = null;
     	private String XQWSPath = null;
@@ -916,6 +890,7 @@ public class SOAPServer
     	
     	//cache for internal Description of an XQWS
     	private long lastModifiedXQWS = 0;
+    	private Module modXQWS = null;
     	private org.exist.memtree.DocumentImpl docXQWSDescription = null;
     	
     	//cache for XQWS WSDL
@@ -931,12 +906,20 @@ public class SOAPServer
     	HashMap descriptionFunction = new HashMap(); //key: functionName as String, value: byte[]
     	
     	
+    	/**
+    	 * Constructor
+    	 * 
+    	 * @param broker	The Database Broker to use
+    	 * @param XQWSPath	The path to the XQWS
+    	 * @param request	The Http Request for the XQWS
+    	 */
     	public XQWSDescription(DBBroker broker, String XQWSPath, HttpServletRequest request) throws XPathException, PermissionDeniedException
     	{
     		this.broker = broker;
     		this.HttpServletRequestURL = request.getRequestURL().toString();
     		this.XQWSPath = XQWSPath;
     		
+    		//create an initial description of the XQWS
     		createInternalDescription(request);
     	}
     	
@@ -999,12 +982,12 @@ public class SOAPServer
     	}
     	
     	/**
-    	 * Updates an XQWS Description by re-reading the XQWS
+    	 * Refreshes an XQWS Description by re-reading the XQWS
     	 * Should be called if isValid() returns false and an XQWS description is needed further 
     	 * 
     	 * @param request	The HttpServletRequest to update for
     	 */
-    	public void update(HttpServletRequest request) throws XPathException, PermissionDeniedException
+    	public void refresh(HttpServletRequest request) throws XPathException, PermissionDeniedException
     	{
     		createInternalDescription(request);
     	}
@@ -1024,8 +1007,10 @@ public class SOAPServer
     		//has the stylesheet changed, or is this the first call for this version
     		if(docStyleSheet.getMetadata().getLastModified() != lastModifiedWSDL || descriptionWSDL == null)
     		{
+    			//TODO: validate the WSDL
+    			
     			//yes, so re-run the transformation
-    			descriptionWSDL = Transform(docStyleSheet, null);
+    			descriptionWSDL = Transform(docXQWSDescription, docStyleSheet, null);
     			lastModifiedWSDL = docStyleSheet.getMetadata().getLastModified();
     		}
     		
@@ -1045,14 +1030,14 @@ public class SOAPServer
     	 */
     	public byte[] getHumanDescription() throws PermissionDeniedException, TransformerConfigurationException, SAXException 
     	{
-    		//get the WSDL StyleSheet
+    		//get the Human Description StyleSheet
     		DocumentImpl docStyleSheet = broker.getXMLResource(XmldbURI.create(XSLT_WEBSERVICE_HUMAN_DESCRIPTION), Lock.READ_LOCK);
     		
     		//has the stylesheet changed, or is this the first call for this version
     		if(docStyleSheet.getMetadata().getLastModified() != lastModifiedHuman || descriptionHuman == null)
     		{
     			//yes, so re-run the transformation
-    			descriptionHuman = Transform(docStyleSheet, null);
+    			descriptionHuman = Transform(docXQWSDescription, docStyleSheet, null);
     			lastModifiedHuman = docStyleSheet.getMetadata().getLastModified();
     		}
     		
@@ -1074,7 +1059,7 @@ public class SOAPServer
     	 */
     	public byte[] getFunctionDescription(String functionName) throws PermissionDeniedException, TransformerConfigurationException, SAXException 
     	{
-    		//get the WSDL StyleSheet
+    		//get the Function Description StyleSheet
     		DocumentImpl docStyleSheet = broker.getXMLResource(XmldbURI.create(XSLT_WEBSERVICE_FUNCTION_DESCRIPTION), Lock.READ_LOCK);
     		
     		//has the stylesheet changed?
@@ -1093,7 +1078,7 @@ public class SOAPServer
     			//do the transformation and store in the cache
     			Properties params = new Properties();
     			params.put("function", functionName);
-    			descriptionFunction.put(functionName, Transform(docStyleSheet, params));
+    			descriptionFunction.put(functionName, Transform(docXQWSDescription, docStyleSheet, params));
     		}
     		
     		//close the Stylesheet Document and release the read lock
@@ -1178,6 +1163,13 @@ public class SOAPServer
     		return null;
     	}
     	
+    	/**
+    	 * Returns the Name for the function parameter
+    	 * 
+    	 * @param internalFunctionParameter The internal function parameter to return the Name for
+    	 * 
+    	 * @return The Name of the parameter
+    	 */
     	public String getFunctionParameterName(Node internalFunctionParameter)
     	{
     		//first element child of <parameter> is <name>
@@ -1197,6 +1189,13 @@ public class SOAPServer
     		return null;
     	}
     	
+    	/**
+    	 * Returns the Type for the function parameter
+    	 * 
+    	 * @param internalFunctionParameter The internal function parameter to return the Type for
+    	 * 
+    	 * @return The Type of the parameter
+    	 */
     	public String getFunctionParameterType(Node internalFunctionParameter)
     	{
     		//second element child of <parameter> is <type>
@@ -1216,6 +1215,13 @@ public class SOAPServer
     		return null;
     	}
     	
+    	/**
+    	 * Returns the Cardinality for the function parameter
+    	 * 
+    	 * @param internalFunctionParameter The internal function parameter to return the Cardinality for
+    	 * 
+    	 * @return The Cardinality as defined by org.exist.xquery.Cardinality
+    	 */
     	public int getFunctionParameterCardinality(Node internalFunctionParameter)
     	{
     		//third element child of <parameter> is <cardinality>
@@ -1234,6 +1240,28 @@ public class SOAPServer
     		
     		//default cardinality
     		return Cardinality.EXACTLY_ONE;
+    	}
+    	
+    	/**
+    	 * Returns the SOAP Response for the XQWS Function
+    	 * named with the result provided.
+    	 * 
+    	 * @param functionName	The name of the XQWS function that was called
+    	 * @param functionResult	The Result of the XQWS function that was called
+    	 * @param request	The Http Request for the XQWS
+    	 * 
+    	 * @return byte array containing the SOAP Response
+    	 */
+    	public byte[] getSOAPResponse(String functionName, Sequence functionResult, HttpServletRequest request) throws XPathException, PermissionDeniedException, TransformerConfigurationException, SAXException
+    	{
+    		//get the Result StyleSheet for the SOAP Response
+    		DocumentImpl docStyleSheet = broker.getXMLResource(XmldbURI.create(XSLT_WEBSERVICE_SOAP_RESPONSE), Lock.READ_LOCK);
+    		
+    		//Get an internal description, containg just a single function with its result
+    		org.exist.memtree.DocumentImpl docResult = describeWebService(modXQWS, xqwsFileURI, request, XQWSPath, functionName, functionResult);
+    		
+    		//return the SOAP Response
+    		return Transform(docResult, docStyleSheet, null);
     	}
     	
     	/**
@@ -1259,8 +1287,8 @@ public class SOAPServer
             CompiledXQuery compiled = XQueryIncludeXQWS(broker, docXQWS.getFileURI(), xqwsNamespace, docXQWS.getCollection().getURI());
             
             // 5) Inspect the XQWS and its function signatures and create a small XML document to represent it
-            Module modXQWS = compiled.getContext().getModule(xqwsNamespace.getNamespaceURI());
-            docXQWSDescription = describeWebService(modXQWS, docXQWS.getFileURI(), request, XQWSPath);
+            modXQWS = compiled.getContext().getModule(xqwsNamespace.getNamespaceURI());
+            docXQWSDescription = describeWebService(modXQWS, xqwsFileURI, request, XQWSPath, null, null);
     	}
     	
     	/**
@@ -1271,7 +1299,7 @@ public class SOAPServer
          * 
          * @return byte array containing the result of the transformation
          */
-        private byte[] Transform(DocumentImpl docStyleSheet, Properties parameters) throws  TransformerConfigurationException, SAXException
+        private byte[] Transform(org.exist.memtree.DocumentImpl srcDoc, DocumentImpl docStyleSheet, Properties parameters) throws  TransformerConfigurationException, SAXException
         {
             //Transform docXQWSDescription with the stylesheet
         	
@@ -1305,20 +1333,12 @@ public class SOAPServer
 				}
 			}
 			
-			//START send result of transformation directly to response
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
             StreamResult result = new StreamResult(os);
             handler.setResult(result);
-			//END		
-            
-            /**
-             * TODO: Validation should be done before WSDL is sent to the client. org.exist.validation.Validator
-             * will need to make use of org.exist.validation.internal.BlockingOutputStream to connect to the Validator.
-             * 
-             */
             
 			handler.startDocument();
-			docXQWSDescription.toSAX(broker, handler);
+			srcDoc.toSAX(broker, handler);
 			handler.endDocument();
 			
 			return os.toByteArray();
