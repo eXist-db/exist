@@ -323,7 +323,7 @@ public class SOAPServer
         //add the arguments for the function call if any
         NodeList xqwsSOAPFunctionParams = xqwsSOAPFunction.getChildNodes();
         Node nInternalFunction = xqwsDescription.getFunction(functionName);
-        NodeList nlInternalFunctionParams = xqwsDescription.getFunctionParameters(functionName);
+        NodeList nlInternalFunctionParams = xqwsDescription.getFunctionParameters(nInternalFunction);
         
         for(int i = 0; i < xqwsSOAPFunctionParams.getLength(); i++)
         {
@@ -1102,14 +1102,21 @@ public class SOAPServer
     		{
     			//get the function node
     			Node nFunction = nlFunctions.item(i);
-    			//first child of function should be name
-    			Node nFunctionName = nFunction.getFirstChild();
-    			
-    			//is this the function node we are looking for?
-    			if(nFunctionName.getNodeValue().equals(functionName))
+    		
+    			//iterate through children of function, get value of <name> element
+    			NodeList nlFunctionChildren = nFunction.getChildNodes();
+    			for(int j = 0; j < nlFunctionChildren.getLength(); j++)
     			{
-    				//yes so return it
-    				return nFunction;
+    				Node nFunctionChild = nlFunctionChildren.item(j);
+    				if(nFunctionChild.getNodeType() == Node.ELEMENT_NODE)
+    				{
+    					//is this the function node we are looking for?
+    					if(nFunctionChild.getNodeName().equals("name") && nFunctionChild.getFirstChild().getNodeValue().equals(functionName))
+    					{
+    						//yes so return it
+    						return nFunction; 
+    					}
+    				}
     			}
     		}
     		
@@ -1146,7 +1153,7 @@ public class SOAPServer
     		for(int i = 0; i < nlChildren.getLength(); i++)
     		{
     			Node child = nlChildren.item(i);
-    			if(child.getNodeName() == "parameters")
+    			if(child.getNodeName().equals("parameters"))
     			{
     				return child.getChildNodes();
     			}
