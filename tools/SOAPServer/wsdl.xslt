@@ -9,30 +9,38 @@
                     <xsl:for-each select="functions/function">
                         <xsl:variable name="funName" select="name" as="xs:string"/>
                         <xs:element name="{$funName}">
-                            <xs:complexType>
-                                <xs:sequence>
-                                    <xsl:for-each select="parameters/parameter">
-                                        <xsl:variable name="type" select="type"/>
-                                        <xsl:variable name="cardinality" select="cardinality"/>
-                                        <xsl:choose>
-                                            <xsl:when test="$cardinality &gt; 2"><!-- need array of type --></xsl:when>
-                                            <xsl:otherwise>
-                                                <xs:element name="{concat('arg', position())}" type="{$type}"/>
-                                            </xsl:otherwise>
+                            <xsl:for-each select="parameters/parameter">
+                            <xsl:variable name="cardinality" select="cardinality"/>
+                                <xsl:variable name="type" select="type"/>
+                                <xs:complexType>
+                                    <xs:sequence>
+                                    <xsl:choose>
+                                        <xsl:when test="$cardinality &lt; 4">
+                                             <!-- single value of type -->
+                                              <xs:element name="{concat('arg', position())}" type="{$type}"/>   
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <!-- array of type -->
+                                            <xs:element name="{concat('arg', position())}" type="{$type}" minOccurs="1" maxOccurs="unbounded"/>
+                                        </xsl:otherwise>
                                         </xsl:choose>
-                                    </xsl:for-each>
-                                </xs:sequence>
-                            </xs:complexType>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xsl:for-each>
                         </xs:element>
                         <xs:element name="{concat($funName, 'Response')}">
                             <xs:complexType>
                                 <xs:sequence>
-                                    <xsl:variable name="type" select="return/type"/>
                                     <xsl:variable name="cardinality" select="return/cardinality"/>
+                                    <xsl:variable name="type" select="return/type"/>
                                     <xsl:choose>
-                                        <xsl:when test="$cardinality &gt; 2"><!-- need array of type --></xsl:when>
-                                        <xsl:otherwise>
+                                        <xsl:when test="$cardinality &lt; 4">
+                                            <!-- single value of type -->
                                             <xs:element name="{concat($funName, 'Result')}" type="{$type}"/>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <!-- array of type -->
+                                            <xs:element name="result" type="{$type}" minOccurs="1" maxOccurs="unbounded"/>
                                         </xsl:otherwise>
                                     </xsl:choose>
                                 </xs:sequence>
