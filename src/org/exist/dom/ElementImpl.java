@@ -1294,6 +1294,8 @@ public class ElementImpl extends NamedNode implements Element {
         final long lastChild = lastChildID();
         getBroker().removeAllNodes(transaction, oldNode, oldNode.getPath());
         --children;
+        if (oldChild.getNodeType() == Node.ATTRIBUTE_NODE)
+            --attributes;
         getBroker().endRemove();
         getBroker().updateNode(transaction, this);
         if (oldNode.getGID() < lastChild) {

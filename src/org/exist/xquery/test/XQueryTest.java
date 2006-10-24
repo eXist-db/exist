@@ -1621,7 +1621,7 @@ public class XQueryTest extends XMLTestCase {
 		}
 	}
 	
-	public void bugtestXUpdateWithAdvancentTextNodes() {
+	public void bugtestXUpdateWithAdjacentTextNodes() {
 		ResourceSet result;
 		String query;	
 		
@@ -1691,6 +1691,21 @@ public class XQueryTest extends XMLTestCase {
 			fail(e.getMessage());
 		}
 	}
+        
+    public void testNodeName(){
+        String query="declare function local:name($node as node()) as xs:string? { "
+                +" if ($node/self::element() != '') then name($node) else () }; "
+                +" let $n := <!-- Just a comment! --> return local:name($n) ";
+        XPathQueryService service;
+        try {
+            service = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+            assertEquals( "XQuery: " + query, 0, result.getSize() );
+        } catch (XMLDBException ex) {
+            fail(ex.toString());
+        }
+    }
+    
 	/**
 	 * @return
 	 * @throws XMLDBException
