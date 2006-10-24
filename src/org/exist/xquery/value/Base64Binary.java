@@ -21,10 +21,8 @@
  */
 package org.exist.xquery.value;
 
-import java.io.UnsupportedEncodingException;
-
-import org.apache.xmlrpc.Base64;
-import org.exist.xquery.Constants;
+import org.exist.util.Base64Encoder;
+import org.exist.util.Base64Decoder;
 import org.exist.xquery.XPathException;
 
 public class Base64Binary extends BinaryValue {
@@ -34,50 +32,48 @@ public class Base64Binary extends BinaryValue {
     }
 
     public Base64Binary(String str) throws XPathException {
-    	try { 
-    		if (!Base64.isBase64(str)) 
-    			throw new XPathException("cannot build " + Type.getTypeName(getType()) + " from '" + str + "'");    		
-    		if (str.indexOf("=") != Constants.STRING_NOT_FOUND && str.indexOf("=") != str.length()) 
-    			throw new XPathException("cannot build " + Type.getTypeName(getType()) + " from '" + str + "', '=' must be at the end");    		
-			this.data = Base64.decode(str.getBytes("UTF-8"));
-		} catch (UnsupportedEncodingException e) {
-			throw new XPathException("cannot build UTF-8 " + Type.getTypeName(getType()) + " from '" + str + "'");
+    	Base64Decoder dec = new Base64Decoder();
+		try
+		{
+			dec.translate(str);
 		}
+		catch(IllegalArgumentException e)
+		{
+			throw new XPathException("cannot build " + Type.getTypeName(getType()) + " from '" + str + "'. " + e.getMessage());
+		}
+    	this.data = dec.getByteArray();
     }
     
     public int getType() {
         return Type.BASE64_BINARY;
     }
     
-    public String getStringValue() throws XPathException {
-        try {
-			return new String(Base64.encode(data), "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			throw new XPathException("cannot build UTF-8 " + Type.getTypeName(getType()) + " from " + Type.getTypeName(getType()));
-		}
+    public String getStringValue() throws XPathException
+    {
+        	Base64Encoder enc = new Base64Encoder();
+        	enc.translate(data);
+        	return new String(enc.getCharArray());
     }
 
-    public AtomicValue convertTo(int requiredType) throws XPathException {
+    public AtomicValue convertTo(int requiredType) throws XPathException
+    {
+    	
+    	Base64Encoder enc = new Base64Encoder();
+    	
     	switch (requiredType) {
     	case Type.BASE64_BINARY: 
     		return this;
         case Type.HEX_BINARY:
             return new HexBinary(data);
     	case Type.UNTYPED_ATOMIC:
-    		try {
-    			//Added trim() since it looks like a new line character is added
-    			return new UntypedAtomicValue(new String(Base64.encode(data), "UTF-8").trim());
-			} catch (UnsupportedEncodingException e) {
-				throw new XPathException("cannot convert UTF-8 " + Type.getTypeName(getType()) + " to " + Type.getTypeName(requiredType));
-			}
+    		//Added trim() since it looks like a new line character is added
+    		enc.translate(data);
+    		return new UntypedAtomicValue(new String(enc.getCharArray()).trim());
     	case Type.STRING: 
-    		try {
-				//return new StringValue(new String(data, "UTF-8"));
-    			//Added trim() since it looks like a new line character is added
-    			return new StringValue(new String(Base64.encode(data), "UTF-8").trim());
-			} catch (UnsupportedEncodingException e) {
-				throw new XPathException("cannot convert UTF-8 " + Type.getTypeName(getType()) + " to " + Type.getTypeName(requiredType));
-			}
+			//return new StringValue(new String(data, "UTF-8"));
+    		//Added trim() since it looks like a new line character is added
+    		enc.translate(data);
+    		return new StringValue(new String(enc.getCharArray()).trim());
     	default:
     		throw new XPathException("cannot convert " + Type.getTypeName(getType()) + " to " + Type.getTypeName(requiredType));
     	}
