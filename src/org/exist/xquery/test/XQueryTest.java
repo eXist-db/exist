@@ -1522,6 +1522,36 @@ public class XQueryTest extends XMLTestCase {
 			fail(e.getMessage());
 		}
 	}
+        
+    public void bugtestAttributeNamespace() {
+
+        String query = "declare function local:copy($nodes as node()*) as node()* {"
+        +"for $n in $nodes return "
+        +"if ($n instance of element()) then "
+        +"  element {node-name($n)} {(local:copy($n/@*), local:copy($n/node()))} "
+        +"else if ($n instance of attribute()) then "
+        +"  attribute {node-name($n)} {$n} "
+        +"else if ($n instance of text()) then "
+        +"  text {$n} "
+        +"else "
+        +"  <Other/>"
+        +"};"
+        +"let $c :="
+        +"<c:C  xmlns:c=\"http://c\" xmlns:d=\"http://d\" d:d=\"ddd\">"
+        +"ccc"
+        +"</c:C>"
+        +"return local:copy($c)";
+        try {
+            XPathQueryService service = (XPathQueryService) testCollection.getService(
+                    "XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+            assertEquals(1, result.getSize());
+            assertEquals("<c:C xmlns:c=\"http://c\" xmlns:d=\"http://d\" d:d=\"ddd\">"
+                    +"ccc"+"</c:C>", result.getResource(0).getContent().toString());
+        } catch (XMLDBException e) {
+            fail(e.getMessage());
+        }
+    }
 
     public void testNameConflicts() {
         String query = "let $a := <name name=\"Test\"/> return <wrap>{$a//@name}</wrap>";
