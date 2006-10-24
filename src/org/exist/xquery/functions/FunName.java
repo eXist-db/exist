@@ -111,7 +111,8 @@ public class FunName extends Function {
                     break;
     			case Node.DOCUMENT_NODE:
     			case Node.TEXT_NODE:
-    				result.add(new StringValue(""));
+    			case Node.COMMENT_NODE:
+    				result.add(StringValue.EMPTY_STRING);
     				break;
                 //TODO : what kind of default do we expect here ? -pb
     			default:

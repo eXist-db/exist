@@ -113,6 +113,35 @@ public class DocumentUpdateTest extends TestCase {
 		}
     }
     
+    public void testUpdateAttribute(){
+        String query1="let $content :="
+                +"<A><B><C d=\"xxx\">ccc1</C><C d=\"yyy\" e=\"zzz\">ccc2</C></B></A> "
+                +"let $uri := xmldb:store(\"/db/\", \"marktest7.xml\", $content) "
+                +"let $doc := doc($uri) "
+                +"let $xxx := update delete $doc//@*"
+                +"return $doc";
+
+        String query2="let $doc := doc(\"/db/marktest7.xml\") "
+                +"return "
+                +"( for $elem in $doc//* "
+                +"return update insert attribute AAA {\"BBB\"} into $elem, $doc) ";
+
+        try {
+            String result1 = execQuery(query1);
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.getMessage());
+        }
+        
+        try {   
+            String result2 = execQuery(query2);
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.getMessage());
+        }
+
+    }
+    
     private String execQuery(String query) throws XMLDBException {
     	XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
     	ResourceSet result = service.query(query);

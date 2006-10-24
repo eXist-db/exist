@@ -80,7 +80,7 @@ public class EnclosedExpr extends PathExpr {
 			    context.proceed(this, builder);
 				// if item is an atomic value, collect the string values of all
 				// following atomic values and seperate them by a space. 
-				if (Type.subTypeOf(next.getType(), Type.ATOMIC)) {
+				if (next.getType() == Type.TEXT || Type.subTypeOf(next.getType(), Type.ATOMIC)) {
 				    if(buf == null)
 				        buf = new StringBuffer();
 					else if (buf.length() > 0)

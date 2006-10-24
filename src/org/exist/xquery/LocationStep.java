@@ -207,8 +207,14 @@ public class LocationStep extends Step {
                             .toNodeSet());
                     break;
                 case Constants.CHILD_AXIS:
-                    result = getChildren(context, contextSequence.toNodeSet());
-                    break;
+                	//VirtualNodeSets may have modified the axis ; checking the type
+                	//TODO : futher checks ?
+                	if (this.test.getType() == 2) {
+                		this.axis = Constants.ATTRIBUTE_AXIS;
+                		result = getAttributes(context, contextSequence.toNodeSet());
+                	} else
+                		result = getChildren(context, contextSequence.toNodeSet());
+                	break;
                 case Constants.ANCESTOR_SELF_AXIS:
                 case Constants.ANCESTOR_AXIS:
                     result = getAncestors(context, contextSequence.toNodeSet());

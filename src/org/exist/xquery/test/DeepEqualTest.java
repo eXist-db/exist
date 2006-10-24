@@ -326,8 +326,67 @@ public class DeepEqualTest extends TestCase {
                             + "return deep-equal($result1, $result2)";
             assertQuery(true,query);    
 	}
+    
+        public void testsiblingCornerCase() {
+        	String query = "declare  namespace ve = 'http://www.test.com/deepestEqualError'; " +
+            "declare function ve:functionVerifications() as element(FunctionVerifications) { " +
+            "let $parVers := " + 
+            "<ParameterVerifications> " +
+            "  <Parameter/> " +
+            "  <PassedLevel>ATP</PassedLevel> " +
+            "  <PassedLevel>PE</PassedLevel> " +
+            "  <PassedLevel>SPC</PassedLevel> " +
+            "  <Specification>ATP</Specification> " +
+            "  <Specification>PE</Specification> " +
+            "  <Specification>SPC</Specification> " +
+            "</ParameterVerifications> " +
+            "let $dummy := $parVers/PassedLevel  (: cause deep-equal bug!!! :) " +
+            "return " +
+            "<FunctionVerifications> " +
+            "  <PassedLevel>ATP</PassedLevel> " +
+            "  <PassedLevel>PE</PassedLevel> " +
+            "  <PassedLevel>SPC</PassedLevel> " +
+            "  {$parVers} " +
+            "</FunctionVerifications> " +
+          "}; " +
+          "let $expected := " +
+          "  <FunctionVerifications> " +
+          "    <PassedLevel>ATP</PassedLevel> " +
+          "    <PassedLevel>PE</PassedLevel> " +
+          "    <PassedLevel>SPC</PassedLevel> " +
+          "    <ParameterVerifications> " +
+          "      <Parameter/> " +
+          "      <PassedLevel>ATP</PassedLevel> " +
+          "      <PassedLevel>PE</PassedLevel> " +
+          "      <PassedLevel>SPC</PassedLevel> " +
+          "      <Specification>ATP</Specification> " +
+          "      <Specification>PE</Specification> " +
+          "      <Specification>SPC</Specification> " +
+          "    </ParameterVerifications> " +
+          "  </FunctionVerifications> " +
+          "let $got := ve:functionVerifications() " +
+          "return deep-equal($expected, $got)";
+        	assertQuery(true,query);
+        }
         
-        
+         public void testSequenceError1() {
+        	String query = "declare namespace ds = \"http://www.test.com/SequenceError\"; "
+                        +"declare function ds:result(  $current as element(Result)?, "
+                        +"$value  as element(Value)?) as element(Result) {"
+                        +"<Result> <Value>{ ($current/Value/node(), $value/node()) }</Value> </Result> };"
+                        +"let $v1 := <Value>1234</Value> " 
+                        +"let $result1 := ds:result((), $v1) "
+                        +"let $v2 := <Value>abcd</Value> "
+                        +"let $expected := <Value>{($v1, $v2)/node()}</Value> "
+                        +"let $result2 := ds:result($result1, $v2) "
+                        +"return deep-equal($expected, $result2/Value)";
+//                for(int i=1; i<20;i++){
+//                    System.out.println("nr="+i);
+                    assertQuery(true,query);
+//               }
+        };
+
+
 	
 	public void testNSElements1() {
 		createDocument("test", "<test xmlns:p='urn:foo' xmlns:q='urn:foo'><p:a/><q:a/></test>");
