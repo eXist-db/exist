@@ -458,8 +458,8 @@ public class LocationStep extends Step {
             	return index.findDescendantsByTagName(ElementValue.ELEMENT, test.getName(), axis,
             			docs, (ExtArrayNodeSet) contextSet, contextId);
             } else {
-            	if (contextSet instanceof VirtualNodeSet)
-            		((VirtualNodeSet)contextSet).realize();
+//            	if (contextSet instanceof VirtualNodeSet)
+//            		((VirtualNodeSet)contextSet).realize();
             	NodeSelector selector = new ChildSelector(contextSet, contextId);
             	return index.findElementsByTagName(ElementValue.ELEMENT, docs, test
             			.getName(), selector);
