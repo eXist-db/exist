@@ -24,7 +24,10 @@ package org.exist.client;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -33,6 +36,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.exist.storage.DBBroker;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
@@ -49,14 +54,15 @@ import org.xmldb.api.base.XMLDBException;
 public class CollectionXConf
 {	
 	private InteractiveClient client = null;	//the client
-	private String path = null;					//path of the collection.xconf file
+	private String path = null;				//path of the collection.xconf file
 	Collection collection = null;				//the configuration collection
 	Resource resConfig = null;					//the collection.xconf resource
 	
+	private LinkedHashMap customNamespaces = null;		//custom namespaces
 	private FullTextIndex fulltextIndex = null;		//fulltext index model
-	private RangeIndex[] rangeIndexes = null;		//range indexes model
-	private QNameIndex[] qnameIndexes;				//qname indexes model
-	private Trigger[] triggers = null;				//triggers model
+	private RangeIndex[] rangeIndexes = null;			//range indexes model
+	private QNameIndex[] qnameIndexes;					//qname indexes model
+	private Trigger[] triggers = null;					//triggers model
 	
 	private boolean hasChanged = false;	//indicates if changes have been made to the current collection configuration
 	
@@ -107,6 +113,9 @@ public class CollectionXConf
 		
 		//Get the root of the collection.xconf
 		Element xconf = docConfig.getDocumentElement();
+		
+		//Read any custom namespaces from xconf
+		customNamespaces = getCustomNamespaces(xconf);
 		
 		//Read FullText Index from xconf
 		fulltextIndex = getFullTextIndex(xconf);
@@ -654,6 +663,32 @@ public class CollectionXConf
 	}
 	
 	//given the root element of collection.xconf it will return the fulltext index
+	private LinkedHashMap getCustomNamespaces(Element xconf)
+	{
+		NamedNodeMap attrs = xconf.getAttributes();
+		
+		//there will always be one attribute - the default namespace
+		if(attrs.getLength() > 1)
+		{
+			LinkedHashMap namespaces = new LinkedHashMap();
+			
+			for(int i = 0; i < attrs.getLength(); i++)
+			{
+				Node a = attrs.item(i);
+				if(a.getNodeName().startsWith("xmlns:"))
+				{
+					String namespaceLocalName = a.getNodeName().substring(a.getNodeName().indexOf(":")+1); 
+					namespaces.put(namespaceLocalName, a.getNodeValue());
+				}
+			}
+			
+			return namespaces;
+		}
+		
+		return null;
+	}
+	
+	//given the root element of collection.xconf it will return the fulltext index
 	private FullTextIndex getFullTextIndex(Element xconf)
 	{
 		NodeList nlFullTextIndex = xconf.getElementsByTagName("fulltext");
@@ -805,7 +840,20 @@ public class CollectionXConf
 	{
 		StringBuffer xconf = new StringBuffer();
 		
-		xconf.append("<collection xmlns=\"http://exist-db.org/collection-config/1.0\">");
+		xconf.append("<collection xmlns=\"http://exist-db.org/collection-config/1.0\"");
+		if(customNamespaces != null)
+		{
+			Set namespaceKeys = customNamespaces.keySet();
+			Iterator itKeys = namespaceKeys.iterator();
+			while(itKeys.hasNext())
+			{
+				xconf.append(" ");
+				String namespaceLocalName = (String)itKeys.next();
+				String namespaceURL = (String)customNamespaces.get(namespaceLocalName);
+				xconf.append("xmlns:" + namespaceLocalName + "=\"" + namespaceURL + "\"");
+			}
+		}
+		xconf.append(">");
 		xconf.append(System.getProperty("line.separator"));
 		
 		//index

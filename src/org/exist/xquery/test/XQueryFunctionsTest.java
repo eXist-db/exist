@@ -302,7 +302,8 @@ public class XQueryFunctionsTest extends TestCase {
             } catch (XMLDBException e) {
                 message = e.getMessage();
             }
-            assertTrue(message.indexOf("FOCH0002") > -1);		            
+            //depends whether we have strict type checking or not
+            assertTrue(message.indexOf("FORG0001") > -1 | message.indexOf("FOCH0002") > -1);		            
 			
 		} catch (XMLDBException e) {
 			e.printStackTrace();
@@ -348,8 +349,8 @@ public class XQueryFunctionsTest extends TestCase {
             } catch (XMLDBException e) {
                 message = e.getMessage();
             }
-            assertTrue(message.indexOf("FOCH0002") > -1);				
-			
+            //depends whether we have strict type checking or not
+            assertTrue(message.indexOf("FORG0001") > -1 | message.indexOf("FOCH0002") > -1);		            
 
 		} catch (XMLDBException e) {
 			e.printStackTrace();
@@ -712,7 +713,7 @@ public class XQueryFunctionsTest extends TestCase {
     	}
     }
     
-    public void bugtestBase64BinaryCast()
+    public void testBase64BinaryCast()
 	{
     	final String TEST_BINARY_COLLECTION = "testBinary";
     	final String TEST_COLLECTION = "/db/" + TEST_BINARY_COLLECTION;
