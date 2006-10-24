@@ -78,13 +78,13 @@
                 </tr>
                 <tr>
                     <td>
-                        <a href="http://prdownloads.sourceforge.net/exist/eXist-1.0.jar">eXist-1.0.jar</a>
+                        <a href="http://prdownloads.sourceforge.net/exist/eXist-1.0.1.jar">eXist-1.0.1.jar</a>
                     </td>
-                    <td> Installer based on IzPack. Includes source. Run with <tt>java -jar eXist-1.0.jar</tt></td>
+                    <td> Installer based on IzPack. Includes source. Run with <tt>java -jar eXist-1.0.1.jar</tt></td>
                 </tr>
                 <tr>
                     <td>
-                        <a href="http://prdownloads.sourceforge.net/exist/exist-1.0.war">exist-1.0.war</a>
+                        <a href="http://prdownloads.sourceforge.net/exist/exist-1.0.1.war">exist-1.0.1.war</a>
                     </td>
                     <td>Web application archive, ready to be installed into an existing
                         servlet-engine like Tomcat or Jetty. </td>
@@ -103,13 +103,13 @@
                 </tr>
                 <tr>
                     <td>
-                        <a href="http://prdownloads.sourceforge.net/exist/eXist-1.1-newcore.jar">eXist-1.1-newcore.jar</a>
+                        <a href="http://prdownloads.sourceforge.net/exist/eXist-1.1.1-newcore.jar">eXist-1.1.1-newcore.jar</a>
                     </td>
-                    <td> Installer based on IzPack. Includes source. Run with <tt>java -jar eXist-1.1-newcore.jar</tt></td>
+                    <td> Installer based on IzPack. Includes source. Run with <tt>java -jar eXist-1.1.1-newcore.jar</tt></td>
                 </tr>
                 <tr>
                     <td>
-                        <a href="http://prdownloads.sourceforge.net/exist/exist-1.1-newcore.war">exist-1.1-newcore.war</a>
+                        <a href="http://prdownloads.sourceforge.net/exist/exist-1.1.1-newcore.war">exist-1.1.1-newcore.war</a>
                     </td>
                     <td>Web application archive, ready to be installed into an existing
                         servlet-engine like Tomcat or Jetty. </td>
