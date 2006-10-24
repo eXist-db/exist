@@ -113,7 +113,7 @@ public class DocumentUpdateTest extends TestCase {
 		}
     }
     
-    public void bugtestUpdateAttribute(){
+    public void testUpdateAttribute(){
         String query1="let $content :="
                 +"<A><B><C d=\"xxx\">ccc1</C><C d=\"yyy\" e=\"zzz\">ccc2</C></B></A> "
                 +"let $uri := xmldb:store(\"/db/\", \"marktest7.xml\", $content) "
