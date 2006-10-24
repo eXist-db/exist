@@ -9,6 +9,7 @@ import junit.textui.TestRunner;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xquery.XPathException;
+import org.exist.util.Configuration;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -756,9 +757,13 @@ public class XQueryFunctionsTest extends TestCase {
 	    	CollectionManagementService colService = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
 			Collection testCollection = colService.createCollection(TEST_BINARY_COLLECTION);
 			assertNotNull(testCollection);
-			
-			//store the eXist logo in the test collection
-			File fLogo = new File("webapp/" + BINARY_RESOURCE_FILENAME);
+			File home = Configuration.getExistHome();
+            File fLogo;
+            if (home != null)
+                fLogo = new File(home, "webapp/" + BINARY_RESOURCE_FILENAME);
+            else
+                fLogo = new File("webapp/" + BINARY_RESOURCE_FILENAME);
+            //store the eXist logo in the test collection
 			BinaryResource br = (BinaryResource)testCollection.createResource(BINARY_RESOURCE_FILENAME, "BinaryResource");
 			br.setContent(fLogo);
 			testCollection.storeResource(br);
