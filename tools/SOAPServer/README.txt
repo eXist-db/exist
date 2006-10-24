@@ -4,10 +4,6 @@ SOAPServer is a Server module for the eXist EXistServlet that allows
 webservices to be written in XQuery. Allowing for easy transportation
 of XML data which can also be query dependant.
 
-At the moment only functions with simple argument and return types are supported
-(that is with cardinality EXACTLY_ONE). More complex arguments and return types
-should be fairly simple to add.
-
 
 Notes
 ====
