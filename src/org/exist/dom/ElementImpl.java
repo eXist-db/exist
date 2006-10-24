@@ -1089,6 +1089,8 @@ public class ElementImpl extends NamedNode implements Element {
                     "node is not a child of this element");
         getBroker().removeAllNodes(transaction, oldNode, oldNode.getPath());
         --children;
+        if (oldChild.getNodeType() == Node.ATTRIBUTE_NODE)
+            --attributes;
         getBroker().endRemove();
         getBroker().updateNode(transaction, this);
         getBroker().flush();
