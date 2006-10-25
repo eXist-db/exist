@@ -346,7 +346,7 @@ public class XQueryServlet extends HttpServlet {
     private void sendError(PrintWriter out, String message, XMLDBException e) {
         out.print("<html><head>");
         out.print("<title>XQueryServlet Error</title>");
-        out.print("<link rel=\"stylesheet\" type=\"text/css\" href=\"error.css\"></head>");
+        out.print("<link rel=\"stylesheet\" type=\"text/css\" href=\"error.css\"></link></head>");
         out.print("<body><div id=\"container\"><h1>Error found</h1>");
         Throwable t = e.getCause();
         if (t instanceof XPathException) {
@@ -370,7 +370,7 @@ public class XQueryServlet extends HttpServlet {
     private void sendError(PrintWriter out, String message, String description) {
         out.print("<html><head>");
         out.print("<title>XQueryServlet Error</title>");
-        out.print("<link rel=\"stylesheet\" type=\"text/css\" href=\"error.css\"></head>");
+        out.print("<link rel=\"stylesheet\" type=\"text/css\" href=\"error.css\"></link></head>");
         out.println("<body><h1>Error found</h1>");
         out.print("<div class='message'><b>Message: </b>");
         out.print(message);
