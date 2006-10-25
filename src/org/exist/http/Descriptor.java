@@ -64,15 +64,17 @@ import org.xml.sax.XMLReader;
 public class Descriptor implements ErrorHandler
 {
 	private static final String SYSTEM_LINE_SEPARATOR = System.getProperty("line.separator");
+	private final static String EXIST_HOME_VAR_NAME = "${EXIST_HOME}"; 
+	
 	//References
 	private static Descriptor singletonRef;
 	private final static Logger LOG = Logger.getLogger(Descriptor.class);		//Logger
 	/** descriptor file (descriptor.xml) */
 	private final static String file = "descriptor.xml";							
-
+	
 	//Data
 	private BufferedWriter bufWriteReplayLog = null;	//Should a replay log of requests be created
-	private String allowSourceXQueryList[] = null; 	//Array of xql files to allow source to be viewed 
+	private String allowSourceXQueryList[] = null; 		//Array of xql files to allow source to be viewed 
 	private String mapList[][] = null;	 				//Array of Mappings
 	  
 	/**
@@ -212,11 +214,11 @@ public class Descriptor implements ErrorHandler
             	return;
             }
             
-            //Does the path contain $EXIST_HOME?
-            if(path.startsWith("{$EXIST_HOME}"))
+            //Does the path contain ${EXIST_HOME}?
+            if(path.startsWith(EXIST_HOME_VAR_NAME))
             {
-            	//Replace $EXIST_HOME with the actual path
-            	path = Configuration.getExistHome().getAbsolutePath() + path.substring("{$EXIST_HOME}".length());
+            	//Replace ${EXIST_HOME} with the actual path
+            	path = Configuration.getExistHome().getAbsolutePath() + path.substring(EXIST_HOME_VAR_NAME.length());
             }
             
             //store the path
@@ -257,10 +259,10 @@ public class Descriptor implements ErrorHandler
             }
             
             //Does the path contain $EXIST_HOME?
-            if(path.startsWith("{$EXIST_HOME}"))
+            if(path.startsWith(EXIST_HOME_VAR_NAME))
             {
             	//Replace $EXIST_HOME with the actual path
-            	path = Configuration.getExistHome().getAbsolutePath() + path.substring("{$EXIST_HOME}".length());
+            	path = Configuration.getExistHome().getAbsolutePath() + path.substring(EXIST_HOME_VAR_NAME.length());
             }
             
             //must be a view to map to
@@ -271,10 +273,10 @@ public class Descriptor implements ErrorHandler
             }
             
             //Does the view contain $EXIST_HOME?
-            if(view.startsWith("{$EXIST_HOME}"))
+            if(view.startsWith(EXIST_HOME_VAR_NAME))
             {
             	//Replace $EXIST_HOME with the actual path
-            	view = Configuration.getExistHome().getAbsolutePath() + view.substring("{$EXIST_HOME}".length());
+            	view = Configuration.getExistHome().getAbsolutePath() + view.substring(EXIST_HOME_VAR_NAME.length());
             }
             
             //store what to map from
