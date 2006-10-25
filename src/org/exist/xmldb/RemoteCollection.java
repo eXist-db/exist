@@ -18,7 +18,7 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
+ *
  *  $Id$
  */
 package org.exist.xmldb;
@@ -48,27 +48,29 @@ import org.xmldb.api.base.Service;
 import org.xmldb.api.base.XMLDBException;
 
 /**
- * A remote implementation of the Collection interface. This 
+ * A remote implementation of the Collection interface. This
  * implementation communicates with the server through the XMLRPC
  * protocol.
- * 
+ *
  * @author wolf
+ * Updated Andy Foster - Updated code to allow child collection cache to
+ * resync with the remote collection.
  */
 public class RemoteCollection implements CollectionImpl {
-	
+
 	// max size of a resource to be send to the server
 	// if the resource exceeds this limit, the data is split into
 	// junks and uploaded to the server via the update() call
 	private static final int MAX_CHUNK_LENGTH = 512 * 1024;
 	private static final int MAX_UPLOAD_CHUNK = 10 * 1024 * 1024;
-	
+
 	protected Map childCollections = null;
 	protected XmldbURI path;
 	protected Permission permissions = null;
 	protected RemoteCollection parent = null;
 	protected XmlRpcClient rpcClient = null;
 	protected Properties properties = null;
- 
+
 	public RemoteCollection(XmlRpcClient client, XmldbURI path)
 		throws XMLDBException {
 		this(client, null, path);
@@ -142,17 +144,37 @@ public class RemoteCollection implements CollectionImpl {
 	}
 
 	public Collection getChildCollection(XmldbURI name) throws XMLDBException {
-		if (childCollections == null)
-		readCollection();
-		if (name.numSegments()>1)
-			return (Collection) childCollections.get(name);
-		else
-			return (Collection) childCollections.get(getPathURI().append(name));
+		// AF get the child collection refreshing cache from server if not found
+		return getChildCollection(name,true);
 	}
 
-	public int getChildCollectionCount() throws XMLDBException {
-		if (childCollections == null)
+	// AF - NEW METHOD
+	protected Collection getChildCollection(XmldbURI name, boolean refreshCacheIfNotFound) throws XMLDBException {
+		if (childCollections == null) {
 			readCollection();
+			refreshCacheIfNotFound = false;
+		}
+
+		// stores reference to the collection found
+		Collection foundCollection = null;
+		if (name.numSegments()>1)
+			foundCollection = (Collection) childCollections.get(name);
+		else
+			foundCollection = (Collection) childCollections.get(getPathURI().append(name));
+
+		// if we did not find collection in cache set cache back to null to force full refresh
+		if (foundCollection == null && refreshCacheIfNotFound) {
+			childCollections = null;
+			return getChildCollection(name,false);
+		}
+		// return the found collection
+		return foundCollection;
+	}
+
+
+	public int getChildCollectionCount() throws XMLDBException {
+		//  AF Always refresh cache for latest set - if (childCollections == null)
+		readCollection();
 		return childCollections.size();
 	}
 
@@ -244,8 +266,8 @@ public class RemoteCollection implements CollectionImpl {
 	}
 
 	protected boolean hasChildCollection(String name) throws XMLDBException {
-		if (childCollections == null)
-			readCollection();
+		//  AF Always refresh cache for latest set - if (childCollections == null)
+		readCollection();
 		try {
 			return childCollections.containsKey(XmldbURI.xmldbUriFor(name));
 		} catch(URISyntaxException e) {
@@ -266,8 +288,8 @@ public class RemoteCollection implements CollectionImpl {
 	 *@exception  XMLDBException  Description of the Exception
 	 */
 	public String[] listChildCollections() throws XMLDBException {
-		if (childCollections == null)
-			readCollection();
+		// Always refresh cache for latest set - if (childCollections == null)
+		readCollection();
 		String coll[] = new String[childCollections.size()];
 		int j = 0;
 		XmldbURI uri;
@@ -281,7 +303,7 @@ public class RemoteCollection implements CollectionImpl {
 	public String[] getChildCollections() throws XMLDBException {
 		return listChildCollections();
 	}
-	
+
 	public String[] listResources() throws XMLDBException {
 	    Vector params = new Vector();
 		params.addElement(getPath());
@@ -302,7 +324,7 @@ public class RemoteCollection implements CollectionImpl {
 	public String[] getResources() throws XMLDBException {
 		return listResources();
 	}
-	
+
 	public Resource getResource(String name) throws XMLDBException {
 	    Vector params = new Vector();
 		XmldbURI docUri;
@@ -323,7 +345,7 @@ public class RemoteCollection implements CollectionImpl {
 		String docName = (String) hash.get("name");
 		if(docName == null)
 			return null;	// resource does not exist!
-		int p;	
+		int p;
 		try {
 			docUri = XmldbURI.xmldbUriFor(docName).lastSegment();
 		} catch(URISyntaxException e) {
@@ -358,7 +380,7 @@ public class RemoteCollection implements CollectionImpl {
 			return r;
 		}
 	}
-	
+
 	private void readCollection() throws XMLDBException {
 		childCollections = new HashMap();
 		Vector params = new Vector();
@@ -468,16 +490,16 @@ public class RemoteCollection implements CollectionImpl {
 		} else if(res.getResourceType().equals("BinaryResource"))
 		{
 			((RemoteBinaryResource)res).dateCreated =a;
-	        ((RemoteBinaryResource)res).dateModified =b;			
+	        ((RemoteBinaryResource)res).dateModified =b;
 			store((RemoteBinaryResource)res);
-		}	
+		}
 		else {
 			((RemoteXMLResource)res).dateCreated =a;
 		    ((RemoteXMLResource)res).dateModified =b;
 			store((RemoteXMLResource)res);
 	}
 	}
-	
+
 
 	private void store(RemoteXMLResource res) throws XMLDBException {
 		byte[] data = res.getData();
@@ -489,12 +511,12 @@ public class RemoteCollection implements CollectionImpl {
 			throw new XMLDBException(ErrorCodes.INVALID_URI,e);
 		}
 		params.addElement(new Integer(1));
-		
+
 		if (res.dateCreated != null) {
 		params.addElement(res.dateCreated );
-		params.addElement(res.dateModified );			
+		params.addElement(res.dateModified );
 		}
-		        
+
 		try {
 			rpcClient.execute("parse", params);
 		} catch (XmlRpcException xre) {
@@ -518,18 +540,18 @@ public class RemoteCollection implements CollectionImpl {
 		}
         params.addElement(res.getMimeType());
 		params.addElement(Boolean.TRUE);
-		
-		
+
+
 		if ((Date)res.dateCreated != null) {
 			params.addElement((Date)res.dateCreated );
-			params.addElement((Date)res.dateModified );			
+			params.addElement((Date)res.dateModified );
 			}
-		
+
 		try {
 			rpcClient.execute("storeBinary", params);
 		} catch (XmlRpcException xre) {
 		    /* the error code previously was INVALID_RESOURCE, but this was also thrown
-		     * in case of insufficient persmissions. As you cannot tell here any more what the 
+		     * in case of insufficient persmissions. As you cannot tell here any more what the
 		     * error really was, use UNKNOWN_ERROR. The reason is in XmlRpcResponseProcessor#processException
 		     * which will only pass on the error message.
 		     */
@@ -541,7 +563,7 @@ public class RemoteCollection implements CollectionImpl {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
 		}
 	}
-	
+
 	private void uploadAndStore(Resource res) throws XMLDBException {
 		File file = (File) res.getContent();
 		byte[] chunk = new byte[MAX_UPLOAD_CHUNK];
@@ -568,10 +590,10 @@ public class RemoteCollection implements CollectionImpl {
 				throw new XMLDBException(ErrorCodes.INVALID_URI,e);
 			}
 			params.addElement(Boolean.TRUE);
-			
+
 			if ( ((RemoteXMLResource)res).dateCreated  != null ) {
 				params.addElement( ((RemoteXMLResource)res).dateCreated );
-				params.addElement( ((RemoteXMLResource)res).dateModified );			
+				params.addElement( ((RemoteXMLResource)res).dateModified );
 				}
 
 			rpcClient.execute("parseLocal", params);
@@ -608,10 +630,10 @@ public class RemoteCollection implements CollectionImpl {
     	//TODO : get the name from client
     	accessor.append("exist");
     	accessor.append("://");
-    	accessor.append(rpcClient.getURL().getHost());   
+    	accessor.append(rpcClient.getURL().getHost());
     	if (rpcClient.getURL().getPort() != -1)
-    		accessor.append(":").append(rpcClient.getURL().getPort());    	
-    	accessor.append(rpcClient.getURL().getPath());      	
+    		accessor.append(":").append(rpcClient.getURL().getPort());
+    	accessor.append(rpcClient.getURL().getPath());
     	try {
     		//TODO : cache it when constructed
     		return XmldbURI.create(accessor.toString(), getPath());
@@ -621,3 +643,4 @@ public class RemoteCollection implements CollectionImpl {
     	}
     }
 }
+
