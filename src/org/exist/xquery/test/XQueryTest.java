@@ -332,6 +332,83 @@ public class XQueryTest extends XMLTestCase {
 		}
 	}	
 	
+        // Testcase by Gev
+	public void bugtestInMemoryNodeSequences() {
+		ResourceSet result;
+		String query;
+		
+		try {
+			XPathQueryService service =
+				(XPathQueryService) testCollection.getService(
+					"XPathQueryService",
+					"1.0");
+			
+			System.out.println("testInMemoryNodeSequences 1: ========" );
+			query = "let $c := (<a/>,<b/>) return <t>text{$c[1]}</t>";
+			result = service.query(query);
+			printResult(result);
+			assertEquals( "XQuery: " + query, "<t>text<a/></t>", ((XMLResource)result.getResource(0)).getContent());
+
+			System.out.println("testInMemoryNodeSequences 2: ========" );
+			query = "let $c := (<a/>,<b/>) return <t><text/>{$c[1]}</t>";
+			result = service.query(query);
+			printResult(result);
+			assertEquals( "XQuery: " + query, "<t><text/><a/></t>", ((XMLResource)result.getResource(0)).getContent());
+
+			System.out.println("testInMemoryNodeSequences 3: ========" );
+			query = "let $c := (<a/>,<b/>) return <t>{\"text\"}{$c[1]}</t>";
+			result = service.query(query);
+			printResult(result);
+			assertEquals( "XQuery: " + query, "<t>text<a/></t>", ((XMLResource)result.getResource(0)).getContent());
+
+			System.out.println("testInMemoryNodeSequences 4: ========" );
+			query = "let $c := (<a/>,\"b\") return <t>text{$c[1]}</t>";
+			result = service.query(query);
+			printResult(result);
+			assertEquals( "XQuery: " + query, "<t>text<a/></t>", ((XMLResource)result.getResource(0)).getContent());
+
+			System.out.println("testInMemoryNodeSequences 5: ========" );
+			query = "let $c := (<a/>,\"b\") return <t><text/>{$c[1]}</t>";
+			result = service.query(query);
+			printResult(result);
+			assertEquals( "XQuery: " + query, "<t><text/><a/></t>", ((XMLResource)result.getResource(0)).getContent());
+
+			System.out.println("testInMemoryNodeSequences 6: ========" );
+			query = "let $c := (<a/>,\"b\") return <t>{\"text\"}{$c[1]}</t>";
+			result = service.query(query);
+			printResult(result);
+			assertEquals( "XQuery: " + query, "<t>text<a/></t>", ((XMLResource)result.getResource(0)).getContent());
+
+			System.out.println("testInMemoryNodeSequences 7: ========" );
+			query = "let $c := (<a/>,<b/>) return <t>{<text/>,$c[1]}</t>";
+			result = service.query(query);
+			printResult(result);
+			assertEquals( "XQuery: " + query, "<t>text<a/></t>", ((XMLResource)result.getResource(0)).getContent());
+
+			System.out.println("testInMemoryNodeSequences 8: ========" );
+			query = "let $c := (<a/>,<b/>) return <t>{\"text\",$c[1]}</t>";
+			result = service.query(query);
+			printResult(result);
+			assertEquals( "XQuery: " + query, "<t>text<a/></t>", ((XMLResource)result.getResource(0)).getContent());
+
+			System.out.println("testInMemoryNodeSequences 9: ========" );
+			query = "let $c := (<a/>,\"b\") return <t>{<text/>,$c[1]}</t>";
+			result = service.query(query);
+			printResult(result);
+			assertEquals( "XQuery: " + query, "<t>text<a/></t>", ((XMLResource)result.getResource(0)).getContent());
+
+			System.out.println("testInMemoryNodeSequences 10: ========" );
+			query = "let $c := (<a/>,\"b\") return <t>{\"text\",$c[1]}</t>";
+			result = service.query(query);
+			printResult(result);
+			assertEquals( "XQuery: " + query, "<t>text<a/></t>", ((XMLResource)result.getResource(0)).getContent());
+
+		} catch (XMLDBException e) {
+			System.out.println("testInMemoryNodeSequences(): XMLDBException: "+e);
+			fail(e.getMessage());
+		}
+	}	
+
 	public void testVariable() {
 		ResourceSet result;
 		String query;
