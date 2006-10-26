@@ -63,6 +63,7 @@
                 <include name="backup.properties"/>
                 <include name="server.xml"/>
                 <include name="mime-types.xml"/>
+                <include name="descriptor.xml"/>
             </webinf>
             
             <!-- Add files context root ('/') -->
