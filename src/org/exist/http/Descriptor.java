@@ -64,17 +64,15 @@ import org.xml.sax.XMLReader;
 public class Descriptor implements ErrorHandler
 {
 	private static final String SYSTEM_LINE_SEPARATOR = System.getProperty("line.separator");
-	private final static String EXIST_HOME_VAR_NAME = "${EXIST_HOME}"; 
-	
 	//References
 	private static Descriptor singletonRef;
 	private final static Logger LOG = Logger.getLogger(Descriptor.class);		//Logger
 	/** descriptor file (descriptor.xml) */
 	private final static String file = "descriptor.xml";							
-	
+
 	//Data
 	private BufferedWriter bufWriteReplayLog = null;	//Should a replay log of requests be created
-	private String allowSourceXQueryList[] = null; 		//Array of xql files to allow source to be viewed 
+	private String allowSourceXQueryList[] = null; 	//Array of xql files to allow source to be viewed 
 	private String mapList[][] = null;	 				//Array of Mappings
 	  
 	/**
@@ -213,14 +211,9 @@ public class Descriptor implements ErrorHandler
                 LOG.warn("Error element 'xquery' requires an attribute 'path'");
             	return;
             }
-            
-            //Does the path contain ${EXIST_HOME}?
-            if(path.startsWith(EXIST_HOME_VAR_NAME))
-            {
-            	//Replace ${EXIST_HOME} with the actual path
-            	path = Configuration.getExistHome().getAbsolutePath() + path.substring(EXIST_HOME_VAR_NAME.length());
-            }
-            
+            path=path.replaceAll("\\$\\{WEBAPP_HOME\\}", 
+                    Configuration.getWebappHome().getAbsolutePath().replace('\\','/') );
+
             //store the path
             allowSourceXQueryList[i] = path;
         }
@@ -256,14 +249,9 @@ public class Descriptor implements ErrorHandler
             {
                 LOG.warn("Error element 'map' requires an attribute 'path' or an attribute 'pattern'");
             	return;
-            }
-            
-            //Does the path contain $EXIST_HOME?
-            if(path.startsWith(EXIST_HOME_VAR_NAME))
-            {
-            	//Replace $EXIST_HOME with the actual path
-            	path = Configuration.getExistHome().getAbsolutePath() + path.substring(EXIST_HOME_VAR_NAME.length());
-            }
+            }           
+            path=path.replaceAll("\\$\\{WEBAPP_HOME\\}", 
+                    Configuration.getWebappHome().getAbsolutePath().replace('\\','/') );
             
             //must be a view to map to
             if(view == null)
@@ -271,13 +259,8 @@ public class Descriptor implements ErrorHandler
             	LOG.warn("Error element 'map' requires an attribute 'view'");
             	return;
             }
-            
-            //Does the view contain $EXIST_HOME?
-            if(view.startsWith(EXIST_HOME_VAR_NAME))
-            {
-            	//Replace $EXIST_HOME with the actual path
-            	view = Configuration.getExistHome().getAbsolutePath() + view.substring(EXIST_HOME_VAR_NAME.length());
-            }
+            view=view.replaceAll("\\$\\{WEBAPP_HOME\\}", 
+                    Configuration.getWebappHome().getAbsolutePath().replace('\\','/') );
             
             //store what to map from
            /* if(path != null)
@@ -311,6 +294,9 @@ public class Descriptor implements ErrorHandler
     		//Iterate through the xqueries that source viewing is allowed for
         	for(int i = 0; i < allowSourceXQueryList.length; i++)
         	{
+                        // DWES: this helps a lot. quickfix not the final solution
+                        path=path.replace('\\','/');
+                        
         		//does the path match the <allow-source><xquery path=""/></allow-source> path
         		if((allowSourceXQueryList[i].equals(path)) || (path.indexOf(allowSourceXQueryList[i]) > -1))
         		{

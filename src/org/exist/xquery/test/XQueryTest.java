@@ -332,6 +332,83 @@ public class XQueryTest extends XMLTestCase {
 		}
 	}	
 	
+        // Testcase by Gev
+	public void bugtestInMemoryNodeSequences() {
+		ResourceSet result;
+		String query;
+		
+		try {
+			XPathQueryService service =
+				(XPathQueryService) testCollection.getService(
+					"XPathQueryService",
+					"1.0");
+			
+			System.out.println("testInMemoryNodeSequences 1: ========" );
+			query = "let $c := (<a/>,<b/>) return <t>text{$c[1]}</t>";
+			result = service.query(query);
+			printResult(result);
+			assertEquals( "XQuery: " + query, "<t>text<a/></t>", ((XMLResource)result.getResource(0)).getContent());
+
+			System.out.println("testInMemoryNodeSequences 2: ========" );
+			query = "let $c := (<a/>,<b/>) return <t><text/>{$c[1]}</t>";
+			result = service.query(query);
+			printResult(result);
+			assertEquals( "XQuery: " + query, "<t><text/><a/></t>", ((XMLResource)result.getResource(0)).getContent());
+
+			System.out.println("testInMemoryNodeSequences 3: ========" );
+			query = "let $c := (<a/>,<b/>) return <t>{\"text\"}{$c[1]}</t>";
+			result = service.query(query);
+			printResult(result);
+			assertEquals( "XQuery: " + query, "<t>text<a/></t>", ((XMLResource)result.getResource(0)).getContent());
+
+			System.out.println("testInMemoryNodeSequences 4: ========" );
+			query = "let $c := (<a/>,\"b\") return <t>text{$c[1]}</t>";
+			result = service.query(query);
+			printResult(result);
+			assertEquals( "XQuery: " + query, "<t>text<a/></t>", ((XMLResource)result.getResource(0)).getContent());
+
+			System.out.println("testInMemoryNodeSequences 5: ========" );
+			query = "let $c := (<a/>,\"b\") return <t><text/>{$c[1]}</t>";
+			result = service.query(query);
+			printResult(result);
+			assertEquals( "XQuery: " + query, "<t><text/><a/></t>", ((XMLResource)result.getResource(0)).getContent());
+
+			System.out.println("testInMemoryNodeSequences 6: ========" );
+			query = "let $c := (<a/>,\"b\") return <t>{\"text\"}{$c[1]}</t>";
+			result = service.query(query);
+			printResult(result);
+			assertEquals( "XQuery: " + query, "<t>text<a/></t>", ((XMLResource)result.getResource(0)).getContent());
+
+			System.out.println("testInMemoryNodeSequences 7: ========" );
+			query = "let $c := (<a/>,<b/>) return <t>{<text/>,$c[1]}</t>";
+			result = service.query(query);
+			printResult(result);
+			assertEquals( "XQuery: " + query, "<t>text<a/></t>", ((XMLResource)result.getResource(0)).getContent());
+
+			System.out.println("testInMemoryNodeSequences 8: ========" );
+			query = "let $c := (<a/>,<b/>) return <t>{\"text\",$c[1]}</t>";
+			result = service.query(query);
+			printResult(result);
+			assertEquals( "XQuery: " + query, "<t>text<a/></t>", ((XMLResource)result.getResource(0)).getContent());
+
+			System.out.println("testInMemoryNodeSequences 9: ========" );
+			query = "let $c := (<a/>,\"b\") return <t>{<text/>,$c[1]}</t>";
+			result = service.query(query);
+			printResult(result);
+			assertEquals( "XQuery: " + query, "<t>text<a/></t>", ((XMLResource)result.getResource(0)).getContent());
+
+			System.out.println("testInMemoryNodeSequences 10: ========" );
+			query = "let $c := (<a/>,\"b\") return <t>{\"text\",$c[1]}</t>";
+			result = service.query(query);
+			printResult(result);
+			assertEquals( "XQuery: " + query, "<t>text<a/></t>", ((XMLResource)result.getResource(0)).getContent());
+
+		} catch (XMLDBException e) {
+			System.out.println("testInMemoryNodeSequences(): XMLDBException: "+e);
+			fail(e.getMessage());
+		}
+	}	
+
 	public void testVariable() {
 		ResourceSet result;
 		String query;
@@ -1519,6 +1596,36 @@ public class XQueryTest extends XMLTestCase {
 			fail(e.getMessage());
 		}
 	}
+        
+    public void bugtestAttributeNamespace() {
+
+        String query = "declare function local:copy($nodes as node()*) as node()* {"
+        +"for $n in $nodes return "
+        +"if ($n instance of element()) then "
+        +"  element {node-name($n)} {(local:copy($n/@*), local:copy($n/node()))} "
+        +"else if ($n instance of attribute()) then "
+        +"  attribute {node-name($n)} {$n} "
+        +"else if ($n instance of text()) then "
+        +"  text {$n} "
+        +"else "
+        +"  <Other/>"
+        +"};"
+        +"let $c :="
+        +"<c:C  xmlns:c=\"http://c\" xmlns:d=\"http://d\" d:d=\"ddd\">"
+        +"ccc"
+        +"</c:C>"
+        +"return local:copy($c)";
+        try {
+            XPathQueryService service = (XPathQueryService) testCollection.getService(
+                    "XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+            assertEquals(1, result.getSize());
+            assertEquals("<c:C xmlns:c=\"http://c\" xmlns:d=\"http://d\" d:d=\"ddd\">"
+                    +"ccc"+"</c:C>", result.getResource(0).getContent().toString());
+        } catch (XMLDBException e) {
+            fail(e.getMessage());
+        }
+    }
 
     public void testNameConflicts() {
         String query = "let $a := <name name=\"Test\"/> return <wrap>{$a//@name}</wrap>";

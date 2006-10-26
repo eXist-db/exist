@@ -238,6 +238,7 @@ public class XQueryServlet extends HttpServlet {
                 //show the source
                 
                 //check are we allowed to show the xquery source - descriptor.xml
+//                System.out.println("path="+path);
                 if(descriptor.allowSourceXQuery(path)) {
                     //Show the source of the XQuery
                     //writeResourceAs(resource, broker, stylesheet, encoding, "text/plain", outputProperties, response);
@@ -249,6 +250,8 @@ public class XQueryServlet extends HttpServlet {
                 } else {
                     //we are not allowed to show the source - query not allowed in descriptor.xml
                     //TODO: is this the correct exception to throw or should we return a http response?
+                    //DWES: this must be a 403 !!!
+                    //response.sendError(HttpServletResponse.SC_FORBIDDEN, "Permission to view XQuery source for: " + path + " denied. Must be explicitly defined in descriptor.xml");return;
                     throw new ServletException("Permission to view XQuery source for: " + path + " denied. Must be explicitly defined in descriptor.xml");
                 }
             }
@@ -346,7 +349,7 @@ public class XQueryServlet extends HttpServlet {
     private void sendError(PrintWriter out, String message, XMLDBException e) {
         out.print("<html><head>");
         out.print("<title>XQueryServlet Error</title>");
-        out.print("<link rel=\"stylesheet\" type=\"text/css\" href=\"error.css\"></head>");
+        out.print("<link rel=\"stylesheet\" type=\"text/css\" href=\"error.css\"></link></head>");
         out.print("<body><div id=\"container\"><h1>Error found</h1>");
         Throwable t = e.getCause();
         if (t instanceof XPathException) {
@@ -370,7 +373,7 @@ public class XQueryServlet extends HttpServlet {
     private void sendError(PrintWriter out, String message, String description) {
         out.print("<html><head>");
         out.print("<title>XQueryServlet Error</title>");
-        out.print("<link rel=\"stylesheet\" type=\"text/css\" href=\"error.css\"></head>");
+        out.print("<link rel=\"stylesheet\" type=\"text/css\" href=\"error.css\"></link></head>");
         out.println("<body><h1>Error found</h1>");
         out.print("<div class='message'><b>Message: </b>");
         out.print(message);
