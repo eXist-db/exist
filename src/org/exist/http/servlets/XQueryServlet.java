@@ -26,7 +26,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.net.URI;
 import java.net.URISyntaxException;
 
 import javax.servlet.ServletConfig;
@@ -248,11 +247,9 @@ public class XQueryServlet extends HttpServlet {
                     output.flush();
                     return;
                 } else {
-                    //we are not allowed to show the source - query not allowed in descriptor.xml
-                    //TODO: is this the correct exception to throw or should we return a http response?
-                    //DWES: this must be a 403 !!!
-                    //response.sendError(HttpServletResponse.SC_FORBIDDEN, "Permission to view XQuery source for: " + path + " denied. Must be explicitly defined in descriptor.xml");return;
-                    throw new ServletException("Permission to view XQuery source for: " + path + " denied. Must be explicitly defined in descriptor.xml");
+                   
+                   response.sendError(HttpServletResponse.SC_FORBIDDEN, "Permission to view XQuery source for: " + path + " denied. Must be explicitly defined in descriptor.xml");
+                   return;
                 }
             }
         }
