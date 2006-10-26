@@ -238,6 +238,7 @@ public class XQueryServlet extends HttpServlet {
                 //show the source
                 
                 //check are we allowed to show the xquery source - descriptor.xml
+//                System.out.println("path="+path);
                 if(descriptor.allowSourceXQuery(path)) {
                     //Show the source of the XQuery
                     //writeResourceAs(resource, broker, stylesheet, encoding, "text/plain", outputProperties, response);
@@ -249,6 +250,8 @@ public class XQueryServlet extends HttpServlet {
                 } else {
                     //we are not allowed to show the source - query not allowed in descriptor.xml
                     //TODO: is this the correct exception to throw or should we return a http response?
+                    //DWES: this must be a 403 !!!
+                    //response.sendError(HttpServletResponse.SC_FORBIDDEN, "Permission to view XQuery source for: " + path + " denied. Must be explicitly defined in descriptor.xml");return;
                     throw new ServletException("Permission to view XQuery source for: " + path + " denied. Must be explicitly defined in descriptor.xml");
                 }
             }
