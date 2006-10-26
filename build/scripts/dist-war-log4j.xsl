@@ -3,7 +3,7 @@
 
     <!-- $Id$ -->
     <!-- Convert log4j.xml for use in war-file -->
-    <xsl:output method="xml"/>
+    <xsl:output method="xml" doctype-system="log4j.dtd"/>
     
     <xsl:template match="category[@name='org.mortbay']">
     </xsl:template>
