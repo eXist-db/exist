@@ -27,7 +27,9 @@
             BEWARE the security consequences of enabling this for your queries!
             
             REST XQuery paths (EXistServlet/RESTServer) start from the db location e.g. /db/mycollection/myquery.xql
-            FileSystem XQuery paths (XQueryServlet) start from the root filesystem location e.g. $EXIST_HOME/webapp/myapp/myquery.xql and end with a .xql suffix
+            FileSystem XQuery paths (XQueryServlet) start from the root filesystem location e.g. $EXIST_HOME/webapp/myapp/myquery.xql
+            and end with a .xql suffix. However ${WEBAPP_HOME} may be used for convenience to represent eXist's webapp folder without
+            the need to know the specific path.
             Cocoon XQuery Paths (XQueryGenerator) are not yet supported!
         -->
 
@@ -35,6 +37,7 @@
         <!-- NB - Not Yet Supported -->
 
         <!-- Allow viewing of Source for eXist XQuery examples (XQueryServlet) -->
+		<xquery path="${WEBAPP_HOME}/sandbox/sandbox.xql"/>
         <xquery path="${WEBAPP_HOME}/xquery/guess.xql"/>
         <xquery path="${WEBAPP_HOME}/xquery/transform.xql"/>
         <xquery path="${WEBAPP_HOME}/xquery/login.xql"/>
@@ -53,7 +56,7 @@
         -->
 
         <!-- Maps the virtual fibo.xql to fibo.xq. Here the XQueryServlet executes what would normally be executed by XQueryGenerator -->
-        <map path="${WEBAPP_HOME}/xquery/fibo.xql" view="${WEBAPP_HOME}/webapp/xquery/fibo.xq"/>
+        <map path="${WEBAPP_HOME}/xquery/fibo.xql" view="${WEBAPP_HOME}/xquery/fibo.xq"/>
 
         <!-- Default Document like example for REST
             <map path="/db/myCollection" view="/db/myCollection/index.xql"/>
