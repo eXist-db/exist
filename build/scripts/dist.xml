@@ -64,6 +64,7 @@
                 <include name="server.xml"/>
                 <include name="mime-types.xml"/>
                 <include name="descriptor.xml"/>
+                <include name="log4j.dtd"/>
             </webinf>
             
             <!-- Add files context root ('/') -->
@@ -72,7 +73,7 @@
                 <exclude name="WEB-INF/web.xml"/>
                 <exclude name="WEB-INF/data/*.dbx"/>
                 <exclude name="WEB-INF/data/*.lck"/>
-                <exclude name="**/*.log"/>
+                <exclude name="**/*.log*"/>
             </fileset>
             <zipfileset dir="samples" prefix="samples">
                 <include name="**"/>
