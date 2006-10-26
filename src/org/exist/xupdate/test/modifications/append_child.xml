@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xu:modifications version="1.0" xmlns:xu="http://www.xmldb.org/xupdate">
+	
+	<xu:append select="//address[lname &amp;= 'hyde']" child="1">
+		<xu:element name="email"><xu:attribute name="type">home</xu:attribute>andrew@foo.org</xu:element>
+	</xu:append>
+	
+	<xu:append select="//address[lname &amp;= 'jekyll']" child="3">
+		<xu:element name="email"><xu:attribute name="type">home</xu:attribute>jekyll@foo.org</xu:element>
+	</xu:append>
+</xu:modifications>
