@@ -146,6 +146,7 @@
                 <include name="*.bat"/>
                 <include name="*.sh"/>
                 <include name="conf.xml"/>
+            	<include name="server.xml"/>
                 <include name="*.tmpl"/>
                 <include name="descriptor.xml"/>
                 <include name="build.xml"/>
