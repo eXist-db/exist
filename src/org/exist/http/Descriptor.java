@@ -211,8 +211,9 @@ public class Descriptor implements ErrorHandler
                 LOG.warn("Error element 'xquery' requires an attribute 'path'");
             	return;
             }
-            path=path.replaceAll("\\$\\{WEBAPP_HOME\\}", Configuration.getWebappHome().getAbsolutePath().replace("\\","/") );
-//            System.out.println(path);
+            path=path.replaceAll("\\$\\{WEBAPP_HOME\\}", 
+                    Configuration.getWebappHome().getAbsolutePath().replace('\\','/') );
+
             //store the path
             allowSourceXQueryList[i] = path;
         }
@@ -249,7 +250,8 @@ public class Descriptor implements ErrorHandler
                 LOG.warn("Error element 'map' requires an attribute 'path' or an attribute 'pattern'");
             	return;
             }           
-            path=path.replaceAll("\\$\\{WEBAPP_HOME\\}", Configuration.getWebappHome().getAbsolutePath().replace("\\","/") );
+            path=path.replaceAll("\\$\\{WEBAPP_HOME\\}", 
+                    Configuration.getWebappHome().getAbsolutePath().replace('\\','/') );
             
             //must be a view to map to
             if(view == null)
@@ -257,7 +259,8 @@ public class Descriptor implements ErrorHandler
             	LOG.warn("Error element 'map' requires an attribute 'view'");
             	return;
             }
-            view=view.replaceAll("\\$\\{WEBAPP_HOME\\}", Configuration.getWebappHome().getAbsolutePath().replace("\\","/") );
+            view=view.replaceAll("\\$\\{WEBAPP_HOME\\}", 
+                    Configuration.getWebappHome().getAbsolutePath().replace('\\','/') );
             
             //store what to map from
            /* if(path != null)
@@ -292,7 +295,7 @@ public class Descriptor implements ErrorHandler
         	for(int i = 0; i < allowSourceXQueryList.length; i++)
         	{
                         // DWES: this helps a lot. quickfix not the final solution
-                        path=path.replace("\\","/");
+                        path=path.replace('\\','/');
                         
         		//does the path match the <allow-source><xquery path=""/></allow-source> path
         		if((allowSourceXQueryList[i].equals(path)) || (path.indexOf(allowSourceXQueryList[i]) > -1))
