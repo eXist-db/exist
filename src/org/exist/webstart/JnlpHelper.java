@@ -44,37 +44,38 @@ public class JnlpHelper {
     public JnlpHelper() {
         
         // Setup path based on installation (in jetty, container)
-        if(isInWarFile()){
+        if(Configuration.isInWarFile()){
             // all files mixed in existHome/lib/
             logger.debug("eXist is running in container (.war).");
             coreJarsFolder= new File(existHome, "lib/");
             existJarFolder= new File(existHome, "lib/");
-            webappFolder= new File(existHome, "..");
             
         } else {
             // all files located in existHome/lib/core/
             logger.debug("eXist is running private jetty server.");
             coreJarsFolder= new File(existHome, "lib/core");
             existJarFolder= existHome;
-            webappFolder= new File(existHome, "webapp");
         }
+        
+        webappFolder=Configuration.getWebappHome();
+        
         logger.debug("CORE jars location="+coreJarsFolder.getAbsolutePath());
         logger.debug("EXIST jars location="+existJarFolder.getAbsolutePath());
         logger.debug("WEBAPP location="+webappFolder.getAbsolutePath());
     }
     
-    /**
-     *  Check wether exist runs in Servlet container (as war file).
-     * @return TRUE if exist runs in servlet container.
-     */
-    public boolean isInWarFile(){
-        
-        boolean retVal =true;
-        if( new File(existHome, "lib/core").isDirectory() ) {
-            retVal=false;
-        }
-        return retVal;
-    }
+//    /**
+//     *  Check wether exist runs in Servlet container (as war file).
+//     * @return TRUE if exist runs in servlet container.
+//     */
+//    public boolean isInWarFile(){
+//        
+//        boolean retVal =true;
+//        if( new File(existHome, "lib/core").isDirectory() ) {
+//            retVal=false;
+//        }
+//        return retVal;
+//    }
     
     
     public File getWebappFolder(){

@@ -1120,7 +1120,51 @@ public class Configuration implements ErrorHandler
 
         existHome = null;
         return existHome;
-	}
+    }
+    
+    /**
+     *  Check wether exist runs in Servlet container (as war file).
+     * @return TRUE if exist runs in servlet container.
+     */
+    public static boolean isInWarFile(){
+        
+        boolean retVal =true;
+        
+        // if existHome is not set,try to do so.
+        if (existHome == null){
+            getExistHome();
+        }
+        
+        if( new File(existHome, "lib/core").isDirectory() ) {
+            retVal=false;
+        }
+        return retVal;
+    }
+    
+    /**
+     *  Get folder in which the exist webapplications are found.
+     * For default install ("jar install") and in webcontainer ("war install")
+     * the location is different. (EXIST_HOME/webapps vs. TOMCAT/webapps/exist)
+     *
+     * @return folder.
+     */
+    public static File getWebappHome(){
+        
+        File webappFolder =null;
+        
+        // if existHome is not set,try to do so.
+        if (existHome == null){
+            getExistHome();
+        }
+        
+        if(isInWarFile()){
+            webappFolder= new File(existHome, "..");
+        } else {
+            webappFolder= new File(existHome, "webapp");
+        }
+        
+        return webappFolder;
+    }
     
     /**
      * Returns <code>true</code> if the directory <code>dir</code> contains a file
