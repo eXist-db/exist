@@ -1163,6 +1163,14 @@ public class Configuration implements ErrorHandler
             webappFolder= new File(existHome, "webapp");
         }
         
+        // convert to real path
+        try {   
+            File tmpFolder = webappFolder.getCanonicalFile();
+            webappFolder=tmpFolder;
+        } catch (IOException ex) {
+            // oops ; use previous path
+        }
+        
         return webappFolder;
     }
     
