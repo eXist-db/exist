@@ -293,12 +293,9 @@ public class RESTServer {
                 		else
                 		{
                 			//we are not allowed to show the source - query not allowed in descriptor.xml
-                			//TODO: is this the correct exception to throw or should we return a http response?
-                                        //DWES: this must be a 403 !!!
-                                        //response.sendError(HttpServletResponse.SC_FORBIDDEN, "Permission to view XQuery source for: " + path + " denied. Must be explicitly defined in descriptor.xml");
-                			throw new PermissionDeniedException("Permission to view XQuery source for: " + path + " denied. Must be explicitly defined in descriptor.xml");
+                            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Permission to view XQuery source for: " + path + " denied. Must be explicitly defined in descriptor.xml");
+                			return;
                 		}
-                		
                 	}
                 	else
             		{
