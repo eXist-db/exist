@@ -124,7 +124,7 @@ declare function xqts:get-query($case as element(catalog:test-case)) {
 
 declare function xqts:print-result($test-name as xs:string, $passed as xs:boolean, $query as xs:string, 
     $result as item()*, $expected as item()*, $case as element(catalog:test-case)) as element() {
-    <test-case name="{$test-name}" result="{if ($passed) then 'pass' else 'fail'}">
+    <test-case name="{$test-name}" result="{if ($passed) then 'pass' else 'fail'}" dateRun="{util:system-time()}">
     {
         if (not($passed)) then (
             <result>{$result}</result>,
@@ -156,7 +156,7 @@ declare function xqts:check-output($query as xs:string, $result as item()*, $cas
     return
         (: Expected an error, but got a result :)
         if (exists($case/catalog:expected-error)) then
-            <test-case name="{$case/@name}" result="fail">
+            <test-case name="{$case/@name}" result="fail" dateRun="{util:system-time()}">
                    <expected-error>{string-join($case/catalog:expected-error/text(), ";")}</expected-error>
                    <result>{$result}</result>
                    <query>{$query}</query>
@@ -178,7 +178,7 @@ declare function xqts:check-output($query as xs:string, $result as item()*, $cas
                 return
                     xqts:print-result($case/@name, $test, $query, $result, $expected, $case),
                 (: Handle unexpected exceptions :)
-                <test-case name="{$case/@name}" result="fail">
+                <test-case name="{$case/@name}" result="fail" dateRun="{util:system-time()}">
                    <exception>Exception while loading expected result: {$util:exception-message}</exception>
                    <query>{$query}</query>
                 </test-case>
@@ -195,7 +195,7 @@ declare function xqts:check-output($query as xs:string, $result as item()*, $cas
                 return
                     xqts:print-result($case/@name, $test, $query, $result, $expected, $case),
                 (: Handle unexpected exceptions :)
-                <test-case name="{$case/@name}" result="fail">
+                <test-case name="{$case/@name}" result="fail" dateRun="{util:system-time()}">
                    <exception>Exception while loading expected result fragment: {$util:exception-message}</exception>
                    <query>{$query}</query>
                 </test-case>
@@ -247,15 +247,15 @@ declare function xqts:run-test-case( $testCase as element(catalog:test-case)) as
            return
                xqts:check-output($query, $result, $testCase),
            if ($testCase//catalog:expected-error) then
-               <test-case name="{$testCase/@name}" result="pass">
+               <test-case name="{$testCase/@name}" result="pass" dateRun="{util:system-time()}">
                    <exception>{$util:exception-message}</exception>
                    <expected-error>{string-join($testCase//catalog:expected-error/text(),";")}</expected-error>
                    <query>{$query}</query>
                </test-case>
            else
-               <test-case name="{$testCase/@name}" result="fail">
+               <test-case name="{$testCase/@name}" result="fail" dateRun="{util:system-time()}">
                    <exception>{$util:exception-message}</exception>                  
-					(: TODO : insert expected result here :)    
+					<!-- TODO : insert expected result here -->    
                    <query>{$query}</query>
                </test-case>
        )

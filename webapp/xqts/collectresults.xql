@@ -65,7 +65,8 @@ return
                 <p>No unusual comparisons</p>
         </comparison>
         <otherComments>
-                <p>The test run took n seconds.</p>
+                <p>The test run took {let $b := for $a in $cases//@dateRun order by xs:time($a) return xs:time($a)
+return ($b[last()] - $b[1]) div xs:dayTimeDuration('PT1S')} seconds.</p>
         </otherComments>
     </test-run>
 
