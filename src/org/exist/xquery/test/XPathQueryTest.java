@@ -997,7 +997,7 @@ public class XPathQueryTest extends XMLTestCase {
 
     
     // @see http://sourceforge.net/tracker/index.php?func=detail&aid=1488303&group_id=17691&atid=117691
-    public void bugtestPredicateBUG1488303() throws Exception {
+    public void testPredicateBUG1488303() throws Exception {
         XQueryService service = getQueryService();
         ResourceSet rs=null;
         
@@ -1080,7 +1080,7 @@ public class XPathQueryTest extends XMLTestCase {
      *
      * @see http://wiki.exist-db.org/space/XQueryBugs
      */
-    public void bugtestPredicateBUG_wiki_1() throws Exception {
+    public void testPredicateBUG_wiki_1() throws Exception {
         String xQuery = "let $dum := <dummy><el>1</el><el>2</el></dummy> return $dum/el[2]";
         
         XQueryService service = getQueryService();
@@ -1119,7 +1119,7 @@ public class XPathQueryTest extends XMLTestCase {
      * @see http://wiki.exist-db.org/space/XQueryBugs
      */
     
-    public void bugtestVirtualNodesetBUG_wiki_3()  {
+    public void testVirtualNodesetBUG_wiki_3()  {
         String xQuery = "declare option exist:serialize \"method=xml indent=no\"; "
                 +"let $node := (<c id=\"OK\"><b id=\"cool\"/></c>)"
                 +"/descendant::*/attribute::id return <a>{$node}</a>";
@@ -1142,7 +1142,7 @@ public class XPathQueryTest extends XMLTestCase {
      *
      *@see http://wiki.exist-db.org/space/XQueryBugs
      */
-    public void bugtestVirtualNodesetBUG_wiki_4()  {
+    public void testVirtualNodesetBUG_wiki_4()  {
         String xQuery = "declare option exist:serialize \"method=xml indent=no\"; "
                 +"let $node := (<c id=\"OK\">"
                 +"<b id=\"cool\"/></c>)/descendant-or-self::*/child::b "
@@ -1166,7 +1166,7 @@ public class XPathQueryTest extends XMLTestCase {
      *
      *@see http://wiki.exist-db.org/space/XQueryBugs
      */
-    public void bugtestVirtualNodesetBUG_wiki_5()  {
+    public void testVirtualNodesetBUG_wiki_5()  {
         String xQuery = "declare option exist:serialize \"method=xml indent=no\"; "
                 +"let $node := (<c id=\"OK\"><b id=\"cool\"/>"
                 +"</c>)/descendant-or-self::*/descendant::b return <a>{$node}</a>";
@@ -1224,7 +1224,7 @@ public class XPathQueryTest extends XMLTestCase {
       * Miscomputation of the expression context in where clause when no 
       * wrapper expression is used. Using, e.g. where data($x/@id) eq "id" works !
       */
-     public void bugtestComputationBug_wiki_8()  {
+     public void testComputationBug_wiki_8()  {
          String xQuery = "declare option exist:serialize \"method=xml indent=no\"; "
                  +"let $a := element node1 { attribute id {'id'}, "
                  +"element node1 { '1'},element node2 { '2'} }"
