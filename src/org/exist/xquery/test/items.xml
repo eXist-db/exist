@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<items xmlns:x="http://www.foo.com" xmlns:xx="http://test.com">
+    <item id="i1" xx:test="123">
+        <itemno>1</itemno>
+        <name>Red Bicycle</name>
+        <price specialprice="false">645.5</price>
+        <stock>15</stock>
+		<x:rating>8.7</x:rating>
+    </item>
+    <item id="i2" xx:test="456">
+        <itemno>2</itemno>
+        <name>Racing Bicycle</name>
+        <price specialprice="true">1024.99</price>
+        <stock>8</stock>
+		<x:rating>9.0</x:rating>
+    </item>
+    <item id="i3">
+        <itemno>3</itemno>
+        <name>Mountainbike</name>
+        <price>453.00</price>
+        <stock>29</stock>
+    </item>
+    <item id="i4">
+        <itemno>4</itemno>
+        <name>Snowboard</name>
+        <price specialprice="false">230.10</price>
+        <stock>5</stock>
+		<x:rating>2.3</x:rating>
+    </item>
+    <item id="i5">
+        <itemno>5</itemno>
+        <name>Racing Ski</name>
+        <price>400.50</price>
+        <stock>10</stock>
+        <mixed><span>un</span><span>explained</span></mixed>
+    </item>
+    <item id="i4">
+		<itemno>6</itemno>
+		<name>Black Horse</name>
+		<price>3000.50</price>
+		<stock>-5</stock>
+		<mixed><span>ex</span><span><span>tern</span><span>al</span></span></mixed>
+	</item>
+	<item>
+		<itemno>7</itemno>
+		<name>Wizard's Robe</name>
+		<price>-100.10</price>
+		<stock>-1</stock>
+		<mixed><span>un</span><span>even</span></mixed>
+	</item>
+</items>

@@ -1,0 +1,336 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-06 Wolfgang M. Meier
+ *  wolfgang@exist-db.org
+ *  http://exist.sourceforge.net
+ *  
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *  
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  
+ *  $Id$
+ */
+
+package org.exist.xquery.value;
+
+import java.math.BigDecimal;
+import java.text.Collator;
+import java.text.DecimalFormat;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.xml.datatype.DatatypeConstants;
+import javax.xml.datatype.Duration;
+import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.namespace.QName;
+
+import org.exist.xquery.Constants;
+import org.exist.xquery.XPathException;
+
+/**
+ * @author wolf
+ * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
+ */
+public abstract class AbstractDateTimeValue extends ComputableValue {
+	
+	//Provisionally public
+	public final XMLGregorianCalendar calendar;
+	private XMLGregorianCalendar implicitCalendar, canonicalCalendar, trimmedCalendar;
+	
+	protected static Pattern negativeDateStart = Pattern.compile("^\\d-(\\d+)-(.*)"); 
+
+	public final static int YEAR = 0;
+	public final static int MONTH = 1;
+	public final static int DAY = 2;
+	public final static int HOUR = 3;
+	public final static int MINUTE = 4;
+	public final static int SECOND = 5;
+	public final static int MILLISECOND = 6;
+
+	/**
+	 * Create a new date time value based on the given calendar.  The calendar is
+	 * <em>not</em> cloned, so it is the subclass's responsibility to make sure there are
+	 * no external references to it that would allow for mutation.
+	 *
+	 * @param calendar the calendar to wrap into an XPath value
+	 */
+	protected AbstractDateTimeValue(XMLGregorianCalendar calendar) {
+		this.calendar = calendar;
+	}
+	
+	protected AbstractDateTimeValue(String lexicalValue) throws XPathException {
+        lexicalValue = StringValue.trimWhitespace(lexicalValue);
+		try {
+			this.calendar = TimeUtils.getInstance().newXMLGregorianCalendar(lexicalValue);
+		} catch (IllegalArgumentException e) {
+			throw new XPathException("illegal lexical form for date-time-like value '" + lexicalValue + "' " + e.getMessage(), e);
+		}
+	}
+	
+	/**
+	 * Return a calendar with the timezone field set, to be used for order comparison.
+	 * If the original calendar did not specify a timezone, set the local timezone (unadjusted
+	 * for daylight savings).  The returned calendars will be totally ordered between themselves.
+	 * We also set any missing fields to ensure that normalization doesn't discard important data!
+	 * (This is probably a bug in the JAXP implementation, but the workaround doesn't hurt us,
+	 * so it's faster to just fix it here.)
+	 *
+	 * @return the calendar represented by this object, with the timezone field filled in with an implicit value if necessary
+	 */
+	protected XMLGregorianCalendar getImplicitCalendar() {
+		if (implicitCalendar == null) {
+			implicitCalendar = (XMLGregorianCalendar) calendar.clone();
+			if (calendar.getTimezone() == DatatypeConstants.FIELD_UNDEFINED) {
+				implicitCalendar.setTimezone(TimeUtils.getInstance().getLocalTimezoneOffsetMinutes());
+			}
+			// fill in fields from default reference; don't have to worry about weird combinations of fields being set, since we control that on creation
+			switch(getType()) {
+				case Type.DATE: implicitCalendar.setTime(0,0,0); break;
+				case Type.TIME: implicitCalendar.setYear(1972); implicitCalendar.setMonth(12); implicitCalendar.setDay(31); break;
+				default:
+			}
+			implicitCalendar = implicitCalendar.normalize();	// the comparison routines will normalize it anyway, just do it once here
+		}
+		return implicitCalendar;
+	}
+	
+	// TODO: method not currently used, apparently the XPath spec never needs to canonicalize
+	// date/times after all (see section 17.1.2 on casting)
+	protected XMLGregorianCalendar getCanonicalCalendar() {
+		if (canonicalCalendar == null) {
+			canonicalCalendar = getTrimmedCalendar().normalize();
+		}
+		return canonicalCalendar;
+	}
+	
+	protected XMLGregorianCalendar getTrimmedCalendar() {
+		if (trimmedCalendar == null) {
+			trimmedCalendar = (XMLGregorianCalendar) calendar.clone();
+			BigDecimal fract = trimmedCalendar.getFractionalSecond();
+			if (fract != null) {
+				// TODO: replace following algorithm in JDK 1.5 with fract.stripTrailingZeros();
+				String s = fract.toString();
+				int i = s.length();
+				while (i > 0 && s.charAt(i-1) == '0') i--;
+				if (i == 0) trimmedCalendar.setFractionalSecond(null);
+				else if (i != s.length()) trimmedCalendar.setFractionalSecond(new BigDecimal(s.substring(0, i)));
+			}
+		}
+		return trimmedCalendar;
+	}
+	
+	protected abstract AbstractDateTimeValue createSameKind(XMLGregorianCalendar cal) throws XPathException;
+	
+	protected long getTimeInMillis() {
+		// use getImplicitCalendar() rather than relying on toGregorianCalendar timezone defaulting
+		// to maintain consistency
+		return getImplicitCalendar().toGregorianCalendar().getTimeInMillis();
+	}
+	
+	protected abstract QName getXMLSchemaType();
+	
+	public String getStringValue() throws XPathException {
+		String r = getTrimmedCalendar().toXMLFormat();
+		// hacked to match the format mandated in XPath 2 17.1.2, which is different from the XML Schema canonical format
+		//if (r.charAt(r.length()-1) == 'Z') r = r.substring(0, r.length()-1) + "+00:00";
+		
+		//Let's try these lexical transformations...		
+		boolean startsWithDashDash = r.startsWith("--");
+		r = r.replaceAll("--", "");
+		if (startsWithDashDash)
+			r = "--" + r;
+		
+		Matcher m = negativeDateStart.matcher(r);
+		if (m.matches()) {
+			//TODO : refactor this -1 shift :
+			//OK for : 
+			//(xs:dateTime("0001-01-01T01:01:01Z") + xs:yearMonthDuration("-P20Y07M"))			
+			//which goes from "0-20-06-01T01:01:01Z" to correct "-0021-06-01T01:01:01Z"
+			//not OK for : 
+			//xs:string("-0012-05:00") cast as xs:gYear
+			//which goes from "0-12-05:00" to incorrectly shifted "-0013-05:00"
+			int year = Integer.valueOf(m.group(1)).intValue() + 1;
+			DecimalFormat df = new DecimalFormat("0000");
+			r = "-" + df.format(year) + "-" + m.group(2);
+		}
+		
+		return r;
+	}
+
+	public boolean effectiveBooleanValue() throws XPathException {
+		throw new XPathException("FORG0006: effective boolean value invalid operand type: " + Type.getTypeName(getType()));
+	}
+	
+	public abstract AtomicValue convertTo(int requiredType) throws XPathException;
+
+	public int getPart(int part) {
+		switch (part) {
+			case YEAR: return calendar.getYear(); 
+			case MONTH: return calendar.getMonth();
+			case DAY: return calendar.getDay();
+			case HOUR: return calendar.getHour();
+			case MINUTE: return calendar.getMinute();
+			case SECOND: return calendar.getSecond();
+			case MILLISECOND: int mSec=calendar.getMillisecond();
+                                          if(mSec == DatatypeConstants.FIELD_UNDEFINED)
+                                              return 0;
+                                          else
+                                              return calendar.getMillisecond();
+			default: throw new IllegalArgumentException("Invalid argument to method getPart");
+		}
+	}
+	
+	private static final Duration tzLowerBound = TimeUtils.getInstance().newDurationDayTime("-PT14H");
+	private static final Duration tzUpperBound = tzLowerBound.negate();
+	protected void validateTimezone(DayTimeDurationValue offset) throws XPathException {
+		Duration tz = offset.duration;
+		Number secs = tz.getField(DatatypeConstants.SECONDS);
+		if (secs != null && ((BigDecimal) secs).compareTo(BigDecimal.valueOf(0)) != 0)
+			throw new XPathException("duration " + offset + " has fractional minutes so cannot be used as a timezone offset");
+		if (! (
+				tz.equals(tzLowerBound) ||
+				tz.equals(tzUpperBound) ||
+				(tz.isLongerThan(tzLowerBound) && tz.isShorterThan(tzUpperBound))
+			))
+			throw new XPathException("duration " + offset + " outside valid timezone offset range");
+	}
+
+	public AbstractDateTimeValue adjustedToTimezone(DayTimeDurationValue offset) throws XPathException {
+		if (offset == null) offset = new DayTimeDurationValue(TimeUtils.getInstance().getLocalTimezoneOffsetMillis());
+		validateTimezone(offset);
+		XMLGregorianCalendar xgc = (XMLGregorianCalendar) calendar.clone();
+		if (xgc.getTimezone() != DatatypeConstants.FIELD_UNDEFINED) {
+			if (getType() == Type.DATE) xgc.setTime(0,0,0);	// set the fields so we don't lose precision when shifting timezones
+			xgc = xgc.normalize();
+			xgc.add(offset.duration);
+		}
+		try {
+			xgc.setTimezone((int) (offset.getValue()/60));
+		} catch (IllegalArgumentException e) {
+			throw new XPathException("illegal timezone offset " + offset, e);
+		}
+		return createSameKind(xgc);
+	}
+	
+	public AbstractDateTimeValue withoutTimezone() throws XPathException {
+		XMLGregorianCalendar xgc = (XMLGregorianCalendar) calendar.clone();
+		xgc.setTimezone(DatatypeConstants.FIELD_UNDEFINED);
+		return createSameKind(xgc);
+	}
+	
+	public Sequence getTimezone() throws XPathException {
+		int tz = calendar.getTimezone();
+		if (tz == DatatypeConstants.FIELD_UNDEFINED) return Sequence.EMPTY_SEQUENCE;
+		return new DayTimeDurationValue(tz * 60000L);
+	}
+	
+	public boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException {
+		int cmp = compareTo(collator, other);
+		switch (operator) {
+			case Constants.EQ: return cmp == 0;
+			case Constants.NEQ: return cmp != 0;
+			case Constants.LT: return cmp < 0;
+			case Constants.LTEQ: return cmp <= 0;
+			case Constants.GT: return cmp > 0;
+			case Constants.GTEQ: return cmp >= 0;
+			default :
+				throw new XPathException("Unknown operator type in comparison");
+		}
+	}
+
+	public int compareTo(Collator collator, AtomicValue other) throws XPathException {
+		if (other.getType() == getType()) {
+			// filling in missing timezones with local timezone, should be total order as per XPath 2.0 10.4
+			int r =  getImplicitCalendar().compare(((AbstractDateTimeValue) other).getImplicitCalendar());
+			if (r == DatatypeConstants.INDETERMINATE) throw new RuntimeException("indeterminate order between " + this + " and " + other);
+			return r;
+		}
+		throw new XPathException(
+			"Type error: cannot compare " + Type.getTypeName(getType()) + " to "
+				+ Type.getTypeName(other.getType()));
+	}
+
+	public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
+		AbstractDateTimeValue otherDate = other.getType() == getType() ? (AbstractDateTimeValue) other : (AbstractDateTimeValue) other.convertTo(getType());
+		return getImplicitCalendar().compare(otherDate.getImplicitCalendar()) > 0 ? this : other;
+	}
+
+	public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
+		AbstractDateTimeValue otherDate = other.getType() == getType() ? (AbstractDateTimeValue) other : (AbstractDateTimeValue) other.convertTo(getType());
+		return getImplicitCalendar().compare(otherDate.getImplicitCalendar()) < 0 ? this : other;
+	}
+
+	// override for xs:time
+	public ComputableValue plus(ComputableValue other) throws XPathException {
+		switch(other.getType()) {
+			case Type.YEAR_MONTH_DURATION:
+			case Type.DAY_TIME_DURATION:
+				return other.plus(this);
+			default:
+				throw new XPathException(
+						"Operand to plus should be of type xdt:dayTimeDuration or xdt:yearMonthDuration; got: "
+							+ Type.getTypeName(other.getType()));
+		}
+	}
+
+	public ComputableValue mult(ComputableValue other) throws XPathException {
+		throw new XPathException("multiplication is not supported for type " + Type.getTypeName(getType()));
+	}
+
+	public ComputableValue div(ComputableValue other) throws XPathException {
+		throw new XPathException("division is not supported for type " + Type.getTypeName(getType()));
+	}
+
+	public int conversionPreference(Class javaClass) {
+		if (javaClass.isAssignableFrom(DateValue.class)) return 0;
+		if (javaClass.isAssignableFrom(XMLGregorianCalendar.class)) return 1;
+		if (javaClass.isAssignableFrom(GregorianCalendar.class)) return 2;
+		if (javaClass == Date.class) return 3;
+		return Integer.MAX_VALUE;
+	}
+
+	public Object toJavaObject(Class target) throws XPathException {
+		if (target == Object.class || target.isAssignableFrom(DateValue.class))
+			return this;
+		else if (target.isAssignableFrom(XMLGregorianCalendar.class))
+			return calendar.clone();
+		else if (target.isAssignableFrom(GregorianCalendar.class))
+			return calendar.toGregorianCalendar();
+		else if (target == Date.class)
+			return calendar.toGregorianCalendar().getTime();
+
+		throw new XPathException("cannot convert value of type " + Type.getTypeName(getType()) + " to Java object of type " + target.getName());
+	}
+    
+    /* (non-Javadoc)
+     * @see java.lang.Comparable#compareTo(java.lang.Object)
+     */
+    public int compareTo(Object o)
+    {
+        final AtomicValue other = (AtomicValue)o;
+        if(Type.subTypeOf(other.getType(), Type.DATE_TIME))
+        	try {
+        		//TODO : find something that will consume less resources
+        		return calendar.compare(TimeUtils.getInstance().newXMLGregorianCalendar(other.getStringValue()));
+        	} catch (XPathException e) {
+        		System.out.println("Failed to get string value of '" + other + "'");
+        		//Why not ?
+        		return Constants.SUPERIOR;
+        	}
+        else
+            return getType() > other.getType() ? Constants.SUPERIOR : Constants.INFERIOR;
+    }	
+
+}

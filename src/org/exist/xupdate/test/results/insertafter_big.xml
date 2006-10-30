@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<addressbook>
+	<address id="1">
+		<fname>John</fname>
+		<lname>Jekyll</lname>
+		<company>Johnny's Car Wash</company>
+		<city>Bloomington</city>
+		<email type="work">john@carwash.com</email>
+	</address>
+	<address id="2">
+		<fname>Andrew</fname>
+		<lname>Hyde</lname>
+		<company>Null-Devices</company>
+		<city>Washington</city>
+		<zipcode>12345</zipcode>
+	</address>
+	<address id="3">
+		<fname>Torsten</fname>
+		<lname>Maier</lname>
+		<company>Cytec</company>
+		<city>Konstanz</city>
+	</address>
+	<address id="4">
+		<fname>Boris</fname>
+		<lname>Becker</lname>
+		<company>BB-Inc.</company>
+		<city>Leimen</city>
+	</address>
+	<address id="5">
+		<fname>Steffi</fname>
+		<lname>Graf</lname>
+		<company>SG-Inc.</company>
+		<city>Bruehl</city>
+	</address>
+</addressbook>
