@@ -184,6 +184,7 @@ public class ExternalModuleImpl implements ExternalModule {
 	}
 	
 	public void reset() {
-		mContext.reset();
-	}
+        mContext.reset();
+        mStaticVariables.clear();
+    }
 }

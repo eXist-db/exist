@@ -18,7 +18,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *  $Id: RESTServer.java 3567 2006-05-19 13:37:34 +0000 (Fri, 19 May 2006) wolfgang_m $
+ *  $Id$
  */
 package org.exist.http;
 
@@ -89,6 +89,21 @@ import org.xml.sax.XMLReader;
 
 /**
  * @author Adam Retter (adam.retter@devon.gov.uk)
+ * 
+ * @serial 20061025T00:17:00
+ * 
+ * The SOAPServer allows Web Services to be written in XQuery; it translates a 
+ * SOAP Request to an XQuery function call and then translates the result of the
+ * XQuery function to a SOAP Response.
+ * 
+ * This is done by managing an internal representation of an XQWS (XQuery Web Service),
+ * through this it is able to provide enough information to an XSLT proccessor to
+ * generate WSDL and human readable descriptions of the web service and individual
+ * functions.
+ * 
+ * XSLT's are provided for document-oriented Web Service's and are located
+ * in $EXIST_HOME/tools/SOAPServer
+ * 
  */
 public class SOAPServer
 {
@@ -216,14 +231,15 @@ public class SOAPServer
      */
     private CompiledXQuery XQueryExecuteXQWSFunction(DBBroker broker, Node xqwsSOAPFunction, XQWSDescription xqwsDescription, HttpServletRequest request, HttpServletResponse response) throws XPathException
     {	
-    	String query = "xquery version \"1.0\";" + SEPERATOR;
-        query += SEPERATOR;
-        query += "import module namespace " + xqwsDescription.getNamespace().getLocalName() + "=\"" + xqwsDescription.getNamespace().getNamespaceURI() + "\" at \"" + xqwsDescription.getFileURI().toString() + "\";" + SEPERATOR;
-        query += SEPERATOR;
+    	StringBuffer query = new StringBuffer();
+    	query.append("xquery version \"1.0\";" + SEPERATOR);
+    	query.append(SEPERATOR);
+        query.append("import module namespace " + xqwsDescription.getNamespace().getLocalName() + "=\"" + xqwsDescription.getNamespace().getNamespaceURI() + "\" at \"" + xqwsDescription.getFileURI().toString() + "\";" + SEPERATOR);
+        query.append(SEPERATOR);
         
         //add the function call to the xquery
         String functionName = xqwsSOAPFunction.getNodeName();
-        query += xqwsDescription.getNamespace().getLocalName() + ":" + functionName + "(";
+        query.append(xqwsDescription.getNamespace().getLocalName() + ":" + functionName + "(");
         
         //add the arguments for the function call if any
         NodeList xqwsSOAPFunctionParams = xqwsSOAPFunction.getChildNodes();
@@ -236,21 +252,23 @@ public class SOAPServer
         	Node nSOAPFunctionParam = xqwsSOAPFunctionParams.item(i);
         	if(nSOAPFunctionParam.getNodeType() == Node.ELEMENT_NODE)
         	{
-	        	query += writeXQueryFunctionParameter(xqwsDescription.getFunctionParameterType(nlInternalFunctionParams.item(j)), xqwsDescription.getFunctionParameterCardinality(nlInternalFunctionParams.item(j)), nSOAPFunctionParam.getFirstChild().getNodeValue());
+	        	query.append(writeXQueryFunctionParameter(xqwsDescription.getFunctionParameterType(nlInternalFunctionParams.item(j)), xqwsDescription.getFunctionParameterCardinality(nlInternalFunctionParams.item(j)), nSOAPFunctionParam));
+        		query.append(","); //add function seperator
 	        	
-	        	//add a comma if this isnt the last parameter
-	        	if(j != nlInternalFunctionParams.getLength()-1)
-	        	{
-	        		query += ",";
-	        	}
 	        	j++;
         	}
         }
         
-        query += ")";
+        //remove last superflurous seperator
+		if(query.charAt(query.length()-1) == ',')
+		{
+			query.deleteCharAt(query.length()-1);
+		}
+        
+        query.append(")");
         
         //compile the query
-        return compileXQuery(broker, new StringSource(query), new XmldbURI[] { xqwsDescription.getCollectionURI() }, xqwsDescription.getCollectionURI(), request, response);
+        return compileXQuery(broker, new StringSource(query.toString()), new XmldbURI[] { xqwsDescription.getCollectionURI() }, xqwsDescription.getCollectionURI(), request, response);
     }
     
     /**
@@ -262,7 +280,7 @@ public class SOAPServer
      * 
      * @return A String representation of the parameter, suitable for use in the function call 
      */
-    private String writeXQueryFunctionParameter(String paramType, int paramCardinality, String strSOAPParamValue) throws XPathException
+    private String writeXQueryFunctionParameter(String paramType, int paramCardinality, Node nSOAPParam) throws XPathException
     {
     	String prefix = new String();
     	String postfix = new String();
@@ -294,8 +312,45 @@ public class SOAPServer
     		
     		default:
     	}
-    	
-    	return prefix +  strSOAPParamValue + postfix;
+    
+    	//determine the cardinality of the parameter
+    	if(paramCardinality >= Cardinality.MANY)
+    	{
+    		//sequence
+    		StringBuffer param = new StringBuffer();
+    		
+    		param.append("(");
+    		
+    		NodeList nlParamSequenceItems = nSOAPParam.getChildNodes();
+    		for(int i=0; i < nlParamSequenceItems.getLength(); i++)
+    		{
+    			Node nParamSeqItem = nlParamSequenceItems.item(i);
+    			if(nParamSeqItem.getNodeType() == Node.ELEMENT_NODE)
+    			{
+    				param.append(prefix);
+    				param.append(nParamSeqItem.getFirstChild().getNodeValue());
+    				param.append(postfix);
+    	        	
+	        		param.append(",");	//seperator for next item in sequence
+    	        	
+    			}
+    		}
+    		
+    		//remove last superflurous seperator
+    		if(param.charAt(param.length()-1) == ',')
+    		{
+    			param.deleteCharAt(param.length()-1);
+    		}
+    		
+    		param.append(")");
+    		
+    		return param.toString();
+    	}
+    	else
+    	{
+    		//atomic value
+    		return prefix +  nSOAPParam.getFirstChild().getNodeValue() + postfix;
+    	}
     }
     
     /**
@@ -1159,7 +1214,7 @@ public class SOAPServer
     	 * 	<path/>
     	 * 	<URL/>
     	 * 	<functions>
-    	 * 		@see org.exist.http.SOAPServer#describeWebServiceFunction(org.exist.xquery.FunctionSignature, org.exist.memtree.MemTreeBuilder)
+    	 * 		<function/> { unbounded } { @see org.exist.http.SOAPServer#describeWebServiceFunction(org.exist.xquery.FunctionSignature, org.exist.memtree.MemTreeBuilder) }
     	 * 	</functions>
     	 * </webservice>
     	 *
@@ -1224,7 +1279,7 @@ public class SOAPServer
     	 * 		<name/>
     	 * 		<description/>
     	 * 		<parameters>
-    	 * 			<parameter>
+    	 * 			<parameter>	{ unbounded }
     	 * 				<name/>
     	 * 				<type/>
     	 * 				<cardinality/>
@@ -1233,7 +1288,14 @@ public class SOAPServer
     	 * 		<return>
     	 * 			<type/>
     	 * 			<cardinality/>
-    	 * 			<result/>		//Only displayed if this is after the function has been executed
+    	 * 			<result>		{ Only displayed if this is after the function has been executed }
+    	 * 				either {
+    	 * 					<value/> or
+    	 * 					<sequence>
+    	 * 						<value/> { unbounded }
+    	 * 					</sequence>
+    	 * 				}
+    	 * 			</result>
     	 * 		</return>
     	 * 	</function>
     	 * 
@@ -1275,15 +1337,36 @@ public class SOAPServer
         	builderFunction.startElement(new QName("type",null, null), null);
         	builderFunction.characters(Type.getTypeName(signature.getReturnType().getPrimaryType()));
         	builderFunction.endElement();
+        	int iReturnCardinality = signature.getReturnType().getCardinality();
         	builderFunction.startElement(new QName("cardinality",null, null), null);
-        	builderFunction.characters(Integer.toString(signature.getReturnType().getCardinality()));
+        	builderFunction.characters(Integer.toString(iReturnCardinality));
         	builderFunction.endElement();
         	if(functionResult != null)
         	{
         		builderFunction.startElement(new QName("result", null, null), null);
-
-        		//TODO: this will work for a single string result, but need to add much more logic for other types and complex cardinalities
-        		builderFunction.characters(functionResult.itemAt(0).getStringValue());
+        		
+        		//determine result cardinality
+        		if(iReturnCardinality >= Cardinality.MANY)
+        		{
+        			//sequence of values
+        			builderFunction.startElement(new QName("sequence", null, null), null);
+        			
+        			for(int i=0; i < functionResult.getLength(); i++)
+        			{
+            			builderFunction.startElement(new QName("value", null, null), null);
+            			builderFunction.characters(functionResult.itemAt(i).getStringValue());
+            			builderFunction.endElement();
+        			}
+        			
+        			builderFunction.endElement();
+        		}
+        		else
+        		{
+        			//atomic value
+        			builderFunction.startElement(new QName("value", null, null), null);
+        			builderFunction.characters(functionResult.itemAt(0).getStringValue());
+        			builderFunction.endElement();
+        		}
         		
         		builderFunction.endElement();
         	}
