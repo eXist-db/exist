@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xu:modifications version="1.0" xmlns:xu="http://www.xmldb.org/xupdate">
+
+  <xu:rename 
+		xmlns:t="http://test.com" 
+		xmlns:new="http://new.test.com" 
+		select="/t:root/t:node" >new:name</xu:rename>
+
+</xu:modifications>
+<?xml version="1.0" encoding="UTF-8"?>
+<xu:modifications version="1.0" xmlns:xu="http://www.xmldb.org/xupdate">
+
+  <xu:rename 
+		xmlns:t="http://test.com" 
+		xmlns:new="http://new.test.com" 
+		select="/t:root/t:node" >new:name</xu:rename>
+
+</xu:modifications>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xu:modifications version="1.0" xmlns:xu="http://www.xmldb.org/xupdate">
+    
+    <xu:variable name="company" select="//address[lname |= 'hyde']/company"/>
+    
+    <xu:append select="/addressbook">
+        
+        <xu:element name="address">
+        
+            <xu:attribute name="rating">99</xu:attribute>
+            
+            <fname>Boris</fname>
+            <lname>Becker</lname>
+            <xu:value-of select="$company"/>
+            <city>Leimen</city>
+        </xu:element>
+        
+    </xu:append>
+    
+</xu:modifications>    
+

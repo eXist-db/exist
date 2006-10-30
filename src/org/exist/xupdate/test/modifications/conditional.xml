@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xu:modifications version="1.0" xmlns:xu="http://www.xmldb.org/xupdate">
+	
+	<xu:if test="not(/addressbook/@count)">
+		<xu:variable name="count" select="count(//address)"/>
+		<xu:append select="/addressbook">
+			<xu:attribute name="count"><xu:value-of select="$count"/></xu:attribute>
+		</xu:append>
+	</xu:if>
+</xu:modifications>
+	

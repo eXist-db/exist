@@ -1,0 +1,620 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:apachesoap="http://xml.apache.org/xml-soap" xmlns:impl="urn:exist" xmlns:intf="urn:exist" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="query" targetNamespace="urn:exist">
+<!--WSDL created by Apache Axis version: 1.2.1
+Built on Jun 14, 2005 (09:15:57 EDT)-->
+ <wsdl:types>
+  <schema xmlns="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="urn:exist">
+   <element name="getResource">
+    <complexType>
+     <sequence>
+      <element name="sessionId" type="xsd:string"/>
+      <element name="path" type="xsd:string"/>
+      <element name="indent" type="xsd:boolean"/>
+      <element name="xinclude" type="xsd:boolean"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="getResourceResponse">
+    <complexType>
+     <sequence>
+      <element name="getResourceReturn" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="query">
+    <complexType>
+     <sequence>
+      <element name="sessionId" type="xsd:string"/>
+      <element name="xpath" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="queryResponse">
+    <complexType>
+     <sequence>
+      <element name="queryReturn" type="impl:QueryResponse"/>
+     </sequence>
+    </complexType>
+   </element>
+   <complexType name="QueryResponseDocument">
+    <sequence>
+     <element name="documentName" type="xsd:string"/>
+     <element name="hitCount" type="xsd:int"/>
+    </sequence>
+   </complexType>
+   <complexType name="QueryResponseDocuments">
+    <sequence>
+     <element maxOccurs="unbounded" minOccurs="0" name="elements" type="impl:QueryResponseDocument"/>
+    </sequence>
+   </complexType>
+   <complexType name="QueryResponseCollection">
+    <sequence>
+     <element name="collectionName" type="xsd:string"/>
+     <element name="documents" type="impl:QueryResponseDocuments"/>
+    </sequence>
+   </complexType>
+   <complexType name="QueryResponseCollections">
+    <sequence>
+     <element maxOccurs="unbounded" minOccurs="0" name="elements" type="impl:QueryResponseCollection"/>
+    </sequence>
+   </complexType>
+   <complexType name="QueryResponse">
+    <sequence>
+     <element name="collections" type="impl:QueryResponseCollections" nillable="true"/>
+     <element name="hits" type="xsd:int"/>
+     <element name="queryTime" type="xsd:long"/>
+    </sequence>
+   </complexType>
+   <element name="connect">
+    <complexType>
+     <sequence>
+      <element name="userId" type="xsd:string"/>
+      <element name="password" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="connectResponse">
+    <complexType>
+     <sequence>
+      <element name="connectReturn" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="retrieve">
+    <complexType>
+     <sequence>
+      <element name="sessionId" type="xsd:string"/>
+      <element name="start" type="xsd:int"/>
+      <element name="howmany" type="xsd:int"/>
+      <element name="indent" type="xsd:boolean"/>
+      <element name="xinclude" type="xsd:boolean"/>
+      <element name="highlight" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="retrieveResponse">
+    <complexType>
+     <sequence>
+      <element maxOccurs="unbounded" name="retrieveReturn" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="disconnect">
+    <complexType>
+     <sequence>
+      <element name="sessionId" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="disconnectResponse">
+    <complexType/>
+   </element>
+   <element name="getResourceData">
+    <complexType>
+     <sequence>
+      <element name="sessionId" type="xsd:string"/>
+      <element name="path" type="xsd:string"/>
+      <element name="indent" type="xsd:boolean"/>
+      <element name="xinclude" type="xsd:boolean"/>
+      <element name="processXSLPI" type="xsd:boolean"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="getResourceDataResponse">
+    <complexType>
+     <sequence>
+      <element name="getResourceDataReturn" type="xsd:base64Binary"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="xquery">
+    <complexType>
+     <sequence>
+      <element name="sessionId" type="xsd:string"/>
+      <element name="xquery" type="xsd:base64Binary"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="xqueryResponse">
+    <complexType>
+     <sequence>
+      <element name="xqueryReturn" type="impl:QueryResponse"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="retrieveData">
+    <complexType>
+     <sequence>
+      <element name="sessionId" type="xsd:string"/>
+      <element name="start" type="xsd:int"/>
+      <element name="howmany" type="xsd:int"/>
+      <element name="indent" type="xsd:boolean"/>
+      <element name="xinclude" type="xsd:boolean"/>
+      <element name="highlight" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="retrieveDataResponse">
+    <complexType>
+     <sequence>
+      <element name="retrieveDataReturn" type="impl:Base64BinaryArray"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="retrieveByDocument">
+    <complexType>
+     <sequence>
+      <element name="sessionId" type="xsd:string"/>
+      <element name="start" type="xsd:int"/>
+      <element name="howmany" type="xsd:int"/>
+      <element name="path" type="xsd:string"/>
+      <element name="indent" type="xsd:boolean"/>
+      <element name="xinclude" type="xsd:boolean"/>
+      <element name="highlight" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="retrieveByDocumentResponse">
+    <complexType>
+     <sequence>
+      <element maxOccurs="unbounded" name="retrieveByDocumentReturn" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="listCollection">
+    <complexType>
+     <sequence>
+      <element name="sessionId" type="xsd:string"/>
+      <element name="path" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="listCollectionResponse">
+    <complexType>
+     <sequence>
+      <element name="listCollectionReturn" type="impl:Collection"/>
+     </sequence>
+    </complexType>
+   </element>
+   <complexType name="Collection">
+    <sequence>
+     <element name="collections" type="impl:StringArray"/>
+     <element name="resources" type="impl:StringArray"/>
+    </sequence>
+   </complexType>
+   <complexType name="StringArray">
+   	<sequence>
+   		<element name="elements" type="string" minOccurs="0" maxOccurs="unbounded" nillable="true"></element>
+   	</sequence>
+   </complexType>
+
+   <complexType name="Base64BinaryArray">
+   	<sequence>
+   		<element name="elements" type="base64Binary" maxOccurs="unbounded"></element>
+   	</sequence>
+   </complexType>
+
+  </schema>
+ </wsdl:types>
+
+   <wsdl:message name="xqueryRequest">
+
+      <wsdl:part element="impl:xquery" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="retrieveByDocumentResponse">
+
+      <wsdl:part element="impl:retrieveByDocumentResponse" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="listCollectionResponse">
+
+      <wsdl:part element="impl:listCollectionResponse" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="queryRequest">
+
+      <wsdl:part element="impl:query" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="connectRequest">
+
+      <wsdl:part element="impl:connect" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="listCollectionRequest">
+
+      <wsdl:part element="impl:listCollection" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="getResourceResponse">
+
+      <wsdl:part element="impl:getResourceResponse" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="retrieveDataRequest">
+
+      <wsdl:part element="impl:retrieveData" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="retrieveResponse">
+
+      <wsdl:part element="impl:retrieveResponse" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="disconnectRequest">
+
+      <wsdl:part element="impl:disconnect" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="connectResponse">
+
+      <wsdl:part element="impl:connectResponse" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="retrieveByDocumentRequest">
+
+      <wsdl:part element="impl:retrieveByDocument" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="getResourceDataRequest">
+
+      <wsdl:part element="impl:getResourceData" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="getResourceDataResponse">
+
+      <wsdl:part element="impl:getResourceDataResponse" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="xqueryResponse">
+
+      <wsdl:part element="impl:xqueryResponse" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="getResourceRequest">
+
+      <wsdl:part element="impl:getResource" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="queryResponse">
+
+      <wsdl:part element="impl:queryResponse" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="retrieveDataResponse">
+
+      <wsdl:part element="impl:retrieveDataResponse" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="disconnectResponse">
+
+      <wsdl:part element="impl:disconnectResponse" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="retrieveRequest">
+
+      <wsdl:part element="impl:retrieve" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:portType name="Query">
+
+      <wsdl:operation name="getResource">
+
+         <wsdl:input message="impl:getResourceRequest" name="getResourceRequest"/>
+
+         <wsdl:output message="impl:getResourceResponse" name="getResourceResponse"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="query">
+
+         <wsdl:input message="impl:queryRequest" name="queryRequest"/>
+
+         <wsdl:output message="impl:queryResponse" name="queryResponse"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="connect">
+
+         <wsdl:input message="impl:connectRequest" name="connectRequest"/>
+
+         <wsdl:output message="impl:connectResponse" name="connectResponse"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="retrieve">
+
+         <wsdl:input message="impl:retrieveRequest" name="retrieveRequest"/>
+
+         <wsdl:output message="impl:retrieveResponse" name="retrieveResponse"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="disconnect">
+
+         <wsdl:input message="impl:disconnectRequest" name="disconnectRequest"/>
+
+         <wsdl:output message="impl:disconnectResponse" name="disconnectResponse"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="getResourceData">
+
+         <wsdl:input message="impl:getResourceDataRequest" name="getResourceDataRequest"/>
+
+         <wsdl:output message="impl:getResourceDataResponse" name="getResourceDataResponse"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="xquery">
+
+         <wsdl:input message="impl:xqueryRequest" name="xqueryRequest"/>
+
+         <wsdl:output message="impl:xqueryResponse" name="xqueryResponse"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="retrieveData">
+
+         <wsdl:input message="impl:retrieveDataRequest" name="retrieveDataRequest"/>
+
+         <wsdl:output message="impl:retrieveDataResponse" name="retrieveDataResponse"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="retrieveByDocument">
+
+         <wsdl:input message="impl:retrieveByDocumentRequest" name="retrieveByDocumentRequest"/>
+
+         <wsdl:output message="impl:retrieveByDocumentResponse" name="retrieveByDocumentResponse"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="listCollection">
+
+         <wsdl:input message="impl:listCollectionRequest" name="listCollectionRequest"/>
+
+         <wsdl:output message="impl:listCollectionResponse" name="listCollectionResponse"/>
+
+      </wsdl:operation>
+
+   </wsdl:portType>
+
+   <wsdl:binding name="QuerySoapBinding" type="impl:Query">
+
+      <wsdlsoap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+      <wsdl:operation name="getResource">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="getResourceRequest">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="getResourceResponse">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="query">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="queryRequest">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="queryResponse">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="connect">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="connectRequest">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="connectResponse">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="retrieve">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="retrieveRequest">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="retrieveResponse">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="disconnect">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="disconnectRequest">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="disconnectResponse">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="getResourceData">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="getResourceDataRequest">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="getResourceDataResponse">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="xquery">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="xqueryRequest">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="xqueryResponse">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="retrieveData">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="retrieveDataRequest">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="retrieveDataResponse">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="retrieveByDocument">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="retrieveByDocumentRequest">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="retrieveByDocumentResponse">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="listCollection">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="listCollectionRequest">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="listCollectionResponse">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+   </wsdl:binding>
+
+   <wsdl:service name="QueryService">
+
+      <wsdl:port binding="impl:QuerySoapBinding" name="Query">
+
+         <wsdlsoap:address location="http://localhost:8080/exist/services/Query"/>
+
+      </wsdl:port>
+
+   </wsdl:service>
+
+</wsdl:definitions>

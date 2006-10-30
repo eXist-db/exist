@@ -1,0 +1,1134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:apachesoap="http://xml.apache.org/xml-soap" xmlns:impl="urn:exist" xmlns:intf="urn:exist" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="Permissions" targetNamespace="urn:exist">
+<!--WSDL created by Apache Axis version: 1.2.1
+Built on Jun 14, 2005 (09:15:57 EDT)-->
+ <wsdl:types>
+  <schema xmlns="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="urn:exist">
+   <element name="store">
+    <complexType>
+     <sequence>
+      <element name="sessionId" type="xsd:string"/>
+      <element name="data" type="xsd:base64Binary"/>
+      <element name="encoding" type="xsd:string"/>
+      <element name="path" type="xsd:string"/>
+      <element name="replace" type="xsd:boolean"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="storeResponse">
+    <complexType/>
+   </element>
+   <element name="connect">
+    <complexType>
+     <sequence>
+      <element name="userId" type="xsd:string"/>
+      <element name="password" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="connectResponse">
+    <complexType>
+     <sequence>
+      <element name="connectReturn" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="disconnect">
+    <complexType>
+     <sequence>
+      <element name="sessionId" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="disconnectResponse">
+    <complexType/>
+   </element>
+   <element name="removeCollection">
+    <complexType>
+     <sequence>
+      <element name="sessionId" type="xsd:string"/>
+      <element name="path" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="removeCollectionResponse">
+    <complexType>
+     <sequence>
+      <element name="removeCollectionReturn" type="xsd:boolean"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="removeDocument">
+    <complexType>
+     <sequence>
+      <element name="sessionId" type="xsd:string"/>
+      <element name="path" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="removeDocumentResponse">
+    <complexType>
+     <sequence>
+      <element name="removeDocumentReturn" type="xsd:boolean"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="createCollection">
+    <complexType>
+     <sequence>
+      <element name="sessionId" type="xsd:string"/>
+      <element name="path" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="createCollectionResponse">
+    <complexType>
+     <sequence>
+      <element name="createCollectionReturn" type="xsd:boolean"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="xupdate">
+    <complexType>
+     <sequence>
+      <element name="sessionId" type="xsd:string"/>
+      <element name="collectionName" type="xsd:string"/>
+      <element name="xupdate" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="xupdateResponse">
+    <complexType>
+     <sequence>
+      <element name="xupdateReturn" type="xsd:int"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="xupdateResource">
+    <complexType>
+     <sequence>
+      <element name="sessionId" type="xsd:string"/>
+      <element name="documentName" type="xsd:string"/>
+      <element name="xupdate" type="xsd:string"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="xupdateResourceResponse">
+    <complexType>
+     <sequence>
+      <element name="xupdateResourceReturn" type="xsd:int"/>
+     </sequence>
+    </complexType>
+   </element>
+   <element name="storeBinaryResponse">
+   	<complexType>
+   		</complexType>
+   </element>
+   <element name="storeBinary">
+            	<complexType>
+            		<sequence>
+            			<element name="sessionId" type="xsd:string"></element>
+            			<element name="data" type="xsd:base64Binary"></element>
+            			<element name="path" type="xsd:string"></element>
+            			<element name="mimeType" type="xsd:string"></element>
+            			<element name="replace" type="xsd:boolean"></element>
+            		</sequence>
+            	</complexType>
+            </element>
+   <element name="getBinaryResourceResponse">
+   	<complexType>
+   		<sequence>
+   			<element name="getBinaryResourceReturn" type="xsd:base64Binary"></element>
+   		</sequence>
+   	</complexType>
+   </element>
+   <element name="getBinaryResource">
+   	<complexType>
+   		<sequence>
+   			<element name="sessionId" type="xsd:string"></element>
+   			<element name="name" type="xsd:string"></element>
+   		</sequence>
+   	</complexType>
+   </element>
+   <element name="getCollectionDescResponse">
+   	<complexType>
+   		<sequence>
+   			<element name="getCollectionDescReturn" type="impl:CollectionDesc"></element>
+   		</sequence>
+   	</complexType>
+   </element>
+   <element name="getCollectionDesc">
+            	<complexType>
+            		<sequence>
+            			<element name="sessionId" type="xsd:string"></element>
+            			<element name="collectionName" type="xsd:string"></element>
+            		</sequence>
+            	</complexType>
+            </element>
+   <complexType name="Strings">
+   	<sequence>
+   		<element name="elements" type="xsd:string" maxOccurs="unbounded" minOccurs="0"></element>
+   	</sequence>
+   </complexType>
+
+   <complexType name="DocumentDescs">
+   	<sequence>
+   		<element name="elements" maxOccurs="unbounded"
+   			minOccurs="0" type="impl:DocumentDesc">
+   		</element>
+   	</sequence>
+   </complexType>
+
+   <simpleType name="DocumentType">
+   	<restriction base="xsd:string">
+   		<enumeration value="XMLResource"></enumeration>
+   		<enumeration value="BinaryResource"></enumeration>
+   	</restriction>
+   </simpleType>
+
+   <complexType name="CollectionDesc">
+   	<sequence>
+   		<element name="name" type="xsd:string"></element>
+   		<element name="owner" type="xsd:string"></element>
+   		<element name="group" type="xsd:string"></element>
+   		<element name="permissions" type="xsd:int"></element>
+   		<element name="created" type="xsd:long"></element>
+   		<element name="collections" type="impl:Strings"></element>
+   		<element name="documents" type="impl:DocumentDescs"></element>
+   	</sequence>
+   </complexType>
+   <complexType name="DocumentDesc">
+   	<sequence>
+   		<element name="name" type="xsd:string"></element>
+   		<element name="owner" type="xsd:string"></element>
+   		<element name="group" type="xsd:string"></element>
+   		<element name="permissions" type="xsd:int"></element>
+   		<element name="type" type="impl:DocumentType"></element>
+   	</sequence>
+   </complexType>
+   <element name="setPermissionsResponse">
+   	<complexType>
+   		</complexType>
+   </element>
+   <element name="setPermissions">
+            	<complexType>
+            		<sequence>
+            			<element name="sessionId" type="xsd:string"></element>
+            			<element name="resource" type="xsd:string"></element>
+            			<element name="owner" type="xsd:string"></element>
+            			<element name="ownerGroup" type="xsd:string"></element>
+            			<element name="permissions" type="xsd:int"></element>
+            		</sequence>
+            	</complexType>
+            </element>
+   <element name="copyResourceResponse">
+   	<complexType>
+   		</complexType>
+   </element>
+   <element name="copyResource">
+            	<complexType>
+            		<sequence>
+            			<element name="sessionId" type="xsd:string"></element>
+            			<element name="docPath" type="xsd:string"></element>
+            			<element name="destinationPath" type="xsd:string"></element>
+            			<element name="newName" type="xsd:string"></element>
+            		</sequence>
+            	</complexType>
+            </element>
+   <element name="copyCollectionResponse">
+   	<complexType>
+   		</complexType>
+   </element>
+   <element name="copyCollection">
+            	<complexType>
+            		<sequence>
+            			<element name="sessionId" type="xsd:string"></element>
+            			<element name="collectionPath" type="xsd:string"></element>
+            			<element name="destinationPath" type="xsd:string"></element>
+            			<element name="newName" type="xsd:string"></element>
+            		</sequence>
+            	</complexType>
+            </element>
+   <element name="setUserResponse">
+   	<complexType>
+   		</complexType>
+   </element>
+   <element name="setUser">
+            	<complexType>
+            		<sequence>
+            			<element name="sessionId" type="xsd:string"></element>
+            			<element name="name" type="xsd:string"></element>
+            			<element name="password" type="xsd:string"></element>
+            			<element name="groups" type="impl:Strings"></element>
+            			<element name="home" type="xsd:string"></element>
+            		</sequence>
+            	</complexType>
+            </element>
+   <element name="getUserResponse">
+   	<complexType>
+   		<sequence>
+   			<element name="getUserReturn" type="impl:UserDesc">
+   			</element>
+   		</sequence>
+   	</complexType>
+   </element>
+   <element name="getUser">
+            	<complexType>
+            		<sequence>
+            			<element name="sessionId" type="xsd:string"></element>
+            			<element name="user" type="xsd:string"></element>
+            		</sequence>
+            	</complexType>
+            </element>
+   <complexType name="UserDesc">
+   	<sequence>
+   		<element name="name" type="xsd:string"></element>
+   		<element name="groups" type="impl:Strings"></element>
+   		<element name="home" type="xsd:string" nillable="true"></element>
+   	</sequence>
+   </complexType>
+   <element name="removeUserResponse">
+   	<complexType>
+   		</complexType>
+   </element>
+   <element name="removeUser">
+            	<complexType>
+            		<sequence>
+            			<element name="sessionId" type="xsd:string"></element>
+            			<element name="name" type="xsd:string"></element>
+            		</sequence>
+            	</complexType>
+            </element>
+   <element name="getUsersResponse">
+   	<complexType>
+   		<sequence>
+   			<element name="getUsersReturn" type="impl:UserDescs"></element>
+   		</sequence>
+   	</complexType>
+   </element>
+   <element name="getUsers">
+            	<complexType>
+            		<sequence>
+            			<element name="sessionId" type="xsd:string"></element>
+            		</sequence>
+            	</complexType>
+            </element>
+            <complexType name="UserDescs">
+            	<sequence>
+            		<element name="elements" type="impl:UserDesc" minOccurs="0" maxOccurs="unbounded"></element>
+            	</sequence>
+            </complexType>
+
+            <element name="getGroupsResponse">
+            	<complexType>
+            		<sequence>
+            			<element name="getGroupsReturn" type="impl:Strings"></element>
+            		</sequence>
+            	</complexType>
+            </element>
+            <element name="getGroups">
+            	<complexType>
+            		<sequence>
+            			<element name="sessionId" type="xsd:string"></element>
+            		</sequence>
+            	</complexType>
+            </element>
+            <element name="moveCollectionResponse">
+            	<complexType>
+            		</complexType>
+            </element>
+            <element name="moveCollection">
+            	<complexType>
+            		<sequence>
+            			<element name="sessionId" type="xsd:string"></element>
+            			<element name="collectionPath" type="xsd:string"></element>
+            			<element name="destinationPath" type="xsd:string"></element>
+            			<element name="newName" type="xsd:string"></element>
+            		</sequence>
+            	</complexType>
+            </element>
+            <element name="moveResourceResponse">
+            	<complexType>
+            		</complexType>
+            </element>
+            <element name="moveResource">
+            	<complexType>
+            		<sequence>
+            			<element name="sessionId" type="xsd:string"></element>
+            			<element name="docPath" type="xsd:string"></element>
+            			<element name="destinationPath" type="xsd:string"></element>
+            			<element name="newName" type="xsd:string"></element>
+            		</sequence>
+            	</complexType>
+            </element>
+            <element name="lockResourceResponse">
+            	<complexType>
+            		</complexType>
+            </element>
+            <element name="lockResource">
+            	<complexType>
+            		<sequence>
+            			<element name="sessionId" type="xsd:string"></element>
+            			<element name="path" type="xsd:string"></element>
+            			<element name="userName" type="xsd:string"></element>
+            		</sequence>
+            	</complexType>
+            </element>
+            <element name="unlockResourceResponse">
+            	<complexType>
+            		</complexType>
+            </element>
+            <element name="unlockResource">
+            	<complexType>
+            		<sequence>
+            			<element name="sessionId" type="xsd:string"></element>
+            			<element name="path" type="xsd:string"></element>
+            		</sequence>
+            	</complexType>
+            </element>
+            <element name="hasUserLockResponse">
+            	<complexType>
+            		<sequence>
+            			<element name="hasUserLockReturn" type="xsd:string"></element>
+            		</sequence>
+            	</complexType>
+            </element>
+            <element name="hasUserLock">
+            	<complexType>
+            		<sequence>
+            			<element name="sessionId" type="xsd:string"></element>
+            			<element name="path" type="xsd:string"></element>
+            		</sequence>
+            	</complexType>
+            </element>
+            <element name="getPermissionsResponse">
+            	<complexType>
+            		<sequence>
+            			<element name="getPermissionsReturn" type="impl:Permissions"></element>
+            		</sequence>
+            	</complexType>
+            </element>
+            <element name="getPermissions">
+            	<complexType>
+            		<sequence>
+            			<element name="sessionId" type="xsd:string"></element>
+            			<element name="resource" type="xsd:string"></element>
+            		</sequence>
+            	</complexType>
+            </element>
+            <complexType name="Permissions">
+            	<sequence>
+            		<element name="owner" type="xsd:string"></element>
+            		<element name="group" type="xsd:string"></element>
+            		<element name="permissions" type="xsd:int"></element>
+            	</sequence>
+            </complexType>
+
+            <element name="listCollectionPermissionsResponse">
+            	<complexType>
+            		<sequence>
+            			<element
+            				name="listCollectionPermissionsReturn" type="impl:EntityPermissionsList">
+            				</element>
+            		</sequence>
+            	</complexType>
+            </element>
+            <element name="listCollectionPermissions">
+            	<complexType>
+            		<sequence>
+            			<element name="sessionId" type="xsd:string"></element>
+            			<element name="name" type="xsd:string"></element>
+            		</sequence>
+            	</complexType>
+            </element>
+            <complexType name="EntityPermissionsList">
+            	<sequence>
+            		<element name="elements" maxOccurs="unbounded" minOccurs="0" type="impl:EntityPermissions">
+            		</element>
+            	</sequence>
+            </complexType>
+
+            <complexType name="EntityPermissions">
+            	<sequence>
+            		<element name="name" type="xsd:string"></element>
+            		<element name="owner" type="xsd:string"></element>
+            		<element name="group" type="xsd:string"></element>
+            		<element name="permissions" type="xsd:int"></element>
+            	</sequence>
+            </complexType>
+            <element name="listDocumentPermissionsResponse">
+            	<complexType>
+            		<sequence>
+            			<element name="listDocumentPermissionsReturn" type="impl:EntityPermissionsList"></element>
+            		</sequence>
+            	</complexType>
+            </element>
+            <element name="listDocumentPermissions">
+            	<complexType>
+            		<sequence>
+            			<element name="sessionId" type="xsd:string"></element>
+            			<element name="name" type="xsd:string"></element>
+            		</sequence>
+            	</complexType>
+            </element>
+            <element name="getIndexedElementsResponse">
+            	<complexType>
+            		<sequence>
+            			<element name="getIndexedElementsReturn"
+            				type="impl:IndexedElements">
+            			</element>
+            		</sequence>
+            	</complexType>
+            </element>
+            <element name="getIndexedElements">
+            	<complexType>
+            		<sequence>
+            			<element name="sessionId" type="xsd:string"></element>
+            			<element name="collectionName" type="xsd:string"></element>
+            			<element name="inclusive" type="xsd:boolean"></element>
+            		</sequence>
+            	</complexType>
+            </element>
+            <complexType name="IndexedElements">
+            	<sequence>
+            		<element name="elements"
+            			type="impl:IndexedElement" maxOccurs="unbounded"
+            			minOccurs="0">
+            		</element>
+            	</sequence>
+            </complexType>
+
+            <complexType name="IndexedElement">
+            	<sequence>
+            		<element name="localName" type="xsd:string"></element>
+            		<element name="namespaceURI" type="xsd:string"></element>
+            		<element name="prefix" type="xsd:string"></element>
+            		<element name="occurences" type="xsd:int"></element>
+            	</sequence>
+            </complexType>
+        </schema>
+ </wsdl:types>
+
+   <wsdl:message name="xupdateResourceResponse">
+
+      <wsdl:part element="impl:xupdateResourceResponse" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="storeRequest">
+
+      <wsdl:part element="impl:store" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="connectRequest">
+
+      <wsdl:part element="impl:connect" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="createCollectionRequest">
+
+      <wsdl:part element="impl:createCollection" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="xupdateResponse">
+
+      <wsdl:part element="impl:xupdateResponse" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="disconnectRequest">
+
+      <wsdl:part element="impl:disconnect" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="connectResponse">
+
+      <wsdl:part element="impl:connectResponse" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="xupdateRequest">
+
+      <wsdl:part element="impl:xupdate" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="removeDocumentResponse">
+
+      <wsdl:part element="impl:removeDocumentResponse" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="xupdateResourceRequest">
+
+      <wsdl:part element="impl:xupdateResource" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="removeCollectionResponse">
+
+      <wsdl:part element="impl:removeCollectionResponse" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="removeCollectionRequest">
+
+      <wsdl:part element="impl:removeCollection" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="createCollectionResponse">
+
+      <wsdl:part element="impl:createCollectionResponse" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="storeResponse">
+
+      <wsdl:part element="impl:storeResponse" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="removeDocumentRequest">
+
+      <wsdl:part element="impl:removeDocument" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="disconnectResponse">
+
+      <wsdl:part element="impl:disconnectResponse" name="parameters"/>
+
+   </wsdl:message>
+
+   <wsdl:message name="getBinaryResourceResponse">
+   	<wsdl:part name="parameters"
+   		element="impl:getBinaryResourceResponse">
+   	</wsdl:part>
+   </wsdl:message>
+   <wsdl:message name="getBinaryResourceRequest">
+   	<wsdl:part name="parameters"
+   		element="impl:getBinaryResource">
+   	</wsdl:part>
+   </wsdl:message>
+   <wsdl:message name="getCollectionDescResponse">
+   	<wsdl:part name="parameters"
+   		element="impl:getCollectionDescResponse">
+   	</wsdl:part>
+   </wsdl:message>
+   <wsdl:message name="getCollectionDescRequest">
+   	<wsdl:part name="parameters"
+   		element="impl:getCollectionDesc">
+   	</wsdl:part>
+   </wsdl:message>
+   <wsdl:message name="setPermissionsResponse">
+   	<wsdl:part name="parameters"
+   		element="impl:setPermissionsResponse">
+   	</wsdl:part>
+   </wsdl:message>
+   <wsdl:message name="setPermissionsRequest">
+   	<wsdl:part name="parameters"
+   		element="impl:setPermissions">
+   	</wsdl:part>
+   </wsdl:message>
+   <wsdl:message name="copyResourceResponse">
+   	<wsdl:part name="parameters"
+   		element="impl:copyResourceResponse">
+   	</wsdl:part>
+   </wsdl:message>
+   <wsdl:message name="copyResourceRequest">
+   	<wsdl:part name="parameters"
+   		element="impl:copyResource">
+   	</wsdl:part>
+   </wsdl:message>
+   <wsdl:message name="copyCollectionResponse">
+   	<wsdl:part name="parameters"
+   		element="impl:copyCollectionResponse">
+   	</wsdl:part>
+   </wsdl:message>
+   <wsdl:message name="copyCollectionRequest">
+   	<wsdl:part name="parameters"
+   		element="impl:copyCollection">
+   	</wsdl:part>
+   </wsdl:message>
+   <wsdl:message name="setUserResponse">
+   	<wsdl:part name="parameters"
+   		element="impl:setUserResponse">
+   	</wsdl:part>
+   </wsdl:message>
+   <wsdl:message name="setUserRequest">
+   	<wsdl:part name="parameters" element="impl:setUser"></wsdl:part>
+   </wsdl:message>
+   <wsdl:message name="getUserResponse">
+   	<wsdl:part name="parameters"
+   		element="impl:getUserResponse">
+   	</wsdl:part>
+   </wsdl:message>
+   <wsdl:message name="getUserRequest">
+   	<wsdl:part name="parameters" element="impl:getUser"></wsdl:part>
+   </wsdl:message>
+   <wsdl:message name="removeUserResponse">
+   	<wsdl:part name="parameters"
+   		element="impl:removeUserResponse">
+   	</wsdl:part>
+   </wsdl:message>
+   <wsdl:message name="removeUserRequest">
+   	<wsdl:part name="parameters"
+   		element="impl:removeUser">
+   	</wsdl:part>
+   </wsdl:message>
+   <wsdl:message name="getUsersResponse">
+   	<wsdl:part name="parameters"
+   		element="impl:getUsersResponse">
+   	</wsdl:part>
+   </wsdl:message>
+   <wsdl:message name="getUsersRequest">
+   	<wsdl:part name="parameters"
+   		element="impl:getUsers">
+   	</wsdl:part>
+   </wsdl:message>
+   <wsdl:message name="getGroupsResponse">
+   	<wsdl:part name="parameters"
+   		element="impl:getGroupsResponse">
+   	</wsdl:part>
+   </wsdl:message>
+   <wsdl:message name="getGroupsRequest">
+   	<wsdl:part name="parameters"
+   		element="impl:getGroups">
+   	</wsdl:part>
+   </wsdl:message>
+   <wsdl:message name="moveCollectionResponse">
+   	<wsdl:part name="parameters"
+   		element="impl:moveCollectionResponse">
+   	</wsdl:part>
+   </wsdl:message>
+   <wsdl:message name="moveCollectionRequest">
+   	<wsdl:part name="parameters"
+   		element="impl:moveCollection">
+   	</wsdl:part>
+   </wsdl:message>
+   <wsdl:message name="moveResourceResponse">
+   	<wsdl:part name="parameters"
+   		element="impl:moveResourceResponse">
+   	</wsdl:part>
+   </wsdl:message>
+   <wsdl:message name="moveResourceRequest">
+   	<wsdl:part name="parameters"
+   		element="impl:moveResource">
+   	</wsdl:part>
+   </wsdl:message>
+   <wsdl:message name="lockResourceResponse">
+   	<wsdl:part name="parameters"
+   		element="impl:lockResourceResponse">
+   	</wsdl:part>
+   </wsdl:message>
+   <wsdl:message name="lockResourceRequest">
+   	<wsdl:part name="parameters"
+   		element="impl:lockResource">
+   	</wsdl:part>
+   </wsdl:message>
+   <wsdl:message name="unlockResourceResponse">
+   	<wsdl:part name="parameters"
+   		element="impl:unlockResourceResponse">
+   	</wsdl:part>
+   </wsdl:message>
+   <wsdl:message name="unlockResourceRequest">
+   	<wsdl:part name="parameters"
+   		element="impl:unlockResource">
+   	</wsdl:part>
+   </wsdl:message>
+   <wsdl:message name="hasUserLockResponse">
+   	<wsdl:part name="parameters"
+   		element="impl:hasUserLockResponse">
+   	</wsdl:part>
+   </wsdl:message>
+   <wsdl:message name="hasUserLockRequest">
+   	<wsdl:part name="parameters"
+   		element="impl:hasUserLock">
+   	</wsdl:part>
+   </wsdl:message>
+   <wsdl:message name="getPermissionsResponse">
+   	<wsdl:part name="parameters"
+   		element="impl:getPermissionsResponse">
+   	</wsdl:part>
+   </wsdl:message>
+   <wsdl:message name="getPermissionsRequest">
+   	<wsdl:part name="parameters"
+   		element="impl:getPermissions">
+   	</wsdl:part>
+   </wsdl:message>
+   <wsdl:message name="listCollectionPermissionsResponse">
+   	<wsdl:part name="parameters"
+   		element="impl:listCollectionPermissionsResponse">
+   	</wsdl:part>
+   </wsdl:message>
+   <wsdl:message name="listCollectionPermissionsRequest">
+   	<wsdl:part name="parameters"
+   		element="impl:listCollectionPermissions">
+   	</wsdl:part>
+   </wsdl:message>
+   <wsdl:message name="listDocumentPermissionsResponse">
+   	<wsdl:part name="parameters"
+   		element="impl:listDocumentPermissionsResponse">
+   	</wsdl:part>
+   </wsdl:message>
+   <wsdl:message name="listDocumentPermissionsRequest">
+   	<wsdl:part name="parameters"
+   		element="impl:listDocumentPermissions">
+   	</wsdl:part>
+   </wsdl:message>
+   <wsdl:message name="getIndexedElementsResponse">
+   	<wsdl:part name="parameters"
+   		element="impl:getIndexedElementsResponse">
+   	</wsdl:part>
+   </wsdl:message>
+   <wsdl:message name="getIndexedElementsRequest">
+   	<wsdl:part name="parameters"
+   		element="impl:getIndexedElements">
+   	</wsdl:part>
+   </wsdl:message>
+   <wsdl:message name="storeBinaryResponse">
+   	<wsdl:part name="parameters"
+   		element="impl:storeBinaryResponse">
+   	</wsdl:part>
+   </wsdl:message>
+   <wsdl:message name="storeBinaryRequest">
+   	<wsdl:part name="parameters"
+   		element="impl:storeBinary">
+   	</wsdl:part>
+   </wsdl:message>
+   <wsdl:portType name="Admin">
+
+      <wsdl:operation name="store">
+
+         <wsdl:input message="impl:storeRequest" name="storeRequest"/>
+
+         <wsdl:output message="impl:storeResponse" name="storeResponse"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="connect">
+
+         <wsdl:input message="impl:connectRequest" name="connectRequest"/>
+
+         <wsdl:output message="impl:connectResponse" name="connectResponse"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="disconnect">
+
+         <wsdl:input message="impl:disconnectRequest" name="disconnectRequest"/>
+
+         <wsdl:output message="impl:disconnectResponse" name="disconnectResponse"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="removeCollection">
+
+         <wsdl:input message="impl:removeCollectionRequest" name="removeCollectionRequest"/>
+
+         <wsdl:output message="impl:removeCollectionResponse" name="removeCollectionResponse"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="removeDocument">
+
+         <wsdl:input message="impl:removeDocumentRequest" name="removeDocumentRequest"/>
+
+         <wsdl:output message="impl:removeDocumentResponse" name="removeDocumentResponse"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="createCollection">
+
+         <wsdl:input message="impl:createCollectionRequest" name="createCollectionRequest"/>
+
+         <wsdl:output message="impl:createCollectionResponse" name="createCollectionResponse"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="xupdate">
+
+         <wsdl:input message="impl:xupdateRequest" name="xupdateRequest"/>
+
+         <wsdl:output message="impl:xupdateResponse" name="xupdateResponse"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="xupdateResource">
+
+         <wsdl:input message="impl:xupdateResourceRequest" name="xupdateResourceRequest"/>
+
+         <wsdl:output message="impl:xupdateResourceResponse" name="xupdateResourceResponse"/>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="getBinaryResource">
+      	<wsdl:input message="impl:getBinaryResourceRequest"></wsdl:input>
+      	<wsdl:output message="impl:getBinaryResourceResponse"></wsdl:output>
+      </wsdl:operation>
+      <wsdl:operation name="getCollectionDesc">
+      	<wsdl:input message="impl:getCollectionDescRequest"></wsdl:input>
+      	<wsdl:output message="impl:getCollectionDescResponse"></wsdl:output>
+      </wsdl:operation>
+      <wsdl:operation name="setPermissions">
+      	<wsdl:input message="impl:setPermissionsRequest"></wsdl:input>
+      	<wsdl:output message="impl:setPermissionsResponse"></wsdl:output>
+      </wsdl:operation>
+      <wsdl:operation name="copyResource">
+      	<wsdl:input message="impl:copyResourceRequest"></wsdl:input>
+      	<wsdl:output message="impl:copyResourceResponse"></wsdl:output>
+      </wsdl:operation>
+      <wsdl:operation name="copyCollection">
+      	<wsdl:input message="impl:copyCollectionRequest"></wsdl:input>
+      	<wsdl:output message="impl:copyCollectionResponse"></wsdl:output>
+      </wsdl:operation>
+      <wsdl:operation name="setUser">
+      	<wsdl:input message="impl:setUserRequest"></wsdl:input>
+      	<wsdl:output message="impl:setUserResponse"></wsdl:output>
+      </wsdl:operation>
+      <wsdl:operation name="getUser">
+      	<wsdl:input message="impl:getUserRequest"></wsdl:input>
+      	<wsdl:output message="impl:getUserResponse"></wsdl:output>
+      </wsdl:operation>
+      <wsdl:operation name="removeUser">
+      	<wsdl:input message="impl:removeUserRequest"></wsdl:input>
+      	<wsdl:output message="impl:removeUserResponse"></wsdl:output>
+      </wsdl:operation>
+      <wsdl:operation name="getUsers">
+      	<wsdl:input message="impl:getUsersRequest"></wsdl:input>
+      	<wsdl:output message="impl:getUsersResponse"></wsdl:output>
+      </wsdl:operation>
+      <wsdl:operation name="getGroups">
+      	<wsdl:input message="impl:getGroupsRequest"></wsdl:input>
+      	<wsdl:output message="impl:getGroupsResponse"></wsdl:output>
+      </wsdl:operation>
+      <wsdl:operation name="moveCollection">
+      	<wsdl:input message="impl:moveCollectionRequest"></wsdl:input>
+      	<wsdl:output message="impl:moveCollectionResponse"></wsdl:output>
+      </wsdl:operation>
+      <wsdl:operation name="moveResource">
+      	<wsdl:input message="impl:moveResourceRequest"></wsdl:input>
+      	<wsdl:output message="impl:moveResourceResponse"></wsdl:output>
+      </wsdl:operation>
+      <wsdl:operation name="lockResource">
+      	<wsdl:input message="impl:lockResourceRequest"></wsdl:input>
+      	<wsdl:output message="impl:lockResourceResponse"></wsdl:output>
+      </wsdl:operation>
+      <wsdl:operation name="unlockResource">
+      	<wsdl:input message="impl:unlockResourceRequest"></wsdl:input>
+      	<wsdl:output message="impl:unlockResourceResponse"></wsdl:output>
+      </wsdl:operation>
+      <wsdl:operation name="hasUserLock">
+      	<wsdl:input message="impl:hasUserLockRequest"></wsdl:input>
+      	<wsdl:output message="impl:hasUserLockResponse"></wsdl:output>
+      </wsdl:operation>
+      <wsdl:operation name="getPermissions">
+      	<wsdl:input message="impl:getPermissionsRequest"></wsdl:input>
+      	<wsdl:output message="impl:getPermissionsResponse"></wsdl:output>
+      </wsdl:operation>
+      <wsdl:operation name="listCollectionPermissions">
+      	<wsdl:input message="impl:listCollectionPermissionsRequest"></wsdl:input>
+      	<wsdl:output
+      		message="impl:listCollectionPermissionsResponse">
+      	</wsdl:output>
+      </wsdl:operation>
+      <wsdl:operation name="listDocumentPermissions">
+      	<wsdl:input message="impl:listDocumentPermissionsRequest"></wsdl:input>
+      	<wsdl:output message="impl:listDocumentPermissionsResponse"></wsdl:output>
+      </wsdl:operation>
+      <wsdl:operation name="getIndexedElements">
+      	<wsdl:input message="impl:getIndexedElementsRequest"></wsdl:input>
+      	<wsdl:output message="impl:getIndexedElementsResponse"></wsdl:output>
+      </wsdl:operation>
+      <wsdl:operation name="storeBinary">
+      	<wsdl:input message="impl:storeBinaryRequest"></wsdl:input>
+      	<wsdl:output message="impl:storeBinaryResponse"></wsdl:output>
+      </wsdl:operation>
+   </wsdl:portType>
+
+   <wsdl:binding name="AdminSoapBinding" type="impl:Admin">
+
+      <wsdlsoap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+      <wsdl:operation name="store">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="storeRequest">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="storeResponse">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="connect">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="connectRequest">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="connectResponse">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="disconnect">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="disconnectRequest">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="disconnectResponse">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="removeCollection">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="removeCollectionRequest">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="removeCollectionResponse">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="removeDocument">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="removeDocumentRequest">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="removeDocumentResponse">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="createCollection">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="createCollectionRequest">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="createCollectionResponse">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="xupdate">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="xupdateRequest">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="xupdateResponse">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+      <wsdl:operation name="xupdateResource">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="xupdateResourceRequest">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="xupdateResourceResponse">
+
+            <wsdlsoap:body use="literal"/>
+
+         </wsdl:output>
+
+      </wsdl:operation>
+
+        <wsdl:operation name="getBinaryResource"><wsdlsoap:operation soapAction="urn:exist/getBinaryResource"></wsdlsoap:operation><wsdl:input><wsdlsoap:body use="literal"></wsdlsoap:body></wsdl:input><wsdl:output><wsdlsoap:body use="literal"></wsdlsoap:body></wsdl:output></wsdl:operation>
+        <wsdl:operation name="getCollectionDesc"><wsdlsoap:operation soapAction="urn:exist/getCollectionDesc"></wsdlsoap:operation><wsdl:input><wsdlsoap:body use="literal"></wsdlsoap:body></wsdl:input><wsdl:output><wsdlsoap:body use="literal"></wsdlsoap:body></wsdl:output></wsdl:operation>
+        <wsdl:operation name="setPermissions"><wsdlsoap:operation soapAction="urn:exist/setPermissions"></wsdlsoap:operation><wsdl:input><wsdlsoap:body use="literal"></wsdlsoap:body></wsdl:input><wsdl:output><wsdlsoap:body use="literal"></wsdlsoap:body></wsdl:output></wsdl:operation>
+        <wsdl:operation name="copyResource"><wsdlsoap:operation soapAction="urn:exist/copyResource"></wsdlsoap:operation><wsdl:input><wsdlsoap:body use="literal"></wsdlsoap:body></wsdl:input><wsdl:output><wsdlsoap:body use="literal"></wsdlsoap:body></wsdl:output></wsdl:operation>
+        <wsdl:operation name="copyCollection"><wsdlsoap:operation soapAction="urn:exist/copyCollection"></wsdlsoap:operation><wsdl:input><wsdlsoap:body use="literal"></wsdlsoap:body></wsdl:input><wsdl:output><wsdlsoap:body use="literal"></wsdlsoap:body></wsdl:output></wsdl:operation>
+        <wsdl:operation name="setUser"><wsdlsoap:operation soapAction="urn:exist/setUser"></wsdlsoap:operation><wsdl:input><wsdlsoap:body use="literal"></wsdlsoap:body></wsdl:input><wsdl:output><wsdlsoap:body use="literal"></wsdlsoap:body></wsdl:output></wsdl:operation>
+        <wsdl:operation name="getUser"><wsdlsoap:operation soapAction="urn:exist/getUser"></wsdlsoap:operation><wsdl:input><wsdlsoap:body use="literal"></wsdlsoap:body></wsdl:input><wsdl:output><wsdlsoap:body use="literal"></wsdlsoap:body></wsdl:output></wsdl:operation>
+        <wsdl:operation name="removeUser"><wsdlsoap:operation soapAction="urn:exist/removeUser"></wsdlsoap:operation><wsdl:input><wsdlsoap:body use="literal"></wsdlsoap:body></wsdl:input><wsdl:output><wsdlsoap:body use="literal"></wsdlsoap:body></wsdl:output></wsdl:operation>
+        <wsdl:operation name="getUsers"><wsdlsoap:operation soapAction="urn:exist/getUsers"></wsdlsoap:operation><wsdl:input><wsdlsoap:body use="literal"></wsdlsoap:body></wsdl:input><wsdl:output><wsdlsoap:body use="literal"></wsdlsoap:body></wsdl:output></wsdl:operation>
+        <wsdl:operation name="getGroups"><wsdlsoap:operation soapAction="urn:exist/getGroups"></wsdlsoap:operation><wsdl:input><wsdlsoap:body use="literal"></wsdlsoap:body></wsdl:input><wsdl:output><wsdlsoap:body use="literal"></wsdlsoap:body></wsdl:output></wsdl:operation>
+        <wsdl:operation name="moveCollection"><wsdlsoap:operation soapAction="urn:exist/moveCollection"></wsdlsoap:operation><wsdl:input><wsdlsoap:body use="literal"></wsdlsoap:body></wsdl:input><wsdl:output><wsdlsoap:body use="literal"></wsdlsoap:body></wsdl:output></wsdl:operation>
+        <wsdl:operation name="moveResource"><wsdlsoap:operation soapAction="urn:exist/moveResource"></wsdlsoap:operation><wsdl:input><wsdlsoap:body use="literal"></wsdlsoap:body></wsdl:input><wsdl:output><wsdlsoap:body use="literal"></wsdlsoap:body></wsdl:output></wsdl:operation>
+        <wsdl:operation name="lockResource"><wsdlsoap:operation soapAction="urn:exist/lockResource"></wsdlsoap:operation><wsdl:input><wsdlsoap:body use="literal"></wsdlsoap:body></wsdl:input><wsdl:output><wsdlsoap:body use="literal"></wsdlsoap:body></wsdl:output></wsdl:operation>
+        <wsdl:operation name="unlockResource"><wsdlsoap:operation soapAction="urn:exist/unlockResource"></wsdlsoap:operation><wsdl:input><wsdlsoap:body use="literal"></wsdlsoap:body></wsdl:input><wsdl:output><wsdlsoap:body use="literal"></wsdlsoap:body></wsdl:output></wsdl:operation>
+        <wsdl:operation name="hasUserLock"><wsdlsoap:operation soapAction="urn:exist/hasUserLock"></wsdlsoap:operation><wsdl:input><wsdlsoap:body use="literal"></wsdlsoap:body></wsdl:input><wsdl:output><wsdlsoap:body use="literal"></wsdlsoap:body></wsdl:output></wsdl:operation>
+        <wsdl:operation name="getPermissions"><wsdlsoap:operation soapAction="urn:exist/getPermissions"></wsdlsoap:operation><wsdl:input><wsdlsoap:body use="literal"></wsdlsoap:body></wsdl:input><wsdl:output><wsdlsoap:body use="literal"></wsdlsoap:body></wsdl:output></wsdl:operation>
+        <wsdl:operation name="listCollectionPermissions"><wsdlsoap:operation soapAction="urn:exist/listCollectionPermissions"></wsdlsoap:operation><wsdl:input><wsdlsoap:body use="literal"></wsdlsoap:body></wsdl:input><wsdl:output><wsdlsoap:body use="literal"></wsdlsoap:body></wsdl:output></wsdl:operation>
+        <wsdl:operation name="listDocumentPermissions"><wsdlsoap:operation soapAction="urn:exist/listDocumentPermissions"></wsdlsoap:operation><wsdl:input><wsdlsoap:body use="literal"></wsdlsoap:body></wsdl:input><wsdl:output><wsdlsoap:body use="literal"></wsdlsoap:body></wsdl:output></wsdl:operation>
+        <wsdl:operation name="getIndexedElements"><wsdlsoap:operation soapAction="urn:exist/getIndexedElements"></wsdlsoap:operation><wsdl:input><wsdlsoap:body use="literal"></wsdlsoap:body></wsdl:input><wsdl:output><wsdlsoap:body use="literal"></wsdlsoap:body></wsdl:output></wsdl:operation>
+        <wsdl:operation name="storeBinary"><wsdlsoap:operation soapAction="urn:exist/storeBinary"></wsdlsoap:operation><wsdl:input><wsdlsoap:body use="literal"></wsdlsoap:body></wsdl:input><wsdl:output><wsdlsoap:body use="literal"></wsdlsoap:body></wsdl:output></wsdl:operation>
+    </wsdl:binding>
+
+   <wsdl:service name="AdminService">
+
+      <wsdl:port binding="impl:AdminSoapBinding" name="Admin">
+
+         <wsdlsoap:address location="http://localhost:8080/exist/services/Admin"/>
+
+      </wsdl:port>
+
+   </wsdl:service>
+
+</wsdl:definitions>

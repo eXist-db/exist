@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<antlib>
+  <typedef name="store" classname="org.exist.ant.XMLDBStoreTask"/>
+  <typedef name="create" classname="org.exist.ant.XMLDBCreateTask"/>
+  <typedef name="xpath" classname="org.exist.ant.XMLDBXPathTask"/>
+  <typedef name="xquery" classname="org.exist.ant.XMLDBXQueryTask"/>
+  <typedef name="extract" classname="org.exist.ant.XMLDBExtractTask"/>
+  <typedef name="list" classname="org.exist.ant.XMLDBListTask"/>
+  <typedef name="exist" classname="org.exist.ant.XMLDBExistTask"/>
+  <typedef name="backup" classname="org.exist.ant.BackupTask"/>
+  <typedef name="restore" classname="org.exist.ant.RestoreTask"/>
+  <typedef name="remove" classname="org.exist.ant.XMLDBRemoveTask"/>
+  <typedef name="move" classname="org.exist.ant.XMLDBMoveTask"/>
+  <typedef name="copy" classname="org.exist.ant.XMLDBCopyTask"/>
+  <typedef name="xupdate" classname="org.exist.ant.XMLDBXUpdateTask"/>
+  <typedef name="shutdown" classname="org.exist.ant.XMLDBShutdownTask"/>
+  <typedef name="chmod" classname="org.exist.ant.ChmodTask"/>
+  <typedef name="chown" classname="org.exist.ant.ChownTask"/>
+  <typedef name="users" classname="org.exist.ant.ListUsersTask"/>
+  <typedef name="groups" classname="org.exist.ant.ListGroupsTask"/>
+  <typedef name="adduser" classname="org.exist.ant.AddUserTask"/>
+  <typedef name="rmuser" classname="org.exist.ant.RemoveUserTask"/>
+  <typedef name="lock" classname="org.exist.ant.LockResourceTask"/>
+</antlib>
+

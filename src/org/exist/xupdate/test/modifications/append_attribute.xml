@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xu:modifications version="1.0" xmlns:xu="http://www.xmldb.org/xupdate">
+	
+	<xu:append select="//address[lname &amp;= 'jekyll']/company">
+		<xu:attribute name="id">555</xu:attribute>
+	</xu:append>
+</xu:modifications>
