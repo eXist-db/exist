@@ -91,6 +91,19 @@ public class RESTServiceTest extends TestCase {
     	"return\n" +
     	"	($param, ' ', $t:VAR)";
     
+    private final static String TEST_XQUERY_PARAMETER =
+    "xquery version \"1.0\";\n" +
+    "declare namespace request=\"http://exist-db.org/xquery/request\";\n" +
+    "import module namespace requestparametermod=\"http://exist-db.org/xquery/requestparametermod\" at \"requestparametermod.xqm\";\n" +
+    "concat(\"xql=\", request:get-parameter(\"doc\",())),\n" +
+    "concat(\"xqm=\", $requestparametermod:request)";
+    
+    private final static String TEST_XQUERY_PARAMETER_MODULE =
+   	"module namespace requestparametermod = \"http://exist-db.org/xquery/requestparametermod\";\n" +   	
+    "declare namespace request=\"http://exist-db.org/xquery/request\";\n" +
+    "declare variable $requestparametermod:request { request:get-parameter(\"doc\",())};\n";
+    
+    
     private String credentials;
     
     public RESTServiceTest(String name) {
@@ -273,6 +286,51 @@ public class RESTServiceTest extends TestCase {
             assertEquals(response, SERVER_URI + DBBroker.ROOT_COLLECTION + "/test");
         } catch (Exception e) {
             fail(e.getMessage());
+        }
+    }
+    
+    public void testRequestGetParameterFromModule()
+    {
+    	try
+    	{
+    		/* store the documents that we need for this test */
+    		System.out.println("--- Storing xquery and module ---");
+    		doPut(TEST_XQUERY_PARAMETER, "requestparameter.xql");
+    		doPut(TEST_XQUERY_PARAMETER_MODULE, "requestparametermod.xqm");
+    		
+	        /* execute the stored xquery a few times */
+    		HttpURLConnection connect;
+    		int iHttpResult;
+	        for(int i=0; i < 5; i++)
+	        {
+	            System.out.println("--- Executing stored xquery, iteration=" + i + " ---");
+	            connect = getConnection(COLLECTION_URI + "/requestparameter.xql?doc=somedoc" + i);
+	            connect.setRequestMethod("GET");
+	            connect.connect();
+	
+	            iHttpResult = connect.getResponseCode();
+	            assertEquals("Server returned response code " + iHttpResult, 200, iHttpResult);
+	            String contentType = connect.getContentType();
+	            int semicolon = contentType.indexOf(';');
+	            if (semicolon > 0) {
+	                contentType = contentType.substring(0, semicolon).trim();
+	            }
+	            assertEquals("Server returned content type " + contentType, "text/html", contentType);
+	
+	            //get the response of the query
+	            String response = readResponse(connect.getInputStream());
+	            
+	            String strXQLRequestParameter = response.substring("xql=".length(), response.indexOf("xqm="));
+	            String strXQMRequestParameter = response.substring(response.indexOf("xqm=") + "xqm=".length(), response.lastIndexOf("\r\n"));
+	            
+	            //check the responses
+	            assertEquals("XQuery Request Parameter is: \"" + strXQLRequestParameter + "\" expected: \"somedoc"+i + "\"", "somedoc"+i, strXQLRequestParameter);
+	            assertEquals("XQuery Module Request Parameter is: \"" + strXQMRequestParameter + "\" expected: \"somedoc"+i + "\"", "somedoc"+i, strXQMRequestParameter);
+	        }
+        }
+        catch(Exception e)
+        {
+        	fail(e.getMessage());
         }
     }
 
