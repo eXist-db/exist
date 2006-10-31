@@ -222,7 +222,7 @@ public void testReadAborted() {
 	}
 
 	public void testXMLDBStore() throws XMLDBException {
-		BrokerPool.FORCE_CORRUPTION = false;
+		BrokerPool.FORCE_CORRUPTION = true;
 	    BrokerPool pool = startDB();
 
 	    org.xmldb.api.base.Collection root = DatabaseManager.getCollection("xmldb:exist://" + DBBroker.ROOT_COLLECTION, "admin", "");
