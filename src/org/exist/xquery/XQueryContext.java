@@ -1114,7 +1114,6 @@ public class XQueryContext {
 		
 		//Sanity check : one may *not* want to bind the module !
 		if (myModule == null) {
-			System.out.println("Module '" + SessionModule.NAMESPACE_URI + "' is not bound");
 			return null;
 		}
 
