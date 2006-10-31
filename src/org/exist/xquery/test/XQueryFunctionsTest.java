@@ -3,13 +3,18 @@
  */
 package org.exist.xquery.test;
 
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
 
 import org.exist.storage.DBBroker;
+import org.exist.util.Configuration;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xquery.XPathException;
-import org.exist.util.Configuration;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -18,13 +23,6 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XPathQueryService;
-
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.text.*;
-import java.util.*;
 
 /** Tests for various standart XQuery functions
  * @author jens
@@ -414,6 +412,20 @@ public class XQueryFunctionsTest extends TestCase {
 		}
 	}	
 	
+	public void testUtilEval() throws XPathException {
+		ResourceSet result 		= null;
+		String		r			= "";
+		try {
+			String query = "<a><b/></a>/util:eval('*')";
+			result 	= service.query( query );			
+			assertEquals( 1, result.getSize());	
+			
+		} catch (XMLDBException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+	}	
+
 	public void testSharedLock() throws XPathException {
 		ResourceSet result 		= null;
 		String		r			= "";
@@ -468,6 +480,7 @@ public class XQueryFunctionsTest extends TestCase {
 			fail(e.getMessage());
 		}
 	}	
+
 	
 	public void testEncodeForURI() {
 		ResourceSet result 		= null;
