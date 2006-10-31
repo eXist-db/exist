@@ -76,8 +76,8 @@ public class MoveResourceTest extends TestCase {
 			assertNotNull(test2);
 			broker.saveCollection(transaction, test2);
 
-                        String existHome = System.getProperty("exist.home");
-                        File existDir = existHome==null ? new File(".") : new File(existHome);
+            String existHome = System.getProperty("exist.home");
+            File existDir = existHome==null ? new File(".") : new File(existHome);
 			File f = new File(existDir,"samples/shakespeare/r_and_j.xml");
 			assertNotNull(f);
 			IndexInfo info = test2.validateXMLResource(transaction, broker, TestConstants.TEST_XML_URI, new InputSource(f.toURI().toASCIIString()));
@@ -160,8 +160,11 @@ public class MoveResourceTest extends TestCase {
 			assertNotNull(test2);
 			broker.saveCollection(transaction, test2);
 
-			File f = new File("samples/shakespeare/r_and_j.xml");
-			IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create("new_test2.xml"),
+            String existHome = System.getProperty("exist.home");
+            File existDir = existHome==null ? new File(".") : new File(existHome);
+			File f = new File(existDir,"samples/shakespeare/r_and_j.xml");
+			assertNotNull(f);
+            IndexInfo info = test2.validateXMLResource(transaction, broker, XmldbURI.create("new_test2.xml"),
 					new InputSource(f.toURI().toASCIIString()));
 			test2.store(transaction, broker, info, new InputSource(f.toURI()
 					.toASCIIString()), false);
@@ -235,7 +238,10 @@ public void testReadAborted() {
 	    if (test2 == null)
 	    	test2 = mgr.createCollection("test2");
 
-	    File f = new File("samples/shakespeare/r_and_j.xml");
+	    String existHome = System.getProperty("exist.home");
+        File existDir = existHome==null ? new File(".") : new File(existHome);
+        File f = new File(existDir,"samples/shakespeare/r_and_j.xml");
+        assertNotNull(f);
 	    Resource res = test2.createResource("test3.xml", "XMLResource");
 	    res.setContent(f);
 	    test2.storeResource(res);
