@@ -711,14 +711,14 @@ public class NativeBroker extends DBBroker {
 	                lock.acquire(Lock.READ_LOCK);
 	                VariableByteInput is;
 	                if (addr == BFile.UNKNOWN_ADDRESS) {
-	                    Value key = new Value(name.toString().getBytes("UTF-8"));
-	                    is = collectionsDb.getAsStream(key);
+                        Value key = new CollectionStore.CollectionKey(name.toString());
+                        is = collectionsDb.getAsStream(key);
 	                } else {
 	                    is = collectionsDb.getAsStream(addr);
 	                }
 	                if (is == null) return null;   
-	                
-	                collection = new Collection(name);
+
+                    collection = new Collection(name);
 	                collection.read(this, is);
 	                
 	                //TODO : manage this from within the cache -pb
@@ -880,12 +880,7 @@ public class NativeBroker extends DBBroker {
                 lock.acquire(Lock.WRITE_LOCK);
                 
                 collectionsCache.remove(collection);
-                Value key;
-                try {
-                    key = new Value(name.toString().getBytes("UTF-8"));
-                } catch (UnsupportedEncodingException uee) {
-                    key = new Value(name.toString().getBytes());
-                }   
+                Value key = new CollectionStore.CollectionKey(name.toString());
                 collectionsDb.remove(transaction, key);
 
                 collection.setPath(destination.getURI().append(newName));
@@ -970,20 +965,13 @@ public class NativeBroker extends DBBroker {
             try {
                 lock.acquire(Lock.WRITE_LOCK);
                 // remove the metadata of all documents in the collection
-                Value docKey = new DocumentKey(collection.getId());
+                Value docKey = new CollectionStore.DocumentKey(collection.getId());
                 IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, docKey);
                 collectionsDb.removeAll(transaction, query);
                 
                 // if this is not the root collection remove it...
                 if (!isRoot) {
-                    Value key;
-                    try {
-                        key = new Value(name.toString().getBytes("UTF-8"));
-                    } catch (UnsupportedEncodingException e) {
-                        //TODO : real exception ; we are in trouble ! -pb
-                        LOG.error("Can not encode '" + name + "' in UTF-8", e);
-                        key = new Value(name.toString().getBytes());
-                    }  
+                    Value key = new CollectionStore.CollectionKey(name.toString());
                     //... from the disk
                     collectionsDb.remove(transaction, key);
                     //... from the cache
@@ -1080,13 +1068,7 @@ public class NativeBroker extends DBBroker {
             if (collection.getId() == Collection.UNKNOWN_COLLECTION_ID)
                 collection.setId(getNextCollectionId(transaction));
 
-            Value name;
-            try {
-                name = new Value(collection.getURI().toString().getBytes("UTF-8"));
-            } catch (UnsupportedEncodingException uee) {
-                LOG.debug(uee);
-                name = new Value(collection.getURI().toString().getBytes());
-            }
+            Value name = new CollectionStore.CollectionKey(collection.getURI().toString());
             
             try {
                 final VariableByteOutputStream ostream = new VariableByteOutputStream(8);
@@ -1122,7 +1104,7 @@ public class NativeBroker extends DBBroker {
         Lock lock = collectionsDb.getLock();
         try {
             lock.acquire(Lock.WRITE_LOCK);
-            Value key = new Value(CollectionStore.FREE_COLLECTION_ID_KEY);
+            Value key = new CollectionStore.CollectionKey(CollectionStore.FREE_COLLECTION_ID_KEY);
             Value value = collectionsDb.get(key);
             if (value != null) {
                 byte[] data = value.getData();
@@ -1157,7 +1139,7 @@ public class NativeBroker extends DBBroker {
         Lock lock = collectionsDb.getLock();
         try {
             lock.acquire(Lock.WRITE_LOCK);
-            Value key = new Value(CollectionStore.FREE_COLLECTION_ID_KEY);
+            Value key = new CollectionStore.CollectionKey(CollectionStore.FREE_COLLECTION_ID_KEY);
             Value value = collectionsDb.get(key);
             if (value != null) {
                 byte[] data = value.getData();
@@ -1196,7 +1178,7 @@ public class NativeBroker extends DBBroker {
         Lock lock = collectionsDb.getLock();
         try {
             lock.acquire(Lock.WRITE_LOCK);
-            Value key = new Value(CollectionStore.NEXT_COLLECTION_ID_KEY);
+            Value key = new CollectionStore.CollectionKey(CollectionStore.NEXT_COLLECTION_ID_KEY);
             Value data = collectionsDb.get(key);
             if (data != null) {
                 nextCollectionId = ByteConversion.byteToShort(data.getData(), 0);
@@ -1444,7 +1426,7 @@ public class NativeBroker extends DBBroker {
             ostream.clear();
             doc.setMetadataLocation(metaPointer);
             doc.write(ostream);
-            Value key = new DocumentKey(doc.getCollection().getId(), doc.getResourceType(), doc.getDocId());
+            Value key = new CollectionStore.DocumentKey(doc.getCollection().getId(), doc.getResourceType(), doc.getDocId());
             collectionsDb.put(transaction, key, ostream.data(), true);
         } catch (ReadOnlyException e) {
             LOG.warn(DATABASE_IS_READ_ONLY);
@@ -1585,7 +1567,7 @@ public class NativeBroker extends DBBroker {
         Lock lock = collectionsDb.getLock();
         try {
             lock.acquire();            
-            Value key = new DocumentKey(collection.getId());
+            Value key = new CollectionStore.DocumentKey(collection.getId());
             IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, key);
             collectionsDb.query(query, new DocumentCallback(collection));
         } catch (LockException e) {
@@ -1839,8 +1821,7 @@ public class NativeBroker extends DBBroker {
         try {
             if (LOG.isInfoEnabled()) {
                 LOG.info("Removing document "
-                    + document.getFileURI()
-                    + " ...");
+                    + document.getFileURI() + " (" + document.getDocId() + ") ...");
             }
             
             notifyDropIndex(document);
@@ -1911,7 +1892,7 @@ public class NativeBroker extends DBBroker {
         try {
             lock.acquire();            
             LOG.debug("Removing resource metadata for " + document.getDocId());
-            Value key = new DocumentKey(document.getCollection().getId(), document.getResourceType(), document.getDocId());
+            Value key = new CollectionStore.DocumentKey(document.getCollection().getId(), document.getResourceType(), document.getDocId());
             collectionsDb.remove(transaction, key);
         } catch (ReadOnlyException e) {
             LOG.warn(DATABASE_IS_READ_ONLY);
@@ -1933,7 +1914,7 @@ public class NativeBroker extends DBBroker {
 		Lock lock = collectionsDb.getLock();
 		try {
 			lock.acquire(Lock.WRITE_LOCK);
-            Value key = new Value(CollectionStore.FREE_DOC_ID_KEY);
+            Value key = new CollectionStore.CollectionKey(CollectionStore.FREE_DOC_ID_KEY);
 			Value value = collectionsDb.get(key);
 			if (value != null) {
                 byte[] data = value.getData();
@@ -1968,7 +1949,7 @@ public class NativeBroker extends DBBroker {
 		Lock lock = collectionsDb.getLock();
 		try {
 			lock.acquire(Lock.WRITE_LOCK);
-            Value key = new Value(CollectionStore.FREE_DOC_ID_KEY);
+            Value key = new CollectionStore.CollectionKey(CollectionStore.FREE_DOC_ID_KEY);
 			Value value = collectionsDb.get(key);
 			if (value != null) {
 				byte[] data = value.getData();
@@ -2009,7 +1990,7 @@ public class NativeBroker extends DBBroker {
 		Lock lock = collectionsDb.getLock();
 		try {
 			lock.acquire(Lock.WRITE_LOCK);
-            Value key = new Value(CollectionStore.NEXT_DOC_ID_KEY);
+            Value key = new CollectionStore.CollectionKey(CollectionStore.NEXT_DOC_ID_KEY);
             Value data = collectionsDb.get(key);
 			if (data != null) {
 				nextDocId = ByteConversion.byteToInt(data.getData(), 0);
@@ -3105,7 +3086,7 @@ public class NativeBroker extends DBBroker {
         
         public boolean indexInfo(Value key, long pointer) throws TerminatedException {
             try {
-                byte type = key.data()[key.start() + 2];
+                byte type = key.data()[key.start() + 3];
                 VariableByteInput istream = collectionsDb.getAsStream(pointer);
                 DocumentImpl doc = null;
                 if (type == DocumentImpl.BINARY_FILE)
