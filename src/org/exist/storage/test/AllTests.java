@@ -40,17 +40,17 @@ public class AllTests {
         suite.addTestSuite(MoveResourceTest.class);
         suite.addTestSuite(CopyCollectionTest.class);
         suite.addTestSuite(RecoverBinaryTest.class);
-        suite.addTestSuite(RecoverBinaryTest2.class);
-        suite.addTestSuite(RecoveryTest.class);
-        suite.addTestSuite(RemoveCollectionTest.class);
-        suite.addTestSuite(AppendTest.class);
-        suite.addTestSuite(RemoveTest.class);
-        suite.addTestSuite(RenameTest.class);
-        suite.addTestSuite(ReplaceTest.class);
-        suite.addTestSuite(UpdateTest.class);
-        suite.addTestSuite(UpdateAttributeTest.class);
-        suite.addTestSuite(UpdateRecoverTest.class);
-        suite.addTestSuite(ResourceTest.class);
+//        suite.addTestSuite(RecoverBinaryTest2.class);
+//        suite.addTestSuite(RecoveryTest.class);
+//        suite.addTestSuite(RemoveCollectionTest.class);
+//        suite.addTestSuite(AppendTest.class);
+//        suite.addTestSuite(RemoveTest.class);
+//        suite.addTestSuite(RenameTest.class);
+//        suite.addTestSuite(ReplaceTest.class);
+//        suite.addTestSuite(UpdateTest.class);
+//        suite.addTestSuite(UpdateAttributeTest.class);
+//        suite.addTestSuite(UpdateRecoverTest.class);
+//        suite.addTestSuite(ResourceTest.class);
         //$JUnit-END$
         return suite;
     }
