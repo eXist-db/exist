@@ -28,7 +28,7 @@ Installing eXist into SMF
 =========================
 1) Create the user "exist" in the group "daemon"
 
-2) chown eXist:daemon /eXist
+2) chown -R exist:daemon /eXist
 
 3) Choose either the eXist Jetty or eXist Standalone configuration, only one may be used.
 
