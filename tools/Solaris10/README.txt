@@ -5,7 +5,7 @@ Adam Retter <adam.retter@devon.gov.uk>
 
 About
 =====
-Two sets SMF configuration and script files have been provided for Solaris 10. These allow
+Two sets of SMF configuration and script files have been provided for Solaris 10. These allow
 eXist to be installed as a service and managed by SMF in either Jetty or Standalone startup
 configurations.
 
