@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
+
+<!--
+	2006-11-01
+    Adam Retter <adam.retter@devon.gov.uk>
+    Service manifest for eXist Standalone
+-->
+
+<service_bundle type="manifest" name="eXist:standalone">
+    
+    <service name="application/eXist" version="1.1" type="service">
+        
+        <create_default_instance enabled="false" />
+        
+        <single_instance/>
+        
+        <!-- dependency on the filesystem -->
+        <dependency name='fs' grouping='require_all' restart_on='none' type='service'>
+            <service_fmri value='svc:/system/filesystem/local' />
+        </dependency>
+        
+        <!-- start -->
+        <exec_method type="method" name="start" exec="/lib/svc/method/svc-eXist-standalone start" timeout_seconds="300">
+            <method_context>
+                <method_credential user="exist" group="daemon" />
+            </method_context>
+        </exec_method>
+        
+        <!-- stop -->
+        <exec_method type="method" name="stop" exec="/lib/svc/method/svc-eXist-standalone stop" timeout_seconds="300">
+            <method_context>
+                <method_credential user="exist" group="daemon" />
+            </method_context>
+        </exec_method>
+        
+        <template>
+            <common_name>
+                <loctext xml:lang="C">eXist XML Native Database (Standalone)</loctext>
+            </common_name>
+            <documentation>
+                <doc_link name="eXist Website" uri="http://www.exist-db.org"/>
+                <doc_link name="eXist Wiki" uri="http://wiki.exist-db.org"/>
+            </documentation>
+        </template>
+        
+    </service>
+    
+</service_bundle>
