@@ -1,0 +1,31 @@
+#!/usr/bin/sh
+#
+#        2006-11-01
+#        Adam Retter <adam.retter@devon.gov.uk>
+#        SMF Method file for eXist Standalone
+#
+# NOTE: Make sure EXIST_HOME is owned BY the exist user and daemon group 
+#
+
+.. /lib/svc/share/smf_include.sh
+
+EXIST_HOME=/eXist											# Installed location of eXist
+EXIST_ADMIN_PWD=admin										# Password for eXist admin user
+EXIST_STANDALONE_URI=xmldb:exist://localhost:8088/xmlrpc	# URI of eXist XMLRPC
+
+case "$1" in
+        start)
+            ${EXIST_HOME}/bin/server.sh > /dev/null &
+        ;;
+        stop)
+            ${EXIST_HOME}/bin/shutdown.sh -p ${EXIST_ADMIN_PWD} --uri=${EXIST_STANDALONE_URI} > /dev/null &
+        ;;
+        *)
+                echo ""
+                echo "Usage: `basename $0` { start | stop }"
+                echo ""
+                exit 64
+                ;;
+esac
+
+#---EOF
