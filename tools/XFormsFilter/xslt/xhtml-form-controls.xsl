@@ -351,9 +351,16 @@
                                 <xsl:with-param name="parent">
                                     <xsl:for-each select="(-12 to 12)">
                                         <xforms:item id="">
-                                            <xsl:if test=". = $timezone">
-                                                <xsl:attribute name="selected">true</xsl:attribute>
-                                            </xsl:if>
+                                            <xsl:choose>
+                                                <xsl:when test="$timezone != ''">
+                                                    <xsl:if test=". = $timezone">
+                                                        <xsl:attribute name="selected">true</xsl:attribute>
+                                                    </xsl:if>
+                                                </xsl:when>
+                                                <xsl:otherwise>
+                                                    <xsl:if test=". = 0"><xsl:attribute name="selected">true</xsl:attribute></xsl:if>
+                                                </xsl:otherwise>
+                                            </xsl:choose>
                                             <xforms:label><xsl:if test=". > -1">+</xsl:if><xsl:value-of select="."/>:00</xforms:label>
                                             <xforms:value><xsl:if test=". > -1">+</xsl:if><xsl:value-of select="."/>:00</xforms:value>
                                         </xforms:item>
