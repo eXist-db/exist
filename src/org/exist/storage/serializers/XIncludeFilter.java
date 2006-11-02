@@ -241,14 +241,16 @@ public class XIncludeFilter implements Receiver {
         // current collection
 
         // Patch 1520454 start
-        String base = document.getCollection().getURI() + "/";
-        String child = "./" + docUri.toString();
+        if (!docUri.isAbsolute()) {
+            String base = document.getCollection().getURI() + "/";
+            String child = "./" + docUri.toString();
 
-        URI baseUri = URI.create(base);
-        URI childUri = URI.create(child);
+            URI baseUri = URI.create(base);
+            URI childUri = URI.create(child);
 
-        URI uri = baseUri.resolve(childUri);
-        docUri = XmldbURI.create(uri);
+            URI uri = baseUri.resolve(childUri);
+            docUri = XmldbURI.create(uri);
+        }
         // Patch 1520454 end
 
         // retrieve the document
@@ -365,7 +367,6 @@ public class XIncludeFilter implements Receiver {
 	 * Process xmlns() schema. We process these here, because namespace mappings should
 	 * already been known when parsing the xpointer() expression.
 	 * 
-	 * @param context
 	 * @param xpointer
 	 * @return
 	 * @throws XPathException
