@@ -118,6 +118,8 @@ public XQueryTreeParser() {
 		org.exist.xquery.parser.XQueryAST xpointer_AST_in = (_t == ASTNULL) ? null : (org.exist.xquery.parser.XQueryAST)_t;
 		org.exist.xquery.parser.XQueryAST nc = null;
 		Expression step = null;
+		System.out.println("Processing XPOINTER");
+		
 		
 		try {      // for error handling
 			if (_t==null) _t=ASTNULL;
@@ -146,13 +148,16 @@ public XQueryTreeParser() {
 				_t = __t3;
 				_t = _t.getNextSibling();
 				
+					    System.out.println("Creating XPointer query: " + nc.getText());
+					    PathExpr p = new PathExpr(context);
 						RootNode root = new RootNode(context);
-						path.add(root);
+						p.add(root);
 						Function fun= new FunId(context, FunId.signature[0]);
 						List params= new ArrayList(1);
 						params.add(new LiteralValue(context, new StringValue(nc.getText())));
 						fun.setArguments(params);
-						path.add(fun);
+						p.addPath(fun);
+						path.add(p);
 					
 				break;
 			}
