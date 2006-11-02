@@ -625,7 +625,7 @@ public class NativeBroker extends DBBroker {
     public Collection getOrCreateCollection(Txn transaction, XmldbURI name) throws PermissionDeniedException {
     	name = prepend(name.normalizeCollectionPath());
         final CollectionCache collectionsCache = pool.getCollectionsCache();
-        synchronized(collectionsCache) {   
+        synchronized(collectionsCache) {
             try {
                 XmldbURI[] segments = name.getPathSegments();
                 XmldbURI path = XmldbURI.ROOT_COLLECTION_URI;
@@ -1757,9 +1757,7 @@ public class NativeBroker extends DBBroker {
         if(newName==null) {
         	newName = doc.getFileURI();
         }
-        Lock lock = collectionsDb.getLock();
         try {
-            lock.acquire(Lock.WRITE_LOCK);
             // check if the move would overwrite a collection
             if(getCollection(destination.getURI().append(newName)) != null)
                 throw new PermissionDeniedException("A resource can not replace an existing collection");
@@ -1794,7 +1792,7 @@ public class NativeBroker extends DBBroker {
                     saveCollection(transaction, collection);
                 }
                 destination.addDocument(transaction, this, doc);
-    
+
                 if(!renameOnly) {
                     // reindexing
                     reindexXMLResource(transaction, doc, true);
@@ -1809,8 +1807,6 @@ public class NativeBroker extends DBBroker {
             throw new PermissionDeniedException(e.getMessage());
         } catch (ReadOnlyException e) {
             throw new PermissionDeniedException(e.getMessage());
-        } finally {
-            lock.release();
         }
     }
     
