@@ -69,12 +69,13 @@ public class FunPosition extends Function {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
             if (contextItem != null)
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
-        }        
-        
-        Sequence result;
+        }
+
 		if (contextSequence == null)
 			throw new XPathException(getASTNode(), "XPDY0002: Undefined context item");
-		else if (contextSequence.isEmpty())
+		
+		Sequence result;
+		if (contextSequence.isEmpty())
             result = Sequence.EMPTY_SEQUENCE;
         else
             result = new IntegerValue(context.getContextPosition() + 1);

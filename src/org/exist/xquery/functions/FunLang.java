@@ -26,7 +26,6 @@ import java.util.Iterator;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.dom.NodeSetHelper;
 import org.exist.dom.QName;
 import org.exist.numbering.NodeId;
 import org.exist.storage.ElementValue;
@@ -75,8 +74,11 @@ public class FunLang extends Function {
         
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
-        
-        Sequence result;
+		
+		if (contextSequence == null)
+			throw new XPathException(getASTNode(), "XPDY0002: Undefined context item");
+		
+        Sequence result; 
 		if (!(Type.subTypeOf(contextSequence.getItemType(), Type.NODE)))
             result = Sequence.EMPTY_SEQUENCE;
         else {

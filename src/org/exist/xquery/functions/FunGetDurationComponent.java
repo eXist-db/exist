@@ -117,7 +117,11 @@ public class FunGetDurationComponent extends BasicFunction {
 			} else if (isCalledAs("minutes-from-duration")) {
             result = new IntegerValue(duration.getPart(DurationValue.MINUTE));
 			} else if (isCalledAs("seconds-from-duration")) {
-	    		result = new DecimalValue(duration.getCanonicalDuration().getField(DatatypeConstants.SECONDS).doubleValue() * duration.getCanonicalDuration().getSign());
+				if (duration.getCanonicalDuration().getField(DatatypeConstants.SECONDS) == null)
+					//TODO sign inot account ?
+					result = new DecimalValue(0);
+				else
+					result = new DecimalValue(duration.getCanonicalDuration().getField(DatatypeConstants.SECONDS).doubleValue() * duration.getCanonicalDuration().getSign());
 			} else if (isCalledAs("months-from-duration")) {
             result = new IntegerValue(duration.getPart(DurationValue.MONTH));
 			} else if (isCalledAs("years-from-duration")) {

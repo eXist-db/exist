@@ -86,15 +86,18 @@ public class FunName extends Function {
 		if (contextSequence == null || contextSequence.isEmpty()) 
 			result = Sequence.EMPTY_SEQUENCE;            
         
-		//If we have one argumment, we take it into account
+		//If we have one argument, we take it into account
 		if (getSignature().getArgumentCount() > 0) 
 			seq = getArgument(0).eval(contextSequence, contextItem);
 		//Otherwise, we take the context sequence and we iterate over it
 		else
 			seq = contextSequence; 
+		
+		if (seq == null)
+			throw new XPathException(getASTNode(), "XPDY0002: Undefined context item");
 				
         result = new ValueSequence();
-		int j = 0;
+		int j = 0; 
 		for (SequenceIterator i = seq.iterate(); i.hasNext(); j++) {
 			item = i.nextItem();
             if (!Type.subTypeOf(item.getType(), Type.NODE))

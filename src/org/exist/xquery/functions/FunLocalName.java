@@ -86,11 +86,10 @@ public class FunLocalName extends Function {
             Sequence seq = getArgument(0).eval(contextSequence);
             if (!seq.isEmpty())
                 item = seq.itemAt(0);
-        } else {
-            if (!contextSequence.isEmpty())
-                item = contextSequence.itemAt(0);
-            else
-                throw new XPathException(getASTNode(), "undefined context item");
+        } else { 
+        	if (contextSequence == null || contextSequence.isEmpty())
+        		throw new XPathException(getASTNode(), "XPDY0002: Undefined context item");        	
+            item = contextSequence.itemAt(0);
         }
         
         Sequence result;
