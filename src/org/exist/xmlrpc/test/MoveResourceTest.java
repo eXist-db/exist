@@ -8,6 +8,7 @@ import org.mortbay.util.MultiException;
 import org.apache.xmlrpc.XmlRpcClient;
 import org.apache.xmlrpc.XmlRpc;
 import org.apache.xmlrpc.XmlRpcException;
+import org.apache.log4j.BasicConfigurator;
 
 import java.util.Iterator;
 import java.util.Vector;
@@ -29,6 +30,7 @@ import java.io.*;
 public class MoveResourceTest extends TestCase {
 
     public static void main(String[] args) {
+        BasicConfigurator.configure();
         TestRunner.run(MoveResourceTest.class);
     }
     
@@ -45,14 +47,19 @@ public class MoveResourceTest extends TestCase {
     public void testMove() {
         Thread thread1 = new MoveThread();
         Thread thread2 = new CheckThread();
+        Thread thread3 = new CheckThread();
 
         thread1.start();
         thread2.start();
+        thread3.start();
         try {
             thread1.join();
             thread2.join();
+            thread3.join();
         } catch (InterruptedException e) {
         }
+
+        System.out.println("DONE.");
     }
     
     private void createCollection(XmlRpcClient client, XmldbURI collection) throws IOException, XmlRpcException {
@@ -81,7 +88,7 @@ public class MoveResourceTest extends TestCase {
     private class MoveThread extends Thread {
 
         public void run() {
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < 100; i++) {
                 try {
                     XmldbURI sourceColl = XmldbURI.ROOT_COLLECTION_URI.append("source" + i);
                     XmldbURI targetColl1 = XmldbURI.ROOT_COLLECTION_URI.append("target");
@@ -127,10 +134,11 @@ public class MoveResourceTest extends TestCase {
                     params.addElement( options );
 
                     byte[] data = (byte[]) xmlrpc.execute( "getDocument", params );
+                    assertTrue(data != null && data.length > 0);
 //                    System.out.println( new String(data, "UTF-8") );
 
                     synchronized (this) {
-                        wait(2000);
+                        wait(250);
                     }
 
                     System.out.println("Removing created collections ...");
@@ -153,7 +161,7 @@ public class MoveResourceTest extends TestCase {
 
         public void run() {
             String reqUrl = REST_URI + "/db?_query=" + URLEncoder.encode("collection('/db')//SPEECH[SPEAKER = 'JULIET']");
-            for (int i = 0; i < 500; i++) {
+            for (int i = 0; i < 200; i++) {
                 try {
                     URL url = new URL(reqUrl);
                     HttpURLConnection connect = (HttpURLConnection) url.openConnection();
@@ -166,7 +174,7 @@ public class MoveResourceTest extends TestCase {
                     System.out.println(readResponse(connect.getInputStream()));
 
                     synchronized (this) {
-                        wait(1000);
+                        wait(250);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();

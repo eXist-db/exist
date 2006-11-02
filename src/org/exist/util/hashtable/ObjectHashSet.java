@@ -23,6 +23,8 @@
 package org.exist.util.hashtable;
 
 import java.util.Iterator;
+import java.util.List;
+import java.util.ArrayList;
 
 
 /**
@@ -177,10 +179,19 @@ public class ObjectHashSet extends AbstractHashtable {
 	protected final static int hash(Object o) {
 		return o.hashCode();
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.exist.util.hashtable.AbstractHashtable#iterator()
-	 */
+
+    public List keys() {
+        ArrayList list = new ArrayList(items);
+        for (int i = 0; i < tabSize; i++) {
+            if (keys[i] != null && keys[i] != REMOVED)
+                list.add(keys[i]);
+        }
+        return list;
+    }
+
+    /* (non-Javadoc)
+      * @see org.exist.util.hashtable.AbstractHashtable#iterator()
+      */
 	public Iterator iterator() {
 		return new ObjectHashSetIterator();
 	}
