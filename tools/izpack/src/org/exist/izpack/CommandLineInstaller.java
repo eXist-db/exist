@@ -76,24 +76,21 @@ public class CommandLineInstaller {
             
             String filename = File.createTempFile("inst", ".xml").getAbsolutePath();
             Writer w = new FileWriter(filename);
-            w.write(
-                    "<?xml version=\"1.0\"?>" +
-                    "<AutomatedInstallation langpack=\"en\">" +
-                    "    <com.izforge.izpack.panels.HelloPanel/>" +
-                    "    <com.izforge.izpack.panels.PacksPanel>" +
-                    "        <pack name=\"core\" index=\"0\" selected=\"true\"/>" +
-                    "        <pack name=\"sources\" index=\"1\" selected=\"true\"/>" +
-                    "        <pack name=\"javadoc\" index=\"2\" selected=\"true\"/>" +
-                    "    </com.izforge.izpack.panels.PacksPanel>" +
-                    "    <com.izforge.izpack.panels.TargetPanel>" +
-                    "        <installpath>" + installPath + "</installpath>" +
-                    "    </com.izforge.izpack.panels.TargetPanel>" +
-                    "    <com.izforge.izpack.panels.InstallPanel/>" +
-                    "    <com.izforge.izpack.panels.ShortcutPanel/>" +
-                    "    <com.izforge.izpack.panels.HTMLInfoPanel/>" +
-                    "    <com.izforge.izpack.panels.FinishPanel/>" +
-                    "</AutomatedInstallation>"
-            );
+            w.write("<AutomatedInstallation langpack=\"eng\">\n");
+			w.write("<com.izforge.izpack.panels.HelloPanel/>\n" +
+					"    <com.izforge.izpack.panels.PacksPanel>\n" +
+					"        <selected>\n" +
+					"            <pack index=\"0\"/>\n" +
+					"            <pack index=\"1\"/>\n" +
+					"            <pack index=\"2\"/>\n" +
+					"        </selected>\n" +
+					"    </com.izforge.izpack.panels.PacksPanel>\n");
+			w.write("<com.izforge.izpack.panels.TargetPanel>\n" +
+					"        <installpath>" + installPath + "</installpath>\n" +
+					"    </com.izforge.izpack.panels.TargetPanel>\n");
+			w.write("<com.izforge.izpack.panels.InstallPanel/>\n");
+			w.write("<com.izforge.izpack.panels.FinishPanel/>\n");
+			w.write("</AutomatedInstallation>");
 			w.close();
 			
 			new AutomatedInstaller(filename);
