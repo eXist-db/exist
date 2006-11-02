@@ -98,6 +98,10 @@ public class FunRoot extends Function {
 		//Otherwise, we take the context sequence and we iterate over it
 		else
 			seq = contextSequence; 
+		
+		if (seq == null)
+			throw new XPathException(getASTNode(), "XPDY0002: Undefined context item");
+		
 				
         result = new ExtArrayNodeSet(seq.getLength());
 		int j = 0;

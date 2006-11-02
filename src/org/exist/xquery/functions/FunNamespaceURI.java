@@ -80,6 +80,9 @@ public class FunNamespaceURI extends Function {
         
         if(contextItem != null)
             contextSequence = contextItem.toSequence();
+
+		//if (contextSequence == null)
+		//	throw new XPathException(getASTNode(), "XPDY0002: Undefined context item");        
         
         Sequence result;
         Item item = null;
@@ -89,11 +92,12 @@ public class FunNamespaceURI extends Function {
             Sequence seq = getArgument(0).eval(contextSequence);
             if(!seq.isEmpty())
                 item = seq.itemAt(0);
-        } else {
+        } else { 
+        	if (contextSequence == null)
+        		throw new XPathException(getASTNode(), "XPDY0002: Undefined context item");
             if(!contextSequence.isEmpty())
-                item = contextSequence.itemAt(0);
-            else
-                throw new XPathException(getASTNode(), "XPDY0002: Undefined context item");
+            	throw new XPathException(getASTNode(), "XPDY0002: Undefined context item");
+            item = contextSequence.itemAt(0);
         }
         
         if(item == null)
