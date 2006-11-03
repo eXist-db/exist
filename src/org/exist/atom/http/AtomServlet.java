@@ -311,7 +311,7 @@ public class AtomServlet extends HttpServlet {
                         continue;
                      }
                      String responseContentType = methodConf.getAttribute("content-type");
-                     if (responseContentType!=null) {
+                     if (responseContentType!=null && responseContentType.trim().length()!=0) {
                         mconf.setContentType(responseContentType);
                      }
                      

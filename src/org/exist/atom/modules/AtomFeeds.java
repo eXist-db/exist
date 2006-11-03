@@ -49,7 +49,18 @@ public class AtomFeeds extends AtomModuleBase implements Atom {
    public void doGet(DBBroker broker,IncomingMessage request,OutgoingMessage response)
       throws BadRequestException,PermissionDeniedException,NotFoundException,EXistException
    {
+       handleGet(true,broker,request,response);
+   }
       
+   public void doHead(DBBroker broker,IncomingMessage request,OutgoingMessage response)
+      throws BadRequestException,PermissionDeniedException,NotFoundException,EXistException
+   {
+       handleGet(false,broker,request,response);
+   }
+   
+   protected void handleGet(boolean returnContent, DBBroker broker,IncomingMessage request,OutgoingMessage response)
+      throws BadRequestException,PermissionDeniedException,NotFoundException,EXistException
+   {
       DocumentImpl resource = null;
       XmldbURI pathUri = XmldbURI.create(request.getPath());
       try {
@@ -70,24 +81,28 @@ public class AtomFeeds extends AtomModuleBase implements Atom {
                }
                // Return the collection feed
                String charset = getContext().getDefaultCharset();
-               response.setStatusCode(200);
-               response.setContentType(Atom.MIME_TYPE+"; charset="+charset);
-               
-               Serializer serializer = broker.getSerializer();
-               serializer.reset();
-               
-               //Serialize the document
-               try {
-                  Writer w = new OutputStreamWriter(response.getOutputStream(),charset);
-                  serializer.serialize(feedDoc,w);
-                  w.flush();
-                  w.close();
-               } catch (IOException ex) {
-                  LOG.fatal("Cannot read resource "+request.getPath(),ex);
-                  throw new EXistException("I/O error on read of resource "+request.getPath(),ex);
-               } catch (SAXException saxe) {
-                  LOG.warn(saxe);
-                  throw new BadRequestException("Error while serializing XML: " + saxe.getMessage());
+               if (returnContent) {
+                  response.setStatusCode(200);
+                  response.setContentType(Atom.MIME_TYPE+"; charset="+charset);
+
+                  Serializer serializer = broker.getSerializer();
+                  serializer.reset();
+
+                  //Serialize the document
+                  try {
+                     Writer w = new OutputStreamWriter(response.getOutputStream(),charset);
+                     serializer.serialize(feedDoc,w);
+                     w.flush();
+                     w.close();
+                  } catch (IOException ex) {
+                     LOG.fatal("Cannot read resource "+request.getPath(),ex);
+                     throw new EXistException("I/O error on read of resource "+request.getPath(),ex);
+                  } catch (SAXException saxe) {
+                     LOG.warn(saxe);
+                     throw new BadRequestException("Error while serializing XML: " + saxe.getMessage());
+                  }
+               } else {
+                  response.setStatusCode(204);
                }
             } else {
                throw new NotFoundException("Resource " + request.getPath() + " not found");
@@ -98,36 +113,41 @@ public class AtomFeeds extends AtomModuleBase implements Atom {
                throw new PermissionDeniedException("Not allowed to read resource");
             }
             
-            if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
-               response.setContentType(resource.getMetadata().getMimeType());
-               try {
-                  OutputStream os = response.getOutputStream();
-                  broker.readBinaryResource((BinaryDocument) resource, os);
-                  os.flush();
-               } catch (IOException ex) {
-                  LOG.fatal("Cannot read resource "+request.getPath(),ex);
-                  throw new EXistException("I/O error on read of resource "+request.getPath(),ex);
+            if (returnContent) {
+               response.setStatusCode(200);
+               if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
+                  response.setContentType(resource.getMetadata().getMimeType());
+                  try {
+                     OutputStream os = response.getOutputStream();
+                     broker.readBinaryResource((BinaryDocument) resource, os);
+                     os.flush();
+                  } catch (IOException ex) {
+                     LOG.fatal("Cannot read resource "+request.getPath(),ex);
+                     throw new EXistException("I/O error on read of resource "+request.getPath(),ex);
+                  }
+               } else {
+                  // xml resource
+                  Serializer serializer = broker.getSerializer();
+                  serializer.reset();
+
+                  String charset = getContext().getDefaultCharset();
+                  //Serialize the document
+                  try {
+                     response.setContentType(resource.getMetadata().getMimeType()+"; charset="+charset);
+                     Writer w = new OutputStreamWriter(response.getOutputStream(),charset);
+                     serializer.serialize(resource,w);
+                     w.flush();
+                     w.close();
+                  } catch (IOException ex) {
+                     LOG.fatal("Cannot read resource "+request.getPath(),ex);
+                     throw new EXistException("I/O error on read of resource "+request.getPath(),ex);
+                  } catch (SAXException saxe) {
+                     LOG.warn(saxe);
+                     throw new BadRequestException("Error while serializing XML: " + saxe.getMessage());
+                  }
                }
             } else {
-               // xml resource
-               Serializer serializer = broker.getSerializer();
-               serializer.reset();
-               
-               String charset = getContext().getDefaultCharset();
-               //Serialize the document
-               try {
-                  response.setContentType(resource.getMetadata().getMimeType()+"; charset="+charset);
-                  Writer w = new OutputStreamWriter(response.getOutputStream(),charset);
-                  serializer.serialize(resource,w);
-                  w.flush();
-                  w.close();
-               } catch (IOException ex) {
-                  LOG.fatal("Cannot read resource "+request.getPath(),ex);
-                  throw new EXistException("I/O error on read of resource "+request.getPath(),ex);
-               } catch (SAXException saxe) {
-                  LOG.warn(saxe);
-                  throw new BadRequestException("Error while serializing XML: " + saxe.getMessage());
-               }
+               response.setStatusCode(204);
             }
          }
       } finally {
