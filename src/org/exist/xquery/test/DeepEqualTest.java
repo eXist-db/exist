@@ -326,7 +326,36 @@ public class DeepEqualTest extends TestCase {
                             + "return deep-equal($result1, $result2)";
         	assertQuery(true,query);    
 	}
-        
+
+    public void testReferenceNode3() {
+        createDocument("test", "<root><value>A</value><value>B</value></root>");
+        // two adjacent reference text nodes from another document should be merged into one
+        assertQuery(true,
+                "let $a := <v>{/root/value[1]/node(), /root/value[2]/node()}</v>" +
+                "let $b := <v>AB</v>" +
+                "return deep-equal($a, $b)");
+        // one reference node after a text node
+        assertQuery(true,
+                "let $a := <v>{/root/value[1]/node(), /root/value[2]/node()}</v>" +
+                "let $b := <v>A{/root/value[2]/node()}</v>" +
+                "return deep-equal($a, $b)");
+        // reference node before a text node
+        assertQuery(true,
+                "let $a := <v>{/root/value[1]/node(), /root/value[2]/node()}</v>" +
+                "let $b := <v>{/root/value[1]/node()}B</v>" +
+                "return deep-equal($a, $b)");
+        // reference node before an atomic value
+        assertQuery(true,
+                "let $a := <v>{/root/value[1]/node(), 'B'}</v>" +
+                "let $b := <v>AB</v>" +
+                "return deep-equal($a, $b)");
+        // reference node after an atomic value
+        assertQuery(true,
+                "let $a := <v>{'A', /root/value[2]/node()}</v>" +
+                "let $b := <v>AB</v>" +
+                "return deep-equal($a, $b)");
+    }
+
         public void testsiblingCornerCase() {
         	String query = "declare  namespace ve = 'http://www.test.com/deepestEqualError'; " +
             "declare function ve:functionVerifications() as element(FunctionVerifications) { " +

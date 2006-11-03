@@ -243,6 +243,12 @@ public class DocumentImpl extends NodeImpl implements Document {
         alpha[nodeNr] = nextRef++;
     }
 
+    public void replaceReferenceNode(int nodeNr, CharSequence ch) {
+        nodeKind[nodeNr] = Node.TEXT_NODE;
+        references[alpha[nodeNr]] = null;
+        addChars(nodeNr, ch);
+    }
+
     public int addAttribute(int nodeNr, QName qname, String value)
             throws DOMException {
         if (nodeKind == null) init();
