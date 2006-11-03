@@ -134,7 +134,9 @@
 
             <p>
                 <link href="http://news.gmane.org/thread.php?group=gmane.text.xml.exist">
-                    http://news.gmane.org/thread.php?group=gmane.text.xml.exist </link>
+                    http://news.gmane.org/thread.php?group=gmane.text.xml.exist</link> or, via NNTP, 
+                <link href="news://news.gmane.org/gmane.text.xml.exist">
+                    news://news.gmane.org/gmane.text.xml.exist</link>
             </p>
 
             <p>The project also has an <b>IRC channel</b>
