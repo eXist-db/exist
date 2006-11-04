@@ -515,8 +515,14 @@ public class XmldbURI implements Comparable {
 		}
 		return false;
 	}	
-	
-	public boolean isAbsolute() {	
+
+    public boolean equalsInternal(XmldbURI other) {
+        if (this == other)
+            return true;
+        return encodedCollectionPath.equals(other.encodedCollectionPath);
+    }
+
+    public boolean isAbsolute() {
 		return isCollectionPathAbsolute();
 	}
 	

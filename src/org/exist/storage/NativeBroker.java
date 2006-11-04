@@ -2904,7 +2904,7 @@ public class NativeBroker extends DBBroker {
         /** Updates the various indices */
         public void doIndex() {
             int indexType = RangeIndexSpec.NO_INDEX;
-            final boolean isTemp = XmldbURI.TEMP_COLLECTION_URI.equals(((DocumentImpl)node.getOwnerDocument()).getCollection().getURI());
+            final boolean isTemp = XmldbURI.TEMP_COLLECTION_URI.equalsInternal(((DocumentImpl)node.getOwnerDocument()).getCollection().getURI());
             switch (node.getNodeType()) {
                 case Node.ELEMENT_NODE :
                     if (idxSpec != null) {
