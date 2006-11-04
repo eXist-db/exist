@@ -51,18 +51,13 @@
                         <important>
                             <para>To avoid misunderstandings: eXist does nevertheless support strong typing 
                             whenever the expected type of an expression, a function argument or function return 
-                            value is explicitely specified or can be known otherwise. Don't expect eXist to be lax 
+                            value is explicitely specified or can be known otherwise. Don't expect eXist to be laxist 
                             about type checks!</para>
                         </important>
                     </listitem>
                     <listitem>
-                        <para>Atomic Data Types: <command>xs:gYear</command>,
-                            <command>xs:gMonth</command>, etc. (These types are seldom used).</para>
-                    </listitem>
-                    <listitem>
-                        <para>XPath Axes: <command>following</command>, <command>preceding</command></para>
-
-                        <para> Both axes work with an explicit test for an attribute or element
+                        <para>XPath Axes: <command>following</command>, <command>preceding</command> with wildcards.</para>
+                        <para>Both axes work with an explicit element or attribute name test though
                             (e.g. following::foo will work, but following::* will not).</para>
                     </listitem>
                 </itemizedlist>
