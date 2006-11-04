@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Team
+ *  Copyright (C) 2001-06 The eXist Team
  *
  *  http://exist-db.org
  *  
@@ -68,32 +68,37 @@ public class Eval extends BasicFunction {
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 				new QName("eval", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-				"Dynamically evaluates its string argument as an XPath/XQuery expression. " +
-                "The query is specified via the first argument. If it is of type xs:string, util:eval " +
-                "tries to execute this string as the query. If the first argument is an xs:anyURI, " +
-                "the function will try to load the query from the resource to which the (absolute) URI resolves. " +
+				"Dynamically evaluates an XPath/XQuery expression. " +
+                "If the first argument is of type xs:string, the function " +
+                "tries to execute this string as the query. If the first argument is of type xs:anyURI, " +
+                "the function will try to load the query from the resource to which the URI resolves. " +
                 "If the URI has no scheme, it is assumed that the query is stored in the db and the " +
                 "URI is interpreted as a database path. This is the same as calling " +
                 "util:eval('xmldb:exist:///db/test/test.xq'). " +
-				"The argument expression will inherit the current execution context, i.e. all " +
+                //TODO : to be discussed ; until now, it's been used with a null context
+				"The query inherits the current execution context, i.e. all " +
 				"namespace declarations and variable declarations are visible from within the " +
-				"inner expression. It will return an empty sequence if you pass a whitespace string.",
+				"inner expression. " +
+                "The function returns an empty sequence if a whitespace string is passed.",
 				new SequenceType[] {
 					new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
 				},
 				new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)),
 		new FunctionSignature(
 				new QName("eval", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-				"Dynamically evaluates its string argument as an XPath/XQuery expression. " +
-                "The query is specified via the first argument. If it is of type xs:string, util:eval " +
-                "tries to execute this string as the query. If the first argument is an xs:anyURI, " +
+				"Dynamically evaluates an XPath/XQuery expression. " +
+                "If the first argument is of type xs:string, the function " +
+                "tries to execute this string as the query. If the first argument is of type xs:anyURI, " +
                 "the function will try to load the query from the resource to which the URI resolves. " +
                 "If the URI has no scheme, it is assumed that the query is stored in the db and the " +
                 "URI is interpreted as a database path. This is the same as calling " +
                 "util:eval('xmldb:exist:///db/test/test.xq'). " +
-				"The argument expression will inherit the current execution context, i.e. all " +
+				"The query inherits the current execution context, i.e. all " +
 				"namespace declarations and variable declarations are visible from within the " +
-				"inner expression. It will return an empty sequence if you pass a whitespace string.",
+				"inner expression. " +
+                "The function returns an empty sequence if a whitespace string is passed. " +
+				"The third argument specifies if the compiled query expression " +
+				"should be cached. The cached query will be globally available within the db instance.",
 				new SequenceType[] {
 					new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
 					new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
@@ -101,17 +106,18 @@ public class Eval extends BasicFunction {
 				new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)),
 		new FunctionSignature(
 				new QName("eval-with-context", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-				"Dynamically evaluates its string argument as an XPath/XQuery expression. " +
-                "The query is specified via the first argument. If it is of type xs:string, util:eval " +
-                "tries to execute this string as the query. If the first argument is an xs:anyURI, " +
+				"Dynamically evaluates an XPath/XQuery expression. " +
+                "If the first argument is of type xs:string, the function " +
+                "tries to execute this string as the query. If the first argument is of type xs:anyURI, " +
                 "the function will try to load the query from the resource to which the URI resolves. " +
                 "If the URI has no scheme, it is assumed that the query is stored in the db and the " +
                 "URI is interpreted as a database path. This is the same as calling " +
-                "util:eval('xmldb:exist:///db/test/test.xq'). " +
-				"A new execution context will be created before the expression is evaluated. Static " +
-				"context properties can be set via the XML fragment in the second parameter. The " +
-				"XML fragment should have the format: <static-context><variable name=\"qname\">" +
-				"variable value</variable></static-context>.",
+                "util:eval('xmldb:exist:///db/test/test.xq'). " +                
+				"The query inherits the context described by the XML fragment in the second parameter. " +
+				"It should have the format: <static-context><variable name=\"qname\">" +
+				"variable value</variable></static-context>. " +
+				"The third argument specifies if the compiled query expression " +
+				"should be cached. The cached query will be globally available within the db instance.",
 				new SequenceType[] {
 					new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
 					new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
@@ -120,16 +126,17 @@ public class Eval extends BasicFunction {
 				new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)),
 		new FunctionSignature(
 				new QName("eval-inline", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-				"Dynamically evaluates the XPath/XQuery expression specified in $b within " +
-				"the current instance of the query engine. " +
-                "The query is specified via the first argument. If it is of type xs:string, util:eval " +
-                "tries to execute this string as the query. If the first argument is an xs:anyURI, " +
+				"Dynamically evaluates an XPath/XQuery expression. " +
+                "If the first argument is of type xs:string, the function " +
+                "tries to execute this string as the query. If the first argument is of type xs:anyURI, " +
                 "the function will try to load the query from the resource to which the URI resolves. " +
                 "If the URI has no scheme, it is assumed that the query is stored in the db and the " +
                 "URI is interpreted as a database path. This is the same as calling " +
                 "util:eval('xmldb:exist:///db/test/test.xq'). " +
-                "The evaluation context is taken from " +
-				"argument $a.",
+				"The query inherits the first argument's context, i.e. all " +
+				"namespace declarations and variable declarations are visible from within the " +
+				"inner expression. " +
+                "The function returns an empty sequence if a whitespace string is passed.",
 				new SequenceType[] {
 					new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE),
 					new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
@@ -137,16 +144,18 @@ public class Eval extends BasicFunction {
 				new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)),
 		new FunctionSignature(
 				new QName("eval-inline", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-				"Dynamically evaluates the XPath/XQuery expression specified in $b within " +
-				"the current instance of the query engine. " +
-                "The query is specified via the first argument. If it is of type xs:string, util:eval " +
-                "tries to execute this string as the query. If the first argument is an xs:anyURI, " +
+				"Dynamically evaluates an XPath/XQuery expression. " +
+                "If the first argument is of type xs:string, the function " +
+                "tries to execute this string as the query. If the first argument is of type xs:anyURI, " +
                 "the function will try to load the query from the resource to which the URI resolves. " +
                 "If the URI has no scheme, it is assumed that the query is stored in the db and the " +
                 "URI is interpreted as a database path. This is the same as calling " +
                 "util:eval('xmldb:exist:///db/test/test.xq'). " +
-                "The evaluation context is taken from " +
-				"argument $a. The third argument, $c, specifies if the compiled query expression " +
+				"The query inherits the first argument's context, i.e. all " +
+				"namespace declarations and variable declarations are visible from within the " +
+				"inner expression. " +
+                "The function returns an empty sequence if a whitespace string is passed." +
+				"The third argument specifies if the compiled query expression " +
 				"should be cached. The cached query will be globally available within the db instance.",
 				new SequenceType[] {
 					new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE),
