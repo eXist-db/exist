@@ -28,6 +28,7 @@ import org.exist.collections.Collection;
 import org.exist.numbering.NodeId;
 import org.exist.security.Group;
 import org.exist.security.Permission;
+import org.exist.security.PermissionFactory;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
 import org.exist.storage.DBBroker;
@@ -93,7 +94,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	private XmldbURI fileURI = null;
     
     //TODO : make private
-    protected Permission permissions = new Permission(Permission.DEFAULT_PERM);
+    protected Permission permissions = PermissionFactory.getPermission(Permission.DEFAULT_PERM);
     
     private transient Lock updateLock = null;
     

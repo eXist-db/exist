@@ -53,6 +53,7 @@ import org.exist.dom.DocumentSet;
 import org.exist.security.Group;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.PermissionFactory;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
 import org.exist.security.XMLSecurityManager;
@@ -121,7 +122,7 @@ public  class Collection extends Observable
     private XmldbURI path;
     
     // the permissions assigned to this collection
-    private Permission permissions = new Permission(0755);
+    private Permission permissions = PermissionFactory.getPermission(0775);
     
     // stores child-collections with their storage address
     private ObjectHashSet subcollections = new ObjectHashSet(19);
@@ -296,7 +297,7 @@ public  class Collection extends Observable
         }
         return cl;
     }
-
+    
     /**
      * Retrieve all documents contained in this collections.
      *
@@ -309,76 +310,45 @@ public  class Collection extends Observable
      * @param checkPermissions
      * @return The set of documents.
      */
-    public DocumentSet allDocs(DBBroker broker, DocumentSet docs, boolean recursive,
-                                    boolean checkPermissions) {
+    public DocumentSet allDocs(DBBroker broker, DocumentSet docs,
+            boolean recursive, boolean checkPermissions) {
         if (permissions.validate(broker.getUser(), Permission.READ)) {
-            List subColls = null;
-            try {
-                // acquire a lock on the collection
-                getLock().acquire(Lock.READ_LOCK);
-                // add all docs in this collection to the returned set
+            CollectionCache cache = broker.getBrokerPool().getCollectionsCache();
+            synchronized (cache) {
                 getDocuments(broker, docs, checkPermissions);
-                // get a list of subcollection URIs. We will process them after unlocking this collection.
-                // otherwise we may deadlock ourselves
-                subColls = subcollections.keys();
-            } catch (LockException e) {
-                LOG.warn(e.getMessage(), e);
-            } finally {
-                getLock().release();
-            }
-            if (recursive && subColls != null) {
-                // process the child collections
-                for (int i = 0; i < subColls.size(); i++) {
-                    XmldbURI childName = (XmldbURI) subColls.get(i);
-                    Collection child = broker.openCollection(path.appendInternal(childName), Lock.NO_LOCK);
-                    // a collection may have been removed in the meantime, so check first
-                    if (child != null)
-                        child.allDocs(broker, docs, recursive, checkPermissions);
-                }
+                if (recursive)
+                    allDocs(broker, docs, checkPermissions);
             }
         }
         return docs;
     }
-
-//    public DocumentSet allDocs(DBBroker broker, DocumentSet docs,
-//            boolean recursive, boolean checkPermissions) {
-//        if (permissions.validate(broker.getUser(), Permission.READ)) {
-//            CollectionCache cache = broker.getBrokerPool().getCollectionsCache();
-//            synchronized (cache) {
-//                getDocuments(broker, docs, checkPermissions);
-//                if (recursive)
-//                    allDocs(broker, docs, checkPermissions);
-//            }
-//        }
-//        return docs;
-//    }
-//
-//    private DocumentSet allDocs(DBBroker broker, DocumentSet docs, boolean checkPermissions) {
-//        try {
-//            getLock().acquire(Lock.READ_LOCK);
-//            Collection child;
-//            XmldbURI childName;
-//            Iterator i = subcollections.iterator();
-//            while (i.hasNext() ) {
-//                childName = (XmldbURI) i.next();
-//                child = broker.getCollection(path.appendInternal(childName));
-//                if(child == null) {
-//                    LOG.warn("child collection " + path.appendInternal(childName) + " not found. Skipping ...");
-//                    // we always check if we have permissions to read the child collection
-//                } else if (child.permissions.validate(broker.getUser(), Permission.READ)) {
-//                    child.getDocuments(broker, docs, checkPermissions);
-//                    if (child.getChildCollectionCount() > 0)
-//                        child.allDocs(broker, docs, checkPermissions);
-//                }
-//            }
-//        } catch (LockException e) {
-//            LOG.warn(e.getMessage(), e);
-//        } finally {
-//            getLock().release();
-//        }
-//        return docs;
-//    }
-
+    
+    private DocumentSet allDocs(DBBroker broker, DocumentSet docs, boolean checkPermissions) {
+        try {
+            getLock().acquire(Lock.READ_LOCK);
+            Collection child;
+            XmldbURI childName;
+            Iterator i = subcollections.iterator();
+            while (i.hasNext() ) {
+                childName = (XmldbURI) i.next();
+                child = broker.getCollection(path.appendInternal(childName));
+                if(child == null) {
+                    LOG.warn("child collection " + path.appendInternal(childName) + " not found. Skipping ...");
+                    // we always check if we have permissions to read the child collection
+                } else if (child.permissions.validate(broker.getUser(), Permission.READ)) {
+                    child.getDocuments(broker, docs, checkPermissions);
+                    if (child.getChildCollectionCount() > 0)
+                        child.allDocs(broker, docs, checkPermissions);
+                }
+            }
+        } catch (LockException e) {
+            LOG.warn(e.getMessage(), e);
+        } finally {
+            getLock().release();
+        }
+        return docs;
+    }
+    
     /**
      * Add all documents to the specified document set.
      *

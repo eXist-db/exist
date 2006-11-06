@@ -27,6 +27,7 @@ package org.exist.xquery.functions.xmldb;
 
 import org.exist.dom.QName;
 import org.exist.security.Permission;
+import org.exist.security.PermissionFactory;
 import org.exist.security.User;
 import org.exist.xmldb.UserManagementService;
 import org.exist.xquery.Cardinality;
@@ -83,7 +84,7 @@ public class XMLDBSetCollectionPermissions extends XMLDBAbstractCollectionManipu
                 throw new XPathException(getASTNode(), "Needs a valid group name, not: "+group);
 
             // Must actually get a User object for the Permission...
-            Permission p = new Permission(user, group, mode);
+            Permission p = PermissionFactory.getPermission(user, group, mode);
             User u = ums.getUser(user);
             if (null == u)
                 throw new XPathException(getASTNode(), "Needs a valid user name, not: "+user);

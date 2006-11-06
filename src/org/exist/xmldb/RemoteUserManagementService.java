@@ -7,6 +7,7 @@ import java.util.Vector;
 
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.security.Permission;
+import org.exist.security.PermissionFactory;
 import org.exist.security.User;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
@@ -288,8 +289,7 @@ public class RemoteUserManagementService implements UserManagementService {
 			Vector params = new Vector();
 			params.addElement(((RemoteCollection) coll).getPath());
 			Hashtable result = (Hashtable) parent.getClient().execute("getPermissions", params);
-			perm =
-				new Permission((String) result.get("owner"), (String) result.get("group"),
+			perm = PermissionFactory.getPermission((String) result.get("owner"), (String) result.get("group"),
 						((Integer) result.get("permissions")).intValue());
 			return perm;
 		} catch (XmlRpcException e) {
@@ -318,8 +318,7 @@ public class RemoteUserManagementService implements UserManagementService {
 			Vector params = new Vector();
 			params.addElement(path);
 			Hashtable result = (Hashtable) parent.getClient().execute("getPermissions", params);
-			Permission perm =
-				new Permission((String) result.get("owner"), (String) result.get("group"),
+			Permission perm = PermissionFactory.getPermission((String) result.get("owner"), (String) result.get("group"),
 						((Integer) result.get("permissions")).intValue());
 			return perm;
 		} catch (XmlRpcException e) {
@@ -340,7 +339,7 @@ public class RemoteUserManagementService implements UserManagementService {
 			Vector t;
 			for (int i = 0; i < resources.length; i++) {
 				t = (Vector) result.get(resources[i]);
-				perm[i] = new Permission();
+				perm[i] = PermissionFactory.getPermission();
 				perm[i].setOwner((String) t.elementAt(0));
 				perm[i].setGroup((String) t.elementAt(1));
 				perm[i].setPermissions(((Integer) t.elementAt(2)).intValue());
@@ -364,7 +363,7 @@ public class RemoteUserManagementService implements UserManagementService {
 			Vector t;
 			for (int i = 0; i < collections.length; i++) {
 				t = (Vector) result.get(collections[i]);
-				perm[i] = new Permission();
+				perm[i] = PermissionFactory.getPermission();
 				perm[i].setOwner((String) t.elementAt(0));
 				perm[i].setGroup((String) t.elementAt(1));
 				perm[i].setPermissions(((Integer) t.elementAt(2)).intValue());
