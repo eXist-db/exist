@@ -39,6 +39,7 @@ import java.util.Vector;
 import org.apache.xmlrpc.XmlRpcClient;
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.security.Permission;
+import org.exist.security.PermissionFactory;
 import org.exist.util.Compressor;
 import org.exist.validation.service.RemoteValidationService;
 import org.xmldb.api.base.Collection;
@@ -351,8 +352,7 @@ public class RemoteCollection implements CollectionImpl {
 		} catch(URISyntaxException e) {
 			throw new XMLDBException(ErrorCodes.INVALID_URI,e);
 		}
-		Permission perm =
-			new Permission(
+		Permission perm = PermissionFactory.getPermission(
 				(String) hash.get("owner"),
 				(String) hash.get("group"),
 				((Integer) hash.get("permissions")).intValue());
@@ -395,8 +395,7 @@ public class RemoteCollection implements CollectionImpl {
 			throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "An IO error occurred: " + ioe.getMessage(), ioe);
 		}
 		Vector collections = (Vector) collection.get("collections");
-		permissions =
-			new Permission(
+		permissions = PermissionFactory.getPermission(
 				(String) collection.get("owner"),
 				(String) collection.get("group"),
 				((Integer) collection.get("permissions")).intValue());

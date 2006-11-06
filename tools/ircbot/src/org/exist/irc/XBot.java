@@ -13,6 +13,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.exist.security.Permission;
+import org.exist.security.PermissionFactory;
 import org.exist.xmldb.UserManagementService;
 import org.jibble.pircbot.IrcException;
 import org.jibble.pircbot.NickAlreadyInUseException;
@@ -307,7 +308,7 @@ public class XBot extends PircBot {
 			collection.storeResource(res);
             UserManagementService umgr = (UserManagementService)
                 collection.getService("UserManagementService", "1.0");
-            umgr.setPermissions(res, new Permission(properties.getProperty("xmldb.user"), 
+            umgr.setPermissions(res, PermissionFactory.getPermission(properties.getProperty("xmldb.user"), 
                     properties.getProperty("xmldb.password"), 0744));
 		}
 		return resourceName;

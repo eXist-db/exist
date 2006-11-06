@@ -27,6 +27,7 @@ import junit.textui.TestRunner;
 
 import org.exist.StandaloneServer;
 import org.exist.security.Permission;
+import org.exist.security.PermissionFactory;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.UserManagementService;
 import org.mortbay.util.MultiException;
@@ -107,8 +108,8 @@ public class RemoteDatabaseImplTest extends RemoteDBTest {
 	        UserManagementService ums = (UserManagementService) rootCollection.getService("UserManagementService", "1.0");
 	        if (ums != null) {
 	
-	            Permission p = new Permission();
-	            p.setPermissions("user=+read,+write,group=-read,-write,other=-read,-write");
+	            Permission p = PermissionFactory.getPermission();
+	            p.setPermissions(Permission.USER_STRING + "=+read,+write," + Permission.GROUP_STRING + "=-read,-write," + Permission.OTHER_STRING + "=-read,-write");
 	            ums.setPermissions(adminCollection, p);
 	
 	            Collection guestCollection = DatabaseManager.getCollection(URI + DBBroker.ROOT_COLLECTION + "/" + ADMIN_COLLECTION_NAME, "guest",

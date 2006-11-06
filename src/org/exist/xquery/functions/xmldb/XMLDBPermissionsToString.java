@@ -8,6 +8,7 @@ package org.exist.xquery.functions.xmldb;
 
 import org.exist.dom.QName;
 import org.exist.security.Permission;
+import org.exist.security.PermissionFactory;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -51,7 +52,7 @@ public class XMLDBPermissionsToString extends BasicFunction {
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 			throws XPathException {
 		int value = ((IntegerValue)args[0].itemAt(0)).getInt();
-		Permission perm = new Permission(value);
+		Permission perm = PermissionFactory.getPermission(value);
 		return new StringValue(perm.toString());
 	}
 
