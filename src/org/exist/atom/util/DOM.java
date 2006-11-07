@@ -37,7 +37,8 @@ public class DOM {
             current = current.getNextSibling();
             continue;
          }
-         if (namespaceName!=null && !current.getNamespaceURI().equals(namespaceName)) {
+         if ((namespaceName==null && current.getNamespaceURI()!=null) ||
+             (namespaceName!=null && !namespaceName.equals(current.getNamespaceURI())) ) {
             current = current.getNextSibling();
             continue;
          }
@@ -58,7 +59,8 @@ public class DOM {
             current = current.getNextSibling();
             continue;
          }
-         if (namespaceName!=null && !current.getNamespaceURI().equals(namespaceName)) {
+         if ((namespaceName==null && current.getNamespaceURI()!=null) ||
+             (namespaceName!=null && !namespaceName.equals(current.getNamespaceURI())) ) {
             current = current.getNextSibling();
             continue;
          }
