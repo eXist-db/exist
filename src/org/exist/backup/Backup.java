@@ -22,11 +22,7 @@
 package org.exist.backup;
 
 import java.awt.Dimension;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Properties;
@@ -57,7 +53,7 @@ import org.xmldb.api.modules.XMLResource;
 
 public class Backup {
 
-	private String backupDir;
+	private String target;
 	private XmldbURI rootCollection;
 	private String user;
 	private String pass;
@@ -80,19 +76,19 @@ public class Backup {
 	    contentsOutputProps.setProperty(OutputKeys.INDENT, "yes");
     }
     
-	public Backup(String user, String pass, String backupDir, XmldbURI rootCollection) {
+	public Backup(String user, String pass, String target, XmldbURI rootCollection) {
 		this.user = user;
 		this.pass = pass;
-		this.backupDir = backupDir;
+		this.target = target;
 		this.rootCollection = rootCollection;		
 	}
 
-	public Backup(String user, String pass, String backupDir) {
-		this(user, pass, backupDir, XmldbURI.create("xmldb:exist://" + DBBroker.ROOT_COLLECTION));
+	public Backup(String user, String pass, String target) {
+		this(user, pass, target, XmldbURI.create("xmldb:exist://" + DBBroker.ROOT_COLLECTION));
 	}
 	
-	public Backup(String user, String pass, String backupDir, XmldbURI rootCollection, Properties property) {
-		this(user, pass, backupDir, rootCollection);
+	public Backup(String user, String pass, String target, XmldbURI rootCollection, Properties property) {
+		this(user, pass, target, rootCollection);
 		this.defaultOutputProperties.setProperty(OutputKeys.INDENT, property.getProperty("indent","no"));
 	}
 
@@ -187,7 +183,22 @@ public class Backup {
 			backup(current, null);
 	}
 
-	private void backup(Collection current, BackupDialog dialog)
+    private void backup(Collection current, BackupDialog dialog)
+		throws XMLDBException, IOException, SAXException {
+        String cname = current.getName();
+		if (cname.charAt(0) != '/')
+			cname = "/" + cname;
+        String path = target + encode(URIUtils.urlDecodeUtf8(cname));
+        BackupWriter output;
+        if (target.endsWith(".zip"))
+            output = new ZipWriter(target, encode(URIUtils.urlDecodeUtf8(cname)));
+        else
+            output = new FileSystemWriter(path);
+        backup(current, output, dialog);
+        output.close();
+    }
+
+    private void backup(Collection current, BackupWriter output, BackupDialog dialog)
 		throws XMLDBException, IOException, SAXException {
 		if (current == null)
 			return;
@@ -200,12 +211,6 @@ public class Backup {
 		// get resources and permissions
 		String[] resources = current.listResources();
 		Arrays.sort(resources);
-        
-//      TODO : use dedicated function in XmldbURI
-		String cname = current.getName();
-		if (cname.charAt(0) != '/')
-			cname = "/" + cname;
-		String path = backupDir + encode(URIUtils.urlDecodeUtf8(cname));
 		
 		UserManagementService mgtService =
 			(UserManagementService) current.getService("UserManagementService", "1.0");
@@ -216,17 +221,7 @@ public class Backup {
 			dialog.setCollection(current.getName());
 			dialog.setResourceCount(resources.length);
 		}
-		// create directory and open __contents__.xml
-		File file = new File(path);
-		if(file.exists()) {
-			System.out.println("removing " + path);
-			file.delete();
-		}
-		file.mkdirs();
-		BufferedWriter contents =
-			new BufferedWriter(
-				new OutputStreamWriter(
-					new FileOutputStream(path + File.separatorChar + "__contents__.xml"), "UTF-8"));
+        Writer contents = output.newContents();
 		// serializer writes to __contents__.xml
 		SAXSerializer serializer = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
 		serializer.setOutput(contents, contentsOutputProps);
@@ -257,27 +252,23 @@ public class Backup {
 
 		// scan through resources
 		Resource resource;
-		FileOutputStream os;
+		OutputStream os;
 		BufferedWriter writer;
 		SAXSerializer contentSerializer;
 		for (int i = 0; i < resources.length; i++) {
             try {
                 resource = current.getResource(resources[i]);
-                file = new File(path);
-                if (!file.exists())
-                    file.mkdirs();
+
                 if (dialog == null)
-                    System.out.println("writing " + path + File.separatorChar + resources[i]);
+                    System.out.println("writing " + resources[i]);
                 else {
                     dialog.setResource(resources[i]);
                     dialog.setProgress(i);
                 }
-                //os = new FileOutputStream(path + File.eparatorChar + resources[i]);
-                os = new FileOutputStream(path + File.separatorChar + encode(URIUtils.urlDecodeUtf8(resources[i])));
+                os = output.newEntry(encode(URIUtils.urlDecodeUtf8(resources[i])));
                 if(resource.getResourceType().equals("BinaryResource")) {
                     byte[] bdata = (byte[])resource.getContent();
                     os.write(bdata);
-                    os.close();
                 } else {
                     try {
                         writer =
@@ -289,13 +280,14 @@ public class Backup {
                         ((EXistResource)resource).setLexicalHandler(contentSerializer);
                         ((XMLResource)resource).getContentAsSAX(contentSerializer);
                         SerializerPool.getInstance().returnObject(contentSerializer);
-                        writer.close();
+                        writer.flush();
                     } catch(Exception e) {
                         System.err.println("An exception occurred while writing the resource: " + e.getMessage());
                         e.printStackTrace();
                         continue;
                     }
                 }
+                output.closeEntry();
                 EXistResource ris = (EXistResource)resource;
                 
                 //store permissions
@@ -379,16 +371,19 @@ public class Backup {
 		serializer.endElement(NS, "collection", "collection");
 		serializer.endPrefixMapping("");
 		serializer.endDocument();
-		contents.close();
-		SerializerPool.getInstance().returnObject(serializer);
+		output.closeContents();
+
+        SerializerPool.getInstance().returnObject(serializer);
 		// descend into subcollections
 		Collection child;
 		for (int i = 0; i < collections.length; i++) {
 			child = current.getChildCollection(collections[i]);
 			if (child.getName().equals(NativeBroker.TEMP_COLLECTION))
 				continue;
-			backup(child, dialog);
-		}
+            output.newCollection(encode(URIUtils.urlDecodeUtf8(collections[i])));
+            backup(child, output, dialog);
+            output.closeCollection();
+        }
 	}
 
 	class BackupThread extends Thread {
@@ -412,7 +407,7 @@ public class Backup {
 		}
 	}
 
-	public static void main(String args[]) {
+    public static void main(String args[]) {
 		try {
 			Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
 			Database database = (Database) cl.newInstance();
