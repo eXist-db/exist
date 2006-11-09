@@ -21,7 +21,10 @@ public class TriggerSystemTask extends BasicFunction {
     public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("trigger-system-task", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
-			"Trigger a system task.",
+			"Trigger a system task. The first argument specifies the name of the Java class to be executed. The " +
+            "class has to implement org.exist.storage.SystemTask. An XML fragment may be passed as second " +
+            "argument. It should have the following structure: <parameters><param name=\"param-name1\" value=\"param-value1\"/>" +
+            "</parameters>. The parameters are transformed into Java properties and passed to the system task.",
 			new SequenceType[]{
                 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
                 new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
