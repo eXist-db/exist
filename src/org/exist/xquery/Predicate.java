@@ -385,7 +385,8 @@ public class Predicate extends PathExpr {
                         //TODO : rename this method as getInDocumentOrder ? -pb
 				        p = temp.get(v.getInt() - 1);
 				        if (p != null) {
-				        	p.clearContext(Expression.IGNORE_CONTEXT);
+				        	//Commented out : but this is probably more complicated (see test case in the same commit)
+				        	//p.clearContext(Expression.IGNORE_CONTEXT);
 				        	result.add(p);
 				        }
                         //TODO : does null make sense here ? Well... sometimes ;-) 

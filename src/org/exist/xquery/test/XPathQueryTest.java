@@ -719,14 +719,36 @@ public class XPathQueryTest extends XMLTestCase {
             resource = (XMLResource)result.getResource(0);
             assertEquals("XPath: " + query, "a", resource.getContent().toString());
             
+            query = "let $doc := document {<a><b n='1'/><b n='2'/></a>} " +
+            	"return $doc//b/(if (@n = '1') then position() else ())";        
+		    result = service.queryResource("numbers.xml", query);		    
+		    assertEquals("XPath: " + query, 1, result.getSize());
+		    assertEquals("1", result.getResource(0).getContent().toString());
+		    //Try a second time to see if the position is reset
+		    result = service.queryResource("numbers.xml", query);
+		    assertEquals("XPath: " + query, 1, result.getSize());
+		    assertEquals("1", result.getResource(0).getContent().toString());
+		    
+            query = "let $doc := document {<a><b/></a>} " +
+        	"return $doc/a[1] [b[1]]";
+	        service.setProperty(OutputKeys.INDENT, "no");
+		    result = service.queryResource("numbers.xml", query);		    
+		    assertEquals("XPath: " + query, 1, result.getSize());
+		    assertXMLEqual("<a><b/></a>", result.getResource(0).getContent().toString());		    
             
-            // TODO: clarify
-//            query = "let $a := ('a', 'b', 'c') for $b in $a[position()] return <blah>{$b}</blah>";
-//            result = service.queryResource("numbers.xml", query);
-//            assertEquals("XPath: " + query, 3, result.getSize());
+            //TODO : make this work ! It currently returns some content
+            //query = "let $doc := document {<a><b><c>1</c></b><b><c>a</c></b></a>} " +
+            //	"return $doc/a[b[position() = 2]/c[.='1']]";
+		    //result = service.queryResource("numbers.xml", query);
+		    //assertEquals("XPath: " + query, 0, result.getSize());
+            
+            // TODO: make this work ! It currently returns 1
+		    //query = "let $a := ('a', 'b', 'c') for $b in $a[position()] return <blah>{$b}</blah>";
+		    //result = service.queryResource("numbers.xml", query);
+		    //assertEquals("XPath: " + query, 3, result.getSize());
             
             
-        } catch (XMLDBException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
         }
