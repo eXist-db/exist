@@ -307,6 +307,8 @@ public class XQueryContext {
 		{
 			broker.setUser(user);
 		}
+		//Reset current context position
+		setContextPosition(0);
 	}
 	
 	public AccessContext getAccessContext() {
