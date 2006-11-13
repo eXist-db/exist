@@ -39,7 +39,7 @@ import java.io.IOException;
  *          <td>the directory (or zip file) into which the backup will be written. If the path ends
  *          with .zip, a zip file will be generated at the specified location and the backup will be
  *          directly written into this file. Otherwise, the task creates a directory for the specified
- *          path. If you pass a relative pass, it will be interpreted relative to the data directory
+ *          path. If you pass a relative path, it will be interpreted relative to the data directory
  *          set in conf.xml.</td>
  *      </tr>
  *  </table>
