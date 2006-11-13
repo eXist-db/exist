@@ -16,6 +16,33 @@ import java.io.IOException;
  * BackupSystemTask creates an XML backup of the current database into a directory
  * or zip file. Running the backup as a system task guarantees a consistent backup. No
  * other transactions will be allowed while the backup is in progress.
+ *
+ * The following properties can be used to configure the backup task if passed to the
+ * {@link #configure(org.exist.util.Configuration, java.util.Properties)} method:
+ *
+ * <table>
+ *      <tr>
+ *          <td>collection</td>
+ *          <td>the collection to backup, specified as an absolute path into the db, e.g. /db/back-me-up</td>
+ *      </tr>
+ *      <tr>
+ *          <td>user</td>
+ *          <td>a valid user for writing the backup. Usually, this needs to be a user in the dba
+ *          database admin group.</td>
+ *      </tr>
+ *      <tr>
+ *          <td>password</td>
+ *          <td>the password for the user</td>
+ *      </tr>
+ *      <tr>
+ *          <td>dir</td>
+ *          <td>the directory (or zip file) into which the backup will be written. If the path ends
+ *          with .zip, a zip file will be generated at the specified location and the backup will be
+ *          directly written into this file. Otherwise, the task creates a directory for the specified
+ *          path. If you pass a relative pass, it will be interpreted relative to the data directory
+ *          set in conf.xml.</td>
+ *      </tr>
+ *  </table>
  */
 public class BackupSystemTask implements SystemTask {
 
