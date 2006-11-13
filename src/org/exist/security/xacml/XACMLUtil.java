@@ -43,6 +43,7 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.XMLSecurityManager;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NativeValueIndexByQName;
 import org.exist.storage.UpdateListener;
@@ -96,7 +97,7 @@ public class XACMLUtil implements UpdateListener
 		DBBroker broker = null;
 		try
 		{
-			broker = pdp.getBrokerPool().get();
+			broker = pdp.getBrokerPool().get(XMLSecurityManager.SYSTEM_USER);
 			initializePolicyCollection(broker);
 		}
 		catch(EXistException ee)

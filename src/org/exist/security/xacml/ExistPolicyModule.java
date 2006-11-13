@@ -14,6 +14,7 @@ import java.util.Iterator;
 import org.apache.log4j.Logger;
 
 import org.exist.EXistException;
+import org.exist.security.XMLSecurityManager;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.storage.BrokerPool;
@@ -70,7 +71,7 @@ public class ExistPolicyModule extends PolicyFinderModule
 		DBBroker broker = null;
 		try
 		{
-			broker = pool.get();
+			broker = pool.get(XMLSecurityManager.SYSTEM_USER);
 			return findPolicy(broker, context);
 		}
 		catch(EXistException ee)
@@ -127,7 +128,7 @@ public class ExistPolicyModule extends PolicyFinderModule
 		DBBroker broker = null;
 		try
 		{
-			broker = pool.get();
+			broker = pool.get(XMLSecurityManager.SYSTEM_USER);
 			AbstractPolicy policy = pdp.getUtil().findPolicy(broker, idReference, type);
 			return (policy == null) ? new PolicyFinderResult() : new PolicyFinderResult(policy);
 		}

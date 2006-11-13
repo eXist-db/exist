@@ -225,7 +225,7 @@ public class XMLSecurityManager implements SecurityManager {
         TransactionManager transact = pool.getTransactionManager();
         Txn txn = transact.beginTransaction();
 		try {
-			broker = pool.get();
+			broker = pool.get(SYSTEM_USER);
 			save(broker, txn);
             transact.commit(txn);
 		} catch (EXistException e) {
@@ -274,7 +274,7 @@ public class XMLSecurityManager implements SecurityManager {
         TransactionManager transact = pool.getTransactionManager();
         Txn txn = transact.beginTransaction();
         try {
-            broker = pool.get();
+            broker = pool.get(SYSTEM_USER);
             save(broker, txn);
             transact.commit(txn);
         } catch (EXistException e) {
@@ -401,7 +401,7 @@ public class XMLSecurityManager implements SecurityManager {
         Txn txn = transact.beginTransaction();
 		DBBroker broker = null;
 		try {
-			broker = pool.get();
+			broker = pool.get(SYSTEM_USER);
 			save(broker, txn);
 			createUserHome(broker, txn, user);
             transact.commit(txn);

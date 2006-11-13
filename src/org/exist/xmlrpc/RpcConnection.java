@@ -71,13 +71,11 @@ import org.exist.numbering.NodeId;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
+import org.exist.security.XMLSecurityManager;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
-import org.exist.storage.BrokerPool;
-import org.exist.storage.DBBroker;
-import org.exist.storage.DataBackup;
-import org.exist.storage.XQueryPool;
+import org.exist.storage.*;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.sync.Sync;
@@ -754,7 +752,7 @@ public class RpcConnection extends Thread {
     public boolean sync() {
         DBBroker broker = null;
         try {
-            broker = brokerPool.get();
+            broker = brokerPool.get(XMLSecurityManager.SYSTEM_USER);
             broker.sync(Sync.MAJOR_SYNC);
         } catch (EXistException e) {
         } finally {
@@ -762,7 +760,7 @@ public class RpcConnection extends Thread {
         }
         return true;
     }
-    
+
     public boolean isXACMLEnabled() {
     	return brokerPool.getSecurityManager().isXACMLEnabled();
     }

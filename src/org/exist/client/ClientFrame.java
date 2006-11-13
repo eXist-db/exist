@@ -509,7 +509,37 @@ public class ClientFrame extends JFrame
             }
         });
         toolsMenu.add(item);
-        
+
+        toolsMenu.addSeparator();
+
+        item = new JMenuItem("Enter service mode");
+        item.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    DatabaseInstanceManager service = (DatabaseInstanceManager) client.current.getService("DatabaseInstanceManager", "1.0");
+                    service.enterServiceMode();
+                } catch (XMLDBException ex) {
+                    showErrorMessage(ex.getMessage(), ex);
+                }
+            }
+        });
+        toolsMenu.add(item);
+
+        item = new JMenuItem("Exit service mode");
+        item.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    DatabaseInstanceManager service = (DatabaseInstanceManager) client.current.getService("DatabaseInstanceManager", "1.0");
+                    service.exitServiceMode();
+                } catch (XMLDBException ex) {
+                    showErrorMessage(ex.getMessage(), ex);
+                }
+            }
+        });
+        toolsMenu.add(item);
+
         toolsMenu.addSeparator();
         
         item = new JMenuItem(Messages.getString("ClientFrame.63"), KeyEvent.VK_B); //$NON-NLS-1$
