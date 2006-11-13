@@ -2541,10 +2541,11 @@ public class RpcConnection extends Thread {
     public void backup(User user, String userbackup, String password,
 	String destcollection, String collection) throws Exception {
     	try {
+    		
     		   Backup backup = new Backup(
     				userbackup,
                     password, 
-                    destcollection+"-backup",
+                    (destcollection.endsWith(".zip") ? destcollection.substring(0, destcollection.length()-4)+"-backup.zip" : destcollection+"-backup"),
                     XmldbURI.xmldbUriFor(XmldbURI.EMBEDDED_SERVER_URI.toString() + collection));
                 backup.backup(false, null);
             } catch (Exception e) {
