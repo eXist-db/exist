@@ -1496,6 +1496,12 @@ public class RpcServer implements RpcAPI {
         brokerPool.exitServiceMode(user);
         return true;
     }
+    
+    public boolean isInServiceMode(User user) throws PermissionDeniedException, EXistException {
+        BrokerPool brokerPool = BrokerPool.getInstance(databaseId);
+       return brokerPool.isInServiceMode();
+        
+    }
 
     public boolean shutdown(User user) throws PermissionDeniedException {
         return shutdown(user, 0);

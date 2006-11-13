@@ -869,7 +869,11 @@ public class BrokerPool {
     public boolean isReadOnly() {
         return isReadOnly;
     }
-    
+
+    public boolean isInServiceMode() {
+        return inServiceMode;
+    }
+
     public TransactionManager getTransactionManager() {
         return this.transactionManager;
     }	
