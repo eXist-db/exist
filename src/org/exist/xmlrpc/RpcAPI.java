@@ -64,7 +64,7 @@ public interface RpcAPI {
 
     boolean enterServiceMode(User user) throws PermissionDeniedException, EXistException;
 
-    void exitServiceMode(User user) throws PermissionDeniedException, EXistException;
+    boolean exitServiceMode(User user) throws PermissionDeniedException, EXistException;
 
     public boolean sync(User user);
 	
