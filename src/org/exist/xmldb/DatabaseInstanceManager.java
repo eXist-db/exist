@@ -29,8 +29,12 @@ public interface DatabaseInstanceManager extends Service {
 	 * @throws XMLDBException
 	 */
 	public void shutdown(long delay) throws XMLDBException;
-	
-	public DatabaseStatus getStatus() throws XMLDBException;
+
+    public boolean enterServiceMode() throws XMLDBException;
+
+    public void exitServiceMode() throws XMLDBException;
+    
+    public DatabaseStatus getStatus() throws XMLDBException;
 	
 	/**
 	 * Returns true if the database instance is running local, i.e. in

@@ -4,6 +4,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import org.exist.security.User;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
@@ -42,8 +43,26 @@ public class LocalDatabaseInstanceManager implements DatabaseInstanceManager {
 		} else
 			pool.shutdown();
 	}
-	
-	public DatabaseStatus getStatus() throws XMLDBException {
+
+
+    public boolean enterServiceMode() throws XMLDBException {
+        try {
+            pool.enterServiceMode(user);
+        } catch (PermissionDeniedException e) {
+            throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
+        }
+        return true;
+    }
+
+    public void exitServiceMode() throws XMLDBException {
+        try {
+            pool.exitServiceMode(user);
+        } catch (PermissionDeniedException e) {
+            throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
+        }
+    }
+
+    public DatabaseStatus getStatus() throws XMLDBException {
 		return new DatabaseStatus(pool);
 	}
 

@@ -98,7 +98,7 @@ public class DatabaseImpl implements Database {
         // System.out.println("Configuring '" + instanceName + "' using " + Configuration.getPath(configuration, null));
         try {
             Configuration config = new Configuration(configuration, null);
-            BrokerPool.configure(instanceName, 1, 5, config);            
+            BrokerPool.configure(instanceName, 1, 5, config);
             if (shutdown != null)
                 BrokerPool.getInstance(instanceName).registerShutdownListener(shutdown);
         } catch (Exception e ) {

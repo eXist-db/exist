@@ -57,7 +57,7 @@ public class Head extends AbstractWebDAVMethod {
 		Collection collection = null;
 		DocumentImpl resource = null;
 		try {
-			broker = pool.get();
+			broker = pool.get(user);
 			collection = broker.openCollection(path, Lock.READ_LOCK);
 			if(collection != null) {
                 response.setContentLength(0);

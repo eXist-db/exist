@@ -61,8 +61,12 @@ public interface RpcAPI {
 	 * @throws PermissionDeniedException
 	 */
 	public boolean shutdown(User user, long delay) throws PermissionDeniedException;
-	
-	public boolean sync(User user);
+
+    boolean enterServiceMode(User user) throws PermissionDeniedException, EXistException;
+
+    void exitServiceMode(User user) throws PermissionDeniedException, EXistException;
+
+    public boolean sync(User user);
 	
 	/**
 	 * Returns true if XACML is enabled for the current database instance

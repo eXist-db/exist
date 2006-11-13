@@ -357,11 +357,11 @@ public class BrokerPool {
 	
 	/**
 	 * The kind of scheduled cache synchronization event. 
-	 * One of {@link org.exist.storage.Sync#MINOR_SYNC} or {@link org.exist.storage.Sync#MINOR_SYNC}
+	 * One of {@link org.exist.storage.sync.Sync#MAJOR_SYNC} or {@link org.exist.storage.sync.Sync#MINOR_SYNC}
 	 */
 	private int syncEvent = 0;	
 	
-    private boolean checkpoint = false;		
+    private boolean checkpoint = false;
 	
     /**
      * <code>true</code> if the database instance is running in read-only mode.
@@ -456,7 +456,10 @@ public class BrokerPool {
     // WM: no, we need one lock per database instance. Otherwise we would lock another database.
 	private Lock globalXUpdateLock = new ReentrantReadWriteLock("xupdate");
 
-	/** Creates and configures the database instance. 
+    private User serviceModeUser = null;
+    private boolean inServiceMode = false;
+    
+    /** Creates and configures the database instance.
 	 * @param instanceName A name for the database instance.
 	 * @param minBrokers The minimum number of concurrent brokers for handling requests on the database instance.
 	 * @param maxBrokers The maximum number of concurrent brokers for handling requests on the database instance.
@@ -535,7 +538,7 @@ public class BrokerPool {
 		            Class clazz = Class.forName(systemTasksConfigs[i].getClassName());
 		            SystemTask task = (SystemTask) clazz.newInstance();	
 		            if (!(task instanceof SystemTask))
-		            	//TODO : shall we ignore the exception ?		            	
+		            	//TODO : shall we ignore the exception ?
 		            	throw new EXistException("'" + task.getClass().getName() + "' is not an instance of org.exist.storage.SystemTask");
 		            task.configure(conf, systemTasksConfigs[i].getProperties());
 		            systemTasks.add(task);
@@ -958,7 +961,7 @@ public class BrokerPool {
 	 * @throws EXistException If the instance is not available (stopped or not configured)
 	 */
     //TODO : rename as getBroker ? getInstance (when refactored) ?
-	public DBBroker get() throws EXistException {
+	public DBBroker get(User user) throws EXistException {
 		if (!isInstanceConfigured())			
 			throw new EXistException("database instance '" + instanceName + "' is not available");
 		
@@ -979,7 +982,14 @@ public class BrokerPool {
 		}
 		//No active broker : get one ASAP
 		synchronized(this) {
-			//Are there any available brokers ?
+            while (serviceModeUser != null && !user.equals(serviceModeUser)) {
+                try {
+                    LOG.debug("Db instance is in service mode. Waiting for db to become available again ...");
+                    wait();
+                } catch (InterruptedException e) {
+                }
+            }
+            //Are there any available brokers ?
 			if (inactiveBrokers.isEmpty()) {
 				//There are no available brokers. If allowed... 
 				if (brokersCount < maxBrokers)
@@ -999,24 +1009,11 @@ public class BrokerPool {
 			//activate the broker
 			activeBrokers.put(Thread.currentThread(), broker);
 			broker.incReferenceCount();
-			//Inform the other threads that we have a new-comer 
+            broker.setUser(user);
+            //Inform the other threads that we have a new-comer
 			this.notifyAll();
 			return broker;
 		}
-	}
-
-	/**
-	 * Returns an active broker for the database instance and sets its current user.
-	 *  
-	 * @param user The user
-	 * @return The broker
-	 * @throws EXistException
-	 */
-	//TODO : rename as getBroker ? getInstance (when refactored) ?
-	public DBBroker get(User user) throws EXistException {
-		DBBroker broker = get();
-		broker.setUser(user);
-		return broker;
 	}
 	
 	/**
@@ -1053,13 +1050,47 @@ public class BrokerPool {
                     this.checkpoint = false;
 				}				
                 processWaitingTasks(broker);
-			}
+                if (serviceModeUser != null && !broker.getUser().equals(serviceModeUser)) {
+                    inServiceMode = true;
+                }
+            }
 			//Inform the other threads that someone is gone
 			this.notifyAll();
 		}
 	}
 
-	/**
+    public void enterServiceMode(User user) throws PermissionDeniedException {
+        if (!user.hasDbaRole())
+            throw new PermissionDeniedException("Only users of group dba can switch the db to service mode");
+        serviceModeUser = user;
+        synchronized (this) {
+            if (activeBrokers.size() != 0) {
+                while(!inServiceMode) {
+                    try {
+                        wait();
+                    } catch (InterruptedException e) {
+                    }
+                }
+            }
+        }
+        inServiceMode = true;
+        DBBroker broker = (DBBroker) inactiveBrokers.peek();
+        checkpoint = true;
+        sync(broker, Sync.MAJOR_SYNC);
+        checkpoint = false;
+    }
+
+    public void exitServiceMode(User user) throws PermissionDeniedException {
+        if (!user.equals(serviceModeUser))
+            throw new PermissionDeniedException("The db has been locked by a different user");
+        serviceModeUser = null;
+        inServiceMode = false;
+        synchronized (this) {
+            this.notifyAll();
+        }
+    }
+
+    /**
 	 * Reloads the security manager of the database instance. This method is 
          * called for example when the <code>users.xml</code> file has been changed.
 	 * 
@@ -1080,7 +1111,7 @@ public class BrokerPool {
     /**
      * Executes a waiting cache synchronization for the database instance.
 	 * @param broker A broker responsible for executing the job 
-	 * @param syncEvent One of {@link org.exist.storage.Sync#MINOR_SYNC} or {@link org.exist.storage.Sync#MINOR_SYNC}
+	 * @param syncEvent One of {@link org.exist.storage.sync.Sync#MINOR_SYNC} or {@link org.exist.storage.sync.Sync#MINOR_SYNC}
 	 */
 	//TODO : rename as runSync ? executeSync ?
 	//TOUNDERSTAND (pb) : *not* synchronized, so... "executes" or, rather, "schedules" ? "executes" (WM)

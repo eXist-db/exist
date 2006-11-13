@@ -81,6 +81,8 @@ public class RpcServer implements RpcAPI {
 
     protected ConnectionPool pool;
 
+    private String databaseId;
+    
     /**
      * Constructor for the RpcServer object
      * 
@@ -92,7 +94,8 @@ public class RpcServer implements RpcAPI {
     public RpcServer(Configuration conf, String databaseid) throws EXistException {
         databaseid = (databaseid != null && !"".equals(databaseid)) ? databaseid
                 : BrokerPool.DEFAULT_INSTANCE_NAME;
-        pool = new ConnectionPool(MIN_CONNECT, MAX_CONNECT, conf, databaseid);
+        this.pool = new ConnectionPool(MIN_CONNECT, MAX_CONNECT, conf, databaseid);
+        this.databaseId = databaseid;
     }
 
     public boolean createCollection(User user, String name) throws EXistException,
@@ -1480,6 +1483,17 @@ public class RpcServer implements RpcAPI {
         } finally {
             pool.release(con);
         }
+    }
+
+    public boolean enterServiceMode(User user) throws PermissionDeniedException, EXistException {
+        BrokerPool brokerPool = BrokerPool.getInstance(databaseId);
+        brokerPool.enterServiceMode(user);
+        return true;
+    }
+
+    public void exitServiceMode(User user) throws PermissionDeniedException, EXistException {
+        BrokerPool brokerPool = BrokerPool.getInstance(databaseId);
+        brokerPool.exitServiceMode(user);
     }
 
     public boolean shutdown(User user) throws PermissionDeniedException {

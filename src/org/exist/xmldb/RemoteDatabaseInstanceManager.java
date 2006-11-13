@@ -47,7 +47,33 @@ public class RemoteDatabaseInstanceManager implements DatabaseInstanceManager {
 		}		
 	}
 
-	/**
+    public boolean enterServiceMode() throws XMLDBException {
+		try {
+			client.execute("enterServiceMode", new Vector());
+		} catch(XmlRpcException e) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
+				"Failed to switch db to service mode: " + e.getMessage(), e);
+		} catch(IOException e) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
+                "Failed to switch db to service mode: " + e.getMessage(), e);
+		}
+        return true;
+    }
+
+
+    public void exitServiceMode() throws XMLDBException {
+        try {
+			client.execute("exitServiceMode", new Vector());
+		} catch(XmlRpcException e) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
+				"Failed to switch db to service mode: " + e.getMessage(), e);
+		} catch(IOException e) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
+                "Failed to switch db to service mode: " + e.getMessage(), e);
+		}
+    }
+
+    /**
 	 * @see org.xmldb.api.base.Service#getName()
 	 */
 	public String getName() throws XMLDBException {
