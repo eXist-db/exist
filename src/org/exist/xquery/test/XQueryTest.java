@@ -1518,6 +1518,20 @@ public class XQueryTest extends XMLTestCase {
 			 fail(e.getMessage());
 		 }
 	}
+        
+    public void bugtestConstructedAttributeValue() {
+        String query="let $attr := attribute d { \"xxx\" } "
+                +"return string($attr)"; 
+        try {
+            XPathQueryService service = (XPathQueryService) testCollection.getService(
+                    "XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+            assertEquals(1, result.getSize());
+            assertEquals("xxx", result.getResource(0).getContent().toString());
+        } catch (XMLDBException e) {
+            fail(e.getMessage());
+        }
+    }
 	
     public void testAttributeAxis() {
         ResourceSet result;
