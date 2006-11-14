@@ -1469,7 +1469,7 @@ public class XPathQueryTest extends XMLTestCase {
         }
     }
     
-    public void bugtestExternalVars2() {
+    public void testExternalVars2() {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
