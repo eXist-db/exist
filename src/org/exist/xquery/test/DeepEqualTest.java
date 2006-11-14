@@ -409,10 +409,10 @@ public class DeepEqualTest extends TestCase {
                         +"let $expected := <Value>{($v1, $v2)/node()}</Value> "
                         +"let $result2 := ds:result($result1, $v2) "
                         +"return deep-equal($expected, $result2/Value)";
-//                for(int i=1; i<20;i++){
-//                    System.out.println("nr="+i);
+                for(int i=1; i<20;i++){
+                    System.out.println("nr="+i);
                     assertQuery(true,query);
-//               }
+               }
 
         };
 
