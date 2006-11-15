@@ -39,11 +39,12 @@ import org.exist.collections.CollectionConfigurationManager;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
+import org.exist.scheduler.Scheduler;
+import org.exist.scheduler.SystemTaskJob;
 import org.exist.storage.lock.FileLock;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.ReentrantReadWriteLock;
 import org.exist.storage.sync.Sync;
-import org.exist.storage.sync.SyncDaemon;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -53,7 +54,6 @@ import org.exist.util.XMLReaderObjectFactory;
 import org.exist.util.XMLReaderPool;
 import org.exist.xmldb.ShutdownListener;
 import org.exist.xmldb.XmldbURI;
-
 /**
  * This class controls all available instances of the database.
  * Use it to configure, start and stop database instances. 
@@ -382,12 +382,17 @@ public class BrokerPool {
 	 */
 	private long maxShutdownWait;
 
-    /**
-	 * The daemon which periodically triggers system tasks and cache synchronization on the database instance.
+	/**
+	 * The scheduler for the database instance.
 	 */
-	private SyncDaemon syncDaemon;
-
-    private Sync sync;
+	private Scheduler scheduler;
+	
+    /**
+	 * Cache synchronization on the database instance.
+	 */
+	private long majorSyncPeriod = DEFAULT_SYNCH_PERIOD;		//the period after which a major sync should occur		
+	private long lastMajorSync = System.currentTimeMillis();	//time the last major sync occurred
+	private Sync sync = null;									//the Sync Job
     
 	/**
 	 * The listener that is notified when the database instance shuts down.
@@ -484,8 +489,6 @@ public class BrokerPool {
 		//TODO : create static final members for configuration keys
 		this.minBrokers = DEFAULT_MIN_BROKERS;
 		this.maxBrokers = DEFAULT_MAX_BROKERS;
-		//TODO : make a member of it ? or, better, use a SystemTask (see below)
-		long syncPeriod = DEFAULT_SYNCH_PERIOD;
 		this.maxShutdownWait = DEFAULT_MAX_SHUTDOWN_WAIT;
 		//TODO : read from configuration
 		this.transactionsEnabled = true;
@@ -510,12 +513,12 @@ public class BrokerPool {
 		//TODO : use the periodicity of a SystemTask (see below)
 		aLong = (Long) conf.getProperty(PROPERTY_SYNC_PERIOD);
 		if (aLong != null)
-			/*this.*/syncPeriod = aLong.longValue();
+			/*this.*/majorSyncPeriod = aLong.longValue();
 		//TODO : sanity check : the synch period should be reasonible
-		LOG.info("database instance '" + instanceName + "' will be synchronized every " + /*this.*/syncPeriod + " ms");
+		LOG.info("database instance '" + instanceName + "' will be synchronized every " + /*this.*/majorSyncPeriod + " ms");
 
 		//TODO : move this to initialize ?
-		syncDaemon = new SyncDaemon();		
+		scheduler = new Scheduler(this);
 
 		aLong = (Long) conf.getProperty("db-connection.pool.shutdown-wait");		
 		if (aLong != null) {
@@ -572,10 +575,9 @@ public class BrokerPool {
 		initialize();
 		
 		//TODO : move this to initialize ?
-        if (syncPeriod > 0) {
+        if (majorSyncPeriod > 0) {
         	//TODO : why not automatically register Sync in system tasks ?
-            sync = new Sync(this, syncPeriod);
-            syncDaemon.executePeriodically(2500, sync, false);
+            scheduler.createPeriodicJob(2500, new Sync(), false);
         }
 	}
 	
@@ -753,7 +755,7 @@ public class BrokerPool {
     private void initSystemTask(Long period, SystemTask task) throws EXistException {
         try {
             LOG.debug("Scheduling system maintenance task " + task.getClass().getName() + " every " + period + " ms");
-            syncDaemon.executePeriodically(period.longValue(), new SystemTaskRunnable(this, task), false);
+            scheduler.createPeriodicJob(period.longValue(), new SystemTaskJob(task), false);
         } catch (Exception e) {
 			LOG.warn(e.getMessage(), e);
             throw new EXistException("Failed to initialize system maintenance task: " + e.getMessage());
@@ -844,12 +846,12 @@ public class BrokerPool {
     public SecurityManager getSecurityManager() {
     	return securityManager;
     }
-
-    /** Returns the daemon which periodically executes system tasks, including cache synchronization, on the database instance.
-     * @return The daemon
+    
+    /** Returns the Scheduler
+     * @return The scheduler
      */
-    public SyncDaemon getSyncDaemon() {
-        return syncDaemon;
+    public Scheduler getScheduler() {
+    	return scheduler;
     }
 	
     public NotificationService getNotificationService() {
@@ -1112,6 +1114,16 @@ public class BrokerPool {
 		LOG.debug("Security manager reloaded");
 	}
 
+	public long getMajorSyncPeriod()
+	{
+		return majorSyncPeriod;
+	}
+	
+	public long getLastMajorSync()
+	{
+		return lastMajorSync;
+	}
+	
     /**
      * Executes a waiting cache synchronization for the database instance.
 	 * @param broker A broker responsible for executing the job 
@@ -1130,7 +1142,7 @@ public class BrokerPool {
 		broker.setUser(SecurityManager.SYSTEM_USER);
         if (status != SHUTDOWN)
             broker.cleanUpTempResources();
-        if (syncEvent == Sync.MAJOR_SYNC) {
+        if (syncEvent == Sync.MAJOR_SYNC){
             try {
                 if (!FORCE_CORRUPTION)
                     transactionManager.checkpoint(checkpoint);
@@ -1138,7 +1150,7 @@ public class BrokerPool {
                 LOG.warn(e.getMessage(), e);
             }
             cacheManager.checkCaches();
-            sync.restart();
+            lastMajorSync = System.currentTimeMillis();
             notificationService.debug();
         } else
             cacheManager.checkDistribution();
@@ -1272,7 +1284,7 @@ public class BrokerPool {
 		notificationService.debug();
 		
 		//Notify all running tasks that we are shutting down
-		syncDaemon.shutDown();
+		scheduler.shutdown();
 		//Notify all running XQueries that we are shutting down
 		xQueryMonitor.killAll(500);
 		//TODO : close other objects using varying methods ? set them to null ?
@@ -1355,28 +1367,4 @@ public class BrokerPool {
             checkpoint = true;
         }
     }
-    
-	/** A wrapper class for executing a database instance's system task.
-	 */    
-    //TODO : make it protected ?
-    private static class SystemTaskRunnable implements Runnable {
-        SystemTask task;
-        BrokerPool pool;
-        
-        /** Creates a wrapper for executing a database instance's system task.
-         * @param pool The database instance
-         * @param task The system task
-         */
-        public SystemTaskRunnable(BrokerPool pool, SystemTask task) {
-            this.pool = pool;
-            this.task = task;
-        }
-        
-        /** Runs the wrapper for executing a system task.
-         */        
-        public void run() {
-        	LOG.debug("Running system task '" + task.getClass().getName() + "'");
-            pool.triggerSystemTask(task);
-        }
-    }	
 }
