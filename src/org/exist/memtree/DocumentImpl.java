@@ -735,6 +735,10 @@ public class DocumentImpl extends NodeImpl implements Document {
                 receiver.characters(document.characters, document.alpha[nr],
                         document.alphaLen[nr]);
                 break;
+            case Node.CDATA_SECTION_NODE:
+            	receiver.cdataSection(document.characters, document.alpha[nr],
+                        document.alphaLen[nr]);
+            	break;
             case Node.ATTRIBUTE_NODE:
                 QName attrQName = (QName) document.namePool.get(document.attrName[nr]);
                 receiver.attribute(attrQName, attrValue[nr]);
