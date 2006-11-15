@@ -7,8 +7,8 @@
 	<classpathentry kind="src" path="test/src"/>
 	<classpathentry kind="src" path="tools/wrapper/src"/>
 	<classpathentry kind="src" path="extensions/modules/src"/>
-	<classpathentry sourcepath="/jEdit-syntax" kind="lib" path="lib/core/jEdit-syntax.jar"/>
-﻿	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/core/jEdit-syntax.jar" sourcepath="/jEdit-syntax"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/cocoon/avalon-framework-impl-4.1.5.jar"/>
 	<classpathentry kind="lib" path="lib/cocoon/cocoon-2.1.7-deprecated.jar"/>
 	<classpathentry kind="lib" path="lib/cocoon/cocoon-2.1.7.jar"/>
@@ -72,8 +72,8 @@
 	<classpathentry kind="lib" path="tools/ircbot/lib/pircbot.jar"/>
 	<classpathentry kind="lib" path="tools/jetty/lib/org.mortbay.jetty.jar"/>
 	<classpathentry kind="lib" path="tools/wrapper/lib/wrapper.jar"/>
-﻿	<classpathentry kind="lib" path="lib/cocoon/avalon-framework-api-4.1.5.jar"/>
-
-	<classpathentry kind="output" path="build/classes"/>
+	<classpathentry kind="lib" path="lib/cocoon/avalon-framework-api-4.1.5.jar"/>
+	<classpathentry kind="lib" path="lib/core/jta.jar"/>
+	<classpathentry kind="lib" path="lib/core/quartz-1.6.0.jar"/>
 	<classpathentry kind="output" path="test/classes"/>
 </classpath>
