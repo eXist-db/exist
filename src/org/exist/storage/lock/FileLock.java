@@ -28,6 +28,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.text.DateFormat;
 
 import org.apache.log4j.Logger;
@@ -125,15 +126,12 @@ public class FileLock {
         } catch (IOException e) {
             throw new ReadOnlyException(message("Caught exception while trying to write lock file", e));
         }
-        pool.getSyncDaemon().executePeriodically(HEARTBEAT, new Runnable() {
-            public void run() {
-                try {
-                    save();
-                } catch (IOException e) {
-                    message("Caught exception while trying to write lock file", e);
-                }
-            }
-        }, true);
+        
+        //Schedule the heartbeat for the file lock
+        HashMap params = new HashMap();
+        params.put(FileLock.class.getName(), this);
+        pool.getScheduler().createPeriodicJob(HEARTBEAT, new FileLockHeartBeat(lockFile.getName()), true, params);
+        
         return true;
     }
     
@@ -186,7 +184,7 @@ public class FileLock {
         channel = raf.getChannel();
     }
     
-    private void save() throws IOException {
+    protected void save() throws IOException {
         if (channel == null)
             open();
         long now = System.currentTimeMillis();
@@ -220,7 +218,7 @@ public class FileLock {
         message("File lock last access timestamp: " + df.format(getLastHeartbeat()), null);
     }
     
-    private String message(String message, Exception e) {
+    protected String message(String message, Exception e) {
         StringBuffer str = new StringBuffer(message);
         str.append(' ').append(lockFile.getAbsolutePath());
         if (e != null)
