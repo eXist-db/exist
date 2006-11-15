@@ -33,7 +33,7 @@ public class ValueIndexByQNameTest extends ValueIndexTest {
 	/** @see org.exist.xquery.test.ValueIndexTest#testStrings() */
 	public void testStrings() throws Exception {
         configureCollection();
-        XPathQueryService service = storeXMLFileAndGetQueryService("items.xml", "src/org/exist/xquery/test/items.xml");
+        XPathQueryService service = storeXMLFileAndGetQueryService("items.xml", "test/src/org/exist/xquery/test/items.xml");
 
         // queryResource(service, "items.xml", "//item[name > 'Racing Bicycle']", 4 );
 
