@@ -64,7 +64,7 @@ public class TestEXistXMLSerialize extends TestCase{
 
     Collection c = null;
     Database database = null;
-    File testFile = new File(existDir,"src/org/exist/xmldb/test/PerformanceTest.xml");
+    File testFile = new File(existDir,"test/src/org/exist/xmldb/test/PerformanceTest.xml");
     
     public void setUp() {
     	try {
