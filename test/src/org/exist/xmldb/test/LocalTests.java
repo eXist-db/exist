@@ -14,6 +14,7 @@ public class LocalTests {
 		//$JUnit-BEGIN$
 		suite.addTest(new TestSuite(CreateCollectionsTest.class));
 		suite.addTest(new TestSuite(ResourceTest.class));
+        suite.addTest(new TestSuite(BinaryResourceUpdateTest.class));
 //		suite.addTest(new TestSuite(ResourceSetTest.class));
 		suite.addTest(new TestSuite(TestEXistXMLSerialize.class));
 		suite.addTest(new TestSuite(CopyMoveTest.class));

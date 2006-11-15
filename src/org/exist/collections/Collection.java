@@ -1003,14 +1003,19 @@ public  class Collection extends Observable
                 LOG.debug("removing old document " + oldDoc.getFileURI());
                 oldDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
                 oldDocLocked = true;
-                if (oldDoc.getResourceType() == DocumentImpl.BINARY_FILE)
+                if (oldDoc.getResourceType() == DocumentImpl.BINARY_FILE) {
                     broker.removeBinaryResource(transaction, (BinaryDocument) oldDoc);
-                else
+                    documents.remove(oldDoc.getFileURI().getRawCollectionPath());
+                    document.getUpdateLock().acquire(Lock.WRITE_LOCK);
+                    document.setDocId(broker.getNextResourceId(transaction, this));
+                    addDocument(transaction, broker, document);
+                } else {
                     broker.removeXMLResource(transaction, oldDoc, false);
-                oldDoc.copyOf(document);
-                indexer.setDocumentObject(oldDoc);
-                oldDocLocked = false;		// old has become new at this point
-                document = oldDoc;
+                    oldDoc.copyOf(document);
+                    indexer.setDocumentObject(oldDoc);
+                    oldDocLocked = false;		// old has become new at this point
+                    document = oldDoc;
+                }
             } else {
                 document.getUpdateLock().acquire(Lock.WRITE_LOCK);
                 document.setDocId(broker.getNextResourceId(transaction, this));
