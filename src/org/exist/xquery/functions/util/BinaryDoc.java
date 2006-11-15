@@ -34,14 +34,11 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Base64Binary;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 public class BinaryDoc extends BasicFunction {
 
-    public final static FunctionSignature signature =
+    public final static FunctionSignature signatures[] = {
         new FunctionSignature(
             new QName("binary-doc", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
             "Retrieves the binary resource identified by $a and returns its contents as a " +
@@ -52,26 +49,40 @@ public class BinaryDoc extends BasicFunction {
             },
             new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE),
             true
-        );
+        ),
+        new FunctionSignature(
+            new QName("binary-doc-available", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+            "Checks if the binary resource identified by $a is available.",
+            new SequenceType[] {
+                new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
+            },
+            new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE),
+            true
+        )
+    };
     
-    public BinaryDoc(XQueryContext context) {
+    public BinaryDoc(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }
 
     public Sequence eval(Sequence[] args, Sequence contextSequence)
             throws XPathException {
+        Sequence defaultReturn = (isCalledAs("binary-doc") ? Sequence.EMPTY_SEQUENCE : BooleanValue.FALSE);
         if (args[0].isEmpty())
-            return Sequence.EMPTY_SEQUENCE;
+            return defaultReturn;
         String path = args[0].getStringValue();
         try {
             DocumentImpl doc = context.getBroker().getXMLResource(XmldbURI.xmldbUriFor(path), Lock.READ_LOCK);
             if (doc == null)
-                return Sequence.EMPTY_SEQUENCE;
+                return defaultReturn;
             if (doc.getResourceType() != DocumentImpl.BINARY_FILE)
                 throw new XPathException(getASTNode(), path + " exists but is not a binary resource");
-            BinaryDocument bin = (BinaryDocument) doc;
-            byte[] data = context.getBroker().getBinaryResource(bin);
-            return new Base64Binary(data);
+            if (isCalledAs("binary-doc")) {
+                BinaryDocument bin = (BinaryDocument) doc;
+                byte[] data = context.getBroker().getBinaryResource(bin);
+                return new Base64Binary(data);
+            } else
+                return BooleanValue.TRUE;
         } catch (URISyntaxException e) {
             throw new XPathException(getASTNode(), "Invalid resource uri",e);
         } catch (PermissionDeniedException e) {
