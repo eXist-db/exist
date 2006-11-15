@@ -31,6 +31,7 @@ import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.XMLResource;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
+import org.apache.log4j.BasicConfigurator;
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
 
@@ -43,6 +44,9 @@ public class BinaryResourceUpdateTest extends TestCase {
 
     private static File binFile = null;
     private static File xmlFile = null;
+
+    private static final int REPEAT = 10;
+
     static {
       String existHome = System.getProperty("exist.home");
       File existDir = existHome==null ? new File(".") : new File(existHome);
@@ -52,22 +56,24 @@ public class BinaryResourceUpdateTest extends TestCase {
 
     public void testUpdateBinary() {
         try {
-            BinaryResource binaryResource = (BinaryResource)
-                    testCollection.createResource("test.xml", "BinaryResource");
-            binaryResource.setContent(binFile);
-            testCollection.storeResource(binaryResource);
+            for (int i = 0; i < REPEAT; i++) {
+                BinaryResource binaryResource = (BinaryResource)
+                        testCollection.createResource("test.xml", "BinaryResource");
+                binaryResource.setContent(binFile);
+                testCollection.storeResource(binaryResource);
 
-            Resource resource = testCollection.getResource("test.xml");
-            assertNotNull(resource);
-            System.out.println("Content:\n" + resource.getContent().toString());
-            
-            XMLResource xmlResource = (XMLResource) testCollection.createResource("test.xml", "XMLResource");
-            xmlResource.setContent(xmlFile);
-            testCollection.storeResource(xmlResource);
+                Resource resource = testCollection.getResource("test.xml");
+                assertNotNull(resource);
+                System.out.println("Content:\n" + resource.getContent().toString());
 
-            resource = testCollection.getResource("test.xml");
-            assertNotNull(resource);
-            System.out.println("Content:\n" + resource.getContent().toString());
+                XMLResource xmlResource = (XMLResource) testCollection.createResource("test.xml", "XMLResource");
+                xmlResource.setContent(xmlFile);
+                testCollection.storeResource(xmlResource);
+
+                resource = testCollection.getResource("test.xml");
+                assertNotNull(resource);
+                System.out.println("Content:\n" + resource.getContent().toString());
+            }
         } catch (XMLDBException e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -118,6 +124,7 @@ public class BinaryResourceUpdateTest extends TestCase {
 	}
 
     public static void main(String[] args) {
+        BasicConfigurator.configure();
         TestRunner.run(BinaryResourceUpdateTest.class);
     }
 }
