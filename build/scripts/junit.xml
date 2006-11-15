@@ -6,6 +6,10 @@
 <project basedir="../.." default="test" name="jUnit tests">
 
     <description>jUnit tests for eXist</description>
+    
+    <path id="classpath.junit">
+        <pathelement path="${junit.reports}/classes"/>
+    </path>
 
     <target name="test"
             depends="test-prepare,test-recovery, test-local, test-jetty, test-concurrent, test-remote, test-wrapup"
@@ -15,8 +19,23 @@
     <property name="junit.reports.dat" value="${junit.reports}/junit/data"/>
     <property name="junit.reports.html" value="${junit.reports}/junit/html"/>
 
+    <target name="test-compile">
+    <mkdir dir="${junit.reports}/classes"/>
+       <javac debug="${build.debug}" deprecation="${build.deprecation}"
+            destdir="${junit.reports}/classes" encoding="UTF-8"
+            optimize="${build.optimize}" srcdir="${junit.reports}/src"
+            source="${build.compiler.source}" target="${build.compiler.target}">
+
+            <classpath>
+                <path refid="classpath.core"/>
+                <path refid="classpath.jetty"/>
+            </classpath>
+        </javac>
+        
+    </target>
+    
     <!-- Seperate target for creating folders -->
-    <target name="test-prepare" depends="jar">
+    <target name="test-prepare" depends="jar,test-compile">
         <delete failonerror="false">
             <fileset dir="webapp/WEB-INF/data" includes="*.dbx,*.log"/>
         </delete>
@@ -24,7 +43,8 @@
         <delete dir="${junit.reports.dat}"/>
         <delete dir="${junit.reports.html}"/>
 
-        <mkdir dir="${junit.reports}"/>
+        <!--mkdir dir="${junit.reports}"/-->
+        <mkdir dir="${junit.reports}/classes"/>
         <mkdir dir="${junit.reports.dat}"/>
         <mkdir dir="${junit.reports.html}"/>
     </target>
@@ -52,6 +72,8 @@
             <sysproperty key="exist.home" value="${basedir}" />
             <classpath refid="classpath.core"/>
             <classpath refid="classpath.jetty"/>
+            <classpath refid="classpath.junit"/>
+            
             <formatter type="plain"/>
             <formatter type="xml"/>
             <test fork="yes" name="org.exist.xmldb.test.LocalTests" todir="${junit.reports.dat}"/>
@@ -85,6 +107,8 @@
             <sysproperty key="exist.home" value="${basedir}" />
             <classpath refid="classpath.core"/>
             <classpath refid="classpath.jetty"/>
+            <classpath refid="classpath.junit"/>
+            
             <formatter type="plain"/>
             <formatter type="xml"/>
 
@@ -109,6 +133,8 @@
             <sysproperty key="exist.home" value="${basedir}" />
             <classpath refid="classpath.core"/>
             <classpath refid="classpath.jetty"/>
+            <classpath refid="classpath.junit"/>
+            
             <formatter type="plain"/>
             <formatter type="xml"/>
             <test name="org.exist.xmldb.test.concurrent.AllTests" todir="${junit.reports.dat}"/>
@@ -123,6 +149,7 @@
         <junit haltonfailure="false" printsummary="on" showoutput="${junit.output}" fork="no">
             <sysproperty key="exist.home" value="${basedir}" />
             <classpath refid="classpath.core"/>
+            <classpath refid="classpath.junit"/>
             <formatter type="plain"/>
             <formatter type="xml"/>
             <test name="org.exist.storage.test.AllTests" todir="${junit.reports.dat}"/>
@@ -141,6 +168,7 @@
             <sysproperty key="exist.home" value="${basedir}" />
             <classpath refid="classpath.core"/>
             <classpath refid="classpath.jetty"/>
+            <classpath refid="classpath.junit"/>
             <!--arg value="-d"/-->
         </java>
         <echo>Server started.</echo>
@@ -156,6 +184,7 @@
             <sysproperty key="exist.home" value="${basedir}" />
             <classpath refid="classpath.core"/>
             <classpath refid="classpath.jetty"/>
+            <classpath refid="classpath.junit"/>
             <formatter type="plain"/>
             <formatter type="xml"/>
             <test fork="yes" name="org.exist.xmlrpc.test.XmlRpcTest" todir="${junit.reports.dat}"/>
@@ -173,6 +202,7 @@
         <!-- Register Ant tasks for eXist -->
         <typedef resource="org/exist/ant/antlib.xml" uri="http://exist-db.org/ant">
             <classpath refid="classpath.core"/>
+            <classpath refid="classpath.junit"/>
         </typedef>
 
         <echo message="Shutting down the server ..."/>

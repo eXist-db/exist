@@ -463,7 +463,7 @@
         <delete dir="${junit.reports}/junit"/>
         <delete dir="${junit.reports}/pmd"/>
         <delete dir="${junit.reports}/jdepend"/>
-        <delete dir="${junit.reports}"/>
+        <!--delete dir="${junit.reports}"/-->
         
         <delete dir="${src.webapp}/api"/>
         <delete dir="${src.webapp}/WEB-INF/data/backup"/>
