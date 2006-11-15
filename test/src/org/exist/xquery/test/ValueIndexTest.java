@@ -132,7 +132,7 @@ public class ValueIndexTest extends TestCase {
 
     public void testStrings() throws Exception {
         configureCollection();
-        XPathQueryService service = storeXMLFileAndGetQueryService("items.xml", "src/org/exist/xquery/test/items.xml");
+        XPathQueryService service = storeXMLFileAndGetQueryService("items.xml", "test/src/org/exist/xquery/test/items.xml");
         queryResource(service, "items.xml", "//item[@id = 'i2']", 1);
         queryResource(service, "items.xml", "//item[name = 'Racing Bicycle']", 1);
         queryResource(service, "items.xml", "//item[name > 'Racing Bicycle']", 4);
@@ -204,7 +204,7 @@ public class ValueIndexTest extends TestCase {
                 "};\n" + 
                 "\n";
             
-            XPathQueryService service = storeXMLFileAndGetQueryService("items.xml", "src/org/exist/xquery/test/items.xml");
+            XPathQueryService service = storeXMLFileAndGetQueryService("items.xml", "test/src/org/exist/xquery/test/items.xml");
             String query = queryBody + "u:index-keys(//item/name, \'\', util:function(\'f:term-callback\', 2), 1000)";
             ResourceSet result = service.query(query);
             for (ResourceIterator i = result.getIterator(); i.hasMoreResources(); ) {

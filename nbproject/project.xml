@@ -245,6 +245,11 @@
                 <location>tools/ircbot/classes</location>
                 <build-target>all</build-target>
             </export>
+            <export>
+                <type>folder</type>
+                <location>test/classes</location>
+                <build-target>all</build-target>
+            </export>
             <view>
                 <items>
                     <source-folder style="packages">
@@ -358,6 +363,7 @@
             <compilation-unit>
                 <package-root>test/src</package-root>
                 <unit-tests/>
+                <built-to>test/classes</built-to>
                 <source-level>1.4</source-level>
             </compilation-unit>
         </java-data>
