@@ -1575,6 +1575,26 @@ public class XQueryTest extends XMLTestCase {
             fail(e.getMessage());
         }
     }
+    
+    public void testCDATASerialization() {
+        ResourceSet result;
+        String query;
+        XMLResource resu;
+        try {
+            XPathQueryService service = (XPathQueryService) testCollection.getService(
+    				"XPathQueryService", "1.0");
+
+            query = "let $doc := document{ <root><![CDATA[gaga]]></root> } " +
+            	"return $doc/root/string()";
+            result = service.query(query);            
+            resu = (XMLResource) result.getResource(0);
+            assertEquals( "XQuery: " + query, "gaga", resu.getContent().toString());    
+        } catch (XMLDBException e) {
+            System.out.println("testAttributeAxis(): XMLDBException: "+e);
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+    }      
 
 	public void testLargeAttributeContains() {
 		ResourceSet result;
@@ -1859,10 +1879,8 @@ public class XQueryTest extends XMLTestCase {
 					documentName, "XMLResource" );
 		doc.setContent(new File(documentName));
 		testCollection.storeResource(doc);
-		XPathQueryService service =
-			(XPathQueryService) testCollection.getService(
-				"XPathQueryService",
-				"1.0");
+		XPathQueryService service = (XPathQueryService) testCollection.getService(
+				"XPathQueryService", "1.0");
 		return service;
 	}
 
