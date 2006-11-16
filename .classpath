@@ -15,7 +15,6 @@
 	<classpathentry kind="lib" path="lib/cocoon/cocoon-databases-block.jar"/>
 	<classpathentry kind="lib" path="lib/cocoon/cocoon-xmldb-block.jar"/>
 	<classpathentry kind="lib" path="lib/cocoon/cocoon-xsp-block.jar"/>
-	<classpathentry kind="lib" path="lib/cocoon/commons-collections-3.1.jar"/>
 	<classpathentry kind="lib" path="lib/cocoon/commons-jexl-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/cocoon/commons-jxpath-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/cocoon/commons-lang-2.0-20041007T2305.jar"/>
@@ -59,7 +58,6 @@
 	<classpathentry kind="lib" path="lib/optional/commons-fileupload-1.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-httpclient-3.0.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-io-1.1.jar"/>
-	<classpathentry kind="lib" path="lib/optional/commons-logging-1.0.4.jar"/>
 	<classpathentry kind="lib" path="lib/optional/jaxrpc.jar"/>
 	<classpathentry kind="lib" path="lib/optional/jug-lgpl-2.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/optional/saaj.jar"/>
@@ -75,5 +73,7 @@
 	<classpathentry kind="lib" path="lib/cocoon/avalon-framework-api-4.1.5.jar"/>
 	<classpathentry kind="lib" path="lib/core/jta.jar"/>
 	<classpathentry kind="lib" path="lib/core/quartz-1.6.0.jar"/>
+	<classpathentry kind="lib" path="lib/core/commons-logging-1.0.4.jar"/>
+	<classpathentry kind="lib" path="lib/core/commons-collections-3.1.jar"/>
 	<classpathentry kind="output" path="test/classes"/>
 </classpath>
