@@ -21,12 +21,14 @@
  */
 package org.exist.scheduler;
 
+import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
 
 import org.exist.EXistException;
 import org.exist.storage.BrokerPool;
+import org.quartz.CronTrigger;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.SimpleTrigger;
@@ -115,26 +117,9 @@ public class Scheduler
 		//Create the job details
 		JobDetail jobDetail = new JobDetail(job.getName(), job.getGroup(), job.getClass());
 
-		//Get the jobs's data map
+		//Setup the jobs's data map
 		JobDataMap jobDataMap = jobDetail.getJobDataMap();
-		
-		//if this is a system job, store the brokerpool in the job's data map
-		if(job instanceof SystemJob || job instanceof SystemTaskJob)
-		{
-			jobDataMap.put("brokerpool", brokerpool);
-		}
-		
-		//if this is a system task job, store the systemtask in the job's data map
-		if(job instanceof SystemTaskJob)
-		{
-			jobDataMap.put("systemtask", ((SystemTaskJob)job).getSystemTask());
-		}
-		
-		//copy any parameters into the job's data map
-		if(params != null)
-		{
-			jobDataMap.put("params", params);
-		}
+		setupJobDataMap(job, jobDataMap, params);
 		
 		//setup a trigger for the job, millisecond based
 		SimpleTrigger trigger = new SimpleTrigger();
@@ -171,5 +156,87 @@ public class Scheduler
 		
 		//Succesfully scheduled Job
 		return true;
+	}
+	
+	/**
+	 * @param cronExpression	The Cron scheduling expression
+	 * @param job 	The job to trigger after each period
+	 * 
+	 * @return	true if thejob was successfully scheduled, false otherwise
+	 */
+	public boolean createCronJob(String cronExpression, Job job)
+	{
+		return createCronJob(cronExpression, job, null);
+	}
+	
+	/**
+	 * @param cronExpression	The Cron scheduling expression
+	 * @param job 	The job to trigger after each period
+	 * @param params	Any parameters to pass to the job
+	 * 
+	 * @return	true if thejob was successfully scheduled, false otherwise
+	 */
+	public boolean createCronJob(String cronExpression, Job job, Map params)
+	{
+		//Create the job details
+		JobDetail jobDetail = new JobDetail(job.getName(), job.getGroup(), job.getClass());
+
+		//Setup the jobs's data map
+		JobDataMap jobDataMap = jobDetail.getJobDataMap();
+		setupJobDataMap(job, jobDataMap, params);
+		
+		try
+		{
+			//setup a trigger for the job, cron based
+			CronTrigger trigger = new CronTrigger(job.getName() + " Trigger", job.getGroup(), cronExpression);
+			
+			//schedule the job
+			scheduler.scheduleJob(jobDetail, trigger);
+		}
+		catch(ParseException pe)
+		{
+			//Failed to schedule Job
+			return false;
+		}
+		catch(SchedulerException se)
+		{
+			//Failed to schedule Job
+			return false;
+		}
+		
+		//Succesfully scheduled Job
+		return true;
+	}
+	
+	/**
+	 * Sets up the Job's Data Map
+	 * 
+	 * @param job	The Job
+	 * @param jobDataMap	The Job's Data Map
+	 * @param params	Any parameters for the job
+	 */
+	private void setupJobDataMap(Job job, JobDataMap jobDataMap, Map params)
+	{
+		//if this is a system job, store the brokerpool in the job's data map
+		jobDataMap.put("brokerpool", brokerpool);
+		
+		//if this is a system task job, store the systemtask in the job's data map
+		if(job instanceof SystemTaskJob)
+		{
+			jobDataMap.put("systemtask", ((SystemTaskJob)job).getSystemTask());
+		}
+		
+		//if this is a users xquery job, store the xquery resource and user in the job's data map
+		if(job instanceof UserXQueryJob)
+		{
+			jobDataMap.put("xqueryresource", ((UserXQueryJob)job).getXQueryResource());
+			jobDataMap.put("user", ((UserXQueryJob)job).getUser());
+		}
+		
+		//copy any parameters into the job's data map
+		if(params != null)
+		{
+			jobDataMap.put("params", params);
+		}
 	}
 }
