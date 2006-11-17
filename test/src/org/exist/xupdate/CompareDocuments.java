@@ -1,4 +1,4 @@
-package org.exist.xupdate.test;
+package org.exist.xupdate;
 
 /*
  *  The XML:DB Initiative Software License, Version 1.0

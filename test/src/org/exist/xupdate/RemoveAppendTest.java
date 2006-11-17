@@ -19,7 +19,7 @@
  *  
  *  $Id$
  */
-package org.exist.xupdate.test;
+package org.exist.xupdate;
 
 import java.io.IOException;
 import java.io.StringWriter;
