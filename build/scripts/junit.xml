@@ -82,7 +82,7 @@
             
             <!-- Execute all other tests except those that have to be called manually.   -->
             <batchtest fork="yes" todir="${junit.reports.dat}">
-                <fileset dir="${src}">
+                <fileset dir="${junit.reports}/src">
                     <include name="**/test/*Test.java"/>
                     <exclude name="**/xmldb/test/*.java"/>
                     <exclude name="**/xupdate/test/*.java"/>
@@ -113,7 +113,7 @@
             <formatter type="xml"/>
 
             <batchtest fork="yes" todir="${junit.reports.dat}">
-                <fileset dir="${src}">
+                <fileset dir="${junit.reports}/src">
                     <include name="org/exist/soap/test/*Test.java"/>
                 </fileset>
             </batchtest>
