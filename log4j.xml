@@ -4,7 +4,7 @@
 <!-- This is the configuration for LOG4J -->
 
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
-
+    
     <!-- writes log messages to the console. It outputs file name,
          method name and line number of the caller. This is slow,
          so just use it for debugging. -->
@@ -13,7 +13,7 @@
             <param name="ConversionPattern" value="%d{DATE} [%t] %-5p (%F [%M]:%L) - %m %n"/>
         </layout>
     </appender>
-
+    
     <!-- the following appenders write to files  -->
     <appender name="exist.ehcache" class="org.apache.log4j.RollingFileAppender">
         <param name="File" value="${exist.home}/webapp/WEB-INF/logs/cocoon-ehcache.log"/>
@@ -33,7 +33,7 @@
             <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
         </layout>
     </appender>
-
+    
     <appender name="exist.xacml" class="org.apache.log4j.RollingFileAppender">
         <param name="File" value="${exist.home}/webapp/WEB-INF/logs/xacml.log"/>
         <param name="MaxFileSize" value="500KB"/>
@@ -41,7 +41,7 @@
             <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
         </layout>
     </appender>
-
+    
     <appender name="exist.xmldb" class="org.apache.log4j.RollingFileAppender">
         <param name="File" value="${exist.home}/webapp/WEB-INF/logs/xmldb.log"/>
         <param name="MaxFileSize" value="500KB"/>
@@ -49,7 +49,7 @@
             <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
         </layout>
     </appender>
-
+    
     <appender name="exist.profiling" class="org.apache.log4j.RollingFileAppender">
         <param name="File" value="${exist.home}/webapp/WEB-INF/logs/profile.log"/>
         <param name="MaxFileSize" value="500KB"/>
@@ -65,7 +65,15 @@
             <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
         </layout>
     </appender>
-
+    
+    <appender name="exist.scheduler" class="org.apache.log4j.RollingFileAppender">
+        <param name="File" value="${exist.home}/webapp/WEB-INF/logs/scheduler.log"/>
+        <param name="MaxFileSize" value="500KB"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
+        </layout>
+    </appender>
+    
     
     <!-- the following appenders write to NULL  -->
     <appender name="null" class="org.apache.log4j.varia.NullAppender">
@@ -73,34 +81,34 @@
             <param name="ConversionPattern" value="%d [%t] %-5p (%F [%M]:%L) - %m %n"/>
         </layout>
     </appender>
-
+    
     <!-- LF5 appender. Using this appender in an appender-ref will
         pop up the LogFactor5 gui.
     -->
     <appender name="lf5" class="org.apache.log4j.lf5.LF5Appender">
         <param name="MaxNumberOfRecords" value="1000"/>
     </appender>
-
-	<category name="xquery.profiling" additivity="false">
-	    <priority value="debug"/>
-	    <appender-ref ref="exist.profiling"/>
-	</category>
-
+    
+    <category name="xquery.profiling" additivity="false">
+        <priority value="debug"/>
+        <appender-ref ref="exist.profiling"/>
+    </category>
+    
     <category name="org.exist.security.xacml" additivity="false">
         <priority value="warn"/>
         <appender-ref ref="exist.xacml"/>
     </category>
-
+    
     <category name="org.exist.xmldb" additivity="false">
-		 <priority value="debug"/>
+        <priority value="debug"/>
         <appender-ref ref="exist.xmldb"/>
     </category>
-
+    
     <category name="org.mortbay" additivity="false">
         <priority value="info"/>
         <appender-ref ref="console"/>
     </category>
-
+    
     <category name="httpclient" additivity="false">
         <priority value="info"/>
         <appender-ref ref="console"/>
@@ -115,16 +123,22 @@
         <priority value="debug"/>
         <appender-ref ref="exist.ehcache"/>
     </category>
-
+    
     <!-- Axis produces a large amount of debugging output if
         priority is set to debug -->
     <category name="org.apache" additivity="false">
         <priority value="info"/>
         <appender-ref ref="console"/>
     </category>
+    
+    <!-- Scheduler -->
+    <category name="org.quartz" additivity="false">
+        <priority value="info"/>
+        <appender-ref ref="exist.scheduler"/>
+    </category>
 
     <root>
-		 	<priority value="debug"/>
-    	<appender-ref ref="exist.core"/>
+        <priority value="debug"/>
+        <appender-ref ref="exist.core"/>
     </root>
 </log4j:configuration>
