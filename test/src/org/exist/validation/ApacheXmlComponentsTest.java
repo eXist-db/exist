@@ -20,13 +20,11 @@
  *  $Id$
  */
 
-package org.exist.validation.test;
+package org.exist.validation;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-
-import org.exist.validation.XmlLibraryChecker;
 
 /**
  *  Class for testing XML Parser and XML Transformer configuration.

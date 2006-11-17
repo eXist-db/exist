@@ -20,7 +20,7 @@
  *  $Id$
  */
 
-package org.exist.validation.test;
+package org.exist.validation;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -32,8 +32,6 @@ import junit.framework.TestSuite;
 
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
-import org.exist.validation.ValidationReport;
-import org.exist.validation.Validator;
 import org.exist.validation.internal.DatabaseResources;
 import org.exist.xmldb.XmldbURI;
 

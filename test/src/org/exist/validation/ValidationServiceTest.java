@@ -20,7 +20,7 @@
  *  $Id$
  */
 
-package org.exist.validation.test;
+package org.exist.validation;
 import junit.framework.Assert;
 import junit.framework.Test;
 import junit.framework.TestCase;
