@@ -84,6 +84,7 @@
             <batchtest fork="yes" todir="${junit.reports.dat}">
                 <fileset dir="${junit.reports}/src">
                     <include name="**/test/*Test.java"/>
+                    <include name="**/validation/*Test.java"/>
                     <exclude name="**/xmldb/test/*.java"/>
                     <exclude name="**/xupdate/test/*.java"/>
                     <exclude name="**/xquery/test/*.java"/>

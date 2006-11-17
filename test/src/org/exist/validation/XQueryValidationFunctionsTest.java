@@ -1,7 +1,7 @@
 /*
  * Created on 17.03.2005 - $Id: XQueryValidationFunctionsTest.java 3080 2006-04-07 22:17:14Z dizzzz $
  */
-package org.exist.validation.test;
+package org.exist.validation;
 
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
