@@ -77,7 +77,7 @@
             <formatter type="plain"/>
             <formatter type="xml"/>
             <test fork="yes" name="org.exist.xmldb.test.LocalTests" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="org.exist.xupdate.test.AllTests" todir="${junit.reports.dat}"/>
+            <test fork="yes" name="org.exist.xupdate.AllTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.xquery.test.AllTests" todir="${junit.reports.dat}"/>
             
             <!-- Execute all other tests except those that have to be called manually.   -->
@@ -86,7 +86,7 @@
                     <include name="**/test/*Test.java"/>
                     <include name="**/validation/*Test.java"/>
                     <exclude name="**/xmldb/test/*.java"/>
-                    <exclude name="**/xupdate/test/*.java"/>
+                    <exclude name="**/xupdate/*.java"/>
                     <exclude name="**/xquery/test/*.java"/>
                     <exclude name="**/xmlrpc/test/*.java"/>
                     <exclude name="**/http/test/*.java"/>

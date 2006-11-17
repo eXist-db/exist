@@ -1,4 +1,4 @@
-package org.exist.xupdate.test;
+package org.exist.xupdate;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -44,10 +44,10 @@ public class XUpdateTest {
            existDir = existHome==null ? new File(".") : new File(existHome);
         }
 	private final static String MODIFICATION_DIR =
-		(new File(existDir,"test/src/org/exist/xupdate/test/modifications")).getAbsolutePath();
+		(new File(existDir,"test/src/org/exist/xupdate/modifications")).getAbsolutePath();
 	private final static String RESTULT_DIR =
-		(new File(existDir,"test/src/org/exist/xupdate/test/results")).getAbsolutePath();
-	private final static String SOURCE_DIR = (new File(existDir,"test/src/org/exist/xupdate/test/input")).getAbsolutePath();
+		(new File(existDir,"test/src/org/exist/xupdate/results")).getAbsolutePath();
+	private final static String SOURCE_DIR = (new File(existDir,"test/src/org/exist/xupdate/input")).getAbsolutePath();
 
 	private final static String XUPDATE_FILE = "xu.xml";       // xlm document name in eXist
 

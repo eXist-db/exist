@@ -1,4 +1,4 @@
-package org.exist.xupdate.test;
+package org.exist.xupdate;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;

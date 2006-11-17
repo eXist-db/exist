@@ -19,7 +19,7 @@
  *  
  *  $Id$
  */
-package org.exist.xupdate.test;
+package org.exist.xupdate;
 
 import java.util.Random;
 
