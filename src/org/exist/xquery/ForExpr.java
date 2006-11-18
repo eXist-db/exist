@@ -22,10 +22,7 @@
  */
 package org.exist.xquery;
 
-import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.QName;
+import org.exist.dom.*;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
@@ -35,6 +32,8 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
+import org.exist.storage.UpdateListener;
+import org.exist.numbering.NodeId;
 
 // import sun.security.action.GetLongAction;
 
@@ -46,8 +45,8 @@ import org.exist.xquery.value.ValueSequence;
 public class ForExpr extends BindingExpression {
 
 	private String positionalVariable = null;
-	
-	public ForExpr(XQueryContext context) {
+
+    public ForExpr(XQueryContext context) {
 		super(context);
 	}
 
@@ -136,15 +135,17 @@ public class ForExpr extends BindingExpression {
 		LocalVariable mark = context.markLocalVariables(false);
 		
 		// Evaluate the "in" expression
-		Sequence in = inputSequence.eval(contextSequence, null);        
-		clearContext(getExpressionId(), in); 
+		Sequence in = inputSequence.eval(contextSequence, null);
+        clearContext(getExpressionId(), in);
         
-		// Declare the iteration variable
+        // Declare the iteration variable
 		LocalVariable var = new LocalVariable(QName.parse(context, varName, null));
         var.setSequenceType(sequenceType);
 		context.declareVariableBinding(var);      
-		
-		// Declare positional variable
+
+        registerUpdateListener(in);
+        
+        // Declare positional variable
 		LocalVariable at = null;
 		if(positionalVariable != null) {
 			at = new LocalVariable(QName.parse(context, positionalVariable, null));
@@ -341,10 +342,18 @@ public class ForExpr extends BindingExpression {
         result.append(returnExpr.toString());
         return result.toString();
     }
-	/* (non-Javadoc)
+
+    /* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#returnsType()
 	 */
 	public int returnsType() {
 		return Type.ITEM;
 	}
+
+    /* (non-Javadoc)
+    * @see org.exist.xquery.AbstractExpression#resetState()
+    */
+    public void resetState() {
+        super.resetState();
+    }
 }

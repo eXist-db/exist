@@ -495,11 +495,19 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
      */
     public boolean isPersistentSet() {
         return true;
-    } 
+    }
 
-	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.Item#toSequence()
-	 */
+    public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
+        if (nodeId.equals(oldNodeId)) {
+            // update myself
+            nodeId = newNode.getNodeId();
+            internalAddress = newNode.getInternalAddress();
+        }
+    }
+
+    /* (non-Javadoc)
+      * @see org.exist.xquery.value.Item#toSequence()
+      */
 	public Sequence toSequence() {
 		return this;
 	}

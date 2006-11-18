@@ -22,7 +22,10 @@ package org.exist.xquery.value;
 
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.StoredNode;
 import org.exist.xquery.XPathException;
+import org.exist.numbering.NodeId;
 
 /**
  * This interface represents a sequence as defined in the XPath 2.0 specification.
@@ -224,4 +227,15 @@ public interface Sequence {
 	public void setSelfAsContext(int contextId);
     
     public boolean isPersistentSet();
+
+    /**
+     * Node sets may implement this method to be informed of storage address
+     * and node id changes after updates.
+     *
+     * @see org.exist.storage.UpdateListener
+     * 
+     * @param oldNodeId
+     * @param newNode
+     */
+    void nodeMoved(NodeId oldNodeId, StoredNode newNode);
 }

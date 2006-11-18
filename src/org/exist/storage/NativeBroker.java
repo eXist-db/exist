@@ -2128,7 +2128,7 @@ public class NativeBroker extends DBBroker {
 //                  return null;
 //              }
 //          }.run();
-            storeXMLResource(transaction, doc);
+//            storeXMLResource(transaction, doc);
 //            checkTree(doc);
             LOG.debug("Defragmentation took " + (System.currentTimeMillis() - start) + "ms.");
         } catch (ReadOnlyException e) {
@@ -2286,9 +2286,14 @@ public class NativeBroker extends DBBroker {
         }
         .run();
     }
-    
-    private void copyNodes(Txn transaction, Iterator iterator, StoredNode node, NodePath currentPath, 
+
+    private void copyNodes(Txn transaction, Iterator iterator, StoredNode node, NodePath currentPath,
             DocumentImpl newDoc, boolean defrag, boolean index) {
+        copyNodes(transaction, iterator, node, currentPath, newDoc, defrag, index, null);
+    }
+
+    private void copyNodes(Txn transaction, Iterator iterator, StoredNode node, NodePath currentPath,
+            DocumentImpl newDoc, boolean defrag, boolean index, NodeId oldNodeId) {
         if (node.getNodeType() == Node.ELEMENT_NODE)
             currentPath.addComponent(node.getQName());
         final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
@@ -2296,6 +2301,8 @@ public class NativeBroker extends DBBroker {
         node.setOwnerDocument(newDoc);
         node.setInternalAddress(BFile.UNKNOWN_ADDRESS);
         storeNode(transaction, node, currentPath, index);
+        if (defrag && oldNodeId != null)
+            pool.getNotificationService().notifyMove(oldNodeId, node);
         if (node.getNodeType() == Node.ELEMENT_NODE)
             endElement(node, currentPath, null, oldAddress);
         if (node.getNodeId().getTreeLevel() == 1)
@@ -2308,14 +2315,15 @@ public class NativeBroker extends DBBroker {
             NodeId nodeId = node.getNodeId();
             for (int i = 0; i < count; i++) {
                 child = (StoredNode) iterator.next();
+                oldNodeId = child.getNodeId();
                 if (defrag) {
 	                if (i == 0)
 	            		nodeId = nodeId.newChild();
 	            	else
 	            		nodeId = nodeId.nextSibling();
-	                child.setNodeId(nodeId);
+                    child.setNodeId(nodeId);
                 }
-                copyNodes(transaction, iterator, child, currentPath, newDoc, defrag, index);
+                copyNodes(transaction, iterator, child, currentPath, newDoc, defrag, index, oldNodeId);
             }
         }
         if(node.getNodeType() == Node.ELEMENT_NODE) {
@@ -2668,7 +2676,7 @@ public class NativeBroker extends DBBroker {
 				Value val = domDb.get(p.getInternalAddress());
 				if (val == null) {
 					LOG.debug("Node " + p.getNodeId() + " not found in document " + p.getDocument().getURI() +
-							"; docId = " + p.getDocument().getDocId());
+							"; docId = " + p.getDocument().getDocId() + ": " + StorageAddress.toString(p.getInternalAddress()));
 //					LOG.debug(domDb.debugPages(p.doc, true));
 //					return null;
 					return objectWith(p.getDocument(), p.getNodeId()); // retry?

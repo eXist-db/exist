@@ -25,16 +25,14 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
+import org.exist.dom.*;
 import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.NodeImpl;
 import org.exist.util.FastQSort;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.Variable;
+import org.exist.numbering.NodeId;
 
 /**
  * A sequence that may contain a mixture of atomic values and nodes.
@@ -271,6 +269,14 @@ public class ValueSequence extends AbstractSequence {
         for (int i = 0; i <= size; i++) {
             if (Type.subTypeOf(values[i].getType(), Type.NODE))
                 ((NodeValue) values[i]).clearContext(contextId);
+        }
+    }
+
+
+    public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
+        for (int i = 0; i <= size; i++) {
+            if (Type.subTypeOf(values[i].getType(), Type.NODE))
+                ((NodeValue) values[i]).nodeMoved(oldNodeId, newNode);
         }
     }
 

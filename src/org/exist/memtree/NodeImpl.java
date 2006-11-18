@@ -22,10 +22,7 @@
  */
 package org.exist.memtree;
 
-import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeSet;
-import org.exist.dom.QName;
-import org.exist.dom.QNameable;
+import org.exist.dom.*;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.DOMStreamer;
@@ -43,6 +40,7 @@ import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.UntypedAtomicValue;
 import org.exist.xquery.value.ValueSequence;
+import org.exist.numbering.NodeId;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -769,7 +767,11 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
         return false;
     }
 
-	public void clearContext(int contextId) {
+    public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
+        // can not be applied to in-memory nodes
+    }
+
+    public void clearContext(int contextId) {
 		throw new RuntimeException("Can not call clearContext() on node type " + this.getNodeType());
 	}
 }

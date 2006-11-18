@@ -185,14 +185,12 @@ public class Eval extends BasicFunction {
         }
 		
 		int argCount = 0;
-		
-		Sequence exprContext;		
+		Sequence exprContext = null;
+
 		if (isCalledAs("eval-inline")) {
 			// the current expression context
 			exprContext = args[argCount++];
-		} else
-			exprContext = contextSequence;
-		
+		}
 		// get the query expression
         Item expr = args[argCount++].itemAt(0);
         Source querySource;
