@@ -27,14 +27,14 @@ import junit.framework.TestSuite;
 
 import org.exist.storage.DBBroker;
 
-public class RemoteTests {
+public class XqueryRemoteTests {
     
     public static void main(String[] args) {
         junit.textui.TestRunner.run(suite());
     }
 
     public static Test suite() {
-        TestSuite suite = new TestSuite("Test for org.exist.xquery.test");
+        TestSuite suite = new TestSuite("Test for org.exist.xquery");
         //$JUnit-BEGIN$
         XPathQueryTest.setURI("xmldb:exist://localhost:8088/xmlrpc" + DBBroker.ROOT_COLLECTION);
         suite.addTestSuite(XPathQueryTest.class);

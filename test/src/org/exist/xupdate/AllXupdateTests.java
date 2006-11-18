@@ -12,7 +12,7 @@ import junit.textui.TestRunner;
  * To enable and disable the creation of type comments go to
  * Window>Preferences>Java>Code Generation.
  */
-public class AllTests {
+public class AllXupdateTests {
 
 	public static Test suite() {
 

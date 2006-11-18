@@ -31,14 +31,14 @@ import org.exist.xquery.value.AnyURITest;
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
-public class AllTests {
+public class AllXqueryTests {
 
     public static void main(String[] args) {
         junit.textui.TestRunner.run(suite());
     }
 
     public static Test suite() {
-        TestSuite suite = new TestSuite("Test for org.exist.xquery.test");
+        TestSuite suite = new TestSuite("Test for org.exist.xquery");
         //$JUnit-BEGIN$
         XPathQueryTest.setURI("xmldb:exist://" + DBBroker.ROOT_COLLECTION);
 //        suite.addTestSuite(XQueryUpdateTest.class);
