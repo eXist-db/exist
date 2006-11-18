@@ -27,7 +27,7 @@ import junit.framework.TestCase;
 import junit.textui.TestRunner;
 
 import org.exist.storage.DBBroker;
-import org.exist.xmldb.test.concurrent.DBUtils;
+import org.exist.xmldb.concurrent.DBUtils;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;

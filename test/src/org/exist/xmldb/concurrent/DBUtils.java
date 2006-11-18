@@ -1,0 +1,183 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2000-04,  Wolfgang M. Meier (wolfgang@exist-db.org)
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Library General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Library General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ *  $Id$
+ */
+package org.exist.xmldb.concurrent;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.util.ArrayList;
+
+import org.exist.source.Source;
+import org.exist.source.StringSource;
+import org.exist.util.Occurrences;
+import org.exist.xmldb.DatabaseInstanceManager;
+import org.exist.xmldb.IndexQueryService;
+import org.exist.xmldb.XQueryService;
+import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.Database;
+import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.CollectionManagementService;
+import org.xmldb.api.modules.XMLResource;
+import org.xmldb.api.modules.XPathQueryService;
+
+/**
+ * Static utility methods used by the tests.
+ *
+ * @author wolf
+ */
+public class DBUtils {
+    
+    private final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
+    
+    public static Collection setupDB(String uri) throws Exception {
+        Class cl = Class.forName(DRIVER);
+        Database database = (Database)cl.newInstance();
+        database.setProperty("create-database", "true");
+        DatabaseManager.registerDatabase(database);
+        return DatabaseManager.getCollection(uri, "admin", null);
+    }
+    
+    public static void shutdownDB(String uri) throws XMLDBException {
+        Collection collection = DatabaseManager.getCollection(uri, "admin", null);
+        if (collection != null) {
+            DatabaseInstanceManager manager = (DatabaseInstanceManager)
+            collection.getService("DatabaseInstanceManager","1.0");
+            manager.shutdown();
+            collection.close();
+        }
+    }
+    
+    public static File generateXMLFile(int elementCnt, int attrCnt, String[] wordList) throws Exception {
+        return generateXMLFile(elementCnt, attrCnt, wordList, false);
+    }
+    
+    public static File generateXMLFile(int elementCnt, int attrCnt, String[] wordList, boolean namespaces) throws Exception {
+        return generateXMLFile(3, elementCnt, attrCnt, wordList, false);
+    }
+    
+	public static File generateXMLFile(int depth, int elementCnt, int attrCnt, String[] wordList, boolean namespaces) throws Exception {
+		File file = File.createTempFile(Thread.currentThread().getName(), ".xml");
+		if(file.exists() && !file.canWrite())
+			throw new IllegalArgumentException("Cannot write to output file " + file.getAbsolutePath());
+		
+		System.out.println("Generating XML file " + file.getAbsolutePath());
+		Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"));
+		
+		XMLGenerator gen = new XMLGenerator(elementCnt, attrCnt, depth, wordList, namespaces);
+		gen.generateXML(writer);
+		writer.close();
+		return file;
+	}
+	
+	public static Collection addCollection(Collection parent, String name)
+	throws XMLDBException
+	{
+		CollectionManagementService service = getCollectionManagementService(
+				parent);
+		
+		return service.createCollection(name);
+	}
+	
+	public static void removeCollection(Collection parent, String name) throws XMLDBException {
+		CollectionManagementService service = getCollectionManagementService(
+				parent);
+		service.removeCollection(name);
+	}
+	
+	public static CollectionManagementService getCollectionManagementService(
+	        Collection col) throws XMLDBException {
+	        return (CollectionManagementService)col.getService(
+	            "CollectionManagementService", "1.0");
+	    }
+
+	public static void addXMLResource(Collection col, String resourceId, File file) throws XMLDBException {
+		XMLResource res = (XMLResource)col.createResource(
+				resourceId, "XMLResource");
+		res.setContent(file);
+		col.storeResource(res);
+	}
+	
+	public static void addXMLResource(Collection col, String resourceId, String contents) throws XMLDBException {
+		XMLResource res = (XMLResource)col.createResource(
+				resourceId, "XMLResource");
+		res.setContent(contents);
+		col.storeResource(res);
+	}
+	
+	public static ResourceSet query(Collection collection, String xpath)
+	throws XMLDBException
+	{
+		XPathQueryService service = getQueryService(collection);
+		return service.query(xpath);
+	}
+	
+    public static ResourceSet queryResource(Collection collection, String resource, String xpath)
+    throws XMLDBException
+    {
+        XPathQueryService service = getQueryService(collection);
+        return service.queryResource(resource, xpath);
+    }
+    
+	public static ResourceSet xquery(Collection collection, String xquery)
+	throws XMLDBException
+	{
+		XQueryService service = getXQueryService(collection);
+		Source source = new StringSource(xquery);
+		return service.execute(source);
+	}
+	
+	public static XPathQueryService getQueryService(Collection collection)
+	throws XMLDBException
+	{
+		return (XPathQueryService) collection.getService(
+				"XPathQueryService", "1.0");
+	}
+
+	public static XQueryService getXQueryService(Collection collection)
+	throws XMLDBException
+	{
+		return (XQueryService) collection.getService(
+				"XQueryService", "1.0");
+	}
+	
+	public static String[] wordList(Collection root) throws XMLDBException {
+		IndexQueryService service = (IndexQueryService)
+		root.getService("IndexQueryService", "1.0");
+        ArrayList list = new ArrayList();
+        String alphas = "abcdefghijklmnopqrstuvwxyz";
+        for (int i = 0; i < alphas.length(); i++) {
+            String s = alphas.substring(i, i + 1);
+            Occurrences[] terms = service.scanIndexTerms(s, s + 'z', true);
+            for(int j = 0; j < terms.length; j++) {
+                list.add( terms[j].getTerm().toString());
+            }
+        }
+        String[] words = new String[list.size()];
+        list.toArray(words);
+        System.out.println("Size of the word list: " + words.length);
+        return words;
+    }
+}
