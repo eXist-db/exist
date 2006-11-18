@@ -46,17 +46,7 @@ import org.exist.util.ByteConversion;
 import org.exist.util.UTF8;
 import org.exist.xquery.Constants;
 import org.exist.xquery.value.StringValue;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Comment;
-import org.w3c.dom.DOMException;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.ProcessingInstruction;
-import org.w3c.dom.Text;
-import org.w3c.dom.TypeInfo;
-import org.w3c.dom.UserDataHandler;
+import org.w3c.dom.*;
 
 /**
  * ElementImpl.java
@@ -486,6 +476,14 @@ public class ElementImpl extends NamedNode implements Element {
                 getBroker().indexNode(transaction, text, lastPath);
                 last.setNode(text);
                 return text;
+            case Node.CDATA_SECTION_NODE :
+                final CDATASectionImpl cdata = new CDATASectionImpl(newNodeId, ((CDATASection) child).getData());
+                cdata.setOwnerDocument(owner);
+                // insert the node
+                getBroker().insertNodeAfter(transaction, last.getNode(), cdata);
+                getBroker().indexNode(transaction, cdata, lastPath);
+                last.setNode(cdata);
+                return cdata;
             case Node.ATTRIBUTE_NODE:
                 Attr attr = (Attr) child;
                 String ns = attr.getNamespaceURI();

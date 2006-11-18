@@ -38,16 +38,13 @@ import java.util.TreeMap;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.Namespaces;
+import org.exist.numbering.NodeId;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.collections.triggers.DocumentTrigger;
 import org.exist.collections.triggers.Trigger;
 import org.exist.collections.triggers.TriggerStatePerThread;
-import org.exist.dom.BinaryDocument;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.QName;
+import org.exist.dom.*;
 import org.exist.http.servlets.SessionWrapper;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.security.Permission;
@@ -1911,7 +1908,16 @@ public class XQueryContext {
 			}
 		}
 
-		public void debug() {
+
+        public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
+            for (int i = 0; i < listeners.size(); i++) {
+                UpdateListener listener = (UpdateListener) listeners.get(i);
+                if (listener != null)
+                    listener.nodeMoved(oldNodeId, newNode);
+			}
+        }
+
+        public void debug() {
 			LOG.debug("XQueryContext: ");
 			for (int i = 0; i < listeners.size(); i++) {
 				((UpdateListener) listeners.get(i)).debug();

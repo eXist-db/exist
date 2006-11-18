@@ -24,11 +24,14 @@ package org.exist.xquery;
 import org.apache.log4j.Logger;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.StoredNode;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
+import org.exist.numbering.NodeId;
 
 public abstract class DeferredFunctionCall implements Sequence {
     
@@ -240,5 +243,8 @@ public abstract class DeferredFunctionCall implements Sequence {
         }
     }
 
-    
+
+    public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
+        // not applicable
+    }
 }

@@ -23,6 +23,8 @@
 package org.exist.xquery;
 
 import org.exist.dom.QName;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.StoredNode;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.OrderedValueSequence;
@@ -30,6 +32,8 @@ import org.exist.xquery.value.PreorderedValueSequence;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
+import org.exist.storage.UpdateListener;
+import org.exist.numbering.NodeId;
 
 /**
  * Implements an XQuery let-expression.
@@ -38,7 +42,7 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class LetExpr extends BindingExpression {
 
-	public LetExpr(XQueryContext context) {
+    public LetExpr(XQueryContext context) {
 		super(context);
 	}
 
@@ -113,6 +117,8 @@ public class LetExpr extends BindingExpression {
             var.setValue(in);
             var.setContextDocs(inputSequence.getContextDocSet());
             var.checkType();
+
+            registerUpdateListener(in);
             
             if (whereExpr != null) {
                 Sequence filtered = applyWhereExpression(null);
@@ -234,5 +240,5 @@ public class LetExpr extends BindingExpression {
             result.append("return ");       
         result.append(returnExpr.toString());
         return result.toString();
-    }    
+    }
 }

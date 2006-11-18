@@ -629,7 +629,13 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 			p.clearContext(contextId);
 		}
 	}
-	
+
+    public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
+        NodeProxy p = get((DocumentImpl)newNode.getOwnerDocument(), oldNodeId);
+		if (p != null)
+            p.nodeMoved(oldNodeId, newNode);
+    }
+
     /* (non-Javadoc)
      * @see org.exist.xquery.value.AbstractSequence#isPersistentSet()
      */

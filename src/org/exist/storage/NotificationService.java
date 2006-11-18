@@ -5,6 +5,9 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.DocumentImpl;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.StoredNode;
+import org.exist.numbering.NodeId;
 
 /**
  * Global notification service for document updates. Other classes
@@ -57,8 +60,20 @@ public class NotificationService extends IdentityHashMap {
 	        listener.documentUpdated(document, event);
 		}
 	}
-	
-	public void debug() {
+
+    /**
+	 * Notify all subscribers that a node has been moved. Nodes may be moved during a
+     * defragmentation run.
+	 */
+	public synchronized void notifyMove(NodeId oldNodeId, StoredNode newNode) {
+		UpdateListener listener;
+		for (Iterator i = keySet().iterator(); i.hasNext(); ) {
+	        listener = (UpdateListener) i.next();
+	        listener.nodeMoved(oldNodeId, newNode);
+		}
+	}
+
+    public void debug() {
 		LOG.debug("Registered UpdateListeners:");
 		UpdateListener listener;
 		for (Iterator i = keySet().iterator(); i.hasNext(); ) {

@@ -23,8 +23,11 @@ package org.exist.xquery.value;
 import java.text.Collator;
 
 import org.exist.EXistException;
+import org.exist.numbering.NodeId;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.StoredNode;
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.storage.DBBroker;
 import org.exist.storage.Indexable;
@@ -323,8 +326,12 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
     public boolean isPersistentSet() {
         return false;
     }
-    
-	public final static AtomicValue deserialize(byte[] data, int start, int len) throws EXistException {
+
+
+    public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
+    }
+
+    public final static AtomicValue deserialize(byte[] data, int start, int len) throws EXistException {
 		return (AtomicValue)ValueIndexFactory.deserialize(data, start, len);
 	}
 	

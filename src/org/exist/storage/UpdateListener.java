@@ -1,6 +1,9 @@
 package org.exist.storage;
 
 import org.exist.dom.DocumentImpl;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.StoredNode;
+import org.exist.numbering.NodeId;
 
 public interface UpdateListener {
 
@@ -24,6 +27,16 @@ public interface UpdateListener {
 	 * @param event
 	 */
 	public void documentUpdated(DocumentImpl document, int event);
-	
-	public void debug();
+
+    /**
+     * nodeMoved is called after a defragmentation run occurred for a document during which
+     * the address and the nodeId of a node may have changed. Defragmentation
+     * may only occur after a node update.
+     *
+     * @param oldNodeId
+     * @param newNode
+     */
+    void nodeMoved(NodeId oldNodeId, StoredNode newNode);
+
+    public void debug();
 }

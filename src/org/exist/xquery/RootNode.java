@@ -22,17 +22,14 @@ package org.exist.xquery;
 
 import java.util.Iterator;
 
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
+import org.exist.dom.*;
 import org.exist.storage.UpdateListener;
 import org.exist.util.LockException;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
+import org.exist.numbering.NodeId;
 
 /**
  * Reads a set of document root nodes from the context. Used for
@@ -144,7 +141,12 @@ public class RootNode extends Step {
                         }
                     }
                 }
-                
+
+
+                public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
+                    // not relevant
+                }
+
                 public void debug() {
                 	LOG.debug("UpdateListener: Line: " + RootNode.this.toString());                	
                 }

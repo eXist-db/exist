@@ -36,12 +36,10 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.numbering.NodeId;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeSet;
-import org.exist.dom.QName;
+import org.exist.dom.*;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.XMLSecurityManager;
 import org.exist.storage.DBBroker;
@@ -134,8 +132,13 @@ public class XACMLUtil implements UpdateListener
 		if(inPolicyCollection(document) && (event == UpdateListener.REMOVE || event == UpdateListener.UPDATE))
 			POLICY_CACHE.remove(document.getURI());
 	}
-	
-	/**
+
+
+    public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
+        // not relevant
+    }
+
+    /**
 	 * Returns true if the specified document is in the policy collection.
 	 * This does not check subcollections.
 	 * 

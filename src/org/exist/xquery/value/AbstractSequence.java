@@ -26,8 +26,10 @@ import java.util.List;
 
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
+import org.exist.dom.StoredNode;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.XPathException;
+import org.exist.numbering.NodeId;
 
 /**
  * An abstract implementation of {@link org.exist.xquery.value.Sequence} with
@@ -129,8 +131,11 @@ public abstract class AbstractSequence implements Sequence {
     public DocumentSet getDocumentSet() {
         return DocumentSet.EMPTY_DOCUMENT_SET;
     }
-    
-	/** See
+
+    public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
+    }
+
+    /** See
 	 * <a <href="http://www.w3.org/TR/xquery/#id-ebv">2.4.3 Effective Boolean Value</a>
 	 * @see org.exist.xquery.value.Sequence#effectiveBooleanValue()
 	 */

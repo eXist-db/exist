@@ -26,11 +26,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.QName;
+import org.exist.dom.*;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
@@ -49,6 +45,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.exist.numbering.NodeId;
 
 /**
  * Implements eXist's document() function.
@@ -222,7 +219,12 @@ public class ExtDocument extends Function {
                         }
                     }
                 }
-                
+
+
+                public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
+                    // not relevant
+                }
+
                 public void debug() {
                 	LOG.debug("UpdateListener: Line: " + getASTNode().getLine() + ": " + ExtDocument.this.toString());                	
                 }
