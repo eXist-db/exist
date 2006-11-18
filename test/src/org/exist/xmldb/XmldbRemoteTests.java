@@ -19,28 +19,22 @@
 * 
 *  $Id$
 */
-package org.exist.xmldb.concurrent;
+package org.exist.xmldb;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import junit.textui.TestRunner;
 
-public class AllTests {
+/**
+ * @author wolf
+ */
+public class XmldbRemoteTests {
 
 	public static Test suite() {
-		TestSuite suite = new TestSuite("Test suite for org.exist.xmldb.test.concurrent");
-		//$JUnit-BEGIN$
-		suite.addTest(new TestSuite(ConcurrentResourceTest.class));
-		suite.addTest(new TestSuite(ConcurrentAttrUpdateTest.class));
-		suite.addTest(new TestSuite(ConcurrentXUpdateTest.class));
-		suite.addTest(new TestSuite(ConcurrentQueryTest.class));
-		suite.addTest(new TestSuite(ComplexUpdateTest.class));
-        suite.addTest(new TestSuite(ValueIndexUpdateTest.class));
-		//$JUnit-END$
+		TestSuite suite = new TestSuite("Remote tests for org.exist.xmldb");
+		suite.addTest(new TestSuite(RemoteCollectionTest.class));
+		suite.addTest(new TestSuite(RemoteDatabaseImplTest.class));
+		suite.addTest(new TestSuite(RemoteQueryTest.class));
+		suite.addTest(new TestSuite(DOMTestJUnit.class));
 		return suite;
-	}
-	
-	public static void main(String[] args) {
-		TestRunner.run(suite());
 	}
 }

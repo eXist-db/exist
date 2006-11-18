@@ -76,9 +76,9 @@
             
             <formatter type="plain"/>
             <formatter type="xml"/>
-            <test fork="yes" name="org.exist.xmldb.LocalTests" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="org.exist.xupdate.AllTests" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="org.exist.xquery.AllTests" todir="${junit.reports.dat}"/>
+            <test fork="yes" name="org.exist.xmldb.XmldbLocalTests" todir="${junit.reports.dat}"/>
+            <test fork="yes" name="org.exist.xupdate.AllXupdateTests" todir="${junit.reports.dat}"/>
+            <test fork="yes" name="org.exist.xquery.AllXqueryTests" todir="${junit.reports.dat}"/>
             
             <!-- Execute all other tests except those that have to be called manually.   -->
             <batchtest fork="yes" todir="${junit.reports.dat}">
@@ -141,7 +141,7 @@
             
             <formatter type="plain"/>
             <formatter type="xml"/>
-            <test name="org.exist.xmldb.concurrent.AllTests" todir="${junit.reports.dat}"/>
+            <test name="org.exist.xmldb.concurrent.AllConcurrentTests" todir="${junit.reports.dat}"/>
         </junit>
     </target>
 
@@ -156,7 +156,7 @@
             <classpath refid="classpath.junit"/>
             <formatter type="plain"/>
             <formatter type="xml"/>
-            <test name="org.exist.storage.AllTests" todir="${junit.reports.dat}"/>
+            <test name="org.exist.storage.AllStorageTests" todir="${junit.reports.dat}"/>
         </junit>
     </target>
 	
@@ -192,8 +192,8 @@
             <formatter type="plain"/>
             <formatter type="xml"/>
             <test fork="yes" name="org.exist.xmlrpc.XmlRpcTest" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="org.exist.xmldb.RemoteTests" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="org.exist.xquery.RemoteTests" todir="${junit.reports.dat}"/>
+            <test fork="yes" name="org.exist.xmldb.XmldbRemoteTests" todir="${junit.reports.dat}"/>
+            <test fork="yes" name="org.exist.xquery.XqueryRemoteTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.http.RESTServiceTest" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.storage.XIncludeSerializerTest" todir="${junit.reports.dat}"/>
         </junit>

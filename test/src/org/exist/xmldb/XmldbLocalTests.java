@@ -3,14 +3,14 @@ package org.exist.xmldb;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class LocalTests {
+public class XmldbLocalTests {
 
     public static void main(String[] args) {
         junit.textui.TestRunner.run(suite());
     }
     
 	public static Test suite() {
-		TestSuite suite = new TestSuite("Test suite for org.exist.xmldb.test");
+		TestSuite suite = new TestSuite("Test suite for org.exist.xmldb");
 		//$JUnit-BEGIN$
 		suite.addTest(new TestSuite(CreateCollectionsTest.class));
 		suite.addTest(new TestSuite(ResourceTest.class));

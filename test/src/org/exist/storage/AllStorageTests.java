@@ -24,14 +24,14 @@ package org.exist.storage;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class AllTests {
+public class AllStorageTests {
 
     public static void main(String[] args) {
         junit.textui.TestRunner.run(suite());
     }
 
     public static Test suite() {
-        TestSuite suite = new TestSuite("Test for org.exist.storage.test");
+        TestSuite suite = new TestSuite("Test for org.exist.storage");
         //$JUnit-BEGIN$
         // TODO: some problem here... uncommenting next test causes a db corruption
         suite.addTestSuite(ShutdownTest.class);
