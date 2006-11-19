@@ -546,7 +546,7 @@ public class BrokerPool {
 		            task.configure(conf, systemTasksConfigs[i].getProperties());
 		            systemTasks.add(task);
 		            //TODO : remove when SystemTask has a getPeriodicity() method
-		            systemTasksPeriods.add(new Long(systemTasksConfigs[i].getPeriod()));
+		            systemTasksPeriods.add(systemTasksConfigs[i]);
 		            LOG.info("added system task instance '" + task.getClass().getName() + "' to be executed every " +  systemTasksConfigs[i].getPeriod() + " ms");
 	        	}
 	        	catch (ClassNotFoundException e) {
@@ -743,23 +743,31 @@ public class BrokerPool {
 		//Schedule the system tasks	            
 	    for (int i = 0; i < systemTasks.size(); i++) {
 	    	//TODO : remove first argument when SystemTask has a getPeriodicity() method
-	        initSystemTask((Long)systemTasksPeriods.elementAt(i), (SystemTask)systemTasks.get(i));
+	        initSystemTask((Configuration.SystemTaskConfig) systemTasksPeriods.get(i), (SystemTask)systemTasks.get(i));
 	    }		
-		
+		systemTasksPeriods = null;
+        
         if (LOG.isDebugEnabled())
             LOG.debug("database instance '" + instanceName + "' initialized");
 	}
 	    
 	//TODO : remove the period argument when SystemTask has a getPeriodicity() method
 	//TODO : make it protected ?
-    private void initSystemTask(Long period, SystemTask task) throws EXistException {
+    private void initSystemTask(Configuration.SystemTaskConfig config, SystemTask task) throws EXistException {
         try {
-            LOG.debug("Scheduling system maintenance task " + task.getClass().getName() + " every " + period + " ms");
-            scheduler.createPeriodicJob(period.longValue(), new SystemTaskJob(task), false);
+            if (config.getCronExpr() == null) {
+                LOG.debug("Scheduling system maintenance task " + task.getClass().getName() + " every " +
+                        config.getPeriod() + " ms");
+                scheduler.createPeriodicJob(config.getPeriod(), new SystemTaskJob(task), false);
+            } else {
+                LOG.debug("Scheduling system maintenance task " + task.getClass().getName() +
+                        " with cron expression: " + config.getCronExpr());
+                scheduler.createCronJob(config.getCronExpr(), new SystemTaskJob(task));
+            }
         } catch (Exception e) {
 			LOG.warn(e.getMessage(), e);
             throw new EXistException("Failed to initialize system maintenance task: " + e.getMessage());
-        }		    
+        }
     }  	
 
     /**

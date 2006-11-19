@@ -2,6 +2,8 @@ package org.exist.storage;
 
 import org.exist.util.Configuration;
 import org.exist.EXistException;
+import org.exist.xquery.value.DateTimeValue;
+import org.exist.xquery.XPathException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.backup.Backup;
 import org.xmldb.api.base.XMLDBException;
@@ -9,8 +11,11 @@ import org.xml.sax.SAXException;
 import org.apache.log4j.Logger;
 
 import java.util.Properties;
+import java.util.Date;
 import java.io.File;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 
 /**
  * BackupSystemTask creates an XML backup of the current database into a directory
@@ -36,21 +41,32 @@ import java.io.IOException;
  *      </tr>
  *      <tr>
  *          <td>dir</td>
- *          <td>the directory (or zip file) into which the backup will be written. If the path ends
- *          with .zip, a zip file will be generated at the specified location and the backup will be
- *          directly written into this file. Otherwise, the task creates a directory for the specified
- *          path. If you pass a relative path, it will be interpreted relative to the data directory
- *          set in conf.xml.</td>
+ *          <td>the output directory where the backup will be written</td>
+ *      </tr>
+ *      <tr>
+ *          <td>prefix</td>
+ *          <td>a prefix for the generated file name. the final file name will consist of
+ *          prefix + current-dateTime + suffix</td>
+ *      </tr>
+ *      <tr>
+ *          <td>suffix</td>
+ *          <td>a suffix for the generated file name. If it ends with .zip, BackupSystemTask will
+ *          directly write the backup into a zip file. Otherwise, it will write into a plain directory.</td>
  *      </tr>
  *  </table>
  */
 public class BackupSystemTask implements SystemTask {
 
+    private static final Logger LOG = Logger.getLogger(BackupSystemTask.class);
+
+    private static final DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+
     private String user;
     private String password;
-    private String dest;
+    private File directory;
+    private String suffix;
     private XmldbURI collection;
-    private static final Logger LOG = Logger.getLogger(BackupSystemTask.class);
+    private String prefix;
 
     public void configure(Configuration config, Properties properties) throws EXistException {
         user = properties.getProperty("user", "guest");
@@ -60,19 +76,25 @@ public class BackupSystemTask implements SystemTask {
             collName = "xmldb:exist://" + collName;
         collection = XmldbURI.create(collName);
         LOG.debug("Collection to backup: " + collection.toString());
+
+        suffix = properties.getProperty("suffix", "");
+        prefix = properties.getProperty("prefix", "");
         
-        dest = properties.getProperty("dir", "backup");
-        File f = new File(dest);
-        if (!f.isAbsolute()) {
-            dest = (String)config.getProperty("db-connection.data-dir") +
-                File.separatorChar + dest;
-            f = new File(dest);
+        String dir = properties.getProperty("dir", "backup");
+        directory = new File(dir);
+        if (!directory.isAbsolute()) {
+            dir = (String)config.getProperty("db-connection.data-dir") +
+                File.separatorChar + dir;
+            directory = new File(dir);
         }
-        dest = f.getAbsolutePath();
+        directory.mkdirs();
     }
 
 
     public void execute(DBBroker broker) throws EXistException {
+        String dateTime = df.format(new Date());
+        String dest = directory.getAbsolutePath() + File.separatorChar + prefix + dateTime + suffix;
+
         Backup backup = new Backup(user, password, dest, collection);
         try {
             backup.backup(false, null);
