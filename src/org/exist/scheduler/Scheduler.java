@@ -25,6 +25,9 @@ import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
+import java.util.Properties;
+import java.io.InputStream;
+import java.io.IOException;
 
 import org.exist.EXistException;
 import org.exist.storage.BrokerPool;
@@ -50,7 +53,6 @@ public class Scheduler
 	//the brokerpool for this scheduler
 	private BrokerPool brokerpool = null;
 	
-	
 	/**
 	 * Create and Start a new Scheduler
 	 * 
@@ -62,7 +64,15 @@ public class Scheduler
 		
 		try
 		{
-			SchedulerFactory schedulerFactory = new StdSchedulerFactory();
+            InputStream is = Scheduler.class.getResourceAsStream("quartz.properties");
+            Properties properties = new Properties();
+            try {
+                properties.load(is);
+            } catch (IOException e) {
+                throw new EXistException("Failed to load scheduler settings from org/exist/scheduler/quartz.properties");
+            }
+
+            SchedulerFactory schedulerFactory = new StdSchedulerFactory(properties);
 			scheduler = schedulerFactory.getScheduler();
 		
 			scheduler.start();
@@ -97,7 +107,7 @@ public class Scheduler
 	 * 
 	 * @return	true if thejob was successfully scheduled, false otherwise
 	 */
-	public boolean createPeriodicJob(long period, Job job, boolean startNow)
+	public boolean createPeriodicJob(long period, JobDescription job, boolean startNow)
 	{
 		return createPeriodicJob(period, job, startNow, null);
 	}
@@ -112,7 +122,7 @@ public class Scheduler
 	 * 
 	 * @return	true if thejob was successfully scheduled, false otherwise
 	 */
-	public boolean createPeriodicJob(long period, Job job, boolean startNow, Map params)
+	public boolean createPeriodicJob(long period, JobDescription job, boolean startNow, Map params)
 	{
 		//Create the job details
 		JobDetail jobDetail = new JobDetail(job.getName(), job.getGroup(), job.getClass());
@@ -164,7 +174,7 @@ public class Scheduler
 	 * 
 	 * @return	true if thejob was successfully scheduled, false otherwise
 	 */
-	public boolean createCronJob(String cronExpression, Job job)
+	public boolean createCronJob(String cronExpression, JobDescription job)
 	{
 		return createCronJob(cronExpression, job, null);
 	}
@@ -176,7 +186,7 @@ public class Scheduler
 	 * 
 	 * @return	true if thejob was successfully scheduled, false otherwise
 	 */
-	public boolean createCronJob(String cronExpression, Job job, Map params)
+	public boolean createCronJob(String cronExpression, JobDescription job, Map params)
 	{
 		//Create the job details
 		JobDetail jobDetail = new JobDetail(job.getName(), job.getGroup(), job.getClass());
@@ -215,7 +225,7 @@ public class Scheduler
 	 * @param jobDataMap	The Job's Data Map
 	 * @param params	Any parameters for the job
 	 */
-	private void setupJobDataMap(Job job, JobDataMap jobDataMap, Map params)
+	private void setupJobDataMap(JobDescription job, JobDataMap jobDataMap, Map params)
 	{
 		//if this is a system job, store the brokerpool in the job's data map
 		jobDataMap.put("brokerpool", brokerpool);

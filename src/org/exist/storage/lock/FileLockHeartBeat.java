@@ -21,19 +21,22 @@
  */
 package org.exist.storage.lock;
 
+import org.exist.scheduler.JobDescription;
+import org.exist.scheduler.SystemJob;
+import org.quartz.Job;
+import org.quartz.JobDataMap;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
+
 import java.io.IOException;
 import java.util.Map;
-
-import org.exist.scheduler.JobException;
-import org.exist.scheduler.SystemJob;
-import org.exist.storage.BrokerPool;
 
 /**
  * Provides a Scheduled HeartBeat for the FileLock
  */
-public class FileLockHeartBeat extends SystemJob
-{
-	private String JOB_NAME = "FileLockHeartBeat";
+public class FileLockHeartBeat implements JobDescription, Job {
+
+    private String JOB_NAME = "FileLockHeartBeat";
 	
 	public FileLockHeartBeat()
 	{
@@ -48,12 +51,17 @@ public class FileLockHeartBeat extends SystemJob
 	{
 		return JOB_NAME;
 	}
-	
-	public void execute(BrokerPool pool, Map params) throws JobException
-	{
-		//get the file lock
-		FileLock lock = (FileLock)params.get(FileLock.class.getName());
-		
+
+    public String getGroup() {
+        return SystemJob.JOB_GROUP;
+    }
+
+    public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+        //get the file lock
+        JobDataMap jobDataMap = jobExecutionContext.getJobDetail().getJobDataMap();
+        Map params = (Map)jobDataMap.get("params");
+        FileLock lock = (FileLock)params.get(FileLock.class.getName());
+
 		if(lock != null)
 		{
 			try
@@ -63,12 +71,12 @@ public class FileLockHeartBeat extends SystemJob
 			catch(IOException e)
 			{
 	            lock.message("Caught exception while trying to write lock file", e);
-	        }	
+	        }
 		}
-		else
-		{
-			//abort this job
-			throw new JobException(JobException.JOB_ABORT_THIS, "Unable to Heart Beat, FileLock was null!");
-		}
-	} 
+		else {
+            //abort this job
+            JobExecutionException jat = new JobExecutionException("Unable to write heart-beat: lock was null");
+            jat.setUnscheduleFiringTrigger(true);
+        }
+    }
 }
