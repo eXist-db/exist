@@ -27,6 +27,7 @@ import org.exist.storage.BrokerPool;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.quartz.Job;
 
 /**
  * Class to represent a System Job
@@ -38,8 +39,7 @@ import org.quartz.JobExecutionException;
  * 
  * @author Adam Retter <adam.retter@devon.gov.uk>
  */
-public abstract class SystemJob implements Job, org.quartz.StatefulJob
-{
+public abstract class SystemJob implements JobDescription, Job {
 	public final static String JOB_GROUP = "eXist.System";
 	
 	public final String getGroup()

@@ -31,7 +31,7 @@ package org.exist.scheduler;
  * 
  * @author Adam Retter <adam.retter@devon.gov.uk>
  */
-public abstract class UserJob implements Job, org.quartz.Job
+public abstract class UserJob implements JobDescription, org.quartz.Job
 {
 	//TODO: Adam: this is a work in progress
 	
