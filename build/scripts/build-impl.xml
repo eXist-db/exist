@@ -334,8 +334,10 @@
                 <include name="**.xq"/>
             </fileset>
         </copy>
-        
-    	<!-- Convert native to ascii-->
+        <copy file="${src}/org/exist/scheduler/quartz.properties"
+             todir="${build.classes}/org/exist/scheduler"/>
+
+        <!-- Convert native to ascii-->
         <native2ascii src="${src}/org/exist/client" dest="${build.classes}/org/exist/client"
                  includes="messages*.properties" />
         
@@ -393,7 +395,7 @@
     <!-- ================================================================== -->
     <!-- Build all                                                          -->
     <!-- ================================================================== -->
-    <target name="all" depends="jar,wrapper,extension-modules" description="Build all"/>
+    <target name="all" depends="jar,wrapper,extension-modules,test-compile" description="Build all"/>
 
     <!-- ================================================================== -->
     <!-- Rebuild all                                                        -->
