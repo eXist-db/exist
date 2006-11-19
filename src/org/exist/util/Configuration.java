@@ -80,22 +80,34 @@ public class Configuration implements ErrorHandler
     public static final class SystemTaskConfig {
         
         private String className;
-        private long period;
+        private long period = -1;
+        private String cronExpr = null;
         private Properties params = new Properties();
         
-        public SystemTaskConfig(String className, long period) {
+        public SystemTaskConfig(String className) {
             this.className = className;
-            this.period = period;
         }
         
         public String getClassName() {
             return className;
         }
-        
+
+        public void setPeriod(long period) {
+            this.period = period;
+        }
+
         public long getPeriod() {
             return period;
         }
-        
+
+        public String getCronExpr() {
+            return cronExpr;
+        }
+
+        public void setCronExpr(String cronExpr) {
+            this.cronExpr = cronExpr;
+        }
+
         public Properties getProperties() {
             return params;
         }
@@ -709,16 +721,22 @@ public class Configuration implements ErrorHandler
             String classAttr = taskDef.getAttribute("class");
             if (classAttr == null || classAttr.length() == 0)
                 throw new DatabaseConfigurationException("No class specified for system-task");
+            SystemTaskConfig sysTask = new SystemTaskConfig(classAttr);
+            String cronAttr = taskDef.getAttribute("cron-trigger");
             String periodAttr = taskDef.getAttribute("period");
-            if (periodAttr == null || periodAttr.length() == 0)
-                throw new DatabaseConfigurationException("No period specified for system-task");
-            long period;
-            try {
-                period = Long.parseLong(periodAttr);
-            } catch (NumberFormatException e) {
-                throw new DatabaseConfigurationException("Attribute period is not a number: " + e.getMessage());
+            if (cronAttr != null && cronAttr.length() > 0) {
+                sysTask.setCronExpr(cronAttr);
+            } else {
+                if (periodAttr == null || periodAttr.length() == 0)
+                    throw new DatabaseConfigurationException("No period or cron-trigger specified for system-task");
+                long period;
+                try {
+                    period = Long.parseLong(periodAttr);
+                } catch (NumberFormatException e) {
+                    throw new DatabaseConfigurationException("Attribute period is not a number: " + e.getMessage());
+                }
+                sysTask.setPeriod(period);
             }
-            SystemTaskConfig sysTask = new SystemTaskConfig(classAttr, period);
             NodeList params = taskDef.getElementsByTagName("parameter");
             for (int j = 0; j < params.getLength(); j++) {
                 Element param = (Element) params.item(j);
