@@ -492,34 +492,35 @@ public class NativeBroker extends DBBroker {
      * is defined on it.
      */
     public void endElement(final StoredNode node, NodePath currentPath, String content, long oldAddress) {
-        node.getQName().setNameType(ElementValue.ELEMENT);
-        
-        final DocumentImpl doc = (DocumentImpl) node.getOwnerDocument();
         final int indexType = ((ElementImpl) node).getIndexType();
-
-        NodeProxy p = new NodeProxy(node);
-
-        // TODO move_to NativeValueIndex
+        
+        //TODO : do not care about the current code redundancy : this will move in the (near) future
+        
+        // TODO : move to NativeValueIndex
         if (RangeIndexSpec.hasRangeIndex(indexType)) {
+        	node.getQName().setNameType(ElementValue.ELEMENT);
             if (content == null) {
+                NodeProxy p = new NodeProxy(node);
                 if (oldAddress != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
                     p.setInternalAddress(oldAddress);
                 content = getNodeValue(node, false);
-                //Curious...
+                //Curious... I assume getNodeValue() needs the old address
                 p.setInternalAddress(node.getInternalAddress());
             }
-            valueIndex.setDocument(doc);
+            valueIndex.setDocument((DocumentImpl) node.getOwnerDocument());
             valueIndex.storeElement(RangeIndexSpec.indexTypeToXPath(indexType), 
                     (ElementImpl) node, content.toString());
         }
         
-        // TODO move_to NativeValueIndexByQName 
+        // TODO : move to NativeValueIndexByQName 
         if ( RangeIndexSpec.hasQNameIndex(indexType) ) {
+        	node.getQName().setNameType(ElementValue.ELEMENT);
             if (content == null) {
+                NodeProxy p = new NodeProxy(node);
                 if (oldAddress != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
                     p.setInternalAddress(oldAddress);
                 content = getNodeValue(node, false);
-                //Curious...
+                //Curious... I assume getNodeValue() needs the old address
                 p.setInternalAddress(node.getInternalAddress());
             }
             
@@ -527,18 +528,22 @@ public class NativeBroker extends DBBroker {
                 qnameValueIndex.endElement((ElementImpl) node, currentPath, content);
         }
 
+        // TODO : move to NativeTextEngine 
         if (RangeIndexSpec.hasMixedTextIndex(indexType)) {
+        	node.getQName().setNameType(ElementValue.ELEMENT);
             if (content == null) {
+                NodeProxy p = new NodeProxy(node);
                 if (oldAddress != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
                     p.setInternalAddress(oldAddress);
                 content = getNodeValue(node, false);
-                //Curious...
+                //Curious... I assume getNodeValue() needs the old address
                 p.setInternalAddress(node.getInternalAddress());
             }
-            textEngine.setDocument(doc);
+            textEngine.setDocument((DocumentImpl) node.getOwnerDocument());
             textEngine.storeText(null, node, content);
         }
-        p.setIndexType(indexType);
+        
+        //p.setIndexType(indexType);
     }
     
     /** Takes care of actually remove entries from the indices;
@@ -590,15 +595,6 @@ public class NativeBroker extends DBBroker {
 	    return idxConf;
 	}
     
-    public Serializer getSerializer() {
-        xmlSerializer.reset();
-        return xmlSerializer;
-    }
-    
-    public Serializer newSerializer() {
-        return new NativeSerializer(this, getConfiguration());
-    }    
-    
     public ElementIndex getElementIndex() {
         return elementIndex;
     }    
@@ -619,26 +615,44 @@ public class NativeBroker extends DBBroker {
         try {
             return new DOMFileIterator(this, domDb, new NodeProxy(node));
         } catch (BTreeException e) {
-            LOG.debug("failed to create DOM iterator", e);
+            LOG.warn("failed to create DOM iterator", e);
         } catch (IOException e) {
-            LOG.debug("failed to create DOM iterator", e);
+            LOG.warn("failed to create DOM iterator", e);
         }
         return null;
     }
 
     public Iterator getNodeIterator(StoredNode node) {
-       if (node==null) {
+       if (node == null)
           throw new IllegalArgumentException("The node parameter cannot be null.");
-       }
-//      domDb.setOwnerObject(this);
         try {
             return new NodeIterator(this, domDb, node, false);
         } catch (BTreeException e) {
-            LOG.debug("failed to create node iterator", e);
+            LOG.warn("failed to create node iterator", e);
         } catch (IOException e) {
-            LOG.debug("failed to create node iterator", e);
+            LOG.warn("failed to create node iterator", e);
         }
         return null;
+    }
+    
+    public Serializer getSerializer() {
+        xmlSerializer.reset();
+        return xmlSerializer;
+    }
+    
+    public Serializer newSerializer() {
+        return new NativeSerializer(this, getConfiguration());
+    }    
+
+    public XmldbURI prepend(XmldbURI uri) {
+    	switch(prepend) {
+    	case PREPEND_DB_ALWAYS:
+    		return uri.prepend(XmldbURI.ROOT_COLLECTION_URI);
+    	case PREPEND_DB_AS_NEEDED:
+    		return uri.startsWith(XmldbURI.ROOT_COLLECTION_URI)?uri:uri.prepend(XmldbURI.ROOT_COLLECTION_URI);
+    	default:
+    		return uri;
+    	}
     }
     
     /** create temporary collection */  
@@ -676,17 +690,6 @@ public class NativeBroker extends DBBroker {
             transact.abort(txn);
             LOG.warn("Failed to remove temporary collection: " + e.getMessage(), e);
         }
-    }
-    
-    public XmldbURI prepend(XmldbURI uri) {
-    	switch(prepend) {
-    	case PREPEND_DB_ALWAYS:
-    		return uri.prepend(XmldbURI.ROOT_COLLECTION_URI);
-    	case PREPEND_DB_AS_NEEDED:
-    		return uri.startsWith(XmldbURI.ROOT_COLLECTION_URI)?uri:uri.prepend(XmldbURI.ROOT_COLLECTION_URI);
-    	default:
-    		return uri;
-    	}
     }
     
     public Collection getOrCreateCollection(Txn transaction, XmldbURI name) throws PermissionDeniedException {
@@ -828,8 +831,8 @@ public class NativeBroker extends DBBroker {
 	}
     
    public void copyCollection(Txn transaction, Collection collection, Collection destination, XmldbURI newName)
-   throws PermissionDeniedException, LockException {
-        if (readOnly)
+   	throws PermissionDeniedException, LockException {
+       if (readOnly)
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
  	   if(newName!=null && newName.numSegments()!=1) {
 		   throw new PermissionDeniedException("New collection name must have one segment!");
@@ -1152,7 +1155,7 @@ public class NativeBroker extends DBBroker {
                 collection.setAddress(addr);
                 ostream.close();
             } catch (IOException ioe) {
-                LOG.debug(ioe);
+                LOG.warn(ioe);
             }
         } catch (ReadOnlyException e) {
             LOG.warn(DATABASE_IS_READ_ONLY);
@@ -2066,7 +2069,7 @@ public class NativeBroker extends DBBroker {
 			ByteConversion.intToByte(nextDocId, d, 0);
 			collectionsDb.put(transaction, key, d, true);
 		} catch (ReadOnlyException e) {
-			LOG.debug("database read-only");
+			LOG.warn("Database is read-only");
 			return DocumentImpl.UNKNOWN_DOCUMENT_ID;
             //TODO : rethrow ? -pb
 		} catch (LockException e) {
@@ -2325,7 +2328,7 @@ public class NativeBroker extends DBBroker {
             StoredNode old = 
                 StoredNode.deserialize(oldVal.data(), oldVal.start(), oldVal.getLength(), 
                 		(DocumentImpl)node.getOwnerDocument(), false);
-            LOG.debug(
+            LOG.warn(
                 "Exception while storing "
                     + node.getNodeName()
                     + "; gid = "
@@ -2968,7 +2971,7 @@ public class NativeBroker extends DBBroker {
 
         public void reset(Txn transaction, StoredNode node, NodePath currentPath) {            
             if (node.getNodeId() == null)
-                LOG.debug("illegal node: " + node.getNodeName());
+                LOG.warn("illegal node: " + node.getNodeName());
                 //TODO : why continue processing ? return ? -pb
             this.transaction = transaction;
             this.node = node;
@@ -3185,9 +3188,9 @@ public class NativeBroker extends DBBroker {
                 //doc.setInternalAddress(pointer);
                 collection.addDocument(null, NativeBroker.this, doc);
             } catch (EOFException e) {
-                LOG.debug("EOFException while reading document data", e);
+                LOG.warn("EOFException while reading document data", e);
             } catch (IOException e) {
-                LOG.debug("IOException while reading document data", e);
+                LOG.warn("IOException while reading document data", e);
             }
             return true;
         }
