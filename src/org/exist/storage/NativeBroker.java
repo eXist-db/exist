@@ -292,9 +292,14 @@ public class NativeBroker extends DBBroker {
      * @throws DBException
      */
     private void createStructuralIndexFile() throws DBException {
-        elementsDb = createNativeFile(ELEMENTS_DBX_ID, false, config, dataDir, 
+    	//TODO : read from configuration (key ?)
+    	double cacheGrowth = DEFAULT_STRUCTURAL_CACHE_GROWTH;
+    	double cacheKeyThresdhold = DEFAULT_STRUCTURAL_KEY_THRESHOLD;
+    	double cacheValueThresHold = DEFAULT_STRUCTURAL_VALUE_THRESHOLD;
+
+    	elementsDb = createNativeFile(ELEMENTS_DBX_ID, false, config, dataDir, 
         		ELEMENTS_DBX, "db-connection.elements", 
-        		DEFAULT_STRUCTURAL_CACHE_GROWTH, DEFAULT_STRUCTURAL_KEY_THRESHOLD, DEFAULT_STRUCTURAL_VALUE_THRESHOLD);
+    			cacheGrowth, cacheKeyThresdhold, cacheValueThresHold);
         elementIndex = new NativeElementIndex(this, elementsDb);
         addContentLoadingObserver(elementIndex);
     }
@@ -303,9 +308,14 @@ public class NativeBroker extends DBBroker {
      * @throws DBException
      */    
     private void createValueIndexFile() throws DBException {
-        valuesDb = createNativeFile(VALUES_DBX_ID, false, config, dataDir, 
+    	//TODO : read from configuration (key ?)
+    	double cacheGrowth = DEFAULT_VALUE_CACHE_GROWTH;
+    	double cacheKeyThresdhold = DEFAULT_VALUE_KEY_THRESHOLD;
+    	double cacheValueThresHold = DEFAULT_VALUE_VALUE_THRESHOLD;
+
+    	valuesDb = createNativeFile(VALUES_DBX_ID, false, config, dataDir, 
         		VALUES_DBX, "db-connection.values", 
-        		DEFAULT_VALUE_CACHE_GROWTH, DEFAULT_VALUE_KEY_THRESHOLD, DEFAULT_VALUE_VALUE_THRESHOLD);
+    			cacheGrowth, cacheKeyThresdhold, cacheValueThresHold);
         valueIndex = new NativeValueIndex(this, valuesDb);
         addContentLoadingObserver(valueIndex);
     }
@@ -314,9 +324,14 @@ public class NativeBroker extends DBBroker {
      * @throws DBException
      */      
     private void createQNameValueIndexFiles() throws DBException {        
-        valuesDbQname = createNativeFile(VALUES_QNAME_DBX_ID, false, config, dataDir, 
+    	//TODO : read from configuration (key ?)
+    	double cacheGrowth = DEFAULT_VALUE_CACHE_GROWTH;
+    	double cacheKeyThresdhold = DEFAULT_VALUE_KEY_THRESHOLD;
+    	double cacheValueThresHold = DEFAULT_VALUE_VALUE_THRESHOLD;
+
+    	valuesDbQname = createNativeFile(VALUES_QNAME_DBX_ID, false, config, dataDir, 
         		VALUES_QNAME_DBX, "db-connection2.values", 
-        		DEFAULT_VALUE_CACHE_GROWTH, DEFAULT_VALUE_KEY_THRESHOLD, DEFAULT_VALUE_VALUE_THRESHOLD);
+    			cacheGrowth, cacheKeyThresdhold, cacheValueThresHold);
         qnameValueIndex = new NativeValueIndexByQName(this, valuesDbQname);
         addContentLoadingObserver(qnameValueIndex);   
     }
@@ -325,9 +340,14 @@ public class NativeBroker extends DBBroker {
      * @throws DBException
      */     
     private void createFulltextIndexFiles() throws DBException {
+    	//TODO : read from configuration (key ?)
+    	double cacheGrowth = DEFAULT_WORD_CACHE_GROWTH;
+    	double cacheKeyThresdhold = DEFAULT_WORD_KEY_THRESHOLD;
+    	double cacheValueThresHold = DEFAULT_WORD_VALUE_THRESHOLD;
+    	
     	dbWords = createNativeFile(NativeBroker.WORDS_DBX_ID, false, config, dataDir, 
     			WORDS_DBX, "db-connection.words", 
-    			DEFAULT_WORD_CACHE_GROWTH, DEFAULT_WORD_KEY_THRESHOLD, DEFAULT_WORD_VALUE_THRESHOLD);
+    			cacheGrowth, cacheKeyThresdhold, cacheValueThresHold);
         textEngine = new NativeTextEngine(this, config, dbWords);
         addContentLoadingObserver(textEngine);
         
@@ -347,13 +367,14 @@ public class NativeBroker extends DBBroker {
     }
 
     private BFile createNativeFile(byte id, boolean transactional, Configuration config, String dataDir, 
-            String dataFile, String propertyName, double cacheGrowth, double keyThreshold, double valueThreshold) throws DBException {        
-        BFile nativeFile = (BFile) config.getProperty(propertyName);        
+            String dataFile, String configKeyForFile, 
+            double cacheGrowth, double keyThreshold, double valueThreshold) throws DBException {        
+        BFile nativeFile = (BFile) config.getProperty(configKeyForFile);        
         if (nativeFile == null) {
             File file = new File(dataDir + File.separatorChar + dataFile);
             LOG.debug("Creating '" + file.getName() + "'...");
             nativeFile = new BFile(pool, id, transactional, file, pool.getCacheManager(), cacheGrowth, keyThreshold, valueThreshold);            
-            config.setProperty(propertyName, nativeFile);            
+            config.setProperty(configKeyForFile, nativeFile);            
         }
         //TODO : move this out of this method ? 
         readOnly = readOnly || nativeFile.isReadOnly();
@@ -2740,28 +2761,31 @@ public class NativeBroker extends DBBroker {
 	}
 	
     public void repair() throws PermissionDeniedException {
-        Collection root = getCollection(XmldbURI.ROOT_COLLECTION_URI);
         if (readOnly)
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
         
-        LOG.debug("Removing index files ...");
+        LOG.info("Removing index files ...");
         clearContentLoadingObservers();
         
         elementsDb.closeAndRemove();
         config.setProperty("db-connection.elements", null);
+       
+        if (valuesDb != null) {
+	        valuesDb.closeAndRemove();
+	        config.setProperty("db-connection.values", null);
+        }
         
-        dbWords.closeAndRemove();
-        config.setProperty("db-connection.words", null);
-        
-        valuesDb.closeAndRemove();
-        config.setProperty("db-connection.values", null);
-        
-        if (qnameValueIndexation) {
-            valuesDbQname.closeAndRemove();
+        if (valuesDbQname != null) {
+        	valuesDbQname.closeAndRemove();
             config.setProperty("db-connection2.values", null);
         }        
         
-        LOG.debug("Recreating index files ...");
+        if (dbWords != null) {
+        	dbWords.closeAndRemove();
+	        config.setProperty("db-connection.words", null);
+        }
+
+        LOG.info("Recreating index files ...");
         try {
         	createStructuralIndexFile();
         	//TODO : don't create if unnecessary ?
@@ -2774,8 +2798,10 @@ public class NativeBroker extends DBBroker {
         } catch (DBException e) {
             LOG.warn("Exception during repair: " + e.getMessage(), e);
         }
+        
         LOG.info("Reindexing database files ...");
-        reindexCollection(null, root, true);
+        //Reindex from root collection
+        reindexCollection(null, getCollection(XmldbURI.ROOT_COLLECTION_URI), true);
     }
     
     public void flush() {
@@ -2834,7 +2860,7 @@ public class NativeBroker extends DBBroker {
             }
         } catch (DBException dbe) {
             dbe.printStackTrace();
-            LOG.debug(dbe);
+            LOG.warn(dbe);
         }
     }     
 
@@ -2844,15 +2870,16 @@ public class NativeBroker extends DBBroker {
 //            cleanUpTempCollection();
 			sync(Sync.MAJOR_SYNC);
             domDb.close();
-            textEngine.close();
             collectionsDb.close();
 			elementsDb.close();
-			valuesDb.close();
+			if (valuesDb != null)
+				valuesDb.close();
 			if (qnameValueIndex != null)
 				qnameValueIndex.close();			
+            if (textEngine != null)
+            	textEngine.close();
 		} catch (Exception e) {
-			LOG.debug(e);
-			e.printStackTrace();
+			LOG.warn(e);
 		}
         super.shutdown();
 	}    
