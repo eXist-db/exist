@@ -439,6 +439,9 @@
             <link href="http://jakarta.apache.org/commons/pool/apidocs/"/>
             <link href="http://jakarta.apache.org/commons/collections/api/"/>
             <link href="http://logging.apache.org/log4j/docs/api"/>
+            <link href="http://xerces.apache.org/xerces2-j/javadocs/api/"/>
+            <link href="http://xerces.apache.org/xerces2-j/javadocs/xni/"/>
+            <link href="http://xml.apache.org/xalan-j/apidocs/"/>
         </javadoc>
         <delete dir="${build.src}"/>
     </target>
