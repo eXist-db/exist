@@ -138,6 +138,10 @@ public class XACMLUtil implements UpdateListener
         // not relevant
     }
 
+    public void unsubscribe() {
+        // not relevant
+    }
+
     /**
 	 * Returns true if the specified document is in the policy collection.
 	 * This does not check subcollections.

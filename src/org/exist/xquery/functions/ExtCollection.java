@@ -210,6 +210,11 @@ public class ExtCollection extends Function {
                     }
                 }
 
+
+                public void unsubscribe() {
+                    ExtCollection.this.listener = null;
+                }
+
                 public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
                     // not relevant
                 }
