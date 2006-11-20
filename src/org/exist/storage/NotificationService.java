@@ -44,7 +44,8 @@ public class NotificationService extends IdentityHashMap {
 		Object i = remove(listener);
 		if (i == null)
 			throw new RuntimeException(hashCode() + " listener not found: " + listener.hashCode());
-	}
+        listener.unsubscribe();
+    }
 
 	/**
 	 * Notify all subscribers that a document has been updated/removed or

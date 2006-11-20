@@ -815,6 +815,11 @@ public class LocationStep extends Step {
                 public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
                 }
 
+
+                public void unsubscribe() {
+                    LocationStep.this.listener = null;
+                }
+
                 public void debug() {
                 	LOG.debug("UpdateListener: Line: " + LocationStep.this.toString() +
                 			"; id: " + LocationStep.this.getExpressionId());

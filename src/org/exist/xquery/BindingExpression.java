@@ -55,7 +55,7 @@ public abstract class BindingExpression extends AbstractExpression {
 	protected Expression returnExpr;
 	protected Expression whereExpr;
 	protected OrderSpec orderSpecs[] = null;
-    private UpdateListener listener;
+    private ExprUpdateListener listener;
 
     public BindingExpression(XQueryContext context) {
 		super(context);
@@ -245,17 +245,36 @@ public abstract class BindingExpression extends AbstractExpression {
 	}
 
     protected void registerUpdateListener(final Sequence sequence) {
-        listener = new UpdateListener() {
-            public void documentUpdated(DocumentImpl document, int event) {
-            }
+        if (listener == null) {
+            listener = new ExprUpdateListener(sequence);
+            context.registerUpdateListener(listener);
+        } else
+            listener.setSequence(sequence);
+    }
 
-            public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
-                sequence.nodeMoved(oldNodeId, newNode);
-            }
+    private class ExprUpdateListener implements UpdateListener {
+        private Sequence sequence;
 
-            public void debug() {
-            }
-        };
-        context.registerUpdateListener(listener);
+        public ExprUpdateListener(Sequence sequence) {
+            this.sequence = sequence;
+        }
+
+        public void setSequence(Sequence sequence) {
+            this.sequence = sequence;
+        }
+        
+        public void documentUpdated(DocumentImpl document, int event) {
+        }
+
+        public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
+            sequence.nodeMoved(oldNodeId, newNode);
+        }
+
+        public void unsubscribe() {
+            BindingExpression.this.listener = null;
+        }
+
+        public void debug() {
+        }
     }
 }

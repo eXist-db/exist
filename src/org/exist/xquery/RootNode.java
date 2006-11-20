@@ -142,6 +142,9 @@ public class RootNode extends Step {
                     }
                 }
 
+                public void unsubscribe() {
+                    RootNode.this.listener = null;
+                }
 
                 public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
                     // not relevant

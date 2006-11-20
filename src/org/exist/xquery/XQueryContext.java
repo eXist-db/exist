@@ -291,8 +291,23 @@ public class XQueryContext {
            }
            
 	}
-	
-	/**
+
+    public XQueryContext copyContext() {
+        XQueryContext ctx = new XQueryContext(this);
+        ctx.baseURI = this.baseURI;
+        ctx.baseURISetInProlog = this.baseURISetInProlog;
+        ctx.staticDocumentPaths = this.staticDocumentPaths;
+        ctx.staticDocuments = this.staticDocuments;
+        ctx.moduleLoadPath = this.moduleLoadPath;
+        ctx.defaultFunctionNamespace = this.defaultFunctionNamespace;
+        ctx.defaultCollation = this.defaultCollation;
+        ctx.defaultCollator = this.defaultCollator;
+        ctx.backwardsCompatible = this.backwardsCompatible;
+        ctx.stripWhitespace = this.stripWhitespace;
+        return ctx;
+    }
+
+    /**
 	 * Prepares the current context before xquery execution
 	 */
 	public void prepare()
@@ -746,7 +761,7 @@ public class XQueryContext {
      * called when adding an XQuery to the cache.
 	 */
 	public void reset() {
-		builder = new MemTreeBuilder(this);
+        builder = new MemTreeBuilder(this);
 		builder.startDocument();
 		staticDocumentPaths = null;
 		staticDocuments = null;
@@ -1908,6 +1923,14 @@ public class XQueryContext {
 			}
 		}
 
+        public void unsubscribe() {
+            for (int i = 0; i < listeners.size(); i++) {
+                UpdateListener listener = (UpdateListener) listeners.get(i);
+                if (listener != null) {
+                    listener.unsubscribe();
+                }
+            }
+        }
 
         public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
             for (int i = 0; i < listeners.size(); i++) {

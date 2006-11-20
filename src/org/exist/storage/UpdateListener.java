@@ -36,7 +36,12 @@ public interface UpdateListener {
      * @param oldNodeId
      * @param newNode
      */
-    void nodeMoved(NodeId oldNodeId, StoredNode newNode);
+    public void nodeMoved(NodeId oldNodeId, StoredNode newNode);
+
+    /**
+     * Called when the listener is removed from the notification service
+     */
+    public void unsubscribe();
 
     public void debug();
 }

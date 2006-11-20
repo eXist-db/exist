@@ -220,6 +220,9 @@ public class ExtDocument extends Function {
                     }
                 }
 
+                public void unsubscribe() {
+                    ExtDocument.this.listener = null;
+                }
 
                 public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
                     // not relevant

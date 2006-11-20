@@ -146,6 +146,10 @@ public class FunDoc extends Function {
                     }
                 }
 
+                public void unsubscribe() {
+                    FunDoc.this.listener = null;
+                }
+
                 public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
                     // not relevant
                 }
