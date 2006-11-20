@@ -547,7 +547,7 @@ public class XmldbURI implements Comparable {
 	}
 	
 	public boolean isCollectionPathAbsolute() {
-		return encodedCollectionPath!=null && encodedCollectionPath.charAt(0)=='/';
+		return encodedCollectionPath !=null && encodedCollectionPath.length() > 0 && encodedCollectionPath.charAt(0)=='/';
 	}
 	
 	public XmldbURI normalizeCollectionPath() {			
