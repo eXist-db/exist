@@ -98,13 +98,13 @@ abstract class OrderedDurationValue extends DurationValue {
 	public ComputableValue minus(ComputableValue other) throws XPathException {
 		switch(other.getType()) {
 		case Type.DAY_TIME_DURATION: {
-			if (getType() != other.getType()) throw new IllegalArgumentException();	// not a match after all
+			if (getType() != other.getType()) throw new IllegalArgumentException(Type.getTypeName(getType()) + " differs from " + Type.getTypeName(other.getType()));	
 			Duration a = getCanonicalDuration();
 			Duration b = ((OrderedDurationValue) other).getCanonicalDuration();	
 			Duration result = createSameKind(a.subtract(b)).getCanonicalDuration();
 			return new DayTimeDurationValue(result); }				
 		case Type.YEAR_MONTH_DURATION: {
-			if (getType() != other.getType()) throw new IllegalArgumentException();	// not a match after all
+			if (getType() != other.getType()) throw new IllegalArgumentException(Type.getTypeName(getType()) + " differs from " + Type.getTypeName(other.getType()));	
 			Duration a = getCanonicalDuration();
 			Duration b = ((OrderedDurationValue) other).getCanonicalDuration();	
 			Duration result = createSameKind(a.subtract(b)).getCanonicalDuration();
@@ -119,7 +119,7 @@ abstract class OrderedDurationValue extends DurationValue {
 			return date.createSameKind(gc);
 		*/
 		default:
-			throw new IllegalArgumentException();		// caught and converted to XPathException in subclass	
+			throw new IllegalArgumentException("Invalid Type: " + Type.getTypeName(other.getType()));		// caught and converted to XPathException in subclass	
 		}
 		/*
 		if(other.getType() == getType()) {
