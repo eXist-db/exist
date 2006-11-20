@@ -155,7 +155,10 @@ public class NativeBroker extends DBBroker {
     /** default buffer size setting */
     public static final int BUFFERS = 256;
     /** check available memory after storing DEFAULT_NODES_BEFORE_MEMORY_CHECK nodes */
-    public static final int DEFAULT_NODES_BEFORE_MEMORY_CHECK = 10000;     
+    public static final int DEFAULT_NODES_BEFORE_MEMORY_CHECK = 10000;
+    public static final double DEFAULT_STRUCTURAL_CACHE_GROWTH = 1.25;
+    public static final double DEFAULT_STRUCTURAL_KEY_THRESHOLD = 0.01;
+    public static final double DEFAULT_STRUCTURAL_VALUE_THRESHOLD = 0.04;   
     public static final double DEFAULT_VALUE_CACHE_GROWTH = 1.25;
     public static final double DEFAULT_VALUE_KEY_THRESHOLD = 0.01;
     public static final double DEFAULT_VALUE_VALUE_THRESHOLD = 0.04;
@@ -239,6 +242,13 @@ public class NativeBroker extends DBBroker {
         
         readOnly = pool.isReadOnly();
 		try {
+			
+			//TODO : refactor so that we can,
+			//1) customize the different properties (file names, cache settings...)
+			//2) have a consistent READ-ONLY behaviour (based on *mandatory* files ?)
+			//3) have consistent file creation behaviour (we can probably avoid some unnecessary files)
+			//4) use... *customized* factories for a better index plugability ;-)
+			
             // Initialize DOM storage     
             domDb = (DOMFile) config.getProperty("db-connection.dom");
 			if (domDb== null) {
@@ -260,7 +270,14 @@ public class NativeBroker extends DBBroker {
             readOnly = readOnly || collectionsDb.isReadOnly();
             
             //TODO : is it necessary to create them if we are in read-only mode ?
-			createIndexFiles();
+            createStructuralIndexFile();
+            //TODO : don't create if unnecessary ?
+            createValueIndexFile();
+            //Like this ;-)
+            if (qnameValueIndexation) 
+            	createQNameValueIndexFiles();
+            //TODO : don't create if unnecessary ?
+            createFulltextIndexFiles();			
 			
 			if (readOnly)
 				LOG.info("Database runs in read-only mode");
@@ -271,22 +288,50 @@ public class NativeBroker extends DBBroker {
 		}
 	}
 
-    private void createIndexFiles() throws DBException {
-        elementsDb = createValueIndexFile(ELEMENTS_DBX_ID, false, config, dataDir, ELEMENTS_DBX, "db-connection.elements", DEFAULT_VALUE_VALUE_THRESHOLD);
+    /** Creates the (mandatory) indexed structural file.
+     * @throws DBException
+     */
+    private void createStructuralIndexFile() throws DBException {
+        elementsDb = createNativeFile(ELEMENTS_DBX_ID, false, config, dataDir, 
+        		ELEMENTS_DBX, "db-connection.elements", 
+        		DEFAULT_STRUCTURAL_CACHE_GROWTH, DEFAULT_STRUCTURAL_KEY_THRESHOLD, DEFAULT_STRUCTURAL_VALUE_THRESHOLD);
         elementIndex = new NativeElementIndex(this, elementsDb);
         addContentLoadingObserver(elementIndex);
-        
-        valuesDb = createValueIndexFile(VALUES_DBX_ID, false, config, dataDir, VALUES_DBX, "db-connection.values", DEFAULT_VALUE_VALUE_THRESHOLD);
+    }
+      
+    /** Creates the indexed values (by path) file.
+     * @throws DBException
+     */    
+    private void createValueIndexFile() throws DBException {
+        valuesDb = createNativeFile(VALUES_DBX_ID, false, config, dataDir, 
+        		VALUES_DBX, "db-connection.values", 
+        		DEFAULT_VALUE_CACHE_GROWTH, DEFAULT_VALUE_KEY_THRESHOLD, DEFAULT_VALUE_VALUE_THRESHOLD);
         valueIndex = new NativeValueIndex(this, valuesDb);
         addContentLoadingObserver(valueIndex);
+    }
         
-        if (qnameValueIndexation) {
-            valuesDbQname = createValueIndexFile(VALUES_QNAME_DBX_ID, false, config, dataDir, VALUES_QNAME_DBX,
-                    "db-connection2.values", DEFAULT_VALUE_VALUE_THRESHOLD);
-            qnameValueIndex = new NativeValueIndexByQName(this, valuesDbQname);
-            addContentLoadingObserver(qnameValueIndex);            
-        }        
+    /** Creates the indexed values (by QName) file.
+     * @throws DBException
+     */      
+    private void createQNameValueIndexFiles() throws DBException {        
+        valuesDbQname = createNativeFile(VALUES_QNAME_DBX_ID, false, config, dataDir, 
+        		VALUES_QNAME_DBX, "db-connection2.values", 
+        		DEFAULT_VALUE_CACHE_GROWTH, DEFAULT_VALUE_KEY_THRESHOLD, DEFAULT_VALUE_VALUE_THRESHOLD);
+        qnameValueIndex = new NativeValueIndexByQName(this, valuesDbQname);
+        addContentLoadingObserver(qnameValueIndex);   
+    }
         
+    /** Creates the fulltext values (aka "words") file.
+     * @throws DBException
+     */     
+    private void createFulltextIndexFiles() throws DBException {
+    	dbWords = createNativeFile(NativeBroker.WORDS_DBX_ID, false, config, dataDir, 
+    			WORDS_DBX, "db-connection.words", 
+    			DEFAULT_WORD_CACHE_GROWTH, DEFAULT_WORD_KEY_THRESHOLD, DEFAULT_WORD_VALUE_THRESHOLD);
+        textEngine = new NativeTextEngine(this, config, dbWords);
+        addContentLoadingObserver(textEngine);
+        
+        /*
         dbWords = (BFile) config.getProperty("db-connection.words");
         if (dbWords == null) {
             File file = new File(dataDir + File.separatorChar + WORDS_DBX);
@@ -298,20 +343,21 @@ public class NativeBroker extends DBBroker {
         textEngine = new NativeTextEngine(this, config, dbWords);
         addContentLoadingObserver(textEngine);
         readOnly = readOnly || dbWords.isReadOnly();
+        */
     }
 
-    private BFile createValueIndexFile(byte id, boolean transactional, Configuration config, String dataDir, 
-            String dataFile, String propertyName, double thresholdData ) throws DBException {
-        
-        BFile db = (BFile) config.getProperty(propertyName);        
-        if (db == null) {
+    private BFile createNativeFile(byte id, boolean transactional, Configuration config, String dataDir, 
+            String dataFile, String propertyName, double cacheGrowth, double keyThreshold, double valueThreshold) throws DBException {        
+        BFile nativeFile = (BFile) config.getProperty(propertyName);        
+        if (nativeFile == null) {
             File file = new File(dataDir + File.separatorChar + dataFile);
             LOG.debug("Creating '" + file.getName() + "'...");
-            db = new BFile(pool, id, transactional, file, pool.getCacheManager(), DEFAULT_VALUE_CACHE_GROWTH, DEFAULT_VALUE_KEY_THRESHOLD, thresholdData);            
-            config.setProperty(propertyName, db);            
+            nativeFile = new BFile(pool, id, transactional, file, pool.getCacheManager(), cacheGrowth, keyThreshold, valueThreshold);            
+            config.setProperty(propertyName, nativeFile);            
         }
-        readOnly = readOnly || db.isReadOnly();
-        return db;
+        //TODO : move this out of this method ? 
+        readOnly = readOnly || nativeFile.isReadOnly();
+        return nativeFile;
     }
 
     /** Observer Design Pattern: List of ContentLoadingObserver objects */
@@ -701,8 +747,9 @@ public class NativeBroker extends DBBroker {
 	 */
 	public Collection openCollection(XmldbURI name, long addr, int lockMode) {
 	    name = prepend(name.toCollectionPathURI());
+	    //We *must* declare it here (see below)
 	    Collection collection;
-	    final CollectionCache collectionsCache = pool.getCollectionsCache();        
+	    final CollectionCache collectionsCache = pool.getCollectionsCache();  
 	    synchronized(collectionsCache) {      
 	        collection = collectionsCache.get(name);
 	        if (collection == null) {				
@@ -740,6 +787,7 @@ public class NativeBroker extends DBBroker {
 	            }
 	        }         
 	    }
+
         //Important : 
         //This code must remain ouside of the synchonized block
         //because another thread may already own a lock on the collection
@@ -749,11 +797,12 @@ public class NativeBroker extends DBBroker {
         //TODO : another yet smarter solution ?
         if(lockMode != Lock.NO_LOCK) {
             try {
-                collection.getLock().acquire(lockMode);
+            	collection.getLock().acquire(lockMode);
             } catch (LockException e) {
                 LOG.warn("Failed to acquire lock on collection '" + name + "'");
             }
         }
+	   
         return collection;           
 	}
     
@@ -2714,7 +2763,14 @@ public class NativeBroker extends DBBroker {
         
         LOG.debug("Recreating index files ...");
         try {
-            createIndexFiles();
+        	createStructuralIndexFile();
+        	//TODO : don't create if unnecessary ?
+        	createValueIndexFile();
+        	//Like this ;-)
+        	if (qnameValueIndexation) 
+        		createQNameValueIndexFiles();
+        	//TODO : don't create if unnecessary ?
+        	createFulltextIndexFiles();
         } catch (DBException e) {
             LOG.warn("Exception during repair: " + e.getMessage(), e);
         }
