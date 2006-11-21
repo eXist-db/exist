@@ -1198,10 +1198,10 @@ example:echo(("Hello", "World!"))
 	            <para>Uses a single Transaction and Trigger events for the expressions enclosed in curly braces.</para>
             </section>            
 			<section id="pragma_exception-if-index-not-used">
-	            <title>exist:exceptionIfIndexNotUsed</title>
+	            <title>pragma_force-index-use</title>
 				<para><b>For debugging purposes</b>. An expression that can be assisted by <i>range</i> or <i>QName</i> indexes - <b>comparisons</b>, <b>fn:matches()</b> - will raise an error if, for any reason, this assistance can not be performed.</para>
 				<para>This can help to check whether the indexes are correctly defined or not.</para>
-	            <synopsis>(# exist:exceptionIfIndexNotUsed #) {
+	            <synopsis>(# exist:force-index-use #) {
 	            	//group[. = "dba"]
 	             }</synopsis>
 	            <para>Raises an error (currently <b>XPDYxxxx</b> since this kind of dynamic error is not yet defined by the XQuery specifications) if the general comparison doesn't use a <i>range</i> or a <i>QName</i> index.</para>
