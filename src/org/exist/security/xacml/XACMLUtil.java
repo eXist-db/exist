@@ -309,7 +309,7 @@ public class XACMLUtil implements UpdateListener
 
 		NativeValueIndexByQName index = broker.getQNameValueIndex();
 		Sequence results = index.findByQName(attributeQName, comparison, nodeSet);
-		//TODO : should we honour (# exist:exceptionIfIndexNotUsed #) ? 
+		//TODO : should we honour (# exist:force-index-use #) ? 
 
 		return (results == null) ? null : results.getDocumentSet();
 	}

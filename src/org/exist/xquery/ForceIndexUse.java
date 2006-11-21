@@ -25,15 +25,15 @@ import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.xquery.functions.FunMatches;
 
-public class ExceptionIfIndexNotUsed extends Pragma {
+public class ForceIndexUse extends Pragma {
 	
 	Expression expression;
 	boolean bailout = false;
 
 	public static final QName EXCEPTION_IF_INDEX_NOT_USED_PRAGMA = 
-		 new QName("exceptionIfIndexNotUsed", Namespaces.EXIST_NS, "exist");
+		 new QName("force-index-use", Namespaces.EXIST_NS, "exist");
 
-    public ExceptionIfIndexNotUsed(QName qname, String contents) throws XPathException {
+    public ForceIndexUse(QName qname, String contents) throws XPathException {
     	super(qname, contents);
     }
     

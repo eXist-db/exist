@@ -260,26 +260,34 @@ public class XQueryUpdateTest extends TestCase {
             XQuery xquery = broker.getXQueryService();
             
             String query =
-                "for $prod in //product return\n" +
+                "for $prod at $i in //product return\n" +
                 "	update value $prod/description\n" +
-                "	with 'Updated Description'";
+                "	with concat('Updated Description', $i)";
             Sequence seq = xquery.execute(query, null, AccessContext.TEST);
             
             seq = xquery.execute("//product[starts-with(description, 'Updated')]", null, AccessContext.TEST);
             assertEquals(seq.getLength(), ITEMS_TO_APPEND);
-            
+            for (int i = 1; i <= ITEMS_TO_APPEND; i++) {
+                seq = xquery.execute("//product[description &= 'Updated" + i + "']", null, AccessContext.TEST);
+                assertEquals(seq.getLength(), 1);
+            }
+            seq = xquery.execute("//product[description &= 'Updated']", null, AccessContext.TEST);
+            assertEquals(seq.getLength(), ITEMS_TO_APPEND);
+
             Serializer serializer = broker.getSerializer();
             System.out.println(serializer.serialize((NodeValue) seq.itemAt(0)));
             
             query =
-            	"for $prod in //product return\n" +
+            	"for $prod at $count in //product return\n" +
                 "	update value $prod/stock/text()\n" +
-                "	with 400";
+                "	with (400 + $count)";
             seq = xquery.execute(query, null, AccessContext.TEST);
             
-            seq = xquery.execute("//product[stock = 400]", null, AccessContext.TEST);
+            seq = xquery.execute("//product[stock > 400]", null, AccessContext.TEST);
             assertEquals(seq.getLength(), ITEMS_TO_APPEND);
-            
+            seq = xquery.execute("//product[stock &= '401']", null, AccessContext.TEST);
+            assertEquals(seq.getLength(), 1);
+
             System.out.println(serializer.serialize((NodeValue) seq.itemAt(0)));
             
             query =
