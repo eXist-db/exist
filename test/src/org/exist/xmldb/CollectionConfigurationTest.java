@@ -468,24 +468,39 @@ public class CollectionConfigurationTest extends TestCase {
 
            result = service.query("/test/c[(# exist:exceptionIfIndexNotUsed #) { . = xs:dateTime(\"2002-12-07T12:20:46.275+01:00\") }]");
            assertEquals(1, result.getSize());       
-       
+
+           result = service.query("/test[(# exist:exceptionIfIndexNotUsed #) { c = xs:dateTime(\"2002-12-07T12:20:46.275+01:00\") }]");
+           assertEquals(1, result.getSize());       
+           
            result = service.query("/test/d[(# exist:exceptionIfIndexNotUsed #) { . = xs:double(1) }]");
            assertEquals(1, result.getSize());
+           
+           result = service.query("/test[(# exist:exceptionIfIndexNotUsed #) { d = xs:double(1) }]");
+           assertEquals(1, result.getSize());           
 
            result = service.query("/test/e[(# exist:exceptionIfIndexNotUsed #) { . = xs:float(1) }]");
            assertEquals(1, result.getSize());
+           
+           result = service.query("/test[(# exist:exceptionIfIndexNotUsed #) { e = xs:float(1) }]");
+           assertEquals(1, result.getSize());           
           
            result = service.query("/test/f[(# exist:exceptionIfIndexNotUsed #) { . = true() }]");
-           assertEquals(1, result.getSize()); 
+           assertEquals(1, result.getSize());
+           
+           result = service.query("/test[(# exist:exceptionIfIndexNotUsed #) { f = true() }]");
+           assertEquals(1, result.getSize());            
            
            result = service.query("/test/g[(# exist:exceptionIfIndexNotUsed #) { . = 1 }]");
            assertEquals(1, result.getSize()); 
            
+           result = service.query("/test[(# exist:exceptionIfIndexNotUsed #) { g = 1 }]");
+           assertEquals(1, result.getSize());            
+           
            result = service.query("/test/h[(# exist:exceptionIfIndexNotUsed #) { . = '1' }]");
-           assertEquals(1, result.getSize());              
-                      
+           assertEquals(1, result.getSize());  
            
-           
+           result = service.query("/test[(# exist:exceptionIfIndexNotUsed #) { h = '1' }]");
+           assertEquals(1, result.getSize());
        
        } catch(Exception e) { 
       	 	e.printStackTrace();
