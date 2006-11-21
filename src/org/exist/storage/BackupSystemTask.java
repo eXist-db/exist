@@ -59,7 +59,7 @@ public class BackupSystemTask implements SystemTask {
 
     private static final Logger LOG = Logger.getLogger(BackupSystemTask.class);
 
-    private static final DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+    private static final DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HHmm");
 
     private String user;
     private String password;
@@ -75,7 +75,7 @@ public class BackupSystemTask implements SystemTask {
         if (!collName.startsWith("xmldb:exist:"))
             collName = "xmldb:exist://" + collName;
         collection = XmldbURI.create(collName);
-        LOG.debug("Collection to backup: " + collection.toString());
+        LOG.debug("Collection to backup: " + collection.toString() + ". User: " + user);
 
         suffix = properties.getProperty("suffix", "");
         prefix = properties.getProperty("prefix", "");
