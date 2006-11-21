@@ -89,7 +89,7 @@ public class GeneralComparison extends BinaryOp {
 
     protected int rightOpDeps;
     
-    protected boolean hasUsedIndex = true;
+    private boolean hasUsedIndex = false;
     
 	public GeneralComparison(XQueryContext context, int relation) {
 		this(context, relation, Constants.TRUNC_NONE);
@@ -103,6 +103,10 @@ public class GeneralComparison extends BinaryOp {
 	public GeneralComparison(XQueryContext context, Expression left, Expression right, int relation) {
 		this(context, left, right, relation, Constants.TRUNC_NONE);
 	}
+	
+    public boolean hasUsedIndex() {
+    	return hasUsedIndex;
+    }	
 	
 	public GeneralComparison(XQueryContext context,	Expression left, Expression right, int relation, 
             int truncation) {        
@@ -253,7 +257,7 @@ public class GeneralComparison extends BinaryOp {
 	 * 
 	 * @param contextSequence
 	 * @param contextItem
-	 * @return
+	 * @return The Sequence resulting from the comparison
 	 * @throws XPathException
 	 */
 	protected Sequence genericCompare(Sequence contextSequence,	Item contextItem) throws XPathException {
@@ -462,6 +466,7 @@ public class GeneralComparison extends BinaryOp {
 		                    		"' to find key '" + Type.getTypeName(key.getType()) + "(" + key.getStringValue() + ")'");
 		                    
 		                    NodeSet ns = context.getBroker().getValueIndex().find(relation, docs, nodes, (Indexable)key);
+		                    hasUsedIndex = true;
 							if (result == null)
 								result = ns;
 							else
@@ -479,6 +484,7 @@ public class GeneralComparison extends BinaryOp {
 				        			LOG.trace("Using range index for key: " + key.getStringValue());
 								NodeSet ns = context.getBroker().getValueIndex().match(docs, nodes,
                                         getRegexp(key.getStringValue()).toString(), DBBroker.MATCH_REGEXP);
+								hasUsedIndex = true;
 								if (result == null)
 									result = ns;
 								else
@@ -516,9 +522,6 @@ public class GeneralComparison extends BinaryOp {
 		}
 	    else
 	    {
-
-	    	hasUsedIndex = false;
-	    		
 	    	if (LOG.isTraceEnabled())
 	    		LOG.trace("No suitable index found for key: " + rightSeq.getStringValue());
 	    	//no range index defined on the nodes in this sequence, so fallback to nodeSetCompare
@@ -643,7 +646,7 @@ public class GeneralComparison extends BinaryOp {
 	
 	/**
      * @param lv
-     * @return
+     * @return Whether or not <code>lv</code> is an empty string
 	 * @throws XPathException
      */
     private static boolean isEmptyString(AtomicValue lv) throws XPathException {
@@ -759,5 +762,6 @@ public class GeneralComparison extends BinaryOp {
 		getLeft().resetState();
 		getRight().resetState();
 		cached = null;        
+		hasUsedIndex = false;
 	}
 }

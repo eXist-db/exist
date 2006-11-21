@@ -23,6 +23,7 @@ import java.util.Iterator;
 
 import org.exist.Namespaces;
 import org.exist.dom.QName;
+import org.exist.xquery.functions.FunMatches;
 
 public class ExceptionIfIndexNotUsed extends Pragma {
 	
@@ -45,9 +46,13 @@ public class ExceptionIfIndexNotUsed extends Pragma {
     		for (Iterator i = pe.steps.iterator(); i.hasNext();) {
                 Expression expr = (Expression) i.next();
                 if (expr instanceof GeneralComparison) {
-                	if (!((GeneralComparison)expr).hasUsedIndex)
-                		throw new XPathException(expression.getASTNode(), "Can not use index");
+                	if (!((GeneralComparison)expr).hasUsedIndex())
+                		throw new XPathException(expression.getASTNode(), "XQDYxxxx: Can not use index");                	
                 }
+                if (expr instanceof FunMatches) {
+                	if (!((FunMatches)expr).hasUsedIndex())
+                		throw new XPathException(expression.getASTNode(), "XQDYxxxx: Can not use index");                	
+                } 
             }
     	}
     }
