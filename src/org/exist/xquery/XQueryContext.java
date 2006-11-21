@@ -62,7 +62,6 @@ import org.exist.source.DBSource;
 import org.exist.source.Source;
 import org.exist.source.SourceFactory;
 import org.exist.storage.DBBroker;
-import org.exist.storage.NativeValueIndex;
 import org.exist.storage.UpdateListener;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.TransactionException;
@@ -1636,8 +1635,8 @@ public class XQueryContext {
             if (BatchTransactionPragma.BATCH_TRANSACTION_PRAGMA.equalsSimple(qname)) {
                 return new BatchTransactionPragma(qname, contents);
             }
-            if (ExceptionIfIndexNotUsed.EXCEPTION_IF_INDEX_NOT_USED_PRAGMA.equalsSimple(qname)) {
-            	return new ExceptionIfIndexNotUsed(qname, contents);
+            if (ForceIndexUse.EXCEPTION_IF_INDEX_NOT_USED_PRAGMA.equalsSimple(qname)) {
+            	return new ForceIndexUse(qname, contents);
             }
         }
         return null;

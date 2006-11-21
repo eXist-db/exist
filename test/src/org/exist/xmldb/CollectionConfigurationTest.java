@@ -466,40 +466,40 @@ public class CollectionConfigurationTest extends TestCase {
            result = service.query("util:index-type(/test/h)");
            assertEquals("xs:string", result.getResource(0).getContent());  
 
-           result = service.query("/test/c[(# exist:exceptionIfIndexNotUsed #) { . = xs:dateTime(\"2002-12-07T12:20:46.275+01:00\") }]");
+           result = service.query("/test/c[(# exist:force-index-use #) { . = xs:dateTime(\"2002-12-07T12:20:46.275+01:00\") }]");
            assertEquals(1, result.getSize());       
 
-           result = service.query("/test[(# exist:exceptionIfIndexNotUsed #) { c = xs:dateTime(\"2002-12-07T12:20:46.275+01:00\") }]");
+           result = service.query("/test[(# exist:force-index-use #) { c = xs:dateTime(\"2002-12-07T12:20:46.275+01:00\") }]");
            assertEquals(1, result.getSize());       
            
-           result = service.query("/test/d[(# exist:exceptionIfIndexNotUsed #) { . = xs:double(1) }]");
+           result = service.query("/test/d[(# exist:force-index-use #) { . = xs:double(1) }]");
            assertEquals(1, result.getSize());
            
-           result = service.query("/test[(# exist:exceptionIfIndexNotUsed #) { d = xs:double(1) }]");
+           result = service.query("/test[(# exist:force-index-use #) { d = xs:double(1) }]");
            assertEquals(1, result.getSize());           
 
-           result = service.query("/test/e[(# exist:exceptionIfIndexNotUsed #) { . = xs:float(1) }]");
+           result = service.query("/test/e[(# exist:force-index-use #) { . = xs:float(1) }]");
            assertEquals(1, result.getSize());
            
-           result = service.query("/test[(# exist:exceptionIfIndexNotUsed #) { e = xs:float(1) }]");
+           result = service.query("/test[(# exist:force-index-use #) { e = xs:float(1) }]");
            assertEquals(1, result.getSize());           
           
-           result = service.query("/test/f[(# exist:exceptionIfIndexNotUsed #) { . = true() }]");
+           result = service.query("/test/f[(# exist:force-index-use #) { . = true() }]");
            assertEquals(1, result.getSize());
            
-           result = service.query("/test[(# exist:exceptionIfIndexNotUsed #) { f = true() }]");
+           result = service.query("/test[(# exist:force-index-use #) { f = true() }]");
            assertEquals(1, result.getSize());            
            
-           result = service.query("/test/g[(# exist:exceptionIfIndexNotUsed #) { . = 1 }]");
+           result = service.query("/test/g[(# exist:force-index-use #) { . = 1 }]");
            assertEquals(1, result.getSize()); 
            
-           result = service.query("/test[(# exist:exceptionIfIndexNotUsed #) { g = 1 }]");
+           result = service.query("/test[(# exist:force-index-use #) { g = 1 }]");
            assertEquals(1, result.getSize());            
            
-           result = service.query("/test/h[(# exist:exceptionIfIndexNotUsed #) { . = '1' }]");
+           result = service.query("/test/h[(# exist:force-index-use #) { . = '1' }]");
            assertEquals(1, result.getSize());  
            
-           result = service.query("/test[(# exist:exceptionIfIndexNotUsed #) { h = '1' }]");
+           result = service.query("/test[(# exist:force-index-use #) { h = '1' }]");
            assertEquals(1, result.getSize());
        
        } catch(Exception e) { 
@@ -527,7 +527,7 @@ public class CollectionConfigurationTest extends TestCase {
            
            try {
         	   exceptionThrown = false;
-	           result = service.query("/test/c[(# exist:exceptionIfIndexNotUsed #) { . = xs:dateTime(\"2002-12-07T12:20:46.275+01:00\") }]");
+	           result = service.query("/test/c[(# exist:force-index-use #) { . = xs:dateTime(\"2002-12-07T12:20:46.275+01:00\") }]");
            } catch (Exception e) { 
         	   if (e.getMessage().indexOf("XQDYxxxx") != Constants.STRING_NOT_FOUND)
         		   exceptionThrown = true; 
@@ -537,7 +537,7 @@ public class CollectionConfigurationTest extends TestCase {
        
            try {
         	   exceptionThrown = false;
-        	   result = service.query("/test/d[(# exist:exceptionIfIndexNotUsed #) { . = xs:double(1) }]");
+        	   result = service.query("/test/d[(# exist:force-index-use #) { . = xs:double(1) }]");
 	       } catch (Exception e) {
         	   if (e.getMessage().indexOf("XQDYxxxx") != Constants.STRING_NOT_FOUND)
         		   exceptionThrown = true; 
@@ -547,7 +547,7 @@ public class CollectionConfigurationTest extends TestCase {
 
 	       try {
 	    	   exceptionThrown = false;
-	           result = service.query("/test/e[(# exist:exceptionIfIndexNotUsed #) { . = xs:float(1) }]");
+	           result = service.query("/test/e[(# exist:force-index-use #) { . = xs:float(1) }]");
 		   } catch (Exception e) {
         	   if (e.getMessage().indexOf("XQDYxxxx") != Constants.STRING_NOT_FOUND)
         		   exceptionThrown = true; 
@@ -557,7 +557,7 @@ public class CollectionConfigurationTest extends TestCase {
 	          
 	       try {
 	    	   exceptionThrown = false;
-	    	   result = service.query("/test/f[(# exist:exceptionIfIndexNotUsed #) { . = true() }]");
+	    	   result = service.query("/test/f[(# exist:force-index-use #) { . = true() }]");
 			} catch (Exception e) {
         	   if (e.getMessage().indexOf("XQDYxxxx") != Constants.STRING_NOT_FOUND)
         		   exceptionThrown = true; 
@@ -567,7 +567,7 @@ public class CollectionConfigurationTest extends TestCase {
 	           
 	        try {
 	     	   exceptionThrown = false;
-	     	   result = service.query("/test/g[(# exist:exceptionIfIndexNotUsed #) { . = 1 }]");
+	     	   result = service.query("/test/g[(# exist:force-index-use #) { . = 1 }]");
 		   } catch (Exception e) {
         	   if (e.getMessage().indexOf("XQDYxxxx") != Constants.STRING_NOT_FOUND)
         		   exceptionThrown = true; 
@@ -577,7 +577,7 @@ public class CollectionConfigurationTest extends TestCase {
 	           
 	       try {
 	    	   exceptionThrown = false;
-	    	   result = service.query("/test/h[(# exist:exceptionIfIndexNotUsed #) { . = '1' }]");
+	    	   result = service.query("/test/h[(# exist:force-index-use #) { . = '1' }]");
 	       } catch (Exception e) {
         	   if (e.getMessage().indexOf("XQDYxxxx") != Constants.STRING_NOT_FOUND)
         		   exceptionThrown = true; 
