@@ -89,6 +89,8 @@ public class GeneralComparison extends BinaryOp {
 
     protected int rightOpDeps;
     
+    protected boolean hasUsedIndex = true;
+    
 	public GeneralComparison(XQueryContext context, int relation) {
 		this(context, relation, Constants.TRUNC_NONE);
 	}
@@ -514,6 +516,9 @@ public class GeneralComparison extends BinaryOp {
 		}
 	    else
 	    {
+
+	    	hasUsedIndex = false;
+	    		
 	    	if (LOG.isTraceEnabled())
 	    		LOG.trace("No suitable index found for key: " + rightSeq.getStringValue());
 	    	//no range index defined on the nodes in this sequence, so fallback to nodeSetCompare

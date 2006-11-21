@@ -38,15 +38,20 @@ import java.util.TreeMap;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.Namespaces;
-import org.exist.numbering.NodeId;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.collections.triggers.DocumentTrigger;
 import org.exist.collections.triggers.Trigger;
 import org.exist.collections.triggers.TriggerStatePerThread;
-import org.exist.dom.*;
+import org.exist.dom.BinaryDocument;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.QName;
+import org.exist.dom.StoredNode;
 import org.exist.http.servlets.SessionWrapper;
 import org.exist.memtree.MemTreeBuilder;
+import org.exist.numbering.NodeId;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
@@ -57,6 +62,7 @@ import org.exist.source.DBSource;
 import org.exist.source.Source;
 import org.exist.source.SourceFactory;
 import org.exist.storage.DBBroker;
+import org.exist.storage.NativeValueIndex;
 import org.exist.storage.UpdateListener;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.TransactionException;
@@ -1629,6 +1635,9 @@ public class XQueryContext {
             }
             if (BatchTransactionPragma.BATCH_TRANSACTION_PRAGMA.equalsSimple(qname)) {
                 return new BatchTransactionPragma(qname, contents);
+            }
+            if (ExceptionIfIndexNotUsed.EXCEPTION_IF_INDEX_NOT_USED_PRAGMA.equalsSimple(qname)) {
+            	return new ExceptionIfIndexNotUsed(qname, contents);
             }
         }
         return null;
