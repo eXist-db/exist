@@ -97,6 +97,8 @@ public class FunMatches extends Function {
 	protected Matcher matcher = null;
 	protected Pattern pat = null;
 	
+	protected boolean hasUsedIndex = false;
+	
 	/**
 	 * @param context
 	 */
@@ -158,6 +160,10 @@ public class FunMatches extends Function {
 		return Type.BOOLEAN;
     }
     
+    public boolean hasUsedIndex() {
+    	return hasUsedIndex;
+    }
+    
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
     	contextInfo.setParent(this);
     	//  call analyze for each argument
@@ -207,7 +213,7 @@ public class FunMatches extends Function {
      * @param contextSequence
      * @param contextItem
      * @param stringArg
-     * @return
+     * @return The resulting sequence
 	 * @throws XPathException
      */
     private Sequence evalWithIndex(Sequence contextSequence, Item contextItem, Sequence input) throws XPathException {
@@ -238,7 +244,8 @@ public class FunMatches extends Function {
 		if(Type.subTypeOf(indexType, Type.STRING)) {
 		    DocumentSet docs = nodes.getDocumentSet();
 		    try {
-                NativeValueIndex index = context.getBroker().getValueIndex(); 
+                NativeValueIndex index = context.getBroker().getValueIndex();
+                hasUsedIndex = true;
                 //TODO : check index' case compatibility with flags' one ? -pb 
 		    	if (context.isProfilingEnabled())
 		    		context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "Using vlaue index '" + index.toString() + "'", "Regex: " + pattern);
@@ -271,7 +278,7 @@ public class FunMatches extends Function {
 	 * syntax.
 	 * 
 	 * @param pattern
-	 * @return
+	 * @return The translated regexp
 	 * @throws XPathException
 	 */
 	protected String translateRegexp(String pattern) throws XPathException {
@@ -289,7 +296,7 @@ public class FunMatches extends Function {
      * @param contextSequence
      * @param contextItem
      * @param stringArg
-     * @return
+     * @return The resulting sequence
      * @throws XPathException
      */
     private Sequence evalGeneric(Sequence contextSequence, Item contextItem, Sequence stringArg) throws XPathException {
@@ -307,7 +314,7 @@ public class FunMatches extends Function {
      * @param string
      * @param pattern
      * @param flags
-     * @return
+     * @return Whether or not the string matches the given pattern with the given flags     
      * @throws XPathException
      */
     private boolean match(String string, String pattern, int flags) throws XPathException {
@@ -350,4 +357,10 @@ public class FunMatches extends Function {
 		}
 		return flags;
 	}
+    
+    public void reset() { 
+    	super.reset();
+		hasUsedIndex = false;
+	}
+    
 }

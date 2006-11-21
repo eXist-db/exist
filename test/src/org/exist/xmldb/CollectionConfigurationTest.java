@@ -4,6 +4,7 @@ import junit.framework.TestCase;
 
 import org.exist.collections.CollectionConfiguration;
 import org.exist.storage.DBBroker;
+import org.exist.xquery.Constants;
 import org.exist.test.TestConstants;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -512,8 +513,10 @@ public class CollectionConfigurationTest extends TestCase {
            try {
         	   exceptionThrown = false;
 	           result = service.query("/test/c[(# exist:exceptionIfIndexNotUsed #) { . = xs:dateTime(\"2002-12-07T12:20:46.275+01:00\") }]");
-           } catch (Exception e) {        	  
-        	   exceptionThrown = true;        	   
+           } catch (Exception e) { 
+        	   if (e.getMessage().indexOf("XQDYxxxx") != Constants.STRING_NOT_FOUND)
+        		   exceptionThrown = true; 
+        	   else throw e;
            }
            assertTrue("Exception expected : missing index", exceptionThrown);
        
@@ -521,7 +524,9 @@ public class CollectionConfigurationTest extends TestCase {
         	   exceptionThrown = false;
         	   result = service.query("/test/d[(# exist:exceptionIfIndexNotUsed #) { . = xs:double(1) }]");
 	       } catch (Exception e) {
-	    	   exceptionThrown = true;        	   
+        	   if (e.getMessage().indexOf("XQDYxxxx") != Constants.STRING_NOT_FOUND)
+        		   exceptionThrown = true; 
+        	   else throw e;       	   
 	       }
 	       assertTrue("Exception expected : missing index", exceptionThrown);
 
@@ -529,7 +534,9 @@ public class CollectionConfigurationTest extends TestCase {
 	    	   exceptionThrown = false;
 	           result = service.query("/test/e[(# exist:exceptionIfIndexNotUsed #) { . = xs:float(1) }]");
 		   } catch (Exception e) {
-			   exceptionThrown = true;        	   
+        	   if (e.getMessage().indexOf("XQDYxxxx") != Constants.STRING_NOT_FOUND)
+        		   exceptionThrown = true; 
+        	   else throw e;      	   
 		   }
 		   assertTrue("Exception expected : missing index", exceptionThrown);
 	          
@@ -537,7 +544,9 @@ public class CollectionConfigurationTest extends TestCase {
 	    	   exceptionThrown = false;
 	    	   result = service.query("/test/f[(# exist:exceptionIfIndexNotUsed #) { . = true() }]");
 			} catch (Exception e) {
-				   exceptionThrown = true;        	   
+        	   if (e.getMessage().indexOf("XQDYxxxx") != Constants.STRING_NOT_FOUND)
+        		   exceptionThrown = true; 
+        	   else throw e;       	   
 			}
 			assertTrue("Exception expected : missing index", exceptionThrown);
 	           
@@ -545,7 +554,9 @@ public class CollectionConfigurationTest extends TestCase {
 	     	   exceptionThrown = false;
 	     	   result = service.query("/test/g[(# exist:exceptionIfIndexNotUsed #) { . = 1 }]");
 		   } catch (Exception e) {
-			   exceptionThrown = true;        	   
+        	   if (e.getMessage().indexOf("XQDYxxxx") != Constants.STRING_NOT_FOUND)
+        		   exceptionThrown = true; 
+        	   else throw e;       	   
 		   }
 		   assertTrue("Exception expected : missing index", exceptionThrown);
 	           
@@ -553,7 +564,9 @@ public class CollectionConfigurationTest extends TestCase {
 	    	   exceptionThrown = false;
 	    	   result = service.query("/test/h[(# exist:exceptionIfIndexNotUsed #) { . = '1' }]");
 	       } catch (Exception e) {
-	    	   exceptionThrown = true;        	   
+        	   if (e.getMessage().indexOf("XQDYxxxx") != Constants.STRING_NOT_FOUND)
+        		   exceptionThrown = true; 
+        	   else throw e;   	   
 	       }
 	       assertTrue("Exception expected : missing index", exceptionThrown);
                           
