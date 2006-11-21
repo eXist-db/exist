@@ -124,5 +124,19 @@
                 <command>Namespace:</command>&#160;http://exist-db.org/xquery/math
             </para>
         </section>
+        
+        <section id="module_scheduler">
+            <title>Scheduler Module</title>
+            <para>Provides access to eXist's Scheduler for the purposes of scheduling job's and manipulating existing job's.</para>
+            <para>
+                <command>Creator:</command>&#160;<dc:creator>Adam Retter</dc:creator><br/>
+                <command>Licence:</command>&#160;LGPL<br/>
+                <command>Status:</command>&#160;production
+            </para>
+            <para>
+                <command>Class:</command>&#160;org.exist.xquery.modules.scheduler.SchedulerModule<br/>
+                <command>Namespace:</command>&#160;http://exist-db.org/xquery/scheduler
+            </para>
+        </section>
     </chapter>
 </book>
