@@ -421,8 +421,8 @@ public class CollectionConfigurationTest extends TestCase {
            testCollection.storeResource(doc);
    
            XPathQueryService service = (XPathQueryService)
-           testCollection.getService("XPathQueryService", "1.0");
-               
+           testCollection.getService("XPathQueryService", "1.0");              
+           
            result = service.query("util:index-key-occurrences(/test/c, xs:dateTime(\"2002-12-07T12:20:46.275+01:00\") )");
            assertEquals(1, result.getSize());
            assertEquals("1", result.getResource(0).getContent());             
@@ -463,7 +463,27 @@ public class CollectionConfigurationTest extends TestCase {
            assertEquals("1", result.getResource(0).getContent());
            
            result = service.query("util:index-type(/test/h)");
-           assertEquals("xs:string", result.getResource(0).getContent());            
+           assertEquals("xs:string", result.getResource(0).getContent());  
+
+           result = service.query("/test/c[(# exist:exceptionIfIndexNotUsed #) { . = xs:dateTime(\"2002-12-07T12:20:46.275+01:00\") }]");
+           assertEquals(1, result.getSize());       
+       
+           result = service.query("/test/d[(# exist:exceptionIfIndexNotUsed #) { . = xs:double(1) }]");
+           assertEquals(1, result.getSize());
+
+           result = service.query("/test/e[(# exist:exceptionIfIndexNotUsed #) { . = xs:float(1) }]");
+           assertEquals(1, result.getSize());
+          
+           result = service.query("/test/f[(# exist:exceptionIfIndexNotUsed #) { . = true() }]");
+           assertEquals(1, result.getSize()); 
+           
+           result = service.query("/test/g[(# exist:exceptionIfIndexNotUsed #) { . = 1 }]");
+           assertEquals(1, result.getSize()); 
+           
+           result = service.query("/test/h[(# exist:exceptionIfIndexNotUsed #) { . = '1' }]");
+           assertEquals(1, result.getSize());              
+                      
+           
            
        
        } catch(Exception e) { 
@@ -471,6 +491,77 @@ public class CollectionConfigurationTest extends TestCase {
            fail(e.getMessage());             
        }
   }
+   
+   public void testMissingRangeIndexes() { 
+       ResourceSet result; 
+       boolean exceptionThrown = false;
+       try {
+           //Configure collection automatically
+           IndexQueryService idxConf = (IndexQueryService)
+           testCollection.getService("IndexQueryService", "1.0");           
+
+           //... then index document 
+           XMLResource doc = (XMLResource)
+           testCollection.createResource(TestConstants.TEST_XML_URI.toString(), "XMLResource" );
+           doc.setContent(DOCUMENT_CONTENT2); 
+           testCollection.storeResource(doc);
+   
+           XPathQueryService service = (XPathQueryService)
+           testCollection.getService("XPathQueryService", "1.0");  
+           
+           try {
+        	   exceptionThrown = false;
+	           result = service.query("/test/c[(# exist:exceptionIfIndexNotUsed #) { . = xs:dateTime(\"2002-12-07T12:20:46.275+01:00\") }]");
+           } catch (Exception e) {        	  
+        	   exceptionThrown = true;        	   
+           }
+           assertTrue("Exception expected : missing index", exceptionThrown);
+       
+           try {
+        	   exceptionThrown = false;
+        	   result = service.query("/test/d[(# exist:exceptionIfIndexNotUsed #) { . = xs:double(1) }]");
+	       } catch (Exception e) {
+	    	   exceptionThrown = true;        	   
+	       }
+	       assertTrue("Exception expected : missing index", exceptionThrown);
+
+	       try {
+	    	   exceptionThrown = false;
+	           result = service.query("/test/e[(# exist:exceptionIfIndexNotUsed #) { . = xs:float(1) }]");
+		   } catch (Exception e) {
+			   exceptionThrown = true;        	   
+		   }
+		   assertTrue("Exception expected : missing index", exceptionThrown);
+	          
+	       try {
+	    	   exceptionThrown = false;
+	    	   result = service.query("/test/f[(# exist:exceptionIfIndexNotUsed #) { . = true() }]");
+			} catch (Exception e) {
+				   exceptionThrown = true;        	   
+			}
+			assertTrue("Exception expected : missing index", exceptionThrown);
+	           
+	        try {
+	     	   exceptionThrown = false;
+	     	   result = service.query("/test/g[(# exist:exceptionIfIndexNotUsed #) { . = 1 }]");
+		   } catch (Exception e) {
+			   exceptionThrown = true;        	   
+		   }
+		   assertTrue("Exception expected : missing index", exceptionThrown);
+	           
+	       try {
+	    	   exceptionThrown = false;
+	    	   result = service.query("/test/h[(# exist:exceptionIfIndexNotUsed #) { . = '1' }]");
+	       } catch (Exception e) {
+	    	   exceptionThrown = true;        	   
+	       }
+	       assertTrue("Exception expected : missing index", exceptionThrown);
+                          
+       } catch(Exception e) { 
+      	 	e.printStackTrace();
+           fail(e.getMessage());             
+       }
+  }   
 
    public void testMultipleConfigurations00() {     	  
        checkStoreConf(CONF_COLL_URI, TEST_CONFIG_NAME_1, CONF_COLL_URI, TEST_CONFIG_NAME_1, true);
