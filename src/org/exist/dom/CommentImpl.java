@@ -23,6 +23,10 @@ public class CommentImpl extends CharacterDataImpl implements Comment {
     public CommentImpl( char[] data, int start, int howmany ) {
         super( Node.COMMENT_NODE, data, start, howmany );
     }
+    
+	public String getLocalName() {		
+        return "";
+	}        
 
     public String toString() {
         StringBuffer buf = new StringBuffer();
