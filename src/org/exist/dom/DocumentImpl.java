@@ -122,7 +122,11 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 
 	public String getLocalName() {		
         return "";
-	}    
+	}
+	
+	public String getNamespaceURI() {
+        return "";
+	}		
     
     /************************************************
      * 

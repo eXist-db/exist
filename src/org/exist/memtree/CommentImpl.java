@@ -46,7 +46,11 @@ public class CommentImpl extends NodeImpl implements Comment {
     
 	public String getLocalName() {		
         return "";
-	}        
+	}   
+	
+	public String getNamespaceURI() {
+        return "";
+	}		
 
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.CharacterData#getData()

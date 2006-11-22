@@ -77,6 +77,10 @@ public class TextImpl extends NodeImpl implements Text {
         return "";
     }
     
+	public String getNamespaceURI() {
+        return "";
+	} 
+    
     public Node getFirstChild() {
         return null;
     }    

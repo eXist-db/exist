@@ -67,6 +67,10 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
 	public String getLocalName() {
         return target;
 	}  	
+	
+	public String getNamespaceURI() {
+        return "";
+	}		
 
     /**
      *  Gets the data attribute of the ProcessingInstructionImpl object
