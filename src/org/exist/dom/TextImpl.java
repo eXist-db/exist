@@ -53,6 +53,10 @@ public class TextImpl extends CharacterDataImpl implements Text {
         super( Node.TEXT_NODE, nodeId, data );
     }
     
+	public String getLocalName() {		
+        return "";
+	}    
+    
     public static StoredNode deserialize(byte[] data,
                                        int start,
                                        int len,

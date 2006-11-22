@@ -43,6 +43,10 @@ public class CommentImpl extends NodeImpl implements Comment {
     public String getStringValue() {
     	return getData();
     }
+    
+	public String getLocalName() {		
+        return "";
+	}        
 
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.CharacterData#getData()

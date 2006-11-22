@@ -119,6 +119,10 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
         this.collection = collection;
 		this.fileURI = fileURI;		
 	}
+
+	public String getLocalName() {		
+        return "";
+	}    
     
     /************************************************
      * 

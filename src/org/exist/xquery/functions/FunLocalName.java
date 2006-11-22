@@ -35,7 +35,6 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
-import org.w3c.dom.ProcessingInstruction;
 
 /**
  * Built-in function fn:local-name().
@@ -101,18 +100,7 @@ public class FunLocalName extends Function {
                         Type.getTypeName(item.getType()));          
             //TODO : how to improve performance ?
             Node n = ((NodeValue)item).getNode();
-            switch(n.getNodeType()) {
-                case Node.ELEMENT_NODE:
-                case Node.ATTRIBUTE_NODE:
-                    result = new StringValue(n.getLocalName());
-                    break;
-                case Node.PROCESSING_INSTRUCTION_NODE:
-                    result = new StringValue(((ProcessingInstruction)n).getTarget());
-                    break;
-                default:
-                	LOG.warn("Tried to obtain local name for node type " + n.getNodeType());
-                    result = new StringValue("");
-            }
+            result = new StringValue(n.getLocalName());
         }
         
         if (context.getProfiler().isEnabled()) 

@@ -51,6 +51,10 @@ public class ProcessingInstructionImpl
         // TODO: this could be optimized
     	return getData().replaceFirst("^\\s+","");
     }	
+    
+	public String getLocalName() {
+        return getTarget();
+	}    
 
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.ProcessingInstruction#getData()

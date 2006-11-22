@@ -993,6 +993,10 @@ public class DocumentImpl extends NodeImpl implements Document {
         return count;
     }
     
+	public String getLocalName() {		
+        return "";
+	}     
+    
 	/** ? @see org.w3c.dom.Document#getInputEncoding()
 	 */
 	public String getInputEncoding() {
