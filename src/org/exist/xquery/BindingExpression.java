@@ -33,9 +33,14 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
+ 
+import org.exist.xquery.value.GroupedValueSequence; 
+import org.exist.xquery.value.GroupedValueSequenceList; 
+ 
 import org.exist.storage.UpdateListener;
 import org.exist.numbering.NodeId;
 
+ 
 /**
  * Abstract superclass for the variable binding expressions "for" and "let".
  * 
@@ -54,13 +59,35 @@ public abstract class BindingExpression extends AbstractExpression {
 	protected Expression inputSequence;
 	protected Expression returnExpr;
 	protected Expression whereExpr;
-	protected OrderSpec orderSpecs[] = null;
-    private ExprUpdateListener listener;
+	protected OrderSpec orderSpecs[] = null; 
+	/* bv : variables for group by 
+	    group toGroupVarName as groupVarName as groupSpecs... return groupReturnExpr */ 
+	protected GroupSpec groupSpecs[] = null; 
+	protected Expression groupReturnExpr; 
+	protected String groupVarName; 
+	protected String toGroupVarName;   
+	private ExprUpdateListener listener;
 
     public BindingExpression(XQueryContext context) {
 		super(context);
 	}
 
+    public void setGroupSpecs(GroupSpec specs[]) { 
+        this.groupSpecs = specs; 
+    } 
+         
+    public void setGroupReturnExpr(Expression expr) { 
+        this.groupReturnExpr = expr; 
+    }     
+     
+    public void setGroupVariable(String qname) { 
+        groupVarName = qname; 
+    } 
+
+    public void setToGroupVariable(String qname) { 
+        toGroupVarName = qname; 
+    } 
+    
 	public void setVariable(String qname) {
 		varName = qname;
 	}

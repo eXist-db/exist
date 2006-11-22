@@ -15,6 +15,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * 
+ * basé sur 4568, modif boris GB 
  * $Id: XQuery.g,v 1.30 2004/09/26 21:55:00 wolfgang_m Exp $
  */
 header {
