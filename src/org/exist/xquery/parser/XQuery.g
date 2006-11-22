@@ -144,6 +144,7 @@ imaginaryTokenDefinitions
 	ATOMIC_TYPE 
 	MODULE 
 	ORDER_BY 
+    GROUP_BY 
 	POSITIONAL_VAR 
 	BEFORE 
 	AFTER 
@@ -504,7 +505,7 @@ renameExpr throws XPathException
 	
 flworExpr throws XPathException
 :
-	( forClause | letClause )+ ( "where" expr )? ( orderByClause )? "return"^ exprSingle
+	( forClause | letClause )+ ( "where" expr )? ( groupByClause )? ( orderByClause )?  "return"^ exprSingle 
 	;
 
 forClause throws XPathException
@@ -558,6 +559,46 @@ orderModifier
 :
 	( "ascending" | "descending" )? ( "empty" ( "greatest" | "least" ) )? ( "collation" STRING_LITERAL )?
 	;
+
+groupByClause throws XPathException 
+: 
+    "group"! toGroupVarRef "as"! groupVarBinding "by"! groupSpecList 
+    { #groupByClause= #([GROUP_BY, "group by"], #groupByClause); } 
+    ; 
+ 
+toGroupVarRef throws XPathException 
+{ String toGroupVarName = null; } 
+: 
+    DOLLAR! toGroupVarName=v:qName 
+    {  
+        #toGroupVarRef= #[VARIABLE_REF, toGroupVarName]; 
+        #toGroupVarRef.copyLexInfo(#v); 
+    } 
+    ; 
+ 
+groupVarBinding throws XPathException 
+{ String groupVarName; } 
+: 
+    DOLLAR! groupVarName=qName! 
+    { #groupVarBinding= #(#[VARIABLE_BINDING, groupVarName], #groupVarBinding); } 
+    ; 
+     
+groupSpecList throws XPathException 
+: 
+    groupSpec ( COMMA! groupSpec )* 
+    ; 
+ 
+groupSpec throws XPathException:  
+    exprSingle "as"! (groupKeyVarBinding)! 
+    ; 
+ 
+groupKeyVarBinding throws XPathException 
+{ String groupKeyVarName; } 
+: 
+    DOLLAR! groupKeyVarName=qName! 
+    { #groupKeyVarBinding= #(#[VARIABLE_BINDING, groupKeyVarName], #groupKeyVarBinding); } 
+    ; 
+ 	
 
 quantifiedExpr throws XPathException:
 	( "some"^ | "every"^ ) quantifiedInVarBinding ( COMMA! quantifiedInVarBinding )*
@@ -1432,6 +1473,8 @@ reservedKeywords returns [String name]
 	|
 	"by" { name = "by"; }
 	|
+    "group" { name = "group"; } 
+    | 	
 	"some" { name = "some"; }
 	|
 	"every" { name = "every"; }

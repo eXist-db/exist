@@ -707,6 +707,11 @@ throws PermissionDeniedException, EXistException, XPathException
 			action.setASTNode(r);
 			PathExpr whereExpr= null;
 			List orderBy= null;
+            //bv : variables for groupBy 
+            List groupBy= null; 
+            String toGroupVar = null; 
+            String groupVar = null; 
+            String groupKeyVar = null; 			
 		}
 		(
 			#(
@@ -776,8 +781,37 @@ throws PermissionDeniedException, EXistException, XPathException
 			}
 			step=expr [whereExpr]
 		)?
+        //bv : group by clause 
 		(
 			#(
+                GROUP_BY { groupBy= new ArrayList(3); } 
+                ( 
+                    #( toGroupVarName:VARIABLE_REF 
+                      { toGroupVar= toGroupVarName.getText(); } 
+                    ) 
+                )!                 
+                ( 
+                    #( groupVarName:VARIABLE_BINDING 
+                      { groupVar= groupVarName.getText(); } 
+                    ) 
+                )! 
+                (             
+                    { PathExpr groupSpecExpr= new PathExpr(context); } 
+                    step=expr [groupSpecExpr] 
+                    { 
+                    } 
+                    #( groupKeyVarName:VARIABLE_BINDING 
+                      { groupKeyVar = groupKeyVarName.getText(); 
+                        GroupSpec groupSpec= new GroupSpec(context, groupSpecExpr, groupKeyVar); 
+                        groupBy.add(groupSpec); 
+                      } 
+                    ) 
+                )+ 
+            ) 
+        )? 
+         
+        ( 
+            #( 			
 				ORDER_BY { orderBy= new ArrayList(3); }
 				(
 					{ PathExpr orderSpecExpr= new PathExpr(context); }
@@ -821,6 +855,9 @@ throws PermissionDeniedException, EXistException, XPathException
 		)?
 		step=expr [(PathExpr) action]
 		{
+            //bv : save the "real" return expression (used in groupBy) 
+            PathExpr groupReturnExpr = (PathExpr) action; 
+  
 			for (int i= clauses.size() - 1; i >= 0; i--) {
 				ForLetClause clause= (ForLetClause) clauses.get(i);
 				BindingExpression expr;
@@ -850,6 +887,20 @@ throws PermissionDeniedException, EXistException, XPathException
 				}
 				((BindingExpression)action).setOrderSpecs(orderSpecs);
 			}
+            // bv : group by initialisation 
+            if (groupBy != null) { 
+                GroupSpec groupSpecs[]= new GroupSpec[groupBy.size()]; 
+                int k= 0; 
+                for (Iterator j= groupBy.iterator(); j.hasNext(); k++) { 
+                    GroupSpec groupSpec= (GroupSpec) j.next(); 
+                    groupSpecs[k]= groupSpec; 
+                } 
+                ((BindingExpression)action).setGroupSpecs(groupSpecs); 
+                ((BindingExpression)action).setGroupVariable(groupVar); 
+                ((BindingExpression)action).setGroupReturnExpr(groupReturnExpr); 
+                ((BindingExpression)action).setToGroupVariable(toGroupVar); 
+            } 
+         
 			path.add(action);
 			step = action;
 		}

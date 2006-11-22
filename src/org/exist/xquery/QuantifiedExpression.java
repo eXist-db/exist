@@ -62,7 +62,7 @@ public class QuantifiedExpression extends BindingExpression {
     /* (non-Javadoc)
      * @see org.exist.xquery.BindingExpression#analyze(org.exist.xquery.Expression, int, org.exist.xquery.OrderSpec[])
      */
-    public void analyze(AnalyzeContextInfo contextInfo, OrderSpec orderBy[]) throws XPathException {
+	public void analyze(AnalyzeContextInfo contextInfo, OrderSpec orderBy[], GroupSpec groupBy[]) throws XPathException { 
         LocalVariable mark = context.markLocalVariables(false);
 		context.declareVariableBinding(new LocalVariable(QName.parse(context, varName, null)));
 		
@@ -73,7 +73,7 @@ public class QuantifiedExpression extends BindingExpression {
 		context.popLocalVariables(mark);
     }
     
-	public Sequence eval(Sequence contextSequence, Item contextItem, Sequence resultSequence) 
+	public Sequence eval(Sequence contextSequence, Item contextItem, Sequence resultSequence, GroupedValueSequenceList groupedSequence)   
         throws XPathException {
         
         if (context.getProfiler().isEnabled()) {
