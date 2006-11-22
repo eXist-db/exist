@@ -995,7 +995,11 @@ public class DocumentImpl extends NodeImpl implements Document {
     
 	public String getLocalName() {		
         return "";
-	}     
+	}   
+	
+	public String getNamespaceURI() {
+        return "";
+	}	
     
 	/** ? @see org.w3c.dom.Document#getInputEncoding()
 	 */

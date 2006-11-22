@@ -56,6 +56,10 @@ public class TextImpl extends CharacterDataImpl implements Text {
 	public String getLocalName() {		
         return "";
 	}    
+	
+	public String getNamespaceURI() {
+        return "";
+	}		
     
     public static StoredNode deserialize(byte[] data,
                                        int start,

@@ -80,11 +80,7 @@ public class FunNamespaceURI extends Function {
         
         if(contextItem != null)
             contextSequence = contextItem.toSequence();
-
-		//if (contextSequence == null)
-		//	throw new XPathException(getASTNode(), "XPDY0002: Undefined context item");        
         
-        Sequence result;
         Item item = null;
         // check if the node is passed as an argument or should be taken from
         // the context sequence
@@ -100,6 +96,7 @@ public class FunNamespaceURI extends Function {
             item = contextSequence.itemAt(0);
         }
         
+        Sequence result;
         if(item == null)
             result = AnyURIValue.EMPTY_URI;
         else {        	
@@ -108,17 +105,7 @@ public class FunNamespaceURI extends Function {
                         Type.getTypeName(item.getType()));
             //TODO : how to improve performance ?
             Node n = ((NodeValue)item).getNode();
-            switch(n.getNodeType()) {
-                case Node.ELEMENT_NODE:
-                case Node.ATTRIBUTE_NODE:                	
-                    result = new AnyURIValue(n.getNamespaceURI());
-                    break;
-                //TODO : what kind of default do we expect here ? -pb
-                default:
-                	//TODO : raise an exception ?
-                	LOG.warn("Tried to obtain namespace URI for node type " + n.getNodeType());
-                    result = AnyURIValue.EMPTY_URI;
-            }
+            result = new AnyURIValue(n.getNamespaceURI());
         }
         
         if (context.getProfiler().isEnabled()) 

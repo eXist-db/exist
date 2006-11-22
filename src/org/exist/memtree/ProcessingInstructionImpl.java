@@ -55,6 +55,10 @@ public class ProcessingInstructionImpl
 	public String getLocalName() {
         return getTarget();
 	}    
+	
+	public String getNamespaceURI() {
+        return "";
+	}	
 
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.ProcessingInstruction#getData()

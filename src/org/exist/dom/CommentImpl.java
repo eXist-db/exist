@@ -26,7 +26,11 @@ public class CommentImpl extends CharacterDataImpl implements Comment {
     
 	public String getLocalName() {		
         return "";
-	}        
+	}
+	
+	public String getNamespaceURI() {
+        return "";
+	}		
 
     public String toString() {
         StringBuffer buf = new StringBuffer();
