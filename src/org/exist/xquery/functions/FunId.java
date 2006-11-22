@@ -28,7 +28,6 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.dom.NodeSetHelper;
 import org.exist.dom.QName;
 import org.exist.storage.ElementValue;
 import org.exist.util.XMLChar;
@@ -113,6 +112,9 @@ public class FunId extends Function {
                 if (nodes.getLength() == 0)
                     throw new XPathException(getASTNode(), 
                             "XPDY0002: no node or context item for fn:id");
+                if (!Type.subTypeOf(nodes.itemAt(0).getType(), Type.NODE)) 
+                	throw new XPathException(getASTNode(), 
+                    "XPTY0004: fn:id() argument is not a node");               	
                 NodeValue node = (NodeValue)nodes.itemAt(0);
                 if (node.getImplementationType() == NodeValue.IN_MEMORY_NODE)
                     throw new XPathException(getASTNode(), "FODC0001: supplied node is not from a persistent document");
