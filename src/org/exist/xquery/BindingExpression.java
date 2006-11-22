@@ -121,22 +121,22 @@ public abstract class BindingExpression extends AbstractExpression {
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression, int)
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-        analyze(contextInfo, orderSpecs);
+    	analyze(contextInfo, orderSpecs, groupSpecs); 
     }
     
-    public abstract void analyze(AnalyzeContextInfo contextInfo, OrderSpec orderBy[]) throws XPathException;
+    public abstract void analyze(AnalyzeContextInfo contextInfo, OrderSpec orderBy[], GroupSpec groupBy[]) throws XPathException; 
     
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.AbstractExpression#eval(org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-		return eval(contextSequence, contextItem, null);
+		return eval(contextSequence, contextItem, null, null); 
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
-	public abstract Sequence eval(Sequence contextSequence,	Item contextItem, Sequence resultSequence)
+	public abstract Sequence eval(Sequence contextSequence,    Item contextItem, Sequence resultSequence, GroupedValueSequenceList groupedSequence) 
 		throws XPathException;
 
 	protected Sequence applyWhereExpression(Sequence contextSequence) throws XPathException {
