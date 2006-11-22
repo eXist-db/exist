@@ -122,6 +122,10 @@ public class FunMin extends CollatingFunction {
                     	value = value.convertTo(Type.DOUBLE);
                 	//Ugly test
 	                if (value instanceof NumericValue) {
+	                	//Don't mix comparisons
+	                	if (!Type.subTypeOf(min.getType(), Type.NUMBER))
+	                		throw new XPathException("FORG0006: Cannot compare " + Type.getTypeName(min.getType()) + 
+	                				" and " + Type.getTypeName(value.getType()));
 	                	if (((NumericValue) value).isNaN()) {
                            if (value.getType() == Type.FLOAT)
                                min = FloatValue.NaN;
