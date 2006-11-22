@@ -257,6 +257,7 @@ public class XQueryFunctionsTest extends TestCase {
 			assertEquals( "NaN", r );
 
 		} catch (XMLDBException e) {
+			e.printStackTrace();
 			System.out.println("testAvg(): " + e);
 			fail(e.getMessage());
 		}

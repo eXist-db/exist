@@ -30,6 +30,7 @@ import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.Duration;
 
 import org.exist.util.FastStringBuffer;
+import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 
 /**
@@ -145,6 +146,16 @@ public class YearMonthDurationValue extends OrderedDurationValue {
 	}
 	
 	public ComputableValue mult(ComputableValue other) throws XPathException {
+		if (other instanceof NumericValue) {
+			//If $arg2 is NaN an error is raised [err:FOCA0005]
+			if (((NumericValue)other).isNaN()) {
+				throw new XPathException("FOCA0005: Operand is not a number");				
+			}		
+			//If $arg2 is positive or negative infinity, the result overflows
+			if (((NumericValue)other).isInfinite()) {
+				throw new XPathException("FODT0002: Multiplication by infinity overflow");		
+			}		
+		}
 		BigDecimal factor = numberToBigDecimal(other, "Operand to mult should be of numeric type; got: ");
 		boolean isFactorNegative = factor.signum() < 0;		
 		YearMonthDurationValue product = fromDecimalMonths(
@@ -168,6 +179,10 @@ public class YearMonthDurationValue extends OrderedDurationValue {
 			if (((NumericValue)other).isInfinite()) {
 				return new YearMonthDurationValue("P0M");
 			}
+			//If $arg2 is positive or negative zero, the result overflows and is handled as discussed in 10.1.1 Limits and Precision
+			if (((NumericValue)other).compareTo(IntegerValue.ZERO) == Constants.EQUAL) { 
+				throw new XPathException("FODT0002: Division by zero overflow");
+			}			
 		}
 		BigDecimal divisor = numberToBigDecimal(other, "Can not divide xdt:yearMonthDuration by '" + Type.getTypeName(other.getType())+ "'");
 		boolean isDivisorNegative = divisor.signum() < 0;
