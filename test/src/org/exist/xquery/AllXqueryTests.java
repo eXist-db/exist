@@ -57,6 +57,7 @@ public class AllXqueryTests {
         suite.addTestSuite(FtQueryTest.class);
         suite.addTestSuite(DocumentUpdateTest.class);
         suite.addTestSuite(AnyURITest.class);
+        suite.addTestSuite(XQueryGroupByTest.class);        
         //		suite.addTestSuite(XQueryUseCasesTest.class);
         //$JUnit-END$
         return suite;

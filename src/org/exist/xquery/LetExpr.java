@@ -26,6 +26,8 @@ import org.exist.dom.QName;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.StoredNode;
 import org.exist.xquery.util.ExpressionDumper;
+import org.exist.xquery.value.GroupedValueSequence; 
+import org.exist.xquery.value.GroupedValueSequenceList; 
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.OrderedValueSequence;
 import org.exist.xquery.value.PreorderedValueSequence;
@@ -120,6 +122,9 @@ public class LetExpr extends BindingExpression {
 
             registerUpdateListener(in);
             
+             
+             
+             
             if (whereExpr != null) {
                 Sequence filtered = applyWhereExpression(null);
                 // TODO: don't use returnsType here
@@ -195,6 +200,22 @@ public class LetExpr extends BindingExpression {
             dumper.nl().display("where ");
             whereExpr.dump(dumper);
         }
+        if(groupSpecs != null) { 
+            dumper.display("group "); 
+            dumper.display("$").display(toGroupVarName); 
+            dumper.display(" as "); 
+            dumper.display("$").display(groupVarName); 
+            dumper.display(" by "); 
+            for(int i = 0; i < groupSpecs.length; i++) { 
+                if(i > 0) 
+                    dumper.display(", "); 
+                 
+                dumper.display(groupSpecs[i].getGroupExpression().toString()); 
+                dumper.display(" as "); 
+                dumper.display("$").display(groupSpecs[i].getKeyVarName()); 
+            } 
+            dumper.nl(); 
+        } 
         if(orderSpecs != null) {
             dumper.nl().display("order by ");
             for(int i = 0; i < orderSpecs.length; i++) {
