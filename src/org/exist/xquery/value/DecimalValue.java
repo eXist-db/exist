@@ -28,6 +28,7 @@ import java.math.BigInteger;
 import java.text.Collator;
 import java.util.regex.Pattern;
 
+import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 
 /**
@@ -332,6 +333,21 @@ public class DecimalValue extends NumericValue {
 				value.min(((DecimalValue) other.convertTo(Type.DECIMAL)).value));
 		}
 	}
+	
+    public int compareTo(Object o) {
+        final AtomicValue other = (AtomicValue)o;
+        if(Type.subTypeOf(other.getType(), Type.DECIMAL)) {
+        	DecimalValue otherAsDecimal = null;
+        	try {
+        		otherAsDecimal = (DecimalValue)other.convertTo(Type.DECIMAL);        		
+        	} catch (XPathException e) {
+        		//TODO : is this relevant ?
+        		return Constants.INFERIOR;
+        	}
+        	return value.compareTo(otherAsDecimal.value);
+        } else
+            return getType() < other.getType() ? Constants.INFERIOR : Constants.SUPERIOR;
+    }	
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Item#conversionPreference(java.lang.Class)

@@ -23,12 +23,14 @@
 
 package org.exist.xquery.value;
 
-import java.math.*;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.Duration;
 
 import org.exist.util.FastStringBuffer;
+import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 
 /**
@@ -192,6 +194,16 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 	*/
 	
 	public ComputableValue mult(ComputableValue other) throws XPathException {
+		if (other instanceof NumericValue) {
+			//If $arg2 is NaN an error is raised [err:FOCA0005]
+			if (((NumericValue)other).isNaN()) {
+				throw new XPathException("FOCA0005: Operand is not a number");				
+			}		
+			//If $arg2 is positive or negative infinity, the result overflows
+			if (((NumericValue)other).isInfinite()) {
+				throw new XPathException("FODT0002: Multiplication by infinity overflow");		
+			}		
+		}		
 		BigDecimal factor = numberToBigDecimal(other, "Operand to mult should be of numeric type; got: ");
 		boolean isFactorNegative = factor.signum() < 0;
 		DayTimeDurationValue product = new DayTimeDurationValue(duration.multiply(factor.abs()));
@@ -211,8 +223,13 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 			if (((NumericValue)other).isNaN()) {
 				throw new XPathException("FOCA0005: Operand is not a number");				
 			}
+			//If $arg2 is positive or negative infinity, the result is a zero-length duration
 			if (((NumericValue)other).isInfinite()) {
 				return new DayTimeDurationValue("PT0S");
+			}
+			//If $arg2 is positive or negative zero, the result overflows and is handled as discussed in 10.1.1 Limits and Precision
+			if (((NumericValue)other).compareTo(IntegerValue.ZERO) == Constants.EQUAL) { 
+				throw new XPathException("FODT0002: Division by zero");
 			}
 		}
 		BigDecimal divisor = numberToBigDecimal(other, "Operand to div should be of xdt:dayTimeDuration or numeric type; got: ");

@@ -142,12 +142,13 @@ abstract class OrderedDurationValue extends DurationValue {
 	protected BigDecimal numberToBigDecimal(ComputableValue x, String exceptionMessagePrefix) throws XPathException {
 		if (!Type.subTypeOf(x.getType(), Type.NUMBER)) {
 			throw new XPathException(exceptionMessagePrefix + Type.getTypeName(x.getType()));
-		}
-		BigDecimal val =
-			x.conversionPreference(BigDecimal.class) < Integer.MAX_VALUE
-			? (BigDecimal) x.toJavaObject(BigDecimal.class)
-			: new BigDecimal(((NumericValue) x).getDouble());
-		return val;
+		}	
+		if (((NumericValue) x).isInfinite() || ((NumericValue) x).isNaN())
+			throw new XPathException("Tried to convert '" + (NumericValue) x + "' to BigDecimal");	
+		if (x.conversionPreference(BigDecimal.class) < Integer.MAX_VALUE)
+			return (BigDecimal) x.toJavaObject(BigDecimal.class);
+		else 
+			return new BigDecimal(((NumericValue) x).getDouble());		
 	}
 
 }
