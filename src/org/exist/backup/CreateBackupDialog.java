@@ -17,6 +17,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import org.exist.client.ClientFrame;
 
 import org.exist.storage.DBBroker;
 
@@ -66,7 +67,7 @@ public class CreateBackupDialog extends JPanel {
 		grid.setConstraints(collections, c);
 		add(collections);
 
-		label = new JLabel("Backup-Directory:");
+		label = new JLabel("Target:");
 		c.gridx = 0;
 		c.gridy = 1;
 		c.gridwidth = 1;
@@ -94,22 +95,56 @@ public class CreateBackupDialog extends JPanel {
 		c.anchor = GridBagConstraints.EAST;
 		c.fill = GridBagConstraints.NONE;
 		grid.setConstraints(select, c);
+                select.setToolTipText("Select ZIP file or directory.");
 		add(select);
 	}
+        
+    public class MyBackupContentsFilter extends javax.swing.filechooser.FileFilter {
+            public boolean accept(File f) {
+                if (f.getName().toLowerCase().equals("__contents__.xml"))
+                    return true;
+                if (f.isDirectory())
+                    return true;
+                return false;
+            }
+            
+            public String getDescription() {
+                return "__contents__.xml files"; 
+            }
+    }
+    
+    public class MyZipFilter extends javax.swing.filechooser.FileFilter {
+            public boolean accept(File f) {
+                if (f.getName().toLowerCase().endsWith(".zip"))
+                    return true;
+                if (f.isDirectory())
+                    return true;
+                return false;
+            }
+            
+            public String getDescription() {
+                return "Zip files";
+            }
+            
+    }
 
 	private void actionSelect() {
 		JFileChooser chooser = new JFileChooser();
 		chooser.setMultiSelectionEnabled(false);
-		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+                chooser.addChoosableFileFilter(new MyBackupContentsFilter());
+                chooser.addChoosableFileFilter(new MyZipFilter());
+                chooser.setSelectedFile(new File("eXist-backup.zip"));
 		chooser.setCurrentDirectory(null);
-		if (chooser.showDialog(this, "Select directory for backup")
+               
+		if (chooser.showDialog(this, "Select target for backup")
 			== JFileChooser.APPROVE_OPTION) {
 			File f = chooser.getSelectedFile();
 			if (f.exists()) {
 				if (JOptionPane
 					.showConfirmDialog(
 						this,
-						"Directory " + f.getAbsolutePath() + " exists. OK to delete?",
+						"Target " + f.getAbsolutePath() + " exists. OK to delete?",
 						"Confirm deletion",
 						JOptionPane.YES_NO_OPTION)
 					== JOptionPane.NO_OPTION)

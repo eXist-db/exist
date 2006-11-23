@@ -1104,7 +1104,7 @@ public class ClientFrame extends JFrame
                 properties.getProperty("user", "admin"),  //$NON-NLS-1$ //$NON-NLS-2$
                 properties.getProperty("password", null), //$NON-NLS-1$
                 properties.getProperty("backup-dir", System.getProperty("user.home") //$NON-NLS-1$ //$NON-NLS-2$
-                + File.separatorChar + "backup")); //$NON-NLS-1$
+                + File.separatorChar + "eXist-backup.zip")); //$NON-NLS-1$
         if (JOptionPane.showOptionDialog(this, dialog, Messages.getString("ClientFrame.157"), //$NON-NLS-1$
                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
                 null, null, null) == JOptionPane.YES_OPTION) {
@@ -1129,23 +1129,18 @@ public class ClientFrame extends JFrame
         }
     }
     
+
+    
+
+    
     private void restoreAction(ActionEvent ev) {
         JFileChooser chooser = new JFileChooser();
         chooser.setMultiSelectionEnabled(false);
-        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        chooser.setFileFilter(new FileFilter() {
-            public boolean accept(File f) {
-                if (f.isDirectory())
-                    return true;
-                if (f.getName().equals(Messages.getString("ClientFrame.167"))) //$NON-NLS-1$
-                    return true;
-                return false;
-            }
-            
-            public String getDescription() {
-                return Messages.getString("ClientFrame.168"); //$NON-NLS-1$
-            }
-        });
+        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        chooser.addChoosableFileFilter(new BackupContentsFilter());
+        chooser.addChoosableFileFilter(new ZipFilter());
+        chooser.setSelectedFile(new File("eXist-backup.zip"));
+
         if (chooser.showDialog(null, Messages.getString("ClientFrame.169")) == JFileChooser.APPROVE_OPTION) { //$NON-NLS-1$
         	JPanel askPass = new JPanel(new BorderLayout());
         	askPass.add(new JLabel(Messages.getString("ClientFrame.170")), BorderLayout.NORTH); //$NON-NLS-1$
