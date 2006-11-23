@@ -213,6 +213,18 @@ public class IntegerValue extends NumericValue {
 		return // Long.toString(value);
 		value.toString();
 	}
+	
+	public boolean isNaN() {
+		return false;
+	}
+
+	public boolean isInfinite() {
+		return false;
+	}
+
+	public boolean isZero() {
+		return value.compareTo(ZERO_BIGINTEGER) == Constants.EQUAL;
+	};	
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AtomicValue#convertTo(int)

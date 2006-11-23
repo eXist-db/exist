@@ -23,13 +23,11 @@ public abstract class NumericValue extends ComputableValue {
 		return (int)((IntegerValue)convertTo(Type.INTEGER)).getValue();
 	}
 	
-	public boolean isNaN() {
-		return false;
-	}
+	public abstract boolean isNaN();
 
-	public boolean isInfinite() {
-		return false;
-	}
+	public abstract boolean isInfinite();
+
+	public abstract boolean isZero();
 	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AtomicValue#compareTo(int, org.exist.xquery.value.AtomicValue)

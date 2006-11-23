@@ -36,6 +36,7 @@ import org.exist.xquery.XPathException;
  */
 public class DecimalValue extends NumericValue {
 	
+	private static final BigDecimal ZERO_BIGDECIMAL = new BigDecimal("0");
 	//Copied from Saxon 8.6.1    
 	private static final int DIVIDE_PRECISION = 18;
 	//Copied from Saxon 8.7
@@ -168,6 +169,18 @@ public class DecimalValue extends NumericValue {
 	 */
 	public boolean effectiveBooleanValue() throws XPathException {
 		return value.signum() != 0;
+	}
+	
+	public boolean isNaN() {
+		return false;
+	}
+
+	public boolean isInfinite() {
+		return false;
+	}
+
+	public boolean isZero() {
+		return value.compareTo(ZERO_BIGDECIMAL) == Constants.EQUAL;
 	}
 	
 	/* (non-Javadoc)
