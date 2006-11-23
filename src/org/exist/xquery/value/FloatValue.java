@@ -112,6 +112,14 @@ public class FloatValue extends NumericValue {
 	public boolean isNaN() {
 		return Float.isNaN(value);
 	}
+	
+	public boolean isInfinite() {
+		return Float.isInfinite(value);
+	}
+
+	public boolean isZero() {
+		return Float.compare(value, 0f) == Constants.EQUAL;	
+	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Sequence#convertTo(int)

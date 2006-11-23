@@ -241,6 +241,10 @@ public class DoubleValue extends NumericValue {
 	public boolean isInfinite() {
 		return Double.isInfinite(value);
 	}
+	
+	public boolean isZero() {
+		return Double.compare(value, 0.0) == Constants.EQUAL;	
+	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AtomicValue#convertTo(int)
