@@ -326,6 +326,22 @@ public class LetExpr extends BindingExpression {
         	result.append(" where ");
         	result.append(whereExpr.toString());
         }
+        if(groupSpecs != null) {
+            result.append("group ");
+            result.append("$").append(toGroupVarName);
+            result.append(" as ");
+            result.append("$").append(groupVarName);
+            result.append(" by ");
+            for(int i = 0; i < groupSpecs.length; i++) {
+                if(i > 0)
+                        result.append(", ");
+
+                result.append(groupSpecs[i].getGroupExpression().toString());
+                result.append(" as ");
+                result.append("$").append(groupSpecs[i].getKeyVarName());
+            }
+            result.append(" ");
+        }
         if(orderSpecs != null) {
         	result.append(" order by ");
             for(int i = 0; i < orderSpecs.length; i++) {

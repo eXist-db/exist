@@ -23,32 +23,22 @@
 package org.exist.xquery; 
  
  
-import java.io.File; 
-import java.io.IOException; 
-import java.net.HttpURLConnection; 
-import java.net.MalformedURLException; 
-import java.net.URL; 
-import java.net.URLConnection; 
- 
-import javax.xml.transform.OutputKeys; 
- 
-import org.custommonkey.xmlunit.DetailedDiff; 
-import org.custommonkey.xmlunit.XMLTestCase; 
-import org.exist.storage.DBBroker; 
-import org.exist.xmldb.DatabaseInstanceManager; 
-import org.exist.xmldb.EXistResource; 
-import org.w3c.dom.Element; 
-import org.w3c.dom.Node; 
-import org.xmldb.api.DatabaseManager; 
-import org.xmldb.api.base.Collection; 
-import org.xmldb.api.base.Database; 
-import org.xmldb.api.base.Resource; 
-import org.xmldb.api.base.ResourceIterator; 
-import org.xmldb.api.base.ResourceSet; 
-import org.xmldb.api.base.XMLDBException; 
-import org.xmldb.api.modules.CollectionManagementService; 
-import org.xmldb.api.modules.XMLResource; 
-import org.xmldb.api.modules.XPathQueryService; 
+import java.io.File;
+
+import org.custommonkey.xmlunit.XMLTestCase;
+import org.exist.storage.DBBroker;
+import org.exist.xmldb.DatabaseInstanceManager;
+import org.w3c.dom.Element;
+import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.Database;
+import org.xmldb.api.base.Resource;
+import org.xmldb.api.base.ResourceIterator;
+import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.CollectionManagementService;
+import org.xmldb.api.modules.XMLResource;
+import org.xmldb.api.modules.XPathQueryService;
  
 /** concerns the Group By extension for XQuery  
  *  
