@@ -17,7 +17,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import org.exist.client.ClientFrame;
+import org.exist.client.Messages;
 
 import org.exist.storage.DBBroker;
 
@@ -48,8 +48,9 @@ public class CreateBackupDialog extends JPanel {
 		setLayout(grid);
 		GridBagConstraints c = new GridBagConstraints();
 		c.insets = new Insets(5, 5, 5, 5);
-
-		JLabel label = new JLabel("Collection:");
+                
+                
+		JLabel label = new JLabel( Messages.getString("CreateBackupDialog.1") );
 		c.gridx = 0;
 		c.gridy = 0;
 		c.anchor = GridBagConstraints.WEST;
@@ -67,7 +68,8 @@ public class CreateBackupDialog extends JPanel {
 		grid.setConstraints(collections, c);
 		add(collections);
 
-		label = new JLabel("Target:");
+                
+		label = new JLabel( Messages.getString("CreateBackupDialog.2") );
 		c.gridx = 0;
 		c.gridy = 1;
 		c.gridwidth = 1;
@@ -84,7 +86,8 @@ public class CreateBackupDialog extends JPanel {
 		grid.setConstraints(directory, c);
 		add(directory);
 
-		JButton select = new JButton("Select");
+                
+		JButton select = new JButton( Messages.getString("CreateBackupDialog.3") );
 		select.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				actionSelect();
@@ -95,7 +98,8 @@ public class CreateBackupDialog extends JPanel {
 		c.anchor = GridBagConstraints.EAST;
 		c.fill = GridBagConstraints.NONE;
 		grid.setConstraints(select, c);
-                select.setToolTipText("Select ZIP file or directory.");
+                
+                select.setToolTipText( Messages.getString("CreateBackupDialog.4") );
 		add(select);
 	}
         
@@ -137,15 +141,15 @@ public class CreateBackupDialog extends JPanel {
                 chooser.setSelectedFile(new File("eXist-backup.zip"));
 		chooser.setCurrentDirectory(null);
                
-		if (chooser.showDialog(this, "Select target for backup")
+		if (chooser.showDialog(this, Messages.getString("CreateBackupDialog.5"))
 			== JFileChooser.APPROVE_OPTION) {
 			File f = chooser.getSelectedFile();
 			if (f.exists()) {
 				if (JOptionPane
 					.showConfirmDialog(
 						this,
-						"Target " + f.getAbsolutePath() + " exists. OK to delete?",
-						"Confirm deletion",
+						Messages.getString("CreateBackupDialog.6a") + " "+ f.getAbsolutePath() + " "+ Messages.getString("CreateBackupDialog.6b"),
+						Messages.getString("CreateBackupDialog.6c"),
 						JOptionPane.YES_NO_OPTION)
 					== JOptionPane.NO_OPTION)
 					return;
