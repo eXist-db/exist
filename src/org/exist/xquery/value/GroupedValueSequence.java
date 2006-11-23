@@ -22,18 +22,17 @@
  */ 
 package org.exist.xquery.value; 
  
-import org.exist.dom.NodeSet; 
-import org.exist.xquery.XPathException; 
-import org.exist.dom.ExtArrayNodeSet; 
-import org.exist.dom.NodeProxy; 
-import org.exist.xquery.GroupSpec; 
-import org.exist.xquery.util.ExpressionDumper; 
-import org.exist.xquery.Constants; 
-import org.exist.xquery.XPathException; 
-import org.exist.xquery.ValueComparison; 
-import org.exist.xquery.GeneralComparison; 
-import org.exist.xquery.XQueryContext; 
-import java.text.Collator; 
+import java.text.Collator;
+
+import org.exist.dom.ExtArrayNodeSet;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
+import org.exist.xquery.Constants;
+import org.exist.xquery.GeneralComparison;
+import org.exist.xquery.GroupSpec;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.util.ExpressionDumper;
  
  
  
@@ -56,16 +55,16 @@ public class GroupedValueSequence extends AbstractSequence {
     private int count = 0; 
     //grouping keys values of this group 
     private GroupSpec groupSpecs[];  
-    private Item groupKey[]; 
+    private Sequence groupKey; 
     private XQueryContext context; 
      
     // used to keep track of the type of added items. 
     private int itemType = Type.ANY_TYPE; 
      
-    public GroupedValueSequence(GroupSpec groupSpecs[], int size, Item keyItem[], XQueryContext aContext) { 
+    public GroupedValueSequence(GroupSpec groupSpecs[], int size, Sequence keySequence, XQueryContext aContext) { 
         this.groupSpecs = groupSpecs; 
         this.items = new Entry[size]; 
-        this.groupKey = keyItem; 
+        this.groupKey = keySequence; 
         this.context = aContext; 
     } 
      
@@ -90,7 +89,7 @@ public class GroupedValueSequence extends AbstractSequence {
         return (items == null) ? 0 : count; 
     } 
      
-    public Item[] getGroupKey() { 
+    public Sequence getGroupKey() { 
         return this.groupKey; 
     } 
  
@@ -103,12 +102,14 @@ public class GroupedValueSequence extends AbstractSequence {
      *  @return                 <code>true</code> if equal, <code>false</code> 
      *                          otherwise.     
      */         
-    public boolean checkKeys(Item otherGroupKey[]) throws XPathException { 
-        if(this.groupKey.length == otherGroupKey.length){ 
+    public boolean checkKeys(Sequence otherGroupKey) throws XPathException {
+    	//TODO : possible performance gap here ! getLength() is costly
+        if(this.groupKey.getLength() == otherGroupKey.getLength()){ 
          
-            for(int i = 0; i < this.groupKey.length ; i++){ 
-                // bv : compare atomic values using GeneralComparison 
-                if(!GeneralComparison.compareAtomic(Collator.getInstance(), this.groupKey[i].atomize(), otherGroupKey[i].atomize(), true, Constants.TRUNC_BOTH, Constants.EQ)){ 
+            for(int i = 0; i < this.groupKey.getLength() ; i++){ 
+                // bv : compare atomic values using GeneralComparison
+            	//TODO : YES ! Well, valueComparison, which is a little bit more specific
+                if(!GeneralComparison.compareAtomic(Collator.getInstance(), this.groupKey.itemAt(i).atomize(), otherGroupKey.itemAt(i).atomize(), true, Constants.TRUNC_BOTH, Constants.EQ)){ 
                     return false; 
                 } 
             } 
