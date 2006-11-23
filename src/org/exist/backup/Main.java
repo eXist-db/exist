@@ -205,7 +205,7 @@ public class Main {
 							properties.getProperty("user", "admin"),
 							properties.getProperty("password",""),
 							properties.getProperty("backup-dir", System.getProperty("user.home") +
-									File.separatorChar + "backup"));
+									File.separatorChar + "eXist-backup.zip"));
 					if (JOptionPane
 						.showOptionDialog(
 							null,
