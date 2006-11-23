@@ -112,20 +112,21 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 		}
 	}
 
+	//TODO : what are the semantics ? IMHO, QName.EMPTY_QNAME shouldn't be QNameable ! -pb
 	public QName getQName() {
-	    switch (getNodeType()) {
-			case Node.DOCUMENT_NODE :
-				return QName.DOCUMENT_QNAME;
+	    switch (getNodeType()) {			
 			case Node.ATTRIBUTE_NODE :
 			case Node.ELEMENT_NODE :
 			case Node.PROCESSING_INSTRUCTION_NODE :
 				QName qn = (QName)
 					document.namePool.get(document.nodeName[nodeNumber]);
 				return qn;
+			case Node.DOCUMENT_NODE :
+				return QName.EMPTY_QNAME;		
 			case Node.COMMENT_NODE:
-			    return QName.COMMENT_QNAME;
+			    return QName.EMPTY_QNAME;		
 			case Node.TEXT_NODE :
-				return QName.TEXT_QNAME;
+				return QName.EMPTY_QNAME;		
 			default :
 				return null;
 		}

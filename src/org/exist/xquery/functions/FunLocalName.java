@@ -95,9 +95,8 @@ public class FunLocalName extends Function {
         if (item == null)
             result = StringValue.EMPTY_STRING;
         else {
-            if(!Type.subTypeOf(item.getType(), Type.NODE))
-                throw new XPathException(getASTNode(), "context item is not a node; got: " +
-                        Type.getTypeName(item.getType()));          
+            if (!Type.subTypeOf(item.getType(), Type.NODE))
+            	throw new XPathException(getASTNode(), "XPTY0004: item is not a node; got '" + Type.getTypeName(item.getType()) + "'");          
             //TODO : how to improve performance ?
             Node n = ((NodeValue)item).getNode();
             result = new StringValue(n.getLocalName());

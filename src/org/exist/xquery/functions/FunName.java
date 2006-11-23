@@ -21,6 +21,7 @@
 package org.exist.xquery.functions;
 
 import org.exist.dom.QName;
+import org.exist.dom.QNameable;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
@@ -31,13 +32,10 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
 import org.w3c.dom.Node;
-import org.w3c.dom.ProcessingInstruction;
 
 /**
  * xpath-library function: string(object)
@@ -78,13 +76,14 @@ public class FunName extends Function {
         
         Sequence seq;
         Sequence result;
-        Item item;
         
         if (contextItem != null)
         	contextSequence = contextItem.toSequence();
  
+        /*
 		if (contextSequence == null || contextSequence.isEmpty()) 
-			result = Sequence.EMPTY_SEQUENCE;            
+			result = Sequence.EMPTY_SEQUENCE;	
+		*/	          
         
 		//If we have one argument, we take it into account
 		if (getSignature().getArgumentCount() > 0) 
@@ -95,32 +94,20 @@ public class FunName extends Function {
 		
 		if (seq == null)
 			throw new XPathException(getASTNode(), "XPDY0002: Undefined context item");
-				
-        result = new ValueSequence();
-		int j = 0; 
-		for (SequenceIterator i = seq.iterate(); i.hasNext(); j++) {
-			item = i.nextItem();
+
+        if (seq.isEmpty())
+        	//Bloody specs !
+            result = StringValue.EMPTY_STRING;
+        else {
+            Item item = seq.itemAt(0);
             if (!Type.subTypeOf(item.getType(), Type.NODE))
-            	throw new XPathException("FOTY0011: item is not a node; got '" + item + "'");
+            	throw new XPathException(getASTNode(), "XPTY0004: item is not a node; got '" + Type.getTypeName(item.getType()) + "'");
             //TODO : how to improve performance ?
-            Node n = ((NodeValue)item).getNode();
-    		switch(n.getNodeType()) {
-    			case Node.ELEMENT_NODE:
-    			case Node.ATTRIBUTE_NODE:
-    				result.add(new StringValue(n.getNodeName()));
-    				break;
-    			case Node.PROCESSING_INSTRUCTION_NODE:
-    				result.add(new StringValue(((ProcessingInstruction)n).getTarget()));
-                    break;
-    			case Node.DOCUMENT_NODE:
-    			case Node.TEXT_NODE:
-    			case Node.COMMENT_NODE:
-    				result.add(StringValue.EMPTY_STRING);
-    				break;
-                //TODO : what kind of default do we expect here ? -pb
-    			default:
-    				throw new XPathException("Unhandled node type: '" + n.getNodeType() + "'");
-    		}
+            Node n = ((NodeValue)item).getNode();  
+            if (n instanceof QNameable)
+            	result = new StringValue(((QNameable)n).getQName().getStringValue());
+            else
+            	result = StringValue.EMPTY_STRING;
         }
         
         if (context.getProfiler().isEnabled()) 

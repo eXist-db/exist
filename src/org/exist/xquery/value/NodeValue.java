@@ -76,6 +76,10 @@ public interface NodeValue extends Item, Sequence {
 	
     public void addContextNode(int contextId, NodeValue node);
     
+    
+	/** Retrieve the actual node. This operation is <strong>expensive</strong>.
+	 * @return The actual node.
+	 */
 	public Node getNode();
 	
 	public Document getOwnerDocument();
