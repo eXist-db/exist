@@ -310,8 +310,6 @@ public class ForExpr extends BindingExpression {
             } 
         } 
          
-        //TODO : unbind variables (unless group variables) 
- 
         // restore the local variable stack 
         context.popLocalVariables(mark); 
          
@@ -336,7 +334,7 @@ public class ForExpr extends BindingExpression {
  
                 //evaluate real return expression 
                 val = groupReturnExpr.eval(null); 
-		
+                resultSequence.addAll(val);
             }
             //Reset the context position
             context.setContextPosition(0);
@@ -347,9 +345,6 @@ public class ForExpr extends BindingExpression {
 		
         clearContext(getExpressionId(), in);
 
-		// restore the local variable stack
-		context.popLocalVariables(mark);
-		
         if (context.getProfiler().isEnabled())
             context.getProfiler().end(this, "", resultSequence);
 
@@ -427,6 +422,22 @@ public class ForExpr extends BindingExpression {
         	result.append(" ");
         	result.append(whereExpr.toString());
         	result.append(" ");
+        }
+        if(groupSpecs != null) {
+            result.append("group ");
+            result.append("$").append(toGroupVarName);
+            result.append(" as ");
+            result.append("$").append(groupVarName);
+            result.append(" by ");
+            for(int i = 0; i < groupSpecs.length; i++) {
+                if(i > 0)
+                        result.append(", ");
+
+                result.append(groupSpecs[i].getGroupExpression().toString());
+                result.append(" as ");
+                result.append("$").append(groupSpecs[i].getKeyVarName());
+            }
+            result.append(" ");
         }
         if(orderSpecs != null) {
         	result.append("order by ");
