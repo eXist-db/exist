@@ -38,7 +38,6 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
-import org.w3c.dom.ProcessingInstruction;
 
 
 /**
@@ -83,26 +82,14 @@ public class FunNodeName extends Function {
             result = Sequence.EMPTY_SEQUENCE;
         else {
             Item item = seq.itemAt(0);
-            if(!Type.subTypeOf(item.getType(), Type.NODE))
-                throw new XPathException(getASTNode(), "argument is not a node; got: " +
-                        Type.getTypeName(item.getType()));
+            if (!Type.subTypeOf(item.getType(), Type.NODE))
+            	throw new XPathException(getASTNode(), "XPTY0004: item is not a node; got '" + Type.getTypeName(item.getType()) + "'");
             //TODO : how to improve performance ?
-            Node n = ((NodeValue)item).getNode();
-            QName qname;
-            switch(n.getNodeType()) {
-                case Node.ELEMENT_NODE:
-                case Node.ATTRIBUTE_NODE:
-                    qname = ((QNameable) n).getQName();
-                    result = new QNameValue(context, qname);
-                    break;
-                case Node.PROCESSING_INSTRUCTION_NODE :
-                    qname = new QName(((ProcessingInstruction)n).getTarget(), "", "");
-                    result = new QNameValue(context, qname);
-                    break;
-                default:
-                	LOG.warn("Tried to obtain node name for node type " + n.getNodeType());
-                    result = new QNameValue(context, QName.EMPTY_QNAME);
-            }
+            Node n = ((NodeValue)item).getNode();            
+            if (n instanceof QNameable)
+            	result = new QNameValue(context, ((QNameable)n).getQName());
+            else
+            	result = new QNameValue(context, QName.EMPTY_QNAME);
         }
         
         if (context.getProfiler().isEnabled()) 
