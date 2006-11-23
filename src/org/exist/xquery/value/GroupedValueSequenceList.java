@@ -69,19 +69,19 @@ public class GroupedValueSequenceList extends ArrayList {
      */ 
     public void add(Item item) throws XPathException { 
         Sequence specEvaluation[] = new Sequence[groupSpecs.length]; 
-        Item keyItem[] = new Item[groupSpecs.length]; 
+        Sequence keySequence = new ValueSequence(); /* new Sequence[groupSpecs.length]; */ 
          
         boolean groupAdded = false; 
                  
         for(int i = 0; i < groupSpecs.length ; i++){ 
             //evaluates the values of the grouping keys 
             specEvaluation[i] =  groupSpecs[i].getGroupExpression().eval(item.toSequence()); 
-            keyItem[i] = specEvaluation[i].itemAt(0); 
+            keySequence.add(specEvaluation[i].itemAt(0)); 
         } 
          
         for(int k = 0; (k < this.size())/*&& (groupAdded == false)*/ ; k++){ 
             GroupedValueSequence currentGroup = (GroupedValueSequence)this.get(k); 
-            if(currentGroup.checkKeys(keyItem)){ 
+            if(currentGroup.checkKeys(keySequence)){ 
                 //this group already exists, then add to this group 
                 currentGroup.add(item); 
                 groupAdded = true; 
@@ -89,7 +89,7 @@ public class GroupedValueSequenceList extends ArrayList {
         } 
         if(groupAdded == false){ 
             //this group doesn't exists, then creates this group 
-            GroupedValueSequence newGroup = new GroupedValueSequence(groupSpecs, 1, keyItem,context); 
+            GroupedValueSequence newGroup = new GroupedValueSequence(groupSpecs, 1, keySequence,context); 
             newGroup.add(item); 
             super.add(newGroup); 
             groupAdded = true; 

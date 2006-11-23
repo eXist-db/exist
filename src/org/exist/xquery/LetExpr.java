@@ -239,7 +239,7 @@ public class LetExpr extends BindingExpression {
              
                     //set value of grouping keys for the current group 
                     for(int i=0; i< groupKeyVar.length ; i ++){ 
-                        groupKeyVar[i].setValue(currentGroup.getGroupKey()[i].toSequence()); 
+                        groupKeyVar[i].setValue(currentGroup.getGroupKey().itemAt(i).toSequence()); 
                     } 
  
                     //evaluate real return expression 
