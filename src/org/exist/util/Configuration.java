@@ -67,7 +67,8 @@ public class Configuration implements ErrorHandler
 	 * run around in the system.  Right now, any attempts to create multiple instances will
 	 * likely get the system confused.  Let's decide which one it should be and fix it properly.
 	 * 
-	 * I vote for a Singleton (like Descriptor.java) - deliriumsky
+	 * This class cannot be a singleton as it is possible to run multiple instances of the database
+	 * on the same system.
 	 */
     
     private final static Logger LOG = Logger.getLogger(Configuration.class); //Logger
