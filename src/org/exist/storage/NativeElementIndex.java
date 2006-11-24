@@ -385,8 +385,6 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                     }
                 } catch (EOFException e) {
                    //EOF is expected here 
-                } finally {
-                    os.clear();
                 }
                 if (changed) {  
                     //TODO : no call to dbNodes.remove if no data ? -pb
@@ -407,6 +405,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             LOG.error(e.getMessage(), e);
         } finally {
             lock.release();
+            os.clear();
         }
         if (os.size() > 512000)
             // garbage collect the output stream if it is larger than 512k, otherwise reuse it
