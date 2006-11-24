@@ -157,6 +157,9 @@ public class FunReplace extends FunMatches {
     			throw new XPathException(getASTNode(), "Invalid regular expression: " + e.getMessage(), e);
     		} catch (IndexOutOfBoundsException e) {
     		    throw new XPathException(getASTNode(), e.getMessage(), e);
+       		//Some JVMs seem to raise this one
+    		} catch (IllegalArgumentException e) {
+    			throw new XPathException(getASTNode(), "Invalid replace expression: " + e.getMessage(), e);
             }
         }
         
