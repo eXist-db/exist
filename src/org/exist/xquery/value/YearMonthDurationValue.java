@@ -30,7 +30,6 @@ import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.Duration;
 
 import org.exist.util.FastStringBuffer;
-import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 
 /**
@@ -180,7 +179,7 @@ public class YearMonthDurationValue extends OrderedDurationValue {
 				return new YearMonthDurationValue("P0M");
 			}
 			//If $arg2 is positive or negative zero, the result overflows and is handled as discussed in 10.1.1 Limits and Precision
-			if (((NumericValue)other).compareTo(IntegerValue.ZERO) == Constants.EQUAL) { 
+			if (((NumericValue)other).isZero()) { 
 				throw new XPathException("FODT0002: Division by zero overflow");
 			}			
 		}
