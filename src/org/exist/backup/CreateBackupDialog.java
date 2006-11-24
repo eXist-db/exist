@@ -17,7 +17,9 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import org.exist.client.BackupContentsFilter;
 import org.exist.client.Messages;
+import org.exist.client.ZipFilter;
 
 import org.exist.storage.DBBroker;
 
@@ -28,7 +30,7 @@ import org.xmldb.api.base.XMLDBException;
 public class CreateBackupDialog extends JPanel {
 
 	JComboBox collections;
-	JTextField directory;
+	JTextField backupTarget;
 	String uri;
 	String user;
 	String passwd;
@@ -78,13 +80,13 @@ public class CreateBackupDialog extends JPanel {
 		grid.setConstraints(label, c);
 		add(label);
 
-		directory = new JTextField(backupDir, 40);
+		backupTarget = new JTextField(backupDir, 40);
 		c.gridx = 1;
 		c.gridy = 1;
 		c.anchor = GridBagConstraints.EAST;
 		c.fill = GridBagConstraints.HORIZONTAL;
-		grid.setConstraints(directory, c);
-		add(directory);
+		grid.setConstraints(backupTarget, c);
+		add(backupTarget);
 
                 
 		JButton select = new JButton( Messages.getString("CreateBackupDialog.3") );
@@ -103,58 +105,17 @@ public class CreateBackupDialog extends JPanel {
 		add(select);
 	}
         
-    public class MyBackupContentsFilter extends javax.swing.filechooser.FileFilter {
-            public boolean accept(File f) {
-                if (f.getName().toLowerCase().equals("__contents__.xml"))
-                    return true;
-                if (f.isDirectory())
-                    return true;
-                return false;
-            }
-            
-            public String getDescription() {
-                return "__contents__.xml files"; 
-            }
-    }
-    
-    public class MyZipFilter extends javax.swing.filechooser.FileFilter {
-            public boolean accept(File f) {
-                if (f.getName().toLowerCase().endsWith(".zip"))
-                    return true;
-                if (f.isDirectory())
-                    return true;
-                return false;
-            }
-            
-            public String getDescription() {
-                return "Zip files";
-            }
-            
-    }
-
 	private void actionSelect() {
 		JFileChooser chooser = new JFileChooser();
 		chooser.setMultiSelectionEnabled(false);
 		chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-                chooser.addChoosableFileFilter(new MyBackupContentsFilter());
-                chooser.addChoosableFileFilter(new MyZipFilter());
+                chooser.addChoosableFileFilter(new ZipFilter());
                 chooser.setSelectedFile(new File("eXist-backup.zip"));
 		chooser.setCurrentDirectory(null);
                
 		if (chooser.showDialog(this, Messages.getString("CreateBackupDialog.5"))
 			== JFileChooser.APPROVE_OPTION) {
-			File f = chooser.getSelectedFile();
-			if (f.exists()) {
-				if (JOptionPane
-					.showConfirmDialog(
-						this,
-						Messages.getString("CreateBackupDialog.6a") + " "+ f.getAbsolutePath() + " "+ Messages.getString("CreateBackupDialog.6b"),
-						Messages.getString("CreateBackupDialog.6c"),
-						JOptionPane.YES_NO_OPTION)
-					== JOptionPane.NO_OPTION)
-					return;
-			}
-			directory.setText(f.getAbsolutePath());
+			backupTarget.setText(chooser.getSelectedFile().getAbsolutePath());
 		}
 	}
 
@@ -184,7 +145,7 @@ public class CreateBackupDialog extends JPanel {
 		return (String) collections.getSelectedItem();
 	}
 
-	public String getBackupDir() {
-		return directory.getText();
+	public String getBackupTarget() {
+		return backupTarget.getText();
 	}
 }
