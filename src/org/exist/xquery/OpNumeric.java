@@ -127,9 +127,9 @@ public class OpNumeric extends BinaryOp {
     				throw new XPathException("XPTY0004: '" + Type.getTypeName(rvalue.getType()) + "(" + rvalue + ")' can not be an operand for " + Constants.OPS[operator]);
 
     			if (operator == Constants.IDIV) {    				
-        			if (!(lvalue instanceof NumericValue))
+    				if (!Type.subTypeOf(lvalue.getType(), Type.NUMBER))
         				throw new XPathException("XPTY0004: '" + Type.getTypeName(lvalue.getType()) + "(" + lvalue + ")' can not be an operand for " + Constants.OPS[operator]);
-        			if (!(rvalue instanceof NumericValue))
+    				if (!Type.subTypeOf(rvalue.getType(), Type.NUMBER))
         				throw new XPathException("XPTY0004: '" + Type.getTypeName(rvalue.getType()) + "(" + rvalue + ")' can not be an operand for " + Constants.OPS[operator]);
                     result = ((NumericValue) lvalue).idiv((NumericValue) rvalue);
     			} else {
@@ -163,7 +163,13 @@ public class OpNumeric extends BinaryOp {
 			case Constants.PLUS:	return left.plus(right);
 			case Constants.MULT:	return left.mult(right);
 			case Constants.DIV:		return left.div(right);
-			case Constants.MOD:		return ((NumericValue) left).mod((NumericValue) right);
+			case Constants.MOD:		{
+				if (!Type.subTypeOf(left.getType(), Type.NUMBER))
+    				throw new XPathException("XPTY0004: '" + Type.getTypeName(left.getType()) + "(" + left + ")' is not numeric");
+				if (!Type.subTypeOf(right.getType(), Type.NUMBER))
+    				throw new XPathException("XPTY0004: '" + Type.getTypeName(right.getType()) + "(" + right + ")' is not numeric");
+				return ((NumericValue) left).mod((NumericValue) right);
+			}
 			default:				throw new RuntimeException("unknown numeric operator " + operator);
 		}
 	}
