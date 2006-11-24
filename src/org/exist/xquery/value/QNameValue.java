@@ -52,7 +52,11 @@ public class QNameValue extends AtomicValue {
         if (name.length() == 0)
             throw new XPathException("FORG0001: An empty string is not a valid lexical representation of xs:QName.");
 	    this.context = context;
-        this.qname = QName.parse(context, name, context.getURIForPrefix(""));
+	    try {
+	    	this.qname = QName.parse(context, name, context.getURIForPrefix(""));
+	    } catch (Exception e) {
+	    	throw new XPathException(e);
+	    }
     }
     
 	public QNameValue(XQueryContext context, QName name) {
