@@ -119,7 +119,7 @@ public class XQueryWatchDog {
         if(maxNodesLimit > 0 && builder.getSize() > maxNodesLimit) {
             if(expr == null)
                 expr = context.getRootExpression();
-            LOG.warn("Query exceeded predefined limit for document fragments: " + 
+            LOG.warn("Query exceeded predefined limit (" +  maxNodesLimit + ") for document fragments: " + 
                     ExpressionDumper.dump(expr));
             cleanUp();
             throw new TerminatedException.SizeLimitException(expr.getASTNode(),
