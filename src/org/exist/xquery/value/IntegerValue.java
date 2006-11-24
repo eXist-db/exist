@@ -366,7 +366,7 @@ public class IntegerValue extends NumericValue {
 	 */
 	public ComputableValue div(ComputableValue other) throws XPathException {
 		if (other instanceof IntegerValue) {
-			if (((IntegerValue) other).value == BigInteger.ZERO)
+			if (((IntegerValue) other).isZero())
 				throw new XPathException("FOAR0001 : division by zero");
 			//http://www.w3.org/TR/xpath20/#mapping : numeric; but xs:decimal if both operands are xs:integer
 			BigDecimal d = new BigDecimal(value);			 
@@ -379,6 +379,9 @@ public class IntegerValue extends NumericValue {
 	}
 
 	public IntegerValue idiv(NumericValue other) throws XPathException {
+		if (other.isZero())
+			//If the divisor is (positive or negative) zero, then an error is raised [err:FOAR0001]
+		    throw new XPathException("FOAR0001: division by zero");		
 		ComputableValue result = div(other);
 		return new IntegerValue(((IntegerValue)result.convertTo(Type.INTEGER)).getLong());		
 	}

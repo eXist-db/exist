@@ -30,6 +30,7 @@ import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.Duration;
 
 import org.exist.util.FastStringBuffer;
+import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 
 /**
