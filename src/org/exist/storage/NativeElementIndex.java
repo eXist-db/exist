@@ -195,6 +195,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 return;                 
             } finally {
                 lock.release();
+                os.clear();
             }
             progress.setValue(count);
             if (progress.changed()) {
@@ -315,8 +316,9 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 LOG.error(e.getMessage(), e);
             } finally {
                 lock.release();
+                os.clear();
             }
-        }        
+        }
         pending.clear();
     } 
     
@@ -383,7 +385,9 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                     }
                 } catch (EOFException e) {
                    //EOF is expected here 
-                }                
+                } finally {
+                    os.clear();
+                }
                 if (changed) {  
                     //TODO : no call to dbNodes.remove if no data ? -pb
                     //TODO : why not use the same construct as above :
