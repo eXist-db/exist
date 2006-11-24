@@ -374,6 +374,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     } else {                        
                         if (dbTokens.put(key, os.data()) == BFile.UNKNOWN_ADDRESS) {
                             LOG.error("Could not put index data for token '" +  token + "' in '" + dbTokens.getFile().getName() + "'");
+                            //TODO : throw an exception ?
                         }                    
                     }
                 }
@@ -1000,11 +1001,13 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 					            if (dbTokens.update(value.getAddress(), key, os.data()) == BFile.UNKNOWN_ADDRESS) {
                                     LOG.error("Could not update index data for token '" +  token + "' in '" + dbTokens.getFile().getName() + 
                                         "' (inverted index)");
+                                    //TODO : throw an exception ?
                                 }                    						    
 					    } else {                           
 				            if (dbTokens.put(key, os.data()) == BFile.UNKNOWN_ADDRESS) {
                                 LOG.error("Could not put index data for token '" +  token + "' in '" + dbTokens.getFile().getName() + 
                                     "' (inverted index)");  
+                                //TODO : throw an exception ?
                             }                    
 					    }
 					} catch (LockException e) {
@@ -1121,12 +1124,14 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	                        if (dbTokens.put(key, os.data()) == BFile.UNKNOWN_ADDRESS) {
                                 LOG.error("Could not put index data for token '" +  token + "' in '" + dbTokens.getFile().getName() + 
                                         "' (inverted index)");
+                                //TODO : throw an exception ?
                             }
 	                    } else {  
                             long address = ((BFile.PageInputStream) is).getAddress();
 	                        if (dbTokens.update(address, key, os.data()) == BFile.UNKNOWN_ADDRESS) {
                                 LOG.error("Could not update index data for value '" +  token +  "' in '" + dbTokens.getFile().getName() + 
-                                    "' (inverted index)"); 
+                                    "' (inverted index)");
+                                //TODO : throw an exception ?
                             }
 	                    }		                
 		            } catch (LockException e) {

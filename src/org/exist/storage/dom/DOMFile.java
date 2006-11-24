@@ -55,7 +55,6 @@ import org.exist.storage.cache.Cacheable;
 import org.exist.storage.cache.LRUCache;
 import org.exist.storage.journal.LogEntryTypes;
 import org.exist.storage.journal.Loggable;
-import org.exist.storage.journal.Lsn;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.ReentrantReadWriteLock;
 import org.exist.storage.txn.TransactionException;
@@ -1802,6 +1801,8 @@ public class DOMFile extends BTree implements Lockable {
 			try {
 				value = new String(data, "UTF-8");
 			} catch (UnsupportedEncodingException e) {
+				LOG.warn("UTF-8 error while reading node value", e);
+				//TODO : why not store another string like "OOOPS !" ?
 				value = new String(data);
 			}
 			return value;
@@ -1879,6 +1880,7 @@ public class DOMFile extends BTree implements Lockable {
 					&& children - attributes > 1;
 			rec.offset += len + 2;
 			for (int i = 0; i < children; i++) {
+				//recursive call
 				getNodeValue(doc, os, rec, false, addWhitespace);
 				if (extraWhitespace)
 					os.write((byte) ' ');
@@ -3150,14 +3152,12 @@ public int write(Txn transaction, InputStream is) {
 
 		public void streamTo(OutputStream os) {
 			Page page = firstPage;
-			byte[] chunk;
-			long np;
 			int count = 0;
 			while (page != null) {
 				try {
-					chunk = page.read();
+					byte[] chunk = page.read();
 					os.write(chunk);
-					np = page.getPageHeader().getNextPage();
+					long np = page.getPageHeader().getNextPage();
 					page = (np > Page.NO_PAGE) ? getPage(np) : null;
 				} catch (IOException e) {
 					LOG.error("io error while loading overflow page "
