@@ -218,7 +218,7 @@ public class Main {
 							null)
 						== JOptionPane.YES_OPTION) {
 						optionBackup = dialog.getCollection();
-						properties.setProperty("backup-dir", dialog.getBackupDir());
+						properties.setProperty("backup-dir", dialog.getBackupTarget());
 					}
 				} else
 					optionBackup = DBBroker.ROOT_COLLECTION;

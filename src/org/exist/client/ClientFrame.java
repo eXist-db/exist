@@ -1100,21 +1100,37 @@ public class ClientFrame extends JFrame
     
     private void backupAction(ActionEvent ev) {
         CreateBackupDialog dialog = new CreateBackupDialog(
-                properties.getProperty("uri", "xmldb:exist://"),  //$NON-NLS-1$ //$NON-NLS-2$
-                properties.getProperty("user", "admin"),  //$NON-NLS-1$ //$NON-NLS-2$
-                properties.getProperty("password", null), //$NON-NLS-1$
-                properties.getProperty("backup-dir", System.getProperty("user.home") //$NON-NLS-1$ //$NON-NLS-2$
-                + File.separatorChar + "eXist-backup.zip")); //$NON-NLS-1$
-        if (JOptionPane.showOptionDialog(this, dialog, Messages.getString("ClientFrame.157"), //$NON-NLS-1$
+                properties.getProperty("uri", "xmldb:exist://"),  
+                properties.getProperty("user", "admin"),  
+                properties.getProperty("password", null), 
+                properties.getProperty("backup-dir", System.getProperty("user.home") 
+                + File.separatorChar + "eXist-backup.zip")); 
+        if (JOptionPane.showOptionDialog(this, dialog, Messages.getString("ClientFrame.157"), 
                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
                 null, null, null) == JOptionPane.YES_OPTION) {
             String collection = dialog.getCollection();
-            String dir = dialog.getBackupDir();
+            String target = dialog.getBackupTarget();
+            
+//            // DWES add check here?
+//            if(new File(target).exists()){
+//                if (JOptionPane.showConfirmDialog(
+//                        this,
+//                        Messages.getString("CreateBackupDialog.6a") + " "+ target + " "+ Messages.getString("CreateBackupDialog.6b"),
+//                        Messages.getString("CreateBackupDialog.6c"),
+//                        JOptionPane.YES_NO_OPTION)
+//                        == JOptionPane.NO_OPTION)
+//                {
+//                    new File(target).delete();
+//                }
+//                    
+//            }
+        
+            
             try {
             Backup backup = new Backup(
-                    properties.getProperty("user", "admin"), //$NON-NLS-1$ //$NON-NLS-2$
-                    properties.getProperty("password", null), dir, //$NON-NLS-1$
-                    XmldbURI.xmldbUriFor(properties.getProperty("uri", "xmldb:exist://") //$NON-NLS-1$ //$NON-NLS-2$
+                    properties.getProperty("user", "admin"), 
+                    properties.getProperty("password", null), target, 
+                    XmldbURI.xmldbUriFor(properties.getProperty("uri", "xmldb:exist://") 
                     + collection));
                 backup.backup(true, this);
             } catch (XMLDBException e) {
