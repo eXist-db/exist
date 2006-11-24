@@ -147,6 +147,13 @@ public final class NodeIterator implements Iterator {
 					}
 					// read data length
 					short l = ByteConversion.byteToShort(p.data, offset);
+
+					if (l < 0) {
+						LOG.warn("Got negative length" + l + " at offset " + offset + "!!!");
+						LOG.debug(db.debugPageContents(p));
+						//TODO : throw an exception right now ?
+					}
+                    
 					offset += 2;
 					if(ItemId.isRelocated(lastTID)) {
 						// found a relocated node. Read the original address
