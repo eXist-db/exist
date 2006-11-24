@@ -84,12 +84,19 @@ public class FunQName extends BasicFunction {
 			namespace = args[0].getStringValue();
 		
 		String param = args[1].getStringValue();
-		String prefix = QName.extractPrefix(param);
-		String localName = QName.extractLocalName(param);
+		
+		String prefix = null;
+		String localName = null;		
+		try {
+			prefix = QName.extractPrefix(param);
+			localName = QName.extractLocalName(param);
+		} catch (IllegalArgumentException e) {
+        	throw new XPathException(e);
+		}
 		
 		if ((prefix != null && prefix.length() > 0) && (namespace == null || namespace.length() == 0))
         	throw new XPathException("FOCA0002: non-empty namespace prefix with empty namespace URI");
-			
+		
 		QName qname = new QName(localName, namespace, prefix);
 
 		Sequence result = new QNameValue(context, qname);
