@@ -35,6 +35,15 @@ public class RemoteResourceSet implements ResourceSet {
     }
 
     public void clear() throws XMLDBException {
+        Vector params = new Vector();
+    	params.addElement(new Integer(handle));
+        try {
+            collection.getClient().execute("releaseQueryResult", params);
+        } catch (XmlRpcException e) {
+            System.err.println("Failed to release query result on server: " + e.getMessage());
+        } catch (IOException e) {
+            System.err.println("Failed to release query result on server: " + e.getMessage());
+        }
         resources.clear();
     }
 

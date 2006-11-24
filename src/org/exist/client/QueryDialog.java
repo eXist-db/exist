@@ -390,7 +390,7 @@ public class QueryDialog extends JFrame {
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			long tResult =0;
 			long tCompiled=0;
-			
+			ResourceSet result = null;
 			try {
 				XQueryService service= (XQueryService) collection.getService("XQueryService", "1.0");
 				service.setProperty(OutputKeys.INDENT, properties.getProperty(OutputKeys.INDENT, "yes"));
@@ -398,7 +398,7 @@ public class QueryDialog extends JFrame {
 				CompiledExpression compiled = service.compile(xpath);
 				long t1 = System.currentTimeMillis();
 				tCompiled = t1 - t0;
-				ResourceSet result= service.execute(compiled);
+				result = service.execute(compiled);
 				tResult = System.currentTimeMillis() - t1;
 				
 				StringWriter writer = new StringWriter();
@@ -440,7 +440,13 @@ public class QueryDialog extends JFrame {
 				ClientFrame.showErrorMessageQuery(
 						"An exception occurred during query execution: "
 						+ InteractiveClient.getExceptionMessage(e), e);
-			}
+			} finally {
+                if (result != null)
+                    try {
+                        result.clear();
+                    } catch (XMLDBException e) {
+                    }
+            }
 			if(client.queryHistory.isEmpty() || !((String)client.queryHistory.getLast()).equals(xpath)) {
 				client.addToHistory(xpath);
 				client.writeQueryHistory();
