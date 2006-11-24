@@ -27,7 +27,9 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Dependency;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.DoubleValue;
@@ -55,24 +57,41 @@ public class TextRank extends BasicFunction {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
 	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence)
-		throws XPathException {
+	public Sequence eval(Sequence[] args, Sequence contextSequence)	throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+        }  
+        
+        Sequence result;
+        
 		// return 0.0 if the argument sequence is empty
+		//TODO : return empty sequence ?
 		if(args[0].isEmpty())
-			return DoubleValue.ZERO;
-		NodeValue val = (NodeValue)args[0].itemAt(0);
-		// Ranking cannot be applied to constructed nodes
-		if(val.getImplementationType() == NodeValue.IN_MEMORY_NODE)
-			return DoubleValue.ZERO;
-		NodeProxy proxy = (NodeProxy)val;	// this is a persistent node, so casting is safe
-
-		int freq = 0;
-		Match nextMatch = proxy.getMatches();
-		// we just count the number of distinct terms matched
-		while(nextMatch != null) {
-			freq += nextMatch.getFrequency();
-			nextMatch = nextMatch.getNextMatch();
+			result = DoubleValue.ZERO;
+		else {
+			NodeValue val = (NodeValue)args[0].itemAt(0);
+			// Ranking cannot be applied to constructed nodes
+			if(val.getImplementationType() == NodeValue.IN_MEMORY_NODE)
+				throw new XPathException(getASTNode(), getName() + " cannot be applied to in-memory nodes.");
+			NodeProxy proxy = (NodeProxy)val;	// this is a persistent node, so casting is safe
+	
+			int freq = 0;
+			Match nextMatch = proxy.getMatches();
+			// we just count the number of distinct terms matched
+			while(nextMatch != null) {
+				freq += nextMatch.getFrequency();
+				nextMatch = nextMatch.getNextMatch();
+			}
+			result = new DoubleValue(freq);
 		}
-		return new DoubleValue(freq);
+		
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result);
+        
+        return result;
+		
 	}
 }
