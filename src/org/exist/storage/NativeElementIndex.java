@@ -65,7 +65,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
     /** The datastore for this node index */
     protected BFile dbNodes;
 
-    /** Work output Stream taht should be cleared before every use */
+    /** Work output Stream that should be cleared before every use */
     private VariableByteOutputStream os = new VariableByteOutputStream();
     
     public NativeElementIndex(DBBroker broker, BFile dbNodes) {
@@ -154,8 +154,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             FastQSort.sort(gids, 0, gidsCount - 1);
             os.clear();
             os.writeInt(this.doc.getDocId());
-            os.writeByte(inUpdateMode ? ENTRIES_UNORDERED : ENTRIES_ORDERED);
-            
+            os.writeByte(inUpdateMode ? ENTRIES_UNORDERED : ENTRIES_ORDERED);            
             os.writeInt(gidsCount);
             //TOUNDERSTAND -pb
             int lenOffset = os.position();
@@ -181,7 +180,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 //Store the data
                 final Value key = computeKey(collectionId, qname);
                 if (dbNodes.append(key, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                    LOG.error("Could not put index data for node '" +  qname + "'"); 
+                    LOG.error("Could not put index data for node '" +  qname + "'");
+                    //TODO : throw an exception ?
                 }
             } catch (LockException e) {
                 LOG.warn("Failed to acquire lock for '" + dbNodes.getFile().getName() + "'", e);
@@ -291,6 +291,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                                 storedNode.getNodeId().write(os);
                             } catch (IOException e) {
                                 LOG.warn("IO error while writing structural index: " + e.getMessage(), e);
+                                //TODO : throw exception ?
                             }
                             StorageAddress.write(storedNode.getInternalAddress(), os);
                         }
@@ -301,11 +302,13 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 //Store the data
                 if (value == null) {
                     if (dbNodes.put(key, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                        LOG.error("Could not put index data for node '" +  qname + "'");  
+                        LOG.error("Could not put index data for node '" +  qname + "'"); 
+                        //TODO : throw exception ?
                     }                    
                 } else {
                     if (dbNodes.update(value.getAddress(), key, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                        LOG.error("Could not put index data for node '" +  qname + "'");  
+                        LOG.error("Could not put index data for node '" +  qname + "'");
+                        //TODO : throw exception ?
                     }                    
                 }
             } catch (LockException e) {
@@ -378,7 +381,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                             is.copyRaw(os, size);
                         } else {
                             // data are related to our document:
-                            // skip them          
+                            // skip them, they will be processed soon
                             changed = true;
                             is.skipBytes(size);
                         }
@@ -392,6 +395,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                     //dbNodes.update(value.getAddress(), ref, os.data()) -pb
                     if (dbNodes.put(key, os.data()) == BFile.UNKNOWN_ADDRESS) {
                         LOG.error("Could not put index data for value '" +  ref + "'");
+                        //TODO : thow exception ?
                     }                    
                 }
             }
@@ -532,8 +536,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 lock.acquire(Lock.READ_LOCK);
                 VariableByteInput is;
                 /*
-                //TODO : uncomment an implement properly
-                //TODO : bewere of null NS prefix : it looks to be polysemic (none vs. all)
+                //TODO : uncomment and implement properly
+                //TODO : beware of null NS prefix : it looks to be polysemic (none vs. all)
                 //Test for "*" prefix
                 if (qname.getPrefix() == null) {
                 	try {
@@ -716,7 +720,6 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 }
             } catch (EOFException e) {
                 //EOFExceptions are expected here
-//                LOG.warn("EOF: " + e.getMessage(), e);
             } catch (LockException e) {
                 LOG.warn("Failed to acquire lock for '" + dbNodes.getFile().getName() + "'", e);
             } catch (IOException e) {

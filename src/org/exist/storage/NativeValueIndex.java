@@ -256,6 +256,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     nodeId.write(os);
                 } catch (IOException e) {
                     LOG.warn("IO error while writing range index: " + e.getMessage(), e);
+                    //TODO : throw exception?
                 }
             }
             os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
@@ -264,7 +265,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 lock.acquire(Lock.WRITE_LOCK);                
                 Value key = new Value(indexable.serialize(collectionId, caseSensitive));
                 if (dbValues.append(key, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                    LOG.error("Could not append index data for key '" +  key + "'");                   
+                    LOG.error("Could not append index data for key '" +  key + "'");
+                    //TODO : throw exception ?
                 }
 			} catch (EXistException e) {
                 LOG.error(e.getMessage(), e);                
@@ -355,16 +357,19 @@ public class NativeValueIndex implements ContentLoadingObserver {
                                 nodeId.write(os);
                             } catch (IOException e) {
                                 LOG.warn("IO error while writing range index: " + e.getMessage(), e);
+                                //TOO : throw exception ?
                             }
                         }
                         os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
                     }
                     if (dbValues.update(value.getAddress(), searchKey, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                        LOG.error("Could not update index data for value '" +  searchKey + "'");  
+                        LOG.error("Could not update index data for value '" +  searchKey + "'");
+                        //TODO: throw exception ?
                     }                    
                 } else {
                     if (dbValues.put(searchKey, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                        LOG.error("Could not put index data for value '" +  searchKey + "'");  
+                        LOG.error("Could not put index data for value '" +  searchKey + "'");
+                        //TODO : throw exception ?
                     }                    
                 }  
 			} catch (EXistException e) {
@@ -445,7 +450,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         is.copyRaw(os, size);
                     } else {
                         // data are related to our document:
-                        // skip them
+                        // skip them. They will be processed at the end
                         is.skipBytes(size);
                         changed = true;
                     }
@@ -458,6 +463,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     } else {                      
                         if (dbValues.put(key, os.data()) == BFile.UNKNOWN_ADDRESS) {
                             LOG.error("Could not put index data for key '" +  key + "'");
+                            //TODO : throw exception ?
                         }
                     }
                 }
