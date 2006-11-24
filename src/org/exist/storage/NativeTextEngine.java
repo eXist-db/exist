@@ -92,7 +92,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	protected InvertedIndex invertedIndex;
     
     /** Work output Stream that should be cleared before every use */
-    private VariableByteOutputStream os = new VariableByteOutputStream();    
+    private VariableByteOutputStream os = new VariableByteOutputStream(7);    
 
 	public NativeTextEngine(DBBroker broker, Configuration config, BFile db) {
 		super(broker, config);
@@ -385,6 +385,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 LOG.error(e.getMessage() + " in '" + dbTokens.getFile().getName() + "'", e);                       
             } finally {
                 lock.release();
+                os.clear();
             }
         }        
     }    
@@ -771,7 +772,6 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         // values.        
         //TODO : very tricky. Why not 2 inverted indexes ??? -pb
 		private Map words[] = new HashMap[2];
-		private VariableByteOutputStream os = new VariableByteOutputStream(7);
 
 		public InvertedIndex() {
 			words[0] = new HashMap(512);
@@ -896,6 +896,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 LOG.error(e.getMessage() + "' in '" + dbTokens.getFile().getName() + "' (inverted index)", e);   
             } finally {
                 lock.release();
+                os.clear();
             }
         }        
 
@@ -1014,7 +1015,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                         LOG.error(e.getMessage() + "' in '" + dbTokens.getFile().getName() + "' (inverted index)", e);
                     } finally {
 					    lock.release();
-					}
+                        os.clear();
+                    }
 				}
 				words[currentSection].clear();
 			}
@@ -1135,7 +1137,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		                LOG.error("io error while reindexing word '" + token  + "' in '" + dbTokens.getFile().getName() + "' (inverted index)", e);		               
 		            } finally {
 		                lock.release(Lock.WRITE_LOCK);
-		            }
+                        os.clear();
+                    }
 		        }
 		        words[currentSection].clear();
 		    }

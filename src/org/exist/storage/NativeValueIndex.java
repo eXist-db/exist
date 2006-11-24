@@ -280,6 +280,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 return;                 
             } finally {
                 lock.release();
+                os.clear();
             }
         }
         pending.clear();
@@ -377,7 +378,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 LOG.error(e.getMessage(), e);                
             } finally {
                 lock.release();
-            }            
+                os.clear();
+            }
         }
         pending.clear();
     }    
@@ -459,7 +461,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         }
                     }
                 }
-            }            
+                os.clear();
+            }
         } catch (LockException e) {
             LOG.warn("Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e);       
         } catch (TerminatedException e) {

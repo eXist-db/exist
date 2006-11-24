@@ -14,7 +14,9 @@ import org.exist.util.FastByteBuffer;
  */
 public class VariableByteOutputStream extends OutputStream {
 
-	protected FastByteBuffer buf;
+    private final int MAX_BUFFER_SIZE = 65536;
+
+    protected FastByteBuffer buf;
 	
     private final byte[] temp = new byte[5];
     
@@ -29,7 +31,10 @@ public class VariableByteOutputStream extends OutputStream {
 	}
 
 	public void clear() {
-		buf.setLength(0);
+        if (buf.size() > MAX_BUFFER_SIZE)
+            buf = new FastByteBuffer(9);
+        else
+            buf.setLength(0);
 	}
 
 	public void close() throws IOException {
