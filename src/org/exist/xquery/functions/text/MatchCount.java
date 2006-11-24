@@ -27,7 +27,9 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Dependency;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.IntegerValue;
@@ -61,26 +63,41 @@ public class MatchCount extends BasicFunction {
     /* (non-Javadoc)
      * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
      */
-    public Sequence eval(Sequence[] args, Sequence contextSequence)
-            throws XPathException {
-        // return 0.0 if the argument sequence is empty
+    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().start(this);
+            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+            if (contextSequence != null)
+                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+        }  
+        
+        Sequence result;
+        // return 0 if the argument sequence is empty
+    	//TODO : return empty sequence ?
 		if(args[0].isEmpty())
-			return IntegerValue.ZERO;
-		int count = 0;
-		for(SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
-		    Item next = i.nextItem();
-		    if(Type.subTypeOf(next.getType(), Type.NODE)) {
-		        NodeValue nv = (NodeValue)next;
-		        if(nv.getImplementationType() != NodeValue.PERSISTENT_NODE)
-		            throw new XPathException(getName() + " cannot be applied to XQuery-constructed nodes.");
-		        NodeProxy np = (NodeProxy)nv;
-		        for(Match nextMatch = np.getMatches(); nextMatch != null; ) {
-		        	count += nextMatch.getFrequency();
-		            nextMatch = nextMatch.getNextMatch();
-		        }
-		    }
+			result = IntegerValue.ZERO;
+		else {
+			int count = 0;
+			for(SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
+			    Item next = i.nextItem();
+			    if(Type.subTypeOf(next.getType(), Type.NODE)) {
+			        NodeValue nv = (NodeValue)next;
+			        if(nv.getImplementationType() != NodeValue.PERSISTENT_NODE)
+			        	throw new XPathException(getASTNode(), getName() + " cannot be applied to in-memory nodes.");
+			        NodeProxy np = (NodeProxy)nv;
+			        for(Match nextMatch = np.getMatches(); nextMatch != null; ) {
+			        	count += nextMatch.getFrequency();
+			            nextMatch = nextMatch.getNextMatch();
+			        }
+			    }
+			}
+			result = new IntegerValue(count);
 		}
-		return new IntegerValue(count);
+
+        if (context.getProfiler().isEnabled()) 
+            context.getProfiler().end(this, "", result);
+        
+        return result;
     }
 
 }
