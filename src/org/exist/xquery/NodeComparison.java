@@ -94,6 +94,10 @@ public class NodeComparison extends BinaryOp {
 		Sequence ls = getLeft().eval(contextSequence, contextItem);
 		Sequence rs = getRight().eval(contextSequence, contextItem);
         if(!ls.isEmpty() && !rs.isEmpty()) {
+            if (!Type.subTypeOf(ls.itemAt(0).getType(), Type.NODE))
+            	throw new XPathException(getASTNode(), "XPTY0004: left item is not a node; got '" + Type.getTypeName(ls.itemAt(0).getType()) + "'");
+            if (!Type.subTypeOf(rs.itemAt(0).getType(), Type.NODE))
+            	throw new XPathException(getASTNode(), "XPTY0004: right item is not a node; got '" + Type.getTypeName(rs.itemAt(0).getType()) + "'");
     		NodeValue lv = (NodeValue)ls.itemAt(0);
     		NodeValue rv = (NodeValue)rs.itemAt(0);	       		
 			if(lv.getImplementationType() != rv.getImplementationType()) {
