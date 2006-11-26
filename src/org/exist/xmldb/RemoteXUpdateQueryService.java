@@ -39,6 +39,7 @@ public class RemoteXUpdateQueryService implements XUpdateQueryService {
 		try {
 			xupdateData = commands.getBytes("UTF-8");
 		} catch (UnsupportedEncodingException e) {
+			LOG.warn(e);
 			xupdateData = commands.getBytes();
 		}
 		params.addElement(parent.getPath());
@@ -64,6 +65,7 @@ public class RemoteXUpdateQueryService implements XUpdateQueryService {
 		try {
 			xupdateData = commands.getBytes("UTF-8");
 		} catch (UnsupportedEncodingException e) {
+			LOG.warn(e);
 			xupdateData = commands.getBytes();
 		}
         //TODO : use dedicated function in XmldbURI

@@ -22,11 +22,10 @@
 
 package org.exist.xquery;
 
-import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.DocumentBuilderReceiver;
+import org.exist.memtree.MemTreeBuilder;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;

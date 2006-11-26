@@ -24,12 +24,16 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
+import org.apache.log4j.Logger;
+
 /**
  * Abstract base class for implementations of VariableByteInput.
  * 
  * @author wolf
  */
 public abstract class AbstractVariableByteInput implements VariableByteInput {
+	
+	private static Logger LOG = Logger.getLogger(AbstractVariableByteInput.class.getName());
 
     public AbstractVariableByteInput() {
     }
@@ -89,6 +93,7 @@ public abstract class AbstractVariableByteInput implements VariableByteInput {
         try {
             s = new String(data, "UTF-8");
         } catch (UnsupportedEncodingException e) {
+        	LOG.warn(e);
             s = new String(data);
         }
         return s;

@@ -42,6 +42,7 @@ import org.apache.commons.fileupload.DiskFileUpload;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUpload;
 import org.apache.commons.fileupload.FileUploadException;
+import org.apache.log4j.Logger;
 import org.exist.xquery.Constants;
 
 /** A wrapper for requests processed by a servlet.
@@ -55,6 +56,8 @@ public class HttpRequestWrapper implements RequestWrapper {
     private String containerEncoding = null;
     
     private Hashtable params = null;
+    
+    private static Logger LOG = Logger.getLogger(HttpRequestWrapper.class.getName());
     
 	/**
 	 * Constructs a wrapper for the given servlet request.
@@ -135,6 +138,7 @@ public class HttpRequestWrapper implements RequestWrapper {
             byte[] bytes = value.getBytes(containerEncoding);
             return new String(bytes, formEncoding);
         } catch (UnsupportedEncodingException e) {
+        	LOG.warn(e);
             return value;
         }
     }    
@@ -217,6 +221,7 @@ public class HttpRequestWrapper implements RequestWrapper {
                 try {
                     return item.getString(formEncoding);
                 } catch (UnsupportedEncodingException e) {
+                	LOG.warn(e);
                     return null;
                 }
         }
@@ -306,6 +311,7 @@ public class HttpRequestWrapper implements RequestWrapper {
                     try {
                         values[j] = formEncoding == null ? item.getString() : item.getString(formEncoding);
                     } catch (UnsupportedEncodingException e) {
+                    	LOG.warn(e);
                         e.printStackTrace();
                     }
                 }
@@ -315,6 +321,7 @@ public class HttpRequestWrapper implements RequestWrapper {
                 try {
                     values[0] = formEncoding == null ? item.getString() : item.getString(formEncoding);
                 } catch (UnsupportedEncodingException e) {
+                	LOG.warn(e);
                     e.printStackTrace();
                 }
             }

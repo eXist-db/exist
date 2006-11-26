@@ -29,6 +29,7 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.util.ByteConversion;
 import org.exist.util.UTF8;
@@ -47,6 +48,8 @@ import org.exist.xquery.value.Type;
  */
 //TODO : rename as NativeIndexValueFactory ? -pb
 public class ValueIndexFactory {
+	
+	private static Logger LOG = Logger.getLogger(ValueIndexFactory.class.getName());
 
 	public final static Indexable deserialize(byte[] data, int start, int len) throws EXistException {
 		
@@ -61,6 +64,7 @@ public class ValueIndexFactory {
 			try {
 				s = new String(data, start + 3, len - 3, "UTF-8");
 			} catch (UnsupportedEncodingException e) {
+				LOG.warn(e);
 				s = new String(data, start + 3, len - 3);
 			}
 			return new StringValue(s);

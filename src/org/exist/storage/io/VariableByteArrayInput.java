@@ -24,6 +24,8 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
+import org.apache.log4j.Logger;
+
 /**
  * Implements VariableByteInput on top of a byte array.
  * 
@@ -32,10 +34,10 @@ import java.io.UnsupportedEncodingException;
 public class VariableByteArrayInput extends AbstractVariableByteInput {
 
     protected byte[] data;
-
     protected int position;
-
     protected int end;
+    
+    private static Logger LOG = Logger.getLogger(VariableByteArrayInput.class.getName());
 
     public VariableByteArrayInput() {
         super();
@@ -134,6 +136,7 @@ public class VariableByteArrayInput extends AbstractVariableByteInput {
         try {
             s = new String(data, position, len, "UTF-8");
         } catch (UnsupportedEncodingException e) {
+        	LOG.warn(e);
             s = new String(data, position, len);
         }
         position += len;

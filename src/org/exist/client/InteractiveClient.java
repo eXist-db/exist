@@ -72,6 +72,7 @@ import jline.Terminal;
 import org.apache.avalon.excalibur.cli.CLArgsParser;
 import org.apache.avalon.excalibur.cli.CLOption;
 import org.apache.avalon.excalibur.cli.CLUtil;
+import org.apache.log4j.Logger;
 import org.exist.dom.XMLUtil;
 import org.exist.security.Permission;
 import org.exist.security.User;
@@ -187,6 +188,8 @@ public class InteractiveClient {
     
     protected Writer traceWriter = null;
     protected ClientFrame frame;
+    
+    private static Logger LOG = Logger.getLogger(InteractiveClient.class.getName());
     
     public InteractiveClient() {
     }
@@ -1767,6 +1770,7 @@ public class InteractiveClient {
                         traceWriter.write("<?xml version=\"1.0\"?>\r\n");
                         traceWriter.write("<query-log>\r\n");
                     } catch (UnsupportedEncodingException e1) {
+                    	LOG.warn(e1);
                     } catch (FileNotFoundException e1) {
                         messageln("Cannot open file " + traceFile);
                     } catch (IOException e) {

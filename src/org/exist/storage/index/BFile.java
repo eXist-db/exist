@@ -2435,6 +2435,7 @@ public class BFile extends BTree {
             try {
                 s = new String(data, "UTF-8");
             } catch (UnsupportedEncodingException e) {
+            	LOG.warn(e);
                 s = new String(data);
             }
             return s;
