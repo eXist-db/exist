@@ -98,13 +98,19 @@ abstract class OrderedDurationValue extends DurationValue {
 	public ComputableValue minus(ComputableValue other) throws XPathException {
 		switch(other.getType()) {
 		case Type.DAY_TIME_DURATION: {
-			if (getType() != other.getType()) throw new IllegalArgumentException(Type.getTypeName(getType()) + " differs from " + Type.getTypeName(other.getType()));	
+			if (getType() != other.getType()) 
+				throw new IllegalArgumentException("Tried to substract " + 
+						Type.getTypeName(other.getType()) + "('" + other.getStringValue() + "') from " + 
+						Type.getTypeName(getType()) + "('" + other.getStringValue() + "')");
 			Duration a = getCanonicalDuration();
 			Duration b = ((OrderedDurationValue) other).getCanonicalDuration();	
 			Duration result = createSameKind(a.subtract(b)).getCanonicalDuration();
 			return new DayTimeDurationValue(result); }				
 		case Type.YEAR_MONTH_DURATION: {
-			if (getType() != other.getType()) throw new IllegalArgumentException(Type.getTypeName(getType()) + " differs from " + Type.getTypeName(other.getType()));	
+			if (getType() != other.getType()) 
+				throw new IllegalArgumentException("Tried to substract " + 
+						Type.getTypeName(other.getType()) + "('" + other.getStringValue() + "') from " + 
+						Type.getTypeName(getType()) + "('" + other.getStringValue() + "')");
 			Duration a = getCanonicalDuration();
 			Duration b = ((OrderedDurationValue) other).getCanonicalDuration();	
 			Duration result = createSameKind(a.subtract(b)).getCanonicalDuration();
