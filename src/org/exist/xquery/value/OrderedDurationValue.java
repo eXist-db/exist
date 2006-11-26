@@ -125,7 +125,9 @@ abstract class OrderedDurationValue extends DurationValue {
 			return date.createSameKind(gc);
 		*/
 		default:
-			throw new IllegalArgumentException("Invalid Type: " + Type.getTypeName(other.getType()));		// caught and converted to XPathException in subclass	
+			throw new IllegalArgumentException("Tried to substract " + 
+					Type.getTypeName(other.getType()) + "('" + other.getStringValue() + "') from " + 
+					Type.getTypeName(getType()) + "('" + other.getStringValue() + "')");
 		}
 		/*
 		if(other.getType() == getType()) {
