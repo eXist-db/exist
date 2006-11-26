@@ -43,7 +43,6 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.util.Configuration;
 import org.exist.util.Occurrences;
 import org.exist.util.PorterStemmer;
-import org.exist.util.XMLString;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XQueryContext;
 

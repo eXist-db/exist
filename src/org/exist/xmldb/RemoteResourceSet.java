@@ -9,6 +9,7 @@ import java.util.Vector;
 
 import javax.xml.transform.OutputKeys;
 
+import org.apache.log4j.Logger;
 import org.apache.xmlrpc.XmlRpcException;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;
@@ -22,6 +23,8 @@ public class RemoteResourceSet implements ResourceSet {
     protected int handle = -1;
     protected Vector resources;
     protected Properties outputProperties;
+    
+    private static Logger LOG = Logger.getLogger(RemoteResourceSet.class.getName());
 
     public RemoteResourceSet( RemoteCollection col, Properties properties, Vector resources, int handle ) {
         this.handle = handle;
@@ -66,6 +69,7 @@ public class RemoteResourceSet implements ResourceSet {
 			try {
 				content = new String(data, outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8"));
 			} catch (UnsupportedEncodingException ue) {
+				LOG.warn(ue);
 				content = new String(data);
 			}
 			RemoteXMLResource res = new RemoteXMLResource( collection, handle, 0, 

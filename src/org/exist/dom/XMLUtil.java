@@ -31,6 +31,7 @@ import java.io.UnsupportedEncodingException;
 
 import javax.xml.transform.TransformerException;
 
+import org.apache.log4j.Logger;
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.xquery.Constants;
 import org.w3c.dom.DocumentFragment;
@@ -40,6 +41,8 @@ import org.w3c.dom.DocumentFragment;
  *
  */
 public class XMLUtil {
+	
+	private static Logger LOG = Logger.getLogger(XMLUtil.class.getName());
 
 	public final static String dump(DocumentFragment fragment) {
         StringWriter writer = new StringWriter();
@@ -186,6 +189,7 @@ public class XMLUtil {
 		try {
 			return new String(out.toByteArray(), enc);
 		} catch (UnsupportedEncodingException e) {
+			LOG.warn(e);
 			return new String(out.toByteArray());
 		}
 	}

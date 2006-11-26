@@ -219,6 +219,7 @@ public class XIncludeFilter implements Receiver {
             try {
                 xpointer = XMLUtil.decodeAttrMarkup(URLDecoder.decode(xpointer, "UTF-8"));
             } catch (UnsupportedEncodingException e) {
+            	LOG.warn(e);
             }
             // remove the fragment part from the URI for further processing
             URI u = docUri.getURI();

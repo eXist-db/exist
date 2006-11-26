@@ -142,6 +142,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
         try {
             return xml.getBytes("UTF-8");
         } catch (UnsupportedEncodingException e) {
+        	LOG.warn(e);
             return xml.getBytes();
         }
     }
@@ -183,6 +184,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
             //				try {
             //					return xml.getBytes("UTF-8");
             //				} catch (java.io.UnsupportedEncodingException e) {
+            //					LOG.warn(e);
             //					return xml.getBytes();
             //				}
             //
@@ -252,6 +254,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
         try {
             query = new String(xquery, "UTF-8");
         } catch (UnsupportedEncodingException e) {
+        	LOG.warn(e);
             query = new String(xquery);
         }
         return query(sessionId, query);

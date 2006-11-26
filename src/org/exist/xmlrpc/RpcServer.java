@@ -147,6 +147,7 @@ public class RpcServer implements RpcAPI {
             try {
                 xpathString = new String(xpath, encoding);
             } catch (UnsupportedEncodingException e) {
+            	LOG.warn(e);
             }
 
         if (xpathString == null)
@@ -223,6 +224,7 @@ public class RpcServer implements RpcAPI {
             try {
                 return xml.getBytes(encoding);
             } catch (UnsupportedEncodingException uee) {
+            	LOG.warn(uee);
                 return xml.getBytes();
             }
         } catch (Exception e) {
@@ -260,6 +262,7 @@ public class RpcServer implements RpcAPI {
             try {
                 return xml.getBytes(encoding);
             } catch (UnsupportedEncodingException uee) {
+            	LOG.warn(uee);
                 return xml.getBytes();
             }
         } catch (Exception e) {
@@ -366,7 +369,7 @@ public class RpcServer implements RpcAPI {
                 }
 
             } catch (UnsupportedEncodingException uee) {
-
+            	LOG.warn(uee);
                 if (compression.equals("no")) {
                     return xml.getBytes();
                 } else {
@@ -960,6 +963,7 @@ public class RpcServer implements RpcAPI {
         try {
             xqueryStr = new String(xquery, "UTF-8");
         } catch (UnsupportedEncodingException e) {
+        	LOG.warn(e);
             xqueryStr = new String(xquery);
         }
 
@@ -1217,6 +1221,7 @@ public class RpcServer implements RpcAPI {
                     encoding = "UTF-8";
                 return xml.getBytes(encoding);
             } catch (UnsupportedEncodingException uee) {
+            	LOG.warn(uee);
                 return xml.getBytes();
             }
         } catch (Exception e) {
@@ -1263,7 +1268,7 @@ public class RpcServer implements RpcAPI {
                 }
 
             } catch (UnsupportedEncodingException uee) {
-
+            	LOG.warn(uee);
                 if (compression.equals("no")) {
                     return xml.getBytes();
                 } else {
@@ -1297,6 +1302,7 @@ public class RpcServer implements RpcAPI {
             try {
                 return xml.getBytes(encoding);
             } catch (UnsupportedEncodingException uee) {
+            	LOG.warn(uee);
                 return xml.getBytes();
             }
         } catch (Exception e) {

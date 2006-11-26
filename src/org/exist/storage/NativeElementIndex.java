@@ -60,7 +60,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
 	private final static byte ENTRIES_ORDERED = 0;
 	private final static byte ENTRIES_UNORDERED = 1;
 	
-    private static Logger LOG = Logger.getLogger(NativeElementIndex.class.getName());
+	private static Logger LOG = Logger.getLogger(NativeElementIndex.class.getName());
 
     /** The datastore for this node index */
     protected BFile dbNodes;

@@ -51,7 +51,9 @@ package org.exist.storage.btree;
  * $Id$
  */
 
-import java.io.*;
+import java.io.UnsupportedEncodingException;
+
+import org.apache.log4j.Logger;
 
 /**
  * Value is the primary base class for all data storing objects.
@@ -64,6 +66,8 @@ public class Value implements Comparable {
 	protected byte[] data = null;
 	protected int pos = 0;
 	protected int len = -1;
+	
+	private static Logger LOG = Logger.getLogger(Value.class.getName());
 
 	public Value() {
 	}
@@ -89,6 +93,7 @@ public class Value implements Comparable {
 		try {
 			this.data = data.getBytes("UTF-8");
 		} catch (UnsupportedEncodingException uee) {
+			LOG.warn(uee);
 			this.data = data.getBytes();
 		}
 		this.len = this.data.length;

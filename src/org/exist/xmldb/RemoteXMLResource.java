@@ -20,6 +20,7 @@ import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
 
+import org.apache.log4j.Logger;
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.dom.DocumentTypeImpl;
 import org.exist.security.Permission;
@@ -69,6 +70,8 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 	
     protected Date dateCreated= null;
     protected Date dateModified= null;
+    
+	private static Logger LOG = Logger.getLogger(RemoteXMLResource.class.getName());
 	
     public RemoteXMLResource(RemoteCollection parent, XmldbURI docId, String id)
 	throws XMLDBException {
@@ -163,6 +166,7 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 	try {
 	    content = new String(data, properties.getProperty(OutputKeys.ENCODING, "UTF-8"));
 	} catch (UnsupportedEncodingException ue) {
+		LOG.warn(ue);
 	    content = new String(data);
 	}
 	return content;
@@ -364,6 +368,7 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 	    try {
 		return content.getBytes("UTF-8");
 	    } catch (UnsupportedEncodingException e) {
+	    	LOG.warn(e);
 	    }
 	return null;
     } 

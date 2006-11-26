@@ -4,6 +4,7 @@ import java.io.OutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
+import org.apache.log4j.Logger;
 import org.exist.util.ByteArray;
 import org.exist.util.FastByteBuffer;
 
@@ -15,10 +16,10 @@ import org.exist.util.FastByteBuffer;
 public class VariableByteOutputStream extends OutputStream {
 
     private final int MAX_BUFFER_SIZE = 65536;
-
-    protected FastByteBuffer buf;
-	
+    protected FastByteBuffer buf;	
     private final byte[] temp = new byte[5];
+    
+    private static Logger LOG = Logger.getLogger(VariableByteArrayInput.class.getName());
     
 	public VariableByteOutputStream() {
 		super();
@@ -147,6 +148,7 @@ public class VariableByteOutputStream extends OutputStream {
 		try {
 			data = s.getBytes("UTF-8");
 		} catch (UnsupportedEncodingException e) {
+			LOG.warn(e);
 			data = s.getBytes();
 		}
 		writeInt(data.length);
