@@ -634,12 +634,10 @@ public class ElementImpl extends NamedNode implements Element {
     	final int ccount = current.getChildCount();        
         for (int i = 0; i < ccount; i++) {
         	StoredNode next = (StoredNode) iterator.next();
-            //if (next.getNodeType() != Node.ATTRIBUTE_NODE)
-            //	break;
-        	if (next.getNodeType() == Node.ATTRIBUTE_NODE) {
-        		if (next.getQName().equalsSimple(qname))
-        			return (AttrImpl) next;
-        	}
+            if (next.getNodeType() != Node.ATTRIBUTE_NODE)
+            	break;
+    		if (next.getQName().equalsSimple(qname))
+    			return (AttrImpl) next;     
         }
         return null;
     }
