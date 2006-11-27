@@ -41,6 +41,7 @@ public class ModuleImpl extends AbstractInternalModule {
         new FunctionDef(FunBaseURI.signatures[2], FunBaseURI.class),
 		new FunctionDef(FunBoolean.signature, FunBoolean.class),
 		new FunctionDef(FunCeiling.signature, FunCeiling.class),
+		new FunctionDef(FunCodepointEqual.signature, FunCodepointEqual.class),
 		new FunctionDef(FunCodepointsToString.signature, FunCodepointsToString.class),
 		new FunctionDef(FunCompare.signatures[0], FunCompare.class),
 		new FunctionDef(FunCompare.signatures[1], FunCompare.class),		
