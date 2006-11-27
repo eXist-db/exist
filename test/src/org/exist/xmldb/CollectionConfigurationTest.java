@@ -573,40 +573,40 @@ public class CollectionConfigurationTest extends TestCase {
            result = service.query("util:index-type(/test//@h)");
            assertEquals("xs:string", result.getResource(0).getContent());  
 
-           result = service.query("/test/c/@c[(# exist:force-index-use #) { . = xs:dateTime(\"2002-12-07T12:20:46.275+01:00\") }]");
+           result = service.query("/test//@c[(# exist:force-index-use #) { . = xs:dateTime(\"2002-12-07T12:20:46.275+01:00\") }]");
            assertEquals(1, result.getSize());       
 
-           result = service.query("/test[(# exist:force-index-use #) { //@c = xs:dateTime(\"2002-12-07T12:20:46.275+01:00\") }]");
+           result = service.query("/test[(# exist:force-index-use #) { .//@c = xs:dateTime(\"2002-12-07T12:20:46.275+01:00\") }]");
            assertEquals(1, result.getSize());       
            
-           result = service.query("/test/@d[(# exist:force-index-use #) { . = xs:double(1) }]");
+           result = service.query("/test/d/@d[(# exist:force-index-use #) { . = xs:double(1) }]");
            assertEquals(1, result.getSize());
            
-           result = service.query("/test[(# exist:force-index-use #) { //@d = xs:double(1) }]");
+           result = service.query("/test[(# exist:force-index-use #) { .//@d = xs:double(1) }]");
            assertEquals(1, result.getSize());           
 
            result = service.query("/test//@e[(# exist:force-index-use #) { . = xs:float(1) }]");
            assertEquals(1, result.getSize());
            
-           result = service.query("/test[(# exist:force-index-use #) { //@e = xs:float(1) }]");
+           result = service.query("/test[(# exist:force-index-use #) { .//@e = xs:float(1) }]");
            assertEquals(1, result.getSize());           
           
            result = service.query("/test//@f[(# exist:force-index-use #) { . = true() }]");
            assertEquals(1, result.getSize());
            
-           result = service.query("/test[(# exist:force-index-use #) { //@f = true() }]");
+           result = service.query("/test[(# exist:force-index-use #) { .//@f = true() }]");
            assertEquals(1, result.getSize());            
            
            result = service.query("/test//@g[(# exist:force-index-use #) { . = 1 }]");
            assertEquals(1, result.getSize()); 
            
-           result = service.query("/test[(# exist:force-index-use #) { //@g = 1 }]");
+           result = service.query("/test[(# exist:force-index-use #) { .//@g = 1 }]");
            assertEquals(1, result.getSize());            
            
            result = service.query("/test//@h[(# exist:force-index-use #) { . = '1' }]");
            assertEquals(1, result.getSize());  
            
-           result = service.query("/test[(# exist:force-index-use #) { //@h = '1' }]");
+           result = service.query("/test[(# exist:force-index-use #) { .//@h = '1' }]");
            assertEquals(1, result.getSize());
        
        } catch(Exception e) { 

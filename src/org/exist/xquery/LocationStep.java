@@ -362,11 +362,11 @@ public class LocationStep extends Step {
                         "OPTIMIZATION", "direct attribute selection");
             if (contextSet.isEmpty())
             	return NodeSet.EMPTY_SET;
-            NodeProxy proxy = contextSet.get(0);
-            if (proxy != null
-                    && proxy.getInternalAddress() != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
-                return contextSet.directSelectAttribute(test.getName(),
-                        contextId);
+            //NodeProxy proxy = contextSet.get(0);
+            //if (proxy != null
+                    //&& proxy.getInternalAddress() != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
+                //return contextSet.directSelectAttribute(test.getName(),
+                //        contextId);
         }
         if (preloadNodeSets()) {
             DocumentSet docs = getDocumentSet(contextSet);
