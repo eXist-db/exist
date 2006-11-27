@@ -87,7 +87,8 @@ public class XMLDBModule extends AbstractInternalModule {
                 new FunctionDef(XMLDBURIFunctions.signatures[0], XMLDBURIFunctions.class),
                 new FunctionDef(XMLDBURIFunctions.signatures[1], XMLDBURIFunctions.class),
                 new FunctionDef(XMLDBURIFunctions.signatures[2], XMLDBURIFunctions.class),
-                new FunctionDef(XMLDBURIFunctions.signatures[3], XMLDBURIFunctions.class)
+                new FunctionDef(XMLDBURIFunctions.signatures[3], XMLDBURIFunctions.class),
+                new FunctionDef(XMLDBGetMimeType.signature, XMLDBGetMimeType.class)
     };
     
     public XMLDBModule() {
