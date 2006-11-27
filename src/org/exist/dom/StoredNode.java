@@ -92,12 +92,9 @@ public class StoredNode extends NodeImpl implements Visitable {
     /**
      * Read a node from the specified byte array.
      * 
-<<<<<<< .working
-=======
      * This checks the node type and calls the {@link #deserialize(byte[], int, int,DocumentImpl,boolean)}
      * method of the corresponding node class.
      * 
->>>>>>> .merge-right.r4159
      * @param data
      * @param start
      * @param len
@@ -110,11 +107,7 @@ public class StoredNode extends NodeImpl implements Visitable {
 	/**
 	 * Read a node from the specified byte array.
 	 * 
-<<<<<<< .working
 	 * This checks the node type and calls the {@link #deserialize(byte[], int, int, DocumentImpl, boolean)}
-=======
-	 * This checks the node type and calls the deserialize(byte[], int, int,boolean)
->>>>>>> .merge-right.r4159
 	 * method of the corresponding node class. The node will be allocated in the pool
 	 * and should be released once it is no longer needed.
 	 * 
