@@ -838,20 +838,27 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         continue;
                     }                    
                     NodeId nodeId;
+                    NodeId lastParentId = null;
                     for (int j = 0; j < gidsCount; j++) {
                         nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);                        
-                        if (contextSet != null) {
-                            NodeProxy parentNode = contextSet.parentWithChild(storedDocument, nodeId, false, true);
+                        if (contextSet != null) {                        	
+                            NodeProxy parentNode = contextSet.parentWithChild(storedDocument, nodeId, false, true);                            
                             if (parentNode != null) {                                
                                 if (oc == null) {
                                     oc = new ValueOccurrences(atomic);
                                     map.put(atomic, oc);
                                 }
-                                oc.addOccurrences(1);
+                                //Handle this very special case : /item[foo = "bar"] vs. /item[@foo = "bar"]
+                                //Same value, same parent but different nodes !
+                                //Not sure if we should track the contextSet's parentId... (just like we do)
+                                //... or the way the contextSet is created (thus keeping track of the NodeTest)
+                            	if (lastParentId == null || !lastParentId.equals(parentNode.getNodeId()))
+                            		oc.addOccurrences(1);
                                 if (!docAdded) {                                
                                     oc.addDocument(storedDocument);
                                     docAdded = true;
-                                }                                
+                                }  
+                                lastParentId = parentNode.getNodeId();
                             }
                         }
                         //TODO : what if contextSet == null ? -pb
