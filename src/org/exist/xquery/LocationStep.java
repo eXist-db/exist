@@ -360,7 +360,7 @@ public class LocationStep extends Step {
             if (context.getProfiler().isEnabled())
                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
                         "OPTIMIZATION", "direct attribute selection");
-            if (contextSet.getLength() == 0)
+            if (contextSet.isEmpty())
             	return NodeSet.EMPTY_SET;
             NodeProxy proxy = contextSet.get(0);
             if (proxy != null

@@ -631,14 +631,15 @@ public class ElementImpl extends NamedNode implements Element {
     }
 
     private AttrImpl findAttribute(QName qname, Iterator iterator, StoredNode current) {
-    	final int ccount = current.getChildCount();
-        StoredNode next;
+    	final int ccount = current.getChildCount();        
         for (int i = 0; i < ccount; i++) {
-            next = (StoredNode) iterator.next();
-            if (next.getNodeType() != Node.ATTRIBUTE_NODE)
-            	break;
-            if (next.getQName().equalsSimple(qname))
-            	return (AttrImpl) next;
+        	StoredNode next = (StoredNode) iterator.next();
+            //if (next.getNodeType() != Node.ATTRIBUTE_NODE)
+            //	break;
+        	if (next.getNodeType() == Node.ATTRIBUTE_NODE) {
+        		if (next.getQName().equalsSimple(qname))
+        			return (AttrImpl) next;
+        	}
         }
         return null;
     }

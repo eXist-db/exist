@@ -42,8 +42,8 @@ public class CollectionConfigurationTest extends TestCase {
     + "<a>01</a>" + "<a>1</a>" + "<b>001</b>" + "<b>01</b>"
     + "<b>1</b>" + "</test>";
 
-    private final static String DOCUMENT_CONTENT2 = "<test>" + "<c>2002-12-07T12:20:46.275+01:00</c>"
-    + "<d>1</d>" + "<e>1</e>" + "<f>true</f>" +" <g>1</g>" +"<h>1</h>" 
+    private final static String DOCUMENT_CONTENT2 = "<test >" + "<c c='2002-12-07T12:20:46.275+01:00'>2002-12-07T12:20:46.275+01:00</c>"
+    + "<d d='1'>1</d>" + "<e e='1'>1</e>" + "<f f='true'>true</f>" +" <g g='1'>1</g>" +"<h h='1'>1</h>" 
     + "</test>";
 
     
@@ -63,7 +63,13 @@ public class CollectionConfigurationTest extends TestCase {
         + "    <create path=\"//e\" type=\"xs:float\"/>"
         + "    <create path=\"//f\" type=\"xs:boolean\"/>"        
         + "    <create path=\"//g\" type=\"xs:integer\"/>"        
-        + "    <create path=\"//h\" type=\"xs:string\"/>"        
+        + "    <create path=\"//h\" type=\"xs:string\"/>"          
+        + "    <create path=\"//@c\" type=\"xs:dateTime\"/>"
+        + "    <create path=\"//@d\" type=\"xs:double\"/>"
+        + "    <create path=\"//@e\" type=\"xs:float\"/>"
+        + "    <create path=\"//@f\" type=\"xs:boolean\"/>"        
+        + "    <create path=\"//@g\" type=\"xs:integer\"/>"        
+        + "    <create path=\"//@h\" type=\"xs:string\"/>"            
         + "  </index>"
         + "</collection>";
     
@@ -405,7 +411,7 @@ public class CollectionConfigurationTest extends TestCase {
        } catch (Exception e) {
            fail(e.getMessage());
        }
-   } 
+   }
    
    public void testRangeIndex1() { 
        ResourceSet result; 
@@ -506,7 +512,108 @@ public class CollectionConfigurationTest extends TestCase {
       	 	e.printStackTrace();
            fail(e.getMessage());             
        }
-  }
+  }   
+   
+   public void testRangeIndexOverAttributes() { 
+       ResourceSet result; 
+       try {
+           //Configure collection automatically
+           IndexQueryService idxConf = (IndexQueryService)
+           testCollection.getService("IndexQueryService", "1.0");
+           idxConf.configureCollection(CONFIG2);
+
+           //... then index document 
+           XMLResource doc = (XMLResource)
+           testCollection.createResource(TestConstants.TEST_XML_URI.toString(), "XMLResource" );
+           doc.setContent(DOCUMENT_CONTENT2); 
+           testCollection.storeResource(doc);
+   
+           XPathQueryService service = (XPathQueryService)
+           testCollection.getService("XPathQueryService", "1.0");              
+           
+           result = service.query("util:index-key-occurrences(/test//@c, xs:dateTime(\"2002-12-07T12:20:46.275+01:00\") )");
+           assertEquals(1, result.getSize());
+           assertEquals("1", result.getResource(0).getContent());             
+
+           result = service.query("util:index-type(/test//@c)");
+           assertEquals("xs:dateTime", result.getResource(0).getContent());            
+       
+           result = service.query("util:index-key-occurrences(/test//@d, xs:double(1) )");
+           assertEquals(1, result.getSize());
+           assertEquals("1", result.getResource(0).getContent());             
+           
+           result = service.query("util:index-type(/test//@d)");
+           assertEquals("xs:double", result.getResource(0).getContent());            
+
+           result = service.query("util:index-key-occurrences(/test//@e, xs:float(1) )");
+           assertEquals(1, result.getSize());
+           assertEquals("1", result.getResource(0).getContent());             
+
+           result = service.query("util:index-type(/test//@e)");
+           assertEquals("xs:float", result.getResource(0).getContent());            
+
+           result = service.query("util:index-key-occurrences(/test//@f, true())");
+           assertEquals(1, result.getSize());
+           assertEquals("1", result.getResource(0).getContent());
+           
+           result = service.query("util:index-type(/test//@f)");
+           assertEquals("xs:boolean", result.getResource(0).getContent());            
+
+           result = service.query("util:index-key-occurrences(/test//@g, xs:integer(1))");
+           assertEquals(1, result.getSize());
+           assertEquals("1", result.getResource(0).getContent());
+           
+           result = service.query("util:index-type(/test//@g)");
+           assertEquals("xs:integer", result.getResource(0).getContent());            
+
+           result = service.query("util:index-key-occurrences(/test//@h, '1')");
+           assertEquals(1, result.getSize());
+           assertEquals("1", result.getResource(0).getContent());
+           
+           result = service.query("util:index-type(/test//@h)");
+           assertEquals("xs:string", result.getResource(0).getContent());  
+
+           result = service.query("/test/c/@c[(# exist:force-index-use #) { . = xs:dateTime(\"2002-12-07T12:20:46.275+01:00\") }]");
+           assertEquals(1, result.getSize());       
+
+           result = service.query("/test[(# exist:force-index-use #) { //@c = xs:dateTime(\"2002-12-07T12:20:46.275+01:00\") }]");
+           assertEquals(1, result.getSize());       
+           
+           result = service.query("/test/@d[(# exist:force-index-use #) { . = xs:double(1) }]");
+           assertEquals(1, result.getSize());
+           
+           result = service.query("/test[(# exist:force-index-use #) { //@d = xs:double(1) }]");
+           assertEquals(1, result.getSize());           
+
+           result = service.query("/test//@e[(# exist:force-index-use #) { . = xs:float(1) }]");
+           assertEquals(1, result.getSize());
+           
+           result = service.query("/test[(# exist:force-index-use #) { //@e = xs:float(1) }]");
+           assertEquals(1, result.getSize());           
+          
+           result = service.query("/test//@f[(# exist:force-index-use #) { . = true() }]");
+           assertEquals(1, result.getSize());
+           
+           result = service.query("/test[(# exist:force-index-use #) { //@f = true() }]");
+           assertEquals(1, result.getSize());            
+           
+           result = service.query("/test//@g[(# exist:force-index-use #) { . = 1 }]");
+           assertEquals(1, result.getSize()); 
+           
+           result = service.query("/test[(# exist:force-index-use #) { //@g = 1 }]");
+           assertEquals(1, result.getSize());            
+           
+           result = service.query("/test//@h[(# exist:force-index-use #) { . = '1' }]");
+           assertEquals(1, result.getSize());  
+           
+           result = service.query("/test[(# exist:force-index-use #) { //@h = '1' }]");
+           assertEquals(1, result.getSize());
+       
+       } catch(Exception e) { 
+      	 	e.printStackTrace();
+           fail(e.getMessage());             
+       }
+  }   
    
    public void testMissingRangeIndexes() { 
        ResourceSet result; 
