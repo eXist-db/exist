@@ -537,12 +537,26 @@ public class CollectionConfigurationTest extends TestCase {
 
            result = service.query("util:index-type(/test//@c)");
            assertEquals("xs:dateTime", result.getResource(0).getContent());            
-       
+
+           result = service.query("util:index-key-occurrences(/test/c/@c, xs:dateTime(\"2002-12-07T12:20:46.275+01:00\") )");
+           assertEquals(1, result.getSize());
+           assertEquals("1", result.getResource(0).getContent());             
+
+           result = service.query("util:index-type(/test/c/@c)");
+           assertEquals("xs:dateTime", result.getResource(0).getContent());  
+           
            result = service.query("util:index-key-occurrences(/test//@d, xs:double(1) )");
            assertEquals(1, result.getSize());
            assertEquals("1", result.getResource(0).getContent());             
            
            result = service.query("util:index-type(/test//@d)");
+           assertEquals("xs:double", result.getResource(0).getContent());    
+           
+           result = service.query("util:index-key-occurrences(/test/d/@d, xs:double(1) )");
+           assertEquals(1, result.getSize());
+           assertEquals("1", result.getResource(0).getContent());             
+           
+           result = service.query("util:index-type(/test/d/@d)");
            assertEquals("xs:double", result.getResource(0).getContent());            
 
            result = service.query("util:index-key-occurrences(/test//@e, xs:float(1) )");
@@ -550,7 +564,14 @@ public class CollectionConfigurationTest extends TestCase {
            assertEquals("1", result.getResource(0).getContent());             
 
            result = service.query("util:index-type(/test//@e)");
-           assertEquals("xs:float", result.getResource(0).getContent());            
+           assertEquals("xs:float", result.getResource(0).getContent());   
+           
+           result = service.query("util:index-key-occurrences(/test/e/@e, xs:float(1) )");
+           assertEquals(1, result.getSize());
+           assertEquals("1", result.getResource(0).getContent());             
+
+           result = service.query("util:index-type(/test/e/@e)");
+           assertEquals("xs:float", result.getResource(0).getContent());             
 
            result = service.query("util:index-key-occurrences(/test//@f, true())");
            assertEquals(1, result.getSize());
@@ -559,11 +580,25 @@ public class CollectionConfigurationTest extends TestCase {
            result = service.query("util:index-type(/test//@f)");
            assertEquals("xs:boolean", result.getResource(0).getContent());            
 
+           result = service.query("util:index-key-occurrences(/test/f/@f, true())");
+           assertEquals(1, result.getSize());
+           assertEquals("1", result.getResource(0).getContent());
+           
+           result = service.query("util:index-type(/test/f/@f)");
+           assertEquals("xs:boolean", result.getResource(0).getContent());             
+           
            result = service.query("util:index-key-occurrences(/test//@g, xs:integer(1))");
            assertEquals(1, result.getSize());
            assertEquals("1", result.getResource(0).getContent());
            
            result = service.query("util:index-type(/test//@g)");
+           assertEquals("xs:integer", result.getResource(0).getContent());   
+           
+           result = service.query("util:index-key-occurrences(/test/g/@g, xs:integer(1))");
+           assertEquals(1, result.getSize());
+           assertEquals("1", result.getResource(0).getContent());
+           
+           result = service.query("util:index-type(/test/g/@g)");
            assertEquals("xs:integer", result.getResource(0).getContent());            
 
            result = service.query("util:index-key-occurrences(/test//@h, '1')");
@@ -572,18 +607,37 @@ public class CollectionConfigurationTest extends TestCase {
            
            result = service.query("util:index-type(/test//@h)");
            assertEquals("xs:string", result.getResource(0).getContent());  
+           
+           result = service.query("util:index-key-occurrences(/test/h/@h, '1')");
+           assertEquals(1, result.getSize());
+           assertEquals("1", result.getResource(0).getContent());
+           
+           result = service.query("util:index-type(/test/h/@h)");
+           assertEquals("xs:string", result.getResource(0).getContent());             
 
            result = service.query("/test//@c[(# exist:force-index-use #) { . = xs:dateTime(\"2002-12-07T12:20:46.275+01:00\") }]");
            assertEquals(1, result.getSize());       
 
            result = service.query("/test[(# exist:force-index-use #) { .//@c = xs:dateTime(\"2002-12-07T12:20:46.275+01:00\") }]");
            assertEquals(1, result.getSize());       
+
+           result = service.query("/test/c/@c[(# exist:force-index-use #) { . = xs:dateTime(\"2002-12-07T12:20:46.275+01:00\") }]");
+           assertEquals(1, result.getSize());       
+
+           result = service.query("/test[(# exist:force-index-use #) { ./c/@c = xs:dateTime(\"2002-12-07T12:20:46.275+01:00\") }]");
+           assertEquals(1, result.getSize());       
+           
+           result = service.query("/test//@d[(# exist:force-index-use #) { . = xs:double(1) }]");
+           assertEquals(1, result.getSize());
+           
+           result = service.query("/test[(# exist:force-index-use #) { .//@d = xs:double(1) }]");
+           assertEquals(1, result.getSize());  
            
            result = service.query("/test/d/@d[(# exist:force-index-use #) { . = xs:double(1) }]");
            assertEquals(1, result.getSize());
            
-           result = service.query("/test[(# exist:force-index-use #) { .//@d = xs:double(1) }]");
-           assertEquals(1, result.getSize());           
+           result = service.query("/test[(# exist:force-index-use #) { ./d/@d = xs:double(1) }]");
+           assertEquals(1, result.getSize());                      
 
            result = service.query("/test//@e[(# exist:force-index-use #) { . = xs:float(1) }]");
            assertEquals(1, result.getSize());
@@ -591,11 +645,23 @@ public class CollectionConfigurationTest extends TestCase {
            result = service.query("/test[(# exist:force-index-use #) { .//@e = xs:float(1) }]");
            assertEquals(1, result.getSize());           
           
+           result = service.query("/test/e/@e[(# exist:force-index-use #) { . = xs:float(1) }]");
+           assertEquals(1, result.getSize());
+           
+           result = service.query("/test[(# exist:force-index-use #) { ./e/@e = xs:float(1) }]");
+           assertEquals(1, result.getSize());           
+
            result = service.query("/test//@f[(# exist:force-index-use #) { . = true() }]");
            assertEquals(1, result.getSize());
            
            result = service.query("/test[(# exist:force-index-use #) { .//@f = true() }]");
-           assertEquals(1, result.getSize());            
+           assertEquals(1, result.getSize());   
+           
+           result = service.query("/test/f/@f[(# exist:force-index-use #) { . = true() }]");
+           assertEquals(1, result.getSize());
+           
+           result = service.query("/test[(# exist:force-index-use #) { ./f/@f = true() }]");
+           assertEquals(1, result.getSize());                       
            
            result = service.query("/test//@g[(# exist:force-index-use #) { . = 1 }]");
            assertEquals(1, result.getSize()); 
@@ -603,11 +669,23 @@ public class CollectionConfigurationTest extends TestCase {
            result = service.query("/test[(# exist:force-index-use #) { .//@g = 1 }]");
            assertEquals(1, result.getSize());            
            
+           result = service.query("/test/g/@g[(# exist:force-index-use #) { . = 1 }]");
+           assertEquals(1, result.getSize()); 
+           
+           result = service.query("/test[(# exist:force-index-use #) { ./g/@g = 1 }]");
+           assertEquals(1, result.getSize());            
+
            result = service.query("/test//@h[(# exist:force-index-use #) { . = '1' }]");
            assertEquals(1, result.getSize());  
            
            result = service.query("/test[(# exist:force-index-use #) { .//@h = '1' }]");
            assertEquals(1, result.getSize());
+           
+           result = service.query("/test/h/@h[(# exist:force-index-use #) { . = '1' }]");
+           assertEquals(1, result.getSize());  
+           
+           result = service.query("/test[(# exist:force-index-use #) { ./h/@h = '1' }]");
+           assertEquals(1, result.getSize());           
        
        } catch(Exception e) { 
       	 	e.printStackTrace();
