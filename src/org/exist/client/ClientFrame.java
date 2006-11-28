@@ -1098,6 +1098,21 @@ public class ClientFrame extends JFrame
         }
     }
     
+    private boolean deleteDirectory(File target) {
+        if (target.isDirectory()) {
+            String[] children = target.list();
+            for (int i=0; i<children.length; i++) {
+                boolean success = deleteDirectory(new File(target, children[i]));
+                if (!success) {
+                    return false;
+                }
+            }
+        }
+    
+        // The directory is now empty so delete it
+        return target.delete();
+    }
+    
     private void backupAction(ActionEvent ev) {
         CreateBackupDialog dialog = new CreateBackupDialog(
                 properties.getProperty("uri", "xmldb:exist://"),  
@@ -1109,27 +1124,29 @@ public class ClientFrame extends JFrame
                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
                 null, null, null) == JOptionPane.YES_OPTION) {
             String collection = dialog.getCollection();
-            String target = dialog.getBackupTarget();
+            String backuptarget = dialog.getBackupTarget();
             
-//            // DWES add check here?
-//            if(new File(target).exists()){
-//                if (JOptionPane.showConfirmDialog(
-//                        this,
-//                        Messages.getString("CreateBackupDialog.6a") + " "+ target + " "+ Messages.getString("CreateBackupDialog.6b"),
-//                        Messages.getString("CreateBackupDialog.6c"),
-//                        JOptionPane.YES_NO_OPTION)
-//                        == JOptionPane.NO_OPTION)
-//                {
-//                    new File(target).delete();
-//                }
-//                    
-//            }
+            // DWES add check here?
+            File target=new File(backuptarget);
+            if(target.exists()){
+                if (JOptionPane.showConfirmDialog( this,
+                        Messages.getString("CreateBackupDialog.6a") + " "
+                        + backuptarget + " "
+                        + Messages.getString("CreateBackupDialog.6b"),
+                        Messages.getString("CreateBackupDialog.6c"),
+                        JOptionPane.YES_NO_OPTION)
+                        == JOptionPane.NO_OPTION)
+                {
+                    deleteDirectory(target);
+                }
+                    
+            }
         
             
             try {
             Backup backup = new Backup(
                     properties.getProperty("user", "admin"), 
-                    properties.getProperty("password", null), target, 
+                    properties.getProperty("password", null), backuptarget, 
                     XmldbURI.xmldbUriFor(properties.getProperty("uri", "xmldb:exist://") 
                     + collection));
                 backup.backup(true, this);
