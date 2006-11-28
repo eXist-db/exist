@@ -109,12 +109,6 @@ public class ScheduledJobInfo
 	{
 		return trigger.getPreviousFireTime();
 	}
-	
-	
-	public Date getPreviousFireTime()
-	{
-		return trigger.getPreviousFireTime();
-	}
 
 	/**
 	 * Get the Time the Job will Next be Fired
