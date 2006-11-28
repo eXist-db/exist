@@ -1,3 +1,24 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-2006 The eXist team
+ *  http://exist-db.org
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program; if not, write to the Free Software Foundation
+ *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ *  $Id$
+ */
 package org.exist.scheduler;
 
 import java.util.Date;
@@ -6,17 +27,22 @@ import org.quartz.Trigger;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 
+/**
+ * Information about a Scheduled Job
+ *
+ * @author Adam Retter <adam.retter@devon.gov.uk>
+ */
 public class ScheduledJobInfo
 {
 	private Scheduler scheduler = null;
 	private Trigger trigger = null; 
 	
-	private final static int TRIGGER_STATE_ERROR = -1;
-	private final static int TRIGGER_STATE_NONE = 0;
-    private final static int TRIGGER_STATE_NORMAL = 1;
-    private final static int TRIGGER_STATE_PAUSED = 2;
-    private final static int TRIGGER_STATE_BLOCKED = 3;
-    private final static int TRIGGER_STATE_COMPLETE = 4;
+	public final static int TRIGGER_STATE_ERROR = -1;
+	public final static int TRIGGER_STATE_NONE = 0;
+    public final static int TRIGGER_STATE_NORMAL = 1;
+    public final static int TRIGGER_STATE_PAUSED = 2;
+    public final static int TRIGGER_STATE_BLOCKED = 3;
+    public final static int TRIGGER_STATE_COMPLETE = 4;
 	
 	public ScheduledJobInfo(Scheduler scheduler, Trigger trigger)
 	{
@@ -24,46 +50,97 @@ public class ScheduledJobInfo
 		this.trigger = trigger;
 	}
 	
+	/**
+	 * Get the Job's Name
+	 * 
+	 * @return the Job's Name
+	 */
 	public String getName()
 	{
 		return trigger.getJobName();
 	}
 	
+	/**
+	 * Get the Job's Group
+	 * 
+	 * @return the Job's Group
+	 */
 	public String getGroup()
 	{
 		return trigger.getJobGroup();
 	}
 	
+	/**
+	 * Get the Name of the Job's Trigger
+	 * 
+	 * @return the Name of the Job's Trigger
+	 */
 	public String getTriggerName()
 	{
 		return trigger.getName();
 	}
 	
+	/**
+	 * Get the Start time of the Job
+	 * 
+	 * @retun the Start time of the Job
+	 */
 	public Date getStartTime()
 	{
 		return trigger.getStartTime();
 	}
 	
+	/**
+	 * Get the End time of the Job
+	 * 
+	 * @retun the End time of the Job, or null of the job is Scheduled forever
+	 */
 	public Date getEndTime()
 	{
 		return trigger.getEndTime();
 	}
 	
+	/**
+	 * Get the Previous Fired time of the Job
+	 * 
+	 * @retun the time the Job was Previously Fired, or null if the job hasnt fired yet
+	 */
 	public Date getPreviousFireTime()
 	{
 		return trigger.getPreviousFireTime();
 	}
 	
+	
+	public Date getPreviousFireTime()
+	{
+		return trigger.getPreviousFireTime();
+	}
+
+	/**
+	 * Get the Time the Job will Next be Fired
+	 * 
+	 * @retun the time the Job will Next be Fired, or null if the job wont fire again
+	 */
 	public Date getNextFireTime()
 	{
 		return trigger.getNextFireTime();
 	}
 	
+	/**
+	 * Get the Final Time the Job will be Fired
+	 * 
+	 * @retun the time the Job will be Fired for the Final time, or null of the job is Scheduled forever
+	 */
 	public Date getFinalFireTime()
 	{
 		return trigger.getNextFireTime();
 	}
-	
+
+	/**
+	 * Get the State of the Job's Trigger
+	 * 
+	 * @return the TRIGGER_STATE_*
+	 */
 	public int getTriggerState()
 	{
 		try
