@@ -22,6 +22,7 @@
 package org.exist.scheduler;
 
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
@@ -190,7 +191,7 @@ public class Scheduler
 	{
 		//Create the job details
 		JobDetail jobDetail = new JobDetail(job.getName(), job.getGroup(), job.getClass());
-
+		
 		//Setup the jobs's data map
 		JobDataMap jobDataMap = jobDetail.getJobDataMap();
 		setupJobDataMap(job, jobDataMap, params);
@@ -216,6 +217,114 @@ public class Scheduler
 		
 		//Succesfully scheduled Job
 		return true;
+	}
+	
+	/**
+	 * Removes a Job from the Scheduler
+	 * 
+	 * @param jobName	The name of the Job
+	 * @param jobGroup The group that the Job was Scheduled in
+	 * 
+	 * @return true if the job was deleted, false otherwise
+	 */
+	public boolean deleteJob(String jobName, String jobGroup)
+	{
+		try
+		{
+			return scheduler.deleteJob(jobName, jobGroup);
+		}
+		catch(SchedulerException se)
+		{
+			return false;
+		}
+	}
+	
+	/**
+	 * Pauses a Job with the Scheduler
+	 * 
+	 * @param jobName	The name of the Job
+	 * @param jobGroup The group that the Job was Scheduled in
+	 */
+	public void pauseJob(String jobName, String jobGroup)
+	{
+		try
+		{
+			scheduler.pauseJob(jobName, jobGroup);
+		}
+		catch(SchedulerException se)
+		{
+		}
+	}
+	
+	/**
+	 * Resume a Job with the Scheduler
+	 * 
+	 * @param jobName	The name of the Job
+	 * @param jobGroup The group that the Job was Scheduled in
+	 */
+	public void resumeJob(String jobName, String jobGroup)
+	{
+		try
+		{
+			scheduler.resumeJob(jobName, jobGroup);
+		}
+		catch(SchedulerException se)
+		{
+		}
+	}
+	
+	/**
+	 * Get's the names of the Job groups
+	 * 
+	 * @return String array of the Job group names
+	 */
+	public String[] getJobGroupNames()
+	{
+		try
+		{
+			return scheduler.getJobGroupNames();
+		}
+		catch(SchedulerException se)
+		{
+			return null;
+		}
+	}
+	
+	/**
+	 * Get's information about currently Scheduled Job's
+	 * 
+	 * @return An array of ScheduledJobInfo
+	 */
+	public ScheduledJobInfo[] getScheduledJobs()
+	{
+		ArrayList jobs = new ArrayList();
+		
+		try
+		{
+			//get the trigger groups
+			String[] trigGroups = scheduler.getTriggerGroupNames();
+			for(int tg = 0; tg < trigGroups.length; tg++)
+			{
+				//get the trigger names for the trigger group
+				String[] trigNames = scheduler.getTriggerNames(trigGroups[tg]);
+				for(int tn = 0; tn < trigNames.length; tn++)
+				{
+					//add information about the job to the result
+					jobs.add(new ScheduledJobInfo(scheduler, scheduler.getTrigger(trigNames[tn], trigGroups[tg])));
+				}
+			}
+		}
+		catch(SchedulerException se)
+		{
+			return null;
+		}
+		
+		//copy the array list to a correctly typed array
+		Object[] oJobsArray = jobs.toArray();
+		ScheduledJobInfo[] jobsArray = new ScheduledJobInfo[oJobsArray.length]; 
+		System.arraycopy(oJobsArray, 0, jobsArray, 0, oJobsArray.length);
+		
+		return jobsArray;
 	}
 	
 	/**
