@@ -1422,7 +1422,7 @@ public class SOAPServer
         			for(int i=0; i < functionResult.getLength(); i++)
         			{
             			builderFunction.startElement(new QName("value", null, null), null);
-				functionResult.itemAt(i).copyTo(broker, receiver);
+            			functionResult.itemAt(i).copyTo(broker, receiver);
             			//builderFunction.characters(functionResult.itemAt(i).getStringValue());
             			builderFunction.endElement();
         			}
@@ -1433,7 +1433,8 @@ public class SOAPServer
         		{
         			//atomic value
         			builderFunction.startElement(new QName("value", null, null), null);
-        			builderFunction.characters(functionResult.itemAt(0).getStringValue());
+        			functionResult.itemAt(0).copyTo(broker, receiver);
+        			//builderFunction.characters(functionResult.itemAt(0).getStringValue());
         			builderFunction.endElement();
         		}
         		
