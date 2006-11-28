@@ -92,7 +92,7 @@ import org.xml.sax.XMLReader;
 
 /**
  * @author Adam Retter (adam.retter@devon.gov.uk)
- * @contributor José María Fernández
+ * @contributor Jose Maria Fernandez
  * 
  * @serial 20061128T11:49:00
  * 
