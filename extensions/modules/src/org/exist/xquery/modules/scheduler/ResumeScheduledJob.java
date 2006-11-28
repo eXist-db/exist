@@ -1,5 +1,5 @@
 /*
- *  eXist Scheduler Module Extension ScheduleFunctions
+ *  eXist Scheduler Module Extension ResumeSheduledJob
  *  Copyright (C) 2006 Adam Retter <adam.retter@devon.gov.uk>
  *  www.adamretter.co.uk
  *  
@@ -25,9 +25,7 @@ package org.exist.xquery.modules.scheduler;
 import org.exist.dom.QName;
 import org.exist.security.User;
 import org.exist.scheduler.Scheduler;
-import org.exist.scheduler.UserJavaJob;
 import org.exist.scheduler.UserJob;
-import org.exist.scheduler.UserXQueryJob;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -39,9 +37,9 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 /**
- * eXist Scheduler Module Extension ScheduleFunctions
+ * eXist Scheduler Module Extension ResumeScheduledJob
  * 
- * Schedules job's with eXist's Scheduler  
+ * Resumes a Job with the Scheduler
  * 
  * @author Adam Retter <adam.retter@devon.gov.uk>
  * @serial 2006-11-15
@@ -49,39 +47,27 @@ import org.exist.xquery.value.Type;
  *
  * @see org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext, org.exist.xquery.FunctionSignature)
  */
-public class ScheduleFunctions extends BasicFunction
+public class ResumeScheduledJob extends BasicFunction
 {	
 	private Scheduler scheduler = null;
 	private User user = null;
 	
-	public final static FunctionSignature [] signatures = {
+	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("schedule-java-cron-job", SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
-			"Schedules the Java Class named in $a (the class must extend org.exist.scheduler.UserJob) according to the Cron expression in $b",
+			new QName("resume-scheduled-job", SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
+			"Resumes the job named in $a with the Scheduler. Will only resume User Scheduled Job's! Returns true() if the Job was deleted.",
 			new SequenceType[]
 			{
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
 			},
-			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)),
-			
-		new FunctionSignature(
-			new QName("schedule-xquery-cron-job", SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
-			"Schedules the XQuery resource named in $a (e.g. /db/foo.xql) according to the Cron expression in $b",
-			new SequenceType[]
-			{
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
-			},
-			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE))
-	};
+			new SequenceType(Type.EMPTY, Cardinality.EMPTY));
 	
 	/**
-	 * ScheduleFunctions Constructor
+	 * ResumeScheduledJob Constructor
 	 * 
 	 * @param context	The Context of the calling XQuery
 	 */
-	public ScheduleFunctions(XQueryContext context, FunctionSignature signature)
+	public ResumeScheduledJob(XQueryContext context, FunctionSignature signature)
 	{
 		super(context, signature);
 		
@@ -101,8 +87,7 @@ public class ScheduleFunctions extends BasicFunction
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
-		String resource = args[0].getStringValue();
-		String cronExpression = args[1].getStringValue();
+		String jobName = args[0].getStringValue();
 		
 		//Check if the user is a DBA
 		if(!user.hasDbaRole())
@@ -110,59 +95,8 @@ public class ScheduleFunctions extends BasicFunction
 			return(BooleanValue.FALSE);
 		}
 		
-		Object job = null;
+		scheduler.resumeJob(jobName, UserJob.JOB_GROUP);
 		
-		//scheule-xquery-cron-job
-		if(isCalledAs("schedule-xquery-cron-job"))
-		{
-			job = new UserXQueryJob(resource, user);
-		}
-		
-		//schedule-java-cron-job
-		else if(isCalledAs("schedule-java-cron-job"))
-		{
-			try
-			{
-				//Check if the Class is a UserJob
-				Class jobClass = Class.forName(resource);
-				job = jobClass.newInstance();
-				if(!(job instanceof UserJavaJob))
-				{
-					return(BooleanValue.FALSE);
-				}
-			}
-			catch(ClassNotFoundException cnfe)
-			{
-				//TODO: log?
-				return(BooleanValue.FALSE);
-			}
-			catch(IllegalAccessException iae)
-			{
-				//TODO: log?
-				return(BooleanValue.FALSE);
-			}
-			catch(InstantiationException ie)
-			{
-				//TODO: log?
-				return(BooleanValue.FALSE);
-			}
-		}
-		
-		if(job != null)
-		{
-			//schedule the job
-			if(scheduler.createCronJob(cronExpression, (UserJob)job, null))
-			{
-				return(BooleanValue.TRUE);
-			}
-			else
-			{
-				return(BooleanValue.FALSE);
-			}
-		}
-		else
-		{
-			return(BooleanValue.FALSE);
-		}
+		return Sequence.EMPTY_SEQUENCE;
 	}
 }

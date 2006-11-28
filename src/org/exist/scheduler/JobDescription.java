@@ -26,7 +26,8 @@ package org.exist.scheduler;
  * 
  * @author Adam Retter <adam.retter@devon.gov.uk>
  */
-public interface JobDescription {
+public interface JobDescription
+{
 	/**
 	 * Get the name of the job
 	 * 
