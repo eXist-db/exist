@@ -26,12 +26,14 @@ import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import org.apache.log4j.Logger;
 
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Base64Decoder;
+import org.exist.xquery.XQueryContext;
 
 /**
  * @author wolf
@@ -49,11 +51,27 @@ public class BasicAuthenticator implements Authenticator {
 	/* (non-Javadoc)
 	 * @see org.exist.http.servlets.Authenticator#authenticate(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
 	 */
-	public User authenticate(HttpServletRequest request,
-			HttpServletResponse response) throws IOException {
+	public User authenticate(HttpServletRequest request, HttpServletResponse response) throws IOException
+	{
+		//get the user from the session if possible
+		HttpSession session = request.getSession();
+		User user = null;
+		if(session != null)
+		{
+			user = (User)session.getAttribute(XQueryContext.HTTP_SESSIONVAR_XMLDB_USER);
+			if (user != null)
+			{
+				return user;
+			}
+		}
+
+		//get the credentials
 		String credentials = request.getHeader("Authorization");
-		if(credentials == null) {
-                       //LOG.debug("Sending BASIC auth challenge.");
+		if(credentials == null)
+		{
+			//prompt for credentials
+			
+			//LOG.debug("Sending BASIC auth challenge.");
 			sendChallenge(request, response);
 			return null;
 		}
@@ -66,8 +84,9 @@ public class BasicAuthenticator implements Authenticator {
 		String username = p<0 ? s : s.substring(0, p);
 		String password = p<0 ? null : s.substring(p + 1);
 		
+		//authenticate the credentials
 		SecurityManager secman = pool.getSecurityManager();
-		User user = secman.getUser(username);
+		user = secman.getUser(username);
 		if(user == null) {
 			response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
 			return null;
@@ -76,6 +95,14 @@ public class BasicAuthenticator implements Authenticator {
 			response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
 			return null;
 		}
+		
+		//store the user in the session
+		if(session != null)
+		{
+			session.setAttribute(XQueryContext.HTTP_SESSIONVAR_XMLDB_USER, user);
+		}
+		
+		//return the authenicated user
 		return user;
 	}
 	
