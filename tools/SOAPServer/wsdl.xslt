@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
 
-    NB - XSLT Processor dependency 
+    NOTE - XSLT Processor dependency 
         
-        Xalan uses distinct() from EXSLT
-        Saxon uses distinct-values() from XSLT2.0
+        Xalan and Saxon <8.2 uses distinct() from EXSLT
+        Saxon 8.2+ uses distinct-values() from XSLT 2.0
     
     We default to Xalan here as that is the default eXist XSLT Processor
     
 -->
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns="http://schemas.xmlsoap.org/wsdl/" version="2.0">
+
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:set="http://exslt.org/sets" version="2.0">
     <xsl:output method="xml" version="1.0" encoding="UTF-8" indent="yes" media-type="text/xml" omit-xml-declaration="no"/>
     <xsl:template match="/webservice">
         <xsl:variable name="webserviceName" select="name" as="xs:string"/>
@@ -17,7 +18,7 @@
         <definitions name="{$webserviceName}" targetNamespace="{$webserviceURL}">
             <types>
                 <xs:schema elementFormDefault="qualified" targetNamespace="{$webserviceURL}">
-                    <xsl:for-each select="distinct(functions/function/parameters/parameter[cardinality >= 4]/type)">
+                    <xsl:for-each select="set:distinct(functions/function/parameters/parameter[cardinality >= 4]/type)">
                         <xs:complexType name="{concat('arrayOf', translate(., ':', '_'))}">
                             <xs:sequence>
                                 <xs:element minOccurs="0" maxOccurs="unbounded" name="{substring-after(., ':')}" nillable="true" type="{.}"/>
