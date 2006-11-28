@@ -502,6 +502,8 @@ public class EXistServlet extends HttpServlet {
 					.getMessage());
 		} catch (BadRequestException e) {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+		} catch (NotFoundException e) {
+			response.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
 		} finally {
 			pool.release(broker);
 		}
