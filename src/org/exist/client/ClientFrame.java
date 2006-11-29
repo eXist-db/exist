@@ -1169,7 +1169,7 @@ public class ClientFrame extends JFrame
     private void restoreAction(ActionEvent ev) {
         JFileChooser chooser = new JFileChooser();
         chooser.setMultiSelectionEnabled(false);
-        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.addChoosableFileFilter(new BackupContentsFilter());
         chooser.addChoosableFileFilter(new ZipFilter());
         chooser.setSelectedFile(new File("eXist-backup.zip"));
