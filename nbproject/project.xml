@@ -78,7 +78,7 @@
                     <target>test-nb.single</target>
                     <context>
                         <property>classname</property>
-                        <folder>src</folder>
+                        <folder>test/src</folder>
                         <pattern>\.java$</pattern>
                         <format>java-name</format>
                         <arity>
@@ -99,7 +99,7 @@
                     <target>debug-nb.single</target>
                     <context>
                         <property>classname</property>
-                        <folder>test/src</folder>
+                        <folder>src</folder>
                         <pattern>\.java$</pattern>
                         <format>java-name</format>
                         <arity>
