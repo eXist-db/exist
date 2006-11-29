@@ -63,6 +63,7 @@
             <sysproperty key="exist.home" value="${basedir}" />
             <classpath refid="classpath.core"/>
             <classpath refid="classpath.jetty"/>
+            <classpath refid="classpath.junit"/>
             <formatter usefile="false" type="brief"/>
             <formatter type="xml"/>
             <test name="${classname}"/>
