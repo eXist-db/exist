@@ -286,6 +286,23 @@ public class XQueryTest extends XMLTestCase {
         }
     }
     
+    
+    public void bugtestConstructedNode1() {
+        try {
+            String q1 =
+                "let $a := <A/> for $b in $a//B/string() return \"Oops!\"";
+            XPathQueryService service =
+                (XPathQueryService) testCollection.getService(
+                    "XPathQueryService",
+                    "1.0");
+            ResourceSet result = service.query(q1);
+            assertEquals(0, result.getSize());
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+    }
+    
 	public void testCombiningNodeSequences() {
 		ResourceSet result;
 		String query;
