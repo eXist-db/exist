@@ -26,6 +26,7 @@ import org.exist.dom.QName;
 import org.exist.http.servlets.SessionWrapper;
 import org.exist.security.User;
 import org.exist.xmldb.UserManagementService;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -93,12 +94,18 @@ public class XMLDBAuthenticate extends BasicFunction {
 		throws XPathException {
 		if(args[1].isEmpty())
 			return BooleanValue.FALSE;
-		String uri = args[0].getStringValue();
+
+        String uri = args[0].getStringValue();
 		String userName = args[1].getStringValue();
 		String password = args[2].getStringValue();
-		
-		try {
-			Collection root = DatabaseManager.getCollection(new AnyURIValue(uri).toXmldbURI().toString(), userName, password);
+
+        XmldbURI targetColl;
+        if (!uri.startsWith(XmldbURI.XMLDB_SCHEME + ':'))
+            targetColl = XmldbURI.EMBEDDED_SERVER_URI.resolveCollectionPath(XmldbURI.create(uri));
+        else
+            targetColl = XmldbURI.create(uri);
+        try {
+			Collection root = DatabaseManager.getCollection(targetColl.toString(), userName, password);
             if (isCalledAs("login")) {
                 UserManagementService ums = (UserManagementService) root.getService("UserManagementService", "1.0");
                 User user = ums.getUser(userName);
