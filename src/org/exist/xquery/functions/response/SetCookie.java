@@ -1,25 +1,25 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2006 The eXist team
+ *  http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id
+ *  $Id$
  */
+
 package org.exist.xquery.functions.response;
 
 import org.exist.dom.QName;
@@ -37,6 +37,8 @@ import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.StringValue;
+import org.exist.xquery.value.IntegerValue;
 
 /**
  * Set's a HTTP Cookie on the HTTP Response
@@ -47,17 +49,27 @@ import org.exist.xquery.value.Type;
  */
 public class SetCookie extends Function {
 
-	public final static FunctionSignature signature =
-		new FunctionSignature(
-			new QName("set-cookie", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
-			"Set's a HTTP Cookie on the HTTP Response. $a is the cookie name, $b is the cookie value.",
-			new SequenceType[] {
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
-			},
-			new SequenceType(Type.ITEM, Cardinality.EMPTY));
+    public final static FunctionSignature signatures[] = {
+	new FunctionSignature(
+			      new QName("set-cookie", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
+			      "Set's a HTTP Cookie on the HTTP Response. $a is the cookie name, $b is the cookie value.",
+			      new SequenceType[] {
+				  new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+				  new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+			      },
+			      new SequenceType(Type.ITEM, Cardinality.EMPTY)),
+	new FunctionSignature(
+			      new QName("set-cookie", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
+			      "Set's a HTTP Cookie on the HTTP Response. $a is the cookie name, $b is the cookie value, and $c is the maxAge of the cookie.",
+			      new SequenceType[] {
+				  new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+				  new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+				  new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE)
+			      },
+			      new SequenceType(Type.ITEM, Cardinality.EMPTY)) 
+    };
 
-	public SetCookie(XQueryContext context) {
+	public SetCookie(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 	
@@ -87,13 +99,18 @@ public class SetCookie extends Function {
 		//get parameters
 		String name = getArgument(0).eval(contextSequence, contextItem).getStringValue();
 		String value = getArgument(1).eval(contextSequence, contextItem).getStringValue();
-		
+		Sequence ageSeq = getArgument(2).eval(contextSequence, contextItem);
 		//set response header
-		if(response.getObject() instanceof ResponseWrapper)
+		if(response.getObject() instanceof ResponseWrapper) {
+		    if (ageSeq.isEmpty()) {
 			((ResponseWrapper)response.getObject()).addCookie(name, value);
-		else
-			throw new XPathException("Type error: variable $response is not bound to a response object");
-			
+		    } else {
+			int maxAge = ((IntegerValue) ageSeq.convertTo(Type.INTEGER)).getInt();
+			((ResponseWrapper)response.getObject()).addCookie(name, value, maxAge);
+		    }
+		} else {
+		    throw new XPathException("Type error: variable $response is not bound to a response object");
+		}
 		return Sequence.EMPTY_SEQUENCE;
 	}
 }
