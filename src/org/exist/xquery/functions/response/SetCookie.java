@@ -38,7 +38,11 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.StringValue;
+import org.exist.xquery.value.DurationValue;
 import org.exist.xquery.value.IntegerValue;
+
+import java.util.Date;
+import javax.xml.datatype.Duration;
 
 /**
  * Set's a HTTP Cookie on the HTTP Response
@@ -60,11 +64,11 @@ public class SetCookie extends Function {
 			      new SequenceType(Type.ITEM, Cardinality.EMPTY)),
 	new FunctionSignature(
 			      new QName("set-cookie", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
-			      "Set's a HTTP Cookie on the HTTP Response. $a is the cookie name, $b is the cookie value, and $c is the maxAge of the cookie.",
+			      "Set's a HTTP Cookie on the HTTP Response. $a is the cookie name, $b is the cookie value, and $c is the maxAge as xs:duration of the cookie.",
 			      new SequenceType[] {
 				  new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 				  new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-				  new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE)
+				  new SequenceType(Type.DURATION, Cardinality.EXACTLY_ONE)
 			      },
 			      new SequenceType(Type.ITEM, Cardinality.EMPTY)) 
     };
@@ -103,9 +107,10 @@ public class SetCookie extends Function {
 		//set response header
 		if(response.getObject() instanceof ResponseWrapper) {
 		    if (ageSeq.isEmpty()) {
-			((ResponseWrapper)response.getObject()).addCookie(name, value);
+			((ResponseWrapper) response.getObject()).addCookie(name, value);
 		    } else {
-			int maxAge = ((IntegerValue) ageSeq.convertTo(Type.INTEGER)).getInt();
+			Duration duration = ((DurationValue) ageSeq.itemAt(0)).getCanonicalDuration();
+			int maxAge = (int) duration.getTimeInMillis(new Date(System.currentTimeMillis())) * 1000;
 			((ResponseWrapper)response.getObject()).addCookie(name, value, maxAge);
 		    }
 		} else {
