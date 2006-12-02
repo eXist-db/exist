@@ -1,5 +1,7 @@
 package org.exist.xquery;
 
+import org.exist.xquery.functions.ExtFulltext;
+
 /**
  * Basic implementation of the {@link ExpressionVisitor} interface.
  * This implementation will traverse a PathExpr object if it wraps
@@ -17,7 +19,10 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
 	public void visitCastExpr(CastExpression expression) {
 	}
 
-	/**
+    public void visitFtExpression(ExtFulltext fulltext) {
+    }
+
+    /**
 	 * Default implementation will traverse a PathExpr
 	 * if it is just a wrapper around another single
 	 * expression object.
@@ -28,13 +33,41 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
 			next.accept(this);
 		}
 	}
-	
-	protected void processWrappers(Expression expr) {
+
+    public void visitLocationStep(LocationStep locationStep) {
+    }
+
+    public void visitPredicate(Predicate predicate) {
+    }
+
+    protected void processWrappers(Expression expr) {
 		if (expr instanceof Atomize ||
 				expr instanceof DynamicCardinalityCheck ||
 				expr instanceof DynamicNameCheck ||
 				expr instanceof DynamicTypeCheck ||
-				expr instanceof UntypedValueCheck)
+				expr instanceof UntypedValueCheck) {
 			expr.accept(this);
-	}
+        }
+    }
+
+    public final static LocationStep findFirstStep(Expression expr) {
+        if (expr instanceof LocationStep)
+            return (LocationStep) expr;
+        FirstStepVisitor visitor = new FirstStepVisitor();
+        expr.accept(visitor);
+        return visitor.firstStep;
+    }
+
+    public static class FirstStepVisitor extends BasicExpressionVisitor {
+
+        private LocationStep firstStep = null;
+
+        public LocationStep getFirstStep() {
+            return firstStep;
+        }
+
+        public void visitLocationStep(LocationStep locationStep) {
+            firstStep = locationStep;
+        }
+    }
 }

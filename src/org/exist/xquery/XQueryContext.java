@@ -75,13 +75,7 @@ import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
-import org.exist.xquery.value.AnyURIValue;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.JavaObjectValue;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
@@ -1629,8 +1623,11 @@ public class XQueryContext {
     public Pragma getPragma(String name, String contents) throws XPathException {
         QName qname = QName.parse(this, name);
         if (Namespaces.EXIST_NS.equals(qname.getNamespaceURI())) {
+            contents = StringValue.trimWhitespace(contents);
             if (TimerPragma.TIMER_PRAGMA.equalsSimple(qname)) {
                 return new TimerPragma(qname, contents);
+            } else if (Optimize.OPTIMIZE_PRAGMA.equalsSimple(qname)) {
+                return new Optimize(this, qname, contents);
             }
             if (BatchTransactionPragma.BATCH_TRANSACTION_PRAGMA.equalsSimple(qname)) {
                 return new BatchTransactionPragma(qname, contents);
