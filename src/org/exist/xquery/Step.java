@@ -148,7 +148,11 @@ public abstract class Step extends AbstractExpression {
         this.test = test;
     }
 
-	/* (non-Javadoc)
+    public NodeTest getTest() {
+        return test;
+    }
+    
+    /* (non-Javadoc)
 	 * @see org.exist.xquery.AbstractExpression#resetState()
 	 */
 	public void resetState() {

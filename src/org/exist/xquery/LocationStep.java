@@ -118,6 +118,15 @@ public class LocationStep extends Step {
         return false;
     }
 
+    protected void setPreloadNodeSets(boolean doPreload) {
+        this.preload = doPreload;
+    }
+
+    protected void setPreloadedData(DocumentSet docs, NodeSet nodes) {
+        this.currentDocs = docs;
+        this.currentSet = nodes;
+    }
+    
     protected Sequence applyPredicate(Sequence outerSequence,
             Sequence contextSequence) throws XPathException {
         if (contextSequence == null)

@@ -1,5 +1,7 @@
 package org.exist.xquery;
 
+import org.exist.xquery.functions.ExtFulltext;
+
 /**
  * Defines a visitor to be used for traversing and analyzing the
  * expression tree.
@@ -19,7 +21,14 @@ public interface ExpressionVisitor {
 	
 	/** Found a PathExpr */
 	public void visitPathExpr(PathExpr expression);
-	
-	/** Found a CastExpression */
+
+    /** Found a LocationStep */
+    public void visitLocationStep(LocationStep locationStep);
+
+    public void visitPredicate(Predicate predicate);
+    
+    /** Found a CastExpression */
 	public void visitCastExpr(CastExpression expression);
+
+    void visitFtExpression(ExtFulltext fulltext);
 }

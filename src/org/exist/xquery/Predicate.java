@@ -490,7 +490,11 @@ public class Predicate extends PathExpr {
 		super.resetState();
 		cached = null;		
 	}
-	
+
+    public void accept(ExpressionVisitor visitor) {
+        getExpression(0).accept(visitor);
+    }
+    
     public void dump(ExpressionDumper dumper) {
     	dumper.display("[");
   		super.dump(dumper);
