@@ -92,7 +92,7 @@ public class Optimize extends Pragma {
 
             public void visitFtExpression(ExtFulltext fulltext) {
                 LOG.trace("Found optimizable: " + fulltext.getClass().getName());
-                optimizable = fulltext;
+//                optimizable = fulltext;
             }
 
             public void visitPredicate(Predicate predicate) {
