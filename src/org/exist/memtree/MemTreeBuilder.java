@@ -151,7 +151,7 @@ public class MemTreeBuilder {
 	public int addReferenceNode(NodeProxy proxy) {
         int lastNode = doc.getLastNode();
         if (0 < lastNode && level == doc.getTreeLevel(lastNode)) {
-            if (doc.getNodeType(lastNode) == Node.TEXT_NODE) {
+            if (doc.getNodeType(lastNode) == Node.TEXT_NODE && proxy.getNodeType() == Node.TEXT_NODE) {
                 // if the last node is a text node, we have to append the
                 // characters to this node. XML does not allow adjacent text nodes.
                 doc.appendChars(lastNode, proxy.getNodeValue());
@@ -160,7 +160,7 @@ public class MemTreeBuilder {
             if (doc.getNodeType(lastNode) == NodeImpl.REFERENCE_NODE) {
                 // check if the previous node is a reference node. if yes, check if it is a text node
                 int p = doc.alpha[lastNode];
-                if (doc.references[p].getNodeType() == Node.TEXT_NODE) {
+                if (doc.references[p].getNodeType() == Node.TEXT_NODE && proxy.getNodeType() == Node.TEXT_NODE) {
                     // found a text node reference. create a new char sequence containing
                     // the concatenated text of both nodes
                     String s = doc.references[p].getStringValue() + proxy.getStringValue();
