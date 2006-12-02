@@ -50,7 +50,7 @@ public class JnlpJarFiles {
                 "jgroups-all", 
                 "jline-%latest%", 
                 "log4j-%latest%",
-                "resolver",
+                "resolver-%latest%",
                 "xmldb", 
                 "xmlrpc-%latest%-patched"
     };
