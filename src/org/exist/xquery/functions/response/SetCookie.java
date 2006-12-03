@@ -110,8 +110,8 @@ public class SetCookie extends Function {
 			((ResponseWrapper) response.getObject()).addCookie(name, value);
 		    } else {
 			Duration duration = ((DurationValue) ageSeq.itemAt(0)).getCanonicalDuration();
-			int maxAge = (int) duration.getTimeInMillis(new Date(System.currentTimeMillis())) * 1000;
-			((ResponseWrapper)response.getObject()).addCookie(name, value, maxAge);
+			int maxAge = (int) (duration.getTimeInMillis(new Date(System.currentTimeMillis())) / 1000L);
+			((ResponseWrapper) response.getObject()).addCookie(name, value, maxAge);
 		    }
 		} else {
 		    throw new XPathException("Type error: variable $response is not bound to a response object");
