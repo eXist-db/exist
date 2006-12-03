@@ -307,12 +307,6 @@ public class BrokerPool {
 	 */
 	private String instanceName;
 
-    /**
-	 * <code>true</code> if the database instance is not yet initialized
-	 */
-	//TODO : let's be positive and rename it as initialized ? 
-	private boolean initializing = true;
-	
     private final static int OPERATING = 0;
     private final static int INITIALIZING = 1;
     private final static int SHUTDOWN = 2;
@@ -392,7 +386,6 @@ public class BrokerPool {
 	 */
 	private long majorSyncPeriod = DEFAULT_SYNCH_PERIOD;		//the period after which a major sync should occur		
 	private long lastMajorSync = System.currentTimeMillis();	//time the last major sync occurred
-	private Sync sync = null;									//the Sync Job
     
 	/**
 	 * The listener that is notified when the database instance shuts down.
