@@ -180,7 +180,8 @@ public class FunSubstring extends Function {
 		//if the start position extends beyond $sourceString return EMPTY_STRING
     	try
     	{
-    		if(startPosition.getInt() >= stringLength) 
+    		//fn:substring("he",2) must return "e"
+    		if(startPosition.getInt() > stringLength) 
     			return false;
     	}
     	catch(XPathException xpe)
