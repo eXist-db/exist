@@ -78,7 +78,7 @@ public class JnlpServlet extends HttpServlet {
             
         } else if (URI.endsWith(".jar")){
             String filename = stripFilename( request.getPathInfo() );
-            jw.sendJar(jf, filename, response);
+            jw.sendJar(jf, filename, request, response);
             
         } else if ( URI.endsWith(".gif") || URI.endsWith(".jpg") ){
             String filename =  stripFilename( request.getPathInfo() );
