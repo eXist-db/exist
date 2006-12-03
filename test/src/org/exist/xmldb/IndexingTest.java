@@ -142,11 +142,7 @@ public class IndexingTest extends TestCase {
 			} else {
 				String s = (String) resource.getContent();
 				byte[] bytes;
-				try {
-					bytes = s.getBytes("UTF-8");
-				} catch (UnsupportedEncodingException e) {
-					bytes = s.getBytes();
-				}
+				bytes = s.getBytes("UTF-8");
 				ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
 				DocumentBuilder db =
 					DocumentBuilderFactory.newInstance().newDocumentBuilder();
