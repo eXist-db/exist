@@ -40,6 +40,12 @@ import org.apache.log4j.Logger;
  */
 public class JnlpWriter {
     
+    private static final String JAR_MIME_TYPE           = "application/x-java-archive";
+    public static final String ACCEPT_ENCODING          = "accept-encoding";
+    public static final String CONTENT_TYPE             = "content-type";
+    public static final String CONTENT_ENCODING         = "content-encoding";
+    public static final String PACK200_GZIP_ENCODING    = "pack200-gzip";
+    
     private static Logger logger = Logger.getLogger(JnlpWriter.class);
     
     
@@ -52,7 +58,7 @@ public class JnlpWriter {
             HttpServletResponse response) throws IOException {
         
         logger.debug("Writing JNLP file");
-                
+        
         // Format URL: "http://host:8080/CONTEXT/webstart/exist.jnlp"
         String currentUrl = request.getRequestURL().toString();
         
@@ -62,7 +68,7 @@ public class JnlpWriter {
         
         // Find codeBase for jarfiles http://host:8080/CONTEXT/webstart/
         String codeBase = existBaseUrl+"/webstart/";
-               
+        
         // Find URL to connect to with client
         String startUrl = existBaseUrl
                 .replaceFirst("http:", "xmldb:exist:")
@@ -98,17 +104,17 @@ public class JnlpWriter {
         
         out.println("<resources>");
         out.println("<j2se version=\"1.4+\"/>");
-
+        
         out.println("  <jar href=\"" + jnlpFiles.getMainJar().getName()
-            +"\" size=\""+ jnlpFiles.getMainJar().length()
-            + "\"  main=\"true\" />");
-                
+        +"\" size=\""+ jnlpFiles.getMainJar().length()
+        + "\"  main=\"true\" />");
+        
         File coreJars[] = jnlpFiles.getCoreJars();
         for(int i=0 ; i<coreJars.length ; i++) {
             out.println("  <jar href=\"" + coreJars[i].getName()
             + "\" size=\""+ coreJars[i].length() +"\" />");
         }
-
+        
         out.println("</resources>");
         out.println("<application-desc main-class=\"org.exist.client.InteractiveClient\">");
         out.println("  <argument>-ouri=" +  startUrl+ "</argument>");
@@ -126,18 +132,37 @@ public class JnlpWriter {
      * @param response  Object for writing to end user.
      * @throws java.io.IOException
      */
-    void sendJar(JnlpJarFiles jnlpFiles, String filename, 
-                 HttpServletResponse response ) throws IOException {
+    void sendJar(JnlpJarFiles jnlpFiles, String filename,
+            HttpServletRequest request, HttpServletResponse response ) throws IOException {
         
         logger.debug("Send jar file "+ filename);
         
-        File jarFile = jnlpFiles.getFile(filename);
+        File localJarFile = jnlpFiles.getFile(filename);
+        String localJarPath = localJarFile.getAbsolutePath();
         
-        response.setContentType("application/x-java-archive");
-        response.setContentLength( Integer.parseInt(Long.toString(jarFile.length())) );
-        response.setDateHeader("Last-Modified",jarFile.lastModified());
+        // Retrieve info from client
+        String acceptedEncoding = request.getHeader(ACCEPT_ENCODING);
+//        String clientContentType = request.getContentType();
         
-        FileInputStream fis = new FileInputStream( jarFile );
+        String contentType=JAR_MIME_TYPE;
+        File downloadTarget=null;
+        File localPackedFile=new File(localJarPath + ".pack.gz");
+        
+        if(acceptedEncoding.indexOf(PACK200_GZIP_ENCODING)!=-1 &&
+                localPackedFile.exists() && localPackedFile.canRead() ){
+            downloadTarget = localPackedFile;
+            response.setHeader(CONTENT_ENCODING, PACK200_GZIP_ENCODING);
+        } else {
+            downloadTarget=localJarFile;
+        }
+        
+        logger.debug("downloaded="+downloadTarget);
+        
+        response.setContentType(contentType);
+        response.setContentLength( Integer.parseInt(Long.toString(downloadTarget.length())) );
+        response.setDateHeader("Last-Modified",downloadTarget.lastModified());
+        
+        FileInputStream fis = new FileInputStream( downloadTarget );
         OutputStream os = response.getOutputStream();
         
         
@@ -152,7 +177,7 @@ public class JnlpWriter {
         os.close();
         fis.close();
     }
-
+    
     void sendImage(JnlpHelper jh, JnlpJarFiles jf, String filename, HttpServletResponse response) throws IOException {
         logger.debug("Send image "+ filename);
         

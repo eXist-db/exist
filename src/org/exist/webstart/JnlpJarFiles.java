@@ -43,15 +43,15 @@ public class JnlpJarFiles {
     // Names of core jar files sans ".jar" extension.
     // Use %latest% token in place of a version string.
     private String jars[] = new String[]{
-                "xmldb", 
-                "xmlrpc-%latest%-patched",
-                "commons-pool-%latest%",
-                "excalibur-cli-%latest%",
-                "jEdit-syntax",
-                "jline-%latest%",
-                "log4j-%latest%" 
+        "xmldb",
+        "xmlrpc-%latest%-patched",
+        "commons-pool-%latest%",
+        "excalibur-cli-%latest%",
+        "jEdit-syntax",
+        "jline-%latest%",
+        "log4j-%latest%"
     };
-
+    
     // Resolves jar file patterns from jars[].
     private LatestFileResolver jarFileResolver = new LatestFileResolver();
     
@@ -63,27 +63,27 @@ public class JnlpJarFiles {
      * @return File object of jar file, null if not found.
      */
     public File getJar(File folder, String jarFileBaseName){
-    	String fileToFind = folder.getAbsolutePath() + File.separatorChar
-			+ jarFileBaseName + ".jar";
-    	String resolvedFile = jarFileResolver.getResolvedFileName(
-    		fileToFind
-    	);
-    	File jar = new File(resolvedFile);
-    	if (jar.exists()) {
-    		logger.debug(
-    			"Found match: " + resolvedFile
-    			+ " for file pattern: " + fileToFind
-    		);
-    		return jar;
-    	} else {
-    		logger.warn("Could not resolve file pattern: " + fileToFind);
-    		return null;
-    	}
+        String fileToFind = folder.getAbsolutePath() + File.separatorChar
+                + jarFileBaseName + ".jar";
+        String resolvedFile = jarFileResolver.getResolvedFileName(
+                fileToFind
+                );
+        File jar = new File(resolvedFile);
+        if (jar.exists()) {
+            logger.debug(
+                    "Found match: " + resolvedFile
+                    + " for file pattern: " + fileToFind
+                    );
+            return jar;
+        } else {
+            logger.warn("Could not resolve file pattern: " + fileToFind);
+            return null;
+        }
     }
     
     /**
      * Creates a new instance of JnlpJarFiles
-     * 
+     *
      * @param jnlpHelper
      */
     public JnlpJarFiles(JnlpHelper jnlpHelper) {
@@ -103,7 +103,7 @@ public class JnlpJarFiles {
         _mainJar=new File(jnlpHelper.getExistJarFolder(), "exist.jar");
     }
     
-
+    
     
     /**
      * Get references to all "core" jar files.
@@ -125,7 +125,7 @@ public class JnlpJarFiles {
     
     /**
      *  Get File reference of associated jar-file.
-     * @param name 
+     * @param name
      * @return File reference to resource.
      */
     public File getFile(String name){

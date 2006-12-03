@@ -64,20 +64,6 @@ public class JnlpHelper {
         logger.debug("WEBAPP location="+webappFolder.getAbsolutePath());
     }
     
-//    /**
-//     *  Check wether exist runs in Servlet container (as war file).
-//     * @return TRUE if exist runs in servlet container.
-//     */
-//    public boolean isInWarFile(){
-//        
-//        boolean retVal =true;
-//        if( new File(existHome, "lib/core").isDirectory() ) {
-//            retVal=false;
-//        }
-//        return retVal;
-//    }
-    
-    
     public File getWebappFolder(){
         return webappFolder;
     }
