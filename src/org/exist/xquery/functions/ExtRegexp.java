@@ -64,8 +64,10 @@ public class ExtRegexp extends Function {
 				new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE) 
 			},
 			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-			true
-		);
+			true,
+            "This function is eXist-specific and should not be in the standard functions namespace. Please " +
+            "use text:match-all instead."
+        );
 			
 	protected int type = Constants.FULLTEXT_AND;
 	protected CachedResult cached = null;
@@ -171,7 +173,7 @@ public class ExtRegexp extends Function {
 				context.getBroker().getTextEngine().getNodesContaining(
 				    context,
 					nodes.getDocumentSet(),
-					nodes,
+					nodes, null,
 					(String)terms.get(k), DBBroker.MATCH_REGEXP);
 		}
 		NodeSet result = hits[0];

@@ -47,7 +47,9 @@ public class ExtRegexpOr extends ExtRegexp {
 				new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
 				new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE)},
 			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-			true);
+			true,
+            "This function is eXist-specific and should not be in the standard functions namespace. Please " +
+            "use text:match-any instead.");
 
 	/**
 	 * 
