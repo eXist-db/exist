@@ -47,7 +47,7 @@ import org.exist.xquery.value.AnyURIValue;
  */
 public class XmldbURI implements Comparable {
     
-    protected final static Logger LOG = Logger.getLogger(DBBroker.class);
+    protected final static Logger LOG = Logger.getLogger(XmldbURI.class);
 	
     public static final int NO_PORT = -1;
     
