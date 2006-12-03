@@ -98,19 +98,21 @@ public class JnlpWriter {
         
         out.println("<resources>");
         out.println("<j2se version=\"1.4+\"/>");
-        
+
+        out.println("  <jar href=\"" + jnlpFiles.getMainJar().getName()
+            +"\" size=\""+ jnlpFiles.getMainJar().length()
+            + "\"  main=\"true\" />");
+                
         File coreJars[] = jnlpFiles.getCoreJars();
         for(int i=0 ; i<coreJars.length ; i++) {
             out.println("  <jar href=\"" + coreJars[i].getName()
             + "\" size=\""+ coreJars[i].length() +"\" />");
         }
-        
-        out.println("  <jar href=\"" + jnlpFiles.getMainJar().getName()
-        +"\" size=\""+ jnlpFiles.getMainJar().length()
-        + "\"  main=\"true\" />");
+
         out.println("</resources>");
         out.println("<application-desc main-class=\"org.exist.client.InteractiveClient\">");
         out.println("  <argument>-ouri=" +  startUrl+ "</argument>");
+        out.println("  <argument>--no-embedded-mode</argument>");
         out.println("</application-desc>");
         out.println("</jnlp>");
         out.flush();

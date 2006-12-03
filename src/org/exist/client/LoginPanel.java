@@ -175,7 +175,14 @@ public class LoginPanel extends JPanel {
         
         type = new JComboBox();
         type.addItem(Messages.getString("LoginPanel.5")); //$NON-NLS-1$
-        type.addItem(Messages.getString("LoginPanel.6")); //$NON-NLS-1$
+        
+        // when parameter is specified, embedded mode can not be selected
+        boolean showEmbeddedMode = 
+                properties.getProperty("NO_EMBED_MODE", "FALSE").equalsIgnoreCase("FALSE");
+        if(showEmbeddedMode){
+            type.addItem(Messages.getString("LoginPanel.6")); 
+        }
+        
         
         final String uri=properties.getProperty("uri"); //$NON-NLS-1$
         type.setSelectedIndex(uri.equals(URI_EMBEDDED) ? TYPE_EMBEDDED : TYPE_REMOTE);

@@ -43,16 +43,13 @@ public class JnlpJarFiles {
     // Names of core jar files sans ".jar" extension.
     // Use %latest% token in place of a version string.
     private String jars[] = new String[]{
-                "antlr-%latest%", 
-                "commons-pool-%latest%",
-                "excalibur-cli-%latest%", 
-                "jEdit-syntax",
-                "jgroups-all", 
-                "jline-%latest%", 
-                "log4j-%latest%",
-                "resolver-%latest%",
                 "xmldb", 
-                "xmlrpc-%latest%-patched"
+                "xmlrpc-%latest%-patched",
+                "commons-pool-%latest%",
+                "excalibur-cli-%latest%",
+                "jEdit-syntax",
+                "jline-%latest%",
+                "log4j-%latest%" 
     };
 
     // Resolves jar file patterns from jars[].
