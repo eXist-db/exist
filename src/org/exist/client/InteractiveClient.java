@@ -190,7 +190,6 @@ public class InteractiveClient {
     protected ClientFrame frame;
     
     private static Logger LOG = Logger.getLogger(InteractiveClient.class.getName());
-    
     public InteractiveClient() {
     }
     
@@ -1648,6 +1647,10 @@ public class InteractiveClient {
                     return null;
                 case CommandlineOptions.NO_GUI_OPT :
                     startGUI = false;
+                    break;
+                    //
+                case CommandlineOptions.NO_EMBED_OPT :
+                    props.setProperty("NO_EMBED_MODE", "TRUE");
                     break;
                 case CommandlineOptions.QUIET_OPT :
                     quiet = true;

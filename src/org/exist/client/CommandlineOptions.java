@@ -58,6 +58,7 @@ public class CommandlineOptions {
     final static int OUTPUT_FILE_OPT = 'O';
     final static int REINDEX_OPT = 'i';
     final static int QUERY_GUI_OPT = 'Q';
+    final static int NO_EMBED_OPT = 'N';
     
     final static CLOptionDescriptor OPTIONS[] = new CLOptionDescriptor[]{
         new CLOptionDescriptor("help",
@@ -146,7 +147,9 @@ public class CommandlineOptions {
                 CLOptionDescriptor.ARGUMENT_DISALLOWED, REINDEX_OPT,
                 "reindex the collection specified in the collection argument -c"),
                 new CLOptionDescriptor("query", CLOptionDescriptor.ARGUMENT_DISALLOWED, QUERY_GUI_OPT,
-                "directly open the query gui")
+                "directly open the query gui"),
+                new CLOptionDescriptor("no-embedded-mode", CLOptionDescriptor.ARGUMENT_DISALLOWED, NO_EMBED_OPT,
+                "do not make embedded mode available")
     };
     
     boolean needPasswd = false;
