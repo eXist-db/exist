@@ -1171,8 +1171,9 @@ public class ClientFrame extends JFrame
         chooser.setMultiSelectionEnabled(false);
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.addChoosableFileFilter(new BackupContentsFilter());
-        chooser.addChoosableFileFilter(new ZipFilter());
-        chooser.setSelectedFile(new File("eXist-backup.zip"));
+        // re-enable later
+        //chooser.addChoosableFileFilter(new ZipFilter());
+        //chooser.setSelectedFile(new File("eXist-backup.zip"));
 
         if (chooser.showDialog(null, Messages.getString("ClientFrame.169")) == JFileChooser.APPROVE_OPTION) { //$NON-NLS-1$
         	JPanel askPass = new JPanel(new BorderLayout());
