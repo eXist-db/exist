@@ -38,9 +38,6 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
- 
-// import sun.security.action.GetLongAction;
-
 /**
  * Represents an XQuery "for" expression.
  * 
@@ -101,6 +98,9 @@ public class ForExpr extends BindingExpression {
 		
 		// Declare positional variable
 		if(positionalVariable != null) {
+			//could probably be detected by the parser
+			if (varName.equals(positionalVariable))
+				throw new XPathException("XQST0089: bound variable and positional variable have the same name");
 			LocalVariable posVar = new LocalVariable(QName.parse(context, positionalVariable, null));
             posVar.setSequenceType(POSITIONAL_VAR_TYPE);
             context.declareVariableBinding(posVar);
