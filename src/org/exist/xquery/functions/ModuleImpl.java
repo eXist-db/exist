@@ -137,6 +137,8 @@ public class ModuleImpl extends AbstractInternalModule {
 		new FunctionDef(FunReplace.signatures[0], FunReplace.class),
 		new FunctionDef(FunReplace.signatures[1], FunReplace.class),
 		new FunctionDef(FunReverse.signature, FunReverse.class),
+		new FunctionDef(FunResolveURI.signatures[0], FunResolveURI.class),
+		new FunctionDef(FunResolveURI.signatures[1], FunResolveURI.class),
 		new FunctionDef(FunRoot.signatures[0], FunRoot.class),
 		new FunctionDef(FunRoot.signatures[1], FunRoot.class),
 		new FunctionDef(FunRound.signature, FunRound.class),
