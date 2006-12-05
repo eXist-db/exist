@@ -38,7 +38,7 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
-public class FunNormalizeUnicode extends CollatingFunction {
+public class FunNormalizeUnicode extends Function {
 	
 	private String normalizationForm = null;
 	private Class clazz = null;	
@@ -70,11 +70,7 @@ public class FunNormalizeUnicode extends CollatingFunction {
 	};
 
     public FunNormalizeUnicode(XQueryContext context, FunctionSignature signature) {
-	super(context, signature);
-    }
-
-    public int returnsType() {
-	return Type.BOOLEAN;
+    	super(context, signature);
     }
 
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
