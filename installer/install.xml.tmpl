@@ -78,7 +78,6 @@
                 <include name="*.xsl"/>
             </fileset>
             <fileset targetdir="$INSTALL_PATH/tools" dir="tools">
-	        <include name="izpack/build.xml"/>
                 <include name="**/*.jar"/>
                 <include name="wrapper/**"/>
                 <include name="requestlog/**"/>
@@ -107,7 +106,9 @@
             </fileset>
             <file src="installer/index.html" targetdir="$INSTALL_PATH"/>
             <file src="installer/icon.bmp" targetdir="$INSTALL_PATH"/>
-            <file src="installer/install.xml.tmpl" targetdir="$INSTALL_PATH"/>
+	    <file src="installer/install.xml.tmpl" targetdir="$INSTALL_PATH/installer"/>
+	    <file src="tools/izpack/build.xml" targetdir="$INSTALL_PATH/tools/izpack"/>
+
             <fileset targetdir="$INSTALL_PATH/bin" dir="installer">
                 <include name="*.sh"/>
                 <include name="*.bat"/>
@@ -120,13 +121,13 @@
             <parsable type="shell" targetfile="$INSTALL_PATH/bin/startup.sh"/>
             <parsable type="shell" targetfile="$INSTALL_PATH/bin/server.sh"/>
             <parsable type="shell" targetfile="$INSTALL_PATH/bin/shutdown.sh"/>
-			<parsable type="shell" targetfile="$INSTALL_PATH/bin/backup.sh"/>
+	    <parsable type="shell" targetfile="$INSTALL_PATH/bin/backup.sh"/>
             <parsable type="shell" targetfile="$INSTALL_PATH/build.sh"/>
             <parsable targetfile="$INSTALL_PATH/bin/client.bat"/>
             <parsable targetfile="$INSTALL_PATH/bin/startup.bat"/>
             <parsable targetfile="$INSTALL_PATH/bin/server.bat"/>
             <parsable targetfile="$INSTALL_PATH/bin/shutdown.bat"/>
-			<parsable targetfile="$INSTALL_PATH/bin/backup.bat"/>
+	    <parsable targetfile="$INSTALL_PATH/bin/backup.bat"/>
             <parsable targetfile="$INSTALL_PATH/build.bat"/>
             <singlefile src="tools/wrapper/conf/wrapper.conf.install"
                 target="$INSTALL_PATH/tools/wrapper/conf/wrapper.conf"
@@ -140,7 +141,7 @@
                 os="unix"/>
             <executable targetfile="$INSTALL_PATH/bin/shutdown.sh" stage="never"
                 os="unix"/>
-			<executable targetfile="$INSTALL_PATH/bin/backup.sh" stage="never"
+	    <executable targetfile="$INSTALL_PATH/bin/backup.sh" stage="never"
 				os="unix"/>
             <executable targetfile="$INSTALL_PATH/build.sh" stage="never"
                 os="unix"/>
@@ -160,6 +161,18 @@
             <fileset targetdir="$INSTALL_PATH/extensions/modules/src"
             	dir="extensions/modules/src">
             	<exclude name="**/*~"/>
+                <exclude name="**/.*"/>
+                <exclude name="**/CVS/"/>
+                <exclude name=".*"/>
+            </fileset>
+           <fileset targetdir="$INSTALL_PATH/test/src" dir="test/src">
+                <exclude name="**/*~"/>
+                <exclude name="**/.*"/>
+                <exclude name="**/CVS/"/>
+                <exclude name=".*"/>
+            </fileset>
+           <fileset targetdir="$INSTALL_PATH/tools/izpack/src" dir="tools/izpack/src">
+                <exclude name="**/*~"/>
                 <exclude name="**/.*"/>
                 <exclude name="**/CVS/"/>
                 <exclude name=".*"/>
