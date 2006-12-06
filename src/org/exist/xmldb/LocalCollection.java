@@ -76,7 +76,7 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class LocalCollection extends Observable implements CollectionImpl {
     
-    private static Logger LOG = Logger.getLogger(LocalCollection.class.getName());
+    private static Logger LOG = Logger.getLogger(LocalCollection.class);
     
     protected final static Properties defaultProperties = new Properties();
     static {
@@ -731,14 +731,18 @@ public class LocalCollection extends Observable implements CollectionImpl {
     }
     
     private void setupParser(Collection collection, LocalXMLResource res) throws XMLDBException {
-        if ( res.getMimeType().equals("text/html") ) {
+        if ( res.getMimeType().equals("text/html") 
+                || res.getId().endsWith(".htm") || res.getId().endsWith(".html") ) {
             try {
+                LOG.debug("Converting HTML to XML using NekoHTML parser.");
                 Class clazz = Class.forName( "org.cyberneko.html.parsers.SAXParser" );
                 XMLReader htmlReader = (XMLReader) clazz.newInstance();
                 collection.setReader( htmlReader );
             } catch ( Exception e) {
-                LOG.info("nekohtml parser not found. If you want to parse non-wellformed HTML files, put nekohtml.jar into " +
-                        "directory lib/optional/");
+                LOG.error("Error while involing NekoHTML parser. ("+e.getMessage()
+                        +"). If you want to parse non-wellformed HTML files, put "
+                        +"nekohtml.jar into directory 'lib/optional'.", e);
+                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "NekoHTML parser error", e);
             }
         }
     }
