@@ -1171,7 +1171,9 @@ public class BrokerPool {
 	 */
 	public void triggerSync(int syncEvent) {
 		//TOUNDERSTAND (pb) : synchronized, so... "schedules" or, rather, "executes" ? "schedules" (WM)
-		synchronized (this) {
+        if (status == SHUTDOWN)
+            return;
+        synchronized (this) {
 			//Are there available brokers ?
 		    // TOUNDERSTAND (pb) : the trigger is ignored !
             // WM: yes, it seems wrong!!
@@ -1279,7 +1281,7 @@ public class BrokerPool {
 	 * Shuts downs the database instance
 	 * @param killed <code>true</code> when the JVM is (cleanly) exiting
 	 */
-	public synchronized void shutdown(boolean killed) {
+	public void shutdown(boolean killed) {
         status = SHUTDOWN;
         
 		notificationService.debug();
@@ -1287,16 +1289,17 @@ public class BrokerPool {
 		//Notify all running tasks that we are shutting down
 		
 		//Shutdown the scheduler
-		scheduler.shutdown(!killed); 	//asynchronous
-		while(!scheduler.isShutdown()) 	//wait for shutdown
+		scheduler.shutdown(false); 	//asynchronous
+
+        while(!scheduler.isShutdown()) 	//wait for shutdown
 		{
 			try
 			{
 				wait(250);
 			}
-			catch(InterruptedException e){}
+			catch(InterruptedException e) {}
 		}
-		
+
 		//Notify all running XQueries that we are shutting down
 		xQueryMonitor.killAll(500);
 		//TODO : close other objects using varying methods ? set them to null ?
@@ -1304,8 +1307,8 @@ public class BrokerPool {
 		//xQueryPool.something();
 		//collectionConfigurationManager.something();
 		//collectionCache.something();
-		//xmlReaderPool.close();	
-		
+		//xmlReaderPool.close();
+
 		long waitStart = System.currentTimeMillis();
 		//Are there active brokers ?
 		while (activeBrokers.size() > 0) {
@@ -1321,7 +1324,7 @@ public class BrokerPool {
 			}
 		}
 		LOG.debug("calling shutdown ...");
-		
+
 		//TODO : replace the following code by get()/release() statements ?
         // WM: deadlock risk if not all brokers returned properly.
 		DBBroker broker = null;
@@ -1342,20 +1345,20 @@ public class BrokerPool {
             broker.setUser(SecurityManager.SYSTEM_USER);
             broker.shutdown();
         }
-        
+
         transactionManager.shutdown();
-		
+
 		//Invalidate the configuration
 		conf = null;
 		//Clear the living instances container
 		instances.remove(instanceName);
-		
+
         if (!isReadOnly)
             // release the lock on the data directory
             dataLock.release();
-        
+
 		LOG.info("shutdown complete !");
-		
+
 		//Last instance closes the house...
 		//TOUNDERSTAND (pb) : !killed or, rather, killed ?
         // TODO: WM: check usage of killed!
@@ -1365,7 +1368,7 @@ public class BrokerPool {
 		}
 		if (shutdownListener != null)
 			shutdownListener.shutdown(instanceName, instances.size());
-        
+
         status = OPERATING;
 	}
 
