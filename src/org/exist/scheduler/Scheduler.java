@@ -86,16 +86,33 @@ public class Scheduler
 	
 	/**
 	 * Shutdown the running Scheduler
+	 * 
+	 * Asynchronous method. use isShutdown() to determine if the
+	 * Scheduler has Shutdown
 	 */
-	public void shutdown()
+	public void shutdown(boolean waitForJobsToComplete)
 	{
 		try
 		{
-			scheduler.shutdown();
+			scheduler.shutdown(waitForJobsToComplete);
 		}
 		catch(SchedulerException se)
 		{
-			//TODO: something here!?!
+			//TODO: LOG something here!?!
+		}
+	}
+	
+	public boolean isShutdown()
+	{
+		try
+		{
+			return scheduler.isShutdown();
+		}
+		catch(SchedulerException se)
+		{
+			//TODO: LOG something here!?!
+			
+			return false;
 		}
 	}
 	
