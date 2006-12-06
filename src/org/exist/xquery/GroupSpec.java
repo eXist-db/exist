@@ -28,7 +28,7 @@ import org.exist.xquery.util.ExpressionDumper;
  * A XQuery grouping specifier as specified in an "group by" clause (based on 
  * {@link org.exist.xquery.OrderSpec}). 
  *  
- * Used by {@link org.exist.xquery.BindingEpression}.  
+ * Used by {@link org.exist.xquery.BindingExpression}.  
  *  *   
  * @author boris 
  */ 
