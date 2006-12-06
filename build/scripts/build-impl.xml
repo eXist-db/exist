@@ -501,6 +501,9 @@
         <delete failonerror="no" file="exist.jar"/>
         <delete failonerror="no" file="exist-optional.jar"/>
         <delete failonerror="no" file="start.jar"/>
+        <delete>
+            <fileset dir="installer" includes="eXist-*.jar,install.xml" />
+        </delete>
         <delete failonerror="no" dir="${dist}"/>
         <ant antfile="build.xml" dir="tools/wrapper" target="clean"/>
         <ant antfile="build.xml" dir="extensions/modules" target="clean"/>
