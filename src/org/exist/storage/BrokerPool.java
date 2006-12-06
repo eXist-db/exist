@@ -1285,7 +1285,17 @@ public class BrokerPool {
 		notificationService.debug();
 		
 		//Notify all running tasks that we are shutting down
-		scheduler.shutdown(!killed);
+		
+		//Shutdown the scheduler
+		scheduler.shutdown(!killed); 	//asynchronous
+		while(!scheduler.isShutdown()) 	//wait for shutdown
+		{
+			try
+			{
+				wait(250);
+			}
+			catch(InterruptedException e){}
+		}
 		
 		//Notify all running XQueries that we are shutting down
 		xQueryMonitor.killAll(500);
