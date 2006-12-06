@@ -32,7 +32,7 @@ import org.exist.xquery.XQueryContext;
 /** 
  * An arrayList that containts a GroupedValueSequence for each group. 
  * Groups are specified by the group specs of a "group by" clause. Used by  
- * {@link org.exist.xquery.value.ForExpr}. 
+ * {@link org.exist.xquery.ForExpr} et al. 
  * 
  *  WARNING : don't use except for group by clause  
  *   

@@ -83,7 +83,7 @@ public class ScheduledJobInfo
 	/**
 	 * Get the Start time of the Job
 	 * 
-	 * @retun the Start time of the Job
+	 * @return the Start time of the Job
 	 */
 	public Date getStartTime()
 	{
@@ -93,7 +93,7 @@ public class ScheduledJobInfo
 	/**
 	 * Get the End time of the Job
 	 * 
-	 * @retun the End time of the Job, or null of the job is Scheduled forever
+	 * @return the End time of the Job, or null of the job is Scheduled forever
 	 */
 	public Date getEndTime()
 	{
@@ -103,7 +103,7 @@ public class ScheduledJobInfo
 	/**
 	 * Get the Previous Fired time of the Job
 	 * 
-	 * @retun the time the Job was Previously Fired, or null if the job hasnt fired yet
+	 * @return the time the Job was Previously Fired, or null if the job hasnt fired yet
 	 */
 	public Date getPreviousFireTime()
 	{
@@ -113,7 +113,7 @@ public class ScheduledJobInfo
 	/**
 	 * Get the Time the Job will Next be Fired
 	 * 
-	 * @retun the time the Job will Next be Fired, or null if the job wont fire again
+	 * @return the time the Job will Next be Fired, or null if the job wont fire again
 	 */
 	public Date getNextFireTime()
 	{
@@ -123,7 +123,7 @@ public class ScheduledJobInfo
 	/**
 	 * Get the Final Time the Job will be Fired
 	 * 
-	 * @retun the time the Job will be Fired for the Final time, or null of the job is Scheduled forever
+	 * @return the time the Job will be Fired for the Final time, or null of the job is Scheduled forever
 	 */
 	public Date getFinalFireTime()
 	{
