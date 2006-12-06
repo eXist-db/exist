@@ -1285,7 +1285,8 @@ public class BrokerPool {
 		notificationService.debug();
 		
 		//Notify all running tasks that we are shutting down
-		scheduler.shutdown();
+		scheduler.shutdown(!killed);
+		
 		//Notify all running XQueries that we are shutting down
 		xQueryMonitor.killAll(500);
 		//TODO : close other objects using varying methods ? set them to null ?
