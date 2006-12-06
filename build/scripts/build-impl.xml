@@ -50,7 +50,7 @@
     
     <!-- additional set of ant tasks -->
     <property name="asocat-exist.jar" location="${tools.ant}/lib/asocat-exist.jar"/>
-    <property name="javasvn.jar" location="${tools.ant}/lib/javasvn-1.0.4.jar"/>
+    <property name="javasvn.jar" location="${tools.ant}/lib/svnkit-1.1.0.jar"/>
     <available file="${javasvn.jar}" property="svn-present" />
 
     <!-- setup class path -->
@@ -115,7 +115,7 @@
     
       <tstamp/>
       
-      <svninfo url="https://svn.sourceforge.net/svnroot/exist/trunk/eXist-1.0" username="anonymous" password="anonymous" />
+      <svninfo url="https://exist.svn.sourceforge.net/svnroot/exist/trunk/eXist-1.0" username="anonymous" password="anonymous" />
       
       <propertyfile file="VERSION.txt" comment="eXist build info">
         <entry  key="project.version" value="${project.version}"/>

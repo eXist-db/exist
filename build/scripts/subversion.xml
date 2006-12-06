@@ -10,8 +10,8 @@
 
     <target name="svn-download">
     
-      <get src="http://www.ibiblio.org/maven2/org/tmate/javasvn/1.0.4/javasvn-1.0.4.jar"
-                  dest="${tools.ant}/lib/javasvn-1.0.4.jar" verbose="true" />
+      <get src="http://mirrors.ibiblio.org/pub/mirrors/maven2/com/svnkit/svnkit/1.1.0/svnkit-1.1.0.jar"
+                  dest="${tools.ant}/lib/svnkit-1.1.0.jar" verbose="true" />
 
     </target>
 
