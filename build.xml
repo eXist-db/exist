@@ -9,15 +9,18 @@
 <project basedir="." default="all" name="eXist-DB">
 
     <description>eXist Open Source Native XML Database</description>
+    
+    <!-- HTTP proxy ; not used by javadoc -->
+    <!--setproxy proxyhost="hostname" proxyport="8080" proxyuser="username" proxypassword="password"  /-->
 	
-	<!-- ugly patch to correctly tag the 1.1 version -->
-	<condition property="substitution.string" value="project.version = 1.1\1" else="project.version = 1.0\1">
-		<and><available file="src/org/exist/numbering/NodeId.java"/></and>
-	</condition>
-	<replaceregexp byline="true" file="build.properties">
-	  <regexp pattern="project.version = 1.0(.*)"/>
-	  <substitution expression="${substitution.string}"/>
-	</replaceregexp> 
+    <!-- ugly patch to correctly tag the 1.1 version -->
+    <condition property="substitution.string" value="project.version = 1.1\1" else="project.version = 1.0\1">
+      <and><available file="src/org/exist/numbering/NodeId.java"/></and>
+    </condition>
+    <replaceregexp byline="true" file="build.properties">
+      <regexp pattern="project.version = 1.0(.*)"/>
+      <substitution expression="${substitution.string}"/>
+    </replaceregexp> 
 	
     <!-- import default properties from file -->
     <property file="build.properties"/>
