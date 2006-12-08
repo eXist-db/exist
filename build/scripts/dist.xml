@@ -41,7 +41,7 @@
             </lib>
             <lib dir="${lib.core}">
                 <include name="*.jar"/>
-                <exclude name="javax.servlet.jar"/>
+                <exclude name="javax.servlet-1.4.jar"/>
             </lib>
             <lib dir="${lib.optional}">
                 <include name="*.jar"/>
