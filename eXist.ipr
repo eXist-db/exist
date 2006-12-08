@@ -302,7 +302,7 @@
         <root url="jar://$PROJECT_DIR$/lib/core/resolver.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/core/log4j-1.2.14.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/core/jgroups-all.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/core/javax.servlet.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/core/javax.servlet-1.4.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/core/xmlrpc-1.2-patched.jar!/" />
         <root url="jar://$PROJECT_DIR$/start.jar!/" />
         <root url="jar://$PROJECT_DIR$/exist-modules.jar!/" />

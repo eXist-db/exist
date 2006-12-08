@@ -41,7 +41,7 @@ chiba-1.2.0.jar					http://www.sourceforge.net/projects/chiba
 commons-fileupload-1.1.jar		http://jakarta.apache.org/commons/fileupload
 commons-httpclient-3.0.1.jar	http://jakarta.apache.org/commons/httpclient
 dwr-1.1.1.jar					http://getahead.ltd.uk/dwr/download
-javax.servlet.jar				Can be copied from $EXIST_HOME/lib/core or downloaded as part of the J2EE from http://java.sun.com/javaee/downloads/index.jsp
+javax.servlet-1.4.jar				Can be copied from $EXIST_HOME/lib/core or downloaded as part of the J2EE from http://java.sun.com/javaee/downloads/index.jsp
 log4j-1.2.13.jar				http://logging.apache.org/log4j
 
 At the time of writting these were the current jar's that are known to work,
