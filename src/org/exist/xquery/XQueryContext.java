@@ -1635,6 +1635,9 @@ public class XQueryContext {
             if (ForceIndexUse.EXCEPTION_IF_INDEX_NOT_USED_PRAGMA.equalsSimple(qname)) {
             	return new ForceIndexUse(qname, contents);
             }
+            if (ProfilePragma.PROFILIE_PRAGMA.equalsSimple(qname)) {
+            	return new ProfilePragma(qname, contents);
+            }
         }
         return null;
     }
