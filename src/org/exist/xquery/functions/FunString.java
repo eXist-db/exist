@@ -27,12 +27,11 @@ import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
 /**
@@ -85,7 +84,9 @@ public class FunString extends Function {
         
         Sequence result;        
 		if(contextSequence.isEmpty())
-			result = StringValue.EMPTY_STRING;
+			//result = StringValue.EMPTY_STRING;
+			//Despite : fn:string($arg as item()?) as xs:string in the specs
+			result = Sequence.EMPTY_SEQUENCE;
         else
             result = contextSequence.convertTo(Type.STRING);        
 
