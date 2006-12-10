@@ -358,9 +358,6 @@ public class Journal {
 	            syncThread.setChannel(channel);
 			} catch (FileNotFoundException e) {
 				throw new LogException("Failed to open new journal: " + file.getAbsolutePath(), e);
-			} catch (IOException e) {
-				throw new LogException("Failed to open new journal: " + file.getAbsolutePath() +
-						". It might be used by another process.", e);
 			}
         }
         inFilePos = 0;
@@ -382,7 +379,6 @@ public class Journal {
      * @param files
      */
 	public final static int findLastFile(File files[]) {
-		File last = null;
 		int max = -1;
 		for (int i = 0; i < files.length; i++) {
 			int p = files[i].getName().indexOf('.');
@@ -390,7 +386,7 @@ public class Journal {
 			int num = Integer.parseInt(baseName, 16);
 			if (num > max) {
 				max = num;
-				last = files[i];
+				/*File last = files[i];*/
 			}
 		}
 		return max;

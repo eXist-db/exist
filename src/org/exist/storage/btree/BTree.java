@@ -87,7 +87,6 @@ import org.exist.storage.journal.Journal;
 import org.exist.storage.journal.LogEntryTypes;
 import org.exist.storage.journal.LogException;
 import org.exist.storage.journal.Loggable;
-import org.exist.storage.journal.Lsn;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.Txn;
 import org.exist.util.ByteConversion;

@@ -16,7 +16,7 @@ public class BufferStats {
 	public final static int INDEX = 0;
 	public final static int DATA = 1;
 
-	private int type = 0;
+	//private int type = 0;
 	private int size = 0;
 	private int used = 0;
 	private int pageFails = 0;
