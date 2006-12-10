@@ -377,4 +377,24 @@
         <dev-notes>90% XQuery, 5% XSLT 2.0, 3% Java, 1% Javascript, 1% CSS.</dev-notes>
         <submitter>Adam Retter</submitter>
     </application>
+
+    <application>
+    <dc:creator>Andrew Nagy</dc:creator>
+    <creator-site>http://andrew.webitecture.org/</creator-site>
+    <dc:identifier>http://digital.library.villanova.edu/</dc:identifier>
+    <dc:rights>Creative Commons</dc:rights>
+    <dc:title>Villanova University Digital Library</dc:title>
+    <dc:subject>Library</dc:subject>
+    <dc:subject>Catholic History</dc:subject>
+    <dc:subject>Irish History</dc:subject>
+    <dc:subject>American History</dc:subject>
+    <dc:description>Villanova University's Digital Library initiative assembles, presents, and preserves digital collections that support the teaching and research of the campus and the global community of scholars. We work with faculty, staff and regional partners to select and develop resources that enhance access for a wide range of disciplines and audiences.</dc:description>
+    <dc:publisher>Villanova University</dc:publisher>
+    <dc:format>Web Application</dc:format>
+    <production-site>http://digital.library.villanova.edu/</production-site>
+    <status>production</status>
+    <feature-used>XQuery</feature-used>
+    <database size="80Mb" documents="289" updates="frequent" security="read for all"/>
+    <dev-notes>PHP application using REST interface with eXist.  Display pages and RSS feeds via XSL transformation of METS XML Data</dev-notes>
+  </application>
 </applications>
