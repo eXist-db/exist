@@ -109,17 +109,23 @@ public class FunSubSequence extends Function {
         else {
             int start = ((DoubleValue) getArgument(1).eval(contextSequence,
                     contextItem).convertTo(Type.DOUBLE)).getInt();
-            // TODO : exception? -pb
-            if (start < 0)
-                start = 0;
-            else
-                --start;
 
             int length = Integer.MAX_VALUE;
-            if (getSignature().getArgumentCount() == 3)
+            if (getSignature().getArgumentCount() == 3) {
                 length = ((DoubleValue) getArgument(2).eval(
                         contextSequence, contextItem)
                         .convertTo(Type.DOUBLE)).getInt();
+            }
+
+            // TODO : exception? -pb
+            if (start < 0) {
+                length = length + start - 1;
+                start = 0;
+            } else if (start == 0) {
+            	--length;
+                --start;
+            } else
+            	--start;
                         
             Sequence tmp;
             if (seq instanceof NodeSet)
