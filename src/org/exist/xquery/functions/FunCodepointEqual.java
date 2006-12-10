@@ -64,7 +64,7 @@ public class FunCodepointEqual extends BasicFunction {
         Sequence result;
 		if (args[0].isEmpty())
 			result = Sequence.EMPTY_SEQUENCE;
-		if (args[1].isEmpty())
+		else if (args[1].isEmpty())
 			result =  Sequence.EMPTY_SEQUENCE;
         else {
     		result = new BooleanValue(Collations.compare(
