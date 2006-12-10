@@ -53,20 +53,37 @@ public class BasicAuthenticator implements Authenticator {
 	 */
 	public User authenticate(HttpServletRequest request, HttpServletResponse response) throws IOException
 	{
+		String credentials = request.getHeader("Authorization");
+                String username = null;
+                String password = null;
+                if (credentials!=null) {
+                   Base64Decoder dec = new Base64Decoder();
+                   dec.translate(credentials.substring("Basic ".length()));
+                   byte[] c = dec.getByteArray();
+                   String s = new String(c);
+                   //LOG.debug("BASIC auth credentials: "+s);
+                   int p = s.indexOf(':');
+                   username = p<0 ? s : s.substring(0, p);
+                   password = p<0 ? null : s.substring(p + 1);
+                }
+                
 		//get the user from the session if possible
 		HttpSession session = request.getSession();
 		User user = null;
 		if(session != null)
 		{
 			user = (User)session.getAttribute(XQueryContext.HTTP_SESSIONVAR_XMLDB_USER);
-			if (user != null)
-			{
+			if (user != null && (username==null || user.getName().equals(username))) {
 				return user;
 			}
 		}
+                
+                if (user!=null) {
+                   session.removeAttribute(XQueryContext.HTTP_SESSIONVAR_XMLDB_USER);
+                   
+                }
 
 		//get the credentials
-		String credentials = request.getHeader("Authorization");
 		if(credentials == null)
 		{
 			//prompt for credentials
@@ -75,14 +92,6 @@ public class BasicAuthenticator implements Authenticator {
 			sendChallenge(request, response);
 			return null;
 		}
-		Base64Decoder dec = new Base64Decoder();
-		dec.translate(credentials.substring("Basic ".length()));
-		byte[] c = dec.getByteArray();
-		String s = new String(c);
-                //LOG.debug("BASIC auth credentials: "+s);
-		int p = s.indexOf(':');
-		String username = p<0 ? s : s.substring(0, p);
-		String password = p<0 ? null : s.substring(p + 1);
 		
 		//authenticate the credentials
 		SecurityManager secman = pool.getSecurityManager();
