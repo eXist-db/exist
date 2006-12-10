@@ -306,14 +306,15 @@ public class NodeSetHelper {
             } else {
                 // same document: check if the nodes have the same parent
                 int cmp = candidate.getNodeId().getParentId().compareTo(reference.getNodeId().getParentId());
-                if (cmp > 0) {
+                if (cmp > 0 && candidate.getNodeId().getTreeLevel() <= reference.getNodeId().getTreeLevel()) {
                     // wrong parent: proceed
                     firstCandidate = null;
                     if (iReferences.hasNext())
                         reference = (NodeProxy) iReferences.next();
                     else
                         break;
-                } else if (cmp < 0) {
+                } else if (cmp < 0  || (cmp > 0 && candidate.getNodeId().getTreeLevel() >= reference.getNodeId().getTreeLevel())) {
+                	//Why did I have to invert the test ? ----------------------------^^^^^
                     // wrong parent: proceed
                     firstCandidate = null;
                     if (iCandidates.hasNext())
