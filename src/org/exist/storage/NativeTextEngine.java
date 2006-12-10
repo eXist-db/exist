@@ -1403,7 +1403,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         int getTermCount() {
             int count = 1;
             for (int i = 1; i < position; i++) {
-                if (nodes[i] != nodes[i - 1])
+                if (!nodes[i].equals(nodes[i - 1]))
                     count++;
             }
             return count;
@@ -1412,7 +1412,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         int getOccurrences(int start) {
             int count = 1;
             for (int i = start + 1; i < position; i++) {
-                if (nodes[i] == nodes[start])
+                if (nodes[i].equals(nodes[start]))
                     count++;
                 else
                     break;
@@ -1422,7 +1422,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         
         boolean contains(NodeId id) {
             for (int i = 0; i < position; i++)
-                if (nodes[i] == id)
+                if (nodes[i].equals(id))
                     return true;
             return false;
         }
