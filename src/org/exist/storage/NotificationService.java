@@ -5,7 +5,6 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.DocumentImpl;
-import org.exist.dom.NodeProxy;
 import org.exist.dom.StoredNode;
 import org.exist.numbering.NodeId;
 
@@ -19,7 +18,6 @@ import org.exist.numbering.NodeId;
  */
 public class NotificationService extends IdentityHashMap {
 
-	private final static Object DUMMY_VALUE = new Object();
 	private final static Logger LOG = Logger.getLogger(NotificationService.class);
 	
 	public NotificationService() {

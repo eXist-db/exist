@@ -1,21 +1,19 @@
 package org.exist.storage;
 
-import org.exist.util.Configuration;
-import org.exist.EXistException;
-import org.exist.xquery.value.DateTimeValue;
-import org.exist.xquery.XPathException;
-import org.exist.xmldb.XmldbURI;
-import org.exist.backup.Backup;
-import org.xmldb.api.base.XMLDBException;
-import org.xml.sax.SAXException;
-import org.apache.log4j.Logger;
-
-import java.util.Properties;
-import java.util.Date;
 import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Properties;
+
+import org.apache.log4j.Logger;
+import org.exist.EXistException;
+import org.exist.backup.Backup;
+import org.exist.util.Configuration;
+import org.exist.xmldb.XmldbURI;
+import org.xml.sax.SAXException;
+import org.xmldb.api.base.XMLDBException;
 
 /**
  * BackupSystemTask creates an XML backup of the current database into a directory

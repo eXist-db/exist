@@ -22,7 +22,6 @@
 package org.exist.storage.journal;
 
 import java.io.IOException;
-import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.FileChannel;
 
 /**
