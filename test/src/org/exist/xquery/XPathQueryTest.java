@@ -630,6 +630,15 @@ public class XPathQueryTest extends XMLTestCase {
     	    		"return $doc/div[1]/following-sibling::div");
     	    assertEquals(1, rs.getSize());
     	    assertXMLEqual("<div id='3'/>", rs.getResource(0).getContent().toString());  
+    	    
+            service.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            service.setProperty(OutputKeys.INDENT, "no");	    
+    	    rs = service.query("let $doc := <doc><div id='1'/><div id='2'><div id='3'/></div><div id='4'/><div id='5'><div id='6'/></div></doc> " +
+    	    		"return $doc/div/preceding-sibling::div");
+    	    assertEquals(3, rs.getSize());
+    	    assertXMLEqual("<div id='1'/>", rs.getResource(0).getContent().toString());      	    
+    	    assertXMLEqual("<div id='2'><div id='3'/></div>", rs.getResource(1).getContent().toString());      	    
+    	    assertXMLEqual("<div id='4'/>", rs.getResource(2).getContent().toString());      	    
             
         } catch (Exception e) {
             fail(e.getMessage());
