@@ -83,7 +83,11 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 
     public final static byte TEXT_SECTION = 0;
 	public final static byte ATTRIBUTE_SECTION = 1;
-  
+    public final static byte QNAME_SECTION = 2;
+ 
+    private final static byte IDX_GENERIC = 0;
+    private final static byte IDX_QNAME = 1;
+
     /** Length limit for the tokens */
 	public final static int MAX_TOKEN_LENGTH = 2048;
 	
@@ -151,7 +155,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
      * @param attr The attribute to be indexed
      */
     //TODO : unify functionalities with storeText -pb
-    public void storeAttribute(FulltextIndexSpec indexSpec, AttrImpl attr) {
+    public void storeAttribute(FulltextIndexSpec indexSpec, AttrImpl attr, boolean idxByQName) {
         final DocumentImpl doc = (DocumentImpl)attr.getOwnerDocument();
         //TODO : case conversion should be handled by the tokenizer -pb
         tokenizer.setText(attr.getValue().toLowerCase());   
@@ -170,7 +174,10 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 }
             }
             invertedIndex.setDocument(doc);
-            invertedIndex.addAttribute(token, attr.getNodeId());
+            if (idxByQName)
+                invertedIndex.addAttribute(token, attr);
+            else
+                invertedIndex.addAttribute(token, attr.getNodeId());
         }
     }
 
@@ -214,11 +221,11 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         }
     } 
 
-    public void storeText(FulltextIndexSpec indexSpec, StoredNode parent, String text) {
+    public void storeText(FulltextIndexSpec indexSpec, StoredNode parent, boolean idxByQName, String text) {
         final DocumentImpl doc = (DocumentImpl)parent.getOwnerDocument();
         //TODO : case conversion should be handled by the tokenizer -pb
         TextToken token;
-        tokenizer.setText(text);
+        tokenizer.setText(text.toLowerCase());
         while (null != (token = tokenizer.nextToken())) {
             if (token.length() > MAX_TOKEN_LENGTH) {
                 continue;
@@ -233,7 +240,10 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 }
             }
             invertedIndex.setDocument(doc);
-            invertedIndex.addText(token, parent.getNodeId());
+            if (idxByQName)
+                invertedIndex.addText(token, (ElementImpl) parent);
+            else
+                invertedIndex.addText(token, parent.getNodeId());
         }
     }
 
@@ -319,90 +329,22 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     /* Drop all index entries for the given document.
      * @see org.exist.storage.ContentLoadingObserver#dropIndex(org.exist.dom.DocumentImpl)
      */
-    public void dropIndex(DocumentImpl document) {        
-        //Collect document's tokens
-        final TreeSet tokens = new TreeSet();
-        final NodeList children = document.getChildNodes();        
-        for (int i = 0; i < children.getLength(); i++) {
-            StoredNode node = (StoredNode) children.item(i);
-            Iterator j = broker.getDOMIterator(node);
-            collect(tokens, j);
-        }
-        final short collectionId = document.getCollection().getId();        
-        final Lock lock = dbTokens.getLock();
-        for (Iterator iter = tokens.iterator(); iter.hasNext();) {
-            String token = (String) iter.next();
-            WordRef key = new WordRef(collectionId, token);
-            try {
-                lock.acquire(Lock.WRITE_LOCK);
-                boolean changed = false;                
-                os.clear();    
-                VariableByteInput is = dbTokens.getAsStream(key);
-                //Does the token already has data in the index ?
-                if (is == null)
-                    continue;            
-                //try {
-                    while (is.available() > 0) {
-                        int storedDocId = is.readInt();
-                        byte section = is.readByte();
-                        int gidsCount = is.readInt();
-                        //TOUNDERSTAND -pb        
-                        int size = is.readFixedInt();
-                        if (storedDocId != document.getDocId()) {
-                            // data are related to another document:
-                            // copy them to any existing data
-                            os.writeInt(storedDocId);
-                            os.writeByte(section);
-                            os.writeInt(gidsCount);
-                            os.writeFixedInt(size);
-                            is.copyRaw(os, size);
-                        } else {
-                            // data are related to our document:
-                            // skip them      
-                            changed = true;                            
-                            is.skipBytes(size);
-                        }
-                    }
-                //} catch (EOFException e) {
-                    //EOF is expected here 
-                //}
-                //Store new data, if relevant
-                if (changed) {
-                    //Well, nothing to store : remove the existing data
-                    if (os.data().size() == 0) {
-                        dbTokens.remove(key);
-                    } else {                        
-                        if (dbTokens.put(key, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                            LOG.error("Could not put index data for token '" +  token + "' in '" + dbTokens.getFile().getName() + "'");
-                            //TODO : throw an exception ?
-                        }                    
-                    }
-                }
-            } catch (LockException e) {
-                LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);                
-            } catch (IOException e) {
-                LOG.error(e.getMessage() + " in '" + dbTokens.getFile().getName() + "'", e);                
-            } catch (ReadOnlyException e) {
-                LOG.error(e.getMessage() + " in '" + dbTokens.getFile().getName() + "'", e);                       
-            } finally {
-                lock.release();
-                os.clear();
-            }
-        }        
-    }    
+    public void dropIndex(DocumentImpl document) {
+        invertedIndex.dropIndex(document);
+    }
 
-	public NodeSet getNodesContaining(XQueryContext context, DocumentSet docs, NodeSet contextSet,
-	        String expr, int type, boolean matchAll) throws TerminatedException {
+    public NodeSet getNodesContaining(XQueryContext context, DocumentSet docs, NodeSet contextSet,
+	        QName qname, String expr, int type, boolean matchAll) throws TerminatedException {
 		if (type == DBBroker.MATCH_EXACT && containsWildcards(expr)) {
             //TODO : log this fallback ? -pb
 			type = DBBroker.MATCH_WILDCARDS;
 		}
 		switch (type) {
 			case DBBroker.MATCH_EXACT :
-				return getNodesExact(context, docs, contextSet, expr);
+				return getNodesExact(context, docs, contextSet, qname, expr);
                 //TODO : stricter control -pb
 			default :
-				return getNodesRegexp(context, docs, contextSet, expr, type, matchAll);
+				return getNodesRegexp(context, docs, contextSet, qname, expr, type, matchAll);
 		}
 	}
 
@@ -410,7 +352,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	/** 
          * Get all nodes whose content exactly matches the give expression.
 	 */
-	public NodeSet getNodesExact(XQueryContext context, DocumentSet docs, NodeSet contextSet, String expr) 
+	public NodeSet getNodesExact(XQueryContext context, DocumentSet docs, NodeSet contextSet, QName qname, String expr)
 	    throws TerminatedException {
         //Return early
 		if (expr == null)
@@ -430,7 +372,13 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         final NodeSet result = new ExtArrayNodeSet(docs.getLength(), 250);         
 		for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
             final short collectionId = ((Collection) iter.next()).getId();
-            final Value key = new WordRef(collectionId, token);
+            Value key;
+            if (qname == null)
+                key = new WordRef(collectionId, token);
+            else {
+                key = new QNameWordRef(collectionId, qname, token);
+                LOG.debug("Using qname: " + qname.toString() + " " + key.dump() + " '" + key.toString() + "'");
+            }
 			final Lock lock = dbTokens.getLock();
 			try {
 				lock.acquire();
@@ -469,6 +417,10 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                             case TEXT_SECTION :
                                 storedNode = new NodeProxy(storedDocument, nodeId, Node.TEXT_NODE);
                                 break;
+                            case QNAME_SECTION :
+                                storedNode = new NodeProxy(storedDocument, nodeId,
+                                        qname.getNameType() == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE : Node.ELEMENT_NODE);
+                                break;
                             default :
                                 throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() + "'");
                         }
@@ -489,10 +441,13 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                 case TEXT_SECTION :
                                     parent = contextSet.parentWithChild(storedNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
                                     break;
+                                case QNAME_SECTION:
+                                    parent = storedNode;
+                                    break;
                                 default :
                                     throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() + "'");
-                            }                               
-							if (parent != null) {
+                            }
+                            if (parent != null) {
                                 Match match = new Match(nodeId, token, freq);
                                 readOccurrences(freq, is, match, token.length());
                                 parent.addMatch(match);
@@ -526,7 +481,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		return result;
 	}
     
-    private NodeSet getNodesRegexp(XQueryContext context, DocumentSet docs, NodeSet contextSet,
+    private NodeSet getNodesRegexp(XQueryContext context, DocumentSet docs, NodeSet contextSet, QName qname,
             String expr, int type, boolean matchAll) throws TerminatedException {
         //Return early
         if (expr == null)
@@ -552,7 +507,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         try {
             TermMatcher comparator = new RegexMatcher(expr, type, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE,
                     matchAll);
-            return getNodes(context, docs, contextSet, comparator, start);
+            return getNodes(context, docs, contextSet, qname, comparator, start);
         } catch (EXistException e) {
             return null;
         }
@@ -561,20 +516,31 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	/* Return all nodes for wich the matcher matches.
 	 * @see org.exist.storage.TextSearchEngine#getNodes(org.exist.xquery.XQueryContext, org.exist.dom.DocumentSet, org.exist.dom.NodeSet, org.exist.storage.TermMatcher, java.lang.CharSequence)
 	 */
-	public NodeSet getNodes(XQueryContext context, DocumentSet docs, NodeSet contextSet,
+	public NodeSet getNodes(XQueryContext context, DocumentSet docs, NodeSet contextSet, QName qname,
 			TermMatcher matcher, CharSequence startTerm) throws TerminatedException {
-		final NodeSet result = new ExtArrayNodeSet();
-        final SearchCallback cb = new SearchCallback(context, matcher, result, contextSet, docs); 
+        if (LOG.isTraceEnabled() && qname != null)
+            LOG.trace("Index lookup by QName: " + qname);
+        final NodeSet result = new ExtArrayNodeSet();
+        final SearchCallback cb = new SearchCallback(context, matcher, result, contextSet, docs, qname); 
 		final Lock lock = dbTokens.getLock();		
 		for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
             final short collectionId = ((Collection) iter.next()).getId();        
             //Compute a key for the token                
             Value value;
-			if (startTerm != null && startTerm.length() > 0)
+			if (startTerm != null && startTerm.length() > 0) {
                 //TODO : case conversion should be handled by the tokenizer -pb
-				value = new WordRef(collectionId, startTerm.toString().toLowerCase());
-			else
-				value = new WordRef(collectionId);
+                if (qname == null) {
+                    value = new WordRef(collectionId, startTerm.toString().toLowerCase());
+                } else {
+                    value = new QNameWordRef(collectionId, qname, startTerm.toString().toLowerCase());
+                }
+            } else {
+                if (qname == null) {
+                    value = new WordRef(collectionId);
+                } else {
+                    value = new QNameWordRef(collectionId, qname);
+                }
+            }
 			IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, value);
 			try {
 				lock.acquire();	
@@ -767,17 +733,38 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	 */
 	final class InvertedIndex {
 
-		private DocumentImpl doc = null;
+        private class QNameTerm implements Comparable {
+
+            QName qname;
+            String term;
+
+            public QNameTerm(QName qname, String term) {
+                this.qname = qname;
+                this.term = term;
+            }
+
+            public int compareTo(Object o) {
+                QNameTerm other = (QNameTerm) o;
+                int cmp = qname.compareTo(other.qname);
+                if (cmp == 0)
+                    return term.compareTo(other.term);
+                else
+                    return cmp;
+            }
+        }
+
+        private DocumentImpl doc = null;
         // To distinguish between attribute values and text, we use
         // two maps: words[0] collects text, words[1] stores attribute
         // values.        
         //TODO : very tricky. Why not 2 inverted indexes ??? -pb
-		private Map words[] = new HashMap[2];
+		private Map words[] = new Map[3];
 
 		public InvertedIndex() {
 			words[0] = new HashMap(512);
 			words[1] = new HashMap(256);
-		}
+            words[2] = new TreeMap();
+        }
         
         public void setDocument(DocumentImpl document) {
             if (this.doc != null && this.doc.getDocId() != document.getDocId())
@@ -799,6 +786,21 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             }
 		}
 
+        public void addText(TextToken token, ElementImpl ancestor) {
+            QNameTerm term = new QNameTerm(ancestor.getQName(), token.getText());
+            //Is this token already pending ?
+            OccurrenceList list = (OccurrenceList) words[2].get(term);
+            //Create a GIDs list
+            if (list == null) {
+                list = new OccurrenceList();
+                list.add(ancestor.getNodeId(), token.startOffset());
+                words[2].put(term, list);
+            } else {
+                //Add node's GID to the list
+                list.add(ancestor.getNodeId(), token.startOffset());
+            }
+        }
+
         //TODO : unify functionalities with addText -pb
 		public void addAttribute(TextToken token, NodeId nodeId) {
             //Is this token already pending ?
@@ -813,36 +815,52 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 list.add(nodeId, token.startOffset());
             }
 		}
-        
+
+        public void addAttribute(TextToken token, AttrImpl attr) {
+            QNameTerm term = new QNameTerm(attr.getQName(), token.getText());
+            //Is this token already pending ?
+            OccurrenceList list = (OccurrenceList) words[2].get(term);
+            //Create a GIDs list
+            if (list == null) {
+                list = new OccurrenceList();
+                list.add(attr.getNodeId(), token.startOffset());
+                words[2].put(term, list);
+            } else {
+                //Add node's GID to the list
+                list.add(attr.getNodeId(), token.startOffset());
+            }
+        }
+
         public void flush() {
             //return early
             if (this.doc == null)
                 return;            
-            final int wordsCount = words[0].size() + words[1].size();
+            final int wordsCount = words[0].size() + words[1].size() + words[2].size();
             if (wordsCount == 0)
                 return;
             final ProgressIndicator progress = new ProgressIndicator(wordsCount, 100);
             final short collectionId = this.doc.getCollection().getId();
             int count = 0;
-            for (byte currentSection = 0; currentSection <= ATTRIBUTE_SECTION; currentSection++) {
+            for (byte currentSection = 0; currentSection <= QNAME_SECTION; currentSection++) {
             	//Not very necessary, but anyway...
                 switch (currentSection) {
 	                case TEXT_SECTION :
 	                case ATTRIBUTE_SECTION :
-	                	break;
+                    case QNAME_SECTION :
+                        break;
 	                default :
 	                    throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() + 
 	                    "' (inverted index)");
 	            }                    
                 for (Iterator i = words[currentSection].entrySet().iterator(); i.hasNext(); count++) {
                     Map.Entry entry = (Map.Entry) i.next();
-                    String token = (String) entry.getKey();
+                    Object token = entry.getKey();
                     OccurrenceList occurences = (OccurrenceList) entry.getValue();
                     //Don't forget this one
                     occurences.sort();
                     os.clear();
                     os.writeInt(this.doc.getDocId());
-                    os.writeByte(currentSection);
+                    os.writeByte(currentSection == QNAME_SECTION ? TEXT_SECTION : currentSection);
                     os.writeInt(occurences.getTermCount());
                     //TOUNDERSTAND -pb             
                     int lenOffset = os.position();
@@ -861,7 +879,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                         j += freq;                        
                     }
                     os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);                    
-                    flushWord(collectionId, token, os.data());
+                    flushWord(currentSection, collectionId, token, os.data());
                     progress.setValue(count);
                     if (progress.changed()) {
                         setChanged();
@@ -879,7 +897,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             }
         }
 
-        private void flushWord(short collectionId, String token, ByteArray data) {
+        private void flushWord(int currentSection, short collectionId, Object token, ByteArray data) {
             //return early
             //TODO : is this ever called ? -pb
             if (data.size() == 0)
@@ -887,7 +905,14 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             final Lock lock = dbTokens.getLock();
             try {
                 lock.acquire(Lock.WRITE_LOCK); 
-                WordRef key = new WordRef(collectionId, token);
+                Value key;
+                if (currentSection == QNAME_SECTION) {
+                    QNameTerm term = (QNameTerm) token;
+                    key = new QNameWordRef(collectionId, term.qname, term.term);
+//                    LOG.debug(key.dump() + " '" + key.toString() + "'");
+                } else {
+                    key = new WordRef(collectionId, token.toString());
+                }
                 dbTokens.append(key, data);
             } catch (LockException e) {
                 LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "' (inverted index)", e);
@@ -899,9 +924,99 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 lock.release();
                 os.clear();
             }
-        }        
+        }
 
-		/**
+        public void dropIndex(DocumentImpl document) {
+            //Return early
+            if (document == null)
+                return;
+            final short collectionId = document.getCollection().getId();
+            final Lock lock = dbTokens.getLock();
+            for (byte currentSection = 0; currentSection <= QNAME_SECTION; currentSection++) {
+                //Not very necessary, but anyway...
+                switch (currentSection) {
+                    case TEXT_SECTION :
+                    case ATTRIBUTE_SECTION :
+                    case QNAME_SECTION :
+                        break;
+                    default :
+                        throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() +
+                                "' (inverted index)");
+                }
+                LOG.debug("Removing " + words[currentSection].size());
+                for (Iterator i = words[currentSection].entrySet().iterator(); i.hasNext();) {
+                    //Compute a key for the token
+                    Map.Entry entry = (Map.Entry) i.next();
+                    Object token = entry.getKey();
+                    Value key;
+                    if (currentSection == QNAME_SECTION) {
+                        QNameTerm term = (QNameTerm) token;
+                        key = new QNameWordRef(collectionId, term.qname, term.term);
+                    } else {
+                        key = new WordRef(collectionId, token.toString());
+                    }
+                    os.clear();
+                    try {
+                        lock.acquire(Lock.WRITE_LOCK);
+                        boolean changed = false;
+                        os.clear();
+                        VariableByteInput is = dbTokens.getAsStream(key);
+                        //Does the token already has data in the index ?
+                        if (is == null)
+                            continue;
+                        //try {
+                        while (is.available() > 0) {
+                            int storedDocId = is.readInt();
+                            byte section = is.readByte();
+                            int gidsCount = is.readInt();
+                            //TOUNDERSTAND -pb
+                            int size = is.readFixedInt();
+                            if (storedDocId != document.getDocId()) {
+                                // data are related to another document:
+                                // copy them to any existing data
+                                os.writeInt(storedDocId);
+                                os.writeByte(section);
+                                os.writeInt(gidsCount);
+                                os.writeFixedInt(size);
+                                is.copyRaw(os, size);
+                            } else {
+                                // data are related to our document:
+                                // skip them
+                                changed = true;
+                                is.skipBytes(size);
+                            }
+                        }
+                        //} catch (EOFException e) {
+                        //EOF is expected here
+                        //}
+                        //Store new data, if relevant
+                        if (changed) {
+                            //Well, nothing to store : remove the existing data
+                            if (os.data().size() == 0) {
+                                dbTokens.remove(key);
+                            } else {
+                                if (dbTokens.put(key, os.data()) == BFile.UNKNOWN_ADDRESS) {
+                                    LOG.error("Could not put index data for token '" +  token + "' in '" + dbTokens.getFile().getName() + "'");
+                                    //TODO : throw an exception ?
+                                }
+                            }
+                        }
+                    } catch (LockException e) {
+                        LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
+                    } catch (IOException e) {
+                        LOG.error(e.getMessage() + " in '" + dbTokens.getFile().getName() + "'", e);
+                    } catch (ReadOnlyException e) {
+                        LOG.error(e.getMessage() + " in '" + dbTokens.getFile().getName() + "'", e);
+                    } finally {
+                        lock.release();
+                        os.clear();
+                    }
+                }
+                words[currentSection].clear();
+            }
+        }
+
+        /**
 		 * Remove the entries in the current list from the index.
 		 */
         //TODO: use VariableInputStream
@@ -911,22 +1026,29 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 				return;                    
             final short collectionId = this.doc.getCollection().getId();
             final Lock lock = dbTokens.getLock();
-            for (byte currentSection = 0; currentSection <= ATTRIBUTE_SECTION; currentSection++) {
+            for (byte currentSection = 0; currentSection <= QNAME_SECTION; currentSection++) {
             	//Not very necessary, but anyway...
                 switch (currentSection) {
 	                case TEXT_SECTION :
 	                case ATTRIBUTE_SECTION :
-	                    break;
+                    case QNAME_SECTION :
+                        break;
 	                default :
 	                    throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() + 
 	                            "' (inverted index)");
 	            }
-				for (Iterator i = words[currentSection].entrySet().iterator(); i.hasNext();) {
+                for (Iterator i = words[currentSection].entrySet().iterator(); i.hasNext();) {
                     //Compute a key for the token
                     Map.Entry entry = (Map.Entry) i.next();
                     OccurrenceList storedOccurencesList = (OccurrenceList) entry.getValue();
-                    String token = (String) entry.getKey();
-                    WordRef key = new WordRef(collectionId, token);
+                    Object token = entry.getKey();
+                    Value key;
+                    if (currentSection == QNAME_SECTION) {
+                        QNameTerm term = (QNameTerm) token;
+                        key = new QNameWordRef(collectionId, term.qname, term.term);
+                    } else {
+                        key = new WordRef(collectionId, token.toString());
+                    }
                     OccurrenceList newOccurencesList = new OccurrenceList();
                     os.clear();
                     try {
@@ -1027,87 +1149,94 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 
 		public void reindex(DocumentImpl document, StoredNode node) {
             final short collectionId = document.getCollection().getId();
-		    final Lock lock = dbTokens.getLock();
-            for (byte currentSection = 0; currentSection <= ATTRIBUTE_SECTION; currentSection++) {
-            	//Not very necessary, but anyway...
+            final Lock lock = dbTokens.getLock();
+            for (byte currentSection = 0; currentSection <= QNAME_SECTION; currentSection++) {
+                //Not very necessary, but anyway...
                 switch (currentSection) {
-	                case TEXT_SECTION :
-	                case ATTRIBUTE_SECTION :
-	                    break;
-	                default :
-	                    throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() + 
-	                        "' (inverted index)");
-	            }
-		        for (Iterator i = words[currentSection].entrySet().iterator(); i.hasNext();) {                   
+                    case TEXT_SECTION:
+                    case ATTRIBUTE_SECTION:
+                    case QNAME_SECTION:
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() +
+                                "' (inverted index)");
+                }
+                for (Iterator i = words[currentSection].entrySet().iterator(); i.hasNext();) {
                     //Compute a key for the token
                     Map.Entry entry = (Map.Entry) i.next();
-                    String token = (String) entry.getKey();                    
-                    WordRef key = new WordRef(collectionId, token);
+                    Object token = entry.getKey();
+                    Value key;
+                    if (currentSection == QNAME_SECTION) {
+                        QNameTerm term = (QNameTerm) token;
+                        key = new QNameWordRef(collectionId, term.qname, term.term);
+                    } else {
+                        key = new WordRef(collectionId, token.toString());
+                    }
                     OccurrenceList storedOccurencesList = (OccurrenceList) entry.getValue();
-                    os.clear();                     
-		            try {
-		                lock.acquire(Lock.WRITE_LOCK);
-                        VariableByteInput is = dbTokens.getAsStream(key);	
+                    os.clear();
+                    try {
+                        lock.acquire(Lock.WRITE_LOCK);
+                        VariableByteInput is = dbTokens.getAsStream(key);
                         //Does the token already has data in the index ?
-		                if (is != null) {
-		                    //Add its data to the new list    
-		                    //try {
-		                        while (is.available() > 0) {
-                                    int storedDocId = is.readInt();
-                                    byte storedSection = is.readByte();
-                                    int termCount = is.readInt();
-                                    //TOUNDERSTAND -pb         
-                                    int size = is.readFixedInt();
-		                            if (storedSection != currentSection || storedDocId != document.getDocId()) {
-                                        // data are related to another section or document:
-                                        // append them to any existing data
-		                                os.writeInt(storedDocId);
-		                                os.writeByte(storedSection);
-		                                os.writeInt(termCount);
-		                                os.writeFixedInt(size);
-		                                is.copyRaw(os, size);
-		                            } else {
-                                        // data are related to our section and document:
-                                        // feed the new list with the GIDs
-		                                for (int j = 0; j < termCount; j++) {
-                                            NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
-                                            int freq = is.readInt();
-		                                    if (node == null) {
-		                                        if (nodeId.getTreeLevel() < document.getMetadata().reindexRequired()) {
-                                                    for (int l = 0; l < freq; l++) {
-                                                        //Note that we use the existing list
-                                                        storedOccurencesList.add(nodeId, is.readInt());
-                                                    }
-                                                } else
-                                                    is.skip(freq);
-                                                
-		                                    } else {
-                                                if (document.getDocId() != ((DocumentImpl) node.getOwnerDocument()).getDocId()
+                        if (is != null) {
+                            //Add its data to the new list
+                            //try {
+                            while (is.available() > 0) {
+                                int storedDocId = is.readInt();
+                                byte storedSection = is.readByte();
+                                int termCount = is.readInt();
+                                //TOUNDERSTAND -pb
+                                int size = is.readFixedInt();
+                                if (storedSection != currentSection || storedDocId != document.getDocId()) {
+                                    // data are related to another section or document:
+                                    // append them to any existing data
+                                    os.writeInt(storedDocId);
+                                    os.writeByte(storedSection);
+                                    os.writeInt(termCount);
+                                    os.writeFixedInt(size);
+                                    is.copyRaw(os, size);
+                                } else {
+                                    // data are related to our section and document:
+                                    // feed the new list with the GIDs
+                                    for (int j = 0; j < termCount; j++) {
+                                        NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
+                                        int freq = is.readInt();
+                                        if (node == null) {
+                                            if (nodeId.getTreeLevel() < document.getMetadata().reindexRequired()) {
+                                                for (int l = 0; l < freq; l++) {
+                                                    //Note that we use the existing list
+                                                    storedOccurencesList.add(nodeId, is.readInt());
+                                                }
+                                            } else
+                                                is.skip(freq);
+
+                                        } else {
+                                            if (document.getDocId() != ((DocumentImpl) node.getOwnerDocument()).getDocId()
                                                     || !nodeId.isDescendantOrSelfOf(node.getNodeId())) {
-                                                    for (int l = 0; l < freq; l++) {
-                                                        //Note that we use the existing list
-                                                        storedOccurencesList.add(nodeId, is.readInt());
-                                                    }
-                                                } else
-                                                    is.skip(freq);
-                                            }
-		                                }
-		                            }
-		                        }
-		                    //} catch (EOFException e) {
-		                        //EOF is expected here
-		                    //}
-		                }
+                                                for (int l = 0; l < freq; l++) {
+                                                    //Note that we use the existing list
+                                                    storedOccurencesList.add(nodeId, is.readInt());
+                                                }
+                                            } else
+                                                is.skip(freq);
+                                        }
+                                    }
+                                }
+                            }
+                            //} catch (EOFException e) {
+                            //EOF is expected here
+                            //}
+                        }
                         if (storedOccurencesList.getSize() > 0) {
                             //append the data from the new list
                             storedOccurencesList.sort();
-    		                os.writeInt(document.getDocId());
+                            os.writeInt(document.getDocId());
                             os.writeByte(currentSection);
-    		                os.writeInt(storedOccurencesList.getTermCount());
+                            os.writeInt(storedOccurencesList.getTermCount());
                             //TOUNDERSTAND -pb         
                             int lenOffset = os.position();
-    	                    os.writeFixedInt(0);
-                            for (int m = 0; m < storedOccurencesList.getSize(); ) {
+                            os.writeFixedInt(0);
+                            for (int m = 0; m < storedOccurencesList.getSize();) {
                                 storedOccurencesList.nodes[m].write(os);
                                 int freq = storedOccurencesList.getOccurrences(m);
                                 os.writeInt(freq);
@@ -1116,38 +1245,38 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                 }
                                 m += freq;
                             }
-    		                os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
+                            os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
                         }
-		                //Store the data		                
-	                    if (is == null) {
+                        //Store the data
+                        if (is == null) {
                             //TOUNDERSTAND : Should is be null, what will there be in os.data() ? -pb
-	                        if (dbTokens.put(key, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                                LOG.error("Could not put index data for token '" +  token + "' in '" + dbTokens.getFile().getName() + 
+                            if (dbTokens.put(key, os.data()) == BFile.UNKNOWN_ADDRESS) {
+                                LOG.error("Could not put index data for token '" + token + "' in '" + dbTokens.getFile().getName() +
                                         "' (inverted index)");
                                 //TODO : throw an exception ?
                             }
-	                    } else {  
+                        } else {
                             long address = ((BFile.PageInputStream) is).getAddress();
-	                        if (dbTokens.update(address, key, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                                LOG.error("Could not update index data for value '" +  token +  "' in '" + dbTokens.getFile().getName() + 
-                                    "' (inverted index)");
+                            if (dbTokens.update(address, key, os.data()) == BFile.UNKNOWN_ADDRESS) {
+                                LOG.error("Could not update index data for value '" + token + "' in '" + dbTokens.getFile().getName() +
+                                        "' (inverted index)");
                                 //TODO : throw an exception ?
                             }
-	                    }		                
-		            } catch (LockException e) {
-                        LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "' (inverted index)", e);		               
+                        }
+                    } catch (LockException e) {
+                        LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "' (inverted index)", e);
                     } catch (ReadOnlyException e) {
-                        LOG.warn("Read-only error on '" + dbTokens.getFile().getName() + "' (inverted index)", e);                        
-		            } catch (IOException e) {
-		                LOG.error("io error while reindexing word '" + token  + "' in '" + dbTokens.getFile().getName() + "' (inverted index)", e);		               
-		            } finally {
-		                lock.release(Lock.WRITE_LOCK);
+                        LOG.warn("Read-only error on '" + dbTokens.getFile().getName() + "' (inverted index)", e);
+                    } catch (IOException e) {
+                        LOG.error("io error while reindexing word '" + token + "' in '" + dbTokens.getFile().getName() + "' (inverted index)", e);
+                    } finally {
+                        lock.release(Lock.WRITE_LOCK);
                         os.clear();
                     }
-		        }
-		        words[currentSection].clear();
-		    }
-		}
+                }
+                words[currentSection].clear();
+            }
+        }
 	}
 	
 	private class IndexCallback implements BTreeCallback {
@@ -1193,15 +1322,17 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		NodeSet contextSet;
 		XQueryContext context;
 		XMLString word = new XMLString(64);
-        
-		public SearchCallback(XQueryContext context, TermMatcher comparator, NodeSet result,
-				NodeSet contextSet, DocumentSet docs) {
+        QName qname;
+
+        public SearchCallback(XQueryContext context, TermMatcher comparator, NodeSet result,
+				NodeSet contextSet, DocumentSet docs, QName qname) {
 			this.matcher = comparator;
 			this.result = result;
 			this.docs = docs;
 			this.contextSet = contextSet;
 			this.context = context;
-		}
+            this.qname = qname;
+        }
 
 		public boolean indexInfo(Value key, long pointer) throws TerminatedException {            
             VariableByteInput is;
@@ -1212,8 +1343,11 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 return true; 
             } 
             word.reuse();
-            word = UTF8.decode(key.getData(), 2, key.getLength() - 2, word);
-			if (matcher.matches(word)) {                 
+            if (qname == null)
+                word = UTF8.decode(key.getData(), 3, key.getLength() - 3, word);
+            else
+                word = UTF8.decode(key.getData(), 8, key.getLength() - 8, word);
+            if (matcher.matches(word)) {
 				try {
 					while (is.available() > 0) {                        
 					    if(context != null)
@@ -1240,6 +1374,10 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                 case ATTRIBUTE_SECTION :
                                     storedNode = new NodeProxy(storedDocument, nodeId, Node.ATTRIBUTE_NODE);
                                     break;
+                                case QNAME_SECTION :
+                                    storedNode = new NodeProxy(storedDocument, nodeId,
+                                        qname.getNameType() == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE : Node.ELEMENT_NODE);
+                                    break;
                                 default :
                                     throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() + "'");
                             }
@@ -1257,6 +1395,9 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                         } else {
                                             parentNode = contextSet.get(storedNode);
                                         }
+                                        break;
+                                    case QNAME_SECTION:
+                                        parentNode = storedNode;
                                         break;
                                     default :
                                         throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() + "'");
@@ -1311,7 +1452,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             
             String term;
             try {
-                term = new String(key.getData(), 2, key.getLength() - 2, "UTF-8");
+                term = new String(key.getData(), 3, key.getLength() - 3, "UTF-8");
             } catch (UnsupportedEncodingException e) {
                 LOG.error(e.getMessage(), e);
                 //term = new String(key.getData(), 2, key.getLength() - 2);
@@ -1572,20 +1713,63 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	private final static class WordRef extends Value {
 
 		public WordRef(short collectionId) {
-			data = new byte[2];
-			ByteConversion.shortToByte(collectionId, data, 0);
-			len = 2;
+			data = new byte[3];
+            data[0] = IDX_GENERIC;
+            ByteConversion.shortToByte(collectionId, data, 1);
+			len = 3;
 		}
 
 		public WordRef(short collectionId, String word) {
-			len = UTF8.encoded(word) + 2;
+			len = UTF8.encoded(word) + 3;
 			data = new byte[len];
-			ByteConversion.shortToByte(collectionId, data, 0);
-			UTF8.encode(word, data, 2);
+            data[0] = IDX_GENERIC;
+            ByteConversion.shortToByte(collectionId, data, 1);
+			UTF8.encode(word, data, 3);
 		}
 
 		public String toString() {
 			return ByteConversion.byteToShort(data, pos) + new String(data, pos, len);
+		}
+	}
+
+    private final class QNameWordRef extends Value {
+
+		public QNameWordRef(short collectionId) {
+			data = new byte[3];
+            data[0] = IDX_QNAME;
+            ByteConversion.shortToByte(collectionId, data, 1);
+			len = 3;
+            pos = 0;
+        }
+
+        public QNameWordRef(short collectionId, QName qname) {
+            data = new byte[8];
+            data[0] = IDX_QNAME;
+            ByteConversion.shortToByte(collectionId, data, 1);
+            serializeQName(qname, data, 3);
+        }
+
+        public QNameWordRef(short collectionId, QName qname, String word) {
+			len = UTF8.encoded(word) + 8;
+			data = new byte[len];
+            data[0] = IDX_QNAME;
+            ByteConversion.shortToByte(collectionId, data, 1);
+            serializeQName(qname, data, 3);
+            UTF8.encode(word, data, 8);
+        }
+
+        /** serialize the QName field on the persistant storage */
+		private void serializeQName(QName qname, byte[] data, int offset) {
+			SymbolTable symbols = broker.getSymbols();
+			short namespaceId = symbols.getNSSymbol(qname.getNamespaceURI());
+			short localNameId = symbols.getSymbol(qname.getLocalName());
+            data[offset] = qname.getNameType();
+            ByteConversion.shortToByte(namespaceId, data, offset + 1);
+			ByteConversion.shortToByte(localNameId, data, offset + 3);
+		}
+
+        public String toString() {
+			return new String(data, pos + 8, len - 8);
 		}
 	}
     

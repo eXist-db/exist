@@ -410,9 +410,9 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
                 newContext.setNextContextItem(new ContextItem(next.getContextId(), next.getNode()));
                 newContext = newContext.getNextDirect();
             }
-//          System.out.println("NodeProxy.copyContext: " + next.getNode().debugContext());
             next = next.getNextDirect();
         }
+//        System.out.println(debugContext());
     }
     
     public void deepCopyContext(NodeProxy node, int addContextId) {

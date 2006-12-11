@@ -107,16 +107,16 @@ public class ExtensionExpression extends AbstractExpression {
     public void dump(ExpressionDumper dumper) {
         for (int i = 0; i < pragmas.size(); i++) {
             Pragma pragma = (Pragma) pragmas.get(i);
-            dumper.nl().display("(# " + pragma.getQName().toString(), getASTNode());
+            dumper.display("(# " + pragma.getQName().toString(), getASTNode());
             if (pragma.getContents() != null)
                 dumper.display(' ').display(pragma.getContents());
             dumper.display("#)").nl();
         }
-        dumper.display('{').nl();
+        dumper.display('{');
         dumper.startIndent();
-        dumper.dump(innerExpression);
+        innerExpression.dump(dumper);
         dumper.endIndent();
-        dumper.display('}').nl();
+        dumper.nl().display('}').nl();
     }
     
     /* (non-Javadoc)

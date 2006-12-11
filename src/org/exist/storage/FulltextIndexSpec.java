@@ -22,11 +22,15 @@ package org.exist.storage;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.exist.util.DatabaseConfigurationException;
+import org.exist.dom.QName;
 
 
 /**
@@ -35,6 +39,13 @@ import org.w3c.dom.NodeList;
  * to include and exclude from indexing. Paths are specified using
  * simple XPath syntax, e.g. //SPEECH will select any SPEECH elements,
  * //title/@id will select all id attributes being children of title elements.
+ *
+ * <pre>
+ *      &lt;fulltext default="all" attributes="no">
+ *          &lt;include path="//div/para"/>
+ *          &lt;include path="//nested" content="mixed"/>
+ *      &lt;/fulltext>
+ * </pre>
  *
  * @author Wolfgang Meier
  */
@@ -49,7 +60,9 @@ public class FulltextIndexSpec {
     private static final String ALPHANUM_ATTRIB = "alphanum";
     private static final String ATTRIBUTES_ATTRIB = "attributes";
     private static final String DEFAULT_ATTRIB = "default";
-    
+    private static final String CREATE_ELEMENT = "create";
+    private static final String QNAME_ATTRIB = "qname";
+
     private static final NodePath[] ARRAY_TYPE = new NodePath[0];
     
     private final static Logger LOG = Logger.getLogger(FulltextIndexSpec.class);
@@ -58,7 +71,8 @@ public class FulltextIndexSpec {
     protected NodePath[] excludePath;
     protected NodePath[] mixedPath;
     protected NodePath[] preserveContent;
-    
+    protected Set qnameSpecs = new TreeSet();
+
     protected boolean includeByDefault = true;
     protected boolean includeAttributes = true;
     protected boolean includeAlphaNum = true;
@@ -69,7 +83,7 @@ public class FulltextIndexSpec {
      * param def if set to true, include everything by default. In this case
      * use exclude elements to specify the excluded parts.
      */
-    public FulltextIndexSpec(Map namespaces, Element node) {
+    public FulltextIndexSpec(Map namespaces, Element node) throws DatabaseConfigurationException {
         includeByDefault = true;
         ArrayList includeList = new ArrayList();
         ArrayList excludeList = new ArrayList();
@@ -112,7 +126,29 @@ public class FulltextIndexSpec {
 		    } else if(PRESERVE_CONTENT_ELEMENT.equals(next.getLocalName())) {
 		        ps = ((Element) next).getAttribute(PATH_ATTRIB);
                 preserveList.add( new NodePath(namespaces, ps) );
-		    }
+		    } else if(CREATE_ELEMENT.equals(next.getLocalName())) {
+                elem = (Element) next;
+                String name = elem.getAttribute(QNAME_ATTRIB);
+                boolean isAttribute = false;
+                if (name.startsWith("@")) {
+                    isAttribute = true;
+                    name = name.substring(1);
+                }
+                String prefix = QName.extractPrefix(name);
+                String localName = QName.extractLocalName(name);
+                String namespaceURI = "";
+                if (prefix != null) {
+                    namespaceURI = (String) namespaces.get(prefix);
+                    if(namespaceURI == null) {
+                        throw new DatabaseConfigurationException("No namespace defined for prefix: " + prefix +
+                                " in index definition");
+                    }
+                }
+                QName qname = new QName(localName, namespaceURI, null);
+                if (isAttribute)
+                    qname.setNameType(ElementValue.ATTRIBUTE);
+                qnameSpecs.add(qname);
+            }
 		}
         includePath = (NodePath[]) includeList.toArray(ARRAY_TYPE);
         excludePath = (NodePath[]) excludeList.toArray(ARRAY_TYPE);
@@ -212,6 +248,10 @@ public class FulltextIndexSpec {
                 return true;
         }
         return false;
+    }
+
+    public boolean hasQNameIndex(QName qname) {
+        return qnameSpecs.contains(qname);
     }
 
     /**

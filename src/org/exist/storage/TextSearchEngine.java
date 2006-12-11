@@ -35,6 +35,7 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.StoredNode;
 import org.exist.dom.TextImpl;
+import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.analysis.SimpleTokenizer;
 import org.exist.storage.analysis.Tokenizer;
@@ -158,7 +159,7 @@ public abstract class TextSearchEngine extends Observable {
 	 */
 	public abstract void storeText(FulltextIndexSpec idx, TextImpl text, boolean onetoken);
 
-    public abstract void storeText(FulltextIndexSpec indexSpec, StoredNode parent, String text);
+    public abstract void storeText(FulltextIndexSpec indexSpec, StoredNode parent, boolean idxAsQName, String text);
 
     /**
 	 * Tokenize and index the given attribute node.
@@ -166,7 +167,7 @@ public abstract class TextSearchEngine extends Observable {
 	 * @param idx
 	 * @param text
 	 */
-	public abstract void storeAttribute(FulltextIndexSpec idx, AttrImpl text);
+	public abstract void storeAttribute(FulltextIndexSpec idx, AttrImpl text, boolean idxAsQName);
 
 	public abstract void flush();
 	public abstract boolean close() throws DBException;
@@ -180,22 +181,22 @@ public abstract class TextSearchEngine extends Observable {
 	}
 
     public NodeSet getNodesContaining(XQueryContext context, DocumentSet docs,
-	        NodeSet contextSet, String expr, int type) throws TerminatedException {
-        return getNodesContaining(context, docs, contextSet, expr, type, true);
+	        NodeSet contextSet, QName qname, String expr, int type) throws TerminatedException {
+        return getNodesContaining(context, docs, contextSet, qname, expr, type, true);
     }
 
     /**
 	 * For each of the given search terms and each of the documents in the
-	 * document set, return a node-set of matching nodes. 
-	 * 
+	 * document set, return a node-set of matching nodes.
+	 *
 	 * The type-argument indicates if search terms should be compared using
 	 * a regular expression. Valid values are DBBroker.MATCH_EXACT or
 	 * DBBroker.MATCH_REGEXP.
 	 */
-	public abstract NodeSet getNodesContaining(XQueryContext context, DocumentSet docs, 
-	        NodeSet contextSet, String expr, int type, boolean matchAll) throws TerminatedException;
+	public abstract NodeSet getNodesContaining(XQueryContext context, DocumentSet docs,
+	        NodeSet contextSet, QName qname, String expr, int type, boolean matchAll) throws TerminatedException;
 	
-	public abstract NodeSet getNodes(XQueryContext context, DocumentSet docs, NodeSet contextSet, 
+	public abstract NodeSet getNodes(XQueryContext context, DocumentSet docs, NodeSet contextSet, QName qname,
 	        TermMatcher matcher, CharSequence startTerm) throws TerminatedException;
 	
 	/**

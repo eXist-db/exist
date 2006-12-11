@@ -99,8 +99,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
      * that implement {@link Indexable Indexable}.
 	 * The values are {@link org.exist.util.LongLinkedList lists} containing
 	 * the nodes GIDs (global identifiers.
-	 * Do not confuse the keys with the ones used in persistent storage, created with
-	 * {@link Indexable#serialize(short) */
+     */
     protected TreeMap pending = new TreeMap();
     
 	/** The current document */
@@ -425,24 +424,26 @@ public class NativeValueIndex implements ContentLoadingObserver {
     //TODO : note that this is *not* this.doc -pb
     public void dropIndex(DocumentImpl document) throws ReadOnlyException {    
         final short collectionId = document.getCollection().getId();
-        final Value ref = new ElementValue(collectionId);
-        final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
         final Lock lock = dbValues.getLock();
         try {
             lock.acquire(Lock.WRITE_LOCK);
-            ArrayList elements = dbValues.findKeys(query);
-            for (int i = 0; i < elements.size(); i++) {
+            for (Iterator i = pending.entrySet().iterator(); i.hasNext();) {
+                Map.Entry entry = (Map.Entry) i.next();
+                Indexable indexable = (Indexable) entry.getKey();
+                os.clear();
+                //Compute a key for the value
+                Value searchKey = new Value(indexable.serialize(collectionId, caseSensitive));
+                Value value = dbValues.get(searchKey);
+
                 boolean changed = false;
-                Value key = (Value) elements.get(i);
-                Value value = dbValues.get(key);                
                 VariableByteArrayInput is = new VariableByteArrayInput(value.getData());
-                os.clear();                
+                os.clear();
                 while (is.available() > 0) {
                     int storedDocId = is.readInt();
                     int gidsCount = is.readInt();
                     int size = is.readFixedInt();
-					if (storedDocId != document.getDocId()) {
-					    // data are related to another document:
+                    if (storedDocId != document.getDocId()) {
+                        // data are related to another document:
                         // copy them to any existing data
                         os.writeInt(storedDocId);
                         os.writeInt(gidsCount);
@@ -459,10 +460,10 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 if (changed) {
                     if (os.data().size() == 0) {
                         //Well, nothing to store : remove the existing data
-                        dbValues.remove(key);
-                    } else {                      
-                        if (dbValues.put(key, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                            LOG.error("Could not put index data for key '" +  key + "'");
+                        dbValues.remove(searchKey);
+                    } else {
+                        if (dbValues.put(searchKey, os.data()) == BFile.UNKNOWN_ADDRESS) {
+                            LOG.error("Could not put index data for key '" +  searchKey + "'");
                             //TODO : throw exception ?
                         }
                     }
@@ -470,15 +471,14 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 os.clear();
             }
         } catch (LockException e) {
-            LOG.warn("Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e);       
-        } catch (TerminatedException e) {
-            LOG.warn(e.getMessage(), e);            
-        } catch (BTreeException e) {
-            LOG.error(e.getMessage(), e);
+            LOG.warn("Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e);
         } catch (IOException e) {
             LOG.error(e.getMessage(), e);    
+        } catch (EXistException e) {
+            LOG.warn("Exception while removing range index: " + e.getMessage(), e);
         } finally {
             lock.release();
+            pending.clear();
         }
     }
     
@@ -775,10 +775,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     		super(docs, contextSet, result, true);
     		this.matcher = matcher;
     	}
-    	
-    	/**
-		 * @see org.exist.storage.NativeValueIndex.SearchCallback#indexInfo(org.dbxml.core.data.Value, long)
-		 */
+
 		public boolean indexInfo(Value value, long pointer) throws TerminatedException {
             key.reuse();
             UTF8.decode(value.data(), value.start() + 3, value.getLength() - 3, key);

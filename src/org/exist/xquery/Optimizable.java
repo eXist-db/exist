@@ -30,7 +30,7 @@ import org.exist.dom.NodeSet;
  */
 public interface Optimizable extends Expression {
 
-    boolean canOptimize();
+    boolean canOptimize(Sequence contextSequence, Item contextItem);
 
     NodeSet preSelect(Sequence contextSequence, Item contextItem) throws XPathException;
 }

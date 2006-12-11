@@ -67,12 +67,13 @@ public class ExtPhrase extends ExtFulltext {
      * @param nodes 
      */
     public Sequence evalQuery(String searchArg,	NodeSet nodes) throws XPathException {
-		try {
-			getSearchTerms(context, searchArg);
+        String[] terms;
+        try {
+			terms = getSearchTerms(searchArg);
 		} catch (EXistException e) {
 			throw new XPathException(e.getMessage(), e);
 		}
-		NodeSet hits = processQuery(nodes);
+		NodeSet hits = processQuery(terms, nodes);
 		if (hits == null)
 			return Sequence.EMPTY_SEQUENCE;
         
@@ -80,7 +81,7 @@ public class ExtPhrase extends ExtFulltext {
 		for(int i = 0; i < terms.length; i++) {
 			hasWildcards |=	NativeTextEngine.containsWildcards(terms[i]);
 		}
-		return hasWildcards	? patternMatch(context, hits) : exactMatch(context, hits);
+		return hasWildcards	? patternMatch(context, terms, hits) : exactMatch(context, terms, hits);
 	}
 
 	/**
@@ -88,7 +89,7 @@ public class ExtPhrase extends ExtFulltext {
 	 * @param context
 	 * @param result
 	 */
-	private Sequence exactMatch(XQueryContext context, NodeSet result) {
+	private Sequence exactMatch(XQueryContext context, String[] terms, NodeSet result) {
 		TextToken token;
 	
 		NodeSet r = new ExtArrayNodeSet();
@@ -186,7 +187,7 @@ public class ExtPhrase extends ExtFulltext {
 	 * @param result
 	 * @return
 	 */
-	private Sequence patternMatch(XQueryContext context, NodeSet result) {
+	private Sequence patternMatch(XQueryContext context, String[] terms, NodeSet result) {
 		// generate list of search term patterns
 	    Pattern patterns[] = new Pattern[terms.length];
         Matcher matchers[] = new Matcher[terms.length];

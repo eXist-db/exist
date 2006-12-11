@@ -38,6 +38,7 @@ import org.exist.numbering.NodeId;
 import org.exist.storage.NodePath;
 import org.exist.storage.RangeIndexSpec;
 import org.exist.storage.Signatures;
+import org.exist.storage.ElementValue;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -498,7 +499,8 @@ public class ElementImpl extends NamedNode implements Element {
                     // an xml:id attribute. Normalize the attribute and set its type to ID
                     attrib.setValue(StringValue.trimWhitespace(StringValue.collapseWhitespace(attrib.getValue())));
                     attrib.setType(AttrImpl.ID);
-                }
+                } else
+                    attrName.setNameType(ElementValue.ATTRIBUTE);
                 getBroker().insertNodeAfter(transaction, last.getNode(), attrib);
                 // index now?
                 getBroker().indexNode(transaction, attrib, lastPath);
