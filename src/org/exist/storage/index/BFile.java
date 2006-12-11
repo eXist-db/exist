@@ -39,6 +39,7 @@ import org.exist.storage.btree.BTreeException;
 import org.exist.storage.btree.DBException;
 import org.exist.storage.btree.IndexQuery;
 import org.exist.storage.btree.Value;
+import org.exist.storage.btree.Paged;
 import org.exist.storage.cache.Cache;
 import org.exist.storage.cache.Cacheable;
 import org.exist.storage.cache.LRUCache;
@@ -1022,41 +1023,31 @@ public class BFile extends BTree {
         }
     }
     
-    private DataPage getPageForRedo(long pos) throws IOException {
-        DataPage wp = (DataPage) dataCache.get(pos);
-        if (wp == null) {
-            final Page page = getPage(pos);
-            final byte[] data = page.read();
-            if (page.getPageHeader().getStatus() < RECORD)
-                return null;
-            if (page.getPageHeader().getStatus() == MULTI_PAGE)
-                return new OverflowPage(page, data);
-            return new SinglePage(page, data, true);
-        } else if (wp.getPageHeader().getStatus() == MULTI_PAGE)
-            return new OverflowPage(wp);
-        else
-            return wp;
-    }
-    
-    private SinglePage getSinglePageForRedo(long pos) throws IOException {
+    private SinglePage getSinglePageForRedo(Loggable loggable, long pos) throws IOException {
         SinglePage wp = (SinglePage) dataCache.get(pos);
         if (wp == null) {
             final Page page = getPage(pos);
             final byte[] data = page.read();
             if (page.getPageHeader().getStatus() < RECORD)
                 return null;
+            if (loggable != null && isUptodate(page, loggable))
+                return null;
             return new SinglePage(page, data, true);
         }  else
             return wp;
     }
-    
+
+    private boolean isUptodate(Page page, Loggable loggable) {
+        return page.getPageHeader().getLsn() >= loggable.getLsn();
+    }
+
     private boolean requiresRedo(Loggable loggable, DataPage page) {
         return loggable.getLsn() > page.getPageHeader().getLsn();
     }
     
     protected void redoStoreValue(StoreValueLoggable loggable) {
         try {
-            SinglePage page = (SinglePage) getPageForRedo(loggable.page);
+            SinglePage page = getSinglePageForRedo(loggable, loggable.page);
             if (page != null && requiresRedo(loggable, page)) {
                 storeValueHelper(loggable, loggable.tid, loggable.value, page);
             }
@@ -1099,7 +1090,7 @@ public class BFile extends BTree {
                     return;
                 }
                 final byte[] data = page.read();
-                if (page.getPageHeader().getStatus() < RECORD) {
+                if (page.getPageHeader().getStatus() < RECORD || isUptodate(page, loggable)) {
                 	// page is obviously deleted later
                 	return;
                 }
@@ -1133,8 +1124,9 @@ public class BFile extends BTree {
                     return;
                 }
                 final byte[] data = page.read();
-                if (page.getPageHeader().getStatus() < RECORD)
+                if (page.getPageHeader().getStatus() < RECORD || isUptodate(page, loggable)) {
                     return;
+                }
                 wp = new SinglePage(page, data, false);
             }
             if (wp.getPageHeader().getLsn() == Lsn.LSN_INVALID || requiresRedo(loggable, wp)) {
@@ -1195,7 +1187,7 @@ public class BFile extends BTree {
         createPageHelper(loggable, loggable.newPage);
         if (loggable.prevPage != Page.NO_PAGE) {
             try {
-                SinglePage page = getSinglePageForRedo(loggable.prevPage);
+                SinglePage page = getSinglePageForRedo(null, loggable.prevPage);
                 SanityCheck.ASSERT(page != null, "Previous page is null");
                 page.getPageHeader().setNextInChain(loggable.newPage);
                 page.setDirty(true);
@@ -1230,8 +1222,8 @@ public class BFile extends BTree {
     
 	protected void redoAppendOverflow(OverflowAppendLoggable loggable) {
 		try {
-			SinglePage page = getSinglePageForRedo(loggable.pageNum);
-			if (page != null && requiresRedo(loggable, page)) {
+			SinglePage page = getSinglePageForRedo(loggable, loggable.pageNum);
+			if (page != null) {
                 BFilePageHeader ph = page.getPageHeader();
                 loggable.data.copyTo(0, page.getData(), ph.getDataLength(), loggable.chunkSize);
                 ph.setDataLength(ph.getDataLength() + loggable.chunkSize);
@@ -1258,8 +1250,8 @@ public class BFile extends BTree {
     
     protected void redoStoreOverflow(OverflowStoreLoggable loggable) {
         try {
-            SinglePage page = getSinglePageForRedo(loggable.pageNum);
-            if (page != null && requiresRedo(loggable, page)) {
+            SinglePage page = getSinglePageForRedo(loggable, loggable.pageNum);
+            if (page != null) {
                 BFilePageHeader ph = page.getPageHeader();
                 try {
                     System.arraycopy(loggable.data, 0, page.getData(), 0, loggable.size);
@@ -1288,8 +1280,8 @@ public class BFile extends BTree {
     
     protected void redoModifiedOverflow(OverflowModifiedLoggable loggable) {
         try {
-            SinglePage page = getSinglePageForRedo(loggable.pageNum);
-            if (page != null && requiresRedo(loggable, page)) {
+            SinglePage page = getSinglePageForRedo(loggable, loggable.pageNum);
+            if (page != null) {
                 BFilePageHeader ph = page.getPageHeader();
                 ph.setDataLength(loggable.length);
                 ph.setLastInChain(loggable.lastInChain);
@@ -1329,7 +1321,7 @@ public class BFile extends BTree {
                     return;
                 }
                 final byte[] data = page.read();
-                if (page.getPageHeader().getStatus() < RECORD)
+                if (page.getPageHeader().getStatus() < RECORD || isUptodate(page, loggable))
                     return;
                 wp = new SinglePage(page, data, true);
             }
