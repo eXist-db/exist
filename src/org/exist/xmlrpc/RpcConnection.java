@@ -585,29 +585,55 @@ public class RpcConnection extends Thread {
             if(encoding == null)
                 encoding = "UTF-8";
             
-            Serializer serializer = broker.getSerializer();
-            serializer.setProperties(parameters);
-            Hashtable result = new Hashtable();
-            if(doc.getContentLength() > MAX_DOWNLOAD_CHUNK_SIZE) {
-                File tempFile = File.createTempFile("eXistRPCC", ".xml");
-                tempFile.deleteOnExit();
-                LOG.debug("Writing to temporary file: " + tempFile.getName());
+            // binary check TODO dwes
+            if(doc.getResourceType() == DocumentImpl.XML_FILE) {
+                //
                 
-                OutputStream os = new FileOutputStream(tempFile);
-                Writer writer = new OutputStreamWriter(os, encoding);
-                serializer.serialize(doc, writer);
-                writer.close();
-                
-                byte[] firstChunk = getChunk(tempFile, 0);
-                result.put("data", firstChunk);
-                result.put("handle", tempFile.getAbsolutePath());
-                result.put("offset", new Integer(firstChunk.length));
+                Serializer serializer = broker.getSerializer();
+                serializer.setProperties(parameters);
+                Hashtable result = new Hashtable();
+                if(doc.getContentLength() > MAX_DOWNLOAD_CHUNK_SIZE) {
+                    File tempFile = File.createTempFile("eXistRPCC", ".xml");
+                    tempFile.deleteOnExit();
+                    LOG.debug("Writing to temporary file: " + tempFile.getName());
+                    
+                    OutputStream os = new FileOutputStream(tempFile);
+                    Writer writer = new OutputStreamWriter(os, encoding);
+                    serializer.serialize(doc, writer);
+                    writer.close();
+                    
+                    byte[] firstChunk = getChunk(tempFile, 0);
+                    result.put("data", firstChunk);
+                    result.put("handle", tempFile.getAbsolutePath());
+                    result.put("offset", new Integer(firstChunk.length));
+                } else {
+                    String xml = serializer.serialize(doc);
+                    result.put("data", xml.getBytes(encoding));
+                    result.put("offset", new Integer(0));
+                }
+                return result;
             } else {
-                String xml = serializer.serialize(doc);
-                result.put("data", xml.getBytes(encoding));
-                result.put("offset", new Integer(0));
+                Hashtable result = new Hashtable();
+                if(doc.getContentLength() > MAX_DOWNLOAD_CHUNK_SIZE) {
+                    File tempFile = File.createTempFile("eXistRPCC", ".bin");
+                    tempFile.deleteOnExit();
+                    LOG.debug("Writing to temporary file: " + tempFile.getName());
+                    OutputStream os = new FileOutputStream(tempFile);
+                    broker.readBinaryResource((BinaryDocument)doc, os);
+                    os.close();
+                    
+                    byte[] firstChunk = getChunk(tempFile, 0);
+                    result.put("data", firstChunk);
+                    result.put("handle", tempFile.getAbsolutePath());
+                    result.put("offset", new Integer(firstChunk.length));
+                    
+                } else {
+                    byte[] data = broker.getBinaryResource((BinaryDocument)doc);
+                    result.put("data", data);
+                    result.put("offset", new Integer(0));
+                }
+                return result;
             }
-            return result;
         } finally {
             if(collection != null)
                 collection.releaseDocument(doc);
