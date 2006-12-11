@@ -470,19 +470,22 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                     NodeId nodeId;
                     for (int k = 0; k < gidsCount; k++) {
                         nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
-                        long address = StorageAddress.read(is);
                         if (selector == null) {
+                            long address = StorageAddress.read(is);
                             NodeProxy storedNode = new NodeProxy(storedDocument, nodeId, nodeType, address);
                             result.add(storedNode, gidsCount);                        
                         } else {
                             //Filter out the node if requested to do so
                             NodeProxy storedNode = selector.match(storedDocument, nodeId);
                             if (storedNode != null) {
+                                long address = StorageAddress.read(is);
                                 storedNode.setInternalAddress(address);
                                 storedNode.setNodeType(nodeType);
                                 result.add(storedNode, gidsCount);
-                            } else
-                            	sameDocSet = false;
+                            } else {
+                                is.skip(3);
+                                sameDocSet = false;
+                            }
                         }
                     }
                     nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);

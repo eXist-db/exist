@@ -532,20 +532,32 @@ public class NativeBroker extends DBBroker {
         if (RangeIndexSpec.hasMixedTextIndex(indexType)) {
         	node.getQName().setNameType(ElementValue.ELEMENT);
             if (content == null) {
-                NodeProxy p = new NodeProxy(node);
-                if (oldAddress != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
-                    p.setInternalAddress(oldAddress);
-                content = getNodeValue(node, false);
-                //Curious... I assume getNodeValue() needs the old address
-                p.setInternalAddress(node.getInternalAddress());
+                content = getOldNodeContent(node, oldAddress);
             }
             textEngine.setDocument((DocumentImpl) node.getOwnerDocument());
-            textEngine.storeText(null, node, content);
+            textEngine.storeText(null, node, false, content);
         }
-        
+        IndexSpec idxSpec = ((DocumentImpl)node.getOwnerDocument()).getCollection().getIdxConf(NativeBroker.this);
+        FulltextIndexSpec ftIdx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null;
+        if (ftIdx != null && ftIdx.hasQNameIndex(node.getQName())) {
+            if (content == null) {
+                content = getOldNodeContent(node, oldAddress);
+            }
+            textEngine.storeText(ftIdx, node, true, content);
+        }
         //p.setIndexType(indexType);
     }
-    
+
+    private String getOldNodeContent(StoredNode node, long oldAddress) {
+        NodeProxy p = new NodeProxy(node);
+        if (oldAddress != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
+            p.setInternalAddress(oldAddress);
+        String content = getNodeValue(node, false);
+        //Curious... I assume getNodeValue() needs the old address
+        p.setInternalAddress(node.getInternalAddress());
+        return content;
+    }
+
     /** Takes care of actually remove entries from the indices;
      * must be called after one or more call to {@link #removeNode(Txn, StoredNode, NodePath, String)}. */
     public void endRemove() {
@@ -1280,14 +1292,14 @@ public class NativeBroker extends DBBroker {
             LOG.debug("collection " + collectionName + " not found!");
             return;
         }
-        reindexCollection(collection, false);
+        reindexCollection(collection, NodeProcessor.MODE_STORE);
     }    
     
-    public void reindexCollection(Collection collection, boolean repairMode) throws PermissionDeniedException {
+    public void reindexCollection(Collection collection, int mode) throws PermissionDeniedException {
         TransactionManager transact = pool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
         try {
-            reindexCollection(transaction, collection, repairMode);
+            reindexCollection(transaction, collection, mode);
             transact.commit(transaction);
         } catch (TransactionException e) {
             transact.abort(transaction);
@@ -1295,16 +1307,16 @@ public class NativeBroker extends DBBroker {
         }
     }
     
-    public void reindexCollection(Txn transaction, Collection collection, boolean repairMode) throws PermissionDeniedException {
+    public void reindexCollection(Txn transaction, Collection collection, int mode) throws PermissionDeniedException {
         if (!collection.getPermissions().validate(user, Permission.WRITE))
             throw new PermissionDeniedException("insufficient privileges on collection " + collection.getURI());
         LOG.debug("Reindexing collection " + collection.getURI());
         
-        if (!repairMode)
+        if (mode == NodeProcessor.MODE_STORE)
             dropCollectionIndex(collection);
         for(Iterator i = collection.iterator(this); i.hasNext(); ) {
             DocumentImpl next = (DocumentImpl)i.next();
-            reindexXMLResource(transaction, next, repairMode);
+            reindexXMLResource(transaction, next, mode);
         }
         for(Iterator i = collection.collectionIterator(); i.hasNext(); ) {
         	XmldbURI next = (XmldbURI)i.next();
@@ -1312,7 +1324,7 @@ public class NativeBroker extends DBBroker {
             if(child == null)
                 LOG.warn("Collection '" + next + "' not found");
             else {
-                reindexCollection(transaction, child, repairMode);
+                reindexCollection(transaction, child, mode);
             }
         }
     }
@@ -1861,14 +1873,14 @@ public class NativeBroker extends DBBroker {
             doc.setCollection(destination);
             if (doc.getResourceType() == DocumentImpl.XML_FILE) {
                 if(!renameOnly) {
-                    notifyDropIndex(doc);
+                    dropIndex(transaction, doc);
                     saveCollection(transaction, collection);
                 }
                 destination.addDocument(transaction, this, doc);
 
                 if(!renameOnly) {
                     // reindexing
-                    reindexXMLResource(transaction, doc, true);
+                    reindexXMLResource(transaction, doc, NodeProcessor.MODE_REPAIR);
                 }
             } else {
                 // binary resource
@@ -1892,8 +1904,9 @@ public class NativeBroker extends DBBroker {
                 LOG.info("Removing document "
                     + document.getFileURI() + " (" + document.getDocId() + ") ...");
             }
+
+            dropIndex(transaction, document);
             
-            notifyDropIndex(document);
             if (LOG.isDebugEnabled()) {
                 LOG.debug("removeDocument() - removing dom");
             }
@@ -1932,8 +1945,25 @@ public class NativeBroker extends DBBroker {
             LOG.warn("removeDocument(String) - " + DATABASE_IS_READ_ONLY);
         }
     }
-    
-    
+
+    private void dropIndex(Txn transaction, DocumentImpl document) throws ReadOnlyException {
+        elementIndex.dropIndex(document);
+
+        NodeList nodes = document.getChildNodes();
+        for (int i = 0; i < nodes.getLength(); i++) {
+            StoredNode node = (StoredNode) nodes.item(i);
+            Iterator iterator = getNodeIterator(node);
+            iterator.next();
+            scanNodes(transaction, iterator, node, new NodePath(), NodeProcessor.MODE_REMOVE);
+        }
+
+        textEngine.dropIndex(document);
+        valueIndex.dropIndex(document);
+        if (qnameValueIndex != null)
+            qnameValueIndex.dropIndex(document);
+    }
+
+
     public void removeBinaryResource(final Txn transaction, final BinaryDocument blob)
     throws PermissionDeniedException {
         if (readOnly)
@@ -2086,7 +2116,7 @@ public class NativeBroker extends DBBroker {
      * descendant nodes of the passed node, or all nodes below some level of
      * the document if node is null.
      */
-    private void reindexXMLResource(Txn transaction, DocumentImpl doc, boolean repairMode) {
+    private void reindexXMLResource(Txn transaction, DocumentImpl doc, int mode) {
         if(CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE.equals(doc.getFileURI()))
             doc.getCollection().setConfigEnabled(false);
         NodeList nodes = doc.getChildNodes();
@@ -2094,7 +2124,7 @@ public class NativeBroker extends DBBroker {
         	StoredNode node = (StoredNode) nodes.item(i);
         	Iterator iterator = getNodeIterator(node);
             iterator.next();
-            scanNodes(transaction, iterator, node, new NodePath(), repairMode);
+            scanNodes(transaction, iterator, node, new NodePath(), mode);
         }
         flush();
         if(CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE.equals(doc.getFileURI()))
@@ -2130,10 +2160,7 @@ public class NativeBroker extends DBBroker {
             final long firstChild = doc.getFirstChildAddress();
                 
             // dropping old structure index
-            elementIndex.dropIndex(doc);
-            valueIndex.dropIndex(doc);
-            if (qnameValueIndex != null)
-                qnameValueIndex.dropIndex(doc);
+            dropIndex(transaction, doc);
             
             // dropping dom index
             NodeRef ref = new NodeRef(doc.getDocId());
@@ -2168,7 +2195,7 @@ public class NativeBroker extends DBBroker {
             	StoredNode node = (StoredNode) nodes.item(i);
             	Iterator iterator = getNodeIterator(node);
                 iterator.next();                
-                copyNodes(transaction, iterator, node, new NodePath(), tempDoc, true, false);
+                copyNodes(transaction, iterator, node, new NodePath(), tempDoc, true, true);
             }
             flush();
             // checkTree(tempDoc);
@@ -2463,7 +2490,7 @@ public class NativeBroker extends DBBroker {
                     indexAttribs = ftIdx.matchAttribute(currentPath);
                 }
                 if (indexAttribs)
-                    textEngine.storeAttribute(ftIdx, (AttrImpl) node);
+                    textEngine.storeAttribute(ftIdx, (AttrImpl) node, false);
                 if (idxSpec != null) {
                     GeneralRangeIndexSpec spec = idxSpec.getIndexByPath(currentPath);
                     if(spec != null) {
@@ -2558,13 +2585,13 @@ public class NativeBroker extends DBBroker {
      * cases, reindex will be called.
      */
     public void indexNode(Txn transaction, StoredNode node, NodePath currentPath) {
-        indexNode(transaction, node, currentPath, false);
+        indexNode(transaction, node, currentPath, NodeProcessor.MODE_STORE);
     }
     
-    public void indexNode(final Txn transaction, final StoredNode node, NodePath currentPath, boolean repairMode) {
+    public void indexNode(final Txn transaction, final StoredNode node, NodePath currentPath, int repairMode) {
         elementIndex.setInUpdateMode(true);
         nodeProcessor.reset(transaction, node, currentPath);
-        nodeProcessor.setRepairMode(repairMode);
+        nodeProcessor.setMode(repairMode);
         nodeProcessor.index();
     }
     
@@ -2593,10 +2620,10 @@ public class NativeBroker extends DBBroker {
      * @param currentPath
      */
     private void scanNodes(Txn transaction, Iterator iterator, StoredNode node, NodePath currentPath,
-            boolean repairMode) {
+            int mode) {
         if (node.getNodeType() == Node.ELEMENT_NODE)
             currentPath.addComponent(node.getQName());
-        indexNode(transaction, node, currentPath, repairMode);
+        indexNode(transaction, node, currentPath, mode);
         if (node.hasChildNodes()) {
             StoredNode child;
             final int count = node.getChildCount();
@@ -2607,7 +2634,7 @@ public class NativeBroker extends DBBroker {
                             "; children = " + node.getChildCount());
                     throw new IllegalStateException("Wrong node id");
                 }
-                scanNodes(transaction, iterator, child, currentPath, repairMode);
+                scanNodes(transaction, iterator, child, currentPath, mode);
             }
         }
         if (node.getNodeType() == Node.ELEMENT_NODE) {
@@ -2762,7 +2789,11 @@ public class NativeBroker extends DBBroker {
 		}
 		.run();
 	}
-	
+
+    public void storeNode(Txn transaction, StoredNode node, NodePath currentPath) {
+        super.storeNode(transaction, node, currentPath);    //To change body of overridden methods use File | Settings | File Templates.
+    }
+
     public void repair() throws PermissionDeniedException {
         if (readOnly)
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
@@ -2804,7 +2835,7 @@ public class NativeBroker extends DBBroker {
         
         LOG.info("Reindexing database files ...");
         //Reindex from root collection
-        reindexCollection(null, getCollection(XmldbURI.ROOT_COLLECTION_URI), true);
+        reindexCollection(null, getCollection(XmldbURI.ROOT_COLLECTION_URI), NodeProcessor.MODE_REPAIR);
     }
     
     public void flush() {
@@ -2865,7 +2896,7 @@ public class NativeBroker extends DBBroker {
             dbe.printStackTrace();
             LOG.warn(dbe);
         }
-    }     
+    }
 
 	public void shutdown() {		
 		try {
@@ -2949,7 +2980,11 @@ public class NativeBroker extends DBBroker {
     
     /** Delegate for Node Processings : indexing */
     private class NodeProcessor {
-        
+
+        final static int MODE_STORE = 0;
+        final static int MODE_REPAIR = 1;
+        final static int MODE_REMOVE = 2;
+
         private Txn transaction;
         private StoredNode node;
         private NodePath currentPath;
@@ -2961,11 +2996,12 @@ public class NativeBroker extends DBBroker {
         private IndexSpec idxSpec;
         private FulltextIndexSpec ftIdx;
         private int depth;
-        private int level;        
+        private int level;
+        private int mode = MODE_STORE;
+
         /** overall switch to activate fulltext indexation */
         private boolean fullTextIndex = true;
-        private boolean repairMode = false;
-        
+
         NodeProcessor() {
         }
 
@@ -2976,7 +3012,8 @@ public class NativeBroker extends DBBroker {
             this.transaction = transaction;
             this.node = node;
             this.currentPath = currentPath;
-
+            this.mode = MODE_STORE;
+            
             doc = (DocumentImpl) node.getOwnerDocument();
             address = node.getInternalAddress();
             idxSpec = doc.getCollection().getIdxConf(NativeBroker.this);
@@ -2991,8 +3028,8 @@ public class NativeBroker extends DBBroker {
             this.fullTextIndex = fullTextIndex;
         }
 
-        public void setRepairMode(boolean repair) {
-            this.repairMode = repair;
+        public void setMode(int mode) {
+            this.mode = mode;
         }
         
         /** Updates the various indices */
@@ -3030,10 +3067,12 @@ public class NativeBroker extends DBBroker {
                     
                     // qnameValueIndex.startElement((ElementImpl)node, currentPath, index);
                     notifyStartElement((ElementImpl)node, currentPath, fullTextIndex);
-                    NodeProxy p = new NodeProxy(node);
-                    p.setIndexType(indexType);
-                    elementIndex.setDocument(doc);
-                    elementIndex.addNode(node.getQName(), p);
+                    if (mode != MODE_REMOVE) {
+                        NodeProxy p = new NodeProxy(node);
+                        p.setIndexType(indexType);
+                        elementIndex.setDocument(doc);
+                        elementIndex.addNode(node.getQName(), p);
+                    }
                     break;
                     
                 case Node.ATTRIBUTE_NODE :
@@ -3069,8 +3108,12 @@ public class NativeBroker extends DBBroker {
                     // --move to-- NativeTextEngine
                     // TODO : textEngine.storeAttribute( (AttrImpl)node, currentPath, index);
                     if (indexAttribs && !isTemp )
-                        textEngine.storeAttribute(ftIdx, (AttrImpl) node);
-                    
+                        textEngine.storeAttribute(ftIdx, (AttrImpl) node, false);
+
+                    if (ftIdx != null && ftIdx.hasQNameIndex(node.getQName())) {
+                        textEngine.storeAttribute(ftIdx, (AttrImpl) node, true);
+                    }
+
 //                  --move to-- NativeElementIndex
                     // TODO : elementIndex.storeAttribute(node, currentPath, index);
 
@@ -3079,7 +3122,8 @@ public class NativeBroker extends DBBroker {
                     tempProxy.setIndexType(indexType);
 
                     qname.setNameType(ElementValue.ATTRIBUTE);
-                    elementIndex.addNode(qname, tempProxy);
+                    if (mode != MODE_REMOVE)
+                        elementIndex.addNode(qname, tempProxy);
                     
                     // --move to-- NativeElementIndex
                     // TODO : elementIndex.storeAttribute(node, currentPath, index);
@@ -3124,7 +3168,7 @@ public class NativeBroker extends DBBroker {
 
         /** Stores this node into the database, if it's an element */
         public void store() {
-            if (!repairMode && node.getNodeType() == Node.ELEMENT_NODE && level <= depth) {
+            if (mode == MODE_STORE && node.getNodeType() == Node.ELEMENT_NODE && level <= depth) {
                 new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
                     public Object start() throws ReadOnlyException {
                         try {

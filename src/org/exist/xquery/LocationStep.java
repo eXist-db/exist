@@ -118,11 +118,11 @@ public class LocationStep extends Step {
         return false;
     }
 
-    protected void setPreloadNodeSets(boolean doPreload) {
+    public void setPreloadNodeSets(boolean doPreload) {
         this.preload = doPreload;
     }
 
-    protected void setPreloadedData(DocumentSet docs, NodeSet nodes) {
+    public void setPreloadedData(DocumentSet docs, NodeSet nodes) {
         this.currentDocs = docs;
         this.currentSet = nodes;
     }
@@ -838,6 +838,14 @@ public class LocationStep extends Step {
         }
     }
 
+    public void accept(ExpressionVisitor visitor) {
+        visitor.visitLocationStep(this);
+        for (Iterator i = predicates.iterator(); i.hasNext();) {
+			Predicate pred = (Predicate) i.next();
+			visitor.visitPredicate(pred);
+		}
+    }
+    
     /*
      * (non-Javadoc)
      * 

@@ -46,6 +46,8 @@ import org.exist.dom.TextImpl;
 import org.exist.storage.DBBroker;
 import org.exist.storage.GeneralRangeIndexSpec;
 import org.exist.storage.NodePath;
+import org.exist.storage.FulltextIndexSpec;
+import org.exist.storage.IndexSpec;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
@@ -84,8 +86,9 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 
 	protected DBBroker broker = null;
     protected Txn transaction;
-    
-	protected XMLString charBuf = new XMLString();
+
+    protected FulltextIndexSpec ftIdx = null;
+    protected XMLString charBuf = new XMLString();
     protected boolean inCDATASection = false;
 	protected int currentLine = 0;  
 	protected NodePath currentPath = new NodePath();
@@ -188,6 +191,9 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
         nsMappings.clear();
         rootNode = null;
         setPrevious(null);
+        IndexSpec idxSpec = doc.getCollection().getIdxConf(broker);
+        if (idxSpec != null)
+            ftIdx = idxSpec.getFulltextIndexSpec();
     }
     
 	/**
@@ -304,9 +310,10 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 			stack.pop();
 			
 			XMLString elemContent = null;
-			if (GeneralRangeIndexSpec.hasQNameOrValueIndex(last.getIndexType())) {
-				elemContent = (XMLString) nodeContentStack.pop();
-			}
+			if (!validate && (GeneralRangeIndexSpec.hasQNameOrValueIndex(last.getIndexType()) ||
+                    (ftIdx != null && ftIdx.hasQNameIndex(last.getQName())))) {
+                elemContent = (XMLString) nodeContentStack.pop();
+            }
 			
 			if (!validate)
 			    broker.endElement(last, currentPath, elemContent == null ? null : elemContent.toString());
@@ -629,10 +636,11 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 	private void storeElement(ElementImpl node) {
 		broker.storeNode(transaction, node, currentPath);
         node.setChildCount(0);
-		if (GeneralRangeIndexSpec.hasQNameOrValueIndex(node.getIndexType())) {
-			XMLString contentBuf = new XMLString();
-			nodeContentStack.push(contentBuf);
-		}
+		if (GeneralRangeIndexSpec.hasQNameOrValueIndex(node.getIndexType()) ||
+                (ftIdx != null && ftIdx.hasQNameIndex(node.getQName()))) {
+            XMLString contentBuf = new XMLString();
+            nodeContentStack.push(contentBuf);
+        }
 	}
 
 	public void startEntity(String name) {

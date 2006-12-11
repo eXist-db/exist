@@ -44,6 +44,7 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.Item;
 
 /**
  * near() function.
@@ -75,20 +76,62 @@ public class ExtNear extends ExtFulltext {
 		}
 	}
 
-	public Sequence evalQuery(String searchArg, NodeSet nodes) throws XPathException {
+    public NodeSet preSelect(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (contextItem != null)
+			contextSequence = contextItem.toSequence();
+        if (maxDistance != null) {
+			max_distance = ((IntegerValue) maxDistance.eval(contextSequence).convertTo(Type.INTEGER)).getInt();
+		}
+		if (minDistance != null) {
+			min_distance = ((IntegerValue) minDistance.eval(contextSequence).convertTo(Type.INTEGER)).getInt();
+		}
+
+        // get the search terms
+        String arg = searchTerm.eval(contextSequence).getStringValue();
+        String[] terms;
+        try {
+			terms = getSearchTerms(arg);
+		} catch (EXistException e) {
+			throw new XPathException(e.getMessage(), e);
+		}
+        // lookup the terms in the fulltext index. returns one node set for each term
+        NodeSet[] hits = getMatches(contextSequence.getDocumentSet(), null, contextQName, terms);
+        // walk through the matches and compute the combined node set
+        preselectResult = hits[0];
+        if (preselectResult != null) {
+            for(int k = 1; k < hits.length; k++) {
+                if(hits[k] != null) {
+                    preselectResult = preselectResult.deepIntersection(hits[k]);
+                }
+            }
+        } else {
+            preselectResult = NodeSet.EMPTY_SET;
+        }
+		if (terms.length > 1) {
+            boolean hasWildcards = false;
+            for (int i = 0; i < terms.length; i++) {
+                hasWildcards |= NativeTextEngine.containsWildcards(terms[i]);
+            }
+            preselectResult = (NodeSet) (hasWildcards ? patternMatch(context, terms, preselectResult) : 
+                                exactMatch(context, terms, preselectResult));
+        }
+        return preselectResult;
+    }
+
+    public Sequence evalQuery(String searchArg, NodeSet nodes) throws XPathException {
 		if (maxDistance != null) {
 			max_distance = ((IntegerValue) maxDistance.eval(nodes).convertTo(Type.INTEGER)).getInt();
 		}
 		if (minDistance != null) {
 			min_distance = ((IntegerValue) minDistance.eval(nodes).convertTo(Type.INTEGER)).getInt();
 		}
-        
+        String[] terms;
 		try {
-			getSearchTerms(context, searchArg);
+			terms = getSearchTerms(searchArg);
 		} catch (EXistException e) {
 			throw new XPathException(e.getMessage(), e);
 		}
-		NodeSet hits = processQuery(nodes);
+		NodeSet hits = processQuery(terms, nodes);
 		if (hits == null)
 			return Sequence.EMPTY_SEQUENCE;
 		if (terms.length == 1)
@@ -98,10 +141,10 @@ public class ExtNear extends ExtFulltext {
 		for (int i = 0; i < terms.length; i++) {
 			hasWildcards |= NativeTextEngine.containsWildcards(terms[i]);
 		}
-		return hasWildcards ? patternMatch(context, hits) : exactMatch(context,	hits);
+		return hasWildcards ? patternMatch(context, terms, hits) : exactMatch(context, terms, hits);
 	}
 
-	private Sequence exactMatch(XQueryContext context, NodeSet result) {
+	private Sequence exactMatch(XQueryContext context, String[] terms, NodeSet result) {
 		// walk through hits and calculate term-distances
 		NodeSet r = new ExtArrayNodeSet();
 		final Tokenizer tok = context.getBroker().getTextEngine().getTokenizer();
@@ -158,7 +201,7 @@ public class ExtNear extends ExtFulltext {
 		return r;
 	}
 
-	private Sequence patternMatch(XQueryContext context, NodeSet result) {
+	private Sequence patternMatch(XQueryContext context, String[] terms, NodeSet result) {
 		// generate list of search term patterns
 		Pattern patterns[] = new Pattern[terms.length];
 		Matcher matchers[] = new Matcher[terms.length];
@@ -247,7 +290,7 @@ public class ExtNear extends ExtFulltext {
         dumper.display(")");
     }
     
-    public String tosTring() {
+    public String toString() {
         StringBuffer buf = new StringBuffer();
         buf.append("near(");
         buf.append(path);

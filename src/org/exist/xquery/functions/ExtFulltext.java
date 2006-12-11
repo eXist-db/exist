@@ -22,25 +22,22 @@ package org.exist.xquery.functions;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Iterator;
 
 import org.exist.EXistException;
+import org.exist.xmldb.XmldbURI;
+import org.exist.collections.Collection;
+import org.exist.collections.CollectionConfiguration;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.storage.analysis.Tokenizer;
 import org.exist.storage.DBBroker;
-import org.exist.xquery.AnalyzeContextInfo;
-import org.exist.xquery.CachedResult;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Constants;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.Expression;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.PathExpr;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.storage.IndexSpec;
+import org.exist.storage.FulltextIndexSpec;
+import org.exist.storage.ElementValue;
+import org.exist.xquery.*;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -56,7 +53,7 @@ import org.exist.xquery.value.Type;
  * 
  * @author wolf
  */
-public class ExtFulltext extends Function {
+public class ExtFulltext extends Function implements Optimizable {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
@@ -68,19 +65,17 @@ public class ExtFulltext extends Function {
 
 	protected PathExpr path;
 	protected Expression searchTerm = null;
-	protected String terms[] = null;
 	protected int type = Constants.FULLTEXT_AND;
 	
 	protected CachedResult cached = null;
 
-	public ExtFulltext(XQueryContext context, int type) {
+    private LocationStep contextStep = null;
+    protected QName contextQName = null;
+    protected NodeSet preselectResult = null;
+
+    public ExtFulltext(XQueryContext context, int type) {
 		super(context, signature);
 		this.type = type;
-	}
-
-	public ExtFulltext(XQueryContext context, PathExpr path) {
-		super(context, signature);
-		this.path = path;
 	}
 
 	public void addTerm(Expression term) {
@@ -91,25 +86,6 @@ public class ExtFulltext extends Function {
 		searchTerm = term;
 	}
 
-	protected void getSearchTerms(XQueryContext context, String searchString)
-		throws EXistException {
-		List tokens = new ArrayList();
-		Tokenizer tokenizer = context.getBroker().getTextEngine().getTokenizer();
-		tokenizer.setText(searchString);
-		org.exist.storage.analysis.TextToken token;
-		String word;
-		while (null != (token = tokenizer.nextToken(true))) {
-			word = token.getText();
-			tokens.add(word);
-		}
-		terms = new String[tokens.size()];
-		terms = (String[]) tokens.toArray(terms);
-	}
-
-	public int countTerms() {
-		return terms.length;
-	}
-
     /* (non-Javadoc)
      * @see org.exist.xquery.Function#analyze(org.exist.xquery.AnalyzeContextInfo)
      */
@@ -117,16 +93,70 @@ public class ExtFulltext extends Function {
     	contextInfo.setParent(this);
         path.analyze(contextInfo);
         searchTerm.analyze(contextInfo);
+
+        LocationStep step = BasicExpressionVisitor.findFirstStep(path);
+        if (step != null) {
+            NodeTest test = step.getTest();
+            if (!test.isWildcardTest() && test.getName() != null) {
+                contextQName = new QName(test.getName());
+                if (step.getAxis() == Constants.ATTRIBUTE_AXIS || step.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
+                    contextQName.setNameType(ElementValue.ATTRIBUTE);
+                contextStep = step;
+            }
+        }
     }
-    
-	public Sequence eval(
+
+    public boolean canOptimize(Sequence contextSequence, Item contextItem) {
+        if (contextQName == null)
+            return false;
+        return checkForQNameIndex(contextSequence);
+    }
+
+    public NodeSet preSelect(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (contextItem != null)
+			contextSequence = contextItem.toSequence();
+        
+        // get the search terms
+        String arg = searchTerm.eval(contextSequence).getStringValue();
+        String[] terms;
+        try {
+			terms = getSearchTerms(arg);
+		} catch (EXistException e) {
+			throw new XPathException(e.getMessage(), e);
+		}
+        // lookup the terms in the fulltext index. returns one node set for each term
+        NodeSet[] hits = getMatches(contextSequence.getDocumentSet(), null, contextQName, terms);
+        // walk through the matches and compute the combined node set
+        preselectResult = hits[0];
+        if (preselectResult != null) {
+            for(int k = 1; k < hits.length; k++) {
+                if(hits[k] != null) {
+                    preselectResult = (type == Constants.FULLTEXT_AND ? preselectResult.deepIntersection(hits[k])
+                            : preselectResult.union(hits[k]));
+                }
+            }
+        } else {
+            preselectResult = NodeSet.EMPTY_SET;
+        }
+        return preselectResult;
+    }
+
+    public Sequence eval(
 		Sequence contextSequence,
 		Item contextItem)
 		throws XPathException {
-		if (contextItem != null)
+        // if we were optimizing and the preselect did not return anything,
+        // we won't have any matches and can return
+        if (preselectResult != null && preselectResult.isEmpty())
+            return Sequence.EMPTY_SEQUENCE;
+
+        if (contextItem != null)
 			contextSequence = contextItem.toSequence();
-//		long start = System.currentTimeMillis();
-		NodeSet result = null;
+
+        if (preselectResult == null && !checkForQNameIndex(contextSequence))
+            contextQName = null;
+
+        NodeSet result;
 		// if the expression does not depend on the current context item,
 		// we can evaluate it in one single step
 		if (path == null || !Dependency.dependsOn(path, Dependency.CONTEXT_ITEM)) {          
@@ -136,20 +166,29 @@ public class ExtFulltext extends Function {
 			if(	canCache && cached != null && cached.isValid(contextSequence)) {
 				return cached.getResult();
 			}
-			NodeSet nodes =
-				path == null
-					? contextSequence.toNodeSet()
-					: path.eval(contextSequence).toNodeSet();
-			String arg = searchTerm.eval(contextSequence).getStringValue();
-			result = evalQuery(arg, nodes).toNodeSet();
-			if(canCache && contextSequence instanceof NodeSet)
+            // do we optimize this expression?
+            if (contextStep == null || preselectResult == null) {
+                // no optimization: process the whole expression
+                NodeSet nodes =
+                    path == null
+                        ? contextSequence.toNodeSet()
+                        : path.eval(contextSequence).toNodeSet();
+                String arg = searchTerm.eval(contextSequence).getStringValue();
+                result = evalQuery(arg, nodes).toNodeSet();
+            } else {
+                contextStep.setPreloadNodeSets(true);
+                contextStep.setPreloadedData(preselectResult.getDocumentSet(), preselectResult);
+
+                result = path.eval(contextSequence).toNodeSet();
+            }
+            if(canCache && contextSequence instanceof NodeSet)
 				cached = new CachedResult((NodeSet)contextSequence, result);
 			
 		// otherwise we have to walk through each item in the context
 		} else {
 			Item current;
 			String arg;
-			NodeSet nodes = null;
+			NodeSet nodes;
 			result = new ExtArrayNodeSet();
 			Sequence temp;
 			for (SequenceIterator i = contextSequence.iterate(); i.hasNext();) {
@@ -159,32 +198,50 @@ public class ExtFulltext extends Function {
 					path == null
 					? contextSequence.toNodeSet()
 							: path
-							.eval(current.toSequence())
-							.toNodeSet();
+							.eval(current.toSequence()).toNodeSet();
 				temp = evalQuery(arg, nodes);
 				result.addAll(temp);
 			}
 		}
-//		LOG.debug(
-//				"found "
-//					+ result.getLength()
-//					+ " in "
-//					+ (System.currentTimeMillis() - start));
-		return result;
+        preselectResult = null;
+        return result;
 	}
 
-	public Sequence evalQuery(String searchArg, NodeSet nodes) throws XPathException {
-		try {
-			getSearchTerms(context, searchArg);
+    private boolean checkForQNameIndex(Sequence contextSequence) {
+        if (contextQName == null)
+            return false;
+        boolean hasQNameIndex = true;
+        DocumentSet contextDocs = contextSequence.getDocumentSet();
+        for (Iterator i = contextDocs.getCollectionIterator(); i.hasNext(); ) {
+            Collection collection = (Collection) i.next();
+            if (collection.getURI().equals(XmldbURI.SYSTEM_COLLECTION_URI))
+                continue;
+            IndexSpec config = collection.getIdxConf(context.getBroker());
+            FulltextIndexSpec spec = config.getFulltextIndexSpec();
+            hasQNameIndex = spec.hasQNameIndex(contextQName);
+            if (!hasQNameIndex) {
+                if (LOG.isTraceEnabled())
+                    LOG.trace("cannot use index on QName: " + contextQName + ". Collection " + collection.getURI() +
+                        " does not define an index");
+                break;
+            }
+        }
+        return hasQNameIndex;
+    }
+
+    protected Sequence evalQuery(String searchArg, NodeSet nodes) throws XPathException {
+        String[] terms;
+        try {
+			terms = getSearchTerms(searchArg);
 		} catch (EXistException e) {
 			throw new XPathException(e.getMessage(), e);
 		}
-		NodeSet hits = processQuery(nodes);
+		NodeSet hits = processQuery(terms, nodes);
 		if (hits == null)
 			return NodeSet.EMPTY_SET;
 		return hits;
 	}
-    
+
     public String toString() {
         StringBuffer result = new StringBuffer();
         result.append(path.toString());
@@ -206,29 +263,30 @@ public class ExtFulltext extends Function {
 	 * @see org.exist.xquery.functions.Function#getDependencies()
 	 */
 	public int getDependencies() {
-//		return Dependency.CONTEXT_SET;
 		return path.getDependencies();
 	}
 
-	public DocumentSet preselect(DocumentSet in_docs) {
-		return in_docs;
-	}
+    protected String[] getSearchTerms(String searchString)
+		throws EXistException {
+		List tokens = new ArrayList();
+		Tokenizer tokenizer = context.getBroker().getTextEngine().getTokenizer();
+		tokenizer.setText(searchString);
+		org.exist.storage.analysis.TextToken token;
+		String word;
+		while (null != (token = tokenizer.nextToken(true))) {
+			word = token.getText();
+			tokens.add(word);
+		}
+		String[] terms = new String[tokens.size()];
+		return (String[]) tokens.toArray(terms);
+    }
 
-	protected NodeSet processQuery(NodeSet contextSet) throws XPathException {
+    protected NodeSet processQuery(String[] terms, NodeSet contextSet) throws XPathException {
 		if (terms == null)
 			throw new RuntimeException("no search terms");
 		if(terms.length == 0)
 			return NodeSet.EMPTY_SET;
-		NodeSet hits[] = new NodeSet[terms.length];
-		for (int k = 0; k < terms.length; k++) {
-            hits[k] =
-                    context.getBroker().getTextEngine().getNodesContaining(
-                            context,
-                            contextSet.getDocumentSet(),
-                            contextSet,
-                            terms[k],
-                            DBBroker.MATCH_EXACT);
-		}
+        NodeSet[] hits = getMatches(contextSet.getDocumentSet(), contextSet, contextQName, terms);
 		NodeSet result = hits[0];
 		if(result != null) {
 			for(int k = 1; k < hits.length; k++) {
@@ -241,7 +299,22 @@ public class ExtFulltext extends Function {
 			return NodeSet.EMPTY_SET;
 	}
 
-	public int returnsType() {
+    protected NodeSet[] getMatches(DocumentSet docs, NodeSet contextSet, QName qname, String[] terms)
+    throws XPathException {
+        NodeSet hits[] = new NodeSet[terms.length];
+        for (int k = 0; k < terms.length; k++) {
+            hits[k] =
+                    context.getBroker().getTextEngine().getNodesContaining(
+                            context,
+                            docs,
+                            contextSet,
+                            qname, terms[k],
+                            DBBroker.MATCH_EXACT);
+        }
+        return hits;
+    }
+
+    public int returnsType() {
 		return Type.NODE;
 	}
 
@@ -261,6 +334,11 @@ public class ExtFulltext extends Function {
 		super.resetState();
 		path.resetState();
 		searchTerm.resetState();
-		cached = null;
+        preselectResult = null;
+        cached = null;
 	}
+
+    public void accept(ExpressionVisitor visitor) {
+        visitor.visitFtExpression(this);
+    }
 }

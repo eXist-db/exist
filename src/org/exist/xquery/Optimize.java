@@ -23,6 +23,10 @@ package org.exist.xquery;
 
 import org.exist.dom.QName;
 import org.exist.dom.NodeSet;
+import org.exist.dom.VirtualNodeSet;
+import org.exist.dom.ExtArrayNodeSet;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.NodeProxy;
 import org.exist.Namespaces;
 import org.exist.storage.ElementIndex;
 import org.exist.storage.ElementValue;
@@ -30,6 +34,8 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.functions.ExtFulltext;
 import org.apache.log4j.Logger;
+
+import java.util.Iterator;
 
 public class Optimize extends Pragma {
 
@@ -48,31 +54,52 @@ public class Optimize extends Pragma {
     }
 
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-        long start = System.currentTimeMillis();
-        NodeSet contextSet = contextSequence.toNodeSet();
-        NodeSet selection = optimizable.preSelect(contextSequence, contextItem);
-        LOG.trace("pre-selection: " + selection.getLength());
-        NodeSet ancestors;
-        if (contextStep == null) {
-            ancestors = selection.selectAncestorDescendant(contextSet, NodeSet.ANCESTOR, true, -1);
-            return innerExpr.eval(ancestors);
-        } else {
-            start = System.currentTimeMillis();
-            NodeSelector selector;
-            selector = new AncestorSelector(selection, -1, true);
-            ElementIndex index = context.getBroker().getElementIndex();
-            ancestors = index.findElementsByTagName(ElementValue.ELEMENT, selection.getDocumentSet(),
-                    contextStep.getTest().getName(), selector);
-            contextStep.setPreloadNodeSets(true);
-            contextStep.setPreloadedData(ancestors.getDocumentSet(), ancestors);
+        boolean optimize = optimizable != null && optimizable.canOptimize(contextSequence, contextItem);
+        if (optimize) {
+            NodeSet contextSet = contextSequence.toNodeSet();
+            NodeSet selection = optimizable.preSelect(contextSequence, contextItem);
             if (LOG.isTraceEnabled())
-                LOG.trace("context after optimize: " + ancestors.getLength());
-            LOG.trace("optimize took " + (System.currentTimeMillis() - start));
-            start = System.currentTimeMillis();
-            Sequence result = innerExpr.eval(contextSequence);
-            LOG.trace("inner expr took " + (System.currentTimeMillis() - start));
-            return result;
+                LOG.trace("exist:optimize: pre-selection: " + selection.getLength());
+            NodeSet ancestors;
+            if (contextStep == null) {
+                ancestors = selection.selectAncestorDescendant(contextSet, NodeSet.ANCESTOR, true, -1);
+                return innerExpr.eval(ancestors);
+            } else {
+                NodeSelector selector;
+                selector = new AncestorSelector(selection, -1, true);
+                ElementIndex index = context.getBroker().getElementIndex();
+                QName ancestorQN = contextStep.getTest().getName();
+                ancestors = index.findElementsByTagName(ancestorQN.getNameType(), selection.getDocumentSet(),
+                        ancestorQN, selector);
+                contextStep.setPreloadNodeSets(true);
+                contextStep.setPreloadedData(ancestors.getDocumentSet(), ancestors);
+                if (LOG.isTraceEnabled())
+                    LOG.trace("exist:optimize: context after optimize: " + ancestors.getLength());
+                long start = System.currentTimeMillis();
+                contextSequence = filterDocuments(contextSet, ancestors);
+                Sequence result = innerExpr.eval(contextSequence);
+                if (LOG.isTraceEnabled())
+                    LOG.trace("exist:optimize: inner expr took " + (System.currentTimeMillis() - start));
+                return result;
+            }
+        } else {
+            if (LOG.isTraceEnabled())
+                LOG.trace("exist:optimize: Cannot optimize expression.");
+            return innerExpr.eval(contextSequence, contextItem);
         }
+    }
+
+    private Sequence filterDocuments(NodeSet contextSet, NodeSet ancestors) {
+        if (contextSet instanceof VirtualNodeSet)
+            return contextSet;
+        DocumentSet docs = ancestors.getDocumentSet();
+        NodeSet newSet = new ExtArrayNodeSet();
+        for (Iterator i = contextSet.iterator(); i.hasNext();) {
+            NodeProxy p = (NodeProxy) i.next();
+            if (docs.contains(p.getDocument().getDocId()))
+                newSet.add(p);
+        }
+        return newSet;
     }
 
     public void before(XQueryContext context, Expression expression) throws XPathException {
@@ -91,19 +118,25 @@ public class Optimize extends Pragma {
             }
 
             public void visitFtExpression(ExtFulltext fulltext) {
-                LOG.trace("Found optimizable: " + fulltext.getClass().getName());
-//                optimizable = fulltext;
+                if (LOG.isTraceEnabled())
+                    LOG.trace("exist:optimize: found optimizable: " + fulltext.getClass().getName());
+                optimizable = fulltext;
             }
 
             public void visitPredicate(Predicate predicate) {
                 predicate.accept(this);
             }
         });
-        this.contextStep = BasicExpressionVisitor.findFirstStep(innerExpr);
-        LOG.trace("context step: " + this.contextStep);
+
+        contextStep = BasicExpressionVisitor.findFirstStep(innerExpr);
+        if (contextStep.getTest().isWildcardTest())
+            contextStep = null;
+        if (LOG.isTraceEnabled())
+            LOG.trace("exist:optimize: context step: " + contextStep);
     }
 
     public void after(XQueryContext context, Expression expression) throws XPathException {
-
     }
+
+
 }
