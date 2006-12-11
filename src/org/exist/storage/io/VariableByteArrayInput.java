@@ -155,9 +155,11 @@ public class VariableByteArrayInput extends AbstractVariableByteInput {
     }
     
     public void copyRaw(VariableByteOutputStream os, int count) throws IOException {
-    	for (int i = 0; i < count; i++) {
-    		os.buf.append(data[position++]);
-    	}
+        os.buf.append(data, position, count);
+        position += count;
+//        for (int i = 0; i < count; i++) {
+//    		os.buf.append(data[position++]);
+//    	}
     }
     
     public void skip(int count) throws IOException {
