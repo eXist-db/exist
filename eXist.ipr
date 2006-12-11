@@ -316,7 +316,7 @@
       <CLASSES>
         <root url="jar://$PROJECT_DIR$/lib/optional/axis.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/optional/commons-logging-1.0.4.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/optional/commons-httpclient-3.0.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/optional/commons-httpclient-3.0.1.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/optional/saaj.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/optional/nekohtml-0.9.5.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/optional/jug-lgpl-2.0.0.jar!/" />
