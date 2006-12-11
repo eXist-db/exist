@@ -48,6 +48,14 @@ public class FtQueryTest extends XMLTestCase {
 			"<test-elem id=\"4\" attribute3=\"test some text\"/>" +
 		"</test-doc>";
 
+    private final static String QNAME_XML =
+            "<root>" +
+            "   <test>" +
+            "       <node id=\"1\">First node</node>" +
+            "       <node id=\"2\">Second node</node>" +
+            "   </test>" +
+            "</root>";
+    
     private final static String NESTED_XML =
             "<root>\n" +
             "    <nested><s>un</s>even</nested>\n" +
@@ -114,43 +122,43 @@ public class FtQueryTest extends XMLTestCase {
             fail(e.getMessage());
 		}
 	}
-    
+
     public void testFtScan() {
     	try {
 	    	System.out.println("----- testFtScan -----");
 	        String queryBody =
-	            "declare namespace f=\'http://exist-db.org/xquery/test\';\n" + 
-	            "declare namespace mods='http://www.loc.gov/mods/v3';\n" + 
-	            "import module namespace t=\'http://exist-db.org/xquery/text\';\n" + 
-	            "\n" + 
-	            "declare function f:term-callback($term as xs:string, $data as xs:int+)\n" + 
-	            "as element()+ {\n" + 
-	            "    <item>\n" + 
-	            "        <term>{$term}</term>\n" + 
-	            "        <frequency>{$data[1]}</frequency>\n" + 
-	            "    </item>\n" + 
-	            "};\n" + 
+	            "declare namespace f=\'http://exist-db.org/xquery/test\';\n" +
+	            "declare namespace mods='http://www.loc.gov/mods/v3';\n" +
+	            "import module namespace t=\'http://exist-db.org/xquery/text\';\n" +
+	            "\n" +
+	            "declare function f:term-callback($term as xs:string, $data as xs:int+)\n" +
+	            "as element()+ {\n" +
+	            "    <item>\n" +
+	            "        <term>{$term}</term>\n" +
+	            "        <frequency>{$data[1]}</frequency>\n" +
+	            "    </item>\n" +
+	            "};\n" +
 	            "\n";
-	        
+
 	        XQueryService service = (XQueryService)
 	            testCollection.getService("XQueryService", "1.0");
 	        String query = queryBody + "t:index-terms(collection('" + TEST_COLLECTION_PATH + "'), \'is\', util:function(\'f:term-callback\', 2), 1000)";
 	        ResourceSet result = service.query(query);
 	        assertEquals(7, result.getSize());
-	        
+
 	        query = queryBody + "t:index-terms(collection('"  + TEST_COLLECTION_PATH + "')//LINE, \'is\', util:function(\'f:term-callback\', 2), 1000)";
 	        result = service.query(query);
 	        assertEquals(6, result.getSize());
-	        
+
 	        query = queryBody + "t:index-terms(collection('" + TEST_COLLECTION_PATH + "')//mods:title, \'s\', util:function(\'f:term-callback\', 2), 1000)";
 	        result = service.query(query);
 	        assertEquals(20, result.getSize());
 		} catch (XMLDBException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
-		}	        
+		}
     }
-    
+
     public void testFtUpdate() {
     	try {
 	    	System.out.println("----- testFtUpdate -----");
@@ -163,7 +171,7 @@ public class FtQueryTest extends XMLTestCase {
 	        assertEquals(2, result.getSize());
 	        result = service.query("//SPEECH[LINE &= 'fenny snake' and SPEAKER &= 'first']");
 	        assertEquals(1, result.getSize());
-	        
+
 	        service.query(
 	                "update delete //SPEECH[LINE &= 'fenny snake']/SPEAKER[2]"
 	        );
@@ -172,7 +180,7 @@ public class FtQueryTest extends XMLTestCase {
 		} catch (XMLDBException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
-		}	        
+		}
     }
 
     public void testFtConfiguration() {
@@ -190,19 +198,19 @@ public class FtQueryTest extends XMLTestCase {
     		IndexQueryService idxConf = (IndexQueryService)
 				testCollection.getService("IndexQueryService", "1.0");
     		idxConf.configureCollection(config);
-    		
+
     		XMLResource doc =
                 (XMLResource) testCollection.createResource(
                         "test-attributes.xml", "XMLResource");
             doc.setContent(TEST_XML);
             testCollection.storeResource(doc);
-            
+
             XQueryService service = (XQueryService)
             	testCollection.getService("XQueryService", "1.0");
             String query = "//test-elem[@* &= 'some text']";
             ResourceSet result = service.query(query);
             assertEquals(2, result.getSize());
-            
+
             // check attributes="true"
             config =
     			"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
@@ -214,7 +222,7 @@ public class FtQueryTest extends XMLTestCase {
 		    	"</collection>";
             idxConf.configureCollection(config);
             idxConf.reindexCollection();
-            
+
             result = service.query(query);
             assertEquals(3, result.getSize());
     	} catch(Exception e) {
@@ -270,6 +278,123 @@ public class FtQueryTest extends XMLTestCase {
     		e.printStackTrace();
     		fail(e.getMessage());
     	}
+    }
+
+    public void testQNameConfiguration() {
+    	System.out.println("----- testFtConfiguration -----");
+    	try {
+    		String config =
+    			"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
+		    	"    <index>" +
+		    	"        <fulltext default=\"none\" attributes=\"false\">" +
+                "           <include path=\"//node\"/>" +
+                "           <create qname=\"node\"/>" +
+                "           <create qname=\"@id\"/>" +
+                "	      </fulltext>" +
+		    	"    </index>" +
+		    	"</collection>";
+    		IndexQueryService idxConf = (IndexQueryService)
+				testCollection.getService("IndexQueryService", "1.0");
+    		idxConf.configureCollection(config);
+
+    		XMLResource doc =
+                (XMLResource) testCollection.createResource("test-qname.xml", "XMLResource");
+            doc.setContent(QNAME_XML);
+            testCollection.storeResource(doc);
+
+            XQueryService service = (XQueryService)
+            	testCollection.getService("XQueryService", "1.0");
+            doQuery(service, "//node[@id &= '1']", 1);
+            doQuery(service, "//test[node &= 'Second node']", 1);
+            doQuery(service, "//node[. &= 'node']", 2);
+
+            doQuery(service, "update insert <node id='3'>Third node</node> following //test/node[last()]", 0);
+            doQuery(service, "//node[@id &= '3']", 1);
+            doQuery(service, "//test[node &= 'Third node']", 1);
+            doQuery(service, "//node[. &= 'Third node']", 1);
+            doQuery(service, "//node[. &= 'node']", 3);
+
+            doQuery(service, "update insert <node id='4'>Fourth <nested>node</nested></node> following //test/node[last()]", 0);
+            doQuery(service, "//node[@id &= '4']", 1);
+            doQuery(service, "//test[node &= 'Fourth node']", 1);
+            doQuery(service, "//node[. &= 'Fourth node']", 1);
+            doQuery(service, "//node[. &= 'node']", 4);
+
+            doQuery(service, "update delete //node[@id = '1']", 0);
+            doQuery(service, "//node[@id &= '1']", 0);
+            doQuery(service, "//test[node &= 'First node']", 0);
+            doQuery(service, "//node[. &= 'First node']", 0);
+            doQuery(service, "//node[@id &= '2']", 1);
+            doQuery(service, "//test[node &= 'Second node']", 1);
+            doQuery(service, "//node[. &= 'Second node']", 1);
+
+            doQuery(service,
+                    "for $i in 1 to 100 return" +
+                            "   update insert <node id='i{$i}'>Inserted node</node> preceding //test/node[1]", 0);
+
+            doQuery(service, "//node[@id &= 'i1']", 1);
+            doQuery(service, "//node[. &= 'Inserted']", 100);
+            doQuery(service, "//test[node &= 'Inserted']", 1);
+
+            doQuery(service, "//test[* &= 'Inserted node']", 1);
+            doQuery(service, "//test[. &= 'Inserted node']", 1);
+            doQuery(service, "//test[node() &= 'Second node']", 1);
+            doQuery(service, "//node[text() &= 'Second node']", 1);
+            doQuery(service, "//node[text() &= 'Inserted node']", 100);
+        } catch(Exception e) {
+    		e.printStackTrace();
+    		fail(e.getMessage());
+    	}
+    }
+
+    public void testReindex() {
+        try {
+            String config =
+    			"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
+		    	"    <index>" +
+		    	"        <fulltext default=\"none\" attributes=\"false\">" +
+                "           <include path=\"//node\"/>" +
+                "           <create qname=\"node\"/>" +
+                "           <create qname=\"@id\"/>" +
+                "	      </fulltext>" +
+		    	"    </index>" +
+		    	"</collection>";
+    		IndexQueryService idxConf = (IndexQueryService)
+				testCollection.getService("IndexQueryService", "1.0");
+    		idxConf.configureCollection(config);
+
+            XMLResource doc =
+                (XMLResource) testCollection.createResource("test-qname.xml", "XMLResource");
+            doc.setContent(QNAME_XML);
+            testCollection.storeResource(doc);
+
+            XQueryService service = (XQueryService)
+            	testCollection.getService("XQueryService", "1.0");
+            doQuery(service, "update insert <node id='3'>Third node</node> following //test/node[last()]", 0);
+            doQuery(service, "//node[@id &= '3']", 1);
+            doQuery(service, "//test[node &= 'Third node']", 1);
+            doQuery(service, "//node[. &= 'Third node']", 1);
+            doQuery(service, "//node[. &= 'node']", 3);
+
+            IndexQueryService mgmt = (IndexQueryService) testCollection.getService("IndexQueryService", "1.0");
+            mgmt.reindexCollection();
+
+            doQuery(service, "//node[@id &= '1']", 1);
+            doQuery(service, "//test[node &= 'Second node']", 1);
+            doQuery(service, "//node[. &= 'Second node']", 1);
+            doQuery(service, "//node[. &= 'node']", 3);
+            doQuery(service, "//node[@id &= '3']", 1);
+            doQuery(service, "//test[node &= 'Third node']", 1);
+            doQuery(service, "//node[. &= 'Third node']", 1);
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+    }
+
+    private void doQuery(XQueryService service, String query, int expected) throws XMLDBException {
+        ResourceSet result = service.query(query);
+        assertEquals(expected, result.getSize());
     }
 
     protected void setUp() {
@@ -329,8 +454,10 @@ public class FtQueryTest extends XMLTestCase {
 	                "CollectionManagementService",
 	                "1.0");
 	        service.removeCollection(TEST_COLLECTION_NAME);
-	        
-	        DatabaseManager.deregisterDatabase(database);
+
+            service.removeCollection("/db/system/config/db");
+
+            DatabaseManager.deregisterDatabase(database);
 	        DatabaseInstanceManager dim =
 	            (DatabaseInstanceManager) testCollection.getService(
 	                "DatabaseInstanceManager", "1.0");
