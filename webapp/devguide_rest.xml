@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<book xmlns:ci="http://apache.org/cocoon/include/1.0">
+    <bookinfo>
+        <graphic fileref="logo.jpg"/>
+        <productname>Open Source Native XML Database</productname>
+        <title>Developer's Guide</title>
+        <author>
+            <firstname>Wolfgang M.</firstname>
+            <surname>Meier</surname>
+            <affiliation>
+                <address format="linespecific">
+                    <email>wolfgang at exist-db.org</email>
+                </address>
+            </affiliation>
+        </author>
+    </bookinfo>
+    <ci:include src="sidebar.xml"/>
+    <chapter id="ch01">
+        <title>Developer's Guide</title>
+        <section>
+            <title>REST-Style Web API</title>
+            <para>eXist provides a REST-style (or <emphasis>RESTful</emphasis>) API through HTTP,
+                which provides the simplest and quickest way to access the database. To implement
+                this API, all one needs is an HTTP client, which is provided by nearly all
+                programming languages and environments. However, not all of the database features
+                are available using this approach.</para>
+
+            <para> When running eXist as a stand-alone server - i.e. when the database has been
+                started using the shell-script <filename>bin/server.sh</filename> (Unix) or batch
+                file <filename>bin/server.bat</filename> (Windows/DOS) - HTTP access is supported
+                through a simple, built-in web server. This web server however has limited
+                capabilities restricted to the basic operations defined by eXist's REST API (e.g.
+                    <command>GET</command>, <command>POST</command>, <command>PUT</command> and ,
+                    <command>DELETE</command>).</para>
+
+            <para>When running in a servlet-context, this same server functionality is provided by
+                the <application>EXistServlet</application>. In the standard eXist distribution,
+                this servlet is configured to have a listen address at:</para>
+
+            <synopsis>http://localhost:8080/exist/rest/</synopsis>
+
+            <para>Both the stand-alone server and the servlet rely on Java class
+                    <classname>org.exist.http.RESTServer</classname> to do the actual work.</para>
+
+            <para>The server treats all HTTP request paths as paths to a database collection, i.e.
+                all resources are read from the database instead of the file system. Relative paths
+                are therefore resolved relative to the database root collection. For example, if you
+                enter the following URL into your web-browser:</para>
+
+            <synopsis>http://localhost:8080/exist/rest/db/shakespeare/plays/hamlet.xml</synopsis>
+
+            <para>the server will receive an HTTP GET request for the resource
+                <filename>hamlet.xml</filename> in the collection
+                <filename>/db/shakespeare/plays</filename> in the database. The server will look for
+                this collection, and check if the resource is available, and if so, retrieve its
+                contents and send them back to the client. If the document does not exist, an
+                    <emphasis>HTTP 404 (Not Found)</emphasis> status response will be returned.</para>
+
+            <para>To keep the interface simple, the basic database operations are directly mapped to
+                HTTP request methods wherever possible. The following request methods are supported:</para>
+
+            <variablelist>
+                <varlistentry>
+                    <term>GET</term>
+                    <listitem>
+                        <para>Retrieves a representation of the resource or collection from the
+                            database. XQuery and XPath queries may also be specified using GET's
+                            optional parameters applied to the selected resource.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>PUT</term>
+                    <listitem>
+                        <para>Uploads a resource onto the database. If required, collections are
+                            automatically created, and existing resources are overwritten.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>DELETE</term>
+                    <listitem>
+                        <para>Removes a resource (document or collection) from the database.</para>
+                    </listitem>
+                </varlistentry>
+                <varlistentry>
+                    <term>POST</term>
+                    <listitem>
+                        <para>Submits data in the form of an XML fragment in the content of the
+                            request which specifies the action to take. The fragment can be either
+                            an XUpdate document or a query request. Query requests are used to pass
+                            complex XQuery expressions too large to be URL-encoded.</para>
+                    </listitem>
+                </varlistentry>
+            </variablelist>
+
+            <section>
+                <title>HTTP Authentication</title>
+
+                <para>The REST server and servlet support basic HTTP authentication, and only valid
+                    users can access the database. If no username and password are specified, the
+                    server assumes a "guest" user identity, which has limited capabilities. If the
+                    username submitted is not known, or an incorrect password is submitted, an error
+                    page (Status code 403 - Forbidden) is returned.</para>
+            </section>
+
+            <section>
+                <title>GET Requests</title>
+                <para>If the server receives an HTTP GET request, it first tries to locate known
+                    parameters. If no parameters are given or known, it will try to locate the
+                    collection or document specified in the URI database path, and return a
+                    representation of this resource the client. Note that when the located resource
+                    is XML, the returned <emphasis>content-type</emphasis> attribute value will be
+                        <option>text/xml</option>, and for binary resources
+                        <option>application/octet-stream</option>.</para>
+
+                <para>If the path resolves to a database collection, the retrieved results are
+                    returned as an XML fragment. An example fragment is shown below:</para>
+                <example>
+                    <title>XML Results for GET Request for a Collection</title>
+                    <programlisting>
+                        <markup><![CDATA[
+<exist:result xmlns:exist="http://exist.sourceforge.net/NS/exist">
+    <exist:collection name="/db/xinclude" owner="guest" group="guest" 
+        permissions="rwur-ur-u">
+        <exist:resource name="disclaimer.xml" owner="guest" group="guest" 
+            permissions="rwur-ur--"/>
+        <exist:resource name="sidebar.xml" owner="guest" group="guest" 
+            permissions="rwur-ur--"/>
+        <exist:resource name="xinclude.xml" owner="guest" group="guest" 
+            permissions="rwur-ur--"/>
+    </exist:collection>
+</exist:result>]]></markup>
+                        </programlisting>
+                </example>
+                <para>If an <option>xml-stylesheet</option> processing instruction is found in an
+                    XML document being requested, the database will try to apply the stylesheet
+                    before returning the document. Note that in this case, any relative path in a
+                    hypertext link will be resolved relative to the location of the source document.
+                    For example, if the document <filename>hamlet.xml</filename>, which is stored in
+                    collection <filename>/db/shakespeare/plays</filename> contains the XSLT
+                    processing instruction:</para>
+
+                <synopsis>&lt;?xml-stylesheet type="text/xml" href="shakes.xsl"?&gt;</synopsis>
+
+                <para>then the database will try to load the stylesheet from
+                        <filename>/db/shakespeare/plays/shakes.xsl</filename> and apply it to the
+                    document.</para>
+
+                <para>Optionally, GET accepts the following request parameters, which must be
+                    URL-encoded:</para>
+                <variablelist>
+                    <varlistentry>
+                        <term>_xsl=<emphasis>XSL Stylesheet</emphasis></term>
+                        <listitem>
+                            <para>Applies an XSL stylesheet to the requested resource. If the
+                                    <parameter moreinfo="none">_xsl</parameter> parameter contains
+                                an external URI, the corresponding external resource is retrieved.
+                                Otherwise, the path is treated as relative to the database root
+                                collection and the stylesheet is loaded from the database. This
+                                option will override any XSL stylesheet processing instructions
+                                found in the source XML file.</para>
+                            <para>Setting <parameter moreinfo="none">_xsl</parameter> to
+                                <option>no</option> disables any stylesheet processing. This is
+                                useful for retrieving the unprocessed XML from documents that have a
+                                stylesheet declaration.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>_query=<emphasis>XPath/XQuery Expression</emphasis></term>
+                        <listitem>
+                            <para>Executes a query specified by the request. The collection or
+                                resource referenced in the request path is added to the set of
+                                statically known documents for the query. </para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>_indent=<emphasis>yes | no</emphasis></term>
+                        <listitem>
+                            <para>Returns indented pretty-print XML.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>_encoding=<emphasis>Character Encoding Type</emphasis></term>
+                        <listitem>
+                            <para>Sets the character encoding for the resultant XML.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>_howmany=<emphasis>Number of Items</emphasis></term>
+                        <listitem>
+                            <para>Specifies the number of items to return from the resultant
+                                sequence.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>_start=<emphasis>Starting Position in Sequence</emphasis></term>
+                        <listitem>
+                            <para>Specifies the index position of the first item in the result
+                                sequence to be returned</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>_wrap=<emphasis>yes | no</emphasis></term>
+                        <listitem>
+                            <para>Specifies whether the returned query results are to be wrapped
+                                into a surrounding <sgmltag>exist:result</sgmltag> element. The
+                                default value is <option>yes</option>.</para>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
+                <para>EXAMPLE: The following URI will find all <sgmltag>SPEECH</sgmltag> elements in
+                    the collection <filename>/db/shakespeare</filename> with "Juliet" as the
+                        <sgmltag>SPEAKER</sgmltag>. As specified, it will return ten items from the
+                    result sequence, starting at position 1:</para>
+                <synopsis>http://localhost:8080/exist/rest/db/shakespeare?_query=//SPEECH[SPEAKER=%22JULIET%22]&amp;_start=1&amp;_howmany=10</synopsis>
+            </section>
+            <section>
+                <title>PUT Requests</title>
+                <para>Documents can be stored or updated using an HTTP PUT request. The request URI
+                    points to the location where the document will be stored. As defined by the HTTP
+                    specifications, an existing document at the specified path will be updated, i.e.
+                    removed, before storing the new resource. As well, any collections defined in
+                    the path that do not exist will be created automatically.</para>
+                <para>For example, the following Python script stores a document (the name of which
+                    is specified on the command-line) in the database collection
+                    <filename>/db/test</filename>, which will be created if this collection does not
+                    exist. Note that the HTTP header field <option>content-type</option> is
+                    specified as <option>text/xml</option>, since otherwise the document is stored
+                    as a binary resource.</para>
+
+                <example>
+                    <title>PUT Example using Python (See: samples/http/put.py)</title>
+                    <programlisting><![CDATA[
+import httplib
+import sys
+from string import rfind
+
+collection = sys.argv[1]
+file = sys.argv[2]
+
+f = open(file, 'r')
+print "reading file %s ..." % file
+xml = f.read()
+f.close()
+
+p = rfind(file, '/')
+if p > -1:
+    doc = file[p+1:]
+else:
+    doc = file
+print doc
+print "storing document to collection %s ..." % collection
+con = httplib.HTTP('localhost:8080')
+con.putrequest('PUT', '/exist/rest/%s/%s' % (collection, doc))
+con.putheader('Content-Type', 'text/xml')
+clen = len(xml)
+con.putheader('Content-Length', `clen`)
+con.endheaders()
+con.send(xml)
+
+errcode, errmsg, headers = con.getreply()
+
+if errcode != 200:
+    f = con.getfile()
+    print 'An error occurred: %s' % errmsg
+    f.close()
+else:
+    print "Ok."
+]]></programlisting>
+                </example>
+            </section>
+            <section>
+                <title>DELETE Requests</title>
+                <para>DELETE removes a collection or resource from the database. For this, the
+                    server first checks if the request path points to an existing database
+                    collection or resource, and once found, removes it.</para>
+            </section>
+            <section>
+                <title>POST Requests</title>
+                <para>POST requests require an XML fragment in the content of the request, which
+                    specifies the action to take.</para>
+                <para>If the root node of the fragment uses the XUpdate namespace
+                        (<filename>http://www.xmldb.org/xupdate</filename>), the fragment is sent to
+                    the XUpdateProcessor to be processed. Otherwise, the root node will have the
+                    namespace for eXist requests
+                    (<filename>http://exist.sourceforge.net/NS/exist</filename>), in which case the
+                    fragment is interpreted as an <emphasis>extended query request</emphasis>.
+                    Extended query requests can be used to post complex XQuery scripts that are too
+                    large to be encoded in a GET request.</para>
+                <para>The structure of the POST XML request is as follows:</para>
+                <example>
+                    <title>Extended Query Request</title>
+                    <programlisting><![CDATA[
+<query xmlns="http://exist.sourceforge.net/NS/exist"
+    start="[first item to be returned]" 
+    max="[maximum number of items to be returned]">
+    <text>[XQuery expression]</text>
+    <properties>
+        <property name="[name1]" value="[value1]"/>
+    </properties>
+</query>
+]]></programlisting>
+                </example>
+                <para>The root element <option>query</option> identifies the fragment as an extended
+                    query request, and the XQuery expression for this request is enclosed in the
+                        <option>text</option> element. Optional output properties, such as
+                    pretty-print, may be passed in the <option>properties</option> element. An
+                    example of POST for Perl is provided below:</para>
+                <example>
+                    <title>POST Example using Perl (See: samples/http/search.pl)</title>
+                    <programlisting><![CDATA[
+require LWP::UserAgent;
+
+$URL = 'http://localhost:8080/exist/rest/db/';
+$QUERY = <<END;
+<?xml version="1.0" encoding="UTF-8"?>
+<query xmlns="http://exist.sourceforge.net/NS/exist"
+    start="1" max="20">
+    <text>
+        for \$speech in //SPEECH[LINE &= 'corrupt*']
+        order by \$speech/SPEAKER[1]
+        return
+            <hit>{\$speech}</hit>
+    </text>
+    <properties>
+        <property name="indent" value="yes"/>
+    </properties>
+</query>
+END
+
+$ua = LWP::UserAgent->new();
+$req = HTTP::Request->new(POST => $URL);
+$req->content_type('text/xml');
+$req->content($QUERY);
+
+$res = $ua->request($req);
+if($res->is_success) {
+    print $res->content . "\n";
+} else {
+    print "Error:\n\n" . $res->status_line . "\n";
+}
+]]></programlisting>
+                </example>
+                <note>
+                    <para>Please note that you may have to enclose the XQuery expression in a CDATA
+                        section (i.e. &lt;![CDATA[ ... ]]&gt;) to avoid parsing errors (this
+                        is not shown above).</para>
+                </note>
+                <para>The returned query results are enclosed in the <sgmltag>exist:result</sgmltag>
+                    element, which are shown below for the above example:</para>
+                <example>
+                    <title>Returned Results for POST Request</title>
+                    <screen><![CDATA[
+<exist:result xmlns:exist="http://exist.sourceforge.net/NS/exist" hits="2628" start="1" count="10">
+<SPEECH xmlns:exist="http://exist.sourceforge.net/NS/exist">
+    <SPEAKER>BERNARDO</SPEAKER>
+    <LINE>Who's there?</LINE>
+</SPEECH>
+... more items follow ...
+</exist:result>
+]]></screen>
+                </example>
+            </section>
+        </section>
+    </chapter>
+</book>

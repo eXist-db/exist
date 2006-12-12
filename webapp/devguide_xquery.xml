@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<book xmlns:ci="http://apache.org/cocoon/include/1.0">
+    <bookinfo>
+        <graphic fileref="logo.jpg"/>
+        <productname>Open Source Native XML Database</productname>
+        <title>Developer's Guide</title>
+        <author>
+            <firstname>Wolfgang M.</firstname>
+            <surname>Meier</surname>
+            <affiliation>
+                <address format="linespecific">
+                    <email>wolfgang at exist-db.org</email>
+                </address>
+            </affiliation>
+        </author>
+    </bookinfo>
+    <ci:include src="sidebar.xml"/>
+    <chapter id="ch01">
+        <title>Developer's Guide</title>
+        <section id="sectXQuery">
+            <title>Writing Web Applications using XQuery</title>
+            <para>Not only is XQuery a powerful query language, it is also a functional programming
+                language with strong typing features, and can therefore be used to implement the
+                entire processing logic of a web application. Because of this functionality, much of
+                the Java code of eXist web applications has gradually been replaced by XQuery
+                scripts. As a result, eXist provides library modules for getting request parameters,
+                getting/setting session attributes, encoding URLs and so on. Developers who have
+                worked with other functional languages such as <emphasis>Lisp</emphasis> or
+                    <emphasis>Scheme</emphasis> will find XQuery very easy to learn.</para>
+
+            <section>
+                <title>XQueryServlet and XQueryGenerator (Cocoon)</title>
+                <para>eXist generates HTML web pages from XQuery files in two ways: the
+                    XQueryServlet and XQueryGenerator. With both the XQueryServlet and
+                    XQueryGenerator the compiled XQuery script is stored in a cache for future use.
+                    For this, eXist compiles XQuery into a tree of expression objects, which can be
+                    repeatedly executed. This code will only be recompiled if the source file has
+                    changed.</para>
+
+                <variablelist>
+                    <varlistentry>
+                        <term>XQueryServlet</term>
+                        <listitem>
+                            <para>This servlet responds to URL-patterns (e.g.
+                                <filename>*.xql</filename> and <filename>*.xqy</filename>) as
+                                defined in the <filename>web.xml</filename> configuration file of
+                                the application. The servlet will interpret this pattern as pointing
+                                to a valid XQuery file. The XQuery file is then loaded, compiled and
+                                executed, and the results are then sent to the client.</para>
+                            <para>To use the servlet, you must define the URL-patterns for your web
+                                application by adding the following to the
+                                <filename>WEB-INF/web.xml</filename> configuration file:</para>
+                            <example>
+                                <title>Configuration for the Servlet</title>
+                                <programlisting><![CDATA[
+<web-app>
+    <display-name>eXist Server</display-name>
+    <description>eXist Server Setup</description>
+    
+    <servlet>
+        <servlet-name>org.exist.http.servlets.XQueryServlet</servlet-name>
+        <servlet-class>org.exist.http.servlets.XQueryServlet</servlet-class>
+
+        <init-param>
+            <param-name>uri</param-name>
+            <param-value>xmldb:exist:///db</param-value>
+        </init-param>
+    </servlet>
+    
+    <servlet-mapping>
+	  <servlet-name>org.exist.http.servlets.XQueryServlet</servlet-name>
+	  <url-pattern>*.xql</url-pattern>
+    </servlet-mapping>
+</web-app>
+]]></programlisting>
+                            </example>
+                            <para>This will configure the servlet to respond to any URL-pattern
+                                ending with the <option>.xql</option> file extension as specified in
+                                    <sgmltag>servlet-mapping</sgmltag>. Note that the
+                                <option>.xq</option> is specifically NOT used for the
+                                    <sgmltag>url-pattern</sgmltag> definition so as not to interfere
+                                with Cocoon examples, which exclusively use this file extension.
+                                Also note that the <option>uri</option> parameter in
+                                    <sgmltag>init-param</sgmltag> specifies the
+                                <filename>XML:DB</filename> root collection used by the servlet. To
+                                configure this parameter to have the servlet access a remote
+                                database, follow instructions provided in the <ulink
+                                    url="deployment.xml">deployment docs</ulink>.</para>
+                        </listitem>
+                    </varlistentry>
+                    <varlistentry>
+                        <term>XQueryGenerator (Cocoon)</term>
+                        <listitem>
+                            <para>As with the servlet, the Cocoon generator reads and executes
+                                XQuery scripts. However, unlike the servlet, the generator passes
+                                the results to a Cocoon pipeline for further processing.
+                                Furthermore, the XQueryGenerator has to be configured in the Cocoon
+                                sitemap (<filename>sitemap.xmap</filename>). The sitemap registers
+                                the generator and configures a pipeline to map resources for
+                                different web applications. For more information on configuring and
+                                using sitemaps, consult the documentation provided by <ulink
+                                    url="http://cocoon.apache.org">Cocoon</ulink>.The following is a
+                                basic sitemap:</para>
+                            <para/>
+                            <example>
+                                <title>Cocoon Sitemap</title>
+                                <programlisting><![CDATA[
+<map:sitemap xmlns:map="http://apache.org/cocoon/sitemap/1.0">
+    <map:components>
+        <map:generators default="file">
+            <map:generator name="xquery" 
+                logger="sitemap.generator.xquery"
+                src="org.exist.cocoon.XQueryGenerator"/>
+        </map:generators>
+        <map:readers default="resource"/>
+        <map:serializers default="html"/>
+        <map:selectors default="browser"/>
+        <map:matchers default="wildcard"/>
+        <map:transformers default="xslt">
+        </map:transformers>
+	</map:components>
+    <map:pipelines>
+        <map:pipeline>
+            <map:match pattern="*.xq">
+                <map:generate src="{1}.xq" type="xquery"/>
+                <map:serialize encoding="UTF-8" type="html"/>
+            </map:match>
+        </map:pipeline>
+    </map:pipelines>
+</map:sitemap>]]></programlisting>
+                            </example>
+                            <para>According to the above pipeline definition, any path ending with
+                                the <option>.xq</option> extension is matched and processed by the
+                                pipeline. The pipeline generates results using the XQueryGenerator
+                                defined as type <option> xquery</option> in
+                                <sgmltag>map:components</sgmltag>.</para>
+                        </listitem>
+                    </varlistentry>
+                </variablelist>
+            </section>
+
+            <section>
+                <title>Example XQuery Script</title>
+                <para>A script example provided with eXist offers a simple number guessing game that
+                    illustrates many of the features of XQuery. The source code for this game is
+                    found in <ulink url="xquery/guess.xql">webapp/xquery/guess.xql</ulink>, and can
+                    be viewed locally at <ulink url="http://localhost:8080/exist/examples.xml"
+                        >http://localhost:8080/exist/examples.xml</ulink>. As the file extension
+                    indicates, this particular script is processed by the XQueryServlet. The full
+                    script is as follows:</para>
+                <example>
+                    <title>Guess a Number</title>
+                    <programlisting><![CDATA[
+xquery version "1.0";
+
+declare namespace request="http://exist-db.org/xquery/request";
+declare namespace math="java:java.lang.Math";
+
+declare function local:random($max as xs:integer) 
+as empty()
+{
+    let $r := ceiling(math:random() * $max) cast as xs:integer
+    return
+        request:set-session-attribute("random", $r)
+};
+
+declare function local:guess($guess as xs:integer,
+$rand as xs:integer) as element()
+{
+    if ($guess lt $rand) then
+        <p>Your number is too small!</p>
+    else if ($guess gt $rand) then
+        <p>Your number is too large!</p>
+    else (
+        local:random(100),
+        <p>Congratulations! You guessed the right number.
+        Try again!</p> 
+    )
+};
+
+declare function local:main() as node()?
+{
+    request:create-session(),
+    let $rand := request:get-session-attribute("random"),
+        $guess := request:request-parameter("guess", ())
+    return
+        if ($rand) then local:guess($guess, $rand)
+        else local:random(100)
+};
+
+<html>
+    <head><title>Number Guessing</title></head>
+    <body>
+        <form action="{request:encode-url(request:request-uri())}">
+            <table border="0">
+                <tr>
+                    <th colspan="2">
+                        Guess a number
+                    </th>
+                </tr>
+                <tr>
+                    <td>Number:</td>
+                    <td><input type="text" name="guess"
+                        size="3"/></td>
+                </tr>
+                <tr>
+                    <td colspan="2" align="left">
+                        <input type="submit"/>
+                    </td>
+                </tr>
+            </table> 
+        </form>
+        { local:main() }
+    </body>
+</html>
+]]></programlisting>
+                </example>
+                <para>In this example, a random number is generated using the local function
+                        <methodname>local:random</methodname>, which uses the Java binding to call
+                    the static method <methodname>Math.random</methodname>. (For information on the
+                    Java binding with eXist, check the <ulink url="xquery.xml">XQuery Docs</ulink>.)
+                    The generated number is stored as an HTTP session variable (attribute). The user
+                    is then asked to guess its value. If the user submits a guess, it is read from
+                    the HTTP request parameter and compared to the stored number. If the numbers
+                    match, a new random is generated and the game starts again. </para>
+
+                <para>Notice that you do not have to import the request module for handling HTTP
+                    parameter, but can simply declare its namespace (i.e.
+                        <filename>http://exist-db.org/xquery/request</filename>) in the document.
+                    The module, if it is available, is loaded automatically by the XQuery engine.
+                    How do the functions in this module access the HTTP request and session objects?
+                    The XQueryServlet and the XQueryGenerator both export a number of global
+                    variables to the XQuery script: <option>$request</option>,
+                    <option>$response</option> and <option>$session</option>. These variables store
+                    the corresponding HTTP objects as passed by the servlet engine (or Cocoon),
+                    which are accessed by the functions in the library module.</para>
+
+                <para>Both XQueryServlet and the XQueryGenerator provide initialization parameters
+                    to set the username and password used for requests. However, the code will also
+                    check if the current HTTP session contains the session attributes
+                    <option>user</option> and <option>password</option>. If so, the session settings
+                    will overwrite any previous settings. For more information on changing user
+                    identities, see the <ulink url="xquery/login.xql">Session
+                Example</ulink>.</para>
+            </section>
+        </section>
+    </chapter>
+</book>
