@@ -137,7 +137,12 @@ public class ExtensionExpression extends AbstractExpression {
         super.setContextDocSet(contextSet);
         innerExpression.setContextDocSet(contextSet);
     }
-    
+
+
+    public void setPrimaryAxis(int axis) {
+        innerExpression.setPrimaryAxis(axis);            
+    }
+
     /* (non-Javadoc)
      * @see org.exist.xquery.AbstractExpression#resetState()
      */
