@@ -23,14 +23,13 @@ package org.exist.dom;
 
 import java.util.Iterator;
 
+import org.exist.numbering.NodeId;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Expression;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.Type;
-import org.exist.numbering.NodeId;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 

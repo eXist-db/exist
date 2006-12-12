@@ -24,14 +24,13 @@ package org.exist.memtree;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
-import org.apache.log4j.Logger;
 
+import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.CommentImpl;
 import org.exist.dom.DocumentTypeImpl;
 import org.exist.dom.ElementImpl;
-import org.exist.dom.NodeProxy;
 import org.exist.dom.ProcessingInstructionImpl;
 import org.exist.dom.QName;
 import org.exist.dom.StoredNode;

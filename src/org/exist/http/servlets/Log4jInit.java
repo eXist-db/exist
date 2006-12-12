@@ -144,7 +144,7 @@ public class Log4jInit extends HttpServlet {
         System.out.println(getTimestamp() + " - eXist-DB configuration=" 
                 + eXistConfigFile.getAbsolutePath());
         try {
-            Configuration config = new Configuration(eXistConfigFile.getAbsolutePath());
+            /*Configuration config = */ new Configuration(eXistConfigFile.getAbsolutePath());
         } catch (DatabaseConfigurationException ex) {
             ex.printStackTrace();
         }

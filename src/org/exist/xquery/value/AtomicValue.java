@@ -23,12 +23,11 @@ package org.exist.xquery.value;
 import java.text.Collator;
 
 import org.exist.EXistException;
-import org.exist.numbering.NodeId;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
-import org.exist.dom.NodeProxy;
 import org.exist.dom.StoredNode;
 import org.exist.memtree.DocumentBuilderReceiver;
+import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.Indexable;
 import org.exist.storage.ValueIndexFactory;

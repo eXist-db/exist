@@ -22,6 +22,10 @@
 
 package org.exist.xquery.functions.response;
 
+import java.util.Date;
+
+import javax.xml.datatype.Duration;
+
 import org.exist.dom.QName;
 import org.exist.http.servlets.ResponseWrapper;
 import org.exist.xquery.Cardinality;
@@ -32,17 +36,12 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.DurationValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.DurationValue;
-import org.exist.xquery.value.IntegerValue;
-
-import java.util.Date;
-import javax.xml.datatype.Duration;
 
 /**
  * Set's a HTTP Cookie on the HTTP Response

@@ -29,7 +29,6 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.dom.TextImpl;
 import org.exist.memtree.MemTreeBuilder;
-import org.exist.storage.serializers.Serializer;
 import org.exist.util.FastQSort;
 import org.exist.util.XMLString;
 import org.exist.xquery.BasicFunction;
@@ -72,7 +71,7 @@ public class HighlightMatches extends BasicFunction {
             },
             new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE));
     
-    private final static QName MATCH_ELEMENT = new QName("match", Serializer.EXIST_NS, "exist");
+    //private final static QName MATCH_ELEMENT = new QName("match", Serializer.EXIST_NS, "exist");
     
     public HighlightMatches(XQueryContext context) {
         super(context, signature);

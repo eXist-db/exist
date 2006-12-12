@@ -158,7 +158,7 @@ public class UserXQueryJob extends UserJob
 	        
 	        try
 	        {
-	            Sequence result = xquery.execute(compiled, null);
+	            xquery.execute(compiled, null);
 	        }
 	        finally
 	        {

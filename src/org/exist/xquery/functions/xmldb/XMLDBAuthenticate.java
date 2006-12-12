@@ -34,7 +34,6 @@ import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.session.SessionModule;
-import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;

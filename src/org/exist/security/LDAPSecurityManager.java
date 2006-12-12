@@ -268,7 +268,7 @@ public class LDAPSecurityManager implements SecurityManager
       String password = getAttributeValue(userPasswordAttr, attrs);
       String digestPassword = getAttributeValue(userDigestPasswordAttr, attrs);
       String gid = getAttributeValue(gidNumberAttr, attrs);
-      String g_dn = groupByIdPatternFormat.format(new String[] { gid });
+      //String g_dn = groupByIdPatternFormat.format(new String[] { gid });
       
       LOG.info("Searching for "+gidNumberAttr+"="+gid+" in "+groupBase);
       String mainGroup = null;

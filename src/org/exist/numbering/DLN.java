@@ -245,7 +245,7 @@ public class DLN extends DLNBase implements NodeId {
     }
     
     public boolean isSiblingOf(NodeId sibling) {
-        DLN other = (DLN) sibling;
+        //DLN other = (DLN) sibling;
         NodeId parent = getParentId();
         return sibling.isChildOf(parent);
     }
