@@ -377,7 +377,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 key = new WordRef(collectionId, token);
             else {
                 key = new QNameWordRef(collectionId, qname, token);
-                LOG.debug("Using qname: " + qname.toString() + " " + key.dump() + " '" + key.toString() + "'");
+//                LOG.debug("Using qname: " + qname.toString() + " " + key.dump() + " '" + key.toString() + "'");
             }
 			final Lock lock = dbTokens.getLock();
 			try {
