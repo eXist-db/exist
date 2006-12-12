@@ -75,7 +75,8 @@ public abstract class Step extends AbstractExpression {
 	    	AnalyzeContextInfo newContext = new AnalyzeContextInfo(contextInfo);
 	        newContext.setStaticType(this.axis == Constants.SELF_AXIS ? contextInfo.getStaticType() : Type.NODE);
 	    	newContext.setParent(this);
-	        for ( Iterator i = predicates.iterator(); i.hasNext();  ) {
+            newContext.setContextStep(this);
+            for ( Iterator i = predicates.iterator(); i.hasNext();  ) {
 	            ((Predicate) i.next()).analyze(newContext);
 	        }
     	}
