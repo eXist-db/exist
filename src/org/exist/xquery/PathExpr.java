@@ -132,6 +132,8 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                         contextInfo.setContextId(Expression.NO_CONTEXT_ID);                    
                 }
             }
+            if (i > 1)
+                contextInfo.setContextStep((Expression) steps.get(i - 1));
             expr.analyze(contextInfo);
         }
     }

@@ -360,13 +360,14 @@ public class Predicate extends PathExpr {
             	//which will be different from the one(s) in contextSet
             	//ancestors will thus be empty :-(
             	if (outerSequence instanceof VirtualNodeSet)
-            		((VirtualNodeSet)outerSequence).realize(); 
-				Sequence ancestors = contextSet.selectAncestorDescendant(outerNodeSet,
-						NodeSet.ANCESTOR, true, getExpressionId()); 
+            		((VirtualNodeSet)outerSequence).realize();
+//                Sequence ancestors = outerNodeSet.selectAncestors(contextSet, true, getExpressionId());
+                Sequence ancestors = contextSet.selectAncestorDescendant(outerNodeSet,
+						NodeSet.ANCESTOR, true, getExpressionId());
 				if (contextSet.getDocumentSet().intersection(outerNodeSet.getDocumentSet()).getLength() == 0)
 					LOG.info("contextSet and outerNodeSet don't share any document");
 				ExtArrayNodeSet temp = new ExtArrayNodeSet(100);
-				for(SequenceIterator i = ancestors.iterate(); i.hasNext(); ) {					
+				for(SequenceIterator i = ancestors.iterate(); i.hasNext(); ) {
 				    NodeProxy p = (NodeProxy)i.nextItem();
 				    ContextItem contextNode = p.getContext();
 				    temp.reset();

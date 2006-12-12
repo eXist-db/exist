@@ -39,8 +39,10 @@ public class AnalyzeContextInfo {
 	private int contextId = Expression.NO_CONTEXT_ID;
 	
 	private int staticType = Type.ITEM;
-	
-	public AnalyzeContextInfo() {
+
+    private Expression contextStep = null;
+
+    public AnalyzeContextInfo() {
 	}
 	
 	/**
@@ -64,7 +66,8 @@ public class AnalyzeContextInfo {
 		this.parent = other.parent;
 		this.flags = other.flags;
 		this.contextId = other.contextId;
-	}
+        this.contextStep = other.contextStep;
+    }
 	
 	/**
 	 * Returns the current context id. The context id is used
@@ -127,8 +130,16 @@ public class AnalyzeContextInfo {
 	public void setStaticType(int staticType) {
 		this.staticType = staticType;
 	}
-	
-	public String toString() {
+
+    public void setContextStep(Expression step) {
+        this.contextStep = step;
+    }
+
+    public Expression getContextStep() {
+        return contextStep;
+    }
+    
+    public String toString() {
 		StringBuffer buf = new StringBuffer();
 		buf.append("ID: ").append(contextId);
 		buf.append(" Type: ").append(Type.getTypeName(staticType)).append(" Flags: ");

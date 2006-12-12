@@ -240,8 +240,9 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	 * @param nodeType The nodeType to set
 	 */
 	public void setNodeType(short nodeType) {
-        if (this.nodeType != UNKNOWN_NODE_TYPE && this.nodeType != nodeType)
-            throw new IllegalArgumentException("Node type already affected");
+//        if (this.nodeType != UNKNOWN_NODE_TYPE && this.nodeType != nodeType)
+//            throw new IllegalArgumentException("Node type already affected");
+//            throw new IllegalArgumentException("Node type already affected");
         this.nodeType = nodeType;
 	}
  
