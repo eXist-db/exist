@@ -110,12 +110,26 @@ public class ExtFulltext extends Function implements Optimizable {
 
         LocationStep step = BasicExpressionVisitor.findFirstStep(path);
         if (step != null) {
-            NodeTest test = step.getTest();
-            if (!test.isWildcardTest() && test.getName() != null) {
-                contextQName = new QName(test.getName());
-                if (step.getAxis() == Constants.ATTRIBUTE_AXIS || step.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
-                    contextQName.setNameType(ElementValue.ATTRIBUTE);
-                contextStep = step;
+            if (step.getAxis() == Constants.SELF_AXIS) {
+                Expression outerExpr = contextInfo.getContextStep();
+                if (outerExpr != null && outerExpr instanceof LocationStep) {
+                    LocationStep outerStep = (LocationStep) outerExpr;
+                    NodeTest test = outerStep.getTest();
+                    if (!test.isWildcardTest() && test.getName() != null) {
+                        contextQName = new QName(test.getName());
+                        if (step.getAxis() == Constants.ATTRIBUTE_AXIS || step.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
+                            contextQName.setNameType(ElementValue.ATTRIBUTE);
+                        contextStep = step;
+                    }
+                }
+            } else {
+                NodeTest test = step.getTest();
+                if (!test.isWildcardTest() && test.getName() != null) {
+                    contextQName = new QName(test.getName());
+                    if (step.getAxis() == Constants.ATTRIBUTE_AXIS || step.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
+                        contextQName.setNameType(ElementValue.ATTRIBUTE);
+                    contextStep = step;
+                }
             }
         }
     }
