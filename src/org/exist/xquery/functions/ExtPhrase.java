@@ -228,7 +228,7 @@ public class ExtPhrase extends ExtFulltext {
 					tok.setText(value);
                     int j = 0;
 					if (j < patterns.length) {
-                        Pattern term = patterns[j];
+                        //Pattern term = patterns[j];
                         matcher = matchers[j];
                     } else
 						break;
@@ -257,25 +257,25 @@ public class ExtPhrase extends ExtFulltext {
 								}
 								// start again on fist term
 								j=0;
-                                Pattern term = patterns[j];
+                                //Pattern term = patterns[j];
                                 matcher = matchers[j];
 								matchTerm = null;
 								continue;
 							} else {
-                                Pattern term = patterns[j];
+                                //Pattern term = patterns[j];
                                 matcher = matchers[j];
                             }
 						} else if (j > 0 && matchers[0].matches()) {
 							// first search term found: start again
 							j=1;
-                            Pattern term = patterns[j];
+                            //Pattern term = patterns[j];
                             matcher = matchers[j];
 							matchTerm = word;
 							continue;
 						} else {
 							// reset
 							j = 0;
-                            Pattern term = patterns[j];
+                            //Pattern term = patterns[j];
                             matcher = matchers[j];
 							matchTerm = null;
 							continue;

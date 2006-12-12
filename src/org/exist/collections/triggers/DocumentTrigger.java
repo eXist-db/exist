@@ -28,7 +28,6 @@ import org.exist.dom.DocumentImpl;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
-import org.w3c.dom.Document;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ext.LexicalHandler;
 

@@ -228,7 +228,7 @@ public class ExtNear extends ExtFulltext {
 			tok.setText(value);
             int j = 0;
 			if (j < patterns.length) {
-                Pattern term = patterns[j];
+                //Pattern term = patterns[j];
 				matcher = matchers[j];
 			} else {
 				break;
@@ -240,7 +240,7 @@ public class ExtNear extends ExtFulltext {
 				if (current_distance > max_distance) {
 					// reset
 					j = 0;
-                    Pattern term = patterns[j];
+                    //Pattern term = patterns[j];
 					matcher = matchers[j];
 					current_distance = -1;
 				}
@@ -258,13 +258,13 @@ public class ExtNear extends ExtFulltext {
 						}
 						break;
 					} else {
-                        Pattern term = patterns[j];
+                        //Pattern term = patterns[j];
 						matcher = matchers[j];
 					}
 				} else if (j > 0 && matchers[0].matches()) {
 					// first search term found: start again
 					j = 1;
-                    Pattern term = patterns[j];
+                    //Pattern term = patterns[j];
 					matcher = matchers[j];
 					current_distance = 0;
 					continue;

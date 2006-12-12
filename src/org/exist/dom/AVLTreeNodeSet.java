@@ -165,7 +165,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
                 == 2) {
                 Node nodeA = currentParent,
                     nodeB = nodeA.getLeftChild(),
-                    nodeC = nodeB.getLeftChild(),
+                    //nodeC = nodeB.getLeftChild(),
                     nodeD = nodeB.getRightChild();
                 if (nodeB.leftHeight() > nodeB.rightHeight()) {
                     // right rotation for Case 2
@@ -217,10 +217,10 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
 
             if (currentParent.leftHeight() - currentParent.rightHeight()
                 == -2) {
-                Node nodeA = currentParent,
-                    nodeB = nodeA.getRightChild(),
-                    nodeC = nodeB.getLeftChild(),
-                    nodeD = nodeB.getRightChild();
+                Node nodeA = currentParent;
+                Node nodeB = nodeA.getRightChild();
+                Node nodeC = nodeB.getLeftChild();
+                //Node nodeD = nodeB.getRightChild();
 
                 if (nodeB.leftHeight() < nodeB.rightHeight()) {
                     // left rotation for Case 2

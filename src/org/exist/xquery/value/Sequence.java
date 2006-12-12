@@ -22,10 +22,9 @@ package org.exist.xquery.value;
 
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
-import org.exist.dom.NodeProxy;
 import org.exist.dom.StoredNode;
-import org.exist.xquery.XPathException;
 import org.exist.numbering.NodeId;
+import org.exist.xquery.XPathException;
 
 /**
  * This interface represents a sequence as defined in the XPath 2.0 specification.

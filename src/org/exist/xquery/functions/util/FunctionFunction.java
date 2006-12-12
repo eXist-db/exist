@@ -25,7 +25,6 @@ import org.exist.dom.QName;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
-import org.exist.xquery.Dependency;
 import org.exist.xquery.ExternalModule;
 import org.exist.xquery.FunctionCall;
 import org.exist.xquery.FunctionSignature;

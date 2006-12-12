@@ -106,9 +106,9 @@ public  class Collection extends Observable
     
     private final static Logger LOG = Logger.getLogger(Collection.class);
     
-    private final static int VALIDATION_ENABLED = 0;
-    private final static int VALIDATION_AUTO = 1;
-    private final static int VALIDATION_DISABLED = 2;
+    //private final static int VALIDATION_ENABLED = 0;
+    //private final static int VALIDATION_AUTO = 1;
+    //private final static int VALIDATION_DISABLED = 2;
     
     public final static short UNKNOWN_COLLECTION_ID = -1;
     
