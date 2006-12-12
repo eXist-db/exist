@@ -38,7 +38,7 @@ import org.apache.xmlrpc.XmlRpcException;
  *
  * @author dizzzz
  */
-public class RetrieveChuncked {
+public class RetrieveChunked {
     
     /**
      * @param args ignored command line arguments
