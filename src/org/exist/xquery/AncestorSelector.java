@@ -24,18 +24,30 @@ package org.exist.xquery;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
+import org.exist.dom.ExtArrayNodeSet;
 import org.exist.numbering.NodeId;
 
 public class AncestorSelector implements NodeSelector {
 
     private NodeSet ancestors;
+    private NodeSet descendants = null;
+    private int contextId;
+    private boolean includeSelf;
 
     public AncestorSelector(NodeSet descendants, int contextId, boolean includeSelf) {
         super();
-        ancestors = descendants.getAncestors(contextId, includeSelf);
+        this.contextId = contextId;
+        this.includeSelf = includeSelf;
+        if (descendants instanceof ExtArrayNodeSet)
+            this.descendants = descendants;
+        else
+            this.ancestors = descendants.getAncestors(contextId, includeSelf);
     }
 
     public NodeProxy match(DocumentImpl doc, NodeId nodeId) {
-        return ancestors.get(doc, nodeId);
+        if (descendants == null)
+            return ancestors.get(doc, nodeId);
+        else
+            return ((ExtArrayNodeSet) descendants).hasDescendantsInSet(doc, nodeId, includeSelf, contextId);
     }
 }

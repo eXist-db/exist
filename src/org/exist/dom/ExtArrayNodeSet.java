@@ -382,7 +382,12 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
 		}
 		return result;
     }
-    
+
+    public NodeProxy hasDescendantsInSet(DocumentImpl doc, NodeId ancestorId, boolean includeSelf, int contextId) {
+        final Part part = getPart(doc, false, 0);
+        return part == null ? null : part.hasDescendantsInSet(ancestorId, contextId, includeSelf);
+    }
+
     public NodeSet selectParentChild(NodeSet al, int mode, int contextId) {
     	sort();
         if (al instanceof VirtualNodeSet)
@@ -753,7 +758,51 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
             }
             return null;
         }
-        
+
+        NodeProxy hasDescendantsInSet(NodeId ancestorId, int contextId, boolean includeSelf) {
+            // do a binary search to pick some node in the range of valid child
+            // ids
+            int low = 0;
+            int high = length - 1;
+            int mid = 0;
+            int cmp;
+            NodeProxy p;
+            while (low <= high) {
+                mid = (low + high) / 2;
+                p = array[mid];
+                if (p.getNodeId().isDescendantOrSelfOf(ancestorId))
+                    break;	// found a child node, break out.
+                cmp = p.getNodeId().compareTo(ancestorId);
+                if (cmp > 0)
+                    high = mid - 1;
+                else
+                    low = mid + 1;
+            }
+            if (low > high)
+                return null; // no node found
+            // find the first child node in the range
+            while (mid > 0 && array[mid - 1].getNodeId().compareTo(ancestorId) >= 0)
+                --mid;
+            NodeProxy ancestor = new NodeProxy(getDocument(), ancestorId, Node.ELEMENT_NODE);
+            for (int i = mid; i < length; i++) {
+                cmp = array[i].getNodeId().computeRelation(ancestorId);
+                if (cmp > -1) {
+                    boolean add = true;
+                    if (cmp == NodeId.IS_SELF)
+                        add = includeSelf;
+                    if (add) {
+                        if (Expression.NO_CONTEXT_ID != contextId)
+                            ancestor.deepCopyContext(array[i], contextId);
+                        else
+                            ancestor.copyContext(array[i]);
+                        ancestor.addMatches(array[i]);
+                    }
+                } else
+                    break;
+            }
+            return ancestor;
+        }
+
         /**
          * Find all nodes in the current set being children or descendants of the given parent
          * node.
