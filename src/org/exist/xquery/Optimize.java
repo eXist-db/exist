@@ -21,21 +21,20 @@
  */
 package org.exist.xquery;
 
-import org.exist.dom.QName;
-import org.exist.dom.NodeSet;
-import org.exist.dom.VirtualNodeSet;
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.NodeProxy;
-import org.exist.Namespaces;
-import org.exist.storage.ElementIndex;
-import org.exist.storage.ElementValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.functions.ExtFulltext;
-import org.apache.log4j.Logger;
-
 import java.util.Iterator;
+
+import org.apache.log4j.Logger;
+import org.exist.Namespaces;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.ExtArrayNodeSet;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
+import org.exist.dom.VirtualNodeSet;
+import org.exist.storage.ElementIndex;
+import org.exist.xquery.functions.ExtFulltext;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.Sequence;
 
 public class Optimize extends Pragma {
 

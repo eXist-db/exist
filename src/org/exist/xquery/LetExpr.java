@@ -23,19 +23,15 @@
 package org.exist.xquery;
 
 import org.exist.dom.QName;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.StoredNode;
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.GroupedValueSequence; 
-import org.exist.xquery.value.GroupedValueSequenceList; 
+import org.exist.xquery.value.GroupedValueSequence;
+import org.exist.xquery.value.GroupedValueSequenceList;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.OrderedValueSequence;
 import org.exist.xquery.value.PreorderedValueSequence;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
-import org.exist.storage.UpdateListener;
-import org.exist.numbering.NodeId;
 
 /**
  * Implements an XQuery let-expression.

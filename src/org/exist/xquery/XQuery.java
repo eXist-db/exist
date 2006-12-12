@@ -22,15 +22,11 @@
  */
 package org.exist.xquery;
 
-import com.sun.xacml.ctx.RequestCtx;
-
 import java.io.IOException;
 import java.io.Reader;
 
 import org.apache.log4j.Logger;
-import org.exist.http.servlets.SessionWrapper;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.User;
 import org.exist.security.xacml.AccessContext;
 import org.exist.security.xacml.ExistPDP;
 import org.exist.security.xacml.XACMLSource;
@@ -38,19 +34,18 @@ import org.exist.source.Source;
 import org.exist.source.StringSource;
 import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
-import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.util.HTTPUtils;
-import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.Type;
 
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
 import antlr.collections.AST;
+
+import com.sun.xacml.ctx.RequestCtx;
 
 
 /**
@@ -168,13 +163,16 @@ public class XQuery {
     }
     
     public Sequence execute(CompiledXQuery expression, Sequence contextSequence) throws XPathException {
-    	return execute(expression, contextSequence, true);
+    	XQueryContext context = expression.getContext();
+        Sequence result = execute(expression, contextSequence, true);
+        //TODO : move this elsewhere !
+        HTTPUtils.addLastModifiedHeader( result, context );
+    	return result;
     }
     
     public Sequence execute(CompiledXQuery expression, Sequence contextSequence, boolean resetContext) throws XPathException {
+    	XQueryContext context = expression.getContext();
     	
-        XQueryContext context = expression.getContext();
-
 		//check access to the query
 		XACMLSource source = expression.getSource();
 		try {
@@ -199,8 +197,6 @@ public class XQuery {
         broker.getBrokerPool().getXQueryMonitor().queryStarted(context.getWatchDog());
         try {
         	Sequence result = expression.eval(contextSequence);
-            if (resetContext)
-                HTTPUtils.addLastModifiedHeader( result, context );
         	return result;
         } finally {
             expression.reset();
