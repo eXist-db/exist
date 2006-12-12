@@ -437,7 +437,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		for (Iterator i = iterator(); i.hasNext();) {
 			l = (NodeProxy) i.next();
 			if ((p = other.parentWithChild(l, false, true, NodeProxy.UNKNOWN_NODE_LEVEL)) != null) {
-                if (p.getNodeId().equals(l.getNode()))
+                if (p.getNodeId().equals(l.getNodeId()))
 					p.addMatches(l);
 				r.add(p);
 			}
