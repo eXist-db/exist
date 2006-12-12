@@ -30,6 +30,7 @@ import java.util.Vector;
 import org.apache.xmlrpc.XmlRpc;
 import org.apache.xmlrpc.XmlRpcClient;
 import org.apache.xmlrpc.XmlRpcException;
+import org.exist.xmldb.XmldbURI;
 
 /**
  *  Example code for demonstrating XMLRPC methods getDocumentData
@@ -44,14 +45,23 @@ public class RetrieveChunked {
      * @param args ignored command line arguments
      */
     public static void main(String[] args) {
-        String uri = "http://guest:guest@localhost:8080/exist/xmlrpc";
-        String path ="/db/mondial/mondial.xml";
+        
+        // Download file (ohoh not in spec) using xmldb url
+        String xmldbUri = "xmldb:exist://guest:guest@localhost:8080/exist/xmlrpc/db/mondial/mondial.xml";
+        XmldbURI uri = XmldbURI.create(xmldbUri);
+        
+        // Construct url for xmlrpc, without collections / document
+        // username/password yet hardcoded, need to update XmldbUri fir this
+        String url = "http://guest:guest@" + uri.getAuthority() + uri.getContext();
+        String path =uri.getCollectionPath();
+        
+        // Hardcoded yet too
         String filename="mondial.xml";
         
         try {
             // Setup xmlrpc client
             XmlRpc.setEncoding("UTF-8");
-            XmlRpcClient xmlrpc = new XmlRpcClient(uri);
+            XmlRpcClient xmlrpc = new XmlRpcClient(url);
             
             // Setup xml serializer
             Hashtable options = new Hashtable();
