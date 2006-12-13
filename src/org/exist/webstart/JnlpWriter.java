@@ -71,7 +71,7 @@ public class JnlpWriter {
         
         // Perfom sanity checks
         File mainJar=jnlpFiles.getMainJar();
-        if(mainJar==null){
+        if(mainJar==null || !mainJar.exists()){
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                     "Missing exist.jar !");
             return;
@@ -79,7 +79,7 @@ public class JnlpWriter {
         
         File coreJars[] = jnlpFiles.getCoreJars();
         for(int i=0 ; i<coreJars.length ; i++) {
-            if(coreJars[i]==null){
+            if(coreJars[i]==null || !coreJars[i].exists()){
                 response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                         "Missing Jar file! ("+i+")");
                 return;
@@ -156,9 +156,9 @@ public class JnlpWriter {
         logger.debug("Send jar file "+ filename);
         
         File localJarFile = jnlpFiles.getFile(filename);
-        if(localJarFile==null){
+        if(localJarFile==null || !localJarFile.exists()){
             response.sendError(HttpServletResponse.SC_NOT_FOUND,
-                    "Jar file '"+filename+"' could not be found.");
+                    "Jar file '"+filename+"' not found.");
             return;
         }
         String localJarPath = localJarFile.getAbsolutePath();
@@ -217,6 +217,11 @@ public class JnlpWriter {
         response.setContentType(type);
         
         File imageFile = new File(imagesFolder, filename);
+        if(imageFile==null || !imageFile.exists()){
+            response.sendError(HttpServletResponse.SC_NOT_FOUND,
+                    "Image file '"+filename+"' not found.");
+            return;
+        }
         
         response.setContentLength( Integer.parseInt(Long.toString(imageFile.length())) );
         response.setDateHeader("Last-Modified",imageFile.lastModified());
