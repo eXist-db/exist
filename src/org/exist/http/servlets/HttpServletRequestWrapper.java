@@ -79,7 +79,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 		
 		/**
 		 * StringEnumeration Constructor
-		 * @param strings[] 	an array of strings for the Enumeration
+		 * @param strings 	an array of strings for the Enumeration
 		 */
 		StringEnumeration(String[] strings)
 		{

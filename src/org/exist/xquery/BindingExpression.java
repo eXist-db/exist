@@ -203,7 +203,7 @@ public abstract class BindingExpression extends AbstractExpression {
 	 * one single step. In general, this is possible if all order 
 	 * expressions return nodes.
 	 * 
-	 * @return
+	 * @return Whether or not the order specs can be processed in one signle step.
 	 */
 	protected boolean checkOrderSpecs(Sequence in) {
 		if (orderSpecs == null)

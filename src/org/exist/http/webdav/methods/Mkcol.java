@@ -52,7 +52,7 @@ public class Mkcol extends AbstractWebDAVMethod {
 
     public void process(User user, HttpServletRequest request,
             HttpServletResponse response, XmldbURI path) throws ServletException, IOException {
-    	String origPath = request.getPathInfo();
+    	//String origPath = request.getPathInfo();
     	if(path == null || path.equals("")) {
             response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
                     "no path specified");

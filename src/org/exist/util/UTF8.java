@@ -281,9 +281,9 @@ public class UTF8 {
 	private final static char b00111111 = (char) 0x3F;
 	private final static char b00011111 = (char) 0x1F;
 	private final static char b00001111 = (char) 0x0F;
-	private final static char b00000111 = (char) 0x07;
-	private final static char b00000011 = (char) 0x03;
-	private final static char b00000001 = (char) 0x01;
+	//private final static char b00000111 = (char) 0x07;
+	//private final static char b00000011 = (char) 0x03;
+	//private final static char b00000001 = (char) 0x01;
 
 	/**
 	 * Returns the length of the string encoded in UTF-8.
@@ -295,7 +295,8 @@ public class UTF8 {
 
 		int bytlen = 0;
 
-		char ch, sch;
+		char ch;
+		//char sch;
 		for (int c = 0; c < str.length(); c++) {
 
 			ch = str.charAt(c);
@@ -324,7 +325,8 @@ public class UTF8 {
 
 		int bytlen = 0;
 
-		char ch, sch;
+		char ch;
+		//char sch;
 		int end = start + len;
 		for (int c = start; c < end; c++) {
 

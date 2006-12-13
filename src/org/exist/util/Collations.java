@@ -259,7 +259,7 @@ public class Collations {
      * @param lang
      * @param strength
      * @param decomposition
-     * @return
+     * @return The collator
      */
     private static Collator getCollationFromParams(String lang,
             String strength, String decomposition) throws XPathException {
@@ -323,7 +323,7 @@ public class Collations {
 
     /**
      * @param lang
-     * @return
+     * @return The locale
      */
     private static Locale getLocale(String lang) {
         int dashPos = lang.indexOf('-');

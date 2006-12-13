@@ -207,7 +207,7 @@ public abstract class Function extends PathExpr {
 	 * 
 	 * @param expr
 	 * @param type
-	 * @return
+	 * @return The passed expression
 	 * @throws XPathException
 	 */
 	protected Expression checkArgument(Expression expr, SequenceType type, int argPosition)
