@@ -50,7 +50,7 @@ public class JnlpWriter {
     
     
     /**
-     *  Write JNLP file to browser.
+     *  Write JNLP files (jnlp, jar, gif/jpg) to browser.
      * @param response  Object for writing to end user.
      * @throws java.io.IOException
      */
@@ -69,12 +69,31 @@ public class JnlpWriter {
         // Find codeBase for jarfiles http://host:8080/CONTEXT/webstart/
         String codeBase = existBaseUrl+"/webstart/";
         
+        // Perfom sanity checks
+        File mainJar=jnlpFiles.getMainJar();
+        if(mainJar==null){
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    "Missing exist.jar !");
+            return;
+        }
+        
+        File coreJars[] = jnlpFiles.getCoreJars();
+        for(int i=0 ; i<coreJars.length ; i++) {
+            if(coreJars[i]==null){
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                        "Missing Jar file! ("+i+")");
+                return;
+            }
+        }
+        
+        
+        
         // Find URL to connect to with client
         String startUrl = existBaseUrl
                 .replaceFirst("http:", "xmldb:exist:")
                 .replaceAll("-", "%2D") + "/xmlrpc";
         
-        
+        response.setDateHeader("Last-Modified", mainJar.lastModified());
         response.setContentType("application/x-java-jnlp-file");
         PrintWriter out = response.getWriter();
         
@@ -109,7 +128,6 @@ public class JnlpWriter {
         +"\" size=\""+ jnlpFiles.getMainJar().length()
         + "\"  main=\"true\" />");
         
-        File coreJars[] = jnlpFiles.getCoreJars();
         for(int i=0 ; i<coreJars.length ; i++) {
             out.println("  <jar href=\"" + coreJars[i].getName()
             + "\" size=\""+ coreJars[i].length() +"\" />");
@@ -117,7 +135,7 @@ public class JnlpWriter {
         
         out.println("</resources>");
         out.println("<application-desc main-class=\"org.exist.client.InteractiveClient\">");
-        out.println("  <argument>-ouri=" +  startUrl+ "</argument>");
+        out.println("  <argument>-ouri=" + startUrl + "</argument>");
         out.println("  <argument>--no-embedded-mode</argument>");
         out.println("</application-desc>");
         out.println("</jnlp>");
@@ -138,7 +156,13 @@ public class JnlpWriter {
         logger.debug("Send jar file "+ filename);
         
         File localJarFile = jnlpFiles.getFile(filename);
+        if(localJarFile==null){
+            response.sendError(HttpServletResponse.SC_NOT_FOUND,
+                    "Jar file '"+filename+"' could not be found.");
+            return;
+        }
         String localJarPath = localJarFile.getAbsolutePath();
+        
         
         // Retrieve info from client
         String acceptedEncoding = request.getHeader(ACCEPT_ENCODING);
@@ -156,7 +180,7 @@ public class JnlpWriter {
             downloadTarget=localJarFile;
         }
         
-        logger.debug("downloaded="+downloadTarget);
+        logger.debug("Actual file "+downloadTarget.getAbsolutePath());
         
         response.setContentType(contentType);
         response.setContentLength( Integer.parseInt(Long.toString(downloadTarget.length())) );
@@ -167,7 +191,7 @@ public class JnlpWriter {
         
         
         // Transfer bytes from in to out
-        byte[] buf = new byte[8096];
+        byte[] buf = new byte[4096];
         int len;
         while ((len = fis.read(buf)) > 0) {
             os.write(buf, 0, len);
@@ -183,7 +207,7 @@ public class JnlpWriter {
         
         File imagesFolder = new File(jh.getWebappFolder() , "resources");
         
-        String type="";
+        String type=null;
         if(filename.endsWith(".gif")){
             type="image/gif";
         } else {
