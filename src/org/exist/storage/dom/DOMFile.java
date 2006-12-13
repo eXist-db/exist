@@ -213,8 +213,7 @@ public class DOMFile extends BTree implements Lockable {
 	 * current page is full. If the value is larger than the page size, it will
 	 * be written to an overflow page.
 	 * 
-	 * @param value
-	 *                     the value to append
+	 * @param value the value to append
 	 * @return the virtual storage address of the value
 	 */
 	public long add(Txn transact, byte[] value) throws ReadOnlyException {
@@ -238,7 +237,7 @@ public class DOMFile extends BTree implements Lockable {
 	 * 
 	 * @param value
 	 * @param overflowPage
-	 * @return
+	 * @return the virtual storage address of the value
 	 * @throws ReadOnlyException
 	 */
 	private long add(Txn transaction, byte[] value, boolean overflowPage)
@@ -940,7 +939,7 @@ public class DOMFile extends BTree implements Lockable {
 	 * Returns the number of records stored in a page.
 	 * 
 	 * @param page
-	 * @return
+	 * @return The number of records
 	 */
 	private short countRecordsInPage(DOMPage page) {
 		short count = 0;
@@ -1125,7 +1124,7 @@ public class DOMFile extends BTree implements Lockable {
 	 * 
 	 * @param lock
 	 * @param node
-	 * @return
+	 * @return The node's adress or <code>KEY_NOT_FOUND</code> if the node can not be found.
 	 * @throws IOException
 	 * @throws BTreeException
 	 */
@@ -1930,7 +1929,7 @@ public class DOMFile extends BTree implements Lockable {
 	 * Find a record within the page or the pages linked to it.
 	 * 
 	 * @param p
-	 * @return
+	 * @return The record position in the page
 	 */
 	protected RecordPos findRecord(long p, boolean skipLinks) {
 		long pageNr = StorageAddress.pageFromPointer(p);

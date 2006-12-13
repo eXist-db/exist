@@ -204,7 +204,7 @@ public class IndexSpec {
      * the index element.
      * 
      * @param elem
-     * @return
+     * @return The namespaces map.
      */
     private Map getNamespaceMap(Element elem) {
         HashMap map = new HashMap();

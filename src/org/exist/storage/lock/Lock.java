@@ -52,7 +52,6 @@ public interface Lock {
 	 * will fail immediately if the lock cannot be acquired.
 	 *  
 	 * @param mode
-	 * @throws LockException
 	 */
 	public boolean attempt( int mode );
 	

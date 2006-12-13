@@ -90,7 +90,7 @@ public class JournalReader {
      * 
      * @return the previous entry
      * @throws LogException if an entry could not be read due to an inconsistency on disk.
-     * @throws IOException 
+     * @throws LogException 
      */
     public Loggable previousEntry() throws LogException {
         try {
@@ -128,7 +128,7 @@ public class JournalReader {
     /**
      * Read a single entry.
      * 
-     * @return
+     * @return The entry
      * @throws LogException
      */
     private Loggable readEntry() throws LogException {
@@ -181,7 +181,7 @@ public class JournalReader {
      * with the given LSN.
      * 
      * @param lsn
-     * @throws IOException 
+     * @throws LogException 
      */
     public void position(long lsn) throws LogException {
         try {
