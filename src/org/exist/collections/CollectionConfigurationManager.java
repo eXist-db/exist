@@ -118,7 +118,7 @@ public class CollectionConfigurationManager {
      * @param broker
      * @param collection
      * @param collectionPath
-     * @return
+     * @return The collection configuration
      * @throws CollectionConfigurationException
      */
     protected CollectionConfiguration getConfiguration(DBBroker broker, Collection collection) 

@@ -230,7 +230,6 @@ public class Journal {
      * be called on the file to force all changes to disk.
      * 
      * @param fsync forces all changes to disk if true and syncMode is set to SYNC_ON_COMMIT.
-     * @throws TransactionException
      */
     public void flushToLog(boolean fsync) {
     	flushToLog(fsync, false);
@@ -242,7 +241,6 @@ public class Journal {
      * 
      * @param fsync forces all changes to disk if true and syncMode is set to SYNC_ON_COMMIT.
      * @param forceSync force changes to disk even if syncMode doesn't require it.
-     * @throws TransactionException
      */
     public synchronized void flushToLog(boolean fsync, boolean forceSync) {
         if (inRecovery)
@@ -457,7 +455,7 @@ public class Journal {
      * Translate a file number into a file name.
      * 
      * @param fileNum
-     * @return
+     * @return The file name
      */
     private static String getFileName(int fileNum) {
         String hex = Integer.toHexString(fileNum);

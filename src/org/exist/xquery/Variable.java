@@ -162,7 +162,8 @@ public class Variable {
         
         int requiredType = type.getPrimaryType();
         if(Type.subTypeOf(requiredType, Type.ATOMIC)) {
-            if(!Type.subTypeOf(value.getItemType(), Type.ATOMIC))
+            //if(!Type.subTypeOf(value.getItemType(), Type.ATOMIC))ll
+        	if(!Type.subTypeOf(value.getItemType(), Type.ATOMIC))
                 value = Atomize.atomize(value);
             if(requiredType != Type.ATOMIC)
                 value = convert(value);

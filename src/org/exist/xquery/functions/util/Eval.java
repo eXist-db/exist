@@ -235,8 +235,8 @@ public class Eval extends BasicFunction {
 		} else
 			// use the existing outer context
             // TODO: check if copying the static context would be sufficient???
-//			innerContext = context.copyContext();
-            innerContext = context;
+			innerContext = context.copyContext();
+            //innerContext = context;
         try {
 			if(compiled == null) {
 			    compiled = xquery.compile(innerContext, querySource);

@@ -200,7 +200,7 @@ public class ForExpr extends BindingExpression {
 		// Assign the whole input sequence to the bound variable.
 		// This is required if we process the "where" or "order by" clause
 		// in one step.
-		var.setValue(in);
+		var.setValue(in);		
 		
 		// Save the current context document set to the variable as a hint
 		// for path expressions occurring in the "return" clause.

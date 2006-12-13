@@ -100,8 +100,6 @@ public class TransactionManager {
     /**
      * Create a new transaction. Creates a new transaction id that will
      * be logged to disk immediately. 
-     * 
-     * @throws TransactionException
      */
     public Txn beginTransaction() {
         if (!enabled)

@@ -62,7 +62,7 @@ public class GeneralRangeIndexSpec extends RangeIndexSpec {
      * of this index spec.
      * 
      * @param otherPath
-     * @return
+     * @return Whether or not the 2 paths match
      */
     protected boolean matches(NodePath otherPath) {
         return path.match(otherPath);
