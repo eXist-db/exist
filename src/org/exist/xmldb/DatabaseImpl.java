@@ -164,7 +164,7 @@ public class DatabaseImpl implements Database {
      * @param xmldbURI
      * @param user
      * @param password
-     * @return
+     * @return The collection
      * @throws XMLDBException
      */
     private Collection getLocalCollection(XmldbURI xmldbURI, String user, String password) 
@@ -204,7 +204,7 @@ public class DatabaseImpl implements Database {
      * @param xmldbURI
      * @param user
      * @param password
-     * @return
+     * @return The collection
      * @throws XMLDBException
      */
     private Collection getRemoteCollection(XmldbURI xmldbURI, String user, String password) 

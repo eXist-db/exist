@@ -98,7 +98,7 @@ public class LocationStep extends Step {
      * expression, we can optimize by preloading entire element or attribute
      * sets.
      * 
-     * @return
+     * @return Whether or not we can optimize 
      */
     protected boolean preloadNodeSets() {
         // TODO : log elsewhere ?

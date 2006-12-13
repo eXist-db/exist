@@ -346,7 +346,7 @@ public class RemoteCollection implements CollectionImpl {
 		String docName = (String) hash.get("name");
 		if(docName == null)
 			return null;	// resource does not exist!
-		int p;
+		
 		try {
 			docUri = XmldbURI.xmldbUriFor(docName).lastSegment();
 		} catch(URISyntaxException e) {

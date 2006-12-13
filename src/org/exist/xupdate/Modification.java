@@ -142,7 +142,7 @@ public abstract class Modification {
 	 * Evaluate the select expression.
 	 * 
 	 * @param docs
-	 * @return
+	 * @return The selected nodes.
 	 * @throws PermissionDeniedException
 	 * @throws EXistException
 	 * @throws XPathException
@@ -219,7 +219,7 @@ public abstract class Modification {
 	 *            TODO
 	 * @param nl
 	 * 
-	 * @return
+	 * @return The selected document nodes.
 	 * @throws LockException
 	 */
 	protected final StoredNode[] selectAndLock()
