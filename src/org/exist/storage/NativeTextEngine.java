@@ -396,15 +396,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     //Exit if the document is not concerned
                     if (storedDocument == null) {
                         is.skipBytes(size);
-                        continue;                        
-                    }                    
-					if (contextSet != null) {
-                        //Exit if the document is not concerned
-                        if (!contextSet.containsDoc(storedDocument)) {                    
-                            is.skipBytes(size);
-                            continue;
-                        }                        
-					}
+                        continue;
+                    }
                     //Process the nodes
 					for (int j = 0; j < gidsCount; j++) {
                         NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
@@ -723,7 +716,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     public String toString() {
         return this.getClass().getName() + " at "+ dbTokens.getFile().getName() +
         " owned by " + broker.toString();
-    }    
+    }
 
 	/**
 	 * This inner class is responsible for actually storing the list of

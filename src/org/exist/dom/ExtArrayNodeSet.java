@@ -131,10 +131,6 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         lastDoc = -1;
         state = 0;
     }
-
-    public boolean containsDoc(DocumentImpl doc) {
-        return ArrayUtils.binarySearch(documentIds, doc.getDocId(), partCount) > -1;
-    }
     
     private void insertPart(int docId, Part part, int idx) {
         if (partCount == parts.length) {
@@ -393,34 +389,24 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         if (al instanceof VirtualNodeSet)
             return super.selectParentChild(al, mode, contextId);
     	return getDescendantsInSet(al, true, false, mode, contextId);
-//    	return hasChildrenInSet(al, mode, contextId);
-//        return super.selectParentChild(al, mode, contextId);
-    	
-//    	if (al instanceof VirtualNodeSet)
-//    		return super.selectParentChild(al, mode, contextId);
-//    	NodeSet result = new ExtArrayNodeSet();
-//		NodeSetIterator ia = al.iterator();
-//		NodeProxy na = (NodeProxy) ia.next();
-//		if (na == null || partCount == 0)
-//			return NodeSet.EMPTY_SET;
-//		int currentPart = 0;
-//		while (currentPart < partCount) {
-//			// first, try to find nodes belonging to the same doc
-//			if (na.getDocument().getDocId() < documentIds[currentPart]) {
-//				if (ia.hasNext()) {
-//					na = (NodeProxy) ia.next();
-//                } else
-//					break;
-//			} else if (na.getDocument().getDocId() > documentIds[currentPart]) {
-//				++currentPart;
-//			} else {
-//				parts[currentPart].selectParentChild(result, na, ia, mode, contextId);
-//				++currentPart;
-//			}
-//		}
-//		return result;
     }
-    
+
+    public NodeSet filterDocuments(ExtArrayNodeSet otherSet) {
+        LOG.debug("Filtering...");
+        ExtArrayNodeSet other = (ExtArrayNodeSet) otherSet;
+        ExtArrayNodeSet result = new ExtArrayNodeSet(partCount, other.initalSize);
+        for (int i = 0; i < other.partCount; i++) {
+            int idx = ArrayUtils.binarySearch(documentIds, other.documentIds[i], partCount);
+            if (idx > -1) {
+                Part part = parts[idx];
+                int otherIdx = ArrayUtils.binarySearch(result.documentIds, documentIds[idx], result.partCount);
+                otherIdx = - (otherIdx + 1);
+                result.insertPart(documentIds[idx], part, otherIdx);
+            }
+        }
+        return result;
+    }
+
     private boolean isSorted() {
         return isSorted;
     }
@@ -795,7 +781,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
                             ancestor.deepCopyContext(array[i], contextId);
                         else
                             ancestor.copyContext(array[i]);
-                        ancestor.addMatches(array[i]);
+//                        ancestor.addMatches(array[i]);
                     }
                 } else
                     break;
