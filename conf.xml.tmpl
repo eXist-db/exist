@@ -74,8 +74,11 @@
             The cacheSize should not be more than half of the size of the JVM 
             heap size (set by the JVM -Xmx parameter).
         
-        - collectionCacheSize:
-            not documented.
+        - collectionCache:
+            maximum amount of memory (in megabytes) to use for collection caches.
+			Memory calculation is just approximate. If your collections are very different
+			in size, it might be possible that the actual amount of memory used exceeds
+			the specified limit. You should thus be careful with this setting.
         
         - database:
             selects a database backend. Currently, "native" and "native_cluster"
@@ -103,7 +106,7 @@
         you have some more memory to waste. If you deal with lots of 
         collections, you can also increase the collectionCacheSize value 
     -->
-    <db-connection cacheSize="48M" collectionCacheSize="128" database="@database@"
+    <db-connection cacheSize="48M" collectionCache="24M" database="@database@"
         files="webapp/WEB-INF/data" free_mem_min="5" pageSize="4096">
         
         <!--
