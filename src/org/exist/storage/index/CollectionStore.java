@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.io.Writer;
 
 import org.exist.storage.BrokerPool;
-import org.exist.storage.CacheManager;
+import org.exist.storage.DefaultCacheManager;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.btree.DBException;
 import org.exist.storage.btree.Value;
@@ -40,7 +40,7 @@ public class CollectionStore extends BFile {
      * @param file 
      * @throws DBException 
      */
-	public CollectionStore(BrokerPool pool, File file, CacheManager cacheManager) throws DBException {
+	public CollectionStore(BrokerPool pool, File file, DefaultCacheManager cacheManager) throws DBException {
 		super(pool, NativeBroker.COLLECTIONS_DBX_ID, true, file, cacheManager, 1.25, 0.01, 0.03);
 	}
 	
