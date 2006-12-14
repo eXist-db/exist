@@ -23,10 +23,12 @@ package org.exist.xquery.value;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Iterator;
 
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.StoredNode;
+import org.exist.dom.EmptyNodeSet;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.XPathException;
 import org.exist.numbering.NodeId;
@@ -130,6 +132,10 @@ public abstract class AbstractSequence implements Sequence {
      */
     public DocumentSet getDocumentSet() {
         return DocumentSet.EMPTY_DOCUMENT_SET;
+    }
+
+    public Iterator getCollectionIterator() {
+        return EmptyNodeSet.EMPTY_ITERATOR;
     }
 
     public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {

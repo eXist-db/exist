@@ -239,8 +239,7 @@ public class ExtFulltext extends Function implements Optimizable {
         if (contextQName == null)
             return false;
         boolean hasQNameIndex = true;
-        DocumentSet contextDocs = contextSequence.getDocumentSet();
-        for (Iterator i = contextDocs.getCollectionIterator(); i.hasNext(); ) {
+        for (Iterator i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
             Collection collection = (Collection) i.next();
             if (collection.getURI().equals(XmldbURI.SYSTEM_COLLECTION_URI))
                 continue;

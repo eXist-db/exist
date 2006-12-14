@@ -32,6 +32,7 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
+import org.exist.collections.Collection;
 import org.w3c.dom.Node;
 
 /**
@@ -193,7 +194,11 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		return ds;
 	}
 
-	/**
+    public Iterator getCollectionIterator() {
+        return new CollectionIterator();
+    }
+
+    /**
 	 * Check if any child nodes are found within this node set for a given
 	 * set of potential parent nodes.
 	 * 
@@ -657,5 +662,40 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
         }
         result.append(")");
         return result.toString();
-    }     
+    }
+
+    private class CollectionIterator implements Iterator {
+
+        Collection nextCollection = null;
+        NodeSetIterator nodeIterator = iterator();
+
+        CollectionIterator() {
+            if (nodeIterator.hasNext()) {
+                NodeProxy p = (NodeProxy) nodeIterator.next();
+                nextCollection = p.getDocument().getCollection();
+            }
+        }
+
+        public boolean hasNext() {
+            return nextCollection != null;
+        }
+
+        public Object next() {
+            Collection oldCollection = nextCollection;
+            nextCollection = null;
+            while (nodeIterator.hasNext()) {
+                NodeProxy p = (NodeProxy) nodeIterator.next();
+                if (!p.getDocument().getCollection().equals(oldCollection)) {
+                    nextCollection = p.getDocument().getCollection();
+                    break;
+                }
+            }
+            return oldCollection;
+        }
+
+        public void remove() {
+             // not needed
+            throw new IllegalStateException();
+        }
+    }
 }

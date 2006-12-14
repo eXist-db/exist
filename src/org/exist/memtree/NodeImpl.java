@@ -50,6 +50,8 @@ import org.w3c.dom.UserDataHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import java.util.Iterator;
+
 public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 
     public final static short REFERENCE_NODE = 100;
@@ -80,8 +82,12 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
     public DocumentSet getDocumentSet() {
         return DocumentSet.EMPTY_DOCUMENT_SET;
     }
+
+    public Iterator getCollectionIterator() {
+        return EmptyNodeSet.EMPTY_ITERATOR;
+    }
     
-	/* (non-Javadoc)
+    /* (non-Javadoc)
 	 * @see org.exist.xquery.value.NodeValue#getNode()
 	 */
 	public Node getNode() {

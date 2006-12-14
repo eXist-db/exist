@@ -89,7 +89,6 @@ public class IndexSpec {
      * @throws DatabaseConfigurationException
      */
     public void read(Element index) throws DatabaseConfigurationException {
-    	LOG.debug("Reading configuration ...");
         Map namespaces = getNamespaceMap(index);
         String indexDepth = index.getAttribute(INDEX_DEPTH_ATTRIB);
 		if (indexDepth != null && indexDepth.length() > 0)
@@ -211,7 +210,6 @@ public class IndexSpec {
         NamedNodeMap attrs = elem.getAttributes();
         for(int i = 0; i < attrs.getLength(); i++) {
             Attr attr = (Attr) attrs.item(i);
-            LOG.debug(attr.getName());
             if(attr.getPrefix() != null && attr.getPrefix().equals("xmlns")) {
                 map.put(attr.getLocalName(), attr.getValue());
             }
