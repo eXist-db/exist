@@ -421,9 +421,11 @@ public class BrokerPool {
 	 * The cache in which the database instance may store items.
 	 */	
 	
-	private CacheManager cacheManager;
+	private DefaultCacheManager cacheManager;
 
-	/**
+    private CollectionCacheManager collectionCacheMgr;
+
+    /**
 	 * The pool in which the database instance's <strong>compiled</strong> XQueries are stored.
 	 */
 	private XQueryPool xQueryPool;
@@ -638,7 +640,8 @@ public class BrokerPool {
         status = INITIALIZING;
         
 		//REFACTOR : construct then configure
-        cacheManager = new CacheManager(conf);
+        cacheManager = new DefaultCacheManager(conf);
+
         //REFACTOR : construct then configure
         xQueryPool = new XQueryPool(conf);
         //REFACTOR : construct then... configure
@@ -649,7 +652,8 @@ public class BrokerPool {
         int bufferSize = conf.getInteger(PROPERTY_COLLECTION_CACHE_SIZE);
         if(bufferSize == -1)
         	bufferSize = DEFAULT_COLLECTION_BUFFER_SIZE;
-        collectionCache = new CollectionCache(this, bufferSize, 0.9);
+        collectionCache = new CollectionCache(this, bufferSize, 0.001);
+        collectionCacheMgr = new CollectionCacheManager(conf, collectionCache);
         
         notificationService = new NotificationService();
         
@@ -904,7 +908,7 @@ public class BrokerPool {
      * 
      * @return The cache
 	 */	
-    public CacheManager getCacheManager() {
+    public DefaultCacheManager getCacheManager() {
         return cacheManager;
     }
 
@@ -1345,7 +1349,8 @@ public class BrokerPool {
             broker.setUser(SecurityManager.SYSTEM_USER);
             broker.shutdown();
         }
-
+        collectionCacheMgr.deregisterCache(collectionCache);
+        
         transactionManager.shutdown();
 
 		//Invalidate the configuration

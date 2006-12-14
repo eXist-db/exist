@@ -20,12 +20,13 @@ public class CollectionCache extends LRDCache {
 
 	private Object2LongHashMap names;
 	private BrokerPool pool;
-	
+
 	public CollectionCache(BrokerPool pool, int blockBuffers, double growthThreshold) {
-		super(blockBuffers, 1.25, growthThreshold);
+		super(blockBuffers, 1.8, growthThreshold);
         this.names = new Object2LongHashMap(blockBuffers);
 		this.pool = pool;
-	}
+        setFileName("collections.dbx");
+    }
 	
 	public void add(Collection collection) {
 		add(collection, 1);
@@ -33,7 +34,9 @@ public class CollectionCache extends LRDCache {
 
 	public void add(Collection collection, int initialRefCount) {
 		super.add(collection, initialRefCount);
-		names.put(collection.getURI().getRawCollectionPath(), collection.getKey());
+        String name = collection.getURI().getRawCollectionPath();
+        if (!names.containsKey(name))
+            names.put(names, collection.getKey());
 	}
 
 	public Collection get(Collection collection) {
@@ -90,6 +93,7 @@ public class CollectionCache extends LRDCache {
         
         accounting.replacedPage(item);
         if (cacheManager != null && accounting.resizeNeeded()) {
+            accounting.stats();
             cacheManager.requestMem(this);
         }
 		return old;
@@ -102,7 +106,24 @@ public class CollectionCache extends LRDCache {
         if(pool.getConfigurationManager() != null) // might be null during db initialization
            pool.getConfigurationManager().invalidate(col.getURI());
     }
-    
+
+    /**
+     * Compute and return the in-memory size of all collections
+     * currently contained in this cache.
+     *
+     * @see org.exist.storage.CollectionCacheManager
+     * @return in-memory size in bytes.
+     */
+    public int getRealSize() {
+        int size = 0;
+        for (int i = 0; i < items.length; i++) {
+            Collection item = (Collection) items[i];
+            if (item != null)
+                size += item.getMemorySize();
+        }
+        return size;
+    }
+
     public void resize(int newSize) {
         if (newSize < size) {
             shrink(newSize);
@@ -120,10 +141,9 @@ public class CollectionCache extends LRDCache {
             this.size = newSize;
             this.map = newMap;
             this.names = newNames;
+            this.items = newItems;
             accounting.reset();
             accounting.setTotalSize(size);
         }
     }
-    
-    
 }
