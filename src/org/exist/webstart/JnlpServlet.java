@@ -28,7 +28,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.apache.log4j.Logger;
 
 /**
@@ -66,7 +65,7 @@ public class JnlpServlet extends HttpServlet {
      * @throws IOException       Standard IO exception
      */
     public void doGet(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException{
+                                           throws ServletException, IOException{
         
         JnlpWriter jw=new JnlpWriter();
         
@@ -85,8 +84,9 @@ public class JnlpServlet extends HttpServlet {
             jw.sendImage(jh, jf, filename, response);
             
         } else {
-            logger.error("Invalid file type");
-            throw new ServletException("Invalid file type");
+            logger.error("Invalid filename extension.");
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid filename extension.");
+            return;
         }
         
     }
