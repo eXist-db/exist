@@ -813,14 +813,18 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
                 --mid;
             NodeProxy ancestor = new NodeProxy(getDocument(), ancestorId, Node.ELEMENT_NODE);
             for (int i = mid; i < length; i++) {
-                boolean add = (includeSelf ? array[i].getNodeId().isDescendantOrSelfOf(ancestorId) :
-                        array[i].getNodeId().isDescendantOf(ancestorId));
-                if (add) {
-                    if (Expression.NO_CONTEXT_ID != contextId)
-                        ancestor.deepCopyContext(array[i], contextId);
-                    else
-                        ancestor.copyContext(array[i]);
+                cmp = array[i].getNodeId().computeRelation(ancestorId);
+                if (cmp > -1) {
+                    boolean add = true;
+                    if (cmp == NodeId.IS_SELF)
+                        add = includeSelf;
+                    if (add) {
+                        if (Expression.NO_CONTEXT_ID != contextId)
+                            ancestor.deepCopyContext(array[i], contextId);
+                        else
+                            ancestor.copyContext(array[i]);
 //                        ancestor.addMatches(array[i]);
+                    }
                 } else
                     break;
             }
