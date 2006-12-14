@@ -26,6 +26,8 @@ import org.exist.dom.StoredNode;
 import org.exist.numbering.NodeId;
 import org.exist.xquery.XPathException;
 
+import java.util.Iterator;
+
 /**
  * This interface represents a sequence as defined in the XPath 2.0 specification.
  * 
@@ -181,8 +183,16 @@ public interface Sequence {
 	 * 
 	 */
 	public DocumentSet getDocumentSet();
-	
-	/**
+
+    /**
+     * Return an iterator on all collections referenced by documents
+     * contained in this sequence..
+     *
+     * @return
+     */
+    public Iterator getCollectionIterator();
+
+    /**
 	 * Returns a preference indicator, indicating the preference of
 	 * a value to be converted into the given Java class. Low numbers mean
 	 * that the value can be easily converted into the given class.

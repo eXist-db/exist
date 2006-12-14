@@ -30,7 +30,7 @@ import org.w3c.dom.NodeList;
 
 public final class EmptyNodeSet extends AbstractNodeSet {
 
-	private final static EmptyNodeSetIterator EMPTY_ITERATOR = new EmptyNodeSetIterator();
+	public final static EmptyNodeSetIterator EMPTY_ITERATOR = new EmptyNodeSetIterator();
 	
     public NodeSetIterator iterator() {
 	    return EMPTY_ITERATOR;

@@ -23,6 +23,7 @@ package org.exist.xquery.value;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.*;
@@ -33,6 +34,7 @@ import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.Variable;
 import org.exist.numbering.NodeId;
+import org.exist.collections.Collection;
 
 /**
  * A sequence that may contain a mixture of atomic values and nodes.
@@ -296,6 +298,49 @@ public class ValueSequence extends AbstractSequence {
         return docs;
     }
 
+
+    public Iterator getCollectionIterator() {
+        return new CollectionIterator();
+    }
+
+    private class CollectionIterator implements Iterator {
+
+        Collection nextCollection = null;
+        int pos = 0;
+
+        CollectionIterator() {
+            nextCollection = (Collection) next();
+        }
+
+        public boolean hasNext() {
+            return nextCollection != null;
+        }
+
+        public Object next() {
+            Collection oldCollection = nextCollection;
+            nextCollection = null;
+            while (pos <= size) {
+                if (Type.subTypeOf(values[pos].getType(), Type.NODE)) {
+                    NodeValue node = (NodeValue) values[pos];
+                    if (node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+                        NodeProxy p = (NodeProxy) node;
+                        if (!p.getDocument().getCollection().equals(oldCollection)) {
+                            nextCollection = p.getDocument().getCollection();
+                            break;
+                        }
+                    }
+                }
+                pos++;
+            }
+            return oldCollection;
+        }
+
+        public void remove() {
+             // not needed
+            throw new IllegalStateException();
+        }
+    }
+    
     public String toString() {
 		try {
 			StringBuffer result = new StringBuffer();

@@ -44,6 +44,8 @@ import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import java.util.Iterator;
+
 /**
  * Placeholder class for DOM nodes. 
  * 
@@ -887,7 +889,27 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
         docs.add(doc);
         return docs;
     }
-    
+
+
+    public Iterator getCollectionIterator() {
+        return new Iterator() {
+
+            boolean hasNext = true;
+
+            public boolean hasNext() {
+                return hasNext;
+            }
+
+            public Object next() {
+                hasNext = false;
+                return NodeProxy.this;
+            }
+
+            public void remove() {
+            }
+        };
+    }
+
     /* (non-Javadoc)
      * @see org.exist.dom.NodeSet#intersection(org.exist.dom.NodeSet)
      */

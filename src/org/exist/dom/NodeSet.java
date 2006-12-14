@@ -29,6 +29,8 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.NodeList;
 
+import java.util.Iterator;
+
 /**
  * @author wolf
  */
@@ -62,10 +64,24 @@ public interface NodeSet extends Sequence, NodeList {
 	 * @param proxy
 	 */
 	public boolean contains(NodeProxy proxy);
-	
-	public DocumentSet getDocumentSet();
-	
-	/**
+
+    /**
+     * Returns a DocumentSet containing all documents referenced
+     * in this node set.
+     *
+     * @return
+     */
+    public DocumentSet getDocumentSet();
+
+    /**
+     * Return an iterator on all collections referenced by documents
+     * contained in this node set.
+     *
+     * @return
+     */
+    public Iterator getCollectionIterator();
+    
+    /**
 	 * Add a new proxy object to the node set. Please note: node set
 	 * implementations may allow duplicates.
 	 * 

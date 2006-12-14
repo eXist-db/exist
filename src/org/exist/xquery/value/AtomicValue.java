@@ -21,11 +21,13 @@
 package org.exist.xquery.value;
 
 import java.text.Collator;
+import java.util.Iterator;
 
 import org.exist.EXistException;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.StoredNode;
+import org.exist.dom.EmptyNodeSet;
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
@@ -237,6 +239,10 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
         return DocumentSet.EMPTY_DOCUMENT_SET;
     }
 
+    public Iterator getCollectionIterator() {
+        return EmptyNodeSet.EMPTY_ITERATOR;
+    }
+    
     public AtomicValue promote(AtomicValue otherValue) throws XPathException {
         if (getType() != otherValue.getType()) {
             if (Type.subTypeOf(getType(), Type.DECIMAL) && 

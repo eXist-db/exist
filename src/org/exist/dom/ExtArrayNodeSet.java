@@ -33,6 +33,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
+import org.exist.collections.Collection;
 import org.w3c.dom.Node;
 
 /**
@@ -539,7 +540,48 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
     public void setDocumentSet(DocumentSet docs) {
     	cachedDocuments = docs;
     }
-    
+
+
+    public Iterator getCollectionIterator() {
+        return new CollectionIterator();
+    }
+
+    private class CollectionIterator implements Iterator {
+
+        Collection nextCollection = null;
+        int currentPart = 0;
+
+        CollectionIterator() {
+            if (partCount > 0) {
+                Part part = parts[currentPart++];
+                nextCollection = part.getDocument().getCollection();
+            }
+        }
+
+        public boolean hasNext() {
+            return nextCollection != null;
+        }
+
+        public Object next() {
+            Collection oldCollection = nextCollection;
+            nextCollection = null;
+            Collection col;
+            while (currentPart < partCount) {
+                col = parts[currentPart++].getDocument().getCollection();
+                if (!col.equals(oldCollection)) {
+                    nextCollection = col;
+                    break;
+                }
+            }
+            return oldCollection;
+        }
+
+        public void remove() {
+             // not needed
+            throw new IllegalStateException();
+        }
+    }
+
     /*
      * (non-Javadoc)
      * 
