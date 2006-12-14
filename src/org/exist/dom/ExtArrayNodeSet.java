@@ -114,7 +114,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
             part = parts[idx];
         } else if (create) {
             idx = - (idx + 1);
-            part = new Part(sizeHint, doc);
+            part = new Part(sizeHint);
             insertPart(doc.getDocId(), part, idx);
         }
         return part;
@@ -394,7 +394,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
 
     public NodeSet filterDocuments(ExtArrayNodeSet otherSet) {
         LOG.debug("Filtering...");
-        ExtArrayNodeSet other = (ExtArrayNodeSet) otherSet;
+        ExtArrayNodeSet other = otherSet;
         ExtArrayNodeSet result = new ExtArrayNodeSet(partCount, other.initalSize);
         for (int i = 0; i < other.partCount; i++) {
             int idx = ArrayUtils.binarySearch(documentIds, other.documentIds[i], partCount);
@@ -612,7 +612,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         private NodeProxy array[];
         private int length = 0;
 
-        Part(int initialSize, DocumentImpl myDoc) {
+        Part(int initialSize) {
             array = new NodeProxy[initialSize];
         }
 
@@ -794,13 +794,13 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
             int high = length - 1;
             int mid = 0;
             int cmp;
-            NodeProxy p;
+            NodeId id;
             while (low <= high) {
                 mid = (low + high) / 2;
-                p = array[mid];
-                if (p.getNodeId().isDescendantOrSelfOf(ancestorId))
+                id = array[mid].getNodeId();
+                if (id.isDescendantOrSelfOf(ancestorId))
                     break;	// found a child node, break out.
-                cmp = p.getNodeId().compareTo(ancestorId);
+                cmp = id.compareTo(ancestorId);
                 if (cmp > 0)
                     high = mid - 1;
                 else
@@ -813,18 +813,14 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
                 --mid;
             NodeProxy ancestor = new NodeProxy(getDocument(), ancestorId, Node.ELEMENT_NODE);
             for (int i = mid; i < length; i++) {
-                cmp = array[i].getNodeId().computeRelation(ancestorId);
-                if (cmp > -1) {
-                    boolean add = true;
-                    if (cmp == NodeId.IS_SELF)
-                        add = includeSelf;
-                    if (add) {
-                        if (Expression.NO_CONTEXT_ID != contextId)
-                            ancestor.deepCopyContext(array[i], contextId);
-                        else
-                            ancestor.copyContext(array[i]);
+                boolean add = (includeSelf ? array[i].getNodeId().isDescendantOrSelfOf(ancestorId) :
+                        array[i].getNodeId().isDescendantOf(ancestorId));
+                if (add) {
+                    if (Expression.NO_CONTEXT_ID != contextId)
+                        ancestor.deepCopyContext(array[i], contextId);
+                    else
+                        ancestor.copyContext(array[i]);
 //                        ancestor.addMatches(array[i]);
-                    }
                 } else
                     break;
             }
@@ -849,7 +845,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
             // document nodes are treated specially
             if (parentId == NodeId.DOCUMENT_NODE) {
             	for (int i = 0; i < length; i++) {
-            		boolean add = false;
+            		boolean add;
             		if (childOnly)
             			add = array[i].getNodeId().getTreeLevel() == 1;
             		else if (includeSelf)

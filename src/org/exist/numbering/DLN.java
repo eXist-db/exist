@@ -215,8 +215,8 @@ public class DLN extends DLNBase implements NodeId {
 
     public boolean isDescendantOrSelfOf(NodeId other) {
     	DLN ancestor = (DLN) other;
-        return startsWith((DLN) ancestor) &&
-        	(bitIndex == ancestor.bitIndex || isLevelSeparator(((DLN)ancestor).bitIndex + 1));
+        return startsWith(ancestor) &&
+        	(bitIndex == ancestor.bitIndex || isLevelSeparator((ancestor).bitIndex + 1));
     }
 
     public boolean isChildOf(NodeId parent) {
