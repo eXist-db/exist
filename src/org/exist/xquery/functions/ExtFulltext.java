@@ -85,6 +85,7 @@ public class ExtFulltext extends Function implements Optimizable {
 
     private LocationStep contextStep = null;
     protected QName contextQName = null;
+    protected boolean optimizeSelf = false;
     protected NodeSet preselectResult = null;
 
     public ExtFulltext(XQueryContext context, int type) {
@@ -120,6 +121,7 @@ public class ExtFulltext extends Function implements Optimizable {
                         if (step.getAxis() == Constants.ATTRIBUTE_AXIS || step.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
                             contextQName.setNameType(ElementValue.ATTRIBUTE);
                         contextStep = step;
+                        optimizeSelf = true;
                     }
                 }
             } else {
@@ -138,6 +140,11 @@ public class ExtFulltext extends Function implements Optimizable {
         if (contextQName == null)
             return false;
         return checkForQNameIndex(contextSequence);
+    }
+
+
+    public boolean optimizeOnSelf() {
+        return optimizeSelf;
     }
 
     public NodeSet preSelect(Sequence contextSequence, Item contextItem) throws XPathException {

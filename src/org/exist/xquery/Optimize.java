@@ -68,7 +68,10 @@ public class Optimize extends Pragma {
                 selector = new AncestorSelector(selection, -1, true);
                 ElementIndex index = context.getBroker().getElementIndex();
                 QName ancestorQN = contextStep.getTest().getName();
-                ancestors = index.findElementsByTagName(ancestorQN.getNameType(), selection.getDocumentSet(),
+                if (optimizable.optimizeOnSelf()) {
+                    ancestors = selection;
+                } else
+                    ancestors = index.findElementsByTagName(ancestorQN.getNameType(), selection.getDocumentSet(),
                         ancestorQN, selector);
                 contextStep.setPreloadNodeSets(true);
                 contextStep.setPreloadedData(ancestors.getDocumentSet(), ancestors);
