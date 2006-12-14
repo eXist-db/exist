@@ -31,7 +31,7 @@ import java.util.Arrays;
 
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BufferStats;
-import org.exist.storage.CacheManager;
+import org.exist.storage.DefaultCacheManager;
 import org.exist.storage.StorageAddress;
 import org.exist.storage.btree.BTree;
 import org.exist.storage.btree.BTreeCallback;
@@ -140,7 +140,7 @@ public class BFile extends BTree {
     
     protected int maxValueSize;
     
-    public BFile(BrokerPool pool, byte fileId, boolean transactional, File file, CacheManager cacheManager, 
+    public BFile(BrokerPool pool, byte fileId, boolean transactional, File file, DefaultCacheManager cacheManager,
             double cacheGrowth, double thresholdBTree, double thresholdData) throws DBException {
         super(pool, fileId, transactional, cacheManager, file, thresholdBTree);
         fileHeader = (BFileHeader) getFileHeader();
