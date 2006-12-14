@@ -397,4 +397,23 @@
     <database size="80Mb" documents="289" updates="frequent" security="read for all"/>
     <dev-notes>PHP application using REST interface with eXist.  Display pages and RSS feeds via XSL transformation of METS XML Data</dev-notes>
   </application>
+
+    <application>
+         <dc:creator>Evgeny Gazdovsky</dc:creator>
+         <creator-site>http://licsoft.ru</creator-site>
+         <dc:identifier>http://rosavtotorg.ru</dc:identifier>
+         <dc:title>New and used car classifieds in Russia</dc:title>
+         <dc:subject>auto</dc:subject>
+         <dc:subject>classifieds</dc:subject>
+         <dc:description> New and used cars for sale in Russia. Auto classifieds and  news.</dc:description>
+         <dc:publisher> Evgeny Gazdovsky </dc:publisher>
+         <dc:format>eXist distribution add-on: Cocoon sub-sitemap</dc:format>
+
+        <status>alpha</status>
+        <feature-used>XQuery</feature-used>
+        <feature-used>Cocoon</feature-used>
+        <database size="~1Gb" documents="~150000" updates="every second" security='read for all' />
+        <dev-notes> XSLT styles, java classes, medium-sized xml meta documents, heavy queries </dev-notes>
+        <submitter />
+    </application>
 </applications>
