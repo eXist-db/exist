@@ -40,7 +40,7 @@ import org.exist.numbering.DLNBase;
 import org.exist.numbering.NodeId;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BufferStats;
-import org.exist.storage.CacheManager;
+import org.exist.storage.DefaultCacheManager;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.Signatures;
 import org.exist.storage.StorageAddress;
@@ -168,7 +168,7 @@ public class DOMFile extends BTree implements Lockable {
 
     private final AddValueLoggable addValueLog = new AddValueLoggable();
     
-	public DOMFile(BrokerPool pool, File file, CacheManager cacheManager)
+	public DOMFile(BrokerPool pool, File file, DefaultCacheManager cacheManager)
 			throws DBException {
 		super(pool, NativeBroker.DOM_DBX_ID, true, cacheManager, 0.01);
 		lock = new ReentrantReadWriteLock("dom.dbx");
@@ -1006,7 +1006,12 @@ public class DOMFile extends BTree implements Lockable {
 		return true;
 	}
 
-	public boolean create() throws DBException {
+    public void closeAndRemove() {
+    	super.closeAndRemove();
+    	cacheManager.deregisterCache(dataCache);
+    }
+
+    public boolean create() throws DBException {
 		if (super.create((short) -1))
 			return true;
 		else

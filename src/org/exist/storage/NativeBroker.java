@@ -821,8 +821,9 @@ public class NativeBroker extends DBBroker {
 	            } finally {
 	                lock.release();
 	            }
-	        }         
-	    }
+	        } else
+                collectionsCache.add(collection);
+        }
 
         //Important : 
         //This code must remain ouside of the synchonized block

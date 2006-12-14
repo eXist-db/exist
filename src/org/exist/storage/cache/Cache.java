@@ -103,7 +103,7 @@ public interface Cache {
      * can't grow, 1.5 means it grows by 50 percent. A cache with
      * growth factor &lt;= 1.0 can also not be shrinked.
      * 
-     * A cache is resized by the {@link CacheManager}.
+     * A cache is resized by the {@link org.exist.storage.DefaultCacheManager}.
      * 
      * @return growth factor
      */
@@ -111,7 +111,7 @@ public interface Cache {
     
     /**
      * Resize the cache. This method is called by the
-     * {@link CacheManager}. The newSize parameter
+     * {@link org.exist.storage.DefaultCacheManager}. The newSize parameter
      * can either be larger or smaller than the current
      * cache size.
      * 

@@ -103,6 +103,10 @@ public  class Collection extends Observable
     public Collection(){
         
     }
+
+    private final static int SHALLOW_SIZE = 550;
+
+    private final static int DOCUMENT_SIZE = 450;
     
     private final static Logger LOG = Logger.getLogger(Collection.class);
     
@@ -444,7 +448,19 @@ public  class Collection extends Observable
             return false;
         return ((Collection) obj).collectionId == collectionId;
     }
-    
+
+    /**
+     * Returns the estimated amount of memory used by this collection
+     * and its documents. This information is required by the
+     * {@link org.exist.storage.CollectionCacheManager} to be able
+     * to resize the caches.
+     *
+     * @return estimated amount of memory in bytes
+     */
+    public int getMemorySize() {
+        return SHALLOW_SIZE + documents.size() * DOCUMENT_SIZE;
+    }
+
     /**
      *  Return the number of child-collections managed by this
      * collection.

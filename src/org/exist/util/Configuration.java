@@ -41,13 +41,14 @@ import org.exist.memtree.SAXAdapter;
 import org.exist.security.User;
 import org.exist.security.xacml.XACMLConstants;
 import org.exist.storage.BrokerPool;
-import org.exist.storage.CacheManager;
+import org.exist.storage.DefaultCacheManager;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.NativeValueIndex;
 import org.exist.storage.TextSearchEngine;
 import org.exist.storage.XQueryPool;
+import org.exist.storage.CollectionCacheManager;
 import org.exist.validation.resolver.eXistCatalogResolver;
 import org.exist.xquery.XQueryWatchDog;
 import org.w3c.dom.Document;
@@ -410,9 +411,6 @@ public class Configuration implements ErrorHandler
         }
     }
     
-    /**
-     * @param transformer
-     */
     private void configureTransformer(NodeList transformers)
     {
         Element transformer = (Element)transformers.item(0);
@@ -500,8 +498,20 @@ public class Configuration implements ErrorHandler
             if (cacheMem.endsWith("M") || cacheMem.endsWith("m"))
                 cacheMem = cacheMem.substring(0, cacheMem.length() - 1);
             try {
-                config.put(CacheManager.PROPERTY_CACHE_SIZE, new Integer(cacheMem));
-                LOG.debug(CacheManager.PROPERTY_CACHE_SIZE + ": " + config.get(CacheManager.PROPERTY_CACHE_SIZE) + "m");
+                config.put(DefaultCacheManager.PROPERTY_CACHE_SIZE, new Integer(cacheMem));
+                LOG.debug(DefaultCacheManager.PROPERTY_CACHE_SIZE + ": " + config.get(DefaultCacheManager.PROPERTY_CACHE_SIZE) + "m");
+            } catch (NumberFormatException nfe) {
+            	LOG.warn(nfe);
+            }
+        }
+
+        String collectionCache = con.getAttribute("collectionCache");
+        if (collectionCache != null) {
+            if (collectionCache.endsWith("M") || collectionCache.endsWith("m"))
+                collectionCache = collectionCache.substring(0, collectionCache.length() - 1);
+            try {
+                config.put(CollectionCacheManager.PROPERTY_CACHE_SIZE, new Integer(collectionCache));
+                LOG.debug(CollectionCacheManager.PROPERTY_CACHE_SIZE + ": " + config.get(CollectionCacheManager.PROPERTY_CACHE_SIZE) + "m");
             } catch (NumberFormatException nfe) {
             	LOG.warn(nfe);
             }

@@ -79,7 +79,7 @@ import java.text.NumberFormat;
 
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BufferStats;
-import org.exist.storage.CacheManager;
+import org.exist.storage.DefaultCacheManager;
 import org.exist.storage.cache.Cache;
 import org.exist.storage.cache.Cacheable;
 import org.exist.storage.cache.LRDCache;
@@ -143,7 +143,7 @@ public class BTree extends Paged {
         LogEntryTypes.addEntryType(LOG_SET_PARENT, SetParentLoggable.class);
 	}
 	
-    protected CacheManager cacheManager;
+    protected DefaultCacheManager cacheManager;
     
     /** Cache of BTreeNode(s) */
     protected Cache cache;
@@ -165,7 +165,7 @@ public class BTree extends Paged {
     
     protected BrokerPool pool;
     
-	protected BTree(BrokerPool pool, byte fileId, boolean transactional, CacheManager cacheManager, double growthThreshold)
+	protected BTree(BrokerPool pool, byte fileId, boolean transactional, DefaultCacheManager cacheManager, double growthThreshold)
 	throws DBException {
 		super();
 		this.pool = pool;
@@ -181,7 +181,7 @@ public class BTree extends Paged {
             logManager = pool.getTransactionManager().getJournal();
 	}
 
-	public BTree(BrokerPool pool, byte fileId, boolean transactional, CacheManager cacheManager, File file, double growthThreshold) 
+	public BTree(BrokerPool pool, byte fileId, boolean transactional, DefaultCacheManager cacheManager, File file, double growthThreshold)
 	throws DBException {
         this(pool, fileId, transactional, cacheManager, growthThreshold);
 		setFile(file);
