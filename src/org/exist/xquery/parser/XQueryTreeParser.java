@@ -297,10 +297,12 @@ public XQueryTreeParser() {
 						org.exist.xquery.parser.XQueryAST tmp4_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 						match(_t,LITERAL_as);
 						_t = _t.getFirstChild();
-						sequenceType(_t,clause.sequenceType);
+						SequenceType type= new SequenceType();
+						sequenceType(_t,type);
 						_t = _retTree;
 						_t = __t79;
 						_t = _t.getNextSibling();
+						clause.sequenceType = type;
 						break;
 					}
 					case QNAME:
@@ -474,10 +476,12 @@ public XQueryTreeParser() {
 						org.exist.xquery.parser.XQueryAST tmp6_AST_in = (org.exist.xquery.parser.XQueryAST)_t;
 						match(_t,LITERAL_as);
 						_t = _t.getFirstChild();
-						sequenceType(_t,clause.sequenceType);
+						SequenceType type= new SequenceType();
+						sequenceType(_t,type);
 						_t = _retTree;
 						_t = __t85;
 						_t = _t.getNextSibling();
+						clause.sequenceType = type;
 						break;
 					}
 					case QNAME:

@@ -623,8 +623,10 @@ throws PermissionDeniedException, EXistException, XPathException
 				(
 					#(
 						"as"
-						sequenceType[clause.sequenceType]
+						{ SequenceType type= new SequenceType(); }
+						sequenceType[type]
 					)
+					{ clause.sequenceType = type; }
 				)?
 				step=expr[inputSequence]
 				{
@@ -669,8 +671,10 @@ throws PermissionDeniedException, EXistException, XPathException
 				(
 					#(
 						"as"
-						sequenceType[clause.sequenceType]
+						{ SequenceType type= new SequenceType(); }
+						sequenceType[type]
 					)
+					{ clause.sequenceType = type; }
 				)?
 				step=expr[inputSequence]
 				{
