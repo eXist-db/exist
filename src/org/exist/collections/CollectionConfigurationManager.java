@@ -117,7 +117,6 @@ public class CollectionConfigurationManager {
      * 
      * @param broker
      * @param collection
-     * @param collectionPath
      * @return The collection configuration
      * @throws CollectionConfigurationException
      */
@@ -143,14 +142,16 @@ public class CollectionConfigurationManager {
     			        DocumentImpl confDoc = (DocumentImpl) i.next();
     			        if(confDoc.getFileURI().endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX_URI)) {
                             if (!configFound) {
-                                LOG.debug("Reading collection configuration for '" + collection.getURI() + "' from '" + confDoc.getURI() + "'");
+                                if (LOG.isTraceEnabled())
+                                    LOG.trace("Reading collection configuration for '" + collection.getURI() + "' from '" + confDoc.getURI() + "'");
         			            conf.read(broker, confDoc, path, confDoc.getFileURI());                            
                                 configFound = true;
                                 //Allow just one configuration document per collection
                                 //TODO : do not break if a system property allows several ones -pb
         			            break;
                             } else {
-                                LOG.debug("Found another collection configuration for '" + collection.getURI() + "' in '" + confDoc.getURI() + "'");
+                                if (LOG.isDebugEnabled())
+                                    LOG.debug("Found another collection configuration for '" + collection.getURI() + "' in '" + confDoc.getURI() + "'");
                             }
     			        }
     			    }                    
@@ -162,7 +163,8 @@ public class CollectionConfigurationManager {
     		path = path.removeLastSegment();
 	    }
         if (!configFound) {
-            LOG.debug("Reading collection configuration for '" + collection.getURI() + "' from index configuration");
+            if (LOG.isTraceEnabled())
+                LOG.trace("Reading collection configuration for '" + collection.getURI() + "' from index configuration");
             // use default configuration
             conf.setIndexConfiguration(broker.getIndexConfiguration());
         }
