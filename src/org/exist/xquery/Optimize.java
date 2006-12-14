@@ -91,14 +91,7 @@ public class Optimize extends Pragma {
     private Sequence filterDocuments(NodeSet contextSet, NodeSet ancestors) {
         if (contextSet instanceof VirtualNodeSet)
             return contextSet;
-        DocumentSet docs = ancestors.getDocumentSet();
-        NodeSet newSet = new ExtArrayNodeSet();
-        for (Iterator i = contextSet.iterator(); i.hasNext();) {
-            NodeProxy p = (NodeProxy) i.next();
-            if (docs.contains(p.getDocument().getDocId()))
-                newSet.add(p);
-        }
-        return newSet;
+        return contextSet.filterDocuments(ancestors);
     }
 
     public void before(XQueryContext context, Expression expression) throws XPathException {

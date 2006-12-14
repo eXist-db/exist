@@ -312,21 +312,6 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
         return null;
     }
 
-    public final boolean containsDoc(DocumentImpl doc) {
-        if (root == null)
-            return false;
-        Node tempNode = root;
-        while (tempNode != null) {
-            if (tempNode.data.getDocument().getDocId() == doc.getDocId()) {
-                return true;
-            } else if (tempNode.data.getDocument().getDocId() < doc.getDocId())
-                tempNode = tempNode.rightChild;
-            else
-                tempNode = tempNode.leftChild;
-        }
-        return false;
-    }
-
     /* (non-Javadoc)
       * @see org.exist.dom.NodeSet#contains(org.exist.dom.NodeProxy)
       */

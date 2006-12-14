@@ -21,6 +21,7 @@
 package org.exist.dom;
 
 import org.exist.memtree.DocumentBuilderReceiver;
+import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.RangeIndexSpec;
 import org.exist.storage.StorageAddress;
@@ -37,8 +38,6 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.UntypedAtomicValue;
-
-import org.exist.numbering.NodeId;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -890,14 +889,6 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
     }
     
     /* (non-Javadoc)
-     * @see org.exist.dom.NodeSet#containsDoc(org.exist.dom.DocumentImpl)
-     */
-    public boolean containsDoc(DocumentImpl document) {
-        return doc.getDocId() == document.getDocId();
-    }
-    
-    
-    /* (non-Javadoc)
      * @see org.exist.dom.NodeSet#intersection(org.exist.dom.NodeSet)
      */
     public NodeSet intersection(NodeSet other) {
@@ -928,14 +919,21 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
         result.add(this);
         return result;
     }
-    
+
     /* (non-Javadoc)
      * @see org.exist.dom.NodeSet#except(org.exist.dom.NodeSet)
      */
     public NodeSet except(NodeSet other) {
         return other.contains(this) ? NodeSet.EMPTY_SET : this;
     }
-    
+
+    public NodeSet filterDocuments(NodeSet otherSet) {
+        DocumentSet docs = otherSet.getDocumentSet();
+        if (docs.contains(doc.getDocId()))
+            return this;
+        return NodeSet.EMPTY_SET;
+    }
+
     public void setProcessInReverseOrder(boolean inReverseOrder) {
     	//Nothing to do
     }

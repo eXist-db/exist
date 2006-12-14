@@ -726,14 +726,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 	if (storedDocument == null) {
                         is.skipBytes(size);
                         continue;                        
-                    }                
-                	if (contextSet != null) { 
-                        //Exit if the document is not concerned
-                	    if (!contextSet.containsDoc(storedDocument)) {
-                            is.skipBytes(size);
-                	        continue;
-                        }                        
-                	}
+                    }
                 	//Process the nodes
                     NodeId nodeId;
                 	for (int j = 0; j < gidsCount; j++) {

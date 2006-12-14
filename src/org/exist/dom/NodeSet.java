@@ -22,11 +22,11 @@
  */
 package org.exist.dom;
 
+import org.exist.numbering.NodeId;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
-import org.exist.numbering.NodeId;
 import org.w3c.dom.NodeList;
 
 /**
@@ -62,13 +62,6 @@ public interface NodeSet extends Sequence, NodeList {
 	 * @param proxy
 	 */
 	public boolean contains(NodeProxy proxy);
-	
-	/**
-	 * Check if this node set contains nodes belonging to the given document.
-	 * 
-	 * @param doc
-	 */
-	public boolean containsDoc(DocumentImpl doc);
 	
 	public DocumentSet getDocumentSet();
 	
@@ -306,7 +299,16 @@ public interface NodeSet extends Sequence, NodeList {
 	 * @param other
 	 */
 	public NodeSet except(NodeSet other);
-	
+
+    /**
+     * Create a new node set from this set containing only nodes in documents
+     * that are also contained in the argument set.
+     *
+     * @param otherSet
+     * @return
+     */
+    public NodeSet filterDocuments(NodeSet otherSet);
+
     public void setProcessInReverseOrder(boolean inReverseOrder);
 
     public boolean getProcessInReverseOrder();

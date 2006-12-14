@@ -95,15 +95,6 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	public abstract boolean contains(NodeProxy proxy);
 
 	/**
-	 * Check if this node set contains nodes belonging to the given document.
-	 * 
-	 * @param doc
-	 */
-	public boolean containsDoc(DocumentImpl doc) {
-		return true;
-	}
-
-	/**
 	 * Add a new proxy object to the node set. Please note: node set
 	 * implementations may allow duplicates.
 	 * 
@@ -465,7 +456,18 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		}
 		return r;
 	}
-	
+
+    public NodeSet filterDocuments(NodeSet otherSet) {
+        DocumentSet docs = otherSet.getDocumentSet();
+        NodeSet newSet = new ExtArrayNodeSet();
+        for (Iterator i = iterator(); i.hasNext();) {
+            NodeProxy p = (NodeProxy) i.next();
+            if (docs.contains(p.getDocument().getDocId()))
+                newSet.add(p);
+        }
+        return newSet;
+    }
+
     public void setProcessInReverseOrder(boolean inReverseOrder) {
     	processInReverseOrder = inReverseOrder;
     }
