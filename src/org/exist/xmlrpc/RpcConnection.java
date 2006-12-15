@@ -1306,7 +1306,7 @@ public class RpcConnection extends Thread {
         }
         file.delete();
         documentCache.clear();
-        return doc != null;
+        return true; // when arrived here, insert/update was successfull
     }
     
     
