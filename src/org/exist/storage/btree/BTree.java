@@ -351,7 +351,7 @@ public class BTree extends Paged {
      * 
      * @param page
      * @param parent
-     * @return
+     * @return The BTree node
      */
 	private BTreeNode getBTreeNode(long page) {
 		try {
@@ -376,7 +376,7 @@ public class BTree extends Paged {
      * @param transaction
      * @param status
      * @param parent
-     * @return
+     * @return The BTree node
      */
 	private BTreeNode createBTreeNode(Txn transaction, byte status, BTreeNode parent, 
 		boolean reuseDeleted) {
@@ -417,7 +417,7 @@ public class BTree extends Paged {
      * Create the root node.
      * 
      * @param transaction
-     * @return
+     * @return The root node
      * @throws IOException
      */
 	protected long createRootNode(Txn transaction) throws IOException {
@@ -755,7 +755,7 @@ public class BTree extends Paged {
 		}
         
 		/**
-         * @see org.exist.storage.cache.Cacheable#sync()
+         * @see org.exist.storage.cache.Cacheable#sync(boolean syncJournal)
          */
 		public boolean sync(boolean syncJournal) {
 			if(isDirty())
@@ -817,7 +817,7 @@ public class BTree extends Paged {
 		/**
 		 * Returns the raw data size (in bytes) required by this node.
 		 * 
-		 * @return
+		 * @return The data length
 		 */
 		private int getDataLen() {
 			return currentDataLen < 0 ? recalculateDataLen() :
@@ -827,7 +827,7 @@ public class BTree extends Paged {
 		/**
 		 * Recalculates the raw data size (in bytes) required by this node.
 		 * 
-		 * @return
+		 * @return the data length
 		 */
 		private int recalculateDataLen() {
 			currentDataLen = ptrs == null ? 0 : nPtrs << 3;
@@ -843,7 +843,7 @@ public class BTree extends Paged {
          * required for storing removedValue.
          * 
          * @param removedValue
-         * @return
+         * @return The new data length
          */
         private int decrementDataLen(Value removedValue) {
             currentDataLen = currentDataLen - 8 - removedValue.getLength();
@@ -938,7 +938,7 @@ public class BTree extends Paged {
          * Retrieve the child node at index idx.
          * 
          * @param idx
-         * @return
+         * @return The BTree node
          * @throws IOException
          */
 		private BTreeNode getChildNode(int idx) throws IOException {

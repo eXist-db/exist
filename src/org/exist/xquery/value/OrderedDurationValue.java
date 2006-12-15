@@ -101,7 +101,7 @@ abstract class OrderedDurationValue extends DurationValue {
 			if (getType() != other.getType()) 
 				throw new IllegalArgumentException("Tried to substract " + 
 						Type.getTypeName(other.getType()) + "('" + other.getStringValue() + "') from " + 
-						Type.getTypeName(getType()) + "('" + other.getStringValue() + "')");
+						Type.getTypeName(getType()) + "('" + getStringValue() + "')");
 			Duration a = getCanonicalDuration();
 			Duration b = ((OrderedDurationValue) other).getCanonicalDuration();	
 			Duration result = createSameKind(a.subtract(b)).getCanonicalDuration();
@@ -110,7 +110,7 @@ abstract class OrderedDurationValue extends DurationValue {
 			if (getType() != other.getType()) 
 				throw new IllegalArgumentException("Tried to substract " + 
 						Type.getTypeName(other.getType()) + "('" + other.getStringValue() + "') from " + 
-						Type.getTypeName(getType()) + "('" + other.getStringValue() + "')");
+						Type.getTypeName(getType()) + "('" + getStringValue() + "')");
 			Duration a = getCanonicalDuration();
 			Duration b = ((OrderedDurationValue) other).getCanonicalDuration();	
 			Duration result = createSameKind(a.subtract(b)).getCanonicalDuration();
@@ -127,7 +127,7 @@ abstract class OrderedDurationValue extends DurationValue {
 		default:
 			throw new IllegalArgumentException("Tried to substract " + 
 					Type.getTypeName(other.getType()) + "('" + other.getStringValue() + "') from " + 
-					Type.getTypeName(getType()) + "('" + other.getStringValue() + "')");
+					Type.getTypeName(getType()) + "('" + getStringValue() + "')");
 		}
 		/*
 		if(other.getType() == getType()) {
