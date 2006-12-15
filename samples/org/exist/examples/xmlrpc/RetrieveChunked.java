@@ -62,6 +62,7 @@ public class RetrieveChunked {
             // Setup xmlrpc client
             XmlRpc.setEncoding("UTF-8");
             XmlRpcClient xmlrpc = new XmlRpcClient(url);
+            xmlrpc.setBasicAuthentication("guest", "guest");
             
             // Setup xml serializer
             Hashtable options = new Hashtable();

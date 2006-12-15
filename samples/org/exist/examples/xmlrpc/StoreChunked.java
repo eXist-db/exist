@@ -62,7 +62,7 @@ public class StoreChunked {
             // Setup xmlrpc client
             XmlRpc.setEncoding("UTF-8");
             XmlRpcClient xmlrpc = new XmlRpcClient(url);
-            //xmlrpc.setBasicAuthentication("admin", "");
+            xmlrpc.setBasicAuthentication("guest", "guest");
             
             // Initialize xmlrpc parameters
             Vector params = new Vector();
