@@ -396,8 +396,7 @@ public class ElementImpl extends NamedNode implements Element {
 
     /**
      * Internal append.
-     *
-     * @return Node
+     *    
      * @throws DOMException
      */
     protected void appendChildren(Txn transaction, NodeId newNodeId, NodeImplRef last, NodePath lastPath, NodeList nodes,
@@ -649,7 +648,7 @@ public class ElementImpl extends NamedNode implements Element {
      * in the current element.
      *
      * @param attrs
-     * @return
+     * @return The attributes list
      * @throws DOMException
      */
     private NodeList findDupAttributes(NodeList attrs) throws DOMException {

@@ -14,15 +14,12 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import org.exist.client.BackupContentsFilter;
+
 import org.exist.client.Messages;
 import org.exist.client.ZipFilter;
-
 import org.exist.storage.DBBroker;
-
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;

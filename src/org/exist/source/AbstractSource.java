@@ -75,7 +75,7 @@ public abstract class AbstractSource implements Source {
      * XQuery declaration.
      * 
      * @param is
-     * @return
+     * @return The guessed encoding.
      */
     protected final static String guessXQueryEncoding(InputStream is) {
         XQueryLexer lexer = new XQueryLexer(null, new InputStreamReader(is));
