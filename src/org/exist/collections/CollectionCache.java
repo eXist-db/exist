@@ -35,8 +35,7 @@ public class CollectionCache extends LRDCache {
 	public void add(Collection collection, int initialRefCount) {
 		super.add(collection, initialRefCount);
         String name = collection.getURI().getRawCollectionPath();
-        if (!names.containsKey(name))
-            names.put(names, collection.getKey());
+        names.put(name, collection.getKey());
 	}
 
 	public Collection get(Collection collection) {
