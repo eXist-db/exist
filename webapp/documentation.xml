@@ -84,6 +84,13 @@
             </tr>
 
             <tr>
+              <td class="doclink"><ulink url="triggers.xml">Configuring
+              Triggers</ulink>:</td>
+
+              <td>how to configure triggers.</td>
+            </tr>
+
+            <tr>
               <td class="doclink"><ulink
               url="deployment.xml">Deployment</ulink>:</td>
 
