@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<book>
+    <bookinfo>
+        <graphic fileref="logo.jpg"/>
+        <productname>Open Source Native XML Database</productname>
+        <title>Configuring Database Triggers</title>
+        <orgname>The eXist Project</orgname>
+    </bookinfo>
+    <ci:include xmlns:ci="http://apache.org/cocoon/include/1.0" src="sidebar.xml"/>
+    <chapter>
+        <title>Configuring Database Triggers</title>
+        <section>
+            <title>Overview</title>
+            <para>In this section, we discuss the types of database events that may be Triggered by eXist, as well
+                as how Triggers are created and configured. It assumes readers have a basic
+                understanding of XML, Java and XQuery.</para>
+            <para>Triggers may be configured by the User to respond to document and/or collection events.
+            The current version of eXist defines six events, all of which are applicable to the collection configured with the Trigger:</para>
+            <orderedlist>
+                <listitem>
+                    <para>
+                        <emphasis>store</emphasis>: Fired when a document is stored to the collection or sub-collection</para>
+                </listitem>
+                <listitem>
+                    <para>
+                        <emphasis>update</emphasis>: Fired when a document is updated in the collection or sub-collection</para>
+                </listitem>
+                <listitem>
+                    <para>
+                        <emphasis>remove</emphasis>: Fired when a document is removed from the collection or sub-collection</para>
+                </listitem>
+                <listitem>
+                    <para>
+                        <emphasis>create</emphasis>: Fired when a sub-collection is created</para>
+                </listitem>
+                <listitem>
+                    <para>
+                        <emphasis>rename</emphasis>: Fired when a sub-collection is renamed</para>
+                </listitem>
+            	<listitem>
+                    <para>
+                        <emphasis>delete</emphasis>: Fired when a sub-collection is deleted</para>
+                </listitem>
+            </orderedlist>
+        </section>
+        <section>
+            <title>Trigger Types</title>
+            <para>Triggers may be written in either XQuery or Java and will be Triggered twice,
+            once pre-event and once post-event. The Trigger may response to either or both the pre
+            and post events.</para>
+            <section>
+                <title>XQuery Triggers</title>
+                <para>Triggers written in XQuery may be configuring by using the org.exist.collections.triggers.XQueryTrigger to fire the XQuery</para>
+                <para>At present the XQuery must be placed inside the collection.xconf file, however work is underway to extend XQueryTrigger so that it can load
+                  XQueries from the database</para>
+            </section>
+            <section>
+                <title>Java Triggers</title>
+                <para>Triggers written in Java must implement the org.exist.collections.triggers.Trigger interface or one of its extensions such as
+                    org.exist.collections.triggers.DocumentTrigger. The Java class for your trigger must be available on the class path, lib/user is a good place
+                    to copy your custom trigger to.</para>
+                <para>The DocumentTrigger interface provides a convenient starting place and provides the methods prepare() (fired pre-event) and finish() (fired post-event())</para>
+            </section>
+        </section>
+        <section>
+            <title>Configuring Triggers</title>
+
+            <para>Users configure Triggers using collection-specific configuration files. These files are stored
+                as standard XML documents in the system collection:
+                <filename>/db/system/config</filename>, which can be accessed using the Admin
+                interface or Java Client. In addition to defining settings for Triggers
+                the configuration document specifies collection-specific other settings such as
+                indexes or default permissions.</para>
+
+            <para>The contents of the system collection (<filename>/db/system/config</filename>)
+                mirror the hierarchical structure of the main collection. Configurations are
+                therefore "inherited" by descendants in the hierarchy, (i.e. the configuration
+                settings for the child collection are added to or override those set for the
+                parent). It is furthermore possible for each collection in the hierarchy to have its
+                own <emphasis>trigger creation policy</emphasis> defined by a configuration file.</para>
+
+            <para>To configure triggers for a given collection - for example:
+                <filename>/db/foo</filename> - you must create a new <filename>.xconf</filename>
+                configuration file and store it in the system collection (e.g.
+                    <filename>/db/system/config/db/foo</filename>). You can choose any name for this
+                document so long as it has the <filename>.xconf</filename> extension, although
+                <filename>collection.xconf</filename> is recommended. Note that
+                since subcollections will inherit the configuration policy of their parent
+                collections, you are not required to specify a configuration for every collection.</para>
+
+            <note>
+                <para>You can store only ONE <filename>.xconf</filename> configuration document per
+                    collection in the system collection <filename>/db/system/config</filename>. For
+                    example, the collection <filename>/db/system/config/foo</filename> would contain
+                    one configuration file and/or other subcollections.</para>
+            </note>
+
+            <section>
+                <title>Configuration Structure and Syntax</title>
+
+                <para>Trigger configuration files are standard XML documents that have their elements
+                    and attributes defined by the eXist namespace:</para>
+
+                <synopsis>http://exist-db.org/collection-config/1.0</synopsis>
+
+                <para>The following example shows a simple configuration document:</para>
+
+                <example>
+                    <title>Simple Configuration Document</title>
+                    <programlisting><markup><![CDATA[<collection xmlns="http://exist-db.org/collection-config/1.0">
+    <triggers>
+		<trigger event="store,update,remove" class="my.domain.testTrigger"/>
+    </triggers>
+</collection>]]></markup></programlisting>
+                </example>
+
+                <para>All configuration documents have the <sgmltag>collection</sgmltag> root
+                    element. These documents also have an <sgmltag>triggers</sgmltag> element 
+                    below the root element, which encloses the trigger configuration. Only ONE
+                        <sgmltag>triggers</sgmltag> element is permitted in a document. </para>
+
+                <para>In the <sgmltag>triggers</sgmltag> element are elements that define each trigger
+                and the event(s) that it is fired for.</para>
+
+                <para>Each <sgmltag>trigger</sgmltag> element has two attributes, <emphasis>event</emphasis> which is a comma
+                seperated list of events to fire for and <emphasis>class</emphasis> which is the name of the Java Class to fire on the event</para>
+                <section>
+                    <title>Configuring an XQuery Trigger</title>
+                    <para/>
+                </section>
+            </section>
+        </section>
+        <section>
+            <title>Provided Triggers</title>
+            <para>eXist provides some Triggers out of the box that may be used</para>
+            <section>
+                <title>HistoryTrigger</title>
+                <para>This collection trigger will save all old versions of documents before they are overwritten or removed. The old versions are kept in the
+                    'history root' which is by default <code>/db/history</code>, but can be changed with the parameter <code>root</code>.
+                    You need to configure this trigger for every collection whose history you want to preserve.</para>
+                <example>
+                    <title>History Trigger collection.xconf</title>
+                    <programlisting><markup><![CDATA[<collection xmlns='http://exist-db.org/collection-config/1.0'>
+     <triggers>
+       <trigger event="update,remove" class="org.exist.collections.triggers.HistoryTrigger"/>
+     </triggers>
+</collection>]]>
+                            </markup></programlisting>
+                </example>
+            </section>
+            <section>
+                <title>STX Transformer Trigger</title>
+                <para>STXTransformerTrigger applies an STX stylesheet to the input SAX stream, using <a href="http://joost.sourceforge.net">Joost</a>.
+                    The stylesheet location is identified by parameter "src". If the src parameter is just a path, the stylesheet will be loaded from the database,
+                    otherwise, it is interpreted as an URI.</para>
+            </section>
+        </section>
+    </chapter>
+</book>
