@@ -24,6 +24,7 @@ package org.exist.xmlrpc;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,15 +46,12 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Vector;
 import java.util.WeakHashMap;
-
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 
 import org.exist.backup.Backup;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
 import org.exist.dom.BinaryDocument;
@@ -83,9 +81,9 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Compressor;
 import org.exist.util.Configuration;
-import org.exist.util.LockException;
+import org.exist.util.MimeTable;
+import org.exist.util.MimeType;
 import org.exist.util.Occurrences;
-import org.exist.util.SyntaxException;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.validation.ValidationReport;
@@ -110,7 +108,6 @@ import org.exist.xupdate.XUpdateProcessor;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 /**
@@ -1237,11 +1234,17 @@ public class RpcConnection extends Thread {
         Txn txn = transact.beginTransaction();
         DBBroker broker = null;
         DocumentImpl doc = null;
+        
+        // DWES
+        MimeType mime = MimeTable.getInstance().getContentTypeFor(docUri);
+        if (mime == null)
+            mime = MimeType.BINARY_TYPE;
+                    
         try {
             broker = brokerPool.get(user);
             Collection collection = null;
-            IndexInfo info;
-            InputSource source;
+            IndexInfo info=null;
+            InputSource source=null;
             try {
                 collection = broker.openCollection(docUri.removeLastSegment(), Lock.WRITE_LOCK);
                 if (collection == null) {
@@ -1255,19 +1258,45 @@ public class RpcConnection extends Thread {
                                 "Old document exists and overwrite is not allowed");
                     }
                 }
-                source = new InputSource(file.toURI().toASCIIString());
-                info = collection.validateXMLResource(txn, broker, docUri.lastSegment(), source);
+                
+                //XML
+                if(mime.isXMLType()) {
+                    source = new InputSource(file.toURI().toASCIIString());
+                    info = collection.validateXMLResource(txn, broker, docUri.lastSegment(), source);
+                    
+                } else {
+                    FileInputStream is = new FileInputStream(file);
+                    doc = collection.addBinaryResource(txn, broker, docUri.lastSegment(), is, 
+                            mime.getName(), (int) file.length());
+                    is.close();
+
+                    
+                }
             } finally {
+                // DWES originally before set time ; is this ok?
                 if(collection != null)
                     collection.release();
             }
             
-            if (created != null)
-                info.getDocument().getMetadata().setCreated(created.getTime());
+            if(mime.isXMLType()){
+                if (created != null)
+                    info.getDocument().getMetadata().setCreated(created.getTime());
+                
+                if (modified != null)
+                    info.getDocument().getMetadata().setLastModified(modified.getTime());
+                collection.store(txn, broker, info, source, false);
+                
+            } else {
+                //DWES... add created/modified?
+                if (created != null)
+                    doc.getMetadata().setCreated(created.getTime());
+                if (modified != null)
+                    doc.getMetadata().setLastModified(modified.getTime());
+                
+            }
+
             
-            if (modified != null)
-                info.getDocument().getMetadata().setLastModified(modified.getTime());
-            collection.store(txn, broker, info, source, false);
+            // generic
             transact.commit(txn);
         } catch (Exception e) {
             transact.abort(txn);
