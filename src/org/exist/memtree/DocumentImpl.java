@@ -463,6 +463,18 @@ public class DocumentImpl extends NodeImpl implements Document {
         return count;
     }
     
+    public int getNamespacesCountFor(int nodeNumber) {
+        int count = 0;
+        int ns = alphaLen[nodeNumber];
+        if (-1 < ns) {
+            while (ns < nextNamespace
+                    && namespaceParent[ns++] == nodeNumber) {
+                ++count;
+            }
+        }
+        return count;
+    }
+    
     public int getChildCountFor(int nr) {
         int count = 0;
         //short level = (short)(treeLevel[nr] + 1);

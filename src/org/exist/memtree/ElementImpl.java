@@ -116,7 +116,7 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 	 * @see org.w3c.dom.Node#hasAttributes()
 	 */
 	public boolean hasAttributes() {
-		return document.alpha[nodeNumber] > -1;
+		return document.alpha[nodeNumber] > -1 || document.alphaLen[nodeNumber] > -1;
 	}
 
 	/* (non-Javadoc)
@@ -124,14 +124,27 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 	 */
 	public String getAttribute(String name) {
 		int attr = document.alpha[nodeNumber];
-		if (attr < 0)
-			return null;
-		while (attr < document.nextAttr
-			&& document.attrParent[attr] == nodeNumber) {
-			QName attrQName = (QName)document.namePool.get(document.attrName[attr]);
-			if (attrQName.getLocalName().equals(name))
-				return document.attrValue[attr];
-			++attr;
+		if (-1 < attr) {
+			while (attr < document.nextAttr
+				&& document.attrParent[attr] == nodeNumber) {
+				QName attrQName = (QName)document.namePool.get(document.attrName[attr]);
+				if (attrQName.getStringValue().equals(name))
+					return document.attrValue[attr];
+				++attr;
+			}
+		}
+		
+		if(name.startsWith("xmlns:")) {
+			int ns = document.alphaLen[nodeNumber];
+			if (-1 < ns) {
+				while (ns < document.nextNamespace
+						&& document.namespaceParent[ns] == nodeNumber) {
+					QName nsQName=(QName)document.namePool.get(document.namespaceCode[ns]);
+					if (nsQName.getStringValue().equals(name))
+						return nsQName.getNamespaceURI();
+					++ns;
+				}
+			}
 		}
 		return null;
 	}
@@ -153,7 +166,7 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 	}
 
     public int getAttributesCount() {
-       return document.getAttributesCountFor(nodeNumber);
+       return document.getAttributesCountFor(nodeNumber)+document.getNamespacesCountFor(nodeNumber);
     }
     
 	/* (non-Javadoc)
@@ -187,14 +200,27 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 	 */
 	public Attr getAttributeNode(String name) {
 		int attr = document.alpha[nodeNumber];
-		if (attr < 0)
-			return null;
-		while (attr < document.nextAttr
-			&& document.attrParent[attr] == nodeNumber) {
-			QName attrQName = (QName)document.namePool.get(document.attrName[attr]);
-			if (attrQName.equals(name))
-				return new AttributeImpl(document, attr);
-			++attr;
+		if (-1 < attr) {
+			while (attr < document.nextAttr
+				&& document.attrParent[attr] == nodeNumber) {
+				QName attrQName = (QName)document.namePool.get(document.attrName[attr]);
+				if (attrQName.getStringValue().equals(name))
+					return new AttributeImpl(document, attr);
+				++attr;
+			}
+		}
+		
+		if(name.startsWith("xmlns:")) {
+			int ns = document.alphaLen[nodeNumber];
+			if (-1 < ns) {
+				while (ns < document.nextNamespace
+						&& document.namespaceParent[ns] == nodeNumber) {
+					QName nsQName=(QName)document.namePool.get(document.namespaceCode[ns]);
+					if (nsQName.getStringValue().equals(name))
+						return new NamespaceNode(document, ns);
+					++ns;
+				}
+			}
 		}
 		return null;
 	}
@@ -237,16 +263,29 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 	 */
 	public String getAttributeNS(String namespaceURI, String localName) {
 		int attr = document.alpha[nodeNumber];
-		if (attr < 0)
-			return null;
-		QName name;
-		while (attr < document.nextAttr
-			&& document.attrParent[attr] == nodeNumber) {
-			name = (QName)document.namePool.get(document.attrName[attr]);
-			if (name.getLocalName().equals(localName)
-				&& name.getNamespaceURI().equals(namespaceURI))
-				return document.attrValue[attr];
-			++attr;
+		if (-1 < attr) {
+			QName name;
+			while (attr < document.nextAttr
+				&& document.attrParent[attr] == nodeNumber) {
+				name = (QName)document.namePool.get(document.attrName[attr]);
+				if (name.getLocalName().equals(localName)
+					&& name.getNamespaceURI().equals(namespaceURI))
+					return document.attrValue[attr];
+				++attr;
+			}
+		}
+		
+		if(Namespaces.XMLNS_NS.equals(namespaceURI)) {
+			int ns = document.alphaLen[nodeNumber];
+			if (-1 < ns) {
+				while (ns < document.nextNamespace
+						&& document.namespaceParent[ns] == nodeNumber) {
+					QName nsQName=(QName)document.namePool.get(document.namespaceCode[ns]);
+					if (nsQName.getLocalName().equals(localName))
+						return nsQName.getNamespaceURI();
+					++ns;
+				}
+			}
 		}
 		return null;
 	}
@@ -274,16 +313,29 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 	 */
 	public Attr getAttributeNodeNS(String namespaceURI, String localName) {
 		int attr = document.alpha[nodeNumber];
-		if (attr < 0)
-			return null;
-		QName name;
-		while (attr < document.nextAttr
-			&& document.attrParent[attr] == nodeNumber) {
-			name = (QName)document.namePool.get(document.attrName[attr]);
-			if (name.getLocalName().equals(localName)
-				&& name.getNamespaceURI().equals(namespaceURI))
-				return new AttributeImpl(document, attr);
-			++attr;
+		if (-1 < attr) {
+			QName name;
+			while (attr < document.nextAttr
+				&& document.attrParent[attr] == nodeNumber) {
+				name = (QName)document.namePool.get(document.attrName[attr]);
+				if (name.getLocalName().equals(localName)
+					&& name.getNamespaceURI().equals(namespaceURI))
+					return new AttributeImpl(document, attr);
+				++attr;
+			}
+		}
+		
+		if(Namespaces.XMLNS_NS.equals(namespaceURI)) {
+			int ns = document.alphaLen[nodeNumber];
+			if (-1 < ns) {
+				while (ns < document.nextNamespace
+						&& document.namespaceParent[ns] == nodeNumber) {
+					QName nsQName=(QName)document.namePool.get(document.namespaceCode[ns]);
+					if (nsQName.getLocalName().equals(localName))
+						return new NamespaceNode(document, ns);
+					++ns;
+				}
+			}
 		}
 		return null;
 	}
@@ -361,26 +413,31 @@ public class ElementImpl extends NodeImpl implements Element, QNameable {
 	}
 	
 	public String toString() {
-    	StringBuffer result = new StringBuffer();
-    	result.append("in-memory#");
-    	result.append("element {");
-    	result.append(getQName().getStringValue());
-    	result.append("} {");        
-        if(getAttributes() != null) {			
-			for(int i = 0; i < getAttributes().getLength(); i++) {
-			    if(i > 0)
-			    	result.append(" ");		    
-			    AttributeImpl att = (AttributeImpl)getAttributes().item(i);			    
-			    result.append(att.toString());			    
+    		StringBuffer result = new StringBuffer();
+    		result.append("in-memory#");
+    		result.append("element {");
+    		result.append(getQName().getStringValue());
+    		result.append("} {");
+		NamedNodeMap theAttrs;
+        	if((theAttrs=getAttributes()) != null) {
+			for(int i = 0; i < theAttrs.getLength(); i++) {
+				if(i > 0)
+					result.append(" ");
+				Node natt=theAttrs.item(i);
+				if("org.exist.memtree.AttributeImpl".equals(natt.getClass().getName())) {
+					result.append(((AttributeImpl)natt).toString());
+				} else {
+					result.append(((NamespaceNode)natt).toString());
+				}
 			}
 		}
-        for(int i = 0; i < this.getChildCount(); i++ ) {  
-        	if(i > 0)
-            	result.append(" ");        	
-    		Node child = getChildNodes().item(i);
-            result.append(child.toString());           
-        }        
-        result.append("} ");        
-        return result.toString();
+        	for(int i = 0; i < this.getChildCount(); i++ ) {  
+        		if(i > 0)
+            		result.append(" ");        	
+    			Node child = getChildNodes().item(i);
+        	    result.append(child.toString());           
+        	}        
+        	result.append("} ");        
+        	return result.toString();
 	}
 }

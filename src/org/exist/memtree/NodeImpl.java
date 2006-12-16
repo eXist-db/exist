@@ -98,21 +98,25 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	 * @see org.w3c.dom.Node#getNodeName()
 	 */
 	public String getNodeName() {
-		switch (getNodeType()) {
-			case Node.DOCUMENT_NODE :
+		switch (getType()) {
+			case Type.DOCUMENT :
 				return "#document";
-			case Node.ELEMENT_NODE :
-			case Node.PROCESSING_INSTRUCTION_NODE :
+			case Type.ELEMENT :
+			case Type.PROCESSING_INSTRUCTION :
 				QName qn = (QName)
 					document.namePool.get(document.nodeName[nodeNumber]);
 				//TODO : check !
 				return qn.getStringValue();
-			case Node.ATTRIBUTE_NODE:
+			case Type.ATTRIBUTE:
 				return ((QName)document.namePool.get(document.attrName[nodeNumber])).getStringValue();
-			case NodeImpl.NAMESPACE_NODE:
+			case Type.NAMESPACE:
 				return ((QName)document.namePool.get(document.namespaceCode[nodeNumber])).getStringValue();
-			case Node.TEXT_NODE :
+			case Type.TEXT :
 				return "#text";
+			case Type.COMMENT :
+				return "#comment";
+			case Type.CDATA_SECTION :
+				return "#cdata-section";
 			default :
 				return "#unknown";
 		}
@@ -132,6 +136,8 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 			case Node.COMMENT_NODE:
 			    return QName.EMPTY_QNAME;		
 			case Node.TEXT_NODE :
+				return QName.EMPTY_QNAME;		
+			case Node.CDATA_SECTION_NODE :
 				return QName.EMPTY_QNAME;		
 			default :
 				return null;
@@ -415,6 +421,8 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 				return Type.ATTRIBUTE;
 			case Node.TEXT_NODE :
 				return Type.TEXT;
+			case Node.CDATA_SECTION_NODE :
+				return Type.CDATA_SECTION;
 			default :
 				return Type.NODE;
 		}

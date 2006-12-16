@@ -22,6 +22,8 @@ public interface Namespaces {
 	
 	public final static String XML_NS = "http://www.w3.org/XML/1998/namespace";
 	
+	public final static String XMLNS_NS = "http://www.w3.org/2000/xmlns/";
+	
 	/** QName representing xml:id */
 	public final static QName XML_ID_QNAME = new QName("id", XML_NS, "xml");
 	

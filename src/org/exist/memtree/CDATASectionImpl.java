@@ -62,6 +62,10 @@ public class CDATASectionImpl extends NodeImpl implements CDATASection {
                 document.alphaLen[nodeNumber]);
     }
 
+    public String getNodeValue() {
+    	return getData();
+    }
+    
     /* (non-Javadoc)
      * @see org.w3c.dom.CharacterData#substringData(int, int)
      */
