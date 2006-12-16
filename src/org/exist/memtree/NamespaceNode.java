@@ -22,6 +22,7 @@
  */
 package org.exist.memtree;
 
+import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.dom.QNameable;
 import org.exist.xquery.value.Type;
@@ -72,8 +73,7 @@ public class NamespaceNode extends NodeImpl implements Attr, QNameable {
     }
 
     public String getNamespaceURI() {
-    	//TODO: remove
-    	return getQName().getNamespaceURI();
+    	return Namespaces.XMLNS_NS;
     }
     
 	public boolean getSpecified() {

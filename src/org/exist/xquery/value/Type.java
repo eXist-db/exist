@@ -42,7 +42,8 @@ public class Type {
 			"processing-instruction",
 			"comment",
 			"document",
-			"namespace" };
+			"namespace",
+			"cdata-section" };
 
 	public static final int NODE = -1;
 
@@ -53,6 +54,7 @@ public class Type {
 	public final static int COMMENT = 5;
 	public final static int DOCUMENT = 6;
 	public final static int NAMESPACE = 500;
+	public final static int CDATA_SECTION = 501;
 
 	public final static int EMPTY = 10;
 	public final static int ITEM = 11;
@@ -129,6 +131,7 @@ public class Type {
 		defineSubType(NODE, COMMENT);
 		defineSubType(NODE, DOCUMENT);
 		defineSubType(NODE, NAMESPACE);
+		defineSubType(NODE, CDATA_SECTION);
 
 		defineSubType(ITEM, ATOMIC);
 		//TODO :; haven't we here UNTYPED_ATOMIC descendants ?
@@ -204,6 +207,7 @@ public class Type {
 		defineBuiltInType(PROCESSING_INSTRUCTION, "processing-instruction");
 		defineBuiltInType(COMMENT, "comment");
 		defineBuiltInType(NAMESPACE, "namespace");
+		defineBuiltInType(CDATA_SECTION, "cdata-section");
 
 		defineBuiltInType(JAVA_OBJECT, "object");
 		defineBuiltInType(FUNCTION_REFERENCE, "function");
