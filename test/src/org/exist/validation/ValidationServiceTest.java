@@ -56,7 +56,7 @@ public class ValidationServiceTest  extends TestCase {
     
     public void setUp() {
         try {
-            System.out.println(">>> setUp");            
+            System.out.println(">>> setUp");
             Class cl = Class.forName(DRIVER);
             Database database = (Database) cl.newInstance();
             database.setProperty("create-database", "true");
@@ -80,6 +80,7 @@ public class ValidationServiceTest  extends TestCase {
     }
     
     public void testGetName() {
+        System.out.println("testGetName");
         try {
             Assert.assertEquals("ValidationService check", service.getName(),  "ValidationService" );
         } catch (Exception e) {
@@ -88,6 +89,7 @@ public class ValidationServiceTest  extends TestCase {
     }
     
     public void testGetVersion() {
+        System.out.println("testGetVersion");
         try {
             assertEquals("ValidationService check", service.getVersion(),   "1.0" );
         } catch (Exception e) {
@@ -96,6 +98,7 @@ public class ValidationServiceTest  extends TestCase {
     }
     
     public void testXsdValidDocument() {
+        System.out.println("testXsdValidDocument");
         try {
             assertTrue( service.validateResource("/db/grammar/addressbook_valid.xml") );
         } catch (Exception e) {
@@ -104,6 +107,7 @@ public class ValidationServiceTest  extends TestCase {
     }
     
     public void testXsdInvalidDocument() {
+        System.out.println("testXsdInvalidDocument");
         try {
             assertFalse( service.validateResource("/db/grammar/addressbook_invalid.xml") );
         } catch (Exception e) {
@@ -112,6 +116,7 @@ public class ValidationServiceTest  extends TestCase {
     }
     
     public void testNonexistingDocument() {
+        System.out.println("testNonexistingDocument");
         try {
             assertFalse( service.validateResource(DBBroker.ROOT_COLLECTION + "/foobar.xml") );
         } catch (Exception e) {
@@ -120,6 +125,7 @@ public class ValidationServiceTest  extends TestCase {
     }
     
     public void testDtdValidDocument() {
+        System.out.println("testDtdValidDocument");
         try {
             assertTrue( service.validateResource("/db/grammar/hamlet_valid.xml") );
         } catch (Exception e) {
@@ -128,6 +134,7 @@ public class ValidationServiceTest  extends TestCase {
     }
     
     public void testDtdInvalidDocument() {
+        System.out.println("testDtdInvalidDocument");
         try {
             assertFalse( service.validateResource("/db/grammar/hamlet_invalid.xml") );
         } catch (Exception e) {
@@ -136,6 +143,7 @@ public class ValidationServiceTest  extends TestCase {
     }
     
     public void testNoDoctype() {
+        System.out.println("testNoDoctype");
         try {
             assertFalse( service.validateResource("/db/grammar/hamlet_nodoctype.xml") );
         } catch (Exception e) {
@@ -144,6 +152,7 @@ public class ValidationServiceTest  extends TestCase {
     }
     
     public void testWrongDoctype() {
+        System.out.println("testWrongDoctype");
         try {
             assertFalse( service.validateResource("/db/grammar/hamlet_wrongdoctype.xml") );
         } catch (Exception e) {
