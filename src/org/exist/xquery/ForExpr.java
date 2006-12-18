@@ -28,7 +28,7 @@ import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.GroupedValueSequence;
-import org.exist.xquery.value.GroupedValueSequenceList;
+import org.exist.xquery.value.GroupedValueSequenceTable;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.OrderedValueSequence;
@@ -37,6 +37,10 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
+import java.util.Iterator;
+
+
+
 
 /**
  * Represents an XQuery "for" expression.
@@ -145,7 +149,7 @@ public class ForExpr extends BindingExpression {
 	 * 
 	 * @see org.exist.xquery.Expression#eval(Sequence, Item)
 	 */
-    public Sequence eval(Sequence contextSequence, Item contextItem, Sequence resultSequence, GroupedValueSequenceList groupedSequence) 
+    public Sequence eval(Sequence contextSequence, Item contextItem, Sequence resultSequence, GroupedValueSequenceTable groupedSequence) 
         throws XPathException {
 
         if (context.getProfiler().isEnabled()) {
@@ -163,7 +167,7 @@ public class ForExpr extends BindingExpression {
         LocalVariable groupVar = null; 
         LocalVariable groupKeyVar[] = null; 
         if(groupSpecs != null){ 
-            groupedSequence = new GroupedValueSequenceList(groupSpecs,toGroupVarName,context);  
+            groupedSequence = new GroupedValueSequenceTable(groupSpecs,toGroupVarName,context);  
             groupVar = new LocalVariable(QName.parse(context, groupVarName, null)); 
             groupVar.setSequenceType(sequenceType); 
             context.declareVariableBinding(groupVar); 
@@ -318,11 +322,12 @@ public class ForExpr extends BindingExpression {
         // bv : Special processing for groupBy : one return per group in groupedSequence 
         //TODO : positional variable ! 
         if(groupSpecs!=null){ 
-            for(int k=0; k<groupedSequence.size(); k++){ 
-                GroupedValueSequence currentGroup = (GroupedValueSequence)groupedSequence.get(k); 
- 
-                context.proceed(this); 
-                context.setContextPosition(k); //bv : not tested 
+            for(Iterator it = groupedSequence.iterate(); it.hasNext(); ){ 
+            	Object key = it.next();
+                GroupedValueSequence currentGroup = (GroupedValueSequence)groupedSequence.get(key); 
+    	
+        	    context.proceed(this); 
+                //context.setContextPosition(k); //bv : not tested 
                  
                 // set the grouping variable to current group nodes 
                 groupVar.setValue(currentGroup); 

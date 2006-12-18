@@ -25,7 +25,7 @@ package org.exist.xquery;
 import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.GroupedValueSequenceList; 
+import org.exist.xquery.value.GroupedValueSequenceTable; 
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -73,7 +73,7 @@ public class QuantifiedExpression extends BindingExpression {
 		context.popLocalVariables(mark);
     }
     
-	public Sequence eval(Sequence contextSequence, Item contextItem, Sequence resultSequence, GroupedValueSequenceList groupedSequence)   
+	public Sequence eval(Sequence contextSequence, Item contextItem, Sequence resultSequence, GroupedValueSequenceTable groupedSequence)   
         throws XPathException {
         
         if (context.getProfiler().isEnabled()) {

@@ -21,25 +21,20 @@
  *  $Id$ 
  */ 
 package org.exist.xquery.value; 
- 
-import java.text.Collator;
 
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.xquery.Constants;
-import org.exist.xquery.GeneralComparison;
 import org.exist.xquery.GroupSpec;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.ExpressionDumper;
  
  
- 
 /** 
  * A sequence that containts items of one group specified by the group specs of 
  * an "group by" clause. Used by  
- * {@link org.exist.xquery.value.GroupedValueSequenceList}. 
+ * {@link org.exist.xquery.value.GroupedValueSequenceTable}. 
  *  
  * This class is based on {@link org.exist.xquery.value.OrderedValueSequence}. 
  *  
@@ -49,7 +44,6 @@ import org.exist.xquery.util.ExpressionDumper;
  */ 
  
 public class GroupedValueSequence extends AbstractSequence { 
- 
      
     private Entry[] items = null; 
     private int count = 0; 
@@ -57,6 +51,7 @@ public class GroupedValueSequence extends AbstractSequence {
     private GroupSpec groupSpecs[];  
     private Sequence groupKey; 
     private XQueryContext context; 
+    private int groupKeyLength;
      
     // used to keep track of the type of added items. 
     private int itemType = Type.ANY_TYPE; 
@@ -66,6 +61,7 @@ public class GroupedValueSequence extends AbstractSequence {
         this.items = new Entry[size]; 
         this.groupKey = keySequence; 
         this.context = aContext; 
+        this.groupKeyLength = groupKey.getLength();
     } 
      
     /* (non-Javadoc) 
@@ -93,33 +89,6 @@ public class GroupedValueSequence extends AbstractSequence {
         return this.groupKey; 
     } 
  
- 
-    /** 
-     * Check equality with self grouping keys values. Returns a boolean. 
-     *  
-     *  @param     otherGroupKey    An <code>Item[]</code> to compare with 
-     *                          self grouping keys values 
-     *  @return                 <code>true</code> if equal, <code>false</code> 
-     *                          otherwise.     
-     */         
-    public boolean checkKeys(Sequence otherGroupKey) throws XPathException {
-    	//TODO : possible performance gap here ! getLength() is costly
-        if(this.groupKey.getLength() == otherGroupKey.getLength()){ 
-         
-            for(int i = 0; i < this.groupKey.getLength() ; i++){ 
-                // bv : compare atomic values using GeneralComparison
-            	//TODO : YES ! Well, valueComparison, which is a little bit more specific
-                if(!GeneralComparison.compareAtomic(Collator.getInstance(), this.groupKey.itemAt(i).atomize(), otherGroupKey.itemAt(i).atomize(), true, Constants.TRUNC_BOTH, Constants.EQ)){ 
-                    return false; 
-                } 
-            } 
-            return true; 
-        } 
-        else 
-            return false; 
-    } 
-     
-     
     public boolean isEmpty() { 
         return isEmpty; 
     } 
