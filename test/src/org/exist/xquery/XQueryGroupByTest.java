@@ -258,7 +258,8 @@ public class XQueryGroupByTest  extends XMLTestCase {
             //test the contents of $partition 
             System.out.println("testGroupBy 6: ========" ); 
             query = "for $item in //item group $item as $partition by $item/key1 "+  
-                    "as $key1, $item/key2 as $key2 return <group>{$partition}</group>"; 
+                    "as $key1, $item/key2 as $key2 order by $key1 descending, "+
+                    "$key2 descending return <group>{$partition}</group>"; 
             result = service.queryResource(BINARYTABLE_XML, query ); 
             printResult(result); 
              
@@ -409,7 +410,8 @@ public class XQueryGroupByTest  extends XMLTestCase {
             "for $b in //book\n"+ 
             "let $pub := <publisher>{$b/publisher}</publisher>\n"+ 
             "for $cell in local:cube(($pub,$b/year))\n"+ 
-            "group $b as $partition by $cell as $cell2\n"+ 
+            "group $b as $partition by $cell as $cell2\n"+
+            "order by $cell2 \n"+
             "return\n"+  
             "<result>\n"+ 
             "  {$cell2}\n"+ 

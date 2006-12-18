@@ -33,7 +33,7 @@ import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
-import org.exist.xquery.value.GroupedValueSequenceList; 
+import org.exist.xquery.value.GroupedValueSequenceTable; 
 import org.exist.storage.UpdateListener;
 import org.exist.numbering.NodeId;
 
@@ -138,7 +138,7 @@ public abstract class BindingExpression extends AbstractExpression {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
-	public abstract Sequence eval(Sequence contextSequence,    Item contextItem, Sequence resultSequence, GroupedValueSequenceList groupedSequence) 
+	public abstract Sequence eval(Sequence contextSequence,    Item contextItem, Sequence resultSequence, GroupedValueSequenceTable groupedSequence) 
 		throws XPathException;
 
 	protected Sequence applyWhereExpression(Sequence contextSequence) throws XPathException {

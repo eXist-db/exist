@@ -359,6 +359,29 @@ public class ValueSequence extends AbstractSequence {
 		}
 		
 	}
+    
+    /**
+    * Returns a hashKey based on sequence item string values.
+    * This function is faster than toString() but need to be enhanced.
+    * 
+    * Warning : don't use except for experimental GroupBy clause.
+    * 
+    * @see org.exist.xquery.value.GroupedValueSequenceTable 
+    * @author Boris Verhaegen
+    *
+    */
+    public String getHashKey(){
+    	try{
+    		String hashKey = "";
+    		for(SequenceIterator i = iterate();i.hasNext();){
+     			Item current = i.nextItem();
+    			hashKey+=current.getStringValue();
+     		}
+      		return hashKey;
+    	} catch (XPathException e) {
+      		return "ValueSequence.getHashKey() failed: " + e.getMessage();
+      	}
+    }    
 	
 	private class ValueSequenceIterator implements SequenceIterator {
 		
