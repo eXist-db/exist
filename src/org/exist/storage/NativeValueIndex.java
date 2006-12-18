@@ -435,6 +435,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 Value searchKey = new Value(indexable.serialize(collectionId, caseSensitive));
                 Value value = dbValues.get(searchKey);
 
+                if (value == null)
+                    continue;
                 boolean changed = false;
                 VariableByteArrayInput is = new VariableByteArrayInput(value.getData());
                 os.clear();
