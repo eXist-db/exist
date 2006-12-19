@@ -334,6 +334,7 @@ public class SendEmailFunction extends BasicFunction
 		}
 		catch(IOException e)
 		{
+			LOG.error(e);
 			return(false);
 		}
 		
@@ -749,10 +750,10 @@ public class SendEmailFunction extends BasicFunction
 	{
 		Base64Encoder enc = new Base64Encoder();
 		enc.translate(str.getBytes(charset));
-		String result = new String(enc.getCharArray());
-        result = result.substring(0,result.length()-1);
-        result = result.replaceAll("\n","?=\n =?UTF-8?B?");
-        result = "=?"+charset+"?B?" + result + "?=";
+		String result = new String(enc.getCharArray());	
+		
+        result = result.replaceAll("\n","?=\n =?" + charset + "?B?");
+        result = "=?" + charset + "?B?" + result + "?=";
         return(result);
 	}
 
