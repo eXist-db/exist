@@ -38,7 +38,6 @@ import org.exist.collections.Collection;
 
 /**
  * A sequence that may contain a mixture of atomic values and nodes.
- * 
  * @author wolf
  */
 public class ValueSequence extends AbstractSequence {
@@ -365,9 +364,10 @@ public class ValueSequence extends AbstractSequence {
     * This function is faster than toString() but need to be enhanced.
     * 
     * Warning : don't use except for experimental GroupBy clause.
-    * 
+    * author Boris Verhaegen
+    *
     * @see org.exist.xquery.value.GroupedValueSequenceTable 
-    * @author Boris Verhaegen
+    * 
     *
     */
     public String getHashKey(){

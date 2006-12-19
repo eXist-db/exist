@@ -187,8 +187,6 @@ public interface Sequence {
     /**
      * Return an iterator on all collections referenced by documents
      * contained in this sequence..
-     *
-     * @return
      */
     public Iterator getCollectionIterator();
 
