@@ -24,6 +24,7 @@ package org.exist.http.servlets;
 
 import java.util.Enumeration;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 
 /**
@@ -32,7 +33,14 @@ import javax.servlet.http.HttpSession;
 public class HttpSessionWrapper implements SessionWrapper {
 
 	private HttpSession session;
-	
+
+	/**
+	 * @return the javax.servlet.ServletContext
+	 */
+	public ServletContext getServletContext() {
+		return session.getServletContext();
+	}
+
 	/**
 	 * 
 	 */
