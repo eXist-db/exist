@@ -206,6 +206,7 @@ public class SendEmailFunction extends BasicFunction
 		}
 		catch(IOException e)
 		{
+			LOG.error(e);
 			return(false);
 		}
 		
