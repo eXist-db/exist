@@ -68,16 +68,12 @@ public interface NodeSet extends Sequence, NodeList {
     /**
      * Returns a DocumentSet containing all documents referenced
      * in this node set.
-     *
-     * @return
      */
     public DocumentSet getDocumentSet();
 
     /**
      * Return an iterator on all collections referenced by documents
      * contained in this node set.
-     *
-     * @return
      */
     public Iterator getCollectionIterator();
     
@@ -321,7 +317,6 @@ public interface NodeSet extends Sequence, NodeList {
      * that are also contained in the argument set.
      *
      * @param otherSet
-     * @return
      */
     public NodeSet filterDocuments(NodeSet otherSet);
 
