@@ -24,6 +24,8 @@ package org.exist.xquery.functions.util;
 
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.BinaryDocument;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -35,6 +37,13 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.Base64Binary;
+import org.exist.xquery.value.BooleanValue;
+import org.exist.xmldb.XmldbURI;
+import org.exist.storage.lock.Lock;
+import org.exist.security.PermissionDeniedException;
+
+import java.net.URISyntaxException;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
@@ -46,18 +55,22 @@ public class DocumentNameOrId extends BasicFunction {
 	public final static FunctionSignature docNameSignature =
 		new FunctionSignature(
 			new QName("document-name", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-			"Returns the name of the document to which the passed node belongs.",
+			"Returns the name of a document (excluding the collection path). The argument can either be " +
+            "a node or a string path pointing to a resource in the database. If the resource does not exist or the node " +
+            "does not belong to a stored document, the empty sequence is returned.",
 			new SequenceType[] {
-					new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
+					new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
 			},
 			new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
 	
 	public final static FunctionSignature docIdSignature =
 		new FunctionSignature(
 			new QName("document-id", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-			"Returns the internal id of the document to which the passed node belongs.",
+			"Returns the internal integer id of a document. The argument can either be " +
+            "a node or a string path pointing to a resource in the database. If the resource does not exist or the node " +
+            "does not belong to a stored document, the empty sequence is returned.",
 			new SequenceType[] {
-					new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
+					new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
 			},
 			new SequenceType(Type.INT, Cardinality.ZERO_OR_ONE));
 	
@@ -70,15 +83,32 @@ public class DocumentNameOrId extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)
 		throws XPathException {
-		NodeValue node = (NodeValue)args[0].itemAt(0);
-		if(node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-			NodeProxy proxy = (NodeProxy)node;
-			if("document-name".equals(getSignature().getName().getLocalName()))
-				return new StringValue(proxy.getDocument().getFileURI().toString());
-			else
-				return new IntegerValue(proxy.getDocument().getDocId(), Type.INT);
-		}
-		return Sequence.EMPTY_SEQUENCE;
-	}
+        DocumentImpl doc = null;
+        if (Type.subTypeOf(args[0].getItemType(), Type.NODE)) {
+            NodeValue node = (NodeValue) args[0].itemAt(0);
+            if (node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+                NodeProxy proxy = (NodeProxy) node;
+                doc = proxy.getDocument();
+            }
+        } else {
+            String path = args[0].getStringValue();
+            try {
+                doc = context.getBroker().getXMLResource(XmldbURI.xmldbUriFor(path), Lock.READ_LOCK);
+            } catch (URISyntaxException e) {
+                throw new XPathException(getASTNode(), "Invalid resource uri: " + path,e);
+            } catch (PermissionDeniedException e) {
+                throw new XPathException(getASTNode(), path + ": permission denied to read resource");
+            } finally {
+                if (doc != null) doc.getUpdateLock().release(Lock.READ_LOCK);
+            }
+        }
+        if (doc != null) {
+            if ("document-name".equals(getSignature().getName().getLocalName()))
+                return new StringValue(doc.getFileURI().toString());
+            else
+                return new IntegerValue(doc.getDocId(), Type.INT);
+        }
+        return Sequence.EMPTY_SEQUENCE;
+    }
 
 }

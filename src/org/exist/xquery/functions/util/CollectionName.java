@@ -36,8 +36,11 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
+import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
+
+import java.net.URISyntaxException;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
@@ -48,7 +51,10 @@ public class CollectionName extends BasicFunction {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("collection-name", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-			"Returns the name of the collection to which the passed node belongs.",
+			"Returns the name of the collection from a passed node or path string. If the argument is " +
+            "a node, the function returns the name of the collection to which the node's document belongs. " +
+            "If the argument is a string, it is interpreted as path to a resource and the function returns the " +
+            "computed parent collection path for this resource.",
 			new SequenceType[] {
 					new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE)
 			},
@@ -76,7 +82,15 @@ public class CollectionName extends BasicFunction {
 			} catch (XMLDBException e) {
 				throw new XPathException(getASTNode(), "Failed to retrieve collection name", e);
 			}
-		} else if(Type.subTypeOf(item.getType(), Type.NODE)) {
+        } else if (Type.subTypeOf(item.getType(), Type.STRING)) {
+            String path = item.getStringValue();
+            try {
+                XmldbURI uri = XmldbURI.xmldbUriFor(path).removeLastSegment();
+                return new StringValue(uri.toString());
+            } catch (URISyntaxException e) {
+                throw new XPathException(getASTNode(), "Illegal URI for resource path: " + path);
+            }
+        } else if(Type.subTypeOf(item.getType(), Type.NODE)) {
 			NodeValue node = (NodeValue) item;
 			if(node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 				NodeProxy p = (NodeProxy) node;

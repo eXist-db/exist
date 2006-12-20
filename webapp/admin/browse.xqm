@@ -145,7 +145,8 @@ declare function browse:remove() as element() {
     Remove a resource.
 :)
 declare function browse:remove-resource($resource as xs:string) as element()* {
-    let $doc := doc($resource)
+    let $isBinary := util:binary-doc-available($resource)
+    let $doc := if ($isBinary) then $resource else doc($resource)
     return
         if($doc) then (
             <li>Removing document: {$resource} ...</li>,
