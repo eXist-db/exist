@@ -1047,84 +1047,71 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     try {
                         lock.acquire(Lock.WRITE_LOCK);
                         Value value = dbTokens.get(key);
-                        //Does the token already has data in the index ?
-					    if (value != null) {
-					        //Add its data to the new list    
-                            VariableByteArrayInput is = new VariableByteArrayInput(value.getData());
-                            //try {
-    				            while (is.available() > 0) {
-                                    int storedDocId = is.readInt();
-                                    byte storedSection = is.readByte();
-                                    int termCount = is.readInt();
-                                    //TOUNDERSTAND -pb           
-                                    int size = is.readFixedInt();
-    				                if (storedSection != currentSection || storedDocId != this.doc.getDocId()) {
-                                        // data are related to another section or document:
-                                        // append them to any existing data
-                                        os.writeInt(storedDocId);
-                                        os.writeByte(storedSection);
-                                        os.writeInt(termCount);
-                                        os.writeFixedInt(size);
-                                        is.copyRaw(os, size);
+                        if (value == null)
+                            continue;
+                        //Add its data to the new list
+                        VariableByteArrayInput is = new VariableByteArrayInput(value.getData());
+                        while (is.available() > 0) {
+                            int storedDocId = is.readInt();
+                            byte storedSection = is.readByte();
+                            int termCount = is.readInt();
+                            //TOUNDERSTAND -pb
+                            int size = is.readFixedInt();
+                            if (storedSection != currentSection || storedDocId != this.doc.getDocId()) {
+                                // data are related to another section or document:
+                                // append them to any existing data
+                                os.writeInt(storedDocId);
+                                os.writeByte(storedSection);
+                                os.writeInt(termCount);
+                                os.writeFixedInt(size);
+                                is.copyRaw(os, size);
+                            } else {
+                                // data are related to our section and document:
+                                // feed the new list with the GIDs
+                                for (int j = 0; j < termCount; j++) {
+                                    NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
+                                    int freq = is.readInt();
+                                    // add the node to the new list if it is not
+                                    // in the list of removed nodes
+                                    if (!storedOccurencesList.contains(nodeId)) {
+                                        for (int k = 0; k < freq; k++) {
+                                            newOccurencesList.add(nodeId, is.readInt());
+                                        }
                                     } else {
-                                        // data are related to our section and document:
-                                        // feed the new list with the GIDs
-    				                    for (int j = 0; j < termCount; j++) {
-                                            NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
-                                            int freq = is.readInt();
-    				                        // add the node to the new list if it is not 
-    				                        // in the list of removed nodes
-    				                        if (!storedOccurencesList.contains(nodeId)) {
-                                                for (int k = 0; k < freq; k++) {
-                                                    newOccurencesList.add(nodeId, is.readInt());
-                                                }
-    				                        } else {
-                                                is.skip(freq);
-                                            }
-    				                    }
-    				                }                                    
-    				            }
-                            //} catch (EOFException e) {
-                                //Is it expected ? -pb
-                                //LOG.warn("REPORT ME " + e.getMessage(), e);                            
-                            //}                                
-                            //append the data from the new list
-                            if(newOccurencesList.getSize() > 0) {
-                                //Don't forget this one
-                                newOccurencesList.sort();                                
-                                os.writeInt(this.doc.getDocId());                           
-                                os.writeByte(currentSection);
-                                os.writeInt(newOccurencesList.getTermCount());
-                                //TOUNDERSTAND -pb           
-                                int lenOffset = os.position();
-                                os.writeFixedInt(0);
-                                for (int m = 0; m < newOccurencesList.getSize(); ) {
-                                    newOccurencesList.nodes[m].write(os);
-                                    int freq = newOccurencesList.getOccurrences(m);
-                                    os.writeInt(freq);
-                                    for (int n = 0; n < freq; n++) {
-                                        os.writeInt(newOccurencesList.offsets[m + n]);
+                                        is.skip(freq);
                                     }
-                                    m += freq;
                                 }
-                                os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
                             }
-                            //Store the data
-    					    if(os.data().size() == 0) 		    	
-    							dbTokens.remove(key);                            
-					        else
-					            if (dbTokens.update(value.getAddress(), key, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                                    LOG.error("Could not update index data for token '" +  token + "' in '" + dbTokens.getFile().getName() + 
-                                        "' (inverted index)");
-                                    //TODO : throw an exception ?
-                                }                    						    
-					    } else {                           
-				            if (dbTokens.put(key, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                                LOG.error("Could not put index data for token '" +  token + "' in '" + dbTokens.getFile().getName() + 
-                                    "' (inverted index)");  
-                                //TODO : throw an exception ?
-                            }                    
-					    }
+                        }
+                        //append the data from the new list
+                        if(newOccurencesList.getSize() > 0) {
+                            //Don't forget this one
+                            newOccurencesList.sort();
+                            os.writeInt(this.doc.getDocId());
+                            os.writeByte(currentSection);
+                            os.writeInt(newOccurencesList.getTermCount());
+                            //TOUNDERSTAND -pb
+                            int lenOffset = os.position();
+                            os.writeFixedInt(0);
+                            for (int m = 0; m < newOccurencesList.getSize(); ) {
+                                newOccurencesList.nodes[m].write(os);
+                                int freq = newOccurencesList.getOccurrences(m);
+                                os.writeInt(freq);
+                                for (int n = 0; n < freq; n++) {
+                                    os.writeInt(newOccurencesList.offsets[m + n]);
+                                }
+                                m += freq;
+                            }
+                            os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
+                        }
+                        //Store the data
+                        if(os.data().size() == 0)
+                            dbTokens.remove(key);
+                        else if (dbTokens.update(value.getAddress(), key, os.data()) == BFile.UNKNOWN_ADDRESS) {
+                            LOG.error("Could not update index data for token '" +  token + "' in '" + dbTokens.getFile().getName() +
+                                    "' (inverted index)");
+                            //TODO : throw an exception ?
+                        }
 					} catch (LockException e) {
                         LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "' (inverted index)", e);
                     } catch (ReadOnlyException e) {
