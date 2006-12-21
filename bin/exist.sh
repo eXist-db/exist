@@ -20,8 +20,8 @@
 #
 # Adapt the following lines to your configuration
 JAVA_HOME=/usr/java/jdk1.5.0_03/
-EXIST_HOME=/opt/hydrogen/exist
-DAEMON_HOME=/opt/hydrogen/exist/bin
+EXIST_HOME=/opt/exist
+DAEMON_HOME=$EXIST_HOME/bin
 EXIST_USER=exist
 
 # for multi instances adapt those lines.
