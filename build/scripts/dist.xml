@@ -3,6 +3,9 @@
 <project basedir="../.." default="dist" name="dist">
 
     <description>Create eXist distribution</description>
+	
+	<!-- import common targets -->
+	<import file="../../build.xml"/>
     
     <!-- ================================================================== -->
     <!-- Prepare webapp                                                     -->

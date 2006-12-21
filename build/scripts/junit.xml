@@ -4,10 +4,13 @@
 <!-- eXist build file : Run jUnit tests                                      -->
 <!-- ======================================================================= -->
 <project basedir="../.." default="test" name="jUnit tests">
-
+	
     <description>jUnit tests for eXist</description>
     
-    <path id="classpath.junit">
+	<!-- import common targets -->
+	<import file="../../build.xml"/>
+
+	<path id="classpath.junit">
         <pathelement path="${junit.reports}/classes"/>
     </path>
 
