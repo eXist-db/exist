@@ -8,7 +8,10 @@
 
 <project basedir="../.." default="all" name="exist">
 
-    <!-- setup properties -->
+	<!-- import common targets -->
+	<import file="../../build.xml"/>
+
+	<!-- setup properties -->
     <property name="jetty.dir" value="tools/jetty"/>
     <property name="src" value="./src"/>
     <property name="src.webapp" value="./webapp"/>
