@@ -1,0 +1,83 @@
+<project name="build" default="nothing" basedir=".">
+    <taskdef name="svn" classname="org.tigris.subversion.svnant.SvnTask"/>
+    <property file="${build.properties.file}"/>
+    <property name="build.dir" location="all"/>
+    <property name="project-suffix" value=""/>
+    <property name="current.checkout.dir" location="${build.dir}/checkout"/>
+    <target name="nothing"/>
+    <target name="setup">
+        <mkdir dir="${build.dir}"/>
+        <mkdir dir="${build.dir}/checkout"/>
+        <mkdir dir="${build.dir}/logs"/>
+        <mkdir dir="${build.dir}/artifacts"/>
+    </target>
+    <target name="create-touch">
+        <tstamp>
+            <format property="current.datetime" pattern="MM/dd/yyyy hh:mm aa"/>
+        </tstamp>
+        <echo file="${build.dir}/${project}${project-suffix}.touch">${current.datetime}</echo>
+    </target>
+    <target name="force">
+        <tstamp>
+            <format property="current.datetime" pattern="MM/dd/yyyy hh:mm aa"/>
+        </tstamp>
+        <delete file="${build.dir}/${project}${project-suffix}.touch"/>
+        <echo file="${build.dir}/${project}${project-suffix}.touch">${current.datetime}</echo>
+    </target>
+
+ <target name="system-properties">
+    <echo message="Java Runtime Environment 
+        version: ${java.version}"/>
+    <echo message="Java Runtime Environment 
+        vendor: ${java.vendor}"/>
+    <echo message="Java Runtime Environment 
+        vendor URL: ${java.vendor.url}"/>
+    <echo message="Java installation 
+        directory: ${java.home}"/>
+    <echo message="Java Virtual Machine 
+        specification version: 
+        ${java.vm.specification.version}"/>
+    <echo message="Java Virtual Machine 
+        specification vendor: 
+        ${java.vm.specification.vendor}"/>
+    <echo message="Java Virtual Machine 
+        specification name: 
+        ${java.vm.specification.name}"/>
+    <echo message="Java Virtual Machine 
+        implementation version: 
+        ${java.vm.version}"/>
+    <echo message="Java Virtual Machine 
+        implementation vendor: 
+        ${java.vm.vendor}"/>
+    <echo message="Java Virtual Machine 
+        implementation name: ${java.vm.name}"/>
+    <echo message="Java Runtime Environment 
+        specification version: 
+        ${java.specification.version}"/>
+    <echo message="Java Runtime Environment 
+        specification vendor: 
+        ${java.specification.vendor}"/>
+    <echo message="Java Runtime Environment 
+        specification name: 
+        ${java.specification.name}"/>
+    <echo message="Java class format version 
+        number: ${java.class.version}"/>
+    <echo message="Java class path: 
+        ${java.class.path}"/>
+    <echo message="List of paths to search when 
+        loading libraries: ${java.library.path}"/>
+    <echo message="Path of extension directory 
+        or directories: ${java.ext.dirs}"/>
+    <echo message="Default temp file path: 
+        ${java.io.tmpdir}"/>
+    <echo message="Operating system name: 
+        ${os.name}"/>
+    <echo message="Operating system 
+        architecture: ${os.arch}"/>
+    <echo message="Operating system version: 
+        ${os.version}"/>
+  </target>
+
+   <import file="build.exist.xml"/>
+
+</project>

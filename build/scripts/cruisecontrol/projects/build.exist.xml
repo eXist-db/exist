@@ -1,0 +1,245 @@
+<project name="exist" default="nothing" basedir=".">
+
+    <property name="exist.target.dir" location="${current.checkout.dir}/exist${project-suffix}"/>
+
+    <!-- eXist trunk -->
+    <target name="exist" depends="exist-echo,exist-delete,exist-svn,exist-svn-tag,exist-tweak,exist-build-setup,exist-srcball,exist-build">
+       <echo>Elapsed Breakdown:</echo>
+       <echo>Delete   : ${exist.delete.start} ${exist.delete.end}</echo>
+       <echo>SVN      : ${exist.svn.start} ${exist.svn.end}</echo>
+       <echo>Srcball  : ${exist.srcball.start} ${exist.srcball.end}</echo>
+       <echo>Jdk 1.4  : ${exist.jdk14.start} ${exist.jdk14.end}</echo>
+       <echo>Dist 1.4 : ${exist.dist.jdk14.start} ${exist.dist.jdk14.end}</echo>
+       <echo>Jdk 1.5  : ${exist.jdk15.start} ${exist.jdk15.end}</echo>
+       <echo>Dist 1.5 : ${exist.dist.jdk15.start} ${exist.dist.jdk15.end}</echo>
+       <echo>Test     : ${exist.test.start} ${exist.test.end}</echo>
+    </target>
+
+    <target name="exist-1.0" depends="exist-echo,exist-delete,exist-svn-1.0,exist-tweak,exist-build-setup,exist-srcball,exist-build">
+       <echo>Elapsed Breakdown:</echo>
+       <echo>Delete   : ${exist.delete.start} ${exist.delete.end}</echo>
+       <echo>SVN      : ${exist.svn.start} ${exist.svn.end}</echo>
+       <echo>Srcball  : ${exist.srcball.start} ${exist.srcball.end}</echo>
+       <echo>Jdk 1.4  : ${exist.jdk14.start} ${exist.jdk14.end}</echo>
+       <echo>Dist 1.4 : ${exist.dist.jdk14.start} ${exist.dist.jdk14.end}</echo>
+       <echo>Jdk 1.5  : ${exist.jdk15.start} ${exist.jdk15.end}</echo>
+       <echo>Dist 1.5 : ${exist.dist.jdk15.start} ${exist.dist.jdk15.end}</echo>
+       <echo>Test     : ${exist.test.start} ${exist.test.end}</echo>
+    </target>
+
+    <target name="exist-delete">
+        <tstamp><format property="exist.delete.start" pattern="hh:mm:ss"/></tstamp>
+        <delete dir="${exist.target.dir}"/>
+        <tstamp><format property="exist.delete.end" pattern="hh:mm:ss"/></tstamp>
+    </target>
+
+    <target name="exist-svn" unless="exist.tag">
+        <tstamp><format property="exist.svn.start" pattern="hh:mm:ss"/></tstamp>
+        <mkdir dir="${exist.target.dir}"/>
+        <echo>Checkout from https://exist.svn.sourceforge.net/svnroot/exist/trunk/eXist</echo>
+        <svn>
+            <checkout url="https://exist.svn.sourceforge.net/svnroot/exist/trunk/eXist" destPath="${exist.target.dir}/eXist"/>
+        </svn>
+        <tstamp><format property="exist.svn.end" pattern="hh:mm:ss"/></tstamp>
+    </target>
+
+    <target name="exist-svn-1.0">
+        <tstamp><format property="exist.svn.start" pattern="hh:mm:ss"/></tstamp>
+        <mkdir dir="${exist.target.dir}"/>
+        <echo>Checkout from https://exist.svn.sourceforge.net/svnroot/exist/branches/eXist-1.0</echo>
+        <svn>
+            <checkout url="https://exist.svn.sourceforge.net/svnroot/exist/branches/eXist-1.0" destPath="${exist.target.dir}/eXist"/>
+        </svn>
+        <tstamp><format property="exist.svn.end" pattern="hh:mm:ss"/></tstamp>
+    </target>
+
+    <target name="exist-svn-tag" if="exist.tag">
+        <tstamp><format property="exist.svn.start" pattern="hh:mm:ss"/></tstamp>
+        <echo>Checkout from https://exist.svn.sourceforge.net/svnroot/exist/${exist.tag}</echo>
+        <mkdir dir="${exist.target.dir}"/>
+        <svn>
+            <checkout url="https://exist.svn.sourceforge.net/svnroot/exist/${exist.tag}" destPath="${exist.target.dir}/eXist"/>
+        </svn>
+        <tstamp><format property="exist.svn.end" pattern="hh:mm:ss"/></tstamp>
+    </target>
+
+    <target name="exist-echo">
+       <echo>eXist Build, tag=${exist.tag}</echo>
+    </target>
+
+    <target name="exist-build" depends="exist-compile-on-jdk14,exist-dist-jdk14,exist-clean,exist-compile,exist-dist,exist-test"/>
+    <target name="exist-srcball">
+       <tstamp><format property="exist.srcball.start" pattern="hh:mm:ss"/></tstamp>
+       <zip basedir="${exist.target.dir}"
+            includes="eXist/**"
+            destfile="${exist.target.dir}/result/eXist-src.zip"/>
+       <tar basedir="${exist.target.dir}"
+            includes="eXist/**"
+            destfile="${exist.target.dir}/result/eXist-src.tar"/>
+       <gzip src="${exist.target.dir}/result/eXist-src.tar"
+            destfile="${exist.target.dir}/result/eXist-src.tar.gz"/>
+       <delete file="${exist.target.dir}/result/eXist-src.tar"/>
+       <tstamp><format property="exist.srcball.end" pattern="hh:mm:ss"/></tstamp>
+
+    </target>
+
+    <target name="exist-tweak">
+        <echo file="${exist.target.dir}/eXist/build.properties">
+project.name = eXist
+project.version = 1.0rc
+
+# build settings
+build.debug = on
+build.optimize = on
+build.deprecation = off
+build.encoding = UTF-8
+build.compiler.pedantic = false
+build.compiler=modern
+build.compiler.source=1.4
+build.compiler.target=1.4
+
+# output dir for junit reports
+junit.reports = test
+junit.output = true
+
+# antlr is only needed if you change the XPath/XQuery parser
+# set these properties to true to get a lot of debugging output
+antlr.traceParser = false
+antlr.traceLexer = false
+
+# Tomcat home directory. Required for building the XmldbRealm
+# Replace, if you compile against your own Tomcat version
+catalina.home = ./thirdparty/tomcat5
+
+# IZPack is required to create the installer package
+izpack.dir = /opt/izpack
+
+# sources of the XML:DB API. Needed for javadoc
+xmldb.src = D:\\Sources\\eXist\\snapshot\\xapi\\src\\api
+
+        </echo>
+   </target>
+
+   <target name="exist-build-setup">
+      <delete dir="${exist.target.dir}/result"/>
+      <mkdir dir="${exist.target.dir}/result"/>
+   </target>
+
+   <target name="exist-compile-on-jdk14">
+      <tstamp><format property="exist.jdk14.start" pattern="hh:mm:ss"/></tstamp>
+      <exec executable="/opt/ant/bin/ant-jdk14" logError="true" failonerror="true" append="true" output="${exist.target.dir}/result/jdk-1.4-compile.log" error="${exist.target.dir}/result/jdk-1.4-compile.log">
+         <arg value="-f"/>
+         <arg file="build.xml"/>
+         <arg value="-Dproject-suffix=${project-suffix}"/>
+         <arg value="-Dcurrent.checkout.dir=${current.checkout.dir}"/>
+         <arg value="exist-compile"/>
+      </exec>
+      <tstamp><format property="exist.jdk14.end" pattern="hh:mm:ss"/></tstamp>
+   </target>
+
+   <target name="exist-clean">
+        <ant inheritall="false" antfile="${exist.target.dir}/eXist/build.xml" target="clean">
+            <property name="build.no" value="${label}"/>
+            <property name="build.label" value="${cctimestamp}"/>
+            <property name="default.javac.source" value="1.4"/>
+            <property name="default.javac.target" value="1.4"/>
+        </ant>
+   </target>
+
+   <target name="exist-compile" depends="system-properties">
+      <tstamp><format property="exist.jdk15.start" pattern="hh:mm:ss"/></tstamp>
+        <ant inheritall="false" antfile="${exist.target.dir}/eXist/build.xml" target="all">
+            <property name="build.no" value="${label}"/>
+            <property name="build.label" value="${cctimestamp}"/>
+            <property name="default.javac.source" value="1.4"/>
+            <property name="default.javac.target" value="1.4"/>
+        </ant>
+      <tstamp><format property="exist.jdk15.end" pattern="hh:mm:ss"/></tstamp>
+   </target>
+
+   <target name="exist-test">
+      <tstamp><format property="exist.test.start" pattern="hh:mm:ss"/></tstamp>
+        <ant inheritall="false" antfile="${exist.target.dir}/eXist/build.xml" target="test">
+            <property name="build.no" value="${label}"/>
+            <property name="build.label" value="${cctimestamp}"/>
+            <property name="default.javac.source" value="1.4"/>
+            <property name="default.javac.target" value="1.4"/>
+        </ant>
+       <move file="${exist.target.dir}/eXist/test" tofile="${exist.target.dir}/result/test"/>
+      <tstamp><format property="exist.test.end" pattern="hh:mm:ss"/></tstamp>
+   </target>
+
+   <target name="exist-installs-jdk14">
+      <tstamp><format property="exist.dist.jdk14.start" pattern="hh:mm:ss"/></tstamp>
+        <!-- just a copy of exist-installs -->
+        <ant inheritall="false" antfile="${exist.target.dir}/eXist/build.xml" target="snapshot-installer">
+            <property name="build.no" value="${label}"/>
+            <property name="build.label" value="${cctimestamp}"/>
+            <property name="default.javac.source" value="1.4"/>
+            <property name="default.javac.target" value="1.4"/>
+        </ant>
+        <ant inheritall="false" antfile="${exist.target.dir}/eXist/build.xml" target="dist-war">
+            <property name="build.no" value="${label}"/>
+            <property name="build.label" value="${cctimestamp}"/>
+            <property name="default.javac.source" value="1.4"/>
+            <property name="default.javac.target" value="1.4"/>
+        </ant>
+        <ant inheritall="false" antfile="${exist.target.dir}/eXist/build.xml" target="dist-minimal">
+            <property name="build.no" value="${label}"/>
+            <property name="build.label" value="${cctimestamp}"/>
+            <property name="default.javac.source" value="1.4"/>
+            <property name="default.javac.target" value="1.4"/>
+        </ant>
+
+    </target>
+
+   <target name="exist-installs">
+      <tstamp><format property="exist.dist.jdk15.start" pattern="hh:mm:ss"/></tstamp>
+        <ant inheritall="false" antfile="${exist.target.dir}/eXist/build.xml" target="snapshot-installer">
+            <property name="build.no" value="${label}"/>
+            <property name="build.label" value="${cctimestamp}"/>
+            <property name="default.javac.source" value="1.4"/>
+            <property name="default.javac.target" value="1.4"/>
+        </ant>
+        <ant inheritall="false" antfile="${exist.target.dir}/eXist/build.xml" target="dist-war">
+            <property name="build.no" value="${label}"/>
+            <property name="build.label" value="${cctimestamp}"/>
+            <property name="default.javac.source" value="1.4"/>
+            <property name="default.javac.target" value="1.4"/>
+        </ant>
+        <ant inheritall="false" antfile="${exist.target.dir}/eXist/build.xml" target="dist-minimal">
+            <property name="build.no" value="${label}"/>
+            <property name="build.label" value="${cctimestamp}"/>
+            <property name="default.javac.source" value="1.4"/>
+            <property name="default.javac.target" value="1.4"/>
+        </ant>
+
+    </target>
+
+    <target name="exist-dist-jdk14" depends="exist-installs-jdk14">
+       <tstamp/>
+       <mkdir dir="${exist.target.dir}/result/jdk14"/>
+       <move todir="${exist.target.dir}/result/jdk14">
+          <fileset dir="${exist.target.dir}/eXist/installer" includes="eXist-*.jar"/>
+       </move>
+       <move todir="${exist.target.dir}/result/jdk14">
+          <fileset dir="${exist.target.dir}/eXist/dist" includes="exist-*.war"/>
+       </move>
+       <zip basedir="${exist.target.dir}/eXist/dist/minimal" includes="**" destfile="${exist.target.dir}/result/jdk14/minimal.zip"/>
+      <tstamp><format property="exist.dist.jdk14.end" pattern="hh:mm:ss"/></tstamp>
+    </target>
+
+    <target name="exist-dist" depends="exist-installs">
+       <tstamp/>
+       <mkdir dir="${exist.target.dir}/result/jdk15"/>
+       <move todir="${exist.target.dir}/result/jdk15">
+          <fileset dir="${exist.target.dir}/eXist/installer" includes="eXist-*.jar"/>
+       </move>
+       <move todir="${exist.target.dir}/result/jdk15">
+          <fileset dir="${exist.target.dir}/eXist/dist" includes="exist-*.war"/>
+       </move>
+       <zip basedir="${exist.target.dir}/eXist/dist/minimal" includes="**" destfile="${exist.target.dir}/result/jdk15/minimal.zip"/>
+      <tstamp><format property="exist.dist.jdk15.end" pattern="hh:mm:ss"/></tstamp>
+    </target>
+
+</project>
