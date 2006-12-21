@@ -1,0 +1,146 @@
+<cruisecontrol>
+<!-- ********************************************************** -->
+<!--
+     Configuration:
+
+     You need to modify these values to reflect your 
+     environment
+-->
+<!-- ********************************************************** -->
+   <property name="buildcode.dir" value=".."/>
+   <property name="ant.dir" value="/opt/ant"/>
+   <property name="svn.username" value="you"/>
+   <property name="svn.password" value="yourpassword"/>
+   <property name="mail.username" value="you"/>
+   <property name="mail.password" value="yourpassword"/>
+   <property name="mail.buildmaster" value="build@foo.com"/>
+   <property name="build.www" value="http://build.foo.com/buildresults/"/>
+<!-- ********************************************************** -->
+<!-- ********************************************************** -->
+
+   <property name="projects.root.dir" value="${buildcode.dir}/projects"/>
+   <property name="projects.dir" value="${projects.root.dir}/all"/>
+
+<!--
+   You can change the threads here 
+-->
+<!--
+   <system>
+      <configuration>
+         <threads count="1"/>
+      </configuration>
+   </system>
+-->
+
+<!-- ********************************************************** -->
+<!-- Integration builds                                          -->
+<!-- ********************************************************** -->
+
+<!-- eXist -->
+<!-- ========================================================== -->
+
+   <project name="exist" buildafterfailed="true">
+      <property name="current.checkout.dir"  value="${projects.dir}/checkout"/>
+      <property name="current.dir"           value="${projects.dir}/checkout/exist"/>
+      <property name="current.logs.dir"      value="${projects.dir}/logs/exist/"/>
+      <property name="current.artifacts.dir" value="${projects.dir}/artifacts/exist"/>
+      <modificationset quietperiod="60" >
+         <filesystem folder="${projects.dir}/exist.touch"/>
+         <svn repositoryLocation="https://exist.svn.sourceforge.net/svnroot/exist/trunk/eXist" username="${svn.username}" password="${svn.password}"/>
+      </modificationset>
+      <!-- this should normally be 30 minutes = 1800 -->
+      <schedule interval="180">
+         <ant anthome="${ant.dir}" buildfile="${projects.root.dir}/build.xml" uselogger="true" target="exist">
+            <property name="current.checkout.dir" value="${current.checkout.dir}"/>
+         </ant>
+      </schedule>
+      <log dir="${current.logs.dir}">
+         <merge dir="${current.dir}/result/test/junit/data"/>
+      </log>
+      <publishers>
+         <artifactspublisher dir="${current.dir}/result" dest="${current.artifacts.dir}"/>
+         <email mailhost="mail.milowski.org"
+                username="${mail.username}"
+                password="${mail.password}"
+                defaultsuffix="@users.sourceforge.net"
+                returnaddress="${mail.buildmaster}"
+                buildresultsurl="${build.www}/exist/">
+            <failure address="${mail.buildmaster}"/>
+            <map alias="User" address="${mail.buildmaster}"/>
+         </email>
+      </publishers>
+   </project>
+   <project name="exist-1.0" buildafterfailed="true">
+      <property name="current.checkout.dir"  value="${projects.dir}/checkout"/>
+      <property name="current.dir"           value="${projects.dir}/checkout/exist-1.0"/>
+      <property name="current.logs.dir"      value="${projects.dir}/logs/exist-1.0/"/>
+      <property name="current.artifacts.dir" value="${projects.dir}/artifacts/exist-1.0"/>
+      <modificationset quietperiod="60" >
+         <filesystem folder="${projects.dir}/exist-1.0.touch"/>
+         <svn repositoryLocation="https://exist.svn.sourceforge.net/svnroot/exist/branches/eXist-1.0" username="${svn.username}" password="${svn.password}"/>
+      </modificationset>
+      <!-- this should normally be 30 minutes = 1800 -->
+      <schedule interval="180">
+         <ant anthome="${ant.dir}" buildfile="${projects.root.dir}/build.xml" uselogger="true" target="exist-1.0">
+            <property name="project-suffix" value="-1.0"/>
+            <property name="current.checkout.dir" value="${current.checkout.dir}"/>
+         </ant>
+      </schedule>
+      <log dir="${current.logs.dir}">
+         <merge dir="${current.dir}/result/test/junit/data"/>
+      </log>
+      <publishers>
+         <artifactspublisher dir="${current.dir}/result" dest="${current.artifacts.dir}"/>
+         <email mailhost="mail.milowski.org"
+                username="${mail.username}"
+                password="${mail.password}"
+                defaultsuffix="@users.sourceforge.net"
+                returnaddress="${mail.buildmaster}"
+                buildresultsurl="${build.www}/exist-1.0/">
+            <failure address="${mail.buildmaster}"/>
+            <map alias="User" address="${mail.buildmaster}"/>
+         </email>
+      </publishers>
+    </project>
+
+<!-- ********************************************************** -->
+<!-- Release builds                                             -->
+<!-- ********************************************************** -->
+
+<!-- eXist -->
+<!-- ========================================================== -->
+
+   <project name="exist-release" buildafterfailed="true">
+      <property name="current.checkout.dir"  value="${projects.dir}/checkout"/>
+      <property name="current.dir"           value="${projects.dir}/checkout/exist-release"/>
+      <property name="current.logs.dir"      value="${projects.dir}/logs/exist-release/"/>
+      <property name="current.artifacts.dir" value="${projects.dir}/artifacts/exist-release"/>
+      <modificationset quietperiod="60" >
+         <filesystem folder="${projects.dir}/exist.tag"/>
+      </modificationset>
+      <!-- this should normally be 30 minutes = 1800 -->
+      <schedule interval="180">
+         <ant anthome="${ant.dir}" buildfile="${projects.root.dir}/build.xml" uselogger="true" target="exist">
+            <property name="project-suffix" value="-release"/>
+            <property name="build.properties.file" value="${projects.dir}/exist-release.properties"/>
+            <property name="current.checkout.dir" value="${current.checkout.dir}"/>
+         </ant>
+      </schedule>
+      <log dir="${current.logs.dir}">
+         <merge dir="${current.dir}/result/test/junit/data"/>
+      </log>
+      <publishers>
+         <artifactspublisher dir="${current.dir}/result" dest="${current.artifacts.dir}"/>
+         <email mailhost="mail.milowski.org"
+                username="${mail.username}"
+                password="${mail.password}"
+                defaultsuffix="@users.sourceforge.net"
+                returnaddress="${mail.buildmaster}"
+                buildresultsurl="${build.www}/exist-release/">
+            <failure address="${mail.buildmaster}"/>
+            <map alias="User" address="${mail.buildmaster}"/>
+         </email>
+      </publishers>
+   </project>
+
+</cruisecontrol>
