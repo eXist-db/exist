@@ -72,23 +72,32 @@ public class DocUtils {
 		
 	}	
 
-	private static Sequence getDocumentByPath(XQueryContext context, String path) throws XPathException, PermissionDeniedException {	 
+	private static Sequence getDocumentByPath(XQueryContext context, String path) throws XPathException, PermissionDeniedException
+	{	 
 		Sequence document = Sequence.EMPTY_SEQUENCE;	
-	  	//URLs
-		if (path.matches("^[a-z]+://.*")) {
-			try {
+
+		if(path.matches("^[a-z]+://.*"))
+		{
+			/* URL */
+			
+			try
+			{
 				//Basic tests on the URL				
 				URL url = new URL(path);
 				URLConnection con = url.openConnection();
-				if (con instanceof HttpURLConnection) {
+				if(con instanceof HttpURLConnection)
+				{
 					HttpURLConnection httpConnection = (HttpURLConnection)con;
-                                        if(httpConnection.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND){
-                                            // Special case: '404'
-                                            return Sequence.EMPTY_SEQUENCE;
-                                        } else if (httpConnection.getResponseCode() != HttpURLConnection.HTTP_OK){
-                                            //TODO : return another type 
-                                            throw new PermissionDeniedException("Server returned code " + httpConnection.getResponseCode());	
-                                        }
+					if(httpConnection.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND)
+					{
+						// Special case: '404'
+                        return Sequence.EMPTY_SEQUENCE;
+                    }
+					else if(httpConnection.getResponseCode() != HttpURLConnection.HTTP_OK)
+					{
+						//TODO : return another type 
+                        throw new PermissionDeniedException("Server returned code " + httpConnection.getResponseCode());	
+                    }
 				}
 				
 				//TODO : process pseudo-protocols URLs more efficiently.
@@ -107,62 +116,83 @@ public class DocUtils {
 				memtreeDoc = (org.exist.memtree.DocumentImpl)doc;
 				memtreeDoc.setContext(context);
 				document = memtreeDoc;
-			} catch (MalformedURLException e) {
+			}
+			catch(MalformedURLException e)
+			{
 				throw new XPathException(e.getMessage(), e);					
-			} catch (ParserConfigurationException e) {				
+			}
+			catch(ParserConfigurationException e)
+			{				
 				throw new XPathException(e.getMessage(), e);		
-			} catch (SAXException e) {
+			}
+			catch(SAXException e)
+			{
 				throw new XPathException(e.getMessage(), e);	
-			} catch (IOException e) {
-                            // Special case: FileNotFoundException
-                            if(e instanceof FileNotFoundException){
-                                return Sequence.EMPTY_SEQUENCE;
-                            } else {
-				throw new XPathException(e.getMessage(), e);	
-                            }
+			}
+			catch(IOException e)
+			{
+				// Special case: FileNotFoundException
+                if(e instanceof FileNotFoundException)
+                {
+                	return Sequence.EMPTY_SEQUENCE;
+                }
+                else
+                {
+                	throw new XPathException(e.getMessage(), e);	
+                }
 			}			
-		//Database documents
-		} else {
+		}
+		else
+		{
+			/* Database documents */
 
 			// check if the loaded documents should remain locked
 			boolean lockOnLoad = context.lockDocumentsOnLoad();
 
 			DocumentImpl doc = null;
-			try {
+			try
+			{
 				XmldbURI pathUri = XmldbURI.xmldbUriFor(path);
 				// relative collection Path: add the current base URI
 				pathUri = context.getBaseURI().toXmldbURI().resolveCollectionPath(pathUri);
 				// try to open the document and acquire a lock
 				doc = (DocumentImpl) context.getBroker().getXMLResource(pathUri, Lock.READ_LOCK);
-				if (doc != null) {				
-					if (!doc.getPermissions().validate(context.getUser(), Permission.READ)) {
+				if(doc != null)
+				{				
+					if(!doc.getPermissions().validate(context.getUser(), Permission.READ))
+					{
 						doc.getUpdateLock().release(Lock.READ_LOCK);
 						throw new PermissionDeniedException("Insufficient privileges to read resource " + path);
 					}
 					
-                    if (doc.getResourceType() == DocumentImpl.BINARY_FILE) {
-                        throw new XPathException("Document is a binary resource, not " +
-                                "an XML document. Please consider using the function util:binary-resource to " +
-                                "retrieve a reference to it.");
+                    if(doc.getResourceType() == DocumentImpl.BINARY_FILE)
+                    {
+                        throw new XPathException("Document is a binary resource, not an XML document. Please consider using the function util:binary-resource to retrieve a reference to it.");
                     }
-					if (lockOnLoad) {
+					
+                    if(lockOnLoad)
+                    {
 						// add the document to the list of locked documents
 						context.getLockedDocuments().add(doc);
 					}
 					document = new NodeProxy(doc);
 				}
-			} catch (PermissionDeniedException e) {
+			}
+			catch(PermissionDeniedException e)
+			{
 				throw e;
-			} catch (URISyntaxException e) {
+			}
+			catch(URISyntaxException e)
+			{
 				throw new XPathException(e);
-			} finally {
+			}
+			finally
+			{
 				// release all locks unless lockOnLoad is true
-				if (!lockOnLoad && doc != null)
+				if(!lockOnLoad && doc != null)
 					doc.getUpdateLock().release(Lock.READ_LOCK);
 			}
 		}	 	  
 		return document;
 	}
-		
-
 }
