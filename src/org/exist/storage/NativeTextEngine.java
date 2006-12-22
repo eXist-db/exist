@@ -587,7 +587,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             final short collectionId = ((Collection) i.next()).getId();          
             final IndexQuery query;
             if (end == null) {
-                Value startRef = new WordRef(collectionId, start.toLowerCase());
+                Value startRef = start == null ? new WordRef(collectionId) : new WordRef(collectionId, start.toLowerCase());
                 query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startRef);
             } else {
                 Value startRef = new WordRef(collectionId,  start.toLowerCase());
