@@ -27,9 +27,12 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.Collator;
 import java.util.regex.Pattern;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
+import org.exist.util.FastStringBuffer;
 
 /**
  * @author wolf
@@ -41,12 +44,16 @@ public class DecimalValue extends NumericValue {
 	private static final int DIVIDE_PRECISION = 18;
 	//Copied from Saxon 8.7
 	private static final Pattern decimalPattern = Pattern.compile("(\\-|\\+)?((\\.[0-9]+)|([0-9]+(\\.[0-9]*)?))");
+	//Copied from Saxon 8.8
+    private static boolean stripTrailingZerosMethodUnavailable = false;
+    private static Method stripTrailingZerosMethod = null;
+    private static final Object[] EMPTY_OBJECT_ARRAY = {};
+    public static final BigInteger BIG_INTEGER_TEN = BigInteger.valueOf(10);
 	
 	BigDecimal value;
 
 	public DecimalValue(BigDecimal decimal) {
-		this.value = decimal;
-		loseTrailingZeros();
+		this.value = stripTrailingZeros(decimal);		
 	}
 
 	public DecimalValue(String str) throws XPathException {
@@ -56,7 +63,7 @@ public class DecimalValue extends NumericValue {
 				throw new XPathException("FORG0001: cannot construct " + Type.getTypeName(this.getItemType()) +
 						" from \"" + str + "\"");            
 			}
-			value = new BigDecimal(str);
+			value = stripTrailingZeros(new BigDecimal(str));
 		} catch (NumberFormatException e) {
 			throw new XPathException("FORG0001: cannot construct " + Type.getTypeName(this.getItemType()) +
 					" from \"" + getStringValue() + "\"");					
@@ -64,7 +71,7 @@ public class DecimalValue extends NumericValue {
 	}
 
 	public DecimalValue(double val) {
-		value = new BigDecimal(val);
+		value = stripTrailingZeros(new BigDecimal(val));
 	}
 
 	/* (non-Javadoc)
@@ -89,20 +96,32 @@ public class DecimalValue extends NumericValue {
 		return s;
 		*/
 		
-		//Copied from Saxon 8.6.1
+		//Copied from Saxon 8.8
         // Can't use the plain BigDecimal#toString() under JDK 1.5 because this produces values like "1E-5".
         // JDK 1.5 offers BigDecimal#toPlainString() which might do the job directly
-        if (value.scale() <= 0) {
+        int scale = value.scale();
+        if (scale == 0) {
             return value.toString();
-        } else {
-            boolean negative = value.signum() < 0;
+        } else if (scale < 0) {
             String s = value.abs().unscaledValue().toString();
+
+            FastStringBuffer sb = new FastStringBuffer(s.length() + (-scale) + 2);
+            if (value.signum() < 0) {
+                sb.append('-');
+            }
+            sb.append(s);
+            for (int i=0; i<(-scale); i++) {
+                sb.append('0');
+            }
+            return sb.toString();
+        } else {
+            String s = value.abs().unscaledValue().toString();
+            if (s.equals("0")) {
+                return s;
+            }
             int len = s.length();
-            int scale = value.scale();
-            //For some reason this leads to an out of memory error
-            //FastStringBuffer sb = new FastStringBuffer(len+1);
-            StringBuffer sb = new StringBuffer();
-            if (negative) {
+            FastStringBuffer sb = new FastStringBuffer(len+1);
+            if (value.signum() < 0) {
                 sb.append('-');
             }
             if (scale >= len) {
@@ -427,31 +446,63 @@ public class DecimalValue extends NumericValue {
 				+ target.getName());
 	}
 	
-	//Copied from Saxon 8.6.1
+	//Copied from Saxon 8.8
     /**
-    * Remove insignificant trailing zeros (the Java BigDecimal class retains trailing zeros,
-    * but the XPath 2.0 xs:decimal type does not)
-    */
-    private void loseTrailingZeros() {
-        int scale = value.scale();
-        if (scale > 0) {
-            BigInteger i = value.unscaledValue();
-            while (true) {
-                BigInteger[] dr = i.divideAndRemainder(BigInteger.valueOf(10));
-                if (dr[1].equals(BigInteger.ZERO)) {
-                    i = dr[0];
-                    scale--;
-                    if (scale==0) {
-                        break;
-                    }
-                } else {
-                    break;
-                }
-            }
-            if (scale != value.scale()) {
-                value = new BigDecimal(i, scale);
-            }
-        }
-    }	
-    //End of copy
+	    * Remove insignificant trailing zeros (the Java BigDecimal class retains trailing zeros,
+	    * but the XPath 2.0 xs:decimal type does not). The BigDecimal#stripTrailingZeros() method
+	    * was introduced in JDK 1.5: we use it if available, and simulate it if not.
+	    */
+
+	    private static BigDecimal stripTrailingZeros(BigDecimal value) {
+	        if (stripTrailingZerosMethodUnavailable) {
+	            return stripTrailingZerosFallback(value);
+	        }
+
+	        try {
+	            if (stripTrailingZerosMethod == null) {
+	                Class[] argTypes = {};
+	                stripTrailingZerosMethod = BigDecimal.class.getMethod("stripTrailingZeros", argTypes);
+	            }
+	            Object result = stripTrailingZerosMethod.invoke(value, EMPTY_OBJECT_ARRAY);
+	            return (BigDecimal)result;
+	        } catch (NoSuchMethodException e) {
+	            stripTrailingZerosMethodUnavailable = true;
+	            return stripTrailingZerosFallback(value);
+	        } catch (IllegalAccessException e) {
+	            stripTrailingZerosMethodUnavailable = true;
+	            return stripTrailingZerosFallback(value);
+	        } catch (InvocationTargetException e) {
+	            stripTrailingZerosMethodUnavailable = true;
+	            return stripTrailingZerosFallback(value);
+	        }
+
+	    }
+	    
+	    private static BigDecimal stripTrailingZerosFallback(BigDecimal value) {
+
+	        // The code below differs from JDK 1.5 stripTrailingZeros in that it does not remove trailing zeros
+	        // from integers, for example 1000 is not changed to 1E3.
+
+	        int scale = value.scale();
+	        if (scale > 0) {
+	            BigInteger i = value.unscaledValue();
+	            while (true) {
+	                BigInteger[] dr = i.divideAndRemainder(BIG_INTEGER_TEN);
+	                if (dr[1].equals(BigInteger.ZERO)) {
+	                    i = dr[0];
+	                    scale--;
+	                    if (scale==0) {
+	                        break;
+	                    }
+	                } else {
+	                    break;
+	                }
+	            }
+	            if (scale != value.scale()) {
+	                value = new BigDecimal(i, scale);
+	            }
+	        }
+	        return value;
+	    }
+	   //End of copy
 }
