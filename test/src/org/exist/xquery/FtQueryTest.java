@@ -35,6 +35,8 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.base.ResourceIterator;
+import org.xmldb.api.base.Resource;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 
@@ -347,6 +349,57 @@ public class FtQueryTest extends XMLTestCase {
     	}
     }
 
+    public void testFtQNameScan() {
+    	try {
+            System.out.println("----- testFtQNameScan -----");
+            String config =
+    			"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
+		    	"    <index>" +
+		    	"        <fulltext default=\"none\" attributes=\"false\">" +
+                "           <include path=\"//node\"/>" +
+                "           <create qname=\"node\"/>" +
+                "           <create qname=\"@id\"/>" +
+                "	      </fulltext>" +
+		    	"    </index>" +
+		    	"</collection>";
+    		IndexQueryService idxConf = (IndexQueryService)
+				testCollection.getService("IndexQueryService", "1.0");
+    		idxConf.configureCollection(config);
+
+    		XMLResource doc =
+                (XMLResource) testCollection.createResource("test-qname.xml", "XMLResource");
+            doc.setContent(QNAME_XML);
+            testCollection.storeResource(doc);
+
+            XQueryService service = (XQueryService) testCollection.getService("XQueryService", "1.0");
+            doQuery(service, "//node", 2);
+
+            String queryBody =
+	            "declare namespace f=\'http://exist-db.org/xquery/test\';\n" +
+	            "import module namespace t=\'http://exist-db.org/xquery/text\';\n" +
+	            "\n" +
+	            "declare function f:term-callback($term as xs:string, $data as xs:int+)\n" +
+	            "as element()+ {\n" +
+	            "    <item>\n" +
+	            "        <term>{$term}</term>\n" +
+	            "        <frequency>{$data[1]}</frequency>\n" +
+	            "    </item>\n" +
+	            "};\n" +
+	            "\n";
+
+	        String query = queryBody + "t:index-terms(collection('" + TEST_COLLECTION_PATH + "')/root, \'a\', util:function(\'f:term-callback\', 2), 1000)";
+	        ResourceSet result = service.query(query);
+            for (ResourceIterator i = result.getIterator(); i.hasMoreResources(); ) {
+                Resource resource = i.nextResource();
+                System.out.println(resource.getContent());
+            }
+            assertEquals(4, result.getSize());
+		} catch (XMLDBException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+    }
+
     public void testReindex() {
         try {
             String config =
@@ -453,9 +506,9 @@ public class FtQueryTest extends XMLTestCase {
 	            (CollectionManagementService) root.getService(
 	                "CollectionManagementService",
 	                "1.0");
-	        service.removeCollection(TEST_COLLECTION_NAME);
+//	        service.removeCollection(TEST_COLLECTION_NAME);
 
-            service.removeCollection("/db/system/config/db");
+//            service.removeCollection("/db/system/config/db");
 
             DatabaseManager.deregisterDatabase(database);
 	        DatabaseInstanceManager dim =

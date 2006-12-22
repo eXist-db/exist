@@ -55,6 +55,7 @@ public class IndexTerms extends BasicFunction {
             "argument $a. The function returns term frequencies for all terms in the index found " +
             "in descendants of the nodes in $a. The second argument $b specifies " +
             "a start string. Only terms starting with the specified character sequence are returned. " +
+            "If $a is the empty sequence, all terms in the index will be selected. " +
             "$c is a function reference, which points to a callback function that will be called " +
             "for every term occurrence. $d defines the maximum number of terms that should be " +
             "reported. The function reference for $c can be created with the util:function " +
@@ -65,7 +66,7 @@ public class IndexTerms extends BasicFunction {
             "list of terms returned, d) the rank of the current term in the whole list of terms returned.",
             new SequenceType[]{
                     new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-                    new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+                    new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
                     new SequenceType(Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE),
                     new SequenceType(Type.INT, Cardinality.EXACTLY_ONE)
             },
@@ -84,7 +85,9 @@ public class IndexTerms extends BasicFunction {
             return Sequence.EMPTY_SEQUENCE;
         NodeSet nodes = args[0].toNodeSet();
         DocumentSet docs = nodes.getDocumentSet();
-        String start = args[1].getStringValue();
+        String start = null;
+        if (!args[1].isEmpty())
+            start = args[1].getStringValue();
         FunctionReference ref = (FunctionReference) args[2].itemAt(0);
         int max = ((IntegerValue) args[3].itemAt(0)).getInt();
         FunctionCall call = ref.getFunctionCall();
