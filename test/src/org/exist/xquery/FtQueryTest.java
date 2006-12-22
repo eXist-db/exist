@@ -387,13 +387,13 @@ public class FtQueryTest extends XMLTestCase {
 	            "};\n" +
 	            "\n";
 
-	        String query = queryBody + "t:index-terms(collection('" + TEST_COLLECTION_PATH + "')/root, \'a\', util:function(\'f:term-callback\', 2), 1000)";
+	        String query = queryBody + "t:index-terms(collection('" + TEST_COLLECTION_PATH + "')/root, (), util:function(\'f:term-callback\', 2), 1000)";
 	        ResourceSet result = service.query(query);
             for (ResourceIterator i = result.getIterator(); i.hasMoreResources(); ) {
                 Resource resource = i.nextResource();
                 System.out.println(resource.getContent());
             }
-            assertEquals(4, result.getSize());
+            assertEquals(3, result.getSize());
 		} catch (XMLDBException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
