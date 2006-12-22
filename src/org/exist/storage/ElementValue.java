@@ -35,70 +35,85 @@ public class ElementValue extends Value {
 	public static final byte ATTRIBUTE = 1;
 	public static final byte ATTRIBUTE_ID = 2;
 	
+	public static int OFFSET_COLLECTION_ID = 0;
+	public static int LENGTH_COLLECTION_ID = 2; //sizeof short
+	public static int OFFSET_TYPE = OFFSET_COLLECTION_ID + LENGTH_COLLECTION_ID; //2
+	public static int LENGTH_TYPE = 1; //sizeof byte
+	public static int OFFSET_SYMBOL = OFFSET_TYPE + LENGTH_TYPE; //3
+	public static int LENGTH_SYMBOL = 2; //sizeof short
+	public static int OFFSET_NSSYMBOL = OFFSET_SYMBOL + LENGTH_SYMBOL; //5
+	public static int LENGTH_NSSYMBOL = 2; //sizeof short
+	public static int OFFSET_ID_STRING_VALUE = OFFSET_TYPE + LENGTH_TYPE; //3
+	
 	public static final String[] type = { "element", "attribute", "id" };
 
     ElementValue(short collectionId) {
-		data = new byte[2];
-		ByteConversion.shortToByte(collectionId, data, 0);
-		len = 2;
-		pos = 0;
+		len = LENGTH_COLLECTION_ID;
+		data = new byte[len];
+		ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
+		pos = OFFSET_COLLECTION_ID;
 	}
 
 	ElementValue(byte type, short collectionId) {
-		data = new byte[3];
-		ByteConversion.shortToByte(collectionId, data, 0);
-		data[2] = type;
-		len = 3;
-		pos = 0;
+		len = LENGTH_COLLECTION_ID + LENGTH_TYPE;
+		data = new byte[len];
+		ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
+		data[OFFSET_TYPE] = type;
+		pos = OFFSET_COLLECTION_ID;
 	}
 
 	ElementValue(byte type, short collectionId, short symbol) {
-		len = 5;
+		len = LENGTH_COLLECTION_ID + LENGTH_TYPE + LENGTH_SYMBOL;
 		data = new byte[len];
-		ByteConversion.shortToByte(collectionId, data, 0);
-		data[2] = type;
-		ByteConversion.shortToByte(symbol, data, 3);
-		pos = 0;
+		ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
+		data[OFFSET_TYPE] = type;
+		ByteConversion.shortToByte(symbol, data, OFFSET_SYMBOL);
+		pos = OFFSET_COLLECTION_ID;
 	}
 
 	ElementValue(byte type, short collectionId, short symbol, short nsSymbol) {
-		len = 7;
+		len = LENGTH_COLLECTION_ID + LENGTH_TYPE + LENGTH_SYMBOL + OFFSET_NSSYMBOL;
 		data = new byte[len];
-		ByteConversion.shortToByte(collectionId, data, 0);
-		data[2] = type;
-		ByteConversion.shortToByte(symbol, data, 3);
-		ByteConversion.shortToByte(nsSymbol, data, 5);
-		pos = 0;
+		ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
+		data[OFFSET_TYPE] = type;
+		ByteConversion.shortToByte(symbol, data, OFFSET_SYMBOL);
+		ByteConversion.shortToByte(nsSymbol, data, OFFSET_NSSYMBOL);
+		pos = OFFSET_COLLECTION_ID;
 	}
 
-	ElementValue(byte type, short collectionId, String idValue) {
-		len = 3 + UTF8.encoded(idValue);
+	ElementValue(byte type, short collectionId, String idStringValue) {
+		//Note that the type expected to be ElementValue.ATTRIBUTE_ID
+		//TODO : add sanity check for this ?
+		len = LENGTH_COLLECTION_ID + LENGTH_TYPE + UTF8.encoded(idStringValue);
 		data = new byte[len];
-		ByteConversion.shortToByte(collectionId, data, 0);
-		data[2] = type;
-		UTF8.encode(idValue, data, 3);
+		ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
+		data[OFFSET_TYPE] = type;
+		UTF8.encode(idStringValue, data, OFFSET_ID_STRING_VALUE);
+		//TODO : reset pos, just like in other contructors ?
 	}
 
 	short getCollectionId() {
-		return ByteConversion.byteToShort(data, 0);
+		return ByteConversion.byteToShort(data, OFFSET_COLLECTION_ID);
 	}
 	
 	public String toString() {
 		StringBuffer buf = new StringBuffer();
-		buf.append("Collection id : " + ByteConversion.byteToShort(data, 0));
-		if (len > 2)
-			buf.append(" Type : " + type[data[2]]);		
-		
-		if (len > 7) {
-			buf.append(" idValue : " + UTF8.decode(data, 4, data.length - 3)); //untested
-		} else { 
-			//TODO : could we have a string in the cases below ?
-			if (len > 3)
-				buf.append(" Symbol id : " + ByteConversion.byteToShort(data, 3));
-			if (len > 5)
-				buf.append(" NSSymbol id : " + ByteConversion.byteToShort(data, 5));
+		buf.append("Collection id : " + ByteConversion.byteToShort(data, OFFSET_COLLECTION_ID));
+		if (len > OFFSET_COLLECTION_ID) {
+			buf.append(" Type : " + type[data[OFFSET_TYPE]]);
+			if (data[OFFSET_TYPE] == ElementValue.ATTRIBUTE_ID) {
+				 //untested 4 is strange (would have expected 3, i.e. OFFSET_ID_STRING_VALUE)
+				buf.append(" idStringValue : " + UTF8.decode(data, 4, data.length - (LENGTH_COLLECTION_ID + LENGTH_TYPE)));
+			} else {
+				if (len == LENGTH_COLLECTION_ID + LENGTH_TYPE + LENGTH_SYMBOL)
+					buf.append(" Symbol id : " + ByteConversion.byteToShort(data, OFFSET_SYMBOL));
+				else if (len == LENGTH_COLLECTION_ID + LENGTH_TYPE + LENGTH_SYMBOL + LENGTH_NSSYMBOL) {
+					buf.append(" Symbol id : " + ByteConversion.byteToShort(data, OFFSET_SYMBOL));
+					buf.append(" NSSymbol id : " + ByteConversion.byteToShort(data, OFFSET_NSSYMBOL));
+				} else 
+					buf.append("Invalid data length !!!");
+			}
 		}
-		
 		return buf.toString();
 	}
 }
