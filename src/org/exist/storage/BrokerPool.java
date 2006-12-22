@@ -1285,7 +1285,7 @@ public class BrokerPool {
 	 * Shuts downs the database instance
 	 * @param killed <code>true</code> when the JVM is (cleanly) exiting
 	 */
-	public void shutdown(boolean killed) {
+	public synchronized void shutdown(boolean killed) {
         status = SHUTDOWN;
         
 		notificationService.debug();
