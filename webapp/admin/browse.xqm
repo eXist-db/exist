@@ -18,7 +18,7 @@ declare function browse:main($user as xs:string, $passwd as xs:string) as elemen
     return
         <div class="panel">
             { browse:process-action($collection) }
-            <div class="panel-head">Browsing Collection: {$colName}</div>
+            <div class="panel-head">Browsing Collection: {xdb:decode-uri(xs:anyURI($colName))}</div>
             <form method="POST" enctype="multipart/form-data">
                 {
                     browse:display-collection($collection)
@@ -198,7 +198,7 @@ as element() {
             </tr>
             <tr>
                 <td/>
-                <td><a href="?panel=browse&amp;collection={browse:get-parent-collection($colName)}">Up</a></td>
+                <td><a href="?panel=browse&amp;collection={browse:get-parent-collection(xdb:encode-uri($colName))}">Up</a></td>
                 <td/>
                 <td/>
                 <td/>
@@ -223,7 +223,7 @@ as element()* {
     return
         <tr>
             <td><input type="checkbox" name="resource" value="{$path}"/></td>
-            <td><a href="?panel=browse&amp;collection={$path}">{$child}</a></td>
+            <td><a href="?panel=browse&amp;collection={xdb:encode-uri($path)}">{xdb:decode-uri(xs:anyURI($child))}</a></td>
             <td class="perm">{xdb:permissions-to-string(xdb:get-permissions($path))}</td>
             <td>{xdb:get-owner($path)}</td>
             <td>{xdb:get-group($path)}</td>
@@ -241,7 +241,7 @@ as element()* {
     return
         <tr>
             <td><input type="checkbox" name="resource" value="{$parent}/{$child}"/></td>
-            <td><a target="_new" href="../rest/{$parent}/{$child}">{$child}</a></td>
+            <td><a target="_new" href="../rest/{xdb:encode-uri($parent)}/{xdb:encode-uri($child)}">{xdb:decode-uri(xs:anyURI($child))}</a></td>
             <td class="perm">{xdb:permissions-to-string(xdb:get-permissions($collection, $child))}</td>
             <td>{xdb:get-owner($collection, $child)}</td>
             <td>{xdb:get-group($collection, $child)}</td>
