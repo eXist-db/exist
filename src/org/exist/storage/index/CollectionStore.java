@@ -9,6 +9,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 
+import org.exist.collections.Collection;
+import org.exist.dom.DocumentImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DefaultCacheManager;
 import org.exist.storage.NativeBroker;
@@ -70,9 +72,11 @@ public class CollectionStore extends BFile {
     }
     
     protected void dumpValue(Writer writer, Value value) throws IOException {
-        if (value.getLength() == 7) {
+    	//TODO : what does this 5 stand for ?
+        if (value.getLength() == 5 + Collection.LENGTH_COLLECTION_ID) {
             short collectionId = ByteConversion.byteToShort(value.data(), value.start());
-            int docId = ByteConversion.byteToInt(value.data(), value.start() + 3);
+            //TODO : what does this 1 stand for ?
+            int docId = ByteConversion.byteToInt(value.data(), value.start() + 1 + Collection.LENGTH_COLLECTION_ID);
             writer.write('[');
             writer.write("Document: collection = ");
             writer.write(collectionId);
@@ -88,34 +92,48 @@ public class CollectionStore extends BFile {
     }
 
     public static class DocumentKey extends Value {
+    	
+		public static int OFFSET_TYPE = 0;
+		public static int LENGTH_TYPE = 1; //sizeof byte
+		public static int OFFSET_COLLECTION_ID = OFFSET_TYPE + LENGTH_TYPE; //1
+		public static int LENGTH_TYPE_DOCUMENT = 2; //sizeof short
+		public static int OFFSET_DOCUMENT_TYPE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //3
+		public static int LENGTH_DOCUMENT_TYPE = 1; //sizeof byte
+		public static int OFFSET_DOCUMENT_ID = OFFSET_DOCUMENT_TYPE + LENGTH_DOCUMENT_TYPE; //4
 
         public DocumentKey(short collectionId) {
-            data = new byte[3];
-            data[0] = KEY_TYPE_DOCUMENT;
-            ByteConversion.shortToByte(collectionId, data, 1);
-            len = 3;
-            pos = 0;
+            data = new byte[LENGTH_TYPE + Collection.LENGTH_COLLECTION_ID];
+            data[OFFSET_TYPE] = KEY_TYPE_DOCUMENT;
+            ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
+            len = LENGTH_TYPE + Collection.LENGTH_COLLECTION_ID;
+            pos = OFFSET_TYPE;
         }
 
         public DocumentKey(short collectionId, byte type, int docId) {
-            data = new byte[8];
-            data[0] = KEY_TYPE_DOCUMENT;
-            ByteConversion.shortToByte(collectionId, data, 1);
-            data[3] = type;
-            ByteConversion.intToByte(docId, data, 4);
-            len = 8;
-            pos = 0;
+            data = new byte[LENGTH_TYPE + Collection.LENGTH_COLLECTION_ID + LENGTH_DOCUMENT_TYPE + 
+                            DocumentImpl.LENGTH_DOCUMENT_ID];
+            data[OFFSET_TYPE] = KEY_TYPE_DOCUMENT;
+            ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
+            data[OFFSET_DOCUMENT_TYPE] = type;
+            ByteConversion.intToByte(docId, data, OFFSET_DOCUMENT_ID);
+            len = LENGTH_TYPE + Collection.LENGTH_COLLECTION_ID + LENGTH_DOCUMENT_TYPE + 
+            	DocumentImpl.LENGTH_DOCUMENT_ID;
+            pos = OFFSET_TYPE;
         }
     }
 
     public static class CollectionKey extends Value {
+    	
+    	public static int OFFSET_TYPE = 0;
+		public static int LENGTH_TYPE = 1; //sizeof byte
+		public static int OFFSET_VALUE = OFFSET_TYPE + LENGTH_TYPE; //1
 
         public CollectionKey(String name) {
-            len = 1 + UTF8.encoded(name);
+            len = LENGTH_TYPE + UTF8.encoded(name);
             data = new byte[len];
-            data[0] = KEY_TYPE_COLLECTION;
-            UTF8.encode(name, data, 1);
-            pos = 0;
+            data[OFFSET_TYPE] = KEY_TYPE_COLLECTION;
+            UTF8.encode(name, data, OFFSET_VALUE);
+            pos = OFFSET_TYPE;
         }
     }
 }

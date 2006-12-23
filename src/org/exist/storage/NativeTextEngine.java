@@ -32,13 +32,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import org.exist.EXistException;
-import org.exist.numbering.NodeId;
 import org.exist.collections.Collection;
-import org.exist.dom.*;
+import org.exist.dom.AttrImpl;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.ElementImpl;
+import org.exist.dom.ExtArrayNodeSet;
+import org.exist.dom.Match;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
+import org.exist.dom.StoredNode;
+import org.exist.dom.SymbolTable;
+import org.exist.dom.TextImpl;
+import org.exist.dom.VirtualNodeSet;
+import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.analysis.TextToken;
 import org.exist.storage.btree.BTreeCallback;
@@ -64,7 +75,6 @@ import org.exist.xquery.Constants;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XQueryContext;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /**
  * This class is responsible for fulltext-indexing. Text-nodes are handed over
@@ -376,7 +386,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             if (qname == null)
                 key = new WordRef(collectionId, token);
             else {
-                key = new QNameWordRef(collectionId, qname, token);
+                key = new QNameWordRef(collectionId, qname, token, broker);
 //                LOG.debug("Using qname: " + qname.toString() + " " + key.dump() + " '" + key.toString() + "'");
             }
 			final Lock lock = dbTokens.getLock();
@@ -525,13 +535,13 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 if (qname == null) {
                     value = new WordRef(collectionId, startTerm.toString().toLowerCase());
                 } else {
-                    value = new QNameWordRef(collectionId, qname, startTerm.toString().toLowerCase());
+                    value = new QNameWordRef(collectionId, qname, startTerm.toString().toLowerCase(), broker);
                 }
             } else {
                 if (qname == null) {
                     value = new WordRef(collectionId);
                 } else {
-                    value = new QNameWordRef(collectionId, qname);
+                    value = new QNameWordRef(collectionId, qname, broker);
                 }
             }
 			IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, value);
@@ -901,7 +911,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 Value key;
                 if (currentSection == QNAME_SECTION) {
                     QNameTerm term = (QNameTerm) token;
-                    key = new QNameWordRef(collectionId, term.qname, term.term);
+                    key = new QNameWordRef(collectionId, term.qname, term.term, broker);
 //                    LOG.debug(key.dump() + " '" + key.toString() + "'");
                 } else {
                     key = new WordRef(collectionId, token.toString());
@@ -944,7 +954,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     Value key;
                     if (currentSection == QNAME_SECTION) {
                         QNameTerm term = (QNameTerm) token;
-                        key = new QNameWordRef(collectionId, term.qname, term.term);
+                        key = new QNameWordRef(collectionId, term.qname, term.term, broker);
                     } else {
                         key = new WordRef(collectionId, token.toString());
                     }
@@ -1038,7 +1048,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     Value key;
                     if (currentSection == QNAME_SECTION) {
                         QNameTerm term = (QNameTerm) token;
-                        key = new QNameWordRef(collectionId, term.qname, term.term);
+                        key = new QNameWordRef(collectionId, term.qname, term.term, broker);
                     } else {
                         key = new WordRef(collectionId, token.toString());
                     }
@@ -1148,7 +1158,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     Value key;
                     if (currentSection == QNAME_SECTION) {
                         QNameTerm term = (QNameTerm) token;
-                        key = new QNameWordRef(collectionId, term.qname, term.term);
+                        key = new QNameWordRef(collectionId, term.qname, term.term, broker);
                     } else {
                         key = new WordRef(collectionId, token.toString());
                     }
@@ -1282,13 +1292,13 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		    if(context != null)
 		        context.proceed();			
 			try {
-                final String word = new String(key.getData(), 2, key.getLength() - 2, "UTF-8");
+                final String word = new String(key.getData(), Collection.LENGTH_COLLECTION_ID, 
+                		key.getLength() - Collection.LENGTH_COLLECTION_ID, "UTF-8");
                 if (matcher.matches(word))
                     matches.add(word);
                 return true;
 			} catch (UnsupportedEncodingException e) {
                 LOG.error(e.getMessage(), e);
-				//word = new String(key.getData(), 2, key.getLength() - 2);
                 return true;
 			} 
 		}
@@ -1324,9 +1334,13 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             } 
             word.reuse();
             if (qname == null)
-                word = UTF8.decode(key.getData(), 3, key.getLength() - 3, word);
+            	//What does 1 stands for ?
+                word = UTF8.decode(key.getData(), (1 + Collection.LENGTH_COLLECTION_ID), 
+                		key.getLength() - (1 + Collection.LENGTH_COLLECTION_ID), word);
             else
-                word = UTF8.decode(key.getData(), 8, key.getLength() - 8, word);
+            	//What does 1 stands for ?
+                word = UTF8.decode(key.getData(), (1 + Collection.LENGTH_COLLECTION_ID +  SymbolTable.LENGTH_NSSYMBOL + SymbolTable.LENGTH_SYMBOL), 
+                		key.getLength() - (1 + Collection.LENGTH_COLLECTION_ID +  SymbolTable.LENGTH_NSSYMBOL + SymbolTable.LENGTH_SYMBOL), word);
             if (matcher.matches(word)) {
 				try {
 					while (is.available() > 0) {                        
@@ -1428,25 +1442,23 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		/* (non-Javadoc)
 		 * @see org.dbxml.core.filer.BTreeCallback#indexInfo(org.dbxml.core.data.Value, long)
 		 */
-		public boolean indexInfo(Value key, long pointer) throws TerminatedException {
-            
+		public boolean indexInfo(Value key, long pointer) throws TerminatedException {            
             String term;
             try {
-                term = new String(key.getData(), 3, key.getLength() - 3, "UTF-8");
+            	//What does 1 stands for ?
+                term = new String(key.getData(), (1 + Collection.LENGTH_COLLECTION_ID), 
+                		key.getLength() - (1 + Collection.LENGTH_COLLECTION_ID), "UTF-8");
             } catch (UnsupportedEncodingException e) {
                 LOG.error(e.getMessage(), e);
-                //term = new String(key.getData(), 2, key.getLength() - 2);
                 return true;
-            }
-            
+            }            
             VariableByteInput is;
             try {
                 is = dbTokens.getAsStream(pointer);
             } catch (IOException e) {
                 LOG.error(e.getMessage(), e);
                 return true;
-            } 
-           
+            }           
 			try {
 				while (is.available() > 0) {
                     boolean docAdded = false;                    
@@ -1691,20 +1703,25 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	}
 
 	private final static class WordRef extends Value {
+		
+		public static int OFFSET_TYPE = 0;
+		public static int LENGTH_TYPE = 1; //sizeof byte
+		public static int OFFSET_COLLECTION_ID = OFFSET_TYPE + LENGTH_TYPE; //1
+		public static int OFFSET_VALUE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //3
 
 		public WordRef(short collectionId) {
-			data = new byte[3];
-            data[0] = IDX_GENERIC;
-            ByteConversion.shortToByte(collectionId, data, 1);
+			data = new byte[Collection.LENGTH_COLLECTION_ID + LENGTH_TYPE];
+            data[OFFSET_TYPE] = IDX_GENERIC;
+            ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
 			len = 3;
 		}
 
 		public WordRef(short collectionId, String word) {
-			len = UTF8.encoded(word) + 3;
+			len = UTF8.encoded(word) + Collection.LENGTH_COLLECTION_ID + WordRef.LENGTH_TYPE;
 			data = new byte[len];
-            data[0] = IDX_GENERIC;
-            ByteConversion.shortToByte(collectionId, data, 1);
-			UTF8.encode(word, data, 3);
+            data[OFFSET_TYPE] = IDX_GENERIC;
+            ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
+			UTF8.encode(word, data, OFFSET_VALUE);
 		}
 
 		public String toString() {
@@ -1712,44 +1729,64 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		}
 	}
 
-    private final class QNameWordRef extends Value {
+	//TODO : Add some static stuff here !
+    private final static class QNameWordRef extends Value {
+
+    	public static int OFFSET_TYPE = 0;
+		public static int LENGTH_TYPE = 1; //sizeof byte
+		public static int OFFSET_COLLECTION_ID = OFFSET_TYPE + LENGTH_TYPE; //1
+		public static int OFFSET_VALUE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //3
 
 		public QNameWordRef(short collectionId) {
-			data = new byte[3];
-            data[0] = IDX_QNAME;
-            ByteConversion.shortToByte(collectionId, data, 1);
-			len = 3;
-            pos = 0;
+			data = new byte[Collection.LENGTH_COLLECTION_ID + LENGTH_TYPE];
+            data[OFFSET_TYPE] = IDX_QNAME;
+            ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
+			len = Collection.LENGTH_COLLECTION_ID + LENGTH_TYPE;
+            pos = OFFSET_TYPE;
+        }
+		
+		//TODO : find a smarter way to pass the broker
+        public QNameWordRef(short collectionId, QName qname, DBBroker broker) {
+        	//TODO : what does this 1 stand for ?
+            data = new byte[Collection.LENGTH_COLLECTION_ID + LENGTH_TYPE + 
+                            SymbolTable.LENGTH_NSSYMBOL + SymbolTable.LENGTH_SYMBOL + 1];
+            data[OFFSET_TYPE] = IDX_QNAME;
+            ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
+            serializeQName(qname, data, OFFSET_VALUE, broker);
         }
 
-        public QNameWordRef(short collectionId, QName qname) {
-            data = new byte[8];
-            data[0] = IDX_QNAME;
-            ByteConversion.shortToByte(collectionId, data, 1);
-            serializeQName(qname, data, 3);
-        }
-
-        public QNameWordRef(short collectionId, QName qname, String word) {
-			len = UTF8.encoded(word) + 8;
+        //TODO : find a smarter way to pass the broker
+        public QNameWordRef(short collectionId, QName qname, String word, DBBroker broker) {
+        	//TODO : what does this 1 stand for ?
+			len = UTF8.encoded(word) + Collection.LENGTH_COLLECTION_ID + LENGTH_TYPE + 
+			SymbolTable.LENGTH_NSSYMBOL + SymbolTable.LENGTH_SYMBOL + 1;
 			data = new byte[len];
-            data[0] = IDX_QNAME;
-            ByteConversion.shortToByte(collectionId, data, 1);
-            serializeQName(qname, data, 3);
-            UTF8.encode(word, data, 8);
+            data[OFFSET_TYPE] = IDX_QNAME;
+            ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
+            serializeQName(qname, data, OFFSET_VALUE, broker);
+            //TODO : what does this 1 stand for ?
+            UTF8.encode(word, data, Collection.LENGTH_COLLECTION_ID + LENGTH_TYPE + 
+        			SymbolTable.LENGTH_NSSYMBOL + SymbolTable.LENGTH_SYMBOL + 1);
         }
 
         /** serialize the QName field on the persistant storage */
-		private void serializeQName(QName qname, byte[] data, int offset) {
+		private static void serializeQName(QName qname, byte[] data, int offset, DBBroker broker) {
 			SymbolTable symbols = broker.getSymbols();
 			short namespaceId = symbols.getNSSymbol(qname.getNamespaceURI());
-			short localNameId = symbols.getSymbol(qname.getLocalName());
-            data[offset] = qname.getNameType();
+			///TODO : what does this 1 stand for ?
             ByteConversion.shortToByte(namespaceId, data, offset + 1);
-			ByteConversion.shortToByte(localNameId, data, offset + 3);
+			short localNameId = symbols.getSymbol(qname.getLocalName());
+			///TODO : what does this 1 stand for ?
+			ByteConversion.shortToByte(localNameId, data, offset + SymbolTable.LENGTH_NSSYMBOL + 1);
+            data[offset] = qname.getNameType();
 		}
 
         public String toString() {
-			return new String(data, pos + 8, len - 8);
+        	//TODO : what does these 1 stand for ?
+			return new String(data, pos + (Collection.LENGTH_COLLECTION_ID + LENGTH_TYPE + 
+					SymbolTable.LENGTH_NSSYMBOL + SymbolTable.LENGTH_SYMBOL + 1), 
+					len - (Collection.LENGTH_COLLECTION_ID + LENGTH_TYPE + 
+							SymbolTable.LENGTH_NSSYMBOL + SymbolTable.LENGTH_SYMBOL + 1));
 		}
 	}
     
