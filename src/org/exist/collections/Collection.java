@@ -99,6 +99,7 @@ public  class Collection extends Observable
         
         implements Comparable, EntityResolver, Cacheable {
     
+	public static int LENGTH_COLLECTION_ID = 2; //sizeof short
     
     public Collection(){
         

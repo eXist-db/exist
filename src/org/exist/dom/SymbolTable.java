@@ -51,6 +51,9 @@ import org.w3c.dom.Node;
 public class SymbolTable {
 
 	private final static Logger LOG = Logger.getLogger(SymbolTable.class);
+	
+	public static int LENGTH_SYMBOL = 2; //sizeof short
+	public static int LENGTH_NSSYMBOL = 2; //sizeof short	
 
     /** Maps local node names to an integer id */
 	protected Object2IntHashMap nameSymbols = new Object2IntHashMap(200);

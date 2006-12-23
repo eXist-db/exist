@@ -82,6 +82,13 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
 
 	private final static Logger LOG = Logger.getLogger(NativeValueIndexByQName.class);
 
+	public static int OFFSET_COLLECTION_ID = 0;
+	//Notice that the conventional sedign is to serialize OFFSET_SYMBOL *then* OFFSET_NSSYMBOL
+	//TODO : investigate
+	public static int OFFSET_NSSYMBOL = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //2
+	public static int OFFSET_SYMBOL = OFFSET_NSSYMBOL + SymbolTable.LENGTH_NSSYMBOL; //4
+	public static int OFFSET_VALUE = OFFSET_SYMBOL + SymbolTable.LENGTH_SYMBOL; //6
+
 	/** switch to activate/deactivate the feature "new index by QName" */
 	private boolean qnameValueIndexation = true; // false;
 
@@ -211,19 +218,14 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
 		 * provides the persistant storage key :
 		 * (collectionId, qname, indexType, indexData) */
 		public byte[] serialize(short collectionId, boolean caseSensitive) throws EXistException {
-	        final byte[] data = indexable.serializeValue(6, caseSensitive);
-	        ByteConversion.shortToByte(collectionId, data, 0);
-			serializeQName(data, 2 );
-			return data;
-		}
-		
-		/** serialize the QName field on the persistant storage */
-		private void serializeQName(byte[] data, int offset) {
+	        final byte[] data = indexable.serializeValue(OFFSET_VALUE, caseSensitive);
+	        ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
 			SymbolTable symbols = broker.getSymbols();
 			short namespaceId = symbols.getNSSymbol(qname.getNamespaceURI());
+			ByteConversion.shortToByte(namespaceId, data, OFFSET_NSSYMBOL);
 			short localNameId = symbols.getSymbol(qname.getLocalName());
-			ByteConversion.shortToByte(namespaceId, data, offset);
-			ByteConversion.shortToByte(localNameId, data, offset + 2);
+			ByteConversion.shortToByte(localNameId, data, OFFSET_SYMBOL);
+			return data;
 		}
 		
 		/** @return negative value <==> this object is less than other */

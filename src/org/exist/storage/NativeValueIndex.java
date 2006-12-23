@@ -88,6 +88,11 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
     private final static Logger LOG = Logger.getLogger(NativeValueIndex.class);
     
+	public static int OFFSET_COLLECTION_ID = 0;	
+	public static int OFFSET_TYPE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //2
+	public static int LENGTH_TYPE = 1; //sizeof byte
+	public static int OFFSET_DATA = OFFSET_TYPE + NativeValueIndex.LENGTH_TYPE; //3
+    
 	/** The broker that is using this value index */
 	DBBroker broker;
 	
@@ -555,9 +560,6 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     searchKey = new Value(startTerm.serialize(collectionId, caseSensitive));
                 } else {
                     searchKey = computeKeyPrefix(Type.STRING, collectionId);                
-                    //key = new byte[3];
-                    //ByteConversion.shortToByte(collectionId, key, 0);
-                    //key[2] = (byte) Type.STRING;
                 }
                 final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, searchKey);                
 				dbValues.query(query, callback);
@@ -615,9 +617,9 @@ public class NativeValueIndex implements ContentLoadingObserver {
      * Returns a search key for a collectionId/type combination.
      */
     private Value computeKeyPrefix(int type, short collectionId) {
-        byte[] data = new byte[3];
-        ByteConversion.shortToByte(collectionId, data, 0);
-        data[2] = (byte) type;
+        byte[] data = new byte[Collection.LENGTH_COLLECTION_ID + NativeValueIndex.LENGTH_TYPE];
+        ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
+        data[OFFSET_TYPE] = (byte) type;
         return new Value(data);
     }    
 
@@ -773,7 +775,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
 		public boolean indexInfo(Value value, long pointer) throws TerminatedException {
             key.reuse();
-            UTF8.decode(value.data(), value.start() + 3, value.getLength() - 3, key);
+            UTF8.decode(value.data(), value.start() + OFFSET_DATA, 
+            		value.getLength() - (Collection.LENGTH_COLLECTION_ID + NativeValueIndex.LENGTH_TYPE), key);
 			if(matcher.matches(key)) {
 				super.indexInfo(value, pointer);
 			}
