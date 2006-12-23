@@ -60,6 +60,13 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
 	private final static byte ENTRIES_ORDERED = 0;
 	private final static byte ENTRIES_UNORDERED = 1;
 	
+	//TODO : check
+	public static int OFFSET_COLLECTION_ID = 0;
+	//TODO : check
+	public static int OFFSET_TYPE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //2
+	public static int OFFSET_SYMBOL = OFFSET_TYPE + ElementValue.LENGTH_TYPE; //3
+	public static int OFFSET_NSSYMBOL = OFFSET_SYMBOL + SymbolTable.LENGTH_SYMBOL; //5
+	
 	private static Logger LOG = Logger.getLogger(NativeElementIndex.class.getName());
 
     /** The datastore for this node index */
@@ -778,8 +785,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 for (Iterator j = values.iterator(); j.hasNext();) {
                     //TOUNDERSTAND : what's in there ?
                     Value val[] = (Value[]) j.next();
-                    short sym = ByteConversion.byteToShort(val[0].getData(), 3);
-                    short nsSymbol = ByteConversion.byteToShort(val[0].getData(), 5);
+                    short sym = ByteConversion.byteToShort(val[0].getData(), OFFSET_SYMBOL);
+                    short nsSymbol = ByteConversion.byteToShort(val[0].getData(), OFFSET_NSSYMBOL);
                     String name = symbols.getName(sym);
                     String namespace;
                     if (nsSymbol == 0) {
@@ -845,7 +852,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             for (int i = 0; i < elements.size(); i++) {
                 Value key = (Value) elements.get(i);
                 Value value = dbNodes.get(key);
-                short sym = ByteConversion.byteToShort(key.data(), key.start() + 3);
+                short sym = ByteConversion.byteToShort(key.data(), key.start() + OFFSET_SYMBOL);
                 String nodeName = symbols.getName(sym);
                 msg.setLength(0);
                 msg.append("Checking ").append(nodeName).append(": ");                

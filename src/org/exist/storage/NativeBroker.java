@@ -165,6 +165,9 @@ public class NativeBroker extends DBBroker {
     public static final double DEFAULT_WORD_CACHE_GROWTH = 1.4;
     public static final double DEFAULT_WORD_KEY_THRESHOLD = 0.01;  
     public static final double DEFAULT_WORD_VALUE_THRESHOLD = 0.015;
+    
+	public static int OFFSET_COLLECTION_ID = 0;
+	public static int OFFSET_VALUE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID;
 
 	/** the database files */
 	protected CollectionStore collectionsDb;
@@ -1194,13 +1197,13 @@ public class NativeBroker extends DBBroker {
             Value value = collectionsDb.get(key);
             if (value != null) {
                 byte[] data = value.getData();
-                byte[] ndata = new byte[data.length + 2];
-                System.arraycopy(data, 0, ndata, 2, data.length);
-                ByteConversion.shortToByte(id, ndata, 0);
+                byte[] ndata = new byte[data.length + Collection.LENGTH_COLLECTION_ID];
+                System.arraycopy(data, 0, ndata, OFFSET_VALUE, data.length);
+                ByteConversion.shortToByte(id, ndata, OFFSET_COLLECTION_ID);
                 collectionsDb.put(transaction, key, ndata, true);
             } else {
-                byte[] data = new byte[2];
-                ByteConversion.shortToByte(id, data, 0);
+                byte[] data = new byte[Collection.LENGTH_COLLECTION_ID];
+                ByteConversion.shortToByte(id, data, OFFSET_COLLECTION_ID);
                 collectionsDb.put(transaction, key, data, true);
             }
         } catch (LockException e) {

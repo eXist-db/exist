@@ -22,6 +22,8 @@
  */
 package org.exist.storage;
 
+import org.exist.collections.Collection;
+import org.exist.dom.SymbolTable;
 import org.exist.storage.btree.Value;
 import org.exist.util.ByteConversion;
 import org.exist.util.UTF8;
@@ -35,27 +37,24 @@ public class ElementValue extends Value {
 	public static final byte ATTRIBUTE = 1;
 	public static final byte ATTRIBUTE_ID = 2;
 	
-	public static int OFFSET_COLLECTION_ID = 0;
-	public static int LENGTH_COLLECTION_ID = 2; //sizeof short
-	public static int OFFSET_TYPE = OFFSET_COLLECTION_ID + LENGTH_COLLECTION_ID; //2
+	public static int OFFSET_COLLECTION_ID = 0;	
+	public static int OFFSET_TYPE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //2
 	public static int LENGTH_TYPE = 1; //sizeof byte
-	public static int OFFSET_SYMBOL = OFFSET_TYPE + LENGTH_TYPE; //3
-	public static int LENGTH_SYMBOL = 2; //sizeof short
-	public static int OFFSET_NSSYMBOL = OFFSET_SYMBOL + LENGTH_SYMBOL; //5
-	public static int LENGTH_NSSYMBOL = 2; //sizeof short
+	public static int OFFSET_SYMBOL = OFFSET_TYPE + ElementValue.LENGTH_TYPE; //3
+	public static int OFFSET_NSSYMBOL = OFFSET_SYMBOL + SymbolTable.LENGTH_SYMBOL; //5
 	public static int OFFSET_ID_STRING_VALUE = OFFSET_TYPE + LENGTH_TYPE; //3
 	
 	public static final String[] type = { "element", "attribute", "id" };
 
     ElementValue(short collectionId) {
-		len = LENGTH_COLLECTION_ID;
+		len = Collection.LENGTH_COLLECTION_ID;
 		data = new byte[len];
 		ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
 		pos = OFFSET_COLLECTION_ID;
 	}
 
 	ElementValue(byte type, short collectionId) {
-		len = LENGTH_COLLECTION_ID + LENGTH_TYPE;
+		len = Collection.LENGTH_COLLECTION_ID + ElementValue.LENGTH_TYPE;
 		data = new byte[len];
 		ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
 		data[OFFSET_TYPE] = type;
@@ -63,7 +62,7 @@ public class ElementValue extends Value {
 	}
 
 	ElementValue(byte type, short collectionId, short symbol) {
-		len = LENGTH_COLLECTION_ID + LENGTH_TYPE + LENGTH_SYMBOL;
+		len = Collection.LENGTH_COLLECTION_ID + ElementValue.LENGTH_TYPE + SymbolTable.LENGTH_SYMBOL;
 		data = new byte[len];
 		ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
 		data[OFFSET_TYPE] = type;
@@ -72,7 +71,7 @@ public class ElementValue extends Value {
 	}
 
 	ElementValue(byte type, short collectionId, short symbol, short nsSymbol) {
-		len = LENGTH_COLLECTION_ID + LENGTH_TYPE + LENGTH_SYMBOL + OFFSET_NSSYMBOL;
+		len = Collection.LENGTH_COLLECTION_ID + ElementValue.LENGTH_TYPE + SymbolTable.LENGTH_SYMBOL + OFFSET_NSSYMBOL;
 		data = new byte[len];
 		ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
 		data[OFFSET_TYPE] = type;
@@ -84,7 +83,7 @@ public class ElementValue extends Value {
 	ElementValue(byte type, short collectionId, String idStringValue) {
 		//Note that the type expected to be ElementValue.ATTRIBUTE_ID
 		//TODO : add sanity check for this ?
-		len = LENGTH_COLLECTION_ID + LENGTH_TYPE + UTF8.encoded(idStringValue);
+		len = Collection.LENGTH_COLLECTION_ID + ElementValue.LENGTH_TYPE + UTF8.encoded(idStringValue);
 		data = new byte[len];
 		ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
 		data[OFFSET_TYPE] = type;
@@ -103,11 +102,12 @@ public class ElementValue extends Value {
 			buf.append(" Type : " + type[data[OFFSET_TYPE]]);
 			if (data[OFFSET_TYPE] == ElementValue.ATTRIBUTE_ID) {
 				 //untested 4 is strange (would have expected 3, i.e. OFFSET_ID_STRING_VALUE)
-				buf.append(" idStringValue : " + UTF8.decode(data, 4, data.length - (LENGTH_COLLECTION_ID + LENGTH_TYPE)));
+				buf.append(" idStringValue : " + UTF8.decode(data, 4, data.length - (Collection.LENGTH_COLLECTION_ID + LENGTH_TYPE)));
 			} else {
-				if (len == LENGTH_COLLECTION_ID + LENGTH_TYPE + LENGTH_SYMBOL)
+				if (len == Collection.LENGTH_COLLECTION_ID + ElementValue.LENGTH_TYPE + SymbolTable.LENGTH_SYMBOL)
 					buf.append(" Symbol id : " + ByteConversion.byteToShort(data, OFFSET_SYMBOL));
-				else if (len == LENGTH_COLLECTION_ID + LENGTH_TYPE + LENGTH_SYMBOL + LENGTH_NSSYMBOL) {
+				else if (len == Collection.LENGTH_COLLECTION_ID + ElementValue.LENGTH_TYPE + 
+						SymbolTable.LENGTH_SYMBOL + SymbolTable.LENGTH_NSSYMBOL) {
 					buf.append(" Symbol id : " + ByteConversion.byteToShort(data, OFFSET_SYMBOL));
 					buf.append(" NSSymbol id : " + ByteConversion.byteToShort(data, OFFSET_NSSYMBOL));
 				} else 
