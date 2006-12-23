@@ -686,9 +686,10 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     broker.getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, data, 3);
                 int readOffset = Signatures.getLength(idSizeType) + nodeIdLen + 3;
                 if (hasNamespace) {
-					readOffset += SymbolTable.LENGTH_SYMBOL; // skip namespace id
+                	//TODO : check the order in wich both info are read (and discarded)
+					readOffset += SymbolTable.LENGTH_LOCAL_NAME; // skip namespace id
 					final short prefixLen = ByteConversion.byteToShort(data, readOffset);
-					readOffset += prefixLen + SymbolTable.LENGTH_NSSYMBOL; // skip prefix
+					readOffset += prefixLen + SymbolTable.LENGTH_NS_URI; // skip prefix
 				}
                 String val;
                 try {
@@ -1344,8 +1345,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 		key.getLength() - (1 + Collection.LENGTH_COLLECTION_ID), word);
             else
             	//What does 1 stands for ?
-                word = UTF8.decode(key.getData(), (1 + Collection.LENGTH_COLLECTION_ID +  SymbolTable.LENGTH_NSSYMBOL + SymbolTable.LENGTH_SYMBOL), 
-                		key.getLength() - (1 + Collection.LENGTH_COLLECTION_ID +  SymbolTable.LENGTH_NSSYMBOL + SymbolTable.LENGTH_SYMBOL), word);
+                word = UTF8.decode(key.getData(), (1 + Collection.LENGTH_COLLECTION_ID +  SymbolTable.LENGTH_NS_URI + SymbolTable.LENGTH_LOCAL_NAME), 
+                		key.getLength() - (1 + Collection.LENGTH_COLLECTION_ID +  SymbolTable.LENGTH_NS_URI + SymbolTable.LENGTH_LOCAL_NAME), word);
             if (matcher.matches(word)) {
 				try {
 					while (is.available() > 0) {                        
@@ -1753,7 +1754,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         public QNameWordRef(short collectionId, QName qname, DBBroker broker) {
         	//TODO : what does this 1 stand for ?
             data = new byte[Collection.LENGTH_COLLECTION_ID + QNameWordRef.LENGTH_IDX_TYPE + 
-                            SymbolTable.LENGTH_NSSYMBOL + SymbolTable.LENGTH_SYMBOL + 1];
+                            SymbolTable.LENGTH_NS_URI + SymbolTable.LENGTH_LOCAL_NAME + 1];
             data[OFFSET_IDX_TYPE] = IDX_QNAME;
             ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
             serializeQName(qname, data, OFFSET_VALUE, broker);
@@ -1763,14 +1764,14 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         public QNameWordRef(short collectionId, QName qname, String word, DBBroker broker) {
         	//TODO : what does this 1 stand for ?
 			len = UTF8.encoded(word) + Collection.LENGTH_COLLECTION_ID + QNameWordRef.LENGTH_IDX_TYPE + 
-			SymbolTable.LENGTH_NSSYMBOL + SymbolTable.LENGTH_SYMBOL + 1;
+			SymbolTable.LENGTH_NS_URI + SymbolTable.LENGTH_LOCAL_NAME + 1;
 			data = new byte[len];
             data[OFFSET_IDX_TYPE] = IDX_QNAME;
             ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
             serializeQName(qname, data, OFFSET_VALUE, broker);
             //TODO : what does this 1 stand for ?
             UTF8.encode(word, data, Collection.LENGTH_COLLECTION_ID + QNameWordRef.LENGTH_IDX_TYPE + 
-        			SymbolTable.LENGTH_NSSYMBOL + SymbolTable.LENGTH_SYMBOL + 1);
+        			SymbolTable.LENGTH_NS_URI + SymbolTable.LENGTH_LOCAL_NAME + 1);
         }
 
         /** serialize the QName field on the persistent storage */
@@ -1781,16 +1782,16 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             ByteConversion.shortToByte(namespaceId, data, offset + 1);
 			short localNameId = symbols.getSymbol(qname.getLocalName());
 			///TODO : what does this 1 stand for ?
-			ByteConversion.shortToByte(localNameId, data, offset + SymbolTable.LENGTH_NSSYMBOL + 1);
+			ByteConversion.shortToByte(localNameId, data, offset + SymbolTable.LENGTH_NS_URI + 1);
             data[offset] = qname.getNameType();
 		}
 
         public String toString() {
         	//TODO : what does these 1 stand for ?
 			return new String(data, pos + (Collection.LENGTH_COLLECTION_ID + QNameWordRef.LENGTH_IDX_TYPE + 
-					SymbolTable.LENGTH_NSSYMBOL + SymbolTable.LENGTH_SYMBOL + 1), 
+					SymbolTable.LENGTH_NS_URI + SymbolTable.LENGTH_LOCAL_NAME + 1), 
 					len - (Collection.LENGTH_COLLECTION_ID + QNameWordRef.LENGTH_IDX_TYPE + 
-							SymbolTable.LENGTH_NSSYMBOL + SymbolTable.LENGTH_SYMBOL + 1));
+							SymbolTable.LENGTH_NS_URI + SymbolTable.LENGTH_LOCAL_NAME + 1));
 		}
 	}
     

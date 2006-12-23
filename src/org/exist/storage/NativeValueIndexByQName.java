@@ -83,11 +83,11 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
 	private final static Logger LOG = Logger.getLogger(NativeValueIndexByQName.class);
 
 	public static int OFFSET_COLLECTION_ID = 0;
-	//Notice that the conventional sedign is to serialize OFFSET_SYMBOL *then* OFFSET_NSSYMBOL
+	//Notice that the conventional design is to serialize OFFSET_SYMBOL *then* OFFSET_NSSYMBOL
 	//TODO : investigate
-	public static int OFFSET_NSSYMBOL = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //2
-	public static int OFFSET_SYMBOL = OFFSET_NSSYMBOL + SymbolTable.LENGTH_NSSYMBOL; //4
-	public static int OFFSET_VALUE = OFFSET_SYMBOL + SymbolTable.LENGTH_SYMBOL; //6
+	public static int OFFSET_NS_URI = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //2
+	public static int OFFSET_LOCAL_NAME = OFFSET_NS_URI + SymbolTable.LENGTH_NS_URI; //4
+	public static int OFFSET_VALUE = OFFSET_LOCAL_NAME + SymbolTable.LENGTH_LOCAL_NAME; //6
 
 	/** switch to activate/deactivate the feature "new index by QName" */
 	private boolean qnameValueIndexation = true; // false;
@@ -222,9 +222,9 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
 	        ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
 			SymbolTable symbols = broker.getSymbols();
 			short namespaceId = symbols.getNSSymbol(qname.getNamespaceURI());
-			ByteConversion.shortToByte(namespaceId, data, OFFSET_NSSYMBOL);
+			ByteConversion.shortToByte(namespaceId, data, OFFSET_NS_URI);
 			short localNameId = symbols.getSymbol(qname.getLocalName());
-			ByteConversion.shortToByte(localNameId, data, OFFSET_SYMBOL);
+			ByteConversion.shortToByte(localNameId, data, OFFSET_LOCAL_NAME);
 			return data;
 		}
 		
