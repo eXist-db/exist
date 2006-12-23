@@ -263,6 +263,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     //TODO : throw exception?
                 }
             }
+            //What does this 4 stand for ?
             os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
             
             try {
@@ -364,6 +365,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                                 //TOO : throw exception ?
                             }
                         }
+                        //What does this 4 stand for ?
                         os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
                     }
                     if (dbValues.update(value.getAddress(), searchKey, os.data()) == BFile.UNKNOWN_ADDRESS) {

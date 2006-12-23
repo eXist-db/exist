@@ -1218,6 +1218,7 @@ public class DOMFile extends BTree implements Lockable {
 	public void printStatistics() {
 		super.printStatistics();
 		NumberFormat nf = NumberFormat.getPercentInstance();
+		NumberFormat nf2 = NumberFormat.getInstance();
 		StringBuffer buf = new StringBuffer();
 		buf.append(getFile().getName()).append(" DATA ");
         buf.append("Buffers occupation : ");
@@ -1225,7 +1226,7 @@ public class DOMFile extends BTree implements Lockable {
         	buf.append("N/A");
         else
         	buf.append(nf.format(dataCache.getUsedBuffers()/(float)dataCache.getBuffers()));
-        buf.append(" (" + dataCache.getUsedBuffers() + " out of " + dataCache.getBuffers() + ")");		
+        buf.append(" (" + nf2.format(dataCache.getUsedBuffers()) + " out of " + nf2.format(dataCache.getBuffers()) + ")");		
 		//buf.append(dataCache.getBuffers()).append(" / ");
 		//buf.append(dataCache.getUsedBuffers()).append(" / ");
         buf.append(" Cache efficiency : ");

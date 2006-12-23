@@ -2949,24 +2949,30 @@ public class NativeBroker extends DBBroker {
 	}
 
 	public final static class NodeRef extends Value {
-
-        public NodeRef(int docId) {
+		
+		public static int OFFSET_DOCUMENT_ID = 0;
+		
+		public NodeRef(int docId) {
+			//What does this 4 stand for ?
             data = new byte[4];
-            ByteConversion.intToByte(docId, data, 0);
+            ByteConversion.intToByte(docId, data, OFFSET_DOCUMENT_ID);
+            //What does this 4 stand for ?
             len = 4;
-            pos = 0;
+            pos = OFFSET_DOCUMENT_ID;
         }
         
         public NodeRef(int docId, NodeId nodeId) {
-        	pos = 0;
+        	//What does this 4 stand for ?
         	len = nodeId.size() + 4;
 			data = new byte[len];
-			ByteConversion.intToByte(docId, data, 0);
+			ByteConversion.intToByte(docId, data, OFFSET_DOCUMENT_ID);
+			//What does this 4 stand for ?
 			nodeId.serialize(data, 4);
+            pos = OFFSET_DOCUMENT_ID;
 		}
 
 		int getDocId() {
-			return ByteConversion.byteToInt(data, 0);
+			return ByteConversion.byteToInt(data, OFFSET_DOCUMENT_ID);
 		}
 	}
     
@@ -3224,7 +3230,7 @@ public class NativeBroker extends DBBroker {
         
         public boolean indexInfo(Value key, long pointer) throws TerminatedException {
             try {
-            	//TODO : 1 stands for the type's length            	
+            	//What does this 1 stand for ?            	
                 byte type = key.data()[key.start() + Collection.LENGTH_COLLECTION_ID + 1]; 
                 VariableByteInput istream = collectionsDb.getAsStream(pointer);
                 DocumentImpl doc = null;
