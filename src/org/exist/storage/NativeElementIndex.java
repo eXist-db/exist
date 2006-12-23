@@ -181,6 +181,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 StorageAddress.write(storedNode.getInternalAddress(), os);
             }
             broker.getBrokerPool().getNodeFactory().writeEndOfDocument(os);
+            //What does this 4 stand for ?
             os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
             try {
                 lock.acquire(Lock.WRITE_LOCK);
@@ -303,6 +304,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                             StorageAddress.write(storedNode.getInternalAddress(), os);
                         }
                         broker.getBrokerPool().getNodeFactory().writeEndOfDocument(os);
+                        //What does this 4 stand for ?
                         os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);    
                     }
                 }                
@@ -490,6 +492,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                                 storedNode.setNodeType(nodeType);
                                 result.add(storedNode, gidsCount);
                             } else {
+                            	//What does this 3 stand for ?
                                 is.skip(3);
                                 sameDocSet = false;
                             }

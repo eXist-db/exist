@@ -650,19 +650,23 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     //TODO : unify functionalities with storeText -pb
     private void collect(Set words, Iterator domIterator) {
         byte[] data = ((Value) domIterator.next()).getData();
+        //TODO : named constant
         short type = Signatures.getType(data[0]);
         switch (type) {
             case Node.ELEMENT_NODE :
+            	//TODO : named constant
                 int children = ByteConversion.byteToInt(data, 1);
                 for (int i = 0; i < children; i++)
                     collect(words, domIterator);
                 break;
             case Node.TEXT_NODE :
+            	//TODO : named constant
                 int dlnLen = ByteConversion.byteToShort(data, 1);
-            	int nodeIdLen = 
-            		broker.getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, data, 3);
+                //TODO : named constant
+            	int nodeIdLen = broker.getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, data, 3);
                 String s;
                 try {
+                	//TODO : named constant
                     s = new String(data, nodeIdLen + 3, data.length - nodeIdLen - 3, "UTF-8");
                     tokenizer.setText(s);
                     TextToken token;
@@ -679,11 +683,15 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 }
                 break;
             case Node.ATTRIBUTE_NODE :
+            	//TODO : named constant
                 byte idSizeType = (byte) (data[0] & 0x3);
+                //TODO : named constant
                 boolean hasNamespace = (data[0] & 0x10) == 0x10;
+                //TODO : named constant
                 dlnLen = ByteConversion.byteToShort(data, 1);
-                nodeIdLen  =
-                    broker.getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, data, 3);
+                //TODO : named constant
+                nodeIdLen = broker.getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, data, 3);
+                //TODO : named constant
                 int readOffset = Signatures.getLength(idSizeType) + nodeIdLen + 3;
                 if (hasNamespace) {
                 	//TODO : check the order in wich both info are read (and discarded)
@@ -693,9 +701,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 				}
                 String val;
                 try {
-                    val = new String(data,
-                        readOffset, data.length - readOffset, 
-                        "UTF-8");
+                    val = new String(data, readOffset, data.length - readOffset, "UTF-8");
                     tokenizer.setText(val);
                     TextToken token;
                     while (null != (token = tokenizer.nextToken())) {
@@ -772,6 +778,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		public InvertedIndex() {
 			words[TEXT_NODES] = new HashMap(512);
 			words[ATTRIBUTE_NODES] = new HashMap(256);
+			//seems to be linked with QName indexes
             words[2] = new TreeMap();
         }
         
@@ -887,6 +894,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                         }
                         j += freq;                        
                     }
+                    //What does this 4 stand for ?
                     os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);                    
                     flushWord(currentSection, collectionId, token, os.data());
                     progress.setValue(count);
@@ -1118,6 +1126,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                 }
                                 m += freq;
                             }
+                            //What does this 4 stand for ?
                             os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
                         }
                         //Store the data
@@ -1241,6 +1250,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                 }
                                 m += freq;
                             }
+                            //What does this 4 stand for ?
                             os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
                         }
                         //Store the data
@@ -1340,11 +1350,11 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             } 
             word.reuse();
             if (qname == null)
-            	//What does 1 stands for ?
+            	//What does this 1 stand for ?
                 word = UTF8.decode(key.getData(), (1 + Collection.LENGTH_COLLECTION_ID), 
                 		key.getLength() - (1 + Collection.LENGTH_COLLECTION_ID), word);
             else
-            	//What does 1 stands for ?
+            	//What does this 1 stand for ?
                 word = UTF8.decode(key.getData(), (1 + Collection.LENGTH_COLLECTION_ID +  SymbolTable.LENGTH_NS_URI + SymbolTable.LENGTH_LOCAL_NAME), 
                 		key.getLength() - (1 + Collection.LENGTH_COLLECTION_ID +  SymbolTable.LENGTH_NS_URI + SymbolTable.LENGTH_LOCAL_NAME), word);
             if (matcher.matches(word)) {
@@ -1451,7 +1461,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		public boolean indexInfo(Value key, long pointer) throws TerminatedException {            
             String term;
             try {
-            	//What does 1 stands for ?
+            	//What does this 1 stand for ?
                 term = new String(key.getData(), (1 + Collection.LENGTH_COLLECTION_ID), 
                 		key.getLength() - (1 + Collection.LENGTH_COLLECTION_ID), "UTF-8");
             } catch (UnsupportedEncodingException e) {
@@ -1740,7 +1750,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     	public static int OFFSET_IDX_TYPE = 0;
 		public static int LENGTH_IDX_TYPE = 1; //sizeof byte
 		public static int OFFSET_COLLECTION_ID = OFFSET_IDX_TYPE + QNameWordRef.LENGTH_IDX_TYPE; //1
-		public static int OFFSET_VALUE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //3
+		public static int OFFSET_QNAME = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //3
 
 		public QNameWordRef(short collectionId) {
 			data = new byte[Collection.LENGTH_COLLECTION_ID + QNameWordRef.LENGTH_IDX_TYPE];
@@ -1757,7 +1767,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                             SymbolTable.LENGTH_NS_URI + SymbolTable.LENGTH_LOCAL_NAME + 1];
             data[OFFSET_IDX_TYPE] = IDX_QNAME;
             ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
-            serializeQName(qname, data, OFFSET_VALUE, broker);
+            serializeQName(qname, data, OFFSET_QNAME, broker);
         }
 
         //TODO : find a smarter way to pass the broker
@@ -1768,7 +1778,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 			data = new byte[len];
             data[OFFSET_IDX_TYPE] = IDX_QNAME;
             ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
-            serializeQName(qname, data, OFFSET_VALUE, broker);
+            serializeQName(qname, data, OFFSET_QNAME, broker);
             //TODO : what does this 1 stand for ?
             UTF8.encode(word, data, Collection.LENGTH_COLLECTION_ID + QNameWordRef.LENGTH_IDX_TYPE + 
         			SymbolTable.LENGTH_NS_URI + SymbolTable.LENGTH_LOCAL_NAME + 1);
