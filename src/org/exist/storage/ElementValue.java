@@ -41,7 +41,7 @@ public class ElementValue extends Value {
 	public static int OFFSET_TYPE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //2
 	public static int LENGTH_TYPE = 1; //sizeof byte
 	public static int OFFSET_SYMBOL = OFFSET_TYPE + ElementValue.LENGTH_TYPE; //3
-	public static int OFFSET_NSSYMBOL = OFFSET_SYMBOL + SymbolTable.LENGTH_SYMBOL; //5
+	public static int OFFSET_NSSYMBOL = OFFSET_SYMBOL + SymbolTable.LENGTH_LOCAL_NAME; //5
 	public static int OFFSET_ID_STRING_VALUE = OFFSET_TYPE + LENGTH_TYPE; //3
 	
 	public static final String[] type = { "element", "attribute", "id" };
@@ -62,7 +62,7 @@ public class ElementValue extends Value {
 	}
 
 	ElementValue(byte type, short collectionId, short symbol) {
-		len = Collection.LENGTH_COLLECTION_ID + ElementValue.LENGTH_TYPE + SymbolTable.LENGTH_SYMBOL;
+		len = Collection.LENGTH_COLLECTION_ID + ElementValue.LENGTH_TYPE + SymbolTable.LENGTH_LOCAL_NAME;
 		data = new byte[len];
 		ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
 		data[OFFSET_TYPE] = type;
@@ -71,7 +71,7 @@ public class ElementValue extends Value {
 	}
 
 	ElementValue(byte type, short collectionId, short symbol, short nsSymbol) {
-		len = Collection.LENGTH_COLLECTION_ID + ElementValue.LENGTH_TYPE + SymbolTable.LENGTH_SYMBOL + OFFSET_NSSYMBOL;
+		len = Collection.LENGTH_COLLECTION_ID + ElementValue.LENGTH_TYPE + SymbolTable.LENGTH_LOCAL_NAME + OFFSET_NSSYMBOL;
 		data = new byte[len];
 		ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
 		data[OFFSET_TYPE] = type;
@@ -104,10 +104,10 @@ public class ElementValue extends Value {
 				 //untested 4 is strange (would have expected 3, i.e. OFFSET_ID_STRING_VALUE)
 				buf.append(" idStringValue : " + UTF8.decode(data, 4, data.length - (Collection.LENGTH_COLLECTION_ID + LENGTH_TYPE)));
 			} else {
-				if (len == Collection.LENGTH_COLLECTION_ID + ElementValue.LENGTH_TYPE + SymbolTable.LENGTH_SYMBOL)
+				if (len == Collection.LENGTH_COLLECTION_ID + ElementValue.LENGTH_TYPE + SymbolTable.LENGTH_LOCAL_NAME)
 					buf.append(" Symbol id : " + ByteConversion.byteToShort(data, OFFSET_SYMBOL));
 				else if (len == Collection.LENGTH_COLLECTION_ID + ElementValue.LENGTH_TYPE + 
-						SymbolTable.LENGTH_SYMBOL + SymbolTable.LENGTH_NSSYMBOL) {
+						SymbolTable.LENGTH_LOCAL_NAME + SymbolTable.LENGTH_NS_URI) {
 					buf.append(" Symbol id : " + ByteConversion.byteToShort(data, OFFSET_SYMBOL));
 					buf.append(" NSSymbol id : " + ByteConversion.byteToShort(data, OFFSET_NSSYMBOL));
 				} else 
