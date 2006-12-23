@@ -110,8 +110,11 @@ public class DecimalValue extends NumericValue {
                 sb.append('-');
             }
             sb.append(s);
-            for (int i=0; i<(-scale); i++) {
-                sb.append('0');
+            //Provisional hack : 10.0 mod 10.0 to trigger the bug
+            if (!"0".equals(s)){
+	            for (int i=0; i<(-scale); i++) {
+	                sb.append('0');
+	            }
             }
             return sb.toString();
         } else {
@@ -330,11 +333,9 @@ public class DecimalValue extends NumericValue {
 	 */
 	public NumericValue mod(NumericValue other) throws XPathException {
 		if (other.getType() == Type.DECIMAL) {
-			BigDecimal quotient =
-				value.divide(((DecimalValue) other).value, BigDecimal.ROUND_DOWN);
-			BigDecimal remainder =
-				value.subtract(quotient.setScale(0, BigDecimal.ROUND_DOWN).multiply(((DecimalValue) other).value));
-			return new DecimalValue(remainder);
+            BigDecimal quotient = value.divide(((DecimalValue)other).value, 0, BigDecimal.ROUND_DOWN);
+            BigDecimal remainder = value.subtract(quotient.setScale(0, BigDecimal.ROUND_DOWN).multiply(((DecimalValue) other).value));
+            return new DecimalValue(remainder);
 		} else
 			return ((NumericValue) convertTo(other.getType())).mod(other);
 	}
