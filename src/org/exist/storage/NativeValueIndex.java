@@ -89,9 +89,9 @@ public class NativeValueIndex implements ContentLoadingObserver {
     private final static Logger LOG = Logger.getLogger(NativeValueIndex.class);
     
 	public static int OFFSET_COLLECTION_ID = 0;	
-	public static int OFFSET_TYPE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //2
-	public static int LENGTH_TYPE = 1; //sizeof byte
-	public static int OFFSET_DATA = OFFSET_TYPE + NativeValueIndex.LENGTH_TYPE; //3
+	public static int OFFSET_VALUE_TYPE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //2
+	public static int LENGTH_VALUE_TYPE = 1; //sizeof byte
+	public static int OFFSET_DATA = OFFSET_VALUE_TYPE + NativeValueIndex.LENGTH_VALUE_TYPE; //3
     
 	/** The broker that is using this value index */
 	DBBroker broker;
@@ -504,7 +504,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 final Value searchKey = new Value(value.serialize(collectionId, caseSensitive));
                 final int idxOp =  checkRelationOp(relation);
                 final IndexQuery query = new IndexQuery(idxOp, searchKey);
-                final Value keyPrefix = computeKeyPrefix(value.getType(), collectionId);                
+                final Value keyPrefix = computeTypeCollectionKey(value.getType(), collectionId);                
 				dbValues.query(query, keyPrefix, callback);	
 			} catch (EXistException e) {
                 LOG.error(e.getMessage(), e);				
@@ -559,7 +559,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 if (startTerm != null) {                 
                     searchKey = new Value(startTerm.serialize(collectionId, caseSensitive));
                 } else {
-                    searchKey = computeKeyPrefix(Type.STRING, collectionId);                
+                    searchKey = computeTypeCollectionKey(Type.STRING, collectionId);                
                 }
                 final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, searchKey);                
 				dbValues.query(query, callback);
@@ -591,7 +591,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 if (stringType)
                     dbValues.query(query, cb);
                 else {
-                    Value keyPrefix = computeKeyPrefix(start.getType(), collectionId);
+                    Value keyPrefix = computeTypeCollectionKey(start.getType(), collectionId);
                     dbValues.query(query, keyPrefix, cb);
                 }
 			} catch (EXistException e) {
@@ -616,10 +616,10 @@ public class NativeValueIndex implements ContentLoadingObserver {
     /**
      * Returns a search key for a collectionId/type combination.
      */
-    private Value computeKeyPrefix(int type, short collectionId) {
-        byte[] data = new byte[Collection.LENGTH_COLLECTION_ID + NativeValueIndex.LENGTH_TYPE];
+    private Value computeTypeCollectionKey(int type, short collectionId) {
+        byte[] data = new byte[Collection.LENGTH_COLLECTION_ID + NativeValueIndex.LENGTH_VALUE_TYPE];
         ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
-        data[OFFSET_TYPE] = (byte) type;
+        data[OFFSET_VALUE_TYPE] = (byte) type;
         return new Value(data);
     }    
 
@@ -776,7 +776,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
 		public boolean indexInfo(Value value, long pointer) throws TerminatedException {
             key.reuse();
             UTF8.decode(value.data(), value.start() + OFFSET_DATA, 
-            		value.getLength() - (Collection.LENGTH_COLLECTION_ID + NativeValueIndex.LENGTH_TYPE), key);
+            		value.getLength() - (Collection.LENGTH_COLLECTION_ID + NativeValueIndex.LENGTH_VALUE_TYPE), key);
 			if(matcher.matches(key)) {
 				super.indexInfo(value, pointer);
 			}
