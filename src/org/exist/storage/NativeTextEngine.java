@@ -596,9 +596,12 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {            
             final short collectionId = ((Collection) i.next()).getId();          
             final IndexQuery query;
-            if (end == null) {
-                Value startRef = start == null ? new WordRef(collectionId) : new WordRef(collectionId, start.toLowerCase());
-                query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startRef);
+            if (start == null) {
+            	Value startRef = new WordRef(collectionId);            	
+            	query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startRef);
+            } else if (end == null) {
+            	Value startRef = new WordRef(collectionId, start.toLowerCase());
+            	query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startRef);
             } else {
                 Value startRef = new WordRef(collectionId,  start.toLowerCase());
                 Value endRef = new WordRef(collectionId, end.toLowerCase());
@@ -683,9 +686,9 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     broker.getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, data, 3);
                 int readOffset = Signatures.getLength(idSizeType) + nodeIdLen + 3;
                 if (hasNamespace) {
-					readOffset += 2; // skip namespace id
+					readOffset += SymbolTable.LENGTH_SYMBOL; // skip namespace id
 					final short prefixLen = ByteConversion.byteToShort(data, readOffset);
-					readOffset += prefixLen + 2; // skip prefix
+					readOffset += prefixLen + SymbolTable.LENGTH_NSSYMBOL; // skip prefix
 				}
                 String val;
                 try {
@@ -762,10 +765,12 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         // values.        
         //TODO : very tricky. Why not 2 inverted indexes ??? -pb
 		private Map words[] = new Map[3];
+		private int TEXT_NODES = 0;
+		private int ATTRIBUTE_NODES = 1;
 
 		public InvertedIndex() {
-			words[0] = new HashMap(512);
-			words[1] = new HashMap(256);
+			words[TEXT_NODES] = new HashMap(512);
+			words[ATTRIBUTE_NODES] = new HashMap(256);
             words[2] = new TreeMap();
         }
         
@@ -777,12 +782,12 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 
 		public void addText(TextToken token, NodeId nodeId) {
             //Is this token already pending ?
-            OccurrenceList list = (OccurrenceList) words[0].get(token);
+            OccurrenceList list = (OccurrenceList) words[TEXT_NODES].get(token);
             //Create a GIDs list
             if (list == null) {
                 list = new OccurrenceList();
                 list.add(nodeId, token.startOffset());
-                words[0].put(token.getText(), list);
+                words[TEXT_NODES].put(token.getText(), list);
             } else {
                 //Add node's GID to the list
                 list.add(nodeId, token.startOffset());
@@ -807,12 +812,12 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         //TODO : unify functionalities with addText -pb
 		public void addAttribute(TextToken token, NodeId nodeId) {
             //Is this token already pending ?
-            OccurrenceList list = (OccurrenceList) words[1].get(token);
+            OccurrenceList list = (OccurrenceList) words[ATTRIBUTE_NODES].get(token);
             //Create a GIDs list
             if (list == null) {
                 list = new OccurrenceList();
                 list.add(nodeId, token.startOffset());
-                words[1].put(token.getText(), list);
+                words[ATTRIBUTE_NODES].put(token.getText(), list);
             } else {
                 //Add node's GID to the list
                 list.add(nodeId, token.startOffset());
@@ -838,7 +843,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             //return early
             if (this.doc == null)
                 return;            
-            final int wordsCount = words[0].size() + words[1].size() + words[2].size();
+            final int wordsCount = words[TEXT_NODES].size() + words[ATTRIBUTE_NODES].size() + words[2].size();
             if (wordsCount == 0)
                 return;
             final ProgressIndicator progress = new ProgressIndicator(wordsCount, 100);
@@ -1704,22 +1709,22 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 
 	private final static class WordRef extends Value {
 		
-		public static int OFFSET_TYPE = 0;
-		public static int LENGTH_TYPE = 1; //sizeof byte
-		public static int OFFSET_COLLECTION_ID = OFFSET_TYPE + LENGTH_TYPE; //1
+		public static int OFFSET_IDX_TYPE = 0;
+		public static int LENGTH_IDX_TYPE = 1; //sizeof byte
+		public static int OFFSET_COLLECTION_ID = OFFSET_IDX_TYPE + WordRef.LENGTH_IDX_TYPE; //1
 		public static int OFFSET_VALUE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //3
 
 		public WordRef(short collectionId) {
-			data = new byte[Collection.LENGTH_COLLECTION_ID + LENGTH_TYPE];
-            data[OFFSET_TYPE] = IDX_GENERIC;
+			data = new byte[Collection.LENGTH_COLLECTION_ID + WordRef.LENGTH_IDX_TYPE];
+            data[OFFSET_IDX_TYPE] = IDX_GENERIC;
             ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
 			len = 3;
 		}
 
 		public WordRef(short collectionId, String word) {
-			len = UTF8.encoded(word) + Collection.LENGTH_COLLECTION_ID + WordRef.LENGTH_TYPE;
+			len = UTF8.encoded(word) + Collection.LENGTH_COLLECTION_ID + WordRef.LENGTH_IDX_TYPE;
 			data = new byte[len];
-            data[OFFSET_TYPE] = IDX_GENERIC;
+            data[OFFSET_IDX_TYPE] = IDX_GENERIC;
             ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
 			UTF8.encode(word, data, OFFSET_VALUE);
 		}
@@ -1729,28 +1734,27 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		}
 	}
 
-	//TODO : Add some static stuff here !
     private final static class QNameWordRef extends Value {
 
-    	public static int OFFSET_TYPE = 0;
-		public static int LENGTH_TYPE = 1; //sizeof byte
-		public static int OFFSET_COLLECTION_ID = OFFSET_TYPE + LENGTH_TYPE; //1
+    	public static int OFFSET_IDX_TYPE = 0;
+		public static int LENGTH_IDX_TYPE = 1; //sizeof byte
+		public static int OFFSET_COLLECTION_ID = OFFSET_IDX_TYPE + QNameWordRef.LENGTH_IDX_TYPE; //1
 		public static int OFFSET_VALUE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //3
 
 		public QNameWordRef(short collectionId) {
-			data = new byte[Collection.LENGTH_COLLECTION_ID + LENGTH_TYPE];
-            data[OFFSET_TYPE] = IDX_QNAME;
+			data = new byte[Collection.LENGTH_COLLECTION_ID + QNameWordRef.LENGTH_IDX_TYPE];
+            data[OFFSET_IDX_TYPE] = IDX_QNAME;
             ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
-			len = Collection.LENGTH_COLLECTION_ID + LENGTH_TYPE;
-            pos = OFFSET_TYPE;
+			len = Collection.LENGTH_COLLECTION_ID + QNameWordRef.LENGTH_IDX_TYPE;
+            pos = OFFSET_IDX_TYPE;
         }
 		
 		//TODO : find a smarter way to pass the broker
         public QNameWordRef(short collectionId, QName qname, DBBroker broker) {
         	//TODO : what does this 1 stand for ?
-            data = new byte[Collection.LENGTH_COLLECTION_ID + LENGTH_TYPE + 
+            data = new byte[Collection.LENGTH_COLLECTION_ID + QNameWordRef.LENGTH_IDX_TYPE + 
                             SymbolTable.LENGTH_NSSYMBOL + SymbolTable.LENGTH_SYMBOL + 1];
-            data[OFFSET_TYPE] = IDX_QNAME;
+            data[OFFSET_IDX_TYPE] = IDX_QNAME;
             ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
             serializeQName(qname, data, OFFSET_VALUE, broker);
         }
@@ -1758,18 +1762,18 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         //TODO : find a smarter way to pass the broker
         public QNameWordRef(short collectionId, QName qname, String word, DBBroker broker) {
         	//TODO : what does this 1 stand for ?
-			len = UTF8.encoded(word) + Collection.LENGTH_COLLECTION_ID + LENGTH_TYPE + 
+			len = UTF8.encoded(word) + Collection.LENGTH_COLLECTION_ID + QNameWordRef.LENGTH_IDX_TYPE + 
 			SymbolTable.LENGTH_NSSYMBOL + SymbolTable.LENGTH_SYMBOL + 1;
 			data = new byte[len];
-            data[OFFSET_TYPE] = IDX_QNAME;
+            data[OFFSET_IDX_TYPE] = IDX_QNAME;
             ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
             serializeQName(qname, data, OFFSET_VALUE, broker);
             //TODO : what does this 1 stand for ?
-            UTF8.encode(word, data, Collection.LENGTH_COLLECTION_ID + LENGTH_TYPE + 
+            UTF8.encode(word, data, Collection.LENGTH_COLLECTION_ID + QNameWordRef.LENGTH_IDX_TYPE + 
         			SymbolTable.LENGTH_NSSYMBOL + SymbolTable.LENGTH_SYMBOL + 1);
         }
 
-        /** serialize the QName field on the persistant storage */
+        /** serialize the QName field on the persistent storage */
 		private static void serializeQName(QName qname, byte[] data, int offset, DBBroker broker) {
 			SymbolTable symbols = broker.getSymbols();
 			short namespaceId = symbols.getNSSymbol(qname.getNamespaceURI());
@@ -1783,9 +1787,9 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 
         public String toString() {
         	//TODO : what does these 1 stand for ?
-			return new String(data, pos + (Collection.LENGTH_COLLECTION_ID + LENGTH_TYPE + 
+			return new String(data, pos + (Collection.LENGTH_COLLECTION_ID + QNameWordRef.LENGTH_IDX_TYPE + 
 					SymbolTable.LENGTH_NSSYMBOL + SymbolTable.LENGTH_SYMBOL + 1), 
-					len - (Collection.LENGTH_COLLECTION_ID + LENGTH_TYPE + 
+					len - (Collection.LENGTH_COLLECTION_ID + QNameWordRef.LENGTH_IDX_TYPE + 
 							SymbolTable.LENGTH_NSSYMBOL + SymbolTable.LENGTH_SYMBOL + 1));
 		}
 	}
