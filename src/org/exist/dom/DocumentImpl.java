@@ -75,6 +75,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
     public final static byte XML_FILE = 0;
 	public final static byte BINARY_FILE = 1;
 	
+	public static int LENGTH_DOCUMENT_ID = 4; //sizeof int 
+	
 	//public final static byte DOCUMENT_NODE_SIGNATURE = 0x0F;
 
 	private transient DBBroker broker = null;

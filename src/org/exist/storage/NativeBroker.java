@@ -167,7 +167,7 @@ public class NativeBroker extends DBBroker {
     public static final double DEFAULT_WORD_VALUE_THRESHOLD = 0.015;
     
 	public static int OFFSET_COLLECTION_ID = 0;
-	public static int OFFSET_VALUE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID;
+	public static int OFFSET_VALUE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //2
 
 	/** the database files */
 	protected CollectionStore collectionsDb;
@@ -1232,11 +1232,11 @@ public class NativeBroker extends DBBroker {
             Value value = collectionsDb.get(key);
             if (value != null) {
                 byte[] data = value.getData();
-                freeCollectionId = ByteConversion.byteToShort(data, data.length - 2);
+                freeCollectionId = ByteConversion.byteToShort(data, data.length - Collection.LENGTH_COLLECTION_ID);
 //              LOG.debug("reusing collection id: " + freeCollectionId);
-                if(data.length - 2 > 0) {
-                    byte[] ndata = new byte[data.length - 2];
-                    System.arraycopy(data, 0, ndata, 0, ndata.length);
+                if(data.length - Collection.LENGTH_COLLECTION_ID > 0) {
+                    byte[] ndata = new byte[data.length - Collection.LENGTH_COLLECTION_ID];
+                    System.arraycopy(data, 0, ndata, OFFSET_COLLECTION_ID, ndata.length);
                     collectionsDb.put(transaction, key, ndata, true);
                 } else
                     collectionsDb.remove(transaction, key);
@@ -1270,11 +1270,11 @@ public class NativeBroker extends DBBroker {
             Value key = new CollectionStore.CollectionKey(CollectionStore.NEXT_COLLECTION_ID_KEY);
             Value data = collectionsDb.get(key);
             if (data != null) {
-                nextCollectionId = ByteConversion.byteToShort(data.getData(), 0);
+                nextCollectionId = ByteConversion.byteToShort(data.getData(), OFFSET_COLLECTION_ID);
                 ++nextCollectionId;
             }
-            byte[] d = new byte[2];
-            ByteConversion.shortToByte(nextCollectionId, d, 0);
+            byte[] d = new byte[Collection.LENGTH_COLLECTION_ID];
+            ByteConversion.shortToByte(nextCollectionId, d, OFFSET_COLLECTION_ID);
             collectionsDb.put(transaction, key, d, true);
             return nextCollectionId;
         } catch (LockException e) {
@@ -3224,7 +3224,8 @@ public class NativeBroker extends DBBroker {
         
         public boolean indexInfo(Value key, long pointer) throws TerminatedException {
             try {
-                byte type = key.data()[key.start() + 3];
+            	//TODO : 1 stands for the type's length            	
+                byte type = key.data()[key.start() + Collection.LENGTH_COLLECTION_ID + 1]; 
                 VariableByteInput istream = collectionsDb.getAsStream(pointer);
                 DocumentImpl doc = null;
                 if (type == DocumentImpl.BINARY_FILE)
