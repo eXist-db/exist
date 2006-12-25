@@ -533,14 +533,14 @@ public class CollectionConfigurationTest extends TestCase {
            
            result = service.query("util:index-key-occurrences(/test//@c, xs:dateTime(\"2002-12-07T12:20:46.275+01:00\") )");
            assertEquals(1, result.getSize());
-           assertEquals("1", result.getResource(0).getContent());             
+           assertEquals("1", result.getResource(0).getContent());
 
            result = service.query("util:index-type(/test//@c)");
-           assertEquals("xs:dateTime", result.getResource(0).getContent());            
+           assertEquals("xs:dateTime", result.getResource(0).getContent());
 
            result = service.query("util:index-key-occurrences(/test/c/@c, xs:dateTime(\"2002-12-07T12:20:46.275+01:00\") )");
            assertEquals(1, result.getSize());
-           assertEquals("1", result.getResource(0).getContent());             
+           assertEquals("1", result.getResource(0).getContent());
 
            result = service.query("util:index-type(/test/c/@c)");
            assertEquals("xs:dateTime", result.getResource(0).getContent());  
