@@ -134,8 +134,10 @@ public class CollectionCache extends LRDCache {
             Object2LongHashMap newNames = new Object2LongHashMap(newSize);
             for (int i = 0; i < count; i++) {
                 newItems[i] = items[i];
-                newMap.put(items[i].getKey(), items[i]);
-                newNames.put(((Collection) items[i]).getURI().getRawCollectionPath(), items[i].getKey());
+                if (items[i] != null) {
+                    newMap.put(items[i].getKey(), items[i]);
+                    newNames.put(((Collection) items[i]).getURI().getRawCollectionPath(), items[i].getKey());
+                }
             }
             this.size = newSize;
             this.map = newMap;
