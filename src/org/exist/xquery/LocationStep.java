@@ -69,6 +69,8 @@ public class LocationStep extends Step {
 
     protected boolean inUpdate = false;
 
+    protected boolean useDirectAttrSelect = true;
+
     // Cache for the current NodeTest type
     private Integer nodeTestType = null;
 
@@ -157,6 +159,9 @@ public class LocationStep extends Step {
             inUpdate = true;
         if ((contextInfo.getFlags() & SINGLE_STEP_EXECUTION) > 0) {
             preload = true;
+        }
+        if ((contextInfo.getFlags() & NEED_INDEX_INFO) > 0) {
+            useDirectAttrSelect = false;
         }
         
         // Mark ".", which is expanded as self::node() by the parser
@@ -362,7 +367,8 @@ public class LocationStep extends Step {
             return result;
             // if there's just a single known node in the context, it is faster
             // do directly search for the attribute in the parent node.
-        } else if (!(contextSet instanceof VirtualNodeSet)
+        } else if (useDirectAttrSelect
+                && !(contextSet instanceof VirtualNodeSet)
                 && axis == Constants.ATTRIBUTE_AXIS
                 && contextSet.getLength() < ATTR_DIRECT_SELECT_THRESHOLD) {
             if (context.getProfiler().isEnabled())
@@ -370,11 +376,11 @@ public class LocationStep extends Step {
                         "OPTIMIZATION", "direct attribute selection");
             if (contextSet.isEmpty())
             	return NodeSet.EMPTY_SET;
-            //NodeProxy proxy = contextSet.get(0);
-            //if (proxy != null
-                    //&& proxy.getInternalAddress() != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
-                //return contextSet.directSelectAttribute(test.getName(),
-                //        contextId);
+            NodeProxy proxy = contextSet.get(0);
+            if (proxy != null
+                    && proxy.getInternalAddress() != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
+                return contextSet.directSelectAttribute(test.getName(),
+                        contextId);
         }
         if (preloadNodeSets()) {
             DocumentSet docs = getDocumentSet(contextSet);
@@ -796,6 +802,10 @@ public class LocationStep extends Step {
         if (ds == null)
             ds = contextSet.getDocumentSet();
         return ds;
+    }
+
+    public void setUseDirectAttrSelect(boolean useDirectAttrSelect) {
+        this.useDirectAttrSelect = useDirectAttrSelect;
     }
 
     protected void registerUpdateListener() {

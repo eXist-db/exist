@@ -30,6 +30,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
@@ -54,6 +55,12 @@ public class IndexType extends BasicFunction {
      */
     public IndexType(XQueryContext context) {
         super(context, signature);
+    }
+
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+        contextInfo.addFlag(NEED_INDEX_INFO);
+        super.analyze(contextInfo);
+        contextInfo.removeFlag(NEED_INDEX_INFO);
     }
 
     /*

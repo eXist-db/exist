@@ -63,6 +63,8 @@ public interface Expression {
      * should not cache any relevant data as it may be subject to change.
      */
     public final static int IN_UPDATE = 8;
+
+    public final static int NEED_INDEX_INFO = 16;
     
     public final static int DOT_TEST = 128;
     

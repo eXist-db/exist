@@ -138,7 +138,8 @@ public class GeneralComparison extends BinaryOp {
      * @see org.exist.xquery.BinaryOp#analyze(org.exist.xquery.AnalyzeContextInfo)
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-    	contextInfo.setParent(this);
+        contextInfo.addFlag(NEED_INDEX_INFO);
+        contextInfo.setParent(this);
         super.analyze(contextInfo);
         inWhereClause = (contextInfo.getFlags() & IN_WHERE_CLAUSE) != 0;
 
@@ -162,6 +163,10 @@ public class GeneralComparison extends BinaryOp {
         		rightOpDeps = expression.getInnerExpression().getDependencies();
         	}
         });
+        if (contextInfo.getContextStep() != null && contextInfo.getContextStep() instanceof LocationStep) {
+            ((LocationStep)contextInfo.getContextStep()).setUseDirectAttrSelect(false);
+        }
+        contextInfo.removeFlag(NEED_INDEX_INFO);
     }
     
 	/* (non-Javadoc)
