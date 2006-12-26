@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<antlib>
+  <typedef name="benchmark" classname="org.exist.performance.ant.AntTask"/>
+</antlib>
