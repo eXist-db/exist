@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test xmlns="http://exist.sourceforge.net/NS/exist">
+    <configuration>
+        <connection id="con" user="admin" password="" base="xmldb:exist://embedded-eXist-server"/>
+        <!--<connection id="con" user="admin" password="" base="xmldb:exist://localhost:8080/exist/xmlrpc/"/>-->
+        <action name="sequence" class="org.exist.performance.ActionSequence"/>
+        <action name="create-collection" class="org.exist.performance.actions.CreateCollection"/>
+        <action name="remove-collection" class="org.exist.performance.actions.RemoveCollection"/>
+        <action name="store-files" class="org.exist.performance.actions.StoreFromFile"/>
+        <action name="xquery" class="org.exist.performance.actions.XQuery"/>
+    </configuration>
+    <thread name="thread1" connection="con">
+        <sequence description="store shakespeare files">
+            <create-collection parent="/db" name="test1"/>
+            <store-files dir="samples/shakespeare" includes="**/*.xml" collection="/db/test1"/>
+        </sequence>
+        <sequence repeat="20" description="query resources">
+            <xquery collection="/db" query="//SPEECH[SPEAKER='HAMLET']"/>
+            <xquery collection="/db" query="//SPEECH[LINE &amp;= 'love']"/>
+        </sequence>
+        <remove-collection parent="/db" collection="test1" description="remove /db/test1"/>
+    </thread>
+</test>

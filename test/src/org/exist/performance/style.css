@@ -1,0 +1,58 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font: 100% Verdana, Arial, Helvetica, sans-serif;
+    margin: 20px;
+}
+
+table {
+    width: 100%;
+}
+
+h1 {
+    font-size: 100%;
+    margin-bottom: 10px;
+}
+
+tr {
+    background-color: white;
+}
+
+th, td {
+    padding: 8px 1.5em 0 0;
+    font-size: 80%;
+    border: 1px solid #AAA;
+}
+
+th {
+    background-color: #C3D9FF;
+    text-align: left;
+}
+
+.desc {
+    padding: 5px 0 0 0;
+}
+
+.sequence {
+
+}
+
+.nested {
+    padding: 5px 0 0 20px;
+    background-color: #EEE;
+}
+
+.nested th {
+    background-color: #B4EEBD;
+}
+
+.timing {
+    text-align:right;
+}
+
+.thread {
+    margin-bottom: 15px;
+}
