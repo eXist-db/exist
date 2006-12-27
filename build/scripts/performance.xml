@@ -4,36 +4,45 @@
 <!-- eXist build file : Run jUnit tests                                      -->
 <!-- ======================================================================= -->
 <project basedir="../.." default="benchmark" name="performance tests">
-
+    
     <description>Performance tests for eXist</description>
-
-    <typedef resource="org/exist/performance/ant/antlib.xml" uri="http://exist-db.org/test">
-		<classpath refid="classpath.junit"/>
-        <classpath refid="classpath.core"/>
-    </typedef>
-
-    <typedef resource="org/exist/ant/antlib.xml" uri="http://exist-db.org/ant">
-		<classpath refid="classpath.core"/>
-	</typedef>
-
+    
     <property name="benchmark.output" value="${junit.reports}/benchmark"/>
     <property name="benchmark.src" value="${junit.reports}/src"/>
-
-    <target name="benchmark" depends="run-benchmark, post-process-benchmark"/>
-
+    
+    <!-- Don't forget build clean all before calling this target -->
+    <target name="benchmark" depends="prepare-benchmark,run-benchmark, post-process-benchmark"/>
+    
+    <target name="prepare-benchmark" >
+        <copy todir="${junit.reports}/classes">
+            <fileset dir="${junit.reports}/src">
+                <include name="**/antlib.xml"/>
+            </fileset>
+        </copy>
+    </target>
+    
     <target name="run-benchmark" xmlns:test="http://exist-db.org/test">
+        <typedef resource="org/exist/performance/ant/antlib.xml" uri="http://exist-db.org/test">
+            <classpath refid="classpath.core"/>
+            <classpath refid="classpath.junit"/>
+        </typedef>
+        
         <mkdir dir="${benchmark.output}"/>
         <test:benchmark outputFile="${benchmark.output}/results.xml"
-            source="${benchmark.src}/org/exist/performance/test.xml"/>
+                        source="${benchmark.src}/org/exist/performance/test.xml"/>
     </target>
-
+    
     <target name="post-process-benchmark" xmlns:xdb="http://exist-db.org/ant">
+        <typedef resource="org/exist/ant/antlib.xml" uri="http://exist-db.org/ant">
+            <classpath refid="classpath.core"/>
+        </typedef>
+        
         <xdb:store uri="xmldb:exist:///db/bench" createcollection="true" initdb="true">
-			<fileset dir="${benchmark.output}" includes="results.xml"/>
-		</xdb:store>
+            <fileset dir="${benchmark.output}" includes="results.xml"/>
+        </xdb:store>
         <xdb:xquery uri="xmldb:exist:///db/bench"
-               queryFile="${benchmark.src}/org/exist/performance/log2html.xql"
-                outputProperty="benchmark.result"/>
+                    queryFile="${benchmark.src}/org/exist/performance/log2html.xql"
+                    outputProperty="benchmark.result"/>
         <echo file="${benchmark.output}/results.html" message="${benchmark.result}"/>
         <copy todir="${benchmark.output}" file="${benchmark.src}/org/exist/performance/style.css"/>
     </target>
