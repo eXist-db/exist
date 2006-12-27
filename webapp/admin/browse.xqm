@@ -152,7 +152,7 @@ declare function browse:remove-resource($resource as xs:string) as element()* {
             <li>Removing document: {$resource} ...</li>,
             xdb:remove(util:collection-name($doc), util:document-name($doc))
         ) else (
-            <li>Removing collection: {$resource} ...</li>,
+            <li>Removing collection: {xdb:decode-uri(xs:anyURI($resource))} ...</li>,
             xdb:remove($resource)
         )
 };
