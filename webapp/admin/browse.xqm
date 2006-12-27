@@ -149,7 +149,7 @@ declare function browse:remove-resource($resource as xs:string) as element()* {
     let $doc := if ($isBinary) then $resource else doc($resource)
     return
         if($doc) then (
-            <li>Removing document: {$resource} ...</li>,
+            <li>Removing document: {xdb:decode-uri(xs:anyURI($resource))} ...</li>,
             xdb:remove(util:collection-name($doc), util:document-name($doc))
         ) else (
             <li>Removing collection: {xdb:decode-uri(xs:anyURI($resource))} ...</li>,
