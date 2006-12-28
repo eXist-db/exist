@@ -168,9 +168,9 @@ declare function browse:create-collection($parent as object) as element() {
             <ul>
             {
                 if($newcol) then
-                    let $col := xdb:create-collection($parent, $newcol)
+                    let $col := xdb:create-collection($parent, xdb:encode-uri($newcol))
                     return
-                        <li>Created collection: {util:collection-name($col)}.</li>
+                        <li>Created collection: {xdb:decode-uri(xs:anyURI(util:collection-name($col)))}.</li>
                 else
                     <li>No name specified for new collection!</li>
             }
