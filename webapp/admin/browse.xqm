@@ -93,7 +93,7 @@ declare function browse:upload($collection as object) as element() {
             <ul>
                 <li>Storing uploaded content to: {$docName}</li>
                 {
-                    xdb:store($collection, $docName, $file)
+                    xdb:decode-uri(xs:anyURI(xdb:store($collection, xdb:encode-uri($docName), $file)))
                 }
             </ul>
         </div>
