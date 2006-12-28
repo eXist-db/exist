@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--
     This is the central configuration file for the database. If the database
     is running in a servlet-context, the configuration file will be read from
@@ -48,7 +47,7 @@
             events based on these collections, colon is the separator char when
             more than one collection is added.
         
-        - journalDir
+        - journalDir:
             specifies the folder where the eXist cluster node saves its journal
             file. Directory is automatically created if it doesn't exist. If no
             journaldir is specified, journal is disabled.
@@ -76,9 +75,9 @@
         
         - collectionCache:
             maximum amount of memory (in megabytes) to use for collection caches.
-			Memory calculation is just approximate. If your collections are very different
-			in size, it might be possible that the actual amount of memory used exceeds
-			the specified limit. You should thus be careful with this setting.
+            Memory calculation is just approximate. If your collections are very different
+            in size, it might be possible that the actual amount of memory used exceeds
+            the specified limit. You should thus be careful with this setting.
         
         - database:
             selects a database backend. Currently, "native" and "native_cluster"
@@ -108,17 +107,18 @@
     -->
     <db-connection cacheSize="48M" collectionCache="24M" database="@database@"
         files="webapp/WEB-INF/data" free_mem_min="5" pageSize="4096">
-        
+
         <!--
             Specifies the default permissions for all resources and collections
             in eXist (see  User Authentication and Access Control). When this is
             not configured, the default "mod" (similar to the Unix "chmod" 
             command) is set to 0775 in the resources and collections attributes.
+            
             A different default value may be set for a database instance, and 
             local overrides are also possible.
         -->
         <!--default-permissions collection="0775" resource="0775" /-->
-        
+
         <!-- 
             Settings for the database connection pool:
             
@@ -185,16 +185,16 @@
         -->
         <recovery enabled="yes" group-commit="no"
             journal-dir="webapp/WEB-INF/data" size="100M" sync-on-commit="no" />
-        
+
         <!-- 
             The <security> element in the <db-connection> node is used to select
             the security manager Class and control the database of users and
             groups.
             
             - class:
-		            this attribute is required, and specifies a Java class name used
-		            to implement the org.exist.security.SecurityManager interface, 
-		            as in the following example:
+                this attribute is required, and specifies a Java class name used
+                to implement the org.exist.security.SecurityManager interface, 
+                as in the following example:
             
             Example: <security> class Attribute (LDAP)
             <security class="org.exist.security.LDAPSecurityManager" />
@@ -202,13 +202,13 @@
             eXist is distributed with the following built-in security manager
             implementations:
             
-            - org.exist.security.XMLSecurityManager
+                - org.exist.security.XMLSecurityManager
             
                 stores the user information in the database. This is the 
                 default manager if the <security> element is not included 
                 in <db-connection>.
             
-            - org.exist.security.LDAPSecurityManager 
+                - org.exist.security.LDAPSecurityManager 
             
                 retrieves the user and groups from the LDAP database. This
                 requires addition configuration parameters which are 
@@ -231,7 +231,7 @@
                 challenges.
         -->
         <!-- security class="org.exist.security.LDAPSecurityManager" /-->
-        
+
         <!--
             Tasks used for system maintenance. System tasks require the database
             to be in a consistent state. All database operations will be stopped
@@ -245,26 +245,27 @@
         </system-task-->
         <!-- Automatically creates a backup of the database every 6 hours.
 
-			Parameters:
-				dir: The directory into which the backup will be written.
-				suffix:
-                     File suffix for the generated backup file or directory. Specify .zip to write the
-                     backup into a .zip. Otherwise, the backup will be written to a plain directory.
-                     The name of the final backup file or directory will be:
+            Parameters:
+                dir:
+                    The directory into which the backup will be written.
+                suffix:
+                    File suffix for the generated backup file or directory. Specify .zip to write the
+                    backup into a .zip. Otherwise, the backup will be written to a plain directory.
+                    The name of the final backup file or directory will be:
+                    prefix + current-date + suffix.
+                prefix:
+                    File prefix for the generated backup file or directory.
 
-                     prefix + current-date + suffix.
-                 prefix:File prefix for the generated backup file or directory.
+                -->
+        <!--system-task class="org.exist.storage.BackupSystemTask" cron-trigger="0 0 */6 * * ?">
 
-		-->
-		<!--system-task class="org.exist.storage.BackupSystemTask" cron-trigger="0 0 */6 * * ?">
-
-			<parameter name="dir" value="backup"/>
-			<parameter name="suffix" value=".zip"/>
-			<parameter name="prefix" value="backup-"/>
-			<parameter name="collection" value="/db"/>
-			<parameter name="user" value="admin"/>
+                        <parameter name="dir" value="backup"/>
+                        <parameter name="suffix" value=".zip"/>
+                        <parameter name="prefix" value="backup-"/>
+                        <parameter name="collection" value="/db"/>
+                        <parameter name="user" value="admin"/>
             <parameter name="password" value=""/>
-		</system-task-->
+                </system-task-->
 
         <!--
             This is the global configuration for the query watchdog. The 
@@ -287,35 +288,35 @@
             
         -->
         <watchdog output-size-limit="10000" query-timeout="-1" />
-        
+
     </db-connection>
-   
+
     <!-- 
         Settings for the indexer:
         
-        - caseSensitive
+        - caseSensitive:
             should equality comparisons between strings be case-sensitive or
             insensitive: "yes" or "no".
         
-        - index-depth
+        - index-depth:
             defines the maximum nesting depth of nodes which will be indexed
             in the DOM index. Nodes below the specified nesting depth will
             not be indexed in the DOM file. This has only an effect when 
             retrieving query results or for some types of XPath subexpressions, 
             like equality comparisons.
         
-        - stemming
+        - stemming:
             eXist includes a very simple english language stemmer, based on 
             Porter's algorithm. Set the "stemming"-option to "true" if you 
             would like to use stemming. This does only work for english.
         
-        - suppress-whitespace
+        - suppress-whitespace:
             should leading or trailing whitespace be removed from a text node?
             Set to "leading", "trailing", "both" or "none".
             Changing the parameter will only have an effect on newly loaded 
             files, not old ones.
         
-        - suppress-whitespace-mixed-content
+        - suppress-whitespace-mixed-content:
             preserve the white space inside a mixed content node
         
         - tokenizer:
@@ -339,13 +340,13 @@
         suppress-whitespace="both"
         tokenizer="org.exist.storage.analysis.SimpleTokenizer"
         track-term-freq="yes" validation="auto">
-        
+
         <!-- 
             The file for this element points to a file containing a list of 
             stopwords. Note that stopwords are NOT added to the fullext index.
         -->
         <stopwords file="stopword" />
-        
+
         <!--
             Default index settings. Default settings apply if there's no 
             collection-specific configuration for a collection.
@@ -355,7 +356,7 @@
                 <exclude path="/auth" />
             </fulltext>
         </index>
-        
+
         <!-- 
             Specify the location of one or more catalog files.
             Catalogs are used to resolve external entities in XML documents.
@@ -364,7 +365,7 @@
             <catalog file="webapp/WEB-INF/catalog.xml" />
         </entity-resolver>
     </indexer>
-       
+
     <!-- 
         Default settings for the serializer. Most of these can be changed
         by client code:
@@ -407,11 +408,11 @@
             Set the parameter to "yes" to disable this feature.
 
     -->
-    <serializer add-exist-id="none" compress-output="no" enable-xinclude="yes" 
-    		enable-xsl="no" indent="yes" match-tagging-attributes="no" 
-    		match-tagging-elements="yes" />
+    <serializer add-exist-id="none" compress-output="no" enable-xinclude="yes"
+        enable-xsl="no" indent="yes" match-tagging-attributes="no"
+        match-tagging-elements="yes" />
 
-	<!--
+    <!--
         Default settings for the XSLT Transformer. Allow's for a choice of 
         implementation:
         
@@ -419,9 +420,10 @@
             the name of the class that implements javax.xml.transform.TransformerFactory
             
             for Saxon (XSLT 2.0 support) - net.sf.saxon.TransformerFactoryImpl
-            	You will need to copy saxon8.jar saxon8-dom.jar and saxon8-xpath.jar
-            	into lib/endorsed.
-            	You can get these from http://sourceforge.net/projects/saxon
+            
+                You will need to copy saxon8.jar saxon8-dom.jar and saxon8-xpath.jar
+                into lib/endorsed. 
+                You can get these from http://sourceforge.net/projects/saxon
             
             for Xalan (XSLT 1.0 support) - org.apache.xalan.processor.TransformerFactoryImpl
             
@@ -430,8 +432,8 @@
         
     -->
     <transformer class="org.apache.xalan.processor.TransformerFactoryImpl" />
-    
-    
+
+
     <!-- 
         Define modules that contain xQuery functions.
         
@@ -457,16 +459,36 @@
                 uri="http://exist-db.org/xquery/text" />
             <module class="org.exist.xquery.modules.example.ExampleModule"
                 uri="http://exist-db.org/xquery/examples" />
-            <module class="org.exist.xquery.functions.validation.ValidationModule"
+            <module
+                class="org.exist.xquery.functions.validation.ValidationModule"
                 uri="http://exist-db.org/xquery/validation" />
             <module class="org.exist.xquery.functions.system.SystemModule"
                 uri="http://exist-db.org/xquery/system" />
+
+            <!-- Optional Modules -->
+            <!--module class="org.exist.xquery.modules.example.ExampleModule"
+                    uri="http://exist-db.org/xquery/examples" />
+            <module class="org.exist.xquery.modules.image.ImageModule"
+                    uri="http://exist-db.org/xquery/image" />
+            <module class="org.exist.xquery.modules.mail.MailModule"
+                    uri="http://exist-db.org/xquery/mail" />
+            <module class="org.exist.xquery.modules.simpleql.SimpleQLModule"
+                    uri="http://exist-db.org/xquery/simple-ql" />
+            <module class="org.exist.xquery.modules.sql.SQLModule"
+                    uri="http://exist-db.org/xquery/sql" />
+            <module class="org.exist.xquery.modules.xmldiff.XmlDiffModule"
+                    uri="http://exist-db.org/xquery/xmldiff" />
+            <module class="org.exist.xquery.modules.math.MathModule"
+                    uri="http://exist-db.org/xquery/math" />
+            <module class="org.exist.xquery.modules.scheduler.SchedulerModule"
+                    uri="http://exist-db.org/xquery/scheduler" /-->
+
         </builtin-modules>
     </xquery>
 
 
     <!-- 
-        During XUpdates, the database needs to do a partial reindex of the
+      During XUpdates, the database needs to do a partial reindex of the
       document whenever the internal node-id structure has changed. Reindex
       runs can occur quite frequently and slow down the XUpdate process.
     
@@ -478,7 +500,7 @@
             defines the maximum number of page splits allowed within a document
             before a defragmentation run will be triggered.
             
-      - enable-consistency-checks:
+        - enable-consistency-checks:
             for debugging only. If the parameter is set to "yes", a consistency
             check will be run on every modified document after every XUpdate 
             request. It checks if the persistent DOM is complete and all 
@@ -492,7 +514,7 @@
             to be aware that leaving spare ids also limits the maximum size of
             a document that can be indexed. 
         
-  	-->
+    -->
     <xupdate allowed-fragmentation="5" enable-consistency-checks="no"
         growth-factor="20" />
 
