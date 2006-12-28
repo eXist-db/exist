@@ -77,7 +77,7 @@ public class BinaryDoc extends BasicFunction {
             if (doc == null)
                 return defaultReturn;
             if (doc.getResourceType() != DocumentImpl.BINARY_FILE)
-                throw new XPathException(getASTNode(), path + " exists but is not a binary resource");
+                return defaultReturn;
             if (isCalledAs("binary-doc")) {
                 BinaryDocument bin = (BinaryDocument) doc;
                 byte[] data = context.getBroker().getBinaryResource(bin);
