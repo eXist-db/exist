@@ -120,6 +120,10 @@ public class AttributeImpl extends NodeImpl implements Attr, QNameable {
 	public String getNodeValue() throws DOMException {
 		return document.attrValue[nodeNumber];
 	}
+
+	public String getStringValue() throws DOMException {
+		return document.attrValue[nodeNumber];
+	}
 	
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.Attr#setValue(java.lang.String)
