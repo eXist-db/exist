@@ -108,7 +108,7 @@ public class DataGenerator extends AbstractAction {
     }
 
 
-    public void execute(Connection connection) throws XMLDBException, EXistException, FileNotFoundException {
+    public void execute(Connection connection) throws XMLDBException, EXistException {
         Collection collection = connection.getCollection("/db");
         XQueryService service = (XQueryService) collection.getService("XQueryService", "1.0");
         service.declareVariable("filename", "");

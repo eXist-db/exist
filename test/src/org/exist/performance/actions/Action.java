@@ -34,7 +34,7 @@ public interface Action {
 
     void configure(Runner runner, Action parent, Element config) throws EXistException;
     
-    void execute(Connection connection) throws XMLDBException, EXistException, FileNotFoundException;
+    void execute(Connection connection) throws XMLDBException, EXistException;
 
     String getDescription();
 
