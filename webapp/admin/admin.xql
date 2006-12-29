@@ -52,7 +52,7 @@ declare function admin:panel($user as xs:string, $pass as xs:string?) as element
     $credentials is either an empty sequence or a pair (user, password).
 :)
 declare function admin:main($credentials as xs:string*) as element()+ {
-    if(empty($credentials)) then
+    if( empty($credentials) or (count($credentials)!=2) ) then
         admin:display-login-form()
     else
         admin:panel($credentials[1], $credentials[2])
