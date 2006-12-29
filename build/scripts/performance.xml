@@ -4,46 +4,59 @@
 <!-- eXist build file : Run jUnit tests                                      -->
 <!-- ======================================================================= -->
 <project basedir="../.." default="benchmark" name="performance tests">
-    
+
     <description>Performance tests for eXist</description>
-    
+
     <property name="benchmark.output" value="${junit.reports}/benchmark"/>
     <property name="benchmark.src" value="${junit.reports}/src"/>
-    
-    <!-- Don't forget build clean all before calling this target -->
-    <target name="benchmark" depends="prepare-benchmark,run-benchmark, post-process-benchmark"/>
-    
-    <target name="prepare-benchmark" >
-        <copy todir="${junit.reports}/classes">
-            <fileset dir="${junit.reports}/src">
-                <include name="**/antlib.xml"/>
-            </fileset>
-        </copy>
-    </target>
-    
+    <property name="benchmark.data" value="${benchmark.output}/data"/>
+
+    <available property="benchmark.data.available"
+        file="jgoethe.xml" filepath="${benchmark.data}/jgoethe"/>
+
+    <target name="benchmark" depends="run-benchmark, post-process-benchmark"/>
+
     <target name="run-benchmark" xmlns:test="http://exist-db.org/test">
         <typedef resource="org/exist/performance/ant/antlib.xml" uri="http://exist-db.org/test">
-            <classpath refid="classpath.core"/>
-            <classpath refid="classpath.junit"/>
+            <classpath>
+                <path refid="classpath.core"/>
+                <path refid="classpath.junit"/>
+            </classpath>
         </typedef>
-        
+
+        <delete dir="${benchmark.output}/temp" failonerror="false"/>
         <mkdir dir="${benchmark.output}"/>
+        <mkdir dir="${benchmark.output}/temp"/>
         <test:benchmark outputFile="${benchmark.output}/results.xml"
                         source="${benchmark.src}/org/exist/performance/test.xml"/>
     </target>
-    
+
     <target name="post-process-benchmark" xmlns:xdb="http://exist-db.org/ant">
         <typedef resource="org/exist/ant/antlib.xml" uri="http://exist-db.org/ant">
             <classpath refid="classpath.core"/>
         </typedef>
-        
+
         <xdb:store uri="xmldb:exist:///db/bench" createcollection="true" initdb="true">
-            <fileset dir="${benchmark.output}" includes="results.xml"/>
-        </xdb:store>
+			<fileset dir="${benchmark.output}" includes="results.xml"/>
+		</xdb:store>
         <xdb:xquery uri="xmldb:exist:///db/bench"
-                    queryFile="${benchmark.src}/org/exist/performance/log2html.xql"
-                    outputProperty="benchmark.result"/>
+               queryFile="${benchmark.src}/org/exist/performance/log2html.xql"
+                outputProperty="benchmark.result"/>
         <echo file="${benchmark.output}/results.html" message="${benchmark.result}"/>
         <copy todir="${benchmark.output}" file="${benchmark.src}/org/exist/performance/style.css"/>
+    </target>
+
+    <target name="install-data-goethe" unless="benchmark.data.available">
+        <echo>Installing Test Data: "Der Junge Goethe in seiner Zeit"</echo>
+        <echo>-------------------------</echo>
+        <echo>Downloading XML data: this may take a few minutes ...</echo>
+        <mkdir dir="${benchmark.data}"/>
+        <mkdir dir="${benchmark.data}/jgoethe"/>
+        <get src="http://exist-db.org/jgoethe-tei.zip"
+            dest="${benchmark.data}/jgoethe-tei.zip" verbose="on"/>
+        <unzip src="${benchmark.data}/jgoethe-tei.zip"
+            dest="${benchmark.data}/jgoethe"/>
+        <available property="benchmark.data.available"
+            file="jgoethe.xml" filepath="${benchmark.data}/jgoethe"/>
     </target>
 </project>
