@@ -312,6 +312,10 @@ public class DecimalValue extends NumericValue {
 			case Type.INTEGER:
 				return div((ComputableValue) other.convertTo(getType()));
 			default: 
+				if (!(other instanceof DecimalValue)) {
+	            	final ComputableValue n = (ComputableValue)this.convertTo(other.getType());
+	            	return ((ComputableValue)n).div(other);
+				}				
 				//Copied from Saxon 8.6.1	
 		        int scale = Math.max(DIVIDE_PRECISION, Math.max(value.scale(), ((DecimalValue)other).value.scale()));
 				BigDecimal result = value.divide(((DecimalValue)other).value, scale, BigDecimal.ROUND_HALF_DOWN);
