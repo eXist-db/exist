@@ -23,6 +23,7 @@ package org.exist.performance;
 
 import org.exist.EXistException;
 import org.exist.Namespaces;
+import org.exist.performance.actions.Action;
 import org.exist.xmldb.CollectionImpl;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.w3c.dom.Document;
@@ -48,7 +49,7 @@ public class Runner {
 
     private Map classes = new HashMap();
 
-    private List threads = new ArrayList();
+    private List groups = new ArrayList();
 
     private TestResultWriter resultWriter;
 
@@ -83,30 +84,19 @@ public class Runner {
             connections.put(con.getId(), con);
         }
 
-        nl = root.getElementsByTagNameNS(Namespaces.EXIST_NS, "thread");
+        nl = root.getElementsByTagNameNS(Namespaces.EXIST_NS, "group");
+        System.out.println("Groups: " + nl.getLength());
         for (int i = 0; i < nl.getLength(); i++) {
             Element elem = (Element) nl.item(i);
-            ActionThread action = new ActionThread();
-            action.configure(this, null, elem);
-            threads.add(action);
+            Group group = new Group(this, elem);
+            groups.add(group);
         }
     }
 
     public void run() throws XMLDBException, EXistException {
-        Stack stack = new Stack();
-        for (Iterator i = threads.iterator(); i.hasNext(); ) {
-            ActionThread thread = (ActionThread) i.next();
-            Thread t = new Thread(thread, thread.getName());
-            t.start();
-            stack.push(t);
-        }
-
-        while (!stack.isEmpty()) {
-            Thread t = (Thread) stack.pop();
-            try {
-                t.join();
-            } catch (InterruptedException e) {
-            }
+        for (Iterator iterator = groups.iterator(); iterator.hasNext();) {
+            Group group = (Group) iterator.next();
+            group.run();
         }
     }
 

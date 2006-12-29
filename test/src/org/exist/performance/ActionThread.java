@@ -50,15 +50,19 @@ public class ActionThread extends ActionSequence implements Runnable {
         try {
             execute(this.connection);
         } catch (XMLDBException e) {
-
+            e.printStackTrace();
         } catch (EXistException e) {
-
+            e.printStackTrace();
         }
         long elapsed = System.currentTimeMillis() - start;
     }
 
     public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
 

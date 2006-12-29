@@ -7,17 +7,58 @@
         <action name="create-collection" class="org.exist.performance.actions.CreateCollection"/>
         <action name="remove-collection" class="org.exist.performance.actions.RemoveCollection"/>
         <action name="store-files" class="org.exist.performance.actions.StoreFromFile"/>
+        <action name="store" class="org.exist.performance.actions.StoreInline"/>
+        <action name="generate" class="org.exist.performance.actions.DataGenerator"/>
         <action name="xquery" class="org.exist.performance.actions.XQuery"/>
     </configuration>
-    <thread name="thread1" connection="con">
-        <sequence description="store shakespeare files">
-            <create-collection parent="/db" name="test1"/>
-            <store-files dir="samples/shakespeare" includes="**/*.xml" collection="/db/test1"/>
-        </sequence>
-        <sequence repeat="20" description="query resources">
-            <xquery collection="/db" query="//SPEECH[SPEAKER='HAMLET']"/>
-            <xquery collection="/db" query="//SPEECH[LINE &amp;= 'love']"/>
-        </sequence>
-        <remove-collection parent="/db" collection="test1" description="remove /db/test1"/>
-    </thread>
+    <group name="simple">
+        <setup connection="con">
+            <create-collection parent="/db" name="test"/>
+            <create-collection parent="/db/test" name="shakespeare"/>
+            <store-files dir="samples/shakespeare" includes="hamlet.xml" collection="/db/test/shakespeare"/>
+            <create-collection parent="/db/system/config" name="db"/>
+            <store collection="/db/system/config/db" name="collection.xconf">
+                <collection xmlns="http://exist-db.org/collection-config/1.0">
+                    <index>
+                        <fulltext default="all" attributes="false">
+                        </fulltext>
+                        
+                        <create path="//book/@id" type="xs:string"/>
+                        <create path="//book/@n" type="xs:integer"/>
+                        <create path="//section/@id" type="xs:string"/>
+                    </index>
+                </collection>
+            </store>
+            <generate count="10000" todir="test/benchmark/temp" prefix="book">
+                <book xmlns="" id="{$filename}" n="{$count}">
+                    <chapter>
+                        <title>{pt:random-text(7)}</title>
+                        
+                        {
+                        for $section in 1 to 8 return
+                        <section id="sect{$section}">
+                            <title>{pt:random-text(7)}</title>
+                            {
+                            for $para in 1 to 20 return
+                            <para>{pt:random-text(40)}</para>
+                            }
+                        </section>
+                        }
+                    </chapter>
+                </book>
+            </generate>
+        </setup>
+        <thread name="thread1" connection="con">
+            <store-files dir="test/benchmark/temp" includes="**/*.xml" collection="/db/test"/>
+            <sequence repeat="20" description="query resources">
+                <xquery collection="/db" query="//book[@id = 'book100.xml']"/>
+                <xquery collection="/db" query="//book[@n = 100]"/>
+                <xquery collection="/db" query="//chapter[title &amp;= 'k*']"/>
+                <xquery collection="/db" query="//chapter[para &amp;= 'is']"/>
+            </sequence>
+        </thread>
+        <tear-down connection="con">
+            <remove-collection parent="/db" collection="test" description="remove /db/test"/>
+        </tear-down>
+    </group>
 </test>
