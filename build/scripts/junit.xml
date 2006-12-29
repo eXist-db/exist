@@ -38,8 +38,6 @@
               file="${junit.reports}/src/org/exist/performance/ant/antlib.xml"/>
         <copy todir="${junit.reports}/classes/org/exist/performance"
             file="${junit.reports}/src/org/exist/performance/log2html.xql"/>
-        <copy todir="${junit.reports}/classes/org/exist/performance"
-            file="${junit.reports}/src/org/exist/performance/wordlist.xq"/>
     </target>
 
     <!-- Seperate target for creating folders -->
