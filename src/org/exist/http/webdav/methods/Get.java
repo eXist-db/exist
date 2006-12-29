@@ -148,7 +148,8 @@ public class Get extends AbstractWebDAVMethod {
             
         } catch (PermissionDeniedException e) {
             LOG.error(e);
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, READ_PERMISSION_DENIED);
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, READ_PERMISSION_DENIED,
+                    e.getMessage());
             return;
             
         } finally {

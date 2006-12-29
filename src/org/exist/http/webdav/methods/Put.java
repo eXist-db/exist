@@ -171,25 +171,25 @@ public class Put extends AbstractWebDAVMethod {
         } catch (PermissionDeniedException e) {
             transact.abort(txn);
             LOG.debug(e);
-            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
             return;
             
         } catch (TriggerException e) {
             transact.abort(txn);
             LOG.debug(e);
-            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
             return;
             
         } catch (SAXException e) {
             transact.abort(txn);
             LOG.debug(e);
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
             return;
             
         } catch (LockException e) {
             transact.abort(txn);
             LOG.debug(e);
-            response.sendError(HttpServletResponse.SC_CONFLICT);
+            response.sendError(HttpServletResponse.SC_CONFLICT, e.getMessage());
             return;
             
         } finally {

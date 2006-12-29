@@ -191,7 +191,7 @@ public class Lock extends AbstractWebDAVMethod {
                 resource = broker.getXMLResource(path,  org.exist.storage.lock.Lock.READ_LOCK);
             } catch (PermissionDeniedException ex) {
                 LOG.error(ex);
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ex.getMessage());
                 return;
             }
             
