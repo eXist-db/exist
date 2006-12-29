@@ -2,7 +2,7 @@ xquery version "1.0";
 
 declare namespace t="http://exist.sourceforge.net/NS/exist";
 
-declare function t:process-action($action as element(t:action)+) {
+declare function t:process-action($group as element(t:group), $action as element(t:action)+) {
     let $isSeq := ($action/@name = "org.exist.performance.ActionSequence")
     return (
         <tr>
@@ -14,14 +14,14 @@ declare function t:process-action($action as element(t:action)+) {
         if ($isSeq) then
             <tr>
                 <td colspan="4" class="nested">
-                    {t:process-sequence($action[1])}
+                    {t:process-sequence($group, $action[1])}
                 </td>
             </tr>
         else ()
     )
 };
 
-declare function t:process-sequence($group as element(t:action)) {
+declare function t:process-sequence($group as element(t:group), $sequence as element(t:action)) {
     <table>
         <tr>
             <th>Action</th>
@@ -30,18 +30,18 @@ declare function t:process-sequence($group as element(t:action)) {
             <th class="desc">Description</th>
         </tr>
         {
-            if ($group/@name = "org.exist.performance.ActionSequence") then
-                let $actions := distinct-values(//t:action[@parent = $group/@id]/@id)
+            if ($sequence/@name = "org.exist.performance.ActionSequence") then
+                let $actions := distinct-values($group//t:action[@parent = $sequence/@id]/@id)
                 for $action in $actions
                 return
-                    t:process-action(//t:action[@id = $action])
+                    t:process-action($group, $group//t:action[@id = $action])
             else
-                t:process-action($group)
+                t:process-action($group, $sequence)
         }
     </table>
 };
 
-declare function t:process-thread($thread as xs:string) {
+declare function t:process-thread($group as element(t:group), $thread as xs:string) {
     <div class="thread">
         <h1>Thread: {$thread}</h1>
         
@@ -53,9 +53,9 @@ declare function t:process-thread($thread as xs:string) {
             <th class="desc">Description</th>
         </tr>
         {
-            for $action in //t:action[@thread = $thread][not(@parent)]
+            for $action in $group//t:action[@thread = $thread][not(@parent)]
             return
-                t:process-action($action)
+                t:process-action($group, $action)
         }
         </table>
     </div>
@@ -69,9 +69,16 @@ declare function t:process-thread($thread as xs:string) {
     </head>
     <body>
     {
-        for $thread in distinct-values(//t:action/@thread)
+        for $group in //t:group
         return
-            t:process-thread($thread)
+            <div class="group">
+                <h1>Group {string($group/@name)}</h1>
+                {
+                    for $thread in distinct-values($group//t:action/@thread)
+                    return
+                        t:process-thread($group, $thread)
+                }
+            </div>
     }
     </body>
 </html>

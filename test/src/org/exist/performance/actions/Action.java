@@ -6,6 +6,8 @@ import org.exist.EXistException;
 import org.w3c.dom.Element;
 import org.xmldb.api.base.XMLDBException;
 
+import java.io.FileNotFoundException;
+
 /*
 *  eXist Open Source Native XML Database
 *  Copyright (C) 2001-06 The eXist Project
@@ -32,7 +34,7 @@ public interface Action {
 
     void configure(Runner runner, Action parent, Element config) throws EXistException;
     
-    void execute(Connection connection) throws XMLDBException, EXistException;
+    void execute(Connection connection) throws XMLDBException, EXistException, FileNotFoundException;
 
     String getDescription();
 

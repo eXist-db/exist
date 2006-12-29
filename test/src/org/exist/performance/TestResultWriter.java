@@ -51,6 +51,7 @@ public class TestResultWriter {
     private static final QName DESCRIPTION_ATTRIB = new QName("description", "", "");
     private static final QName ID_ATTRIB = new QName("id", "", "");
     private static final QName PARENT_ATTRIB = new QName("parent", "", "");
+    private static final QName GROUP_ELEMENT = new QName("group", Namespaces.EXIST_NS, "");
 
     private final static Properties defaultProperties = new Properties();
 
@@ -101,6 +102,24 @@ public class TestResultWriter {
         try {
             serializer.startElement(THREAD_ELEMENT, attribs);
             serializer.endElement(ACTION_ELEMENT);
+        } catch (SAXException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public synchronized void groupStart(Group group) {
+        AttrList attribs = new AttrList();
+        attribs.addAttribute(NAME_ATTRIB, group.getName());
+        try {
+            serializer.startElement(GROUP_ELEMENT, attribs);
+        } catch (SAXException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public synchronized void groupEnd(Group group) {
+        try {
+            serializer.endElement(GROUP_ELEMENT);
         } catch (SAXException e) {
             e.printStackTrace();
         }
