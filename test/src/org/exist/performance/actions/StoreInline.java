@@ -76,7 +76,7 @@ public class StoreInline extends AbstractAction {
         content = writer.toString();
     }
 
-    public void execute(Connection connection) throws XMLDBException, EXistException, FileNotFoundException {
+    public void execute(Connection connection) throws XMLDBException, EXistException {
         Collection collection = connection.getCollection(collectionPath);
         if (collection == null)
             throw new EXistException("Collection not found: " + collectionPath);
