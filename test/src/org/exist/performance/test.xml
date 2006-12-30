@@ -29,7 +29,7 @@
                     </index>
                 </collection>
             </store>
-            <generate count="10000" todir="test/benchmark/temp" prefix="book">
+            <generate count="1000" todir="test/benchmark/temp" prefix="book">
                 <book xmlns="" id="{$filename}" n="{$count}">
                     <chapter>
                         <title>{pt:random-text(7)}</title>
@@ -39,7 +39,7 @@
                         <section id="sect{$section}">
                             <title>{pt:random-text(7)}</title>
                             {
-                            for $para in 1 to 20 return
+                            for $para in 1 to 10 return
                             <para>{pt:random-text(40)}</para>
                             }
                         </section>
@@ -59,6 +59,51 @@
         </thread>
         <tear-down connection="con">
             <remove-collection parent="/db" collection="test" description="remove /db/test"/>
+        </tear-down>
+    </group>
+    <group name="ft-tests">
+        <setup connection="con">
+            <create-collection parent="/db/system/config" name="db"/>
+            <store collection="/db/system/config/db" name="collection.xconf">
+                <collection xmlns="http://exist-db.org/collection-config/1.0">
+                    <index>
+                        <fulltext default="all" attributes="false">
+                            <create qname="p"/>
+                            <create qname="head"/>
+                        </fulltext>
+                    </index>
+                </collection>
+            </store>
+        </setup>
+        <thread name="thread2" connection="con">
+            <create-collection parent="/db" name="jgoethe"/>
+            <store-files dir="test/benchmark/data/jgoethe" includes="*.xml" collection="/db/jgoethe"
+            description="storing Goethe data"/>
+            <sequence repeat="10">
+                <xquery collection="/db/jgoethe" query="//(p|l|head|cell)[. &amp;= 'liebe']"/>
+                <xquery collection="/db/jgoethe" query="//(p|l|head|cell)[. &amp;= 'liebe sinnlichkeit']"/>
+                <xquery collection="/db/jgoethe" query="//(p|l|head|cell)[. &amp;= 'sinnlich*']"/>
+                <xquery collection="/db/jgoethe" query="//(p|l|head|cell)[. &amp;= 'liebe sinnlich*']"/>
+                <xquery collection="/db/jgoethe" query="//(p|l|head|cell)[. &amp;= 'schmerz* herz']"/>
+                <xquery collection="/db/jgoethe" query="//(p|l|head|cell)[. &amp;= 'himmel hölle']"/>
+                <xquery collection="/db/jgoethe" query="//(p|l|head|cell)[. |= 'liebe sinnlich*']"/>
+                <xquery collection="/db/jgoethe" query="//(p|l|head|cell)[. |= 'himmel hölle']"/>
+                <xquery collection="/db/jgoethe" query="//(p|l|head|cell)[match-all(., 'himme?l.*')]"/>
+                
+                <xquery collection="/db/jgoethe" query="//div3[head &amp;= 'götz von berlichingen']"/>
+                <xquery collection="/db/jgoethe" query="//*[head &amp;= 'götz von berlichingen']"/>
+                <xquery collection="/db/jgoethe" query="/TEI.2//div3[head &amp;= 'götz von berlichingen']"/>
+                <xquery collection="/db/jgoethe" query="/TEI.2//*[head &amp;= 'götz von berlichingen']"/>
+                <xquery collection="/db/jgoethe" query="//div3[head &amp;= 'götz von berlichingen']//p[. &amp;= 'arsch']"/>
+                <xquery collection="/db/jgoethe" query="//*[head &amp;= 'götz von berlichingen']//p[. &amp;= 'arsch']"/>
+                <xquery collection="/db/jgoethe" query="//div3[head &amp;= 'götz von berlichingen']//p[. &amp;= 'arsch']"/>
+                <xquery collection="/db/jgoethe" query="/TEI.2//div3[head &amp;= 'götz von berlichingen']//p[. &amp;= 'arsch']"/>
+                <xquery collection="/db/jgoethe" query="/TEI.2//*[head &amp;= 'götz von berlichingen']//p[. &amp;= 'arsch']"/>
+                <xquery collection="/db/jgoethe" query="//(div1|div2|div3|div4|div5)[head &amp;= 'berlichingen eisernen hand']//p[. &amp;= 'arsch']"/>
+            </sequence>
+        </thread>
+        <tear-down connection="con">
+            <!--remove-collection parent="/db" collection="jgoethe" description="remove /db/jgoethe"/-->
         </tear-down>
     </group>
 </test>
