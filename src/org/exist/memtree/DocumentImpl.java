@@ -1119,8 +1119,17 @@ public class DocumentImpl extends NodeImpl implements Document {
     	StringBuffer result = new StringBuffer();
     	result.append("in-memory#");
     	result.append("document {");
-    	result.append(getDocumentElement().toString());       
-    	result.append("} ");    	
+        if (size != 1) {
+        	int nodeNr = 1;
+        	while (true) {
+	        	result.append(getNode(nodeNr).toString());
+	            if (next[nodeNr] < nodeNr) {
+	                break;
+	            } else
+	                nodeNr = next[nodeNr];
+        	}
+        }       
+        result.append("} ");    	
     	return result.toString();
     }    	
 }
