@@ -235,7 +235,8 @@
             </classpath>
         </antlr>
         <antlr target="${src}/org/exist/xquery/parser/XQueryTree.g"
-            outputdirectory="${src}/org/exist/xquery/parser">
+            outputdirectory="${src}/org/exist/xquery/parser"
+            tracetreewalker="no">
             <classpath>
                 <path refid="classpath.core"/>
             </classpath>
