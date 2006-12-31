@@ -688,18 +688,18 @@ public class DocumentImpl extends NodeImpl implements Document {
         while (node != null) {
             copyStartNode(node, receiver, expandRefs);
             NodeImpl nextNode;
-        	if (node instanceof ReferenceNode)
-        		//Nothing more to stream ?
-        		nextNode = null;
-        	else
-        		nextNode = (NodeImpl) node.getFirstChild();
+            if (node instanceof ReferenceNode)
+                //Nothing more to stream ?
+                nextNode = null;
+            else
+                nextNode = (NodeImpl) node.getFirstChild();
             while (nextNode == null) {
                 copyEndNode(node, receiver);
-                if (top != null && top.nodeNumber == node.nodeNumber) 
+                if (top != null && top.nodeNumber == node.nodeNumber)
                     break;
                 //No nextNode if the top node is a Document node
-                if (top != null && top.nodeNumber == 0) 
-                    break;
+//                if (top != null && top.nodeNumber == 0)
+//                    break;
                 nextNode = (NodeImpl) node.getNextSibling();
                 if (nextNode == null) {
                     node = (NodeImpl) node.getParentNode();
