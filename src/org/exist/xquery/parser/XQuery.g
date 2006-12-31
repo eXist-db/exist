@@ -710,19 +710,9 @@ multiplicativeExpr throws XPathException
 
 unaryExpr throws XPathException
 :
-	// TODO: XPath 2.0 allows an arbitrary number of +/-, 
-	// we restrict it to one
-	m:MINUS expr:valueExpr
-	{ 
-        #unaryExpr= #(#[UNARY_MINUS, "-"], #expr);
-        #unaryExpr.copyLexInfo(#m);
-    }
+	MINUS! ( unaryExpr ) { #unaryExpr = #(#[UNARY_MINUS, "-"], #unaryExpr); }
 	|
-	p:PLUS expr2:valueExpr
-	{ 
-        #unaryExpr= #(#[UNARY_PLUS, "+"], #expr2);
-        #unaryExpr.copyLexInfo(#p);
-    }
+	PLUS! ( unaryExpr ) { #unaryExpr = #(#[UNARY_PLUS, "+"], #unaryExpr); }
 	|
 	valueExpr
 	;
