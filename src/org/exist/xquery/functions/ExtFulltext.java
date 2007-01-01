@@ -243,7 +243,7 @@ public class ExtFulltext extends Function implements Optimizable {
 	}
 
     private boolean checkForQNameIndex(Sequence contextSequence) {
-        if (contextQName == null)
+        if (contextSequence == null || contextQName == null)
             return false;
         boolean hasQNameIndex = true;
         for (Iterator i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
