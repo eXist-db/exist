@@ -26,10 +26,7 @@ import java.util.List;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.NodeSet;
-import org.exist.dom.QName;
+import org.exist.dom.*;
 import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
 import org.exist.storage.FulltextIndexSpec;
@@ -243,7 +240,7 @@ public class ExtFulltext extends Function implements Optimizable {
 	}
 
     private boolean checkForQNameIndex(Sequence contextSequence) {
-        if (contextSequence == null || contextQName == null)
+        if (contextSequence == null || contextQName == null || contextSequence instanceof VirtualNodeSet)
             return false;
         boolean hasQNameIndex = true;
         for (Iterator i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
