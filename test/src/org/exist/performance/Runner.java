@@ -49,7 +49,7 @@ public class Runner {
 
     private Map classes = new HashMap();
 
-    private List groups = new ArrayList();
+    private Map groups = new HashMap();
 
     private TestResultWriter resultWriter;
 
@@ -85,17 +85,23 @@ public class Runner {
         }
 
         nl = root.getElementsByTagNameNS(Namespaces.EXIST_NS, "group");
-        System.out.println("Groups: " + nl.getLength());
         for (int i = 0; i < nl.getLength(); i++) {
             Element elem = (Element) nl.item(i);
             Group group = new Group(this, elem);
-            groups.add(group);
+            groups.put(group.getName(), group);
         }
     }
 
-    public void run() throws XMLDBException, EXistException {
-        for (Iterator iterator = groups.iterator(); iterator.hasNext();) {
-            Group group = (Group) iterator.next();
+    public void run(String groupToRun) throws XMLDBException, EXistException {
+        if (groupToRun == null) {
+            for (Iterator iterator = groups.values().iterator(); iterator.hasNext();) {
+                Group group = (Group) iterator.next();
+                group.run();
+            }
+        } else {
+            Group group = (Group) groups.get(groupToRun);
+            if (group == null)
+                throw new EXistException("Test group not found: " + groupToRun);
             group.run();
         }
     }
@@ -160,7 +166,7 @@ public class Runner {
 
             TestResultWriter writer = new TestResultWriter("out.xml");
             runner = new Runner(doc.getDocumentElement(), writer);
-            runner.run();
+            runner.run(null);
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("ERROR: " + e.getMessage());

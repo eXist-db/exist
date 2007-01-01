@@ -36,6 +36,8 @@ public class AntTask extends Task {
     private String source;
     private String outputFile;
 
+    private String group = null;
+
     public void execute() throws BuildException {
         File src = new File(source);
         if (!(src.canRead() && src.isFile()))
@@ -53,7 +55,7 @@ public class AntTask extends Task {
 
             TestResultWriter writer = new TestResultWriter(outFile.getAbsolutePath());
             runner = new Runner(doc.getDocumentElement(), writer);
-            runner.run();
+            runner.run(group);
         } catch (Exception e) {
             throw new BuildException("ERROR: " + e.getMessage(), e);
         } finally {
@@ -68,6 +70,14 @@ public class AntTask extends Task {
 
     public void setOutputFile(String outputFile) {
         this.outputFile = outputFile;
+    }
+
+    public String getGroup() {
+        return group;
+    }
+
+    public void setGroup(String group) {
+        this.group = group;
     }
 
     public String getSource() {
