@@ -513,7 +513,7 @@ public class BrokerPool {
 		LOG.info("database instance '" + instanceName + "' will be synchronized every " + /*this.*/majorSyncPeriod + " ms");
 
 		//TODO : move this to initialize ?
-		scheduler = new Scheduler(this);
+		scheduler = new Scheduler(this, conf);
 
 		aLong = (Long) conf.getProperty("db-connection.pool.shutdown-wait");		
 		if (aLong != null) {
@@ -568,6 +568,9 @@ public class BrokerPool {
 		
 		//TODO : in the future, we should implement an Initializable interface
 		initialize();
+		
+		//setup any configured jobs for the scheduler
+		scheduler.setupConfiguredJobs(conf);
 		
 		//TODO : move this to initialize ?
         if (majorSyncPeriod > 0) {

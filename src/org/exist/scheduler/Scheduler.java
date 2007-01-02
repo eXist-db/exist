@@ -31,7 +31,10 @@ import java.io.InputStream;
 import java.io.IOException;
 
 import org.exist.EXistException;
+import org.exist.security.SecurityManager;
+import org.exist.security.User;
 import org.exist.storage.BrokerPool;
+import org.exist.util.Configuration;
 import org.quartz.CronTrigger;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
@@ -48,6 +51,8 @@ import org.quartz.impl.StdSchedulerFactory;
  */
 public class Scheduler
 {
+	public static final String PROPERTY_SCHEDULER_JOBS = "scheduler.jobs";
+	
 	//the scheduler
 	private org.quartz.Scheduler scheduler = null;
 	
@@ -59,12 +64,13 @@ public class Scheduler
 	 * 
 	 * @param brokerpool	The brokerpool for which this scheduler is intended
 	 */
-	public Scheduler(BrokerPool brokerpool) throws EXistException
+	public Scheduler(BrokerPool brokerpool, Configuration config) throws EXistException
 	{
 		this.brokerpool = brokerpool;
 		
 		try
 		{
+			//load the properties for quartz
             InputStream is = Scheduler.class.getResourceAsStream("quartz.properties");
             Properties properties = new Properties();
             try {
@@ -75,7 +81,8 @@ public class Scheduler
 
             SchedulerFactory schedulerFactory = new StdSchedulerFactory(properties);
 			scheduler = schedulerFactory.getScheduler();
-		
+
+			//start quartz
 			scheduler.start();
 		}
 		catch(SchedulerException se)
@@ -342,6 +349,76 @@ public class Scheduler
 		System.arraycopy(oJobsArray, 0, jobsArray, 0, oJobsArray.length);
 		
 		return jobsArray;
+	}
+	
+	/**
+	 * Set's up all the job's that are listed in conf.xml and loaded
+	 * through org.exist.util.Configuration
+	 */
+	public void setupConfiguredJobs(Configuration config)
+	{
+		String jobList[][] = (String[][])config.getProperty(Scheduler.PROPERTY_SCHEDULER_JOBS);
+		
+		if(jobList == null)
+			return;
+		
+		for(int i = 0; i < jobList.length; i ++)
+		{
+			String jobResource = jobList[i][0];
+			String jobSchedule = jobList[i][1];
+			
+			//must be a resource and a schedule
+			if(jobResource == null || jobSchedule == null)
+				return;
+			
+			JobDescription job = null;
+			
+			if(jobResource.startsWith("/db/"))
+			{
+				//create an xquery job
+				User guestUser = brokerpool.getSecurityManager().getUser(SecurityManager.GUEST_USER);
+				job = new UserXQueryJob(jobResource, guestUser);
+			}
+			else
+			{
+				//create a java job
+				try
+				{
+					//Check if the Class is a UserJob
+					Class jobClass = Class.forName(jobResource);
+					job = (JobDescription)jobClass.newInstance();
+					if(!(job instanceof UserJavaJob))
+					{
+						return;
+					}
+				}
+				catch(ClassNotFoundException cnfe)
+				{
+					return;
+				}
+				catch(IllegalAccessException iae)
+				{
+					return;
+				}
+				catch(InstantiationException ie)
+				{
+					return;
+				}
+			}
+			
+			//trigger is cron or period?
+			if(jobSchedule.indexOf(' ') > -1)
+			{
+				//schedule job with cron trigger
+				createCronJob(jobSchedule, job);
+			}
+			else
+			{
+				//schedule job with periodic trigger
+				long period = Long.parseLong(jobSchedule);
+				createPeriodicJob(period, job, true);
+			}
+		}
 	}
 	
 	/**
