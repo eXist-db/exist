@@ -85,10 +85,13 @@ public class MatchCount extends BasicFunction {
 			        if(nv.getImplementationType() != NodeValue.PERSISTENT_NODE)
 			        	throw new XPathException(getASTNode(), getName() + " cannot be applied to in-memory nodes.");
 			        NodeProxy np = (NodeProxy)nv;
-			        for(Match nextMatch = np.getMatches(); nextMatch != null; ) {
-			        	count += nextMatch.getFrequency();
-			            nextMatch = nextMatch.getNextMatch();
-			        }
+			        Match match = np.getMatches();
+			        while (match != null) {
+				        if (match.getNodeId().isDescendantOrSelfOf(np.getNodeId())) {
+				        	count += match.getFrequency();
+				        }
+				        match = match.getNextMatch();
+				   }
 			    }
 			}
 			result = new IntegerValue(count);
