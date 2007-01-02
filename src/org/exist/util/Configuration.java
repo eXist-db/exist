@@ -38,6 +38,7 @@ import javax.xml.parsers.SAXParserFactory;
 import org.apache.log4j.Logger;
 import org.exist.Indexer;
 import org.exist.memtree.SAXAdapter;
+import org.exist.scheduler.Scheduler;
 import org.exist.security.User;
 import org.exist.security.xacml.XACMLConstants;
 import org.exist.storage.BrokerPool;
@@ -193,6 +194,12 @@ public class Configuration implements ErrorHandler
             NodeList indexer = doc.getElementsByTagName("indexer");
             if (indexer.getLength() > 0) {
                 configureIndexer(existHomeDirname, doc, indexer);
+            }
+            
+            //scheduler settings
+            NodeList schedulers = doc.getElementsByTagName("scheduler");
+            if(schedulers.getLength() > 0) {
+            	configureScheduler(schedulers);
             }
             
             //db connection settings
@@ -465,6 +472,48 @@ public class Configuration implements ErrorHandler
             config.put("serialization.match-tagging-attributes", tagAttributeMatches);
             LOG.debug("serialization.match-tagging-attributes: " + config.get("serialization.match-tagging-attributes"));
         }
+    }
+    
+    /**
+     * Reads the scheduler configuration
+     * 
+     * @param transformers A Node List of all the transformers nodes
+     */
+    private void configureScheduler(NodeList Schedulers)
+    {
+        Element scheduler = (Element)Schedulers.item(0);
+        NodeList nlJobs = scheduler.getElementsByTagName("job");
+        
+        if(nlJobs == null)
+        	return;
+        
+        String jobList[][] = new String[nlJobs.getLength()][2];
+        String jobResource = null;
+        String jobSchedule = null;
+        
+        for(int i = 0; i < nlJobs.getLength(); i++)
+        {
+        	Element job = (Element)nlJobs.item(i);
+        	
+        	//get the job resource
+        	jobResource = job.getAttribute("class");
+        	if(jobResource == null)
+        		jobResource = job.getAttribute("xquery");
+        	
+        	//get the job schedule
+        	jobSchedule = job.getAttribute("cron-trigger");
+        	if(jobSchedule == null)
+        		jobSchedule = job.getAttribute("period");
+        	
+        	//check we have both a resource and a schedule
+        	if(jobResource == null | jobSchedule == null)
+        		return;
+        	
+        	jobList[i][0] = jobResource;
+            jobList[i][1] = jobSchedule;
+            LOG.debug("Configured scheduled job '" + jobResource + "' with trigger '" + jobSchedule + "'");
+        }
+        config.put(Scheduler.PROPERTY_SCHEDULER_JOBS, jobList);
     }
     
     /**
