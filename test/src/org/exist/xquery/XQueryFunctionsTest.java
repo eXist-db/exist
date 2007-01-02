@@ -426,6 +426,28 @@ public class XQueryFunctionsTest extends TestCase {
 		}
 	}	
 
+	public void testUtilEvalForFunction() throws XPathException
+	{
+			ResourceSet result = null;
+		
+			String query = "declare function local:home()\n"
+			+ "{\n"
+			+ "<b>HOME</b>\n"
+			+ "};\n"
+			+ "util:eval(\"local:home()\")\n";
+			
+			try
+			{
+				result = service.query(query);
+				assertEquals(1, result.getSize());
+			}
+			catch(XMLDBException e)
+			{
+				e.printStackTrace();
+				fail(e.getMessage());
+			}
+	}
+	
 	public void testSharedLock() throws XPathException {
 		ResourceSet result 		= null;
 		String		r			= "";
