@@ -90,16 +90,26 @@
                 <xquery collection="/db/jgoethe" query="//(p|l|head|cell)[. |= 'himmel hölle']"/>
                 <xquery collection="/db/jgoethe" query="//(p|l|head|cell)[match-all(., 'himme?l.*')]"/>
                 
+                <xquery collection="/db/jgoethe" query="/TEI.2//p[. &amp;= 'liebe']"/>
+                <xquery collection="/db/jgoethe" query="/TEI.2//((#exist:optimize#) { p[. &amp;= 'liebe'] })"/>
+                <xquery collection="/db/jgoethe" query="/TEI.2//p[. &amp;= 'liebe sinnlichkeit']"/>
+                <xquery collection="/db/jgoethe" query="/TEI.2//((#exist:optimize#) { p[. &amp;= 'liebe sinnlichkeit'] })"/>
+                <xquery collection="/db/jgoethe" query="/TEI.2//p[. &amp;= 'liebe sinnlich*']"/>
+                <xquery collection="/db/jgoethe" query="/TEI.2//((#exist:optimize#) { p[. &amp;= 'liebe sinnlich*'] })"/>
+                <xquery collection="/db/jgoethe" query="/TEI.2//p[. &amp;= 'schmerz* herz']"/>
+                <xquery collection="/db/jgoethe" query="/TEI.2//((#exist:optimize#) { p[. &amp;= 'schmerz* herz'] })"/>
+                
                 <xquery collection="/db/jgoethe" query="//div3[head &amp;= 'götz von berlichingen']"/>
                 <xquery collection="/db/jgoethe" query="//*[head &amp;= 'götz von berlichingen']"/>
                 <xquery collection="/db/jgoethe" query="/TEI.2//div3[head &amp;= 'götz von berlichingen']"/>
                 <xquery collection="/db/jgoethe" query="/TEI.2//*[head &amp;= 'götz von berlichingen']"/>
-                <xquery collection="/db/jgoethe" query="//div3[head &amp;= 'götz von berlichingen']//p[. &amp;= 'arsch']"/>
-                <xquery collection="/db/jgoethe" query="//*[head &amp;= 'götz von berlichingen']//p[. &amp;= 'arsch']"/>
-                <xquery collection="/db/jgoethe" query="//div3[head &amp;= 'götz von berlichingen']//p[. &amp;= 'arsch']"/>
-                <xquery collection="/db/jgoethe" query="/TEI.2//div3[head &amp;= 'götz von berlichingen']//p[. &amp;= 'arsch']"/>
-                <xquery collection="/db/jgoethe" query="/TEI.2//*[head &amp;= 'götz von berlichingen']//p[. &amp;= 'arsch']"/>
-                <xquery collection="/db/jgoethe" query="//(div1|div2|div3|div4|div5)[head &amp;= 'berlichingen eisernen hand']//p[. &amp;= 'arsch']"/>
+                <xquery collection="/db/jgoethe" query="//div3[head &amp;= 'faust']//p[. &amp;= 'todt']"/>
+                <xquery collection="/db/jgoethe" query="//*[head &amp;= 'faust']//p[. &amp;= 'todt']"/>
+                <xquery collection="/db/jgoethe" query="//div3[head &amp;= 'faust']//p[. &amp;= 'todt']"/>
+                <xquery collection="/db/jgoethe" query="/TEI.2//div3[head &amp;= 'faust']//p[. &amp;= 'todt']"/>
+                <xquery collection="/db/jgoethe" query="/TEI.2//*[head &amp;= 'faust']//p[. &amp;= 'todt']"/>
+                <xquery collection="/db/jgoethe" query="//(div1|div2|div3|div4|div5)[head &amp;= 'faust']//p[. &amp;= 'todt']"/>
+                <xquery collection="/db/jgoethe" query="//(div1|div2|div3|div4|div5)[head &amp;= 'faust']//p[. &amp;= 'tod*']"/>
             </sequence>
         </thread>
         <tear-down connection="con">
