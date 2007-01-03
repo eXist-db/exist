@@ -157,7 +157,7 @@ public class XQuery {
 				msg = msg.substring(0, msg.length() - ", found 'null'".length());
             throw new StaticXQueryException(msg, e.getLine(), e.getColumn());
         } catch (TokenStreamException e) {
-			LOG.debug("Error compiling query: " + e.getMessage(), e);
+        	LOG.debug("Error compiling query: " + e.getMessage(), e);
             throw new StaticXQueryException(e.getMessage(), e);
         }
     }
@@ -171,6 +171,7 @@ public class XQuery {
     }
     
     public Sequence execute(CompiledXQuery expression, Sequence contextSequence, boolean resetContext) throws XPathException {
+    	long start = System.currentTimeMillis();
     	XQueryContext context = expression.getContext();
     	
 		//check access to the query
@@ -197,6 +198,7 @@ public class XQuery {
         broker.getBrokerPool().getXQueryMonitor().queryStarted(context.getWatchDog());
         try {
         	Sequence result = expression.eval(contextSequence);
+        	LOG.debug("Execution took "  +  (System.currentTimeMillis() - start) + "ms");
         	return result;
         } finally {
             expression.reset();
@@ -205,8 +207,6 @@ public class XQuery {
         	broker.getBrokerPool().getXQueryMonitor().queryCompleted(context.getWatchDog());
         }
     }
-    
-
 
 	public Sequence execute(String expression, Sequence contextSequence, AccessContext accessCtx) throws XPathException {
 		XQueryContext context = new XQueryContext(broker, accessCtx);

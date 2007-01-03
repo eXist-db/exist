@@ -358,6 +358,7 @@ public class GeneralComparison extends BinaryOp {
 
 		// if the context sequence hasn't changed we can return a cached result
 		if(cached != null && cached.isValid(contextSequence)) {
+			LOG.debug("Using cached results");
             if(context.getProfiler().isEnabled())
                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "OPTIMIZATION", "Returned cached result");
 			return(cached.getResult());
