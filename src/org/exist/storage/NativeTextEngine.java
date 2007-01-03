@@ -1355,8 +1355,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 		key.getLength() - (1 + Collection.LENGTH_COLLECTION_ID), word);
             else
             	//What does this 1 stand for ?
-                word = UTF8.decode(key.getData(), (1 + Collection.LENGTH_COLLECTION_ID +  SymbolTable.LENGTH_NS_URI + SymbolTable.LENGTH_LOCAL_NAME), 
-                		key.getLength() - (1 + Collection.LENGTH_COLLECTION_ID +  SymbolTable.LENGTH_NS_URI + SymbolTable.LENGTH_LOCAL_NAME), word);
+                word = UTF8.decode(key.getData(), (2 + Collection.LENGTH_COLLECTION_ID +  SymbolTable.LENGTH_NS_URI + SymbolTable.LENGTH_LOCAL_NAME),
+                		key.getLength() - (2 + Collection.LENGTH_COLLECTION_ID +  SymbolTable.LENGTH_NS_URI + SymbolTable.LENGTH_LOCAL_NAME), word);
             if (matcher.matches(word)) {
 				try {
 					while (is.available() > 0) {                        
