@@ -89,7 +89,11 @@ public class VirtualNodeSet extends AbstractNodeSet {
 	    return context.getDocumentSet();
 	}
 
-    private NodeProxy getFirstParent(NodeProxy node, NodeProxy first, 
+    public Iterator getCollectionIterator() {
+        return context.getCollectionIterator();
+    }
+
+    private NodeProxy getFirstParent(NodeProxy node, NodeProxy first,
             boolean includeSelf, int recursions) {
         return getFirstParent(node, first, includeSelf, true, recursions);
     }

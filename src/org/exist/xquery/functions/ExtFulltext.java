@@ -240,7 +240,7 @@ public class ExtFulltext extends Function implements Optimizable {
 	}
 
     private boolean checkForQNameIndex(Sequence contextSequence) {
-        if (contextSequence == null || contextQName == null || contextSequence instanceof VirtualNodeSet)
+        if (contextSequence == null || contextQName == null)
             return false;
         boolean hasQNameIndex = true;
         for (Iterator i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
@@ -279,7 +279,7 @@ public class ExtFulltext extends Function implements Optimizable {
         result.append(" &= ");
         result.append(searchTerm.toString());
         return result.toString();
-    }   
+    }
 
 	/* (non-Javadoc)
      * @see org.exist.xquery.Function#dump(org.exist.xquery.util.ExpressionDumper)
