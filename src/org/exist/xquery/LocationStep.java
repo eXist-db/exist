@@ -207,8 +207,9 @@ public class LocationStep extends Step {
              */
             result = cached.getResult();
             if (context.getProfiler().isEnabled())
+            	LOG.debug("Using cached results");            	
                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
-                        "Using cached results", result);
+                		"Using cached results", result);
 
             // }
         } else if (needsComputation()) {
