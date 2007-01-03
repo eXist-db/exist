@@ -213,31 +213,46 @@ public class Transform extends BasicFunction {
     	SAXTransformerFactory factory = (SAXTransformerFactory)TransformerFactoryAllocator.getTransformerFactory(context.getBroker());
     	
 		TransformerHandler handler;
-		try {
+		try
+		{
 			Templates templates = null;
-			if(Type.subTypeOf(stylesheetItem.getType(), Type.NODE)) {
+			if(Type.subTypeOf(stylesheetItem.getType(), Type.NODE))
+			{
 				NodeValue stylesheetNode = (NodeValue)stylesheetItem;
 				// if the passed node is a document node or document root element,
 				// we construct an XMLDB URI and use the caching implementation. 
-				if(stylesheetNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+				if(stylesheetNode.getImplementationType() == NodeValue.PERSISTENT_NODE)
+				{
 					NodeProxy root = (NodeProxy) stylesheetNode;
-                    if (root.getNodeId() == NodeId.DOCUMENT_NODE ||
-                            root.getNodeId().getTreeLevel() == 1) {
-						String uri = XmldbURI.XMLDB_URI_PREFIX + context.getBroker().getBrokerPool().getId() +
-							"://" + root.getDocument().getURI();
+                    if (root.getNodeId() == NodeId.DOCUMENT_NODE || root.getNodeId().getTreeLevel() == 1)
+                    {
+						//as this is a persistent node (e.g. a stylesheet stored in the db)
+						//set the URI Resolver as a DatabaseResolver
+						factory.setURIResolver(new DatabaseResolver(root.getDocument()));
+					
+						String uri = XmldbURI.XMLDB_URI_PREFIX + context.getBroker().getBrokerPool().getId() + "://" + root.getDocument().getURI();
 						templates = getSource(factory, uri);
 					}
 				}
-				if (templates == null)
+				if(templates == null)
+				{
 					templates = getSource(factory, stylesheetNode);
-			} else {
+				}
+			}
+			else
+			{
 				String stylesheet = stylesheetItem.getStringValue();
 				templates = getSource(factory, stylesheet);
 			}
 			handler = factory.newTransformerHandler(templates);
+			
 			if(options != null)
+			{
 				parseParameters(options, handler.getTransformer());
-		} catch (TransformerConfigurationException e) {
+			}
+		}
+		catch (TransformerConfigurationException e)
+		{
 			throw new XPathException("Unable to set up transformer: " + e.getMessage(), e);
 		}
         return handler;
@@ -294,10 +309,8 @@ public class Transform extends BasicFunction {
 		}
 	}
 	
-	private Templates getSource(SAXTransformerFactory factory, NodeValue stylesheetRoot)
-	throws XPathException, TransformerConfigurationException {
-		if(stylesheetRoot.getImplementationType() == NodeValue.PERSISTENT_NODE)
-			factory.setURIResolver(new DatabaseResolver(((NodeProxy)stylesheetRoot).getDocument()));
+	private Templates getSource(SAXTransformerFactory factory, NodeValue stylesheetRoot) throws XPathException, TransformerConfigurationException
+	{
 		TemplatesHandler handler = factory.newTemplatesHandler();
 		try {
 			handler.startDocument();
