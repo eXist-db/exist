@@ -66,11 +66,10 @@ public class FtQueryTest extends XMLTestCase {
         "</root>";
 
     private final static String MATCH_COUNT =
-        "<doc> term term <level1>term term</level1><level1>term</level1></doc>";
+        "<doc> term term <level1>term term</level1><level1>term<level2>term</level2></level1></doc>";
     
     private final static String FILES[] = { "hamlet.xml", "macbeth.xml", "r_and_j.xml" };
-    
-    static File existDir;
+        static File existDir;
     static {
       String existHome = System.getProperty("exist.home");
       existDir = existHome==null ? new File(".") : new File(existHome);
@@ -472,18 +471,63 @@ public class FtQueryTest extends XMLTestCase {
             XQueryService service = (XQueryService)
             	testCollection.getService("XQueryService", "1.0");
             String query = "for $d in /doc[. &= 'term'] " +
-            	"return (text:match-count($d), " +
-            	"for $l in $d/level1 return text:match-count($l))";
+        	"return (text:match-count($d), " +
+        	"for $l in $d/level1 return text:match-count($l))";
             ResourceSet result = service.query(query);
             assertEquals(3, result.getSize());
-            assertEquals("5", result.getResource(0).getContent().toString());
+            assertEquals("6", result.getResource(0).getContent().toString());
             assertEquals("2", result.getResource(1).getContent().toString());
-            assertEquals("1", result.getResource(2).getContent().toString());
+            assertEquals("2", result.getResource(2).getContent().toString());
         } catch(Exception e) {
     		e.printStackTrace();
     		fail(e.getMessage());
     	}
     }
+    
+    //It looks like matches are not copied along all axes 
+    public void bugtestMatchCount() {
+        System.out.println("----- testMatchCount -----");
+    	try {
+            String config =
+    			"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
+		    	"    <index>" +
+		    	"        <fulltext default=\"none\" attributes=\"false\">" +
+                "           <include path=\"/doc\"/>" +
+                "	      </fulltext>" +
+		    	"    </index>" +
+		    	"</collection>";
+    		IndexQueryService idxConf = (IndexQueryService)
+				testCollection.getService("IndexQueryService", "1.0");
+    		idxConf.configureCollection(config);
+
+    		XMLResource doc =
+                (XMLResource) testCollection.createResource(
+                        "test-match-count.xml", "XMLResource");
+            doc.setContent(MATCH_COUNT);
+            testCollection.storeResource(doc);
+
+            XQueryService service = (XQueryService)
+            	testCollection.getService("XQueryService", "1.0");
+            String query = "for $d in /doc[. &= 'term'] " +
+	        	"return text:match-count($d/level1[1]/..)";
+            ResourceSet result = service.query(query);
+	        assertEquals(1, result.getSize());
+	        assertEquals("2", result.getResource(0).getContent().toString());
+	        
+            query = "for $node in /doc//*[. &= 'term'] " +
+        	"return concat(local-name($node), '(', text:match-count($node), ')')" ;
+            result = service.query(query);
+            assertEquals(4, result.getSize());            
+            assertEquals("doc(6)", result.getResource(0).getContent().toString());
+            assertEquals("level1(2)", result.getResource(1).getContent().toString());
+            assertEquals("level1(2)", result.getResource(2).getContent().toString());
+            assertEquals("level2(1)", result.getResource(3).getContent().toString());	        
+	
+	    	} catch(Exception e) {
+    		e.printStackTrace();
+    		fail(e.getMessage());
+    	}
+    }    
 
     private void doQuery(XQueryService service, String query, int expected) throws XMLDBException {
         ResourceSet result = service.query(query);
