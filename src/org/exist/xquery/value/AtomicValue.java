@@ -340,14 +340,31 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 		return (AtomicValue)ValueIndexFactory.deserialize(data, start, len);
 	}
 	
-	public byte[] serialize(short collectionId, boolean caseSensitive) 
-		throws EXistException {	
+	public byte[] serialize(short collectionId)	throws EXistException {	
+		//TODO : pass the factory as an argument
+		return ValueIndexFactory.serialize(this, collectionId);
+	}	
+
+
+	/* (non-Javadoc)
+	 * @deprecated
+	 * @see org.exist.storage.Indexable#serialize(short, boolean)
+	 */
+	public byte[] serialize(short collectionId, boolean caseSensitive)	throws EXistException {	
 		//TODO : pass the factory as an argument
 		return ValueIndexFactory.serialize(this, collectionId, caseSensitive);
 	}	
 	
-	public byte[] serializeValue(int offset, boolean caseSensitive) 
-		throws EXistException {		
+	public byte[] serializeValue(int offset) throws EXistException {		
+		//TODO : pass the factory as an argument
+		return ValueIndexFactory.serialize(this, offset);
+	}
+	
+	/* (non-Javadoc)
+	 * @deprecated
+	 * @see org.exist.storage.Indexable#serializeValue(int, boolean)
+	 */
+	public byte[] serializeValue(int offset, boolean caseSensitive)	throws EXistException {		
 		//TODO : pass the factory as an argument
 		return ValueIndexFactory.serialize(this, offset, caseSensitive);
 	}

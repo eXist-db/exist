@@ -490,7 +490,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     public NodeSet find(int relation, DocumentSet docs, NodeSet contextSet, Indexable value) 
             throws TerminatedException {        
         final NodeSet result = new ExtArrayNodeSet();
-        final SearchCallback callback = new SearchCallback(docs, contextSet, result, true);
+        final SearchCallback cb = new SearchCallback(docs, contextSet, result, true);
         final Lock lock = dbValues.getLock();
         for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
 			try {
@@ -501,8 +501,9 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 final int idxOp =  checkRelationOp(relation);
                 final IndexQuery query = new IndexQuery(idxOp, searchKey);
                 //Compute a key for the value's type in the collection
-                final Value keyPrefix = computeTypedKey(collectionId, value.getType());                
-				dbValues.query(query, keyPrefix, callback);	
+                //final Value keyPrefix = computeTypedKey(collectionId, value.getType());
+                //dbValues.query(query, keyPrefix, cb);
+                dbValues.query(query, cb);
 			} catch (EXistException e) {
                 LOG.error(e.getMessage(), e);				
 			} catch (LockException e) {
@@ -546,7 +547,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         }        
 		final TermMatcher comparator = new RegexMatcher(expr, type, flags);
         final NodeSet result = new ExtArrayNodeSet();
-        final RegexCallback callback = new RegexCallback(docs, contextSet, result, comparator);
+        final RegexCallback cb = new RegexCallback(docs, contextSet, result, comparator);
         final Lock lock = dbValues.getLock();
         for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {			
 			try {
@@ -557,11 +558,11 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 	//Compute a key for the start term in the collection
                     searchKey = new Value(startTerm.serialize(collectionId, caseSensitive));
                 } else {
-                	//Compute a key for a string in the collection
+                	//Compute a key for an arbitrary string in the collection
                     searchKey = computeTypedKey(collectionId, Type.STRING);                
                 }
                 final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, searchKey);                
-				dbValues.query(query, callback);
+				dbValues.query(query, cb);
             } catch (LockException e) {
                 LOG.warn("Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e);  
 			} catch (IOException e) {
@@ -578,7 +579,6 @@ public class NativeValueIndex implements ContentLoadingObserver {
     public ValueOccurrences[] scanIndexKeys(DocumentSet docs, NodeSet contextSet, Indexable start) {        
         final int type = ((Item) start).getType();        
         final boolean stringType = Type.subTypeOf(type, Type.STRING);
-        final int op = stringType ? IndexQuery.TRUNC_RIGHT : IndexQuery.GEQ;
         final IndexScanCallback cb = new IndexScanCallback(docs, contextSet, type);
         final Lock lock = dbValues.getLock();
         for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
@@ -586,14 +586,17 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 lock.acquire(); 
                 final  short collectionId = ((Collection) i.next()).getId();
                 //Compute a key for the start value in the collection
-                final Value startKey = new Value(start.serialize(collectionId, caseSensitive));            
-                final IndexQuery query = new IndexQuery(op, startKey);                  
-                if (stringType)
+                if (stringType) {
+                    final Value startKey = new Value(start.serialize(collectionId, caseSensitive));            
+                	IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startKey);
                     dbValues.query(query, cb);
-                else {
+                } else {
+                	final Value startKey = new Value(start.serialize(collectionId));
+                    final IndexQuery query = new IndexQuery(IndexQuery.GEQ, startKey);                  
                 	//Compute a key for the start value's type in the collection
-                    Value keyPrefix = computeTypedKey(collectionId, start.getType());
-                    dbValues.query(query, keyPrefix, cb);
+                    //Value keyPrefix = computeTypedKey(collectionId, start.getType());
+                    //dbValues.query(query, keyPrefix, cb);
+                	dbValues.query(query, cb);
                 }
 			} catch (EXistException e) {
                 LOG.error(e.getMessage(), e);                
