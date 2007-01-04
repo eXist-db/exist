@@ -6,6 +6,9 @@
 <project basedir="../.." default="benchmark" name="performance tests">
 
     <description>Performance tests for eXist</description>
+	
+	<!-- import common targets -->
+	<import file="../../build.xml"/>	
 
     <property name="benchmark.output" value="${junit.reports}/benchmark"/>
     <property name="benchmark.src" value="${junit.reports}/src"/>
