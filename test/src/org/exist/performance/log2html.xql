@@ -2,12 +2,23 @@ xquery version "1.0";
 
 declare namespace t="http://exist.sourceforge.net/NS/exist";
 
+declare function t:median($sequence) {
+	let $ordered := for $item in $sequence order by $item return $item
+    return 
+		if (empty($ordered)) then
+			()
+		else if (count($ordered) mod 2 = 1) then
+			$ordered[(count($ordered) idiv 2) + 1]
+		else
+			avg(($ordered[(count($ordered) idiv 2)], $ordered[(count($ordered) idiv 2) + 1]))
+};
+
 declare function t:process-action($group as element(t:group), $action as element(t:action)+) {
     let $isSeq := ($action/@name = "org.exist.performance.ActionSequence")
     return (
         <tr>
             <td class="{if ($isSeq) then 'sequence' else ''}">{string($action[1]/@name)}</td>
-            <td class="timing">{round(avg($action/@elapsed))}</td>
+            <td class="timing">{round(t:median($action/@elapsed))}</td>
             <td class="timing">{sum($action/@elapsed)}</td>
             <td class="desc">{string($action[1]/@description)}</td>
         </tr>,
@@ -25,7 +36,7 @@ declare function t:process-sequence($group as element(t:group), $sequence as ele
     <table>
         <tr>
             <th>Action</th>
-            <th class="timing">Avg. time</th>
+            <th class="timing">Med. time</th>
             <th class="timing">Total time</th>
             <th class="desc">Description</th>
         </tr>
