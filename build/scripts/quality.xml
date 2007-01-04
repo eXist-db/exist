@@ -11,7 +11,10 @@ $Header$
 
 <project basedir="../.." default="pmd" name="quality-tests">
 
-    <!-- import default properties from file -->
+	<!-- import common targets -->
+	<import file="../../build.xml"/>
+
+	<!-- import default properties from file -->
     <property file="build.properties"/>
  
 	<!-- You must put tools/ant/lib/jdepend-2.9.jar in the classpath,

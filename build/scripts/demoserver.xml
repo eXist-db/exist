@@ -7,6 +7,9 @@
 <project basedir="../.." default="docs" name="Demoserver">
 
     <description>Create HTML files for docs on http://exist-db.org </description>
+	
+	<!-- import common targets -->
+	<import file="../../build.xml"/>	
 
     <target depends="jar" name="prepare-docs">
         <property name="demo.host" value="http://demo.exist-db.org"/>
