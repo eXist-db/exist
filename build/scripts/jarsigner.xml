@@ -102,10 +102,10 @@
     
     <!-- Special task for unsigning jar files -->
     <target name="jnlp-unsign-all">
-        <taskdef name="unsignjars" 
+        <taskdef name="unsignjar" 
                  classname="nl.ow.dilemma.ant.jar.UnsignJarTask" 
                  classpath="${asocat-exist.jar}"/>
-        <unsignjars>
+        <unsignjar>
             <fileset dir=".">
                 <include name="exist*.jar"/>
                 <include name="start.jar"/>
@@ -113,7 +113,7 @@
             <fileset dir="lib/core">
                 <include name="*.jar"/>
             </fileset>
-        </unsignjars>
+        </unsignjar>
     </target>
     
     <!-- 
@@ -125,10 +125,10 @@
         <antcall target="jnlp-unsign-all"/>
         
         <!-- Secondly pack-unpack the jar files (normalize) -->
-        <taskdef name="normalize" 
-                 classname="nl.ow.dilemma.ant.jar.NormalizeJarTask" 
+        <taskdef name="repack" 
+                 classname="nl.ow.dilemma.ant.jar.RepackJarTask" 
                  classpath="${asocat-exist.jar}"/>
-        <normalize>
+        <repack>
             <fileset dir=".">
                 <include name="exist*.jar"/>
                 <include name="start.jar"/>
@@ -136,7 +136,7 @@
             <fileset dir="lib/core">
                 <include name="*.jar"/>
             </fileset>
-        </normalize>
+        </repack>
         
         <!-- Sign all jars -->
         <antcall target="jnlp-sign-exist"/>
