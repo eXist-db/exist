@@ -246,8 +246,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             ArrayList gids = (ArrayList) entry.getValue();
             int gidsCount = gids.size();
             //Don't forget this one
-            FastQSort.sort(gids, 0, gidsCount - 1);
-            
+            FastQSort.sort(gids, 0, gidsCount - 1);            
             os.clear();
             os.writeInt(this.doc.getDocId());
             os.writeInt(gidsCount);
@@ -264,8 +263,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 }
             }
             //What does this 4 stand for ?
-            os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
-            
+            os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);            
             try {
                 lock.acquire(Lock.WRITE_LOCK);                
                 Value key = new Value(indexable.serialize(collectionId, caseSensitive));
@@ -317,36 +315,30 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 if (value != null) {
                     //Add its data to the new list
                     VariableByteArrayInput is = new VariableByteArrayInput(value.getData());
-                    //try {                            
-                        while (is.available() > 0) {
-                            int storedDocId = is.readInt();
-                            int gidsCount = is.readInt();
-                            int size = is.readFixedInt();
-                            if (storedDocId != this.doc.getDocId()) {
-                                // data are related to another document:
-                                // append them to any existing data
-                                os.writeInt(storedDocId);
-                                os.writeInt(gidsCount);
-                                os.writeFixedInt(size);
-                                is.copyRaw(os, size);
-                            } else {
-                                // data are related to our document:
-                                // feed the new list with the GIDs
-                                for (int j = 0; j < gidsCount; j++) {
-                                    NodeId nodeId = 
-                                        broker.getBrokerPool().getNodeFactory().createFromStream(is);  
-                                    // add the node to the new list if it is not 
-                                    // in the list of removed nodes
-                                    if (!containsNode(storedGIDList, nodeId)) {
-                                        newGIDList.add(nodeId);
-                                    }
+                    while (is.available() > 0) {
+                        int storedDocId = is.readInt();
+                        int gidsCount = is.readInt();
+                        int size = is.readFixedInt();
+                        if (storedDocId != this.doc.getDocId()) {
+                            // data are related to another document:
+                            // append them to any existing data
+                            os.writeInt(storedDocId);
+                            os.writeInt(gidsCount);
+                            os.writeFixedInt(size);
+                            is.copyRaw(os, size);
+                        } else {
+                            // data are related to our document:
+                            // feed the new list with the GIDs
+                            for (int j = 0; j < gidsCount; j++) {
+                                NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);  
+                                // add the node to the new list if it is not 
+                                // in the list of removed nodes
+                                if (!containsNode(storedGIDList, nodeId)) {
+                                    newGIDList.add(nodeId);
                                 }
                             }
                         }
-                    //} catch (EOFException e) {
-                        //Is it expected ? if not, remove the block -pb
-                        //LOG.warn("REPORT ME " + e.getMessage(), e);
-                    //}
+                    }
                     //append the data from the new list
                     if (newGIDList.size() > 0) {
                         int gidsCount = newGIDList.size();
@@ -437,15 +429,13 @@ public class NativeValueIndex implements ContentLoadingObserver {
             for (Iterator i = pending.entrySet().iterator(); i.hasNext();) {
                 Map.Entry entry = (Map.Entry) i.next();
                 Indexable indexable = (Indexable) entry.getKey();
-                os.clear();
-                //Compute a key for the value
+                //Compute a key for the indexed value in the collection
                 Value searchKey = new Value(indexable.serialize(collectionId, caseSensitive));
                 Value value = dbValues.get(searchKey);
-
                 if (value == null)
                     continue;
-                boolean changed = false;
                 VariableByteArrayInput is = new VariableByteArrayInput(value.getData());
+                boolean changed = false;
                 os.clear();
                 while (is.available() > 0) {
                     int storedDocId = is.readInt();
@@ -453,14 +443,14 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     int size = is.readFixedInt();
                     if (storedDocId != document.getDocId()) {
                         // data are related to another document:
-                        // copy them to any existing data
+                        // copy them (keep them)
                         os.writeInt(storedDocId);
                         os.writeInt(gidsCount);
                         os.writeFixedInt(size);
                         is.copyRaw(os, size);
                     } else {
                         // data are related to our document:
-                        // skip them. They will be processed at the end
+                        // skip them (remove them)
                         is.skipBytes(size);
                         changed = true;
                     }
@@ -468,16 +458,18 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 //Store new data, if relevant
                 if (changed) {
                     if (os.data().size() == 0) {
-                        //Well, nothing to store : remove the existing data
+                        // nothing to store: 
+                    	// remove the existing key/value pair
                         dbValues.remove(searchKey);
                     } else {
+                    	// still something to store:
+                    	// modify the existing value for the key
                         if (dbValues.put(searchKey, os.data()) == BFile.UNKNOWN_ADDRESS) {
                             LOG.error("Could not put index data for key '" +  searchKey + "'");
                             //TODO : throw exception ?
                         }
                     }
                 }
-                os.clear();
             }
         } catch (LockException e) {
             LOG.warn("Failed to acquire lock for '" + dbValues.getFile().getName() + "'", e);
@@ -486,6 +478,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         } catch (EXistException e) {
             LOG.warn("Exception while removing range index: " + e.getMessage(), e);
         } finally {
+            os.clear();
             lock.release();
             pending.clear();
         }
@@ -503,10 +496,12 @@ public class NativeValueIndex implements ContentLoadingObserver {
 			try {
 				lock.acquire();	
                 final short collectionId = ((Collection) iter.next()).getId();
+                //Compute a key for the value in the collection
                 final Value searchKey = new Value(value.serialize(collectionId, caseSensitive));
                 final int idxOp =  checkRelationOp(relation);
                 final IndexQuery query = new IndexQuery(idxOp, searchKey);
-                final Value keyPrefix = computeTypeCollectionKey(value.getType(), collectionId);                
+                //Compute a key for the value's type in the collection
+                final Value keyPrefix = computeTypedKey(collectionId, value.getType());                
 				dbValues.query(query, keyPrefix, callback);	
 			} catch (EXistException e) {
                 LOG.error(e.getMessage(), e);				
@@ -558,10 +553,12 @@ public class NativeValueIndex implements ContentLoadingObserver {
 				lock.acquire();
                 final short collectionId = ((Collection) iter.next()).getId();
                 Value searchKey;
-                if (startTerm != null) {                 
+                if (startTerm != null) {      
+                	//Compute a key for the start term in the collection
                     searchKey = new Value(startTerm.serialize(collectionId, caseSensitive));
                 } else {
-                    searchKey = computeTypeCollectionKey(Type.STRING, collectionId);                
+                	//Compute a key for a string in the collection
+                    searchKey = computeTypedKey(collectionId, Type.STRING);                
                 }
                 final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, searchKey);                
 				dbValues.query(query, callback);
@@ -587,13 +584,15 @@ public class NativeValueIndex implements ContentLoadingObserver {
         for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
             try {
                 lock.acquire(); 
-                final  short collectionId = ((Collection) i.next()).getId();            
+                final  short collectionId = ((Collection) i.next()).getId();
+                //Compute a key for the start value in the collection
                 final Value startKey = new Value(start.serialize(collectionId, caseSensitive));            
                 final IndexQuery query = new IndexQuery(op, startKey);                  
                 if (stringType)
                     dbValues.query(query, cb);
                 else {
-                    Value keyPrefix = computeTypeCollectionKey(start.getType(), collectionId);
+                	//Compute a key for the start value's type in the collection
+                    Value keyPrefix = computeTypedKey(collectionId, start.getType());
                     dbValues.query(query, keyPrefix, cb);
                 }
 			} catch (EXistException e) {
@@ -618,7 +617,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     /**
      * Returns a search key for a collectionId/type combination.
      */
-    private Value computeTypeCollectionKey(int type, short collectionId) {
+    private Value computeTypedKey(short collectionId, int type) {
         byte[] data = new byte[Collection.LENGTH_COLLECTION_ID + NativeValueIndex.LENGTH_VALUE_TYPE];
         ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
         data[OFFSET_VALUE_TYPE] = (byte) type;
@@ -734,9 +733,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         continue;                        
                     }
                 	//Process the nodes
-                    NodeId nodeId;
                 	for (int j = 0; j < gidsCount; j++) {
-                        nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);                        
+                		NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);                        
                         NodeProxy storedNode = new NodeProxy(storedDocument, nodeId);					
                 		// if a context set is specified, we can directly check if the
                 		// matching node is a descendant of one of the nodes
@@ -751,12 +749,10 @@ public class NativeValueIndex implements ContentLoadingObserver {
                                 result.add(storedNode, sizeHint);
                 		// otherwise, we add all nodes without check
                 		} else {
-                			result.add(storedNode, -1);
+                			result.add(storedNode, Constants.NO_SIZE_HINT);
                 		}
                 	}
                 }
-            //} catch (EOFException e) {
-                // EOF is expected here
             } catch (IOException e) {                
                 LOG.error(e.getMessage(), e);
             }
@@ -834,10 +830,9 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         is.skipBytes(size);
                         continue;
                     }                    
-                    NodeId nodeId;
                     NodeId lastParentId = null;
                     for (int j = 0; j < gidsCount; j++) {
-                        nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);                        
+                    	NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);                        
                         if (contextSet != null) {                        	
                             NodeProxy parentNode = contextSet.parentWithChild(storedDocument, nodeId, false, true);                            
                             if (parentNode != null) {                                
@@ -863,9 +858,6 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         //otherwise, we add all nodes without check    
                     }
                 }
-            //} catch(EOFException e) {
-                //Is it expected ? -pb
-                //LOG.warn("REPORT ME" + e.getMessage(), e);
             } catch(IOException e) {
                 LOG.error(e.getMessage(), e);
             }
