@@ -35,6 +35,19 @@ public interface Indexable extends Comparable {
     /**
      * Serialize the value plus collection and possibly element information
      * to an array of bytes.
+
+     * The returned byte array has the following format:
+     * 
+     * (short: collectionId, byte type, byte[] value)
+     * 
+     * @param collectionId the collection id to use
+     */
+	//TODO : better exception ?
+    public byte[] serialize(short collectionId) throws EXistException;
+
+    /**
+     * Serialize the value plus collection and possibly element information
+     * to an array of bytes.
      * @deprecated use following function instead; this API should be local 
      * to value index class like {@link NativeValueIndex}
      * 
@@ -55,12 +68,26 @@ public interface Indexable extends Comparable {
      * 
      * (offset-1 free bytes, byte type, byte[] value)
      * 
+     * @deprecated use following function instead; this API should be local 
+     * to value index class like {@link NativeValueIndex}
      * @param offset starting index for writing in array data
      * @return the size actually writen in the array argument
      */
     //TODO : better exception ?
 	public byte[] serializeValue(int offset, boolean caseSensitive) throws EXistException;
 
+    /** Serialize the value to an array of bytes for the persistant storage.
+     * 
+     * The returned byte array has the following format:
+     * 
+     * (offset-1 free bytes, byte type, byte[] value)
+     * 
+     * @param offset starting index for writing in array data
+     * @return the size actually writen in the array argument
+     */
+    //TODO : better exception ?
+	public byte[] serializeValue(int offset) throws EXistException;
+	
     /**
      * Returns the type of the Indexable as one of the constants defined
      * in {@link org.exist.xquery.value.Type}.

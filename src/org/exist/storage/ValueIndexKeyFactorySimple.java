@@ -21,11 +21,21 @@ public class ValueIndexKeyFactorySimple implements ValueIndexKeyFactory {
 		this.indexable = indexable;
 	}
 
-	/** called from {@link NativeValueIndex};
-	 * provides the persistant storage key :
-	 * (collectionId, qname, indexType, indexData) */
+	/* provides the persistent storage key : collectionId + qname + indexType + indexData
+	 * @deprecated
+	 * @see org.exist.storage.ValueIndexKeyFactory#serialize(short, boolean)
+	 */
 	public byte[] serialize(short collectionId, boolean caseSensitive)  throws EXistException {
         final byte[] data = indexable.serializeValue(OFFSET_VALUE, caseSensitive);
+        ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
+		return data;
+	}
+
+	/* provides the persistent storage key : collectionId + qname + indexType + indexData
+	 * @see org.exist.storage.ValueIndexKeyFactory#serialize(short, boolean)
+	 */
+	public byte[] serialize(short collectionId)  throws EXistException {
+        final byte[] data = indexable.serializeValue(OFFSET_VALUE);
         ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
 		return data;
 	}

@@ -227,13 +227,24 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
 			ByteConversion.shortToByte(localNameId, data, OFFSET_LOCAL_NAME);
 			return data;
 		}
+
+		public byte[] serialize(short collectionId) throws EXistException {
+	        final byte[] data = indexable.serializeValue(OFFSET_VALUE);
+	        ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
+			SymbolTable symbols = broker.getSymbols();
+			short namespaceId = symbols.getNSSymbol(qname.getNamespaceURI());
+			ByteConversion.shortToByte(namespaceId, data, OFFSET_NS_URI);
+			short localNameId = symbols.getSymbol(qname.getLocalName());
+			ByteConversion.shortToByte(localNameId, data, OFFSET_LOCAL_NAME);
+			return data;
+		}
 		
 		/** @return negative value <==> this object is less than other */
 		public int compareTo(Object other) {
 			int ret = 0;
 			if ( other instanceof QNameValueIndexKeyFactory ) {
 				QNameValueIndexKeyFactory otherIndexable = (QNameValueIndexKeyFactory)other;
-				int qnameComparison = qname.toString().compareTo(otherIndexable.qname.toString());
+				int qnameComparison = qname.compareTo(otherIndexable.qname);
 				if ( qnameComparison != 0 ) {
 					ret = qnameComparison;
 				} else {
@@ -247,7 +258,12 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
 		public byte[] serializeValue( int offset, boolean caseSensitive) {
 			return null;
 		}
-        
+
+		/** unused - TODO "ValueIndexKeyFactory" refactoring: remove after refactoring NativeValueIndex */
+		public byte[] serializeValue( int offset) {
+			return null;
+		}
+		
         public int getType() {
             return indexable.getType();
         }

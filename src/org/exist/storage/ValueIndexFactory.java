@@ -134,6 +134,19 @@ public class ValueIndexFactory {
 		}
 	}
 	
+	public final static byte[] serialize(Indexable value, short collectionId) throws EXistException {
+		//TODO : refactor (only strings are case sensitive)
+		return  serialize(value, collectionId, true);
+	}	
+
+	/**
+	 * @deprecated
+	 * @param value
+	 * @param collectionId
+	 * @param caseSensitive
+	 * @return
+	 * @throws EXistException
+	 */
 	public final static byte[] serialize(Indexable value, short collectionId, boolean caseSensitive) 
 		throws EXistException {	
 
@@ -213,8 +226,21 @@ public class ValueIndexFactory {
 		}	
 	}
 	
+	public final static byte[] serialize(Indexable value, int offset) throws EXistException {
+		//TODO : refactor (only strings are case sensitive)
+		return  serialize(value, offset, true);
+	}
+
+	/**
+	 * @deprecated
+	 * @param value
+	 * @param offset
+	 * @param caseSensitive
+	 * @return
+	 * @throws EXistException
+	 */
 	public final static byte[] serialize(Indexable value, int offset, boolean caseSensitive) 
-		throws EXistException {
+	throws EXistException {
 
 		/* xs:string */
 		if (Type.subTypeOf(value.getType(), Type.STRING))
