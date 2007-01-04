@@ -52,7 +52,11 @@
             <store-files dir="test/benchmark/temp" includes="**/*.xml" collection="/db/test"/>
             <sequence repeat="20" description="query resources">
                 <xquery collection="/db" query="//book[@id = 'book100.xml']"/>
+                <xquery collection="/db" query="//book[@id &lt; 'book100.xml']"/>
+                <xquery collection="/db" query="//book[@id &gt; 'book100.xml']"/>
                 <xquery collection="/db" query="//book[@n = 100]"/>
+                <xquery collection="/db" query="//book[@n &lt; 100]"/>
+                <xquery collection="/db" query="//book[@n &gt; 100]"/>
                 <xquery collection="/db" query="//chapter[title &amp;= 'k*']"/>
                 <xquery collection="/db" query="//chapter[para &amp;= 'is']"/>
             </sequence>
