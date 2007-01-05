@@ -1991,7 +1991,32 @@ public class XPathQueryTest extends XMLTestCase {
             fail(e.getMessage());
         }
     }
-    
+
+    public void testAtomization() {
+        try {
+            String query =
+                    "declare namespace ex = \"http://example.org\";\n" +
+                    "declare function ex:elementName() as xs:QName {\n" +
+                    "   QName(\"http://test.org\", \"test:name\")\n" +
+                    "};\n" +
+                    "<test>{\n" +
+                    "   element {QName(\"http://test.org\", \"test:name\") }{},\n" +
+                    "   element {ex:elementName()} {}\n" +
+                    "}</test>";
+
+            org.exist.xmldb.XQueryService service = (org.exist.xmldb.XQueryService) getQueryService();
+            service.setProperty(OutputKeys.INDENT, "no");
+            ResourceSet result = service.query(query);
+            assertEquals(1, result.getSize());
+            printResult(result);
+            assertXMLEqual(result.getResource(0).getContent().toString(),
+                    "<test><test:name xmlns:test=\"http://test.org\"/><test:name xmlns:test=\"http://test.org\"/></test>");
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+    }
+
     public void testSubstring() throws XMLDBException {
         
         XQueryService service = getQueryService();
