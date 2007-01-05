@@ -204,13 +204,13 @@ public class ElementConstructor extends NodeConstructor {
 		Sequence qnameSeq = qnameExpr.eval(contextSequence, contextItem);
 		if(!qnameSeq.hasOne())
 		    throw new XPathException("Type error: the node name should evaluate to a single item");
-		
+        Item qnitem = qnameSeq.itemAt(0);
 		QName qn;
-		if (qnameSeq instanceof QNameValue) {
-			qn = ((QNameValue)qnameSeq).getQName();
+		if (qnitem instanceof QNameValue) {
+			qn = ((QNameValue)qnitem).getQName();
 		} else {		
 			//Do we have the same result than Atomize there ? -pb
-			qn = QName.parse(context, qnameSeq.getStringValue());
+			qn = QName.parse(context, qnitem.getStringValue());
 			//Use the default namespace if specified
 		 	if (qn.getPrefix() == null && context.inScopeNamespaces.get("xmlns") != null) {
 	 			qn.setNamespaceURI((String)context.inScopeNamespaces.get("xmlns"));
@@ -219,7 +219,7 @@ public class ElementConstructor extends NodeConstructor {
 		
 		//Not in the specs but... makes sense
 		if(!XMLChar.isValidName(qn.getLocalName()))
-			throw new XPathException("XPTY0004 '" + qnameSeq.getStringValue() + "' is not a valid element name");
+			throw new XPathException("XPTY0004 '" + qnitem.getStringValue() + "' is not a valid element name");
 	 	
 	 	// add namespace declaration nodes
 		int nodeNr = builder.startElement(qn, attrs);
@@ -233,7 +233,7 @@ public class ElementConstructor extends NodeConstructor {
             content.eval(contextSequence, contextItem);
 		}
 		builder.endElement();
-		NodeImpl node = ((DocumentImpl)builder.getDocument()).getNode(nodeNr);
+		NodeImpl node = builder.getDocument().getNode(nodeNr);
 		context.popInScopeNamespaces();
 		return node;
 	}
