@@ -105,7 +105,7 @@ public class BinaryDocument extends DocumentImpl {
 		}
 		ostream.writeByte((byte) permissions.getPermissions());
         ostream.writeInt(realSize);
-		getMetadata().write(ostream);
+		getMetadata().write(broker, ostream);
 	}
 
 	public void read(VariableByteInput istream)
@@ -131,7 +131,7 @@ public class BinaryDocument extends DocumentImpl {
 		realSize = istream.readInt();
         
         DocumentMetadata metadata = new DocumentMetadata();
-        metadata.read(istream);
+        metadata.read(broker, istream);
         setMetadata(metadata);
 	}
 }

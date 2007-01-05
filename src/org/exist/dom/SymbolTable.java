@@ -49,8 +49,6 @@ import org.w3c.dom.Node;
  *
  */
 public class SymbolTable {
-
-	private final static Logger LOG = Logger.getLogger(SymbolTable.class);
 	
 	public static int LENGTH_LOCAL_NAME = 2; //sizeof short
 	public static int LENGTH_NS_URI = 2; //sizeof short	
@@ -79,7 +77,10 @@ public class SymbolTable {
      * Temporary name pool to share QName instances during indexing.
      */
 	protected QNamePool namePool = new QNamePool();
-	
+
+    protected Object2IntHashMap mimeTypeByName = new Object2IntHashMap(32);
+    protected Int2ObjectHashMap mimeTypeById = new Int2ObjectHashMap(32);
+
     /** contains the next local name id to be used */
 	protected short max = 0;
     
@@ -249,6 +250,26 @@ public class SymbolTable {
 		return prefixes;
 	}
 
+    public synchronized int getMimeTypeId(String mimeType) {
+        int id = mimeTypeByName.get(mimeType);
+        if (id == -1) {
+            int maxId = 0;
+            for (Iterator i = mimeTypeById.iterator(); i.hasNext(); ) {
+                Integer val = (Integer) i.next();
+                maxId = Math.max(maxId, val.intValue());
+            }
+            id = ++maxId;
+            mimeTypeByName.put(mimeType, id);
+            mimeTypeById.put(id, mimeType);
+            changed = true;
+        }
+        return id;
+    }
+
+    public synchronized String getMimeType(int id) {
+        return (String) mimeTypeById.get(id);
+    }
+
     /**
      * Write the symbol table to persistent storage.
      * 
@@ -286,7 +307,16 @@ public class SymbolTable {
 			ostream.writeUTF(prefix);
 			ostream.writeShort(nsId);
 		}
-		changed = false;
+        ostream.writeInt(mimeTypeByName.size());
+        String mime;
+        int mimeId;
+        for (Iterator i = mimeTypeByName.iterator(); i.hasNext(); ) {
+            mime = (String) i.next();
+            mimeId = mimeTypeByName.get(mime);
+            ostream.writeUTF(mime);
+            ostream.writeInt(mimeId);
+        }
+        changed = false;
 	}
 
     /**
@@ -325,8 +355,17 @@ public class SymbolTable {
 			nsId = istream.readShort();
 			defaultMappings.put(prefix, nsId);
 		}
-		changed = false;
-	}
+        count = istream.readInt();
+        String mime;
+        int mimeId;
+        for (int i = 0; i < count; i++) {
+            mime = istream.readUTF();
+            mimeId = istream.readInt();
+            mimeTypeByName.put(mime, mimeId);
+            mimeTypeById.put(mimeId, mime);
+        }
+        changed = false;
+    }
 	
 	public File getFile() {
 		return file;
