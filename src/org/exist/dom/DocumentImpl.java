@@ -79,7 +79,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	
 	//public final static byte DOCUMENT_NODE_SIGNATURE = 0x0F;
 
-	private transient DBBroker broker = null;
+	protected transient DBBroker broker = null;
 
 	/** number of child nodes */
 	private int children = 0;
@@ -332,7 +332,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 					ostream.writeShort(StorageAddress.tidFromPointer(childAddress[i]));
 			    }
 			}
-            metadata.write(ostream);
+            metadata.write(broker, ostream);
 		} catch (IOException e) {
 			LOG.warn("io error while writing document data", e);
 		}
@@ -377,7 +377,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
             istream.skip(children * 2);
 
             metadata = new DocumentMetadata();
-            metadata.read(istream);
+            metadata.read(broker, istream);
         } catch (IOException e) {
             LOG.error("IO error while reading document metadata for " + fileURI, e);
         }

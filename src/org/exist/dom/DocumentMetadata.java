@@ -27,6 +27,7 @@ import java.io.IOException;
 
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
+import org.exist.storage.DBBroker;
 import org.exist.util.MimeType;
 import org.w3c.dom.DocumentType;
 
@@ -128,10 +129,10 @@ public class DocumentMetadata {
         --pageCount;
     }
     
-    public void write(VariableByteOutputStream ostream) throws IOException {
+    public void write(DBBroker broker, VariableByteOutputStream ostream) throws IOException {
         ostream.writeLong(created);
         ostream.writeLong(lastModified);
-        ostream.writeUTF(mimeType);
+        ostream.writeInt(broker.getSymbols().getMimeTypeId(mimeType));
         ostream.writeInt(pageCount);
         ostream.writeInt(userLock);
         
@@ -153,10 +154,10 @@ public class DocumentMetadata {
         
     }
     
-    public void read(VariableByteInput istream) throws IOException, EOFException {
+    public void read(DBBroker broker, VariableByteInput istream) throws IOException {
         created = istream.readLong();
         lastModified = istream.readLong();
-        mimeType = istream.readUTF();
+        mimeType = broker.getSymbols().getMimeType(istream.readInt());
         pageCount = istream.readInt();
         userLock = istream.readInt();
         
