@@ -1013,7 +1013,8 @@ public class NativeBroker extends DBBroker {
         long start = System.currentTimeMillis();
         final CollectionCache collectionsCache = pool.getCollectionsCache();
         synchronized(collectionsCache) {
-            final XmldbURI name = collection.getURI();
+            final XmldbURI uri = collection.getURI();
+            final String collName = uri.getRawCollectionPath();
             final boolean isRoot = collection.getParentURI() == null;
             //Drop all index entries
             notifyDropIndex(collection);            
@@ -1025,12 +1026,12 @@ public class NativeBroker extends DBBroker {
                     transaction.registerLock(parent.getLock(), Lock.WRITE_LOCK);
                 if (parent != null) {
                     try {
-                        LOG.debug("Removing collection '" + name + "' from its parent...");
+                        LOG.debug("Removing collection '" + collName + "' from its parent...");
                         //TODO : resolve from collection's base URI
-                        parent.removeCollection(name.lastSegment());
+                        parent.removeCollection(uri.lastSegment());
                         saveCollection(transaction, parent);
                     } catch (LockException e) {
-                        LOG.warn("LockException while removing collection '" + name + "'");
+                        LOG.warn("LockException while removing collection '" + collName + "'");
                     } finally {
                         if (transaction == null)
                             parent.getLock().release();
@@ -1038,11 +1039,12 @@ public class NativeBroker extends DBBroker {
                 }
             }
             // remove child collections
-            LOG.debug("Removing children collections from their parent '" + name + "'...");
+            if (LOG.isDebugEnabled())
+                LOG.debug("Removing children collections from their parent '" + collName + "'...");
             for (Iterator i = collection.collectionIterator(); i.hasNext();) {
                 final XmldbURI childName = (XmldbURI) i.next();
                 //TODO : resolve from collection's base URI
-                Collection childCollection = openCollection(name.append(childName), Lock.WRITE_LOCK);
+                Collection childCollection = openCollection(uri.append(childName), Lock.WRITE_LOCK);
                 try {                    
                     removeCollection(transaction, childCollection);                    
                 } finally {
@@ -1060,7 +1062,7 @@ public class NativeBroker extends DBBroker {
                 
                 // if this is not the root collection remove it...
                 if (!isRoot) {
-                    Value key = new CollectionStore.CollectionKey(name.toString());
+                    Value key = new CollectionStore.CollectionKey(collName);
                     //... from the disk
                     collectionsDb.remove(transaction, key);
                     //... from the cache
@@ -1085,7 +1087,8 @@ public class NativeBroker extends DBBroker {
                 lock.release();
             }
             //Remove child resources
-            LOG.debug("Removing resources in '" + name + "'...");
+            if (LOG.isDebugEnabled())
+                LOG.debug("Removing resources in '" + collName + "'...");
             for (Iterator i = collection.iterator(this); i.hasNext();) {
                 final DocumentImpl doc = (DocumentImpl) i.next();
                 //Remove doc's metadata
@@ -1127,7 +1130,8 @@ public class NativeBroker extends DBBroker {
                 //Make doc's id available again
                 freeResourceId(transaction, doc.getDocId());
             }
-            LOG.debug("Removing collection '" + name + "' took " + (System.currentTimeMillis() - start));
+            if (LOG.isDebugEnabled())
+                LOG.debug("Removing collection '" + collName + "' took " + (System.currentTimeMillis() - start));
             return true;
         }
     }
@@ -1510,10 +1514,6 @@ public class NativeBroker extends DBBroker {
         try {
             lock.acquire();
             final VariableByteOutputStream ostream = new VariableByteOutputStream(8);
-            doc.getMetadata().write(ostream);
-            long metaPointer = collectionsDb.storeValue(transaction, ostream.data());
-            ostream.clear();
-            doc.setMetadataLocation(metaPointer);
             doc.write(ostream);
             Value key = new CollectionStore.DocumentKey(doc.getCollection().getId(), doc.getResourceType(), doc.getDocId());
             collectionsDb.put(transaction, key, ostream.data(), true);
@@ -1723,16 +1723,13 @@ public class NativeBroker extends DBBroker {
     }    
     
     //TODO : consider a better cooperation with Collection -pb
-    public void getResourceMetadata(DocumentImpl doc) {
+    public void getResourceMetadata(DocumentImpl document) {
         Lock lock = collectionsDb.getLock();
         try {
             lock.acquire();
-            SanityCheck.ASSERT(doc.getMetadataLocation() != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS, 
-                    "Missing pointer to metadata location in document " + doc.getDocId());
-            VariableByteInput istream = collectionsDb.getAsStream(doc.getMetadataLocation());
-            DocumentMetadata metadata = new DocumentMetadata();
-            metadata.read(istream);
-            doc.setMetadata(metadata);
+            Value key = new CollectionStore.DocumentKey(document.getCollection().getId(), document.getResourceType(), document.getDocId());
+            VariableByteInput istream = collectionsDb.getAsStream(key);
+            document.readDocumentMeta(istream);
         } catch (LockException e) {
             LOG.warn("Failed to acquire lock on " + collectionsDb.getFile().getName());
         } catch (IOException e) {
@@ -1993,8 +1990,9 @@ public class NativeBroker extends DBBroker {
         // remove document metadata
         Lock lock = collectionsDb.getLock();
         try {
-            lock.acquire();            
-            LOG.debug("Removing resource metadata for " + document.getDocId());
+            lock.acquire();
+            if (LOG.isDebugEnabled())
+                LOG.debug("Removing resource metadata for " + document.getDocId());
             Value key = new CollectionStore.DocumentKey(document.getCollection().getId(), document.getResourceType(), document.getDocId());
             collectionsDb.remove(transaction, key);
         } catch (ReadOnlyException e) {

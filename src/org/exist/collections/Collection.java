@@ -167,12 +167,12 @@ public  class Collection extends Observable
     
     public Collection(XmldbURI path) {
         setPath(path);
-        lock = new ReentrantReadWriteLock(getURI().toString());
+        lock = new ReentrantReadWriteLock(getURI().getRawCollectionPath());
     }
     
     public void setPath(XmldbURI path) {
     	path = path.toCollectionPathURI();
-        isTempCollection = path.equals(XmldbURI.TEMP_COLLECTION_URI);
+        isTempCollection = path.getRawCollectionPath().equals(DBBroker.TEMP_COLLECTION);
         this.path=path;
     }
     
@@ -1304,13 +1304,8 @@ public  class Collection extends Observable
         }
         ostream.writeInt(permissions.getPermissions());
         ostream.writeLong(created);
-        DocumentImpl doc;
-        for (Iterator i = documents.values().iterator(); i.hasNext(); ) {
-            doc = (DocumentImpl) i.next();
-            doc.write(ostream);
-        }
     }
-    
+
     public CollectionConfiguration getConfiguration(DBBroker broker) {
         if (!collectionConfEnabled)
             return null;
@@ -1319,11 +1314,11 @@ public  class Collection extends Observable
         //System collection has no configuration
         if (getURI().equals(XmldbURI.SYSTEM_COLLECTION_URI))
             return null;
-        
+
         CollectionConfigurationManager manager = broker.getBrokerPool().getConfigurationManager();
         if (manager == null)
             return null;
-        
+
         //Attempt to get configuration
         collectionConfEnabled = false;
         try {
@@ -1331,11 +1326,11 @@ public  class Collection extends Observable
         } catch (CollectionConfigurationException e) {
             LOG.warn("Failed to load collection configuration for '" + getURI() + "'", e);
         }
-	        //TODO : we should not consider the collectiona configured after a failure ! -pb
-	        collectionConfEnabled = true;
-        
+        //TODO : we should not consider the collectiona configured after a failure ! -pb
+        collectionConfEnabled = true;
+
         return configuration;
-        }
+    }
     
     /**
      * Should the collection configuration document be enabled
