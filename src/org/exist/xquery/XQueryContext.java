@@ -116,10 +116,10 @@ public class XQueryContext {
 	protected final Stack namespaceStack = new Stack();
 
 	// Known user defined functions in the local module
-	protected final TreeMap declaredFunctions = new TreeMap();
+	protected TreeMap declaredFunctions = new TreeMap();
 
 	// Globally declared variables
-	protected final TreeMap globalVariables = new TreeMap();
+	protected TreeMap globalVariables = new TreeMap();
 
 	// The last element in the linked list of local in-scope variables
 	protected LocalVariable lastVar = null;
@@ -303,6 +303,11 @@ public class XQueryContext {
         ctx.defaultCollator = this.defaultCollator;
         ctx.backwardsCompatible = this.backwardsCompatible;
         ctx.stripWhitespace = this.stripWhitespace;
+
+        ctx.declaredFunctions = new TreeMap(this.declaredFunctions);
+        ctx.globalVariables = new TreeMap(this.globalVariables);
+        ctx.watchdog = this.watchdog;
+
         return ctx;
     }
 
