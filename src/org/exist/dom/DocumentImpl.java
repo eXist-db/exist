@@ -100,9 +100,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
     
     private transient Lock updateLock = null;
     
-    private DocumentMetadata metadata = null;
-    
-    private transient long metadataLocation = StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;    
+    private DocumentMetadata metadata = null;    
     
     public DocumentImpl(DBBroker broker) {
         this(broker, null, null);
@@ -199,14 +197,6 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			broker.getResourceMetadata(this);
 		}
 		return metadata;
-	}
-	
-	public void setMetadataLocation(long pointer) {
-		this.metadataLocation = pointer;
-	}
-	
-	public long getMetadataLocation() {
-		return metadataLocation;
 	}
 	
     /************************************************
@@ -341,8 +331,8 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 					ostream.writeInt(StorageAddress.pageFromPointer(childAddress[i]));
 					ostream.writeShort(StorageAddress.tidFromPointer(childAddress[i]));
 			    }
-			}            
-            StorageAddress.write(metadataLocation, ostream);
+			}
+            metadata.write(ostream);
 		} catch (IOException e) {
 			LOG.warn("io error while writing document data", e);
 		}
@@ -373,13 +363,28 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 			for (int i = 0; i < children; i++) { 
 				childAddress[i] = StorageAddress.createPointer(istream.readInt(), istream.readShort());
 			}
-            metadataLocation = StorageAddress.read(istream);
 		} catch (IOException e) {
             LOG.error("IO error while reading document data for document " + fileURI, e);
 		}
 	}
-	
-	public final int compareTo(Object other) {
+
+    public void readDocumentMeta(VariableByteInput istream) {
+        // skip over already known document data
+        try {
+            istream.skip(1);
+            istream.readUTF();
+            istream.skip(4);
+            istream.skip(children * 2);
+
+            metadata = new DocumentMetadata();
+            metadata.read(istream);
+        } catch (IOException e) {
+            LOG.error("IO error while reading document metadata for " + fileURI, e);
+        }
+
+    }
+
+    public final int compareTo(Object other) {
 		final long otherId = ((DocumentImpl)other).docId;
 		if (otherId == docId)
 			return Constants.EQUAL;
