@@ -49,8 +49,10 @@ import org.w3c.dom.Node;
  *
  */
 public class SymbolTable {
-	
-	public static int LENGTH_LOCAL_NAME = 2; //sizeof short
+
+    public final static short FILE_FORMAT_VERSION_ID = 7;
+
+    public static int LENGTH_LOCAL_NAME = 2; //sizeof short
 	public static int LENGTH_NS_URI = 2; //sizeof short	
 
     /** Maps local node names to an integer id */
@@ -278,7 +280,8 @@ public class SymbolTable {
      */
 	public synchronized void write(final VariableByteOutputStream ostream)
 		throws IOException {
-		ostream.writeShort(max);
+        ostream.writeFixedInt(FILE_FORMAT_VERSION_ID);
+        ostream.writeShort(max);
 		ostream.writeShort(nsMax);
 		ostream.writeInt(nameSymbols.size());
 		for (Iterator i = nameSymbols.iterator(); i.hasNext();) {
@@ -326,7 +329,11 @@ public class SymbolTable {
      * @throws IOException
      */
 	public synchronized void read(VariableByteInput istream) throws IOException {
-		max = istream.readShort();
+        int magic = istream.readFixedInt();
+        if (magic != FILE_FORMAT_VERSION_ID)
+            throw new IOException("Database file symbols.dbx has a storage format incompatible with this " +
+                "version of eXist. Please do a backup/restore of your data first.");
+        max = istream.readShort();
 		nsMax = istream.readShort();
 		int count = istream.readInt();
 		String name;
