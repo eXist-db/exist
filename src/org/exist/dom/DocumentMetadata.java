@@ -65,12 +65,6 @@ public class DocumentMetadata {
     
     protected transient int splitCount = 0;
     
-    /**
-     * if set to > -1, the document needs to be partially reindexed
-     *  - beginning at the tree-level defined by reindex
-     */
-    protected transient int reindex = REINDEX_ALL;
-    
     public DocumentMetadata() {
     }
     
