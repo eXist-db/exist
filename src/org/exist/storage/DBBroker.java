@@ -165,7 +165,7 @@ public abstract class DBBroker extends Observable {
 					+ symbolsFile.getAbsolutePath());
 		} catch (IOException e) {
 			throw new EXistException("io error occurred while reading "
-					+ symbolsFile.getAbsolutePath());
+					+ symbolsFile.getAbsolutePath() + ": " + e.getMessage());
 		}
 	}
 
