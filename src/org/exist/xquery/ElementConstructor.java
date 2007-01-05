@@ -175,7 +175,7 @@ public class ElementConstructor extends NodeConstructor {
 			QName attrQName;
 			// first, search for xmlns attributes and declare in-scope namespaces
 			for (int i = 0; i < attributes.length; i++) {
-				constructor = (AttributeConstructor)attributes[i];
+				constructor = attributes[i];
 				if(constructor.isNamespaceDeclaration()) {
 					int p = constructor.getQName().indexOf(':');
 					if(p == Constants.STRING_NOT_FOUND)
@@ -189,7 +189,7 @@ public class ElementConstructor extends NodeConstructor {
 			// process the remaining attributes
 			for (int i = 0; i < attributes.length; i++) {
 			    context.proceed(this, builder);
-				constructor = (AttributeConstructor)attributes[i];
+				constructor = attributes[i];
 				attrValues = constructor.eval(contextSequence, contextItem);
 				attrQName = QName.parse(context, constructor.getQName(), "");
 				if (attrs.getIndex(attrQName.getNamespaceURI(), attrQName.getLocalName()) != -1)
@@ -254,7 +254,7 @@ public class ElementConstructor extends NodeConstructor {
 			for(int i = 0; i < attributes.length; i++) {
 			    if(i > 0)
 			        dumper.nl();
-				attr = (AttributeConstructor)attributes[i];
+				attr = attributes[i];
 				attr.dump(dumper);
 			}
 	        dumper.endIndent();
@@ -285,7 +285,7 @@ public class ElementConstructor extends NodeConstructor {
 			for(int i = 0; i < attributes.length; i++) {
 			    if(i > 0)
 			    	result.append(" ");
-				attr = (AttributeConstructor)attributes[i];
+				attr = attributes[i];
 				result.append(attr.toString());
 			}
 		}
@@ -319,7 +319,7 @@ public class ElementConstructor extends NodeConstructor {
 			content.resetState();
 		if(attributes != null)
 		    for(int i = 0; i < attributes.length; i++) {
-				Expression next = (Expression)attributes[i];
+				Expression next = attributes[i];
 				next.resetState();
 			}
 	}
