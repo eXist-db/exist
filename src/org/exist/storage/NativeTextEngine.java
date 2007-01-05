@@ -37,6 +37,7 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentMetadata;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.ExtArrayNodeSet;
@@ -1200,7 +1201,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                         NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
                                         int freq = is.readInt();
                                         if (node == null) {
-                                            if (nodeId.getTreeLevel() < document.getMetadata().reindexRequired()) {
+                                        	//TODO : investigate because this should aaways be false ! 
+                                            if (nodeId.getTreeLevel() < DocumentMetadata.REINDEX_ALL) {
                                                 for (int l = 0; l < freq; l++) {
                                                     //Note that we use the existing list
                                                     storedOccurencesList.add(nodeId, is.readInt());

@@ -22,19 +22,20 @@
  */
 package org.exist.dom;
 
-import java.io.EOFException;
 import java.io.IOException;
 
+import org.exist.storage.DBBroker;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
-import org.exist.storage.DBBroker;
 import org.exist.util.MimeType;
 import org.w3c.dom.DocumentType;
 
 public class DocumentMetadata {
     
+    public final static byte NO_DOCTYPE = 0;
     public final static byte HAS_DOCTYPE = 1;
     
+    public final static byte NO_LOCKTOKEN = 0;
     public final static byte HAS_LOCKTOKEN = 2;
     
     public final static int REINDEX_ALL = -1;
@@ -140,7 +141,7 @@ public class DocumentMetadata {
             ostream.writeByte(HAS_DOCTYPE);
             ((DocumentTypeImpl) docType).write(ostream);
         } else {
-            ostream.writeByte((byte) 0);
+            ostream.writeByte(NO_DOCTYPE);
         }
 
         // TODO added by dwes
@@ -148,10 +149,8 @@ public class DocumentMetadata {
             ostream.writeByte(HAS_LOCKTOKEN);
             lockToken.write(ostream);
         } else {
-            ostream.writeByte((byte) 0);
-        }
-
-        
+            ostream.writeByte(NO_LOCKTOKEN);
+        }        
     }
     
     public void read(DBBroker broker, VariableByteInput istream) throws IOException {
@@ -213,18 +212,10 @@ public class DocumentMetadata {
         this.listener = listener;
     }
     
-    public int reindexRequired() {
-        return reindex;
-    }
-    
-    public void setReindexRequired(int level) {
-        this.reindex = level;
-    }
-    
     /**
      * Increase the page split count of this document. The number
      * of pages that have been split during inserts serves as an
-     * indicator for the
+     * indicator for the fragmentation
      *
      */
     public void incSplitCount() {
