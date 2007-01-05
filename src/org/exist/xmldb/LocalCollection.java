@@ -235,8 +235,20 @@ public class LocalCollection extends Observable implements CollectionImpl {
         }
     }
     
-    //TODO: api change to XmldbURI?
-    public String createId() throws XMLDBException {
+    /**
+     * Creates a unique name for a database resource
+     * Uniqueness is only guaranteed within the eXist instance
+     * 
+     * The name is based on a hex encoded string of a random integer
+     * and will have the format xxxxxxxx.xml where x is in the range
+     * 0 to 9 and a to f 
+     * 
+     * @return the unique resource name 
+     */
+    public String createId() throws XMLDBException 
+    {
+        //TODO: api change to XmldbURI?
+    	
         Collection collection = getCollectionWithLock(Lock.READ_LOCK);
         try {
             XmldbURI id;
