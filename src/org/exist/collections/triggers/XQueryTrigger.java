@@ -10,6 +10,8 @@ import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeSet;
 import org.exist.memtree.SAXAdapter;
 import org.exist.security.xacml.AccessContext;
+import org.exist.source.Source;
+import org.exist.source.SourceFactory;
 import org.exist.source.StringSource;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
@@ -40,7 +42,7 @@ public class XQueryTrigger extends FilteringTrigger {
 	
 	private SAXAdapter adapter;
 	private Collection collection = null;
-	private String query = null;
+	private Source query = null;
 	/** namespace prefix associated to trigger */
 	private String bindingPrefix = null;
 	private XQuery service;
@@ -57,9 +59,29 @@ public class XQueryTrigger extends FilteringTrigger {
 		throws CollectionConfigurationException {
  		LOG.debug("Configured XQuery trigger for collection : '" + parent.getURI() + "'");	
  		this.collection = parent;
- 		this.query = (String) parameters.get("query");
-		if (query == null)
+ 		
+ 		
+ 		String url = (String) parameters.get("url");
+ 		if(url != null)
+ 		{
+ 			try
+ 			{
+ 				this.query = SourceFactory.getSource(broker, null, url, false);
+ 			}
+ 			catch(Exception e)
+ 			{
+ 				throw new CollectionConfigurationException(e);
+ 			}
+ 		}
+ 		
+ 		String query = (String) parameters.get("query");
+ 		if (query != null)
+ 			this.query = new StringSource(query);
+		
+		if(this.query == null)
 			return;
+ 		
+ 		
 		this.bindingPrefix = (String) parameters.get("bindingPrefix");
 		if (this.bindingPrefix != null && !"".equals(this.bindingPrefix.trim()))
 				this.bindingPrefix = this.bindingPrefix.trim() + ":";
@@ -89,7 +111,7 @@ public class XQueryTrigger extends FilteringTrigger {
         CompiledXQuery compiledQuery;
         try {       	
         	
-        	compiledQuery = service.compile(context, new StringSource(query));
+        	compiledQuery = service.compile(context, query);
 
         	/*
         	Variable globalVar;
@@ -164,7 +186,7 @@ public class XQueryTrigger extends FilteringTrigger {
         CompiledXQuery compiledQuery = null;
         try {
         	
-        	compiledQuery = service.compile(context, new StringSource(query));
+        	compiledQuery = service.compile(context, query);
         	
         	/*
         	Variable globalVar;
@@ -248,7 +270,7 @@ public class XQueryTrigger extends FilteringTrigger {
         try {       	
         	
         	// compiledQuery = 
-        	service.compile(context, new StringSource(query));
+        	service.compile(context, query);
 
         	/*
         	Variable globalVar;
@@ -318,9 +340,9 @@ public class XQueryTrigger extends FilteringTrigger {
     	}
     }
 
-	public String toString() {
+	/*public String toString() {
 		return "collection=" + collection + "\n" +
 			"modifiedDocument=" + TriggerStatePerThread.getModifiedDocument() + "\n" +
 			( query != null ? query.substring(0, 40 ) : null );
-}
+	}*/
 }

@@ -303,11 +303,6 @@ public class XQueryContext {
         ctx.defaultCollator = this.defaultCollator;
         ctx.backwardsCompatible = this.backwardsCompatible;
         ctx.stripWhitespace = this.stripWhitespace;
-
-        ctx.declaredFunctions = new TreeMap(this.declaredFunctions);
-        ctx.globalVariables = new TreeMap(this.globalVariables);
-        ctx.watchdog = this.watchdog;
-
         return ctx;
     }
 
@@ -1453,14 +1448,18 @@ public class XQueryContext {
 					// No. Load from file or URL
                     try {
                     	//TODO: use URIs to ensure proper resolution of relative locations
-                        source = SourceFactory.getSource(moduleLoadPath, location, true);
+                        source = SourceFactory.getSource(broker, moduleLoadPath, location, true);
                     } catch (MalformedURLException e) {
                         throw new XPathException("source location for module " + namespaceURI + " should be a valid URL: " +
                                 e.getMessage());
                     } catch (IOException e) {
                         throw new XPathException("source for module " + namespaceURI + " not found: " +
                                 e.getMessage());
+                    } catch (PermissionDeniedException e) {
+                    	throw new XPathException("Permission denied to access module " + namespaceURI + " : " +
+                                e.getMessage());
                     }
+                    
                     module = compileModule(namespaceURI, location, module, source);
                 }
 			}
