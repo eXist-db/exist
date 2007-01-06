@@ -38,8 +38,6 @@ public class DocumentMetadata {
     public final static byte NO_LOCKTOKEN = 0;
     public final static byte HAS_LOCKTOKEN = 2;
     
-    public final static int REINDEX_ALL = -1;
-    
     /** the mimeType of the document */
     private String mimeType = MimeType.XML_TYPE.getName();
     

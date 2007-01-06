@@ -425,14 +425,6 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             os = new VariableByteOutputStream();
     }
 
-
-    /* (non-Javadoc)
-     * @see org.exist.storage.ContentLoadingObserver#reindex(org.exist.dom.DocumentImpl, org.exist.dom.NodeImpl)
-     */
-    //TODO : note that this is *not* this.doc -pb
-    public void reindex(DocumentImpl document, StoredNode node) {
-    }
-
     /**
      * Lookup elements or attributes in the index matching a given {@link QName} and
      * {@link NodeSelector}. The NodeSelector argument is optional. If selector is
