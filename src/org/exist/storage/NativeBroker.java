@@ -176,16 +176,16 @@ public class NativeBroker extends DBBroker {
 	/** the database files */
 	protected CollectionStore collectionsDb;
 	protected DOMFile domDb;
-	protected BFile elementsDb;
-	protected BFile valuesDb;
-    protected BFile dbWords;
-	protected BFile valuesDbQname;
+	//protected BFile elementsDb;
+	//protected BFile valuesDb;
+	//protected BFile valuesDbQname;
+    //protected BFile dbWords;
     
-	/** the index processors */
-	protected NativeTextEngine textEngine;
+	/** the index processors */	
 	protected NativeElementIndex elementIndex;
 	protected NativeValueIndex valueIndex;
 	protected NativeValueIndexByQName qnameValueIndex;
+	protected NativeTextEngine textEngine;
     
     protected IndexSpec idxConf;
     
@@ -304,7 +304,7 @@ public class NativeBroker extends DBBroker {
     	double cacheKeyThresdhold = DEFAULT_STRUCTURAL_KEY_THRESHOLD;
     	double cacheValueThresHold = DEFAULT_STRUCTURAL_VALUE_THRESHOLD;
 
-    	elementsDb = createNativeFile(ELEMENTS_DBX_ID, false, config, dataDir, 
+    	BFile elementsDb = createNativeFile(ELEMENTS_DBX_ID, false, config, dataDir, 
         		ELEMENTS_DBX, "db-connection.elements", 
     			cacheGrowth, cacheKeyThresdhold, cacheValueThresHold);
         elementIndex = new NativeElementIndex(this, elementsDb);
@@ -320,7 +320,7 @@ public class NativeBroker extends DBBroker {
     	double cacheKeyThresdhold = DEFAULT_VALUE_KEY_THRESHOLD;
     	double cacheValueThresHold = DEFAULT_VALUE_VALUE_THRESHOLD;
 
-    	valuesDb = createNativeFile(VALUES_DBX_ID, false, config, dataDir, 
+    	BFile valuesDb = createNativeFile(VALUES_DBX_ID, false, config, dataDir, 
         		VALUES_DBX, "db-connection.values", 
     			cacheGrowth, cacheKeyThresdhold, cacheValueThresHold);
         valueIndex = new NativeValueIndex(this, valuesDb);
@@ -336,7 +336,7 @@ public class NativeBroker extends DBBroker {
     	double cacheKeyThresdhold = DEFAULT_VALUE_KEY_THRESHOLD;
     	double cacheValueThresHold = DEFAULT_VALUE_VALUE_THRESHOLD;
 
-    	valuesDbQname = createNativeFile(VALUES_QNAME_DBX_ID, false, config, dataDir, 
+    	BFile valuesDbQname = createNativeFile(VALUES_QNAME_DBX_ID, false, config, dataDir, 
         		VALUES_QNAME_DBX, "db-connection2.values", 
     			cacheGrowth, cacheKeyThresdhold, cacheValueThresHold);
         qnameValueIndex = new NativeValueIndexByQName(this, valuesDbQname);
@@ -352,7 +352,7 @@ public class NativeBroker extends DBBroker {
     	double cacheKeyThresdhold = DEFAULT_WORD_KEY_THRESHOLD;
     	double cacheValueThresHold = DEFAULT_WORD_VALUE_THRESHOLD;
     	
-    	dbWords = createNativeFile(NativeBroker.WORDS_DBX_ID, false, config, dataDir, 
+    	BFile dbWords = createNativeFile(NativeBroker.WORDS_DBX_ID, false, config, dataDir, 
     			WORDS_DBX, "db-connection.words", 
     			cacheGrowth, cacheKeyThresdhold, cacheValueThresHold);
         textEngine = new NativeTextEngine(this, config, dbWords);
@@ -395,12 +395,14 @@ public class NativeBroker extends DBBroker {
         super.addObserver(o);
         textEngine.addObserver(o);
         elementIndex.addObserver(o);
+        //TODO : what about other indexes observers ?
     }
     
     public void deleteObservers() {
         super.deleteObservers();
         if (elementIndex != null)
             elementIndex.deleteObservers();
+        //TODO : what about other indexes observers ?
         if (textEngine != null)
             textEngine.deleteObservers();
     }
@@ -589,18 +591,18 @@ public class NativeBroker extends DBBroker {
     
     public BTree getStorage(byte id) {
         switch (id) {
+        	case DOM_DBX_ID :
+        		return domDb;
             case COLLECTIONS_DBX_ID :
                 return collectionsDb;
             case ELEMENTS_DBX_ID :
-                return elementsDb;
-            case WORDS_DBX_ID :
-                return dbWords;
+                return elementIndex.dbNodes;
             case VALUES_DBX_ID :
-                return valuesDb;
+                return valueIndex.dbValues;
             case VALUES_QNAME_DBX_ID :
-                return valuesDbQname;
-            case DOM_DBX_ID :
-                return domDb;
+                return qnameValueIndex.dbValues;
+            case WORDS_DBX_ID :
+                return textEngine.dbTokens;
             default:
                 return null;
         }
@@ -1952,8 +1954,6 @@ public class NativeBroker extends DBBroker {
     }
 
     private void dropIndex(Txn transaction, DocumentImpl document) throws ReadOnlyException {
-        elementIndex.dropIndex(document);
-
         NodeList nodes = document.getChildNodes();
         for (int i = 0; i < nodes.getLength(); i++) {
             StoredNode node = (StoredNode) nodes.item(i);
@@ -1962,10 +1962,14 @@ public class NativeBroker extends DBBroker {
             scanNodes(transaction, iterator, node, new NodePath(), NodeProcessor.MODE_REMOVE);
         }
         //notifyDropIndex(document);
-        textEngine.dropIndex(document);
-        valueIndex.dropIndex(document);
+        if (elementIndex != null)
+	        elementIndex.dropIndex(document);
+        if (valueIndex != null)
+        	valueIndex.dropIndex(document);       
         if (qnameValueIndex != null)
             qnameValueIndex.dropIndex(document);
+        if (textEngine != null)
+        	textEngine.dropIndex(document);
     }
 
 
@@ -2807,21 +2811,21 @@ public class NativeBroker extends DBBroker {
         LOG.info("Removing index files ...");
         clearContentLoadingObservers();
         
-        elementsDb.closeAndRemove();
+        elementIndex.dbNodes.closeAndRemove();
         config.setProperty("db-connection.elements", null);
        
-        if (valuesDb != null) {
-	        valuesDb.closeAndRemove();
+        if (valueIndex != null) {
+        	valueIndex.dbValues.closeAndRemove();
 	        config.setProperty("db-connection.values", null);
         }
         
-        if (valuesDbQname != null) {
-        	valuesDbQname.closeAndRemove();
+        if (qnameValueIndex != null) {
+        	qnameValueIndex.dbValues.closeAndRemove();
             config.setProperty("db-connection2.values", null);
         }        
         
-        if (dbWords != null) {
-        	dbWords.closeAndRemove();
+        if (textEngine != null) {
+        	textEngine.dbTokens.closeAndRemove();
 	        config.setProperty("db-connection.words", null);
         }
 
@@ -2887,14 +2891,15 @@ public class NativeBroker extends DBBroker {
                         (runtime.maxMemory() / 1024) + "K max; " +
                         (runtime.freeMemory() / 1024) + "K free");              
                 
+                //TODO : use notification system
                 domDb.printStatistics(); 
                 collectionsDb.printStatistics();
-                if (elementsDb != null)
-                    elementsDb.printStatistics();                
-                if (valuesDb != null)
-                    valuesDb.printStatistics();             
-                if (valuesDbQname != null)
-                    valuesDbQname.printStatistics();
+                if (elementIndex != null)
+                    elementIndex.dbNodes.printStatistics();                
+                if (valueIndex != null)
+                    valueIndex.dbValues.printStatistics();             
+                if (qnameValueIndex != null)
+                	qnameValueIndex.dbValues.printStatistics();
                 if (textEngine != null)
                     textEngine.printStatistics();
             }
@@ -2911,9 +2916,10 @@ public class NativeBroker extends DBBroker {
 			sync(Sync.MAJOR_SYNC);
             domDb.close();
             collectionsDb.close();
-			elementsDb.close();
-			if (valuesDb != null)
-				valuesDb.close();
+            if (elementIndex != null)
+            	elementIndex.close();
+			if (valueIndex != null)
+				valueIndex.close();
 			if (qnameValueIndex != null)
 				qnameValueIndex.close();			
             if (textEngine != null)
