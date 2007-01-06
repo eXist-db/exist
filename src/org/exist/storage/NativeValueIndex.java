@@ -39,7 +39,6 @@ import org.exist.dom.ElementImpl;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.dom.StoredNode;
 import org.exist.dom.TextImpl;
 import org.exist.numbering.NodeId;
 import org.exist.storage.btree.BTreeCallback;
@@ -866,8 +865,5 @@ public class NativeValueIndex implements ContentLoadingObserver {
             }
             return true;
         }
-    }
-
-    public void reindex(DocumentImpl oldDoc, StoredNode node) {
     }
 }

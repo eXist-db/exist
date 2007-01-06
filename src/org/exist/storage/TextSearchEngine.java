@@ -228,14 +228,4 @@ public abstract class TextSearchEngine extends Observable {
 	 */
 	public abstract void dropIndex(DocumentImpl doc);
 	
-	/**
-	 * Reindex a document or node.
-	 * 
-	 * If node is null, all levels of the document tree starting with
-	 * DocumentImpl.reindexRequired() will be reindexed.
-	 *  
-	 * @param oldDoc
-	 * @param node
-	 */
-	public abstract void reindex(DocumentImpl oldDoc, StoredNode node);
 }

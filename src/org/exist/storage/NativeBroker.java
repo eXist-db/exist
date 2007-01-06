@@ -83,8 +83,12 @@ import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.*;
-import org.exist.util.sanity.SanityCheck;
+import org.exist.util.ByteArrayPool;
+import org.exist.util.ByteConversion;
+import org.exist.util.Collations;
+import org.exist.util.Configuration;
+import org.exist.util.LockException;
+import org.exist.util.ReadOnlyException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.exist.xquery.TerminatedException;
@@ -1957,7 +1961,7 @@ public class NativeBroker extends DBBroker {
             iterator.next();
             scanNodes(transaction, iterator, node, new NodePath(), NodeProcessor.MODE_REMOVE);
         }
-
+        //notifyDropIndex(document);
         textEngine.dropIndex(document);
         valueIndex.dropIndex(document);
         if (qnameValueIndex != null)

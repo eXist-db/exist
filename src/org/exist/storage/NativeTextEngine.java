@@ -37,7 +37,6 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentMetadata;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.ExtArrayNodeSet;
@@ -316,10 +315,6 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
      */    
 	public void flush() {
 		invertedIndex.flush();
-	}
-
-	public void reindex(DocumentImpl document, StoredNode node) {
-		invertedIndex.reindex(document, node);
 	}
 
 	public void remove() {
@@ -1145,139 +1140,6 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 				words[currentSection].clear();
 			}
 		}
-
-		public void reindex(DocumentImpl document, StoredNode node) {
-            final short collectionId = document.getCollection().getId();
-            final Lock lock = dbTokens.getLock();
-            for (byte currentSection = 0; currentSection <= QNAME_SECTION; currentSection++) {
-                //Not very necessary, but anyway...
-                switch (currentSection) {
-                    case TEXT_SECTION:
-                    case ATTRIBUTE_SECTION:
-                    case QNAME_SECTION:
-                        break;
-                    default:
-                        throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() +
-                                "' (inverted index)");
-                }
-                for (Iterator i = words[currentSection].entrySet().iterator(); i.hasNext();) {
-                    //Compute a key for the token
-                    Map.Entry entry = (Map.Entry) i.next();
-                    Object token = entry.getKey();
-                    Value key;
-                    if (currentSection == QNAME_SECTION) {
-                        QNameTerm term = (QNameTerm) token;
-                        key = new QNameWordRef(collectionId, term.qname, term.term, broker.getSymbols());
-                    } else {
-                        key = new WordRef(collectionId, token.toString());
-                    }
-                    OccurrenceList storedOccurencesList = (OccurrenceList) entry.getValue();
-                    os.clear();
-                    try {
-                        lock.acquire(Lock.WRITE_LOCK);
-                        VariableByteInput is = dbTokens.getAsStream(key);
-                        //Does the token already has data in the index ?
-                        if (is != null) {
-                            //Add its data to the new list
-                            //try {
-                            while (is.available() > 0) {
-                                int storedDocId = is.readInt();
-                                byte storedSection = is.readByte();
-                                int termCount = is.readInt();
-                                //TOUNDERSTAND -pb
-                                int size = is.readFixedInt();
-                                if (storedSection != currentSection || storedDocId != document.getDocId()) {
-                                    // data are related to another section or document:
-                                    // append them to any existing data
-                                    os.writeInt(storedDocId);
-                                    os.writeByte(storedSection);
-                                    os.writeInt(termCount);
-                                    os.writeFixedInt(size);
-                                    is.copyRaw(os, size);
-                                } else {
-                                    // data are related to our section and document:
-                                    // feed the new list with the GIDs
-                                    for (int j = 0; j < termCount; j++) {
-                                        NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
-                                        int freq = is.readInt();
-                                        if (node == null) {
-                                        	//TODO : investigate because this should aaways be false ! 
-                                            if (nodeId.getTreeLevel() < DocumentMetadata.REINDEX_ALL) {
-                                                for (int l = 0; l < freq; l++) {
-                                                    //Note that we use the existing list
-                                                    storedOccurencesList.add(nodeId, is.readInt());
-                                                }
-                                            } else
-                                                is.skip(freq);
-
-                                        } else {
-                                            if (document.getDocId() != ((DocumentImpl) node.getOwnerDocument()).getDocId()
-                                                    || !nodeId.isDescendantOrSelfOf(node.getNodeId())) {
-                                                for (int l = 0; l < freq; l++) {
-                                                    //Note that we use the existing list
-                                                    storedOccurencesList.add(nodeId, is.readInt());
-                                                }
-                                            } else
-                                                is.skip(freq);
-                                        }
-                                    }
-                                }
-                            }
-                            //} catch (EOFException e) {
-                            //EOF is expected here
-                            //}
-                        }
-                        if (storedOccurencesList.getSize() > 0) {
-                            //append the data from the new list
-                            storedOccurencesList.sort();
-                            os.writeInt(document.getDocId());
-                            os.writeByte(currentSection);
-                            os.writeInt(storedOccurencesList.getTermCount());
-                            //TOUNDERSTAND -pb         
-                            int lenOffset = os.position();
-                            os.writeFixedInt(0);
-                            for (int m = 0; m < storedOccurencesList.getSize();) {
-                                storedOccurencesList.nodes[m].write(os);
-                                int freq = storedOccurencesList.getOccurrences(m);
-                                os.writeInt(freq);
-                                for (int n = 0; n < freq; n++) {
-                                    os.writeInt(storedOccurencesList.offsets[m + n]);
-                                }
-                                m += freq;
-                            }
-                            //What does this 4 stand for ?
-                            os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
-                        }
-                        //Store the data
-                        if (is == null) {
-                            //TOUNDERSTAND : Should is be null, what will there be in os.data() ? -pb
-                            if (dbTokens.put(key, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                                LOG.error("Could not put index data for token '" + token + "' in '" + dbTokens.getFile().getName() +
-                                        "' (inverted index)");
-                                //TODO : throw an exception ?
-                            }
-                        } else {
-                            long address = ((BFile.PageInputStream) is).getAddress();
-                            if (dbTokens.update(address, key, os.data()) == BFile.UNKNOWN_ADDRESS) {
-                                LOG.error("Could not update index data for value '" + token + "' in '" + dbTokens.getFile().getName() +
-                                        "' (inverted index)");
-                                //TODO : throw an exception ?
-                            }
-                        }
-                    } catch (LockException e) {
-                        LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "' (inverted index)", e);
-                    } catch (ReadOnlyException e) {
-                        LOG.warn("Read-only error on '" + dbTokens.getFile().getName() + "' (inverted index)", e);
-                    } catch (IOException e) {
-                        LOG.error("io error while reindexing word '" + token + "' in '" + dbTokens.getFile().getName() + "' (inverted index)", e);
-                    } finally {
-                        lock.release(Lock.WRITE_LOCK);
-                        os.clear();
-                    }
-                }
-                words[currentSection].clear();
-            }
-        }
 	}
 	
 	private class IndexCallback implements BTreeCallback {
