@@ -87,6 +87,10 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
     private final static Logger LOG = Logger.getLogger(NativeValueIndex.class);
     
+    public static final double DEFAULT_VALUE_CACHE_GROWTH = 1.25;
+    public static final double DEFAULT_VALUE_KEY_THRESHOLD = 0.01;
+    public static final double DEFAULT_VALUE_VALUE_THRESHOLD = 0.04;
+    
 	public static int OFFSET_COLLECTION_ID = 0;	
 	public static int OFFSET_VALUE_TYPE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //2
 	public static int LENGTH_VALUE_TYPE = 1; //sizeof byte

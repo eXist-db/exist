@@ -89,6 +89,10 @@ import org.w3c.dom.Node;
  * @author Wolfgang Meier
  */
 public class NativeTextEngine extends TextSearchEngine implements ContentLoadingObserver {
+	
+    public static final double DEFAULT_WORD_CACHE_GROWTH = 1.4;
+    public static final double DEFAULT_WORD_KEY_THRESHOLD = 0.01;  
+    public static final double DEFAULT_WORD_VALUE_THRESHOLD = 0.015;
 
     public final static byte TEXT_SECTION = 0;
 	public final static byte ATTRIBUTE_SECTION = 1;

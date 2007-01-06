@@ -160,15 +160,6 @@ public class NativeBroker extends DBBroker {
     public static final int BUFFERS = 256;
     /** check available memory after storing DEFAULT_NODES_BEFORE_MEMORY_CHECK nodes */
     public static final int DEFAULT_NODES_BEFORE_MEMORY_CHECK = 10000;
-    public static final double DEFAULT_STRUCTURAL_CACHE_GROWTH = 1.25;
-    public static final double DEFAULT_STRUCTURAL_KEY_THRESHOLD = 0.01;
-    public static final double DEFAULT_STRUCTURAL_VALUE_THRESHOLD = 0.04;   
-    public static final double DEFAULT_VALUE_CACHE_GROWTH = 1.25;
-    public static final double DEFAULT_VALUE_KEY_THRESHOLD = 0.01;
-    public static final double DEFAULT_VALUE_VALUE_THRESHOLD = 0.04;
-    public static final double DEFAULT_WORD_CACHE_GROWTH = 1.4;
-    public static final double DEFAULT_WORD_KEY_THRESHOLD = 0.01;  
-    public static final double DEFAULT_WORD_VALUE_THRESHOLD = 0.015;
     
 	public static int OFFSET_COLLECTION_ID = 0;
 	public static int OFFSET_VALUE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //2
@@ -176,10 +167,6 @@ public class NativeBroker extends DBBroker {
 	/** the database files */
 	protected CollectionStore collectionsDb;
 	protected DOMFile domDb;
-	//protected BFile elementsDb;
-	//protected BFile valuesDb;
-	//protected BFile valuesDbQname;
-    //protected BFile dbWords;
     
 	/** the index processors */	
 	protected NativeElementIndex elementIndex;
@@ -300,9 +287,9 @@ public class NativeBroker extends DBBroker {
      */
     private void createStructuralIndexFile() throws DBException {
     	//TODO : read from configuration (key ?)
-    	double cacheGrowth = DEFAULT_STRUCTURAL_CACHE_GROWTH;
-    	double cacheKeyThresdhold = DEFAULT_STRUCTURAL_KEY_THRESHOLD;
-    	double cacheValueThresHold = DEFAULT_STRUCTURAL_VALUE_THRESHOLD;
+    	double cacheGrowth = NativeElementIndex.DEFAULT_STRUCTURAL_CACHE_GROWTH;
+    	double cacheKeyThresdhold = NativeElementIndex.DEFAULT_STRUCTURAL_KEY_THRESHOLD;
+    	double cacheValueThresHold = NativeElementIndex.DEFAULT_STRUCTURAL_VALUE_THRESHOLD;
 
     	BFile elementsDb = createNativeFile(ELEMENTS_DBX_ID, false, config, dataDir, 
         		ELEMENTS_DBX, "db-connection.elements", 
@@ -316,9 +303,9 @@ public class NativeBroker extends DBBroker {
      */    
     private void createValueIndexFile() throws DBException {
     	//TODO : read from configuration (key ?)
-    	double cacheGrowth = DEFAULT_VALUE_CACHE_GROWTH;
-    	double cacheKeyThresdhold = DEFAULT_VALUE_KEY_THRESHOLD;
-    	double cacheValueThresHold = DEFAULT_VALUE_VALUE_THRESHOLD;
+    	double cacheGrowth = NativeValueIndex.DEFAULT_VALUE_CACHE_GROWTH;
+    	double cacheKeyThresdhold = NativeValueIndex.DEFAULT_VALUE_KEY_THRESHOLD;
+    	double cacheValueThresHold = NativeValueIndex.DEFAULT_VALUE_VALUE_THRESHOLD;
 
     	BFile valuesDb = createNativeFile(VALUES_DBX_ID, false, config, dataDir, 
         		VALUES_DBX, "db-connection.values", 
@@ -332,9 +319,9 @@ public class NativeBroker extends DBBroker {
      */      
     private void createQNameValueIndexFiles() throws DBException {        
     	//TODO : read from configuration (key ?)
-    	double cacheGrowth = DEFAULT_VALUE_CACHE_GROWTH;
-    	double cacheKeyThresdhold = DEFAULT_VALUE_KEY_THRESHOLD;
-    	double cacheValueThresHold = DEFAULT_VALUE_VALUE_THRESHOLD;
+    	double cacheGrowth = NativeValueIndexByQName.DEFAULT_VALUE_CACHE_GROWTH;
+    	double cacheKeyThresdhold = NativeValueIndexByQName.DEFAULT_VALUE_KEY_THRESHOLD;
+    	double cacheValueThresHold = NativeValueIndexByQName.DEFAULT_VALUE_VALUE_THRESHOLD;
 
     	BFile valuesDbQname = createNativeFile(VALUES_QNAME_DBX_ID, false, config, dataDir, 
         		VALUES_QNAME_DBX, "db-connection2.values", 
@@ -348,29 +335,15 @@ public class NativeBroker extends DBBroker {
      */     
     private void createFulltextIndexFiles() throws DBException {
     	//TODO : read from configuration (key ?)
-    	double cacheGrowth = DEFAULT_WORD_CACHE_GROWTH;
-    	double cacheKeyThresdhold = DEFAULT_WORD_KEY_THRESHOLD;
-    	double cacheValueThresHold = DEFAULT_WORD_VALUE_THRESHOLD;
+    	double cacheGrowth = NativeTextEngine.DEFAULT_WORD_CACHE_GROWTH;
+    	double cacheKeyThresdhold = NativeTextEngine.DEFAULT_WORD_KEY_THRESHOLD;
+    	double cacheValueThresHold = NativeTextEngine.DEFAULT_WORD_VALUE_THRESHOLD;
     	
     	BFile dbWords = createNativeFile(NativeBroker.WORDS_DBX_ID, false, config, dataDir, 
     			WORDS_DBX, "db-connection.words", 
     			cacheGrowth, cacheKeyThresdhold, cacheValueThresHold);
         textEngine = new NativeTextEngine(this, config, dbWords);
         addContentLoadingObserver(textEngine);
-        
-        /*
-        dbWords = (BFile) config.getProperty("db-connection.words");
-        if (dbWords == null) {
-            File file = new File(dataDir + File.separatorChar + WORDS_DBX);
-            LOG.debug("Creating '" + file.getName() + "'...");
-        	dbWords = new BFile(pool, NativeBroker.WORDS_DBX_ID, false, file,                     
-        	        pool.getCacheManager(), DEFAULT_WORD_CACHE_GROWTH, DEFAULT_WORD_KEY_THRESHOLD, DEFAULT_WORD_VALUE_THRESHOLD);
-            config.setProperty("db-connection.words", dbWords); 
-        }
-        textEngine = new NativeTextEngine(this, config, dbWords);
-        addContentLoadingObserver(textEngine);
-        readOnly = readOnly || dbWords.isReadOnly();
-        */
     }
 
     private BFile createNativeFile(byte id, boolean transactional, Configuration config, String dataDir, 
@@ -1961,7 +1934,8 @@ public class NativeBroker extends DBBroker {
             iterator.next();
             scanNodes(transaction, iterator, node, new NodePath(), NodeProcessor.MODE_REMOVE);
         }
-        //notifyDropIndex(document);
+        notifyDropIndex(document);
+        /*
         if (elementIndex != null)
 	        elementIndex.dropIndex(document);
         if (valueIndex != null)
@@ -1970,6 +1944,7 @@ public class NativeBroker extends DBBroker {
             qnameValueIndex.dropIndex(document);
         if (textEngine != null)
         	textEngine.dropIndex(document);
+        */
     }
 
 
@@ -2916,6 +2891,7 @@ public class NativeBroker extends DBBroker {
 			sync(Sync.MAJOR_SYNC);
             domDb.close();
             collectionsDb.close();
+            //TODO : use notification mechanism
             if (elementIndex != null)
             	elementIndex.close();
 			if (valueIndex != null)
@@ -3074,7 +3050,7 @@ public class NativeBroker extends DBBroker {
                     // --move to-- NativeTextEngine
                     if(ftIdx == null || currentPath == null || ftIdx.match(currentPath))
                         indexType |= RangeIndexSpec.TEXT;
-                    if (currentPath != null && ftIdx != null && ftIdx.matchMixedElement(currentPath))
+                    if (ftIdx != null && currentPath != null && ftIdx.matchMixedElement(currentPath))
                         indexType |= RangeIndexSpec.TEXT_MIXED_CONTENT;
                     if(node.getChildCount() - node.getAttributesCount() > 1) {
                         indexType |= RangeIndexSpec.MIXED_CONTENT;
