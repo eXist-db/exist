@@ -80,10 +80,18 @@ public class SourceFactory {
         /* xmldb: */
         else if(location.startsWith(XmldbURI.XMLDB_URI_PREFIX))
         {
-			XmldbURI pathUri = XmldbURI.create(location);
-			DocumentImpl resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
-			source = new DBSource(broker, (BinaryDocument)resource, true);
-			resource.getUpdateLock().release();
+        	DocumentImpl resource = null;
+        	try
+        	{
+				XmldbURI pathUri = XmldbURI.create(location);
+				resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
+				source = new DBSource(broker, (BinaryDocument)resource, true);
+        	}
+			finally
+			{
+				if(resource != null)
+					resource.getUpdateLock().release();
+			}
         }
         
         /* resource: */
