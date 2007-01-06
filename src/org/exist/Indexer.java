@@ -44,10 +44,9 @@ import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
 import org.exist.dom.TextImpl;
 import org.exist.storage.DBBroker;
+import org.exist.storage.FulltextIndexSpec;
 import org.exist.storage.GeneralRangeIndexSpec;
 import org.exist.storage.NodePath;
-import org.exist.storage.FulltextIndexSpec;
-import org.exist.storage.IndexSpec;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
@@ -191,9 +190,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
         nsMappings.clear();
         rootNode = null;
         setPrevious(null);
-        IndexSpec idxSpec = doc.getCollection().getIdxConf(broker);
-        if (idxSpec != null)
-            ftIdx = idxSpec.getFulltextIndexSpec();
+        ftIdx = doc.getCollection().getFulltextIndexConfiguration(broker);
     }
     
 	/**

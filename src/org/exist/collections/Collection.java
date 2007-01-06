@@ -50,6 +50,7 @@ import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentMetadata;
 import org.exist.dom.DocumentSet;
+import org.exist.dom.QName;
 import org.exist.security.Group;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
@@ -58,7 +59,11 @@ import org.exist.security.SecurityManager;
 import org.exist.security.User;
 import org.exist.security.XMLSecurityManager;
 import org.exist.storage.DBBroker;
+import org.exist.storage.FulltextIndexSpec;
+import org.exist.storage.GeneralRangeIndexSpec;
 import org.exist.storage.IndexSpec;
+import org.exist.storage.NodePath;
+import org.exist.storage.QNameRangeIndexSpec;
 import org.exist.storage.UpdateListener;
 import org.exist.storage.cache.Cacheable;
 import org.exist.storage.index.BFile;
@@ -1566,12 +1571,34 @@ public  class Collection extends Observable
         return buf.toString();
     }
     
+    /**
+     * @deprecated
+     * @param broker
+     * @return
+     */
     public IndexSpec getIdxConf(DBBroker broker) {
         CollectionConfiguration conf = getConfiguration(broker);
-        if(conf == null) {
+        //If the collection has its own config...
+        if (conf == null) {
             return broker.getIndexConfiguration();
+        //... otherwise return the general config (the broker's one)
         } else {
             return conf.getIndexConfiguration();
         }
+    }
+    
+    public GeneralRangeIndexSpec getIndexByPathConfiguration(DBBroker broker, NodePath path) {
+    	IndexSpec idxSpec = getIdxConf(broker);
+    	return (idxSpec == null) ? null : idxSpec.getIndexByPath(path);
+    }    
+    
+    public QNameRangeIndexSpec getIndexByQNameConfiguration(DBBroker broker, QName qname) {
+    	IndexSpec idxSpec = getIdxConf(broker);
+    	return (idxSpec == null) ? null : idxSpec.getIndexByQName(qname);
+    }    
+    
+    public FulltextIndexSpec getFulltextIndexConfiguration(DBBroker broker) {
+    	IndexSpec idxSpec = getIdxConf(broker);
+    	return (idxSpec == null) ? null : idxSpec.getFulltextIndexSpec();
     }
 }
