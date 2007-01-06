@@ -303,6 +303,11 @@ public class XQueryContext {
         ctx.defaultCollator = this.defaultCollator;
         ctx.backwardsCompatible = this.backwardsCompatible;
         ctx.stripWhitespace = this.stripWhitespace;
+
+        ctx.declaredFunctions = new TreeMap(this.declaredFunctions);
+        ctx.globalVariables = new TreeMap(this.globalVariables);
+        ctx.watchdog = this.watchdog;
+
         return ctx;
     }
 
