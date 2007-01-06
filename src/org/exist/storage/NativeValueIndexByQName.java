@@ -81,6 +81,10 @@ Related test: @link org.exist.xquery.test.ValueIndexByQNameTest
 public class NativeValueIndexByQName extends NativeValueIndex implements ContentLoadingObserver {
 
 	private final static Logger LOG = Logger.getLogger(NativeValueIndexByQName.class);
+	
+    public static final double DEFAULT_VALUE_CACHE_GROWTH = 1.25;
+    public static final double DEFAULT_VALUE_KEY_THRESHOLD = 0.01;
+    public static final double DEFAULT_VALUE_VALUE_THRESHOLD = 0.04;
 
 	public static int OFFSET_COLLECTION_ID = 0;
 	//Notice that the conventional design is to serialize OFFSET_SYMBOL *then* OFFSET_NSSYMBOL
