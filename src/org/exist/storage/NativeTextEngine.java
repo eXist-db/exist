@@ -22,6 +22,7 @@
 package org.exist.storage;
 
 //import java.io.EOFException;
+import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -119,12 +120,25 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     /** Work output Stream that should be cleared before every use */
     private VariableByteOutputStream os = new VariableByteOutputStream(7);    
 
-	public NativeTextEngine(DBBroker broker, Configuration config, BFile db) {
+    public NativeTextEngine(DBBroker broker, byte id, String dataDir, String dataFile, 
+    		Configuration config, String configKeyForFile) throws DBException {
 		super(broker, config);
-        this.dbTokens = db;
+        //TODO : read from configuration (key ?)
+    	double cacheGrowth = NativeTextEngine.DEFAULT_WORD_CACHE_GROWTH;
+    	double cacheKeyThresdhold = NativeTextEngine.DEFAULT_WORD_KEY_THRESHOLD;
+    	double cacheValueThresHold = NativeTextEngine.DEFAULT_WORD_VALUE_THRESHOLD;
+    	BFile nativeFile = (BFile) config.getProperty(configKeyForFile);        
+        if (nativeFile == null) {
+            File file = new File(dataDir + File.separatorChar + dataFile);
+            LOG.debug("Creating '" + file.getName() + "'...");
+            nativeFile = new BFile(broker.getBrokerPool(), id, false, 
+            		file, broker.getBrokerPool().getCacheManager(), cacheGrowth, cacheKeyThresdhold, cacheValueThresHold);            
+            config.setProperty(configKeyForFile, nativeFile);            
+        }        
+        dbTokens = nativeFile;
         this.invertedIndex = new InvertedIndex();
-	}
-
+    }
+	
 	/**
 	 * Checks if the given string could be a regular expression.
 	 * 

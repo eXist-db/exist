@@ -22,6 +22,7 @@
 package org.exist.storage;
 
 //import java.io.EOFException;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -52,6 +53,7 @@ import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.Lock;
 import org.exist.util.ByteConversion;
+import org.exist.util.Configuration;
 import org.exist.util.FastQSort;
 import org.exist.util.LockException;
 import org.exist.util.ReadOnlyException;
@@ -121,11 +123,24 @@ public class NativeValueIndex implements ContentLoadingObserver {
     
     public static String PROPERTY_INDEX_CASE_SENSITIVE = "indexer.case-sensitive";
     
-    public NativeValueIndex(DBBroker broker, BFile dbValues) {
+    public NativeValueIndex(DBBroker broker, byte id, String dataDir, String dataFile, 
+    		Configuration config, String configKeyForFile) throws DBException {
         this.broker = broker;
-        this.dbValues = dbValues;
+    	//TODO : read from configuration (key ?)
+    	double cacheGrowth = NativeValueIndex.DEFAULT_VALUE_CACHE_GROWTH;
+    	double cacheKeyThresdhold = NativeValueIndex.DEFAULT_VALUE_KEY_THRESHOLD;
+    	double cacheValueThresHold = NativeValueIndex.DEFAULT_VALUE_VALUE_THRESHOLD;
+        BFile nativeFile = (BFile) config.getProperty(configKeyForFile);        
+        if (nativeFile == null) {
+            File file = new File(dataDir + File.separatorChar + dataFile);
+            LOG.debug("Creating '" + file.getName() + "'...");
+            nativeFile = new BFile(broker.getBrokerPool(), id, false, 
+            		file, broker.getBrokerPool().getCacheManager(), cacheGrowth, cacheKeyThresdhold, cacheValueThresHold);            
+            config.setProperty(configKeyForFile, nativeFile);            
+        }        
+        dbValues = nativeFile;
         //TODO : reconsider this. Case sensitivity have nothing to do with atomic values -pb
-        Boolean caseOpt = (Boolean) broker.getConfiguration().getProperty(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE);
+        Boolean caseOpt = (Boolean) config.getProperty(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE);
         if (caseOpt != null)
             caseSensitive = caseOpt.booleanValue();
     }
