@@ -41,9 +41,9 @@ import org.exist.storage.btree.BTreeException;
 import org.exist.storage.btree.DBException;
 import org.exist.storage.btree.IndexQuery;
 import org.exist.storage.btree.Value;
-import org.exist.storage.index.BFile;
 import org.exist.storage.lock.Lock;
 import org.exist.util.ByteConversion;
+import org.exist.util.Configuration;
 import org.exist.util.LockException;
 import org.exist.util.ReadOnlyException;
 import org.exist.xquery.Constants;
@@ -82,10 +82,6 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
 
 	private final static Logger LOG = Logger.getLogger(NativeValueIndexByQName.class);
 	
-    public static final double DEFAULT_VALUE_CACHE_GROWTH = 1.25;
-    public static final double DEFAULT_VALUE_KEY_THRESHOLD = 0.01;
-    public static final double DEFAULT_VALUE_VALUE_THRESHOLD = 0.04;
-
 	public static int OFFSET_COLLECTION_ID = 0;
 	//Notice that the conventional design is to serialize OFFSET_SYMBOL *then* OFFSET_NSSYMBOL
 	//TODO : investigate
@@ -96,10 +92,11 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
 	/** switch to activate/deactivate the feature "new index by QName" */
 	private boolean qnameValueIndexation = true; // false;
 
-	public NativeValueIndexByQName(DBBroker broker, BFile valuesDb) {
-		super(broker, valuesDb);
-	}
-	
+    public NativeValueIndexByQName(DBBroker broker, byte id, String dataDir, String dataFile, 
+    		Configuration config, String configKeyForFile) throws DBException {
+        super(broker, id, dataDir, dataFile, config, configKeyForFile);	
+    }
+    	    
 	/** @see org.exist.storage.NativeValueIndex#storeAttribute(org.exist.storage.RangeIndexSpec, org.exist.dom.AttrImpl)
 	 */
 	public void storeAttribute(RangeIndexSpec spec, AttrImpl node) {

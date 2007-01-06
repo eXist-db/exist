@@ -21,6 +21,7 @@
 package org.exist.storage;
 
 import java.io.EOFException;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -58,6 +59,7 @@ import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.Lock;
 import org.exist.util.ByteConversion;
+import org.exist.util.Configuration;
 import org.exist.util.FastQSort;
 import org.exist.util.LockException;
 import org.exist.util.Occurrences;
@@ -98,9 +100,22 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
     /** Work output Stream that should be cleared before every use */
     private VariableByteOutputStream os = new VariableByteOutputStream();
     
-    public NativeElementIndex(DBBroker broker, BFile dbNodes) {
+    public NativeElementIndex(DBBroker broker, byte id, String dataDir, String dataFile, 
+    		Configuration config, String configKeyForFile) throws DBException {
         super(broker);
-        this.dbNodes = dbNodes;
+    	//TODO : read from configuration (key ?)
+    	double cacheGrowth = NativeElementIndex.DEFAULT_STRUCTURAL_CACHE_GROWTH;
+    	double cacheKeyThresdhold = NativeElementIndex.DEFAULT_STRUCTURAL_KEY_THRESHOLD;
+    	double cacheValueThresHold = NativeElementIndex.DEFAULT_STRUCTURAL_VALUE_THRESHOLD;    	       
+        BFile nativeFile = (BFile) config.getProperty(configKeyForFile);        
+        if (nativeFile == null) {
+            File file = new File(dataDir + File.separatorChar + dataFile);
+            LOG.debug("Creating '" + file.getName() + "'...");
+            nativeFile = new BFile(broker.getBrokerPool(), id, false, 
+            		file, broker.getBrokerPool().getCacheManager(), cacheGrowth, cacheKeyThresdhold, cacheValueThresHold);            
+            config.setProperty(configKeyForFile, nativeFile);            
+        }        
+        this.dbNodes = nativeFile;
     }
  
     /** Store the given node in the node index.
@@ -585,7 +600,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 	sameDocSet = false;
                     continue;
                 }
-                int lastDocId = -1;
+                int lastDocId = DocumentImpl.UNKNOWN_DOCUMENT_ID;
                 NodeProxy ancestor = null;
                 
                 while (is.available() > 0) {

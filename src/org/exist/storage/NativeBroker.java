@@ -174,7 +174,7 @@ public class NativeBroker extends DBBroker {
 	protected NativeValueIndexByQName qnameValueIndex;
 	protected NativeTextEngine textEngine;
     
-    protected IndexSpec idxConf;
+    protected IndexSpec indexConfiguration;
     
     protected int defaultIndexDepth;    
     
@@ -230,7 +230,7 @@ public class NativeBroker extends DBBroker {
 		if (memMinFree < 0)
 			memMinFree = DEFAULT_MIN_MEMORY;
         
-        idxConf = (IndexSpec) config.getProperty("indexer.config");         
+        indexConfiguration = (IndexSpec) config.getProperty("indexer.config");         
         xmlSerializer = new NativeSerializer(this, config);
         user = SecurityManager.SYSTEM_USER;            
         
@@ -264,7 +264,7 @@ public class NativeBroker extends DBBroker {
             readOnly = readOnly || collectionsDb.isReadOnly();
             
             //TODO : is it necessary to create them if we are in read-only mode ?
-            createStructuralIndexFile();
+            createStructuralIndexFile();            
             //TODO : don't create if unnecessary ?
             createValueIndexFile();
             //Like this ;-)
@@ -286,15 +286,8 @@ public class NativeBroker extends DBBroker {
      * @throws DBException
      */
     private void createStructuralIndexFile() throws DBException {
-    	//TODO : read from configuration (key ?)
-    	double cacheGrowth = NativeElementIndex.DEFAULT_STRUCTURAL_CACHE_GROWTH;
-    	double cacheKeyThresdhold = NativeElementIndex.DEFAULT_STRUCTURAL_KEY_THRESHOLD;
-    	double cacheValueThresHold = NativeElementIndex.DEFAULT_STRUCTURAL_VALUE_THRESHOLD;
-
-    	BFile elementsDb = createNativeFile(ELEMENTS_DBX_ID, false, config, dataDir, 
-        		ELEMENTS_DBX, "db-connection.elements", 
-    			cacheGrowth, cacheKeyThresdhold, cacheValueThresHold);
-        elementIndex = new NativeElementIndex(this, elementsDb);
+        elementIndex = new NativeElementIndex(this, ELEMENTS_DBX_ID, dataDir, ELEMENTS_DBX, 
+        		config, "db-connection.elements");
         addContentLoadingObserver(elementIndex);
     }
       
@@ -302,31 +295,17 @@ public class NativeBroker extends DBBroker {
      * @throws DBException
      */    
     private void createValueIndexFile() throws DBException {
-    	//TODO : read from configuration (key ?)
-    	double cacheGrowth = NativeValueIndex.DEFAULT_VALUE_CACHE_GROWTH;
-    	double cacheKeyThresdhold = NativeValueIndex.DEFAULT_VALUE_KEY_THRESHOLD;
-    	double cacheValueThresHold = NativeValueIndex.DEFAULT_VALUE_VALUE_THRESHOLD;
-
-    	BFile valuesDb = createNativeFile(VALUES_DBX_ID, false, config, dataDir, 
-        		VALUES_DBX, "db-connection.values", 
-    			cacheGrowth, cacheKeyThresdhold, cacheValueThresHold);
-        valueIndex = new NativeValueIndex(this, valuesDb);
+        valueIndex = new NativeValueIndex(this, VALUES_DBX_ID, dataDir, VALUES_DBX, 
+        		config, "db-connection.values");
         addContentLoadingObserver(valueIndex);
     }
-        
+    
     /** Creates the indexed values (by QName) file.
      * @throws DBException
      */      
     private void createQNameValueIndexFiles() throws DBException {        
-    	//TODO : read from configuration (key ?)
-    	double cacheGrowth = NativeValueIndexByQName.DEFAULT_VALUE_CACHE_GROWTH;
-    	double cacheKeyThresdhold = NativeValueIndexByQName.DEFAULT_VALUE_KEY_THRESHOLD;
-    	double cacheValueThresHold = NativeValueIndexByQName.DEFAULT_VALUE_VALUE_THRESHOLD;
-
-    	BFile valuesDbQname = createNativeFile(VALUES_QNAME_DBX_ID, false, config, dataDir, 
-        		VALUES_QNAME_DBX, "db-connection2.values", 
-    			cacheGrowth, cacheKeyThresdhold, cacheValueThresHold);
-        qnameValueIndex = new NativeValueIndexByQName(this, valuesDbQname);
+        qnameValueIndex = new NativeValueIndexByQName(this,  VALUES_QNAME_DBX_ID, dataDir, VALUES_QNAME_DBX,
+        		config, "db-connection2.values");
         addContentLoadingObserver(qnameValueIndex);   
     }
         
@@ -334,31 +313,8 @@ public class NativeBroker extends DBBroker {
      * @throws DBException
      */     
     private void createFulltextIndexFiles() throws DBException {
-    	//TODO : read from configuration (key ?)
-    	double cacheGrowth = NativeTextEngine.DEFAULT_WORD_CACHE_GROWTH;
-    	double cacheKeyThresdhold = NativeTextEngine.DEFAULT_WORD_KEY_THRESHOLD;
-    	double cacheValueThresHold = NativeTextEngine.DEFAULT_WORD_VALUE_THRESHOLD;
-    	
-    	BFile dbWords = createNativeFile(NativeBroker.WORDS_DBX_ID, false, config, dataDir, 
-    			WORDS_DBX, "db-connection.words", 
-    			cacheGrowth, cacheKeyThresdhold, cacheValueThresHold);
-        textEngine = new NativeTextEngine(this, config, dbWords);
+        textEngine = new NativeTextEngine(this, WORDS_DBX_ID, dataDir, WORDS_DBX, config, "db-connection.words"); 
         addContentLoadingObserver(textEngine);
-    }
-
-    private BFile createNativeFile(byte id, boolean transactional, Configuration config, String dataDir, 
-            String dataFile, String configKeyForFile, 
-            double cacheGrowth, double keyThreshold, double valueThreshold) throws DBException {        
-        BFile nativeFile = (BFile) config.getProperty(configKeyForFile);        
-        if (nativeFile == null) {
-            File file = new File(dataDir + File.separatorChar + dataFile);
-            LOG.debug("Creating '" + file.getName() + "'...");
-            nativeFile = new BFile(pool, id, transactional, file, pool.getCacheManager(), cacheGrowth, keyThreshold, valueThreshold);            
-            config.setProperty(configKeyForFile, nativeFile);            
-        }
-        //TODO : move this out of this method ? 
-        readOnly = readOnly || nativeFile.isReadOnly();
-        return nativeFile;
     }
 
     /** Observer Design Pattern: List of ContentLoadingObserver objects */
@@ -586,7 +542,7 @@ public class NativeBroker extends DBBroker {
     }        
 
 	public IndexSpec getIndexConfiguration() {
-	    return idxConf;
+	    return indexConfiguration;
 	}
     
     public ElementIndex getElementIndex() {
@@ -2286,15 +2242,15 @@ public class NativeBroker extends DBBroker {
      */
     public void storeNode(final Txn transaction, final StoredNode node, NodePath currentPath, boolean fullTextIndex) {
         checkAvailableMemory();
-        
         final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
-        final IndexSpec idxSpec = doc.getCollection().getIdxConf(this);
-        final int depth = idxSpec == null ? defaultIndexDepth : idxSpec.getIndexDepth();
         final short nodeType = node.getNodeType();
         new DOMTransaction(this, domDb, Lock.WRITE_LOCK, doc) {
             public Object start() throws ReadOnlyException {
                 long address = BFile.UNKNOWN_ADDRESS;
                 final byte data[] = node.serialize();
+                int depth = doc.getCollection().getIndexDepth(NativeBroker.this);
+                if (depth == -1) 
+                	depth = defaultIndexDepth;
                 if (nodeType == Node.TEXT_NODE
                     || nodeType == Node.ATTRIBUTE_NODE
                     || nodeType == Node.CDATA_SECTION_NODE
@@ -2806,7 +2762,7 @@ public class NativeBroker extends DBBroker {
         try {
         	createStructuralIndexFile();
         	//TODO : don't create if unnecessary ?
-        	createValueIndexFile();
+        	createValueIndexFile();        	
         	//Like this ;-)
         	if (qnameValueIndexation) 
         		createQNameValueIndexFiles();
@@ -2859,10 +2815,9 @@ public class NativeBroker extends DBBroker {
                 }
                 notifySync();
 //              System.gc();
-                Runtime runtime = Runtime.getRuntime();
-                LOG.info("Memory: " + (runtime.totalMemory() / 1024) + "K total; " +
-                        (runtime.maxMemory() / 1024) + "K max; " +
-                        (runtime.freeMemory() / 1024) + "K free");              
+                LOG.info("Memory: " + (run.totalMemory() / 1024) + "K total; " +
+                        (run.maxMemory() / 1024) + "K max; " +
+                        (run.freeMemory() / 1024) + "K free");              
                 
                 //TODO : use notification system
                 domDb.printStatistics(); 
@@ -2987,7 +2942,6 @@ public class NativeBroker extends DBBroker {
 
         private IndexSpec idxSpec;
         private FulltextIndexSpec ftIdx;
-        private int depth;
         private int level;
         private int mode = MODE_STORE;
 
@@ -3009,8 +2963,7 @@ public class NativeBroker extends DBBroker {
             doc = (DocumentImpl) node.getOwnerDocument();
             address = node.getInternalAddress();
             
-            idxSpec = doc.getCollection().getIdxConf(NativeBroker.this);
-            depth = idxSpec == null ? defaultIndexDepth : idxSpec.getIndexDepth();
+            idxSpec = doc.getCollection().getIndexConfiguration(NativeBroker.this);
             ftIdx = doc.getCollection().getFulltextIndexConfiguration(NativeBroker.this);
             level = node.getNodeId().getTreeLevel();
         }
@@ -3160,6 +3113,10 @@ public class NativeBroker extends DBBroker {
 
         /** Stores this node into the database, if it's an element */
         public void store() {
+            final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
+            int depth = doc.getCollection().getIndexDepth(NativeBroker.this);
+            if (depth == -1) 
+            	depth = defaultIndexDepth;
             if (mode == MODE_STORE && node.getNodeType() == Node.ELEMENT_NODE && level <= depth) {
                 new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
                     public Object start() throws ReadOnlyException {
@@ -3221,8 +3178,6 @@ public class NativeBroker extends DBBroker {
                 else
                     doc = new DocumentImpl(NativeBroker.this, collection);
                 doc.read(istream);
-                //Commented since DocumentImpl forked from what is now StoredNode
-                //doc.setInternalAddress(pointer);
                 collection.addDocument(null, NativeBroker.this, doc);
             } catch (EOFException e) {
                 LOG.warn("EOFException while reading document data", e);

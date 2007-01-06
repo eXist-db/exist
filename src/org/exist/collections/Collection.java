@@ -1447,22 +1447,9 @@ public  class Collection extends Observable
         return is;
     }
     
-    private void setFeature(SAXParserFactory factory, String feature,
-            boolean value) {
-        try {
-            factory.setFeature(feature, value);
-        } catch (SAXNotRecognizedException e) {
-            LOG.warn(e);
-        } catch (SAXNotSupportedException snse) {
-            LOG.warn(snse);
-        } catch (ParserConfigurationException pce) {
-            LOG.warn(pce);
-        }
-    }
-    
-        /* (non-Javadoc)
-         * @see java.util.Observable#addObserver(java.util.Observer)
-         */
+    /* (non-Javadoc)
+     * @see java.util.Observable#addObserver(java.util.Observer)
+     */
     public void addObserver(Observer o) {
         if (hasObserver(o)) return;
         if (observers == null) {
@@ -1572,11 +1559,11 @@ public  class Collection extends Observable
     }
     
     /**
-     * @deprecated
+     * @deprecated Make private ASAP
      * @param broker
      * @return
      */
-    public IndexSpec getIdxConf(DBBroker broker) {
+    public IndexSpec getIndexConfiguration(DBBroker broker) {
         CollectionConfiguration conf = getConfiguration(broker);
         //If the collection has its own config...
         if (conf == null) {
@@ -1588,17 +1575,22 @@ public  class Collection extends Observable
     }
     
     public GeneralRangeIndexSpec getIndexByPathConfiguration(DBBroker broker, NodePath path) {
-    	IndexSpec idxSpec = getIdxConf(broker);
+    	IndexSpec idxSpec = getIndexConfiguration(broker);
     	return (idxSpec == null) ? null : idxSpec.getIndexByPath(path);
     }    
     
     public QNameRangeIndexSpec getIndexByQNameConfiguration(DBBroker broker, QName qname) {
-    	IndexSpec idxSpec = getIdxConf(broker);
+    	IndexSpec idxSpec = getIndexConfiguration(broker);
     	return (idxSpec == null) ? null : idxSpec.getIndexByQName(qname);
     }    
     
     public FulltextIndexSpec getFulltextIndexConfiguration(DBBroker broker) {
-    	IndexSpec idxSpec = getIdxConf(broker);
+    	IndexSpec idxSpec = getIndexConfiguration(broker);
     	return (idxSpec == null) ? null : idxSpec.getFulltextIndexSpec();
+    }
+    
+    public int getIndexDepth(DBBroker broker) {
+    	IndexSpec idxSpec = getIndexConfiguration(broker);
+    	return (idxSpec == null) ? -1 : idxSpec.getIndexDepth();    	
     }
 }

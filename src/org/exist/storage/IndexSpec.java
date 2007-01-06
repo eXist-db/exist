@@ -38,7 +38,7 @@ import org.w3c.dom.NodeList;
 /**
  * Top class for index definitions as specified in a collection configuration
  * or the main configuration file. The IndexSpec for a given collection can be retrieved through method
- * {@link org.exist.collections.Collection#getIdxConf(DBBroker)}.
+ * {@link org.exist.collections.Collection#getIndexConfiguration(DBBroker)}.
  *  
  *  An index definition should have the following structure:
  *  
