@@ -316,12 +316,15 @@ public class Eval extends BasicFunction {
             // No. Load from file or URL
             try {
                 //TODO: use URIs to ensure proper resolution of relative locations
-                querySource = SourceFactory.getSource(context.getModuleLoadPath(), location, true);
+                querySource = SourceFactory.getSource(context.getBroker(), context.getModuleLoadPath(), location, true);
             } catch (MalformedURLException e) {
                 throw new XPathException("source location for query at " + location + " should be a valid URL: " +
                         e.getMessage());
             } catch (IOException e) {
                 throw new XPathException("source for query at " + location + " not found: " +
+                        e.getMessage());
+            } catch (PermissionDeniedException e) {
+            	throw new XPathException("Permission denied to access query at " + location + " : " +
                         e.getMessage());
             }
         }

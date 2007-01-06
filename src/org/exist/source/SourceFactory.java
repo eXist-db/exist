@@ -27,7 +27,13 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.exist.dom.BinaryDocument;
+import org.exist.dom.DocumentImpl;
+import org.exist.security.PermissionDeniedException;
+import org.exist.storage.DBBroker;
+import org.exist.storage.lock.Lock;
 import org.exist.xquery.Constants;
+import org.exist.xmldb.XmldbURI;
 
 /**
  * Factory to create a {@link org.exist.source.Source} object for a given
@@ -48,27 +54,51 @@ public class SourceFactory {
      * @throws MalformedURLException
      * @throws IOException
      */
-    public static final Source getSource(String contextPath, String location, boolean checkXQEncoding) 
-    throws MalformedURLException, IOException {
+    public static final Source getSource(DBBroker broker, String contextPath, String location, boolean checkXQEncoding) throws MalformedURLException, IOException, PermissionDeniedException
+    {
         Source source = null;
-        //TODO: Xmldb source for xmldbURIs?
-        if(location.indexOf(':') == Constants.STRING_NOT_FOUND) {
+        
+        /* file:// or location without scheme is assumed to be a file */
+        if(location.startsWith("file:") || location.indexOf(':') == Constants.STRING_NOT_FOUND)
+        {
+        	if(location.startsWith("file:"))
+        	{
+        		location = location.substring("file://".length());
+        	}
+        	
             File f = new File(contextPath + File.separatorChar + location);
-            if(!f.canRead()) {
+            if(!f.canRead())
+            {
                 f = new File(location);
                 if(!f.canRead())
                     throw new FileNotFoundException("cannot read module source from file at " + f.getAbsolutePath());
             }
             location = f.toURI().toASCIIString();
             source = new FileSource(f, "UTF-8", checkXQEncoding);
-        } else {
-            if(location.startsWith(ClassLoaderSource.PROTOCOL)) {
-                source = new ClassLoaderSource(location);
-            } else {
-                URL url = new URL(location);
-                source = new URLSource(url);
-            }
         }
+        
+        /* xmldb: */
+        else if(location.startsWith(XmldbURI.XMLDB_URI_PREFIX))
+        {
+			XmldbURI pathUri = XmldbURI.create(location);
+			DocumentImpl resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
+			source = new DBSource(broker, (BinaryDocument)resource, true);
+			resource.getUpdateLock().release();
+        }
+        
+        /* resource: */
+        else if(location.startsWith(ClassLoaderSource.PROTOCOL))
+        {
+            source = new ClassLoaderSource(location);
+        }
+
+        /* any other URL */
+        else
+        {
+            URL url = new URL(location);
+            source = new URLSource(url);
+        }
+
         return source;
     }
 }
