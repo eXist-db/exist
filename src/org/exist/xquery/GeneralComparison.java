@@ -34,7 +34,6 @@ import org.exist.dom.NodeSet;
 import org.exist.dom.VirtualNodeSet;
 import org.exist.storage.DBBroker;
 import org.exist.storage.FulltextIndexSpec;
-import org.exist.storage.IndexSpec;
 import org.exist.storage.Indexable;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.AtomicValue;
@@ -624,17 +623,11 @@ public class GeneralComparison extends BinaryOp {
 
     private boolean checkArgumentTypes(XQueryContext context, DocumentSet docs)	throws XPathException {			 
 		for (Iterator i = docs.iterator(); i.hasNext();) {
-            DocumentImpl doc = (DocumentImpl) i.next();
-            IndexSpec idxSpec = doc.getCollection().getIdxConf(context.getBroker());
-			if(idxSpec != null) {
-                FulltextIndexSpec idx = idxSpec.getFulltextIndexSpec();
-                if (idx != null) {
-    			    if(idx.isSelective())
-    			        return true;
-    			    if(!idx.getIncludeAlphaNum())
-    			        return true;
-                }
-			}
+            DocumentImpl doc = (DocumentImpl) i.next();            
+			FulltextIndexSpec idx = doc.getCollection().getFulltextIndexConfiguration(context.getBroker());
+            if (idx != null) {
+			    return (idx.isSelective() || !idx.getIncludeAlphaNum());
+            }
 		}
 		return false;
 	}

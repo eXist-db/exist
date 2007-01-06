@@ -109,14 +109,11 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
     
     public void storeAttribute(AttrImpl node, NodePath currentPath, boolean index) {
         if (qnameValueIndexation) {
-            DocumentImpl docu = (DocumentImpl)node.getOwnerDocument();
-            IndexSpec idxSpec = docu.getCollection().getIdxConf(broker);
-            if (idxSpec != null) {
-                RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
-                if (qnIdx != null) {
-                    this.setDocument(docu);
-                    this.storeAttribute(qnIdx, (AttrImpl) node);
-                }
+            DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
+            QNameRangeIndexSpec qnIdx = doc.getCollection().getIndexByQNameConfiguration(broker, node.getQName());
+            if (qnIdx != null) {
+                this.setDocument(doc);
+                this.storeAttribute(qnIdx, (AttrImpl) node);
             }
         }
     }
@@ -135,15 +132,12 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
     /** updates the index type of given node according to the Index By QName config. */
     public void startElement(ElementImpl node, NodePath currentPath, boolean index) {
         if (qnameValueIndexation) {
-            DocumentImpl docu = (DocumentImpl)node.getOwnerDocument();
-            IndexSpec idxSpec = docu.getCollection().getIdxConf(broker);
-            if (idxSpec != null) {
-                RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
-                if (qnIdx != null) {
-                    int newIndexType = RangeIndexSpec.QNAME_INDEX;
-                    ElementImpl elementImpl = (ElementImpl) node;
-                    elementImpl.setIndexType(newIndexType | elementImpl.getIndexType());
-                }
+            DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
+            QNameRangeIndexSpec qnIdx = doc.getCollection().getIndexByQNameConfiguration(broker, node.getQName());
+            if (qnIdx != null) {
+                int newIndexType = RangeIndexSpec.QNAME_INDEX;
+                ElementImpl elementImpl = (ElementImpl) node;
+                elementImpl.setIndexType(newIndexType | elementImpl.getIndexType());
             }
         }
     }
@@ -323,21 +317,17 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
 
 	private void localMarkElement(ElementImpl node, NodePath currentPath, String content) {
 		if (qnameValueIndexation) {
-			DocumentImpl docu = (DocumentImpl)node.getOwnerDocument();
-			IndexSpec idxSpec = docu.getCollection().getIdxConf(broker);
-			if (idxSpec != null) {
-				RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
-				if (qnIdx != null) {
-					this.setDocument(docu);
-					this.storeElement(qnIdx.getType(), (ElementImpl) node,
-							content);
-				}
+			DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
+			QNameRangeIndexSpec qnIdx = doc.getCollection().getIndexByQNameConfiguration(broker, node.getQName());
+			if (qnIdx != null) {
+				this.setDocument(doc);
+				this.storeElement(qnIdx.getType(), (ElementImpl) node, content);
 			}
 		}
 	}
 	
     public void dropIndex(DocumentImpl doc) throws ReadOnlyException {
-    	if ( qnameValueIndexation )
+    	if (qnameValueIndexation)
     		super.dropIndex(doc);
     }
     

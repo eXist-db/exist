@@ -519,8 +519,8 @@ public class NativeBroker extends DBBroker {
             textEngine.setDocument((DocumentImpl) node.getOwnerDocument());
             textEngine.storeText(null, node, false, content);
         }
-        IndexSpec idxSpec = ((DocumentImpl)node.getOwnerDocument()).getCollection().getIdxConf(NativeBroker.this);
-        FulltextIndexSpec ftIdx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null;
+
+        FulltextIndexSpec ftIdx = ((DocumentImpl)node.getOwnerDocument()).getCollection().getFulltextIndexConfiguration(this);
         if (ftIdx != null && ftIdx.hasQNameIndex(node.getQName())) {
             if (content == null) {
                 content = getOldNodeContent(node, oldAddress);
@@ -2289,8 +2289,8 @@ public class NativeBroker extends DBBroker {
         
         final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
         final IndexSpec idxSpec = doc.getCollection().getIdxConf(this);
-        final short nodeType = node.getNodeType();
         final int depth = idxSpec == null ? defaultIndexDepth : idxSpec.getIndexDepth();
+        final short nodeType = node.getNodeType();
         new DOMTransaction(this, domDb, Lock.WRITE_LOCK, doc) {
             public Object start() throws ReadOnlyException {
                 long address = BFile.UNKNOWN_ADDRESS;
@@ -2424,8 +2424,7 @@ public class NativeBroker extends DBBroker {
      */
     public void removeNode(final Txn transaction, final StoredNode node, NodePath currentPath, String content) {
         final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
-        final IndexSpec idxSpec = doc.getCollection().getIdxConf(this);
-        final FulltextIndexSpec ftIdx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null;
+        final FulltextIndexSpec ftIdx = doc.getCollection().getFulltextIndexConfiguration(this);
 
         new DOMTransaction(this, domDb, Lock.WRITE_LOCK, doc) {
             public Object start() {
@@ -2450,13 +2449,12 @@ public class NativeBroker extends DBBroker {
                 elementIndex.setDocument(doc);
                 elementIndex.addNode(qname, p);
                 
-                if (idxSpec != null) {
-                    GeneralRangeIndexSpec spec = idxSpec.getIndexByPath(currentPath);
-                    if(spec != null) {
-                        valueIndex.setDocument(doc);
-                        valueIndex.storeElement(spec.getType(), (ElementImpl) node, content);
-                    }
-                }               
+
+                GeneralRangeIndexSpec spec1 = doc.getCollection().getIndexByPathConfiguration(this, currentPath);
+                if(spec1 != null) {
+                    valueIndex.setDocument(doc);
+                    valueIndex.storeElement(spec1.getType(), (ElementImpl) node, content);
+                }
                 // qnameValueIndex.removeElement((ElementImpl) node, currentPath, content);
                 notifyRemoveElement( (ElementImpl) node, currentPath, content );
                 break;
@@ -2476,18 +2474,17 @@ public class NativeBroker extends DBBroker {
                 }
                 if (indexAttribs)
                     textEngine.storeAttribute(ftIdx, (AttrImpl) node, false);
-                if (idxSpec != null) {
-                    GeneralRangeIndexSpec spec = idxSpec.getIndexByPath(currentPath);
-                    if(spec != null) {
-                        valueIndex.setDocument(doc);
-                        valueIndex.storeAttribute(spec, (AttrImpl) node);
-                    }                   
-//                  RangeIndexSpec qnIdx = idxSpec.getIndexByQName(idxQName);
-//                  if (qnIdx != null && qnameValueIndexation) {
-//                      qnameValueIndex.setDocument(doc);
-//                      qnameValueIndex.storeAttribute(qnIdx, (AttrImpl) node);
-//                  }
-                }
+
+                GeneralRangeIndexSpec spec2 = doc.getCollection().getIndexByPathConfiguration(this, currentPath);
+                if(spec2 != null) {
+                    valueIndex.setDocument(doc);
+                    valueIndex.storeAttribute(spec2, (AttrImpl) node);
+                }                   
+//              RangeIndexSpec qnIdx = idxSpec.getIndexByQName(idxQName);
+//              if (qnIdx != null && qnameValueIndexation) {
+//                  qnameValueIndex.setDocument(doc);
+//                  qnameValueIndex.storeAttribute(qnIdx, (AttrImpl) node);
+//              }
                 
                 if (qnameValueIndex != null)
                     qnameValueIndex.removeAttribute( (AttrImpl)node, currentPath, true);
@@ -2532,11 +2529,12 @@ public class NativeBroker extends DBBroker {
             case Node.ELEMENT_NODE:
                 DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
                 String content = null;
-                IndexSpec idxSpec =  doc.getCollection().getIdxConf(this);
-                if (idxSpec != null) {
-                    GeneralRangeIndexSpec spec = idxSpec.getIndexByPath(currentPath);
-                    RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
-                    if (spec != null || qnIdx != null) {
+                GeneralRangeIndexSpec spec = doc.getCollection().getIndexByPathConfiguration(this, currentPath);
+                if (spec != null) {
+                    content = getNodeValue(node, false);
+                } else {
+                	QNameRangeIndexSpec qnIdx = doc.getCollection().getIndexByQNameConfiguration(this, node.getQName());
+                    if (qnIdx != null) {
                         content = getNodeValue(node, false);
                     }
                 }
@@ -3010,10 +3008,10 @@ public class NativeBroker extends DBBroker {
             
             doc = (DocumentImpl) node.getOwnerDocument();
             address = node.getInternalAddress();
+            
             idxSpec = doc.getCollection().getIdxConf(NativeBroker.this);
-
-            ftIdx = idxSpec != null ? idxSpec.getFulltextIndexSpec() : null;
             depth = idxSpec == null ? defaultIndexDepth : idxSpec.getIndexDepth();
+            ftIdx = doc.getCollection().getFulltextIndexConfiguration(NativeBroker.this);
             level = node.getNodeId().getTreeLevel();
         }
         
