@@ -124,7 +124,7 @@ public class Optimize extends Pragma {
         });
 
         contextStep = BasicExpressionVisitor.findFirstStep(innerExpr);
-        if (contextStep.getTest().isWildcardTest())
+        if (contextStep != null && contextStep.getTest().isWildcardTest())
             contextStep = null;
         if (LOG.isTraceEnabled())
             LOG.trace("exist:optimize: context step: " + contextStep);
