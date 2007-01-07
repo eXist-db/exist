@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.text.Collator;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -2848,9 +2849,10 @@ public class NativeBroker extends DBBroker {
                 }
                 notifySync();
 //              System.gc();
-                LOG.info("Memory: " + (run.totalMemory() / 1024) + "K total; " +
-                        (run.maxMemory() / 1024) + "K max; " +
-                        (run.freeMemory() / 1024) + "K free");              
+                NumberFormat nf = NumberFormat.getNumberInstance();
+                LOG.info("Memory: " + nf.format(run.totalMemory() / 1024) + "K total; " +
+                        nf.format(run.maxMemory() / 1024) + "K max; " +
+                        nf.format(run.freeMemory() / 1024) + "K free");              
                 
                 domDb.printStatistics();
                 collectionsDb.printStatistics();
@@ -2880,12 +2882,11 @@ public class NativeBroker extends DBBroker {
         if (nodesCount > DEFAULT_NODES_BEFORE_MEMORY_CHECK) {
             final double percent = ((double) run.freeMemory() / (double) run.maxMemory()) * 100;
             if (percent < memMinFree) {
-                //LOG.info(
-                //  "total memory: " + run.totalMemory() + "; free: " + run.freeMemory());
                 flush();
                 System.gc();
-                LOG.info(
-                    "total memory: " + run.totalMemory() + "; free: " + run.freeMemory());
+                NumberFormat nf = NumberFormat.getNumberInstance();
+                LOG.info("total memory: " + nf.format(run.totalMemory()) + 
+                		"; free: " + nf.format(run.freeMemory()));
             }
         }
     }

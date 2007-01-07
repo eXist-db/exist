@@ -21,6 +21,7 @@
  */
 package org.exist.storage;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -118,7 +119,9 @@ public class DefaultCacheManager implements CacheManager {
         
         this.totalPageCount = buffers;
         this.maxCacheSize = (int) (totalPageCount * MAX_MEM_USE);
-        LOG.info("Cache settings: totalPages: " + totalPageCount + "; maxCacheSize: " + maxCacheSize);
+        NumberFormat nf = NumberFormat.getNumberInstance();
+        LOG.info("Cache settings: totalPages: " + nf.format(totalPageCount) + 
+        		"; maxCacheSize: " + nf.format(maxCacheSize));
     }
 
     public void registerCache(Cache cache) {
@@ -160,8 +163,12 @@ public class DefaultCacheManager implements CacheManager {
                 if (currentPageCount + newCacheSize > totalPageCount)
                     // new cache size exceeds total: adjust
                     newCacheSize = cache.getBuffers() + (totalPageCount - currentPageCount);
-                LOG.debug("Growing cache " + cache.getFileName() + " (a " + cache.getClass().getName() +  
-                        ") from " + cache.getBuffers() + " to " + newCacheSize);
+                if (LOG.isDebugEnabled()) {
+	                NumberFormat nf = NumberFormat.getNumberInstance();
+	                LOG.debug("Growing cache " + cache.getFileName() + " (a " + cache.getClass().getName() +  
+	                        ") from " + nf.format(cache.getBuffers()) + 
+	                        " to " + nf.format(newCacheSize));
+                }
                 currentPageCount -= cache.getBuffers();
                 // resize the cache
                 cache.resize(newCacheSize);
@@ -190,8 +197,11 @@ public class DefaultCacheManager implements CacheManager {
             if (cache.getGrowthFactor() > 1.0) {
                 load = cache.getLoad();
                 if (cache.getBuffers() > minSize && load < SHRINK_THRESHOLD) {
-                    LOG.debug("Shrinking cache: " + cache.getFileName() + " (a " + cache.getClass().getName() + 
-                        ") to " + cache.getBuffers());
+                	if (LOG.isDebugEnabled()) {
+	                	NumberFormat nf = NumberFormat.getNumberInstance();
+	                    LOG.debug("Shrinking cache: " + cache.getFileName() + " (a " + cache.getClass().getName() + 
+	                        ") to " + nf.format(cache.getBuffers()));
+                	}
                     currentPageCount -= cache.getBuffers();
                     cache.resize(getDefaultInitialSize());
                     currentPageCount += getDefaultInitialSize();
@@ -209,8 +219,11 @@ public class DefaultCacheManager implements CacheManager {
             cache = (Cache) caches.get(i);
             if (cache.getBuffers() >= minSize) {
                 int newSize = (int) (cache.getBuffers() * SHRINK_FACTOR);
-                LOG.debug("Shrinking cache: " + cache.getFileName() + " (a " + cache.getClass().getName() + 
-                        ") to " + newSize);
+                if (LOG.isDebugEnabled()) {
+	                NumberFormat nf = NumberFormat.getNumberInstance();
+	                LOG.debug("Shrinking cache: " + cache.getFileName() + " (a " + cache.getClass().getName() + 
+	                        ") to " + nf.format(newSize));
+	            }
                 currentPageCount -= cache.getBuffers();
                 cache.resize(newSize);
                 currentPageCount += newSize;
