@@ -49,7 +49,7 @@ public class SourceFactory {
      * As a special case, if the URL starts with "resource:", the resource
      * will be read from the current context class loader.
      * 
-     * @param broker, can be null if not asking for a database resource
+     * @param broker broker, can be null if not asking for a database resource
      * @param contextPath
      * @param location
      * @throws MalformedURLException

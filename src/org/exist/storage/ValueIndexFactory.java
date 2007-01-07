@@ -144,7 +144,6 @@ public class ValueIndexFactory {
 	 * @param value
 	 * @param collectionId
 	 * @param caseSensitive
-	 * @return
 	 * @throws EXistException
 	 */
 	public final static byte[] serialize(Indexable value, short collectionId, boolean caseSensitive) 
@@ -236,7 +235,6 @@ public class ValueIndexFactory {
 	 * @param value
 	 * @param offset
 	 * @param caseSensitive
-	 * @return
 	 * @throws EXistException
 	 */
 	public final static byte[] serialize(Indexable value, int offset, boolean caseSensitive) 

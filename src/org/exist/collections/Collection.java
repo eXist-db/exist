@@ -1555,7 +1555,6 @@ public  class Collection extends Observable
     /**
      * @deprecated Make private ASAP
      * @param broker
-     * @return
      */
     public IndexSpec getIndexConfiguration(DBBroker broker) {
         CollectionConfiguration conf = getConfiguration(broker);
