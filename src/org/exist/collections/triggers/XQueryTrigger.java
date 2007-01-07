@@ -351,7 +351,7 @@ public class XQueryTrigger extends FilteringTrigger
 	/**
 	 * Returns a String representation of the Trigger event
 	 * 
-	 * @event The Trigger event
+	 * @param event The Trigger event
 	 * 
 	 * @return The String representation
 	 */
