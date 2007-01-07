@@ -26,6 +26,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Properties;
@@ -42,19 +43,21 @@ import org.exist.scheduler.Scheduler;
 import org.exist.security.User;
 import org.exist.security.xacml.XACMLConstants;
 import org.exist.storage.BrokerPool;
-import org.exist.storage.DefaultCacheManager;
+import org.exist.storage.CollectionCacheManager;
 import org.exist.storage.DBBroker;
+import org.exist.storage.DefaultCacheManager;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.NativeValueIndex;
 import org.exist.storage.TextSearchEngine;
 import org.exist.storage.XQueryPool;
-import org.exist.storage.CollectionCacheManager;
 import org.exist.validation.resolver.eXistCatalogResolver;
 import org.exist.xquery.XQueryWatchDog;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -1150,10 +1153,11 @@ public class Configuration implements ErrorHandler
      * Order of tests is designed with the idea, the more precise it is,
      * the more the developper know what he is doing
      * <ol>
-     *   <li>proposed path : if exists
-     *   <li>exist.home    : if exists
-     *   <li>user.home     : if exists, with a conf.xml file
-     *   <li>user.dir      : if exists, with a conf.xml file
+     *   <li>proposed path   : if exists
+     *   <li>exist.home      : if exists
+     *   <li>user.home       : if exists, with a conf.xml file
+     *   <li>user.dir        : if exists, with a conf.xml file
+     *   <li>classpath entry : if exists, with a conf.xml file
      * </ol>
      *
      * @param path path to eXist home directory
@@ -1194,6 +1198,14 @@ public class Configuration implements ErrorHandler
         if (existHome.isDirectory() && new File(existHome, config).isFile()) {
         	LOG.debug("Got eXist home from system property 'user.dir': " + existHome);
         	return existHome; 
+        }
+        
+        // try classpath
+        URL configUrl = Configuration.class.getClassLoader().getResource(config);
+        if (configUrl != null) {
+            existHome = new File(configUrl.getPath()).getParentFile();
+            LOG.debug("Got eXist home from classpath: " + existHome);
+            return existHome;
         }
 
         existHome = null;
