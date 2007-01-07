@@ -49,8 +49,8 @@
 		          }
 		          
 		          td.max {
-		          	background: #6666AA;
-		          	color: #6666AA;
+		          	background: #C0C0C0;
+		          	color: #C0C0C0;
 		          }
 		          
 		          td.heading {
@@ -243,7 +243,46 @@
   	</xsl:template>
   	
   	<xsl:template match="status:buffers">
-  		<table class="status" border="0" width="70%" cellspacing="7">
+  
+		<!-- added section for Cache Used monitoring -->
+  		<xsl:variable name="psize" select="number(../status:page-size)"/>
+		<xsl:variable name="tused" select="format-number(sum(status:file/status:buffer/status:used)*$psize div 1048576, '###.#')"/>
+  		<xsl:variable name="tsize" select="format-number(sum(status:file/status:buffer/status:size)*$psize div 1048576, '###.#')"/>
+		<xsl:variable name="tmax" select="number(../status:cache-size)"/>
+		<xsl:variable name="tpcnt" select="format-number(($tused div $tmax) * 100, '#0')"/>
+
+  		<xsl:variable name="tusedpcnt" select="round(($tused div $tmax) * 100)"/>
+  		<xsl:variable name="tsizepcnt" select="round(($tsize div $tmax) * 100)"/>
+		
+		<table class="status" border="0" width="400" cellspacing="7">
+  			<tr>
+  				<th align="left" colspan="4">Cache Usage: <xsl:value-of select="$tpcnt"/> %</th>
+   			</tr>
+		 	<tr>
+				<td align="left">
+					<table border="0" width="400" cellpadding="0" cellspacing="0">
+						<tr>
+							<td/>
+							<td width="{$tusedpcnt * 4}" class="used"></td>
+							<td width="{($tsizepcnt - $tusedpcnt) * 4}" class="free"></td>
+							<td width="{(100 - ($tsizepcnt)) * 4}" class="max">:</td>
+						</tr>
+						 <tr>
+							 <td/>
+							 <td colspan="3">
+								 <small>
+									Used: <xsl:value-of select="$tused"/> Mb; 
+									Size: <xsl:value-of select="$tsize"/> Mb; 
+									Max: <xsl:value-of select="$tmax"/> Mb 
+								</small>
+							</td>
+						</tr>
+					</table>
+				</td>	
+			</tr> 
+  		</table>
+
+		<table class="status" border="0" width="70%" cellspacing="7">
   			<tr>
   				<th align="left" colspan="2">Buffer Statistics</th>
   			</tr>

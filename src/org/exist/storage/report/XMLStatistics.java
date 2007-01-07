@@ -50,7 +50,12 @@ public class XMLStatistics {
 			atts.clear();
 			addValue("configuration", instance.getConfiguration().getPath());
 			addValue("data-directory", (String)instance.getConfiguration().getProperty("db-connection.data-dir"));
-			this.contentHandler.startElement(NAMESPACE, "pool", PREFIX + ":pool", atts);
+
+            // values added for cache used % calc - Gary Larsen
+            addValue("cache-size", String.valueOf(instance.getConfiguration().getInteger("db-connection.cache-size")));
+            addValue("page-size", String.valueOf(instance.getConfiguration().getInteger("db-connection.page-size")));
+
+            this.contentHandler.startElement(NAMESPACE, "pool", PREFIX + ":pool", atts);
 			addValue("max", String.valueOf(instance.getMax()));
 			addValue("active", String.valueOf(instance.active()));
 			addValue("available", String.valueOf(instance.available()));
