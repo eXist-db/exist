@@ -22,11 +22,6 @@
  */
 package org.exist.storage;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.Collator;
@@ -48,9 +43,6 @@ import org.exist.dom.SymbolTable;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
-import org.exist.storage.io.VariableByteInput;
-import org.exist.storage.io.VariableByteInputStream;
-import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
@@ -99,10 +91,6 @@ public abstract class DBBroker extends Observable {
 
 	protected BrokerPool pool;
 
-	protected File symbolsFile;
-
-	protected SymbolTable symbols = null;
-
 	protected User user = null;
 
 	protected XQuery xqueryService;
@@ -123,97 +111,24 @@ public abstract class DBBroker extends Observable {
 	//TODO : use a property object
 	public HashMap customProperties = new HashMap();
 
-	/**
-	 * Save the global symbol table. The global symbol table stores QNames and
-	 * namespace/prefix mappings.
-	 * 
-	 * @throws EXistException
-	 */
-	protected void saveSymbols() throws EXistException {
-		synchronized (symbols) {
-			try {
-				VariableByteOutputStream os = new VariableByteOutputStream(256);
-				symbols.write(os);
-				FileOutputStream fos = new FileOutputStream(symbols.getFile()
-						.getAbsolutePath(), false);
-				fos.write(os.toByteArray());
-				fos.close();
-			} catch (FileNotFoundException e) {
-				throw new EXistException("file not found: "
-						+ symbols.getFile().getAbsolutePath());
-			} catch (IOException e) {
-				throw new EXistException("io error occurred while creating "
-						+ symbolsFile.getAbsolutePath());
-			}
-		}
-	}
+	//TODO : give more abstraction in the future (Symbolprovider or something like this)
+	public abstract SymbolTable getSymbols();
 
-	/**
-	 * Read the global symbol table. The global symbol table stores QNames and
-	 * namespace/prefix mappings.
-	 * 
-	 * @throws EXistException
-	 */
-	protected void loadSymbols() throws EXistException {
-		try {
-			FileInputStream fis = new FileInputStream(symbols.getFile());
-			VariableByteInput is = new VariableByteInputStream(fis);
-			symbols.read(is);
-			fis.close();
-		} catch (FileNotFoundException e) {
-			throw new EXistException("could not read "
-					+ symbolsFile.getAbsolutePath());
-		} catch (IOException e) {
-			throw new EXistException("io error occurred while reading "
-					+ symbolsFile.getAbsolutePath() + ": " + e.getMessage());
-		}
-	}
-
-	public void backupSymbolsTo(OutputStream os) throws IOException {
-		FileInputStream fis = new FileInputStream(symbols.getFile());
-		byte[] buf = new byte[1024];
-		int len;
-		while ((len = fis.read(buf)) > 0) {
-			os.write(buf, 0, len);
-		}
-		fis.close();
-	}
-
-	public SymbolTable getSymbols() {
-		return symbols;
-	}
-
-	public DBBroker(BrokerPool pool, Configuration config)
-			throws EXistException {
+	public DBBroker(BrokerPool pool, Configuration config) throws EXistException {
 		this.config = config;
-		Boolean temp;
-		if ((temp = (Boolean) config.getProperty(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE)) != null)
+		Boolean temp = (Boolean) config.getProperty(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE);
+		if (temp != null)
 			caseSensitive = temp.booleanValue();
-		String dataDir;
-		if ((dataDir = (String) config.getProperty("db-connection.data-dir")) == null)
-			dataDir = "data";
-		if ((symbols = (SymbolTable) config
-				.getProperty("db-connection.symbol-table")) == null) {
-			symbolsFile = new File(dataDir + File.separatorChar + "symbols.dbx");
-			LOG.debug("Loading symbol table from "
-					+ symbolsFile.getAbsolutePath());
-			symbols = new SymbolTable(symbolsFile);
-			if (!symbolsFile.canRead()) {
-				saveSymbols();
-			} else
-				loadSymbols();
-			config.setProperty("db-connection.symbol-table", symbols);
-		}		
 
 		//Copy specific properties 
 		//TODO : think about an automatic copy
 		customProperties.put(PROPERTY_XUPDATE_GROWTH_FACTOR, 
 				new Integer(config.getInteger(PROPERTY_XUPDATE_GROWTH_FACTOR)));
 		customProperties.put(PROPERTY_XUPDATE_FRAGMENTATION_FACTOR, 
-				new Integer(config.getInteger(PROPERTY_XUPDATE_FRAGMENTATION_FACTOR)));		
-		if ((temp = (Boolean) config.getProperty(PROPERTY_XUPDATE_CONSISTENCY_CHECKS)) != null)
-			customProperties.put(PROPERTY_XUPDATE_CONSISTENCY_CHECKS, 
-					new Boolean(temp.booleanValue()));
+				new Integer(config.getInteger(PROPERTY_XUPDATE_FRAGMENTATION_FACTOR)));
+		temp = (Boolean) config.getProperty(PROPERTY_XUPDATE_CONSISTENCY_CHECKS);
+		if (temp != null)
+			customProperties.put(PROPERTY_XUPDATE_CONSISTENCY_CHECKS, new Boolean(temp.booleanValue()));
 
 		this.pool = pool;
 		xqueryService = new XQuery(this);
