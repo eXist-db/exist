@@ -22,6 +22,7 @@
  */
 package org.exist.storage;
 
+import java.text.NumberFormat;
 import java.util.Iterator;
 import java.util.Stack;
 
@@ -81,6 +82,7 @@ public class XQueryPool extends Object2ObjectHashMap {
         Integer maxPoolSz = (Integer) conf.getProperty(PROPERTY_POOL_SIZE);
         Long t = (Long) conf.getProperty(PROPERTY_TIMEOUT);
         Long tci = (Long) conf.getProperty(PROPERTY_TIMEOUT_CHECK_INTERVAL);
+        NumberFormat nf = NumberFormat.getNumberInstance();
 
         if (maxPoolSz != null)
         	maxPoolSize = maxPoolSz.intValue();
@@ -103,8 +105,9 @@ public class XQueryPool extends Object2ObjectHashMap {
         else
             timeoutCheckInterval = TIMEOUT_CHECK_INTERVAL;
 
-        LOG.info("QueryPool: size = " + maxPoolSize + "; maxStackSize = " + maxStackSize + "; timeout = "
-                + timeout + "; timeoutCheckInterval = " + timeoutCheckInterval);
+        LOG.info("QueryPool: size = " + nf.format(maxPoolSize) + "; maxStackSize = " + nf.format(maxStackSize) + 
+        		"; timeout = " + nf.format(timeout) + 
+        		"; timeoutCheckInterval = " + nf.format(timeoutCheckInterval));
 
     }
 

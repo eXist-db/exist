@@ -21,6 +21,7 @@
 package org.exist.storage;
 
 import java.io.File;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -32,15 +33,15 @@ import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.numbering.NodeIdFactory;
-import org.exist.numbering.DLNFactory;
 import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfigurationManager;
+import org.exist.numbering.DLNFactory;
+import org.exist.numbering.NodeIdFactory;
+import org.exist.scheduler.Scheduler;
+import org.exist.scheduler.SystemTaskJob;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
-import org.exist.scheduler.Scheduler;
-import org.exist.scheduler.SystemTaskJob;
 import org.exist.storage.lock.FileLock;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.ReentrantReadWriteLock;
@@ -475,6 +476,7 @@ public class BrokerPool {
 		Integer anInteger;
 		Long aLong;
 		Boolean aBoolean;
+		NumberFormat nf = NumberFormat.getNumberInstance();
 		
 		//TODO : ensure that the instance name is unique ?
         //WM: needs to be done in the configure method.
@@ -503,14 +505,14 @@ public class BrokerPool {
 			this.maxBrokers = anInteger.intValue();		
 		//TODO : sanity check : minBrokers shall be lesser than or equal to maxBrokers
 		//TODO : sanity check : minBrokers shall be positive
-		LOG.info("database instance '" + instanceName + "' will have between " + this.minBrokers + " and " + this.maxBrokers + " brokers");
+		LOG.info("database instance '" + instanceName + "' will have between " + nf.format(this.minBrokers) + " and " + nf.format(this.maxBrokers) + " brokers");
 		
 		//TODO : use the periodicity of a SystemTask (see below)
 		aLong = (Long) conf.getProperty(PROPERTY_SYNC_PERIOD);
 		if (aLong != null)
 			/*this.*/majorSyncPeriod = aLong.longValue();
 		//TODO : sanity check : the synch period should be reasonible
-		LOG.info("database instance '" + instanceName + "' will be synchronized every " + /*this.*/majorSyncPeriod + " ms");
+		LOG.info("database instance '" + instanceName + "' will be synchronized every " + nf.format(/*this.*/majorSyncPeriod) + " ms");
 
 		//TODO : move this to initialize ?
 		scheduler = new Scheduler(this, conf);
@@ -520,7 +522,7 @@ public class BrokerPool {
 			this.maxShutdownWait = aLong.longValue();			
 		}
 		//TODO : sanity check : the shutdown period should be reasonible
-		LOG.info("database instance '" + instanceName + "' will wait  " + this.maxShutdownWait + " ms during shutdown");
+		LOG.info("database instance '" + instanceName + "' will wait  " + nf.format(this.maxShutdownWait) + " ms during shutdown");
 
 		aBoolean = (Boolean) conf.getProperty("db-connection.recovery.enabled");
 		if (aBoolean != null) {
@@ -542,7 +544,7 @@ public class BrokerPool {
 		            systemTasks.add(task);
 		            //TODO : remove when SystemTask has a getPeriodicity() method
 		            systemTasksPeriods.add(systemTasksConfigs[i]);
-		            LOG.info("added system task instance '" + task.getClass().getName() + "' to be executed every " +  systemTasksConfigs[i].getPeriod() + " ms");
+		            LOG.info("added system task instance '" + task.getClass().getName() + "' to be executed every " +  nf.format(systemTasksConfigs[i].getPeriod()) + " ms");
 	        	}
 	        	catch (ClassNotFoundException e) {
 	        		//TODO : shall we ignore the exception ?
