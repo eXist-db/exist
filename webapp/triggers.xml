@@ -189,7 +189,7 @@
 xquery version "1.0";
 
 (:
-	A Simple XQuery for an XQueryTrigger that
+	A simple XQuery for an XQueryTrigger that
 	logs all trigger events for which it is executed
 	in the file /db/triggersLogs.xml
 :)
