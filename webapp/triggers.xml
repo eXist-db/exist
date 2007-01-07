@@ -16,7 +16,7 @@
                 understanding of XML, Java and XQuery.</para>
             <para>Triggers may be configured by the User to respond to document and/or collection events.
             The current version of eXist defines six events, all of which are applicable to the collection configured with the Trigger:</para>
-            <orderedlist>
+            <unorderedlist>
                 <listitem>
                     <para>
                         <emphasis>store</emphasis>: Fired when a document is stored to the collection or sub-collection</para>
@@ -41,7 +41,7 @@
                     <para>
                         <emphasis>delete</emphasis>: Fired when a sub-collection is deleted</para>
                 </listitem>
-            </orderedlist>
+            </unorderedlist>
         </section>
         <section>
             <title>Trigger Types</title>
@@ -50,9 +50,26 @@
             and post events.</para>
             <section>
                 <title>XQuery Triggers</title>
-                <para>Triggers written in XQuery may be configuring by using the org.exist.collections.triggers.XQueryTrigger to fire the XQuery</para>
-                <para>At present the XQuery must be placed inside the collection.xconf file, however work is underway to extend XQueryTrigger so that it can load
-                  XQueries from the database</para>
+                <para>Triggers written in XQuery may be configuring by using the org.exist.collections.triggers.XQueryTrigger to fire the XQuery.
+                The XQuery to be executed when the trigger is fired may either be placed in the collection.xconf itself or indicated by a URL.</para>
+                <para>The XQuery may make use of a number of external variables to determine why and for what the trigger was fired -</para>
+                <unorderedlist>
+                	<listitem>
+	                	<para><emphasis>triggeredEvent</emphasis>: The event for which the Trigger was fired</para>
+	                </listitem>
+	                <listitem>
+	                	<para><emphasis>eventType</emphasis>: The type of the Trigger event. Either "prepare" or "finish"</para>
+					</listitem>
+	                <listitem>
+	                	<para><emphasis>collectionName</emphasis>: The name of the collection for which the Trigger was fired</para>
+	                </listitem>
+	                <listitem>
+	                	<para><emphasis>documentName</emphasis>: The name of the document for which the Trigger was fired</para>
+	                </listitem>
+	                <listitem>
+	                	<para><emphasis>document</emphasis>: The document that triggered the event. If this is a Binary document then it will be Base64 Encoded</para>
+                	</listitem>
+                </unorderedlist>
             </section>
             <section>
                 <title>Java Triggers</title>
@@ -103,19 +120,8 @@
 
                 <synopsis>http://exist-db.org/collection-config/1.0</synopsis>
 
-                <para>The following example shows a simple configuration document:</para>
-
-                <example>
-                    <title>Simple Configuration Document</title>
-                    <programlisting><markup><![CDATA[<collection xmlns="http://exist-db.org/collection-config/1.0">
-    <triggers>
-		<trigger event="store,update,remove" class="my.domain.testTrigger"/>
-    </triggers>
-</collection>]]></markup></programlisting>
-                </example>
-
                 <para>All configuration documents have the <sgmltag>collection</sgmltag> root
-                    element. These documents also have an <sgmltag>triggers</sgmltag> element 
+                    element. These documents also have a <sgmltag>triggers</sgmltag> element 
                     below the root element, which encloses the trigger configuration. Only ONE
                         <sgmltag>triggers</sgmltag> element is permitted in a document. </para>
 
@@ -123,12 +129,190 @@
                 and the event(s) that it is fired for.</para>
 
                 <para>Each <sgmltag>trigger</sgmltag> element has two attributes, <emphasis>event</emphasis> which is a comma
-                seperated list of events to fire for and <emphasis>class</emphasis> which is the name of the Java Class to fire on the event</para>
+                seperated list of events to fire for and <emphasis>class</emphasis> which is the name of the Java Class to fire on the event.
+                It may also contain several <sgmltag>parameter</sgmltag> elements defining any parameters to send to the trigger.</para>
                 <section>
                     <title>Configuring an XQuery Trigger</title>
-                    <para/>
+					<para>When configuring an XQuery trigger there are a few parameters that may need to be set -</para>
+					<unorderedlist>
+						<listitem>
+							<para><emphasis>url</emphasis>: The URL to the XQuery that the XQuery Trigger should execute</para>
+						</listitem>
+						<listitem>
+							<para><emphasis>query</emphasis>: Can be used instead of <emphasis>url</emphasis>. And should contain the XQuery itself.</para>
+						</listitem>
+						<listitem>
+							<para><emphasis>bindingPrefix</emphasis>: This should be the namespace that the XQuery resides in. If this is omitted then a default of "local" is assumed.</para>
+						</listitem>
+					</unorderedlist>
+                    <para>The following example shows two XQuery Triggers configured, the first executes an XQuery stored in the database
+                    whereas the second executes XQuery placed inline in the collection.xconf:</para>
+					<example>
+                    	<title>XQuery Trigger Configuration</title>
+	                    <programlisting><markup><![CDATA[<collection xmlns="http://exist-db.org/collection-config/1.0">
+    <triggers>
+		<trigger event="store,update,remove" class="org.exist.collections.triggers.XQueryTrigger">
+			<parameter name="url" value="xmldb:exist://localhost/db/myTrigger.xql"/>
+		</trigger>
+		
+		<trigger event="store,update,remove" class="org.exist.collections.triggers.XQueryTrigger">
+			<parameter name="query" value="util:log('debug', concat('Trigger fired at ', current-dateTime()))" />
+		</trigger>
+    </triggers>
+</collection>]]></markup></programlisting>
+                </example>
+                </section>
+                <section>
+                    <title>Configuring a Java Trigger</title>
+					<para>The following example shows a Java trigger configured:</para>
+
+                	<example>
+                   	 <title>Java Trigger Configuration</title>
+                    	<programlisting><markup><![CDATA[<collection xmlns="http://exist-db.org/collection-config/1.0">
+    <triggers>
+		<trigger event="store,update,remove" class="my.domain.testTrigger"/>
+    </triggers>
+</collection>]]></markup></programlisting>
+                </example>
                 </section>
             </section>
+        </section>
+        <section>
+        	<title>Example Triggers</title>
+        	<para>Here are some simple code examples of triggers</para>
+        	<section>
+        		<title>XQuery</title>
+        		<example>
+        			<title>Simple Logging Trigger</title>
+        			<programlisting>
+<![CDATA[
+xquery version "1.0";
+
+(:
+	A Simple XQuery for an XQueryTrigger that
+	logs all trigger events for which it is executed
+	in the file /db/triggersLogs.xml
+:)
+
+declare variable $local:triggerEvent external;
+declare variable $local:eventType external;
+declare variable $local:collectionName external;
+declare variable $local:documentName external;
+declare variable $local:document external;
+
+declare variable $local:triggersLogFile { "/db/triggersLog.xml" };
+
+declare namespace  xmldb="http://exist-db.org/xquery/xmldb";
+
+
+(: create the log file if it does not exist :)
+if(not(doc-available($local:triggersLogFile)))then
+(
+	xmldb:store("/db", $local:triggersLogFile, <triggers/>)
+)
+else(),
+
+(: log the trigger details to the log file :)
+update insert <trigger event="{$local:triggerEvent}" eventType="{$local:eventType}" collectionName="{$local:collectionName}" documentName="{$local:documentName}">{current-dateTime()}</trigger>  into doc("/db/triggersLog.xml")/triggers
+]]>
+        			</programlisting>
+        		</example>
+        	</section>
+        	<section>
+        		<title>Java</title>
+        		<example>
+        			<title>Simple Logging Trigger</title>
+        			<programlisting>
+<![CDATA[
+import java.io.File;
+import java.io.FileOutputStream;
+
+import org.exist.collections.triggers.FilteringTrigger;
+import org.exist.collections.triggers.TriggerException;
+import org.exist.dom.DocumentImpl;
+import org.exist.storage.DBBroker;
+import org.exist.storage.txn.Txn;
+import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.value.DateTimeValue;
+
+/**
+ 	A simple Java Trigger that
+	logs all trigger events for which it is executed
+	in the file triggersLog.xml in the systems temporary folder
+*/
+
+public class loggingTrigger extends FilteringTrigger
+{
+	private final static String triggersLogFile = "triggersLog.xml";
+	private XmldbURI documentPath = null;
+	
+	
+	//trigger prepare event
+	public void prepare(int event, DBBroker broker, Txn transaction, XmldbURI documentPath, DocumentImpl existingDocument) throws TriggerException
+	{	
+		//log the trigger event
+		log(event, "prepare", documentPath.getCollectionPath(), documentPath.toString());
+		
+		this.documentPath = documentPath;
+	}
+	
+	//trigger finish event
+	public void finish(int event, DBBroker broker, Txn transaction, DocumentImpl document)
+	{	
+		//log the trigger event
+		log(event, "prepare", documentPath.getCollectionPath(), documentPath.toString());
+	}
+	
+	private void log(int triggerEvent, String eventType, String collectionName, String documentName)
+	{
+		try
+		{
+			//open log file for appending
+			File loggingFile = new File(new File(System.getProperty("java.io.tmpdir")), triggersLogFile);
+			FileOutputStream out = new FileOutputStream(loggingFile, true);
+			
+			//create an xml string
+			String xml =
+					"<trigger"
+					+ " event=\"" + eventToString(triggerEvent)+ "\""
+					+ " eventType=\"" + eventType + "\""		
+					+ " collectionName=\"" + collectionName + "\""
+					+ " documentName=\"" + documentName + "\""
+					+ ">"
+					+ (new DateTimeValue()).getStringValue()
+					+ "</trigger>\n";
+			
+			//write the xml string to the log file
+			out.write(xml.getBytes());
+		
+			//close the log file
+			out.close();
+		}
+		catch(Exception e)
+		{
+			//do nothing for now
+		}
+	}
+	
+    private static String eventToString(int event)
+    {
+    	switch(event)
+    	{
+    		case STORE_DOCUMENT_EVENT : return "STORE"; 
+    		case UPDATE_DOCUMENT_EVENT : return "UPDATE";
+    		case REMOVE_DOCUMENT_EVENT : return "REMOVE";
+    		case CREATE_COLLECTION_EVENT : return "CREATE";
+    		case RENAME_COLLECTION_EVENT : return "RENAME";
+    		case DELETE_COLLECTION_EVENT : return "DELETE";
+    		default : return null;
+    	}
+    }
+}
+
+]]>
+					</programlisting>
+				</example>
+			</section>
         </section>
         <section>
             <title>Provided Triggers</title>
