@@ -128,7 +128,7 @@ public class Insert extends Modification {
         
         if (!inSeq.isEmpty()) {
         	if (LOG.isDebugEnabled())
-        		LOG.debug("Found: " + inSeq.getLength());   
+        		LOG.debug("Found: " + inSeq.getLength() + " nodes");   
             
         	context.pushInScopeNamespaces();
             contentSeq = deepCopy(contentSeq);
@@ -138,8 +138,7 @@ public class Insert extends Modification {
                 Txn transaction = getTransaction();
                 StoredNode[] ql = selectAndLock(inSeq.toNodeSet());
                 NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
-                IndexListener listener = new IndexListener(ql);
-                NodeImpl parent;
+                IndexListener listener = new IndexListener(ql);                
                 NodeList contentList = seq2nodeList(contentSeq);
                 for (int i = 0; i < ql.length; i++) {
                     StoredNode node = ql[i];
@@ -152,7 +151,7 @@ public class Insert extends Modification {
     				if (mode == INSERT_APPEND) {
     					node.appendChildren(transaction, contentList, -1);
     				} else {
-    	                parent = (StoredNode) node.getParentNode();
+    					NodeImpl parent = (StoredNode) node.getParentNode();
     	                switch (mode) {
     	                    case INSERT_BEFORE:
     	                        parent.insertBefore(transaction, contentList, node);

@@ -24,6 +24,7 @@ package org.exist.xquery;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.text.NumberFormat;
 
 import org.apache.log4j.Logger;
 import org.exist.security.PermissionDeniedException;
@@ -146,9 +147,14 @@ public class XQuery {
             // Log the query if it is not too large, but avoid
             // dumping huge queries to the log
             if (context.getExpressionCount() < 150)
-                LOG.debug("Query diagnostics:\n" + ExpressionDumper.dump(expr));
+            	LOG.debug("Query diagnostics:\n" + ExpressionDumper.dump(expr));
+            else
+            	LOG.debug("Query diagnostics:\n" + "[skipped: more than 150 expressions]");
             expr.analyze(new AnalyzeContextInfo());
-            LOG.debug("Compilation took "  +  (System.currentTimeMillis() - start));
+            if (LOG.isDebugEnabled()) {
+            	NumberFormat nf = NumberFormat.getNumberInstance();
+            	LOG.debug("Compilation took "  +  nf.format(System.currentTimeMillis() - start) + " ms");
+            }
             return expr;
         } catch (RecognitionException e) {
 			LOG.debug("Error compiling query: " + e.getMessage(), e);
@@ -198,7 +204,10 @@ public class XQuery {
         broker.getBrokerPool().getXQueryMonitor().queryStarted(context.getWatchDog());
         try {
         	Sequence result = expression.eval(contextSequence);
-        	LOG.debug("Execution took "  +  (System.currentTimeMillis() - start) + "ms");
+        	if (LOG.isDebugEnabled()) {
+        		NumberFormat nf = NumberFormat.getNumberInstance();
+        		LOG.debug("Execution took "  +  nf.format(System.currentTimeMillis() - start) + " ms");
+        	}
         	return result;
         } finally {
             expression.reset();

@@ -22,6 +22,8 @@
  */
 package org.exist.xquery;
 
+import java.text.NumberFormat;
+
 import org.apache.log4j.Logger;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.util.Configuration;
@@ -79,7 +81,10 @@ public class XQueryWatchDog {
 		} catch (NumberFormatException e) {
 			throw new XPathException("Error parsing timeout value in option " + option.getQName().getStringValue());
 		}
-		LOG.debug("timeout set from option: " + timeout + "ms.");
+		if (LOG.isDebugEnabled()) {
+			NumberFormat nf = NumberFormat.getNumberInstance();
+			LOG.debug("timeout set from option: " + nf.format(timeout) + " ms.");
+		}
     }
     
     public void setMaxNodesFromOption(Option option) throws XPathException {
@@ -91,7 +96,10 @@ public class XQueryWatchDog {
 		} catch (NumberFormatException e) {
 			throw new XPathException("Error parsing size-limit value in option " + option.getQName().getStringValue());
 		}
-		LOG.debug("output-size-limit set from option: " + maxNodesLimit);
+		if (LOG.isDebugEnabled()) {
+			NumberFormat nf = NumberFormat.getNumberInstance();
+			LOG.debug("output-size-limit set from option: " + nf.format(maxNodesLimit));
+		}
     }
     
     public void proceed(Expression expr) throws TerminatedException {
@@ -106,7 +114,8 @@ public class XQueryWatchDog {
         if(elapsed > timeout) {
             if(expr == null)
                 expr = context.getRootExpression();
-            LOG.warn("Query exceeded predefined timeout (" + elapsed + "ms.): " + 
+            NumberFormat nf = NumberFormat.getNumberInstance();
+            LOG.warn("Query exceeded predefined timeout (" + nf.format(elapsed) + " ms.): " + 
                     ExpressionDumper.dump(expr));
             cleanUp();
             throw new TerminatedException.TimeoutException(expr.getASTNode(),
@@ -119,12 +128,13 @@ public class XQueryWatchDog {
         if(maxNodesLimit > 0 && builder.getSize() > maxNodesLimit) {
             if(expr == null)
                 expr = context.getRootExpression();
-            LOG.warn("Query exceeded predefined limit (" +  maxNodesLimit + ") for document fragments: " + 
+            NumberFormat nf = NumberFormat.getNumberInstance();
+            LOG.warn("Query exceeded predefined limit (" +  nf.format(maxNodesLimit) + ") for document fragments: " + 
                     ExpressionDumper.dump(expr));
             cleanUp();
             throw new TerminatedException.SizeLimitException(expr.getASTNode(),
                     "The constructed document fragment exceeded the predefined size limit (current: " +
-                    builder.getSize() + "; allowed: " + maxNodesLimit +
+                    nf.format(builder.getSize()) + "; allowed: " + nf.format(maxNodesLimit) +
                     "). The query has been killed.");
         }
     }
