@@ -23,12 +23,17 @@
 package org.exist.dom;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Iterator;
 
-import org.apache.log4j.Logger;
+import org.exist.EXistException;
 import org.exist.storage.ElementValue;
 import org.exist.storage.io.VariableByteInput;
+import org.exist.storage.io.VariableByteInputStream;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.util.hashtable.Object2IntHashMap;
@@ -377,4 +382,61 @@ public class SymbolTable {
 	public File getFile() {
 		return file;
 	}
+	
+	/**
+	 * Save the global symbol table. The global symbol table stores QNames and
+	 * namespace/prefix mappings.
+	 * 
+	 * @throws EXistException
+	 */
+	public void saveSymbols() throws EXistException {
+		synchronized (this) {
+			try {
+				VariableByteOutputStream os = new VariableByteOutputStream(256);
+				this.write(os);
+				FileOutputStream fos = new FileOutputStream(this.getFile()
+						.getAbsolutePath(), false);
+				fos.write(os.toByteArray());
+				fos.close();
+			} catch (FileNotFoundException e) {
+				throw new EXistException("file not found: "
+						+ this.getFile().getAbsolutePath());
+			} catch (IOException e) {
+				throw new EXistException("io error occurred while creating "
+						+ this.getFile().getAbsolutePath());
+			}
+		}
+	}
+
+	/**
+	 * Read the global symbol table. The global symbol table stores QNames and
+	 * namespace/prefix mappings.
+	 * 
+	 * @throws EXistException
+	 */
+	public void loadSymbols() throws EXistException {
+		try {
+			FileInputStream fis = new FileInputStream(this.getFile());
+			VariableByteInput is = new VariableByteInputStream(fis);
+			this.read(is);
+			fis.close();
+		} catch (FileNotFoundException e) {
+			throw new EXistException("could not read "
+					+ this.getFile().getAbsolutePath());
+		} catch (IOException e) {
+			throw new EXistException("io error occurred while reading "
+					+ this.getFile().getAbsolutePath() + ": " + e.getMessage());
+		}
+	}
+
+	public void backupSymbolsTo(OutputStream os) throws IOException {
+		FileInputStream fis = new FileInputStream(this.getFile());
+		byte[] buf = new byte[1024];
+		int len;
+		while ((len = fis.read(buf)) > 0) {
+			os.write(buf, 0, len);
+		}
+		fis.close();
+	}
+	
 }
