@@ -116,6 +116,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	/** The datastore for this token index */
 	protected BFile dbTokens;
 	protected InvertedIndex invertedIndex;
+	protected String configKeyForFile;
     
     /** Work output Stream that should be cleared before every use */
     private VariableByteOutputStream os = new VariableByteOutputStream(7);    
@@ -123,6 +124,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     public NativeTextEngine(DBBroker broker, byte id, String dataDir, String dataFile, 
     		Configuration config, String configKeyForFile) throws DBException {
 		super(broker, config);
+		this.configKeyForFile = configKeyForFile;
         //TODO : read from configuration (key ?)
     	double cacheGrowth = NativeTextEngine.DEFAULT_WORD_CACHE_GROWTH;
     	double cacheKeyThresdhold = NativeTextEngine.DEFAULT_WORD_KEY_THRESHOLD;
@@ -733,7 +735,13 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         }
     }
     
+    public void closeAndRemove() {
+    	config.setProperty(this.configKeyForFile, null);
+    	dbTokens.closeAndRemove();
+    }
+    
     public boolean close() throws DBException {
+    	config.setProperty(this.configKeyForFile, null);
         return dbTokens.close();        
     }  
     

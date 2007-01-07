@@ -103,6 +103,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
 	
 	/** The datastore for this value index */
     protected BFile dbValues;
+    protected Configuration config;
+    protected String configKeyForFile;
     
 	/** A collection of key-value pairs that pending modifications for this value index.  
      * The keys are {@link org.exist.xquery.value.AtomicValue atomic values}
@@ -126,6 +128,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
     public NativeValueIndex(DBBroker broker, byte id, String dataDir, String dataFile, 
     		Configuration config, String configKeyForFile) throws DBException {
         this.broker = broker;
+        this.config = config;
+        this.configKeyForFile = configKeyForFile;
     	//TODO : read from configuration (key ?)
     	double cacheGrowth = NativeValueIndex.DEFAULT_VALUE_CACHE_GROWTH;
     	double cacheKeyThresdhold = NativeValueIndex.DEFAULT_VALUE_KEY_THRESHOLD;
@@ -701,6 +705,11 @@ public class NativeValueIndex implements ContentLoadingObserver {
             return null;
         }
         return atomic;        
+    }
+
+    public void closeAndRemove() {
+    	config.setProperty(this.configKeyForFile, null);
+    	dbValues.closeAndRemove();
     }
     
     public boolean close() throws DBException {

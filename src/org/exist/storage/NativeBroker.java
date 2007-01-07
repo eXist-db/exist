@@ -1,7 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
+ *  Copyright (C) 2001-07 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -248,7 +247,7 @@ public class NativeBroker extends DBBroker {
 			if (domDb== null) {
                 File file= new File(dataDir + File.separatorChar + DOM_DBX);
                 LOG.debug("Creating '" + file.getName() + "'...");
-				domDb =	new DOMFile(pool, file, pool.getCacheManager());
+                domDb =	new DOMFile(pool, file, pool.getCacheManager());
 				config.setProperty("db-connection.dom", domDb);				
 			}
             readOnly = readOnly || domDb.isReadOnly();
@@ -286,7 +285,7 @@ public class NativeBroker extends DBBroker {
      * @throws DBException
      */
     private void createStructuralIndexFile() throws DBException {
-        elementIndex = new NativeElementIndex(this, ELEMENTS_DBX_ID, dataDir, ELEMENTS_DBX, 
+    	elementIndex = new NativeElementIndex(this, ELEMENTS_DBX_ID, dataDir, ELEMENTS_DBX, 
         		config, "db-connection.elements");
         addContentLoadingObserver(elementIndex);
     }
@@ -306,7 +305,7 @@ public class NativeBroker extends DBBroker {
     private void createQNameValueIndexFiles() throws DBException {        
         qnameValueIndex = new NativeValueIndexByQName(this,  VALUES_QNAME_DBX_ID, dataDir, VALUES_QNAME_DBX,
         		config, "db-connection2.values");
-        addContentLoadingObserver(qnameValueIndex);   
+        addContentLoadingObserver(qnameValueIndex);
     }
         
     /** Creates the fulltext values (aka "words") file.
@@ -350,7 +349,7 @@ public class NativeBroker extends DBBroker {
     public void removeContentLoadingObserver(ContentLoadingObserver observer) {
         contentLoadingObservers.remove(observer);
     }
-    
+
     // ============ dispatch the various events to indexing classes ==========
 
     private void notifyStartElement(ElementImpl elem, NodePath currentPath, boolean index) {
@@ -382,20 +381,6 @@ public class NativeBroker extends DBBroker {
         }
 	}
     
-    private void notifyFlush() {
-        for (int i = 0; i < contentLoadingObservers.size(); i++) {
-            ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
-            observer.flush();
-        }
-    }    
-	
-    private void notifySync() {
-        for (int i = 0; i < contentLoadingObservers.size(); i++) {
-            ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
-            observer.sync();
-        }
-    }
-
     private void notifyDropIndex(Collection collection) {
         for (int i = 0; i < contentLoadingObservers.size(); i++) {
             ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
@@ -412,12 +397,55 @@ public class NativeBroker extends DBBroker {
     
     private void notifyRemove() {
         for (int i = 0; i < contentLoadingObservers.size(); i++) {
-            ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
+        	ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
             observer.remove();
         }
     }
     
-    // etc ... TODO for all methods of ContentLoadingObserver 
+    private void notifySync() {
+        for (int i = 0; i < contentLoadingObservers.size(); i++) {
+        	ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
+            observer.sync();
+        }
+    }
+
+    private void notifyFlush() {
+        for (int i = 0; i < contentLoadingObservers.size(); i++) {
+        	ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
+        	try {
+        		observer.flush();
+        	} catch (DBException e) {
+        		LOG.warn(e);
+        		//Ignre the exception ; try to continue on other files
+        	}
+        }
+    }    
+
+    private void notifyPrintStatistics() throws DBException {
+        for (int i = 0; i < contentLoadingObservers.size(); i++) {
+        	ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
+            observer.printStatistics();
+        }      
+    }    
+    
+    private void notifyClose() throws DBException {
+        for (int i = 0; i < contentLoadingObservers.size(); i++) {
+        	ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
+            observer.close();
+        } 
+        //No more observers...
+        clearContentLoadingObservers();
+    }
+
+    private void notifyCloseAndRemove() {
+        for (int i = 0; i < contentLoadingObservers.size(); i++) {
+        	ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
+            observer.closeAndRemove();
+        } 
+        //No more observers...
+        clearContentLoadingObservers();
+    }
+    
     
     /**
      * Update indexes for the given element node. This method is called when the indexer
@@ -2730,33 +2758,15 @@ public class NativeBroker extends DBBroker {
 	}
 
     public void storeNode(Txn transaction, StoredNode node, NodePath currentPath) {
-        super.storeNode(transaction, node, currentPath);    //To change body of overridden methods use File | Settings | File Templates.
+        super.storeNode(transaction, node, currentPath);
     }
 
     public void repair() throws PermissionDeniedException {
         if (readOnly)
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
         
-        LOG.info("Removing index files ...");
-        clearContentLoadingObservers();
-        
-        elementIndex.dbNodes.closeAndRemove();
-        config.setProperty("db-connection.elements", null);
-       
-        if (valueIndex != null) {
-        	valueIndex.dbValues.closeAndRemove();
-	        config.setProperty("db-connection.values", null);
-        }
-        
-        if (qnameValueIndex != null) {
-        	qnameValueIndex.dbValues.closeAndRemove();
-            config.setProperty("db-connection2.values", null);
-        }        
-        
-        if (textEngine != null) {
-        	textEngine.dbTokens.closeAndRemove();
-	        config.setProperty("db-connection.words", null);
-        }
+        LOG.info("Removing index files ..."); 
+        notifyCloseAndRemove();  
 
         LOG.info("Recreating index files ...");
         try {
@@ -2779,6 +2789,7 @@ public class NativeBroker extends DBBroker {
     
     public void flush() {
         notifyFlush();
+        //TODO : create a flush() method in symbolTable !
         if (symbols != null && symbols.hasChanged())
             try {
                 saveSymbols();
@@ -2819,17 +2830,9 @@ public class NativeBroker extends DBBroker {
                         (run.maxMemory() / 1024) + "K max; " +
                         (run.freeMemory() / 1024) + "K free");              
                 
-                //TODO : use notification system
-                domDb.printStatistics(); 
+                domDb.printStatistics();
                 collectionsDb.printStatistics();
-                if (elementIndex != null)
-                    elementIndex.dbNodes.printStatistics();                
-                if (valueIndex != null)
-                    valueIndex.dbValues.printStatistics();             
-                if (qnameValueIndex != null)
-                	qnameValueIndex.dbValues.printStatistics();
-                if (textEngine != null)
-                    textEngine.printStatistics();
+                notifyPrintStatistics();
             }
         } catch (DBException dbe) {
             dbe.printStackTrace();
@@ -2840,19 +2843,10 @@ public class NativeBroker extends DBBroker {
 	public void shutdown() {		
 		try {
 			flush();
-//            cleanUpTempCollection();
 			sync(Sync.MAJOR_SYNC);
             domDb.close();
             collectionsDb.close();
-            //TODO : use notification mechanism
-            if (elementIndex != null)
-            	elementIndex.close();
-			if (valueIndex != null)
-				valueIndex.close();
-			if (qnameValueIndex != null)
-				qnameValueIndex.close();			
-            if (textEngine != null)
-            	textEngine.close();
+            notifyClose();
 		} catch (Exception e) {
 			LOG.warn(e);
 		}

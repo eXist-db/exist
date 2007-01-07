@@ -96,6 +96,9 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
 
     /** The datastore for this node index */
     protected BFile dbNodes;
+    
+    protected Configuration config;
+    protected String configKeyForFile;
 
     /** Work output Stream that should be cleared before every use */
     private VariableByteOutputStream os = new VariableByteOutputStream();
@@ -103,6 +106,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
     public NativeElementIndex(DBBroker broker, byte id, String dataDir, String dataFile, 
     		Configuration config, String configKeyForFile) throws DBException {
         super(broker);
+        this.config = config;
+        this.configKeyForFile = configKeyForFile;
     	//TODO : read from configuration (key ?)
     	double cacheGrowth = NativeElementIndex.DEFAULT_STRUCTURAL_CACHE_GROWTH;
     	double cacheKeyThresdhold = NativeElementIndex.DEFAULT_STRUCTURAL_KEY_THRESHOLD;
@@ -176,7 +181,6 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             lock.release();
         }
     }    
-
 
     /* (non-Javadoc)
      * @see org.exist.storage.ContentLoadingObserver#flush()
@@ -975,7 +979,13 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         return false;
     }    
     
+    public void closeAndRemove() {
+    	config.setProperty(this.configKeyForFile, null);
+        dbNodes.closeAndRemove();
+    }
+
     public boolean close() throws DBException {
+    	config.setProperty(this.configKeyForFile, null);
         return dbNodes.close();
     }
     
