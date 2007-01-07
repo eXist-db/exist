@@ -975,7 +975,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                         throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() +
                                 "' (inverted index)");
                 }
-                LOG.debug("Removing " + words[currentSection].size());
+                LOG.debug("Removing " + words[currentSection].size() + " tokens");
                 for (Iterator i = words[currentSection].entrySet().iterator(); i.hasNext();) {
                     //Compute a key for the token
                     Map.Entry entry = (Map.Entry) i.next();
