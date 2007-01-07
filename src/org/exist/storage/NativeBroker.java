@@ -52,6 +52,7 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
+import org.exist.dom.SymbolTable;
 import org.exist.dom.TextImpl;
 import org.exist.memtree.DOMIndexer;
 import org.exist.numbering.NodeId;
@@ -166,6 +167,9 @@ public class NativeBroker extends DBBroker {
 	/** the database files */
 	protected CollectionStore collectionsDb;
 	protected DOMFile domDb;
+	protected File symbolsFile;
+
+	protected SymbolTable symbols = null;
     
 	/** the index processors */	
 	protected NativeElementIndex elementIndex;
@@ -261,6 +265,20 @@ public class NativeBroker extends DBBroker {
 				config.setProperty("db-connection.collections", collectionsDb);				
             }
             readOnly = readOnly || collectionsDb.isReadOnly();
+            
+            // Initialize symbols storage
+    		symbols = (SymbolTable) config.getProperty("db-connection.symbol-table");
+    		if (symbols == null) {
+    			symbolsFile = new File(dataDir + File.separatorChar + "symbols.dbx");
+    			LOG.debug("Loading symbol table from " + symbolsFile.getAbsolutePath());
+    			symbols = new SymbolTable(symbolsFile);
+    			if (!symbolsFile.canRead()) {
+    				symbols.saveSymbols();
+    			} else
+    				symbols.loadSymbols();
+    			config.setProperty("db-connection.symbol-table", symbols);
+    		}		
+            
             
             //TODO : is it necessary to create them if we are in read-only mode ?
             createStructuralIndexFile();            
@@ -568,6 +586,10 @@ public class NativeBroker extends DBBroker {
     public byte[] getStorageFileIds() {
         return ALL_STORAGE_FILES;
     }        
+
+	public SymbolTable getSymbols() {
+		return symbols;
+	}
 
 	public IndexSpec getIndexConfiguration() {
 	    return indexConfiguration;
@@ -2792,7 +2814,7 @@ public class NativeBroker extends DBBroker {
         //TODO : create a flush() method in symbolTable !
         if (symbols != null && symbols.hasChanged())
             try {
-                saveSymbols();
+                symbols.saveSymbols();
             } catch (EXistException e) {
                 LOG.warn(e.getMessage(), e);
             }
