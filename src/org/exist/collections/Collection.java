@@ -37,9 +37,6 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.TreeMap;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParserFactory;
-
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.Indexer;
@@ -86,8 +83,6 @@ import org.w3c.dom.Node;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 
 /**
@@ -1291,8 +1286,7 @@ public  class Collection extends Observable
             childColl = (XmldbURI)i.next();
             ostream.writeUTF(childColl.toString());
         }
-        org.exist.security.SecurityManager secman = broker.getBrokerPool()
-        .getSecurityManager();
+        SecurityManager secman = broker.getBrokerPool().getSecurityManager();
         if (secman == null) {
             ostream.writeInt(1);
             ostream.writeInt(1);

@@ -26,6 +26,7 @@ import org.exist.dom.AttrImpl;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.TextImpl;
+import org.exist.storage.btree.DBException;
 import org.exist.util.ReadOnlyException;
 
 /** Receives callback event during document(s) loading and removal;
@@ -41,42 +42,33 @@ import org.exist.util.ReadOnlyException;
 public interface ContentLoadingObserver {
 
 	/** store and index given attribute */
-	public abstract void storeAttribute( AttrImpl node, NodePath currentPath, boolean fullTextIndexSwitch );
+	public void storeAttribute( AttrImpl node, NodePath currentPath, boolean fullTextIndexSwitch );
 
 	/** store and index given text node */ 
-	public abstract void storeText( TextImpl node, NodePath currentPath, boolean fullTextIndexSwitch );
+	public void storeText( TextImpl node, NodePath currentPath, boolean fullTextIndexSwitch );
 			
 	/** corresponds to SAX function of the same name */
-	public abstract void startElement(ElementImpl impl, NodePath currentPath, boolean index);
+	public void startElement(ElementImpl impl, NodePath currentPath, boolean index);
 
 	/** store and index given element (called storeElement before) */
-	public abstract void endElement(int xpathType, ElementImpl node,
-			String content);
+	public void endElement(int xpathType, ElementImpl node,	String content);
 
 	/** Mark given Element for removal;
 	 * added entries are written to the list of pending entries.
      * {@link #flush()} is called later to flush all pending entries.
 	 * <br>
 	 * Notes: changed name from storeElement() */
-	public abstract void removeElement( ElementImpl node, NodePath currentPath, String content );
+	public void removeElement( ElementImpl node, NodePath currentPath, String content );
 
-	
 	/** set the current document; generally called before calling an operation */
-	public abstract void setDocument(DocumentImpl document);
-
-	/** writes the pending items, for the current document's collection */
-	public abstract void flush();
-
-	/** triggers a cache sync, i.e. forces to write out all cached pages.	
-	 sync() is called from time to time by the background sync daemon. */
-	public abstract void sync();
+	public void setDocument(DocumentImpl document);
 
 	/**
 	 * Drop all index entries for the given collection.
 	 * 
 	 * @param collection
 	 */
-	public abstract void dropIndex(Collection collection);
+	public void dropIndex(Collection collection);
 
 	/**
 	 * Drop all index entries for the given document.
@@ -84,9 +76,24 @@ public interface ContentLoadingObserver {
 	 * @param doc
 	 * @throws ReadOnlyException
 	 */
-	public abstract void dropIndex(DocumentImpl doc) throws ReadOnlyException;
+	public void dropIndex(DocumentImpl doc) throws ReadOnlyException;
 
 	/** remove all pending modifications, for the current document. */
-	public abstract void remove();
+	public void remove();
+	
+	/* The following methods are rather related to file management : create a dedicated interface ? /*
 
+	/** writes the pending items, for the current document's collection */
+	public void flush() throws DBException;
+
+	/** triggers a cache sync, i.e. forces to write out all cached pages.	
+	 sync() is called from time to time by the background sync daemon. */
+	public void sync();
+
+	public boolean close() throws DBException;
+	
+	public void closeAndRemove();
+	
+	public void printStatistics();
+	
 }

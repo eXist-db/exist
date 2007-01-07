@@ -328,9 +328,14 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
     		super.dropIndex(doc);
     }
     
+    public void closeAndRemove() {
+    	if (qnameValueIndexation)
+    		super.closeAndRemove();
+    }
+    
     public boolean close() throws DBException {
     	if (qnameValueIndexation)
-    		return dbValues.close();
+    		return super.close();
         return true;
-    }
+    }    
 }
