@@ -78,6 +78,9 @@ import org.w3c.dom.Node;
  */
 public class NativeElementIndex extends ElementIndex implements ContentLoadingObserver {
 	
+	public static final String ELEMENTS_DBX = "elements.dbx";
+	public static final String  FILE_KEY_IN_CONFIG = "db-connection.elements";
+	
     public static final double DEFAULT_STRUCTURAL_CACHE_GROWTH = 1.25;
     public static final double DEFAULT_STRUCTURAL_KEY_THRESHOLD = 0.01;
     public static final double DEFAULT_STRUCTURAL_VALUE_THRESHOLD = 0.04;   
@@ -103,18 +106,17 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
     /** Work output Stream that should be cleared before every use */
     private VariableByteOutputStream os = new VariableByteOutputStream();
     
-    public NativeElementIndex(DBBroker broker, byte id, String dataDir, String dataFile, 
-    		Configuration config, String configKeyForFile) throws DBException {
+    public NativeElementIndex(DBBroker broker, byte id, String dataDir,	Configuration config) throws DBException {
         super(broker);
         this.config = config;
-        this.configKeyForFile = configKeyForFile;
+        this.configKeyForFile = NativeElementIndex.FILE_KEY_IN_CONFIG;
     	//TODO : read from configuration (key ?)
     	double cacheGrowth = NativeElementIndex.DEFAULT_STRUCTURAL_CACHE_GROWTH;
     	double cacheKeyThresdhold = NativeElementIndex.DEFAULT_STRUCTURAL_KEY_THRESHOLD;
     	double cacheValueThresHold = NativeElementIndex.DEFAULT_STRUCTURAL_VALUE_THRESHOLD;    	       
         BFile nativeFile = (BFile) config.getProperty(configKeyForFile);        
         if (nativeFile == null) {
-            File file = new File(dataDir + File.separatorChar + dataFile);
+            File file = new File(dataDir + File.separatorChar + NativeElementIndex.ELEMENTS_DBX);
             LOG.debug("Creating '" + file.getName() + "'...");
             nativeFile = new BFile(broker.getBrokerPool(), id, false, 
             		file, broker.getBrokerPool().getCacheManager(), cacheGrowth, cacheKeyThresdhold, cacheValueThresHold);            

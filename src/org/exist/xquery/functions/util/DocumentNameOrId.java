@@ -22,10 +22,14 @@
  */
 package org.exist.xquery.functions.util;
 
+import java.net.URISyntaxException;
+
+import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.BinaryDocument;
+import org.exist.security.PermissionDeniedException;
+import org.exist.storage.lock.Lock;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -37,13 +41,6 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
-import org.exist.xquery.value.Base64Binary;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xmldb.XmldbURI;
-import org.exist.storage.lock.Lock;
-import org.exist.security.PermissionDeniedException;
-
-import java.net.URISyntaxException;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)

@@ -9,6 +9,7 @@ import java.util.Iterator;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BufferStats;
 import org.exist.storage.NativeBroker;
+import org.exist.storage.NativeElementIndex;
 import org.exist.storage.dom.DOMFile;
 import org.exist.storage.index.BFile;
 import org.exist.util.Configuration;
@@ -80,7 +81,7 @@ public class XMLStatistics {
 		DOMFile dom = (DOMFile) conf.getProperty("db-connection.dom");
 		genBufferDetails(dom.getIndexBufferStats(), dom.getDataBufferStats(), "Resource storage ("+ NativeBroker.DOM_DBX + ")");
 		db = (BFile) conf.getProperty("db-connection.elements");
-		genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "Structural index ("+ NativeBroker.ELEMENTS_DBX + ")");
+		genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "Structural index ("+ NativeElementIndex.ELEMENTS_DBX + ")");
 		db = (BFile) conf.getProperty("db-connection.values");
 		if (db != null)
 			genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "Values index ("+ NativeBroker.VALUES_DBX + ")");

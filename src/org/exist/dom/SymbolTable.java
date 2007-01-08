@@ -438,5 +438,9 @@ public class SymbolTable {
 		}
 		fis.close();
 	}
-	
+
+	public void flush() throws EXistException {
+	    if (hasChanged())
+	        saveSymbols();
+	}	
 }

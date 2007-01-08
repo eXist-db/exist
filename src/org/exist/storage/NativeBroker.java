@@ -130,8 +130,7 @@ public class NativeBroker extends DBBroker {
     public static final byte WORDS_DBX_ID = 3;
     public static final byte DOM_DBX_ID = 4;
     public static final byte VALUES_QNAME_DBX_ID = 5;
-    
-    public static final String ELEMENTS_DBX = "elements.dbx";
+        
     public static final String VALUES_DBX = "values.dbx";
     public static final String VALUES_QNAME_DBX = "values-by-qname.dbx";
     public static final String DOM_DBX = "dom.dbx";
@@ -265,7 +264,7 @@ public class NativeBroker extends DBBroker {
 				collectionsDb = new CollectionStore(pool, file, pool.getCacheManager());
 				config.setProperty("db-connection.collections", collectionsDb);				
             }
-            readOnly = readOnly || collectionsDb.isReadOnly();
+			readOnly = readOnly || collectionsDb.isReadOnly();
             
             // Initialize symbols storage
     		symbols = (SymbolTable) config.getProperty("db-connection.symbol-table");
@@ -279,7 +278,7 @@ public class NativeBroker extends DBBroker {
     				symbols.loadSymbols();
     			config.setProperty("db-connection.symbol-table", symbols);
     		}		
-            
+    		readOnly = readOnly || !symbols.getFile().canWrite();
             
             //TODO : is it necessary to create them if we are in read-only mode ?
             createStructuralIndexFile();            
@@ -304,8 +303,7 @@ public class NativeBroker extends DBBroker {
      * @throws DBException
      */
     private void createStructuralIndexFile() throws DBException {
-    	elementIndex = new NativeElementIndex(this, ELEMENTS_DBX_ID, dataDir, ELEMENTS_DBX, 
-        		config, "db-connection.elements");
+    	elementIndex = new NativeElementIndex(this, ELEMENTS_DBX_ID, dataDir, config);
         addContentLoadingObserver(elementIndex);
     }
       
@@ -1942,18 +1940,7 @@ public class NativeBroker extends DBBroker {
             scanNodes(transaction, iterator, node, new NodePath(), NodeProcessor.MODE_REMOVE);
         }
         notifyDropIndex(document);
-        /*
-        if (elementIndex != null)
-	        elementIndex.dropIndex(document);
-        if (valueIndex != null)
-        	valueIndex.dropIndex(document);       
-        if (qnameValueIndex != null)
-            qnameValueIndex.dropIndex(document);
-        if (textEngine != null)
-        	textEngine.dropIndex(document);
-        */
     }
-
 
     public void removeBinaryResource(final Txn transaction, final BinaryDocument blob)
     throws PermissionDeniedException {
@@ -2254,8 +2241,7 @@ public class NativeBroker extends DBBroker {
                     LOG.debug("Pages used: " + domDb.debugPages(doc, false));
                     return null;
                 }
-            }.run();
-            
+            }.run();            
             NodeList nodes = doc.getChildNodes();            
             for (int i = 0; i < nodes.getLength(); i++) {
             	StoredNode node = (StoredNode) nodes.item(i);
@@ -2403,10 +2389,9 @@ public class NativeBroker extends DBBroker {
         
         if (node.hasChildNodes()) {
             int count = node.getChildCount();
-            StoredNode child;
             NodeId nodeId = node.getNodeId();
             for (int i = 0; i < count; i++) {
-                child = (StoredNode) iterator.next();
+            	StoredNode child = (StoredNode) iterator.next();
                 oldNodeId = child.getNodeId();
                 if (defrag) {
 	                if (i == 0)
@@ -2523,9 +2508,8 @@ public class NativeBroker extends DBBroker {
         iterator.next();
         Stack stack = new Stack();
         collectNodesForRemoval(stack, iterator, node, currentPath);
-        RemovedNode next;
         while (!stack.isEmpty()) {
-            next = (RemovedNode) stack.pop();
+        	RemovedNode next = (RemovedNode) stack.pop();
             removeNode(transaction, next.node, next.path, next.content);
         }
     }
@@ -2549,10 +2533,9 @@ public class NativeBroker extends DBBroker {
                 stack.push(removed);
 
                 if (node.hasChildNodes()) {
-                    StoredNode child;
                     int childCount = node.getChildCount();
                     for (int i = 0; i < childCount; i++) {
-                        child = (StoredNode) iterator.next();
+                    	StoredNode child = (StoredNode) iterator.next();
                         if (child.getNodeType() == Node.ELEMENT_NODE)
                             currentPath.addComponent(((ElementImpl) child).getQName());
                         collectNodesForRemoval(stack, iterator, child, currentPath);
@@ -2588,9 +2571,8 @@ public class NativeBroker extends DBBroker {
     private void checkNodeTree(Iterator iterator, StoredNode node) {
         if (node.hasChildNodes()) {
             int count = node.getChildCount();
-            StoredNode child;
             for (int i = 0; i < count; i++) {
-                child = (StoredNode) iterator.next();
+            	StoredNode child = (StoredNode) iterator.next();
                 if(child == null) {
                     LOG.fatal("child " + i + " not found for node: " + node.getNodeName() +
                             "; children = " + node.getChildCount());
@@ -2615,11 +2597,10 @@ public class NativeBroker extends DBBroker {
             currentPath.addComponent(node.getQName());
         indexNode(transaction, node, currentPath, mode);
         if (node.hasChildNodes()) {
-            StoredNode child;
             final int count = node.getChildCount();
             for (int i = 0; i < count; i++) {
-                child = (StoredNode) iterator.next();
-                if(child == null) {
+            	StoredNode child = (StoredNode) iterator.next();
+                if (child == null) {
                     LOG.fatal("child " + i + " not found for node: " + node.getNodeName() +
                             "; children = " + node.getChildCount());
                     throw new IllegalStateException("Wrong node id");
@@ -2812,13 +2793,11 @@ public class NativeBroker extends DBBroker {
     
     public void flush() {
         notifyFlush();
-        //TODO : create a flush() method in symbolTable !
-        if (symbols != null && symbols.hasChanged())
-            try {
-                symbols.saveSymbols();
-            } catch (EXistException e) {
-                LOG.warn(e.getMessage(), e);
-            }
+        try {
+        	symbols.flush();
+        } catch (EXistException e) {
+            LOG.warn(e);
+        }	
         nodesCount = 0;
     } 
     
