@@ -89,6 +89,9 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
     private final static Logger LOG = Logger.getLogger(NativeValueIndex.class);
     
+    public static final String FILE_NAME = "values.dbx";
+    public static final String  FILE_KEY_IN_CONFIG = "db-connection.values";
+    
     public static final double DEFAULT_VALUE_CACHE_GROWTH = 1.25;
     public static final double DEFAULT_VALUE_KEY_THRESHOLD = 0.01;
     public static final double DEFAULT_VALUE_VALUE_THRESHOLD = 0.04;
@@ -125,18 +128,19 @@ public class NativeValueIndex implements ContentLoadingObserver {
     
     public static String PROPERTY_INDEX_CASE_SENSITIVE = "indexer.case-sensitive";
     
-    public NativeValueIndex(DBBroker broker, byte id, String dataDir, String dataFile, 
-    		Configuration config, String configKeyForFile) throws DBException {
+    public NativeValueIndex(DBBroker broker, byte id, String dataDir, Configuration config) throws DBException {
         this.broker = broker;
         this.config = config;
-        this.configKeyForFile = configKeyForFile;
+        //use inheritance
+        this.configKeyForFile = getConfigKeyForFile();
     	//TODO : read from configuration (key ?)
     	double cacheGrowth = NativeValueIndex.DEFAULT_VALUE_CACHE_GROWTH;
     	double cacheKeyThresdhold = NativeValueIndex.DEFAULT_VALUE_KEY_THRESHOLD;
     	double cacheValueThresHold = NativeValueIndex.DEFAULT_VALUE_VALUE_THRESHOLD;
         BFile nativeFile = (BFile) config.getProperty(configKeyForFile);        
         if (nativeFile == null) {
-            File file = new File(dataDir + File.separatorChar + dataFile);
+        	//use inheritance
+            File file = new File(dataDir + File.separatorChar + getFileName());
             LOG.debug("Creating '" + file.getName() + "'...");
             nativeFile = new BFile(broker.getBrokerPool(), id, false, 
             		file, broker.getBrokerPool().getCacheManager(), cacheGrowth, cacheKeyThresdhold, cacheValueThresHold);            
@@ -147,6 +151,14 @@ public class NativeValueIndex implements ContentLoadingObserver {
         Boolean caseOpt = (Boolean) config.getProperty(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE);
         if (caseOpt != null)
             caseSensitive = caseOpt.booleanValue();
+    }
+    
+    public String getFileName() {
+    	return FILE_NAME;      
+    }
+    
+    public String getConfigKeyForFile() {
+    	return FILE_KEY_IN_CONFIG;
     }
     
     /* (non-Javadoc)

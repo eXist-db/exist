@@ -130,12 +130,9 @@ public class NativeBroker extends DBBroker {
     public static final byte WORDS_DBX_ID = 3;
     public static final byte DOM_DBX_ID = 4;
     public static final byte VALUES_QNAME_DBX_ID = 5;
-        
-    public static final String VALUES_DBX = "values.dbx";
-    public static final String VALUES_QNAME_DBX = "values-by-qname.dbx";
+
     public static final String DOM_DBX = "dom.dbx";
-    public static final String COLLECTIONS_DBX = "collections.dbx";
-    public static final String WORDS_DBX = "words.dbx";
+    public static final String COLLECTIONS_DBX = "collections.dbx"; 
     
     public static final String PROPERTY_PAGE_SIZE = "db-connection.page-size";
     public static final String PROPERTY_MIN_FREE_MEMORY = "db-connection.min_free_memory";
@@ -311,8 +308,7 @@ public class NativeBroker extends DBBroker {
      * @throws DBException
      */    
     private void createValueIndexFile() throws DBException {
-        valueIndex = new NativeValueIndex(this, VALUES_DBX_ID, dataDir, VALUES_DBX, 
-        		config, "db-connection.values");
+        valueIndex = new NativeValueIndex(this, VALUES_DBX_ID, dataDir, config);
         addContentLoadingObserver(valueIndex);
     }
     
@@ -320,8 +316,7 @@ public class NativeBroker extends DBBroker {
      * @throws DBException
      */      
     private void createQNameValueIndexFiles() throws DBException {        
-        qnameValueIndex = new NativeValueIndexByQName(this,  VALUES_QNAME_DBX_ID, dataDir, VALUES_QNAME_DBX,
-        		config, "db-connection2.values");
+        qnameValueIndex = new NativeValueIndexByQName(this, VALUES_QNAME_DBX_ID, dataDir, config);
         addContentLoadingObserver(qnameValueIndex);
     }
         
@@ -329,7 +324,7 @@ public class NativeBroker extends DBBroker {
      * @throws DBException
      */     
     private void createFulltextIndexFiles() throws DBException {
-        textEngine = new NativeTextEngine(this, WORDS_DBX_ID, dataDir, WORDS_DBX, config, "db-connection.words"); 
+        textEngine = new NativeTextEngine(this, WORDS_DBX_ID, dataDir, config); 
         addContentLoadingObserver(textEngine);
     }
 

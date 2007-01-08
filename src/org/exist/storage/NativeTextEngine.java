@@ -91,6 +91,9 @@ import org.w3c.dom.Node;
  */
 public class NativeTextEngine extends TextSearchEngine implements ContentLoadingObserver {
 	
+    public static final String FILE_NAME = "words.dbx";
+    public static final String  FILE_KEY_IN_CONFIG = "db-connection.words";	
+	
     public static final double DEFAULT_WORD_CACHE_GROWTH = 1.4;
     public static final double DEFAULT_WORD_KEY_THRESHOLD = 0.01;  
     public static final double DEFAULT_WORD_VALUE_THRESHOLD = 0.015;
@@ -121,17 +124,16 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     /** Work output Stream that should be cleared before every use */
     private VariableByteOutputStream os = new VariableByteOutputStream(7);    
 
-    public NativeTextEngine(DBBroker broker, byte id, String dataDir, String dataFile, 
-    		Configuration config, String configKeyForFile) throws DBException {
+    public NativeTextEngine(DBBroker broker, byte id, String dataDir, Configuration config) throws DBException {
 		super(broker, config);
-		this.configKeyForFile = configKeyForFile;
+		this.configKeyForFile = getConfigKeyForFile();
         //TODO : read from configuration (key ?)
     	double cacheGrowth = NativeTextEngine.DEFAULT_WORD_CACHE_GROWTH;
     	double cacheKeyThresdhold = NativeTextEngine.DEFAULT_WORD_KEY_THRESHOLD;
     	double cacheValueThresHold = NativeTextEngine.DEFAULT_WORD_VALUE_THRESHOLD;
     	BFile nativeFile = (BFile) config.getProperty(configKeyForFile);        
         if (nativeFile == null) {
-            File file = new File(dataDir + File.separatorChar + dataFile);
+            File file = new File(dataDir + File.separatorChar + getFileName());
             LOG.debug("Creating '" + file.getName() + "'...");
             nativeFile = new BFile(broker.getBrokerPool(), id, false, 
             		file, broker.getBrokerPool().getCacheManager(), cacheGrowth, cacheKeyThresdhold, cacheValueThresHold);            
@@ -139,6 +141,14 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         }        
         dbTokens = nativeFile;
         this.invertedIndex = new InvertedIndex();
+    }
+    
+    public String getFileName() {
+    	return FILE_NAME;      
+    }
+    
+    public String getConfigKeyForFile() {
+    	return FILE_KEY_IN_CONFIG;
     }
 	
 	/**

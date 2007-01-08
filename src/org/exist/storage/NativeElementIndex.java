@@ -109,14 +109,14 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
     public NativeElementIndex(DBBroker broker, byte id, String dataDir,	Configuration config) throws DBException {
         super(broker);
         this.config = config;
-        this.configKeyForFile = NativeElementIndex.FILE_KEY_IN_CONFIG;
+        this.configKeyForFile = getConfigKeyForFile();
     	//TODO : read from configuration (key ?)
     	double cacheGrowth = NativeElementIndex.DEFAULT_STRUCTURAL_CACHE_GROWTH;
     	double cacheKeyThresdhold = NativeElementIndex.DEFAULT_STRUCTURAL_KEY_THRESHOLD;
     	double cacheValueThresHold = NativeElementIndex.DEFAULT_STRUCTURAL_VALUE_THRESHOLD;    	       
         BFile nativeFile = (BFile) config.getProperty(configKeyForFile);        
         if (nativeFile == null) {
-            File file = new File(dataDir + File.separatorChar + NativeElementIndex.ELEMENTS_DBX);
+            File file = new File(dataDir + File.separatorChar + getFileName());
             LOG.debug("Creating '" + file.getName() + "'...");
             nativeFile = new BFile(broker.getBrokerPool(), id, false, 
             		file, broker.getBrokerPool().getCacheManager(), cacheGrowth, cacheKeyThresdhold, cacheValueThresHold);            
@@ -124,6 +124,14 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         }        
         this.dbNodes = nativeFile;
     }
+    
+    public String getFileName() {
+    	return ELEMENTS_DBX;      
+    }
+    
+    public String getConfigKeyForFile() {
+    	return FILE_KEY_IN_CONFIG;
+    }    
  
     /** Store the given node in the node index.
      * @param qname The node's identity
