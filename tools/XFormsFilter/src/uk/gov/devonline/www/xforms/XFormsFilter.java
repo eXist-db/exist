@@ -85,7 +85,7 @@ import org.chiba.xml.xslt.impl.FileResourceResolver;
  * 
  * Initialization parameters for the ServletFilter
  * 
- * chiba.denug							true or false indicating if Chiba should run in debug mode
+ * chiba.debug							true or false indicating if Chiba should run in debug mode
  * chiba.config							Path to Chiba's configuration file
  * chiba.upload							Path to upload temporary files to
  * chiba.xslt.cache						true or false indicating if Chiba should Cache XSLT
