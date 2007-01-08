@@ -127,7 +127,7 @@ public class ElementImpl extends NamedNode implements Element {
     public byte[] serialize() {
     	 if (nodeId == null)
              throw new RuntimeException("nodeId = null for element: " +
-                 getQName().toString());
+                 getQName().getStringValue());
         try {
             byte[] prefixData = null;
             // serialize namespace prefixes declared in this element
