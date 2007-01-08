@@ -31,10 +31,12 @@ import java.io.OutputStream;
 import java.util.Iterator;
 
 import org.exist.EXistException;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.ElementValue;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteInputStream;
 import org.exist.storage.io.VariableByteOutputStream;
+import org.exist.util.Configuration;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.exist.util.hashtable.Object2IntHashMap;
 import org.w3c.dom.Attr;
@@ -54,6 +56,9 @@ import org.w3c.dom.Node;
  *
  */
 public class SymbolTable {
+	
+    public static final String FILE_NAME = "symbols.dbx";
+    public static final String  FILE_KEY_IN_CONFIG = "db-connection.symbol-table";
 
     public final static short FILE_FORMAT_VERSION_ID = 7;
 
@@ -100,9 +105,23 @@ public class SymbolTable {
     /** the underlying symbols.dbx file */
 	protected File file;
 	
-	public SymbolTable(File file) {
-		this.file = file;
+	public SymbolTable(BrokerPool pool, String dataDir, Configuration config) 
+		throws EXistException {
+		file = new File(dataDir + File.separatorChar + getFileName());		
+		if (!file.canRead()) {
+			saveSymbols();
+		} else
+			loadSymbols();
+		config.setProperty(getConfigKeyForFile(), this);
 	}
+	
+    public static String getFileName() {
+    	return FILE_NAME;      
+    }
+    
+    public static String getConfigKeyForFile() {
+    	return FILE_KEY_IN_CONFIG;
+    }	
 
     /**
      * Retrieve a shared QName instance from the temporary pool.

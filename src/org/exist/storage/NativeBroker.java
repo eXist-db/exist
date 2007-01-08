@@ -131,9 +131,6 @@ public class NativeBroker extends DBBroker {
     public static final byte DOM_DBX_ID = 4;
     public static final byte VALUES_QNAME_DBX_ID = 5;
 
-    public static final String DOM_DBX = "dom.dbx";
-    public static final String COLLECTIONS_DBX = "collections.dbx"; 
-    
     public static final String PROPERTY_PAGE_SIZE = "db-connection.page-size";
     public static final String PROPERTY_MIN_FREE_MEMORY = "db-connection.min_free_memory";
     public static final String PROPERTY_INDEX_DEPTH = "indexer.index-depth";
@@ -243,37 +240,22 @@ public class NativeBroker extends DBBroker {
 			//3) have consistent file creation behaviour (we can probably avoid some unnecessary files)
 			//4) use... *customized* factories for a better index plugability ;-)
 			
-            // Initialize DOM storage     
-            domDb = (DOMFile) config.getProperty("db-connection.dom");
-			if (domDb== null) {
-                File file= new File(dataDir + File.separatorChar + DOM_DBX);
-                LOG.debug("Creating '" + file.getName() + "'...");
-                domDb =	new DOMFile(pool, file, pool.getCacheManager());
-				config.setProperty("db-connection.dom", domDb);				
-			}
-            readOnly = readOnly || domDb.isReadOnly();
+            // Initialize DOM storage
+			domDb = (DOMFile) config.getProperty(DOMFile.getConfigKeyForFile());
+			if (domDb == null)
+				domDb =	new DOMFile(pool, DOM_DBX_ID, dataDir, config);	                        
+			readOnly = readOnly || domDb.isReadOnly();    
             
 			// Initialize collections storage            
-            collectionsDb = (CollectionStore) config.getProperty("db-connection.collections");
-			if (collectionsDb == null) {
-                File file = new File(dataDir + File.separatorChar + COLLECTIONS_DBX);
-                LOG.debug("Creating '" + file.getName() + "'...");
-				collectionsDb = new CollectionStore(pool, file, pool.getCacheManager());
-				config.setProperty("db-connection.collections", collectionsDb);				
-            }
+            collectionsDb = (CollectionStore) config.getProperty(CollectionStore.getConfigKeyForFile());
+			if (collectionsDb == null) 
+				collectionsDb = new CollectionStore(pool, COLLECTIONS_DBX_ID, dataDir, config);	
 			readOnly = readOnly || collectionsDb.isReadOnly();
             
             // Initialize symbols storage
     		symbols = (SymbolTable) config.getProperty("db-connection.symbol-table");
     		if (symbols == null) {
-    			symbolsFile = new File(dataDir + File.separatorChar + "symbols.dbx");
-    			LOG.debug("Loading symbol table from " + symbolsFile.getAbsolutePath());
-    			symbols = new SymbolTable(symbolsFile);
-    			if (!symbolsFile.canRead()) {
-    				symbols.saveSymbols();
-    			} else
-    				symbols.loadSymbols();
-    			config.setProperty("db-connection.symbol-table", symbols);
+    			symbols = new SymbolTable(pool, dataDir, config);
     		}		
     		readOnly = readOnly || !symbols.getFile().canWrite();
             

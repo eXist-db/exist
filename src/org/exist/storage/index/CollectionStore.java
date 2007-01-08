@@ -12,11 +12,10 @@ import java.io.Writer;
 import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.storage.BrokerPool;
-import org.exist.storage.DefaultCacheManager;
-import org.exist.storage.NativeBroker;
 import org.exist.storage.btree.DBException;
 import org.exist.storage.btree.Value;
 import org.exist.util.ByteConversion;
+import org.exist.util.Configuration;
 import org.exist.util.UTF8;
 
 /**
@@ -25,6 +24,9 @@ import org.exist.util.UTF8;
  * @author wolf
  */
 public class CollectionStore extends BFile {
+	
+    public static final String FILE_NAME = "collections.dbx";
+    public static final String  FILE_KEY_IN_CONFIG = "db-connection.collections";
     
     public final static String FREE_DOC_ID_KEY = "__free_doc_id";
     public final static String NEXT_DOC_ID_KEY = "__next_doc_id";  
@@ -34,18 +36,27 @@ public class CollectionStore extends BFile {
     public final static byte KEY_TYPE_COLLECTION = 0;
     public final static byte KEY_TYPE_DOCUMENT = 1;
 
-    /**
-     * 
-     * 
-     * @param pool 
-     * @param cacheManager 
-     * @param file 
-     * @throws DBException 
-     */
-	public CollectionStore(BrokerPool pool, File file, DefaultCacheManager cacheManager) throws DBException {
-		super(pool, NativeBroker.COLLECTIONS_DBX_ID, true, file, cacheManager, 1.25, 0.01, 0.03);
+
+	/**
+	 * @param pool
+	 * @param id
+	 * @param dataDir
+	 * @param config
+	 * @throws DBException
+	 */
+	public CollectionStore(BrokerPool pool, byte id, String dataDir, Configuration config) throws DBException {
+		super(pool, id, true, new File(dataDir + File.separatorChar + getFileName()), 
+				pool.getCacheManager(), 1.25, 0.01, 0.03);		
+		config.setProperty(getConfigKeyForFile(), this);				
 	}
-	
+
+    public static String getFileName() {
+    	return FILE_NAME;      
+    }
+    
+    public static String getConfigKeyForFile() {
+    	return FILE_KEY_IN_CONFIG;
+    }
 	
     /* (non-Javadoc)
      * @see org.dbxml.core.filer.BTree#getBTreeSyncPeriod()
