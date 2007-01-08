@@ -4,8 +4,6 @@ import java.math.BigDecimal;
 import java.text.Collator;
 
 import javax.xml.datatype.*;
-import javax.xml.datatype.DatatypeConstants;
-import javax.xml.datatype.Duration;
 
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
@@ -91,8 +89,9 @@ abstract class OrderedDurationValue extends DurationValue {
 				gc.add(duration);
 				return date.createSameKind(gc);
 			default:
-				throw new IllegalArgumentException();		// caught and converted to XPathException in subclass
-		}
+				throw new XPathException("XPTY0004: cannot add " + 
+						Type.getTypeName(other.getType()) + "('" + other.getStringValue() + "') from " + 
+						Type.getTypeName(getType()) + "('" + getStringValue() + "')");		}
 	}
 
 	public ComputableValue minus(ComputableValue other) throws XPathException {
@@ -125,7 +124,7 @@ abstract class OrderedDurationValue extends DurationValue {
 			return date.createSameKind(gc);
 		*/
 		default:
-			throw new IllegalArgumentException("Tried to substract " + 
+			throw new XPathException("XPTY0004: cannot substract " + 
 					Type.getTypeName(other.getType()) + "('" + other.getStringValue() + "') from " + 
 					Type.getTypeName(getType()) + "('" + getStringValue() + "')");
 		}
