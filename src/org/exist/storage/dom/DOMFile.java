@@ -40,7 +40,6 @@ import org.exist.numbering.DLNBase;
 import org.exist.numbering.NodeId;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BufferStats;
-import org.exist.storage.DefaultCacheManager;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.Signatures;
 import org.exist.storage.StorageAddress;
@@ -60,6 +59,7 @@ import org.exist.storage.lock.ReentrantReadWriteLock;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.Txn;
 import org.exist.util.ByteConversion;
+import org.exist.util.Configuration;
 import org.exist.util.Lockable;
 import org.exist.util.ReadOnlyException;
 import org.exist.util.hashtable.Object2LongIdentityHashMap;
@@ -105,6 +105,9 @@ import org.w3c.dom.Node;
  * @author Wolfgang Meier <wolfgang@exist-db.org>
  */
 public class DOMFile extends BTree implements Lockable {
+	
+    public static final String FILE_NAME = "dom.dbx";
+    public static final String  FILE_KEY_IN_CONFIG = "db-connection.dom";
 
 	/*
 	 * Byte ids for the records written to the log file.
@@ -168,17 +171,16 @@ public class DOMFile extends BTree implements Lockable {
 
     private final AddValueLoggable addValueLog = new AddValueLoggable();
     
-	public DOMFile(BrokerPool pool, File file, DefaultCacheManager cacheManager)
-			throws DBException {
-		super(pool, NativeBroker.DOM_DBX_ID, true, cacheManager, 0.01);
-		lock = new ReentrantReadWriteLock("dom.dbx");
+	public DOMFile(BrokerPool pool, byte id, String dataDir, Configuration config) throws DBException {
+		super(pool, id, true, pool.getCacheManager(), 0.01);
+		lock = new ReentrantReadWriteLock(getFileName());
 		fileHeader = (BTreeFileHeader) getFileHeader();
 		fileHeader.setPageCount(0);
 		fileHeader.setTotalCount(0);
         dataCache = new LRUCache(256, 0.0, 1.0);
-        dataCache.setFileName("dom.dbx");
+        dataCache.setFileName(getFileName());
         cacheManager.registerCache(dataCache);
-
+		File file = new File(dataDir + File.separatorChar + getFileName());
 		setFile(file);
 		if (exists()) {
 			open();
@@ -187,7 +189,16 @@ public class DOMFile extends BTree implements Lockable {
 				LOG.debug("Creating data file: " + file.getName());
 			create();
 		}
+		config.setProperty(getConfigKeyForFile(), this);	
 	}
+	
+    public static String getFileName() {
+    	return FILE_NAME;      
+    }
+    
+    public static String getConfigKeyForFile() {
+    	return FILE_KEY_IN_CONFIG;
+    }	
 
 	protected final Cache getPageBuffer() {
 		return dataCache;
