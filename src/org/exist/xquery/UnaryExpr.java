@@ -75,11 +75,17 @@ public class UnaryExpr extends PathExpr {
         return result;        
 	}
 
-    public void dump(ExpressionDumper dumper) {       
-        dumper.display("to be implemented");      
+    public void dump(ExpressionDumper dumper) {    
+    	if(mode == Constants.MINUS)
+    		dumper.display("-"); 
+    	else
+    		dumper.display("to be implemented");      
     }    
     
     public String toString() {
-        return "to be implemented";
+    	if(mode == Constants.MINUS)
+    		return "-";
+    	else
+    		return("to be implemented");      
     }
 }
