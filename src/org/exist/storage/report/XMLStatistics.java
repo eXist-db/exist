@@ -77,19 +77,19 @@ public class XMLStatistics {
 		Configuration conf = instance.getConfiguration();
 		BFile db;
 		db = (BFile) conf.getProperty("db-connection.collections");
-		genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "Collections storage ("+ NativeBroker.COLLECTIONS_DBX + ")");
+		genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "Collections storage ("+ db.getFile().getName() + ")");
 		DOMFile dom = (DOMFile) conf.getProperty("db-connection.dom");
-		genBufferDetails(dom.getIndexBufferStats(), dom.getDataBufferStats(), "Resource storage ("+ NativeBroker.DOM_DBX + ")");
+		genBufferDetails(dom.getIndexBufferStats(), dom.getDataBufferStats(), "Resource storage ("+ db.getFile().getName() + ")");
 		db = (BFile) conf.getProperty("db-connection.elements");
-		genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "Structural index ("+ NativeElementIndex.ELEMENTS_DBX + ")");
+		genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "Structural index ("+ db.getFile().getName() + ")");
 		db = (BFile) conf.getProperty("db-connection.values");
 		if (db != null)
-			genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "Values index ("+ NativeBroker.VALUES_DBX + ")");
+			genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "Values index ("+ db.getFile().getName() + ")");
 		db = (BFile) conf.getProperty("db-connection2.values");
 		if (db != null)
-			genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "QName values index ("+ NativeBroker.VALUES_QNAME_DBX + ")");
+			genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "QName values index ("+ db.getFile().getName() + ")");
 		db = (BFile) conf.getProperty("db-connection.words");
-		genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "Fulltext index ("+ NativeBroker.WORDS_DBX + ")");		
+		genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "Fulltext index ("+ db.getFile().getName() + ")");		
 		this.contentHandler.endElement(NAMESPACE, "buffers", PREFIX + ":buffers");
 	}
 	

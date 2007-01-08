@@ -82,6 +82,9 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
 
 	private final static Logger LOG = Logger.getLogger(NativeValueIndexByQName.class);
 	
+    public static final String FILE_NAME = "values-by-qname.dbx";
+    public static final String  FILE_KEY_IN_CONFIG = "db-connection2.values";	
+	
 	public static int OFFSET_COLLECTION_ID = 0;
 	//Notice that the conventional design is to serialize OFFSET_SYMBOL *then* OFFSET_NSSYMBOL
 	//TODO : investigate
@@ -92,10 +95,17 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
 	/** switch to activate/deactivate the feature "new index by QName" */
 	private boolean qnameValueIndexation = true; // false;
 
-    public NativeValueIndexByQName(DBBroker broker, byte id, String dataDir, String dataFile, 
-    		Configuration config, String configKeyForFile) throws DBException {
-        super(broker, id, dataDir, dataFile, config, configKeyForFile);	
+    public NativeValueIndexByQName(DBBroker broker, byte id, String dataDir, Configuration config) throws DBException {
+        super(broker, id, dataDir, config);	
     }
+    
+    public String getFileName() {
+    	return FILE_NAME;      
+    }
+    
+    public String getConfigKeyForFile() {
+    	return FILE_KEY_IN_CONFIG;
+    }    
     	    
 	/** @see org.exist.storage.NativeValueIndex#storeAttribute(org.exist.storage.RangeIndexSpec, org.exist.dom.AttrImpl)
 	 */

@@ -96,4 +96,8 @@ public interface ContentLoadingObserver {
 	
 	public void printStatistics();
 	
+	public String getFileName();
+	
+	public String getConfigKeyForFile();
+	
 }
