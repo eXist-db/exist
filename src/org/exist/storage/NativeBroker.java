@@ -29,7 +29,6 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.text.Collator;
 import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Observer;
@@ -130,6 +129,7 @@ public class NativeBroker extends DBBroker {
     public static final byte WORDS_DBX_ID = 3;
     public static final byte DOM_DBX_ID = 4;
     public static final byte VALUES_QNAME_DBX_ID = 5;
+    //Note : no ID for symbols ? Too bad...
 
     public static final String PROPERTY_PAGE_SIZE = "db-connection.page-size";
     public static final String PROPERTY_MIN_FREE_MEMORY = "db-connection.min_free_memory";
@@ -174,9 +174,6 @@ public class NativeBroker extends DBBroker {
     protected IndexSpec indexConfiguration;
     
     protected int defaultIndexDepth;    
-    
-	/** switch to activate/deactivate the feature "new index by QName" */
-	private boolean qnameValueIndexation = true; // false;
 	
 	protected Serializer xmlSerializer;		
 	
@@ -253,21 +250,21 @@ public class NativeBroker extends DBBroker {
 			readOnly = readOnly || collectionsDb.isReadOnly();
             
             // Initialize symbols storage
+			//Notice that there is no ID :-(
     		symbols = (SymbolTable) config.getProperty("db-connection.symbol-table");
     		if (symbols == null) {
     			symbols = new SymbolTable(pool, dataDir, config);
     		}		
     		readOnly = readOnly || !symbols.getFile().canWrite();
             
-            //TODO : is it necessary to create them if we are in read-only mode ?
-            createStructuralIndexFile();            
-            //TODO : don't create if unnecessary ?
-            createValueIndexFile();
-            //Like this ;-)
-            if (qnameValueIndexation) 
-            	createQNameValueIndexFiles();
-            //TODO : don't create if unnecessary ?
-            createFulltextIndexFiles();			
+    		elementIndex = new NativeElementIndex(this, ELEMENTS_DBX_ID, dataDir, config);
+        	addContentLoadingObserver(elementIndex);
+        	valueIndex = new NativeValueIndex(this, VALUES_DBX_ID, dataDir, config);
+        	addContentLoadingObserver(valueIndex);
+    		qnameValueIndex = new NativeValueIndexByQName(this, VALUES_QNAME_DBX_ID, dataDir, config);
+    		addContentLoadingObserver(qnameValueIndex);
+    		textEngine = new NativeTextEngine(this, WORDS_DBX_ID, dataDir, config);
+    		addContentLoadingObserver(textEngine);	
 			
 			if (readOnly)
 				LOG.info("Database runs in read-only mode");
@@ -277,42 +274,7 @@ public class NativeBroker extends DBBroker {
 			throw new EXistException(e);
 		}
 	}
-
-    /** Creates the (mandatory) indexed structural file.
-     * @throws DBException
-     */
-    private void createStructuralIndexFile() throws DBException {
-    	elementIndex = new NativeElementIndex(this, ELEMENTS_DBX_ID, dataDir, config);
-        addContentLoadingObserver(elementIndex);
-    }
-      
-    /** Creates the indexed values (by path) file.
-     * @throws DBException
-     */    
-    private void createValueIndexFile() throws DBException {
-        valueIndex = new NativeValueIndex(this, VALUES_DBX_ID, dataDir, config);
-        addContentLoadingObserver(valueIndex);
-    }
-    
-    /** Creates the indexed values (by QName) file.
-     * @throws DBException
-     */      
-    private void createQNameValueIndexFiles() throws DBException {        
-        qnameValueIndex = new NativeValueIndexByQName(this, VALUES_QNAME_DBX_ID, dataDir, config);
-        addContentLoadingObserver(qnameValueIndex);
-    }
         
-    /** Creates the fulltext values (aka "words") file.
-     * @throws DBException
-     */     
-    private void createFulltextIndexFiles() throws DBException {
-        textEngine = new NativeTextEngine(this, WORDS_DBX_ID, dataDir, config); 
-        addContentLoadingObserver(textEngine);
-    }
-
-    /** Observer Design Pattern: List of ContentLoadingObserver objects */
-    private List contentLoadingObservers = new ArrayList();
-    
     public void addObserver(Observer o) {
         super.addObserver(o);
         textEngine.addObserver(o);
@@ -328,22 +290,7 @@ public class NativeBroker extends DBBroker {
         if (textEngine != null)
             textEngine.deleteObservers();
     }
-    
-    /** Remove all observers */
-    public void clearContentLoadingObservers() {
-        contentLoadingObservers.clear();
-    }    
-    
-    /** Observer Design Pattern: add an observer. */
-    public void addContentLoadingObserver(ContentLoadingObserver observer) {
-        contentLoadingObservers.add(observer);
-    }
-    
-    /** Observer Design Pattern: remove an observer. */
-    public void removeContentLoadingObserver(ContentLoadingObserver observer) {
-        contentLoadingObservers.remove(observer);
-    }
-
+  
     // ============ dispatch the various events to indexing classes ==========
 
     private void notifyStartElement(ElementImpl elem, NodePath currentPath, boolean index) {
@@ -410,7 +357,7 @@ public class NativeBroker extends DBBroker {
         		observer.flush();
         	} catch (DBException e) {
         		LOG.warn(e);
-        		//Ignre the exception ; try to continue on other files
+        		//Ignore the exception ; try to continue on other files
         	}
         }
     }    
@@ -426,8 +373,7 @@ public class NativeBroker extends DBBroker {
         for (int i = 0; i < contentLoadingObservers.size(); i++) {
         	ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
             observer.close();
-        } 
-        //No more observers...
+        }     
         clearContentLoadingObservers();
     }
 
@@ -435,8 +381,7 @@ public class NativeBroker extends DBBroker {
         for (int i = 0; i < contentLoadingObservers.size(); i++) {
         	ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
             observer.closeAndRemove();
-        } 
-        //No more observers...
+        }
         clearContentLoadingObservers();
     }
     
@@ -2751,14 +2696,14 @@ public class NativeBroker extends DBBroker {
 
         LOG.info("Recreating index files ...");
         try {
-        	createStructuralIndexFile();
-        	//TODO : don't create if unnecessary ?
-        	createValueIndexFile();        	
-        	//Like this ;-)
-        	if (qnameValueIndexation) 
-        		createQNameValueIndexFiles();
-        	//TODO : don't create if unnecessary ?
-        	createFulltextIndexFiles();
+        	elementIndex = new NativeElementIndex(this, ELEMENTS_DBX_ID, dataDir, config);
+        	addContentLoadingObserver(elementIndex);
+        	valueIndex = new NativeValueIndex(this, VALUES_DBX_ID, dataDir, config);
+        	addContentLoadingObserver(valueIndex);
+    		qnameValueIndex = new NativeValueIndexByQName(this, VALUES_QNAME_DBX_ID, dataDir, config);
+    		addContentLoadingObserver(qnameValueIndex);
+    		textEngine = new NativeTextEngine(this, WORDS_DBX_ID, dataDir, config);
+    		addContentLoadingObserver(textEngine);
         } catch (DBException e) {
             LOG.warn("Exception during repair: " + e.getMessage(), e);
         }

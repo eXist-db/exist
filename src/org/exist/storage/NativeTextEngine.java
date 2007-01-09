@@ -119,28 +119,28 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	/** The datastore for this token index */
 	protected BFile dbTokens;
 	protected InvertedIndex invertedIndex;
-	protected String configKeyForFile;
     
     /** Work output Stream that should be cleared before every use */
     private VariableByteOutputStream os = new VariableByteOutputStream(7);    
 
     public NativeTextEngine(DBBroker broker, byte id, String dataDir, Configuration config) throws DBException {
-		super(broker, config);
-		this.configKeyForFile = getConfigKeyForFile();
+		super(broker, config);	
         //TODO : read from configuration (key ?)
     	double cacheGrowth = NativeTextEngine.DEFAULT_WORD_CACHE_GROWTH;
     	double cacheKeyThresdhold = NativeTextEngine.DEFAULT_WORD_KEY_THRESHOLD;
     	double cacheValueThresHold = NativeTextEngine.DEFAULT_WORD_VALUE_THRESHOLD;
-    	BFile nativeFile = (BFile) config.getProperty(configKeyForFile);        
+    	BFile nativeFile = (BFile) config.getProperty(getConfigKeyForFile());        
         if (nativeFile == null) {
             File file = new File(dataDir + File.separatorChar + getFileName());
             LOG.debug("Creating '" + file.getName() + "'...");
             nativeFile = new BFile(broker.getBrokerPool(), id, false, 
-            		file, broker.getBrokerPool().getCacheManager(), cacheGrowth, cacheKeyThresdhold, cacheValueThresHold);            
-            config.setProperty(configKeyForFile, nativeFile);            
+            		file, broker.getBrokerPool().getCacheManager(), 
+            		cacheGrowth, cacheKeyThresdhold, cacheValueThresHold);            
+            config.setProperty(getConfigKeyForFile(), nativeFile);             
         }        
         dbTokens = nativeFile;
-        this.invertedIndex = new InvertedIndex();
+        this.invertedIndex = new InvertedIndex();   
+        
     }
     
     public String getFileName() {
@@ -150,6 +150,10 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     public String getConfigKeyForFile() {
     	return FILE_KEY_IN_CONFIG;
     }
+    
+    public NativeTextEngine getInstance() {
+    	return this;
+    }     
 	
 	/**
 	 * Checks if the given string could be a regular expression.
@@ -746,12 +750,12 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     }
     
     public void closeAndRemove() {
-    	config.setProperty(this.configKeyForFile, null);
+    	config.setProperty(getConfigKeyForFile(), null);    	
     	dbTokens.closeAndRemove();
     }
     
     public boolean close() throws DBException {
-    	config.setProperty(this.configKeyForFile, null);
+    	config.setProperty(getConfigKeyForFile(), null);    	
         return dbTokens.close();        
     }  
     

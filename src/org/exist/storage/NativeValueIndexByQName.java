@@ -92,11 +92,8 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
 	public static int OFFSET_LOCAL_NAME = OFFSET_NS_URI + SymbolTable.LENGTH_NS_URI; //4
 	public static int OFFSET_VALUE = OFFSET_LOCAL_NAME + SymbolTable.LENGTH_LOCAL_NAME; //6
 
-	/** switch to activate/deactivate the feature "new index by QName" */
-	private boolean qnameValueIndexation = true; // false;
-
     public NativeValueIndexByQName(DBBroker broker, byte id, String dataDir, Configuration config) throws DBException {
-        super(broker, id, dataDir, config);	
+        super(broker, id, dataDir, config);	       
     }
     
     public String getFileName() {
@@ -105,7 +102,11 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
     
     public String getConfigKeyForFile() {
     	return FILE_KEY_IN_CONFIG;
-    }    
+    } 
+    
+    public NativeValueIndex getInstance() {
+    	return this;
+    }
     	    
 	/** @see org.exist.storage.NativeValueIndex#storeAttribute(org.exist.storage.RangeIndexSpec, org.exist.dom.AttrImpl)
 	 */
@@ -114,15 +115,13 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
         updatePendingIndexEntry(node, keyFactory);
 	}
     
-    public void storeAttribute(AttrImpl node, NodePath currentPath, boolean index) {
-        if (qnameValueIndexation) {
-            DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
-            QNameRangeIndexSpec qnIdx = doc.getCollection().getIndexByQNameConfiguration(broker, node.getQName());
-            if (qnIdx != null) {
-                this.setDocument(doc);
-                this.storeAttribute(qnIdx, (AttrImpl) node);
-            }
-        }
+    public void storeAttribute(AttrImpl node, NodePath currentPath, boolean index) {    
+        DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
+        QNameRangeIndexSpec qnIdx = doc.getCollection().getIndexByQNameConfiguration(broker, node.getQName());
+        if (qnIdx != null) {
+            this.setDocument(doc);
+            this.storeAttribute(qnIdx, (AttrImpl) node);
+        }       
     }
     
     public void removeAttribute(AttrImpl attr, NodePath currentPath, boolean index) {
@@ -137,16 +136,14 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
 	}
     
     /** updates the index type of given node according to the Index By QName config. */
-    public void startElement(ElementImpl node, NodePath currentPath, boolean index) {
-        if (qnameValueIndexation) {
-            DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
-            QNameRangeIndexSpec qnIdx = doc.getCollection().getIndexByQNameConfiguration(broker, node.getQName());
-            if (qnIdx != null) {
-                int newIndexType = RangeIndexSpec.QNAME_INDEX;
-                ElementImpl elementImpl = (ElementImpl) node;
-                elementImpl.setIndexType(newIndexType | elementImpl.getIndexType());
-            }
-        }
+    public void startElement(ElementImpl node, NodePath currentPath, boolean index) {  
+        DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
+        QNameRangeIndexSpec qnIdx = doc.getCollection().getIndexByQNameConfiguration(broker, node.getQName());
+        if (qnIdx != null) {
+            int newIndexType = RangeIndexSpec.QNAME_INDEX;
+            ElementImpl elementImpl = (ElementImpl) node;
+            elementImpl.setIndexType(newIndexType | elementImpl.getIndexType());
+        }        
     }
     
     public void endElement(ElementImpl node, NodePath currentPath, String content) {
@@ -323,29 +320,23 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
     }    
 
 	private void localMarkElement(ElementImpl node, NodePath currentPath, String content) {
-		if (qnameValueIndexation) {
-			DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
-			QNameRangeIndexSpec qnIdx = doc.getCollection().getIndexByQNameConfiguration(broker, node.getQName());
-			if (qnIdx != null) {
-				this.setDocument(doc);
-				this.storeElement(qnIdx.getType(), (ElementImpl) node, content);
-			}
-		}
+		DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
+		QNameRangeIndexSpec qnIdx = doc.getCollection().getIndexByQNameConfiguration(broker, node.getQName());
+		if (qnIdx != null) {
+			this.setDocument(doc);
+			this.storeElement(qnIdx.getType(), (ElementImpl) node, content);
+		}		
 	}
 	
     public void dropIndex(DocumentImpl doc) throws ReadOnlyException {
-    	if (qnameValueIndexation)
-    		super.dropIndex(doc);
+    	super.dropIndex(doc);
     }
     
     public void closeAndRemove() {
-    	if (qnameValueIndexation)
-    		super.closeAndRemove();
+   		super.closeAndRemove();
     }
     
     public boolean close() throws DBException {
-    	if (qnameValueIndexation)
-    		return super.close();
-        return true;
+   		return super.close();
     }    
 }

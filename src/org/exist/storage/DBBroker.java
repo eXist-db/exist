@@ -25,6 +25,7 @@ package org.exist.storage;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.Collator;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -170,6 +171,25 @@ public abstract class DBBroker extends Observable {
 		 * do nothing
 		 */
 	}
+	
+    /** Observer Design Pattern: List of ContentLoadingObserver objects */
+    protected List contentLoadingObservers = new ArrayList();	
+	
+    /** Remove all observers */
+    public void clearContentLoadingObservers() {
+        contentLoadingObservers.clear();
+    }    
+    
+    /** Observer Design Pattern: add an observer. */
+    public void addContentLoadingObserver(ContentLoadingObserver observer) {
+    	if (!contentLoadingObservers.contains(observer))
+    		contentLoadingObservers.add(observer);
+    }
+    
+    /** Observer Design Pattern: remove an observer. */
+    public void removeContentLoadingObserver(ContentLoadingObserver observer) {
+        contentLoadingObservers.remove(observer);
+    }	
 
 	/**
 	 * Adds all the documents in the database to the specified DocumentSet.
