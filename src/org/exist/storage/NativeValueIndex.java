@@ -106,8 +106,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
 	
 	/** The datastore for this value index */
     protected BFile dbValues;
-    protected Configuration config;
-    protected String configKeyForFile;
+    protected Configuration config;  
     
 	/** A collection of key-value pairs that pending modifications for this value index.  
      * The keys are {@link org.exist.xquery.value.AtomicValue atomic values}
@@ -131,20 +130,20 @@ public class NativeValueIndex implements ContentLoadingObserver {
     public NativeValueIndex(DBBroker broker, byte id, String dataDir, Configuration config) throws DBException {
         this.broker = broker;
         this.config = config;
-        //use inheritance
-        this.configKeyForFile = getConfigKeyForFile();
+        //use inheritance if necessary !     
     	//TODO : read from configuration (key ?)
     	double cacheGrowth = NativeValueIndex.DEFAULT_VALUE_CACHE_GROWTH;
     	double cacheKeyThresdhold = NativeValueIndex.DEFAULT_VALUE_KEY_THRESHOLD;
     	double cacheValueThresHold = NativeValueIndex.DEFAULT_VALUE_VALUE_THRESHOLD;
-        BFile nativeFile = (BFile) config.getProperty(configKeyForFile);        
+        BFile nativeFile = (BFile) config.getProperty(getConfigKeyForFile());        
         if (nativeFile == null) {
         	//use inheritance
             File file = new File(dataDir + File.separatorChar + getFileName());
             LOG.debug("Creating '" + file.getName() + "'...");
             nativeFile = new BFile(broker.getBrokerPool(), id, false, 
             		file, broker.getBrokerPool().getCacheManager(), cacheGrowth, cacheKeyThresdhold, cacheValueThresHold);            
-            config.setProperty(configKeyForFile, nativeFile);            
+            config.setProperty(getConfigKeyForFile(), nativeFile);          
+           
         }        
         dbValues = nativeFile;
         //TODO : reconsider this. Case sensitivity have nothing to do with atomic values -pb
@@ -160,6 +159,10 @@ public class NativeValueIndex implements ContentLoadingObserver {
     public String getConfigKeyForFile() {
     	return FILE_KEY_IN_CONFIG;
     }
+    
+    public NativeValueIndex getInstance() {
+    	return this;
+    }    
     
     /* (non-Javadoc)
      * @see org.exist.storage.ContentLoadingObserver#setDocument(org.exist.dom.DocumentImpl)
@@ -720,12 +723,15 @@ public class NativeValueIndex implements ContentLoadingObserver {
     }
 
     public void closeAndRemove() {
-    	config.setProperty(this.configKeyForFile, null);
+    	//Use inheritance if necessary ;-)
+    	config.setProperty(getConfigKeyForFile(), null);       	
     	dbValues.closeAndRemove();
     }
     
     public boolean close() throws DBException {
-        return dbValues.close();
+    	//Use inheritance if necessary ;-)
+    	config.setProperty(getConfigKeyForFile(), null);  
+        return dbValues.close();        
     }
     
     public void printStatistics() {

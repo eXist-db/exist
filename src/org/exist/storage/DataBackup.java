@@ -100,6 +100,7 @@ public class DataBackup implements SystemTask {
 	            out.closeEntry();
 			}
 			
+			//TODO : could we mutualize there ?
 			// backup the symbols.dbx file (not included above)
 			out.putNextEntry(new ZipEntry(broker.getSymbols().getFile().getName()));
 			broker.getSymbols().backupSymbolsTo(out);

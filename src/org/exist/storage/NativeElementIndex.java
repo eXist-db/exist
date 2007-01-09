@@ -101,28 +101,26 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
     protected BFile dbNodes;
     
     protected Configuration config;
-    protected String configKeyForFile;
 
     /** Work output Stream that should be cleared before every use */
     private VariableByteOutputStream os = new VariableByteOutputStream();
     
     public NativeElementIndex(DBBroker broker, byte id, String dataDir,	Configuration config) throws DBException {
         super(broker);
-        this.config = config;
-        this.configKeyForFile = getConfigKeyForFile();
+        this.config = config;       
     	//TODO : read from configuration (key ?)
     	double cacheGrowth = NativeElementIndex.DEFAULT_STRUCTURAL_CACHE_GROWTH;
     	double cacheKeyThresdhold = NativeElementIndex.DEFAULT_STRUCTURAL_KEY_THRESHOLD;
     	double cacheValueThresHold = NativeElementIndex.DEFAULT_STRUCTURAL_VALUE_THRESHOLD;    	       
-        BFile nativeFile = (BFile) config.getProperty(configKeyForFile);        
+        BFile nativeFile = (BFile) config.getProperty(getConfigKeyForFile());        
         if (nativeFile == null) {
             File file = new File(dataDir + File.separatorChar + getFileName());
             LOG.debug("Creating '" + file.getName() + "'...");
             nativeFile = new BFile(broker.getBrokerPool(), id, false, 
             		file, broker.getBrokerPool().getCacheManager(), cacheGrowth, cacheKeyThresdhold, cacheValueThresHold);            
-            config.setProperty(configKeyForFile, nativeFile);            
+            config.setProperty(getConfigKeyForFile(), nativeFile); 
         }        
-        this.dbNodes = nativeFile;
+        this.dbNodes = nativeFile;          
     }
     
     public String getFileName() {
@@ -131,7 +129,11 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
     
     public String getConfigKeyForFile() {
     	return FILE_KEY_IN_CONFIG;
-    }    
+    }   
+    
+    public NativeElementIndex getInstance() {
+    	return this;
+    }
  
     /** Store the given node in the node index.
      * @param qname The node's identity
@@ -990,12 +992,13 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
     }    
     
     public void closeAndRemove() {
-    	config.setProperty(this.configKeyForFile, null);
+    	config.setProperty(getConfigKeyForFile(), null);
+    	broker.removeContentLoadingObserver(getInstance());
         dbNodes.closeAndRemove();
     }
 
     public boolean close() throws DBException {
-    	config.setProperty(this.configKeyForFile, null);
+    	config.setProperty(getConfigKeyForFile(), null);
         return dbNodes.close();
     }
     
