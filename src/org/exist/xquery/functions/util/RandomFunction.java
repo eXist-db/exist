@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.functions.util;
 
+import java.util.Random;
+
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -28,27 +30,48 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.DoubleValue;
+import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 public class RandomFunction extends BasicFunction
 {
-    public final static FunctionSignature signature =
+    public final static FunctionSignature signatures[] = {
         new FunctionSignature(
             new QName("random", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-            "Returns a random number - equivalent to calling the java function Math.random().",
+            "Returns a random number between 0.0 and 1.0",
             null,
-            new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE));
+            new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE)),
+        
+        new FunctionSignature(
+                new QName("random", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+                "Returns a random number between 0 and $a",
+                new SequenceType[] {
+    					new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE)
+    			},
+                new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE))
+    };
     
-    public RandomFunction(XQueryContext context)
+    public RandomFunction(XQueryContext context, FunctionSignature signature)
     {
         super(context, signature);
     }
 
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
     {
-        return new DoubleValue(Math.random()).convertTo(Type.DOUBLE);
+    	Random rndGen = new Random();
+    	
+    	if(args[0].isEmpty())
+    	{
+    		return new DoubleValue(rndGen.nextDouble());
+    	}
+    	else
+    	{
+    		IntegerValue upper = (IntegerValue)args[0].convertTo(Type.INTEGER);
+    		return new IntegerValue(rndGen.nextInt(upper.getInt()));
+    		
+    	}
     }
 }
 
