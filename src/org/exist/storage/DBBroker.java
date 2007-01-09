@@ -188,7 +188,8 @@ public abstract class DBBroker extends Observable {
     
     /** Observer Design Pattern: remove an observer. */
     public void removeContentLoadingObserver(ContentLoadingObserver observer) {
-        contentLoadingObservers.remove(observer);
+    	if (contentLoadingObservers.contains(observer))
+    		contentLoadingObservers.remove(observer);
     }	
 
 	/**

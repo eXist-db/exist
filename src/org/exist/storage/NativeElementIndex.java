@@ -78,7 +78,7 @@ import org.w3c.dom.Node;
  */
 public class NativeElementIndex extends ElementIndex implements ContentLoadingObserver {
 	
-	public static final String ELEMENTS_DBX = "elements.dbx";
+	public static final String FILE_NAME = "elements.dbx";
 	public static final String  FILE_KEY_IN_CONFIG = "db-connection.elements";
 	
     public static final double DEFAULT_STRUCTURAL_CACHE_GROWTH = 1.25;
@@ -120,11 +120,12 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             		file, broker.getBrokerPool().getCacheManager(), cacheGrowth, cacheKeyThresdhold, cacheValueThresHold);            
             config.setProperty(getConfigKeyForFile(), nativeFile); 
         }        
-        this.dbNodes = nativeFile;          
+        this.dbNodes = nativeFile; 
+        broker.addContentLoadingObserver(getInstance());
     }
     
     public String getFileName() {
-    	return ELEMENTS_DBX;      
+    	return FILE_NAME;      
     }
     
     public String getConfigKeyForFile() {
@@ -993,12 +994,15 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
     
     public void closeAndRemove() {
     	config.setProperty(getConfigKeyForFile(), null);
-    	broker.removeContentLoadingObserver(getInstance());
+    	//Do not uncomment yet !
+    	//broker.removeContentLoadingObserver(getInstance());
         dbNodes.closeAndRemove();
     }
 
     public boolean close() throws DBException {
     	config.setProperty(getConfigKeyForFile(), null);
+    	//Do not uncomment yet !
+    	//broker.removeContentLoadingObserver(getInstance());
         return dbNodes.close();
     }
     

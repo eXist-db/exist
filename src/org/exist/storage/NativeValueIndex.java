@@ -150,6 +150,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         Boolean caseOpt = (Boolean) config.getProperty(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE);
         if (caseOpt != null)
             caseSensitive = caseOpt.booleanValue();
+        broker.addContentLoadingObserver(getInstance());
     }
     
     public String getFileName() {

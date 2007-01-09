@@ -8,10 +8,13 @@ import java.util.Iterator;
 
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BufferStats;
-import org.exist.storage.NativeBroker;
 import org.exist.storage.NativeElementIndex;
+import org.exist.storage.NativeTextEngine;
+import org.exist.storage.NativeValueIndex;
+import org.exist.storage.NativeValueIndexByQName;
 import org.exist.storage.dom.DOMFile;
 import org.exist.storage.index.BFile;
+import org.exist.storage.index.CollectionStore;
 import org.exist.util.Configuration;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -76,20 +79,21 @@ public class XMLStatistics {
 		
 		Configuration conf = instance.getConfiguration();
 		BFile db;
-		db = (BFile) conf.getProperty("db-connection.collections");
+		db = (BFile) conf.getProperty(CollectionStore.FILE_KEY_IN_CONFIG);
 		genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "Collections storage ("+ db.getFile().getName() + ")");
-		DOMFile dom = (DOMFile) conf.getProperty("db-connection.dom");
+		DOMFile dom = (DOMFile) conf.getProperty(DOMFile.FILE_KEY_IN_CONFIG);
 		genBufferDetails(dom.getIndexBufferStats(), dom.getDataBufferStats(), "Resource storage ("+ db.getFile().getName() + ")");
-		db = (BFile) conf.getProperty("db-connection.elements");
+		db = (BFile) conf.getProperty(NativeElementIndex.FILE_KEY_IN_CONFIG);
 		genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "Structural index ("+ db.getFile().getName() + ")");
-		db = (BFile) conf.getProperty("db-connection.values");
+		db = (BFile) conf.getProperty(NativeValueIndex.FILE_KEY_IN_CONFIG);
 		if (db != null)
 			genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "Values index ("+ db.getFile().getName() + ")");
-		db = (BFile) conf.getProperty("db-connection2.values");
+		db = (BFile) conf.getProperty(NativeValueIndexByQName.FILE_KEY_IN_CONFIG);
 		if (db != null)
 			genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "QName values index ("+ db.getFile().getName() + ")");
-		db = (BFile) conf.getProperty("db-connection.words");
-		genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "Fulltext index ("+ db.getFile().getName() + ")");		
+		db = (BFile) conf.getProperty(NativeTextEngine.FILE_KEY_IN_CONFIG);
+		if (db != null)
+			genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "Fulltext index ("+ db.getFile().getName() + ")");		
 		this.contentHandler.endElement(NAMESPACE, "buffers", PREFIX + ":buffers");
 	}
 	

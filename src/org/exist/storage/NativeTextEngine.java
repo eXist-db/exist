@@ -139,8 +139,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             config.setProperty(getConfigKeyForFile(), nativeFile);             
         }        
         dbTokens = nativeFile;
-        this.invertedIndex = new InvertedIndex();   
-        
+        this.invertedIndex = new InvertedIndex();  
+        broker.addContentLoadingObserver(getInstance());	        
     }
     
     public String getFileName() {

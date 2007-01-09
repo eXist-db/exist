@@ -107,9 +107,9 @@ import org.w3c.dom.NodeList;
  * 
  * Observer Design Pattern: role : this class is the subject (alias observable)
  * for various classes that generate indices for the database content :
- * @link org.exist.storage.NativeElementIndex,
- * @link org.exist.storage.NativeTextEngine,
- * @link org.exist.storage.NativeValueIndex, 
+ * @link org.exist.storage.NativeElementIndex
+ * @link org.exist.storage.NativeTextEngine
+ * @link org.exist.storage.NativeValueIndex 
  * @link org.exist.storage.NativeValueIndexByQName
  * 
  * This class dispatches the various events (defined by the methods 
@@ -252,19 +252,14 @@ public class NativeBroker extends DBBroker {
             // Initialize symbols storage
 			//Notice that there is no ID :-(
     		symbols = (SymbolTable) config.getProperty("db-connection.symbol-table");
-    		if (symbols == null) {
-    			symbols = new SymbolTable(pool, dataDir, config);
-    		}		
+    		if (symbols == null) 
+    			symbols = new SymbolTable(pool, dataDir, config);    			
     		readOnly = readOnly || !symbols.getFile().canWrite();
             
     		elementIndex = new NativeElementIndex(this, ELEMENTS_DBX_ID, dataDir, config);
-        	addContentLoadingObserver(elementIndex);
-        	valueIndex = new NativeValueIndex(this, VALUES_DBX_ID, dataDir, config);
-        	addContentLoadingObserver(valueIndex);
-    		qnameValueIndex = new NativeValueIndexByQName(this, VALUES_QNAME_DBX_ID, dataDir, config);
-    		addContentLoadingObserver(qnameValueIndex);
-    		textEngine = new NativeTextEngine(this, WORDS_DBX_ID, dataDir, config);
-    		addContentLoadingObserver(textEngine);	
+        	valueIndex = new NativeValueIndex(this, VALUES_DBX_ID, dataDir, config);        	
+    		qnameValueIndex = new NativeValueIndexByQName(this, VALUES_QNAME_DBX_ID, dataDir, config);    		
+    		textEngine = new NativeTextEngine(this, WORDS_DBX_ID, dataDir, config);    		
 			
 			if (readOnly)
 				LOG.info("Database runs in read-only mode");
@@ -2696,14 +2691,10 @@ public class NativeBroker extends DBBroker {
 
         LOG.info("Recreating index files ...");
         try {
-        	elementIndex = new NativeElementIndex(this, ELEMENTS_DBX_ID, dataDir, config);
-        	addContentLoadingObserver(elementIndex);
+        	elementIndex = new NativeElementIndex(this, ELEMENTS_DBX_ID, dataDir, config);        	
         	valueIndex = new NativeValueIndex(this, VALUES_DBX_ID, dataDir, config);
-        	addContentLoadingObserver(valueIndex);
-    		qnameValueIndex = new NativeValueIndexByQName(this, VALUES_QNAME_DBX_ID, dataDir, config);
-    		addContentLoadingObserver(qnameValueIndex);
-    		textEngine = new NativeTextEngine(this, WORDS_DBX_ID, dataDir, config);
-    		addContentLoadingObserver(textEngine);
+    		qnameValueIndex = new NativeValueIndexByQName(this, VALUES_QNAME_DBX_ID, dataDir, config);    		
+    		textEngine = new NativeTextEngine(this, WORDS_DBX_ID, dataDir, config);    		
         } catch (DBException e) {
             LOG.warn("Exception during repair: " + e.getMessage(), e);
         }
