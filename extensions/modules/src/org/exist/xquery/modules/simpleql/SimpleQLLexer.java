@@ -42,8 +42,12 @@ public SimpleQLLexer(LexerSharedInputState state) {
 	caseSensitiveLiterals = true;
 	setCaseSensitive(true);
 	literals = new Hashtable();
-	literals.put(new ANTLRHashString("or", this), new Integer(5));
-	literals.put(new ANTLRHashString("and", this), new Integer(4));
+	literals.put(new ANTLRHashString("NOT", this), new Integer(11));
+	literals.put(new ANTLRHashString("OR", this), new Integer(9));
+	literals.put(new ANTLRHashString("NICHT", this), new Integer(12));
+	literals.put(new ANTLRHashString("UND", this), new Integer(8));
+	literals.put(new ANTLRHashString("ODER", this), new Integer(10));
+	literals.put(new ANTLRHashString("AND", this), new Integer(7));
 }
 
 public Token nextToken() throws TokenStreamException {
@@ -65,6 +69,12 @@ tryAgain:
 				case '"':
 				{
 					mSTRING_LITERAL(true);
+					theRetToken=_returnToken;
+					break;
+				}
+				case '/':
+				{
+					mREGEXP(true);
 					theRetToken=_returnToken;
 					break;
 				}
@@ -105,8 +115,8 @@ tryAgain:
 		int _saveIndex;
 		
 		{
-		int _cnt10=0;
-		_loop10:
+		int _cnt18=0;
+		_loop18:
 		do {
 			switch ( LA(1)) {
 			case ' ':
@@ -132,10 +142,10 @@ tryAgain:
 			}
 			default:
 			{
-				if ( _cnt10>=1 ) { break _loop10; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+				if ( _cnt18>=1 ) { break _loop18; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 			}
 			}
-			_cnt10++;
+			_cnt18++;
 		} while (true);
 		}
 		_ttype = Token.SKIP;
@@ -155,7 +165,7 @@ tryAgain:
 		match('"');
 		text.setLength(_saveIndex);
 		{
-		_loop14:
+		_loop22:
 		do {
 			if ((_tokenSet_1.member(LA(1)))) {
 				{
@@ -163,7 +173,7 @@ tryAgain:
 				}
 			}
 			else {
-				break _loop14;
+				break _loop22;
 			}
 			
 		} while (true);
@@ -178,14 +188,46 @@ tryAgain:
 		_returnToken = _token;
 	}
 	
+	public final void mREGEXP(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
+		int _ttype; Token _token=null; int _begin=text.length();
+		_ttype = REGEXP;
+		int _saveIndex;
+		
+		_saveIndex=text.length();
+		match('/');
+		text.setLength(_saveIndex);
+		{
+		_loop26:
+		do {
+			if ((_tokenSet_2.member(LA(1)))) {
+				{
+				match(_tokenSet_2);
+				}
+			}
+			else {
+				break _loop26;
+			}
+			
+		} while (true);
+		}
+		_saveIndex=text.length();
+		match('/');
+		text.setLength(_saveIndex);
+		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
+			_token = makeToken(_ttype);
+			_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));
+		}
+		_returnToken = _token;
+	}
+	
 	public final void mWORD(boolean _createToken) throws RecognitionException, CharStreamException, TokenStreamException {
 		int _ttype; Token _token=null; int _begin=text.length();
 		_ttype = WORD;
 		int _saveIndex;
 		
 		{
-		int _cnt17=0;
-		_loop17:
+		int _cnt29=0;
+		_loop29:
 		do {
 			switch ( LA(1)) {
 			case '\u00b7':  case '\u02d0':  case '\u02d1':  case '\u0387':
@@ -208,23 +250,23 @@ tryAgain:
 				break;
 			}
 			default:
-				if ((_tokenSet_2.member(LA(1)))) {
+				if ((_tokenSet_3.member(LA(1)))) {
 					mBASECHAR(false);
 				}
-				else if ((_tokenSet_3.member(LA(1)))) {
+				else if ((_tokenSet_4.member(LA(1)))) {
 					mIDEOGRAPHIC(false);
 				}
-				else if ((_tokenSet_4.member(LA(1)))) {
+				else if ((_tokenSet_5.member(LA(1)))) {
 					mDIGIT(false);
 				}
-				else if ((_tokenSet_5.member(LA(1)))) {
+				else if ((_tokenSet_6.member(LA(1)))) {
 					mCOMBINING_CHAR(false);
 				}
 			else {
-				if ( _cnt17>=1 ) { break _loop17; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
+				if ( _cnt29>=1 ) { break _loop29; } else {throw new NoViableAltForCharException((char)LA(1), getFilename(), getLine(), getColumn());}
 			}
 			}
-			_cnt17++;
+			_cnt29++;
 		} while (true);
 		}
 		if ( _createToken && _token==null && _ttype!=Token.SKIP ) {
@@ -2603,6 +2645,14 @@ tryAgain:
 	}
 	public static final BitSet _tokenSet_1 = new BitSet(mk_tokenSet_1());
 	private static final long[] mk_tokenSet_2() {
+		long[] data = new long[2048];
+		data[0]=-140737488355336L;
+		for (int i = 1; i<=1022; i++) { data[i]=-1L; }
+		data[1023]=9223372036854775807L;
+		return data;
+	}
+	public static final BitSet _tokenSet_2 = new BitSet(mk_tokenSet_2());
+	private static final long[] mk_tokenSet_3() {
 		long[] data = new long[2756];
 		data[1]=576460743847706622L;
 		data[3]=-36028797027352577L;
@@ -2673,16 +2723,16 @@ tryAgain:
 		data[862]=68719476735L;
 		return data;
 	}
-	public static final BitSet _tokenSet_2 = new BitSet(mk_tokenSet_2());
-	private static final long[] mk_tokenSet_3() {
+	public static final BitSet _tokenSet_3 = new BitSet(mk_tokenSet_3());
+	private static final long[] mk_tokenSet_4() {
 		long[] data = new long[2504];
 		data[192]=4389456576640L;
 		for (int i = 312; i<=637; i++) { data[i]=-1L; }
 		data[638]=274877906943L;
 		return data;
 	}
-	public static final BitSet _tokenSet_3 = new BitSet(mk_tokenSet_3());
-	private static final long[] mk_tokenSet_4() {
+	public static final BitSet _tokenSet_4 = new BitSet(mk_tokenSet_4());
+	private static final long[] mk_tokenSet_5() {
 		long[] data = new long[1025];
 		data[0]=287948901175001088L;
 		data[25]=4393751543808L;
@@ -2701,8 +2751,8 @@ tryAgain:
 		data[60]=4393751543808L;
 		return data;
 	}
-	public static final BitSet _tokenSet_4 = new BitSet(mk_tokenSet_4());
-	private static final long[] mk_tokenSet_5() {
+	public static final BitSet _tokenSet_5 = new BitSet(mk_tokenSet_5());
+	private static final long[] mk_tokenSet_6() {
 		long[] data = new long[1025];
 		data[12]=-1L;
 		data[13]=12884901951L;
@@ -2741,6 +2791,6 @@ tryAgain:
 		data[194]=100663296L;
 		return data;
 	}
-	public static final BitSet _tokenSet_5 = new BitSet(mk_tokenSet_5());
+	public static final BitSet _tokenSet_6 = new BitSet(mk_tokenSet_6());
 	
 	}

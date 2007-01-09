@@ -55,8 +55,8 @@ public SimpleQLParser(ParserSharedInputState state) {
 		{
 		_loop3:
 		do {
-			if ((LA(1)==LITERAL_and)) {
-				match(LITERAL_and);
+			if ((LA(1)==LITERAL_AND||LA(1)==LITERAL_UND)) {
+				and();
 				s2=orExpr();
 				
 							buf.append(" and ");
@@ -81,14 +81,14 @@ public SimpleQLParser(ParserSharedInputState state) {
 			String s1, s2;
 		
 		
-		s1=queryArg();
+		s1=notExpr();
 		buf.append(s1);
 		{
 		_loop6:
 		do {
-			if ((LA(1)==LITERAL_or)) {
-				match(LITERAL_or);
-				s2=queryArg();
+			if ((LA(1)==LITERAL_OR||LA(1)==LITERAL_ODER)) {
+				or();
+				s2=notExpr();
 				
 							buf.append(" or ");
 							buf.append(s2);
@@ -104,11 +104,84 @@ public SimpleQLParser(ParserSharedInputState state) {
 		return str;
 	}
 	
+	public final void and() throws RecognitionException, TokenStreamException {
+		
+		
+		switch ( LA(1)) {
+		case LITERAL_AND:
+		{
+			match(LITERAL_AND);
+			break;
+		}
+		case LITERAL_UND:
+		{
+			match(LITERAL_UND);
+			break;
+		}
+		default:
+		{
+			throw new NoViableAltException(LT(1), getFilename());
+		}
+		}
+	}
+	
+	public final String  notExpr() throws RecognitionException, TokenStreamException {
+		String str;
+		
+		
+			StringBuffer buf = new StringBuffer();
+			String s;
+		
+		
+		s=queryArg();
+		buf.append(s);
+		{
+		_loop9:
+		do {
+			if ((LA(1)==LITERAL_NOT||LA(1)==LITERAL_NICHT)) {
+				not();
+				s=queryArg();
+				
+							buf.append(" and not(").append(s).append(")");
+						
+			}
+			else {
+				break _loop9;
+			}
+			
+		} while (true);
+		}
+		str = buf.toString();
+		return str;
+	}
+	
+	public final void or() throws RecognitionException, TokenStreamException {
+		
+		
+		switch ( LA(1)) {
+		case LITERAL_OR:
+		{
+			match(LITERAL_OR);
+			break;
+		}
+		case LITERAL_ODER:
+		{
+			match(LITERAL_ODER);
+			break;
+		}
+		default:
+		{
+			throw new NoViableAltException(LT(1), getFilename());
+		}
+		}
+	}
+	
 	public final String  queryArg() throws RecognitionException, TokenStreamException {
 		String arg;
 		
 		Token  l = null;
-		Token  w = null;
+		Token  r = null;
+		Token  w2 = null;
 		
 			StringBuffer buf = new StringBuffer();
 		
@@ -126,13 +199,44 @@ public SimpleQLParser(ParserSharedInputState state) {
 				
 			break;
 		}
-		case WORD:
+		case REGEXP:
 		{
-			w = LT(1);
-			match(WORD);
+			r = LT(1);
+			match(REGEXP);
 			
-					buf.append(". &= \"");
-					buf.append(w.getText());
+					buf.append("match-all(., \"").append(r.getText()).append("\")"); 
+					arg = buf.toString();
+				
+			break;
+		}
+		case EOF:
+		case WORD:
+		case LITERAL_AND:
+		case LITERAL_UND:
+		case LITERAL_OR:
+		case LITERAL_ODER:
+		case LITERAL_NOT:
+		case LITERAL_NICHT:
+		{
+			{
+			_loop12:
+			do {
+				if ((LA(1)==WORD)) {
+					w2 = LT(1);
+					match(WORD);
+					
+								if (buf.length() > 0) buf.append(' ');
+								buf.append(w2.getText());
+							
+				}
+				else {
+					break _loop12;
+				}
+				
+			} while (true);
+			}
+			
+					buf.insert(0, ". &= \"");
 					buf.append('"');
 					arg = buf.toString();
 				
@@ -146,16 +250,42 @@ public SimpleQLParser(ParserSharedInputState state) {
 		return arg;
 	}
 	
+	public final void not() throws RecognitionException, TokenStreamException {
+		
+		
+		switch ( LA(1)) {
+		case LITERAL_NOT:
+		{
+			match(LITERAL_NOT);
+			break;
+		}
+		case LITERAL_NICHT:
+		{
+			match(LITERAL_NICHT);
+			break;
+		}
+		default:
+		{
+			throw new NoViableAltException(LT(1), getFilename());
+		}
+		}
+	}
+	
 	
 	public static final String[] _tokenNames = {
 		"<0>",
 		"EOF",
 		"<2>",
 		"NULL_TREE_LOOKAHEAD",
-		"\"and\"",
-		"\"or\"",
 		"string literal",
+		"regular expression",
 		"WORD",
+		"\"AND\"",
+		"\"UND\"",
+		"\"OR\"",
+		"\"ODER\"",
+		"\"NOT\"",
+		"\"NICHT\"",
 		"WS",
 		"BASECHAR",
 		"IDEOGRAPHIC",

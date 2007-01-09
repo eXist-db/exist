@@ -16,7 +16,7 @@ returns [String str]
 	String s1, s2;
 }:
 	s1=orExpr { buf.append(s1); }
-	( "and" s2=orExpr
+	( and s2=orExpr
 		{
 			buf.append(" and ");
 			buf.append(s2);
@@ -31,11 +31,25 @@ returns [String str]
 	StringBuffer buf = new StringBuffer();
 	String s1, s2;
 }:
-	s1=queryArg { buf.append(s1); }
-	( "or" s2=queryArg
+	s1=notExpr { buf.append(s1); }
+	( or s2=notExpr
 		{
 			buf.append(" or ");
 			buf.append(s2);
+		}
+	)*
+	{ str = buf.toString(); }
+;
+
+notExpr
+returns [String str]
+{
+	StringBuffer buf = new StringBuffer();
+	String s;
+}:
+	s=queryArg { buf.append(s); }
+	( not s=queryArg {
+			buf.append(" and not(").append(s).append(")");
 		}
 	)*
 	{ str = buf.toString(); }
@@ -53,14 +67,28 @@ returns [String arg]
 		arg = buf.toString();
 	}
 	|
-	w:WORD {
-		buf.append(". &= \"");
-		buf.append(w.getText());
+	r:REGEXP
+	{
+		buf.append("match-all(., \"").append(r.getText()).append("\")"); 
+		arg = buf.toString();
+	}
+	|
+	( w2:WORD { 
+			if (buf.length() > 0) buf.append(' ');
+			buf.append(w2.getText());
+		}
+	)*
+	{
+		buf.insert(0, ". &= \"");
 		buf.append('"');
 		arg = buf.toString();
 	}
 	;
 	
+and: "AND" | "UND";
+or: "OR" | "ODER";
+not: "NOT" | "NICHT";
+
 class SimpleQLLexer extends Lexer;
 
 options {
@@ -89,6 +117,14 @@ options {
 }
 :
 	'"'! ( ~( '"' ) )* '"'!
+	;
+
+REGEXP
+options {
+	paraphrase="regular expression";
+}
+:
+	'/'! ( ~( '/' ) )* '/'!
 	;
 
 WORD :
