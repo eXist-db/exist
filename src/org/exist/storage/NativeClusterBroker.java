@@ -39,8 +39,8 @@ public class NativeClusterBroker extends NativeBroker {
      * @param name Description of the Parameter
      * @return The collection value
      */
-    public Collection openCollection(XmldbURI name, long addr, int lockMode) {
-        Collection c= super.openCollection(name, addr, lockMode);
+    public Collection openCollection(XmldbURI name, int lockMode) {
+        Collection c= super.openCollection(name, lockMode);
 
         return c==null?null:new ClusterCollection(c);
 
