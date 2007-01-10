@@ -423,6 +423,7 @@ public class NativeBroker extends DBBroker {
                 //Curious... I assume getNodeValue() needs the old address
                 //p.setInternalAddress(node.getInternalAddress());
             }
+            qnameValueIndex.setDocument((DocumentImpl) node.getOwnerDocument());
             qnameValueIndex.endElement((ElementImpl) node, currentPath, content);
         }
 
@@ -443,6 +444,7 @@ public class NativeBroker extends DBBroker {
 
         FulltextIndexSpec ftIdx = ((DocumentImpl)node.getOwnerDocument()).getCollection().getFulltextIndexConfiguration(this);
         if (ftIdx != null && ftIdx.hasQNameIndex(node.getQName())) {
+        	node.getQName().setNameType(ElementValue.ELEMENT);
             if (content == null) {
                 //NodeProxy p = new NodeProxy(node);
                 //if (node.getOldInternalAddress() != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
@@ -451,6 +453,8 @@ public class NativeBroker extends DBBroker {
                 //Curious... I assume getNodeValue() needs the old address
                 //p.setInternalAddress(node.getInternalAddress());
             }
+            //Grrr : unify with above !
+            textEngine.setDocument((DocumentImpl) node.getOwnerDocument());
             textEngine.storeText(ftIdx, node, true, content);
         }
     }
