@@ -391,7 +391,7 @@ public class NativeBroker extends DBBroker {
      * @param content contains the string value of the element. Needed if a range index
      * is defined on it.
      */
-    public void endElement(final StoredNode node, NodePath currentPath, String content, long oldAddress) {
+    public void endElement(final StoredNode node, NodePath currentPath, String content) {
         final int indexType = ((ElementImpl) node).getIndexType();
         
         //TODO : do not care about the current code redundancy : this will move in the (near) future
@@ -400,12 +400,12 @@ public class NativeBroker extends DBBroker {
         if (RangeIndexSpec.hasRangeIndex(indexType)) {
         	node.getQName().setNameType(ElementValue.ELEMENT);
             if (content == null) {
-                NodeProxy p = new NodeProxy(node);
-                if (oldAddress != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
-                    p.setInternalAddress(oldAddress);
+                //NodeProxy p = new NodeProxy(node);
+                //if (node.getOldInternalAddress() != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
+                //    p.setInternalAddress(node.getOldInternalAddress());                
                 content = getNodeValue(node, false);
                 //Curious... I assume getNodeValue() needs the old address
-                p.setInternalAddress(node.getInternalAddress());
+                //p.setInternalAddress(node.getInternalAddress());
             }
             valueIndex.setDocument((DocumentImpl) node.getOwnerDocument());
             valueIndex.storeElement(RangeIndexSpec.indexTypeToXPath(indexType), 
@@ -416,28 +416,26 @@ public class NativeBroker extends DBBroker {
         if ( RangeIndexSpec.hasQNameIndex(indexType) ) {
         	node.getQName().setNameType(ElementValue.ELEMENT);
             if (content == null) {
-                NodeProxy p = new NodeProxy(node);
-                if (oldAddress != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
-                    p.setInternalAddress(oldAddress);
+                //NodeProxy p = new NodeProxy(node);
+                //if (node.getOldInternalAddress() != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
+                //    p.setInternalAddress(node.getOldInternalAddress());
                 content = getNodeValue(node, false);
                 //Curious... I assume getNodeValue() needs the old address
-                p.setInternalAddress(node.getInternalAddress());
+                //p.setInternalAddress(node.getInternalAddress());
             }
-            
-            if (qnameValueIndex != null)
-                qnameValueIndex.endElement((ElementImpl) node, currentPath, content);
+            qnameValueIndex.endElement((ElementImpl) node, currentPath, content);
         }
 
         // TODO : move to NativeTextEngine 
         if (RangeIndexSpec.hasMixedTextIndex(indexType)) {
         	node.getQName().setNameType(ElementValue.ELEMENT);
             if (content == null) {
-                NodeProxy p = new NodeProxy(node);
-                if (oldAddress != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
-                    p.setInternalAddress(oldAddress);
+                //NodeProxy p = new NodeProxy(node);
+                //if (node.getOldInternalAddress() != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
+                //    p.setInternalAddress(node.getOldInternalAddress());
                 content = getNodeValue(node, false);
                 //Curious... I assume getNodeValue() needs the old address
-                p.setInternalAddress(node.getInternalAddress());
+                //p.setInternalAddress(node.getInternalAddress());
             }
             textEngine.setDocument((DocumentImpl) node.getOwnerDocument());
             textEngine.storeText(null, node, false, content);
@@ -446,12 +444,12 @@ public class NativeBroker extends DBBroker {
         FulltextIndexSpec ftIdx = ((DocumentImpl)node.getOwnerDocument()).getCollection().getFulltextIndexConfiguration(this);
         if (ftIdx != null && ftIdx.hasQNameIndex(node.getQName())) {
             if (content == null) {
-                NodeProxy p = new NodeProxy(node);
-                if (oldAddress != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
-                    p.setInternalAddress(oldAddress);
+                //NodeProxy p = new NodeProxy(node);
+                //if (node.getOldInternalAddress() != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
+                //    p.setInternalAddress(node.getOldInternalAddress());
                 content = getNodeValue(node, false);
                 //Curious... I assume getNodeValue() needs the old address
-                p.setInternalAddress(node.getInternalAddress());
+                //p.setInternalAddress(node.getInternalAddress());
             }
             textEngine.storeText(ftIdx, node, true, content);
         }
@@ -2305,8 +2303,14 @@ public class NativeBroker extends DBBroker {
         storeNode(transaction, node, currentPath, index);
         if (defrag && oldNodeId != null)
             pool.getNotificationService().notifyMove(oldNodeId, node);
-        if (node.getNodeType() == Node.ELEMENT_NODE)
-            endElement(node, currentPath, null, oldAddress);
+        if (node.getNodeType() == Node.ELEMENT_NODE) {
+        	//save old value, whatever it is
+        	long address = node.getOldInternalAddress();
+        	node.setOldInternalAddress(oldAddress);
+            endElement(node, currentPath, null);
+            //restore old value, whatever it was
+            node.setOldInternalAddress(address);
+        }
         if (node.getNodeId().getTreeLevel() == 1)
             newDoc.appendChild(node);
         node.setOwnerDocument(doc);

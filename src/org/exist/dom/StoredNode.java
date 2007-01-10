@@ -42,7 +42,8 @@ public class StoredNode extends NodeImpl implements Visitable {
 	
     protected NodeId nodeId = null;
     
-	private long internalAddress = UNKNOWN_NODE_IMPL_ADDRESS;
+    private long internalAddress = UNKNOWN_NODE_IMPL_ADDRESS;
+    private long oldInternalAddress = UNKNOWN_NODE_IMPL_ADDRESS;
 
     private DocumentImpl ownerDocument = null;
     
@@ -66,14 +67,17 @@ public class StoredNode extends NodeImpl implements Visitable {
         this.nodeType = other.nodeType;
         this.nodeId = other.nodeId;
         this.internalAddress = other.internalAddress;
+        this.oldInternalAddress = other.oldInternalAddress;
         this.ownerDocument = other.ownerDocument;        
     }
     
     public StoredNode(NodeProxy other) {
     	this.ownerDocument = other.getDocument();
     	this.nodeType = other.getNodeType();
-    	this.nodeId = other.getNodeId();
-    	this.internalAddress = other.getInternalAddress();           
+    	this.nodeId = other.getNodeId();    	
+    	this.internalAddress = other.getInternalAddress();
+    	//Take the same address
+    	this.oldInternalAddress = other.getInternalAddress();
     }
     
     /**
@@ -83,6 +87,7 @@ public class StoredNode extends NodeImpl implements Visitable {
     public void clear() {
         this.nodeId = null;
         this.internalAddress = UNKNOWN_NODE_IMPL_ADDRESS;
+        this.oldInternalAddress = UNKNOWN_NODE_IMPL_ADDRESS;
     } 
     
     public byte[] serialize() {
@@ -195,7 +200,25 @@ public class StoredNode extends NodeImpl implements Visitable {
      */
     public void setInternalAddress(long internalAddress) {
         this.internalAddress = internalAddress;
-    }        
+    } 
+    
+	/**
+	 *  Get the internal storage address of this node
+	 *
+	 *@return    The oldInternalAddress value
+	 */
+	public long getOldInternalAddress() {
+		return oldInternalAddress;
+	}
+    
+    /**
+     *  Set the old internal storage address of this node.
+     *
+     *@param  oldInternalAddress  The new internalAddress value
+     */
+    public void setOldInternalAddress(long oldInternalAddress) {
+        this.oldInternalAddress = oldInternalAddress;
+    }     
 
 	/**
 	 * @see org.w3c.dom.Node#getNodeType()
