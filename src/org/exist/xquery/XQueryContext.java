@@ -124,7 +124,7 @@ public class XQueryContext {
 	// The last element in the linked list of local in-scope variables
 	protected LocalVariable lastVar = null;
 	
-    protected final Stack contextStack = new Stack();
+    protected Stack contextStack = new Stack();
     
     protected final Stack callStack = new Stack();
     
@@ -308,6 +308,9 @@ public class XQueryContext {
         ctx.globalVariables = new TreeMap(this.globalVariables);
         ctx.watchdog = this.watchdog;
 
+        ctx.lastVar = this.lastVar;
+        ctx.variableStackSize = this.variableStackSize;
+        ctx.contextStack = this.contextStack;
         return ctx;
     }
 

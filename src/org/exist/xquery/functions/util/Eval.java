@@ -48,6 +48,7 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.LocalVariable;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.EmptySequence;
 import org.exist.xquery.value.Item;
@@ -55,6 +56,7 @@ import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.StringValue;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -200,7 +202,7 @@ public class Eval extends BasicFunction {
         	String queryStr = expr.getStringValue();
             if ("".equals(queryStr.trim()))
               return new EmptySequence();
-            querySource = new StringSource(expr.getStringValue());
+            querySource = new StringSource(queryStr);
         }
 		
 		NodeValue contextInit = null;
@@ -216,7 +218,9 @@ public class Eval extends BasicFunction {
 		
 		// save some context properties
         context.pushNamespaceContext();
-		DocumentSet oldDocs = context.getStaticallyKnownDocuments();
+        LocalVariable mark = context.markLocalVariables(false);
+
+        DocumentSet oldDocs = context.getStaticallyKnownDocuments();
 		if (exprContext != null)
 			context.setStaticallyKnownDocuments(exprContext.getDocumentSet());
 		
@@ -265,7 +269,8 @@ public class Eval extends BasicFunction {
 			}
 			if (oldDocs != null)
 				context.setStaticallyKnownDocuments(oldDocs);
-			context.popNamespaceContext();
+            context.popLocalVariables(mark);
+            context.popNamespaceContext();
 			if (context.isProfilingEnabled(2))
 				context.getProfiler().end(this, "eval: " + expr, sequence);
 		}
