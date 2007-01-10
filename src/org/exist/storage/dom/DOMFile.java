@@ -1797,7 +1797,7 @@ public class DOMFile extends BTree implements Lockable {
 			long address = node.getInternalAddress();
             RecordPos rec = null;
             // try to directly locate the root node through its storage address
-            if (address != Page.NO_PAGE)
+            if (address != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
                 rec = findRecord(address);
             if (rec == null) {
 				// fallback to a btree lookup if the node could not be found
@@ -1819,6 +1819,7 @@ public class DOMFile extends BTree implements Lockable {
 			} catch (UnsupportedEncodingException e) {
 				LOG.warn("UTF-8 error while reading node value", e);
 				//TODO : why not store another string like "OOOPS !" ?
+				//then return null
 				value = new String(data);
 			}
 			return value;
