@@ -237,8 +237,9 @@ public abstract class DBBroker extends Observable {
 	 * path in the btree.
 	 * 
 	 * @return Database collection
-	 */
-	public abstract Collection getCollection(XmldbURI uri, long address);
+	 * 
+	 * public abstract Collection getCollection(XmldbURI uri, long address);
+	 */	
 
 	/**
 	 * Open a collection for reading or writing. The collection is identified by
@@ -272,8 +273,10 @@ public abstract class DBBroker extends Observable {
 	 *            one of the modes specified in class
 	 *            {@link org.exist.storage.lock.Lock}
 	 * @return collection or null if no collection matches the path
+	 * 
 	 */
 	public abstract Collection openCollection(XmldbURI uri, int lockMode);
+	
 
 	/**
 	 * Returns the database collection identified by the specified path. If the

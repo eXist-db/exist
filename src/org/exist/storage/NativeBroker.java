@@ -432,7 +432,12 @@ public class NativeBroker extends DBBroker {
         if (RangeIndexSpec.hasMixedTextIndex(indexType)) {
         	node.getQName().setNameType(ElementValue.ELEMENT);
             if (content == null) {
-                content = getOldNodeContent(node, oldAddress);
+                NodeProxy p = new NodeProxy(node);
+                if (oldAddress != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
+                    p.setInternalAddress(oldAddress);
+                content = getNodeValue(node, false);
+                //Curious... I assume getNodeValue() needs the old address
+                p.setInternalAddress(node.getInternalAddress());
             }
             textEngine.setDocument((DocumentImpl) node.getOwnerDocument());
             textEngine.storeText(null, node, false, content);
@@ -441,13 +446,18 @@ public class NativeBroker extends DBBroker {
         FulltextIndexSpec ftIdx = ((DocumentImpl)node.getOwnerDocument()).getCollection().getFulltextIndexConfiguration(this);
         if (ftIdx != null && ftIdx.hasQNameIndex(node.getQName())) {
             if (content == null) {
-                content = getOldNodeContent(node, oldAddress);
+                NodeProxy p = new NodeProxy(node);
+                if (oldAddress != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
+                    p.setInternalAddress(oldAddress);
+                content = getNodeValue(node, false);
+                //Curious... I assume getNodeValue() needs the old address
+                p.setInternalAddress(node.getInternalAddress());
             }
             textEngine.storeText(ftIdx, node, true, content);
         }
-        //p.setIndexType(indexType);
     }
 
+    /*
     private String getOldNodeContent(StoredNode node, long oldAddress) {
         NodeProxy p = new NodeProxy(node);
         if (oldAddress != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
@@ -456,7 +466,7 @@ public class NativeBroker extends DBBroker {
         //Curious... I assume getNodeValue() needs the old address
         p.setInternalAddress(node.getInternalAddress());
         return content;
-    }
+    }*/
 
     /** Takes care of actually remove entries from the indices;
      * must be called after one or more call to {@link #removeNode(Txn, StoredNode, NodePath, String)}. */
@@ -481,6 +491,7 @@ public class NativeBroker extends DBBroker {
     }
     
     public BTree getStorage(byte id) {
+    	//Notice that there is no entry for the symbols table
         switch (id) {
         	case DOM_DBX_ID :
         		return domDb;
@@ -670,10 +681,6 @@ public class NativeBroker extends DBBroker {
 		return openCollection(name, BFile.UNKNOWN_ADDRESS, Lock.NO_LOCK);
 	}
 	
-	public Collection getCollection(XmldbURI name, long addr) {
-		return openCollection(name, addr, Lock.NO_LOCK);
-	}
-	
 	public Collection openCollection(XmldbURI name, int lockMode) {
 		return openCollection(name, BFile.UNKNOWN_ADDRESS, lockMode);
 	}
@@ -685,7 +692,7 @@ public class NativeBroker extends DBBroker {
 	 *@param  name  collection name
 	 *@return       The collection value
 	 */
-	public Collection openCollection(XmldbURI name, long addr, int lockMode) {
+	private Collection openCollection(XmldbURI name, long addr, int lockMode) {
 	    name = prepend(name.toCollectionPathURI());
 	    //We *must* declare it here (see below)
 	    Collection collection;
