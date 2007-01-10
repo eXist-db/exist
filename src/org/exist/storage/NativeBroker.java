@@ -2898,113 +2898,89 @@ public class NativeBroker extends DBBroker {
         }
         
         /** Updates the various indices */
-        public void doIndex() {
-            int indexType = RangeIndexSpec.NO_INDEX;
+        public void doIndex() {            
             final boolean isTemp = XmldbURI.TEMP_COLLECTION_URI.equalsInternal(((DocumentImpl)node.getOwnerDocument()).getCollection().getURI());
             switch (node.getNodeType()) {
-                case Node.ELEMENT_NODE :
-                    if (idxSpec != null) {
-                        
-                        // --move to-- NativeValueIndex
-                        RangeIndexSpec spec = idxSpec.getIndexByPath(currentPath);
-                        if(spec != null) {
-                            indexType = spec.getIndexType();
-                        }
-                        
-//                        // --move to-- NativeValueIndexByQName
-//                        RangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
-//                        if (qnIdx != null && qnameValueIndexation) {
-//                            indexType |= RangeIndexSpec.QNAME_INDEX;
-//                        }
-                    }
-                    
-                    // --move to-- NativeTextEngine
-                    if(ftIdx == null || currentPath == null || ftIdx.match(currentPath))
-                        indexType |= RangeIndexSpec.TEXT;
-                    if (ftIdx != null && currentPath != null && ftIdx.matchMixedElement(currentPath))
-                        indexType |= RangeIndexSpec.TEXT_MIXED_CONTENT;
-                    if(node.getChildCount() - node.getAttributesCount() > 1) {
-                        indexType |= RangeIndexSpec.MIXED_CONTENT;
-                    }
-                    
-                    // --move to-- NativeValueIndex NativeTextEngine
-                    ((ElementImpl) node).setIndexType(indexType);
-                    
-                    // qnameValueIndex.startElement((ElementImpl)node, currentPath, index);
-                    notifyStartElement((ElementImpl)node, currentPath, fullTextIndex);
-                    if (mode != MODE_REMOVE) {
-                        NodeProxy p = new NodeProxy(node);
-                        p.setIndexType(indexType);
-                        elementIndex.setDocument(doc);
-                        elementIndex.addNode(node.getQName(), p);
-                    }
-                    break;
-                    
-                case Node.ATTRIBUTE_NODE :
-                    boolean indexAttribs = false;
-                    
-                    QName qname = node.getQName();
-                    if (currentPath != null)
-                        currentPath.addComponent(qname);
-                    
-                    // --move to-- NativeElementIndex NativeValueIndex NativeTextEngine
-                    if(fullTextIndex && (ftIdx == null || currentPath == null || ftIdx.matchAttribute(currentPath))) {
-                        indexType |= RangeIndexSpec.TEXT;
-                        indexAttribs = true;
-                    }
-                    
-                    // --move to-- NativeValueIndex
-                    // TODO : valueIndex.storeAttribute( (AttrImpl)node, currentPath, index);
-                    GeneralRangeIndexSpec valSpec = null;
-                    if (idxSpec != null) {
-                        valSpec = idxSpec.getIndexByPath(currentPath);
-                        if(valSpec != null) {
-                            indexType |= valSpec.getIndexType();
-                        }
-                    }
-                    if (valSpec != null) {
-                        valueIndex.setDocument((DocumentImpl)node.getOwnerDocument());
-                        valueIndex.storeAttribute(valSpec, (AttrImpl) node);
-                    }
-                    
-                    // qnameValueIndex.storeAttribute( (AttrImpl)node, currentPath, index);
-                    notifyStoreAttribute( (AttrImpl)node, currentPath, fullTextIndex);
-                    
-                    // --move to-- NativeTextEngine
-                    // TODO : textEngine.storeAttribute( (AttrImpl)node, currentPath, index);
-                    if (indexAttribs && !isTemp )
-                        textEngine.storeAttribute(ftIdx, (AttrImpl) node, false);
-
-                    if (ftIdx != null && ftIdx.hasQNameIndex(node.getQName())) {
-                        textEngine.storeAttribute(ftIdx, (AttrImpl) node, true);
-                    }
-
-//                  --move to-- NativeElementIndex
-                    // TODO : elementIndex.storeAttribute(node, currentPath, index);
-
-                    elementIndex.setDocument(doc);
-                    final NodeProxy tempProxy = new NodeProxy(doc, node.getNodeId(), address);
-                    tempProxy.setIndexType(indexType);
-
-                    qname.setNameType(ElementValue.ATTRIBUTE);
-                    if (mode != MODE_REMOVE)
-                        elementIndex.addNode(qname, tempProxy);
-                    
-                    // --move to-- NativeElementIndex
-                    // TODO : elementIndex.storeAttribute(node, currentPath, index);
-                    // if the attribute has type ID, store the ID-value
-                    // to the element index as well
-                    if (((AttrImpl) node).getType() == AttrImpl.ID) {
-                        qname = new QName(((AttrImpl) node).getValue(), "", null);
-                        //LOG.debug("found ID: " + qname.getLocalName());
-                        qname.setNameType(ElementValue.ATTRIBUTE_ID);
-                        elementIndex.addNode(qname, tempProxy);
-                    }
-                    
-//                    // --move to-- ???
-                    if (currentPath != null)
-                        currentPath.removeLastComponent();
-                    break;
+                case Node.ELEMENT_NODE : {
+	                	//Compute index type
+	                	int indexType = RangeIndexSpec.NO_INDEX;
+	                    if (idxSpec != null && idxSpec.getIndexByPath(currentPath) != null) {
+	                        indexType |= idxSpec.getIndexByPath(currentPath).getIndexType();                      
+	                    }
+	                    if(ftIdx == null || currentPath == null || ftIdx.match(currentPath))
+	                        indexType |= RangeIndexSpec.TEXT;
+	                    if (ftIdx != null && currentPath != null && ftIdx.matchMixedElement(currentPath))
+	                        indexType |= RangeIndexSpec.TEXT_MIXED_CONTENT;
+	                    if(node.getChildCount() - node.getAttributesCount() > 1) {
+	                        indexType |= RangeIndexSpec.MIXED_CONTENT;
+	                    }
+	
+	                    ((ElementImpl) node).setIndexType(indexType);
+	                    notifyStartElement((ElementImpl)node, currentPath, fullTextIndex);
+	                    
+	                    if (mode != MODE_REMOVE) {
+	                        NodeProxy p = new NodeProxy(node);
+	                        p.setIndexType(indexType);
+	                        elementIndex.setDocument(doc);
+	                        elementIndex.addNode(node.getQName(), p);
+	                    }
+	                    break;
+                	}
+                case Node.ATTRIBUTE_NODE : {
+	                    boolean indexAttribs = false;
+	                    
+	                    QName qname = node.getQName();
+	                    if (currentPath != null)
+	                        currentPath.addComponent(qname);
+	                    
+	                	//Compute index type
+	                	int indexType = RangeIndexSpec.NO_INDEX;                	
+	                    if(fullTextIndex && (ftIdx == null || currentPath == null || ftIdx.matchAttribute(currentPath))) {
+	                        indexType |= RangeIndexSpec.TEXT;
+	                        indexAttribs = true;
+	                    }
+	                    if (idxSpec != null && idxSpec.getIndexByPath(currentPath) != null) {
+	                        indexType |= idxSpec.getIndexByPath(currentPath).getIndexType();                        
+	                    }
+	                    if (idxSpec != null && idxSpec.getIndexByPath(currentPath) != null) {
+	                        valueIndex.setDocument((DocumentImpl)node.getOwnerDocument());
+	                        valueIndex.storeAttribute(idxSpec.getIndexByPath(currentPath), (AttrImpl) node);
+	                    }
+	                    
+	                    notifyStoreAttribute( (AttrImpl)node, currentPath, fullTextIndex);
+	                    
+	                    //Special handling for fulltext index
+	                    //TODO : harmonize
+	                    if (indexAttribs && !isTemp )
+	                        textEngine.storeAttribute(ftIdx, (AttrImpl) node, false);
+	                    if (ftIdx != null && ftIdx.hasQNameIndex(node.getQName())) {
+	                        textEngine.storeAttribute(ftIdx, (AttrImpl) node, true);
+	                    }
+	
+	                    elementIndex.setDocument(doc);
+	                    final NodeProxy tempProxy = new NodeProxy(doc, node.getNodeId(), address);
+	                    tempProxy.setIndexType(indexType);
+	
+	                    qname.setNameType(ElementValue.ATTRIBUTE);
+	                    if (mode != MODE_REMOVE)
+	                        elementIndex.addNode(qname, tempProxy);
+	                    
+	                    // --move to-- NativeElementIndex
+	                    // TODO : elementIndex.storeAttribute(node, currentPath, index);
+	                    // if the attribute has type ID, store the ID-value
+	                    // to the element index as well
+	                    if (((AttrImpl) node).getType() == AttrImpl.ID) {
+	                        qname = new QName(((AttrImpl) node).getValue(), "", null);
+	                        //LOG.debug("found ID: " + qname.getLocalName());
+	                        qname.setNameType(ElementValue.ATTRIBUTE_ID);
+	                        elementIndex.addNode(qname, tempProxy);
+	                    }
+	                    
+	//                    // --move to-- ???
+	                    if (currentPath != null)
+	                        currentPath.removeLastComponent();
+	                    break;
+                	}
                     
                 case Node.TEXT_NODE:
                     // --move to-- NativeTextEngine
