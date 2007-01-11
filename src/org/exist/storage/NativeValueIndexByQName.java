@@ -124,8 +124,8 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
         }       
     }
     
-    public void removeAttribute(AttrImpl attr, NodePath currentPath, boolean index) {
-        storeAttribute( attr, currentPath, index );
+    public void removeAttribute(AttrImpl node, NodePath currentPath, boolean index) {
+        storeAttribute(node, currentPath, index);
     }     
 
 	/** @see org.exist.storage.NativeValueIndex#storeElement(int, org.exist.dom.ElementImpl, java.lang.String)

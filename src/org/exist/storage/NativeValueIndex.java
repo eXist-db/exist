@@ -229,7 +229,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         buf.add(node.getNodeId());
     }
     
-    public void storeAttribute(AttrImpl node, NodePath currentPath, boolean fullTextIndexSwitch) {
+    public void storeAttribute(AttrImpl node, NodePath currentPath, int indexingHint) {
         // TODO Auto-generated method stub      
     }
     
@@ -237,7 +237,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         // TODO Auto-generated method stub      
     }
     
-    public void startElement(ElementImpl impl, NodePath currentPath, boolean index) {
+    public void startElement(ElementImpl node, NodePath currentPath, boolean index) {
         // TODO Auto-generated method stub      
     }
     

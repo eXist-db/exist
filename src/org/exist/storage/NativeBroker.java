@@ -304,10 +304,10 @@ public class NativeBroker extends DBBroker {
         }
     }
 
-    private void notifyStoreAttribute(AttrImpl attr, NodePath currentPath, boolean fullTextIndex) {
+    private void notifyStoreAttribute(AttrImpl attr, NodePath currentPath, int indexingHint) {
         for (int i = 0; i < contentLoadingObservers.size(); i++) {
             ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
-            observer.storeAttribute( attr, currentPath, fullTextIndex );
+            observer.storeAttribute( attr, currentPath, indexingHint);
         }	
 	}	
 
@@ -2956,7 +2956,8 @@ public class NativeBroker extends DBBroker {
 	                        valueIndex.storeAttribute(idxSpec.getIndexByPath(currentPath), (AttrImpl) node);
 	                    }
 	                    
-	                    notifyStoreAttribute( (AttrImpl)node, currentPath, fullTextIndex);
+	                    //TODO : investigate. 0/1 seem tobe totally unused !
+	                    notifyStoreAttribute( (AttrImpl)node, currentPath, fullTextIndex ? 1 : 0);
 	                    
 	                    //Special handling for fulltext index
 	                    //TODO : harmonize

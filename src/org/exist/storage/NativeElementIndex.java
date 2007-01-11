@@ -156,7 +156,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         buf.add(proxy);
     }
     
-    public void storeAttribute(AttrImpl node, NodePath currentPath, boolean fullTextIndexSwitch) {
+    public void storeAttribute(AttrImpl node, NodePath currentPath, int indexingHint) {
         // TODO Auto-generated method stub      
     }
 
@@ -164,7 +164,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         // TODO Auto-generated method stub      
     }
 
-    public void startElement(ElementImpl impl, NodePath currentPath, boolean index) {
+    public void startElement(ElementImpl node, NodePath currentPath, boolean index) {
         // TODO Auto-generated method stub      
     }
 

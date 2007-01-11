@@ -206,10 +206,10 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
      * @param attr The attribute to be indexed
      */
     //TODO : unify functionalities with storeText -pb
-    public void storeAttribute(FulltextIndexSpec indexSpec, AttrImpl attr, boolean idxByQName) {
-        final DocumentImpl doc = (DocumentImpl)attr.getOwnerDocument();
+    public void storeAttribute(FulltextIndexSpec indexSpec, AttrImpl node, boolean idxByQName) {
+        final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
         //TODO : case conversion should be handled by the tokenizer -pb
-        tokenizer.setText(attr.getValue().toLowerCase());   
+        tokenizer.setText(node.getValue().toLowerCase());   
         TextToken token;
         while (null != (token = tokenizer.nextToken())) {
             if (token.length() > MAX_TOKEN_LENGTH) {
@@ -227,9 +227,9 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             }
             invertedIndex.setDocument(doc);
             if (idxByQName)
-                invertedIndex.addAttribute(token, attr);
+                invertedIndex.addAttribute(token, node);
             else
-                invertedIndex.addAttribute(token, attr.getNodeId());
+                invertedIndex.addAttribute(token, node.getNodeId());
         }
     }
     
@@ -237,7 +237,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         // TODO Auto-generated method stub  
     }
 
-    public void storeAttribute(AttrImpl node, NodePath currentPath, boolean fullTextIndexSwitch) {
+    public void storeAttribute(AttrImpl node, NodePath currentPath, int indexingHint) {
         //TODO Auto-generated method stub        
     }    
 
