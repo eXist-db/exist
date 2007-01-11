@@ -232,6 +232,14 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 invertedIndex.addAttribute(token, attr.getNodeId());
         }
     }
+    
+    public void storeAttribute(RangeIndexSpec spec, AttrImpl node) {
+        // TODO Auto-generated method stub  
+    }
+
+    public void storeAttribute(AttrImpl node, NodePath currentPath, boolean fullTextIndexSwitch) {
+        //TODO Auto-generated method stub        
+    }    
 
     /**
      * Indexes the tokens contained in a text node.
@@ -299,14 +307,6 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             else
                 invertedIndex.addText(token, parent.getNodeId());
         }
-    }
-
-    public void storeAttribute(RangeIndexSpec spec, AttrImpl node) {
-        // TODO Auto-generated method stub  
-    }
-
-    public void storeAttribute(AttrImpl node, NodePath currentPath, boolean fullTextIndexSwitch) {
-        //TODO Auto-generated method stub        
     }
 
     public void storeText(TextImpl node, NodePath currentPath, boolean fullTextIndexSwitch) {
