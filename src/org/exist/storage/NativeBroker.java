@@ -2403,7 +2403,7 @@ public class NativeBroker extends DBBroker {
                     indexAttribs = ftIdx.matchAttribute(currentPath);
                 }
                 if (indexAttribs)
-                    textEngine.storeAttribute(ftIdx, (AttrImpl) node, false);
+                    textEngine.storeAttribute(ftIdx, (AttrImpl) node, NativeTextEngine.NOT_BY_QNAME);
 
                 GeneralRangeIndexSpec spec2 = doc.getCollection().getIndexByPathConfiguration(this, currentPath);
                 if(spec2 != null) {
@@ -2962,9 +2962,9 @@ public class NativeBroker extends DBBroker {
 	                    //Special handling for fulltext index
 	                    //TODO : harmonize
 	                    if (indexAttribs && !isTemp )
-	                        textEngine.storeAttribute(ftIdx, (AttrImpl) node, false);
+	                        textEngine.storeAttribute(ftIdx, (AttrImpl) node, NativeTextEngine.NOT_BY_QNAME);
 	                    if (ftIdx != null && ftIdx.hasQNameIndex(node.getQName())) {
-	                        textEngine.storeAttribute(ftIdx, (AttrImpl) node, true);
+	                        textEngine.storeAttribute(ftIdx, (AttrImpl) node, NativeTextEngine.BY_QNAME);
 	                    }
 	
 	                    elementIndex.setDocument(doc);

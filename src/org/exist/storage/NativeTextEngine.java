@@ -105,6 +105,9 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     private final static byte IDX_GENERIC = 0;
     private final static byte IDX_QNAME = 1;
     
+    public static int BY_QNAME = 0;
+    public static int NOT_BY_QNAME = 1;
+    
     public final static int OFFSET_NODE_TYPE = 0;    
     public final static int LENGTH_NODE_TYPE = 1; //sizeof byte
     public final static int OFFSET_ELEMENT_CHILDREN_COUNT = OFFSET_NODE_TYPE + LENGTH_NODE_TYPE; //1
@@ -206,7 +209,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
      * @param attr The attribute to be indexed
      */
     //TODO : unify functionalities with storeText -pb
-    public void storeAttribute(FulltextIndexSpec indexSpec, AttrImpl node, boolean idxByQName) {
+    public void storeAttribute(FulltextIndexSpec indexSpec, AttrImpl node, int indexingHint) {
         final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
         //TODO : case conversion should be handled by the tokenizer -pb
         tokenizer.setText(node.getValue().toLowerCase());   
@@ -226,7 +229,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 }
             }
             invertedIndex.setDocument(doc);
-            if (idxByQName)
+            if (indexingHint == BY_QNAME)
                 invertedIndex.addAttribute(token, node);
             else
                 invertedIndex.addAttribute(token, node.getNodeId());
