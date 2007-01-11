@@ -160,7 +160,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         // TODO Auto-generated method stub      
     }
 
-    public void storeText(TextImpl node, NodePath currentPath, boolean fullTextIndexSwitch) {
+    public void storeText(TextImpl node, NodePath currentPath, int indexingHint) {
         // TODO Auto-generated method stub      
     }
 

@@ -233,7 +233,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         // TODO Auto-generated method stub      
     }
     
-    public void storeText(TextImpl node, NodePath currentPath, boolean fullTextIndexSwitch) {
+    public void storeText(TextImpl node, NodePath currentPath, int indexingHint) {
         // TODO Auto-generated method stub      
     }
     
