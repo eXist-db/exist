@@ -61,7 +61,7 @@ return
     update delete //address]]></programlisting>
         </example>
         
-        <para>However, an expression like the following is save as it only modifies the 
+        <para>However, an expression like the following is safe as it only modifies the 
             current iteration variable:</para>
         <example>
             <title>Complex Update</title>
@@ -105,8 +105,8 @@ return
                 </varlistentry>
                 <varlistentry>
                     <term>preceding</term>
-                    <listitem>The content is inserted before the node specified
-                        in exprSingle.</listitem>
+                    <listitem><para>The content is inserted before the node specified
+                        in exprSingle.</para></listitem>
                 </varlistentry>
             </variablelist>
             <example>
