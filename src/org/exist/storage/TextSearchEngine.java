@@ -154,6 +154,14 @@ public abstract class TextSearchEngine extends Observable {
 		return tokenizer;
 	}
 
+    /**
+	 * Tokenize and index the given attribute node.
+	 * 
+	 * @param idx
+	 * @param text
+	 */
+	public abstract void storeAttribute(FulltextIndexSpec idx, AttrImpl text, int indexingHint);
+
 	/**
 	 * Tokenize and index the given text node.
 	 * 
@@ -163,14 +171,6 @@ public abstract class TextSearchEngine extends Observable {
 	public abstract void storeText(FulltextIndexSpec idx, TextImpl text, int indexingHint);
 
     public abstract void storeText(FulltextIndexSpec indexSpec, StoredNode parent, boolean idxAsQName, String text);
-
-    /**
-	 * Tokenize and index the given attribute node.
-	 * 
-	 * @param idx
-	 * @param text
-	 */
-	public abstract void storeAttribute(FulltextIndexSpec idx, AttrImpl text, boolean idxAsQName);
 
 	public abstract void flush();
 	public abstract boolean close() throws DBException;
