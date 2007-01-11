@@ -311,10 +311,10 @@ public class NativeBroker extends DBBroker {
         }	
 	}	
 
-	private void notifyStoreText(TextImpl text, NodePath currentPath, boolean fullTextIndex ) {
+	private void notifyStoreText(TextImpl text, NodePath currentPath, int indexingHint) {
         for (int i = 0; i < contentLoadingObservers.size(); i++) {
             ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
-            observer.storeText(text, currentPath, fullTextIndex);
+            observer.storeText(text, currentPath, indexingHint);
         }
 	}
     
@@ -2434,8 +2434,7 @@ public class NativeBroker extends DBBroker {
                 // check if this textual content should be fulltext-indexed
                 // by calling IndexPaths.match(path)
                 if (ftIdx == null || ftIdx.match(currentPath)){
-                    boolean valore = (ftIdx == null ? false : ftIdx.preserveContent(currentPath));
-                    textEngine.storeText(ftIdx, (TextImpl) node, valore);
+                    textEngine.storeText(ftIdx, (TextImpl) node, ftIdx == null ? TextSearchEngine.TOKENIZE : TextSearchEngine.DO_NOT_TOKENIZE);
                 }
                 break;
         }
@@ -2999,20 +2998,21 @@ public class NativeBroker extends DBBroker {
                     // by calling IndexPaths.match(path)
                 	if (fullTextIndex && !isTemp) {                		
 	                    boolean indexText;
-	                    boolean preventTokenization;
+	                    int tokenize;
 	                    if (ftIdx == null || currentPath == null) {
 	                    	indexText = true;
-	                    	preventTokenization = false;
+	                    	tokenize = TextSearchEngine.TOKENIZE;
 	                    } else {
 	                        indexText = ftIdx.match(currentPath);
-	                        preventTokenization = ftIdx.preserveContent(currentPath);
+	                        tokenize = ftIdx.preserveContent(currentPath) ? 
+	                        		TextSearchEngine.DO_NOT_TOKENIZE : TextSearchEngine.TOKENIZE;
 	                    }
 	                    if (indexText)
-	                        textEngine.storeText(ftIdx, (TextImpl) node, preventTokenization);	                    
+	                        textEngine.storeText(ftIdx, (TextImpl) node, tokenize);	                    
                 	}
                     
-                    notifyStoreText( (TextImpl)node, currentPath, fullTextIndex );
-                    // storeText( TextImpl node, NodePath currentPath, boolean fullTextIndexSwitch );
+                    notifyStoreText( (TextImpl)node, currentPath, 
+                    		fullTextIndex ? TextSearchEngine.DO_NOT_TOKENIZE : TextSearchEngine.TOKENIZE);
                     break;
             }
         }

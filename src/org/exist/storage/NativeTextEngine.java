@@ -97,7 +97,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     public static final double DEFAULT_WORD_CACHE_GROWTH = 1.4;
     public static final double DEFAULT_WORD_KEY_THRESHOLD = 0.01;  
     public static final double DEFAULT_WORD_VALUE_THRESHOLD = 0.015;
-
+    
     public final static byte TEXT_SECTION = 0;
 	public final static byte ATTRIBUTE_SECTION = 1;
     public final static byte QNAME_SECTION = 2;
@@ -251,16 +251,16 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
      *                if <code>false</code>, it is tokenized before being indexed
      */
     //TODO : use an indexSpec member in order to get rid of <code>noTokenizing</code>
-    public void storeText(FulltextIndexSpec indexSpec, TextImpl text, boolean noTokenizing) {
+    public void storeText(FulltextIndexSpec indexSpec, TextImpl text, int indexingHint) {
         final DocumentImpl doc = (DocumentImpl)text.getOwnerDocument();
         //TODO : case conversion should be handled by the tokenizer -pb
         final XMLString t = text.getXMLString().transformToLower();
         TextToken token;
-        if (noTokenizing) {            
+        if (indexingHint == DO_NOT_TOKENIZE) {            
             token = new TextToken(TextToken.ALPHA, t, 0, t.length());
             invertedIndex.setDocument(doc);
             invertedIndex.addText(token, text.getNodeId());
-        } else {
+        } else if (indexingHint == TOKENIZE){
             tokenizer.setText(t);
             while (null != (token = tokenizer.nextToken())) {
                 if (token.length() > MAX_TOKEN_LENGTH) {
@@ -309,7 +309,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         }
     }
 
-    public void storeText(TextImpl node, NodePath currentPath, boolean fullTextIndexSwitch) {
+    public void storeText(TextImpl node, NodePath currentPath, int indexingHint) {
         // TODO Auto-generated method stub      
     }
 

@@ -45,7 +45,7 @@ public interface ContentLoadingObserver {
 	public void storeAttribute( AttrImpl node, NodePath currentPath, boolean fullTextIndexSwitch );
 
 	/** store and index given text node */ 
-	public void storeText( TextImpl node, NodePath currentPath, boolean fullTextIndexSwitch );
+	public void storeText(TextImpl node, NodePath currentPath, int indexingHint);
 			
 	/** corresponds to SAX function of the same name */
 	public void startElement(ElementImpl impl, NodePath currentPath, boolean index);

@@ -60,7 +60,10 @@ public abstract class TextSearchEngine extends Observable {
 	protected final static Logger LOG =
 		Logger.getLogger(TextSearchEngine.class);
 		
-	protected TreeSet stoplist = new TreeSet();
+    public static int TOKENIZE = 0;
+    public static int DO_NOT_TOKENIZE = 1;
+
+    protected TreeSet stoplist = new TreeSet();
 	protected DBBroker broker = null;
 	protected Tokenizer tokenizer;
 	protected Configuration config;
@@ -157,7 +160,7 @@ public abstract class TextSearchEngine extends Observable {
 	 * @param idx
 	 * @param text
 	 */
-	public abstract void storeText(FulltextIndexSpec idx, TextImpl text, boolean onetoken);
+	public abstract void storeText(FulltextIndexSpec idx, TextImpl text, int indexingHint);
 
     public abstract void storeText(FulltextIndexSpec indexSpec, StoredNode parent, boolean idxAsQName, String text);
 
