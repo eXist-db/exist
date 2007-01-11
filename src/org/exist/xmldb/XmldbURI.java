@@ -663,6 +663,7 @@ public class XmldbURI implements Comparable {
 		if(xmldbUri==null) {
 			throw new NullPointerException(toString() + " cannot start with null!");
 		}
+		//TODO : resolve URIs !!! xmldbUri.resolve(this)
 		return xmldbUri.append(this); 	
 	}
 	
