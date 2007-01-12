@@ -165,12 +165,11 @@ public abstract class TextSearchEngine extends Observable {
 	/**
 	 * Tokenize and index the given text node.
 	 * 
-	 * @param idx
-	 * @param text
+	 * @param indexSpec
+	 * @param node
 	 */
-	public abstract void storeText(FulltextIndexSpec idx, TextImpl text, int indexingHint);
-
-    public abstract void storeText(FulltextIndexSpec indexSpec, StoredNode parent, boolean idxAsQName, String text);
+	public abstract void storeText(FulltextIndexSpec indexSpec, TextImpl node, int indexingHint);
+    public abstract void storeText(FulltextIndexSpec indexSpec, StoredNode parent, String text, boolean idxAsQName);
 
 	public abstract void flush();
 	public abstract boolean close() throws DBException;
