@@ -107,6 +107,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     
     public static int BY_QNAME = 0;
     public static int NOT_BY_QNAME = 1;
+    public static int THIRD_OPTION = 2;
     
     public final static int OFFSET_NODE_TYPE = 0;    
     public final static int LENGTH_NODE_TYPE = 1; //sizeof byte
@@ -209,7 +210,10 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
      * @param node The attribute to be indexed
      */
     //TODO : unify functionalities with storeText -pb
-    public void storeAttribute(FulltextIndexSpec indexSpec, AttrImpl node, int indexingHint) {
+    public void storeAttribute(FulltextIndexSpec indexSpec, AttrImpl node, NodePath currentPath, int indexingHint) {
+    	if (indexingHint != BY_QNAME && indexingHint != NOT_BY_QNAME)
+    		return;
+    	
         final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
         //TODO : case conversion should be handled by the tokenizer -pb
         tokenizer.setText(node.getValue().toLowerCase());   
@@ -236,13 +240,12 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         }
     }
     
+	public void storeAttribute(RangeIndexSpec idx, AttrImpl node, NodePath currentPath, int indexingHint) {
+	}
+    
     public void storeAttribute(RangeIndexSpec spec, AttrImpl node) {
         // TODO Auto-generated method stub  
-    }
-
-    public void storeAttribute(RangeIndexSpec spec, AttrImpl node, NodePath currentPath, int indexingHint) {
-        //TODO Auto-generated method stub        
-    }    
+    }  
 
     /**
      * Indexes the tokens contained in a text node.

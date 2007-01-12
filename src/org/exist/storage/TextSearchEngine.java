@@ -154,14 +154,6 @@ public abstract class TextSearchEngine extends Observable {
 		return tokenizer;
 	}
 
-    /**
-	 * Tokenize and index the given attribute node.
-	 * 
-	 * @param idx
-	 * @param text
-	 */
-	public abstract void storeAttribute(FulltextIndexSpec idx, AttrImpl text, int indexingHint);
-
 	/**
 	 * Tokenize and index the given text node.
 	 * 

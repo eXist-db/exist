@@ -2403,7 +2403,7 @@ public class NativeBroker extends DBBroker {
                     indexAttribs = ftIdx.matchAttribute(currentPath);
                 }
                 if (indexAttribs)
-                    textEngine.storeAttribute(ftIdx, (AttrImpl) node, NativeTextEngine.NOT_BY_QNAME);
+                    textEngine.storeAttribute(ftIdx, (AttrImpl) node, null, NativeTextEngine.NOT_BY_QNAME);
 
                 GeneralRangeIndexSpec spec2 = doc.getCollection().getIndexByPathConfiguration(this, currentPath);
                 if(spec2 != null) {
@@ -2958,14 +2958,16 @@ public class NativeBroker extends DBBroker {
 	                    
 	                    //TODO : investigate. 0/1 seem tobe totally unused !
 	                    //And so is null ;-)
-	                    notifyStoreAttribute(null, (AttrImpl)node, currentPath, fullTextIndex ? -1 : -2);
+	                    //notifyStoreAttribute(null, (AttrImpl)node, currentPath, fullTextIndex ? -1 : -2);
+	                    //Let's try this then
+	                    notifyStoreAttribute(null, (AttrImpl)node, currentPath, NativeValueIndex.WITH_PATH);
 	                    
 	                    //Special handling for fulltext index
 	                    //TODO : harmonize
 	                    if (indexAttribs && !isTemp )
-	                        textEngine.storeAttribute(ftIdx, (AttrImpl) node, NativeTextEngine.NOT_BY_QNAME);
+	                        textEngine.storeAttribute(ftIdx, (AttrImpl) node, null, NativeTextEngine.NOT_BY_QNAME);
 	                    if (ftIdx != null && ftIdx.hasQNameIndex(node.getQName())) {
-	                        textEngine.storeAttribute(ftIdx, (AttrImpl) node, NativeTextEngine.BY_QNAME);
+	                        textEngine.storeAttribute(ftIdx, (AttrImpl) node, null, NativeTextEngine.BY_QNAME);
 	                    }
 	
 	                    elementIndex.setDocument(doc);
