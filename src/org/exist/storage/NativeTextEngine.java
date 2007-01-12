@@ -248,8 +248,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
      * Indexes the tokens contained in a text node.
      * 
      * @param indexSpec The index configuration
-     * @param text The text node to be indexed
-     * @param noTokenizing
+     * @param node The text node to be indexed
+     * @param indexingHint
      *                if <code>true</code>, given text is indexed as a single token
      *                if <code>false</code>, it is tokenized before being indexed
      */

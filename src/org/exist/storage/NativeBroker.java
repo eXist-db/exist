@@ -2408,7 +2408,7 @@ public class NativeBroker extends DBBroker {
                 GeneralRangeIndexSpec spec2 = doc.getCollection().getIndexByPathConfiguration(this, currentPath);
                 if(spec2 != null) {
                     valueIndex.setDocument(doc);
-                    valueIndex.storeAttribute(spec2, (AttrImpl) node);
+                    valueIndex.storeAttribute(spec2, (AttrImpl) node, null, NativeValueIndex.WITHOUT_PATH);
                 }                   
 //              RangeIndexSpec qnIdx = idxSpec.getIndexByQName(idxQName);
 //              if (qnIdx != null && qnameValueIndexation) {
@@ -2953,12 +2953,12 @@ public class NativeBroker extends DBBroker {
 	                    }
 	                    if (idxSpec != null && idxSpec.getIndexByPath(currentPath) != null) {
 	                        valueIndex.setDocument((DocumentImpl)node.getOwnerDocument());
-	                        valueIndex.storeAttribute(idxSpec.getIndexByPath(currentPath), (AttrImpl) node);
+	                        valueIndex.storeAttribute(idxSpec.getIndexByPath(currentPath), (AttrImpl) node, null, NativeValueIndex.WITHOUT_PATH);
 	                    }
 	                    
 	                    //TODO : investigate. 0/1 seem tobe totally unused !
 	                    //And so is null ;-)
-	                    notifyStoreAttribute(null, (AttrImpl)node, currentPath, fullTextIndex ? 1 : 0);
+	                    notifyStoreAttribute(null, (AttrImpl)node, currentPath, fullTextIndex ? -1 : -2);
 	                    
 	                    //Special handling for fulltext index
 	                    //TODO : harmonize

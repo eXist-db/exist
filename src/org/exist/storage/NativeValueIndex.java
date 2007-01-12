@@ -92,6 +92,10 @@ public class NativeValueIndex implements ContentLoadingObserver {
     public static final String FILE_NAME = "values.dbx";
     public static final String  FILE_KEY_IN_CONFIG = "db-connection.values";
     
+    //TODO : find the real semantics
+    public static final int WITH_PATH = 1;
+    public static final int WITHOUT_PATH = 2;
+    
     public static final double DEFAULT_VALUE_CACHE_GROWTH = 1.25;
     public static final double DEFAULT_VALUE_KEY_THRESHOLD = 0.01;
     public static final double DEFAULT_VALUE_VALUE_THRESHOLD = 0.04;
@@ -205,7 +209,11 @@ public class NativeValueIndex implements ContentLoadingObserver {
      * @param spec The index specification
      * @param node The attribute
      */
-    public void storeAttribute(RangeIndexSpec spec, AttrImpl node) {
+    public void storeAttribute(RangeIndexSpec spec, AttrImpl node, NodePath currentPath, int indexingHint) {
+    	//Return early
+    	if (indexingHint != WITHOUT_PATH)
+    		return;
+    	
     	if (doc.getDocId() != node.getDocId()) {
     		throw new IllegalArgumentException("Document id ('" + doc.getDocId() + "') and proxy id ('" + 
     				node.getDocId() + "') differ !");
@@ -227,10 +235,6 @@ public class NativeValueIndex implements ContentLoadingObserver {
         }
         //Add node's GID to the list
         buf.add(node.getNodeId());
-    }
-    
-    public void storeAttribute(RangeIndexSpec spec, AttrImpl node, NodePath currentPath, int indexingHint) {
-        // TODO Auto-generated method stub      
     }
     
     public void storeText(TextImpl node, NodePath currentPath, int indexingHint) {
