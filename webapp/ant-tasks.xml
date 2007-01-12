@@ -23,12 +23,22 @@
                    <email>peter.klotz@blue-elephant-systems.com</email>
                </address>
            </affiliation>
-      </author><author>
+      </author>
+      <author>
           <firstname>Sabine</firstname>
           <surname>Meier</surname>
           <affiliation>
               <address format="linespecific">
                   <email>sabine@exist-db.org</email>
+              </address>
+          </affiliation>
+      </author>
+      <author>
+          <firstname>Leif-Jöran</firstname>
+          <surname>Olsson</surname>
+          <affiliation>
+              <address format="linespecific">
+                  <email>ellefj@gmail.com</email>
               </address>
           </affiliation>
       </author>
@@ -640,7 +650,7 @@
             <varlistentry>
                 <term>separator</term>
                 <listitem>
-                    <para>Separator character for output, by default ",".</para>
+                    <para>Separator character for output, by default "," (comma).</para>
                 </listitem>
             </varlistentry>
           </variablelist>
@@ -711,14 +721,14 @@
                 <title>Add User</title>
                 <screen>
                     <![CDATA[<xdb:adduser xmlns:xdb="http://exist-db.org/ant"
-                    uri="${backup.uri}/db" name="guest"/>]]></screen>
+                    uri="${backup.uri}/db" name="guest" secret="ToPSecreT" primaryGroup="users" />]]></screen>
             </example>
 
             <variablelist>
               <varlistentry>
                   <term>name</term>
                   <listitem>
-                      <para>Name of user to lock the resource for.</para>
+                      <para>Name of the new user.</para>
                   </listitem>
               </varlistentry>
               <varlistentry>
@@ -748,7 +758,7 @@
       <section>
             <title>Remove User</title>
             <para>
-              This task remove a user.
+              This task removes a user.
             </para>
 
             <example>
@@ -762,15 +772,15 @@
               <varlistentry>
                   <term>name</term>
                   <listitem>
-                      <para>Name of user to lock the resource for.</para>
+                      <para>Name of the user to remove.</para>
                   </listitem>
               </varlistentry>
             </variablelist>
         </section>
         <section>
-            <title>Change Mod</title>
+            <title>Change resource permissions (chmod)</title>
             <para>
-              This task remove a user.
+              This task changes the permissions of a resource.
             </para>
 
             <example>
@@ -790,15 +800,15 @@
           <varlistentry>
               <term>mod</term>
               <listitem>
-                  <para>Modification string.</para>
+                  <para>Permission modification string.</para>
               </listitem>
           </varlistentry>
         </variablelist>
       </section>
       <section>
-            <title>Change Owner</title>
+            <title>Change Owner of resource/collection (chown)</title>
             <para>
-              This task changes the owner of a resource
+              This task changes the owner of a resource or collection.
             </para>
 
             <example>
