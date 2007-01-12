@@ -124,7 +124,7 @@ update insert <email type="office">andrew@gmail.com</email> into //address[fname
                 text node. If it is an element, exprSingle should contain a
                 single element node as well. If it is an attribute or text node, the
                 value of the attribute or the text node is set to the concatenated string values of all
-                nodes in expr.</para>
+                nodes in exprSingle.</para>
             <example>
                 <title>Replace Example</title>
                 <programlisting><![CDATA[update replace //fname[. = "Andrew"] with <fname>Andy</fname>]]></programlisting>
