@@ -42,7 +42,7 @@ import org.exist.util.ReadOnlyException;
 public interface ContentLoadingObserver {
 
 	/** store and index given attribute */
-	public void storeAttribute( AttrImpl node, NodePath currentPath, int indexingHint);
+	public void storeAttribute(RangeIndexSpec spec, AttrImpl node, NodePath currentPath, int indexingHint);
 
 	/** store and index given text node */ 
 	public void storeText(TextImpl node, NodePath currentPath, int indexingHint);

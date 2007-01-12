@@ -304,10 +304,10 @@ public class NativeBroker extends DBBroker {
         }
     }
 
-    private void notifyStoreAttribute(AttrImpl attr, NodePath currentPath, int indexingHint) {
+    private void notifyStoreAttribute(RangeIndexSpec spec, AttrImpl attr, NodePath currentPath, int indexingHint) {
         for (int i = 0; i < contentLoadingObservers.size(); i++) {
             ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
-            observer.storeAttribute( attr, currentPath, indexingHint);
+            observer.storeAttribute(spec, attr, currentPath, indexingHint);
         }	
 	}	
 
@@ -2957,7 +2957,8 @@ public class NativeBroker extends DBBroker {
 	                    }
 	                    
 	                    //TODO : investigate. 0/1 seem tobe totally unused !
-	                    notifyStoreAttribute( (AttrImpl)node, currentPath, fullTextIndex ? 1 : 0);
+	                    //And so is null ;-)
+	                    notifyStoreAttribute(null, (AttrImpl)node, currentPath, fullTextIndex ? 1 : 0);
 	                    
 	                    //Special handling for fulltext index
 	                    //TODO : harmonize
