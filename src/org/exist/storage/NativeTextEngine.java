@@ -254,15 +254,15 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
      *                if <code>false</code>, it is tokenized before being indexed
      */
     //TODO : use an indexSpec member in order to get rid of <code>noTokenizing</code>
-    public void storeText(FulltextIndexSpec indexSpec, TextImpl text, int indexingHint) {
-        final DocumentImpl doc = (DocumentImpl)text.getOwnerDocument();
+    public void storeText(FulltextIndexSpec indexSpec, TextImpl node, int indexingHint) {
+        final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
         //TODO : case conversion should be handled by the tokenizer -pb
-        final XMLString t = text.getXMLString().transformToLower();
+        final XMLString t = node.getXMLString().transformToLower();
         TextToken token;
         if (indexingHint == DO_NOT_TOKENIZE) {            
             token = new TextToken(TextToken.ALPHA, t, 0, t.length());
             invertedIndex.setDocument(doc);
-            invertedIndex.addText(token, text.getNodeId());
+            invertedIndex.addText(token, node.getNodeId());
         } else if (indexingHint == TOKENIZE){
             tokenizer.setText(t);
             while (null != (token = tokenizer.nextToken())) {
@@ -280,12 +280,12 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     }
                 }                
                 invertedIndex.setDocument(doc);
-                invertedIndex.addText(token, text.getNodeId());
+                invertedIndex.addText(token, node.getNodeId());
             }
         }
     } 
 
-    public void storeText(FulltextIndexSpec indexSpec, StoredNode parent, boolean idxByQName, String text) {
+    public void storeText(FulltextIndexSpec indexSpec, StoredNode parent, String text, boolean idxByQName) {
         final DocumentImpl doc = (DocumentImpl)parent.getOwnerDocument();
         //TODO : case conversion should be handled by the tokenizer -pb
         TextToken token;
