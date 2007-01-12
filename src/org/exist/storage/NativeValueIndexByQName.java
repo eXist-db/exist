@@ -115,7 +115,7 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
         updatePendingIndexEntry(node, keyFactory);
 	}
     
-    public void storeAttribute(AttrImpl node, NodePath currentPath, boolean index) {    
+    public void storeAttribute(RangeIndexSpec spec, AttrImpl node, NodePath currentPath, boolean index) {    
         DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
         QNameRangeIndexSpec qnIdx = doc.getCollection().getIndexByQNameConfiguration(broker, node.getQName());
         if (qnIdx != null) {
@@ -125,7 +125,7 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
     }
     
     public void removeAttribute(AttrImpl node, NodePath currentPath, boolean index) {
-        storeAttribute(node, currentPath, index);
+        storeAttribute(null, node, currentPath, index);
     }     
 
 	/** @see org.exist.storage.NativeValueIndex#storeElement(int, org.exist.dom.ElementImpl, java.lang.String)

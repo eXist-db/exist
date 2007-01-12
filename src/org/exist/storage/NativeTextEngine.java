@@ -206,7 +206,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     /**
      * Indexes the tokens contained in an attribute.
      * 
-     * @param attr The attribute to be indexed
+     * @param node The attribute to be indexed
      */
     //TODO : unify functionalities with storeText -pb
     public void storeAttribute(FulltextIndexSpec indexSpec, AttrImpl node, int indexingHint) {
@@ -240,7 +240,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         // TODO Auto-generated method stub  
     }
 
-    public void storeAttribute(AttrImpl node, NodePath currentPath, int indexingHint) {
+    public void storeAttribute(RangeIndexSpec spec, AttrImpl node, NodePath currentPath, int indexingHint) {
         //TODO Auto-generated method stub        
     }    
 
