@@ -215,7 +215,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
      * @param node The attribute to be indexed
      */
     //TODO : unify functionalities with storeText -pb
-    public void storeAttribute(FulltextIndexSpec indexSpec, AttrImpl node, NodePath currentPath, int indexingHint) {
+    public void storeAttribute(AttrImpl node, NodePath currentPath, int indexingHint, FulltextIndexSpec indexSpec) {
     	if (indexingHint == ATTRIBUTE_BY_QNAME || indexingHint == ATTRIBUTE_NOT_BY_QNAME) {
 	        final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
 	        //TODO : case conversion should be handled by the tokenizer -pb
@@ -247,7 +247,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     //TODO : unify with above choosing one of these 2 strategies :
     //1) compute the indexing strategy from thhe broker (introduce some kind of dependency)
     //2) read the configuration from the indexer (possible performance loss)
-	public void storeAttribute(RangeIndexSpec idx, AttrImpl node, NodePath currentPath, int indexingHint) {
+	public void storeAttribute(AttrImpl node, NodePath currentPath, int indexingHint, RangeIndexSpec idx) {
 	}
     
     /**
@@ -260,7 +260,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
      *                if <code>false</code>, it is tokenized before being indexed
      */
     //TODO : use an indexSpec member in order to get rid of <code>noTokenizing</code>
-    public void storeText(FulltextIndexSpec indexSpec, TextImpl node, int indexingHint) {
+    public void storeText(TextImpl node, int indexingHint, FulltextIndexSpec indexSpec) {
     	if (indexingHint == TOKENIZE || indexingHint == DO_NOT_TOKENIZE) {
 	        final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
 	        //TODO : case conversion should be handled by the tokenizer -pb
@@ -293,7 +293,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     	}
     } 
 
-    public void storeText(FulltextIndexSpec indexSpec, StoredNode parent, String text, boolean idxByQName) {
+    public void storeText(StoredNode parent, String text, boolean idxByQName, FulltextIndexSpec indexSpec) {
         final DocumentImpl doc = (DocumentImpl)parent.getOwnerDocument();
         //TODO : case conversion should be handled by the tokenizer -pb
         TextToken token;

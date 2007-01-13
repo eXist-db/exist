@@ -156,7 +156,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         buf.add(proxy);
     }
     
-    public void storeAttribute(RangeIndexSpec spec, AttrImpl node, NodePath currentPath, int indexingHint) {
+    public void storeAttribute(AttrImpl node, NodePath currentPath, int indexingHint, RangeIndexSpec spec) {
         // TODO Auto-generated method stub      
     }
 

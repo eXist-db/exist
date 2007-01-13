@@ -209,7 +209,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
      * @param spec The index specification
      * @param node The attribute
      */
-    public void storeAttribute(RangeIndexSpec spec, AttrImpl node, NodePath currentPath, int indexingHint) {
+    public void storeAttribute(AttrImpl node, NodePath currentPath, int indexingHint, RangeIndexSpec spec) {
     	//Return early
     	if (indexingHint != WITHOUT_PATH)
     		return;
