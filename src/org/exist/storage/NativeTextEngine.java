@@ -105,9 +105,14 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     private final static byte IDX_GENERIC = 0;
     private final static byte IDX_QNAME = 1;
     
-    public static int BY_QNAME = 0;
-    public static int NOT_BY_QNAME = 1;
+    public static int ATTRIBUTE_BY_QNAME = 0;
+    public static int ATTRIBUTE_NOT_BY_QNAME = 1;
     public static int THIRD_OPTION = 2;
+    public static int FOURTH_OPTION = 2;
+    
+    public static int TOKENIZE = 0;
+    public static int DO_NOT_TOKENIZE = 1;
+    
     
     public final static int OFFSET_NODE_TYPE = 0;    
     public final static int LENGTH_NODE_TYPE = 1; //sizeof byte
@@ -211,33 +216,32 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
      */
     //TODO : unify functionalities with storeText -pb
     public void storeAttribute(FulltextIndexSpec indexSpec, AttrImpl node, NodePath currentPath, int indexingHint) {
-    	if (indexingHint != BY_QNAME && indexingHint != NOT_BY_QNAME)
-    		return;
-    	
-        final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
-        //TODO : case conversion should be handled by the tokenizer -pb
-        tokenizer.setText(node.getValue().toLowerCase());   
-        TextToken token;
-        while (null != (token = tokenizer.nextToken())) {
-            if (token.length() > MAX_TOKEN_LENGTH) {
-            	LOG.warn("Token length exceeded " + MAX_TOKEN_LENGTH + ": " + token.getText().substring(0,20) + "...");
-                continue;
-            } 
-            if (stoplist.contains(token)) {
-                continue;
-            }            
-            if (indexSpec != null) {  
-                //TODO : the tokenizer should strip unwanted token types itself -pb
-                if (!indexSpec.getIncludeAlphaNum() && !token.isAlpha()) {
-                    continue;
-                }
-            }
-            invertedIndex.setDocument(doc);
-            if (indexingHint == BY_QNAME)
-                invertedIndex.addAttribute(token, node);
-            else
-                invertedIndex.addAttribute(token, node.getNodeId());
-        }
+    	if (indexingHint == ATTRIBUTE_BY_QNAME || indexingHint == ATTRIBUTE_NOT_BY_QNAME) {
+	        final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
+	        //TODO : case conversion should be handled by the tokenizer -pb
+	        tokenizer.setText(node.getValue().toLowerCase());   
+	        TextToken token;
+	        while (null != (token = tokenizer.nextToken())) {
+	            if (token.length() > MAX_TOKEN_LENGTH) {
+	            	LOG.warn("Token length exceeded " + MAX_TOKEN_LENGTH + ": " + token.getText().substring(0,20) + "...");
+	                continue;
+	            } 
+	            if (stoplist.contains(token)) {
+	                continue;
+	            }            
+	            if (indexSpec != null) {  
+	                //TODO : the tokenizer should strip unwanted token types itself -pb
+	                if (!indexSpec.getIncludeAlphaNum() && !token.isAlpha()) {
+	                    continue;
+	                }
+	            }
+	            invertedIndex.setDocument(doc);
+	            if (indexingHint == ATTRIBUTE_BY_QNAME)
+	                invertedIndex.addAttribute(token, node);
+	            else
+	                invertedIndex.addAttribute(token, node.getNodeId());
+	        }
+    	}
     }
     
     //TODO : unify with above choosing one of these 2 strategies :
@@ -257,34 +261,36 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
      */
     //TODO : use an indexSpec member in order to get rid of <code>noTokenizing</code>
     public void storeText(FulltextIndexSpec indexSpec, TextImpl node, int indexingHint) {
-        final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
-        //TODO : case conversion should be handled by the tokenizer -pb
-        final XMLString t = node.getXMLString().transformToLower();
-        TextToken token;
-        if (indexingHint == DO_NOT_TOKENIZE) {            
-            token = new TextToken(TextToken.ALPHA, t, 0, t.length());
-            invertedIndex.setDocument(doc);
-            invertedIndex.addText(token, node.getNodeId());
-        } else if (indexingHint == TOKENIZE){
-            tokenizer.setText(t);
-            while (null != (token = tokenizer.nextToken())) {
-                if (token.length() > MAX_TOKEN_LENGTH) {
-                	LOG.warn("Token length exceeded " + MAX_TOKEN_LENGTH + ": " + token.getText().substring(0,20) + "...");
-                    continue;
-                } 
-                if (stoplist.contains(token)) {
-                    continue;
-                }
-                if (indexSpec != null) {
-                    //TODO : the tokenizer should strip unwanted token types itself -pb
-                    if (!indexSpec.getIncludeAlphaNum() && !token.isAlpha()) {
-                        continue;
-                    }
-                }                
-                invertedIndex.setDocument(doc);
-                invertedIndex.addText(token, node.getNodeId());
-            }
-        }
+    	if (indexingHint == TOKENIZE || indexingHint == DO_NOT_TOKENIZE) {
+	        final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
+	        //TODO : case conversion should be handled by the tokenizer -pb
+	        final XMLString t = node.getXMLString().transformToLower();
+	        TextToken token;
+	        if (indexingHint == DO_NOT_TOKENIZE) {            
+	            token = new TextToken(TextToken.ALPHA, t, 0, t.length());
+	            invertedIndex.setDocument(doc);
+	            invertedIndex.addText(token, node.getNodeId());
+	        } else if (indexingHint == TOKENIZE){
+	            tokenizer.setText(t);
+	            while (null != (token = tokenizer.nextToken())) {
+	                if (token.length() > MAX_TOKEN_LENGTH) {
+	                	LOG.warn("Token length exceeded " + MAX_TOKEN_LENGTH + ": " + token.getText().substring(0,20) + "...");
+	                    continue;
+	                } 
+	                if (stoplist.contains(token)) {
+	                    continue;
+	                }
+	                if (indexSpec != null) {
+	                    //TODO : the tokenizer should strip unwanted token types itself -pb
+	                    if (!indexSpec.getIncludeAlphaNum() && !token.isAlpha()) {
+	                        continue;
+	                    }
+	                }                
+	                invertedIndex.setDocument(doc);
+	                invertedIndex.addText(token, node.getNodeId());
+	            }
+	        }
+    	}
     } 
 
     public void storeText(FulltextIndexSpec indexSpec, StoredNode parent, String text, boolean idxByQName) {
