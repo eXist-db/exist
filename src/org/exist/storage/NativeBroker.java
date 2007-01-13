@@ -2417,9 +2417,7 @@ public class NativeBroker extends DBBroker {
 //              }
                 
                 if (qnameValueIndex != null)
-                    qnameValueIndex.removeAttribute( (AttrImpl)node, currentPath, true);
-                // qnameValueIndex.storeAttribute( (AttrImpl)node, currentPath, true);
-
+                    qnameValueIndex.storeAttribute(null, (AttrImpl)node, currentPath, true);
                 
                 // if the attribute has type ID, store the ID-value
                 // to the element index as well

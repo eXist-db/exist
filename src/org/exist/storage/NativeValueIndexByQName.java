@@ -108,26 +108,17 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
     	return this;
     }
     	    
-	/** @see org.exist.storage.NativeValueIndex#storeAttribute(org.exist.storage.RangeIndexSpec, org.exist.dom.AttrImpl)
-	 */
-	public void storeAttribute(RangeIndexSpec spec, AttrImpl node) {
-		ValueIndexKeyFactory keyFactory = computeTemporaryKey(spec.getType(), node.getValue(), node.getQName());
-        updatePendingIndexEntry(node, keyFactory);
-	}
-    
     public void storeAttribute(RangeIndexSpec spec, AttrImpl node, NodePath currentPath, boolean index) {    
         DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
+        //Here's the point : 2 configuration objects ! 
         QNameRangeIndexSpec qnIdx = doc.getCollection().getIndexByQNameConfiguration(broker, node.getQName());
         if (qnIdx != null) {
             this.setDocument(doc);
-            this.storeAttribute(qnIdx, (AttrImpl) node);
+    		ValueIndexKeyFactory keyFactory = computeTemporaryKey(spec.getType(), node.getValue(), node.getQName());
+            updatePendingIndexEntry(node, keyFactory);
         }       
     }
     
-    public void removeAttribute(AttrImpl node, NodePath currentPath, boolean index) {
-        storeAttribute(null, node, currentPath, index);
-    }     
-
 	/** @see org.exist.storage.NativeValueIndex#storeElement(int, org.exist.dom.ElementImpl, java.lang.String)
 	 */
 	public void storeElement(int xpathType, ElementImpl node, String content) {		

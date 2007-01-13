@@ -240,13 +240,12 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         }
     }
     
+    //TODO : unify with above choosing one of these 2 strategies :
+    //1) compute the indexing strategy from thhe broker (introduce some kind of dependency)
+    //2) read the configuration from the indexer (possible performance loss)
 	public void storeAttribute(RangeIndexSpec idx, AttrImpl node, NodePath currentPath, int indexingHint) {
 	}
     
-    public void storeAttribute(RangeIndexSpec spec, AttrImpl node) {
-        // TODO Auto-generated method stub  
-    }  
-
     /**
      * Indexes the tokens contained in a text node.
      * 
