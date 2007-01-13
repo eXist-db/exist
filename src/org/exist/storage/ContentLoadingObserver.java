@@ -42,6 +42,7 @@ import org.exist.util.ReadOnlyException;
 public interface ContentLoadingObserver {
 
 	/** store and index given attribute */
+	//TODO : remove the RangeIndexSpec dependency ASAP
 	public void storeAttribute(RangeIndexSpec spec, AttrImpl node, NodePath currentPath, int indexingHint);
 
 	/** store and index given text node */ 

@@ -2403,7 +2403,7 @@ public class NativeBroker extends DBBroker {
                     indexAttribs = ftIdx.matchAttribute(currentPath);
                 }
                 if (indexAttribs)
-                    textEngine.storeAttribute(ftIdx, (AttrImpl) node, null, NativeTextEngine.NOT_BY_QNAME);
+                    textEngine.storeAttribute(ftIdx, (AttrImpl) node, null, NativeTextEngine.ATTRIBUTE_NOT_BY_QNAME);
 
                 GeneralRangeIndexSpec spec2 = doc.getCollection().getIndexByPathConfiguration(this, currentPath);
                 if(spec2 != null) {
@@ -2432,7 +2432,7 @@ public class NativeBroker extends DBBroker {
                 // check if this textual content should be fulltext-indexed
                 // by calling IndexPaths.match(path)
                 if (ftIdx == null || ftIdx.match(currentPath)){
-                    textEngine.storeText(ftIdx, (TextImpl) node, ftIdx == null ? TextSearchEngine.TOKENIZE : TextSearchEngine.DO_NOT_TOKENIZE);
+                    textEngine.storeText(ftIdx, (TextImpl) node, ftIdx == null ? NativeTextEngine.TOKENIZE : NativeTextEngine.DO_NOT_TOKENIZE);
                 }
                 break;
         }
@@ -2963,9 +2963,9 @@ public class NativeBroker extends DBBroker {
 	                    //Special handling for fulltext index
 	                    //TODO : harmonize
 	                    if (indexAttribs && !isTemp )
-	                        textEngine.storeAttribute(ftIdx, (AttrImpl) node, null, NativeTextEngine.NOT_BY_QNAME);
+	                        textEngine.storeAttribute(ftIdx, (AttrImpl) node, null, NativeTextEngine.ATTRIBUTE_NOT_BY_QNAME);
 	                    if (ftIdx != null && ftIdx.hasQNameIndex(node.getQName())) {
-	                        textEngine.storeAttribute(ftIdx, (AttrImpl) node, null, NativeTextEngine.BY_QNAME);
+	                        textEngine.storeAttribute(ftIdx, (AttrImpl) node, null, NativeTextEngine.ATTRIBUTE_BY_QNAME);
 	                    }
 	
 	                    elementIndex.setDocument(doc);
@@ -3003,18 +3003,18 @@ public class NativeBroker extends DBBroker {
 	                    int tokenize;
 	                    if (ftIdx == null || currentPath == null) {
 	                    	indexText = true;
-	                    	tokenize = TextSearchEngine.TOKENIZE;
+	                    	tokenize = NativeTextEngine.TOKENIZE;
 	                    } else {
 	                        indexText = ftIdx.match(currentPath);
 	                        tokenize = ftIdx.preserveContent(currentPath) ? 
-	                        		TextSearchEngine.DO_NOT_TOKENIZE : TextSearchEngine.TOKENIZE;
+	                        		NativeTextEngine.DO_NOT_TOKENIZE : NativeTextEngine.TOKENIZE;
 	                    }
 	                    if (indexText)
 	                        textEngine.storeText(ftIdx, (TextImpl) node, tokenize);	                    
                 	}
                     
                     notifyStoreText( (TextImpl)node, currentPath, 
-                    		fullTextIndex ? TextSearchEngine.DO_NOT_TOKENIZE : TextSearchEngine.TOKENIZE);
+                    		fullTextIndex ? NativeTextEngine.DO_NOT_TOKENIZE : NativeTextEngine.TOKENIZE);
                     break;
             }
         }

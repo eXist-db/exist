@@ -29,13 +29,12 @@ import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
-import org.exist.dom.AttrImpl;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
 import org.exist.dom.TextImpl;
-import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.analysis.SimpleTokenizer;
 import org.exist.storage.analysis.Tokenizer;
@@ -60,9 +59,6 @@ public abstract class TextSearchEngine extends Observable {
 	protected final static Logger LOG =
 		Logger.getLogger(TextSearchEngine.class);
 		
-    public static int TOKENIZE = 0;
-    public static int DO_NOT_TOKENIZE = 1;
-
     protected TreeSet stoplist = new TreeSet();
 	protected DBBroker broker = null;
 	protected Tokenizer tokenizer;
