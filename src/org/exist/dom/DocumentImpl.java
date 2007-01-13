@@ -76,6 +76,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	public final static byte BINARY_FILE = 1;
 	
 	public static int LENGTH_DOCUMENT_ID = 4; //sizeof int 
+	public static int LENGTH_DOCUMENT_TYPE = 1; //sizeof byte 
 	
 	//public final static byte DOCUMENT_NODE_SIGNATURE = 0x0F;
 
