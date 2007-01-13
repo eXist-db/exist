@@ -119,7 +119,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     public final static int OFFSET_ATTRIBUTE_DLN_LENGTH = OFFSET_NODE_TYPE + LENGTH_NODE_TYPE; //1
     public final static int OFFSET_TEXT_DLN_LENGTH = OFFSET_NODE_TYPE + LENGTH_NODE_TYPE; //1
     public final static int LENGTH_DLN = 2; //sizeof int
-    public final static int OFFSET_DLN = OFFSET_TEXT_DLN_LENGTH + LENGTH_DLN; 
+    public final static int OFFSET_DLN = OFFSET_TEXT_DLN_LENGTH + LENGTH_DLN;
+    public static int LENGTH_NODE_IDS_FREQ_OFFSETS = 4; //sizeof int
 
     /** Length limit for the tokens */
 	public final static int MAX_TOKEN_LENGTH = 2048;
@@ -208,7 +209,10 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	}
     
     public void setDocument(DocumentImpl document) {
-    	this.doc = document;        
+        if (this.doc != null && this.doc.getDocId() != document.getDocId())
+            flush();
+    	this.doc = document;
+    	invertedIndex.setDocument(doc);
     }    
     
     /**
@@ -218,8 +222,9 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
      */
     //TODO : unify functionalities with storeText -pb
     public void storeAttribute(AttrImpl node, NodePath currentPath, int indexingHint, FulltextIndexSpec indexSpec) {
-    	if (indexingHint == ATTRIBUTE_BY_QNAME || indexingHint == ATTRIBUTE_NOT_BY_QNAME) {
-	        final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
+    	if ((indexingHint & ATTRIBUTE_BY_QNAME) == ATTRIBUTE_BY_QNAME || 
+    			(indexingHint & ATTRIBUTE_NOT_BY_QNAME) == ATTRIBUTE_NOT_BY_QNAME) {
+	        //final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
 	        //TODO : case conversion should be handled by the tokenizer -pb
 	        tokenizer.setText(node.getValue().toLowerCase());   
 	        TextToken token;
@@ -231,13 +236,10 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	            if (stoplist.contains(token)) {
 	                continue;
 	            }            
-	            if (indexSpec != null) {  
-	                //TODO : the tokenizer should strip unwanted token types itself -pb
-	                if (!indexSpec.getIncludeAlphaNum() && !token.isAlpha()) {
-	                    continue;
-	                }
+                //TODO : the tokenizer should strip unwanted token types itself -pb
+	            if (!token.isAlpha() && indexSpec != null && !indexSpec.getIncludeAlphaNum()) {  
+                    continue;
 	            }
-	            invertedIndex.setDocument(doc);
 	            if (indexingHint == ATTRIBUTE_BY_QNAME)
 	                invertedIndex.addAttribute(token, node);
 	            else
@@ -264,13 +266,13 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     //TODO : use an indexSpec member in order to get rid of <code>noTokenizing</code>
     public void storeText(TextImpl node, int indexingHint, FulltextIndexSpec indexSpec) {
     	if (indexingHint == TOKENIZE || indexingHint == DO_NOT_TOKENIZE) {
-	        final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
+	        //final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
 	        //TODO : case conversion should be handled by the tokenizer -pb
 	        final XMLString t = node.getXMLString().transformToLower();
 	        TextToken token;
 	        if (indexingHint == DO_NOT_TOKENIZE) {            
 	            token = new TextToken(TextToken.ALPHA, t, 0, t.length());
-	            invertedIndex.setDocument(doc);
+	            //invertedIndex.setDocument(doc);
 	            invertedIndex.addText(token, node.getNodeId());
 	        } else if (indexingHint == TOKENIZE){
 	            tokenizer.setText(t);
@@ -288,7 +290,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	                        continue;
 	                    }
 	                }                
-	                invertedIndex.setDocument(doc);
+	                //invertedIndex.setDocument(doc);
 	                invertedIndex.addText(token, node.getNodeId());
 	            }
 	        }
@@ -296,7 +298,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     } 
 
     public void storeText(StoredNode parent, String text, int indexingHint, FulltextIndexSpec indexSpec) {
-        final DocumentImpl doc = (DocumentImpl)parent.getOwnerDocument();
+        //final DocumentImpl doc = (DocumentImpl)parent.getOwnerDocument();
         //TODO : case conversion should be handled by the tokenizer -pb
         TextToken token;
         tokenizer.setText(text.toLowerCase());
@@ -314,7 +316,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     continue;
                 }
             }
-            invertedIndex.setDocument(doc);
+            //invertedIndex.setDocument(doc);
             if (indexingHint == TEXT_BY_QNAME)
                 invertedIndex.addText(token, (ElementImpl) parent);
             else
@@ -453,16 +455,16 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     int storedDocId = is.readInt();
                     int storedSection = is.readByte();
                     int gidsCount = is.readInt();
-                    //TOUNDERSTAND -pb       
-                    int size = is.readFixedInt();
+                    //Read (variable) length of node IDs + frequency + offsets       
+                    int length = is.readFixedInt();
                     DocumentImpl storedDocument = docs.getDoc(storedDocId);
                     //Exit if the document is not concerned
                     if (storedDocument == null) {
-                        is.skipBytes(size);
+                        is.skipBytes(length);
                         continue;
                     }
                     //Process the nodes
-					for (int j = 0; j < gidsCount; j++) {
+					for (int m = 0; m < gidsCount; m++) {
                         NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
                         int freq = is.readInt();
                         NodeProxy storedNode;
@@ -684,7 +686,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
      */
     private void readOccurrences(int freq, VariableByteInput is, Match match, int length) 
             throws IOException {
-        for (int k = 0; k < freq; k++) {
+        for (int n = 0; n < freq; n++) {
             match.addOffset(is.readInt(), length);
         }
     }        
@@ -921,24 +923,25 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     os.writeInt(this.doc.getDocId());
                     os.writeByte(currentSection == QNAME_SECTION ? TEXT_SECTION : currentSection);
                     os.writeInt(occurences.getTermCount());
-                    //TOUNDERSTAND -pb             
+                    //Mark position
                     int lenOffset = os.position();
+                    //Dummy value : actual one will be written below
                     os.writeFixedInt(0);
-                    for (int j = 0; j < occurences.getSize(); ) {
+                    for (int m = 0; m < occurences.getSize(); ) {
                         try {
-                            occurences.nodes[j].write(os);
+                            occurences.nodes[m].write(os);
                         } catch (IOException e) {
                             LOG.error("IOException while writing fulltext index: " + e.getMessage(), e);
                         }
-                        int freq = occurences.getOccurrences(j);
+                        int freq = occurences.getOccurrences(m);
                         os.writeInt(freq);
-                        for (int k = 0; k < freq; k++) {
-                            os.writeInt(occurences.offsets[j + k]);
+                        for (int n = 0; n < freq; n++) {
+                            os.writeInt(occurences.offsets[m + n]);
                         }
-                        j += freq;                        
+                        m += freq;                        
                     }
-                    //What does this 4 stand for ?
-                    os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);                    
+                    //Write (variable) length of node IDs + frequency + offsets 
+                    os.writeFixedInt(lenOffset, os.position() - lenOffset - LENGTH_NODE_IDS_FREQ_OFFSETS);                    
                     flushWord(currentSection, collectionId, token, os.data());
                     progress.setValue(count);
                     if (progress.changed()) {
@@ -1028,21 +1031,21 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                             int storedDocId = is.readInt();
                             byte section = is.readByte();
                             int gidsCount = is.readInt();
-                            //TOUNDERSTAND -pb
-                            int size = is.readFixedInt();
+                            //Read (variable) length of node IDs + frequency + offsets
+                            int length = is.readFixedInt();
                             if (storedDocId != document.getDocId()) {
                                 // data are related to another document:
                                 // copy them to any existing data
                                 os.writeInt(storedDocId);
                                 os.writeByte(section);
                                 os.writeInt(gidsCount);
-                                os.writeFixedInt(size);
-                                is.copyRaw(os, size);
+                                os.writeFixedInt(length);
+                                is.copyRaw(os, length);
                             } else {
                                 // data are related to our document:
                                 // skip them
                                 changed = true;
-                                is.skipBytes(size);
+                                is.skipBytes(length);
                             }
                         }
                         //} catch (EOFException e) {
@@ -1121,26 +1124,26 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                             int storedDocId = is.readInt();
                             byte storedSection = is.readByte();
                             int termCount = is.readInt();
-                            //TOUNDERSTAND -pb
-                            int size = is.readFixedInt();
+                            //Read (variable) length of node IDs + frequency + offsets
+                            int length = is.readFixedInt();
                             if (storedSection != currentSection || storedDocId != this.doc.getDocId()) {
                                 // data are related to another section or document:
                                 // append them to any existing data
                                 os.writeInt(storedDocId);
                                 os.writeByte(storedSection);
                                 os.writeInt(termCount);
-                                os.writeFixedInt(size);
-                                is.copyRaw(os, size);
+                                os.writeFixedInt(length);
+                                is.copyRaw(os, length);
                             } else {
                                 // data are related to our section and document:
                                 // feed the new list with the GIDs
-                                for (int j = 0; j < termCount; j++) {
+                                for (int m = 0; m < termCount; m++) {
                                     NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
                                     int freq = is.readInt();
                                     // add the node to the new list if it is not
                                     // in the list of removed nodes
                                     if (!storedOccurencesList.contains(nodeId)) {
-                                        for (int k = 0; k < freq; k++) {
+                                        for (int n = 0; n < freq; n++) {
                                             newOccurencesList.add(nodeId, is.readInt());
                                         }
                                     } else {
@@ -1156,8 +1159,9 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                             os.writeInt(this.doc.getDocId());
                             os.writeByte(currentSection);
                             os.writeInt(newOccurencesList.getTermCount());
-                            //TOUNDERSTAND -pb
+                            //Mark position
                             int lenOffset = os.position();
+                            //Dummy value : actual one will be written below
                             os.writeFixedInt(0);
                             for (int m = 0; m < newOccurencesList.getSize(); ) {
                                 newOccurencesList.nodes[m].write(os);
@@ -1168,8 +1172,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                 }
                                 m += freq;
                             }
-                            //What does this 4 stand for ?
-                            os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
+                            //Write (variable) length of node IDs + frequency + offsets
+                            os.writeFixedInt(lenOffset, os.position() - lenOffset - LENGTH_NODE_IDS_FREQ_OFFSETS);
                         }
                         //Store the data
                         if(os.data().size() == 0)
@@ -1271,15 +1275,15 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                         int storedDocId = is.readInt();
                         byte storedSection = is.readByte();
                         int termCount = is.readInt();
-                        //TOUNDERSTAND -pb
-                        int size = is.readFixedInt();
+                        //Read (variable) length of node IDs + frequency + offsets
+                        int length = is.readFixedInt();
                         DocumentImpl storedDocument = docs.getDoc(storedDocId);                        
                         //Exit if the document is not concerned
 						if (storedDocument == null) {
-							is.skipBytes(size);
+							is.skipBytes(length);
 							continue;
 						}
-						for (int j = 0; j < termCount; j++) {
+						for (int m = 0; m < termCount; m++) {
                             NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
                             int freq = is.readInt();
                             NodeProxy storedNode;
@@ -1387,15 +1391,15 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     int storedDocId = is.readInt();
                     byte storedSection = is.readByte();
                     int termCount = is.readInt();
-                    //TOUNDERSTAND -pb
-                    int size = is.readFixedInt();
+                    //Read (variable) length of node IDs + frequency + offsets
+                    int length = is.readFixedInt();
                     DocumentImpl storedDocument = docs.getDoc(storedDocId);
                     //Exit if the document is not concerned
 					if (storedDocument == null) {
-						is.skipBytes(size);
+						is.skipBytes(length);
 						continue;
 					}					
-					for (int j = 0; j < termCount; j++) {
+					for (int m = 0; m < termCount; m++) {
                         NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
                         int freq = is.readInt();                        
                         is.skip(freq);

@@ -104,6 +104,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
 	public static int OFFSET_VALUE_TYPE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //2
 	public static int LENGTH_VALUE_TYPE = 1; //sizeof byte
 	public static int OFFSET_DATA = OFFSET_VALUE_TYPE + NativeValueIndex.LENGTH_VALUE_TYPE; //3
+	public static int LENGTH_NODE_IDS = 4; //sizeof int
     
 	/** The broker that is using this value index */
 	DBBroker broker;
@@ -210,14 +211,15 @@ public class NativeValueIndex implements ContentLoadingObserver {
      * @param node The attribute
      */
     public void storeAttribute(AttrImpl node, NodePath currentPath, int indexingHint, RangeIndexSpec spec) {
+    	if (doc != null && doc.getDocId() != node.getDocId()) {
+    		throw new IllegalArgumentException("Document id ('" + doc.getDocId() + "') and proxy id ('" + 
+    				node.getDocId() + "') differ !");
+    	}        	
+
     	//Return early
     	if (indexingHint != WITHOUT_PATH)
     		return;
     	
-    	if (doc.getDocId() != node.getDocId()) {
-    		throw new IllegalArgumentException("Document id ('" + doc.getDocId() + "') and proxy id ('" + 
-    				node.getDocId() + "') differ !");
-    	}        	
         AtomicValue atomic = convertToAtomic(spec.getType(), node.getValue());
         //Ignore if the value can't be successfully atomized
         //(this is logged elsewhere)
@@ -292,7 +294,9 @@ public class NativeValueIndex implements ContentLoadingObserver {
             os.clear();
             os.writeInt(this.doc.getDocId());
             os.writeInt(gidsCount);
-            int lenOffset = os.position();
+            //Mark position
+            int nodeIDsLength = os.position();
+            //Dummy value : actual one will be written below
             os.writeFixedInt(0);
             //Compute the GID list
             for (int j = 0; j < gidsCount; j++) {                    
@@ -304,8 +308,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     //TODO : throw exception?
                 }
             }
-            //What does this 4 stand for ?
-            os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);            
+            //Write (variable) length of node IDs
+            os.writeFixedInt(nodeIDsLength, os.position() - nodeIDsLength - LENGTH_NODE_IDS);         
             try {
                 lock.acquire(Lock.WRITE_LOCK);                
                 Value key = new Value(indexable.serialize(collectionId, caseSensitive));
@@ -388,7 +392,9 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         FastQSort.sort(newGIDList, 0, gidsCount - 1);
                         os.writeInt(this.doc.getDocId());
                         os.writeInt(gidsCount);
-                        int lenOffset = os.position();
+                        //Mark position
+                        int nodeIDsLength = os.position();
+                        //Dummy value : actual one will be written below
                         os.writeFixedInt(0);
                         for (int j = 0; j < gidsCount; j++) {
                             NodeId nodeId = (NodeId) newGIDList.get(j);
@@ -396,11 +402,11 @@ public class NativeValueIndex implements ContentLoadingObserver {
                                 nodeId.write(os);
                             } catch (IOException e) {
                                 LOG.warn("IO error while writing range index: " + e.getMessage(), e);
-                                //TOO : throw exception ?
+                                //TODO : throw exception ?
                             }
                         }
-                        //What does this 4 stand for ?
-                        os.writeFixedInt(lenOffset, os.position() - lenOffset - 4);
+                        //Write (variable) length of node IDs
+                        os.writeFixedInt(nodeIDsLength, os.position() - nodeIDsLength - LENGTH_NODE_IDS);
                     }
                     if (dbValues.update(value.getAddress(), searchKey, os.data()) == BFile.UNKNOWN_ADDRESS) {
                         LOG.error("Could not update index data for value '" +  searchKey + "'");

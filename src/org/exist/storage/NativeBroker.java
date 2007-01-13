@@ -1444,7 +1444,7 @@ public class NativeBroker extends DBBroker {
     
     public void storeBinaryResource(final Txn transaction, final BinaryDocument blob, final byte[] data) {
     	if (data.length == 0) {
-    		blob.setPage(-1);
+    		blob.setPage(Page.NO_PAGE);
     		return;
     	}
         new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
@@ -1459,7 +1459,7 @@ public class NativeBroker extends DBBroker {
     
     public void storeBinaryResource(final Txn transaction, final BinaryDocument blob, final InputStream is) {
     	if (is == null) {
-    		blob.setPage(-1);
+    		blob.setPage(Page.NO_PAGE);
     		return;
     	}
         new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
@@ -1879,7 +1879,7 @@ public class NativeBroker extends DBBroker {
         if (readOnly)
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
         LOG.info("removing binary resource " + blob.getDocId() + "...");
-        if (blob.getPage() > -1) {
+        if (blob.getPage() != Page.NO_PAGE) {
 	        new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
 	            public Object start() throws ReadOnlyException {
 	                domDb.removeOverflowValue(transaction, blob.getPage());
@@ -2428,8 +2428,10 @@ public class NativeBroker extends DBBroker {
                 // check if this textual content should be fulltext-indexed
                 // by calling IndexPaths.match(path)
                 if (ftIdx == null) {
+                	textEngine.setDocument(doc);
                 	textEngine.storeText((TextImpl) node, NativeTextEngine.TOKENIZE, ftIdx);
                 } else if (ftIdx.match(currentPath)) {
+                	textEngine.setDocument(doc);
                 	textEngine.storeText((TextImpl) node, NativeTextEngine.DO_NOT_TOKENIZE, ftIdx);
                 }
                 break;
@@ -2813,23 +2815,20 @@ public class NativeBroker extends DBBroker {
 	public final static class NodeRef extends Value {
 		
 		public static int OFFSET_DOCUMENT_ID = 0;
+		public static int OFFSET_NODE_ID = OFFSET_DOCUMENT_ID + DocumentImpl.LENGTH_DOCUMENT_ID;
 		
 		public NodeRef(int docId) {
-			//What does this 4 stand for ?
-            data = new byte[4];
-            ByteConversion.intToByte(docId, data, OFFSET_DOCUMENT_ID);
-            //What does this 4 stand for ?
-            len = 4;
+			len = DocumentImpl.LENGTH_DOCUMENT_ID;
+            data = new byte[len];
+            ByteConversion.intToByte(docId, data, OFFSET_DOCUMENT_ID);            
             pos = OFFSET_DOCUMENT_ID;
         }
         
         public NodeRef(int docId, NodeId nodeId) {
-        	//What does this 4 stand for ?
-        	len = nodeId.size() + 4;
+        	len = DocumentImpl.LENGTH_DOCUMENT_ID + nodeId.size();
 			data = new byte[len];
 			ByteConversion.intToByte(docId, data, OFFSET_DOCUMENT_ID);
-			//What does this 4 stand for ?
-			nodeId.serialize(data, 4);
+			nodeId.serialize(data, OFFSET_NODE_ID);
             pos = OFFSET_DOCUMENT_ID;
 		}
 
@@ -2903,10 +2902,12 @@ public class NativeBroker extends DBBroker {
         }
         
         /** Updates the various indices */
-        public void doIndex() {            
+        public void doIndex() {
+        	//TODO : resolve URI !
             final boolean isTemp = XmldbURI.TEMP_COLLECTION_URI.equalsInternal(((DocumentImpl)node.getOwnerDocument()).getCollection().getURI());
             switch (node.getNodeType()) {
-                case Node.ELEMENT_NODE : {
+                case Node.ELEMENT_NODE : 
+                	{
 	                	//Compute index type
                 		//TODO : let indexers OR it themselves
                 		//we'd need to notify the ElementIndexer at the very end then...
@@ -3001,10 +3002,12 @@ public class NativeBroker extends DBBroker {
                     // by calling IndexPaths.match(path)
                 	if (fullTextIndex && !isTemp) {                		
 	                    if (ftIdx == null || currentPath == null) {
+	                    	textEngine.setDocument(doc);
 	                    	textEngine.storeText((TextImpl) node, NativeTextEngine.TOKENIZE, ftIdx);
 	                    } else if (ftIdx.match(currentPath)) {
 	                    	int tokenize = ftIdx.preserveContent(currentPath) ? 
 	                        		NativeTextEngine.DO_NOT_TOKENIZE : NativeTextEngine.TOKENIZE;
+	                    	textEngine.setDocument(doc);
 	                        textEngine.storeText((TextImpl) node, tokenize, ftIdx);
 	                    }
                 	}
@@ -3073,8 +3076,7 @@ public class NativeBroker extends DBBroker {
         
         public boolean indexInfo(Value key, long pointer) throws TerminatedException {
             try {
-            	//What does this 1 stand for ?            	
-                byte type = key.data()[key.start() + Collection.LENGTH_COLLECTION_ID + 1]; 
+                byte type = key.data()[key.start() + Collection.LENGTH_COLLECTION_ID + DocumentImpl.LENGTH_DOCUMENT_TYPE]; 
                 VariableByteInput istream = collectionsDb.getAsStream(pointer);
                 DocumentImpl doc = null;
                 if (type == DocumentImpl.BINARY_FILE)
