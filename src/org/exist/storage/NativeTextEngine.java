@@ -128,6 +128,9 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	protected BFile dbTokens;
 	protected InvertedIndex invertedIndex;
     
+	/** The current document */
+    private DocumentImpl doc;
+
     /** Work output Stream that should be cleared before every use */
     private VariableByteOutputStream os = new VariableByteOutputStream(7);    
 
@@ -205,7 +208,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	}
     
     public void setDocument(DocumentImpl document) {
-        //TODO Auto-generated method stub        
+    	this.doc = document;        
     }    
     
     /**
