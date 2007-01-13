@@ -107,12 +107,11 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     
     public static int ATTRIBUTE_BY_QNAME = 0;
     public static int ATTRIBUTE_NOT_BY_QNAME = 1;
-    public static int THIRD_OPTION = 2;
-    public static int FOURTH_OPTION = 2;
-    
+
     public static int TOKENIZE = 0;
     public static int DO_NOT_TOKENIZE = 1;
-    
+    public static int TEXT_BY_QNAME = 2;
+    public static int FOURTH_OPTION = 3;
     
     public final static int OFFSET_NODE_TYPE = 0;    
     public final static int LENGTH_NODE_TYPE = 1; //sizeof byte
@@ -293,7 +292,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     	}
     } 
 
-    public void storeText(StoredNode parent, String text, boolean idxByQName, FulltextIndexSpec indexSpec) {
+    public void storeText(StoredNode parent, String text, int indexingHint, FulltextIndexSpec indexSpec) {
         final DocumentImpl doc = (DocumentImpl)parent.getOwnerDocument();
         //TODO : case conversion should be handled by the tokenizer -pb
         TextToken token;
@@ -313,7 +312,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 }
             }
             invertedIndex.setDocument(doc);
-            if (idxByQName)
+            if (indexingHint == TEXT_BY_QNAME)
                 invertedIndex.addText(token, (ElementImpl) parent);
             else
                 invertedIndex.addText(token, parent.getNodeId());

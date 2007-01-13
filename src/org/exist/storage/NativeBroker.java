@@ -440,7 +440,7 @@ public class NativeBroker extends DBBroker {
                 //p.setInternalAddress(node.getInternalAddress());
             }
             textEngine.setDocument((DocumentImpl) node.getOwnerDocument());
-            textEngine.storeText(node, content, false, null);
+            textEngine.storeText(node, content, NativeTextEngine.FOURTH_OPTION, null);
         }
 
         FulltextIndexSpec ftIdx = ((DocumentImpl)node.getOwnerDocument()).getCollection().getFulltextIndexConfiguration(this);
@@ -456,7 +456,7 @@ public class NativeBroker extends DBBroker {
             }
             //Grrr : unify with above !
             textEngine.setDocument((DocumentImpl) node.getOwnerDocument());
-            textEngine.storeText(node, content, true, ftIdx);
+            textEngine.storeText(node, content, NativeTextEngine.TEXT_BY_QNAME, ftIdx);
         }
     }
 
