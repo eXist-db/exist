@@ -883,7 +883,7 @@ public class NativeBroker extends DBBroker {
                 collectionsCache.remove(collection);
                 Value key = new CollectionStore.CollectionKey(uri.toString());
                 collectionsDb.remove(transaction, key);
-
+                //TODO : resolve URIs destination.getURI().resolve(newName)
                 collection.setPath(destination.getURI().append(newName));
                 collection.setCreationTime(System.currentTimeMillis());
                 
@@ -2397,6 +2397,16 @@ public class NativeBroker extends DBBroker {
                 elementIndex.setDocument(doc);
                 elementIndex.addNode(qname, p);
                 
+                //Strange : does it mean that the node is added 2 times under 2 different identities ?
+
+                // if the attribute has type ID, store the ID-value
+                // to the element index as well
+                if (((AttrImpl) node).getType() == AttrImpl.ID) {
+                    qname = new QName(((AttrImpl) node).getValue(), "", null);
+                    qname.setNameType(ElementValue.ATTRIBUTE_ID);
+                    elementIndex.addNode(qname, p);
+                }                
+
                 GeneralRangeIndexSpec spec2 = doc.getCollection().getIndexByPathConfiguration(this, currentPath);
                 if(spec2 != null) {
                     valueIndex.setDocument(doc);
@@ -2408,17 +2418,8 @@ public class NativeBroker extends DBBroker {
                 // check if attribute value should be fulltext-indexed
                 // by calling IndexPaths.match(path) 
                 if(ftIdx != null && ftIdx.matchAttribute(currentPath)) {
+                	textEngine.setDocument(doc);
                 	textEngine.storeAttribute((AttrImpl) node, null, NativeTextEngine.ATTRIBUTE_NOT_BY_QNAME, ftIdx);
-                }
-                
-                //Strange : why this hasn't been done earlier ?
-
-                // if the attribute has type ID, store the ID-value
-                // to the element index as well
-                if (((AttrImpl) node).getType() == AttrImpl.ID) {
-                    qname = new QName(((AttrImpl) node).getValue(), "", null);
-                    qname.setNameType(ElementValue.ATTRIBUTE_ID);
-                    elementIndex.addNode(qname, p);
                 }
                 
                 currentPath.removeLastComponent();
@@ -2958,9 +2959,12 @@ public class NativeBroker extends DBBroker {
 	                    }
 	                    //Special handling for fulltext index
 	                    //TODO : harmonize
-	                    if (fullTextIndexing && !isTemp )
-	                        textEngine.storeAttribute((AttrImpl) node, null, NativeTextEngine.ATTRIBUTE_NOT_BY_QNAME, ftIdx);
+	                    if (fullTextIndexing && !isTemp ) {
+	                    	textEngine.setDocument((DocumentImpl)node.getOwnerDocument());
+	                    	textEngine.storeAttribute((AttrImpl) node, null, NativeTextEngine.ATTRIBUTE_NOT_BY_QNAME, ftIdx);
+	                    }	                        
 	                    if (ftIdx != null && ftIdx.hasQNameIndex(node.getQName())) {
+	                    	textEngine.setDocument((DocumentImpl)node.getOwnerDocument());
 	                        textEngine.storeAttribute((AttrImpl) node, null, NativeTextEngine.ATTRIBUTE_BY_QNAME, ftIdx);
 	                    }
 	                    
