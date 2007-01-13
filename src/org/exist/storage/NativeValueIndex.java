@@ -181,7 +181,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
      * @param node The element
      * @param content The string representation of the value
      */
-    public void storeElement(int xpathType, ElementImpl node, String content) {
+    public void storeElement(ElementImpl node, String content, int xpathType) {
     	if (doc.getDocId() != node.getDocId()) {
     		throw new IllegalArgumentException("Document id ('" + doc.getDocId() + "') and proxy id ('" + 
     				node.getDocId() + "') differ !");
