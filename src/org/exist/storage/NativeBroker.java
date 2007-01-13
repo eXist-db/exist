@@ -2912,6 +2912,8 @@ public class NativeBroker extends DBBroker {
             switch (node.getNodeType()) {
                 case Node.ELEMENT_NODE : {
 	                	//Compute index type
+                		//TODO : let indexers OR it themselves
+                		//we'd need to notify the ElementIndexer at the very end then...
 	                	int indexType = RangeIndexSpec.NO_INDEX;
 	                    if (idxSpec != null && idxSpec.getIndexByPath(currentPath) != null) {
 	                        indexType |= idxSpec.getIndexByPath(currentPath).getIndexType();                      
@@ -2935,40 +2937,39 @@ public class NativeBroker extends DBBroker {
 	                    }
 	                    break;
                 	}
-                case Node.ATTRIBUTE_NODE : {
-	                    boolean indexAttribs = false;
-	                    
-	                    QName qname = node.getQName();
+                case Node.ATTRIBUTE_NODE : 
+                	{                	
+                		QName qname = node.getQName();
 	                    if (currentPath != null)
 	                        currentPath.addComponent(qname);
 	                    
-	                	//Compute index type
+	                    boolean fullTextIndexing = false;
+
+	                    //Compute index type
+	                    //TODO : let indexers OR it themselves
+                		//we'd need to notify the ElementIndexer at the very end then...	                    
 	                	int indexType = RangeIndexSpec.NO_INDEX;                	
 	                    if(fullTextIndex && (ftIdx == null || currentPath == null || ftIdx.matchAttribute(currentPath))) {
 	                        indexType |= RangeIndexSpec.TEXT;
-	                        indexAttribs = true;
+	                        fullTextIndexing = true;
 	                    }
 	                    if (idxSpec != null && idxSpec.getIndexByPath(currentPath) != null) {
 	                        indexType |= idxSpec.getIndexByPath(currentPath).getIndexType();                        
 	                    }
 	                    if (idxSpec != null && idxSpec.getIndexByPath(currentPath) != null) {
 	                        valueIndex.setDocument((DocumentImpl)node.getOwnerDocument());
-	                        valueIndex.storeAttribute((AttrImpl) node, null, NativeValueIndex.WITHOUT_PATH, idxSpec.getIndexByPath(currentPath));
+	                        //Oh dear : is it the right semantics then ?
+	                        valueIndex.storeAttribute((AttrImpl) node, currentPath, NativeValueIndex.WITHOUT_PATH, idxSpec.getIndexByPath(currentPath));
 	                    }
-	                    
-	                    //TODO : investigate. 0/1 seem tobe totally unused !
-	                    //And so is null ;-)
-	                    //notifyStoreAttribute(null, (AttrImpl)node, currentPath, fullTextIndex ? -1 : -2);
-	                    //Let's try this then
-	                    notifyStoreAttribute((AttrImpl)node, currentPath, NativeValueIndex.WITH_PATH, null);
-	                    
 	                    //Special handling for fulltext index
 	                    //TODO : harmonize
-	                    if (indexAttribs && !isTemp )
+	                    if (fullTextIndexing && !isTemp )
 	                        textEngine.storeAttribute((AttrImpl) node, null, NativeTextEngine.ATTRIBUTE_NOT_BY_QNAME, ftIdx);
 	                    if (ftIdx != null && ftIdx.hasQNameIndex(node.getQName())) {
 	                        textEngine.storeAttribute((AttrImpl) node, null, NativeTextEngine.ATTRIBUTE_BY_QNAME, ftIdx);
 	                    }
+	                    
+	                    notifyStoreAttribute((AttrImpl)node, currentPath, NativeValueIndex.WITH_PATH, null);
 	
 	                    elementIndex.setDocument(doc);
 	                    final NodeProxy tempProxy = new NodeProxy(doc, node.getNodeId(), address);
@@ -2989,7 +2990,6 @@ public class NativeBroker extends DBBroker {
 	                        elementIndex.addNode(qname, tempProxy);
 	                    }
 	                    
-	//                    // --move to-- ???
 	                    if (currentPath != null)
 	                        currentPath.removeLastComponent();
 	                    break;
