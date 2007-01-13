@@ -304,10 +304,10 @@ public class NativeBroker extends DBBroker {
         }
     }
 
-    private void notifyStoreAttribute(RangeIndexSpec spec, AttrImpl attr, NodePath currentPath, int indexingHint) {
+    private void notifyStoreAttribute(AttrImpl attr, NodePath currentPath, int indexingHint, RangeIndexSpec spec) {
         for (int i = 0; i < contentLoadingObservers.size(); i++) {
             ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
-            observer.storeAttribute(spec, attr, currentPath, indexingHint);
+            observer.storeAttribute(attr, currentPath, indexingHint, spec);
         }	
 	}	
 
@@ -440,7 +440,7 @@ public class NativeBroker extends DBBroker {
                 //p.setInternalAddress(node.getInternalAddress());
             }
             textEngine.setDocument((DocumentImpl) node.getOwnerDocument());
-            textEngine.storeText(null, node, content, false);
+            textEngine.storeText(node, content, false, null);
         }
 
         FulltextIndexSpec ftIdx = ((DocumentImpl)node.getOwnerDocument()).getCollection().getFulltextIndexConfiguration(this);
@@ -456,7 +456,7 @@ public class NativeBroker extends DBBroker {
             }
             //Grrr : unify with above !
             textEngine.setDocument((DocumentImpl) node.getOwnerDocument());
-            textEngine.storeText(ftIdx, node, content, true);
+            textEngine.storeText(node, content, true, ftIdx);
         }
     }
 
@@ -2403,12 +2403,12 @@ public class NativeBroker extends DBBroker {
                     indexAttribs = ftIdx.matchAttribute(currentPath);
                 }
                 if (indexAttribs)
-                    textEngine.storeAttribute(ftIdx, (AttrImpl) node, null, NativeTextEngine.ATTRIBUTE_NOT_BY_QNAME);
+                    textEngine.storeAttribute((AttrImpl) node, null, NativeTextEngine.ATTRIBUTE_NOT_BY_QNAME, ftIdx);
 
                 GeneralRangeIndexSpec spec2 = doc.getCollection().getIndexByPathConfiguration(this, currentPath);
                 if(spec2 != null) {
                     valueIndex.setDocument(doc);
-                    valueIndex.storeAttribute(spec2, (AttrImpl) node, null, NativeValueIndex.WITHOUT_PATH);
+                    valueIndex.storeAttribute((AttrImpl) node, null, NativeValueIndex.WITHOUT_PATH, spec2);
                 }                   
 //              RangeIndexSpec qnIdx = idxSpec.getIndexByQName(idxQName);
 //              if (qnIdx != null && qnameValueIndexation) {
@@ -2431,8 +2431,10 @@ public class NativeBroker extends DBBroker {
             case Node.TEXT_NODE :
                 // check if this textual content should be fulltext-indexed
                 // by calling IndexPaths.match(path)
-                if (ftIdx == null || ftIdx.match(currentPath)){
-                    textEngine.storeText(ftIdx, (TextImpl) node, ftIdx == null ? NativeTextEngine.TOKENIZE : NativeTextEngine.DO_NOT_TOKENIZE);
+                if (ftIdx == null) {
+                	textEngine.storeText((TextImpl) node, NativeTextEngine.TOKENIZE, ftIdx);
+                } else if (ftIdx.match(currentPath)) {
+                	textEngine.storeText((TextImpl) node, NativeTextEngine.DO_NOT_TOKENIZE, ftIdx);
                 }
                 break;
         }
@@ -2951,21 +2953,21 @@ public class NativeBroker extends DBBroker {
 	                    }
 	                    if (idxSpec != null && idxSpec.getIndexByPath(currentPath) != null) {
 	                        valueIndex.setDocument((DocumentImpl)node.getOwnerDocument());
-	                        valueIndex.storeAttribute(idxSpec.getIndexByPath(currentPath), (AttrImpl) node, null, NativeValueIndex.WITHOUT_PATH);
+	                        valueIndex.storeAttribute((AttrImpl) node, null, NativeValueIndex.WITHOUT_PATH, idxSpec.getIndexByPath(currentPath));
 	                    }
 	                    
 	                    //TODO : investigate. 0/1 seem tobe totally unused !
 	                    //And so is null ;-)
 	                    //notifyStoreAttribute(null, (AttrImpl)node, currentPath, fullTextIndex ? -1 : -2);
 	                    //Let's try this then
-	                    notifyStoreAttribute(null, (AttrImpl)node, currentPath, NativeValueIndex.WITH_PATH);
+	                    notifyStoreAttribute((AttrImpl)node, currentPath, NativeValueIndex.WITH_PATH, null);
 	                    
 	                    //Special handling for fulltext index
 	                    //TODO : harmonize
 	                    if (indexAttribs && !isTemp )
-	                        textEngine.storeAttribute(ftIdx, (AttrImpl) node, null, NativeTextEngine.ATTRIBUTE_NOT_BY_QNAME);
+	                        textEngine.storeAttribute((AttrImpl) node, null, NativeTextEngine.ATTRIBUTE_NOT_BY_QNAME, ftIdx);
 	                    if (ftIdx != null && ftIdx.hasQNameIndex(node.getQName())) {
-	                        textEngine.storeAttribute(ftIdx, (AttrImpl) node, null, NativeTextEngine.ATTRIBUTE_BY_QNAME);
+	                        textEngine.storeAttribute((AttrImpl) node, null, NativeTextEngine.ATTRIBUTE_BY_QNAME, ftIdx);
 	                    }
 	
 	                    elementIndex.setDocument(doc);
@@ -2999,18 +3001,13 @@ public class NativeBroker extends DBBroker {
                     // check if this textual content should be fulltext-indexed
                     // by calling IndexPaths.match(path)
                 	if (fullTextIndex && !isTemp) {                		
-	                    boolean indexText;
-	                    int tokenize;
 	                    if (ftIdx == null || currentPath == null) {
-	                    	indexText = true;
-	                    	tokenize = NativeTextEngine.TOKENIZE;
-	                    } else {
-	                        indexText = ftIdx.match(currentPath);
-	                        tokenize = ftIdx.preserveContent(currentPath) ? 
+	                    	textEngine.storeText((TextImpl) node, NativeTextEngine.TOKENIZE, ftIdx);
+	                    } else if (ftIdx.match(currentPath)) {
+	                    	int tokenize = ftIdx.preserveContent(currentPath) ? 
 	                        		NativeTextEngine.DO_NOT_TOKENIZE : NativeTextEngine.TOKENIZE;
+	                        textEngine.storeText((TextImpl) node, tokenize, ftIdx);
 	                    }
-	                    if (indexText)
-	                        textEngine.storeText(ftIdx, (TextImpl) node, tokenize);	                    
                 	}
                     
                     notifyStoreText( (TextImpl)node, currentPath, 
