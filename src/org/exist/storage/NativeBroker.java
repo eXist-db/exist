@@ -409,8 +409,7 @@ public class NativeBroker extends DBBroker {
                 //p.setInternalAddress(node.getInternalAddress());
             }
             valueIndex.setDocument((DocumentImpl) node.getOwnerDocument());
-            valueIndex.storeElement(RangeIndexSpec.indexTypeToXPath(indexType), 
-                    (ElementImpl) node, content.toString());
+            valueIndex.storeElement((ElementImpl) node, content, RangeIndexSpec.indexTypeToXPath(indexType));
         }
         
         // TODO : move to NativeValueIndexByQName 
@@ -1756,21 +1755,22 @@ public class NativeBroker extends DBBroker {
                         " because is locked by user '" + docUser.getName() + "'");
         }
         
-        if(newName==null) {
+        if ( newName==null) {
         	newName = doc.getFileURI();
         }
         try {
             // check if the move would overwrite a collection
+        	//TODO : resolve URIs : destination.getURI().resolve(newName)
             if(getCollection(destination.getURI().append(newName)) != null)
                 throw new PermissionDeniedException("A resource can not replace an existing collection");
             DocumentImpl oldDoc = destination.getDocument(this, newName);
             if(oldDoc != null) {
-                if(doc.getDocId() == oldDoc.getDocId())
+                if (doc.getDocId() == oldDoc.getDocId())
                     throw new PermissionDeniedException("Cannot move resource to itself");
-                if(!destination.getPermissions().validate(user, Permission.UPDATE))
+                if (!destination.getPermissions().validate(user, Permission.UPDATE))
                     throw new PermissionDeniedException("Resource with same name exists in target " +
                             "collection and update is denied");
-                if(!oldDoc.getPermissions().validate(user, Permission.UPDATE))
+                if (!oldDoc.getPermissions().validate(user, Permission.UPDATE))
                     throw new PermissionDeniedException("Resource with same name exists in target " +
                             "collection and update is denied");
                 if (oldDoc.getResourceType() == DocumentImpl.BINARY_FILE)
@@ -1778,7 +1778,7 @@ public class NativeBroker extends DBBroker {
                 else
                     destination.removeXMLResource(transaction, this, oldDoc.getFileURI());
             } else
-                if(!destination.getPermissions().validate(user, Permission.WRITE))
+                if (!destination.getPermissions().validate(user, Permission.WRITE))
                     throw new PermissionDeniedException("Insufficient privileges on target collection " +
                             destination.getURI());
                 
@@ -1789,13 +1789,13 @@ public class NativeBroker extends DBBroker {
             doc.setFileURI(newName);
             doc.setCollection(destination);
             if (doc.getResourceType() == DocumentImpl.XML_FILE) {
-                if(!renameOnly) {
+                if (!renameOnly) {
                     dropIndex(transaction, doc);
                     saveCollection(transaction, collection);
                 }
                 destination.addDocument(transaction, this, doc);
 
-                if(!renameOnly) {
+                if (!renameOnly) {
                     // reindexing
                     reindexXMLResource(transaction, doc, NodeProcessor.MODE_REPAIR);
                 }
@@ -2383,42 +2383,36 @@ public class NativeBroker extends DBBroker {
                 GeneralRangeIndexSpec spec1 = doc.getCollection().getIndexByPathConfiguration(this, currentPath);
                 if(spec1 != null) {
                     valueIndex.setDocument(doc);
-                    valueIndex.storeElement(spec1.getType(), (ElementImpl) node, content);
+                    valueIndex.storeElement((ElementImpl) node, content, spec1.getType());
                 }
                 // qnameValueIndex.removeElement((ElementImpl) node, currentPath, content);
                 notifyRemoveElement( (ElementImpl) node, currentPath, content );
                 break;
                 
             case Node.ATTRIBUTE_NODE :
-                currentPath.addComponent(node.getQName());
-                elementIndex.setDocument(doc);
                 qname = node.getQName();
                 qname.setNameType(ElementValue.ATTRIBUTE);
+                currentPath.addComponent(qname);
+                
+                elementIndex.setDocument(doc);
                 elementIndex.addNode(qname, p);
                 
-                // check if attribute value should be fulltext-indexed
-                // by calling IndexPaths.match(path) 
-                boolean indexAttribs = true;
-                if(ftIdx != null) {
-                    indexAttribs = ftIdx.matchAttribute(currentPath);
-                }
-                if (indexAttribs)
-                    textEngine.storeAttribute((AttrImpl) node, null, NativeTextEngine.ATTRIBUTE_NOT_BY_QNAME, ftIdx);
-
                 GeneralRangeIndexSpec spec2 = doc.getCollection().getIndexByPathConfiguration(this, currentPath);
                 if(spec2 != null) {
                     valueIndex.setDocument(doc);
                     valueIndex.storeAttribute((AttrImpl) node, null, NativeValueIndex.WITHOUT_PATH, spec2);
                 }                   
-//              RangeIndexSpec qnIdx = idxSpec.getIndexByQName(idxQName);
-//              if (qnIdx != null && qnameValueIndexation) {
-//                  qnameValueIndex.setDocument(doc);
-//                  qnameValueIndex.storeAttribute(qnIdx, (AttrImpl) node);
-//              }
                 
-                if (qnameValueIndex != null)
-                    qnameValueIndex.storeAttribute(null, (AttrImpl)node, currentPath, true);
+                qnameValueIndex.storeAttribute(null, (AttrImpl)node, currentPath, true);
                 
+                // check if attribute value should be fulltext-indexed
+                // by calling IndexPaths.match(path) 
+                if(ftIdx != null && ftIdx.matchAttribute(currentPath)) {
+                	textEngine.storeAttribute((AttrImpl) node, null, NativeTextEngine.ATTRIBUTE_NOT_BY_QNAME, ftIdx);
+                }
+                
+                //Strange : why this hasn't been done earlier ?
+
                 // if the attribute has type ID, store the ID-value
                 // to the element index as well
                 if (((AttrImpl) node).getType() == AttrImpl.ID) {
@@ -2426,6 +2420,7 @@ public class NativeBroker extends DBBroker {
                     qname.setNameType(ElementValue.ATTRIBUTE_ID);
                     elementIndex.addNode(qname, p);
                 }
+                
                 currentPath.removeLastComponent();
                 break;
             case Node.TEXT_NODE :
