@@ -1545,7 +1545,7 @@ public class NativeBroker extends DBBroker {
     }    
     
     public byte[] getBinaryResource(final BinaryDocument blob) {
-    	if (blob.getPage() < 0)
+    	if (blob.getPage() == Page.NO_PAGE)
     		return new byte[0];
         byte[] data = (byte[]) new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
             public Object start() throws ReadOnlyException {
@@ -1557,7 +1557,7 @@ public class NativeBroker extends DBBroker {
     }
     
     public void readBinaryResource(final BinaryDocument blob, final OutputStream os) {
-    	if (blob.getPage() < 0)
+    	if (blob.getPage() == Page.NO_PAGE)
     		return;
         new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
             public Object start() throws ReadOnlyException {
