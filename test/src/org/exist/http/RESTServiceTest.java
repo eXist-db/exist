@@ -38,9 +38,8 @@ import junit.textui.TestRunner;
 
 import org.exist.StandaloneServer;
 import org.exist.storage.DBBroker;
+import org.exist.util.Base64Encoder;
 import org.mortbay.util.MultiException;
-
-import sun.misc.BASE64Encoder;
 
 /** A test case for accessing a remote server via REST-Style Web API.
  * @author wolf
@@ -109,7 +108,9 @@ public class RESTServiceTest extends TestCase {
     public RESTServiceTest(String name) {
         super(name);
         
-        credentials = new BASE64Encoder().encode("admin:".getBytes());
+        Base64Encoder enc = new Base64Encoder();
+        enc.translate("admin:".getBytes());
+        credentials = new String(enc.getCharArray());
     }
 
     protected void setUp() {
