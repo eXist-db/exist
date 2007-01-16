@@ -1,8 +1,6 @@
 package org.exist.xquery.modules.image;
 
-import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -225,7 +223,7 @@ public class GetThumbnailsFunction extends BasicFunction {
 						}
 
 						try {
-							bImage = createThumb(image, maxThumbHeight,
+							bImage = ImageModule.createThumb(image, maxThumbHeight,
 									maxThumbWidth);
 						} catch (Exception e) {
 							throw new XPathException(e.getMessage());
@@ -308,48 +306,4 @@ public class GetThumbnailsFunction extends BasicFunction {
 
 		return false;
 	}
-
-	private BufferedImage createThumb(Image image, int height, int width) {
-		int thumbWidth = 0;
-		int thumbHeight = 0;
-		double scaleFactor = 0.0;
-		BufferedImage thumbImage = null;
-		Graphics2D graphics2D = null;
-
-		int imageHeight = image.getHeight(null);
-		int imageWidth = image.getWidth(null);
-
-		if (imageHeight >= imageWidth) {
-			scaleFactor = (double) height / (double) imageHeight;
-			thumbWidth = (int) (imageWidth * scaleFactor);
-			thumbHeight = height;
-			if (thumbWidth > width) { // thumbwidth is greater than
-				// maxThumbWidth, so we have to scale
-				// again
-				scaleFactor = (double) width / (double) thumbWidth;
-				thumbHeight = (int) (thumbHeight * scaleFactor);
-				thumbWidth = width;
-			}
-		} else {
-			scaleFactor = (double) width / (double) imageWidth;
-			thumbHeight = (int) (imageHeight * scaleFactor);
-			thumbWidth = width;
-			if (thumbHeight > height) { // thumbHeight is greater than
-				// maxThumbHeight, so we have to scale
-				// again
-				scaleFactor = (double) height / (double) thumbHeight;
-				thumbWidth = (int) (thumbWidth * scaleFactor);
-				thumbHeight = height;
-			}
-		}
-
-		thumbImage = new BufferedImage(thumbWidth, thumbHeight,
-				BufferedImage.TYPE_INT_RGB);
-		graphics2D = thumbImage.createGraphics();
-		graphics2D.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-				RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-		graphics2D.drawImage(image, 0, 0, thumbWidth, thumbHeight, null);
-		return thumbImage;
-	}
-
 }

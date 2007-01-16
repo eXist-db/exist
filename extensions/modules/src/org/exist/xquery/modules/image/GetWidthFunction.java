@@ -23,23 +23,15 @@
 package org.exist.xquery.modules.image;
 
 import java.awt.Image;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
-import javax.imageio.ImageIO;
-
-import org.exist.dom.BinaryDocument;
-import org.exist.dom.DocumentImpl;
 import org.exist.dom.QName;
-import org.exist.security.PermissionDeniedException;
-import org.exist.storage.DBBroker;
-import org.exist.storage.lock.Lock;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.AnyURIValue;
+import org.exist.xquery.value.Base64Binary;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -48,11 +40,11 @@ import org.exist.xquery.value.Type;
 /**
  * eXist Image Module Extension GetWidthFunction 
  * 
- * Get's the width of an Image stored in the eXist db
+ * Get's the width of an Image
  * 
  * @author Adam Retter <adam.retter@devon.gov.uk>
  * @serial 2006-03-10
- * @version 1.0
+ * @version 1.1
  *
  * @see org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext, org.exist.xquery.FunctionSignature)
  */
@@ -61,10 +53,10 @@ public class GetWidthFunction extends BasicFunction
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-width", ImageModule.NAMESPACE_URI, ImageModule.PREFIX),
-			"Get's the width of the image in the db indicated by $a, returning an integer of the images width in pixels or an empty sequence if $a is invalid.",
+			"Get's the Width of the image passed in $a, returning an integer of the images width in pixels or an empty sequence if $a is invalid.",
 			new SequenceType[]
 			{
-				new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE)
+				new SequenceType(Type.BASE64_BINARY, Cardinality.EXACTLY_ONE)
 			},
 			new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE));
 
@@ -94,74 +86,26 @@ public class GetWidthFunction extends BasicFunction
 		if (args[0].isEmpty())
             return Sequence.EMPTY_SEQUENCE;
 		
-		//get the path of the image
-        AnyURIValue imgPath = (AnyURIValue)args[0].itemAt(0);
-        
-        //Get the image document from the db
-        DBBroker dbbroker = context.getBroker();
-        DocumentImpl docImage = null;
-        
+		//get the image
+		Image image = null;
         try
         {
-        	docImage = dbbroker.getXMLResource(imgPath.toXmldbURI(), Lock.READ_LOCK);
-        }
-        catch (PermissionDeniedException e)
-        {
-        	throw new XPathException(getASTNode(), imgPath + ": permission denied to read resource");
-        }
-        
-        //Valid document?
-        if (docImage == null)
-        {
-        	LOG.error(imgPath + " does not exist!");
-                return Sequence.EMPTY_SEQUENCE;
-        }
-        
-        //Binary Document?
-        if (docImage.getResourceType() != DocumentImpl.BINARY_FILE)
-        {
-            LOG.error(imgPath + " exists but is not a binary resource!");
-        	return Sequence.EMPTY_SEQUENCE;
-        }
-       
-        //Binary document is an image?
-        if(!docImage.getMetadata().getMimeType().startsWith("image/"))
-        {
-        	LOG.error(imgPath + " exists but is not an image!");
-        	return Sequence.EMPTY_SEQUENCE;
-        }
-        
-        //Get the image document as a binary document
-        BinaryDocument binImage = (BinaryDocument) docImage;
-        
-        //get a byte array representing the image
-        byte[] imgData = dbbroker.getBinaryResource(binImage);
-        
-        //close the image from the db
-        dbbroker.closeDocument();
-        
-        Image image = null;
-        int iWidth = -1;
-        
-        //Create an Image object from the byte array
-        try
-        {
-        	image = ImageIO.read(new ByteArrayInputStream(imgData));
+            image = ImageModule.getImage((Base64Binary)args[0].itemAt(0));
         }
         catch(IOException ioe)
         {
-        	LOG.error(imgPath + " could not read image data!");
+        	LOG.error("Unabel to read image data!");
         	return Sequence.EMPTY_SEQUENCE;
         }
         
         //Get the width of the image
-        iWidth = image.getWidth(null);
+        int iWidth = image.getWidth(null);
         
         //did we get the width of the image?
         if(iWidth == -1)
         {
         	//no, log the error
-        	LOG.error(imgPath + " could not read image data!");
+        	LOG.error("Unable to read image data!");
         	return Sequence.EMPTY_SEQUENCE; 
         }
         else
