@@ -94,7 +94,13 @@ public class GetWidthFunction extends BasicFunction
         }
         catch(IOException ioe)
         {
-        	LOG.error("Unabel to read image data!");
+        	LOG.error("Unable to read image data!", ioe);
+        	return Sequence.EMPTY_SEQUENCE;
+        }
+        
+        if(image == null)
+        {
+        	LOG.error("Unable to read image data!");
         	return Sequence.EMPTY_SEQUENCE;
         }
         
