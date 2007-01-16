@@ -211,14 +211,13 @@ public class NativeValueIndex implements ContentLoadingObserver {
      * @param node The attribute
      */
     public void storeAttribute(AttrImpl node, NodePath currentPath, int indexingHint, RangeIndexSpec spec) {
-    	if (doc != null && doc.getDocId() != node.getDocId()) {
-    		throw new IllegalArgumentException("Document id ('" + doc.getDocId() + "') and proxy id ('" + 
-    				node.getDocId() + "') differ !");
-    	}        	
-
-    	//Return early
+        //Return early
     	if (indexingHint != WITHOUT_PATH)
     		return;
+        if (doc != null && doc.getDocId() != node.getDocId()) {
+    		throw new IllegalArgumentException("Document id ('" + doc.getDocId() + "') and proxy id ('" + 
+    				node.getDocId() + "') differ !");
+    	}
     	
         AtomicValue atomic = convertToAtomic(spec.getType(), node.getValue());
         //Ignore if the value can't be successfully atomized
