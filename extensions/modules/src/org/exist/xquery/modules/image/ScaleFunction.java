@@ -116,6 +116,12 @@ public class ScaleFunction extends BasicFunction
 			//get the image data
 			image = ImageModule.getImage((Base64Binary)args[0].itemAt(0));
 		
+			if(image == null)
+			{
+				LOG.error("Unable to read image data!");
+	        	return Sequence.EMPTY_SEQUENCE;
+			}
+			
 			//scale the image
 			bImage = ImageModule.createThumb(image, maxHeight, maxWidth);
 		
