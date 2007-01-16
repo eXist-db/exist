@@ -517,6 +517,9 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                FindEntry finder = new FindEntry(id);
                DOM.findChildren(feedDoc.getDocumentElement(),Atom.NAMESPACE_STRING,"entry",finder);
                Element entry = finder.getEntry();
+               if (entry==null) {
+                  throw new BadRequestException("Cannot find entry with id "+id);
+               }
                mergeEntry(transaction,(ElementImpl)entry,root,currentDateTime);
 
                // Update the feed time
