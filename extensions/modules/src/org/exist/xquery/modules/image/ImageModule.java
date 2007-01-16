@@ -22,8 +22,21 @@
 
 package org.exist.xquery.modules.image;
 
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
+
+import org.exist.util.Base64Decoder;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.value.Base64Binary;
+
 
 /**
  * eXist Image Module Extension
@@ -39,9 +52,7 @@ import org.exist.xquery.FunctionDef;
  */
 
 /*
- * TODO: scale/resample an image (with compression?!?)
  * TODO: metadata extraction from images, especially JPEG's
- * TODO: creation of thumbnails from a collection of images
  */
 
 public class ImageModule extends AbstractInternalModule {
@@ -53,6 +64,7 @@ public class ImageModule extends AbstractInternalModule {
 	private final static FunctionDef[] functions = {
 		new FunctionDef(GetWidthFunction.signature, GetWidthFunction.class),
 		new FunctionDef(GetHeightFunction.signature, GetHeightFunction.class),
+		new FunctionDef(ScaleFunction.signature, ScaleFunction.class),
 		new FunctionDef(GetThumbnailsFunction.signature, GetThumbnailsFunction.class)
 	};
 	
@@ -70,5 +82,72 @@ public class ImageModule extends AbstractInternalModule {
 
 	public String getDescription() {
 		return "A module for performing operations on Images stored in the eXist db";
+	}
+	
+	/**
+	 * Get's an Image object from base64 binary encoded image data
+	 * 
+	 * @param imgBase64Data	The base64 encoded image data
+	 * 
+	 * @return An Image object
+	 */
+	protected static Image getImage(Base64Binary imgBase64Data) throws IOException, XPathException
+	{
+		//decode the base64 image data
+		Base64Decoder dec = new Base64Decoder();
+        dec.translate(imgBase64Data.getStringValue());
+        
+        //get the raw binary data
+		byte[] imgData = dec.getByteArray();
+                
+        //Create an Image object from the byte array
+        return ImageIO.read(new ByteArrayInputStream(imgData));
+	}
+	
+	/**
+	 * @author Rafael Troilo (rtroilo@gmail.com)
+	 */
+	protected static BufferedImage createThumb(Image image, int height, int width)
+	{
+		int thumbWidth = 0;
+		int thumbHeight = 0;
+		double scaleFactor = 0.0;
+		BufferedImage thumbImage = null;
+		Graphics2D graphics2D = null;
+
+		int imageHeight = image.getHeight(null);
+		int imageWidth = image.getWidth(null);
+
+		if (imageHeight >= imageWidth) {
+			scaleFactor = (double) height / (double) imageHeight;
+			thumbWidth = (int) (imageWidth * scaleFactor);
+			thumbHeight = height;
+			if (thumbWidth > width) { // thumbwidth is greater than
+				// maxThumbWidth, so we have to scale
+				// again
+				scaleFactor = (double) width / (double) thumbWidth;
+				thumbHeight = (int) (thumbHeight * scaleFactor);
+				thumbWidth = width;
+			}
+		} else {
+			scaleFactor = (double) width / (double) imageWidth;
+			thumbHeight = (int) (imageHeight * scaleFactor);
+			thumbWidth = width;
+			if (thumbHeight > height) { // thumbHeight is greater than
+				// maxThumbHeight, so we have to scale
+				// again
+				scaleFactor = (double) height / (double) thumbHeight;
+				thumbWidth = (int) (thumbWidth * scaleFactor);
+				thumbHeight = height;
+			}
+		}
+
+		thumbImage = new BufferedImage(thumbWidth, thumbHeight,
+				BufferedImage.TYPE_INT_RGB);
+		graphics2D = thumbImage.createGraphics();
+		graphics2D.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+				RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+		graphics2D.drawImage(image, 0, 0, thumbWidth, thumbHeight, null);
+		return thumbImage;
 	}
 }
