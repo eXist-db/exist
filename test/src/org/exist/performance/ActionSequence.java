@@ -86,6 +86,7 @@ public class ActionSequence extends AbstractAction {
                 long elapsed = System.currentTimeMillis() - start;
                 System.out.println('[' + Thread.currentThread().getName() + "] " + action.getClass().getName() + " took " + elapsed + "ms.");
                 runner.getResults().report(action, null, elapsed);
+                System.gc();
             }
         }
     }
