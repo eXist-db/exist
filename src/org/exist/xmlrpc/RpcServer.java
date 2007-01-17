@@ -753,17 +753,17 @@ public class RpcServer implements RpcAPI {
      * @throws EXistException
      * @throws IOException
      */
-    public boolean parseLocal(User user, String localFile, String docName, boolean replace)
+    public boolean parseLocal(User user, String localFile, String docName, boolean replace, String mimeType)
             throws EXistException, PermissionDeniedException, SAXException {
-        return parseLocal(user, localFile, docName, replace, null, null);
+        return parseLocal(user, localFile, docName, replace, mimeType, null, null);
     }
 
-    public boolean parseLocal(User user, String localFile, String docName, boolean replace,
+    public boolean parseLocal(User user, String localFile, String docName, boolean replace, String mimeType,
             Date created, Date modified) throws EXistException, PermissionDeniedException,
             SAXException {
         RpcConnection con = pool.get();
         try {
-            return con.parseLocal(user, localFile, docName, replace, created, modified);
+            return con.parseLocal(user, localFile, docName, replace, mimeType, created, modified);
         } catch (Exception e) {
             handleException(e);
             return false;

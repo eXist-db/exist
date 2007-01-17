@@ -87,6 +87,7 @@ public class StoreChunked {
             params.addElement(handle);
             params.addElement(path);
             params.addElement(new Boolean(true));
+            params.addElement("image/png");
             Boolean result =(Boolean)xmlrpc.execute("parseLocal", params); // exceptions
             
             // Check result
