@@ -589,7 +589,7 @@ public class RemoteCollection implements CollectionImpl {
 				throw new XMLDBException(ErrorCodes.INVALID_URI,e);
 			}
 			params.addElement(Boolean.TRUE);
-
+            params.addElement(((RemoteXMLResource)res).getMimeType());
 			if ( ((RemoteXMLResource)res).dateCreated  != null ) {
 				params.addElement( ((RemoteXMLResource)res).dateCreated );
 				params.addElement( ((RemoteXMLResource)res).dateModified );

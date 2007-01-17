@@ -1223,20 +1223,20 @@ public class RpcConnection extends Thread {
      * @throws IOException
      */
     public boolean parseLocal(User user, String localFile, String documentPath,
-            boolean replace) throws Exception, URISyntaxException {
-        return parseLocal(user, localFile, documentPath, replace, null, null);
+            boolean replace, String mimeType) throws Exception, URISyntaxException {
+        return parseLocal(user, localFile, documentPath, replace, mimeType, null, null);
     }
     public boolean parseLocal(User user, String localFile, XmldbURI docUri,
-            boolean replace) throws Exception {
-        return parseLocal(user, localFile, docUri, replace, null, null);
+            boolean replace, String mimeType) throws Exception {
+        return parseLocal(user, localFile, docUri, replace, mimeType, null, null);
     }
     
     public boolean parseLocal(User user, String localFile, String documentPath,
-            boolean replace, Date created, Date modified) throws Exception, URISyntaxException {
-    	return parseLocal(user,localFile,XmldbURI.xmldbUriFor(documentPath),replace,created,modified);
+            boolean replace, String mimeType, Date created, Date modified) throws Exception, URISyntaxException {
+    	return parseLocal(user,localFile,XmldbURI.xmldbUriFor(documentPath), replace, mimeType, created, modified);
     }    
     public boolean parseLocal(User user, String localFile, XmldbURI docUri,
-            boolean replace, Date created, Date modified) throws Exception {
+            boolean replace, String mimeType, Date created, Date modified) throws Exception {
         File file = new File(localFile);
         if (!file.canRead())
             throw new EXistException("unable to read file " + localFile);
@@ -1246,7 +1246,7 @@ public class RpcConnection extends Thread {
         DocumentImpl doc = null;
         
         // DWES
-        MimeType mime = MimeTable.getInstance().getContentTypeFor(docUri);
+        MimeType mime = MimeTable.getInstance().getContentType(mimeType);
         if (mime == null)
             mime = MimeType.BINARY_TYPE;
                     

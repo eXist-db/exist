@@ -509,10 +509,10 @@ public interface RpcAPI {
 	 * @throws EXistException
 	 * @throws IOException
 	 */
-	public boolean parseLocal(User user, String localFile, String docName, boolean replace)
+	public boolean parseLocal(User user, String localFile, String docName, boolean replace, String mimeType)
 		throws EXistException, PermissionDeniedException, SAXException;
 
-	public boolean parseLocal(User user, String localFile, String docName, boolean replace, Date created, Date modified)
+	public boolean parseLocal(User user, String localFile, String docName, boolean replace, String mimeType, Date created, Date modified)
 	throws EXistException, PermissionDeniedException, SAXException;
 	
 	/**
