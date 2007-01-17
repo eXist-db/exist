@@ -15,7 +15,7 @@
         <setup connection="con">
             <create-collection parent="/db" name="test"/>
             <create-collection parent="/db/test" name="shakespeare"/>
-            <store-files dir="samples/shakespeare" includes="hamlet.xml" collection="/db/test/shakespeare"/>
+            <store-files dir="samples/shakespeare" includes="*.xml" collection="/db/test/shakespeare"/>
             <create-collection parent="/db/system/config" name="db"/>
             <store collection="/db/system/config/db" name="collection.xconf">
                 <collection xmlns="http://exist-db.org/collection-config/1.0">
@@ -73,7 +73,9 @@
                     <index>
                         <fulltext default="all" attributes="false">
                             <create qname="p"/>
+                            <create qname="l"/>
                             <create qname="head"/>
+                            <create qname="cell"/>
                         </fulltext>
                     </index>
                 </collection>
@@ -85,8 +87,38 @@
             description="storing Goethe data"/>
             <sequence repeat="10">
                 <xquery collection="/db/jgoethe" query="//(p|l|head|cell)[. &amp;= 'liebe']"/>
+                <xquery collection="/db/jgoethe"><![CDATA[
+                    let $t := "liebe"
+                    return
+                        text:filter-nested(
+                            //((#exist:optimize#) { p[. &= $t] }) |
+                            //((#exist:optimize#) { l[. &= $t] }) |
+                            //((#exist:optimize#) { head[. &= $t] }) |
+                            //((#exist:optimize#) { cell[. &= $t] })
+                        )
+                ]]></xquery>
                 <xquery collection="/db/jgoethe" query="//(p|l|head|cell)[. &amp;= 'liebe sinnlichkeit']"/>
+                <xquery collection="/db/jgoethe"><![CDATA[
+                    let $t := "liebe sinnlichkeit"
+                    return
+                        text:filter-nested(
+                            //((#exist:optimize#) { p[. &= $t] }) |
+                            //((#exist:optimize#) { l[. &= $t] }) |
+                            //((#exist:optimize#) { head[. &= $t] }) |
+                            //((#exist:optimize#) { cell[. &= $t] })
+                        )
+                ]]></xquery>
                 <xquery collection="/db/jgoethe" query="//(p|l|head|cell)[. &amp;= 'sinnlich*']"/>
+                <xquery collection="/db/jgoethe"><![CDATA[
+                    let $t := "sinnlich*"
+                    return
+                        text:filter-nested(
+                            //((#exist:optimize#) { p[. &= $t] }) |
+                            //((#exist:optimize#) { l[. &= $t] }) |
+                            //((#exist:optimize#) { head[. &= $t] }) |
+                            //((#exist:optimize#) { cell[. &= $t] })
+                        )
+                ]]></xquery>
                 <xquery collection="/db/jgoethe" query="//(p|l|head|cell)[. &amp;= 'liebe sinnlich*']"/>
                 <xquery collection="/db/jgoethe" query="//(p|l|head|cell)[. &amp;= 'schmerz* herz']"/>
                 <xquery collection="/db/jgoethe" query="//(p|l|head|cell)[. &amp;= 'himmel hölle']"/>
@@ -103,6 +135,11 @@
                 <xquery collection="/db/jgoethe" query="/TEI.2//p[. &amp;= 'schmerz* herz']"/>
                 <xquery collection="/db/jgoethe" query="/TEI.2//((#exist:optimize#) { p[. &amp;= 'schmerz* herz'] })"/>
                 
+                <xquery collection="/db/jgoethe" query="/TEI.2//div3[p &amp;= 'schmerz* herz']/head"/>
+                <xquery collection="/db/jgoethe" query="/TEI.2//((#exist:optimize#) { div3[p &amp;= 'schmerz* herz'] })/head"/>
+                <xquery collection="/db/jgoethe" query="/TEI.2//div3[p &amp;= 'liebe sinnlich*']/head"/>
+                <xquery collection="/db/jgoethe" query="/TEI.2//((#exist:optimize#) { div3[p &amp;= 'liebe sinnlich*'] })/head"/>
+                
                 <xquery collection="/db/jgoethe" query="//div3[head &amp;= 'götz von berlichingen']"/>
                 <xquery collection="/db/jgoethe" query="//*[head &amp;= 'götz von berlichingen']"/>
                 <xquery collection="/db/jgoethe" query="/TEI.2//div3[head &amp;= 'götz von berlichingen']"/>
@@ -114,6 +151,11 @@
                 <xquery collection="/db/jgoethe" query="/TEI.2//*[head &amp;= 'faust']//p[. &amp;= 'todt']"/>
                 <xquery collection="/db/jgoethe" query="//(div1|div2|div3|div4|div5)[head &amp;= 'faust']//p[. &amp;= 'todt']"/>
                 <xquery collection="/db/jgoethe" query="//(div1|div2|div3|div4|div5)[head &amp;= 'faust']//p[. &amp;= 'tod*']"/>
+                
+                <xquery collection="/db/jgoethe" query="//div3[p &amp;= 'liebe']"/>
+                <xquery collection="/db/jgoethe" query="//((#exist:optimize#) { div3[p &amp;= 'liebe'] })"/>
+                <xquery collection="/db/jgoethe" query="//div3[p &amp;= 'liebe sinnlich*']"/>
+                <xquery collection="/db/jgoethe" query="//((#exist:optimize#) { div3[p &amp;= 'liebe sinnlich*'] })"/>
             </sequence>
         </thread>
         <tear-down connection="con">

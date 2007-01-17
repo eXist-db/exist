@@ -24,8 +24,11 @@ package org.exist.performance;
 import org.exist.performance.actions.Action;
 import org.exist.EXistException;
 import org.w3c.dom.Element;
+import org.apache.log4j.Logger;
 
 public abstract class AbstractAction implements Action {
+
+    protected final static Logger LOG = Logger.getLogger(Action.class);
 
     protected Action parent = null;
 
