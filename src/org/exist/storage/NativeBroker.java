@@ -21,21 +21,6 @@
  */
 package org.exist.storage;
 
-import java.io.EOFException;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.text.Collator;
-import java.text.NumberFormat;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Observer;
-import java.util.Stack;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionCache;
@@ -67,8 +52,8 @@ import org.exist.storage.btree.BTreeException;
 import org.exist.storage.btree.DBException;
 import org.exist.storage.btree.IndexQuery;
 import org.exist.storage.btree.Paged;
-import org.exist.storage.btree.Value;
 import org.exist.storage.btree.Paged.Page;
+import org.exist.storage.btree.Value;
 import org.exist.storage.dom.DOMFile;
 import org.exist.storage.dom.DOMFileIterator;
 import org.exist.storage.dom.DOMTransaction;
@@ -98,6 +83,21 @@ import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import java.io.EOFException;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.text.Collator;
+import java.text.NumberFormat;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Observer;
+import java.util.Stack;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *  Main class for the native XML storage backend.
@@ -2436,7 +2436,7 @@ public class NativeBroker extends DBBroker {
                 }
                 break;
         }
-    }    
+    }
 
     public void removeAllNodes(Txn transaction, StoredNode node, NodePath currentPath) {
         Iterator iterator = getNodeIterator(node);
@@ -2970,7 +2970,7 @@ public class NativeBroker extends DBBroker {
 	                    }
 	                    
 	                    notifyStoreAttribute((AttrImpl)node, currentPath, NativeValueIndex.WITH_PATH, null);
-	
+
 	                    elementIndex.setDocument(doc);
 	                    final NodeProxy tempProxy = new NodeProxy(doc, node.getNodeId(), address);
 	                    tempProxy.setIndexType(indexType);
@@ -3000,7 +3000,7 @@ public class NativeBroker extends DBBroker {
                     // TODO textEngine.storeText( (TextImpl) node, currentPath, index);
                     // check if this textual content should be fulltext-indexed
                     // by calling IndexPaths.match(path)
-                	if (fullTextIndex && !isTemp) {                		
+                	if (fullTextIndex && !isTemp) {
 	                    if (ftIdx == null || currentPath == null) {
 	                    	textEngine.setDocument(doc);
 	                    	textEngine.storeText((TextImpl) node, NativeTextEngine.TOKENIZE, ftIdx);

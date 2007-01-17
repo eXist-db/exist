@@ -824,11 +824,12 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
                         else
                             ancestor.copyContext(array[i]);
 //                        ancestor.addMatches(array[i]);
+                        return ancestor;
                     }
                 } else
                     break;
             }
-            return ancestor;
+            return null;
         }
 
         /**

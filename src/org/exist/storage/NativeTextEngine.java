@@ -22,17 +22,6 @@
 package org.exist.storage;
 
 //import java.io.EOFException;
-import java.io.File;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.regex.Pattern;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
@@ -75,6 +64,18 @@ import org.exist.xquery.Constants;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XQueryContext;
 import org.w3c.dom.Node;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.regex.Pattern;
 
 /**
  * This class is responsible for fulltext-indexing. Text-nodes are handed over
@@ -496,11 +497,9 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                     } else
                                         parent = contextSet.get(storedNode);
                                     break;
+                                case QNAME_SECTION:
                                 case TEXT_SECTION :
                                     parent = contextSet.parentWithChild(storedNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
-                                    break;
-                                case QNAME_SECTION:
-                                    parent = storedNode;
                                     break;
                                 default :
                                     throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() + "'");
@@ -819,12 +818,13 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		private Map words[] = new Map[3];
 		private int TEXT_NODES = 0;
 		private int ATTRIBUTE_NODES = 1;
+        private int BY_QNAME = 2;
 
-		public InvertedIndex() {
+        public InvertedIndex() {
 			words[TEXT_NODES] = new HashMap(512);
 			words[ATTRIBUTE_NODES] = new HashMap(256);
 			//seems to be linked with QName indexes
-            words[2] = new TreeMap();
+            words[BY_QNAME] = new TreeMap();
         }
         
         public void setDocument(DocumentImpl document) {
@@ -850,12 +850,12 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         public void addText(TextToken token, ElementImpl ancestor) {
             QNameTerm term = new QNameTerm(ancestor.getQName(), token.getText());
             //Is this token already pending ?
-            OccurrenceList list = (OccurrenceList) words[2].get(term);
+            OccurrenceList list = (OccurrenceList) words[BY_QNAME].get(term);
             //Create a GIDs list
             if (list == null) {
                 list = new OccurrenceList();
                 list.add(ancestor.getNodeId(), token.startOffset());
-                words[2].put(term, list);
+                words[BY_QNAME].put(term, list);
             } else {
                 //Add node's GID to the list
                 list.add(ancestor.getNodeId(), token.startOffset());
@@ -896,7 +896,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             //return early
             if (this.doc == null)
                 return;            
-            final int wordsCount = words[TEXT_NODES].size() + words[ATTRIBUTE_NODES].size() + words[2].size();
+            final int wordsCount = words[TEXT_NODES].size() + words[ATTRIBUTE_NODES].size() + words[BY_QNAME].size();
             if (wordsCount == 0)
                 return;
             final ProgressIndicator progress = new ProgressIndicator(wordsCount, 100);
@@ -921,7 +921,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     occurences.sort();
                     os.clear();
                     os.writeInt(this.doc.getDocId());
-                    os.writeByte(currentSection == QNAME_SECTION ? TEXT_SECTION : currentSection);
+                    os.writeByte(currentSection);
+//                    os.writeByte(currentSection == QNAME_SECTION ? TEXT_SECTION : currentSection);
                     os.writeInt(occurences.getTermCount());
                     //Mark position
                     int lenOffset = os.position();
@@ -1305,6 +1306,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                 NodeProxy parentNode;  
                                 switch (storedSection) {
                                     case TEXT_SECTION :
+                                    case QNAME_SECTION:
                                         parentNode = contextSet.parentWithChild(storedNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
                                         break;
                                     case ATTRIBUTE_SECTION :
@@ -1315,9 +1317,6 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                         } else {
                                             parentNode = contextSet.get(storedNode);
                                         }
-                                        break;
-                                    case QNAME_SECTION:
-                                        parentNode = storedNode;
                                         break;
                                     default :
                                         throw new IllegalArgumentException("Invalid section type in '" + dbTokens.getFile().getName() + "'");
