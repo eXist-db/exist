@@ -1330,7 +1330,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 								} else
                                     is.skip(freq);
 							} else {
-                                Match match = new Match(null, word.toString(), freq);
+                                Match match = new Match(nodeId, word.toString(), freq);
 							    readOccurrences(freq, is, match, word.length());
                                 storedNode.addMatch(match);
 							    result.add(storedNode, Constants.NO_SIZE_HINT);
