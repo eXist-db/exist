@@ -62,7 +62,7 @@ public class RandomFunction extends BasicFunction
     {
     	Random rndGen = new Random();
     	
-    	if(args[0].isEmpty())
+    	if(getArgumentCount() == 0)
     	{
     		return new DoubleValue(rndGen.nextDouble());
     	}
