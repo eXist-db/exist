@@ -39,6 +39,7 @@ class ItemId {
 	public static final byte LINK_FLAG = (byte) 0x1;
 	public static final byte RELOCATED_FLAG = (byte) 0x2;
 	
+	public static final short UNKNOWN_ID = (short)-1;
 	public static final short MAX_ID = (short)0x3FFE;
 	public static final short DEFRAG_LIMIT = (short)0x2FFE;
 	
