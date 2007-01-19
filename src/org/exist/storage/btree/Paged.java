@@ -92,6 +92,30 @@ import org.exist.xquery.Constants;
 
 public abstract class Paged {
 	
+	public static int OFFSET_VERSION_ID = 0;
+	public static int LENGTH_VERSION_ID = 2;  //sizeof short
+	public static int OFFSET_HEADER_SIZE = OFFSET_VERSION_ID + LENGTH_VERSION_ID; //2
+	public static int LENGTH_HEADER_SIZE = 2;  //sizeof short
+	public static int OFFSET_PAGE_SIZE = OFFSET_HEADER_SIZE + LENGTH_HEADER_SIZE; //4
+	public static int LENGTH_PAGE_SIZE = 4; //sizeof int
+	public static int OFFSET_PAGE_COUNT = OFFSET_PAGE_SIZE + LENGTH_PAGE_SIZE; //8
+	public static int LENGTH_PAGE_COUNT = 8; //sizeof long
+	public static int OFFSET_TOTAL_COUNT = OFFSET_PAGE_COUNT + LENGTH_PAGE_COUNT; //16
+	public static int LENGTH_TOTAL_COUNT = 8; //sizeof long
+	public static int OFFSET_FIRST_FREE_PAGE = OFFSET_TOTAL_COUNT + LENGTH_TOTAL_COUNT; //24
+	public static int LENGTH_FIRST_FREE_PAGE = 8; //sizeof long
+	public static int OFFSET_LAST_FREE_PAGE = OFFSET_FIRST_FREE_PAGE + LENGTH_FIRST_FREE_PAGE; //32
+	public static int LENGTH_LAST_FREE_PAGE = 8; //sizeof long
+	public static int OFFSET_PAGE_HEADER_SIZE = OFFSET_LAST_FREE_PAGE + LENGTH_LAST_FREE_PAGE; //40
+	public static int LENGTH_PAGE_HEADER_SIZE = 1; //sizeof byte	
+	public static int OFFSET_MAX_KEY_SIZE = OFFSET_PAGE_HEADER_SIZE + LENGTH_PAGE_HEADER_SIZE; //41
+	public static int LENGTH_MAX_KEY_SIZE = 2;  //sizeof short
+	public static int OFFSET_RECORD_COUNT = OFFSET_MAX_KEY_SIZE + LENGTH_MAX_KEY_SIZE; //43
+	public static int LENGTH_RECORD_COUNT = 8; //sizeof long
+	public static int OFFSET_REMAINDER = OFFSET_RECORD_COUNT + LENGTH_RECORD_COUNT; //51
+	
+	
+
 	protected final static Logger LOG = Logger.getLogger(Paged.class);
 	
 	protected final static byte DELETED = 127;
@@ -713,30 +737,33 @@ public abstract class Paged {
         }
 
         public int read(byte[] buf) throws IOException {
-            int offset = 0;
-            versionId = ByteConversion.byteToShort(buf, offset);
-            offset += 2;
-            headerSize = ByteConversion.byteToShort(buf, offset);
-            offset += 2;
-            pageSize = ByteConversion.byteToInt(buf, offset);
-            offset += 4;
-            pageCount = ByteConversion.byteToLong(buf, offset);
-            offset += 8;
-            totalCount = ByteConversion.byteToLong(buf, offset);
-            offset += 8;
-            firstFreePage = ByteConversion.byteToLong(buf, offset);
-            offset += 8;
-            lastFreePage = ByteConversion.byteToLong(buf, offset);
-            offset += 8;
-            pageHeaderSize = buf[offset++];
-            maxKeySize = ByteConversion.byteToShort(buf, offset);
-            offset += 2;
-            recordCount = ByteConversion.byteToLong(buf, offset);
-            offset += 8;
-            return offset;
+            versionId = ByteConversion.byteToShort(buf, OFFSET_VERSION_ID);
+            headerSize = ByteConversion.byteToShort(buf, OFFSET_HEADER_SIZE);
+            pageSize = ByteConversion.byteToInt(buf, OFFSET_PAGE_SIZE);
+            pageCount = ByteConversion.byteToLong(buf, OFFSET_PAGE_COUNT);
+            totalCount = ByteConversion.byteToLong(buf, OFFSET_TOTAL_COUNT);
+            firstFreePage = ByteConversion.byteToLong(buf, OFFSET_FIRST_FREE_PAGE);
+            lastFreePage = ByteConversion.byteToLong(buf, OFFSET_LAST_FREE_PAGE);
+            pageHeaderSize = buf[OFFSET_PAGE_HEADER_SIZE];
+            maxKeySize = ByteConversion.byteToShort(buf, OFFSET_MAX_KEY_SIZE);
+            recordCount = ByteConversion.byteToLong(buf, OFFSET_RECORD_COUNT);
+            return OFFSET_REMAINDER;
         }
 
-		/**
+        public int write(byte[] buf) throws IOException {
+            ByteConversion.shortToByte(versionId, buf, OFFSET_VERSION_ID);
+            ByteConversion.shortToByte(headerSize, buf, OFFSET_HEADER_SIZE);
+            ByteConversion.intToByte(pageSize, buf, OFFSET_PAGE_SIZE);
+            ByteConversion.longToByte(pageCount, buf, OFFSET_PAGE_COUNT);
+            ByteConversion.longToByte(totalCount, buf, OFFSET_TOTAL_COUNT);
+            ByteConversion.longToByte(firstFreePage, buf, OFFSET_FIRST_FREE_PAGE);
+            ByteConversion.longToByte(lastFreePage, buf, OFFSET_LAST_FREE_PAGE);
+            buf[OFFSET_PAGE_HEADER_SIZE] = pageHeaderSize;
+            ByteConversion.shortToByte(maxKeySize, buf, OFFSET_MAX_KEY_SIZE);
+            ByteConversion.longToByte(recordCount, buf, OFFSET_RECORD_COUNT);
+            return OFFSET_REMAINDER;
+        }
+        /**
 		 *  Sets the dirty attribute of the FileHeader object
 		 *
 		 *@param  dirty  The new dirty value
@@ -843,30 +870,7 @@ public abstract class Paged {
             raf.write(buf);
             dirty = false;
         }
-        
-        public int write(byte[] buf) throws IOException {
-            int offset = 0;
-            ByteConversion.shortToByte(versionId, buf, offset);
-            offset += 2;
-            ByteConversion.shortToByte(headerSize, buf, offset);
-            offset += 2;
-            ByteConversion.intToByte(pageSize, buf, offset);
-            offset += 4;
-            ByteConversion.longToByte(pageCount, buf, offset);
-            offset += 8;
-            ByteConversion.longToByte(totalCount, buf, offset);
-            offset += 8;
-            ByteConversion.longToByte(firstFreePage, buf, offset);
-            offset += 8;
-            ByteConversion.longToByte(lastFreePage, buf, offset);
-            offset += 8;
-            buf[offset++] = pageHeaderSize;
-            ByteConversion.shortToByte(maxKeySize, buf, offset);
-            offset += 2;
-            ByteConversion.longToByte(recordCount, buf, offset);
-            offset += 8;
-            return offset;
-        }
+
 	}
 
 	/**
