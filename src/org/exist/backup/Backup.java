@@ -257,8 +257,11 @@ public class Backup {
 		SAXSerializer contentSerializer;
 		for (int i = 0; i < resources.length; i++) {
             try {
+                if (resources[i].equals("__contents__.xml")) {
+                    System.out.println("Skipping " + resources[i]);
+                    continue;
+                }
                 resource = current.getResource(resources[i]);
-
                 if (dialog == null)
                     System.out.println("writing " + resources[i]);
                 else {
