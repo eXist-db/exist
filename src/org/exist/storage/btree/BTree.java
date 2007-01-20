@@ -186,6 +186,10 @@ public class BTree extends Paged {
         this(pool, fileId, transactional, cacheManager, growthThreshold);
 		setFile(file);
 	}
+	
+	public short getFileVersion() {
+		throw new RuntimeException("getFileVersion() called");
+	}
 
 	public boolean open(short expectedVersion) throws DBException {
 		if (super.open(expectedVersion)) {
