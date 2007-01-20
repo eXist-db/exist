@@ -38,8 +38,9 @@ public class User {
 	public final static int MD5_ENCODING = 2;
 	
 	public static int PASSWORD_ENCODING;
-        
-	static {
+    public static boolean CHECK_PASSWORDS = true;
+
+    static {
 		Properties props = new Properties(); 
 		try {
 			props.load(
@@ -47,10 +48,12 @@ public class User {
 			);
 		} catch (IOException e) {
 		}
-		String encoding = props.getProperty("passwords.encoding", "md5");
-                setPasswordEncoding(encoding);
-	}
-        
+		String option = props.getProperty("passwords.encoding", "md5");
+        setPasswordEncoding(option);
+        option = props.getProperty("passwords.check", "yes");
+        CHECK_PASSWORDS = option.equalsIgnoreCase("yes") || option.equalsIgnoreCase("true");
+    }
+
    static public void setPasswordEncoding(String encoding) {
       if (encoding != null) {
          LOG.equals("Setting password encoding to "+encoding);
@@ -243,7 +246,7 @@ public class User {
     public final String getPrimaryGroup() {
         if ( groups == null || groups.length == 0 )
             return null;
-        return (String) groups[0];
+        return groups[0];
     }
 
 
@@ -346,6 +349,10 @@ public class User {
     }
 
     public final boolean validate( String passwd ) {
+        // security management is disabled if in repair mode
+        if (!CHECK_PASSWORDS)
+            return true;
+
        SecurityManager sm;
        if (password==null && digestPassword==null) {
             return true;
