@@ -230,7 +230,7 @@ public class DOMFile extends BTree implements Lockable {
 	 */
 	public long add(Txn transact, byte[] value) throws ReadOnlyException {
 		if (value == null || value.length == 0)
-			return -1;
+			return KEY_NOT_FOUND;
 		// overflow value?
 		if (value.length + 4 > fileHeader.getWorkSize()) {
 			LOG.debug("Creating overflow page");
@@ -381,14 +381,14 @@ public class DOMFile extends BTree implements Lockable {
 		try {
 			final long p = findValue(key);
 			if (p == KEY_NOT_FOUND)
-				return -1;
+				return p;
 			return insertAfter(transaction, doc, p, value);
 		} catch (BTreeException e) {
 			LOG.warn("key not found", e);
 		} catch (IOException e) {
 			LOG.warn("IO error", e);
 		}
-		return -1;
+		return KEY_NOT_FOUND;
 	}
 
 	/**
@@ -420,7 +420,7 @@ public class DOMFile extends BTree implements Lockable {
 		RecordPos rec = findRecord(address);
 		if (rec == null) {
 			SanityCheck.TRACE("page not found");
-			return -1;
+			return KEY_NOT_FOUND;
 		}
 		short l = ByteConversion.byteToShort(rec.page.data, rec.offset);
 		if (ItemId.isRelocated(rec.tid))
@@ -701,8 +701,7 @@ public class DOMFile extends BTree implements Lockable {
                     writeToLog(loggable, rec.page.page);
                 }
                 
-				ByteConversion.shortToByte(currentId, rec.page.data,
-						rec.page.len);
+				ByteConversion.shortToByte(currentId, rec.page.data, rec.page.len);
 				rec.page.len += 2;
 				System.arraycopy(oldData, pos, rec.page.data, rec.page.len, 8);
 				rec.page.len += 8;
@@ -1155,7 +1154,7 @@ public class DOMFile extends BTree implements Lockable {
 			// node not found in index: try to find the nearest available
 			// ancestor and traverse it
 			NodeId id = node.getNodeId();
-			long parentPointer = -1;
+			long parentPointer = KEY_NOT_FOUND;
 			do {
 				id = id.getParentId();
 				if (id == NodeId.DOCUMENT_NODE) {
@@ -1418,10 +1417,10 @@ public class DOMFile extends BTree implements Lockable {
 			addValue(transaction, key, p);
 		} catch (IOException ioe) {
 			LOG.debug(ioe);
-			return -1;
+			return KEY_NOT_FOUND;
 		} catch (BTreeException bte) {
 			LOG.debug(bte);
-			return -1;
+			return KEY_NOT_FOUND;
 		}
 		return p;
 	}
@@ -1668,7 +1667,7 @@ public class DOMFile extends BTree implements Lockable {
 		buf.append("; docId ").append(doc.getDocId()).append(':');
 		long pnum = StorageAddress.pageFromPointer(((StoredNode) doc
 				.getFirstChild()).getInternalAddress());
-		while (-1 < pnum) {
+		while (KEY_NOT_FOUND < pnum) {
 			DOMPage page = getCurrentPage(pnum);
 			dataCache.add(page);
 			buf.append(' ').append(pnum);
