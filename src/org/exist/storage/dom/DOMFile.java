@@ -2816,29 +2816,29 @@ public class DOMFile extends BTree implements Lockable {
 				// currentId = (short) ( ( data[pos] & 0xff ) + ( ( data[pos +
 				// 1] & 0xff ) << 8 ) );
 				short currentId = ByteConversion.byteToShort(data, pos);
+				pos += 2;
 				byte flags = ItemId.getFlags(currentId);
 				if (ItemId.matches(currentId, targetId)) {
 					if ((flags & ItemId.LINK_FLAG) != 0) {
-						rec = new RecordPos(pos + 2, this, currentId, true);
+						rec = new RecordPos(pos, this, currentId, true);
 					} else {
-						rec = new RecordPos(pos + 2, this, currentId);
+						rec = new RecordPos(pos, this, currentId);
 					}
 					break;
 				} else if ((flags & ItemId.LINK_FLAG) != 0) {
-					pos += 2+ 8;
+					pos += 8;
 				} else {
-					// vlen = (short) ( ( data[pos + 2] & 0xff ) + ( ( data[pos
-					// + 3] & 0xff ) << 8 ) );
-					short vlen = ByteConversion.byteToShort(data, pos + 2);
+					short vlen = ByteConversion.byteToShort(data, pos);
+					pos += 2;
 					if (vlen < 0) {
 						LOG.warn("page = " + page.getPageNum() + "; pos = "
 								+ pos + "; vlen = " + vlen + "; tid = "
 								+ currentId + "; target = " + targetId);
 					}
 					if ((flags & ItemId.RELOCATED_FLAG) != 0) {
-						pos += vlen + 8 + 4;
+						pos += vlen + 8;
 					} else {
-						pos += vlen + 4;
+						pos += vlen;
 					}
 					if (vlen == OVERFLOW)
 						pos += 8;
