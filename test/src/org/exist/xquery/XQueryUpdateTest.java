@@ -264,17 +264,21 @@ public class XQueryUpdateTest extends TestCase {
                 "	update value $prod/description\n" +
                 "	with concat('Updated Description', $i)";
             Sequence seq = xquery.execute(query, null, AccessContext.TEST);
-            
+
             seq = xquery.execute("//product[starts-with(description, 'Updated')]", null, AccessContext.TEST);
             assertEquals(seq.getLength(), ITEMS_TO_APPEND);
+
+            Serializer serializer = broker.getSerializer();
+            System.out.println(serializer.serialize((NodeValue) seq.itemAt(0)));
+
             for (int i = 1; i <= ITEMS_TO_APPEND; i++) {
-                seq = xquery.execute("//product[description &= 'Updated" + i + "']", null, AccessContext.TEST);
-                assertEquals(seq.getLength(), 1);
+                seq = xquery.execute("//product[description &= 'Description" + i + "']", null, AccessContext.TEST);
+                assertEquals(1, seq.getLength());
+                System.out.println(serializer.serialize((NodeValue) seq.itemAt(0)));
             }
             seq = xquery.execute("//product[description &= 'Updated']", null, AccessContext.TEST);
             assertEquals(seq.getLength(), ITEMS_TO_APPEND);
 
-            Serializer serializer = broker.getSerializer();
             System.out.println(serializer.serialize((NodeValue) seq.itemAt(0)));
             
             query =
