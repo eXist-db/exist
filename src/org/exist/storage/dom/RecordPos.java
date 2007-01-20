@@ -27,12 +27,19 @@ public final class RecordPos {
 	private DOMPage page;
 	int offset;
 	private short tid;
-	boolean isLink = false;
+	private boolean isLink = false;
 
 	public RecordPos(int offset, DOMPage page, short tid) {
 		this.offset = offset;
 		this.page = page;
 		this.tid = tid;
+	}
+
+	public RecordPos(int offset, DOMPage page, short tid, boolean isLink) {
+		this.offset = offset;
+		this.page = page;
+		this.tid = tid;
+		this.isLink = isLink;
 	}
 	
 	public DOMPage getPage() {
@@ -51,4 +58,8 @@ public final class RecordPos {
 	public void setTID(short tid) {
 		this.tid = tid;
 	}	
+
+	public boolean isLink() {
+		return isLink;
+	}
 }
