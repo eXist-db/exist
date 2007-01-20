@@ -205,6 +205,23 @@
         </junit>
     </target>
 
+    <target name="extra-tests">
+        <echo message="------------------------------------------"/>
+        <echo message="Running additional tests, which may take some time"/>
+        <echo message="------------------------------------------"/>
+
+        <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}">
+            <sysproperty key="exist.home" value="${basedir}" />
+            <classpath refid="classpath.core"/>
+            <classpath refid="classpath.jetty"/>
+            <classpath refid="classpath.junit"/>
+
+            <formatter type="plain"/>
+            <formatter type="xml"/>
+            <test fork="yes" name="org.exist.xquery.XQueryUpdateTest" todir="${junit.reports.dat}"/>
+        </junit>
+    </target>
+
     <!-- Helper target for stopping server -->
     <!-- This target must be called after all tests because it shutsdown -->
     <!-- the current Jvm -->
