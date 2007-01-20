@@ -297,6 +297,7 @@ public class DOMFile extends BTree implements Lockable {
 			writeToLog(addValueLog, page.page);
 		}
 
+		// save TID
 		ByteConversion.shortToByte(tid, page.data, page.len);
 		page.len += 2;
 		// save data length
@@ -422,59 +423,60 @@ public class DOMFile extends BTree implements Lockable {
 			SanityCheck.TRACE("page not found");
 			return KEY_NOT_FOUND;
 		}
-		short l = ByteConversion.byteToShort(rec.page.data, rec.offset);
-		if (ItemId.isRelocated(rec.tid))
+		short l = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
+		rec.offset += 2;
+		if (ItemId.isRelocated(rec.getTID()))
 			rec.offset += 8;
 		if (l == OVERFLOW)
-			rec.offset += (8 + 2);
+			rec.offset += 8;
 		else
-			rec.offset = rec.offset + l + 2;
+			rec.offset += l;
         
-		int dataLen = rec.page.getPageHeader().getDataLength();
+		int dataLen = rec.getPage().getPageHeader().getDataLength();
 		// insert in the middle of the page?
 		if (rec.offset < dataLen) {
 			if (dataLen + value.length + 4 < fileHeader.getWorkSize()
-					&& rec.page.getPageHeader().hasRoom()) {
-//				 LOG.debug("copying data in page " + rec.page.getPageNum()
+					&& rec.getPage().getPageHeader().hasRoom()) {
+//				 LOG.debug("copying data in page " + rec.getPage().getPageNum()
 //				 + "; offset = " + rec.offset + "; dataLen = "
 //				 + dataLen + "; valueLen = " + value.length);
 				// new value fits into the page
 				int end = rec.offset + value.length + 4;
-				System.arraycopy(rec.page.data, rec.offset, rec.page.data, end,
+				System.arraycopy(rec.getPage().data, rec.offset, rec.getPage().data, end,
 						dataLen - rec.offset);
-				rec.page.len = dataLen + value.length + 4;
-				rec.page.getPageHeader().setDataLength(rec.page.len);
+				rec.getPage().len = dataLen + value.length + 4;
+				rec.getPage().getPageHeader().setDataLength(rec.getPage().len);
 			} else {
 				// doesn't fit: split the page
 				rec = splitDataPage(transaction, doc, rec);
 				if (rec.offset + value.length + 4 > fileHeader.getWorkSize()
-						|| !rec.page.getPageHeader().hasRoom()) {
+						|| !rec.getPage().getPageHeader().hasRoom()) {
 					// still not enough free space: create a new page
 					DOMPage newPage = new DOMPage();
 					LOG.debug("creating additional page: "
-							+ newPage.getPageNum() + "; prev = " + rec.page.getPageNum() + "; next = " +
-                            rec.page.ph.getNextDataPage());
+							+ newPage.getPageNum() + "; prev = " + rec.getPage().getPageNum() + "; next = " +
+                            rec.getPage().ph.getNextDataPage());
                     
                     if (isTransactional && transaction != null) {
                         CreatePageLoggable loggable = new CreatePageLoggable(
-                                transaction, rec.page.getPageNum(),
-                                newPage.getPageNum(), rec.page.ph.getNextDataPage());
+                                transaction, rec.getPage().getPageNum(),
+                                newPage.getPageNum(), rec.getPage().ph.getNextDataPage());
                         writeToLog(loggable, newPage.page);
                     }
                     
                     // adjust page links
 					newPage.getPageHeader().setNextDataPage(
-							rec.page.getPageHeader().getNextDataPage());
+							rec.getPage().getPageHeader().getNextDataPage());
 					newPage.getPageHeader().setPrevDataPage(
-							rec.page.getPageNum());
+							rec.getPage().getPageNum());
                     if (isTransactional && transaction != null) {
                         UpdateHeaderLoggable loggable = new UpdateHeaderLoggable(
-                                transaction, rec.page.ph.getPrevDataPage(), rec.page.getPageNum(),
-                                newPage.getPageNum(), rec.page.ph.getPrevDataPage(), rec.page.ph.getNextDataPage()
+                                transaction, rec.getPage().ph.getPrevDataPage(), rec.getPage().getPageNum(),
+                                newPage.getPageNum(), rec.getPage().ph.getPrevDataPage(), rec.getPage().ph.getNextDataPage()
                         );
-                        writeToLog(loggable, rec.page.page);
+                        writeToLog(loggable, rec.getPage().page);
                     }
-                    rec.page.getPageHeader().setNextDataPage(
+                    rec.getPage().getPageHeader().setNextDataPage(
                             newPage.getPageNum());
                     if (newPage.ph.getNextDataPage() != Page.NO_PAGE) {
                         // link the next page in the chain back to the new page inserted 
@@ -493,44 +495,44 @@ public class DOMFile extends BTree implements Lockable {
                         dataCache.add(nextInChain);
                     }
                     
-					rec.page.setDirty(true);
-					dataCache.add(rec.page);
-					rec.page = newPage;
+					rec.getPage().setDirty(true);
+					dataCache.add(rec.getPage());
+					rec.setPage(newPage);
 					rec.offset = 0;
-					rec.page.len = value.length + 4;
-					rec.page.getPageHeader().setDataLength(rec.page.len);
-					rec.page.getPageHeader().setRecordCount((short) 1);
+					rec.getPage().len = value.length + 4;
+					rec.getPage().getPageHeader().setDataLength(rec.getPage().len);
+					rec.getPage().getPageHeader().setRecordCount((short) 1);
 				} else {
-					rec.page.len = rec.offset + value.length + 4;
-					rec.page.getPageHeader().setDataLength(rec.page.len);
+					rec.getPage().len = rec.offset + value.length + 4;
+					rec.getPage().getPageHeader().setDataLength(rec.getPage().len);
 					dataLen = rec.offset;
 				}
 			}
 		} else if (dataLen + value.length + 4 > fileHeader.getWorkSize()
-				|| !rec.page.getPageHeader().hasRoom()) {
+				|| !rec.getPage().getPageHeader().hasRoom()) {
 			// does value fit into page?
 			DOMPage newPage = new DOMPage();
 			LOG.debug("creating new page: " + newPage.getPageNum());
             if (isTransactional && transaction != null) {
                 CreatePageLoggable loggable = new CreatePageLoggable(
-                        transaction, rec.page.getPageNum(),
-                        newPage.getPageNum(), rec.page.ph.getNextDataPage());
+                        transaction, rec.getPage().getPageNum(),
+                        newPage.getPageNum(), rec.getPage().ph.getNextDataPage());
                 writeToLog(loggable, newPage.page);
 
             }
             
-			long nextPageNr = rec.page.getPageHeader().getNextDataPage();
+			long nextPageNr = rec.getPage().getPageHeader().getNextDataPage();
 			newPage.getPageHeader().setNextDataPage(nextPageNr);
-			newPage.getPageHeader().setPrevDataPage(rec.page.getPageNum());
+			newPage.getPageHeader().setPrevDataPage(rec.getPage().getPageNum());
             
             if (isTransactional && transaction != null) {
                 UpdateHeaderLoggable loggable = 
-                    new UpdateHeaderLoggable(transaction, rec.page.ph.getPrevDataPage(), rec.page.getPageNum(), 
-                            newPage.getPageNum(), rec.page.ph.getPrevDataPage(), 
-                            rec.page.ph.getNextDataPage());
-                writeToLog(loggable, rec.page.page);
+                    new UpdateHeaderLoggable(transaction, rec.getPage().ph.getPrevDataPage(), rec.getPage().getPageNum(), 
+                            newPage.getPageNum(), rec.getPage().ph.getPrevDataPage(), 
+                            rec.getPage().ph.getNextDataPage());
+                writeToLog(loggable, rec.getPage().page);
             }
-            rec.page.getPageHeader().setNextDataPage(newPage.getPageNum());
+            rec.getPage().getPageHeader().setNextDataPage(newPage.getPageNum());
             
 			if (Page.NO_PAGE < nextPageNr) {
 				DOMPage nextPage = getCurrentPage(nextPageNr);
@@ -547,44 +549,43 @@ public class DOMFile extends BTree implements Lockable {
 				nextPage.setDirty(true);
 				dataCache.add(nextPage);
 			}
-			rec.page.setDirty(true);
-			dataCache.add(rec.page);
-			rec.page = newPage;
+			rec.getPage().setDirty(true);
+			dataCache.add(rec.getPage());
+			rec.setPage(newPage);
 			rec.offset = 0;
-			rec.page.len = value.length + 4;
-			rec.page.getPageHeader().setDataLength(rec.page.len);
+			rec.getPage().len = value.length + 4;
+			rec.getPage().getPageHeader().setDataLength(rec.getPage().len);
 		} else {
-			rec.page.len = dataLen + value.length + 4;
-			rec.page.getPageHeader().setDataLength(rec.page.len);
+			rec.getPage().len = dataLen + value.length + 4;
+			rec.getPage().getPageHeader().setDataLength(rec.getPage().len);
 		}
 		// write the data
-		short tid = rec.page.getPageHeader().getNextTID();
+		short tid = rec.getPage().getPageHeader().getNextTID();
         
         if (isTransactional && transaction != null) {
             Loggable loggable = 
-                new InsertValueLoggable(transaction, rec.page.getPageNum(), isOverflow, tid, value, rec.offset);
-            writeToLog(loggable, rec.page.page);
+                new InsertValueLoggable(transaction, rec.getPage().getPageNum(), isOverflow, tid, value, rec.offset);
+            writeToLog(loggable, rec.getPage().page);
         }
         
 		// writing tid
-		ByteConversion.shortToByte((short) tid, rec.page.data, rec.offset);
+		ByteConversion.shortToByte((short) tid, rec.getPage().data, rec.offset);
 		rec.offset += 2;
 		// writing value length
-		ByteConversion.shortToByte(isOverflow ? 0 : (short) value.length,
-				rec.page.data, rec.offset);
+		ByteConversion.shortToByte(isOverflow ? OVERFLOW : (short) value.length,
+				rec.getPage().data, rec.offset);
 		rec.offset += 2;
 		// writing data
-		System.arraycopy(value, 0, rec.page.data, rec.offset, value.length);
+		System.arraycopy(value, 0, rec.getPage().data, rec.offset, value.length);
 		rec.offset += value.length;
-		rec.page.getPageHeader().incRecordCount();
-		rec.page.setDirty(true);
-		if (rec.page.getPageHeader().getCurrentTID() >= ItemId.DEFRAG_LIMIT
-				&& doc != null)
+		rec.getPage().getPageHeader().incRecordCount();
+		rec.getPage().setDirty(true);
+		if (doc != null && rec.getPage().getPageHeader().getCurrentTID() >= ItemId.DEFRAG_LIMIT)
 			doc.triggerDefrag();
 		// LOG.debug(debugPageContents(rec.page));
-		dataCache.add(rec.page);
+		dataCache.add(rec.getPage());
 //        LOG.debug(debugPages(doc));
-		return StorageAddress.createPointer((int) rec.page.getPageNum(), tid);
+		return StorageAddress.createPointer((int) rec.getPage().getPageNum(), tid);
 	}
 
 	/**
@@ -604,107 +605,107 @@ public class DOMFile extends BTree implements Lockable {
 		// records following the split point are already links to other pages. In this
 		// case, the new record is just appended to a new page linked to the old one.
 		boolean requireSplit = false;
-		for (int pos = rec.offset; pos < rec.page.len;) {
-			short currentId = ByteConversion.byteToShort(rec.page.data, pos);
+		for (int pos = rec.offset; pos < rec.getPage().len;) {
+			short currentId = ByteConversion.byteToShort(rec.getPage().data, pos);
+			pos += 2;
 			if (!ItemId.isLink(currentId)) {
 				requireSplit = true;
 				break;
 			}
-			pos += 10;
+			pos += 8;
 		}
 		if (!requireSplit) {
-			LOG.debug("page " + rec.page.getPageNum() + ": no split required");
-			rec.offset = rec.page.len;
+			LOG.debug("page " + rec.getPage().getPageNum() + ": no split required");
+			rec.offset = rec.getPage().len;
 			return rec;
 		}
 
 		// copy the old data up to the split point into a new array
-        int oldDataLen = rec.page.getPageHeader().getDataLength();
-        byte[] oldData = rec.page.data;
+        int oldDataLen = rec.getPage().getPageHeader().getDataLength();
+        byte[] oldData = rec.getPage().data;
         
         if (isTransactional && transaction != null) {
-            Loggable loggable = new SplitPageLoggable(transaction, rec.page.getPageNum(), rec.offset,
+            Loggable loggable = new SplitPageLoggable(transaction, rec.getPage().getPageNum(), rec.offset,
                     oldData, oldDataLen);
-            writeToLog(loggable, rec.page.page);
+            writeToLog(loggable, rec.getPage().page);
         }
         
-		rec.page.data = new byte[fileHeader.getWorkSize()];
-		System.arraycopy(oldData, 0, rec.page.data, 0, rec.offset);
+		rec.getPage().data = new byte[fileHeader.getWorkSize()];
+		System.arraycopy(oldData, 0, rec.getPage().data, 0, rec.offset);
 
 		// the old rec.page now contains a copy of the data up to the split
 		// point
-		rec.page.len = rec.offset;
-		rec.page.setDirty(true);
+		rec.getPage().len = rec.offset;
+		rec.getPage().setDirty(true);
         
 		// create a first split page
 		DOMPage firstSplitPage = new DOMPage();
         
         if (isTransactional && transaction != null) {
             Loggable loggable = new CreatePageLoggable(
-                    transaction, rec.page.getPageNum(), firstSplitPage.getPageNum(), Page.NO_PAGE,
-                    rec.page.getPageHeader().getCurrentTID());
+                    transaction, rec.getPage().getPageNum(), firstSplitPage.getPageNum(), Page.NO_PAGE,
+                    rec.getPage().getPageHeader().getCurrentTID());
             writeToLog(loggable, firstSplitPage.page);
         }
         
 		DOMPage nextSplitPage = firstSplitPage;
 		nextSplitPage.getPageHeader().setNextTID(
-				(short) (rec.page.getPageHeader().getCurrentTID()));
-		short tid, currentId, currentLen, realLen;
+				(short) (rec.getPage().getPageHeader().getCurrentTID()));
+		short currentId, currentLen, realLen;
 		long backLink;
 		short splitRecordCount = 0;
-		LOG.debug("splitting " + rec.page.getPageNum() + " at " + rec.offset
+		LOG.debug("splitting " + rec.getPage().getPageNum() + " at " + rec.offset
 				+ ": new: " + nextSplitPage.getPageNum() + "; next: "
-				+ rec.page.getPageHeader().getNextDataPage());
+				+ rec.getPage().getPageHeader().getNextDataPage());
 
 		// start copying records from rec.offset to the new split pages
 		for (int pos = rec.offset; pos < oldDataLen; splitRecordCount++) {
 			// read the current id
 			currentId = ByteConversion.byteToShort(oldData, pos);
-			tid = ItemId.getId(currentId);
 			pos += 2;
 			if (ItemId.isLink(currentId)) {
 				/* This is already a link, so we just copy it */
-			    if (rec.page.len + 10 > fileHeader.getWorkSize()) {
+			    if (rec.getPage().len + 2 + 8 > fileHeader.getWorkSize()) {
                     /* no room in the old page, append a new one */
                     DOMPage newPage = new DOMPage();
                     
                     if (isTransactional && transaction != null) {
                         Loggable loggable = new CreatePageLoggable(
-                                transaction, rec.page.getPageNum(), newPage.getPageNum(),
-                                rec.page.getPageHeader().getNextDataPage(),
-                                rec.page.getPageHeader().getCurrentTID());
+                                transaction, rec.getPage().getPageNum(), newPage.getPageNum(),
+                                rec.getPage().getPageHeader().getNextDataPage(),
+                                rec.getPage().getPageHeader().getCurrentTID());
                         writeToLog(loggable, firstSplitPage.page);
                         
-                        loggable = new UpdateHeaderLoggable(transaction, rec.page.ph.getPrevDataPage(), 
-                                rec.page.getPageNum(), newPage.getPageNum(), rec.page.ph.getPrevDataPage(),
-                                rec.page.ph.getNextDataPage());
+                        loggable = new UpdateHeaderLoggable(transaction, rec.getPage().ph.getPrevDataPage(), 
+                                rec.getPage().getPageNum(), newPage.getPageNum(), rec.getPage().ph.getPrevDataPage(),
+                                rec.getPage().ph.getNextDataPage());
                         writeToLog(loggable, nextSplitPage.page);
                     }
                     
-                    newPage.getPageHeader().setNextTID((short)(rec.page.getPageHeader().getCurrentTID()));
-                    newPage.getPageHeader().setPrevDataPage(rec.page.getPageNum());
-                    newPage.getPageHeader().setNextDataPage(rec.page.getPageHeader().getNextDataPage());
+                    newPage.getPageHeader().setNextTID((short)(rec.getPage().getPageHeader().getCurrentTID()));
+                    newPage.getPageHeader().setPrevDataPage(rec.getPage().getPageNum());
+                    newPage.getPageHeader().setNextDataPage(rec.getPage().getPageHeader().getNextDataPage());
                     LOG.debug("appending page after split: " + newPage.getPageNum());
-                    rec.page.getPageHeader().setNextDataPage(newPage.getPageNum());
-                    rec.page.getPageHeader().setDataLength(rec.page.len);
-                    rec.page.getPageHeader().setRecordCount(countRecordsInPage(rec.page));
-                    rec.page.setDirty(true);
-                    dataCache.add(rec.page);
+                    rec.getPage().getPageHeader().setNextDataPage(newPage.getPageNum());
+                    rec.getPage().getPageHeader().setDataLength(rec.getPage().len);
+                    rec.getPage().getPageHeader().setRecordCount(countRecordsInPage(rec.getPage()));
+                    rec.getPage().setDirty(true);
+                    dataCache.add(rec.getPage());
                     dataCache.add(newPage);
-                    rec.page = newPage;
-                    rec.page.len = 0;
+                    rec.setPage(newPage);
+                    rec.getPage().len = 0;
                 }
 
                 if (isTransactional && transaction != null) {
                     long link = ByteConversion.byteToLong(oldData, pos);
-                    Loggable loggable = new AddLinkLoggable(transaction, rec.page.getPageNum(), tid, link);
-                    writeToLog(loggable, rec.page.page);
+                    Loggable loggable = new AddLinkLoggable(transaction, rec.getPage().getPageNum(), ItemId.getId(currentId), link);
+                    writeToLog(loggable, rec.getPage().page);
                 }
                 
-				ByteConversion.shortToByte(currentId, rec.page.data, rec.page.len);
-				rec.page.len += 2;
-				System.arraycopy(oldData, pos, rec.page.data, rec.page.len, 8);
-				rec.page.len += 8;
+				ByteConversion.shortToByte(currentId, rec.getPage().data, rec.getPage().len);
+				rec.getPage().len += 2;
+				System.arraycopy(oldData, pos, rec.getPage().data, rec.getPage().len, 8);
+				rec.getPage().len += 8;
 				pos += 8;
 				continue;
 			}
@@ -723,7 +724,7 @@ public class DOMFile extends BTree implements Lockable {
                 if (isTransactional && transaction != null) {
                     Loggable loggable = new CreatePageLoggable(
                             transaction, nextSplitPage.getPageNum(), newPage.getPageNum(), Page.NO_PAGE,
-                            rec.page.getPageHeader().getCurrentTID());
+                            rec.getPage().getPageHeader().getCurrentTID());
                     writeToLog(loggable, firstSplitPage.page);
                     
                     loggable = new UpdateHeaderLoggable(transaction, nextSplitPage.ph.getPrevDataPage(), 
@@ -732,7 +733,7 @@ public class DOMFile extends BTree implements Lockable {
                     writeToLog(loggable, nextSplitPage.page);
                 }
                 
-				newPage.getPageHeader().setNextTID(rec.page.getPageHeader().getCurrentTID());
+				newPage.getPageHeader().setNextTID(rec.getPage().getPageHeader().getCurrentTID());
 				newPage.getPageHeader().setPrevDataPage(
 						nextSplitPage.getPageNum());
 				LOG.debug("creating new split page: " + newPage.getPageNum());
@@ -755,24 +756,23 @@ public class DOMFile extends BTree implements Lockable {
 				backLink = ByteConversion.byteToLong(oldData, pos);
 				pos += 8;
 				RecordPos origRec = findRecord(backLink, false);
-                long oldLink = ByteConversion.byteToLong(origRec.page.data, origRec.offset);
+                long oldLink = ByteConversion.byteToLong(origRec.getPage().data, origRec.offset);
                 
 				long forwardLink = StorageAddress.createPointer(
-						(int) nextSplitPage.getPageNum(), tid);
+						(int) nextSplitPage.getPageNum(), ItemId.getId(currentId));
                 
                 if (isTransactional && transaction != null) {
-                    Loggable loggable = new UpdateLinkLoggable(transaction, origRec.page.getPageNum(), origRec.offset, 
+                    Loggable loggable = new UpdateLinkLoggable(transaction, origRec.getPage().getPageNum(), origRec.offset, 
                             forwardLink, oldLink);
-                    writeToLog(loggable, origRec.page.page);
+                    writeToLog(loggable, origRec.getPage().page);
                 }
                 
-				ByteConversion.longToByte(forwardLink, origRec.page.data,
+				ByteConversion.longToByte(forwardLink, origRec.getPage().data,
 						origRec.offset);
-				origRec.page.setDirty(true);
-				dataCache.add(origRec.page);
+				origRec.getPage().setDirty(true);
+				dataCache.add(origRec.getPage());
 			} else
-				backLink = StorageAddress.createPointer((int) rec.page
-						.getPageNum(), tid);
+				backLink = StorageAddress.createPointer((int) rec.getPage().getPageNum(), ItemId.getId(currentId));
 
 			/*
              * save the record to the split page:
@@ -807,7 +807,7 @@ public class DOMFile extends BTree implements Lockable {
 				SanityCheck.TRACE("pos = " + pos + "; len = "
 						+ nextSplitPage.len + "; currentLen = " + realLen
 						+ "; tid = " + currentId + "; page = "
-						+ rec.page.getPageNum());
+						+ rec.getPage().getPageNum());
 				throw e;
 			}
 			nextSplitPage.len += realLen;
@@ -816,56 +816,56 @@ public class DOMFile extends BTree implements Lockable {
 			// save a link pointer in the original page if the record has not
 			// been relocated before.
 			if (!ItemId.isRelocated(currentId)) {
-				if (rec.page.len + 10 > fileHeader.getWorkSize()) {
+				if (rec.getPage().len + 2 + 8 > fileHeader.getWorkSize()) {
 					// the link doesn't fit into the old page. Append a new page
 					DOMPage newPage = new DOMPage();
                     
                     if (isTransactional && transaction != null) {
                         Loggable loggable = new CreatePageLoggable(
-                                transaction, rec.page.getPageNum(), newPage.getPageNum(),
-                                rec.page.getPageHeader().getNextDataPage(),
-                                rec.page.getPageHeader().getCurrentTID());
+                                transaction, rec.getPage().getPageNum(), newPage.getPageNum(),
+                                rec.getPage().getPageHeader().getNextDataPage(),
+                                rec.getPage().getPageHeader().getCurrentTID());
                         writeToLog(loggable, firstSplitPage.page);
                         
-                        loggable = new UpdateHeaderLoggable(transaction, rec.page.ph.getPrevDataPage(), 
-                                rec.page.getPageNum(), newPage.getPageNum(), rec.page.ph.getPrevDataPage(), 
-                                rec.page.ph.getNextDataPage());
+                        loggable = new UpdateHeaderLoggable(transaction, rec.getPage().ph.getPrevDataPage(), 
+                                rec.getPage().getPageNum(), newPage.getPageNum(), rec.getPage().ph.getPrevDataPage(), 
+                                rec.getPage().ph.getNextDataPage());
                         writeToLog(loggable, nextSplitPage.page);
                     }
                     
-					newPage.getPageHeader().setNextTID(rec.page.ph.getCurrentTID());
-					newPage.getPageHeader().setPrevDataPage(rec.page.getPageNum());
+					newPage.getPageHeader().setNextTID(rec.getPage().ph.getCurrentTID());
+					newPage.getPageHeader().setPrevDataPage(rec.getPage().getPageNum());
 					newPage.getPageHeader().setNextDataPage(
-							rec.page.getPageHeader().getNextDataPage());
+							rec.getPage().getPageHeader().getNextDataPage());
 					LOG.debug("creating new page after split: "
 							+ newPage.getPageNum());
-					rec.page.getPageHeader().setNextDataPage(
+					rec.getPage().getPageHeader().setNextDataPage(
 							newPage.getPageNum());
-					rec.page.getPageHeader().setDataLength(rec.page.len);
-					rec.page.getPageHeader().setRecordCount(
-							countRecordsInPage(rec.page));
-					rec.page.setDirty(true);
-					dataCache.add(rec.page);
+					rec.getPage().getPageHeader().setDataLength(rec.getPage().len);
+					rec.getPage().getPageHeader().setRecordCount(
+							countRecordsInPage(rec.getPage()));
+					rec.getPage().setDirty(true);
+					dataCache.add(rec.getPage());
 					dataCache.add(newPage);
-					rec.page = newPage;
-					rec.page.len = 0;
+					rec.setPage(newPage);
+					rec.getPage().len = 0;
 				}
                 
                 long forwardLink = StorageAddress.createPointer(
-                        (int) nextSplitPage.getPageNum(), tid);
+                        (int) nextSplitPage.getPageNum(), ItemId.getId(currentId));
                 
                 if (isTransactional && transaction != null) {
-                    Loggable loggable = new AddLinkLoggable(transaction, rec.page.getPageNum(), currentId, 
+                    Loggable loggable = new AddLinkLoggable(transaction, rec.getPage().getPageNum(), currentId, 
                             forwardLink);
-                    writeToLog(loggable, rec.page.page);
+                    writeToLog(loggable, rec.getPage().page);
                 }
                 
 				ByteConversion.shortToByte(ItemId.setIsLink(currentId),
-						rec.page.data, rec.page.len);
-				rec.page.len += 2;
-				ByteConversion.longToByte(forwardLink, rec.page.data,
-						rec.page.len);
-				rec.page.len += 8;
+						rec.getPage().data, rec.getPage().len);
+				rec.getPage().len += 2;
+				ByteConversion.longToByte(forwardLink, rec.getPage().data,
+						rec.getPage().len);
+				rec.getPage().len += 8;
 			}
 		} // end of for loop: finished copying data
 
@@ -890,33 +890,33 @@ public class DOMFile extends BTree implements Lockable {
 		} else {
             if (isTransactional && transaction != null) {
                 Loggable loggable = new UpdateHeaderLoggable(transaction, nextSplitPage.ph.getPrevDataPage(),
-                        nextSplitPage.getPageNum(), rec.page.ph.getNextDataPage(),
+                        nextSplitPage.getPageNum(), rec.getPage().ph.getNextDataPage(),
                         nextSplitPage.ph.getPrevDataPage(), nextSplitPage.ph.getNextDataPage());
                 writeToLog(loggable, nextSplitPage.page);
             }
             
 			nextSplitPage.getPageHeader().setDataLength(nextSplitPage.len);
 			nextSplitPage.getPageHeader().setNextDataPage(
-					rec.page.getPageHeader().getNextDataPage());
+					rec.getPage().getPageHeader().getNextDataPage());
 			nextSplitPage.getPageHeader().setRecordCount(splitRecordCount);
 			nextSplitPage.setDirty(true);
 			dataCache.add(nextSplitPage);
             
 			if (isTransactional && transaction != null) {
-                Loggable loggable = new UpdateHeaderLoggable(transaction, rec.page.getPageNum(),
+                Loggable loggable = new UpdateHeaderLoggable(transaction, rec.getPage().getPageNum(),
                         firstSplitPage.getPageNum(), firstSplitPage.ph.getNextDataPage(), firstSplitPage.ph.getPrevDataPage(), 
                         firstSplitPage.ph.getNextDataPage());
                 writeToLog(loggable, nextSplitPage.page);
             }
 
 			firstSplitPage.getPageHeader().setPrevDataPage(
-					rec.page.getPageNum());
+					rec.getPage().getPageNum());
 			if (nextSplitPage != firstSplitPage) {
 				firstSplitPage.setDirty(true);
 				dataCache.add(firstSplitPage);
 			}
 		}
-		long nextPageNr = rec.page.getPageHeader().getNextDataPage();
+		long nextPageNr = rec.getPage().getPageHeader().getNextDataPage();
 		if (Page.NO_PAGE < nextPageNr) {
 			DOMPage nextPage = getCurrentPage(nextPageNr);
             if (isTransactional && transaction != null) {
@@ -924,25 +924,24 @@ public class DOMFile extends BTree implements Lockable {
                         nextPage.getPageNum(), Page.NO_PAGE, nextPage.ph.getPrevDataPage(), nextPage.ph.getNextDataPage());
                 writeToLog(loggable, nextPage.page);
             }
-			nextPage.getPageHeader()
-					.setPrevDataPage(nextSplitPage.getPageNum());
+			nextPage.getPageHeader().setPrevDataPage(nextSplitPage.getPageNum());
 			nextPage.setDirty(true);
 			dataCache.add(nextPage);
 		}
-		rec.page = getCurrentPage(rec.page.getPageNum());
+		rec.setPage(getCurrentPage(rec.getPage().getPageNum()));
 		if (firstSplitPage != null) {
             if (isTransactional && transaction != null) {
-                Loggable loggable = new UpdateHeaderLoggable(transaction, rec.page.ph.getPrevDataPage(),
-                        rec.page.getPageNum(), firstSplitPage.getPageNum(),
-                        rec.page.ph.getPrevDataPage(), rec.page.ph.getNextDataPage());
-                writeToLog(loggable, rec.page.page);
+                Loggable loggable = new UpdateHeaderLoggable(transaction, rec.getPage().ph.getPrevDataPage(),
+                        rec.getPage().getPageNum(), firstSplitPage.getPageNum(),
+                        rec.getPage().ph.getPrevDataPage(), rec.getPage().ph.getNextDataPage());
+                writeToLog(loggable, rec.getPage().page);
             }
-			rec.page.getPageHeader().setNextDataPage(
+			rec.getPage().getPageHeader().setNextDataPage(
 					firstSplitPage.getPageNum());
 		}
-		rec.page.getPageHeader().setDataLength(rec.page.len);
-		rec.page.getPageHeader().setRecordCount(countRecordsInPage(rec.page));
-		rec.offset = rec.page.len;
+		rec.getPage().getPageHeader().setDataLength(rec.getPage().len);
+		rec.getPage().getPageHeader().setRecordCount(countRecordsInPage(rec.getPage()));
+		rec.offset = rec.getPage().len;
 		return rec;
 	}
 
@@ -956,15 +955,17 @@ public class DOMFile extends BTree implements Lockable {
 		short count = 0;
 		final int dlen = page.getPageHeader().getDataLength();
 		for (int pos = 0; pos < dlen; count++) {
-			short currentId = ByteConversion.byteToShort(page.data, pos);
-			if (ItemId.isLink(currentId)) {
-				pos += 10;
+			short tid = ByteConversion.byteToShort(page.data, pos);
+			pos += 2;
+			if (ItemId.isLink(tid)) {
+				pos += 8;
 			} else {
-				short vlen = ByteConversion.byteToShort(page.data, pos + 2);
-				if (ItemId.isRelocated(currentId)) {
-					pos += vlen == OVERFLOW ? 12 + 8 : vlen + 4 + 8;
+				short vlen = ByteConversion.byteToShort(page.data, pos);
+				pos += 2;
+				if (ItemId.isRelocated(tid)) {
+					pos += vlen == OVERFLOW ? 8 + 8 : vlen + 8;
 				} else
-					pos += vlen == OVERFLOW ? 12 : vlen + 4;
+					pos += vlen == OVERFLOW ? 8 : vlen;
 			}
 		}
 		// LOG.debug("page " + page.getPageNum() + " has " + count + "
@@ -976,20 +977,20 @@ public class DOMFile extends BTree implements Lockable {
 		StringBuffer buf = new StringBuffer();
 		buf.append("Page " + page.getPageNum() + ": ");
 		short count = 0;
-		short currentId, vlen;
+		short vlen;
 		int dlen = page.getPageHeader().getDataLength();
 		for (int pos = 0; pos < dlen; count++) {
-			currentId = ByteConversion.byteToShort(page.data, pos);
-            if (ItemId.isLink(currentId))
+			short tid = ByteConversion.byteToShort(page.data, pos);
+			pos += 2;
+            if (ItemId.isLink(tid))
                 buf.append('L');
-            else if (ItemId.isRelocated(currentId))
+            else if (ItemId.isRelocated(tid))
                 buf.append('R');
-			buf.append(ItemId.getId(currentId) + "[" + pos);
-			if (ItemId.isLink(currentId)) {
-				buf.append(':').append(10).append("] ");
-				pos += 10;
+			buf.append(ItemId.getId(tid) + "[" + pos);
+			if (ItemId.isLink(tid)) {
+				buf.append(':').append(8).append("] ");
+				pos += 8;
 			} else {
-                pos += 2;
 				vlen = ByteConversion.byteToShort(page.data, pos);
                 pos += 2;
 				if (vlen < 0) {
@@ -997,7 +998,7 @@ public class DOMFile extends BTree implements Lockable {
 					return buf.toString();
 				}
 				buf.append(':').append(vlen).append("]");
-                if (ItemId.isRelocated(currentId))
+                if (ItemId.isRelocated(tid))
                     pos += 8;
                 buf.append(':').append(Signatures.getType(page.data[pos])).append(' ');
                 pos += vlen;
@@ -1030,28 +1031,6 @@ public class DOMFile extends BTree implements Lockable {
 
 	public FileHeader createFileHeader() {
 		return new BTreeFileHeader(1024, PAGE_SIZE);
-	}
-
-	protected Page createNewPage() {
-		try {
-			Page page = getFreePage();
-			DOMFilePageHeader ph = (DOMFilePageHeader) page.getPageHeader();
-			ph.setStatus(RECORD);
-			ph.setDirty(true);
-			ph.setNextDataPage(Page.NO_PAGE);
-			ph.setPrevDataPage(Page.NO_PAGE);
-			ph.setNextPage(Page.NO_PAGE);
-			ph.setNextTID(ItemId.UNKNOWN_ID);
-			ph.setDataLength(0);
-			ph.setRecordCount((short) 0);
-			if (currentDocument != null)
-				currentDocument.getMetadata().incPageCount();
-//            LOG.debug("New page: " + page.getPageNum() + "; " + page.getPageInfo());
-			return page;
-		} catch (IOException ioe) {
-			LOG.warn(ioe);
-			return null;
-		}
 	}
 
 	protected void unlinkPages(Page page) throws IOException {
@@ -1310,17 +1289,17 @@ public class DOMFile extends BTree implements Lockable {
 //					+ " not found.");
 			return null;
 		}
-		short l = ByteConversion.byteToShort(rec.page.data, rec.offset);
+		short l = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
 		rec.offset += 2;
-		if (ItemId.isRelocated(rec.tid))
+		if (ItemId.isRelocated(rec.getTID()))
 			rec.offset += 8;
 		Value v;
 		if (l == OVERFLOW) {
-			long pnum = ByteConversion.byteToLong(rec.page.data, rec.offset);
+			long pnum = ByteConversion.byteToLong(rec.getPage().data, rec.offset);
 			byte[] data = getOverflowValue(pnum);
 			v = new Value(data);
 		} else
-			v = new Value(rec.page.data, rec.offset, l);
+			v = new Value(rec.getPage().data, rec.offset, l);
 		v.setAddress(p);
 		return v;
 	}
@@ -1354,7 +1333,7 @@ public class DOMFile extends BTree implements Lockable {
 		if (pnum == Page.NO_PAGE) {
 			final DOMPage page = new DOMPage();
 			pages.put(owner, page.page.getPageNum());
-			// LOG.debug("new page created: " + page.page.getPageNum() + " by "
+			// LOG.debug("new page created: " + page.getPage().getPageNum() + " by "
 			// + owner +
 			// "; thread: " + Thread.currentThread().getName());
 			dataCache.add(page);
@@ -1453,32 +1432,32 @@ public class DOMFile extends BTree implements Lockable {
 	 */
 	private void removeLink(Txn transaction, long p) {
 		RecordPos rec = findRecord(p, false);
-		DOMFilePageHeader ph = rec.page.getPageHeader();
+		DOMFilePageHeader ph = rec.getPage().getPageHeader();
 		if (isTransactional && transaction != null) {
             byte[] data = new byte[8];
-            System.arraycopy(rec.page.data, rec.offset, data, 0, 8);
+            System.arraycopy(rec.getPage().data, rec.offset, data, 0, 8);
             RemoveValueLoggable loggable = new RemoveValueLoggable(transaction,
-                    rec.page.getPageNum(), rec.tid, rec.offset - 2, data, false, 0);
-            writeToLog(loggable, rec.page.page);
+                    rec.getPage().getPageNum(), rec.getTID(), rec.offset - 2, data, false, 0);
+            writeToLog(loggable, rec.getPage().page);
         }
 		int end = rec.offset + 8;
-		System.arraycopy(rec.page.data, rec.offset + 8, rec.page.data,
-				rec.offset - 2, rec.page.len - end);
-		rec.page.len = rec.page.len - 10;
-		ph.setDataLength(rec.page.len);
-		rec.page.setDirty(true);
+		System.arraycopy(rec.getPage().data, end, rec.getPage().data,
+				rec.offset - 2, rec.getPage().len - end);
+		rec.getPage().len = rec.getPage().len - 10;
+		ph.setDataLength(rec.getPage().len);
+		rec.getPage().setDirty(true);
 		ph.decRecordCount();
 		// LOG.debug("size = " + ph.getRecordCount());
-		if (rec.page.len == 0) {
+		if (rec.getPage().len == 0) {
 		    if (isTransactional && transaction != null) {
                 RemoveEmptyPageLoggable loggable = new RemoveEmptyPageLoggable(
-                        transaction, rec.page.getPageNum(), rec.page.ph.getPrevDataPage(), rec.page.ph.getNextDataPage());
-                writeToLog(loggable, rec.page.page);
+                        transaction, rec.getPage().getPageNum(), rec.getPage().ph.getPrevDataPage(), rec.getPage().ph.getNextDataPage());
+                writeToLog(loggable, rec.getPage().page);
             }
-			removePage(rec.page);
-			rec.page = null;
+			removePage(rec.getPage());
+			rec.setPage(null);
 		} else {
-			dataCache.add(rec.page);
+			dataCache.add(rec.getPage());
 			// printPageContents(rec.page);
 		}
 	}
@@ -1496,18 +1475,17 @@ public class DOMFile extends BTree implements Lockable {
 	public void removeNode(Txn transaction, long p) {
 		RecordPos rec = findRecord(p);
 		final int startOffset = rec.offset - 2;
-		final DOMFilePageHeader ph = rec.page.getPageHeader();
-		short valueLen = ByteConversion.byteToShort(rec.page.data, rec.offset);
+		final DOMFilePageHeader ph = rec.getPage().getPageHeader();
+		short valueLen = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
         short l = valueLen;
 		rec.offset += 2;
-		if (ItemId.isLink(rec.tid)) {
+		if (ItemId.isLink(rec.getTID())) {
 			throw new RuntimeException("Cannot remove link ...");
 		}
         boolean isOverflow = false;
         long backLink = 0;
-		if (ItemId.isRelocated(rec.tid)) {
-			backLink = ByteConversion
-					.byteToLong(rec.page.data, rec.offset);
+		if (ItemId.isRelocated(rec.getTID())) {
+			backLink = ByteConversion.byteToLong(rec.getPage().data, rec.offset);
 			removeLink(transaction, backLink);
 			rec.offset += 8;
 			l += 8;
@@ -1515,7 +1493,7 @@ public class DOMFile extends BTree implements Lockable {
 		if (l == OVERFLOW) {
 			// remove overflow value
             isOverflow = true;
-			long overflowLink = ByteConversion.byteToLong(rec.page.data, rec.offset);
+			long overflowLink = ByteConversion.byteToLong(rec.getPage().data, rec.offset);
 			rec.offset += 8;
 			try {
 				OverflowDOMPage overflow = new OverflowDOMPage(overflowLink);
@@ -1528,37 +1506,36 @@ public class DOMFile extends BTree implements Lockable {
 		}
 		if (isTransactional && transaction != null) {
 			byte[] data = new byte[valueLen];
-			System.arraycopy(rec.page.data, rec.offset, data, 0, valueLen);
+			System.arraycopy(rec.getPage().data, rec.offset, data, 0, valueLen);
 			RemoveValueLoggable loggable = new RemoveValueLoggable(transaction,
-					rec.page.getPageNum(), rec.tid, startOffset, data, isOverflow, backLink);
-			writeToLog(loggable, rec.page.page);
+					rec.getPage().getPageNum(), rec.getTID(), startOffset, data, isOverflow, backLink);
+			writeToLog(loggable, rec.getPage().page);
 		}
 		int end = startOffset + 4 + l;
 		int len = ph.getDataLength();
 		// remove old value
-		System.arraycopy(rec.page.data, end, rec.page.data, startOffset, len
+		System.arraycopy(rec.getPage().data, end, rec.getPage().data, startOffset, len
 				- end);
-		rec.page.setDirty(true);
+		rec.getPage().setDirty(true);
 		len = len - l - 4;
 		ph.setDataLength(len);
-		rec.page.len = len;
-		rec.page.setDirty(true);
+		rec.getPage().len = len;
+		rec.getPage().setDirty(true);
 		ph.decRecordCount();
-		if (rec.page.len == 0) {
-			LOG.debug("removing page " + rec.page.getPageNum());
+		if (rec.getPage().len == 0) {
+			LOG.debug("removing page " + rec.getPage().getPageNum());
 			if (isTransactional && transaction != null) {
 				RemoveEmptyPageLoggable loggable = new RemoveEmptyPageLoggable(
-						transaction, rec.page.getPageNum(), rec.page.ph
-								.getPrevDataPage(), rec.page.ph
+						transaction, rec.getPage().getPageNum(), rec.getPage().ph
+								.getPrevDataPage(), rec.getPage().ph
 								.getNextDataPage());
-				writeToLog(loggable, rec.page.page);
+				writeToLog(loggable, rec.getPage().page);
 			}
-			removePage(rec.page);
-			rec.page = null;
+			removePage(rec.getPage());
+			rec.setPage(null);
 		} else {
-			rec.page.cleanUp();
-//			LOG.debug(debugPageContents(rec.page));
-			dataCache.add(rec.page);
+			rec.getPage().cleanUp();
+			dataCache.add(rec.getPage());
 		}
 	}
 
@@ -1692,7 +1669,7 @@ public class DOMFile extends BTree implements Lockable {
 		if (pnum == page.page.getPageNum())
 			return;
 		// pages.remove(owner);
-		// LOG.debug("current page set: " + page.page.getPageNum() + " by " +
+		// LOG.debug("current page set: " + page.getPage().getPageNum() + " by " +
 		// owner.hashCode() +
 		// "; thread: " + Thread.currentThread().getName());
 		pages.put(owner, page.page.getPageNum());
@@ -1758,9 +1735,9 @@ public class DOMFile extends BTree implements Lockable {
 			throws ReadOnlyException {
 		RecordPos rec = findRecord(p);
         
-		short l = ByteConversion.byteToShort(rec.page.data, rec.offset);
+		short l = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
 		rec.offset += 2;
-		if (ItemId.isRelocated(rec.tid))
+		if (ItemId.isRelocated(rec.getTID()))
 			rec.offset += 8;
 		if (value.length < l) {
 			// value is smaller than before
@@ -1770,15 +1747,15 @@ public class DOMFile extends BTree implements Lockable {
 					+ value.length + "; got: " + l);
 		} else {
             if (isTransactional && transaction != null) {
-                Loggable loggable = new UpdateValueLoggable(transaction, rec.page
-                        .getPageNum(), rec.tid, value, rec.page.data, rec.offset);
-                writeToLog(loggable, rec.page.page);
+                Loggable loggable = new UpdateValueLoggable(transaction, rec.getPage().getPageNum(), 
+                		rec.getTID(), value, rec.getPage().data, rec.offset);
+                writeToLog(loggable, rec.getPage().page);
             }
             
 			// value length unchanged
-			System.arraycopy(value, 0, rec.page.data, rec.offset, value.length);
+			System.arraycopy(value, 0, rec.getPage().data, rec.offset, value.length);
 		}
-		rec.page.setDirty(true);
+		rec.getPage().setDirty(true);
 	}
 
 	/**
@@ -1839,22 +1816,23 @@ public class DOMFile extends BTree implements Lockable {
 		// locate the next real node, skipping relocated nodes
 		boolean foundNext = false;
 		do {
-			if (rec.offset > rec.page.getPageHeader().getDataLength()) {
+			if (rec.offset > rec.getPage().getPageHeader().getDataLength()) {
 				// end of page reached, proceed to the next page
-				final long nextPage = rec.page.getPageHeader()
-						.getNextDataPage();
+				final long nextPage = rec.getPage().getPageHeader().getNextDataPage();
 				if (nextPage == Page.NO_PAGE) {
 					SanityCheck.TRACE("bad link to next page! offset: " + rec.offset + "; len: " + 
-							rec.page.getPageHeader().getDataLength() +
-							": " + rec.page.page.getPageInfo());
+							rec.getPage().getPageHeader().getDataLength() +
+							": " + rec.getPage().page.getPageInfo());
 					return;
 				}
-				rec.page = getCurrentPage(nextPage);
-				dataCache.add(rec.page);
+				rec.setPage(getCurrentPage(nextPage));
+				dataCache.add(rec.getPage());
 				rec.offset = 2;
 			}
-			rec.tid = ByteConversion.byteToShort(rec.page.data, rec.offset - 2);
-			if (ItemId.isLink(rec.tid)) {
+			//TODO : understand this ! -pb
+			short tid = ByteConversion.byteToShort(rec.getPage().data, rec.offset - 2); 
+			rec.setTID(tid);
+			if (ItemId.isLink(rec.getTID())) {
 				// this is a link: skip it
 				rec.offset += 10;
 			} else
@@ -1862,12 +1840,12 @@ public class DOMFile extends BTree implements Lockable {
 				foundNext = true;
 		} while (!foundNext);
 		// read the page len
-		int len = ByteConversion.byteToShort(rec.page.data, rec.offset);
+		int len = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
         rec.offset += 2;
 		// check if the node was relocated
-		if (ItemId.isRelocated(rec.tid))
+		if (ItemId.isRelocated(rec.getTID()))
 			rec.offset += 8;
-		byte[] data = rec.page.data;
+		byte[] data = rec.getPage().data;
 		int readOffset = rec.offset;
 		boolean inOverflow = false;
 		if (len == OVERFLOW) {
@@ -1929,7 +1907,7 @@ public class DOMFile extends BTree implements Lockable {
 					final short prefixLen = ByteConversion.byteToShort(data, readOffset);
 					readOffset += prefixLen + 2; // skip prefix
 				}
-                os.write(rec.page.data, readOffset, len - (readOffset - start));
+                os.write(rec.getPage().data, readOffset, len - (readOffset - start));
 			}
 			break;
 		}
@@ -1965,7 +1943,7 @@ public class DOMFile extends BTree implements Lockable {
 					return null;
 				}
 //				SanityCheck.TRACE(owner.toString() + ": tid " + targetId
-//						+ " not found on " + page.page.getPageInfo()
+//						+ " not found on " + page.getPage().getPageInfo()
 //						+ ". Loading " + pageNr + "; contents: "
 //						+ debugPageContents(page));
 			} else if (rec.isLink) {
@@ -2078,8 +2056,7 @@ public class DOMFile extends BTree implements Lockable {
 				ByteConversion.shortToByte(valueLen, page.data, page.len);
 				page.len += 2;
 				// save data
-				System.arraycopy(loggable.value, 0, page.data, page.len,
-						valueLen);
+				System.arraycopy(loggable.value, 0, page.data, page.len, valueLen);
 				page.len += valueLen;
 				ph.incRecordCount();
 				ph.setDataLength(page.len);
@@ -2123,15 +2100,15 @@ public class DOMFile extends BTree implements Lockable {
 			RecordPos rec = page.findRecord(ItemId.getId(loggable.tid));
             SanityCheck.THROW_ASSERT(rec != null, "tid " + ItemId.getId(loggable.tid) + " not found on page " + page.getPageNum() +
                     "; contents: " + debugPageContents(page));
-			ByteConversion.byteToShort(rec.page.data, rec.offset);
+			ByteConversion.byteToShort(rec.getPage().data, rec.offset);
 			rec.offset += 2;
-			if (ItemId.isRelocated(rec.tid))
+			if (ItemId.isRelocated(rec.getTID()))
 				rec.offset += 8;
-			System.arraycopy(loggable.value, 0, rec.page.data, rec.offset,
+			System.arraycopy(loggable.value, 0, rec.getPage().data, rec.offset,
 					loggable.value.length);
-            rec.page.ph.setLsn(loggable.getLsn());
-			rec.page.setDirty(true);
-            dataCache.add(rec.page);
+            rec.getPage().ph.setLsn(loggable.getLsn());
+			rec.getPage().setDirty(true);
+            dataCache.add(rec.getPage());
 		}
 	}
 
@@ -2140,10 +2117,10 @@ public class DOMFile extends BTree implements Lockable {
         RecordPos rec = page.findRecord(ItemId.getId(loggable.tid));
         SanityCheck.THROW_ASSERT(rec != null, "tid " + ItemId.getId(loggable.tid) + " not found on page " + page.getPageNum() +
                 "; contents: " + debugPageContents(page));
-        short l = ByteConversion.byteToShort(rec.page.data, rec.offset);
+        short l = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
         SanityCheck.THROW_ASSERT(l == loggable.oldValue.length);
         rec.offset += 2;
-        if (ItemId.isRelocated(rec.tid))
+        if (ItemId.isRelocated(rec.getTID()))
             rec.offset += 8;
         System.arraycopy(loggable.oldValue, 0, page.data, rec.offset, loggable.oldValue.length);
         page.ph.setLsn(loggable.getLsn());
@@ -2162,8 +2139,7 @@ public class DOMFile extends BTree implements Lockable {
             int startOffset = pos.offset - 2;
             if (ItemId.isLink(loggable.tid)) {
                 int end = pos.offset + 8;
-                System.arraycopy(page.data, pos.offset + 8, page.data,
-                        pos.offset - 2, page.len - end);
+                System.arraycopy(page.data, end, page.data, pos.offset - 2, page.len - end);
                 page.len = page.len - 10;
             } else {
     			// get the record length
@@ -2203,15 +2179,14 @@ public class DOMFile extends BTree implements Lockable {
             // make room for the removed value
             int required;
             if (ItemId.isLink(loggable.tid))
-                required = 10;
+                required = 2 + 8;
             else
                 required = valueLen + 4;
             if (ItemId.isRelocated(loggable.tid))
                 required += 8;
             int end = offset + required;
             try {
-            System.arraycopy(page.data, offset, page.data, end,
-                    page.ph.getDataLength() - offset);
+            	System.arraycopy(page.data, offset, page.data, end, page.ph.getDataLength() - offset);
             } catch(ArrayIndexOutOfBoundsException e) {
                 SanityCheck.TRACE("Error while copying data on page " + page.getPageNum() +
                         "; tid: " + ItemId.getId(loggable.tid) + "; required: " + required +
@@ -2219,6 +2194,7 @@ public class DOMFile extends BTree implements Lockable {
                         "; avail: " + page.data.length + "; work: " + fileHeader.getWorkSize());
             }
         }
+        //save TID
 		ByteConversion.shortToByte(loggable.tid, page.data, offset);
 		offset += 2;
         if (ItemId.isLink(loggable.tid)) {
@@ -2228,7 +2204,7 @@ public class DOMFile extends BTree implements Lockable {
     		// save data length
     		// overflow pages have length 0
             if (loggable.isOverflow) {
-                ByteConversion.shortToByte((short) 0, page.data, offset);
+                ByteConversion.shortToByte(OVERFLOW, page.data, offset);
             } else {
                 ByteConversion.shortToByte(valueLen, page.data, offset);
             }
@@ -2436,8 +2412,7 @@ public class DOMFile extends BTree implements Lockable {
         DOMFilePageHeader ph = page.getPageHeader();
         if (ItemId.isLink(loggable.tid)) {
             int end = loggable.offset + 8;
-            System.arraycopy(page.data, loggable.offset + 8, page.data,
-                    loggable.offset - 2, page.len - end);
+            System.arraycopy(page.data, end, page.data, loggable.offset - 2, page.len - end);
             page.len = page.len - 10;
         } else {
             // get the record length
@@ -2814,6 +2789,28 @@ public class DOMFile extends BTree implements Lockable {
 			load(page);
 		}
 
+		protected Page createNewPage() {
+			try {
+				Page page = getFreePage();
+				DOMFilePageHeader ph = (DOMFilePageHeader) page.getPageHeader();
+				ph.setStatus(RECORD);
+				ph.setDirty(true);
+				ph.setNextDataPage(Page.NO_PAGE);
+				ph.setPrevDataPage(Page.NO_PAGE);
+				ph.setNextPage(Page.NO_PAGE);
+				ph.setNextTID(ItemId.UNKNOWN_ID);
+				ph.setDataLength(0);
+				ph.setRecordCount((short) 0);
+				if (currentDocument != null)
+					currentDocument.getMetadata().incPageCount();
+//	            LOG.debug("New page: " + page.getPageNum() + "; " + page.getPageInfo());
+				return page;
+			} catch (IOException ioe) {
+				LOG.warn(ioe);
+				return null;
+			}
+		}
+
 		public RecordPos findRecord(short targetId) {
 			final int dlen = ph.getDataLength();
 			short currentId;
@@ -3055,6 +3052,28 @@ public class DOMFile extends BTree implements Lockable {
 			firstPage = getPage(first);
 		}
 
+		protected Page createNewPage() {
+			try {
+				Page page = getFreePage();
+				DOMFilePageHeader ph = (DOMFilePageHeader) page.getPageHeader();
+				ph.setStatus(RECORD);
+				ph.setDirty(true);
+				ph.setNextDataPage(Page.NO_PAGE);
+				ph.setPrevDataPage(Page.NO_PAGE);
+				ph.setNextPage(Page.NO_PAGE);
+				ph.setNextTID(ItemId.UNKNOWN_ID);
+				ph.setDataLength(0);
+				ph.setRecordCount((short) 0);
+				if (currentDocument != null)
+					currentDocument.getMetadata().incPageCount();
+//	            LOG.debug("New page: " + page.getPageNum() + "; " + page.getPageInfo());
+				return page;
+			} catch (IOException ioe) {
+				LOG.warn(ioe);
+				return null;
+			}
+		}
+
 		// Write binary resource from inputstream
 		public int write(Txn transaction, InputStream is) {
 		
@@ -3225,12 +3244,12 @@ public class DOMFile extends BTree implements Lockable {
 			switch (mode) {
 			case VALUES:
 				RecordPos rec = findRecord(pointer);
-				short l = ByteConversion.byteToShort(rec.page.data, rec.offset);
+				short l = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
 				int dataStart = rec.offset + 2;
 				// int l = (int) VariableByteCoding.decode( page.data,
 				// offset );
 				// int dataStart = VariableByteCoding.getSize( l );
-				values.add(new Value(rec.page.data, dataStart, l));
+				values.add(new Value(rec.getPage().data, dataStart, l));
 				return true;
 			case KEYS:
 				values.add(value);
@@ -3240,17 +3259,4 @@ public class DOMFile extends BTree implements Lockable {
 		}
 	}
 
-	protected final static class RecordPos {
-
-		DOMPage page;
-		int offset;
-		short tid;
-		boolean isLink = false;
-
-		public RecordPos(int offset, DOMPage page, short tid) {
-			this.offset = offset;
-			this.page = page;
-			this.tid = tid;
-		}
-	}
 }

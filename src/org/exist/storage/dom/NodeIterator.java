@@ -221,7 +221,7 @@ public final class NodeIterator implements Iterator {
 	private boolean gotoNextPosition() throws BTreeException, IOException {
 		//	position the iterator at the start of the first value
 		if (node != null) {
-            DOMFile.RecordPos rec = null;
+            RecordPos rec = null;
             if (node.getInternalAddress() != Page.NO_PAGE)
                 rec = db.findRecord(node.getInternalAddress());
             if (rec == null) {
@@ -230,17 +230,17 @@ public final class NodeIterator implements Iterator {
     				return false;
     			rec = db.findRecord(addr);
             }
-			page = rec.page.getPageNum();
-			p = rec.page;
+			page = rec.getPage().getPageNum();
+			p = rec.getPage();
 			offset = rec.offset - 2;
 			node = null;
 		} else if (-1 < startAddress) {
-			final DOMFile.RecordPos rec = db.findRecord(startAddress);
+			final RecordPos rec = db.findRecord(startAddress);
 			if(rec == null)
 				throw new IOException("Node not found at specified address.");
-			page = rec.page.getPageNum();
+			page = rec.getPage().getPageNum();
 			offset = rec.offset - 2;
-			p = rec.page;
+			p = rec.getPage();
 			startAddress = -1;
 		} else if (page != Page.NO_PAGE) {
 			p = db.getCurrentPage(page);
