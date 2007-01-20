@@ -113,8 +113,6 @@ public abstract class Paged {
 	public static int OFFSET_RECORD_COUNT = OFFSET_MAX_KEY_SIZE + LENGTH_MAX_KEY_SIZE; //43
 	public static int LENGTH_RECORD_COUNT = 8; //sizeof long
 	public static int OFFSET_REMAINDER = OFFSET_RECORD_COUNT + LENGTH_RECORD_COUNT; //51
-	
-	
 
 	protected final static Logger LOG = Logger.getLogger(Paged.class);
 	
@@ -144,9 +142,7 @@ public abstract class Paged {
 		setFile(file);
 	}
 
-	public short getFileVersion() {
-		return 0;
-	}
+	public abstract short getFileVersion();
 	
 	public final static void setPageSize(int pageSize) {
 		PAGE_SIZE = pageSize;
