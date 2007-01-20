@@ -184,20 +184,20 @@ public final class DOMFileIterator implements Iterator {
 				long addr = db.findValue(lockKey, node);
 				if (addr == BTree.KEY_NOT_FOUND)
 					return false;
-				DOMFile.RecordPos rec = db.findRecord(addr);
+				RecordPos rec = db.findRecord(addr);
 				if(rec != null) {
-					page = rec.page.getPageNum();
-					p = rec.page;
+					page = rec.getPage().getPageNum();
+					p = rec.getPage();
 					offset = rec.offset - 2;
 					node = null;
 				} else
 				    return false;
 			} else if (startAddress != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS) {
-				DOMFile.RecordPos rec = db.findRecord(startAddress);
+				RecordPos rec = db.findRecord(startAddress);
 				if(rec != null) {
-					page = rec.page.getPageNum();
+					page = rec.getPage().getPageNum();
 					offset = rec.offset - 2;
-					p = rec.page;
+					p = rec.getPage();
 					startAddress = StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;
 					return true;
 				} else
