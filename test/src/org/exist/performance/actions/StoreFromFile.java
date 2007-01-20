@@ -44,6 +44,7 @@ public class StoreFromFile extends AbstractAction {
     private String dir;
     private String includes;
     private String mimeType = "text/xml";
+    private boolean overwrite = true;
 
     public void configure(Runner runner, Action parent, Element config) throws EXistException {
         super.configure(runner, parent, config);
@@ -56,6 +57,8 @@ public class StoreFromFile extends AbstractAction {
         includes = config.getAttribute("includes");
         if (config.hasAttribute("mime-type"))
             mimeType = config.getAttribute("mime-type");
+        if (config.hasAttribute("overwrite"))
+            overwrite = config.getAttribute("overwrite").equalsIgnoreCase("true");
     }
 
     public void execute(Connection connection) throws XMLDBException, EXistException {
@@ -77,14 +80,16 @@ public class StoreFromFile extends AbstractAction {
                 col = makeColl(collection, relDir);
                 prevDir = relDir;
             }
-            //TODO  : these probably need to be encoded
-            Resource resource =
-                    col.createResource(files[j].getName(), resourceType);
-            resource.setContent(files[j]);
-            if("BinaryResource".equals(resourceType))
-                ((EXistResource)resource).setMimeType(mimeType);
-            col.storeResource(resource);
-            System.out.println("Storing " + col.getName() + "/" + resource.getId());
+            if (col.getResource(files[j].getName()) == null || overwrite) {
+                //TODO  : these probably need to be encoded
+                Resource resource =
+                        col.createResource(files[j].getName(), resourceType);
+                resource.setContent(files[j]);
+                if("BinaryResource".equals(resourceType))
+                    ((EXistResource)resource).setMimeType(mimeType);
+                col.storeResource(resource);
+                System.out.println("Storing " + col.getName() + "/" + resource.getId());
+            }
         }
     }
 
