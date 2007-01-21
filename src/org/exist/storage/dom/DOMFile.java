@@ -1995,14 +1995,14 @@ public class DOMFile extends BTree implements Lockable {
                 ph.setLsn(loggable.getLsn());
 				newPage.setDirty(true);
                 
-                if (loggable.nextPage != Page.NO_PAGE)
-                    ph.setNextDataPage(loggable.nextPage);
+                if (loggable.nextPage == Page.NO_PAGE)
+                	ph.setNextDataPage(Page.NO_PAGE);
                 else
-                    ph.setNextDataPage(Page.NO_PAGE);
-                if (loggable.prevPage != Page.NO_PAGE)
-                    ph.setPrevDataPage(loggable.prevPage);
+                	ph.setNextDataPage(loggable.nextPage);
+                if (loggable.prevPage == Page.NO_PAGE)
+                	ph.setPrevDataPage(Page.NO_PAGE);
                 else
-                    ph.setPrevDataPage(Page.NO_PAGE);
+                	ph.setPrevDataPage(loggable.prevPage);
 			} catch (IOException e) {
 				LOG.warn("Failed to redo " + loggable.dump() + ": "
 						+ e.getMessage(), e);
@@ -2239,22 +2239,24 @@ public class DOMFile extends BTree implements Lockable {
 		try {
             DOMPage newPage = getCurrentPage(loggable.pageNum);
             reuseDeleted(newPage.page);
-            if (loggable.prevPage != Page.NO_PAGE) {
+            if (loggable.prevPage == Page.NO_PAGE) 
+            	newPage.getPageHeader().setPrevDataPage(Page.NO_PAGE);
+            else {
             	DOMPage oldPage = getCurrentPage(loggable.prevPage);
             	oldPage.getPageHeader().setNextDataPage(newPage.getPageNum());
             	oldPage.setDirty(true);
             	dataCache.add(oldPage);
             	newPage.getPageHeader().setPrevDataPage(oldPage.getPageNum());
-            } else
-            	newPage.getPageHeader().setPrevDataPage(Page.NO_PAGE);
-            if (loggable.nextPage != Page.NO_PAGE) {
+            }	
+            if (loggable.nextPage == Page.NO_PAGE) 
+            	newPage.getPageHeader().setNextDataPage(Page.NO_PAGE);
+            else {
             	DOMPage oldPage = getCurrentPage(loggable.nextPage);
             	oldPage.getPageHeader().setPrevDataPage(newPage.getPageNum());
                 newPage.getPageHeader().setNextDataPage(loggable.nextPage);
             	oldPage.setDirty(true);
             	dataCache.add(oldPage);
-            } else
-            	newPage.getPageHeader().setNextDataPage(Page.NO_PAGE);
+            }	
             newPage.ph.setNextTID(ItemId.UNKNOWN_ID);
             newPage.setDirty(true);
             dataCache.add(newPage);
@@ -2313,10 +2315,10 @@ public class DOMFile extends BTree implements Lockable {
 			ph.setStatus(RECORD);
 
 			if (ph.getLsn() != Lsn.LSN_INVALID && requiresRedo(loggable, page)) {
-				if (loggable.nextPage != Page.NO_PAGE) {
-					ph.setNextPage(loggable.nextPage);
-				} else {
+				if (loggable.nextPage == Page.NO_PAGE) {
 					ph.setNextPage(Page.NO_PAGE);
+				} else {
+					ph.setNextPage(loggable.nextPage);					
 				}
                 ph.setLsn(loggable.getLsn());
 				writeValue(page, loggable.value);
@@ -2359,10 +2361,10 @@ public class DOMFile extends BTree implements Lockable {
 			PageHeader ph = page.getPageHeader();
 			reuseDeleted(page);
 			ph.setStatus(RECORD);
-			if (loggable.nextPage != Page.NO_PAGE) {
-				ph.setNextPage(loggable.nextPage);
-			} else {
+			if (loggable.nextPage == Page.NO_PAGE) {
 				ph.setNextPage(Page.NO_PAGE);
+			} else {
+				ph.setNextPage(loggable.nextPage);				
 			}
 			writeValue(page, loggable.oldData);
 		} catch (IOException e) {
