@@ -58,7 +58,7 @@ declare function t:process-sequence($group as element(t:group), $sequence as ele
 
 declare function t:process-thread($group as element(t:group), $thread as xs:string) {
     <div class="thread">
-        <h1>Thread: {$thread}</h1>
+        <h2>Thread: {$thread}</h2>
         
         <table>
         <tr>
@@ -85,6 +85,8 @@ declare function t:process-thread($group as element(t:group), $thread as xs:stri
 	    <link rel="stylesheet" href="style.css" type="text/css" />
     </head>
     <body>
+		<h1>Test results</h1>
+		<h2>Generated: {current-dateTime()}</h2>
     {
         for $group in //t:group
         return

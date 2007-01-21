@@ -23,10 +23,12 @@ package org.exist.performance.actions;
 
 import org.w3c.dom.Element;
 import org.exist.EXistException;
+import org.exist.storage.TextSearchEngine;
 import org.exist.xmldb.EXistResource;
 import org.exist.util.DirectoryScanner;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
+import org.exist.util.ProgressIndicator;
 import org.exist.performance.Connection;
 import org.exist.performance.Runner;
 import org.exist.performance.AbstractAction;
@@ -37,6 +39,8 @@ import org.xmldb.api.modules.CollectionManagementService;
 
 import java.io.File;
 import java.util.StringTokenizer;
+import java.util.Observer;
+import java.util.Observable;
 
 public class StoreFromFile extends AbstractAction {
 
@@ -64,7 +68,9 @@ public class StoreFromFile extends AbstractAction {
         Collection collection = connection.getCollection(collectionPath);
         if (collection == null)
             throw new EXistException("collection " + collectionPath + " not found");
-
+        ProgressObserver observer = new ProgressObserver();
+        if (collection instanceof Observable)
+            ((Observable)collection).addObserver(observer);
         String resourceType = getResourceType();
         File baseDir = new File(dir);
         File[] files = DirectoryScanner.scanDir(baseDir, includes);
@@ -77,6 +83,8 @@ public class StoreFromFile extends AbstractAction {
             relDir = relDir.replace(File.separatorChar, '/');
             if (prevDir == null || ( !relDir.equals(prevDir) ) ) {
                 col = makeColl(collection, relDir);
+                if (col instanceof Observable)
+                    ((Observable)col).addObserver(observer);
                 prevDir = relDir;
             }
             if (col.getResource(files[j].getName()) == null || overwrite) {
@@ -116,5 +124,20 @@ public class StoreFromFile extends AbstractAction {
                 current = c;
         }
         return current;
+    }
+
+    private class ProgressObserver implements Observer {
+
+        private long timestamp = System.currentTimeMillis();
+
+        public void update(Observable o, Object arg) {
+            if (System.currentTimeMillis() - timestamp > 20000) {
+                ProgressIndicator ind = (ProgressIndicator) arg;
+                if (!(o instanceof org.exist.storage.ElementIndex || o instanceof TextSearchEngine)) {
+                    LOG.debug("Stored: " + (int)((ind.getValue() / ind.getMax()) * 100) + " %");
+                }
+                timestamp = System.currentTimeMillis();
+            }
+        }
     }
 }
