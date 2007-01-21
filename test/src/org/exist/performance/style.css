@@ -8,13 +8,29 @@ body {
     margin: 20px;
 }
 
+h1 {
+	font-size: 133%;
+	font-weight: normal;
+}
+
+h2 {
+	font-size: 100%;
+	text-align: right;
+}
+
 table {
     width: 100%;
 }
 
-h1 {
-    font-size: 100%;
+.group h1 {
+    font-size: 125%;
     margin-bottom: 10px;
+	border-top: 1px solid black;
+}
+
+.group h2 {
+	font-size: 100%;
+	margin-bottom: 10px;
 }
 
 tr {
