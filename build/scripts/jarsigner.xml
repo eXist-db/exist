@@ -98,10 +98,11 @@
     <!-- All tasks, in the best sequence -->
     <target name="jnlp-sign-all"
             depends="jnlp-prepare,jnlp-keygen,jnlp-sign-exist,jnlp-sign-core"
-            description="Perform all sign tasks."/>
+            description="Sign all jar files."/>
     
     <!-- Special task for unsigning jar files -->
-    <target name="jnlp-unsign-all">
+    <target name="jnlp-unsign-all"
+            description="Sign all jar files.">
         <taskdef name="unsignjar" 
                  classname="nl.ow.dilemma.ant.jar.UnsignJarTask" 
                  classpath="${asocat-exist.jar}"/>
@@ -120,7 +121,7 @@
           For experienced developers only ; running this task might (or shall) 
           ruin all jar files. When it works, nice .pack.gz files are created.
       -->
-    <target name="jnlp-pack200">
+    <target name="jnlp-pack200" description="Pack all jar files.">
         <!-- First remove all signatures from the jar files -->
         <antcall target="jnlp-unsign-all"/>
         
