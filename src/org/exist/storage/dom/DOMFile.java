@@ -114,6 +114,7 @@ public class DOMFile extends BTree implements Lockable {
     public static final int LENGTH_DATA_LENGTH = 2; //sizeof short
     public static final int LENGTH_ORIGINAL_LOCATION = 8; //sizeof long
     public static final int LENGTH_FORWARD_LOCATION = 8; //sizeof long
+    public static final int LENGTH_OVERFLOW_LOCATION = 8; //sizeof long
 
     /*
 	 * Byte ids for the records written to the log file.
@@ -237,7 +238,7 @@ public class DOMFile extends BTree implements Lockable {
 		if (value == null || value.length == 0)
 			return KEY_NOT_FOUND;
 		// overflow value?
-		if (value.length + 4 > fileHeader.getWorkSize()) {
+		if (value.length + 2 + 2 > fileHeader.getWorkSize()) {
 			LOG.debug("Creating overflow page");
 			OverflowDOMPage overflow = new OverflowDOMPage(transact);
 			overflow.write(transact, value);
@@ -257,13 +258,12 @@ public class DOMFile extends BTree implements Lockable {
 	 * @return the virtual storage address of the value
 	 * @throws ReadOnlyException
 	 */
-	private long add(Txn transaction, byte[] value, boolean overflowPage)
-			throws ReadOnlyException {
-		final int valueLen = value.length;
+	private long add(Txn transaction, byte[] value, boolean overflowPage) throws ReadOnlyException {
+		final int vlen = value.length;
 		// always append data to the end of the file
 		DOMPage page = getCurrentPage(transaction);
 		// does value fit into current data page?
-		if (page == null || page.len + 4 + valueLen > page.data.length) {
+		if (page == null || page.len + 2 + 2 + vlen > page.data.length) {
 			DOMPage newPage = new DOMPage();
 			if (page != null) {
 				DOMFilePageHeader ph = page.getPageHeader();
@@ -307,12 +307,11 @@ public class DOMFile extends BTree implements Lockable {
 		page.len += LENGTH_TID;
 		// save data length
 		// overflow pages have length 0
-		ByteConversion.shortToByte(overflowPage ? OVERFLOW : (short) valueLen,
-				page.data, page.len);
+		ByteConversion.shortToByte(overflowPage ? OVERFLOW : (short) vlen, page.data, page.len);
 		page.len += LENGTH_DATA_LENGTH;
 		// save data
-		System.arraycopy(value, 0, page.data, page.len, valueLen);
-		page.len += valueLen;
+		System.arraycopy(value, 0, page.data, page.len, vlen);
+		page.len += vlen;
 		ph.incRecordCount();
 		ph.setDataLength(page.len);
 		page.setDirty(true);
@@ -415,7 +414,7 @@ public class DOMFile extends BTree implements Lockable {
 	public long insertAfter(Txn transaction, DocumentImpl doc, long address, byte[] value) {
 		// check if we need an overflow page
 		boolean isOverflow = false;
-		if (value.length + 4 > fileHeader.getWorkSize()) {
+		if (value.length + 2 + 2 > fileHeader.getWorkSize()) {
 			OverflowDOMPage overflow = new OverflowDOMPage(transaction);
 			LOG.debug("creating overflow page: " + overflow.getPageNum());
 			overflow.write(transaction, value);
@@ -433,28 +432,28 @@ public class DOMFile extends BTree implements Lockable {
 		if (ItemId.isRelocated(rec.getTID()))
 			rec.offset += LENGTH_ORIGINAL_LOCATION;
 		if (len == OVERFLOW)
-			rec.offset += 8;
+			rec.offset += LENGTH_OVERFLOW_LOCATION;
 		else
 			rec.offset += len;
         
-		int dataLen = rec.getPage().getPageHeader().getDataLength();
+		int dlen = rec.getPage().getPageHeader().getDataLength();
 		// insert in the middle of the page?
-		if (rec.offset < dataLen) {
-			if (dataLen + value.length + 4 < fileHeader.getWorkSize()
+		if (rec.offset < dlen) {
+			if (dlen + value.length + 2 + 2 < fileHeader.getWorkSize()
 					&& rec.getPage().getPageHeader().hasRoom()) {
 //				 LOG.debug("copying data in page " + rec.getPage().getPageNum()
 //				 + "; offset = " + rec.offset + "; dataLen = "
 //				 + dataLen + "; valueLen = " + value.length);
 				// new value fits into the page
-				int end = rec.offset + value.length + 4;
+				int end = rec.offset + value.length + 2 + 2;
 				System.arraycopy(rec.getPage().data, rec.offset, rec.getPage().data, end,
-						dataLen - rec.offset);
-				rec.getPage().len = dataLen + value.length + 4;
+						dlen - rec.offset);
+				rec.getPage().len = dlen + value.length + 2 + 2;
 				rec.getPage().getPageHeader().setDataLength(rec.getPage().len);
 			} else {
 				// doesn't fit: split the page
 				rec = splitDataPage(transaction, doc, rec);
-				if (rec.offset + value.length + 4 > fileHeader.getWorkSize()
+				if (rec.offset + value.length + 2 + 2 > fileHeader.getWorkSize()
 						|| !rec.getPage().getPageHeader().hasRoom()) {
 					// still not enough free space: create a new page
 					DOMPage newPage = new DOMPage();
@@ -504,16 +503,16 @@ public class DOMFile extends BTree implements Lockable {
 					dataCache.add(rec.getPage());
 					rec.setPage(newPage);
 					rec.offset = 0;
-					rec.getPage().len = value.length + 4;
+					rec.getPage().len = value.length + 2 + 2;
 					rec.getPage().getPageHeader().setDataLength(rec.getPage().len);
 					rec.getPage().getPageHeader().setRecordCount((short) 1);
 				} else {
-					rec.getPage().len = rec.offset + value.length + 4;
+					rec.getPage().len = rec.offset + value.length + 2 + 2;
 					rec.getPage().getPageHeader().setDataLength(rec.getPage().len);
-					dataLen = rec.offset;
+					dlen = rec.offset;
 				}
 			}
-		} else if (dataLen + value.length + 4 > fileHeader.getWorkSize()
+		} else if (dlen + value.length + 2 + 2 > fileHeader.getWorkSize()
 				|| !rec.getPage().getPageHeader().hasRoom()) {
 			// does value fit into page?
 			DOMPage newPage = new DOMPage();
@@ -558,10 +557,10 @@ public class DOMFile extends BTree implements Lockable {
 			dataCache.add(rec.getPage());
 			rec.setPage(newPage);
 			rec.offset = 0;
-			rec.getPage().len = value.length + 4;
+			rec.getPage().len = value.length + 2+ 2;
 			rec.getPage().getPageHeader().setDataLength(rec.getPage().len);
 		} else {
-			rec.getPage().len = dataLen + value.length + 4;
+			rec.getPage().len = dlen + value.length + 2 + 2;
 			rec.getPage().getPageHeader().setDataLength(rec.getPage().len);
 		}
 		// write the data
@@ -718,7 +717,7 @@ public class DOMFile extends BTree implements Lockable {
 			pos += LENGTH_DATA_LENGTH;
 			// if this is an overflow page, the real data length is always 8
 			// byte for the page number of the overflow page
-			short realLen = (storedLen == OVERFLOW ? 8 : storedLen);
+			short realLen = (storedLen == OVERFLOW ? LENGTH_OVERFLOW_LOCATION : storedLen);
 
 			// check if we have room in the current split page
 			if (nextSplitPage.len + LENGTH_TID + LENGTH_DATA_LENGTH + LENGTH_ORIGINAL_LOCATION + realLen > fileHeader.getWorkSize()) {
@@ -955,9 +954,9 @@ public class DOMFile extends BTree implements Lockable {
 				short vlen = ByteConversion.byteToShort(page.data, pos);
 				pos += LENGTH_DATA_LENGTH;
 				if (ItemId.isRelocated(tid)) {
-					pos += vlen == OVERFLOW ? LENGTH_ORIGINAL_LOCATION + 8 : LENGTH_ORIGINAL_LOCATION + vlen;
+					pos += vlen == OVERFLOW ? LENGTH_ORIGINAL_LOCATION + LENGTH_OVERFLOW_LOCATION : LENGTH_ORIGINAL_LOCATION + vlen;
 				} else
-					pos += vlen == OVERFLOW ? 8 : vlen;
+					pos += vlen == OVERFLOW ? LENGTH_OVERFLOW_LOCATION : vlen;
 			}
 		}
 		// LOG.debug("page " + page.getPageNum() + " has " + count + "
@@ -1435,7 +1434,7 @@ public class DOMFile extends BTree implements Lockable {
 		int end = rec.offset + 8;
 		System.arraycopy(rec.getPage().data, end, rec.getPage().data,
 				rec.offset - 2, rec.getPage().len - end);
-		rec.getPage().len = rec.getPage().len - 10;
+		rec.getPage().len = rec.getPage().len - (2+ 8);
 		ph.setDataLength(rec.getPage().len);
 		rec.getPage().setDirty(true);
 		ph.decRecordCount();
@@ -1468,9 +1467,9 @@ public class DOMFile extends BTree implements Lockable {
 		RecordPos rec = findRecord(p);
 		final int startOffset = rec.offset - 2;
 		final DOMFilePageHeader ph = rec.getPage().getPageHeader();
-		short valueLen = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
+		short vlen = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
 		rec.offset += LENGTH_DATA_LENGTH;
-		short l = valueLen;		
+		short l = vlen;		
 		if (ItemId.isLink(rec.getTID())) {
 			throw new RuntimeException("Cannot remove link ...");
 		}
@@ -1486,30 +1485,29 @@ public class DOMFile extends BTree implements Lockable {
 			// remove overflow value
             isOverflow = true;
 			long overflowLink = ByteConversion.byteToLong(rec.getPage().data, rec.offset);
-			rec.offset += 8;
+			rec.offset += LENGTH_OVERFLOW_LOCATION;
 			try {
 				OverflowDOMPage overflow = new OverflowDOMPage(overflowLink);
 				overflow.delete(transaction);
 			} catch (IOException e) {
 				LOG.error("io error while removing overflow page", e);
 			}
-			l += 8;
-            valueLen = 8;
+			l += LENGTH_OVERFLOW_LOCATION;
+            vlen = LENGTH_OVERFLOW_LOCATION;
 		}
 		if (isTransactional && transaction != null) {
-			byte[] data = new byte[valueLen];
-			System.arraycopy(rec.getPage().data, rec.offset, data, 0, valueLen);
+			byte[] data = new byte[vlen];
+			System.arraycopy(rec.getPage().data, rec.offset, data, 0, vlen);
 			RemoveValueLoggable loggable = new RemoveValueLoggable(transaction,
 					rec.getPage().getPageNum(), rec.getTID(), startOffset, data, isOverflow, backLink);
 			writeToLog(loggable, rec.getPage().page);
 		}
-		int end = startOffset + 4 + l;
+		int end = startOffset + 2 + 2+ l;
 		int len = ph.getDataLength();
 		// remove old value
-		System.arraycopy(rec.getPage().data, end, rec.getPage().data, startOffset, len
-				- end);
+		System.arraycopy(rec.getPage().data, end, rec.getPage().data, startOffset, len - end);
 		rec.getPage().setDirty(true);
-		len = len - (l + 4);
+		len = len - (2 + 2 + l);
 		ph.setDataLength(len);
 		rec.getPage().len = len;
 		rec.getPage().setDirty(true);
@@ -1844,7 +1842,7 @@ public class DOMFile extends BTree implements Lockable {
 			// if we have an overflow value, load it from the overflow page
 			final long op = ByteConversion.byteToLong(data, rec.offset);
 			data = getOverflowValue(op);
-			rec.offset += 10;
+			rec.offset += 2 + 8;
 			len = data.length;
 			readOffset = 0;
 			inOverflow = true;
@@ -1928,19 +1926,13 @@ public class DOMFile extends BTree implements Lockable {
 			if (rec == null) {
 				pageNr = page.getPageHeader().getNextDataPage();
 				if (pageNr == page.getPageNum()) {
-					SanityCheck
-							.TRACE("circular link to next page on " + pageNr);
+					SanityCheck.TRACE("circular link to next page on " + pageNr);
 					return null;
 				}
-//				SanityCheck.TRACE(owner.toString() + ": tid " + targetId
-//						+ " not found on " + page.getPage().getPageInfo()
-//						+ ". Loading " + pageNr + "; contents: "
-//						+ debugPageContents(page));
 			} else if (rec.isLink()) {
 				if (!skipLinks)
 					return rec;
-				long forwardLink = ByteConversion.byteToLong(page.data,
-						rec.offset);
+				long forwardLink = ByteConversion.byteToLong(page.data, rec.offset);
 //				 LOG.debug("following link on " + pageNr +
 //				 " to page "
 //				 + StorageAddress.pageFromPointer(forwardLink)
@@ -1997,22 +1989,6 @@ public class DOMFile extends BTree implements Lockable {
 						+ e.getMessage(), e);
 			}
 		}
-//        if (loggable.prevPage > Page.NO_PAGE) {
-//            DOMPage oldPage = getCurrentPage(loggable.prevPage);
-//            oldPage.ph.setNextDataPage(
-//                    newPage.getPageNum());
-//            oldPage.setDirty(true);
-//            dataCache.add(oldPage);
-//            ph.setPrevDataPage(oldPage.getPageNum());
-//        }
-//        if (loggable.nextPage > Page.NO_PAGE) {
-//            DOMPage oldPage = getCurrentPage(loggable.nextPage);
-//            oldPage.ph.setPrevDataPage(
-//                    newPage.getPageNum());
-//            oldPage.setDirty(true);
-//            dataCache.add(oldPage);
-//            newPage.ph.setNextDataPage(oldPage.getPageNum());
-//        }
         dataCache.add(newPage);
 	}
 
@@ -2042,12 +2018,12 @@ public class DOMFile extends BTree implements Lockable {
 				page.len += LENGTH_TID;
 				// save data length
 				// overflow pages have length 0
-				short valueLen = (short) loggable.value.length;
-				ByteConversion.shortToByte(valueLen, page.data, page.len);
+				short vlen = (short) loggable.value.length;
+				ByteConversion.shortToByte(vlen, page.data, page.len);
 				page.len += LENGTH_DATA_LENGTH;
 				// save data
-				System.arraycopy(loggable.value, 0, page.data, page.len, valueLen);
-				page.len += valueLen;
+				System.arraycopy(loggable.value, 0, page.data, page.len, vlen);
+				page.len += vlen;
 				ph.incRecordCount();
 				ph.setDataLength(page.len);
 				page.setDirty(true);
@@ -2071,12 +2047,12 @@ public class DOMFile extends BTree implements Lockable {
 		// get the record length
 		short l = ByteConversion.byteToShort(page.data, pos.offset);
 		// end offset
-		int end = startOffset + 4 + l;
+		int end = startOffset + 2 + 2 + l;
 		int len = ph.getDataLength();
 		// remove old value
 		System.arraycopy(page.data, end, page.data, startOffset, len - end);
 		page.setDirty(true);
-		len = len - (l + 4);
+		len = len - (l + 2 + 2);
 		ph.setDataLength(len);
 		page.len = len;
 		page.setDirty(true);
@@ -2139,14 +2115,14 @@ public class DOMFile extends BTree implements Lockable {
                     l += LENGTH_ORIGINAL_LOCATION;
                 }
                 if (l == OVERFLOW)
-                    l += 8;
+                    l += LENGTH_OVERFLOW_LOCATION;
     			// end offset
-    			int end = startOffset + 4 + l;
+    			int end = startOffset + 2 + 2 + l;
     			int len = ph.getDataLength();
     			// remove old value
     			System.arraycopy(page.data, end, page.data, startOffset, len - end);
     			page.setDirty(true);
-    			len = len - (l + 4);
+    			len = len - (l + 2 + 2);
     			page.len = len;
             }
             ph.setDataLength(page.len);
@@ -2370,7 +2346,7 @@ public class DOMFile extends BTree implements Lockable {
             int offset = loggable.offset;
             // insert in the middle of the page?
             if (offset < dataLen) {
-                int end = offset + loggable.value.length + 4;
+                int end = offset + loggable.value.length + 2 + 2;
                 try {
                 System.arraycopy(page.data, offset, page.data, end,
                         dataLen - offset);
@@ -2391,7 +2367,7 @@ public class DOMFile extends BTree implements Lockable {
             System.arraycopy(loggable.value, 0, page.data, offset, loggable.value.length);
             offset += loggable.value.length;
             page.getPageHeader().incRecordCount();
-            page.len += loggable.value.length + 4;
+            page.len += loggable.value.length + 2 + 2;
             ph.setDataLength(page.len);
             ph.setNextTID(loggable.tid);
             page.setDirty(true);
@@ -2415,9 +2391,9 @@ public class DOMFile extends BTree implements Lockable {
                 l += LENGTH_ORIGINAL_LOCATION;
             }
             if (l == OVERFLOW)
-                l += 8;
+                l += LENGTH_OVERFLOW_LOCATION;
             // end offset
-            int end = loggable.offset + 4 + l;
+            int end = loggable.offset + (2 + 2 + l);
             int len = ph.getDataLength();
             // remove value
             try {
@@ -2429,7 +2405,7 @@ public class DOMFile extends BTree implements Lockable {
                         "; dataLength: " + len);
             }
             page.setDirty(true);
-            len = len - (l + 4);
+            len = len - (2 + 2 + l);
             page.len = len;
         }
         ph.setDataLength(page.len);
@@ -2471,8 +2447,7 @@ public class DOMFile extends BTree implements Lockable {
         DOMPage page = getCurrentPage(loggable.pageNum);
         DOMFilePageHeader ph = page.getPageHeader();
         if (ph.getLsn() != Lsn.LSN_INVALID && requiresRedo(loggable, page)) {
-            ByteConversion.shortToByte(ItemId.setIsLink(loggable.tid),
-                    page.data, page.len);
+            ByteConversion.shortToByte(ItemId.setIsLink(loggable.tid), page.data, page.len);
             page.len += LENGTH_TID;
             ByteConversion.longToByte(loggable.link, page.data, page.len);
             page.len += LENGTH_FORWARD_LOCATION;
@@ -2527,16 +2502,16 @@ public class DOMFile extends BTree implements Lockable {
             try {
                 ByteConversion.shortToByte(ItemId.setIsRelocated(loggable.tid), page.data, page.len);
                 page.len += LENGTH_TID;
-                short valueLen = (short) loggable.value.length;
+                short vlen = (short) loggable.value.length;
                 // save data length
                 // overflow pages have length 0
-                ByteConversion.shortToByte(valueLen, page.data, page.len);
+                ByteConversion.shortToByte(vlen, page.data, page.len);
                 page.len += LENGTH_DATA_LENGTH;
                 ByteConversion.longToByte(loggable.backLink, page.data, page.len);
                 page.len += LENGTH_FORWARD_LOCATION;
                 // save data
-                System.arraycopy(loggable.value, 0, page.data, page.len, valueLen);
-                page.len += valueLen;
+                System.arraycopy(loggable.value, 0, page.data, page.len, vlen);
+                page.len += vlen;
                 ph.incRecordCount();
                 ph.setDataLength(page.len);
                 page.setDirty(true);
@@ -2572,7 +2547,7 @@ public class DOMFile extends BTree implements Lockable {
                     "; offset: " + (rec.offset - 2) + "; end: " + end + "; len: " + (len - end));
         }
         page.setDirty(true);
-        len = len - (LENGTH_DATA_LENGTH + 2 + 8 + l);
+        len = len - (2 + LENGTH_DATA_LENGTH + 8 + l);
         page.len = len;
         ph.setDataLength(page.len);
         page.setDirty(true);
@@ -2830,7 +2805,7 @@ public class DOMFile extends BTree implements Lockable {
 						pos += vlen;
 					}
 					if (vlen == OVERFLOW)
-						pos += 8;
+						pos += LENGTH_OVERFLOW_LOCATION;
 				}
 			}
 			return rec;
@@ -3005,9 +2980,9 @@ public class DOMFile extends BTree implements Lockable {
 					short vlen = ByteConversion.byteToShort(data, pos);
 					pos += LENGTH_DATA_LENGTH;
 					if (ItemId.isRelocated(tid)) {
-						pos += vlen == OVERFLOW ? LENGTH_ORIGINAL_LOCATION + 8 : LENGTH_ORIGINAL_LOCATION + vlen;
+						pos += vlen == OVERFLOW ? LENGTH_ORIGINAL_LOCATION + LENGTH_OVERFLOW_LOCATION : LENGTH_ORIGINAL_LOCATION + vlen;
 					} else
-						pos += vlen == OVERFLOW ? 8 : vlen;
+						pos += vlen == OVERFLOW ? LENGTH_OVERFLOW_LOCATION : vlen;
 				}
 			}
 			ph.setNextTID(maxTID);
