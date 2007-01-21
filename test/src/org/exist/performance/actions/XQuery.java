@@ -40,6 +40,7 @@ public class XQuery extends AbstractAction {
     private String query = null;
     private String collectionPath;
     private boolean retrieve = false;
+    private int lastResult = 0;
 
     public void configure(Runner runner, Action parent, Element config) throws EXistException {
         super.configure(runner, parent, config);
@@ -71,6 +72,7 @@ public class XQuery extends AbstractAction {
             throw new EXistException("collection " + collectionPath + " not found");
         XQueryService service = (XQueryService) collection.getService("XQueryService", "1.0");
         ResourceSet result = service.query(query);
+        lastResult = (int) result.getSize();
         if (retrieve) {
             for (ResourceIterator i = result.getIterator(); i.hasMoreResources(); ) {
                 Resource r = i.nextResource();
@@ -79,6 +81,9 @@ public class XQuery extends AbstractAction {
         }
     }
 
+    public String getLastResult() {
+        return Integer.toString(lastResult);
+    }
 
     public String getDescription() {
         return (description == null ? query : description);

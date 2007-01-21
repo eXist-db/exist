@@ -51,6 +51,7 @@ public class TestResultWriter {
     private static final QName DESCRIPTION_ATTRIB = new QName("description", "", "");
     private static final QName ID_ATTRIB = new QName("id", "", "");
     private static final QName PARENT_ATTRIB = new QName("parent", "", "");
+    private static final QName RESULT_ATTRIB = new QName("result", "", "");
     private static final QName GROUP_ELEMENT = new QName("group", Namespaces.EXIST_NS, "");
 
     private final static Properties defaultProperties = new Properties();
@@ -86,6 +87,8 @@ public class TestResultWriter {
             attribs.addAttribute(PARENT_ATTRIB, action.getParent().getId());
         if (action.getDescription() != null)
             attribs.addAttribute(DESCRIPTION_ATTRIB, action.getDescription());
+        if (action.getLastResult() != null)
+            attribs.addAttribute(RESULT_ATTRIB, action.getLastResult());
         try {
             serializer.startElement(ACTION_ELEMENT, attribs);
             if (message != null)

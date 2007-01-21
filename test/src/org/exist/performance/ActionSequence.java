@@ -81,12 +81,12 @@ public class ActionSequence extends AbstractAction {
             for (Iterator iterator = actions.iterator(); iterator.hasNext();) {
                 Action action = (Action) iterator.next();
                 long start = System.currentTimeMillis();
-                System.out.println('[' + Thread.currentThread().getName() + "] " + action.getClass().getName());
+                LOG.debug('[' + Thread.currentThread().getName() + "] " + action.getClass().getName());
                 action.execute(connection);
                 long elapsed = System.currentTimeMillis() - start;
-                System.out.println('[' + Thread.currentThread().getName() + "] " + action.getClass().getName() + " took " + elapsed + "ms.");
+                LOG.debug('[' + Thread.currentThread().getName() + "] " + action.getClass().getName() + " took " + elapsed + "ms.");
                 runner.getResults().report(action, null, elapsed);
-                System.gc();
+//                System.gc();
             }
         }
     }

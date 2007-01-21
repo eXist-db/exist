@@ -46,7 +46,6 @@ public class ActionThread extends ActionSequence implements Runnable {
 
     public void run() {
         runner.getResults().threadStarted(this);
-        long start = System.currentTimeMillis();
         try {
             execute(this.connection);
         } catch (XMLDBException e) {
@@ -54,7 +53,6 @@ public class ActionThread extends ActionSequence implements Runnable {
         } catch (EXistException e) {
             e.printStackTrace();
         }
-        long elapsed = System.currentTimeMillis() - start;
     }
 
     public String getName() {
