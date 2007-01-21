@@ -57,8 +57,7 @@ public class StoreFromFile extends AbstractAction {
         includes = config.getAttribute("includes");
         if (config.hasAttribute("mime-type"))
             mimeType = config.getAttribute("mime-type");
-        if (config.hasAttribute("overwrite"))
-            overwrite = config.getAttribute("overwrite").equalsIgnoreCase("true");
+        overwrite = getBooleanValue(config, "overwrite", true);
     }
 
     public void execute(Connection connection) throws XMLDBException, EXistException {
@@ -87,8 +86,8 @@ public class StoreFromFile extends AbstractAction {
                 resource.setContent(files[j]);
                 if("BinaryResource".equals(resourceType))
                     ((EXistResource)resource).setMimeType(mimeType);
+                LOG.debug("Storing " + col.getName() + "/" + resource.getId());
                 col.storeResource(resource);
-                System.out.println("Storing " + col.getName() + "/" + resource.getId());
             }
         }
     }

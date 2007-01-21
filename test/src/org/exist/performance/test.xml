@@ -84,40 +84,34 @@
         <thread name="thread2" connection="con">
             <create-collection parent="/db" name="jgoethe"/>
             <store-files dir="test/benchmark/data/jgoethe" includes="*.xml" collection="/db/jgoethe"
-            description="storing Goethe data"/>
+                description="storing Goethe data" overwrite="no"/>
             <sequence repeat="10">
                 <xquery collection="/db/jgoethe" query="//(p|l|head|cell)[. &amp;= 'liebe']"/>
                 <xquery collection="/db/jgoethe"><![CDATA[
                     let $t := "liebe"
                     return
-                        text:filter-nested(
                             //((#exist:optimize#) { p[. &= $t] }) |
                             //((#exist:optimize#) { l[. &= $t] }) |
                             //((#exist:optimize#) { head[. &= $t] }) |
                             //((#exist:optimize#) { cell[. &= $t] })
-                        )
                 ]]></xquery>
                 <xquery collection="/db/jgoethe" query="//(p|l|head|cell)[. &amp;= 'liebe sinnlichkeit']"/>
                 <xquery collection="/db/jgoethe"><![CDATA[
                     let $t := "liebe sinnlichkeit"
                     return
-                        text:filter-nested(
                             //((#exist:optimize#) { p[. &= $t] }) |
                             //((#exist:optimize#) { l[. &= $t] }) |
                             //((#exist:optimize#) { head[. &= $t] }) |
                             //((#exist:optimize#) { cell[. &= $t] })
-                        )
                 ]]></xquery>
                 <xquery collection="/db/jgoethe" query="//(p|l|head|cell)[. &amp;= 'sinnlich*']"/>
                 <xquery collection="/db/jgoethe"><![CDATA[
                     let $t := "sinnlich*"
                     return
-                        text:filter-nested(
                             //((#exist:optimize#) { p[. &= $t] }) |
                             //((#exist:optimize#) { l[. &= $t] }) |
                             //((#exist:optimize#) { head[. &= $t] }) |
                             //((#exist:optimize#) { cell[. &= $t] })
-                        )
                 ]]></xquery>
                 <xquery collection="/db/jgoethe" query="//(p|l|head|cell)[. &amp;= 'liebe sinnlich*']"/>
                 <xquery collection="/db/jgoethe" query="//(p|l|head|cell)[. &amp;= 'schmerz* herz']"/>
@@ -144,6 +138,12 @@
                 <xquery collection="/db/jgoethe" query="//*[head &amp;= 'götz von berlichingen']"/>
                 <xquery collection="/db/jgoethe" query="/TEI.2//div3[head &amp;= 'götz von berlichingen']"/>
                 <xquery collection="/db/jgoethe" query="/TEI.2//*[head &amp;= 'götz von berlichingen']"/>
+                
+                <xquery collection="/db/jgoethe" query="//div3[head &amp;= 'berlichingen'][p &amp;= 'volck?']"/>
+                <xquery collection="/db/jgoethe"><![CDATA[
+                    //((#exist:optimize#) { div3[head &= 'berlichingen'] })/((#exist:optimize#) { .[p &= 'volck?'] })
+                ]]></xquery>
+                
                 <xquery collection="/db/jgoethe" query="//div3[head &amp;= 'faust']//p[. &amp;= 'todt']"/>
                 <xquery collection="/db/jgoethe" query="//*[head &amp;= 'faust']//p[. &amp;= 'todt']"/>
                 <xquery collection="/db/jgoethe" query="//div3[head &amp;= 'faust']//p[. &amp;= 'todt']"/>
@@ -161,5 +161,44 @@
         <tear-down connection="con">
             <!--remove-collection parent="/db" collection="jgoethe" description="remove /db/jgoethe"/-->
         </tear-down>
+    </group>
+    <group name="large-documents">
+        <setup connection="con">
+            <create-collection parent="/db/system/config" name="db"/>
+            <store collection="/db/system/config/db" name="collection.xconf">
+                <collection xmlns="http://exist-db.org/collection-config/1.0">
+                    <index>
+                        <fulltext default="all" attributes="false">
+                            <create qname="author"/>
+                            <create qname="title"/>
+                            <create qname="booktitle"/>
+                        </fulltext>
+                    </index>
+                </collection>
+            </store>
+        </setup>
+        <thread connection="con" name="main">
+            <create-collection parent="/db" name="library"/>
+            <store-files dir="test/benchmark/data/dblp" includes="*.xml" collection="/db/library"
+                description="storing DBLP library data" overwrite="no"/>
+            <sequence repeat="10">
+                <xquery collection="/db/library" query="//book[author &amp;= 'kernighan']"/>
+                <xquery collection="/db/library" query="//((#exist:optimize#) { book[author &amp;= 'kernighan'] })"/>
+                <xquery collection="/db/library" query="//book[author &amp;= 'brian kernighan']"/>
+                <xquery collection="/db/library" query="//((#exist:optimize#) { book[author &amp;= 'brian kernighan'] })"/>
+                <xquery collection="/db/library" query="//*[author &amp;= 'brian kernighan']"/>
+                <xquery collection="/db/library" query="//((#exist:optimize#) { *[author &amp;= 'brian kernighan'] })"/>
+                <xquery collection="/db/library" query=" //book[author &amp;= 'kernighan']/title"/>
+                <xquery collection="/db/library" query="//((#exist:optimize#) { book[author &amp;= 'kernighan'] })/title"/>
+                <xquery collection="/db/library" query="//inproceedings[title &amp;= 'xml']"/>
+                <xquery collection="/db/library" query="//((#exist:optimize#) { inproceedings[title &amp;= 'xml'] })"/>
+                <xquery collection="/db/library" query="//inproceedings[title &amp;= 'xml xquery']"/>
+                <xquery collection="/db/library" query="//((#exist:optimize#) { inproceedings[title &amp;= 'xml xquery'] })"/>
+                <xquery collection="/db/library" query="//inproceedings[title &amp;= 'xslt']"/>
+                <xquery collection="/db/library" query="//((#exist:optimize#) { inproceedings[title &amp;= 'xslt'] })"/>
+                <xquery collection="/db/library" query="//*[title &amp;= 'xslt']"/>
+                <xquery collection="/db/library" query="//((#exist:optimize#) { *[title &amp;= 'xslt'] })"/>
+            </sequence>
+        </thread>
     </group>
 </test>

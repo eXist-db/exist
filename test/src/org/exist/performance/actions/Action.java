@@ -41,4 +41,6 @@ public interface Action {
     String getId();
 
     Action getParent();
+
+    String getLastResult();
 }

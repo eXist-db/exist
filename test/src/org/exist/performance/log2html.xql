@@ -19,12 +19,14 @@ declare function t:process-action($group as element(t:group), $action as element
         <tr>
             <td class="{if ($isSeq) then 'sequence' else ''}">{string($action[1]/@name)}</td>
             <td class="timing">{round(t:median($action/@elapsed))}</td>
+            <td class="timing">{round(avg($action/@elapsed))}</td>
             <td class="timing">{sum($action/@elapsed)}</td>
+            <td class="timing">{string($action[1]/@result)}</td>
             <td class="desc">{string($action[1]/@description)}</td>
         </tr>,
         if ($isSeq) then
             <tr>
-                <td colspan="4" class="nested">
+                <td colspan="6" class="nested">
                     {t:process-sequence($group, $action[1])}
                 </td>
             </tr>
@@ -37,7 +39,9 @@ declare function t:process-sequence($group as element(t:group), $sequence as ele
         <tr>
             <th>Action</th>
             <th class="timing">Med. time</th>
+            <th class="timing">Avg. time</th>
             <th class="timing">Total time</th>
+            <th class="timing">Result</th>
             <th class="desc">Description</th>
         </tr>
         {
@@ -59,8 +63,10 @@ declare function t:process-thread($group as element(t:group), $thread as xs:stri
         <table>
         <tr>
             <th>Action</th>
+            <th class="timing">Med. time</th>
             <th class="timing">Avg. time</th>
             <th class="timing">Total time</th>
+            <th class="timing">Result</th>
             <th class="desc">Description</th>
         </tr>
         {

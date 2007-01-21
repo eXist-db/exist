@@ -54,8 +54,19 @@ public abstract class AbstractAction implements Action {
         return parent;
     }
 
-
     public String getDescription() {
         return description;
+    }
+
+    public String getLastResult() {
+        return null;
+    }
+
+    public static boolean getBooleanValue(Element config, String name, boolean defaultValue) {
+        if (config.hasAttribute(name)) {
+            String val = config.getAttribute(name);
+            return val.equalsIgnoreCase("true") || val.equalsIgnoreCase("yes");
+        }
+        return defaultValue;
     }
 }
