@@ -260,7 +260,8 @@ public class XQueryUpdateTest extends TestCase {
             XQuery xquery = broker.getXQueryService();
             
             String query =
-                "for $prod at $i in //product return\n" +
+            	"declare option exist:output-size-limit '-1';\n" +
+            	"for $prod at $i in //product return\n" +
                 "	update value $prod/description\n" +
                 "	with concat('Updated Description', $i)";
             Sequence seq = xquery.execute(query, null, AccessContext.TEST);
@@ -282,6 +283,7 @@ public class XQueryUpdateTest extends TestCase {
             System.out.println(serializer.serialize((NodeValue) seq.itemAt(0)));
             
             query =
+            	"declare option exist:output-size-limit '-1';\n" +
             	"for $prod at $count in //product return\n" +
                 "	update value $prod/stock/text()\n" +
                 "	with (400 + $count)";
@@ -295,6 +297,7 @@ public class XQueryUpdateTest extends TestCase {
             System.out.println(serializer.serialize((NodeValue) seq.itemAt(0)));
             
             query =
+            	"declare option exist:output-size-limit '-1';\n" +
             	"for $prod in //product return\n" +
                 "	update value $prod/@num\n" +
                 "	with xs:int($prod/@num) * 3";
@@ -309,6 +312,7 @@ public class XQueryUpdateTest extends TestCase {
             System.out.println(serializer.serialize((NodeValue) seq.itemAt(0)));
             
             query =
+            	"declare option exist:output-size-limit '-1';\n" +
             	"for $prod in //product return\n" +
                 "	update value $prod/stock\n" +
                 "	with (<local>10</local>,<external>1</external>)";
