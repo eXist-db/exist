@@ -393,7 +393,6 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
     }
 
     public NodeSet filterDocuments(ExtArrayNodeSet otherSet) {
-        LOG.debug("Filtering...");
         ExtArrayNodeSet other = otherSet;
         ExtArrayNodeSet result = new ExtArrayNodeSet(partCount, other.initalSize);
         for (int i = 0; i < other.partCount; i++) {
@@ -431,6 +430,8 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
     }
     
     public void sort(boolean mergeContexts) {
+        if (hasOne)
+            isSorted = true;    // shortcut: don't sort if there's just one item
 //        long start = System.currentTimeMillis();
         if (isSorted)
             return;
