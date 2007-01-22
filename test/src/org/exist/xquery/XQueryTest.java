@@ -287,7 +287,7 @@ public class XQueryTest extends XMLTestCase {
     }
     
     
-    public void bugtestConstructedNode1() {
+    public void testConstructedNode1() {
         try {
             String q1 =
                 "let $a := <A/> for $b in $a//B/string() return \"Oops!\"";
@@ -1536,7 +1536,7 @@ public class XQueryTest extends XMLTestCase {
 		 }
 	}
         
-    public void bugtestConstructedAttributeValue() {
+    public void testConstructedAttributeValue() {
         String query="let $attr := attribute d { \"xxx\" } "
                 +"return string($attr)"; 
         try {
