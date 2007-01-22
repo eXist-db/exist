@@ -430,13 +430,15 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
     }
     
     public void sort(boolean mergeContexts) {
+        if (isSorted)
+            return;
+        
         if (hasOne) {
             isSorted = true;    // shortcut: don't sort if there's just one item
             size = parts[0].removeDuplicates(mergeContexts);
+            return;
         }
 //        long start = System.currentTimeMillis();
-        if (isSorted)
-            return;
         Part part;
         size = 0;
         for (int i = 0; i < partCount; i++) {
