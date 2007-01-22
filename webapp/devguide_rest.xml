@@ -162,6 +162,12 @@
                                 <option>no</option> disables any stylesheet processing. This is
                                 useful for retrieving the unprocessed XML from documents that have a
                                 stylesheet declaration.</para>
+                            <note>
+                                <para>If your document has a valid XSL stylesheet declaration, the
+                                web browser may still decide to apply the XSL. In this case, passing 
+                                <parameter>_xsl=no</parameter> has no visible effect, though the XSL
+                                is now rendered by the browser, <emphasis>not</emphasis> eXist.</para>
+                            </note>
                         </listitem>
                     </varlistentry>
                     <varlistentry>
