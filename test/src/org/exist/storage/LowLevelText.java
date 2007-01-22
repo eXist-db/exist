@@ -65,14 +65,14 @@ public class LowLevelText extends TestCase {
 		callAndTestBorrowCompiledXQuery(stringSource);
 	}
 
-	public void bugtestBorrowCompiledXQuery2() {
+	public void testBorrowCompiledXQuery2() {
 		pool.returnCompiledXQuery(stringSource, preCompiledXQuery);
 
 		callAndTestBorrowCompiledXQuery(stringSource);
 		callAndTestBorrowCompiledXQuery(stringSource);
 	}
 
-	public void bugtestBorrowCompiledXQuery3() {
+	public void testBorrowCompiledXQuery3() {
 		pool.returnCompiledXQuery(stringSource, preCompiledXQuery);
 
 		callAndTestBorrowCompiledXQuery(stringSource);
@@ -89,7 +89,7 @@ public class LowLevelText extends TestCase {
 	}
 
 	/** test with a new StringSource object having same content */
-	public void bugtestBorrowCompiledXQueryNewStringSource2() {
+	public void testBorrowCompiledXQueryNewStringSource2() {
 		pool.returnCompiledXQuery(stringSource, preCompiledXQuery);
 		StringSource localStringSource = new StringSource(TEST_XQUERY_SOURCE);
 
