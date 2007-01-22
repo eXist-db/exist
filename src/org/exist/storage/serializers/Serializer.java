@@ -39,6 +39,7 @@ import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.URIResolver;
+import javax.xml.transform.ErrorListener;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.sax.SAXTransformerFactory;
@@ -83,6 +84,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
+import org.xml.sax.SAXParseException;
 import org.xml.sax.ext.LexicalHandler;
 
 /**
@@ -360,8 +362,12 @@ public abstract class Serializer implements XMLReader {
 	
 	public void serialize(DocumentImpl doc, Writer writer, boolean prepareStylesheet) throws SAXException {
 		if (prepareStylesheet) {
-			prepareStylesheets(doc);
-		}
+            try {
+                prepareStylesheets(doc);
+            } catch (TransformerConfigurationException e) {
+                throw new SAXException(e.getMessage(), e);
+            }
+        }
 		if (templates != null)
 			applyXSLHandler(writer);
 		else
@@ -373,8 +379,12 @@ public abstract class Serializer implements XMLReader {
 	
 
 	public String serialize(NodeValue n) throws SAXException {
-		setStylesheetFromProperties(n.getOwnerDocument());
-		StringWriter out = new StringWriter();
+        try {
+            setStylesheetFromProperties(n.getOwnerDocument());
+        } catch (TransformerConfigurationException e) {
+            throw new SAXException(e.getMessage(), e);
+        }
+        StringWriter out = new StringWriter();
 		if (templates != null)
 			applyXSLHandler(out);
 		else
@@ -392,8 +402,12 @@ public abstract class Serializer implements XMLReader {
 	 *@exception  SAXException  Description of the Exception
 	 */
 	public String serialize(NodeProxy p) throws SAXException {
-		setStylesheetFromProperties(p.getOwnerDocument());
-		StringWriter out = new StringWriter();
+        try {
+            setStylesheetFromProperties(p.getOwnerDocument());
+        } catch (TransformerConfigurationException e) {
+            throw new SAXException(e.getMessage(), e);
+        }
+        StringWriter out = new StringWriter();
 		if (templates != null)
 			applyXSLHandler(out);
 		else
@@ -403,7 +417,7 @@ public abstract class Serializer implements XMLReader {
 		return out.toString();
 	}
 
-	public void prepareStylesheets(DocumentImpl doc) {
+	public void prepareStylesheets(DocumentImpl doc) throws TransformerConfigurationException {
 		if (outputProperties.getProperty(EXistOutputKeys.PROCESS_XSL_PI, "no").equals("yes")) {
 			String stylesheet = hasXSLPi(doc);
 			if (stylesheet != null)
@@ -502,7 +516,7 @@ public abstract class Serializer implements XMLReader {
 		xmlout = null;
 	}
 
-	protected void setStylesheetFromProperties(Document doc) {
+	protected void setStylesheetFromProperties(Document doc) throws TransformerConfigurationException {
 		if(templates != null)
 			return;
 		String stylesheet = outputProperties.getProperty(EXistOutputKeys.STYLESHEET);
@@ -526,99 +540,89 @@ public abstract class Serializer implements XMLReader {
 			}
 		}
 	}
-	
-	public void setStylesheet(String stylesheet) {
-		setStylesheet(null, stylesheet);
-	}
 
 	/**
 	 *  Plug an XSL stylesheet into the processing pipeline.
 	 *  All output will be passed to this stylesheet.
 	 */
-	public void setStylesheet(DocumentImpl doc, String stylesheet) {
+	public void setStylesheet(DocumentImpl doc, String stylesheet) throws TransformerConfigurationException {
 		if (stylesheet == null) {
 			templates = null;
 			return;
 		}
 		long start = System.currentTimeMillis();
 		xslHandler = null;
-		try {
-			XmldbURI stylesheetUri = null;
-			URI externalUri = null;
-			try {
-				stylesheetUri = XmldbURI.xmldbUriFor(stylesheet);
-				if(!stylesheetUri.toCollectionPathURI().equals(stylesheetUri)) {
-					externalUri = stylesheetUri.getXmldbURI();
-				}
-			} catch (URISyntaxException e) {
-				//could be an external URI!
-				try {
-					externalUri = new URI(stylesheet);
-				} catch (URISyntaxException ee) {
-					throw new IllegalArgumentException("Stylesheet URI could not be parsed: "+ee.getMessage());
-				}
-			}
-			// does stylesheet point to an external resource?
-			if (externalUri!=null) {
-				StreamSource source = new StreamSource(externalUri.toString());
-				templates = factory.newTemplates(source);
-			// read stylesheet from the database
-			} else {
-				// if stylesheet is relative, add path to the
-				// current collection and normalize
-				if(doc != null) {
-					stylesheetUri = doc.getCollection().getURI().resolveCollectionPath(stylesheetUri).normalizeCollectionPath();
-				}
-				
-				// load stylesheet from eXist
-				DocumentImpl xsl = null;
-				try {
-					xsl = (DocumentImpl) broker.getXMLResource(stylesheetUri);
-				} catch (PermissionDeniedException e) {
-					LOG.debug("permission denied to read stylesheet");
-				}
-				if (xsl == null) {
-					LOG.debug("stylesheet not found");
-					return;
-				}
-				if(!xsl.getPermissions().validate(broker.getUser(), Permission.READ)) {
-					LOG.debug("Permission denied to read stylesheet doc.");
-					return;
-				}
-				
-				//TODO: use xmldbURI
-				if (xsl.getCollection() != null) {
-					factory.setURIResolver(
-							new InternalURIResolver(xsl.getCollection().getURI().toString()));
-				}
-				
-				// save handlers
-				Receiver oldReceiver = receiver;
-				
-				// compile stylesheet
-				TemplatesHandler handler = factory.newTemplatesHandler();
-				receiver = new ReceiverToSAX(handler);
-				try {
-					this.serializeToReceiver(xsl, true);
-					templates = handler.getTemplates();
-				} catch (SAXException e) {
-					LOG.warn("SAXException while creating template", e);
-				}
-				
-				// restore handlers
-				receiver = oldReceiver;
-				factory.setURIResolver(null);
+        XmldbURI stylesheetUri = null;
+        URI externalUri = null;
+        try {
+            stylesheetUri = XmldbURI.xmldbUriFor(stylesheet);
+            if(!stylesheetUri.toCollectionPathURI().equals(stylesheetUri)) {
+                externalUri = stylesheetUri.getXmldbURI();
             }
-			LOG.debug(
-				"compiling stylesheet took " + (System.currentTimeMillis() - start));
-			if(templates != null)
-				xslHandler = factory.newTransformerHandler(templates);
+        } catch (URISyntaxException e) {
+            //could be an external URI!
+            try {
+                externalUri = new URI(stylesheet);
+            } catch (URISyntaxException ee) {
+                throw new IllegalArgumentException("Stylesheet URI could not be parsed: "+ee.getMessage());
+            }
+        }
+        // does stylesheet point to an external resource?
+        if (externalUri!=null) {
+            StreamSource source = new StreamSource(externalUri.toString());
+            templates = factory.newTemplates(source);
+            // read stylesheet from the database
+        } else {
+            // if stylesheet is relative, add path to the
+            // current collection and normalize
+            if(doc != null) {
+                stylesheetUri = doc.getCollection().getURI().resolveCollectionPath(stylesheetUri).normalizeCollectionPath();
+            }
+
+            // load stylesheet from eXist
+            DocumentImpl xsl = null;
+            try {
+                xsl = (DocumentImpl) broker.getXMLResource(stylesheetUri);
+            } catch (PermissionDeniedException e) {
+                throw new TransformerConfigurationException("permission denied to read " + stylesheetUri);
+            }
+            if (xsl == null) {
+                throw new TransformerConfigurationException("stylesheet not found: " + stylesheetUri);
+            }
+            if(!xsl.getPermissions().validate(broker.getUser(), Permission.READ)) {
+                throw new TransformerConfigurationException("permission denied to read " + stylesheetUri);
+            }
+
+            //TODO: use xmldbURI
+            if (xsl.getCollection() != null) {
+                factory.setURIResolver(
+                        new InternalURIResolver(xsl.getCollection().getURI().toString()));
+            }
+
+            // save handlers
+            Receiver oldReceiver = receiver;
+
+            // compile stylesheet
+            factory.setErrorListener(new ErrorListener());
+            TemplatesHandler handler = factory.newTemplatesHandler();
+            receiver = new ReceiverToSAX(handler);
+            try {
+                this.serializeToReceiver(xsl, true);
+                templates = handler.getTemplates();
+            } catch (SAXException e) {
+                throw new TransformerConfigurationException(e.getMessage(), e);
+            }
+
+            // restore handlers
+            receiver = oldReceiver;
+            factory.setURIResolver(null);
+        }
+        LOG.debug(
+                "compiling stylesheet took " + (System.currentTimeMillis() - start));
+        if(templates != null)
+            xslHandler = factory.newTransformerHandler(templates);
 //			xslHandler.getTransformer().setOutputProperties(outputProperties);
-		} catch (TransformerConfigurationException e) {
-			LOG.debug("error compiling stylesheet", e);
-			return;
-		}
-		checkStylesheetParams();
+        checkStylesheetParams();
 	}
 
 	/** 
@@ -662,26 +666,42 @@ public abstract class Serializer implements XMLReader {
 		if (outputProperties.getProperty(EXistOutputKeys.PROCESS_XSL_PI, "no").equals("yes")) {
 			String stylesheet = hasXSLPi(doc);
 			if (stylesheet != null)
-				setStylesheet(doc, stylesheet);
-		}
-		setStylesheetFromProperties(doc);
-		setXSLHandler();
+                try {
+                    setStylesheet(doc, stylesheet);
+                } catch (TransformerConfigurationException e) {
+                    throw new SAXException(e.getMessage(), e);
+                }
+        }
+        try {
+            setStylesheetFromProperties(doc);
+        } catch (TransformerConfigurationException e) {
+            throw new SAXException(e.getMessage(), e);
+        }
+        setXSLHandler();
 		serializeToReceiver(
 			doc,
 			getProperty(GENERATE_DOC_EVENTS, "false").equals("true"));
 	}
 
 	public void toSAX(NodeValue n) throws SAXException {
-		setStylesheetFromProperties(n.getOwnerDocument());
-		setXSLHandler();
+        try {
+            setStylesheetFromProperties(n.getOwnerDocument());
+        } catch (TransformerConfigurationException e) {
+            throw new SAXException(e.getMessage(), e);
+        }
+        setXSLHandler();
 		serializeToReceiver(
 				n,
 				getProperty(GENERATE_DOC_EVENTS, "false").equals("true"));
 	}
 	
 	public void toSAX(NodeProxy p) throws SAXException {
-		setStylesheetFromProperties(p.getOwnerDocument());
-		setXSLHandler();
+        try {
+            setStylesheetFromProperties(p.getOwnerDocument());
+        } catch (TransformerConfigurationException e) {
+            throw new SAXException(e.getMessage(), e);
+        }
+        setXSLHandler();
 		if (p.getNodeId() == NodeId.DOCUMENT_NODE)
 			serializeToReceiver(p.getDocument(), getProperty(GENERATE_DOC_EVENTS, "false").equals("true"));
 		else
@@ -702,8 +722,12 @@ public abstract class Serializer implements XMLReader {
 	 * @throws SAXException
 	 */
 	public void toSAX(Sequence seq, int start, int count, boolean wrap) throws SAXException {
-		setStylesheetFromProperties(null);
-		setXSLHandler();
+        try {
+            setStylesheetFromProperties(null);
+        } catch (TransformerConfigurationException e) {
+            throw new SAXException(e.getMessage(), e);
+        }
+        setXSLHandler();
 		AttrList attrs = new AttrList();
 		attrs.addAttribute(ATTR_HITS_QNAME, Integer.toString(seq.getLength()));
 		attrs.addAttribute(ATTR_START_QNAME, Integer.toString(start));
@@ -852,4 +876,22 @@ public abstract class Serializer implements XMLReader {
 			return new SAXSource(serializer, new InputSource(href));
 		}
 	}
+
+    /**
+     * An error listener that just rethrows the exception
+     */
+    private class ErrorListener implements javax.xml.transform.ErrorListener {
+
+        public void warning(TransformerException exception) throws TransformerException {
+            throw exception;
+        }
+
+        public void error(TransformerException exception) throws TransformerException {
+            throw exception;
+        }
+
+        public void fatalError(TransformerException exception) throws TransformerException {
+            throw exception;
+        }
+    }
 }
