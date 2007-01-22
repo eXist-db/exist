@@ -45,6 +45,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
+import javax.xml.transform.TransformerConfigurationException;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
@@ -397,15 +398,15 @@ public class RESTServer {
             Serializer serializer = broker.getSerializer();
             serializer.reset();
             
-            //use a stylesheet if specified in query parameters
-            if (stylesheet != null)
-            {
-                serializer.setStylesheet(resource, stylesheet);
-            }
-            
+
             //Serialize the document
             try
 			{
+                //use a stylesheet if specified in query parameters
+                if (stylesheet != null)
+                {
+                    serializer.setStylesheet(resource, stylesheet);
+                }
                 serializer.setProperties(outputProperties);
                 serializer.prepareStylesheets(resource);
                 if(asMimeType != null) //was a mime-type specified?
@@ -437,6 +438,9 @@ public class RESTServer {
 			{
                 LOG.warn(saxe);
                 throw new BadRequestException("Error while serializing XML: " + saxe.getMessage());
+            } catch (TransformerConfigurationException e) {
+                LOG.warn(e);
+                throw new BadRequestException(e.getMessageAndLocation());
             }
         }
     }
