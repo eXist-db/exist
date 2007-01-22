@@ -412,7 +412,7 @@ public class XQueryFunctionsTest extends TestCase {
 		}
 	}	
 	
-	public void testUtilEval() throws XPathException {
+	public void bugtestUtilEval1() throws XPathException {
 		ResourceSet result 		= null;
 		String		r			= "";
 		try {
@@ -425,6 +425,24 @@ public class XQueryFunctionsTest extends TestCase {
 			fail(e.getMessage());
 		}
 	}	
+        
+        // @see http://sourceforge.net/tracker/index.php?func=detail&aid=1629363&group_id=17691&atid=117691
+	public void testUtilEval2() throws XPathException {
+		ResourceSet result 		= null;
+		String		r			= "";
+		try {
+			String query = "let $context := <item/> "+
+                                "return util:eval(\"<result>{$context}</result>\")";
+                        // TODO check result
+			result 	= service.query( query );			
+			assertEquals( 1, result.getSize());	
+			
+		} catch (XMLDBException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+	}
+        
 
 	public void testUtilEvalForFunction() throws XPathException
 	{
