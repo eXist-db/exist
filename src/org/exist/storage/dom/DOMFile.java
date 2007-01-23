@@ -1078,7 +1078,7 @@ public class DOMFile extends BTree implements Lockable {
 					break;
 			}
 		}
-		return KEY_NOT_FOUND;
+		return StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;
 	}
 	
 	private long findNode(StoredNode node, NodeId target, Iterator iter) {
@@ -1092,11 +1092,11 @@ public class DOMFile extends BTree implements Lockable {
 					return ((NodeIterator) iter).currentAddress();
 				}
 				long p;
-				if ((p = findNode(child, target, iter)) != KEY_NOT_FOUND)
+				if ((p = findNode(child, target, iter)) != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
 					return p;
 			}
 		}
-		return KEY_NOT_FOUND;
+		return StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;
 	}
 
 	/**
@@ -1137,7 +1137,7 @@ public class DOMFile extends BTree implements Lockable {
 			final Iterator iter = new NodeIterator(lock, this, node.getDocument(), parentPointer);
 			final StoredNode n = (StoredNode) iter.next();
 			final long address = findNode(n, node.getNodeId(), iter);
-			if (address == KEY_NOT_FOUND) {
+			if (address == StoredNode.UNKNOWN_NODE_IMPL_ADDRESS) {
 				// if(LOG.isDebugEnabled())
 				// LOG.debug("Node data location not found for node " +
 				// node.gid);

@@ -32,10 +32,10 @@ public final class NodeIterator implements Iterator {
 	private StoredNode node = null;
 	private DocumentImpl doc = null;
 	private int offset;
-	private short lastTID = -1;
+	private short lastTID = ItemId.UNKNOWN_ID;
 	private DOMFile.DOMPage p = null;
 	private long page;
-	private long startAddress = -1;
+	private long startAddress = StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;
 	private Object lockKey;
 	private boolean useNodePool = false;
 
@@ -105,7 +105,6 @@ public final class NodeIterator implements Iterator {
 	 */
 	public Object next() {
 		Lock lock = db.getLock();
-		StoredNode nextNode = null;
 		try {
 			try {
 				lock.acquire(Lock.READ_LOCK);
@@ -114,6 +113,7 @@ public final class NodeIterator implements Iterator {
 				return null;
 			}
 			db.setOwnerObject(lockKey);
+			StoredNode nextNode = null;
 			if(gotoNextPosition()) {
 				long backLink = 0;
 			    do {
@@ -129,44 +129,44 @@ public final class NodeIterator implements Iterator {
 						}
 						page = nextPage;
 						p = db.getCurrentPage(nextPage);
-//						LOG.debug(" -> " + nextPage + "; len = " + p.len + "; " + p.page.getPageInfo());
+						//LOG.debug(" -> " + nextPage + "; len = " + p.len + "; " + p.page.getPageInfo());
 						db.addToBuffer(p);
 						offset = 0;
 					}
 					// extract the tid
-					lastTID = ByteConversion.byteToShort(p.data, offset);
+					lastTID = ByteConversion.byteToShort(p.data, offset);					
+					offset += DOMFile.LENGTH_TID;
 					
-					offset += 2;
 					//	check if this is just a link to a relocated node
 					if(ItemId.isLink(lastTID)) {
 						// skip this
-						offset += 8;
-//						System.out.println("skipping link on p " + page + " -> " + 
-//								StorageAddress.pageFromPointer(link));
+						offset += DOMFile.LENGTH_FORWARD_LOCATION;
+						//System.out.println("skipping link on p " + page + " -> " + 
+						//StorageAddress.pageFromPointer(link));
+						//continue the iteration
 						continue;
 					}
+					
 					// read data length
-					short l = ByteConversion.byteToShort(p.data, offset);
-
-					if (l < 0) {
-						LOG.warn("Got negative length" + l + " at offset " + offset + "!!!");
+					short vlen = ByteConversion.byteToShort(p.data, offset);
+					offset += DOMFile.LENGTH_DATA_LENGTH;
+					if (vlen < 0) {
+						LOG.warn("Got negative length" + vlen + " at offset " + offset + "!!!");
 						LOG.debug(db.debugPageContents(p));
 						//TODO : throw an exception right now ?
-					}
-                    
-					offset += 2;
+					}                    
+					
 					if(ItemId.isRelocated(lastTID)) {
 						// found a relocated node. Read the original address
 						backLink = ByteConversion.byteToLong(p.data, offset);
-						offset += 8;
+						offset += DOMFile.LENGTH_ORIGINAL_LOCATION;
 					}
+					
 					//	overflow page? load the overflow value
-					if(l == DOMFile.OVERFLOW) {
-//					    LOG.warn("unexpected overflow page at " + p.getPageNum() + "; tid = " + 
-//					            ItemId.getId(lastTID) + "; offset = " + offset + "; skipped = " + skipped);
-						l = 8;
+					if(vlen == DOMFile.OVERFLOW) {
+						vlen = DOMFile.LENGTH_OVERFLOW_LOCATION;
 						final long overflow = ByteConversion.byteToLong(p.data, offset);
-						offset += 8;
+						offset += DOMFile.LENGTH_OVERFLOW_LOCATION;
 						try {
 							final byte[] odata = db.getOverflowValue(overflow);
 							nextNode = StoredNode.deserialize(odata, 0, odata.length, doc, useNodePool);
@@ -177,22 +177,22 @@ public final class NodeIterator implements Iterator {
 					// normal node
 					} else {
                         try {
-    						nextNode = StoredNode.deserialize(p.data, offset, l, doc, useNodePool);
-    						offset += l;
+    						nextNode = StoredNode.deserialize(p.data, offset, vlen, doc, useNodePool);
+    						offset += vlen;
                         } catch(Exception e) {
                             LOG.warn("Error while deserializing node: " + e.getMessage(), e);
-                            LOG.warn("Reading from offset: " + offset + "; len = " + l);
+                            LOG.warn("Reading from offset: " + offset + "; len = " + vlen);
                             LOG.debug(db.debugPageContents(p));
                             throw new RuntimeException(e);
                         }
 					}
 					if(nextNode == null) {
-					    LOG.debug("illegal node on page " + p.getPageNum() + "; tid = " + ItemId.getId(lastTID) +
+					    LOG.warn("illegal node on page " + p.getPageNum() + "; tid = " + ItemId.getId(lastTID) +
 					            "; next = " + p.getPageHeader().getNextDataPage() + "; prev = " + 
-					            p.getPageHeader().getPrevDataPage() + "; offset = " + (offset - l) +
+					            p.getPageHeader().getPrevDataPage() + "; offset = " + (offset - vlen) +
 					            "; len = " + p.getPageHeader().getDataLength());
-//					    LOG.debug(db.debugPageContents(p));
-//					    LOG.debug(p.dumpPage());
+					    //LOG.debug(db.debugPageContents(p));
+					    //LOG.debug(p.dumpPage());
 					    return null;
 					}
 					if(ItemId.isRelocated(lastTID)) {
@@ -203,9 +203,8 @@ public final class NodeIterator implements Iterator {
 						);
 					}
 					nextNode.setOwnerDocument(doc);
-//					System.out.println("Next: " + nextNode.getNodeName() + ": " + p.getPageNum() + " [" + 
-//                            ItemId.getId(lastTID) + ":" + offset + "] " + p.ph.getDataLength());
-			    } while(nextNode == null);
+				//YES ! needed because of the continue statement above
+			    } while (nextNode == null);
 			}
 			return nextNode;
 		} catch (BTreeException e) {
@@ -222,7 +221,7 @@ public final class NodeIterator implements Iterator {
 		//	position the iterator at the start of the first value
 		if (node != null) {
             RecordPos rec = null;
-            if (node.getInternalAddress() != Page.NO_PAGE)
+            if (node.getInternalAddress() != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
                 rec = db.findRecord(node.getInternalAddress());
             if (rec == null) {
     			long addr = db.findValue(lockKey, new NodeProxy(node));
@@ -234,14 +233,14 @@ public final class NodeIterator implements Iterator {
 			p = rec.getPage();
 			offset = rec.offset - 2;
 			node = null;
-		} else if (-1 < startAddress) {
+		} else if (startAddress != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS) {
 			final RecordPos rec = db.findRecord(startAddress);
 			if(rec == null)
 				throw new IOException("Node not found at specified address.");
 			page = rec.getPage().getPageNum();
 			offset = rec.offset - 2;
 			p = rec.getPage();
-			startAddress = -1;
+			startAddress = StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;
 		} else if (page != Page.NO_PAGE) {
 			p = db.getCurrentPage(page);
 			db.addToBuffer(p);
