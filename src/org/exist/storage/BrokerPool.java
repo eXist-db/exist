@@ -1161,7 +1161,8 @@ public class BrokerPool {
             }
             cacheManager.checkCaches();
             lastMajorSync = System.currentTimeMillis();
-            notificationService.debug();
+            if (LOG.isDebugEnabled())
+            	notificationService.debug();
         } else
             cacheManager.checkDistribution();
         //TODO : touch this.syncEvent and syncRequired ?
