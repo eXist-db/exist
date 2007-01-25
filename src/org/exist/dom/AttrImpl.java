@@ -146,6 +146,7 @@ public class AttrImpl extends NamedNode implements Attr {
                 len - (next - start),
                 "UTF-8" );
         } catch ( UnsupportedEncodingException uee ) {
+        	LOG.warn(uee);
             value =
                 new String( data, next,
                		len - (next - start));
@@ -158,6 +159,8 @@ public class AttrImpl extends NamedNode implements Attr {
         attr.nodeName = doc.getSymbols().getQName(Node.ATTRIBUTE_NODE, namespace, name, prefix);
         attr.value = value;
         attr.nodeId = dln;
+        if (dln == null)
+        	throw new RuntimeException("no node id " + id);
         attr.setType( attrType );
         return attr;
     }
