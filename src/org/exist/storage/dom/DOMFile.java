@@ -266,9 +266,10 @@ public class DOMFile extends BTree implements Lockable {
 		DOMPage page = getCurrentPage(transaction);
 		// does value fit into current data page?
 		if (page == null || page.len + LENGTH_TID + LENGTH_DATA_LENGTH + vlen > page.data.length) {
-			DOMPage newPage = new DOMPage();
+			final DOMPage newPage = new DOMPage();
+			final DOMFilePageHeader ph = page.getPageHeader();
 			if (page != null) {
-				final DOMFilePageHeader ph = page.getPageHeader();
+				
                 
                 if (isTransactional && transaction != null) {
                     UpdateHeaderLoggable loggable = new UpdateHeaderLoggable(
@@ -457,7 +458,9 @@ public class DOMFile extends BTree implements Lockable {
 				if (rec.offset + LENGTH_TID + LENGTH_DATA_LENGTH  + value.length > fileHeader.getWorkSize()
 						|| !rec.getPage().getPageHeader().hasRoom()) {
 					// still not enough free space: create a new page
-					DOMPage newPage = new DOMPage();
+					final DOMPage newPage = new DOMPage();
+					final DOMFilePageHeader nph = newPage.getPageHeader();
+					
 					LOG.debug("creating additional page: "
 							+ newPage.getPageNum() + "; prev = " + rec.getPage().getPageNum() + "; next = " +
                             rec.getPage().getPageHeader().getNextDataPage());
@@ -470,8 +473,8 @@ public class DOMFile extends BTree implements Lockable {
                     }
                     
                     // adjust page links
-					newPage.getPageHeader().setNextDataPage(rec.getPage().getPageHeader().getNextDataPage());
-					newPage.getPageHeader().setPrevDataPage(rec.getPage().getPageNum());
+					nph.setNextDataPage(rec.getPage().getPageHeader().getNextDataPage());
+					nph.setPrevDataPage(rec.getPage().getPageNum());
 					
                     if (isTransactional && transaction != null) {
                         UpdateHeaderLoggable loggable = new UpdateHeaderLoggable(
@@ -482,9 +485,9 @@ public class DOMFile extends BTree implements Lockable {
                     }
                     
                     rec.getPage().getPageHeader().setNextDataPage(newPage.getPageNum());
-                    if (newPage.getPageHeader().getNextDataPage() != Page.NO_PAGE) {
+                    if (nph.getNextDataPage() != Page.NO_PAGE) {
                         // link the next page in the chain back to the new page inserted 
-                        DOMPage nextInChain = getCurrentPage(newPage.getPageHeader().getNextDataPage());
+                        DOMPage nextInChain = getCurrentPage(nph.getNextDataPage());
                         
                         if (isTransactional && transaction != null) {
                         	DOMFilePageHeader ph = nextInChain.getPageHeader();
@@ -517,7 +520,8 @@ public class DOMFile extends BTree implements Lockable {
 		} else if (dlen + LENGTH_TID + LENGTH_DATA_LENGTH + value.length > fileHeader.getWorkSize()
 				|| !rec.getPage().getPageHeader().hasRoom()) {
 			// does value fit into page?
-			DOMPage newPage = new DOMPage();
+			final DOMPage newPage = new DOMPage();
+			final DOMFilePageHeader nph = newPage.getPageHeader();
 			LOG.debug("creating new page: " + newPage.getPageNum());
 			
             if (isTransactional && transaction != null) {
@@ -529,8 +533,8 @@ public class DOMFile extends BTree implements Lockable {
             }
             
 			long nextPageNr = rec.getPage().getPageHeader().getNextDataPage();
-			newPage.getPageHeader().setNextDataPage(nextPageNr);
-			newPage.getPageHeader().setPrevDataPage(rec.getPage().getPageNum());
+			nph.setNextDataPage(nextPageNr);
+			nph.setPrevDataPage(rec.getPage().getPageNum());
             
             if (isTransactional && transaction != null) {            	
             	DOMFilePageHeader ph = rec.getPage().getPageHeader();            	
@@ -542,7 +546,7 @@ public class DOMFile extends BTree implements Lockable {
             
             rec.getPage().getPageHeader().setNextDataPage(newPage.getPageNum());            
 			if (Page.NO_PAGE != nextPageNr) {
-				DOMPage nextPage = getCurrentPage(nextPageNr);
+				final DOMPage nextPage = getCurrentPage(nextPageNr);
 				
                 if (isTransactional && transaction != null) {
                     UpdateHeaderLoggable loggable = 
@@ -673,7 +677,7 @@ public class DOMFile extends BTree implements Lockable {
 				/* This is already a link, so we just copy it */
 			    if (rec.getPage().len + LENGTH_TID + LENGTH_FORWARD_LOCATION > fileHeader.getWorkSize()) {
                     /* no room in the old page, append a new one */
-                    DOMPage newPage = new DOMPage();
+                    final DOMPage newPage = new DOMPage();
                     
                     if (isTransactional && transaction != null) {
                         Loggable loggable = new CreatePageLoggable(
@@ -725,7 +729,7 @@ public class DOMFile extends BTree implements Lockable {
 			// check if we have room in the current split page
 			if (nextSplitPage.len + LENGTH_TID + LENGTH_DATA_LENGTH + LENGTH_ORIGINAL_LOCATION + realLen > fileHeader.getWorkSize()) {
 				// not enough room in the split page: append a new page
-				DOMPage newPage = new DOMPage();
+				final DOMPage newPage = new DOMPage();
                 
                 if (isTransactional && transaction != null) {
                     Loggable loggable = new CreatePageLoggable(
@@ -816,7 +820,7 @@ public class DOMFile extends BTree implements Lockable {
 			if (!ItemId.isRelocated(tid)) {
 				if (rec.getPage().len + LENGTH_TID + LENGTH_FORWARD_LOCATION > fileHeader.getWorkSize()) {
 					// the link doesn't fit into the old page. Append a new page
-					DOMPage newPage = new DOMPage();
+					final DOMPage newPage = new DOMPage();
                     
                     if (isTransactional && transaction != null) {
                         Loggable loggable = new CreatePageLoggable(
@@ -909,7 +913,7 @@ public class DOMFile extends BTree implements Lockable {
 		
 		long nextPageNr = rec.getPage().getPageHeader().getNextDataPage();
 		if (Page.NO_PAGE != nextPageNr) {
-			DOMPage nextPage = getCurrentPage(nextPageNr);
+			final DOMPage nextPage = getCurrentPage(nextPageNr);
 			
             if (isTransactional && transaction != null) {
                 Loggable loggable = new UpdateHeaderLoggable(transaction, nextSplitPage.getPageNum(),
@@ -1567,7 +1571,7 @@ public class DOMFile extends BTree implements Lockable {
 		dataCache.remove(page);
 		DOMFilePageHeader ph = page.getPageHeader();
 		if (ph.getNextDataPage() != Page.NO_PAGE) {
-			DOMPage next = getCurrentPage(ph.getNextDataPage());
+			final DOMPage next = getCurrentPage(ph.getNextDataPage());
 			next.getPageHeader().setPrevDataPage(ph.getPrevDataPage());
 //			 LOG.debug(next.getPageNum() + ".prev = " + ph.getPrevDataPage());
 			next.setDirty(true);
@@ -1576,7 +1580,7 @@ public class DOMFile extends BTree implements Lockable {
 		}
 
 		if (ph.getPrevDataPage() != Page.NO_PAGE) {
-			DOMPage prev = getCurrentPage(ph.getPrevDataPage());
+			final DOMPage prev = getCurrentPage(ph.getPrevDataPage());
 			prev.getPageHeader().setNextDataPage(ph.getNextDataPage());
 //			 LOG.debug(prev.getPageNum() + ".next = " + ph.getNextDataPage());
 			prev.setDirty(true);
@@ -1609,10 +1613,10 @@ public class DOMFile extends BTree implements Lockable {
 //		 debug.append("Removed pages: ");
 		long pnum = StorageAddress.pageFromPointer(p);
 		while (Page.NO_PAGE != pnum) {
-			DOMPage page = getCurrentPage(pnum);
+			final DOMPage page = getCurrentPage(pnum);
+			final DOMFilePageHeader ph = page.getPageHeader();
 
-			if (isTransactional && transaction != null) {
-				final DOMFilePageHeader ph = page.getPageHeader();				
+			if (isTransactional && transaction != null) {						
 				RemovePageLoggable loggable = new RemovePageLoggable(
 						transaction, pnum, 
 						ph.getPrevDataPage(), ph.getNextDataPage(), 
@@ -1622,8 +1626,7 @@ public class DOMFile extends BTree implements Lockable {
 
 			pnum = page.getPageHeader().getNextDataPage();
 			dataCache.remove(page);
-			try {
-				final DOMFilePageHeader ph = page.getPageHeader();
+			try {				
 				ph.setNextDataPage(Page.NO_PAGE);
 				ph.setPrevDataPage(Page.NO_PAGE);
 				ph.setDataLength(0);
@@ -1645,7 +1648,7 @@ public class DOMFile extends BTree implements Lockable {
 		long pnum = StorageAddress.pageFromPointer(((StoredNode) doc
 				.getFirstChild()).getInternalAddress());
 		while (Page.NO_PAGE != pnum) {
-			DOMPage page = getCurrentPage(pnum);
+			final DOMPage page = getCurrentPage(pnum);
 			dataCache.add(page);
 			buf.append(' ').append(pnum);
 			pnum = page.getPageHeader().getNextDataPage();
@@ -1927,7 +1930,7 @@ public class DOMFile extends BTree implements Lockable {
 		long pageNr = StorageAddress.pageFromPointer(p);
 		short tid = StorageAddress.tidFromPointer(p);
 		while (pageNr != Page.NO_PAGE) {
-			DOMPage page = getCurrentPage(pageNr);
+			final DOMPage page = getCurrentPage(pageNr);
 			dataCache.add(page);
 			RecordPos rec = page.findRecord(tid);
 			if (rec == null) {
@@ -2205,7 +2208,7 @@ public class DOMFile extends BTree implements Lockable {
 
 	protected void undoRemoveEmptyPage(RemoveEmptyPageLoggable loggable) {
 		try {
-            DOMPage newPage = getCurrentPage(loggable.pageNum);
+            final DOMPage newPage = getCurrentPage(loggable.pageNum);
             reuseDeleted(newPage.page);
             if (loggable.prevPage == Page.NO_PAGE) 
             	newPage.getPageHeader().setPrevDataPage(Page.NO_PAGE);
