@@ -242,6 +242,7 @@ public abstract class Paged {
 				flushed = true;
 			}
 		} catch (IOException ioe) {
+			LOG.warn("report me");
 			//TODO : this exception is *silently* ignored ?
 		}
 		return flushed;
@@ -439,6 +440,7 @@ public abstract class Paged {
                     readOnly = true;
                     raf = new RandomAccessFile(file, "r");
                     //TODO : log this !!!
+                    LOG.warn(e);
                 }                    
 			} else {
                 readOnly = true;
@@ -979,7 +981,7 @@ public abstract class Paged {
 				raf.read(workData);
 				return workData;
 			} catch(Exception e) {
-				LOG.debug("error while reading page: " + getPageInfo(), e);
+				LOG.warn("error while reading page: " + getPageInfo(), e);
 				throw new IOException(e.getMessage());
 			}
 		}

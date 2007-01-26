@@ -3170,12 +3170,14 @@ public class DOMFile extends BTree implements Lockable {
 			while (page != null) {
 				LOG.debug("removing overflow page " + page.getPageNum());
 				long nextPageNumber = page.getPageHeader().getNextPage();
+				
 				if (isTransactional && transaction != null) {
 					byte[] chunk = page.read();
 					Loggable loggable = new RemoveOverflowLoggable(transaction,
 							page.getPageNum(), nextPageNumber, chunk);
 					writeToLog(loggable, page);
 				}
+				
 				unlinkPages(page);
 				page = (nextPageNumber == Page.NO_PAGE) ? null : getPage(nextPageNumber);
 			}
