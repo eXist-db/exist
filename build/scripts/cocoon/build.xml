@@ -90,7 +90,7 @@
             <fileset dir="${exist.home}/lib/core">
                 <include name="xmlrpc*.jar"/>
                 <include name="xmldb.jar"/>
-                <include name="resolver.jar"/>
+                <include name="resolver*.jar"/>
                 <include name="jline*.jar"/>
                 <include name="jEdit-syntax*.jar"/>
                 <include name="jgroups-all*.jar"/>
