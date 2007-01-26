@@ -5,6 +5,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 import org.apache.log4j.Logger;
+import org.exist.util.Base64Encoder;
+
 
 public class MD5 {
 
@@ -21,9 +23,14 @@ public class MD5 {
             md5.update( passwd.getBytes() );
             byte[] digestData = md5.digest();
             
-            if (base64) {
-               digest = new String(Base64Coder.encode(digestData));
-            } else {
+            if(base64)
+            {
+            	Base64Encoder enc = new Base64Encoder();
+            	enc.translate(digestData);
+            	digest = new String(enc.getCharArray());
+            }
+            else
+            {
                digest = byteArrayToHex( digestData );
             }
         } catch ( NoSuchAlgorithmException e ) {
