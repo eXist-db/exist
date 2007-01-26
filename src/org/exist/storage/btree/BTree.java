@@ -553,9 +553,9 @@ public class BTree extends Paged {
         try {
             removeValue(null, loggable.key);
         } catch (BTreeException e) {
-            LOG.debug("Failed to undo: " + loggable.dump(), e);
+            LOG.warn("Failed to undo: " + loggable.dump(), e);
         } catch (IOException e) {
-            LOG.debug("Failed to undo: " + loggable.dump(), e);
+            LOG.warn("Failed to undo: " + loggable.dump(), e);
         }
     }
     
@@ -570,6 +570,7 @@ public class BTree extends Paged {
                 try {
                     dump(writer);
                 } catch (Exception e) {
+                	LOG.warn(e);
                     e.printStackTrace();
                 }
                 LOG.warn(writer.toString());
@@ -585,9 +586,9 @@ public class BTree extends Paged {
         try {
             addValue(null, loggable.key, loggable.oldPointer);
         } catch (BTreeException e) {
-            LOG.debug("Failed to undo: " + loggable.dump(), e);
+            LOG.warn("Failed to undo: " + loggable.dump(), e);
         } catch (IOException e) {
-            LOG.debug("Failed to undo: " + loggable.dump(), e);
+            LOG.warn("Failed to undo: " + loggable.dump(), e);
         }
     }
     
@@ -605,9 +606,9 @@ public class BTree extends Paged {
         try {
             addValue(null, loggable.oldValue, loggable.oldPointer);
         } catch (BTreeException e) {
-            LOG.debug("Failed to undo: " + loggable.dump(), e);
+            LOG.warn("Failed to undo: " + loggable.dump(), e);
         } catch (IOException e) {
-            LOG.debug("Failed to undo: " + loggable.dump(), e);
+            LOG.warn("Failed to undo: " + loggable.dump(), e);
         }
     }
     
