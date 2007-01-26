@@ -85,7 +85,7 @@
                     <title>Resolver</title>
                     <description>Resolver</description>
                     <used-by>exist</used-by>
-                    <lib>optional/resolver.jar</lib>
+                    <lib>optional/resolver-1.2.jar</lib>
                     <homepage>http://jedit.org/</homepage>
                 </file>
             </xsl:if>
