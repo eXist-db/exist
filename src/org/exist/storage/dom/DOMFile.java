@@ -290,7 +290,6 @@ public class DOMFile extends BTree implements Lockable {
 						transaction, page == null ? Page.NO_PAGE : page.getPageNum(),
 						newPage.getPageNum(), Page.NO_PAGE);
 				writeToLog(loggable, newPage.page);
-
 			}
 			
 			page = newPage;
@@ -531,7 +530,6 @@ public class DOMFile extends BTree implements Lockable {
                         transaction, rec.getPage().getPageNum(),
                         newPage.getPageNum(), rec.getPage().getPageHeader().getNextDataPage());
                 writeToLog(loggable, newPage.page);
-
             }
             
 			long nextPageNr = rec.getPage().getPageHeader().getNextDataPage();
@@ -574,7 +572,7 @@ public class DOMFile extends BTree implements Lockable {
 			rec.getPage().getPageHeader().setDataLength(rec.getPage().len);
 		}
 		// write the data
-		short tid = rec.getPage().getPageHeader().getNextTID();
+		final short tid = rec.getPage().getPageHeader().getNextTID();
         
         if (isTransactional && transaction != null) {
             Loggable loggable = 
@@ -620,7 +618,7 @@ public class DOMFile extends BTree implements Lockable {
 		// case, the new record is just appended to a new page linked to the old one.
 		boolean requireSplit = false;
 		for (int pos = rec.offset; pos < rec.getPage().len;) {
-			short tid = ByteConversion.byteToShort(rec.getPage().data, pos);
+			final short tid = ByteConversion.byteToShort(rec.getPage().data, pos);
 			pos += LENGTH_TID;
 			if (!ItemId.isLink(tid)) {
 				requireSplit = true;
@@ -675,7 +673,7 @@ public class DOMFile extends BTree implements Lockable {
 		// start copying records from rec.offset to the new split pages
 		for (int pos = rec.offset; pos < oldDataLen; splitRecordCount++) {
 			// read the current id
-			short tid = ByteConversion.byteToShort(oldData, pos);
+			final short tid = ByteConversion.byteToShort(oldData, pos);
 			pos += LENGTH_TID;
 			if (ItemId.isLink(tid)) {
 				/* This is already a link, so we just copy it */
@@ -769,8 +767,8 @@ public class DOMFile extends BTree implements Lockable {
 				backLink = ByteConversion.byteToLong(oldData, pos);
 				pos += LENGTH_ORIGINAL_LOCATION;
 				RecordPos origRec = findRecord(backLink, false);
-                long oldLink = ByteConversion.byteToLong(origRec.getPage().data, origRec.offset);                
-				long forwardLink = StorageAddress.createPointer(
+                final long oldLink = ByteConversion.byteToLong(origRec.getPage().data, origRec.offset);                
+				final long forwardLink = StorageAddress.createPointer(
 						(int) nextSplitPage.getPageNum(), ItemId.getId(tid));
                 
                 if (isTransactional && transaction != null) {
@@ -854,7 +852,7 @@ public class DOMFile extends BTree implements Lockable {
 					rec.getPage().len = 0;
 				}
                 
-                long forwardLink = StorageAddress.createPointer(
+                final long forwardLink = StorageAddress.createPointer(
                         (int) nextSplitPage.getPageNum(), ItemId.getId(tid));
                 
                 if (isTransactional && transaction != null) {
@@ -983,7 +981,7 @@ public class DOMFile extends BTree implements Lockable {
 		short count = 0;
 		final int dlen = page.getPageHeader().getDataLength();
 		for (int pos = 0; pos < dlen; count++) {
-			short tid = ByteConversion.byteToShort(page.data, pos);
+			final short tid = ByteConversion.byteToShort(page.data, pos);
 			pos += LENGTH_TID;
             if (ItemId.isLink(tid))
                 buf.append('L');
@@ -1242,9 +1240,11 @@ public class DOMFile extends BTree implements Lockable {
 	 */
 	public Value get(Value key) {
 		try {
-			long p = findValue(key);
-			if (p == KEY_NOT_FOUND)
+			final long p = findValue(key);
+			if (p == KEY_NOT_FOUND) {
+				LOG.warn("value not found : " + key);
 				return null;
+			}
 			return get(p);
 		} catch (BTreeException bte) {
 			LOG.warn(bte);
@@ -1265,9 +1265,11 @@ public class DOMFile extends BTree implements Lockable {
 	 */
 	public Value get(NodeProxy node) {
 		try {
-			long p = findValue(owner, node);
-			if (p == KEY_NOT_FOUND)
+			final long p = findValue(owner, node);
+			if (p == KEY_NOT_FOUND) {
+				LOG.warn("node value not found : " + node);
 				return null;
+			}
 			return get(p);
 		} catch (BTreeException bte) {
 			LOG.warn(bte);
@@ -1288,8 +1290,7 @@ public class DOMFile extends BTree implements Lockable {
 	public Value get(long p) {
 		RecordPos rec = findRecord(p);
 		if (rec == null) {
-//			SanityCheck.TRACE("object at " + StorageAddress.toString(p)
-//					+ " not found.");
+			SanityCheck.TRACE("object at " + StorageAddress.toString(p)	+ " not found.");
 			return null;
 		}
 		final short vlen = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
@@ -1298,8 +1299,8 @@ public class DOMFile extends BTree implements Lockable {
 			rec.offset += LENGTH_ORIGINAL_LOCATION;
 		Value v;
 		if (vlen == OVERFLOW) {
-			long pnum = ByteConversion.byteToLong(rec.getPage().data, rec.offset);
-			byte[] data = getOverflowValue(pnum);
+			final long pnum = ByteConversion.byteToLong(rec.getPage().data, rec.offset);
+			final byte[] data = getOverflowValue(pnum);
 			v = new Value(data);
 		} else
 			v = new Value(rec.getPage().data, rec.offset, vlen);
@@ -1396,7 +1397,7 @@ public class DOMFile extends BTree implements Lockable {
 	 */
 	public long put(Txn transaction, Value key, byte[] value)
 			throws ReadOnlyException {
-		long p = add(transaction, value);
+		final long p = add(transaction, value);
 		try {
 			addValue(transaction, key, p);
 		} catch (IOException ioe) {
@@ -1419,9 +1420,11 @@ public class DOMFile extends BTree implements Lockable {
 
 	public void remove(Txn transaction, Value key) {
 		try {
-			long p = findValue(key);
-			if (p == KEY_NOT_FOUND)
+			final long p = findValue(key);
+			if (p == KEY_NOT_FOUND) {
+				LOG.warn("value not found : " + key);
 				return;
+			}
 			remove(transaction, key, p);
 		} catch (BTreeException bte) {
 			LOG.warn(bte);
@@ -1483,7 +1486,7 @@ public class DOMFile extends BTree implements Lockable {
 	}
 
 	public void removeNode(Txn transaction, long p) {
-		RecordPos rec = findRecord(p);
+		final RecordPos rec = findRecord(p);
 		final int startOffset = rec.offset - 2;
 		final DOMFilePageHeader ph = rec.getPage().getPageHeader();
 		final short vlen = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
@@ -1719,8 +1722,10 @@ public class DOMFile extends BTree implements Lockable {
 			throws ReadOnlyException {
 		try {
 			long p = findValue(key);
-			if (p == KEY_NOT_FOUND)
+			if (p == KEY_NOT_FOUND) {
+				LOG.warn("node value not found : " + key);
 				return false;
+			}
 			update(transaction, p, value);
 		} catch (BTreeException bte) {
 			LOG.warn(bte);
@@ -1743,8 +1748,7 @@ public class DOMFile extends BTree implements Lockable {
      */
 	public void update(Txn transaction, long p, byte[] value)
 			throws ReadOnlyException {
-		RecordPos rec = findRecord(p);
-        
+		final RecordPos rec = findRecord(p);        
 		final short vlen = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
 		rec.offset += LENGTH_DATA_LENGTH;
 		if (ItemId.isRelocated(rec.getTID()))
@@ -1790,8 +1794,10 @@ public class DOMFile extends BTree implements Lockable {
 				// fallback to a btree lookup if the node could not be found
 				// by its storage address
 				address = findValue(this, new NodeProxy(node));
-    			if (address == BTree.KEY_NOT_FOUND)
+    			if (address == BTree.KEY_NOT_FOUND) {
+    				LOG.warn("node value not found : " + node);
     				return null;
+    			}
                 rec = findRecord(address);
     			SanityCheck.THROW_ASSERT(rec != null, "Node data could not be found!");
             }
