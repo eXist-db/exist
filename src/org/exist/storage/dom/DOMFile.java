@@ -384,8 +384,10 @@ public class DOMFile extends BTree implements Lockable {
 	public long insertAfter(Txn transaction, DocumentImpl doc, Value key, byte[] value) {
 		try {
 			final long p = findValue(key);
-			if (p == KEY_NOT_FOUND)
+			if (p == KEY_NOT_FOUND) {
+				LOG.warn("couldn't find value");
 				return KEY_NOT_FOUND;
+			}
 			return insertAfter(transaction, doc, p, value);
 		} catch (BTreeException e) {
 			LOG.warn("key not found", e);
@@ -721,11 +723,11 @@ public class DOMFile extends BTree implements Lockable {
 				continue;
 			}
 			// read data length
-			final short storedLen = ByteConversion.byteToShort(oldData, pos);
+			final short vlen = ByteConversion.byteToShort(oldData, pos);
 			pos += LENGTH_DATA_LENGTH;
 			// if this is an overflow page, the real data length is always 8
 			// byte for the page number of the overflow page
-			final short realLen = (storedLen == OVERFLOW ? LENGTH_OVERFLOW_LOCATION : storedLen);
+			final short realLen = (vlen == OVERFLOW ? LENGTH_OVERFLOW_LOCATION : vlen);
 
 			// check if we have room in the current split page
 			if (nextSplitPage.len + LENGTH_TID + LENGTH_DATA_LENGTH + LENGTH_ORIGINAL_LOCATION + realLen > fileHeader.getWorkSize()) {
@@ -798,7 +800,7 @@ public class DOMFile extends BTree implements Lockable {
 			ByteConversion.shortToByte(ItemId.setIsRelocated(tid), nextSplitPage.data, nextSplitPage.len);
 			nextSplitPage.len += LENGTH_TID;
 			// save length field
-			ByteConversion.shortToByte(storedLen, nextSplitPage.data, nextSplitPage.len);
+			ByteConversion.shortToByte(vlen, nextSplitPage.data, nextSplitPage.len);
 			nextSplitPage.len += LENGTH_DATA_LENGTH;
 			// save link to the original page
 			ByteConversion.longToByte(backLink, nextSplitPage.data,	nextSplitPage.len);
@@ -1483,9 +1485,9 @@ public class DOMFile extends BTree implements Lockable {
 		RecordPos rec = findRecord(p);
 		final int startOffset = rec.offset - 2;
 		final DOMFilePageHeader ph = rec.getPage().getPageHeader();
-		short vlen = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
+		final short vlen = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
 		rec.offset += LENGTH_DATA_LENGTH;
-		short l = vlen;		
+		short realLen = vlen;		
 		if (ItemId.isLink(rec.getTID())) {
 			throw new RuntimeException("Cannot remove link ...");
 		}
@@ -1494,10 +1496,10 @@ public class DOMFile extends BTree implements Lockable {
 		if (ItemId.isRelocated(rec.getTID())) {
 			backLink = ByteConversion.byteToLong(rec.getPage().data, rec.offset);
 			rec.offset += LENGTH_ORIGINAL_LOCATION;
-			l += LENGTH_ORIGINAL_LOCATION;
+			realLen += LENGTH_ORIGINAL_LOCATION;
 			removeLink(transaction, backLink);
 		}
-		if (l == OVERFLOW) {
+		if (vlen == OVERFLOW) {
 			// remove overflow value
             isOverflow = true;
 			long overflowLink = ByteConversion.byteToLong(rec.getPage().data, rec.offset);
@@ -1508,24 +1510,23 @@ public class DOMFile extends BTree implements Lockable {
 			} catch (IOException e) {
 				LOG.error("io error while removing overflow page", e);
 			}
-			l += LENGTH_OVERFLOW_LOCATION;
-            vlen = LENGTH_OVERFLOW_LOCATION;
+			realLen += LENGTH_OVERFLOW_LOCATION;
 		}
 		
 		if (isTransactional && transaction != null) {
-			byte[] data = new byte[vlen];
-			System.arraycopy(rec.getPage().data, rec.offset, data, 0, vlen);
+			byte[] data = new byte[vlen == OVERFLOW ? LENGTH_OVERFLOW_LOCATION : vlen];
+			System.arraycopy(rec.getPage().data, rec.offset, data, 0, vlen == OVERFLOW ? LENGTH_OVERFLOW_LOCATION : vlen);
 			RemoveValueLoggable loggable = new RemoveValueLoggable(transaction,
 					rec.getPage().getPageNum(), rec.getTID(), startOffset, data, isOverflow, backLink);
 			writeToLog(loggable, rec.getPage().page);
 		}
 		
-		final int end = startOffset + LENGTH_TID + LENGTH_DATA_LENGTH + l;
 		final int dlen = ph.getDataLength();
+		final int end = startOffset + LENGTH_TID + LENGTH_DATA_LENGTH + realLen;
 		// remove old value
 		System.arraycopy(rec.getPage().data, end, rec.getPage().data, startOffset, dlen - end);
 		rec.getPage().setDirty(true);
-		rec.getPage().len = dlen - (LENGTH_TID + LENGTH_DATA_LENGTH + l);
+		rec.getPage().len = dlen - (LENGTH_TID + LENGTH_DATA_LENGTH + realLen);
 		rec.getPage().setDirty(true);
 		ph.setDataLength(rec.getPage().len);
 		ph.decRecordCount();
