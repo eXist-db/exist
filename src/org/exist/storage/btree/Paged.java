@@ -531,7 +531,10 @@ public abstract class Paged {
 	protected final void writeValue(Page page, byte[] data) throws IOException {
 		PageHeader hdr = page.getPageHeader();
 		hdr.dataLen = fileHeader.workSize;
-		if (data.length < hdr.dataLen) {
+		if (data.length != hdr.dataLen) {
+			//TODO : where to get this 64 from ?
+			if (hdr.dataLen != getPageSize() - 64)
+				LOG.warn("ouch");
 			hdr.dataLen = data.length;
 		}
 		page.write(data);
