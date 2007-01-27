@@ -116,6 +116,7 @@ public class DOMFile extends BTree implements Lockable {
     public static final int LENGTH_FORWARD_LOCATION = 8; //sizeof long
     public static final int LENGTH_OVERFLOW_LOCATION = 8; //sizeof long
     public static final int LENGTH_ELEMENT_CHILD_COUNT = 4; //sizeof int
+    public static final int LENGTH_ATTRIBUTES_COUNT = 2; //sizeof short
     public static final int LENGTH_DLN_LENGTH = 2; //sizeof short    
 
     /*
@@ -428,7 +429,7 @@ public class DOMFile extends BTree implements Lockable {
 			SanityCheck.TRACE("page not found");
 			return KEY_NOT_FOUND;
 		}
-		short vlen = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
+		final short vlen = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
 		rec.offset += LENGTH_DATA_LENGTH;
 		if (ItemId.isRelocated(rec.getTID()))
 			rec.offset += LENGTH_ORIGINAL_LOCATION;
@@ -963,7 +964,7 @@ public class DOMFile extends BTree implements Lockable {
 			if (ItemId.isLink(tid)) {
 				pos += LENGTH_FORWARD_LOCATION;
 			} else {
-				short vlen = ByteConversion.byteToShort(page.data, pos);
+				final short vlen = ByteConversion.byteToShort(page.data, pos);
 				pos += LENGTH_DATA_LENGTH;
 				if (ItemId.isRelocated(tid)) {
 					pos += vlen == OVERFLOW ? LENGTH_ORIGINAL_LOCATION + LENGTH_OVERFLOW_LOCATION : LENGTH_ORIGINAL_LOCATION + vlen;
@@ -993,7 +994,7 @@ public class DOMFile extends BTree implements Lockable {
 				buf.append(':').append(LENGTH_FORWARD_LOCATION).append("] ");
 				pos += LENGTH_FORWARD_LOCATION;
 			} else {
-				short vlen = ByteConversion.byteToShort(page.data, pos);
+				final short vlen = ByteConversion.byteToShort(page.data, pos);
                 pos += LENGTH_DATA_LENGTH;
 				if (vlen < 0) {
 					LOG.warn("Illegal length: " + vlen);
@@ -1291,7 +1292,7 @@ public class DOMFile extends BTree implements Lockable {
 //					+ " not found.");
 			return null;
 		}
-		short vlen = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
+		final short vlen = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
 		rec.offset += LENGTH_DATA_LENGTH;
 		if (ItemId.isRelocated(rec.getTID()))
 			rec.offset += LENGTH_ORIGINAL_LOCATION;
@@ -1744,7 +1745,7 @@ public class DOMFile extends BTree implements Lockable {
 			throws ReadOnlyException {
 		RecordPos rec = findRecord(p);
         
-		short vlen = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
+		final short vlen = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
 		rec.offset += LENGTH_DATA_LENGTH;
 		if (ItemId.isRelocated(rec.getTID()))
 			rec.offset += LENGTH_ORIGINAL_LOCATION;
@@ -1849,7 +1850,8 @@ public class DOMFile extends BTree implements Lockable {
 				foundNext = true;
 		} while (!foundNext);
 		// read the page len
-		int vlen = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
+		final short vlen = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
+		int realLen = vlen;
         rec.offset += LENGTH_DATA_LENGTH;
 		// check if the node was relocated
 		if (ItemId.isRelocated(rec.getTID()))
@@ -1863,7 +1865,7 @@ public class DOMFile extends BTree implements Lockable {
 			data = getOverflowValue(op);
 			//We position the offset *after* the TID
 			rec.offset += LENGTH_OVERFLOW_LOCATION + LENGTH_TID;
-			vlen = data.length;
+			realLen = data.length;
 			readOffset = 0;
 			inOverflow = true;
 		}
@@ -1872,30 +1874,32 @@ public class DOMFile extends BTree implements Lockable {
 		final short type = Signatures.getType(data[readOffset++]);
 		// switch on the node type
 		switch (type) {
-		case Node.ELEMENT_NODE:
-			final int children = ByteConversion.byteToInt(data, readOffset);
-            readOffset += LENGTH_ELEMENT_CHILD_COUNT;
-            int dlnLen = ByteConversion.byteToShort(data, readOffset);
-            readOffset += LENGTH_DLN_LENGTH;
-            readOffset += doc.getBroker().getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, data, readOffset);
-            final short attributes = ByteConversion.byteToShort(data, readOffset);
-            rec.offset += vlen + 2;
-			for (int i = 0; i < children; i++) {
-	            final boolean extraWhitespace = addWhitespace && children - attributes > 1;			
-				//recursive call
-				getNodeValue(doc, os, rec, false, addWhitespace);
-				if (extraWhitespace)
-					os.write((byte) ' ');
+		case Node.ELEMENT_NODE: {
+				final int children = ByteConversion.byteToInt(data, readOffset);
+	            readOffset += LENGTH_ELEMENT_CHILD_COUNT;
+	            final int dlnLen = ByteConversion.byteToShort(data, readOffset);
+	            readOffset += LENGTH_DLN_LENGTH;
+	            readOffset += doc.getBroker().getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, data, readOffset);
+	            final short attributes = ByteConversion.byteToShort(data, readOffset);
+	            rec.offset += realLen + LENGTH_ATTRIBUTES_COUNT;
+				for (int i = 0; i < children; i++) {
+		            final boolean extraWhitespace = addWhitespace && (children - attributes) > 1;			
+					//recursive call
+					getNodeValue(doc, os, rec, false, addWhitespace);
+					if (extraWhitespace)
+						os.write((byte) ' ');
+				}
+				return;
 			}
-			return;
 		case Node.TEXT_NODE:
-        case Node.CDATA_SECTION_NODE:
-            dlnLen = ByteConversion.byteToShort(data, readOffset);
-            readOffset += LENGTH_DLN_LENGTH;
-            int nodeIdLen = doc.getBroker().getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, data, readOffset);
-            readOffset += nodeIdLen;
-            os.write(data, readOffset, vlen - (2 + nodeIdLen  + 1));
-			break;
+        case Node.CDATA_SECTION_NODE: {
+	            final int dlnLen = ByteConversion.byteToShort(data, readOffset);
+	            readOffset += LENGTH_DLN_LENGTH;
+	            final int nodeIdLen = doc.getBroker().getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, data, readOffset);
+	            readOffset += nodeIdLen;
+	            os.write(data, readOffset, realLen - (2 + nodeIdLen  + 1));
+				break;
+			}
 		case Node.ATTRIBUTE_NODE:
 			// use attribute value if the context node is an attribute, i.e.
 			// if this is the first call to the method
@@ -1903,9 +1907,9 @@ public class DOMFile extends BTree implements Lockable {
                 int start = readOffset - 1;
                 final byte idSizeType = (byte) (data[start] & 0x3);
 				final boolean hasNamespace = (data[start] & 0x10) == 0x10;
-                dlnLen = ByteConversion.byteToShort(data, readOffset);
+                final int dlnLen = ByteConversion.byteToShort(data, readOffset);
                 readOffset += LENGTH_DLN_LENGTH;
-                nodeIdLen = doc.getBroker().getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, data, readOffset);
+                final int nodeIdLen = doc.getBroker().getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, data, readOffset);
                 readOffset += nodeIdLen;
                 readOffset += Signatures.getLength(idSizeType); 
                 if (hasNamespace) {
@@ -1913,13 +1917,13 @@ public class DOMFile extends BTree implements Lockable {
 					final short prefixLen = ByteConversion.byteToShort(data, readOffset);
 					readOffset += prefixLen + 2; // skip prefix
 				}
-                os.write(rec.getPage().data, readOffset, vlen - (readOffset - start));
+                os.write(rec.getPage().data, readOffset, realLen - (readOffset - start));
 			}
 			break;
 		}
 		if (!inOverflow)
 			// if it isn't an overflow value, add the value length to the current offset
-			rec.offset += vlen + 2;
+			rec.offset += realLen + 2;
 	}
 
 	protected RecordPos findRecord(long p) {
@@ -2034,7 +2038,7 @@ public class DOMFile extends BTree implements Lockable {
 				page.len += LENGTH_TID;
 				// save data length
 				// overflow pages have length 0
-				short vlen = (short) loggable.value.length;
+				final short vlen = (short) loggable.value.length;
 				ByteConversion.shortToByte(vlen, page.data, page.len);
 				page.len += LENGTH_DATA_LENGTH;
 				// save data
@@ -2098,7 +2102,7 @@ public class DOMFile extends BTree implements Lockable {
         RecordPos rec = page.findRecord(ItemId.getId(loggable.tid));
         SanityCheck.THROW_ASSERT(rec != null, "tid " + ItemId.getId(loggable.tid) + " not found on page " + page.getPageNum() +
                 "; contents: " + debugPageContents(page));
-        short vlen = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
+        final short vlen = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
         SanityCheck.THROW_ASSERT(vlen == loggable.oldValue.length);
         rec.offset += LENGTH_DATA_LENGTH;
         if (ItemId.isRelocated(rec.getTID()))
@@ -2517,7 +2521,7 @@ public class DOMFile extends BTree implements Lockable {
             try {
                 ByteConversion.shortToByte(ItemId.setIsRelocated(loggable.tid), page.data, page.len);
                 page.len += LENGTH_TID;
-                short vlen = (short) loggable.value.length;
+                final short vlen = (short) loggable.value.length;
                 // save data length
                 // overflow pages have length 0
                 ByteConversion.shortToByte(vlen, page.data, page.len);
@@ -2803,7 +2807,7 @@ public class DOMFile extends BTree implements Lockable {
 				} else if (ItemId.isLink(tid)) {
 					pos += LENGTH_FORWARD_LOCATION;
 				} else {
-					short vlen = ByteConversion.byteToShort(data, pos);
+					final short vlen = ByteConversion.byteToShort(data, pos);
 					pos += LENGTH_DATA_LENGTH;
 					if (vlen < 0) {
 						LOG.warn("page = " + page.getPageNum() + "; pos = "
@@ -2988,7 +2992,7 @@ public class DOMFile extends BTree implements Lockable {
 				if (ItemId.isLink(tid)) {
 					pos += LENGTH_FORWARD_LOCATION;
 				} else {
-					short vlen = ByteConversion.byteToShort(data, pos);
+					final short vlen = ByteConversion.byteToShort(data, pos);
 					pos += LENGTH_DATA_LENGTH;
 					if (ItemId.isRelocated(tid)) {
 						pos += vlen == OVERFLOW ? LENGTH_ORIGINAL_LOCATION + LENGTH_OVERFLOW_LOCATION : LENGTH_ORIGINAL_LOCATION + vlen;
@@ -3214,7 +3218,7 @@ public class DOMFile extends BTree implements Lockable {
 			switch (mode) {
 			case VALUES:
 				RecordPos rec = findRecord(pointer);
-				short vlen = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
+				final short vlen = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
 				values.add(new Value(rec.getPage().data, rec.offset + LENGTH_DATA_LENGTH, vlen));
 				return true;
 			case KEYS:
