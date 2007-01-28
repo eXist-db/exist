@@ -568,6 +568,9 @@
     <target name="download-additional-jars" description="Download optional third-party jar files.">
         <get src="http://prdownloads.sourceforge.net/icu/icu4j-3_6.jar"
           dest="${lib.user}/icu4j-3_6.jar" verbose="true" />
+          
+        <get src="http://jug.safehaus.org/curr/jug-lgpl-2.0.0.jar"
+          dest="${lib.user}/jug-lgpl-2.0.0.jar" verbose="true" />
     </target>
     
 </project>
