@@ -24,10 +24,10 @@ package org.exist.dom;
 
 import java.io.IOException;
 
+import org.exist.security.UUIDGenerator;
+
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
-
-import org.safehaus.uuid.UUIDGenerator;
 
 /**
  *  Class representing a locktoken. Introduced for webDAV locking.
@@ -114,7 +114,7 @@ public class LockToken {
     
     // Helper function.
     public static String generateUUID(){
-        return UUIDGenerator.getInstance().generateRandomBasedUUID().toString();
+        return UUIDGenerator.getUUID();
     }
     
     public void write(VariableByteOutputStream ostream) throws IOException {
