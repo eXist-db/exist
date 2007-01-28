@@ -56,7 +56,6 @@
 	<classpathentry kind="lib" path="lib/optional/commons-httpclient-3.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-io-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/optional/jaxrpc.jar"/>
-	<classpathentry kind="lib" path="lib/optional/jug-lgpl-2.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/optional/saaj.jar"/>
 	<classpathentry kind="lib" path="lib/optional/wsdl4j-1.5.1.jar"/>
 	<classpathentry kind="lib" path="thirdparty/tomcat5/bin/jmx.jar"/>
