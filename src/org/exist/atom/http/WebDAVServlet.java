@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.atom.Atom;
@@ -55,6 +56,7 @@ import org.exist.http.webdav.methods.Mkcol;
 import org.exist.http.webdav.methods.Move;
 import org.exist.http.webdav.methods.Put;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.UUIDGenerator;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -67,8 +69,6 @@ import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.value.StringValue;
-import org.safehaus.uuid.UUID;
-import org.safehaus.uuid.UUIDGenerator;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -203,7 +203,7 @@ public class WebDAVServlet extends HttpServlet {
             String created = DateFormatter.toXSDDateTime(new Date());
             ElementImpl feedRoot = (ElementImpl)feedDoc.getDocumentElement();
             DOMDB.replaceTextElement(transaction,feedRoot,Atom.NAMESPACE_STRING,"updated",created,true);
-            String id = "urn:uuid:"+UUIDGenerator.getInstance().generateRandomBasedUUID();
+            String id = "urn:uuid:"+UUIDGenerator.getUUID();
             Element mediaEntry = AtomProtocol.generateMediaEntry(id,created,title,filename.toString(),mime.getName());
             DOMDB.appendChild(transaction,feedRoot,mediaEntry);
             broker.storeXMLResource(transaction, feedDoc);
@@ -339,7 +339,7 @@ public class WebDAVServlet extends HttpServlet {
          TransactionManager transact = broker.getBrokerPool().getTransactionManager();
          Txn transaction = transact.beginTransaction();
          try {
-            UUID id = UUIDGenerator.getInstance().generateRandomBasedUUID();
+            String id = UUIDGenerator.getUUID();
             String currentDateTime = DateFormatter.toXSDDateTime(new Date());
             DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
             docFactory.setNamespaceAware(true);
