@@ -53,7 +53,7 @@ public class UUIDGenerator {
             
         } catch (Exception ex) { // ClassNotFoundException
             // quick escape
-            LOG.debug("java.util.UUID not found");
+            LOG.debug("Skipping java.util.UUID");
             return null;
         }
         
@@ -63,7 +63,7 @@ public class UUIDGenerator {
             method = clazz.getMethod("randomUUID", null);
         } catch (Exception ex) { // SecurityException and NoSuchMethodException
             // quick escape
-            LOG.error("Method UUID.randomUUID not found.",ex);
+            LOG.error("Method UUID.randomUUID not found",ex);
             return null;
         }
         
@@ -74,10 +74,10 @@ public class UUIDGenerator {
             
         } catch (Exception ex) { //IllegalAccessException and InvocationTargetException
             // quick escape
-            LOG.error("Could not invoke method randomUUID.",ex);
+            LOG.error("Could not invoke method randomUUID",ex);
             return null;
         }
-        
+        LOG.debug("Using preferred java.util.UUID");
         return result.toString();
     }
     
@@ -91,7 +91,7 @@ public class UUIDGenerator {
             
         } catch (Exception ex) { // ClassNotFoundException
             // quick escape
-            LOG.debug("org.safehaus.uuid.UUIDGenerator no found.");
+            LOG.debug("Skipping org.safehaus.uuid.UUIDGenerator");
             return null;
         }
         
@@ -101,7 +101,7 @@ public class UUIDGenerator {
             method = clazz.getMethod("getInstance", null);
         } catch (Exception ex) { // SecurityException and NoSuchMethodException
             // quick escape
-            LOG.error("Method UUIDGenerator.getInstance not found.",ex);
+            LOG.error("Method UUIDGenerator.getInstance not found",ex);
             return null;
         }
         
@@ -112,7 +112,7 @@ public class UUIDGenerator {
             
         } catch (Exception ex) { //IllegalAccessException and InvocationTargetException
             // quick escape
-            LOG.error("Could not invoke method UUIDGenerator.getInstance.",ex);
+            LOG.error("Could not invoke method UUIDGenerator.getInstance",ex);
             return null;
         }
         
@@ -136,16 +136,16 @@ public class UUIDGenerator {
             
         } catch (Exception ex) { //IllegalAccessException and InvocationTargetException
             // quick escape
-            LOG.error("Could not invoke method generateRandomBasedUUID.",ex);;
+            LOG.error("Could not invoke method generateRandomBasedUUID",ex);;
             return null;
         }
-        
+        LOG.debug("Fallback to org.safehaus.uuid.UUIDGenerator");
         return result2.toString();
     }
     
     // http://www.javaexchange.com/aboutRandomGUID.html
     private static String getJavaExchangeGUID(){
-        LOG.debug("Using org.exist.security.RandomGUID");
+        LOG.debug("Fallback to org.exist.security.RandomGUID");
         RandomGUID rg = new RandomGUID(false);
         return rg.toString();
     }
