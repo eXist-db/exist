@@ -110,7 +110,8 @@ public class LexerTest extends TestCase {
 			System.out.println("----------------------------------");
 			System.out.println("found: " + result.getLength());
 		} catch (Exception e) {
-			fail(e.getMessage());
+            e.printStackTrace();
+            fail(e.getMessage());
 		} finally {
 			pool.release(broker);
 		}

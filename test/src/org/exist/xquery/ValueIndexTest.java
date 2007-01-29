@@ -71,6 +71,21 @@ public class ValueIndexTest extends TestCase {
         "	</index>" +
     	"</collection>";
 
+    private String CONFIG_QNAME =
+    	"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
+    	"	<index xmlns:x=\"http://www.foo.com\" xmlns:xx=\"http://test.com\">" +
+    	"		<fulltext default=\"none\">" +
+    	"		</fulltext>" +
+        "       <create qname=\"itemno\" type=\"xs:integer\"/>" +
+        "       <create qname=\"mixed\" type=\"xs:string\"/>" +
+        "       <create qname=\"stock\" type=\"xs:integer\"/>" +
+        "       <create qname=\"name\" type=\"xs:string\"/>" +
+        "       <create qname=\"@id\" type=\"xs:string\"/>" +
+        "       <create qname=\"price\" type=\"xs:double\"/>" +
+        "		<create path=\"x:rating\" type=\"xs:double\"/>" +
+        "	</index>" +
+    	"</collection>";
+
     private String CITY =
             "<mondial>" +
             "   <city id=\"cty-Germany-Berlin\" is_country_cap=\"yes\" is_state_cap=\"yes\" " +
@@ -114,6 +129,10 @@ public class ValueIndexTest extends TestCase {
      * @see TestCase#tearDown()
      */
     protected void tearDown() throws Exception {
+        Collection root = DatabaseManager.getCollection(URI, "admin", null);
+        CollectionManagementService service = (CollectionManagementService) root
+                    .getService("CollectionManagementService", "1.0");
+        service.removeCollection("test");
         DatabaseInstanceManager dim =
             (DatabaseInstanceManager) testCollection.getService("DatabaseInstanceManager", "1.0");
         dim.shutdown();
@@ -124,38 +143,44 @@ public class ValueIndexTest extends TestCase {
 	/**
 	 * @throws XMLDBException
 	 */
-	protected void configureCollection() throws XMLDBException {
+	protected void configureCollection(String config) throws XMLDBException {
 		IndexQueryService idxConf = (IndexQueryService)
 			testCollection.getService("IndexQueryService", "1.0");
-		idxConf.configureCollection(getCollectionConfig());
+		idxConf.configureCollection(config);
 	}
 
     public void testStrings() throws Exception {
-        configureCollection();
-        XPathQueryService service = storeXMLFileAndGetQueryService("items.xml", "test/src/org/exist/xquery/items.xml");
-        queryResource(service, "items.xml", "//item[@id = 'i2']", 1);
-        queryResource(service, "items.xml", "//item[name = 'Racing Bicycle']", 1);
-        queryResource(service, "items.xml", "//item[name > 'Racing Bicycle']", 4);
-        queryResource(service, "items.xml", "//item[itemno = 3]", 1);
-        ResourceSet result = queryResource(service, "items.xml", "for $i in //item[stock <= 10] return $i/itemno", 5);
-        for (long i = 0; i < result.getSize(); i++) {
-            Resource res = result.getResource(i);
-            System.out.println(res.getContent());
+        try {
+            configureCollection(CONFIG);
+            XPathQueryService service = storeXMLFileAndGetQueryService("items.xml", "test/src/org/exist/xquery/items.xml");
+            queryResource(service, "items.xml", "//item[@id = 'i2']", 1);
+            queryResource(service, "items.xml", "//item[name = 'Racing Bicycle']", 1);
+            queryResource(service, "items.xml", "//item[name > 'Racing Bicycle']", 4);
+            queryResource(service, "items.xml", "//item[itemno = 3]", 1);
+            ResourceSet result = queryResource(service, "items.xml", "for $i in //item[stock <= 10] return $i/itemno", 5);
+            for (long i = 0; i < result.getSize(); i++) {
+                Resource res = result.getResource(i);
+                System.out.println(res.getContent());
+            }
+
+            queryResource(service, "items.xml", "//item[stock > 20]", 1);
+            queryResource(service, "items.xml", "declare namespace x=\"http://www.foo.com\"; //item[x:rating > 8.0]", 2);
+            queryResource(service, "items.xml", "declare namespace xx=\"http://test.com\"; //item[@xx:test = 123]", 1);
+            queryResource(service, "items.xml", "//item[name &= 'Racing Bicycle']", 1);
+            queryResource(service, "items.xml", "//item[mixed = 'uneven']", 1);
+            queryResource(service, "items.xml", "//item[mixed = 'external']", 1);
+            queryResource(service, "items.xml", "//item[fn:matches(mixed, 'un.*')]", 2);
+            queryResource(service, "items.xml", "//item[price/@specialprice = false()]", 2);
+            queryResource(service, "items.xml", "//item[price/@specialprice = true()]", 1);
+        } catch (XMLDBException e) {
+            e.printStackTrace();
+            fail(e.getMessage());
         }
-        
-        queryResource(service, "items.xml", "//item[stock > 20]", 1);
-        queryResource(service, "items.xml", "declare namespace x=\"http://www.foo.com\"; //item[x:rating > 8.0]", 2);
-        queryResource(service, "items.xml", "declare namespace xx=\"http://test.com\"; //item[@xx:test = 123]", 1);
-        queryResource(service, "items.xml", "//item[name &= 'Racing Bicycle']", 1);
-        queryResource(service, "items.xml", "//item[mixed = 'uneven']", 1);
-		queryResource(service, "items.xml", "//item[mixed = 'external']", 1);
-		queryResource(service, "items.xml", "//item[fn:matches(mixed, 'un.*')]", 2);
-        queryResource(service, "items.xml", "//item[price/@specialprice = false()]", 2);
-        queryResource(service, "items.xml", "//item[price/@specialprice = true()]", 1);
     }
 
     public void testStrFunctions() {
         try {
+            configureCollection(CONFIG);
             XMLResource resource = (XMLResource) testCollection.createResource("mondial-test.xml", "XMLResource");
             resource.setContent(CITY);
             testCollection.storeResource(resource);
@@ -187,15 +212,36 @@ public class ValueIndexTest extends TestCase {
         }
     }
 
+    public void testQNameIndex() {
+        try {
+            configureCollection(CONFIG_QNAME);
+            XPathQueryService service = storeXMLFileAndGetQueryService("items.xml", "test/src/org/exist/xquery/items.xml");
+            queryResource(service, "items.xml", "//((#exist:optimize#) { item[stock = 10] })", 1);
+            queryResource(service, "items.xml", "//((#exist:optimize#) { item[stock > 20] })", 1);
+            queryResource(service, "items.xml", "//((#exist:optimize#) { item[stock < 16] })", 6);
+            queryResource(service, "items.xml", "declare namespace x=\"http://www.foo.com\"; " +
+                    "//((#exist:optimize#) { item[x:rating > 8.0] })", 2);
+            queryResource(service, "items.xml", "//((#exist:optimize#) { item[mixed = 'uneven'] })", 1);
+		    queryResource(service, "items.xml", "//((#exist:optimize#) { item[mixed = 'external'] })", 1);
+            queryResource(service, "items.xml", "//((#exist:optimize#) { item[@id = 'i1'] })",1);
+            queryResource(service, "items.xml", "declare namespace xx=\"http://test.com\";" +
+                    "//((#exist:optimize#) { item[@xx:test = 123] })", 1);
+        } catch (XMLDBException e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+    }
+
     public void testIndexScan() {
         try {
             System.out.println("----- testIndexScan -----");
+            configureCollection(CONFIG);
             String queryBody =
                 "declare namespace f=\'http://exist-db.org/xquery/test\';\n" + 
                 "declare namespace mods='http://www.loc.gov/mods/v3';\n" + 
                 "import module namespace u=\'http://exist-db.org/xquery/util\';\n" + 
                 "\n" + 
-                "declare function f:term-callback($term as xs:string, $data as xs:int+)\n" + 
+                "declare function f:term-callback($term as item(), $data as xs:int+)\n" +
                 "as element()+ {\n" + 
                 "    <item>\n" + 
                 "        <term>{$term}</term>\n" + 
@@ -211,38 +257,91 @@ public class ValueIndexTest extends TestCase {
                 System.out.println(i.nextResource().getContent());
             }
             assertEquals(7, result.getSize());
+
+            query = queryBody + "u:index-keys(//item/stock, 0, util:function(\'f:term-callback\', 2), 1000)";
+            result = service.query(query);
+            for (ResourceIterator i = result.getIterator(); i.hasMoreResources(); ) {
+                System.out.println(i.nextResource().getContent());
+            }
+            assertEquals(5, result.getSize());
         } catch (XMLDBException e) {
             fail(e.getMessage());
-        }           
+        }
     }
     
     public void testUpdates() throws Exception {
-        String append =
-            "<xu:modifications xmlns:xu=\"http://www.xmldb.org/xupdate\" version=\"1.0\">" +
-            "<xu:append select=\"/items\">" +
-            "<item id=\"i100\">" +
-            "<itemno>10</itemno>" +
-            "<name>New Item</name>" +
-            "<price>55.50</price>" +
-            "</item>" +
-            "</xu:append>" +
-            "</xu:modifications>";
-        String remove =
-            "<xu:modifications xmlns:xu=\"http://www.xmldb.org/xupdate\" version=\"1.0\">" +
-            "<xu:remove select=\"/items/item[itemno=7]\"/>" +
-            "</xu:modifications>";
-        
-        XPathQueryService query = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
-        XUpdateQueryService update = (XUpdateQueryService) testCollection.getService("XUpdateQueryService", "1.0");
-        long mods = update.updateResource("items.xml", append);
-		assertEquals(mods, 1);
-        queryResource(query, "items.xml", "//item[price = 55.50]", 1);
-        queryResource(query, "items.xml", "//item[@id = 'i100']",1);
-        mods = update.updateResource("items.xml", remove);
-		assertEquals(mods, 1);
-        queryResource(query, "items.xml", "//item[itemno = 7]", 0);
+        try {
+            configureCollection(CONFIG);
+            storeXMLFileAndGetQueryService("items.xml", "test/src/org/exist/xquery/items.xml");
+            for (int i = 100; i <= 150; i++) {
+                String append =
+                    "<xu:modifications xmlns:xu=\"http://www.xmldb.org/xupdate\" version=\"1.0\">" +
+                    "   <xu:append select=\"/items\">" +
+                    "       <item id=\"i" + i + "\">" +
+                    "           <itemno>" + i + "</itemno>" +
+                    "           <name>New Item</name>" +
+                    "           <price>55.50</price>" +
+                    "       </item>" +
+                    "   </xu:append>" +
+                    "</xu:modifications>";
+                String remove =
+                    "<xu:modifications xmlns:xu=\"http://www.xmldb.org/xupdate\" version=\"1.0\">" +
+                    "   <xu:remove select=\"/items/item[itemno=" + i + "]\"/>" +
+                    "</xu:modifications>";
+
+                XPathQueryService query = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+                XUpdateQueryService update = (XUpdateQueryService) testCollection.getService("XUpdateQueryService", "1.0");
+                long mods = update.updateResource("items.xml", append);
+                assertEquals(mods, 1);
+                queryResource(query, "items.xml", "//item[price = 55.50]", 1);
+                queryResource(query, "items.xml", "//item[@id = 'i" + i + "']",1);
+                mods = update.updateResource("items.xml", remove);
+                assertEquals(mods, 1);
+                queryResource(query, "items.xml", "//item[itemno = " + i + "]", 0);
+            }
+        } catch (XMLDBException e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
     }
-    
+
+    public void testUpdatesQName() throws Exception {
+        try {
+            configureCollection(CONFIG_QNAME);
+            storeXMLFileAndGetQueryService("items.xml", "test/src/org/exist/xquery/items.xml");
+            for (int i = 100; i <= 150; i++) {
+                String append =
+                    "<xu:modifications xmlns:xu=\"http://www.xmldb.org/xupdate\" version=\"1.0\">" +
+                    "   <xu:append select=\"/items\">" +
+                    "       <item id=\"i" + i + "\">" +
+                    "           <itemno>" + i + "</itemno>" +
+                    "           <name>New Item</name>" +
+                    "           <price>55.50</price>" +
+                    "       </item>" +
+                    "   </xu:append>" +
+                    "</xu:modifications>";
+                String remove =
+                    "<xu:modifications xmlns:xu=\"http://www.xmldb.org/xupdate\" version=\"1.0\">" +
+                    "   <xu:remove select=\"/items/item[itemno=" + i + "]\"/>" +
+                    "</xu:modifications>";
+
+                XPathQueryService query = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+                XUpdateQueryService update = (XUpdateQueryService) testCollection.getService("XUpdateQueryService", "1.0");
+                long mods = update.updateResource("items.xml", append);
+                assertEquals(mods, 1);
+                queryResource(query, "items.xml", "//((#exist:optimize#) { item[price = 55.50] })", 1);
+                queryResource(query, "items.xml", "//((#exist:optimize#) { item[@id = 'i" + i + "']})",1);
+                queryResource(query, "items.xml", "//((#exist:optimize#) { item[itemno = " + i + "] })", 1);
+                mods = update.updateResource("items.xml", remove);
+                assertEquals(mods, 1);
+                queryResource(query, "items.xml", "//((#exist:optimize#) { item[itemno = " + i + "] })", 0);
+            }
+        } catch (XMLDBException e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+    }
+
     protected ResourceSet queryResource(XPathQueryService service,
             String resource, String query, int expected) throws XMLDBException {
         return queryResource(service, resource, query, expected, null);
@@ -283,19 +382,5 @@ public class ValueIndexTest extends TestCase {
     
     public static void main(String[] args) {
         junit.textui.TestRunner.run(ValueIndexTest.class);
-	}
-
-	/**
-	 * @param cONFIG The cONFIG to set.
-	 */
-	protected void setCollectionConfig(String cONFIG) {
-		CONFIG = cONFIG;
-	}
-
-	/**
-	 * @return Returns the cONFIG.
-	 */
-	protected String getCollectionConfig() {
-		return CONFIG;
 	}
 }
