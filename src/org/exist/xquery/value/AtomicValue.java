@@ -335,10 +335,6 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 
     public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
     }
-
-    public final static AtomicValue deserialize(byte[] data, int start, int len) throws EXistException {
-		return (AtomicValue)ValueIndexFactory.deserialize(data, start, len);
-	}
 	
 	public byte[] serialize(short collectionId)	throws EXistException {	
 		//TODO : pass the factory as an argument

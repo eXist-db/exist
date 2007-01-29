@@ -375,12 +375,15 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
      * @see org.exist.storage.ContentLoadingObserver#dropIndex(org.exist.collections.Collection)
      */
     public void dropIndex(Collection collection) {
-        final WordRef value = new WordRef(collection.getId());
-        final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, value);            
         final Lock lock = dbTokens.getLock();
         try {
             lock.acquire(Lock.WRITE_LOCK);
-            dbTokens.removeAll(null, query);
+            // remove generic index
+            Value value = new WordRef(collection.getId());
+            dbTokens.removeAll(null, new IndexQuery(IndexQuery.TRUNC_RIGHT, value));
+            // remove QName index
+            value = new QNameWordRef(collection.getId());
+            dbTokens.removeAll(null, new IndexQuery(IndexQuery.TRUNC_RIGHT, value));
         } catch (LockException e) {
             LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
         } catch (BTreeException e) {
