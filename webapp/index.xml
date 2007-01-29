@@ -130,11 +130,11 @@
                 </tr>
                 <tr>
                     <td>
-                        <a href="http://prdownloads.sourceforge.net/exist/cocoon-2.1.9-with-eXist-1.1.1.war">
-                            cocoon-2.1.9-with-eXist-1.1.1.war
+                        <a href="http://prdownloads.sourceforge.net/exist/cocoon-2.1.10-with-eXist-1.1.1.war">
+                            cocoon-2.1.10-with-eXist-1.1.1.war
                         </a>
                     </td>
-                    <td>This is Cocoon version 2.1.9 build with standard options and eXist 1.1.1 as a block. You
+                    <td>This is Cocoon version 2.1.10 build with standard options and eXist 1.1.1 as a block. You
                         should find eXist in <tt>http://my-server:port/cocoon/samples/blocks/exist/</tt>.</td>
                 </tr>
             </table>
