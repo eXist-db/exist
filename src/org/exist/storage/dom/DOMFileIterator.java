@@ -78,6 +78,8 @@ public final class DOMFileIterator implements Iterator {
 				try {
 					lock.acquire();
 				} catch (LockException e) {
+					LOG.warn(e);
+					System.out.println(e);
 					return false;
 				}
 				if(gotoNextPosition()) {
@@ -112,6 +114,8 @@ public final class DOMFileIterator implements Iterator {
 				try {
 					lock.acquire();
 				} catch (LockException e) {
+					LOG.warn(e);
+					System.out.println(e);
 					return null;
 				}
 				Value nextVal = null;
