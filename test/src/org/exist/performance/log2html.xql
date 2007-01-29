@@ -91,7 +91,7 @@ declare function t:process-thread($group as element(t:group), $thread as xs:stri
         for $group in //t:group
         return
             <div class="group">
-                <h1>Group {string($group/@name)}</h1>
+                <h1>Test Group: &quot;{string($group/@name)}&quot;</h1>
                 {
                     for $thread in distinct-values($group//t:action/@thread)
                     return
