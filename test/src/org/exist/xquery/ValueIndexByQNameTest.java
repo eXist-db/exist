@@ -29,10 +29,9 @@ public class ValueIndexByQNameTest extends ValueIndexTest {
     	"       <create qname='mixed' type='xs:string' />" +
     	"	</index>" + 
     	"</collection>";
-    
-	/** @see org.exist.xquery.test.ValueIndexTest#testStrings() */
+
 	public void testStrings() throws Exception {
-        configureCollection();
+        configureCollection(config);
         XPathQueryService service = storeXMLFileAndGetQueryService("items.xml", "test/src/org/exist/xquery/items.xml");
 
         // queryResource(service, "items.xml", "//item[name > 'Racing Bicycle']", 4 );
@@ -52,7 +51,6 @@ public class ValueIndexByQNameTest extends ValueIndexTest {
 //		queryResource(service, "items.xml", "//item[fn:matches(mixed, 'un.*')]", 2);
 	}
 
-	/** @see org.exist.xquery.test.ValueIndexTest#getCollectionConfig() */
 	protected String getCollectionConfig() {
 		return config;
 	}

@@ -396,7 +396,16 @@ public class FtQueryTest extends XMLTestCase {
                 System.out.println(resource.getContent());
             }
             assertEquals(3, result.getSize());
-		} catch (XMLDBException e) {
+
+	        query = "import module namespace t=\'http://exist-db.org/xquery/text\';\n" +
+                    "t:fuzzy-index-terms('node')";
+	        result = service.query(query);
+            for (ResourceIterator i = result.getIterator(); i.hasMoreResources(); ) {
+                Resource resource = i.nextResource();
+                System.out.println(resource.getContent());
+            }
+            assertEquals(1, result.getSize());
+        } catch (XMLDBException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}

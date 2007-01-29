@@ -641,6 +641,7 @@ public class XPathQueryTest extends XMLTestCase {
     	    assertXMLEqual("<div id='4'/>", rs.getResource(2).getContent().toString());      	    
             
         } catch (Exception e) {
+            e.printStackTrace();
             fail(e.getMessage());
         }
     }
