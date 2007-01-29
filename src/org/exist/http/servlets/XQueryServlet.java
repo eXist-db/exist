@@ -221,6 +221,7 @@ public class XQueryServlet extends HttpServlet {
         
         File f = new File(path);
         if(!f.canRead()) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             sendError(output, "Cannot read source file", path);
             return;
         }
@@ -325,6 +326,7 @@ public class XQueryServlet extends HttpServlet {
             }
         } catch (XMLDBException e) {
             LOG.debug(e);
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             sendError(output, e.getMessage(), e);
         }
         output.flush();
