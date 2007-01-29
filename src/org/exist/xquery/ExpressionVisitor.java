@@ -26,9 +26,13 @@ public interface ExpressionVisitor {
     public void visitLocationStep(LocationStep locationStep);
 
     public void visitPredicate(Predicate predicate);
+
+    public void visitGeneralComparison(GeneralComparison comparison);
     
     /** Found a CastExpression */
 	public void visitCastExpr(CastExpression expression);
 
-    void visitFtExpression(ExtFulltext fulltext);
+    public void visitUnionExpr(Union union);
+    
+    public void visitFtExpression(ExtFulltext fulltext);
 }

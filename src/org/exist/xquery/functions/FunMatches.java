@@ -212,7 +212,7 @@ public class FunMatches extends Function {
 	/**
      * @param contextSequence
      * @param contextItem
-     * @param stringArg
+     * @param input
      * @return The resulting sequence
 	 * @throws XPathException
      */
@@ -251,7 +251,7 @@ public class FunMatches extends Function {
 		    		context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "Using vlaue index '" + index.toString() + "'", "Regex: " + pattern);
 		    	if (LOG.isTraceEnabled())
 		    		LOG.trace("Using range index for fn:matches expression: " + pattern);
-                result = index.match(docs, nodes, pattern, DBBroker.MATCH_REGEXP, flags, caseSensitive);
+                result = index.match(docs, nodes, pattern, null, DBBroker.MATCH_REGEXP, flags, caseSensitive);
 			} catch (EXistException e) {
 				throw new XPathException(getASTNode(), e.getMessage(), e);
 			}

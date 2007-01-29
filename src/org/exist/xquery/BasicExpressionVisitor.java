@@ -34,6 +34,12 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
 		}
 	}
 
+    public void visitGeneralComparison(GeneralComparison comparison) {
+    }
+    
+    public void visitUnionExpr(Union union) {
+    }
+
     public void visitLocationStep(LocationStep locationStep) {
     }
 

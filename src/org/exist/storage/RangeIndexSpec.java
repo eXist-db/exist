@@ -25,6 +25,7 @@ package org.exist.storage;
 import java.util.Arrays;
 
 import org.exist.xquery.value.Type;
+import org.exist.dom.QName;
 
 public abstract class RangeIndexSpec {
 
@@ -184,4 +185,13 @@ public abstract class RangeIndexSpec {
 	    return indexTypes[type];
 	}
 
+    /**
+     * Returns the QName for which this index is created. Might be
+     * null if it is a generic index.
+     * 
+     * @return
+     */
+    public QName getQName() {
+        return null;
+    }
 }

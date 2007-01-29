@@ -61,7 +61,7 @@ public class ValueIndexFactory {
 
 	public final static Indexable deserialize(byte[] data, int start, int len) throws EXistException {
 		
-		int type = data[start + Collection.LENGTH_COLLECTION_ID];
+		int type = data[start];
 		
 		//TODO : improve deserialization (use static methods in the org.exist.xquery.Value package
 		
@@ -70,8 +70,8 @@ public class ValueIndexFactory {
 		{
 			String s;
 			try {
-				s = new String(data, start + (Collection.LENGTH_COLLECTION_ID + ValueIndexFactory.LENGTH_VALUE_TYPE),
-				len - (Collection.LENGTH_COLLECTION_ID + ValueIndexFactory.LENGTH_VALUE_TYPE), "UTF-8");
+				s = new String(data, start + (ValueIndexFactory.LENGTH_VALUE_TYPE),
+				len - (ValueIndexFactory.LENGTH_VALUE_TYPE), "UTF-8");
 			} catch (UnsupportedEncodingException e) {
 				LOG.error(e);
 				throw new EXistException(e);
@@ -82,7 +82,7 @@ public class ValueIndexFactory {
 		/* xs:dateTime */
 		else if(Type.subTypeOf(type, Type.DATE_TIME))		{
 			//get the dateTime back as a long
-			long value = ByteConversion.byteToLong(data, start + (Collection.LENGTH_COLLECTION_ID + ValueIndexFactory.LENGTH_VALUE_TYPE));			
+			long value = ByteConversion.byteToLong(data, start + (ValueIndexFactory.LENGTH_VALUE_TYPE));
 			//Create a GregorianCalendar from the long (normalized datetime as milliseconds since the Epoch)
 			GregorianCalendar utccal = new GregorianCalendar();
 			utccal.setTimeInMillis(value);
@@ -101,14 +101,14 @@ public class ValueIndexFactory {
 		/* xs:integer */
 		else if(Type.subTypeOf(type, Type.INTEGER))
 		{
-			return new IntegerValue(ByteConversion.byteToLong(data, start + (Collection.LENGTH_COLLECTION_ID + ValueIndexFactory.LENGTH_VALUE_TYPE)) ^ 0x8000000000000000L);
+			return new IntegerValue(ByteConversion.byteToLong(data, start + (ValueIndexFactory.LENGTH_VALUE_TYPE)) ^ 0x8000000000000000L);
 		}
 
 		
 		/* xs:double */
 		else if (type == Type.DOUBLE)
 		{
-			long bits = ByteConversion.byteToLong(data, start + (Collection.LENGTH_COLLECTION_ID + ValueIndexFactory.LENGTH_VALUE_TYPE)) ^ 0x8000000000000000L;
+			long bits = ByteConversion.byteToLong(data, start + (ValueIndexFactory.LENGTH_VALUE_TYPE)) ^ 0x8000000000000000L;
 			double d = Double.longBitsToDouble(bits);
 			return new DoubleValue(d);
 		}
@@ -116,7 +116,7 @@ public class ValueIndexFactory {
 		/* xs:float */
 		else if (type == Type.FLOAT)
 		{
-			int bits = ByteConversion.byteToInt(data, start + (Collection.LENGTH_COLLECTION_ID + ValueIndexFactory.LENGTH_VALUE_TYPE)) ^ 0x80000000;
+			int bits = ByteConversion.byteToInt(data, start + (ValueIndexFactory.LENGTH_VALUE_TYPE)) ^ 0x80000000;
 			float f = Float.intBitsToFloat(bits);
 			return new FloatValue(f);
 		}		
@@ -124,7 +124,7 @@ public class ValueIndexFactory {
 		/* xs:boolean */
 		else if(type == Type.BOOLEAN)
 		{
-			return new BooleanValue(data[start + (Collection.LENGTH_COLLECTION_ID + ValueIndexFactory.LENGTH_VALUE_TYPE)] == 1);
+			return new BooleanValue(data[start + (ValueIndexFactory.LENGTH_VALUE_TYPE)] == 1);
 		}		
 		
 		/* unknown! */

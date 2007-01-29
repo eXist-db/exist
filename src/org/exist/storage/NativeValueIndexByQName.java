@@ -153,11 +153,11 @@ public class NativeValueIndexByQName extends NativeValueIndex implements Content
 		if(keyFactory == null)
             return;		// skip
 		ArrayList buf;
-		if (pending.containsKey(keyFactory))
-            buf = (ArrayList) pending.get(keyFactory);
+		if (pending[IDX_GENERIC].containsKey(keyFactory))
+            buf = (ArrayList) pending[IDX_GENERIC].get(keyFactory);
         else {
             buf = new ArrayList(8);
-            pending.put(keyFactory, buf);
+            pending[IDX_GENERIC].put(keyFactory, buf);
         }
 		buf.add(node.getNodeId());
 	}

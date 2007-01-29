@@ -60,6 +60,7 @@ public class Optimize extends Pragma {
                 return innerExpr.eval(ancestors);
             } else {
                 NodeSelector selector;
+                long start = System.currentTimeMillis();
                 selector = new AncestorSelector(selection, -1, true);
                 ElementIndex index = context.getBroker().getElementIndex();
                 QName ancestorQN = contextStep.getTest().getName();
@@ -68,11 +69,13 @@ public class Optimize extends Pragma {
                 } else
                     ancestors = index.findElementsByTagName(ancestorQN.getNameType(), selection.getDocumentSet(),
                         ancestorQN, selector);
+                LOG.debug("Ancestor selection took " + (System.currentTimeMillis() - start));
+
                 contextStep.setPreloadNodeSets(true);
                 contextStep.setPreloadedData(ancestors.getDocumentSet(), ancestors);
                 if (LOG.isTraceEnabled())
                     LOG.trace("exist:optimize: context after optimize: " + ancestors.getLength());
-                long start = System.currentTimeMillis();
+                start = System.currentTimeMillis();
                 contextSequence = filterDocuments(contextSet, ancestors);
                 Sequence result = innerExpr.eval(contextSequence);
                 if (LOG.isTraceEnabled())
@@ -111,6 +114,13 @@ public class Optimize extends Pragma {
                 if (LOG.isTraceEnabled())
                     LOG.trace("exist:optimize: found optimizable: " + fulltext.getClass().getName());
                 optimizable = fulltext;
+            }
+
+
+            public void visitGeneralComparison(GeneralComparison comparison) {
+                if (LOG.isTraceEnabled())
+                    LOG.trace("exist:optimize: found optimizable: " + comparison.getClass().getName());
+                optimizable = comparison;
             }
 
             public void visitPredicate(Predicate predicate) {
