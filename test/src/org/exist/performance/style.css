@@ -25,6 +25,8 @@ table {
 .group h1 {
     font-size: 125%;
     margin-bottom: 10px;
+	margin-top: 15px;
+	padding-top: 8px;
 	border-top: 1px solid black;
 }
 
