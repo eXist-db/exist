@@ -7,12 +7,17 @@ import java.util.Vector;
 
 import org.apache.xmlrpc.XmlRpcException;
 import org.exist.security.Permission;
-import org.exist.security.PermissionFactory;
+import org.exist.security.UnixStylePermission;
 import org.exist.security.User;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
+
+
+/*************************************************
+ * Modified by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
+**************************************/
 
 public class RemoteUserManagementService implements UserManagementService {
 
@@ -289,7 +294,8 @@ public class RemoteUserManagementService implements UserManagementService {
 			Vector params = new Vector();
 			params.addElement(((RemoteCollection) coll).getPath());
 			Hashtable result = (Hashtable) parent.getClient().execute("getPermissions", params);
-			perm = PermissionFactory.getPermission((String) result.get("owner"), (String) result.get("group"),
+			perm =
+				new UnixStylePermission((String) result.get("owner"), (String) result.get("group"),
 						((Integer) result.get("permissions")).intValue());
 			return perm;
 		} catch (XmlRpcException e) {
@@ -318,7 +324,8 @@ public class RemoteUserManagementService implements UserManagementService {
 			Vector params = new Vector();
 			params.addElement(path);
 			Hashtable result = (Hashtable) parent.getClient().execute("getPermissions", params);
-			Permission perm = PermissionFactory.getPermission((String) result.get("owner"), (String) result.get("group"),
+			Permission perm =
+				new UnixStylePermission((String) result.get("owner"), (String) result.get("group"),
 						((Integer) result.get("permissions")).intValue());
 			return perm;
 		} catch (XmlRpcException e) {
@@ -339,7 +346,7 @@ public class RemoteUserManagementService implements UserManagementService {
 			Vector t;
 			for (int i = 0; i < resources.length; i++) {
 				t = (Vector) result.get(resources[i]);
-				perm[i] = PermissionFactory.getPermission();
+				perm[i] = new UnixStylePermission();
 				perm[i].setOwner((String) t.elementAt(0));
 				perm[i].setGroup((String) t.elementAt(1));
 				perm[i].setPermissions(((Integer) t.elementAt(2)).intValue());
@@ -363,7 +370,7 @@ public class RemoteUserManagementService implements UserManagementService {
 			Vector t;
 			for (int i = 0; i < collections.length; i++) {
 				t = (Vector) result.get(collections[i]);
-				perm[i] = PermissionFactory.getPermission();
+				perm[i] = new UnixStylePermission();
 				perm[i].setOwner((String) t.elementAt(0));
 				perm[i].setGroup((String) t.elementAt(1));
 				perm[i].setPermissions(((Integer) t.elementAt(2)).intValue());
@@ -450,7 +457,10 @@ public class RemoteUserManagementService implements UserManagementService {
 	}
 
 	/**
-	 *@exception  XMLDBException  
+	 *  Description of the Method
+	 *
+	 *@param  name                Description of the Parameter
+	 *@exception  XMLDBException  Description of the Exception
 	 */
 	public void removeUser(User u) throws XMLDBException {
 		try {
@@ -510,6 +520,60 @@ public class RemoteUserManagementService implements UserManagementService {
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
 		}
 	}
+	
+	/**
+	 *  Update the specified user without update user's password
+	 * Method added by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
+	 *
+	 *@param  user                Description of the Parameter
+	 *@exception  XMLDBException  Description of the Exception
+	 */
+	public void addUserGroup(User user) throws XMLDBException {
+		try {
+			Vector params = new Vector();
+			params.addElement(user.getName());
+			Vector groups = new Vector();
+			String[] gl = user.getGroups();
+			for (int i = 0; i < gl.length; i++)
+				groups.addElement(gl[i]);
+			params.addElement(groups);
+			if (user.getHome() != null)
+				params.addElement(user.getHome());
+			parent.getClient().execute("setUser", params);
+		} catch (XmlRpcException e) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+		} catch (IOException e) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+		}
+	}
+	
+	/**
+	 *  Update the specified user removing a group from user's group
+	 *  method added by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
+	 *
+	 *@param  user                Description of the Parameter
+	 *@param  rmgroup             Description of group to remove 
+	 *@exception  XMLDBException  Description of the Exception
+	 */
+	public void removeGroup(User user, String rmgroup) throws XMLDBException {
+		try {
+			Vector params = new Vector();
+			params.addElement(user.getName());
+			Vector groups = new Vector();
+			String[] gl = user.getGroups();
+			for (int i = 0; i < gl.length; i++)
+				groups.addElement(gl[i]);
+			params.addElement(groups);
+			if (user.getHome() != null)
+				params.addElement(user.getHome());
+			params.addElement(rmgroup);
+			parent.getClient().execute("setUser", params);
+		} catch (XmlRpcException e) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+		} catch (IOException e) {
+			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
+		}
+	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xmldb.UserManagementService#getGroups()
@@ -531,3 +595,4 @@ public class RemoteUserManagementService implements UserManagementService {
 
 }
 // -- end class UserManagementServiceImpl
+

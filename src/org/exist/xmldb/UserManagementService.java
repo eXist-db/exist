@@ -12,6 +12,7 @@ import org.xmldb.api.base.XMLDBException;
  *  permissions.
  *
  *@author     Wolfgang Meier <meier@ifs.tu-darmstadt.de>
+ * Modified by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
  */
 public interface UserManagementService extends Service {
 
@@ -130,6 +131,7 @@ public interface UserManagementService extends Service {
      * if no lock has been set on the resource.
      * 
      * @param res
+     * @return
      * @throws XMLDBException
      */
     public String hasUserLock(Resource res) throws XMLDBException;
@@ -187,6 +189,7 @@ public interface UserManagementService extends Service {
 	 * Please note: new groups are created automatically if a new group
 	 * is assigned to a user. You can't add or remove them.
 	 * 
+	 * @return
 	 * @throws XMLDBException
 	 */
 	public String[] getGroups() throws XMLDBException;
@@ -265,9 +268,31 @@ public interface UserManagementService extends Service {
     /**
      *  Delete a user from the database
      *
-     *@param user
-     *@exception  XMLDBException  
+     *@param  name                Description of the Parameter
+     *@exception  XMLDBException  Description of the Exception
      */
     public void removeUser( User user ) throws XMLDBException;
+    
+    /**
+	 *  Update the specified user without update user's password
+	 *  Method added by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
+	 *
+	 *@param  user                Description of the Parameter
+	 *@exception  XMLDBException  Description of the Exception
+	 */
+    public void addUserGroup(User user) throws XMLDBException;
+    
+    /**
+	 *  Update the specified user removing a group from user's group
+	 *  Method added by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
+	 *
+	 *@param  user                Description of the Parameter
+	 *@param  rmgroup             Description of group to remove 
+	 *@exception  XMLDBException  Description of the Exception
+	 */
+    public void removeGroup(User user, String rmgroup) throws XMLDBException;
 }
+
+
+
 
