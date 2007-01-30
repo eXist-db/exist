@@ -26,7 +26,6 @@ import java.util.List;
 
 import org.exist.dom.QName;
 import org.exist.storage.Indexable;
-import org.exist.storage.NativeValueIndexByQName;
 import org.exist.storage.NativeValueIndex;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Cardinality;
