@@ -51,6 +51,8 @@ public class ResourceThread extends Thread {
     private BrokerPool brokerPool;
     private XmldbURI docUri;
     private OutputStream outputStream;
+    private Exception exception=null;
+
     
     /** Creates a new instance of ResourceThread */
     public ResourceThread(BrokerPool pool, XmldbURI docUri, OutputStream os) {
@@ -58,6 +60,14 @@ public class ResourceThread extends Thread {
         this.brokerPool=pool;
         this.docUri=docUri;
         this.outputStream=os;
+    }
+    
+    public boolean isExceptionThrown(){
+        return (exception!=null);
+    }
+    
+    public Exception getThrownException(){
+        return this.exception;
     }
     
     /**
@@ -101,12 +111,16 @@ public class ResourceThread extends Thread {
             
         } catch (EXistException ex){
             logger.error(ex);
+            exception=ex;
         } catch (PermissionDeniedException ex){
             logger.error(ex);
+            exception=ex;
         } catch (SAXException ex){
             logger.error(ex);
+            exception=ex;
         } catch (IOException ex){
             logger.error(ex);
+            exception=ex;
         } finally {
             if(brokerPool!=null){
                 brokerPool.release(broker);
