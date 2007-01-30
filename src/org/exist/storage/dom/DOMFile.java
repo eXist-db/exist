@@ -316,7 +316,7 @@ public class DOMFile extends BTree implements Lockable {
 		page.len += vlen;
 		ph.incRecordCount();
 		ph.setDataLength(page.len);
-		page.cleanUp();
+		//page.cleanUp();
 		page.setDirty(true);
 		dataCache.add(page, 2);
 		// return pointer from pageNum and offset into page
@@ -598,7 +598,7 @@ public class DOMFile extends BTree implements Lockable {
 		rec.getPage().getPageHeader().incRecordCount();
 		if (doc != null && rec.getPage().getPageHeader().getCurrentTID() >= ItemId.DEFRAG_LIMIT)
 			doc.triggerDefrag();
-		rec.getPage().cleanUp();
+		//rec.getPage().cleanUp();
 		rec.getPage().setDirty(true);
 		dataCache.add(rec.getPage());
 		return StorageAddress.createPointer((int) rec.getPage().getPageNum(), tid);
@@ -654,6 +654,7 @@ public class DOMFile extends BTree implements Lockable {
 		// the old rec.page now contains a copy of the data up to the split
 		// point
 		rec.getPage().len = rec.offset;
+		ph.setDataLength(rec.getPage().len);	
 		rec.getPage().setDirty(true);
         
 		// create a first split page
@@ -705,6 +706,7 @@ public class DOMFile extends BTree implements Lockable {
                     ph.setNextDataPage(newPage.getPageNum());
                     ph.setDataLength(rec.getPage().len);
                     ph.setRecordCount(countRecordsInPage(rec.getPage()));
+                    rec.getPage().cleanUp();
                     rec.getPage().setDirty(true);
                     dataCache.add(rec.getPage());
                     //switch record to new page...
@@ -757,6 +759,7 @@ public class DOMFile extends BTree implements Lockable {
 				nextSplitPage.getPageHeader().setNextDataPage(newPage.getPageNum());
 				nextSplitPage.getPageHeader().setDataLength(nextSplitPage.len);
 				nextSplitPage.getPageHeader().setRecordCount(splitRecordCount);
+				nextSplitPage.cleanUp();
 				nextSplitPage.setDirty(true);
 				dataCache.add(nextSplitPage);
 				dataCache.add(newPage);
@@ -850,6 +853,7 @@ public class DOMFile extends BTree implements Lockable {
 					ph.setNextDataPage(newPage.getPageNum());
 					ph.setDataLength(rec.getPage().len);
 					ph.setRecordCount(countRecordsInPage(rec.getPage()));
+					rec.getPage().cleanUp();
 					rec.getPage().setDirty(true);
 					dataCache.add(rec.getPage());
 					//switch record to new page...
@@ -904,6 +908,7 @@ public class DOMFile extends BTree implements Lockable {
 			nextSplitPage.getPageHeader().setDataLength(nextSplitPage.len);
 			nextSplitPage.getPageHeader().setNextDataPage(ph.getNextDataPage());
 			nextSplitPage.getPageHeader().setRecordCount(splitRecordCount);
+			nextSplitPage.cleanUp();
 			nextSplitPage.setDirty(true);
 			dataCache.add(nextSplitPage);
             
@@ -951,6 +956,7 @@ public class DOMFile extends BTree implements Lockable {
 		}
 		ph.setDataLength(rec.getPage().len);
 		ph.setRecordCount(countRecordsInPage(rec.getPage()));
+		rec.getPage().cleanUp();
 		rec.offset = rec.getPage().len;
 		return rec;
 	}
@@ -1013,9 +1019,15 @@ public class DOMFile extends BTree implements Lockable {
                 pos += vlen;
 			}
 		}
-		buf.append("; records in page: " + count);
+		buf.append("; records in page: " + count + " (header says " + page.getPageHeader().getRecordCount() + ")");
 		buf.append("; nextTID: " + page.getPageHeader().getCurrentTID());
         buf.append("; length: " + page.getPageHeader().getDataLength());
+        for (int i = page.data.length ; i > 0 ; i--) {
+        	if (page.data[i - 1] != 0) {
+        		buf.append(" (last non-zero byte: " + i + ")");
+        		break;
+        	}
+        }
 		return buf.toString();
 	}
 
@@ -1496,7 +1508,7 @@ public class DOMFile extends BTree implements Lockable {
 			removePage(rec.getPage());
 			rec.setPage(null);
 		} else {
-			rec.getPage().cleanUp();
+			//rec.getPage().cleanUp();
 			rec.getPage().setDirty(true);
 			dataCache.add(rec.getPage());			
 		}
@@ -1580,7 +1592,7 @@ public class DOMFile extends BTree implements Lockable {
 			removePage(rec.getPage());
 			rec.setPage(null);
 		} else {
-			rec.getPage().cleanUp();
+			//rec.getPage().cleanUp();
 			rec.getPage().setDirty(true);
 			dataCache.add(rec.getPage());
 		}
@@ -2109,7 +2121,7 @@ public class DOMFile extends BTree implements Lockable {
 			LOG.warn("page length <= 0");
 		ph.setDataLength(page.len);		
 		ph.decRecordCount();
-		page.cleanUp();
+		//page.cleanUp();
 		page.setDirty(true);
 	}
 
@@ -2182,7 +2194,7 @@ public class DOMFile extends BTree implements Lockable {
 			ph.setDataLength(page.len);
 			ph.decRecordCount();
             ph.setLsn(loggable.getLsn());
-            page.cleanUp();
+            //page.cleanUp();
             page.setDirty(true);
             dataCache.add(page);
 		}
@@ -2240,7 +2252,7 @@ public class DOMFile extends BTree implements Lockable {
         }
 		ph.incRecordCount();
 		ph.setDataLength(page.len);
-		page.cleanUp();
+		//page.cleanUp();
 		page.setDirty(true);
 		dataCache.add(page, 2);
 	}
@@ -2470,7 +2482,7 @@ public class DOMFile extends BTree implements Lockable {
         ph.setDataLength(page.len);
         ph.decRecordCount();      
         ph.setLsn(loggable.getLsn());
-        page.cleanUp();
+        //page.cleanUp();
         page.setDirty(true);
         dataCache.add(page);
     }
@@ -2501,7 +2513,7 @@ public class DOMFile extends BTree implements Lockable {
 			LOG.warn("page length <= 0");          
         ph.setDataLength(page.len);
         ph.setLsn(loggable.getLsn());
-        page.cleanUp();
+        //page.cleanUp();
         page.setDirty(true);
         dataCache.add(page);
     }
@@ -2518,7 +2530,7 @@ public class DOMFile extends BTree implements Lockable {
             ph.setDataLength(page.len);
             ph.setLsn(loggable.getLsn());
             ph.incRecordCount();
-            page.cleanUp();
+            //page.cleanUp();
             page.setDirty(true);
             dataCache.add(page);
         }
@@ -2536,7 +2548,7 @@ public class DOMFile extends BTree implements Lockable {
         ph.setDataLength(page.len);
         ph.decRecordCount();        
         ph.setLsn(loggable.getLsn());
-        page.cleanUp();
+        //page.cleanUp();
         page.setDirty(true);
         dataCache.add(page);
     }
@@ -2584,7 +2596,7 @@ public class DOMFile extends BTree implements Lockable {
                 ph.setNextTID(ItemId.getId(loggable.tid));
                 ph.incRecordCount();
                 ph.setLsn(loggable.getLsn());
-                page.cleanUp();
+                //page.cleanUp();
                 page.setDirty(true);
                 dataCache.add(page, 2);
             } catch (ArrayIndexOutOfBoundsException e) {
@@ -2621,7 +2633,7 @@ public class DOMFile extends BTree implements Lockable {
         ph.setDataLength(page.len);
         ph.decRecordCount();
         ph.setLsn(loggable.getLsn());
-        page.cleanUp();
+        //page.cleanUp();
         page.setDirty(true);
         dataCache.add(page);
     }
@@ -3053,8 +3065,11 @@ public class DOMFile extends BTree implements Lockable {
 				}
 			}
 			ph.setNextTID(maxTID);
+			//Uncommented because of recovery runs where both are not in sync
+			/*
 			if (ph.getRecordCount() != recordCount)
 				LOG.warn("page record count differs from computed record count");
+			*/
 		}
 	}
 
