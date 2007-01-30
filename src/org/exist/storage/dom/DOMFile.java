@@ -489,20 +489,20 @@ public class DOMFile extends BTree implements Lockable {
                     rec.getPage().getPageHeader().setNextDataPage(newPage.getPageNum());
                     if (nph.getNextDataPage() != Page.NO_PAGE) {
                         // link the next page in the chain back to the new page inserted 
-                        final DOMPage nextInChain = getCurrentPage(nph.getNextDataPage());
-                        final DOMFilePageHeader nicph = nextInChain.getPageHeader();
+                        final DOMPage nextPage = getCurrentPage(nph.getNextDataPage());
+                        final DOMFilePageHeader nextph = nextPage.getPageHeader();
                         
                         if (isTransactional && transaction != null) {                        	
                         	UpdateHeaderLoggable loggable = 
-                                new UpdateHeaderLoggable(transaction, newPage.getPageNum(), nextInChain.getPageNum(), 
-                                		nicph.getNextDataPage(), nicph.getPrevDataPage(), 
-                                		nicph.getNextDataPage());
-                            writeToLog(loggable, nextInChain.page);
+                                new UpdateHeaderLoggable(transaction, newPage.getPageNum(), nextPage.getPageNum(), 
+                                		nextph.getNextDataPage(), nextph.getPrevDataPage(), 
+                                		nextph.getNextDataPage());
+                            writeToLog(loggable, nextPage.page);
                         }
                         
-                        nicph.setPrevDataPage(newPage.getPageNum());
-                        nextInChain.setDirty(true);
-                        dataCache.add(nextInChain);
+                        nextph.setPrevDataPage(newPage.getPageNum());
+                        nextPage.setDirty(true);
+                        dataCache.add(nextPage);
                     }
                     
 					rec.getPage().setDirty(true);
@@ -512,14 +512,14 @@ public class DOMFile extends BTree implements Lockable {
 					rec.offset = 0;
 					rec.getPage().len = LENGTH_TID + LENGTH_DATA_LENGTH + value.length;
 					rec.getPage().getPageHeader().setDataLength(rec.getPage().len);
-					rec.getPage().getPageHeader().setRecordCount((short) 1);
+					//rec.getPage().getPageHeader().setRecordCount((short) 1);
 				//enough space in split page
 				} else {
 					rec.getPage().len = rec.offset + LENGTH_TID + LENGTH_DATA_LENGTH + value.length;
 					rec.getPage().getPageHeader().setDataLength(rec.getPage().len);
 				}
 			}
-		// does value fit into page?
+		// the value doesn't fit into page : create new page
 		} else if (dlen + LENGTH_TID + LENGTH_DATA_LENGTH + value.length > fileHeader.getWorkSize()
 				|| !rec.getPage().getPageHeader().hasRoom()) {
 			final DOMPage newPage = new DOMPage();
@@ -570,6 +570,7 @@ public class DOMFile extends BTree implements Lockable {
 			rec.offset = 0;
 			rec.getPage().len = LENGTH_TID + LENGTH_DATA_LENGTH + value.length;
 			rec.getPage().getPageHeader().setDataLength(rec.getPage().len);
+		//append the value
 		} else {
 			rec.getPage().len = dlen + LENGTH_TID + LENGTH_DATA_LENGTH + value.length;
 			rec.getPage().getPageHeader().setDataLength(rec.getPage().len);
@@ -1331,6 +1332,23 @@ public class DOMFile extends BTree implements Lockable {
 			LOG.error("io error while removing overflow value", e);
 		}
 	}
+	
+	/**
+	 * Set the last page in the sequence to which nodes are currently appended.
+	 * 
+	 * @param page
+	 *                     The new currentPage value
+	 */
+	private final void setCurrentPage(DOMPage page) {
+		long pnum = pages.get(owner);
+		if (pnum == page.page.getPageNum())
+			return;
+		// pages.remove(owner);
+		// LOG.debug("current page set: " + page.getPage().getPageNum() + " by " +
+		// owner.hashCode() +
+		// "; thread: " + Thread.currentThread().getName());
+		pages.put(owner, page.page.getPageNum());
+	}
 
 	/**
 	 * Retrieve the last page in the current sequence.
@@ -1690,23 +1708,6 @@ public class DOMFile extends BTree implements Lockable {
 		//buf.append("; Document metadata at "
 		//		+ StorageAddress.toString(doc.getInternalAddress()));
 		return buf.toString();
-	}
-
-	/**
-	 * Set the last page in the sequence to which nodes are currently appended.
-	 * 
-	 * @param page
-	 *                     The new currentPage value
-	 */
-	private final void setCurrentPage(DOMPage page) {
-		long pnum = pages.get(owner);
-		if (pnum == page.page.getPageNum())
-			return;
-		// pages.remove(owner);
-		// LOG.debug("current page set: " + page.getPage().getPageNum() + " by " +
-		// owner.hashCode() +
-		// "; thread: " + Thread.currentThread().getName());
-		pages.put(owner, page.page.getPageNum());
 	}
 
 	/**
@@ -2424,7 +2425,7 @@ public class DOMFile extends BTree implements Lockable {
             System.arraycopy(loggable.value, 0, page.data, offset, loggable.value.length);
             offset += loggable.value.length;
             page.len += loggable.value.length;
-            ph.incRecordCount();            
+            ph.incRecordCount();          
             ph.setDataLength(page.len);
             ph.setNextTID(ItemId.getId(loggable.tid));
             page.setDirty(true);
@@ -2577,7 +2578,7 @@ public class DOMFile extends BTree implements Lockable {
                 // save data
                 System.arraycopy(loggable.value, 0, page.data, page.len, vlen);
                 page.len += vlen;
-                //TODO : why 2 in ph.incRecordCount(); ?
+                //TODO : why 2 occurences of ph.incRecordCount(); ?
                 ph.incRecordCount();
                 ph.setDataLength(page.len);
                 ph.setNextTID(ItemId.getId(loggable.tid));
