@@ -19,6 +19,9 @@ import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 
+/*************************************************
+ * Modified by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
+**************************************/
 public class LocalUserManagementService implements UserManagementService {
 	private LocalCollection collection;
 
@@ -630,4 +633,13 @@ public class LocalUserManagementService implements UserManagementService {
 		u.setUID(old.getUID());
 		manager.setUser(u);
 	}
+	
+	public void addUserGroup(User user) throws XMLDBException {
+		
+	}
+	
+	public void removeGroup(User user, String rmgroup) throws XMLDBException {
+		
+	}
 }
+

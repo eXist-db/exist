@@ -11,13 +11,12 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.exist.storage.BrokerPool;
-import org.exist.EXistException;
 
 /**
  *  Represents a user within the database.
  *
  *@author     Wolfgang Meier <wolfgang@exist-db.org>
+ * Modified by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
  */
 public class User {
 
@@ -39,8 +38,8 @@ public class User {
 	
 	public static int PASSWORD_ENCODING;
     public static boolean CHECK_PASSWORDS = true;
-
-    static {
+        
+	static {
 		Properties props = new Properties(); 
 		try {
 			props.load(
@@ -52,8 +51,8 @@ public class User {
         setPasswordEncoding(option);
         option = props.getProperty("passwords.check", "yes");
         CHECK_PASSWORDS = option.equalsIgnoreCase("yes") || option.equalsIgnoreCase("true");
-    }
-
+	}
+        
    static public void setPasswordEncoding(String encoding) {
       if (encoding != null) {
          LOG.equals("Setting password encoding to "+encoding);
@@ -189,6 +188,47 @@ public class User {
     	}
     	if (SecurityManager.DBA_GROUP.equals(group))
     		hasDbaRole = true;
+    }
+    
+    /**
+     *  Remove the user to a group
+     *  Added by {Marco.Tampucci and Massimo.Martinelli}@isti.cnr.it  
+     *
+     *@param  group  The feature to be removed to the Group attribute
+     */
+    public final void remGroup( String group ) {
+    	if (groups == null) {
+    		groups = new String[1];
+    		groups[0] = "guest";
+    	} else {
+    		int len = groups.length;
+    		
+    		String[] rgroup = null;
+    		if (len>1)
+    			rgroup = new String[len-1];
+    		else {
+    			rgroup = new String[1]; 
+    			len=1;
+    		}
+    		
+    		boolean found = false;
+    		for (int i=0; i<len; i++) {
+    			if (!groups[i].equals(group)) {
+    				if (found == true) 
+    					rgroup[i-1] = groups[i];
+    				else 
+    					rgroup[i] = groups[i];
+    			}
+    			else {
+    				found = true;
+    			}
+    		}
+    		if (found == true && len==1)
+    			rgroup[0] = "guest";
+    		groups=rgroup;
+    	}
+    	if (SecurityManager.DBA_GROUP.equals(group))
+    		hasDbaRole = false;
     }
 
     public final void setGroups(String[] groups) {
@@ -360,24 +400,6 @@ public class User {
        if ( passwd == null ) {
             return false;
        }
-
-       //Try to authenticate using LDAP
-       try {
-          sm=BrokerPool.getInstance().getSecurityManager();
-       }
-       catch (EXistException e)
-       {
-          LOG.warn("Failed to get security manager in validate: ",e);
-          return false;
-       }
-       if(sm instanceof LDAPbindSecurityManager )
-       {
-          if( ((LDAPbindSecurityManager)sm).bind(user,passwd))
-             return true;
-          else
-             return false;
-       }
-
        if (password!=null) {
           if (MD5.md(passwd,true).equals( password )) {
              return true;
@@ -427,5 +449,7 @@ public class User {
 		}
 	}
 }
+
+
 
 

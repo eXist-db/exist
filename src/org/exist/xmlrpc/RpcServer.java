@@ -1,23 +1,3 @@
-/*
- * eXist Open Source Native XML Database Copyright (C) 2001-06, Wolfgang M.
- * Meier (meier@ifs.tu-darmstadt.de)
- * 
- * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Library General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option) any
- * later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Library General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Library General Public License
- * along with this program; if not, write to the Free Software Foundation, Inc.,
- * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
- * 
- * $Id$
- */
 package org.exist.xmlrpc;
 
 import java.io.File;
@@ -70,6 +50,7 @@ import org.xml.sax.SAXException;
  *  correct character encoding is preserved during transport.</p>
  *
  *@author     Wolfgang Meier
+ * Modified by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
  */
 public class RpcServer implements RpcAPI {
 
@@ -81,8 +62,6 @@ public class RpcServer implements RpcAPI {
 
     protected ConnectionPool pool;
 
-    private String databaseId;
-    
     /**
      * Constructor for the RpcServer object
      * 
@@ -94,8 +73,7 @@ public class RpcServer implements RpcAPI {
     public RpcServer(Configuration conf, String databaseid) throws EXistException {
         databaseid = (databaseid != null && !"".equals(databaseid)) ? databaseid
                 : BrokerPool.DEFAULT_INSTANCE_NAME;
-        this.pool = new ConnectionPool(MIN_CONNECT, MAX_CONNECT, conf, databaseid);
-        this.databaseId = databaseid;
+        pool = new ConnectionPool(MIN_CONNECT, MAX_CONNECT, conf, databaseid);
     }
 
     public boolean createCollection(User user, String name) throws EXistException,
@@ -1201,6 +1179,10 @@ public class RpcServer implements RpcAPI {
      *                   the document containing the node
      * @param id
      *                   the node's internal id
+     * @param prettyPrint
+     *                   result is pretty printed if >0
+     * @param encoding
+     *                   character encoding to use
      * @param user
      *                   Description of the Parameter
      * @return Description of the Return Value
@@ -1437,6 +1419,64 @@ public class RpcServer implements RpcAPI {
             throws EXistException, PermissionDeniedException {
         return setUser(user, name, password, digestPassword,groups, null);
     }
+    
+    /**
+     * Sets the groups attribute of the RpcServer object.
+     * Added by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
+     * 
+     * @param user
+     *                   The new user value
+     * @param groups
+     *                   The new user's group value
+     * @return Description of the Return Value
+     * @exception EXistException
+     *                        Description of the Exception
+     * @exception PermissionDeniedException
+     *                        Description of the Exception
+     */
+    public boolean setUser(User user, String name, Vector groups, String home)
+    throws EXistException, PermissionDeniedException {
+    	RpcConnection con = null;
+        try {
+            con = pool.get();
+            return con.setUser(user, name, groups);
+        } catch (Exception e) {
+            handleException(e);
+            return false;
+        } finally {
+            pool.release(con);
+        }
+    }
+    
+    /**
+     * Sets the groups attribute of the RpcServer object.
+     * Added by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
+     * 
+     * @param user
+     *                   The new user value
+     * @param groups
+     *                   The new user's group value
+     * @param rgroups
+     *                   The group to remove value 
+     * @return Description of the Return Value
+     * @exception EXistException
+     *                        Description of the Exception
+     * @exception PermissionDeniedException
+     *                        Description of the Exception
+     */
+    public boolean setUser(User user, String name, Vector groups, String home, String rgroup)
+    throws EXistException, PermissionDeniedException {
+    	RpcConnection con = null;
+        try {
+            con = pool.get();
+            return con.setUser(user, name, groups, rgroup);
+        } catch (Exception e) {
+            handleException(e);
+            return false;
+        } finally {
+            pool.release(con);
+        }
+    }
 
     /*
      * (non-Javadoc)
@@ -1489,24 +1529,6 @@ public class RpcServer implements RpcAPI {
         } finally {
             pool.release(con);
         }
-    }
-
-    public boolean enterServiceMode(User user) throws PermissionDeniedException, EXistException {
-        BrokerPool brokerPool = BrokerPool.getInstance(databaseId);
-        brokerPool.enterServiceMode(user);
-        return true;
-    }
-
-    public boolean exitServiceMode(User user) throws PermissionDeniedException, EXistException {
-        BrokerPool brokerPool = BrokerPool.getInstance(databaseId);
-        brokerPool.exitServiceMode(user);
-        return true;
-    }
-    
-    public boolean isInServiceMode(User user) throws PermissionDeniedException, EXistException {
-        BrokerPool brokerPool = BrokerPool.getInstance(databaseId);
-       return brokerPool.isInServiceMode();
-        
     }
 
     public boolean shutdown(User user) throws PermissionDeniedException {
@@ -1912,3 +1934,4 @@ public class RpcServer implements RpcAPI {
         }
     }
 }
+
