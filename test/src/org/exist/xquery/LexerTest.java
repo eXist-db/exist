@@ -10,12 +10,15 @@ import java.io.StringReader;
 import junit.framework.TestCase;
 
 import org.exist.EXistException;
+import org.exist.test.TestConstants;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.security.User;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.parser.XQueryLexer;
@@ -78,11 +81,18 @@ public class LexerTest extends TestCase {
 		try {
 			// parse the xml source
 			broker = pool.get(user);
-			Collection collection = broker.getCollection(XmldbURI.ROOT_COLLECTION_URI.append("test"));
-            IndexInfo info = collection.validateXMLResource(null, broker, XmldbURI.create("test.xml"), xml);
-            collection.store(null, broker, info, xml, false);
+            TransactionManager transact = pool.getTransactionManager();
+            assertNotNull(transact);
+            Txn transaction = transact.beginTransaction();
+            assertNotNull(transaction);
+            Collection collection = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
+            broker.saveCollection(transaction, collection);
 
-			// parse the query into the internal syntax tree
+            IndexInfo info = collection.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), xml);
+            collection.store(transaction, broker, info, xml, false);
+            transact.commit(transaction);
+            
+            // parse the query into the internal syntax tree
 			XQueryContext context = new XQueryContext(broker, AccessContext.TEST);
 			XQueryLexer lexer = new XQueryLexer(context, new StringReader(query));
 			XQueryParser xparser = new XQueryParser(lexer);
