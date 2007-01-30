@@ -129,7 +129,6 @@ public class NativeBroker extends DBBroker {
     public static final byte VALUES_DBX_ID = 2;
     public static final byte WORDS_DBX_ID = 3;
     public static final byte DOM_DBX_ID = 4;
-    public static final byte VALUES_QNAME_DBX_ID = 5;
     //Note : no ID for symbols ? Too bad...
 
     public static final String PROPERTY_PAGE_SIZE = "db-connection.page-size";
@@ -138,7 +137,7 @@ public class NativeBroker extends DBBroker {
     
     private static final byte[] ALL_STORAGE_FILES = {
     	COLLECTIONS_DBX_ID, ELEMENTS_DBX_ID, VALUES_DBX_ID,
-    	VALUES_QNAME_DBX_ID, WORDS_DBX_ID, DOM_DBX_ID
+    	WORDS_DBX_ID, DOM_DBX_ID
     };
     
     private static final String TEMP_FRAGMENT_REMOVE_ERROR = "Could not remove temporary fragment";
@@ -169,7 +168,6 @@ public class NativeBroker extends DBBroker {
 	/** the index processors */	
 	protected NativeElementIndex elementIndex;
 	protected NativeValueIndex valueIndex;
-	protected NativeValueIndexByQName qnameValueIndex;
 	protected NativeTextEngine textEngine;
     
     protected IndexSpec indexConfiguration;
@@ -258,8 +256,7 @@ public class NativeBroker extends DBBroker {
     		readOnly = readOnly || !symbols.getFile().canWrite();
             
     		elementIndex = new NativeElementIndex(this, ELEMENTS_DBX_ID, dataDir, config);
-        	valueIndex = new NativeValueIndex(this, VALUES_DBX_ID, dataDir, config);        	
-    		qnameValueIndex = new NativeValueIndexByQName(this, VALUES_QNAME_DBX_ID, dataDir, config);    		
+        	valueIndex = new NativeValueIndex(this, VALUES_DBX_ID, dataDir, config);
     		textEngine = new NativeTextEngine(this, WORDS_DBX_ID, dataDir, config);    		
 			
 			if (readOnly)
@@ -505,8 +502,6 @@ public class NativeBroker extends DBBroker {
                 return elementIndex.dbNodes;
             case VALUES_DBX_ID :
                 return valueIndex.dbValues;
-            case VALUES_QNAME_DBX_ID :
-                return qnameValueIndex.dbValues;
             case WORDS_DBX_ID :
                 return textEngine.dbTokens;
             default:
@@ -533,10 +528,6 @@ public class NativeBroker extends DBBroker {
     public NativeValueIndex getValueIndex() {
         return valueIndex;
     }
-    
-    public NativeValueIndexByQName getQNameValueIndex() {
-        return qnameValueIndex;
-    }     
     
     public TextSearchEngine getTextEngine() {
         return textEngine;
@@ -2719,7 +2710,6 @@ public class NativeBroker extends DBBroker {
         try {
         	elementIndex = new NativeElementIndex(this, ELEMENTS_DBX_ID, dataDir, config);        	
         	valueIndex = new NativeValueIndex(this, VALUES_DBX_ID, dataDir, config);
-    		qnameValueIndex = new NativeValueIndexByQName(this, VALUES_QNAME_DBX_ID, dataDir, config);    		
     		textEngine = new NativeTextEngine(this, WORDS_DBX_ID, dataDir, config);    		
         } catch (DBException e) {
             LOG.warn("Exception during repair: " + e.getMessage(), e);

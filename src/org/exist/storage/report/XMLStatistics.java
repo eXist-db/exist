@@ -11,7 +11,6 @@ import org.exist.storage.BufferStats;
 import org.exist.storage.NativeElementIndex;
 import org.exist.storage.NativeTextEngine;
 import org.exist.storage.NativeValueIndex;
-import org.exist.storage.NativeValueIndexByQName;
 import org.exist.storage.dom.DOMFile;
 import org.exist.storage.index.BFile;
 import org.exist.storage.index.CollectionStore;
@@ -70,7 +69,7 @@ public class XMLStatistics {
 		}
 		
 		this.contentHandler.endElement(NAMESPACE, "database-instances",
-			PREFIX + "database-instances");
+			PREFIX + ":database-instances");
 	}
 	
 	private void genBufferStatus(BrokerPool instance) throws SAXException {
@@ -88,9 +87,6 @@ public class XMLStatistics {
 		db = (BFile) conf.getProperty(NativeValueIndex.FILE_KEY_IN_CONFIG);
 		if (db != null)
 			genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "Values index ("+ db.getFile().getName() + ")");
-		db = (BFile) conf.getProperty(NativeValueIndexByQName.FILE_KEY_IN_CONFIG);
-		if (db != null)
-			genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "QName values index ("+ db.getFile().getName() + ")");
 		db = (BFile) conf.getProperty(NativeTextEngine.FILE_KEY_IN_CONFIG);
 		if (db != null)
 			genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "Fulltext index ("+ db.getFile().getName() + ")");		

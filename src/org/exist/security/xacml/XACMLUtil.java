@@ -43,12 +43,13 @@ import org.exist.dom.*;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.XMLSecurityManager;
 import org.exist.storage.DBBroker;
-import org.exist.storage.NativeValueIndexByQName;
 import org.exist.storage.UpdateListener;
+import org.exist.storage.NativeValueIndex;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.Constants;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Sequence;
@@ -307,8 +308,9 @@ public class XACMLUtil implements UpdateListener
 		DocumentSet documentSet = getPolicyDocuments(broker, true);
 		NodeSet nodeSet = documentSet.toNodeSet();
 
-		NativeValueIndexByQName index = broker.getQNameValueIndex();
-		Sequence results = index.findByQName(attributeQName, comparison, nodeSet);
+        NativeValueIndex valueIndex = broker.getValueIndex();
+        Sequence results = valueIndex.find(Constants.EQ, documentSet, null, attributeQName, comparison);
+//        Sequence results = index.findByQName(attributeQName, comparison, nodeSet);
 		//TODO : should we honour (# exist:force-index-use #) ? 
 
 		return (results == null) ? null : results.getDocumentSet();
