@@ -121,7 +121,7 @@ public class BlockingInputStream extends InputStream {
      *
      * @throws     IOException  if an I/O error occurs.
      */
-    public synchronized void close() throws IOException {
+    public synchronized void closeInputStream() throws IOException {
         closed = true;
         notifyAll();
     }
@@ -224,7 +224,7 @@ public class BlockingInputStream extends InputStream {
      *
      * @throws     IOException  if an I/O error occurs.
      */
-    public synchronized void closeOutputStream() throws IOException {
+    public synchronized void close() throws IOException {
         try {
             while(!empty() && !closed) wait();
             if (!empty()) throw new IOException("Closing non empty stream.");

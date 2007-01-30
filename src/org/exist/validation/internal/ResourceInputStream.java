@@ -22,6 +22,7 @@
 
 package org.exist.validation.internal;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.log4j.Logger;
@@ -30,7 +31,7 @@ import org.exist.xmldb.XmldbURI;
 
 
 /**
- *  Wrapper between ResourceThread that writes data into outputstream and 
+ *  Wrapper between ResourceThread that writes data into outputstream and
  * the  needed InputStream that is needed for the Validator. The glue is the
  * circulair buffer BlockingOutputStream.
  *
@@ -43,10 +44,11 @@ public class ResourceInputStream extends InputStream {
     
     private final static Logger logger = Logger.getLogger(ResourceInputStream.class);
     private BlockingOutputStream bis = null;
+    private ResourceThread rt = null;
     
     /**
      * Creates a new instance of ResourceInputStream.
-     * 
+     *
      * @param brokerPool          BrokerPool
      * @param docUri    XML resource that must be streamed.
      */
@@ -56,57 +58,81 @@ public class ResourceInputStream extends InputStream {
         
         bis = new BlockingOutputStream();
         
-        ResourceThread rt = new ResourceThread(brokerPool, docUri, bis);
+        rt = new ResourceThread(brokerPool, docUri, bis);
         
         rt.start();
         
         logger.debug("Initializing ResourceInputStream done");
     }
-
+    
     public int read(byte[] b, int off, int len) throws java.io.IOException {
+        if(rt.isExceptionThrown()) {
+            throw new IOException(rt.getThrownException().getMessage());
+        }
         return bis.read(b, off, len);
     }
-
+    
     public int read(byte[] b) throws java.io.IOException {
+        if(rt.isExceptionThrown()) {
+            throw new IOException(rt.getThrownException().getMessage());
+        }
         return bis.read(b, 0, b.length);
     }
-
+    
 //    public void mark(int readlimit) {
 //
 //        bis.mark(readlimit);
 //    }
-
+    
     public long skip(long n) throws java.io.IOException {
+        if(rt.isExceptionThrown()) {
+            throw new IOException(rt.getThrownException().getMessage());
+        }
         return super.skip(n);
     }
-
+    
     public void reset() throws java.io.IOException {
+        if(rt.isExceptionThrown()) {
+            throw new IOException(rt.getThrownException().getMessage());
+        }
         super.reset();
     }
-
+    
     public int read() throws java.io.IOException {
+        if(rt.isExceptionThrown()) {
+            throw new IOException(rt.getThrownException().getMessage());
+        }
         return bis.read();
     }
-
+    
 //    public boolean markSupported() {
 //
 //        boolean retValue;
-//        
+//
 //        retValue = bis.markSupported();
 //        return retValue;
 //    }
-
+    
     public void close() throws java.io.IOException {
+        if(rt.isExceptionThrown()) {
+            throw new IOException(rt.getThrownException().getMessage());
+        }
         bis.close();
     }
     
     //DWES
     public void flush() throws java.io.IOException {
+        if(rt.isExceptionThrown()) {
+            throw new IOException(rt.getThrownException().getMessage());
+        }
         bis.flush();
     }
-       
-
+    
+    
     public int available() throws java.io.IOException {
+        if(rt.isExceptionThrown()) {
+            throw new IOException(rt.getThrownException().getMessage());
+        }
         return bis.available();
     }
     
