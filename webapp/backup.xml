@@ -228,5 +228,28 @@
                 Unix cron utility, though there are small differences. Please consult the Quartz documentation about
                 <ulink url="http://www.opensymphony.com/quartz/wikidocs/TutorialLesson6.html">CronTrigger</ulink> configuration.</para>
         </section>
+        <section>
+            <title>Triggering a Backup</title>
+            
+            <para>The <classname>BackupSystemTask</classname> can also be triggered via XQuery, using the
+                <command>system:trigger-system-task</command> function defined in the "system" module:
+            </para>
+            
+            <example>
+                <title>Triggering a Backup From XQuery</title>
+                <programlisting><![CDATA[let $params :=
+ <parameters>
+   <param name="dir" value="backup"/>
+   <param name="suffix" value=".zip"/>
+   <param name="prefix" value="backup-"/>
+   <param name="collection" value="/db"/>
+ </parameters>
+system:trigger-system-task("org.exist.storage.BackupSystemTask", $params)]]></programlisting>
+            </example>
+            
+            <para>The function will schedule a backup to be executed as soon as possible. As explained above, 
+                the database will be switched to service mode, and eXist 
+                will wait for all pending transactions to complete before the backup starts.</para>
+        </section>
     </chapter>
 </book>
