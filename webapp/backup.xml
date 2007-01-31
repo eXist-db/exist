@@ -244,7 +244,8 @@
    <param name="prefix" value="backup-"/>
    <param name="collection" value="/db"/>
  </parameters>
-system:trigger-system-task("org.exist.storage.BackupSystemTask", $params)]]></programlisting>
+ return
+    system:trigger-system-task("org.exist.storage.BackupSystemTask", $params)]]></programlisting>
             </example>
             
             <para>The function will schedule a backup to be executed as soon as possible. As explained above, 
