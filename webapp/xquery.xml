@@ -1050,8 +1050,7 @@ example:echo(("Hello", "World!"))
                 interpretation of the parameters depends on the context in which the query is
                 called. Most output parameters are applicable only if the query is executed using
                 the XQueryGenerator or XQueryServlet servlets, or the REST server.</para>
-            <para>Serialization parameters can either be set via <emphasis>pragmas</emphasis> (see
-                the following section) or a <option>declare option</option> statement in the query
+            <para>Serialization parameters can be set by <option>declare option</option> statement in the query
                 prolog. In <option>declare option</option>, the serialization parameters can be
                 specified as follows:</para>
             <synopsis>declare option exist:serialize "method=xhtml media-type=application/xhtml+html";</synopsis>
@@ -1123,7 +1122,7 @@ example:echo(("Hello", "World!"))
             </itemizedlist>
 
             <para>For example, to disable XInclude expansion, and indent the output, you can use the
-                following pragma:</para>
+                following syntax:</para>
 
             <synopsis>declare option exist:serialize "expand-xincludes=no";</synopsis>
 
