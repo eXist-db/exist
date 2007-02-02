@@ -476,4 +476,9 @@ public class ForExpr extends BindingExpression {
     public void resetState() {
         super.resetState();
     }
+
+
+    public void accept(ExpressionVisitor visitor) {
+        visitor.visitForExpression(this);
+    }
 }

@@ -433,4 +433,9 @@ public abstract class Function extends PathExpr {
 	public XQueryAST getASTNode() {
 		return astNode;
 	}
+
+
+    public void accept(ExpressionVisitor visitor) {
+        visitor.visitFunction(this);
+    }
 }

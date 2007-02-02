@@ -36,26 +36,13 @@ import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NativeValueIndex;
-import org.exist.xquery.AnalyzeContextInfo;
-import org.exist.xquery.Atomize;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Constants;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.DynamicCardinalityCheck;
-import org.exist.xquery.Expression;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Profiler;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.storage.ElementValue;
+import org.exist.storage.Indexable;
+import org.exist.xquery.*;
 import org.exist.xquery.util.Error;
 import org.exist.xquery.util.RegexTranslator;
 import org.exist.xquery.util.RegexTranslator.RegexSyntaxException;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 /**
  * Implements the fn:matches() function.
@@ -64,7 +51,7 @@ import org.exist.xquery.value.Type;
  * 
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
-public class FunMatches extends Function {
+public class FunMatches extends Function implements Optimizable {
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
@@ -98,8 +85,12 @@ public class FunMatches extends Function {
 	protected Pattern pat = null;
 	
 	protected boolean hasUsedIndex = false;
-	
-	/**
+
+    private LocationStep contextStep = null;
+    private QName contextQName = null;
+    private NodeSet preselectResult = null;
+
+    /**
 	 * @param context
 	 */
 	public FunMatches(XQueryContext context, FunctionSignature signature) {
@@ -110,10 +101,10 @@ public class FunMatches extends Function {
 	 * @see org.exist.xquery.Function#setArguments(java.util.List)
 	 */
 	public void setArguments(List arguments) throws XPathException {
-        Expression arg = (Expression) arguments.get(0);
-        steps.add(arg);
+        Expression path = (Expression) arguments.get(0);
+        steps.add(path);
         
-        arg = (Expression) arguments.get(1);
+        Expression arg = (Expression) arguments.get(1);
         arg = new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, arg,
                 new Error(Error.FUNC_PARAM_CARDINALITY, "2", mySignature)); 
         if(!Type.subTypeOf(arg.returnsType(), Type.ATOMIC))
@@ -128,9 +119,55 @@ public class FunMatches extends Function {
                 arg = new Atomize(context, arg);
             steps.add(arg);            
         }
-	}
-	
-	/* (non-Javadoc)
+
+        LocationStep step = BasicExpressionVisitor.findFirstStep(path);
+        if (step != null) {
+            NodeTest test = step.getTest();
+            if (!test.isWildcardTest() && test.getName() != null) {
+                contextQName = new QName(test.getName());
+                if (step.getAxis() == Constants.ATTRIBUTE_AXIS || step.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
+                    contextQName.setNameType(ElementValue.ATTRIBUTE);
+                contextStep = step;
+            }
+        }
+    }
+
+
+    public boolean canOptimize(Sequence contextSequence, Item contextItem) {
+        if (contextQName == null)
+            return false;
+        return Optimize.getQNameIndexType(context, contextSequence, contextQName) != Type.ITEM;
+    }
+
+    public boolean optimizeOnSelf() {
+        return false;
+    }
+
+    public NodeSet preSelect(Sequence contextSequence, Item contextItem) throws XPathException {
+        if (contextItem != null) {
+            contextSequence = contextItem.toSequence();
+        }
+        int indexType = Optimize.getQNameIndexType(context, contextSequence, contextQName);
+        if (LOG.isTraceEnabled())
+            LOG.trace("Using QName index on type " + Type.getTypeName(indexType));
+        String pattern = translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue());
+        boolean caseSensitive = true;
+        int flags = 0;
+        if(getSignature().getArgumentCount() == 3) {
+            String flagsArg = getArgument(2).eval(contextSequence, contextItem).getStringValue();
+            caseSensitive = (flagsArg.indexOf('i') == Constants.STRING_NOT_FOUND);
+            flags = parseFlags(flagsArg);
+        }
+        try {
+            preselectResult = context.getBroker().getValueIndex().match(contextSequence.getDocumentSet(), null,
+                    pattern, contextQName, DBBroker.MATCH_REGEXP, flags, caseSensitive);
+        } catch (EXistException e) {
+            throw new XPathException(getASTNode(), "Error during index lookup: " + e.getMessage(), e);
+        }
+        return preselectResult;
+    }
+
+    /* (non-Javadoc)
      * @see org.exist.xquery.Function#getDependencies()
      */
     public int getDependencies() {
@@ -185,24 +222,36 @@ public class FunMatches extends Function {
             if (contextItem != null)
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
-        
-	    if (contextItem != null)
+
+        // if we were optimizing and the preselect did not return anything,
+        // we won't have any matches and can return
+        if (preselectResult != null && preselectResult.isEmpty())
+            return Sequence.EMPTY_SEQUENCE;
+
+        if (contextItem != null)
 			contextSequence = contextItem.toSequence();
 	    
         Sequence result;
-		Sequence input = getArgument(0).eval(contextSequence, contextItem);
-		if (input.isEmpty())
-            result = Sequence.EMPTY_SEQUENCE;        
-        else if (inPredicate && !Dependency.dependsOn(this, Dependency.CONTEXT_ITEM)) {
-            if (context.isProfilingEnabled())
-                context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "", "Index evaluation");            
-            result = evalWithIndex(contextSequence, contextItem, input);
+        if (contextStep == null || preselectResult == null) {
+            Sequence input = getArgument(0).eval(contextSequence, contextItem);
+            if (input.isEmpty())
+                result = Sequence.EMPTY_SEQUENCE;
+            else if (inPredicate && !Dependency.dependsOn(this, Dependency.CONTEXT_ITEM)) {
+                if (context.isProfilingEnabled())
+                    context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "", "Index evaluation");
+                result = evalWithIndex(contextSequence, contextItem, input);
+            } else {
+                if (context.isProfilingEnabled())
+                    context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "", "Generic evaluation");
+                result = evalGeneric(contextSequence, contextItem, input);
+            }
         } else {
-            if (context.isProfilingEnabled())
-                context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "", "Generic evaluation");
-            result = evalGeneric(contextSequence, contextItem, input);
+            contextStep.setPreloadNodeSets(true);
+            contextStep.setPreloadedData(preselectResult.getDocumentSet(), preselectResult);
+
+            result = getArgument(0).eval(contextSequence).toNodeSet();
         }
-        
+
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result); 
         

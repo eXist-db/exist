@@ -64,6 +64,16 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
         return visitor.firstStep;
     }
 
+
+    public void visitForExpression(ForExpr forExpr) {
+    }
+
+    public void visitLetExpression(LetExpr letExpr) {
+    }
+
+    public void visitFunction(Function function) {
+    }
+
     public static class FirstStepVisitor extends BasicExpressionVisitor {
 
         private LocationStep firstStep = null;

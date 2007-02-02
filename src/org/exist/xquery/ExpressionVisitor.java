@@ -35,4 +35,10 @@ public interface ExpressionVisitor {
     public void visitUnionExpr(Union union);
     
     public void visitFtExpression(ExtFulltext fulltext);
+
+    public void visitForExpression(ForExpr forExpr);
+
+    public void visitLetExpression(LetExpr letExpr);
+
+    public void visitFunction(Function function);
 }

@@ -74,8 +74,12 @@ public abstract class BindingExpression extends AbstractExpression {
 	public void setVariable(String qname) {
 		varName = qname;
 	}
-	
-	/**
+
+    public String getVariable() {
+        return this.varName;
+    }
+    
+    /**
 	 * Set the sequence type of the variable (as specified in the "as" clause).
 	 * 
 	 * @param type
@@ -88,15 +92,27 @@ public abstract class BindingExpression extends AbstractExpression {
 		this.inputSequence = sequence;
 	}
 
-	public void setReturnExpression(Expression expr) {
+    public Expression getInputSequence() {
+        return this.inputSequence;
+    }
+    
+    public void setReturnExpression(Expression expr) {
 		this.returnExpr = expr;
 	}
 
-	public void setWhereExpression(Expression expr) {
+    public Expression getReturnExpression() {
+        return this.returnExpr;
+    }
+
+    public void setWhereExpression(Expression expr) {
 		this.whereExpr = expr;
 	}
 
-	public void setOrderSpecs(OrderSpec specs[]) {
+    public Expression getWhereExpression() {
+        return this.whereExpr;
+    }
+    
+    public void setOrderSpecs(OrderSpec specs[]) {
 		this.orderSpecs = specs;
 	}
 
@@ -115,7 +131,7 @@ public abstract class BindingExpression extends AbstractExpression {
 	public void setToGroupVariable(String qname) {
 		toGroupVarName = qname;
 	}
-	
+
 	/* (non-Javadoc)
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression, int)
      */
