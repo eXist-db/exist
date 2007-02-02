@@ -125,7 +125,7 @@ public class NativeSerializer extends Serializer {
     		serializeToReceiver(node, domIter, (DocumentImpl)node.getOwnerDocument(), 
     				true, p.getMatches(), new TreeSet());
     	}
-    	DocumentImpl documentImpl = (DocumentImpl) doc;
+    	DocumentImpl documentImpl = doc;
 		LOG.debug("serializing document " + documentImpl.getDocId()
 				+ " (" + documentImpl.getURI() + ")"
     			+ " to SAX took " + (System.currentTimeMillis() - start));
@@ -266,13 +266,16 @@ public class NativeSerializer extends Serializer {
                         tattribs.addAttribute(ID_ATTRIB, node.getNodeId().toString());
                         tattribs.addAttribute(SOURCE_ATTRIB, doc.getFileURI().toString());
                     }
-                    tattribs.addAttribute(((AttrImpl)node).getQName(), cdata);
+                    tattribs.addAttribute(node.getQName(), cdata);
                     receiver.startElement(ATTRIB_ELEMENT, tattribs);
                     receiver.endElement(ATTRIB_ELEMENT);
                 }
-                else
-                    throw new SAXException("Error SENR0001: attribute '" + ((AttrImpl)node).getQName() + "' has no parent element");
-        	} else
+                else {
+                    LOG.warn("Error SENR0001: attribute '" + node.getQName() + "' has no parent element. " +
+                        "While serializing document " + doc.getURI());
+                    throw new SAXException("Error SENR0001: attribute '" + node.getQName() + "' has no parent element");
+                }
+            } else
         		receiver.attribute(node.getQName(), cdata);
             node.release();
             break;
