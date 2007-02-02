@@ -28,7 +28,6 @@ import org.exist.EXistException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.collections.Collection;
 import org.exist.dom.ContextItem;
-import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
@@ -183,7 +182,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
     public boolean canOptimize(Sequence contextSequence, Item contextItem) {
         if (contextQName == null)
             return false;
-        return getQNameIndexType(contextSequence) != Type.ITEM;
+        return Optimize.getQNameIndexType(context, contextSequence, contextQName) != Type.ITEM;
     }
 
     public boolean optimizeOnSelf() {
@@ -221,11 +220,15 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
 		}
 	}
 
+    public int getRelation() {
+        return this.relation;
+    }
+    
     public NodeSet preSelect(Sequence contextSequence, Item contextItem) throws XPathException {
         if (contextItem != null) {
             contextSequence = contextItem.toSequence();
         }
-        int indexType = getQNameIndexType(contextSequence);
+        int indexType = Optimize.getQNameIndexType(context, contextSequence, contextQName);
         if (LOG.isTraceEnabled())
             LOG.trace("Using QName index on type " + Type.getTypeName(indexType));
         Sequence rightSeq = getRight().eval(contextSequence);
@@ -808,52 +811,6 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
 		cached = null;        
 		hasUsedIndex = false;
 	}
-
-    private boolean checkForQNameIndex(Sequence contextSequence) {
-        if (contextSequence == null || contextQName == null)
-            return false;
-        boolean hasQNameIndex = true;
-        for (Iterator i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
-            Collection collection = (Collection) i.next();
-            if (collection.getURI().equals(XmldbURI.SYSTEM_COLLECTION_URI))
-                continue;
-            hasQNameIndex = collection.getIndexByQNameConfiguration(context.getBroker(), contextQName) != null;
-            if (!hasQNameIndex) {
-                if (LOG.isTraceEnabled())
-                    LOG.trace("cannot use index on QName: " + contextQName + ". Collection " + collection.getURI() +
-                        " does not define an index");
-                break;
-            }
-        }
-        return hasQNameIndex;
-    }
-
-    /**
-     * Check every collection in the context sequence for an existing range index by QName.
-     *
-     * @param contextSequence
-     * @return the type of a usable index or {@link Type#ITEM} if there is no common
-     *  index.
-     */
-    private int getQNameIndexType(Sequence contextSequence) {
-        if (contextSequence == null || contextQName == null)
-            return Type.ITEM;
-        int indexType = Type.ITEM;
-        for (Iterator i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
-            Collection collection = (Collection) i.next();
-            if (collection.getURI().equals(XmldbURI.SYSTEM_COLLECTION_URI))
-                continue;
-            QNameRangeIndexSpec config = collection.getIndexByQNameConfiguration(context.getBroker(), contextQName);
-            if (config == null)
-                return Type.ITEM;   // found a collection without index
-            int type = config.getType();
-            if (indexType == Type.ITEM)
-                indexType = type;
-            else if (indexType != type)
-                return Type.ITEM;   // found a collection with a different type
-        }
-        return indexType;
-    }
 
     public void accept(ExpressionVisitor visitor) {
         visitor.visitGeneralComparison(this);

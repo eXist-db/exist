@@ -198,4 +198,8 @@ public class InternalFunctionCall extends Function
 	{
 		return function.toString();
 	}
+
+    public void accept(ExpressionVisitor visitor) {
+        function.accept(visitor);
+    }
 }

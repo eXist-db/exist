@@ -353,4 +353,9 @@ public class LetExpr extends BindingExpression {
         result.append(returnExpr.toString());
         return result.toString();
     }
+
+
+    public void accept(ExpressionVisitor visitor) {
+        visitor.visitLetExpression(this);
+    }
 }

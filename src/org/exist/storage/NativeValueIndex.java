@@ -664,6 +664,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     if (startTerm != null) {
                         searchKey = new QNameValue(collectionId, qname, startTerm, broker.getSymbols());
                     } else {
+                        LOG.debug("Searching with QName prefix");
                         searchKey = new QNamePrefixValue(collectionId, qname, Type.STRING, broker.getSymbols());
                     }
                 }

@@ -23,13 +23,19 @@ package org.exist.xquery;
 
 import org.apache.log4j.Logger;
 import org.exist.Namespaces;
+import org.exist.xmldb.XmldbURI;
+import org.exist.collections.Collection;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.dom.VirtualNodeSet;
 import org.exist.storage.ElementIndex;
+import org.exist.storage.QNameRangeIndexSpec;
 import org.exist.xquery.functions.ExtFulltext;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.Type;
+
+import java.util.Iterator;
 
 public class Optimize extends Pragma {
 
@@ -116,7 +122,6 @@ public class Optimize extends Pragma {
                 optimizable = fulltext;
             }
 
-
             public void visitGeneralComparison(GeneralComparison comparison) {
                 if (LOG.isTraceEnabled())
                     LOG.trace("exist:optimize: found optimizable: " + comparison.getClass().getName());
@@ -125,6 +130,14 @@ public class Optimize extends Pragma {
 
             public void visitPredicate(Predicate predicate) {
                 predicate.accept(this);
+            }
+
+            public void visitFunction(Function function) {
+                if (function instanceof Optimizable) {
+                    if (LOG.isTraceEnabled())
+                        LOG.trace("exist:optimize: found optimizable function: " + function.getClass().getName());
+                    optimizable = (Optimizable) function;
+                }
             }
         });
 
@@ -139,4 +152,30 @@ public class Optimize extends Pragma {
     }
 
 
+    /**
+     * Check every collection in the context sequence for an existing range index by QName.
+     *
+     * @param contextSequence
+     * @return the type of a usable index or {@link org.exist.xquery.value.Type#ITEM} if there is no common
+     *  index.
+     */
+    public static int getQNameIndexType(XQueryContext context, Sequence contextSequence, QName qname) {
+        if (contextSequence == null || qname == null)
+            return Type.ITEM;
+        int indexType = Type.ITEM;
+        for (Iterator i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
+            Collection collection = (Collection) i.next();
+            if (collection.getURI().equals(XmldbURI.SYSTEM_COLLECTION_URI))
+                continue;
+            QNameRangeIndexSpec config = collection.getIndexByQNameConfiguration(context.getBroker(), qname);
+            if (config == null)
+                return Type.ITEM;   // found a collection without index
+            int type = config.getType();
+            if (indexType == Type.ITEM)
+                indexType = type;
+            else if (indexType != type)
+                return Type.ITEM;   // found a collection with a different type
+        }
+        return indexType;
+    }
 }
