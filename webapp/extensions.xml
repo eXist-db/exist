@@ -24,6 +24,7 @@
         <para>The source code for extension modules should be placed in their own folder inside $EXIST_HOME/extensions/modules/src/org/exist/xquery/modules. They may then be compiled in place using either "$EXIST_HOME/build.sh extensions" or "%EXIST_HOME%\build.bat extensions"</para>
         <para>eXist must also be told which modules to load, this is done in conf.xml and the Class name and Namespace for each module is listed below. Note - eXist will require a restart to load the new module.
         Once a Module is configured and loaded eXist will display the module and its function definitions as part of the <ulink url="xquery/functions.xq">function library</ulink> page or through util:decribe-function().</para>
+
         <section id="module_example">
             <title>Example Module</title>
             <para>Demonstrates the simplest example of an Extension module with a single function. A good place to start if you wish to develop your own Extension Module.</para> 		    		
@@ -38,12 +39,26 @@
             </para>
         </section>
         
+        <section id="module_datetime">
+            <title>Date Time Module</title>
+            <para>Provides additional operations on date's and time's</para> 		    		
+            <para>
+                <command>Creator:</command>&#160;<dc:creator>Adam Retter</dc:creator><br/>
+                <command>Licence:</command>&#160;LGPL<br/>
+                <command>Status:</command>&#160;production
+            </para>
+            <para>
+                <command>Class:</command>&#160;org.exist.xquery.modules.datetime.DateTimeModule<br/>
+                <command>Namespace:</command>&#160;http://exist-db.org/xquery/datetime
+            </para>
+        </section>        
+        
         <section id="module_image">
             <title>Image Module</title>
             <para>This modules provides operations on images stored in the db, including: Retreiving Image Dimensions, Creating Thumbnails and Resizing Images.</para> 		    		
             <para>
                 <command>Creator:</command>&#160;<dc:creator>Adam Retter</dc:creator><br/>
-                <command>Contributors:</command>&#160;<dc:contributor>Wolfgang Meier</dc:contributor><br/>
+                <command>Contributors:</command>&#160;<dc:contributor>Wolfgang Meier</dc:contributor>,&#160;<dc:contributor>Rafael Troilo</dc:contributor><br/>
                 <command>Licence:</command>&#160;LGPL<br/>
                 <command>Status:</command>&#160;production
             </para>
@@ -64,6 +79,34 @@
             <para>
                 <command>Class:</command>&#160;org.exist.xquery.modules.mail.MailModule<br/>
                 <command>Namespace:</command>&#160;http://exist-db.org/xquery/mail
+            </para>
+        </section>
+        
+        <section id="module_math">
+            <title>Math Module</title>
+            <para>This module provides mathematical functions from the java Math class.</para>
+            <para>
+                <command>Creator:</command>&#160;<dc:creator>Dannes Wessels</dc:creator><br/>
+                <command>Licence:</command>&#160;LGPL<br/>
+                <command>Status:</command>&#160;production
+            </para>
+            <para>
+                <command>Class:</command>&#160;org.exist.xquery.modules.math.MathModule<br/>
+                <command>Namespace:</command>&#160;http://exist-db.org/xquery/math
+            </para>
+        </section>
+        
+        <section id="module_scheduler">
+            <title>Scheduler Module</title>
+            <para>Provides access to eXist's Scheduler for the purposes of scheduling job's and manipulating existing job's.</para>
+            <para>
+                <command>Creator:</command>&#160;<dc:creator>Adam Retter</dc:creator><br/>
+                <command>Licence:</command>&#160;LGPL<br/>
+                <command>Status:</command>&#160;production
+            </para>
+            <para>
+                <command>Class:</command>&#160;org.exist.xquery.modules.scheduler.SchedulerModule<br/>
+                <command>Namespace:</command>&#160;http://exist-db.org/xquery/scheduler
             </para>
         </section>
         
@@ -111,32 +154,5 @@
             </para>
         </section>
         
-        <section id="module_math">
-            <title>Math Module</title>
-            <para>This module provides mathematical functions from the java Math class.</para>
-            <para>
-                <command>Creator:</command>&#160;<dc:creator>Dannes Wessels</dc:creator><br/>
-                <command>Licence:</command>&#160;LGPL<br/>
-                <command>Status:</command>&#160;production
-            </para>
-            <para>
-                <command>Class:</command>&#160;org.exist.xquery.modules.math.MathModule<br/>
-                <command>Namespace:</command>&#160;http://exist-db.org/xquery/math
-            </para>
-        </section>
-        
-        <section id="module_scheduler">
-            <title>Scheduler Module</title>
-            <para>Provides access to eXist's Scheduler for the purposes of scheduling job's and manipulating existing job's.</para>
-            <para>
-                <command>Creator:</command>&#160;<dc:creator>Adam Retter</dc:creator><br/>
-                <command>Licence:</command>&#160;LGPL<br/>
-                <command>Status:</command>&#160;production
-            </para>
-            <para>
-                <command>Class:</command>&#160;org.exist.xquery.modules.scheduler.SchedulerModule<br/>
-                <command>Namespace:</command>&#160;http://exist-db.org/xquery/scheduler
-            </para>
-        </section>
     </chapter>
 </book>
