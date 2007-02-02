@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <test xmlns="http://exist.sourceforge.net/NS/exist">
     <configuration>
         <connection id="con" user="admin" password="" base="xmldb:exist://embedded-eXist-server"/>
@@ -185,9 +185,11 @@
                             <include path="booktitle"/>
                         </fulltext>
 
+                        <create path="//title" type="xs:string"/>
                         <create path="//author" type="xs:string"/>
                         <create path="//year" type="xs:int"/>
 
+                        <create qname="title" type="xs:string"/>
                         <create qname="author" type="xs:string"/>
                         <create qname="year" type="xs:integer"/>
                     </index>
@@ -223,14 +225,21 @@
                 <xquery collection="/db/library" query="//((#exist:optimize#) { article[author = 'Linus Torvalds'] })"/>
                 <xquery collection="/db/library" query="//((#exist:optimize#) { *[author = 'Bjarne Stroustrup'] })"/>
                 <xquery collection="/db/library" query="//((#exist:optimize#) { *[author = 'Linus Torvalds'] })"/>
-                <xquery collection="/db/library" query="//inproceedings[matches(author, '^Bjarne.*')]"/>
-                <xquery collection="/db/library" query="//((#exist:optimize#) { inproceedings[matches(author, '^Bjarne.*')] })"/>
                 <xquery collection="/db/library" query="//inproceedings[starts-with(author, 'Bjarne')]"/>
                 <xquery collection="/db/library" query="//((#exist:optimize#) { inproceedings[starts-with(author, 'Bjarne')] })"/>
                 <xquery collection="/db/library" query="//article[starts-with(author, 'Erich')]"/>
                 <xquery collection="/db/library" query="//((#exist:optimize#) { article[starts-with(author, 'Erich')] })"/>
                 <xquery collection="/db/library" query="//inproceedings[ends-with(author, 'strup')]"/>
                 <xquery collection="/db/library" query="//((#exist:optimize#) { inproceedings[ends-with(author, 'strup')] })"/>
+                
+                <xquery collection="/db/library" query="//inproceedings[matches(author, '^Bjarne.*')]"/>
+                <xquery collection="/db/library" query="//((#exist:optimize#) { inproceedings[matches(author, '^Bjarne.*')] })"/>
+                <xquery collection="/db/library" query="//inproceedings[matches(title, 'xml', 'i')]"/>
+                <xquery collection="/db/library" query="//((#exist:optimize#) { inproceedings[matches(title, 'xml', 'i')] })"/>
+                <xquery collection="/db/library" query="//*[matches(title, 'xml', 'i')]"/>
+                <xquery collection="/db/library" query="//((#exist:optimize#) { *[matches(title, 'xml', 'i')] })"/>
+                <xquery collection="/db/library" query="//*[matches(title, '^XML')]"/>
+                <xquery collection="/db/library" query="//((#exist:optimize#) { *[matches(title, '^XML')] })"/>
                 
                 <xquery collection="/db/library" query="//inproceedings[year = 2002] "/>
                 <xquery collection="/db/library" query="//((#exist:optimize#) { inproceedings[year = 2002] })"/>
