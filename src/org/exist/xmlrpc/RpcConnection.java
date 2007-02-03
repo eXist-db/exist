@@ -208,7 +208,7 @@ public class RpcConnection extends Thread {
             throw new EXistException(e.getMessage());
         } finally {
             if(collection != null)
-                collection.release();
+                collection.release(Lock.READ_LOCK);
             brokerPool.release(broker);
         }
     }
@@ -242,7 +242,7 @@ public class RpcConnection extends Thread {
             return id.toString();
         } finally {
             if(collection != null)
-                collection.release();
+                collection.release(Lock.READ_LOCK);
             brokerPool.release(broker);
         }
     }
@@ -440,7 +440,7 @@ public class RpcConnection extends Thread {
             return desc;
         } finally {
             if(collection != null)
-                collection.release();
+                collection.release(Lock.READ_LOCK);
             brokerPool.release(broker);
         }
     }
@@ -495,7 +495,8 @@ public class RpcConnection extends Thread {
         DBBroker broker = brokerPool.get(user);
         Collection collection = null;
         try {
-            collection = broker.openCollection(collUri, Lock.WRITE_LOCK);
+        	//WRITE lock ????
+            collection = broker.openCollection(collUri, Lock.READ_LOCK);
             if (collection == null)
                 throw new EXistException("collection " + collUri
                         + " not found!");
@@ -515,7 +516,7 @@ public class RpcConnection extends Thread {
             return desc;
         } finally {
             if(collection != null)
-                collection.release();
+                collection.release(Lock.READ_LOCK);
             brokerPool.release(broker);
         }
     }
@@ -537,11 +538,11 @@ public class RpcConnection extends Thread {
                 return null;
             }
             if(!collection.getPermissions().validate(user, Permission.READ)) {
-                collection.release();
+                collection.release(Lock.READ_LOCK);
                 throw new PermissionDeniedException("Insufficient privileges to read resource");
             }
             doc = collection.getDocumentWithLock(broker, docUri.lastSegment());
-            collection.release();
+            collection.release(Lock.READ_LOCK);
             if (doc == null) {
                 LOG.debug("document " + docUri + " not found!");
                 throw new EXistException("document not found");
@@ -579,11 +580,11 @@ public class RpcConnection extends Thread {
                 throw new EXistException("Collection " + docURI.removeLastSegment() + " not found!");
             }
             if(!collection.getPermissions().validate(user, Permission.READ)) {
-                collection.release();
+                collection.release(Lock.READ_LOCK);
                 throw new PermissionDeniedException("Insufficient privileges to read resource");
             }
             doc = collection.getDocumentWithLock(broker, docURI.lastSegment());
-            collection.release();
+            collection.release(Lock.READ_LOCK);
             if (doc == null) {
                 LOG.debug("document " + docURI + " not found!");
                 throw new EXistException("document not found");
@@ -857,7 +858,7 @@ public class RpcConnection extends Thread {
             return vec;
         } finally {
             if(collection != null)
-                collection.release();
+                collection.release(Lock.READ_LOCK);
             brokerPool.release(broker);
         }
     }
@@ -876,7 +877,7 @@ public class RpcConnection extends Thread {
             return collection.getDocumentCount();
         } finally {
             if(collection != null)
-                collection.release();
+                collection.release(Lock.READ_LOCK);
             brokerPool.release(broker);
         }
     }
@@ -919,7 +920,7 @@ public class RpcConnection extends Thread {
             return id.toString();
         } finally {
             if(collection != null)
-                collection.release();
+                collection.release(Lock.READ_LOCK);
             brokerPool.release(broker);
         }
     }
@@ -958,7 +959,7 @@ public class RpcConnection extends Thread {
             return result;
         } finally {
             if(collection != null)
-                collection.release();
+                collection.release(Lock.READ_LOCK);
             brokerPool.release(broker);
         }
     }
@@ -999,7 +1000,7 @@ public class RpcConnection extends Thread {
             return result;
         } finally {
             if(collection != null)
-                collection.release();
+                collection.release(Lock.READ_LOCK);
             brokerPool.release(broker);
         }
     }
@@ -1034,7 +1035,7 @@ public class RpcConnection extends Thread {
                 doc.getUpdateLock().release(Lock.READ_LOCK);
             } else {
                 perm = collection.getPermissions();
-                collection.release();
+                collection.release(Lock.READ_LOCK);
             }
             Hashtable result = new Hashtable();
             result.put("owner", perm.getOwner());
@@ -1063,7 +1064,7 @@ public class RpcConnection extends Thread {
             return new Date(collection.getCreationTime());
         } finally {
             if(collection != null)
-                collection.release();
+                collection.release(Lock.READ_LOCK);
             brokerPool.release(broker);
         }
     }
@@ -1213,7 +1214,7 @@ public class RpcConnection extends Thread {
                 info = collection.validateXMLResource(txn, broker, docUri.lastSegment(), source);
             } finally {
                 if(collection != null)
-                    collection.release();
+                    collection.release(Lock.WRITE_LOCK);
             }
             
             if (created != null)
@@ -1315,7 +1316,7 @@ public class RpcConnection extends Thread {
             } finally {
                 // DWES originally before set time ; is this ok?
                 if(collection != null)
-                    collection.release();
+                    collection.release(Lock.WRITE_LOCK);
             }
             
             if(mime.isXMLType()){
@@ -1399,7 +1400,7 @@ public class RpcConnection extends Thread {
             throw e;
         } finally {
             if(collection != null)
-                collection.release();
+                collection.release(Lock.WRITE_LOCK);
             brokerPool.release(broker);
         }
         documentCache.clear();
@@ -1733,7 +1734,7 @@ public class RpcConnection extends Thread {
             documentCache.clear();
         } finally {
             if(collection != null)
-                collection.release();
+                collection.release(Lock.WRITE_LOCK);
             brokerPool.release(broker);
         }
     }
@@ -1761,7 +1762,7 @@ public class RpcConnection extends Thread {
             throw e;
         } finally {
             if(collection != null)
-                collection.getLock().release();
+                collection.getLock().release(Lock.WRITE_LOCK);
             brokerPool.release(broker);
         }
     }
@@ -2431,7 +2432,7 @@ public class RpcConnection extends Thread {
             return result;
         } finally {
             if(collection != null)
-                collection.release();
+                collection.release(Lock.READ_LOCK);
             brokerPool.release(broker);
         }
     }
@@ -2459,7 +2460,7 @@ public class RpcConnection extends Thread {
             return result;
         } finally {
             if(collection != null)
-                collection.release();
+                collection.release(Lock.READ_LOCK);
             brokerPool.release(broker);
         }
     }
@@ -2468,7 +2469,6 @@ public class RpcConnection extends Thread {
             String start, String end)
             throws PermissionDeniedException, EXistException, XPathException {
         DBBroker broker = null;
-        Collection collection = null;
         try {
             broker = brokerPool.get(user);
             XQuery xquery = broker.getXQueryService();
@@ -2476,8 +2476,6 @@ public class RpcConnection extends Thread {
             Vector result = scanIndexTerms(start, end, broker, nodes.getDocumentSet(), nodes.toNodeSet());
             return result;
         } finally {
-            if(collection != null)
-                collection.release();
             brokerPool.release(broker);
         }
     }
@@ -2638,12 +2636,12 @@ public class RpcConnection extends Thread {
             transact.abort(transaction);
             throw new PermissionDeniedException("Could not acquire lock on document " + docUri);
         } finally {
-            if(collection != null)
-                collection.release();
-            if(destination != null)
-                destination.release();
             if(doc != null)
                 doc.getUpdateLock().release(Lock.WRITE_LOCK);
+            if(collection != null)
+                collection.release(move ? Lock.WRITE_LOCK : Lock.READ_LOCK);
+            if(destination != null)
+                destination.release(Lock.WRITE_LOCK);
             brokerPool.release(broker);
         }
     }
@@ -2689,9 +2687,9 @@ public class RpcConnection extends Thread {
             throw new PermissionDeniedException(e.getMessage());
         } finally {
             if(collection != null)
-                collection.release();
+                collection.release(move ? Lock.WRITE_LOCK : Lock.READ_LOCK);
             if(destination != null)
-                destination.release();
+                destination.release(Lock.WRITE_LOCK);
             brokerPool.release(broker);
         }
     }

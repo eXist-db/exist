@@ -253,7 +253,7 @@ public class Propfind extends AbstractWebDAVMethod {
             if(resource != null)
                 resource.getUpdateLock().release(Lock.READ_LOCK);
             if(collection != null)
-                collection.release();
+                collection.release(Lock.READ_LOCK);
             pool.release(broker);
         }
     }
@@ -345,7 +345,7 @@ public class Propfind extends AbstractWebDAVMethod {
                     } catch (Exception e) {
                     } finally {
                         if(childCollection != null)
-                            childCollection.release();
+                            childCollection.release(Lock.READ_LOCK);
                     }
                 }
             }

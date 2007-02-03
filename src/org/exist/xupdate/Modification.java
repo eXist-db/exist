@@ -251,7 +251,7 @@ public abstract class Modification {
 			}
 			return ql;
 	    } finally {
-	        globalLock.release();
+	        globalLock.release(Lock.READ_LOCK);
 	    }
 	}
 	

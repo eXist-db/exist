@@ -21,11 +21,17 @@ public abstract class DOMTransaction {
     private Object ownerObject;
     private DOMFile file;
     private DocumentImpl document = null;
-    private int mode = Lock.READ_LOCK;
+    private int mode;
 
+    /**
+     * @deprecated : use other constructors
+     * @param owner
+     * @param f
+     */
     public DOMTransaction(Object owner, DOMFile f) {
     	ownerObject = owner;
     	file = f;
+    	mode = Lock.READ_LOCK;
     }
 
 	public DOMTransaction(Object owner, DOMFile f, int mode) {
@@ -55,7 +61,7 @@ public abstract class DOMTransaction {
             return start();
     	} catch( ReadOnlyException e ) {
         } finally {
-			lock.release();
+			lock.release(mode);
         }
         return null;
     }

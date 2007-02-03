@@ -184,7 +184,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
             throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
         } finally {
             if(collection != null)
-                collection.release();
+                collection.release(Lock.WRITE_LOCK);
             brokerPool.release(broker);
         }
     }
@@ -313,7 +313,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
             if(collection.hasChildCollection(childURI))
                 childName = getPathURI().append(childURI);
         } finally {
-            collection.release();
+            collection.release(Lock.READ_LOCK);
         }
         if(childName != null)
             return new LocalCollection(user, brokerPool, this, childName, accessCtx);
@@ -339,7 +339,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
         try {
             return collection.getURI().toString();
         } finally {
-            collection.release();
+            collection.release(Lock.READ_LOCK);
         }
     }
     
@@ -422,7 +422,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
                     e);
         } finally {
             if(collection != null)
-                collection.release();
+                collection.release(Lock.READ_LOCK);
             brokerPool.release(broker);
         }
     }
@@ -500,7 +500,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
                 collections[j] = ((XmldbURI) i.next()).toString();
             return collections;
         } finally {
-            collection.release();
+            collection.release(Lock.READ_LOCK);
         }
     }
     
@@ -548,7 +548,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
                     e);
         } finally {
             if(collection != null)
-                collection.release();
+                collection.release(Lock.READ_LOCK);
             brokerPool.release(broker);
         }
     }
@@ -578,7 +578,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
             LOG.debug("removing " + resURI);
             
             broker = brokerPool.get(user);
-            collection = broker.openCollection(path, Lock.READ_LOCK);
+            collection = broker.openCollection(path, Lock.WRITE_LOCK);
             if(collection == null) {
                 transact.abort(txn);
                 throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
@@ -610,7 +610,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
                     "Failed to acquire lock on collections.dbx", e);
         } finally {
             if(collection != null)
-                collection.getLock().release();
+                collection.getLock().release(Lock.WRITE_LOCK);
             brokerPool.release(broker);
         }
         needsSync = true;
@@ -675,7 +675,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
                     e);
         } finally {
             if(collection != null)
-                collection.getLock().release();
+                collection.getLock().release(Lock.WRITE_LOCK);
             brokerPool.release(broker);
         }
     }
@@ -721,7 +721,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
                 if (res.datemodified != null)
                     info.getDocument().getMetadata().setLastModified( res.datemodified.getTime());
             } finally {
-                collection.release();
+                collection.release(Lock.WRITE_LOCK);
             }
             if (uri != null) {
                 collection.store(txn, broker, info, new InputSource(uri), false);
@@ -764,7 +764,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
         try {
             return new Date(collection.getCreationTime());
         } finally {
-            collection.getLock().release();
+            collection.getLock().release(Lock.READ_LOCK);
         }
     }
     

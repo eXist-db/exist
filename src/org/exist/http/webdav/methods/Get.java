@@ -156,7 +156,7 @@ public class Get extends AbstractWebDAVMethod {
                 resource.getUpdateLock().release(Lock.READ_LOCK);
             
             if(collection != null)
-                collection.release();
+                collection.release(Lock.READ_LOCK);
             
             pool.release(broker);
         }

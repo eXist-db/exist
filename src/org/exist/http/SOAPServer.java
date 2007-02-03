@@ -855,7 +855,7 @@ public class SOAPServer
     		{
     			if(docXQWS != null)
     			{
-    				docXQWS.getUpdateLock().release();
+    				docXQWS.getUpdateLock().release(Lock.READ_LOCK);
     			}
     		}
     	}
@@ -894,7 +894,7 @@ public class SOAPServer
     		}
     		
     		//close the Stylesheet Document and release the read lock
-			docStyleSheet.getUpdateLock().release();
+			docStyleSheet.getUpdateLock().release(Lock.READ_LOCK);
 			
 			//return the result of the transformation
 			return descriptionWSDL;
@@ -921,7 +921,7 @@ public class SOAPServer
     		}
     		
     		//close the Stylesheet Document and release the read lock
-			docStyleSheet.getUpdateLock().release();
+			docStyleSheet.getUpdateLock().release(Lock.READ_LOCK);
 			
 			//return the result of the transformation
 			return descriptionHuman;
@@ -961,7 +961,7 @@ public class SOAPServer
     		}
     		
     		//close the Stylesheet Document and release the read lock
-			docStyleSheet.getUpdateLock().release();
+			docStyleSheet.getUpdateLock().release(Lock.READ_LOCK);
 			
 			//return the result of the transformation from the cache
 			return (byte[])descriptionFunction.get(functionName);
@@ -1188,7 +1188,7 @@ public class SOAPServer
             
             //close the XQWS Document and release the read lock
 	    if(docXQWS!=null) {
-	            docXQWS.getUpdateLock().release();
+	            docXQWS.getUpdateLock().release(Lock.READ_LOCK);
             }
 	                
             return docXQWS;

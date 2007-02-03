@@ -113,7 +113,7 @@ public class Delete extends AbstractWebDAVMethod {
             response.sendError(HttpServletResponse.SC_CONFLICT, e.getMessage());
         } finally {
             if(collection != null)
-                collection.release();
+                collection.release(Lock.WRITE_LOCK);
             pool.release(broker);
         }
         response.setStatus(HttpServletResponse.SC_NO_CONTENT);

@@ -218,8 +218,16 @@ public  class Collection extends Observable
      * the current thread. This is a shortcut for getLock().release().
      */
     public void release() {
-//		LOG.debug("releasing lock on " + name);
         getLock().release();
+    }
+
+    /**
+     * Closes the collection, i.e. releases the lock held by
+     * the current thread. This is a shortcut for getLock().release().
+     */
+    public void release(int mode) {
+//		LOG.debug("releasing lock on " + name);
+        getLock().release(mode);
     }
     
     /**
@@ -270,7 +278,7 @@ public  class Collection extends Observable
             LOG.warn(e.getMessage(), e);
             return null;
         } finally {
-            getLock().release();
+            getLock().release(Lock.READ_LOCK);
         }
     }
 
@@ -298,7 +306,7 @@ public  class Collection extends Observable
         } catch (LockException e) {
             LOG.warn(e.getMessage(), e);
         } finally {
-            getLock().release();
+            getLock().release(Lock.READ_LOCK);
         }
         return cl;
     }
@@ -330,7 +338,7 @@ public  class Collection extends Observable
             } catch (LockException e) {
                 LOG.warn(e.getMessage(), e);
             } finally {
-                getLock().release();
+                getLock().release(Lock.READ_LOCK);
             }
             if (recursive && subColls != null) {
                 // process the child collections
@@ -398,7 +406,7 @@ public  class Collection extends Observable
         } catch (LockException e) {
             LOG.warn(e.getMessage(), e);
         } finally {
-            getLock().release();
+            getLock().release(Lock.READ_LOCK);
         }
         return docs;
     }
@@ -476,7 +484,7 @@ public  class Collection extends Observable
             LOG.warn(e.getMessage(), e);
             return 0;
         } finally {
-            getLock().release();
+            getLock().release(Lock.READ_LOCK);
         }
     }
     
@@ -500,7 +508,7 @@ public  class Collection extends Observable
             LOG.warn(e.getMessage(), e);
             return null;
         } finally {
-            getLock().release();
+            getLock().release(Lock.READ_LOCK);
         }
     }
     
@@ -538,7 +546,7 @@ public  class Collection extends Observable
             updateLock.acquire(lockMode);
             return doc;
         } finally {
-            getLock().release();
+            getLock().release(Lock.READ_LOCK);
         }
     }
     
@@ -566,7 +574,7 @@ public  class Collection extends Observable
             LOG.warn(e.getMessage(), e);
             return 0;
         } finally {
-            getLock().release();
+            getLock().release(Lock.READ_LOCK);
         }
     }
     
@@ -613,7 +621,7 @@ public  class Collection extends Observable
             LOG.warn(e.getMessage(), e);
             return permissions;
         } finally {
-            getLock().release();
+            getLock().release(Lock.READ_LOCK);
         }
     }
     
@@ -642,7 +650,7 @@ public  class Collection extends Observable
             //TODO : ouch ! -pb
             return subcollections.contains(name);
         } finally {
-            getLock().release();
+            getLock().release(Lock.READ_LOCK);
         }
     }
     
@@ -698,7 +706,7 @@ public  class Collection extends Observable
             getLock().acquire(Lock.WRITE_LOCK);
             subcollections.remove(name);
         } finally {
-            getLock().release();
+            getLock().release(Lock.WRITE_LOCK);
         }
     }
     
@@ -712,6 +720,7 @@ public  class Collection extends Observable
     public void removeXMLResource(Txn transaction, DBBroker broker, XmldbURI docUri)
     throws PermissionDeniedException, TriggerException, LockException {
         try {
+        	//Doh ! READ lock ?
             getLock().acquire(Lock.READ_LOCK);
             
             DocumentImpl doc = getDocument(broker, docUri);
@@ -755,7 +764,8 @@ public  class Collection extends Observable
             broker.getBrokerPool().getNotificationService().notifyUpdate(doc, UpdateListener.REMOVE);
             
         } finally {
-            getLock().release();
+        	//Doh ! A READ lock ?
+            getLock().release(Lock.READ_LOCK);
         }
     }
     
@@ -776,7 +786,7 @@ public  class Collection extends Observable
             
             removeBinaryResource(transaction, broker, doc);
         } finally {
-            getLock().release();
+            getLock().release(Lock.WRITE_LOCK);
         }
     }
     
@@ -818,7 +828,7 @@ public  class Collection extends Observable
                 trigger.finish(Trigger.REMOVE_DOCUMENT_EVENT, broker, transaction, null);
             }
         } finally {
-            getLock().release();
+            getLock().release(Lock.WRITE_LOCK);
         }
     }
     
@@ -981,7 +991,8 @@ public  class Collection extends Observable
         checkConfiguration(transaction, broker, docUri);
 
         if (broker.isReadOnly()) throw new PermissionDeniedException("Database is read-only");
-        DocumentImpl document, oldDoc = null;
+        DocumentImpl document = null;
+        DocumentImpl oldDoc = null;
         boolean oldDocLocked = false;
         try {
             getLock().acquire(Lock.WRITE_LOCK);
@@ -1034,7 +1045,7 @@ public  class Collection extends Observable
                     document = oldDoc;
                 }
             } else {
-                document.getUpdateLock().acquire(Lock.WRITE_LOCK);
+            	document.getUpdateLock().acquire(Lock.WRITE_LOCK);
                 document.setDocId(broker.getNextResourceId(transaction, this));
                 addDocument(transaction, broker, document);
             }
@@ -1043,8 +1054,11 @@ public  class Collection extends Observable
             info.postValidateTrigger();
             return info;
         } finally {
-            if (oldDocLocked) oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
-            getLock().release();
+            if (oldDocLocked) 
+            	oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+            //if (document != null)
+            	//document.getUpdateLock().release(Lock.WRITE_LOCK);
+            getLock().release(Lock.WRITE_LOCK);
         }
     }
     
@@ -1231,7 +1245,7 @@ public  class Collection extends Observable
             }
             return blob;
         } finally {
-            getLock().release();
+            getLock().release(Lock.WRITE_LOCK);
         }
     }
     
@@ -1245,7 +1259,7 @@ public  class Collection extends Observable
             getLock().acquire(Lock.WRITE_LOCK);
             permissions.setPermissions(mode);
         } finally {
-            getLock().release();
+            getLock().release(Lock.WRITE_LOCK);
         }
     }
     
@@ -1254,7 +1268,7 @@ public  class Collection extends Observable
             getLock().acquire(Lock.WRITE_LOCK);
             permissions.setPermissions(mode);
         } finally {
-            getLock().release();
+            getLock().release(Lock.WRITE_LOCK);
         }
     }
     
@@ -1268,7 +1282,7 @@ public  class Collection extends Observable
             getLock().acquire(Lock.WRITE_LOCK);
             this.permissions = permissions;
         } finally {
-            getLock().release();
+            getLock().release(Lock.WRITE_LOCK);
         }
     }
     
@@ -1376,7 +1390,7 @@ public  class Collection extends Observable
             //Ouch ! -pb
             this.triggersEnabled = enabled;
         } finally {
-            getLock().release();
+            getLock().release(Lock.WRITE_LOCK);
         }
     }
     

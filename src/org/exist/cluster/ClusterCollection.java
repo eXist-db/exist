@@ -209,8 +209,8 @@ public final class ClusterCollection extends Collection {
         return collection.hasChildCollection(name);
     }
 
-    public void release() {
-        collection.release();
+    public void release(int mode) {
+        collection.release(mode);
     }
 
     public void update(Collection child) {

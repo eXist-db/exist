@@ -116,7 +116,7 @@ public class Move extends AbstractWebDAVMethod {
 			throw new ServletException("Failed to copy: " + e.getMessage(), e);
 		} finally {
 			if(collection != null)
-				collection.release();
+				collection.release(Lock.WRITE_LOCK);
 			if(resource != null)
 				resource.getUpdateLock().release(Lock.WRITE_LOCK);
 			pool.release(broker);
@@ -174,7 +174,7 @@ public class Move extends AbstractWebDAVMethod {
                 response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
             } finally {
             	if(destCollection != null)
-            		destCollection.release();
+            		destCollection.release(Lock.WRITE_LOCK);
                 transact.commit(txn);
                 pool.release(broker);
             }
@@ -239,7 +239,7 @@ public class Move extends AbstractWebDAVMethod {
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
         } finally {
         	if(destCollection != null)
-        		destCollection.release();
+        		destCollection.release(Lock.WRITE_LOCK);
         }
     }
     

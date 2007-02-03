@@ -191,7 +191,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             LOG.error(e.getMessage(), e); 
             //TODO : throw an exception ? -pb
         } finally {
-            lock.release();
+            lock.release(Lock.WRITE_LOCK);
         }
     }    
 
@@ -257,7 +257,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 //Return without clearing the pending entries
                 return;                 
             } finally {
-                lock.release();
+                lock.release(Lock.WRITE_LOCK);
                 os.clear();
             }
             progress.setValue(count);
@@ -382,7 +382,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             } catch (IOException e) {
                 LOG.error(e.getMessage(), e);
             } finally {
-                lock.release();
+                lock.release(Lock.WRITE_LOCK);
                 os.clear();
             }
         }
@@ -407,7 +407,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         } catch (IOException e) {
             LOG.error(e.getMessage(), e);
         } finally {
-            lock.release();
+            lock.release(Lock.WRITE_LOCK);
         }
     }    
     
@@ -472,7 +472,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         } catch (IOException e) {
             LOG.error(e.getMessage(), e);
         } finally {
-            lock.release();
+            lock.release(Lock.WRITE_LOCK);
             os.clear();
         }
         if (os.size() > 512000)
@@ -556,7 +556,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 LOG.error(e.getMessage(), e);               
                 //TODO : return ?
             } finally {
-                lock.release();
+                lock.release(Lock.READ_LOCK);
             }
         }
 //        LOG.debug("Found: " + result.getLength() + " for " + qname);
@@ -786,7 +786,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 LOG.error(e.getMessage(), e);           
                 //TODO : return ?
             } finally {
-                lock.release();
+                lock.release(Lock.READ_LOCK);
             }
         }
 //        LOG.debug("Found: " + result.getLength() + " for " + qname);
@@ -829,7 +829,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             ElementValue startKey = new ElementValue(ElementValue.ELEMENT, storedCollectionId);
             IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startKey);
             try {
-                lock.acquire();
+                lock.acquire(Lock.READ_LOCK);
                 //TODO : NativeValueIndex uses LongLinkedLists -pb
                 ArrayList values = dbNodes.findEntries(query);
                 for (Iterator j = values.iterator(); j.hasNext();) {
@@ -880,7 +880,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             } catch (TerminatedException e) {
                 LOG.warn(e.getMessage(), e);
             } finally {
-                lock.release();
+                lock.release(Lock.READ_LOCK);
             }
         }
         Occurrences[] result = new Occurrences[map.size()];
@@ -961,7 +961,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             LOG.warn(e.getMessage(), e);
             //TODO : throw an exception ? -pb
         } finally {
-            lock.release();
+            lock.release(Lock.WRITE_LOCK);
         }
     } 
     

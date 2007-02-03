@@ -310,6 +310,9 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
     
 	public void write(VariableByteOutputStream ostream) throws IOException {
 		try {
+			if (!getCollection().isTempCollection() && !getUpdateLock().isLockedForWrite()) {
+				LOG.warn("document not locked for write !");
+			}
             ostream.writeInt(docId);
             ostream.writeUTF(fileURI.toString());
             final SecurityManager secman = broker.getBrokerPool().getSecurityManager();

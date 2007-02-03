@@ -119,7 +119,7 @@ public abstract class AbstractEXistResource implements EXistResource {
 		    return document;
 	    } finally {
 	    	if(parentCollection != null)
-	    		parentCollection.release();
+	    		parentCollection.release(lockMode);
 	    }
 	}
 	

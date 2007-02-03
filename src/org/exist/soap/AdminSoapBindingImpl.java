@@ -421,7 +421,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             throw new RemoteException(e.getMessage(), e);
         } finally {
             if(collection != null)
-                collection.release();
+                collection.release(Lock.WRITE_LOCK);
             pool.release(broker);
         }
 //        documentCache.clear();
@@ -518,7 +518,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             throw new RemoteException(ex.getMessage());
         } finally {
             if(collection != null)
-                collection.release();
+                collection.release(Lock.READ_LOCK);
             pool.release(broker);
         }
     }
@@ -667,12 +667,12 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         } catch (EXistException e) {
             throw new RemoteException(e.getMessage());
         } finally {
-            if(collection != null)
-                collection.release();
             if(destination != null)
-                destination.release();
+                destination.release(Lock.WRITE_LOCK);
             if(doc != null)
                 doc.getUpdateLock().release(Lock.WRITE_LOCK);
+            if(collection != null)
+                collection.release(move ? Lock.WRITE_LOCK : Lock.READ_LOCK);
             pool.release(broker);
         }
     }
@@ -723,9 +723,9 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             throw new PermissionDeniedException(e.getMessage());
         } finally {
             if(collection != null)
-                collection.release();
+                collection.release(move ? Lock.WRITE_LOCK : Lock.READ_LOCK);
             if(destination != null)
-                destination.release();
+                destination.release(Lock.WRITE_LOCK);
             pool.release(broker);
         }
     }
@@ -1023,7 +1023,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
                 doc.getUpdateLock().release(Lock.READ_LOCK);
             } else {
                 perm = collection.getPermissions();
-                collection.release();
+                collection.release(Lock.READ_LOCK);
             }
             Permissions p = new Permissions();
             p.setOwner(perm.getOwner());
@@ -1079,7 +1079,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             throw new RemoteException(ex.getMessage());
         } finally {
             if(collection != null)
-                collection.release();
+                collection.release(Lock.READ_LOCK);
             pool.release(broker);
         }
     }
@@ -1123,7 +1123,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             throw new RemoteException(ex.getMessage());
         } finally {
             if(collection != null)
-                collection.release();
+                collection.release(Lock.READ_LOCK);
             pool.release(broker);
         }
     }
@@ -1160,7 +1160,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             throw new RemoteException(ex.getMessage());
         } finally {
             if(collection != null)
-                collection.release();
+                collection.release(Lock.READ_LOCK);
             pool.release(broker);
         }
     }

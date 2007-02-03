@@ -64,7 +64,7 @@ public class Mkcol extends AbstractWebDAVMethod {
 			broker = pool.get(user);
 			collection = broker.openCollection(path, Lock.READ_LOCK);
 			if(collection != null) {
-				collection.release();
+				collection.release(Lock.READ_LOCK);
 				response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
 	                    "collection " + request.getPathInfo() + " already exists");
 	            return;
@@ -81,13 +81,13 @@ public class Mkcol extends AbstractWebDAVMethod {
                 return;
             }
 	        if(collection.hasDocument(collURI)) {
-	        	collection.release();
+	        	collection.release(Lock.READ_LOCK);
 	        	response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
 	        		"path conflicts with an existing resource");
 	        	return;
 	        }
 	        // TODO: releasing the lock here is dangerous, but we may get into deadlocks otherwise.
-	        collection.release();
+	        collection.release(Lock.READ_LOCK);
             
             TransactionManager transact = pool.getTransactionManager();
             Txn txn = transact.beginTransaction();

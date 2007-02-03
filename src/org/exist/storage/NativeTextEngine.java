@@ -356,7 +356,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             LOG.error(e.getMessage(), e); 
             //TODO : throw an exception ? -pb
         } finally {
-            lock.release();
+            lock.release(Lock.WRITE_LOCK);
         }
     }
     
@@ -450,7 +450,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             }
 			final Lock lock = dbTokens.getLock();
 			try {
-				lock.acquire();
+				lock.acquire(Lock.READ_LOCK);
                 VariableByteInput is = dbTokens.getAsStream(key);
                 //Does the token already has data in the index ?
 				if (is == null)
@@ -532,7 +532,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 LOG.error(e.getMessage() + " in '" + dbTokens.getFile().getName() + "'", e);                
                 //TODO : return ?
 			} finally {
-				lock.release();
+				lock.release(Lock.READ_LOCK);
 			}
 		}
 		return result;
@@ -600,7 +600,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             }
 			IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, value);
 			try {
-				lock.acquire();	
+				lock.acquire(Lock.READ_LOCK);	
 				dbTokens.query(query, cb);
 			} catch (LockException e) {
                 LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
@@ -611,7 +611,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 LOG.error(e.getMessage(), e);   
                 //TODO return null ? rethrow ? -pb
 			} finally {
-				lock.release();
+				lock.release(Lock.READ_LOCK);
 			}
 		}
 		return result;
@@ -626,7 +626,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             Value value = new WordRef(collectionId);
             IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, value);
 			try {
-				lock.acquire();
+				lock.acquire(Lock.READ_LOCK);
 				dbTokens.query(query, cb);
 			} catch (LockException e) {
                 LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
@@ -637,7 +637,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             } catch (TerminatedException e) {
                 LOG.warn(e.getMessage(), e);                       
 			} finally {
-				lock.release();
+				lock.release(Lock.READ_LOCK);
 			}
 		}
 		return cb.getMatches();
@@ -662,7 +662,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     			query = new IndexQuery(IndexQuery.BW, startRef, endRef);
             }
 			try {
-				lock.acquire();
+				lock.acquire(Lock.READ_LOCK);
 				dbTokens.query(query, cb);
 			} catch (LockException e) {
                 LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
@@ -673,7 +673,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 			} catch (TerminatedException e) {
                 LOG.warn(e.getMessage(), e);
             } finally {
-				lock.release();
+				lock.release(Lock.READ_LOCK);
 			}
 		}		
 		Occurrences[] result = new Occurrences[cb.map.size()];		
@@ -987,7 +987,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             } catch (IOException e) {
                 LOG.error(e.getMessage() + "' in '" + dbTokens.getFile().getName() + "' (inverted index)", e);   
             } finally {
-                lock.release();
+                lock.release(Lock.WRITE_LOCK);
                 os.clear();
             }
         }
@@ -1074,7 +1074,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     } catch (ReadOnlyException e) {
                         LOG.error(e.getMessage() + " in '" + dbTokens.getFile().getName() + "'", e);
                     } finally {
-                        lock.release();
+                        lock.release(Lock.WRITE_LOCK);
                         os.clear();
                     }
                 }
@@ -1194,7 +1194,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     } catch (IOException e) {
                         LOG.error(e.getMessage() + "' in '" + dbTokens.getFile().getName() + "' (inverted index)", e);
                     } finally {
-					    lock.release();
+					    lock.release(Lock.WRITE_LOCK);
                         os.clear();
                     }
 				}

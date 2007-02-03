@@ -79,6 +79,9 @@ public class MultiReadReentrantLock implements Lock {
     public MultiReadReentrantLock() {
     }
 
+    /* @deprecated Use other method
+     * @see org.exist.storage.lock.Lock#acquire()
+     */
     public boolean acquire() throws LockException {
         return acquire(Lock.READ_LOCK);
     }
@@ -174,6 +177,9 @@ public class MultiReadReentrantLock implements Lock {
         return true;
     }
 
+    /* @deprecated : use other method
+     * @see org.exist.storage.lock.Lock#release()
+     */
     public void release() {
         release(Lock.READ_LOCK);
     }
@@ -237,6 +243,7 @@ public class MultiReadReentrantLock implements Lock {
         } else {
             log.warn("Possible lock problem: a thread released a write lock it didn't hold. Either the " +
                     "thread was interrupted or it never acquired the lock.");
+        	Thread.dumpStack();
         }
 //        log.debug("writeLock released: " + outstandingWriteLocks +
 //                "; thread: " + Thread.currentThread().getName());
@@ -276,6 +283,7 @@ public class MultiReadReentrantLock implements Lock {
         } else {
             log.warn("Possible lock problem: a thread released a read lock it didn't hold. Either the " +
                     "thread was interrupted or it never acquired the lock.");
+        	Thread.dumpStack();
         }
     }
 
