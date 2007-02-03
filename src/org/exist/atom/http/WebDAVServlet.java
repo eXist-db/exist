@@ -152,7 +152,7 @@ public class WebDAVServlet extends HttpServlet {
          if (updateToExisting) {
             // We do nothing right now
             if (collection!=null) {
-               collection.release();
+               collection.release(Lock.READ_LOCK);
             }
             LOG.debug("Update to existing resource, skipping feed update.");
             return;
@@ -211,9 +211,6 @@ public class WebDAVServlet extends HttpServlet {
          } catch (TransactionException ex) {
             transact.abort(transaction);
             throw new ServletException("Cannot commit transaction.",ex);
-         } catch (EXistException ex) {
-            transact.abort(transaction);
-            throw new ServletException("Exception while getting a broker from the pool.",ex);
          } catch (ParserConfigurationException ex) {
             transact.abort(transaction);
             throw new ServletException("DOM implementation is misconfigured.",ex);
@@ -225,7 +222,7 @@ public class WebDAVServlet extends HttpServlet {
                feedDoc.getUpdateLock().release(Lock.WRITE_LOCK);
             }
             if (collection!=null) {
-               collection.release();
+               collection.release(Lock.READ_LOCK);
             }
             pool.release(broker);
          }
@@ -300,7 +297,7 @@ public class WebDAVServlet extends HttpServlet {
                feedDoc.getUpdateLock().release(Lock.WRITE_LOCK);
             }
             if (collection!=null) {
-               collection.release();
+               collection.release(Lock.READ_LOCK);
             }
             pool.release(broker);
          }
@@ -321,7 +318,7 @@ public class WebDAVServlet extends HttpServlet {
             broker = pool.get(user);
             collection = broker.openCollection(path, Lock.READ_LOCK);
             if (collection != null) {
-               collection.release();
+               collection.release(Lock.READ_LOCK);
                response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
                        "collection " + request.getPathInfo() + " already exists");
                return;
@@ -375,7 +372,7 @@ public class WebDAVServlet extends HttpServlet {
             transact.abort(transaction);
             throw new ServletException("Database exception",ex);
          } finally {
-            collection.release();
+            collection.release(Lock.READ_LOCK);
             pool.release(broker);
          }
       }

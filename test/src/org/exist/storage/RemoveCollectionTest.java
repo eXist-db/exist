@@ -120,7 +120,7 @@ public class RemoveCollectionTest extends TestCase {
             assertNotNull(data);
             System.out.println(data);
             doc.getUpdateLock().release(Lock.READ_LOCK);
-            test.release();
+            test.release(Lock.READ_LOCK);
 	    } catch (Exception e) {            
 	        fail(e.getMessage());   
 	    } finally {

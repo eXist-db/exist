@@ -10,8 +10,10 @@
 
 package org.exist.storage.lock;
 
-import org.exist.util.LockException;
+import java.util.Stack;
+
 import org.apache.log4j.Logger;
+import org.exist.util.LockException;
 
 /**
  * A lock with the same semantics as builtin
@@ -26,13 +28,15 @@ import org.apache.log4j.Logger;
 
 public class ReentrantReadWriteLock implements Lock {
 
-    private final static Logger log = Logger.getLogger(ReentrantReadWriteLock.class);
+    private final static Logger LOG = Logger.getLogger(ReentrantReadWriteLock.class);
 
     protected String id_ = null;
 	protected Thread owner_ = null;
 	protected long holds_ = 0;
-	protected int mode_ = Lock.READ_LOCK;
+	public int mode_ = Lock.NO_LOCK;
 	private long timeOut_ = 240000L;
+	private Stack modeStack = new Stack();
+	private int writeLocks = 0;
 
 	public ReentrantReadWriteLock(String id) {
 		id_ = id;
@@ -49,6 +53,9 @@ public class ReentrantReadWriteLock implements Lock {
 		synchronized (this) {
 			if (caller == owner_) {
 				++holds_;
+				modeStack.push(new Integer(mode));
+				if (mode == Lock.WRITE_LOCK)
+					writeLocks++;
 				mode_ = mode;
 //				System.out.println("thread " + caller.getName() + " acquired lock on " + id_ +
 //					"; locks held = " + holds_);
@@ -56,6 +63,9 @@ public class ReentrantReadWriteLock implements Lock {
 			} else if (owner_ == null) {
 				owner_ = caller;
 				holds_ = 1;
+				modeStack.push(new Integer(mode));
+				if (mode== Lock.WRITE_LOCK)
+					writeLocks++;
 				mode_ = mode;
 //				System.out.println("thread " + caller.getName() + " acquired lock on " + id_);
 				return true;
@@ -67,6 +77,9 @@ public class ReentrantReadWriteLock implements Lock {
 						wait(waitTime);
 						if (caller == owner_) {
 							++holds_;
+							modeStack.push(new Integer(mode));
+							if (mode == Lock.WRITE_LOCK)
+								writeLocks++;
 							mode_ = mode;
 //							System.out.println("thread " + caller.getName() + " acquired lock on " + id_ +
 //								"; locks held = " + holds_);
@@ -74,6 +87,9 @@ public class ReentrantReadWriteLock implements Lock {
 						} else if (owner_ == null) {
 							owner_ = caller;
 							holds_ = 1;
+							modeStack.push(new Integer(mode));
+							if (mode == Lock.WRITE_LOCK)
+								writeLocks++;
 							mode_ = mode;
 //							System.out.println("thread " + caller.getName() + " acquired lock on " + id_ +
 //								"; locks held = " + holds_);
@@ -86,6 +102,7 @@ public class ReentrantReadWriteLock implements Lock {
 									System.out.println("releasing blocking thread " + owner_.getName());
 									owner_ = caller;
 									holds_ = 1;
+									modeStack.push(new Integer(mode));
 									mode_ = mode;
 //									System.out.println("thread " + caller.getName() + " acquired lock on " + id_ +
 //										"; locks held = " + holds_);
@@ -108,6 +125,9 @@ public class ReentrantReadWriteLock implements Lock {
 		synchronized (this) {
 			if (caller == owner_) {
 				++holds_;
+				modeStack.push(new Integer(mode));
+				if (mode == Lock.WRITE_LOCK)
+					writeLocks++;
 				mode_ = mode;
 //				System.out.println("thread " + caller.getName() + " acquired lock on " + id_ +
 //					"; locks held = " + holds_);
@@ -115,6 +135,9 @@ public class ReentrantReadWriteLock implements Lock {
 			} else if (owner_ == null) {
 				owner_ = caller;
 				holds_ = 1;
+				modeStack.push(new Integer(mode));
+				if (mode == Lock.WRITE_LOCK)
+					writeLocks++;
 				mode_ = mode;
 //				System.out.println("thread " + caller.getName() + " acquired lock on " + id_);
 				return true;
@@ -128,23 +151,33 @@ public class ReentrantReadWriteLock implements Lock {
      * @see org.exist.util.Lock#isLockedForWrite()
      */
     public boolean isLockedForWrite() {
-        return holds_ > 0 && mode_ == Lock.WRITE_LOCK;
+        return writeLocks > 0;
     }
     
     /* (non-Javadoc)
      * @see org.exist.util.Lock#release(int)
      */
     public void release(int mode) {
+    	if (((Integer)modeStack.peek()).intValue() != mode) {
+    		LOG.warn("Released lock of different type " + ((Integer)modeStack.peek()).intValue() 
+    				+ " expected " + mode);
+    		Thread.dumpStack();    		
+    	}
+    	mode_ = ((Integer)modeStack.pop()).intValue();
+		if (mode_ == Lock.WRITE_LOCK)
+			writeLocks--;
+    	
         release();
     }
     
 	/**
 	 * Release the lock.
+	 * @deprecated Use release(int mode) instead
 	 * @exception Error thrown if not current owner of lock
 	 **/
 	public synchronized void release() {
         if (Thread.currentThread() != owner_) {
-            log.warn("Possible lock problem: thread " + Thread.currentThread() +
+            LOG.warn("Possible lock problem: thread " + Thread.currentThread() +
                     " released a lock it didn't hold. Either the " +
                     "thread was interrupted or it never acquired the lock. The lock was owned by: "
                     + owner_);
@@ -154,7 +187,7 @@ public class ReentrantReadWriteLock implements Lock {
 //			System.out.println("thread " + owner_.getName() + " released lock on " + id_ +
 //				"; locks held = " + holds_);
 			owner_ = null;
-			mode_ = Lock.READ_LOCK;
+			mode_ = Lock.NO_LOCK;
 			notify();
 		}
 	}
@@ -171,7 +204,7 @@ public class ReentrantReadWriteLock implements Lock {
 	 **/
 	public synchronized void release(long n) {
 		if (Thread.currentThread() != owner_ || n > holds_) {
-            log.warn("Possible lock problem: thread " + Thread.currentThread() +
+            LOG.warn("Possible lock problem: thread " + Thread.currentThread() +
                     " released a lock it didn't hold. Either the " +
                     "thread was interrupted or it never acquired the lock. The lock was owned by: "
                     + owner_);

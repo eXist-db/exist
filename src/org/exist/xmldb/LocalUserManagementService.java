@@ -129,7 +129,7 @@ public class LocalUserManagementService implements UserManagementService {
 					e);
 		} finally {
 			if(coll != null)
-				coll.release();
+				coll.release(Lock.WRITE_LOCK);
 			pool.release(broker);
 		}
 	}
@@ -182,7 +182,7 @@ public class LocalUserManagementService implements UserManagementService {
 				e);
 		} finally {
 			if(coll != null)
-				coll.release();
+				coll.release(Lock.WRITE_LOCK);
 			pool.release(broker);
 		}
 	}
@@ -260,7 +260,7 @@ public class LocalUserManagementService implements UserManagementService {
 				e);
 		} finally {
 			if(coll != null)
-				coll.release();
+				coll.release(Lock.WRITE_LOCK);
 			pool.release(broker);
 		}
 	}
@@ -339,7 +339,7 @@ public class LocalUserManagementService implements UserManagementService {
 				e);
 		} finally {
 			if(coll != null)
-				coll.release();
+				coll.release(Lock.WRITE_LOCK);
 			pool.release(broker);
 		}
 	}
@@ -521,7 +521,7 @@ public class LocalUserManagementService implements UserManagementService {
 					e);
         } finally {
         	if(c != null)
-        		c.release();
+        		c.release(Lock.READ_LOCK);
 		    pool.release(broker);
 		}
 	}
@@ -547,7 +547,7 @@ public class LocalUserManagementService implements UserManagementService {
 					try {
 						perms[j] = childColl.getPermissions();
 					} finally {
-						childColl.release();
+						childColl.release(Lock.READ_LOCK);
 					}
 				}
 			}
@@ -559,7 +559,7 @@ public class LocalUserManagementService implements UserManagementService {
 				e);
 		} finally {
 			if(c != null)
-				c.release();
+				c.release(Lock.READ_LOCK);
 			pool.release(broker);
 		}
 	}

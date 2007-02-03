@@ -138,7 +138,7 @@ public class Put extends AbstractWebDAVMethod {
                 IndexInfo info = collection.validateXMLResource(txn, broker, pathUri, is);
                 doc = info.getDocument();
                 doc.getMetadata().setMimeType(contentType);
-                collection.release();
+                collection.release(Lock.READ_LOCK);
                 collectionLocked = false;
                 collection.store(txn, broker, info, is, false);
                 LOG.debug("done");
@@ -194,7 +194,7 @@ public class Put extends AbstractWebDAVMethod {
             
         } finally {
             if(collectionLocked && collection != null)
-                collection.release();
+                collection.release(Lock.READ_LOCK);
             pool.release(broker);
             tempFile.delete();
         }

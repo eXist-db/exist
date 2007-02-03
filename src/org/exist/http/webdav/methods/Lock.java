@@ -118,7 +118,7 @@ public class Lock extends AbstractWebDAVMethod {
                 IndexInfo info = collection.validateXMLResource(txn, broker, docName, "<nullresource/>");
                 resource = info.getDocument();
                 info.getDocument().getMetadata().setMimeType(contentType);
-                collection.release();
+                collection.release(org.exist.storage.lock.Lock.READ_LOCK);
                 
                 collection.store(txn, broker, info,
                         "<nullresource/>", false);
@@ -260,7 +260,7 @@ public class Lock extends AbstractWebDAVMethod {
                 Txn transaction = transact.beginTransaction();
                 broker.storeXMLResource(transaction, resource);
                 // ?
-                resource.getUpdateLock().release();
+                resource.getUpdateLock().release(org.exist.storage.lock.Lock.READ_LOCK);
                 transact.commit(transaction);
                 
                 LOG.debug("Sucessfully locked '"+path+"'.");
@@ -278,11 +278,11 @@ public class Lock extends AbstractWebDAVMethod {
             if(isNullResource){
                 
                 if(resource!=null){
-                    resource.getUpdateLock().release();
+                    resource.getUpdateLock().release(org.exist.storage.lock.Lock.READ_LOCK);
                 }
                 
                 if(collection != null){
-                    collection.release();
+                    collection.release(org.exist.storage.lock.Lock.READ_LOCK);
                 }
             }
             

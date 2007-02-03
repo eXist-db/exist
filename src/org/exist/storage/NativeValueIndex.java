@@ -287,7 +287,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             LOG.error(e.getMessage(), e); 
             //TODO : throw an exception ? -pb
         } finally {
-            lock.release();
+            lock.release(Lock.WRITE_LOCK);
         }
     }    
     
@@ -355,7 +355,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                     //Return without clearing the pending entries
                     return;
                 } finally {
-                    lock.release();
+                    lock.release(Lock.WRITE_LOCK);
                     os.clear();
                 }
             }
@@ -462,7 +462,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 } catch (IOException e) {
                     LOG.error(e.getMessage(), e);
                 } finally {
-                    lock.release();
+                    lock.release(Lock.WRITE_LOCK);
                     os.clear();
                 }
             }
@@ -499,7 +499,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         } catch (IOException e) {
             LOG.error(e.getMessage(), e);
         } finally {
-            lock.release();
+            lock.release(Lock.WRITE_LOCK);
         }
     }
     
@@ -574,7 +574,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             LOG.warn("Exception while removing range index: " + e.getMessage(), e);
         } finally {
             os.clear();
-            lock.release();
+            lock.release(Lock.WRITE_LOCK);
         }
     }
     
@@ -588,7 +588,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         final Lock lock = dbValues.getLock();
         for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
 			try {
-				lock.acquire();	
+				lock.acquire(Lock.READ_LOCK);	
                 final short collectionId = ((Collection) iter.next()).getId();
                 //Compute a key for the value in the collection
                 final Value searchKey, prefixKey;
@@ -611,7 +611,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             } catch (BTreeException e) {
                 LOG.error(e.getMessage(), e);
             } finally {
-				lock.release();
+				lock.release(Lock.READ_LOCK);
 			}
         }
         return result;
@@ -649,7 +649,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         final Lock lock = dbValues.getLock();
         for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {			
 			try {
-				lock.acquire();
+				lock.acquire(Lock.READ_LOCK);
                 final short collectionId = ((Collection) iter.next()).getId();
                 Value searchKey;
                 if (qname == null) {
@@ -677,7 +677,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
 			} catch (BTreeException e) {
                 LOG.error(e.getMessage(), e);			
 			} finally {
-				lock.release();
+				lock.release(Lock.READ_LOCK);
 			}
         }
         return result;
@@ -690,7 +690,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         final Lock lock = dbValues.getLock();
         for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
             try {
-                lock.acquire(); 
+                lock.acquire(Lock.READ_LOCK); 
                 final  short collectionId = ((Collection) i.next()).getId();
                 //Compute a key for the start value in the collection
                 if (stringType) {
@@ -714,7 +714,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             } catch (TerminatedException e) {
                 LOG.warn(e.getMessage(), e);
             } finally {
-                lock.release();
+                lock.release(Lock.READ_LOCK);
             }
         }
         Map map = cb.map;

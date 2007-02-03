@@ -35,6 +35,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
@@ -138,7 +139,7 @@ public class Unlock extends AbstractWebDAVMethod {
                     broker.storeXMLResource(transaction, resource);
                 }
                 
-                resource.getUpdateLock().release();
+                resource.getUpdateLock().release(Lock.READ_LOCK);
                 
                 transact.commit(transaction);
                 
@@ -157,7 +158,7 @@ public class Unlock extends AbstractWebDAVMethod {
         } finally {
             
             if(collection != null){
-                collection.release();
+                collection.release(Lock.READ_LOCK);
             }
             
             if(pool != null){

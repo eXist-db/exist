@@ -151,7 +151,7 @@ public abstract class Modification extends AbstractExpression
 			}
 			return ql;
 	    } finally {
-	        globalLock.release();
+	        globalLock.release(Lock.READ_LOCK);
 	    }
 	}
 	

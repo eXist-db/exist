@@ -131,7 +131,7 @@ public class Copy extends AbstractWebDAVMethod {
             
         } finally {
             if(collection != null)
-                collection.release();
+                collection.release(Lock.READ_LOCK);
             
             if(resource != null)
                 resource.getUpdateLock().release(Lock.READ_LOCK);
@@ -199,7 +199,7 @@ public class Copy extends AbstractWebDAVMethod {
             
         } finally {
             if(destCollection != null)
-                destCollection.release();
+                destCollection.release(Lock.WRITE_LOCK);
         }
     }
     
@@ -253,7 +253,7 @@ public class Copy extends AbstractWebDAVMethod {
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
         } finally {
             if(destCollection != null)
-                destCollection.release();
+                destCollection.release(Lock.WRITE_LOCK);
         }
     }
     

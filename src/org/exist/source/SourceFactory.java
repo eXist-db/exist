@@ -93,7 +93,7 @@ public class SourceFactory {
 				//TODO: this is nasty!!! as we are unlocking the resource whilst there
 				//is still a source
 				if(resource != null)
-					resource.getUpdateLock().release();
+					resource.getUpdateLock().release(Lock.READ_LOCK);
 			}
         }
         

@@ -158,7 +158,7 @@ public class CollectionConfigurationManager {
                 }
     		} finally {
     			if(coll != null)
-    				coll.release();
+    				coll.release(Lock.READ_LOCK);
     		}
     		path = path.removeLastSegment();
 	    }

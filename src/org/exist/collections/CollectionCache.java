@@ -76,7 +76,7 @@ public class CollectionCache extends LRDCache {
 							minRd = rd;
 							bucket = i;
 						}
-						lock.release();
+						lock.release(Lock.READ_LOCK);
 					}
 			}
 		}

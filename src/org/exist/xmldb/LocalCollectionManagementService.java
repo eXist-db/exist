@@ -177,7 +177,7 @@ public class LocalCollectionManagementService implements CollectionManagementSer
                 e.getMessage(), e );
         } finally {
         	if(collection != null)
-        		collection.release();
+        		collection.release(Lock.WRITE_LOCK);
             brokerPool.release( broker );
         }
     }
@@ -234,9 +234,9 @@ public class LocalCollectionManagementService implements CollectionManagementSer
                     e.getMessage(), e );
         } finally {
         	if(destination != null)
-        		destination.release();
+        		destination.release(Lock.WRITE_LOCK);
         	if(collection != null)
-        		collection.release();
+        		collection.release(Lock.WRITE_LOCK);
             brokerPool.release( broker );
         }
     }
@@ -299,9 +299,9 @@ public class LocalCollectionManagementService implements CollectionManagementSer
                     e.getMessage(), e );
         } finally {
         	if(source != null)
-        		source.release();
+        		source.release(Lock.WRITE_LOCK);
         	if(destination != null)
-        		destination.release();
+        		destination.release(Lock.WRITE_LOCK);
             brokerPool.release( broker );
         }
     }
@@ -359,8 +359,8 @@ public class LocalCollectionManagementService implements CollectionManagementSer
             throw new XMLDBException( ErrorCodes.PERMISSION_DENIED,
                     e.getMessage(), e );
         } finally {
-        	if(collection != null) collection.release();
-        	if(destination != null) destination.release();
+        	if(collection != null) collection.release(Lock.READ_LOCK);
+        	if(destination != null) destination.release(Lock.WRITE_LOCK);
             brokerPool.release( broker );
         }
     }
@@ -424,8 +424,8 @@ public class LocalCollectionManagementService implements CollectionManagementSer
             throw new XMLDBException( ErrorCodes.PERMISSION_DENIED,
                     e.getMessage(), e );
         } finally {
-        	if(source != null) source.release();
-        	if(destination != null) destination.release();
+        	if(source != null) source.release(Lock.WRITE_LOCK);
+        	if(destination != null) destination.release(Lock.WRITE_LOCK);
             brokerPool.release( broker );
         }
     }

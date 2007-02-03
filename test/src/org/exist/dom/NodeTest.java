@@ -6,6 +6,7 @@ import org.exist.collections.IndexInfo;
 import org.exist.security.SecurityManager;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
@@ -58,7 +59,7 @@ public class NodeTest extends XMLTestCase {
             e.printStackTrace();
             fail(e.getMessage());
         } finally {
-            if (doc != null) doc.getUpdateLock().release();
+            if (doc != null) doc.getUpdateLock().release(Lock.READ_LOCK);
             if (pool != null) pool.release(broker);
         }
     }
@@ -105,7 +106,7 @@ public class NodeTest extends XMLTestCase {
         	e.printStackTrace();
 	        fail(e.getMessage());
         } finally {
-        	if (doc != null) doc.getUpdateLock().release();
+        	if (doc != null) doc.getUpdateLock().release(Lock.READ_LOCK);
         	if (pool != null) pool.release(broker);
         }
 	}
@@ -153,7 +154,7 @@ public class NodeTest extends XMLTestCase {
             e.printStackTrace();
             fail(e.getMessage());
         } finally {
-            if (doc != null) doc.getUpdateLock().release();
+            if (doc != null) doc.getUpdateLock().release(Lock.READ_LOCK);
             if (pool != null) pool.release(broker);
         }
     }
@@ -207,7 +208,7 @@ public class NodeTest extends XMLTestCase {
         	e.printStackTrace();
 	        fail(e.getMessage());
         } finally {
-        	if (doc != null) doc.getUpdateLock().release();
+        	if (doc != null) doc.getUpdateLock().release(Lock.READ_LOCK);
         	if (pool != null) pool.release(broker);
         }
 	}
@@ -235,7 +236,7 @@ public class NodeTest extends XMLTestCase {
             e.printStackTrace();
             fail(e.getMessage());
         } finally {
-            if (doc != null) doc.getUpdateLock().release();
+            if (doc != null) doc.getUpdateLock().release(Lock.READ_LOCK);
             if (pool != null) pool.release(broker);
         }
     }

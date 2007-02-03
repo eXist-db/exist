@@ -2360,7 +2360,7 @@ public class BFile extends BTree {
                     throw new IOException("failed to acquire a read lock on "
                             + getFile().getName());
                 } finally {
-                    lock.release();
+                    lock.release(Lock.READ_LOCK);
                 }
             }
         }
@@ -2502,7 +2502,7 @@ public class BFile extends BTree {
                 throw new IOException("failed to acquire a read lock on "
                         + getFile().getName());
             } finally {
-                lock.release();
+                lock.release(Lock.READ_LOCK);
             }
         }
     }

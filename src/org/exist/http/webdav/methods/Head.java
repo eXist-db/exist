@@ -83,7 +83,7 @@ public class Head extends AbstractWebDAVMethod {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, READ_PERMISSION_DENIED);
 		} finally {
 			if(collection != null)
-				collection.release();
+				collection.release(Lock.READ_LOCK);
 			if(resource != null)
 				resource.getUpdateLock().release(Lock.READ_LOCK);
 			pool.release(broker);
