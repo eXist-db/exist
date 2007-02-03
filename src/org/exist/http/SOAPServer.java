@@ -880,24 +880,28 @@ public class SOAPServer
     	 */
     	public byte[] getWSDL() throws PermissionDeniedException, TransformerConfigurationException, SAXException 
     	{
-    		//get the WSDL StyleSheet
-    		DocumentImpl docStyleSheet = broker.getXMLResource(XmldbURI.create(XSLT_WEBSERVICE_WSDL), Lock.READ_LOCK);
-    		
-    		//has the stylesheet changed, or is this the first call for this version
-    		if(docStyleSheet.getMetadata().getLastModified() != lastModifiedWSDL || descriptionWSDL == null)
-    		{
-    			//TODO: validate the WSDL
-    			
-    			//yes, so re-run the transformation
-    			descriptionWSDL = Transform(docXQWSDescription, docStyleSheet, null);
-    			lastModifiedWSDL = docStyleSheet.getMetadata().getLastModified();
+    		DocumentImpl docStyleSheet = null;
+    		try {
+	    		//get the WSDL StyleSheet
+    			docStyleSheet = broker.getXMLResource(XmldbURI.create(XSLT_WEBSERVICE_WSDL), Lock.READ_LOCK);
+	    		
+	    		//has the stylesheet changed, or is this the first call for this version
+	    		if(docStyleSheet.getMetadata().getLastModified() != lastModifiedWSDL || descriptionWSDL == null)
+	    		{
+	    			//TODO: validate the WSDL
+	    			
+	    			//yes, so re-run the transformation
+	    			descriptionWSDL = Transform(docXQWSDescription, docStyleSheet, null);
+	    			lastModifiedWSDL = docStyleSheet.getMetadata().getLastModified();
+	    		}
+	    		
+				//return the result of the transformation
+				return descriptionWSDL;
+    		} finally {
+    			if (docStyleSheet != null)
+	        		//close the Stylesheet Document and release the read lock
+	    			docStyleSheet.getUpdateLock().release(Lock.READ_LOCK);    			
     		}
-    		
-    		//close the Stylesheet Document and release the read lock
-			docStyleSheet.getUpdateLock().release(Lock.READ_LOCK);
-			
-			//return the result of the transformation
-			return descriptionWSDL;
     	}
     	
     	/**
@@ -909,22 +913,26 @@ public class SOAPServer
     	 */
     	public byte[] getHumanDescription() throws PermissionDeniedException, TransformerConfigurationException, SAXException 
     	{
-    		//get the Human Description StyleSheet
-    		DocumentImpl docStyleSheet = broker.getXMLResource(XmldbURI.create(XSLT_WEBSERVICE_HUMAN_DESCRIPTION), Lock.READ_LOCK);
-    		
-    		//has the stylesheet changed, or is this the first call for this version
-    		if(docStyleSheet.getMetadata().getLastModified() != lastModifiedHuman || descriptionHuman == null)
-    		{
-    			//yes, so re-run the transformation
-    			descriptionHuman = Transform(docXQWSDescription, docStyleSheet, null);
-    			lastModifiedHuman = docStyleSheet.getMetadata().getLastModified();
+    		DocumentImpl docStyleSheet = null;
+    		try {
+	    		//get the Human Description StyleSheet
+	    		docStyleSheet = broker.getXMLResource(XmldbURI.create(XSLT_WEBSERVICE_HUMAN_DESCRIPTION), Lock.READ_LOCK);
+	    		
+	    		//has the stylesheet changed, or is this the first call for this version
+	    		if(docStyleSheet.getMetadata().getLastModified() != lastModifiedHuman || descriptionHuman == null)
+	    		{
+	    			//yes, so re-run the transformation
+	    			descriptionHuman = Transform(docXQWSDescription, docStyleSheet, null);
+	    			lastModifiedHuman = docStyleSheet.getMetadata().getLastModified();
+	    		}
+				
+				//return the result of the transformation
+				return descriptionHuman;
+    		} finally {
+    			if (docStyleSheet != null)
+		    		//close the Stylesheet Document and release the read lock
+	    			docStyleSheet.getUpdateLock().release(Lock.READ_LOCK);    			
     		}
-    		
-    		//close the Stylesheet Document and release the read lock
-			docStyleSheet.getUpdateLock().release(Lock.READ_LOCK);
-			
-			//return the result of the transformation
-			return descriptionHuman;
     	}
     	    	
     	/**
@@ -938,34 +946,38 @@ public class SOAPServer
     	 */
     	public byte[] getFunctionDescription(String functionName) throws PermissionDeniedException, TransformerConfigurationException, SAXException 
     	{
-    		//get the Function Description StyleSheet
-    		DocumentImpl docStyleSheet = broker.getXMLResource(XmldbURI.create(XSLT_WEBSERVICE_FUNCTION_DESCRIPTION), Lock.READ_LOCK);
-    		
-    		//has the stylesheet changed?
-    		if(docStyleSheet.getMetadata().getLastModified() != lastModifiedFunction)
-    		{
-    			//yes, so empty the cache
-    			descriptionFunction.clear();
-    			
-    			//change the last modified date
-    			lastModifiedFunction = docStyleSheet.getMetadata().getLastModified();
+    		DocumentImpl docStyleSheet = null;
+    		try {
+	    		//get the Function Description StyleSheet
+    			docStyleSheet = broker.getXMLResource(XmldbURI.create(XSLT_WEBSERVICE_FUNCTION_DESCRIPTION), Lock.READ_LOCK);
+	    		
+	    		//has the stylesheet changed?
+	    		if(docStyleSheet.getMetadata().getLastModified() != lastModifiedFunction)
+	    		{
+	    			//yes, so empty the cache
+	    			descriptionFunction.clear();
+	    			
+	    			//change the last modified date
+	    			lastModifiedFunction = docStyleSheet.getMetadata().getLastModified();
+	    		}
+	    		
+	    		//if there is not a pre-trasformed description in the cache
+	    		if(!descriptionFunction.containsKey(functionName))
+	    		{
+	    			//do the transformation and store in the cache
+	    			Properties params = new Properties();
+	    			params.put("function", functionName);
+	    			descriptionFunction.put(functionName, Transform(docXQWSDescription, docStyleSheet, params));
+	    		}
+	    		
+				//return the result of the transformation from the cache
+				return (byte[])descriptionFunction.get(functionName);
+    		} finally {
+    			if (docStyleSheet != null)    		
+		    		//close the Stylesheet Document and release the read lock
+	    			docStyleSheet.getUpdateLock().release(Lock.READ_LOCK);
     		}
-    		
-    		//if there is not a pre-trasformed description in the cache
-    		if(!descriptionFunction.containsKey(functionName))
-    		{
-    			//do the transformation and store in the cache
-    			Properties params = new Properties();
-    			params.put("function", functionName);
-    			descriptionFunction.put(functionName, Transform(docXQWSDescription, docStyleSheet, params));
-    		}
-    		
-    		//close the Stylesheet Document and release the read lock
-			docStyleSheet.getUpdateLock().release(Lock.READ_LOCK);
-			
-			//return the result of the transformation from the cache
-			return (byte[])descriptionFunction.get(functionName);
-    	}
+   		}
 
     	/**
     	 * Returns the function node from the internal description
@@ -1183,15 +1195,17 @@ public class SOAPServer
          */
         private BinaryDocument getXQWS(DBBroker broker, String path) throws PermissionDeniedException
         {
-            XmldbURI pathUri = XmldbURI.create(path);        
-            BinaryDocument docXQWS = (BinaryDocument) broker.getXMLResource(pathUri, Lock.READ_LOCK);
-            
-            //close the XQWS Document and release the read lock
-	    if(docXQWS!=null) {
-	            docXQWS.getUpdateLock().release(Lock.READ_LOCK);
+        	BinaryDocument docXQWS = null;
+            try {
+            	XmldbURI pathUri = XmldbURI.create(path);        
+            	docXQWS = (BinaryDocument) broker.getXMLResource(pathUri, Lock.READ_LOCK);
+            	return docXQWS;
+            } finally {
+                //close the XQWS Document and release the read lock
+        	    if(docXQWS!=null) {
+        	            docXQWS.getUpdateLock().release(Lock.READ_LOCK);
+                }            	
             }
-	                
-            return docXQWS;
         }
         
         /**

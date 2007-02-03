@@ -140,22 +140,25 @@ public class WebDAVServlet extends HttpServlet {
          Collection collection = null;
          boolean updateToExisting = false;
          try {
-            broker = pool.get(user);
-            collection = broker.openCollection(collUri, Lock.READ_LOCK);
-            updateToExisting = collection.getDocument(broker,filename)!=null;
-         } catch (EXistException ex) {
-            throw new ServletException("Exception while getting a broker from the pool.",ex);
-         }
-         
-         super.process(user,request,response,path);
-
-         if (updateToExisting) {
-            // We do nothing right now
+	         try {
+	            broker = pool.get(user);
+	            collection = broker.openCollection(collUri, Lock.READ_LOCK);
+	            updateToExisting = collection.getDocument(broker,filename)!=null;
+	         } catch (EXistException ex) {
+	            throw new ServletException("Exception while getting a broker from the pool.",ex);
+	         }
+	         
+	         super.process(user,request,response,path);
+	
+	         if (updateToExisting) {
+	            // We do nothing right now
+	            LOG.debug("Update to existing resource, skipping feed update.");
+	            return;
+	         }
+         } finally {
             if (collection!=null) {
-               collection.release(Lock.READ_LOCK);
-            }
-            LOG.debug("Update to existing resource, skipping feed update.");
-            return;
+	               collection.release(Lock.READ_LOCK);
+	        }        	 
          }
          
          TransactionManager transact = pool.getTransactionManager();
@@ -315,14 +318,18 @@ public class WebDAVServlet extends HttpServlet {
          DBBroker broker = null;
          Collection collection = null;
          try {
-            broker = pool.get(user);
-            collection = broker.openCollection(path, Lock.READ_LOCK);
-            if (collection != null) {
-               collection.release(Lock.READ_LOCK);
-               response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
-                       "collection " + request.getPathInfo() + " already exists");
-               return;
-            }
+        	 try {
+	            broker = pool.get(user);
+	            collection = broker.openCollection(path, Lock.READ_LOCK);
+	            if (collection != null) {
+	               response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
+	                       "collection " + request.getPathInfo() + " already exists");
+	               return;
+	            }
+        	 } finally {
+ 	            if (collection != null) 
+ 	               collection.release(Lock.READ_LOCK);        		 
+        	 }
          } catch (EXistException ex) {
             throw new ServletException("Exception while getting a broker from the pool.",ex);
          }

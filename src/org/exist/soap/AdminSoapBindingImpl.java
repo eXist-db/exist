@@ -1010,26 +1010,35 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         User user = session.getUser();
         try {
             broker = pool.get(user);
-            Collection collection = broker.openCollection(resource, Lock.READ_LOCK);
-            Permission perm = null;
-            if (collection == null) {
-// TODO check XML/Binary resource
-//                DocumentImpl doc = (DocumentImpl) broker.openDocument(resource, Lock.READ_LOCK);
-                DocumentImpl doc = (DocumentImpl) broker.getXMLResource(resource, Lock.READ_LOCK);
-                if (doc == null)
-                    throw new EXistException("document or collection " + resource
-                            + " not found");
-                perm = doc.getPermissions();
-                doc.getUpdateLock().release(Lock.READ_LOCK);
-            } else {
-                perm = collection.getPermissions();
-                collection.release(Lock.READ_LOCK);
+            Collection collection = null;
+            try {
+            	collection = broker.openCollection(resource, Lock.READ_LOCK);
+	            Permission perm = null;
+	            if (collection == null) {
+					// TODO check XML/Binary resource
+					// DocumentImpl doc = (DocumentImpl) broker.openDocument(resource, Lock.READ_LOCK);
+	            	DocumentImpl doc = null;
+	            	try {
+	            		doc = (DocumentImpl) broker.getXMLResource(resource, Lock.READ_LOCK);
+		                if (doc == null)
+		                    throw new EXistException("document or collection " + resource + " not found");
+		                perm = doc.getPermissions();
+	            	} finally {
+	            		if (doc != null)
+	            			doc.getUpdateLock().release(Lock.READ_LOCK);
+	            	}
+	            } else {
+	                perm = collection.getPermissions();
+	            }
+	            Permissions p = new Permissions();
+	            p.setOwner(perm.getOwner());
+	            p.setGroup(perm.getOwnerGroup());
+	            p.setPermissions(perm.getPermissions());
+	            return p;
+            } finally {
+            	if (collection != null)
+            		collection.release(Lock.READ_LOCK);            	
             }
-            Permissions p = new Permissions();
-            p.setOwner(perm.getOwner());
-            p.setGroup(perm.getOwnerGroup());
-            p.setPermissions(perm.getPermissions());
-            return p;
         } catch (Exception ex) {
             throw new RemoteException(ex.getMessage());
         } finally {

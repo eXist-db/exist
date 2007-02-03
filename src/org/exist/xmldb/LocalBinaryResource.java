@@ -36,6 +36,7 @@ import org.exist.security.Permission;
 import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.lock.Lock;
 import org.exist.util.LockException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
@@ -89,7 +90,7 @@ public class LocalBinaryResource extends AbstractEXistResource implements Binary
 			BinaryDocument blob = null;
 			try {
 				broker = pool.get(user);
-				blob = (BinaryDocument)getDocument(broker, true);
+				blob = (BinaryDocument)getDocument(broker, Lock.READ_LOCK);
 				if(!blob.getPermissions().validate(user, Permission.READ))
 				    throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
 				    	"Permission denied to read resource");
@@ -98,7 +99,7 @@ public class LocalBinaryResource extends AbstractEXistResource implements Binary
 				throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
 					"error while loading binary resource " + getId(), e);
 			} finally {
-			    parent.getCollection().releaseDocument(blob);
+			    parent.getCollection().releaseDocument(blob, Lock.READ_LOCK);
 				pool.release(broker);
 			}
 		}
@@ -148,7 +149,7 @@ public class LocalBinaryResource extends AbstractEXistResource implements Binary
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
-			BinaryDocument blob = (BinaryDocument)getDocument(broker, false);
+			BinaryDocument blob = (BinaryDocument)getDocument(broker, Lock.NO_LOCK);
 			if (!blob.getPermissions().validate(user, Permission.READ))
 				throw new XMLDBException(
 						ErrorCodes.PERMISSION_DENIED,
@@ -170,7 +171,7 @@ public class LocalBinaryResource extends AbstractEXistResource implements Binary
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
-			BinaryDocument blob = (BinaryDocument)getDocument(broker, false);
+			BinaryDocument blob = (BinaryDocument)getDocument(broker, Lock.NO_LOCK);
 			if (!blob.getPermissions().validate(user, Permission.READ))
 				throw new XMLDBException(
 						ErrorCodes.PERMISSION_DENIED,
@@ -192,7 +193,7 @@ public class LocalBinaryResource extends AbstractEXistResource implements Binary
         DBBroker broker = null;
         try {
             broker = pool.get(user);
-            BinaryDocument blob = (BinaryDocument)getDocument(broker, false);
+            BinaryDocument blob = (BinaryDocument)getDocument(broker, Lock.NO_LOCK);
             if (!blob.getPermissions().validate(user, Permission.READ))
                 throw new XMLDBException(
                         ErrorCodes.PERMISSION_DENIED,
@@ -215,7 +216,7 @@ public class LocalBinaryResource extends AbstractEXistResource implements Binary
 	    DBBroker broker = null;
 	    try {
 	        broker = pool.get(user);
-		    DocumentImpl document = getDocument(broker, false);
+		    DocumentImpl document = getDocument(broker, Lock.NO_LOCK);
 			return document != null ? document.getPermissions() : null;
 	    } catch (EXistException e) {
             throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, e.getMessage(), e);
@@ -233,7 +234,7 @@ public class LocalBinaryResource extends AbstractEXistResource implements Binary
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
-			DocumentImpl document = getDocument(broker, false);
+			DocumentImpl document = getDocument(broker, Lock.NO_LOCK);
 			if (!document.getPermissions().validate(user, Permission.READ))
 				throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
 						"permission denied to read resource");
@@ -246,11 +247,11 @@ public class LocalBinaryResource extends AbstractEXistResource implements Binary
 		}
 	}
 	
-	protected DocumentImpl getDocument(DBBroker broker, boolean lock) throws XMLDBException {
+	protected DocumentImpl getDocument(DBBroker broker, int lock) throws XMLDBException {
 	    DocumentImpl document = null;
-	    if(lock)
+	    if(lock != Lock.NO_LOCK)
             try {
-                document = parent.getCollection().getDocumentWithLock(broker, docId);
+                document = parent.getCollection().getDocumentWithLock(broker, docId, lock);
             } catch (LockException e) {
                 throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
                         "Failed to acquire lock on document " + docId);

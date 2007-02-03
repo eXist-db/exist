@@ -580,7 +580,7 @@ public class NativeBroker extends DBBroker {
     /** create temporary collection */  
     private Collection createTempCollection(Txn transaction) throws LockException, PermissionDeniedException {
         User u = user;
-        Lock lock = collectionsDb.getLock();;
+        Lock lock = collectionsDb.getLock();
         try {           
             lock.acquire(Lock.WRITE_LOCK);
             user = pool.getSecurityManager().getUser(SecurityManager.DBA_USER);
@@ -1419,7 +1419,7 @@ public class NativeBroker extends DBBroker {
     public void storeXMLResource(final Txn transaction, final DocumentImpl doc) {
         Lock lock = collectionsDb.getLock();
         try {
-            lock.acquire(Lock.READ_LOCK);
+            lock.acquire(Lock.WRITE_LOCK);
             final VariableByteOutputStream ostream = new VariableByteOutputStream(8);
             doc.write(ostream);
             Value key = new CollectionStore.DocumentKey(doc.getCollection().getId(), doc.getResourceType(), doc.getDocId());
@@ -1431,7 +1431,7 @@ public class NativeBroker extends DBBroker {
         } catch (IOException e) {
             LOG.warn("IOException while writing document data", e);
         } finally {
-            lock.release(Lock.READ_LOCK);
+            lock.release(Lock.WRITE_LOCK);
         }
     }
     

@@ -167,7 +167,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 			DBBroker broker = null;
 			try {
 				broker = pool.get(user);
-				document = getDocument(broker, true);
+				document = getDocument(broker, Lock.READ_LOCK);
 				if (!document.getPermissions().validate(user, Permission.READ))
 					throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
 							"permission denied to read resource");
@@ -179,7 +179,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e
 						.getMessage(), e);
 			} finally {
-			    parent.getCollection().releaseDocument(document);
+			    parent.getCollection().releaseDocument(document, Lock.READ_LOCK);
 				pool.release(broker);
 			}
 		}
@@ -281,7 +281,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
-			DocumentImpl document = getDocument(broker, false);
+			DocumentImpl document = getDocument(broker, Lock.NO_LOCK);
 			if (!document.getPermissions().validate(user, Permission.READ))
 				throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
 						"permission denied to read resource");
@@ -298,7 +298,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
-			DocumentImpl document = getDocument(broker, false);
+			DocumentImpl document = getDocument(broker, Lock.NO_LOCK);
 			if (!document.getPermissions().validate(user, Permission.READ))
 				throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
 						"permission denied to read resource");
@@ -318,7 +318,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
-			DocumentImpl document = getDocument(broker, false);
+			DocumentImpl document = getDocument(broker, Lock.NO_LOCK);
 			if (!document.getPermissions().validate(user, Permission.READ))
 				throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
 						"permission denied to read resource");
@@ -401,7 +401,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 	    DBBroker broker = null;
 	    try {
 	        broker = pool.get(user);
-		    DocumentImpl document = getDocument(broker, false);
+		    DocumentImpl document = getDocument(broker, Lock.NO_LOCK);
 			return document != null ? document.getPermissions() : null;
 	    } catch (EXistException e) {
             throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, e.getMessage(), e);
@@ -425,11 +425,11 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 		return outputProperties == null ? parent.properties : outputProperties;
 	}
 
-	protected DocumentImpl getDocument(DBBroker broker, boolean lock) throws XMLDBException {
+	protected DocumentImpl getDocument(DBBroker broker, int lock) throws XMLDBException {
 	    DocumentImpl document = null;
-	    if(lock) {
+	    if(lock != Lock.NO_LOCK) {
             try {
-                document = parent.getCollection().getDocumentWithLock(broker, docId);
+                document = parent.getCollection().getDocumentWithLock(broker, docId, lock);
             } catch (LockException e) {
                 throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
                         "Failed to acquire lock on document " + docId);
@@ -449,7 +449,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 	    DBBroker broker = null;
 	    try {
 	        broker = pool.get(user);
-	        DocumentImpl document = getDocument(broker, false);
+	        DocumentImpl document = getDocument(broker, Lock.NO_LOCK);
 	        // this XMLResource represents a document
 			return new NodeProxy(document, NodeId.DOCUMENT_NODE);
 	    } catch (EXistException e) {
@@ -463,7 +463,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 		DBBroker broker = null;
 		try {
 			broker = pool.get(user);
-			DocumentImpl document = getDocument(broker, false);
+			DocumentImpl document = getDocument(broker, Lock.NO_LOCK);
 			if (!document.getPermissions().validate(user, Permission.READ))
 				throw new XMLDBException(ErrorCodes.PERMISSION_DENIED,
 						"permission denied to read resource");
