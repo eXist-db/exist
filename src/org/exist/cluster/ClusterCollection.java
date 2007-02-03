@@ -268,10 +268,18 @@ public final class ClusterCollection extends Collection {
         return collection.getDocumentWithLock(broker, name, lockMode);
     }
 
+    /* 
+     * @deprecated Use other method
+     * @see org.exist.collections.Collection#releaseDocument(org.exist.dom.DocumentImpl)
+     */
     public void releaseDocument(DocumentImpl doc) {
         collection.releaseDocument(doc);
     }
 
+    public void releaseDocument(DocumentImpl doc, int mode) {
+        collection.releaseDocument(doc, mode);
+    }
+    
     public int getDocumentCount() {
         return collection.getDocumentCount();
     }

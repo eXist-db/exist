@@ -110,23 +110,28 @@ public class Lock extends AbstractWebDAVMethod {
             
             LOG.debug("storing document '" + path + "' in collection '"+collName);
             
-            Collection collection = broker.openCollection(collName, org.exist.storage.lock.Lock.READ_LOCK);
-            
-            if(mime.isXMLType()) {
-                LOG.debug("Storing NULL xml resource");
-                
-                IndexInfo info = collection.validateXMLResource(txn, broker, docName, "<nullresource/>");
-                resource = info.getDocument();
-                info.getDocument().getMetadata().setMimeType(contentType);
+            Collection collection = null;
+            try {
+            	collection = broker.openCollection(collName, org.exist.storage.lock.Lock.READ_LOCK);
+	            
+	            if(mime.isXMLType()) {
+	                LOG.debug("Storing NULL xml resource");
+	                
+	                IndexInfo info = collection.validateXMLResource(txn, broker, docName, "<nullresource/>");
+	                resource = info.getDocument();
+	                info.getDocument().getMetadata().setMimeType(contentType);
+	                
+	                collection.store(txn, broker, info,
+	                        "<nullresource/>", false);
+	                
+	            } else {
+	                LOG.debug("Storing NULL byte binary resource.");
+	                resource = collection.addBinaryResource(
+	                        txn, broker, docName, new byte[0], contentType);
+	            }
+            } finally {
                 collection.release(org.exist.storage.lock.Lock.READ_LOCK);
-                
-                collection.store(txn, broker, info,
-                        "<nullresource/>", false);
-                
-            } else {
-                LOG.debug("Storing NULL byte binary resource.");
-                resource = collection.addBinaryResource(
-                        txn, broker, docName, new byte[0], contentType);
+            	
             }
             
             resource.setUserLock(user);
@@ -188,7 +193,7 @@ public class Lock extends AbstractWebDAVMethod {
             broker = pool.get(user);
             
             try {
-                resource = broker.getXMLResource(path,  org.exist.storage.lock.Lock.READ_LOCK);
+            	resource = broker.getXMLResource(path,  org.exist.storage.lock.Lock.READ_LOCK);
             } catch (PermissionDeniedException ex) {
                 LOG.error(ex);
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ex.getMessage());
@@ -259,6 +264,8 @@ public class Lock extends AbstractWebDAVMethod {
                 TransactionManager transact = pool.getTransactionManager();
                 Txn transaction = transact.beginTransaction();
                 broker.storeXMLResource(transaction, resource);
+                //TOUNDERSTAND : this lock is released below (in the finally clause)
+                //isn't it rather a user lock release attempt ? 
                 // ?
                 resource.getUpdateLock().release(org.exist.storage.lock.Lock.READ_LOCK);
                 transact.commit(transaction);

@@ -67,88 +67,93 @@ public class Unlock extends AbstractWebDAVMethod {
             broker = pool.get(user);
             
             try {
-                resource = broker.getXMLResource(path, org.exist.storage.lock.Lock.READ_LOCK);
-                
-            } catch (PermissionDeniedException ex) {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, ex.getMessage());
-                LOG.error(ex);
-                return;
+	            try {
+	                resource = broker.getXMLResource(path, org.exist.storage.lock.Lock.READ_LOCK);
+	                
+	            } catch (PermissionDeniedException ex) {
+	                response.sendError(HttpServletResponse.SC_FORBIDDEN, ex.getMessage());
+	                LOG.error(ex);
+	                return;
+	            }
+	            
+	            if(resource==null){
+	                // No document found, maybe a collection
+	                collection = broker.openCollection(path, org.exist.storage.lock.Lock.READ_LOCK);
+	                if(collection!=null){
+	                    LOG.info("Lock on collections not supported yet");
+	                    response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
+	                            "Lock on collections not supported yet");
+	                    
+	                    return;
+	                } else  {
+	                    LOG.info(NOT_FOUND_ERR + " " + path);
+	                    response.sendError(HttpServletResponse.SC_NOT_FOUND,
+	                            NOT_FOUND_ERR + " " + path);
+	                    return;
+	                }
+	            }
+	            
+	            User lock = resource.getUserLock();
+	            if(lock==null){
+	                // No lock found, can not be unlocked
+	                LOG.debug("No lock found");
+	                
+	                //clean up
+	                resource.getMetadata().setLockToken(null);
+	                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+	                return;
+	                
+	            } else {
+	                // Resource is locked.
+	                LOG.info("Unlocking resource.");
+	                
+	                boolean isNullResource=false;
+	                if(resource.getMetadata().getLockToken().isNullResource() ){
+	                    isNullResource=true;
+	                }
+	                
+	                
+	                // Make it persistant
+	                TransactionManager transact = pool.getTransactionManager();
+	                Txn transaction = transact.beginTransaction();
+	                
+	                // Remove if NullResource
+	                if(isNullResource){
+	                    LOG.debug("Unlock NullResource");
+	                    try {
+	                        if(resource.getResourceType() == DocumentImpl.BINARY_FILE)
+	                            collection.removeBinaryResource(transaction, broker, resource.getFileURI());
+	                        else
+	                            collection.removeXMLResource(transaction, broker, resource.getFileURI());
+	                    } catch (LockException ex) {
+	                        LOG.error(ex);
+	                    } catch (TriggerException ex) {
+	                        LOG.error(ex);
+	                    } catch (PermissionDeniedException ex) {
+	                        LOG.error(ex);
+	                    }
+	                    
+	                } else {
+	                    LOG.debug("Unlock resource");
+	                    resource.setUserLock(null);
+	                    resource.getMetadata().setLockToken(null);
+	                    broker.storeXMLResource(transaction, resource);
+	                }
+	                
+	                //Moved to the finally clause
+	                //resource.getUpdateLock().release(Lock.READ_LOCK);
+	                
+	                transact.commit(transaction);
+	                
+	                LOG.debug("Sucessfully unlocked '"+path+"'.");
+	                
+	                // Say OK
+	                response.sendError(SC_UNLOCK_SUCCESSFULL, "Unlocked "+path);
+	            }
+            } finally {
+            	if (resource != null)
+            		resource.getUpdateLock().release(Lock.READ_LOCK);
             }
-            
-            if(resource==null){
-                // No document found, maybe a collection
-                collection = broker.openCollection(path, org.exist.storage.lock.Lock.READ_LOCK);
-                if(collection!=null){
-                    LOG.info("Lock on collections not supported yet");
-                    response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
-                            "Lock on collections not supported yet");
-                    
-                    return;
-                } else  {
-                    LOG.info(NOT_FOUND_ERR + " " + path);
-                    response.sendError(HttpServletResponse.SC_NOT_FOUND,
-                            NOT_FOUND_ERR + " " + path);
-                    return;
-                }
-            }
-            
-            User lock = resource.getUserLock();
-            if(lock==null){
-                // No lock found, can not be unlocked
-                LOG.debug("No lock found");
-                
-                //clean up
-                resource.getMetadata().setLockToken(null);
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
-                return;
-                
-            } else {
-                // Resource is locked.
-                LOG.info("Unlocking resource.");
-                
-                boolean isNullResource=false;
-                if(resource.getMetadata().getLockToken().isNullResource() ){
-                    isNullResource=true;
-                }
-                
-                
-                // Make it persistant
-                TransactionManager transact = pool.getTransactionManager();
-                Txn transaction = transact.beginTransaction();
-                
-                // Remove if NullResource
-                if(isNullResource){
-                    LOG.debug("Unlock NullResource");
-                    try {
-                        if(resource.getResourceType() == DocumentImpl.BINARY_FILE)
-                            collection.removeBinaryResource(transaction, broker, resource.getFileURI());
-                        else
-                            collection.removeXMLResource(transaction, broker, resource.getFileURI());
-                    } catch (LockException ex) {
-                        LOG.error(ex);
-                    } catch (TriggerException ex) {
-                        LOG.error(ex);
-                    } catch (PermissionDeniedException ex) {
-                        LOG.error(ex);
-                    }
-                    
-                } else {
-                    LOG.debug("Unlock resource");
-                    resource.setUserLock(null);
-                    resource.getMetadata().setLockToken(null);
-                    broker.storeXMLResource(transaction, resource);
-                }
-                
-                resource.getUpdateLock().release(Lock.READ_LOCK);
-                
-                transact.commit(transaction);
-                
-                LOG.debug("Sucessfully unlocked '"+path+"'.");
-                
-                // Say OK
-                response.sendError(SC_UNLOCK_SUCCESSFULL, "Unlocked "+path);
-            }
-            
             
         } catch (EXistException e) {
             LOG.error(e);

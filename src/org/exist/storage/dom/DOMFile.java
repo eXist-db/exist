@@ -2140,8 +2140,8 @@ public class DOMFile extends BTree implements Lockable {
 		// remove old value
 		System.arraycopy(page.data, end, page.data, startOffset, dlen - end);
 		page.len = dlen - (LENGTH_TID + LENGTH_DATA_LENGTH + vlen);		
-		if (page.len < 0)
-			LOG.warn("page length < 0");
+		if (page.len <= 0)
+			LOG.warn("page length <= 0");
 		ph.setDataLength(page.len);		
 		ph.decRecordCount();
 		//page.cleanUp();
@@ -2212,8 +2212,8 @@ public class DOMFile extends BTree implements Lockable {
     			page.setDirty(true);
     			page.len = dlen - (LENGTH_TID + LENGTH_DATA_LENGTH + l);
             }
-			if (page.len < 0)
-				LOG.warn("page length < 0");
+			if (page.len <= 0)
+				LOG.warn("page length <= 0");
 			ph.setDataLength(page.len);
 			ph.decRecordCount();
             ph.setLsn(loggable.getLsn());
@@ -2500,8 +2500,8 @@ public class DOMFile extends BTree implements Lockable {
             }
             page.len = dlen - (LENGTH_TID + LENGTH_DATA_LENGTH + l);
         }
-		if (page.len < 0)
-			LOG.warn("page length < 0");        
+		if (page.len <= 0)
+			LOG.warn("page length <= 0");        
         ph.setDataLength(page.len);
         ph.decRecordCount();      
         ph.setLsn(loggable.getLsn());
@@ -2518,8 +2518,8 @@ public class DOMFile extends BTree implements Lockable {
             page.data = new byte[fileHeader.getWorkSize()];
             System.arraycopy(oldData, 0, page.data, 0, loggable.splitOffset);
             page.len = loggable.splitOffset;
-    		if (page.len < 0)
-    			LOG.warn("page length < 0");              
+    		if (page.len <= 0)
+    			LOG.warn("page length <= 0");              
             ph.setDataLength(page.len);
             ph.setRecordCount(countRecordsInPage(page));
             page.setDirty(true);
@@ -2532,8 +2532,8 @@ public class DOMFile extends BTree implements Lockable {
         final DOMFilePageHeader ph = page.getPageHeader();
         page.data = loggable.oldData;
         page.len = loggable.oldLen;
-		if (page.len < 0)
-			LOG.warn("page length < 0");          
+		if (page.len <= 0)
+			LOG.warn("page length <= 0");          
         ph.setDataLength(page.len);
         ph.setLsn(loggable.getLsn());
         //page.cleanUp();
@@ -2566,8 +2566,8 @@ public class DOMFile extends BTree implements Lockable {
         final int end = rec.offset + LENGTH_FORWARD_LOCATION;
         System.arraycopy(page.data, end, page.data, rec.offset - 2, page.len - end);
         page.len = page.len - (LENGTH_TID + LENGTH_FORWARD_LOCATION);
-		if (page.len < 0)
-			LOG.warn("page length < 0");        
+		if (page.len <= 0)
+			LOG.warn("page length <= 0");        
         ph.setDataLength(page.len);
         ph.decRecordCount();        
         ph.setLsn(loggable.getLsn());
@@ -2651,8 +2651,8 @@ public class DOMFile extends BTree implements Lockable {
                     "; offset: " + (rec.offset - 2) + "; end: " + end + "; len: " + (dlen - end));
         }
         page.len = dlen - (LENGTH_TID + LENGTH_DATA_LENGTH + LENGTH_ORIGINAL_LOCATION + vlen);
-		if (page.len < 0)
-			LOG.warn("page length < 0");        
+		if (page.len <= 0)
+			LOG.warn("page length <= 0");        
         ph.setDataLength(page.len);
         ph.decRecordCount();
         ph.setLsn(loggable.getLsn());

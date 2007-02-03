@@ -103,6 +103,8 @@ public class RemoveCollectionTest extends TestCase {
     public void testRead() {
         BrokerPool.FORCE_CORRUPTION = false;
         DBBroker broker = null;
+        Collection test = null;
+        DocumentImpl doc = null;
         try {
         	System.out.println("testRead() ...\n");
         	assertNotNull(pool);
@@ -111,19 +113,19 @@ public class RemoveCollectionTest extends TestCase {
             Serializer serializer = broker.getSerializer();
             serializer.reset();
             
-            Collection test = broker.openCollection(TestConstants.TEST_COLLECTION_URI, Lock.READ_LOCK);            
+            test = broker.openCollection(TestConstants.TEST_COLLECTION_URI, Lock.READ_LOCK);            
             assertNotNull("Collection '" + DBBroker.ROOT_COLLECTION +  "/test' not found", test);
             
-            DocumentImpl doc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI.append("biblio.rdf"), Lock.READ_LOCK);
+            doc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI.append("biblio.rdf"), Lock.READ_LOCK);
             assertNotNull("Document '" + DBBroker.ROOT_COLLECTION +  "/test/biblio.rdf' should not be null", doc);
             String data = serializer.serialize(doc);
             assertNotNull(data);
             System.out.println(data);
-            doc.getUpdateLock().release(Lock.READ_LOCK);
-            test.release(Lock.READ_LOCK);
 	    } catch (Exception e) {            
 	        fail(e.getMessage());   
 	    } finally {
+            doc.getUpdateLock().release(Lock.READ_LOCK);
+            test.release(Lock.READ_LOCK);            
         	if (pool != null) pool.release(broker);
         }
     }

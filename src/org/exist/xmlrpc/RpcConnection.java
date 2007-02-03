@@ -495,7 +495,6 @@ public class RpcConnection extends Thread {
         DBBroker broker = brokerPool.get(user);
         Collection collection = null;
         try {
-        	//WRITE lock ????
             collection = broker.openCollection(collUri, Lock.READ_LOCK);
             if (collection == null)
                 throw new EXistException("collection " + collUri
@@ -538,11 +537,9 @@ public class RpcConnection extends Thread {
                 return null;
             }
             if(!collection.getPermissions().validate(user, Permission.READ)) {
-                collection.release(Lock.READ_LOCK);
                 throw new PermissionDeniedException("Insufficient privileges to read resource");
             }
-            doc = collection.getDocumentWithLock(broker, docUri.lastSegment());
-            collection.release(Lock.READ_LOCK);
+            doc = collection.getDocumentWithLock(broker, docUri.lastSegment(), Lock.READ_LOCK);
             if (doc == null) {
                 LOG.debug("document " + docUri + " not found!");
                 throw new EXistException("document not found");
@@ -560,7 +557,9 @@ public class RpcConnection extends Thread {
             return null;
         } finally {
             if(collection != null)
-                collection.releaseDocument(doc);
+                collection.releaseDocument(doc, Lock.READ_LOCK);
+            if(collection != null)
+                collection.release(Lock.READ_LOCK);
             brokerPool.release(broker);
         }
     }
@@ -574,17 +573,16 @@ public class RpcConnection extends Thread {
             broker = brokerPool.get(user);
             XmldbURI docURI = XmldbURI.xmldbUriFor(docName);
             
+            
             collection = broker.openCollection(docURI.removeLastSegment(), Lock.READ_LOCK);
             if (collection == null) {
                 LOG.debug("collection " + docURI.removeLastSegment() + " not found!");
                 throw new EXistException("Collection " + docURI.removeLastSegment() + " not found!");
             }
             if(!collection.getPermissions().validate(user, Permission.READ)) {
-                collection.release(Lock.READ_LOCK);
                 throw new PermissionDeniedException("Insufficient privileges to read resource");
             }
-            doc = collection.getDocumentWithLock(broker, docURI.lastSegment());
-            collection.release(Lock.READ_LOCK);
+            doc = collection.getDocumentWithLock(broker, docURI.lastSegment(), Lock.READ_LOCK);
             if (doc == null) {
                 LOG.debug("document " + docURI + " not found!");
                 throw new EXistException("document not found");
@@ -647,7 +645,7 @@ public class RpcConnection extends Thread {
             }
         } finally {
             if(collection != null)
-                collection.releaseDocument(doc);
+                collection.releaseDocument(doc, Lock.READ_LOCK);
             brokerPool.release(broker);
         }
     }
@@ -805,6 +803,7 @@ public class RpcConnection extends Thread {
             broker = brokerPool.get(XMLSecurityManager.SYSTEM_USER);
             broker.sync(Sync.MAJOR_SYNC);
         } catch (EXistException e) {
+        	LOG.warn(e.getMessage(), e);
         } finally {
             brokerPool.release(broker);
         }
@@ -1022,20 +1021,24 @@ public class RpcConnection extends Thread {
     public Hashtable getPermissions(User user, XmldbURI uri)
     throws EXistException, PermissionDeniedException {
         DBBroker broker = null;
+        Collection collection = null;
         try {
             broker = brokerPool.get(user);
-            Collection collection = broker.openCollection(uri, Lock.READ_LOCK);
+            collection = broker.openCollection(uri, Lock.READ_LOCK);
             Permission perm = null;
             if (collection == null) {
-                DocumentImpl doc = broker.getXMLResource(uri, Lock.READ_LOCK);
-                if (doc == null)
-                    throw new EXistException("document or collection " + uri
-                            + " not found");
-                perm = doc.getPermissions();
-                doc.getUpdateLock().release(Lock.READ_LOCK);
+                DocumentImpl doc = null;
+                try {
+                	doc = broker.getXMLResource(uri, Lock.READ_LOCK);
+	                if (doc == null)
+	                    throw new EXistException("document or collection " + uri + " not found");
+	                perm = doc.getPermissions();
+                } finally {
+                	if (doc != null)
+                		doc.getUpdateLock().release(Lock.READ_LOCK);
+                }
             } else {
                 perm = collection.getPermissions();
-                collection.release(Lock.READ_LOCK);
             }
             Hashtable result = new Hashtable();
             result.put("owner", perm.getOwner());
@@ -1043,7 +1046,9 @@ public class RpcConnection extends Thread {
             result.put("permissions", new Integer(perm.getPermissions()));
             return result;
         } finally {
-            brokerPool.release(broker);
+        	if (collection != null)
+                collection.release(Lock.READ_LOCK);
+        	brokerPool.release(broker);
         }
     }
     

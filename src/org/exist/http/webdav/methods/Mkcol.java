@@ -62,32 +62,39 @@ public class Mkcol extends AbstractWebDAVMethod {
 		Collection collection = null;
 		try {
 			broker = pool.get(user);
-			collection = broker.openCollection(path, Lock.READ_LOCK);
-			if(collection != null) {
-				collection.release(Lock.READ_LOCK);
-				response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
-	                    "collection " + request.getPathInfo() + " already exists");
-	            return;
+			try {
+				collection = broker.openCollection(path, Lock.READ_LOCK);
+				if(collection != null) {
+					response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
+		                    "collection " + request.getPathInfo() + " already exists");
+		            return;
+				}
+			} finally {
+				if (collection != null)
+					collection.release(Lock.READ_LOCK);
 			}
+			
             XmldbURI parentURI = path.removeLastSegment();
             if(parentURI==null)
             	parentURI = XmldbURI.ROOT_COLLECTION_URI;
             XmldbURI collURI = path.lastSegment();
-	        collection = broker.openCollection(parentURI, Lock.WRITE_LOCK);
-	        if(collection == null) {
-                LOG.debug("Parent collection " + parentURI + " not found");
-                response.sendError(HttpServletResponse.SC_CONFLICT,
-                        "Parent collection not found");
-                return;
+            try {
+		        collection = broker.openCollection(parentURI, Lock.WRITE_LOCK);
+		        if(collection == null) {
+	                LOG.debug("Parent collection " + parentURI + " not found");
+	                response.sendError(HttpServletResponse.SC_CONFLICT,
+	                        "Parent collection not found");
+	                return;
+	            }
+		        if(collection.hasDocument(collURI)) {
+		        	response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
+		        		"path conflicts with an existing resource");
+		        	return;
+		        }
+            } finally {
+            	if (collection != null)
+            		collection.release(Lock.READ_LOCK);
             }
-	        if(collection.hasDocument(collURI)) {
-	        	collection.release(Lock.READ_LOCK);
-	        	response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
-	        		"path conflicts with an existing resource");
-	        	return;
-	        }
-	        // TODO: releasing the lock here is dangerous, but we may get into deadlocks otherwise.
-	        collection.release(Lock.READ_LOCK);
             
             TransactionManager transact = pool.getTransactionManager();
             Txn txn = transact.beginTransaction();

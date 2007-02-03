@@ -516,6 +516,7 @@ public  class Collection extends Observable
      * Retrieve a child resource after putting a read lock on it. With this method,
      * access to the received document object is safe.
      *
+     * @deprecated Use other method
      * @param broker
      * @param name
      * @return The document that was locked.
@@ -542,8 +543,7 @@ public  class Collection extends Observable
             DocumentImpl doc = (DocumentImpl) documents.get(uri.getRawCollectionPath());
             if(doc == null)
                 return null;
-            Lock updateLock = doc.getUpdateLock();
-            updateLock.acquire(lockMode);
+            doc.getUpdateLock().acquire(lockMode);
             return doc;
         } finally {
             getLock().release(Lock.READ_LOCK);
@@ -552,12 +552,24 @@ public  class Collection extends Observable
     
     /**
      * Release any locks held on the document.
-     *
+     * @deprecated Use other method
      * @param doc
      */
     public void releaseDocument(DocumentImpl doc) {
         if(doc != null) {
             doc.getUpdateLock().release(Lock.READ_LOCK);
+        }
+    }
+
+    
+    /**
+     * Release any locks held on the document.
+     *
+     * @param doc
+     */
+    public void releaseDocument(DocumentImpl doc, int mode) {
+        if(doc != null) {
+            doc.getUpdateLock().release(mode);
         }
     }
     
