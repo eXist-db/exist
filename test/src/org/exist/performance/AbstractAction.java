@@ -23,8 +23,15 @@ package org.exist.performance;
 
 import org.exist.performance.actions.Action;
 import org.exist.EXistException;
+import org.exist.util.serializer.DOMSerializer;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Node;
 import org.apache.log4j.Logger;
+
+import javax.xml.transform.TransformerException;
+import java.io.StringWriter;
+import java.util.Properties;
 
 public abstract class AbstractAction implements Action {
 
@@ -68,5 +75,27 @@ public abstract class AbstractAction implements Action {
             return val.equalsIgnoreCase("true") || val.equalsIgnoreCase("yes");
         }
         return defaultValue;
+    }
+
+    public static String getContent(Element config) throws EXistException {
+        NodeList children = config.getChildNodes();
+        Element root = null;
+        for (int i = 0;  i < children.getLength(); i++) {
+            Node node = children.item(i);
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
+                root = (Element) node;
+                break;
+            }
+        }
+        if (root == null)
+            throw new EXistException("no content element found for " + config.getNodeName());
+        StringWriter writer = new StringWriter();
+        DOMSerializer serializer = new DOMSerializer(writer, new Properties());
+        try {
+            serializer.serialize(root);
+        } catch (TransformerException e) {
+            throw new EXistException("exception while serializing content: " + e.getMessage(), e);
+        }
+        return writer.toString();
     }
 }

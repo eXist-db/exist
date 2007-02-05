@@ -55,25 +55,7 @@ public class StoreInline extends AbstractAction {
             throw new EXistException(StoreInline.class.getName() + " requires an attribute 'name'");
         name = config.getAttribute("name");
 
-        NodeList children = config.getChildNodes();
-        Element root = null;
-        for (int i = 0;  i < children.getLength(); i++) {
-            Node node = children.item(i);
-            if (node.getNodeType() == Node.ELEMENT_NODE) {
-                root = (Element) node;
-                break;
-            }
-        }
-        if (root == null)
-            throw new EXistException("no content element found for store");
-        StringWriter writer = new StringWriter();
-        DOMSerializer serializer = new DOMSerializer(writer, new Properties());
-        try {
-            serializer.serialize(root);
-        } catch (TransformerException e) {
-            throw new EXistException("exception while serializing content to store: " + e.getMessage(), e);
-        }
-        content = writer.toString();
+        content = getContent(config);
     }
 
     public void execute(Connection connection) throws XMLDBException, EXistException {
