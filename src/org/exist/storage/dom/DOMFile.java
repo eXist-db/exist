@@ -238,6 +238,8 @@ public class DOMFile extends BTree implements Lockable {
 	 * @return the virtual storage address of the value
 	 */
 	public long add(Txn transact, byte[] value) throws ReadOnlyException {
+		if (!lock.isLockedForWrite())
+			LOG.warn("the file doesn't own a write lock");
 		if (value == null || value.length == 0)
 			return KEY_NOT_FOUND;
 		// overflow value?
@@ -263,7 +265,7 @@ public class DOMFile extends BTree implements Lockable {
 	 */
 	private long add(Txn transaction, byte[] value, boolean overflowPage) throws ReadOnlyException {
 		if (!lock.isLockedForWrite())
-			LOG.error("the file doesn't own a write lock");
+			LOG.warn("the file doesn't own a write lock");
 		final int vlen = value.length;
 		// always append data to the end of the file
 		DOMPage page = getCurrentPage(transaction);
@@ -342,7 +344,7 @@ public class DOMFile extends BTree implements Lockable {
 	 */
 	public long addBinary(Txn transaction, DocumentImpl doc, byte[] value) {
 		if (!lock.isLockedForWrite())
-			LOG.error("the file doesn't own a write lock");
+			LOG.warn("the file doesn't own a write lock");
 	    OverflowDOMPage overflow = new OverflowDOMPage(transaction);
 	    int pagesCount = overflow.write(transaction, value);
 	    doc.getMetadata().setPageCount(pagesCount);
@@ -357,7 +359,7 @@ public class DOMFile extends BTree implements Lockable {
 	 */
 	public long addBinary(Txn transaction, DocumentImpl doc, InputStream is) {
 		if (!lock.isLockedForWrite())
-			LOG.error("the file doesn't own a write lock");
+			LOG.warn("the file doesn't own a write lock");
 	    OverflowDOMPage overflow = new OverflowDOMPage(transaction);
 	    int pagesCount = overflow.write(transaction, is);
 	    doc.getMetadata().setPageCount(pagesCount);
@@ -370,15 +372,19 @@ public class DOMFile extends BTree implements Lockable {
 	 * @param pageNum
 	 */
 	public byte[] getBinary(long pageNum) {
+		if (!lock.hasLock())
+			LOG.warn("the file doesn't own a lock");
 		return getOverflowValue(pageNum);
 	}
 
 	public void readBinary(long pageNum, OutputStream os) {
+		if (!lock.hasLock())
+			LOG.warn("the file doesn't own a lock");
 		try {
 			OverflowDOMPage overflow = new OverflowDOMPage(pageNum);
 			overflow.streamTo(os);
 		} catch (IOException e) {
-			LOG.error("io error while loading overflow value", e);
+			LOG.warn("io error while loading overflow value", e);
 		}
 	}
 	
@@ -389,6 +395,8 @@ public class DOMFile extends BTree implements Lockable {
 	 * @param value
 	 */
 	public long insertAfter(Txn transaction, DocumentImpl doc, Value key, byte[] value) {
+		if (!lock.isLockedForWrite())
+			LOG.warn("the file doesn't own a write lock");
 		try {
 			final long p = findValue(key);
 			if (p == KEY_NOT_FOUND) {
@@ -421,7 +429,7 @@ public class DOMFile extends BTree implements Lockable {
 	 */
 	public long insertAfter(Txn transaction, DocumentImpl doc, long address, byte[] value) {
 		if (!lock.isLockedForWrite())
-			LOG.error("the file doesn't own a write lock");
+			LOG.warn("the file doesn't own a write lock");
 		// check if we need an overflow page
 		boolean isOverflow = false;
 		if (LENGTH_TID + LENGTH_DATA_LENGTH + value.length > fileHeader.getWorkSize()) {
@@ -1052,6 +1060,8 @@ public class DOMFile extends BTree implements Lockable {
 	}
 
     public void closeAndRemove() {
+		if (!lock.isLockedForWrite())
+			LOG.warn("the file doesn't own a write lock");
     	super.closeAndRemove();
     	cacheManager.deregisterCache(dataCache);
     }
@@ -1077,6 +1087,8 @@ public class DOMFile extends BTree implements Lockable {
 
 	public ArrayList findKeys(IndexQuery query) throws IOException,
 			BTreeException {
+		if (!lock.hasLock())
+			LOG.warn("the file doesn't own a lock");
 		final FindCallback cb = new FindCallback(FindCallback.KEYS);
 		try {
 			query(query, cb);
@@ -1127,6 +1139,8 @@ public class DOMFile extends BTree implements Lockable {
 	}
 	
 	private long findNode(StoredNode node, NodeId target, Iterator iter) {
+		if (!lock.hasLock())
+			LOG.warn("the file doesn't own a lock");
 		if (node.hasChildNodes()) {			
 			for (int i = 0; i < node.getChildCount(); i++) {
 				StoredNode child = (StoredNode) iter.next();
@@ -1155,8 +1169,10 @@ public class DOMFile extends BTree implements Lockable {
 	 * @throws IOException
 	 * @throws BTreeException
 	 */
-	protected long findValue(Object lock, NodeProxy node) throws IOException,
+	protected long findValue(Object lockObject, NodeProxy node) throws IOException,
 			BTreeException {
+		if (!lock.hasLock())
+			LOG.warn("the file doesn't own a lock");
 		final DocumentImpl doc = (DocumentImpl) node.getDocument();
 		final NativeBroker.NodeRef nodeRef = new NativeBroker.NodeRef(doc.getDocId(), node.getNodeId());
 		// first try to find the node in the index
@@ -1180,7 +1196,7 @@ public class DOMFile extends BTree implements Lockable {
 				}
 			} while (parentPointer == KEY_NOT_FOUND);
 
-			final Iterator iter = new NodeIterator(lock, this, node.getDocument(), parentPointer);
+			final Iterator iter = new NodeIterator(lockObject, this, node.getDocument(), parentPointer);
 			final StoredNode n = (StoredNode) iter.next();
 			final long address = findNode(n, node.getNodeId(), iter);
 			if (address == StoredNode.UNKNOWN_NODE_IMPL_ADDRESS) {
@@ -1204,6 +1220,8 @@ public class DOMFile extends BTree implements Lockable {
 	 *                           Description of the Exception
 	 */
 	public ArrayList findValues(IndexQuery query) throws IOException, BTreeException {
+		if (!lock.hasLock())
+			LOG.warn("the file doesn't own a lock");
 		FindCallback cb = new FindCallback(FindCallback.VALUES);
 		try {
 			query(query, cb);
@@ -1222,8 +1240,6 @@ public class DOMFile extends BTree implements Lockable {
 	 *                           Description of the Exception
 	 */
 	public boolean flush() throws DBException {
-		if (!lock.isLockedForWrite())
-			LOG.error("the file doesn't own a write lock");
 		boolean flushed = false;
 		//TODO : record transaction as a valuable flush ?
         if (isTransactional)
@@ -1272,6 +1288,8 @@ public class DOMFile extends BTree implements Lockable {
 	 * @return Description of the Return Value
 	 */
 	public Value get(Value key) {
+		if (!lock.hasLock())
+			LOG.warn("the file doesn't own a lock");		
 		try {
 			final long p = findValue(key);
 			if (p == KEY_NOT_FOUND) {
@@ -1297,6 +1315,8 @@ public class DOMFile extends BTree implements Lockable {
 	 * @return Description of the Return Value
 	 */
 	public Value get(NodeProxy node) {
+		if (!lock.hasLock())
+			LOG.warn("the file doesn't own a lock");		
 		try {
 			final long p = findValue(owner, node);
 			if (p == KEY_NOT_FOUND) {
@@ -1321,6 +1341,8 @@ public class DOMFile extends BTree implements Lockable {
 	 * @return Description of the Return Value
 	 */
 	public Value get(long p) {
+		if (!lock.hasLock())
+			LOG.warn("the file doesn't own a lock");		
 		RecordPos rec = findRecord(p);
 		if (rec == null) {
 			SanityCheck.TRACE("object at " + StorageAddress.toString(p)	+ " not found.");
@@ -1342,23 +1364,25 @@ public class DOMFile extends BTree implements Lockable {
 	}
 
 	protected byte[] getOverflowValue(long pnum) {
+		if (!lock.hasLock())
+			LOG.warn("the file doesn't own a lock");
 		try {
 			OverflowDOMPage overflow = new OverflowDOMPage(pnum);
 			return overflow.read();
 		} catch (IOException e) {
-			LOG.error("io error while loading overflow value", e);
+			LOG.warn("io error while loading overflow value", e);
 			return null;
 		}
 	}
 	
 	public void removeOverflowValue(Txn transaction, long pnum) {
 		if (!lock.isLockedForWrite())
-			LOG.error("the file doesn't own a write lock");
+			LOG.warn("the file doesn't own a write lock");
 		try {
 			OverflowDOMPage overflow = new OverflowDOMPage(pnum);
 			overflow.delete(transaction);
 		} catch (IOException e) {
-			LOG.error("io error while removing overflow value", e);
+			LOG.warn("io error while removing overflow value", e);
 		}
 	}
 	
@@ -1422,6 +1446,8 @@ public class DOMFile extends BTree implements Lockable {
 	}
 
 	public void closeDocument() {
+		if (!lock.hasLock())
+			LOG.warn("the file doesn't own a lock");		
 		pages.remove(owner);
 		// SanityCheck.TRACE("current doc closed by: " + owner +
 		// "; thread: " + Thread.currentThread().getName());
@@ -1435,6 +1461,8 @@ public class DOMFile extends BTree implements Lockable {
 	 *                           Description of the Exception
 	 */
 	public boolean open() throws DBException {
+		if (!lock.hasLock())
+			LOG.warn("the file doesn't own a lock");		
 		return super.open(FILE_FORMAT_VERSION_ID);
 	}
 
@@ -1449,6 +1477,8 @@ public class DOMFile extends BTree implements Lockable {
 	 */
 	public long put(Txn transaction, Value key, byte[] value)
 			throws ReadOnlyException {
+		if (!lock.hasLock())
+			LOG.warn("the file doesn't own a lock");		
 		final long p = add(transaction, value);
 		try {
 			addValue(transaction, key, p);
@@ -1467,12 +1497,14 @@ public class DOMFile extends BTree implements Lockable {
 	 * page and the occupied space is freed.
 	 */
 	public void remove(Value key) {
+		if (!lock.isLockedForWrite())
+			LOG.warn("the file doesn't own a write lock");
 		remove(null, key);
 	}
 
 	public void remove(Txn transaction, Value key) {
 		if (!lock.isLockedForWrite())
-			LOG.error("the file doesn't own a write lock");
+			LOG.warn("the file doesn't own a write lock");
 		try {
 			final long p = findValue(key);
 			if (p == KEY_NOT_FOUND) {
@@ -1540,12 +1572,14 @@ public class DOMFile extends BTree implements Lockable {
 	 * @param p
 	 */
 	public void removeNode(long p) {
+		if (!lock.isLockedForWrite())
+			LOG.warn("the file doesn't own a write lock");
 		removeNode(null, p);
 	}
 
 	public void removeNode(Txn transaction, long p) {
 		if (!lock.isLockedForWrite())
-			LOG.error("the file doesn't own a write lock");
+			LOG.warn("the file doesn't own a write lock");
 		final RecordPos rec = findRecord(p);
 		final int startOffset = rec.offset - 2;
 		final DOMFilePageHeader ph = rec.getPage().getPageHeader();
@@ -1572,7 +1606,7 @@ public class DOMFile extends BTree implements Lockable {
 				OverflowDOMPage overflow = new OverflowDOMPage(overflowLink);
 				overflow.delete(transaction);
 			} catch (IOException e) {
-				LOG.error("io error while removing overflow page", e);
+				LOG.warn("io error while removing overflow page", e);
 			}
 			realLen += LENGTH_OVERFLOW_LOCATION;
 		}
@@ -1644,6 +1678,8 @@ public class DOMFile extends BTree implements Lockable {
 	 * @param page
 	 */
 	private void removePage(DOMPage page) {
+		if (!lock.isLockedForWrite())
+			LOG.warn("the file doesn't own a write lock");
 		//dataCache.remove(page);
 		final DOMFilePageHeader ph = page.getPageHeader();
 		if (ph.getNextDataPage() != Page.NO_PAGE) {
@@ -1687,7 +1723,7 @@ public class DOMFile extends BTree implements Lockable {
 	 */
 	public void removeAll(Txn transaction, long p) {
 		if (!lock.isLockedForWrite())
-			LOG.error("the file doesn't own a write lock");
+			LOG.warn("the file doesn't own a write lock");
 //		 StringBuffer debug = new StringBuffer();
 //		 debug.append("Removed pages: ");
 		long pnum = StorageAddress.pageFromPointer(p);
@@ -1760,12 +1796,16 @@ public class DOMFile extends BTree implements Lockable {
 	 * @param obj
 	 *                     The new ownerObject value
 	 */
-	public final void setOwnerObject(Object obj) {
+	public synchronized final void setOwnerObject(Object obj) {
 		// if(owner != obj && obj != null)
 		// LOG.debug("owner set -> " + obj.hashCode());
 		if (obj == null) {
 			LOG.warn("setOwnerObject(null)");
 		}	
+		if (owner != null && owner != obj) {
+			if (!(obj instanceof NativeBroker))
+				LOG.warn("changing owner");			
+		}
 		owner = obj;
 	}
 
@@ -1808,6 +1848,8 @@ public class DOMFile extends BTree implements Lockable {
      */
 	public void update(Txn transaction, long p, byte[] value)
 			throws ReadOnlyException {
+		if (!lock.isLockedForWrite())
+			LOG.warn("the file doesn't own a write lock");
 		final RecordPos rec = findRecord(p);        
 		final short vlen = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
 		rec.offset += LENGTH_DATA_LENGTH;
@@ -1844,6 +1886,8 @@ public class DOMFile extends BTree implements Lockable {
 	 * @return string value of the specified node
 	 */
 	public String getNodeValue(StoredNode node, boolean addWhitespace) {
+		if (!lock.hasLock())
+			LOG.warn("the file doesn't own a lock");
 		try {
 			long address = node.getInternalAddress();
             RecordPos rec = null;
@@ -1890,6 +1934,8 @@ public class DOMFile extends BTree implements Lockable {
 	 */
 	private void getNodeValue(DocumentImpl doc, ByteArrayOutputStream os, RecordPos rec,
 			boolean firstCall, boolean addWhitespace) {
+		if (!lock.hasLock())
+			LOG.warn("the file doesn't own a lock");
 		// locate the next real node, skipping relocated nodes
 		boolean foundNext = false;
 		do {
@@ -2003,6 +2049,8 @@ public class DOMFile extends BTree implements Lockable {
 	 * @return The record position in the page
 	 */
 	protected RecordPos findRecord(long p, boolean skipLinks) {
+		if (!lock.hasLock())
+			LOG.warn("the file doesn't own a lock");		
 		long pageNr = StorageAddress.pageFromPointer(p);
 		short tid = StorageAddress.tidFromPointer(p);
 		while (pageNr != Page.NO_PAGE) {
@@ -2794,7 +2842,7 @@ public class DOMFile extends BTree implements Lockable {
 		public void setDataLength(int len) {
 			//TODO : how can we get 4032 ?
 			if (len > 4032)
-				LOG.error("too long !");
+				LOG.warn("too long !");
 			dataLen = len;
 		}
 
@@ -3014,7 +3062,7 @@ public class DOMFile extends BTree implements Lockable {
 				writeValue(page, data);
 				setDirty(false);
 			} catch (IOException ioe) {
-				LOG.error(ioe);
+				LOG.warn(ioe);
 			}
 		}
 
@@ -3198,7 +3246,7 @@ public class DOMFile extends BTree implements Lockable {
 		        // TODO what if remaining length=0?
 		
 		    } catch (IOException ex) {
-		        LOG.error("io error while writing overflow page", ex);
+		        LOG.warn("io error while writing overflow page", ex);
 		    }
 		
 		    return pageCount;
@@ -3238,7 +3286,7 @@ public class DOMFile extends BTree implements Lockable {
                     ++pageCount;
                 }
             } catch (IOException e) {
-                LOG.error("io error while writing overflow page", e);
+                LOG.warn("io error while writing overflow page", e);
             }
             return pageCount;
 		}
@@ -3259,7 +3307,7 @@ public class DOMFile extends BTree implements Lockable {
 					long nextPageNumber = page.getPageHeader().getNextPage();
 					page = (nextPageNumber == Page.NO_PAGE) ? null : getPage(nextPageNumber);
 				} catch (IOException e) {
-					LOG.error("io error while loading overflow page "
+					LOG.warn("io error while loading overflow page "
 							+ firstPage.getPageNum() + "; read: " + count, e);
 					break;
 				}

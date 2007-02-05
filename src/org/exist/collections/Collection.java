@@ -217,14 +217,6 @@ public  class Collection extends Observable
      * Closes the collection, i.e. releases the lock held by
      * the current thread. This is a shortcut for getLock().release().
      */
-    public void release() {
-        getLock().release();
-    }
-
-    /**
-     * Closes the collection, i.e. releases the lock held by
-     * the current thread. This is a shortcut for getLock().release().
-     */
     public void release(int mode) {
 //		LOG.debug("releasing lock on " + name);
         getLock().release(mode);

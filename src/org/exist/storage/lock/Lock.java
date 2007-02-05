@@ -55,12 +55,6 @@ public interface Lock {
 	 */
 	public boolean attempt( int mode );
 	
-	/**
-	 * Release a lock. This method assumes that the
-	 * lock is a read lock.
-	 */
-    public void release( );
-    
     /**
      * Release a lock of the specified type.
      * 
@@ -73,4 +67,6 @@ public interface Lock {
      * write locks.
      */
     public boolean isLockedForWrite();
+
+    public boolean hasLock();
 }

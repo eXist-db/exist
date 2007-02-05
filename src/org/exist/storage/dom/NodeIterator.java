@@ -74,7 +74,7 @@ public final class NodeIterator implements Iterator {
 		Lock lock = db.getLock();
 		try {
 			try {
-				lock.acquire();
+				lock.acquire(Lock.READ_LOCK);
 			} catch (LockException e) {
 				LOG.warn("Failed to acquire read lock on " + db.getFile().getName());
 				return false;
@@ -95,7 +95,7 @@ public final class NodeIterator implements Iterator {
 		} catch (IOException e) {
 			LOG.warn(e);
 		} finally {
-			lock.release();
+			lock.release(Lock.READ_LOCK);
 		}
 		return false;
 	}
@@ -212,7 +212,7 @@ public final class NodeIterator implements Iterator {
 		} catch (IOException e) {
 			LOG.warn(e.getMessage(), e);
 		} finally {
-			lock.release();
+			lock.release(Lock.READ_LOCK);
 		}
 		return null;
 	}

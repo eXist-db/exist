@@ -1,7 +1,9 @@
 package org.exist.storage.dom;
 
+import org.apache.log4j.Logger;
 import org.exist.dom.DocumentImpl;
 import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.MultiReadReentrantLock;
 import org.exist.util.LockException;
 import org.exist.util.ReadOnlyException;
 
@@ -18,7 +20,9 @@ import org.exist.util.ReadOnlyException;
  */
 public abstract class DOMTransaction {
 
-    private Object ownerObject;
+	private final static Logger LOG = Logger.getLogger(DOMTransaction.class);
+	
+	private Object ownerObject;
     private DOMFile file;
     private DocumentImpl document = null;
     private int mode;
@@ -60,6 +64,7 @@ public abstract class DOMTransaction {
     	    file.setCurrentDocument(document);
             return start();
     	} catch( ReadOnlyException e ) {
+    		LOG.warn(e.getMessage(), e);
         } finally {
 			lock.release(mode);
         }
