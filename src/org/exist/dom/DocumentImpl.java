@@ -232,7 +232,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
 	 * write.
 	 * 
 	 */
-	public boolean isLockedForWrite() {
+	public synchronized boolean isLockedForWrite() {
 		return getUpdateLock().isLockedForWrite();
 	}
 

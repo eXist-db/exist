@@ -791,6 +791,7 @@ public class NativeBroker extends DBBroker {
                 DocumentImpl child = (DocumentImpl) i.next();
                 LOG.debug("Copying resource: '" + child.getURI() + "'");
                 if (child.getResourceType() == DocumentImpl.XML_FILE) {
+                	//TODO : put a lock on newDoc ?
                     DocumentImpl newDoc = new DocumentImpl(this, destCollection, child.getFileURI());
                     newDoc.copyOf(child);
                     newDoc.setDocId(getNextResourceId(transaction, destination));
@@ -1692,6 +1693,7 @@ public class NativeBroker extends DBBroker {
                 byte[] data = getBinaryResource((BinaryDocument) doc); 
                 destination.addBinaryResource(transaction, this, newName, data, doc.getMetadata().getMimeType());
             } else {
+            	//TODO : put a lock on newDoc ?
                 DocumentImpl newDoc = new DocumentImpl(this, destination, newName);
                 newDoc.copyOf(doc);
                 newDoc.setDocId(getNextResourceId(transaction, destination));
@@ -3042,6 +3044,7 @@ public class NativeBroker extends DBBroker {
             if (depth == -1) 
             	depth = defaultIndexDepth;
             if (mode == MODE_STORE && node.getNodeType() == Node.ELEMENT_NODE && level <= depth) {
+            	//TODO : use NativeBroker.this to avoid owner change ?
                 new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
                     public Object start() throws ReadOnlyException {
                         try {

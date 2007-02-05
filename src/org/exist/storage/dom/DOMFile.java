@@ -1461,8 +1461,6 @@ public class DOMFile extends BTree implements Lockable {
 	 *                           Description of the Exception
 	 */
 	public boolean open() throws DBException {
-		if (!lock.hasLock())
-			LOG.warn("the file doesn't own a lock");		
 		return super.open(FILE_FORMAT_VERSION_ID);
 	}
 
@@ -1804,7 +1802,7 @@ public class DOMFile extends BTree implements Lockable {
 		}	
 		if (owner != null && owner != obj) {
 			if (!(obj instanceof NativeBroker))
-				LOG.warn("changing owner");			
+				LOG.warn("changing owner from " + owner + " to " + obj);			
 		}
 		owner = obj;
 	}

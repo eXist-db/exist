@@ -87,6 +87,10 @@ public class MultiReadReentrantLock implements Lock {
     }
 
     public boolean acquire(int mode) throws LockException {
+		if (mode == Lock.NO_LOCK) {
+			LOG.warn("acquired with no lock !");
+			return true;
+		}
         switch (mode) {
         case Lock.WRITE_LOCK:
             return writeLock();
