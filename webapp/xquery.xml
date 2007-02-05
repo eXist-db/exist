@@ -24,8 +24,8 @@
                     >documentation</ulink>.</para>
 
             <para>The XQuery implementation is tested against the official XQuery Test Suite (XQTS).
-                This suite contains more than 10,000 tests. As of June 2006, eXist passes &gt;
-                80% of the test suite, but we are continuously trying to improve these results.
+                This suite contains more than 10,000 tests. As of December 2006, eXist passes &gt;
+                93% of the test suite, but we are continuously trying to improve these results.
                 Current test results are reported on the <ulink url="http://xqts.exist-db.org/">web
                     site</ulink>. A good part of the remaining failures is caused by smaller
                 problems with value comparisons, formatting of floating point numbers and the
@@ -65,9 +65,9 @@
 
             <para>In addition to the standard features, eXist provides extended support for
                     <emphasis>modules</emphasis> and implements the <emphasis>full axis</emphasis>
-                feature, which means you can use the <emphasis>optional axes</emphasis>: ancestor,
-                ancestor-or-self, following, following-sibling, preceding, and
-            preceding-sibling.</para>
+                feature, which means you can use the <emphasis>optional axes</emphasis>: <command>ancestor</command>,
+                <command>ancestor-or-self</command>, <command>following</command>, <command>following-sibling</command>, <command>preceding</command>, and
+            <command>preceding-sibling</command>.</para>
         </section>
 
         <section>
