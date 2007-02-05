@@ -26,6 +26,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 
+import org.apache.log4j.Logger;
 import org.apache.xmlrpc.XmlRpc;
 import org.apache.xmlrpc.XmlRpcClient;
 import org.exist.EXistException;
@@ -59,6 +60,8 @@ import org.xmldb.api.base.XMLDBException;
  * @author Wolfgang Meier
  */
 public class DatabaseImpl implements Database {
+	
+	private final static Logger LOG = Logger.getLogger(DatabaseImpl.class);
 
 	//TODO : discuss about other possible values
 	protected final static String LOCAL_HOSTNAME = "";    
@@ -188,6 +191,7 @@ public class DatabaseImpl implements Database {
             Collection current = new LocalCollection(u, pool, xmldbURI.toCollectionPathURI(), AccessContext.XMLDB);
             return (current != null) ? current : null;
         } catch (XMLDBException e) {
+        	LOG.error(e.getMessage(), e);
             switch (e.errorCode) {
                 case ErrorCodes.NO_SUCH_RESOURCE:
                 case ErrorCodes.NO_SUCH_COLLECTION:

@@ -42,11 +42,18 @@ public class ReentrantReadWriteLock implements Lock {
 		id_ = id;
 	}
 	
+	/* @deprecated Use other method
+	 * @see org.exist.storage.lock.Lock#acquire()
+	 */
 	public boolean acquire() throws LockException {
 		return acquire(Lock.READ_LOCK);
 	}
 
 	public boolean acquire(int mode) throws LockException {
+		if (mode == Lock.NO_LOCK) {
+			LOG.warn("acquired with no lock !");
+			return true;
+		}
 		if (Thread.interrupted())
 			throw new LockException();
 		Thread caller = Thread.currentThread();
@@ -101,7 +108,10 @@ public class ReentrantReadWriteLock implements Lock {
 								if (writeLocks == 0) {
 									System.out.println("releasing blocking thread " + owner_.getName());
 									owner_ = caller;
-									modeStack.clear();
+									while (!modeStack.isEmpty()) {
+								    	Integer top = (Integer)modeStack.peek();
+								    	top = null;
+									}
 									holds_ = 1;
 									modeStack.push(new Integer(mode));
 									mode_ = mode;
