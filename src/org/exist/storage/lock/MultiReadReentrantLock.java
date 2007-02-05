@@ -52,7 +52,7 @@ import org.exist.util.LockException;
  */
 public class MultiReadReentrantLock implements Lock {
 
-    private final static Logger log = Logger.getLogger(MultiReadReentrantLock.class);
+	private final static Logger LOG = Logger.getLogger(MultiReadReentrantLock.class);
 
     /** Number of threads waiting to read. */
     private int waitingForReadLock = 0;
@@ -241,7 +241,7 @@ public class MultiReadReentrantLock implements Lock {
                 }
             }
         } else {
-            log.warn("Possible lock problem: a thread released a write lock it didn't hold. Either the " +
+            LOG.warn("Possible lock problem: a thread released a write lock it didn't hold. Either the " +
                     "thread was interrupted or it never acquired the lock.");
         	Thread.dumpStack();
         }
@@ -259,7 +259,7 @@ public class MultiReadReentrantLock implements Lock {
      */
     private synchronized void releaseRead() {
         if (outstandingReadLocks > 0) {
-            outstandingReadLocks--;
+        	outstandingReadLocks--;
             if (outstandingReadLocks == 0 && writeLockedThread == null &&
                     waitingForWriteLock != null && waitingForWriteLock.size() > 0) {
                 writeLockedThread = (Thread) waitingForWriteLock.get(0);
@@ -281,7 +281,7 @@ public class MultiReadReentrantLock implements Lock {
             }
             return;
         } else {
-            log.warn("Possible lock problem: a thread released a read lock it didn't hold. Either the " +
+            LOG.warn("Possible lock problem: a thread released a read lock it didn't hold. Either the " +
                     "thread was interrupted or it never acquired the lock.");
         	Thread.dumpStack();
         }
@@ -289,6 +289,10 @@ public class MultiReadReentrantLock implements Lock {
 
     public synchronized boolean isLockedForWrite() {
         return writeLockedThread != null || (waitingForWriteLock != null && waitingForWriteLock.size() > 0);
+    }
+
+    public synchronized boolean hasLock() {
+        return outstandingReadLocks > 0 || isLockedForWrite();
     }
 }
 

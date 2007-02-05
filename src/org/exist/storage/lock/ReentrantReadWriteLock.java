@@ -98,9 +98,10 @@ public class ReentrantReadWriteLock implements Lock {
 							waitTime = timeOut_ - (System.currentTimeMillis() - start);
 							if (waitTime <= 0) {
 								// blocking thread found: if the lock is read only, remove it
-								if (mode_ == Lock.READ_LOCK) {
+								if (writeLocks == 0) {
 									System.out.println("releasing blocking thread " + owner_.getName());
 									owner_ = caller;
+									modeStack.clear();
 									holds_ = 1;
 									modeStack.push(new Integer(mode));
 									mode_ = mode;
@@ -150,73 +151,47 @@ public class ReentrantReadWriteLock implements Lock {
     /* (non-Javadoc)
      * @see org.exist.util.Lock#isLockedForWrite()
      */
-    public boolean isLockedForWrite() {
-        return writeLocks > 0;
+    public synchronized boolean isLockedForWrite() {
+    	return writeLocks > 0;
+    }
+
+    public synchronized boolean hasLock() {
+    	return holds_ > 0;
     }
     
     /* (non-Javadoc)
      * @see org.exist.util.Lock#release(int)
      */
-    public void release(int mode) {
-    	if (((Integer)modeStack.peek()).intValue() != mode) {
-    		LOG.warn("Released lock of different type " + ((Integer)modeStack.peek()).intValue() 
-    				+ " expected " + mode);
-    		Thread.dumpStack();    		
+    public synchronized void release(int mode) {
+    	try {
+	        if (Thread.currentThread() != owner_) {
+	            LOG.warn("Possible lock problem: thread " + Thread.currentThread() +
+	                    " released a lock it didn't hold. Either the " +
+	                    "thread was interrupted or it never acquired the lock. The lock was owned by: "
+	                    + owner_);
+	            return;
+	        }
+	    	Integer top = (Integer)modeStack.peek();
+	    	if (top.intValue() != mode) {
+	    		LOG.warn("Released lock of different type " + top.intValue() + " expected " + mode);
+	    		Thread.dumpStack();    		
+	    	}
+	    	mode_ = top.intValue();
+	    	top = null;
+			if (mode_ == Lock.WRITE_LOCK)
+				writeLocks--;   	
+			if (--holds_ == 0) {
+	//			System.out.println("thread " + owner_.getName() + " released lock on " + id_ +
+	//				"; locks held = " + holds_);
+				owner_ = null;
+				mode_ = Lock.NO_LOCK;
+				notify();
+			}
+    	} finally {
+    		modeStack.pop();
     	}
-    	mode_ = ((Integer)modeStack.pop()).intValue();
-		if (mode_ == Lock.WRITE_LOCK)
-			writeLocks--;
-    	
-        release();
     }
     
-	/**
-	 * Release the lock.
-	 * @deprecated Use release(int mode) instead
-	 * @exception Error thrown if not current owner of lock
-	 **/
-	public synchronized void release() {
-        if (Thread.currentThread() != owner_) {
-            LOG.warn("Possible lock problem: thread " + Thread.currentThread() +
-                    " released a lock it didn't hold. Either the " +
-                    "thread was interrupted or it never acquired the lock. The lock was owned by: "
-                    + owner_);
-            return;
-        }
-		if (--holds_ == 0) {
-//			System.out.println("thread " + owner_.getName() + " released lock on " + id_ +
-//				"; locks held = " + holds_);
-			owner_ = null;
-			mode_ = Lock.NO_LOCK;
-			notify();
-		}
-	}
-
-	/** 
-	 * Release the lock N times. <code>release(n)</code> is
-	 * equivalent in effect to:
-	 * <pre>
-	 *   for (int i = 0; i < n; ++i) release();
-	 * </pre>
-	 * <p>
-	 * @exception Error thrown if not current owner of lock
-	 * or has fewer than N holds on the lock
-	 **/
-	public synchronized void release(long n) {
-		if (Thread.currentThread() != owner_ || n > holds_) {
-            LOG.warn("Possible lock problem: thread " + Thread.currentThread() +
-                    " released a lock it didn't hold. Either the " +
-                    "thread was interrupted or it never acquired the lock. The lock was owned by: "
-                    + owner_);
-            return;
-        }
-		holds_ -= n;
-		if (holds_ == 0) {
-			owner_ = null;
-			notify();
-		}
-	}
-
 	/**
 	 * Return the number of unreleased acquires performed
 	 * by the current thread.
