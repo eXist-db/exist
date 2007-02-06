@@ -155,7 +155,14 @@ public class Runner {
     }
 
     public static void main(String[] args) {
+        if (args.length == 0) {
+            System.out.println("Usage: org.exist.performance.Runner test-definition.xml [group]");
+            return;
+        }
         String xmlFile = args[0];
+        String group = null;
+        if (args.length == 2)
+            group = args[1];
         Runner runner = null;
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -166,7 +173,7 @@ public class Runner {
 
             TestResultWriter writer = new TestResultWriter("out.xml");
             runner = new Runner(doc.getDocumentElement(), writer);
-            runner.run(null);
+            runner.run(group);
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("ERROR: " + e.getMessage());
