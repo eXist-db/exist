@@ -319,7 +319,7 @@
         <root url="jar://$PROJECT_DIR$/lib/optional/commons-httpclient-3.0.1.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/optional/saaj.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/optional/nekohtml-0.9.5.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/optional/commons-io-1.1.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/optional/commons-io-1.3.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/optional/wsdl4j-1.5.1.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/optional/commons-discovery-0.2.jar!/" />
         <root url="jar://$PROJECT_DIR$/lib/optional/axis-schema.jar!/" />
