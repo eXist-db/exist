@@ -73,6 +73,8 @@ public class XQueryTest extends TestCase {
         System.out.println("====> performing xquery, expecting 0 hits");
         String qry1 = "for $a in collection('" + testColl + "')/test/nuts return $a";
         assertEquals(doXQuery(qry1),0);
+        String qry2 = "for $a in collection('" + testColl + "')/test/fruit[@name &= 'apple'] return $a";
+        assertEquals(doXQuery(qry2),1);
     }
     
     private int doXQuery(String qry) throws RemoteException {
