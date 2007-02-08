@@ -198,7 +198,7 @@ public class MatchRegexp extends Function {
 				context.getBroker().getTextEngine().getNodesContaining(
 				    context,
 					nodes.getDocumentSet(),
-					nodes, null,
+					nodes, NodeSet.ANCESTOR, null,
 					(String)terms.get(k), DBBroker.MATCH_REGEXP, matchAll);
 		}
 		NodeSet result = hits[0];

@@ -134,7 +134,7 @@ public class ExtFulltext extends Function implements Optimizable {
         }
     }
 
-    public boolean canOptimize(Sequence contextSequence, Item contextItem) {
+    public boolean canOptimize(Sequence contextSequence) {
         if (contextQName == null)
             return false;
         return checkForQNameIndex(contextSequence);
@@ -145,10 +145,7 @@ public class ExtFulltext extends Function implements Optimizable {
         return optimizeSelf;
     }
 
-    public NodeSet preSelect(Sequence contextSequence, Item contextItem) throws XPathException {
-        if (contextItem != null)
-			contextSequence = contextItem.toSequence();
-        
+    public NodeSet preSelect(Sequence contextSequence, boolean useContext) throws XPathException {
         // get the search terms
         String arg = searchTerm.eval(contextSequence).getStringValue();
         String[] terms;
@@ -158,7 +155,8 @@ public class ExtFulltext extends Function implements Optimizable {
 			throw new XPathException(e.getMessage(), e);
 		}
         // lookup the terms in the fulltext index. returns one node set for each term
-        NodeSet[] hits = getMatches(contextSequence.getDocumentSet(), null, contextQName, terms);
+        NodeSet[] hits = getMatches(contextSequence.getDocumentSet(),
+                useContext ? contextSequence.toNodeSet() : null, NodeSet.DESCENDANT, contextQName, terms);
         // walk through the matches and compute the combined node set
         preselectResult = hits[0];
         if (preselectResult != null) {
@@ -316,7 +314,7 @@ public class ExtFulltext extends Function implements Optimizable {
 			throw new RuntimeException("no search terms");
 		if(terms.length == 0)
 			return NodeSet.EMPTY_SET;
-        NodeSet[] hits = getMatches(contextSet.getDocumentSet(), contextSet, contextQName, terms);
+        NodeSet[] hits = getMatches(contextSet.getDocumentSet(), contextSet, NodeSet.ANCESTOR, contextQName, terms);
 		NodeSet result = hits[0];
 		if(result != null) {
 			for(int k = 1; k < hits.length; k++) {
@@ -329,7 +327,7 @@ public class ExtFulltext extends Function implements Optimizable {
 			return NodeSet.EMPTY_SET;
 	}
 
-    protected NodeSet[] getMatches(DocumentSet docs, NodeSet contextSet, QName qname, String[] terms)
+    protected NodeSet[] getMatches(DocumentSet docs, NodeSet contextSet, int axis, QName qname, String[] terms)
     throws XPathException {
         NodeSet hits[] = new NodeSet[terms.length];
         for (int k = 0; k < terms.length; k++) {
@@ -337,7 +335,7 @@ public class ExtFulltext extends Function implements Optimizable {
                     context.getBroker().getTextEngine().getNodesContaining(
                             context,
                             docs,
-                            contextSet,
+                            contextSet, axis,
                             qname, terms[k],
                             DBBroker.MATCH_EXACT);
         }

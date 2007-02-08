@@ -133,7 +133,7 @@ public class FunMatches extends Function implements Optimizable {
     }
 
 
-    public boolean canOptimize(Sequence contextSequence, Item contextItem) {
+    public boolean canOptimize(Sequence contextSequence) {
         if (contextQName == null)
             return false;
         return Optimize.getQNameIndexType(context, contextSequence, contextQName) != Type.ITEM;
@@ -143,24 +143,22 @@ public class FunMatches extends Function implements Optimizable {
         return false;
     }
 
-    public NodeSet preSelect(Sequence contextSequence, Item contextItem) throws XPathException {
-        if (contextItem != null) {
-            contextSequence = contextItem.toSequence();
-        }
+    public NodeSet preSelect(Sequence contextSequence, boolean useContext) throws XPathException {
         int indexType = Optimize.getQNameIndexType(context, contextSequence, contextQName);
         if (LOG.isTraceEnabled())
             LOG.trace("Using QName index on type " + Type.getTypeName(indexType));
-        String pattern = translateRegexp(getArgument(1).eval(contextSequence, contextItem).getStringValue());
+        String pattern = translateRegexp(getArgument(1).eval(contextSequence).getStringValue());
         boolean caseSensitive = true;
         int flags = 0;
         if(getSignature().getArgumentCount() == 3) {
-            String flagsArg = getArgument(2).eval(contextSequence, contextItem).getStringValue();
+            String flagsArg = getArgument(2).eval(contextSequence).getStringValue();
             caseSensitive = (flagsArg.indexOf('i') == Constants.STRING_NOT_FOUND);
             flags = parseFlags(flagsArg);
         }
         try {
-            preselectResult = context.getBroker().getValueIndex().match(contextSequence.getDocumentSet(), null,
-                    pattern, contextQName, DBBroker.MATCH_REGEXP, flags, caseSensitive);
+            preselectResult = context.getBroker().getValueIndex().match(contextSequence.getDocumentSet(),
+                    useContext ? contextSequence.toNodeSet() : null, NodeSet.DESCENDANT, pattern,
+                    contextQName, DBBroker.MATCH_REGEXP, flags, caseSensitive);
         } catch (EXistException e) {
             throw new XPathException(getASTNode(), "Error during index lookup: " + e.getMessage(), e);
         }
@@ -300,7 +298,7 @@ public class FunMatches extends Function implements Optimizable {
 		    		context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "Using vlaue index '" + index.toString() + "'", "Regex: " + pattern);
 		    	if (LOG.isTraceEnabled())
 		    		LOG.trace("Using range index for fn:matches expression: " + pattern);
-                result = index.match(docs, nodes, pattern, null, DBBroker.MATCH_REGEXP, flags, caseSensitive);
+                result = index.match(docs, nodes, NodeSet.ANCESTOR, pattern, null, DBBroker.MATCH_REGEXP, flags, caseSensitive);
 			} catch (EXistException e) {
 				throw new XPathException(getASTNode(), e.getMessage(), e);
 			}

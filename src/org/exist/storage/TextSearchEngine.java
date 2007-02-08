@@ -171,8 +171,8 @@ public abstract class TextSearchEngine extends Observable {
 	}
 
     public NodeSet getNodesContaining(XQueryContext context, DocumentSet docs,
-	        NodeSet contextSet, QName qname, String expr, int type) throws TerminatedException {
-        return getNodesContaining(context, docs, contextSet, qname, expr, type, true);
+	        NodeSet contextSet, int axis, QName qname, String expr, int type) throws TerminatedException {
+        return getNodesContaining(context, docs, contextSet, axis, qname, expr, type, true);
     }
 
     /**
@@ -184,9 +184,9 @@ public abstract class TextSearchEngine extends Observable {
 	 * DBBroker.MATCH_REGEXP.
 	 */
 	public abstract NodeSet getNodesContaining(XQueryContext context, DocumentSet docs,
-	        NodeSet contextSet, QName qname, String expr, int type, boolean matchAll) throws TerminatedException;
+	        NodeSet contextSet, int axis, QName qname, String expr, int type, boolean matchAll) throws TerminatedException;
 	
-	public abstract NodeSet getNodes(XQueryContext context, DocumentSet docs, NodeSet contextSet, QName qname,
+	public abstract NodeSet getNodes(XQueryContext context, DocumentSet docs, NodeSet contextSet, int axis, QName qname,
 	        TermMatcher matcher, CharSequence startTerm) throws TerminatedException;
 	
 	/**

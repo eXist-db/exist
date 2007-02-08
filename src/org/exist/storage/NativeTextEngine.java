@@ -402,7 +402,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         invertedIndex.dropIndex(document);
     }
 
-    public NodeSet getNodesContaining(XQueryContext context, DocumentSet docs, NodeSet contextSet,
+    public NodeSet getNodesContaining(XQueryContext context, DocumentSet docs, NodeSet contextSet, int axis,
 	        QName qname, String expr, int type, boolean matchAll) throws TerminatedException {
 		if (type == DBBroker.MATCH_EXACT && containsWildcards(expr)) {
             //TODO : log this fallback ? -pb
@@ -410,10 +410,10 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		}
 		switch (type) {
 			case DBBroker.MATCH_EXACT :
-				return getNodesExact(context, docs, contextSet, qname, expr);
+				return getNodesExact(context, docs, contextSet, axis, qname, expr);
                 //TODO : stricter control -pb
 			default :
-				return getNodesRegexp(context, docs, contextSet, qname, expr, type, matchAll);
+				return getNodesRegexp(context, docs, contextSet, axis, qname, expr, type, matchAll);
 		}
 	}
 
@@ -421,7 +421,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	/** 
          * Get all nodes whose content exactly matches the give expression.
 	 */
-	public NodeSet getNodesExact(XQueryContext context, DocumentSet docs, NodeSet contextSet, QName qname, String expr)
+	public NodeSet getNodesExact(XQueryContext context, DocumentSet docs, NodeSet contextSet, int axis,
+                                 QName qname, String expr)
 	    throws TerminatedException {
         //Return early
 		if (expr == null)
@@ -510,10 +511,16 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                             if (parent != null) {
                                 Match match = new Match(nodeId, token, freq);
                                 readOccurrences(freq, is, match, token.length());
-                                parent.addMatch(match);
-                                int sizeHint = contextSet.getSizeHint(storedDocument);
-								result.add(parent, sizeHint);
-							} else {
+                                if (axis == NodeSet.ANCESTOR) {
+                                    parent.addMatch(match);
+                                    int sizeHint = contextSet.getSizeHint(storedDocument);
+                                    result.add(parent, sizeHint);
+                                } else {
+                                    storedNode.addMatch(match);
+                                    int sizeHint = contextSet.getSizeHint(storedDocument);
+                                    result.add(storedNode, sizeHint);
+                                }
+                            } else {
 							    is.skip(freq);
                             }
 						// otherwise, we add all text nodes without check
@@ -538,7 +545,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		return result;
 	}
     
-    private NodeSet getNodesRegexp(XQueryContext context, DocumentSet docs, NodeSet contextSet, QName qname,
+    private NodeSet getNodesRegexp(XQueryContext context, DocumentSet docs, NodeSet contextSet, int axis, QName qname,
             String expr, int type, boolean matchAll) throws TerminatedException {
         //Return early
         if (expr == null)
@@ -564,7 +571,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         try {
             TermMatcher comparator = new RegexMatcher(expr, type, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE,
                     matchAll);
-            return getNodes(context, docs, contextSet, qname, comparator, start);
+            return getNodes(context, docs, contextSet, axis, qname, comparator, start);
         } catch (EXistException e) {
             return null;
         }
@@ -573,12 +580,12 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	/* Return all nodes for wich the matcher matches.
 	 * @see org.exist.storage.TextSearchEngine#getNodes(org.exist.xquery.XQueryContext, org.exist.dom.DocumentSet, org.exist.dom.NodeSet, org.exist.storage.TermMatcher, java.lang.CharSequence)
 	 */
-	public NodeSet getNodes(XQueryContext context, DocumentSet docs, NodeSet contextSet, QName qname,
+	public NodeSet getNodes(XQueryContext context, DocumentSet docs, NodeSet contextSet, int axis, QName qname,
 			TermMatcher matcher, CharSequence startTerm) throws TerminatedException {
         if (LOG.isTraceEnabled() && qname != null)
             LOG.trace("Index lookup by QName: " + qname);
         final NodeSet result = new ExtArrayNodeSet();
-        final SearchCallback cb = new SearchCallback(context, matcher, result, contextSet, docs, qname); 
+        final SearchCallback cb = new SearchCallback(context, matcher, result, contextSet, axis, docs, qname);
 		final Lock lock = dbTokens.getLock();		
 		for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
             final short collectionId = ((Collection) iter.next()).getId();        
@@ -1244,18 +1251,20 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		TermMatcher matcher;
 		NodeSet result;
 		NodeSet contextSet;
-		XQueryContext context;
+        int axis;
+        XQueryContext context;
 		XMLString word = new XMLString(64);
         QName qname;
 
         public SearchCallback(XQueryContext context, TermMatcher comparator, NodeSet result,
-				NodeSet contextSet, DocumentSet docs, QName qname) {
+				NodeSet contextSet, int axis, DocumentSet docs, QName qname) {
 			this.matcher = comparator;
 			this.result = result;
 			this.docs = docs;
 			this.contextSet = contextSet;
 			this.context = context;
             this.qname = qname;
+            this.axis = axis;
         }
 
 		public boolean indexInfo(Value key, long pointer) throws TerminatedException {            
@@ -1327,10 +1336,15 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 								if (parentNode != null) {
                                     Match match = new Match(nodeId, word.toString(), freq);
                                     readOccurrences(freq, is, match, word.length());
-                                    parentNode.addMatch(match);
                                     int sizeHint = contextSet.getSizeHint(storedDocument);
-									result.add(parentNode, sizeHint);
-								} else
+                                    if (axis == NodeSet.ANCESTOR) {
+                                        parentNode.addMatch(match);
+                                        result.add(parentNode, sizeHint);
+                                    } else {
+                                        storedNode.addMatch(match);
+                                        result.add(storedNode, sizeHint);
+                                    }
+                                } else
                                     is.skip(freq);
 							} else {
                                 Match match = new Match(nodeId, word.toString(), freq);
