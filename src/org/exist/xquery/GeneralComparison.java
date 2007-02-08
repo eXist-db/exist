@@ -389,30 +389,43 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
         if (context.getProfiler().isEnabled())
             context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "nodeSetCompare");
         if (LOG.isTraceEnabled())
-        	LOG.trace("No index: fall back to nodeSetCompare");
+        	LOG.trace("No index: fall back to nodeSetCompare");        
 		NodeSet result = new ExtArrayNodeSet();
 		final Collator collator = getCollator(contextSequence);
-		if(contextSequence != null && !contextSequence.isEmpty())
+		if (contextSequence != null && !contextSequence.isEmpty())
 		{
-			for (Iterator i = nodes.iterator(); i.hasNext();) {
-				NodeProxy current = (NodeProxy) i.next();
-				ContextItem context = current.getContext();
-				if (context == null)
-					throw new XPathException(getASTNode(), "Internal error: context node missing");
-				AtomicValue lv = current.atomize();
-				do
-				{
-					Sequence rs = getRight().eval(context.getNode().toSequence());
-					for (SequenceIterator si = rs.iterate(); si.hasNext();)
-					{
+			//TODO : it is probably possible to merge this code with the one below...
+			if (!contextSequence.getDocumentSet().contains(nodes.getDocumentSet())) {
+				for (Iterator i = nodes.iterator(); i.hasNext();) {
+			    	NodeProxy item = (NodeProxy) i.next();
+					AtomicValue lv = item.atomize();					
+					for (SequenceIterator si = getRight().eval(contextSequence).iterate(); si.hasNext();)	{
 						AtomicValue rv = si.nextItem().atomize();
 						if (compareValues(collator, lv, rv))
-							result.add(current);
+							result.add(item);
 					}
-				} while ((context = context.getNextDirect()) != null);
-			}
-		} else {
-		    for (Iterator i = nodes.iterator(); i.hasNext();) {
+				}
+			} else {
+				for (Iterator i = nodes.iterator(); i.hasNext();) {
+					NodeProxy current = (NodeProxy) i.next();
+					ContextItem context = current.getContext();
+					if (context == null)
+						throw new XPathException(getASTNode(), "Internal error: context node missing");
+					AtomicValue lv = current.atomize();
+					do
+					{
+						Sequence rs = getRight().eval(context.getNode().toSequence());
+						for (SequenceIterator si = rs.iterate(); si.hasNext();)
+						{
+							AtomicValue rv = si.nextItem().atomize();
+							if (compareValues(collator, lv, rv))
+								result.add(current);
+						}
+					} while ((context = context.getNextDirect()) != null);
+				}
+			}			
+		} else { 
+			for (Iterator i = nodes.iterator(); i.hasNext();) {
 		    	NodeProxy current = (NodeProxy) i.next();
 				AtomicValue lv = current.atomize();
 				Sequence rs = getRight().eval(null);
