@@ -109,7 +109,7 @@ public class ReentrantReadWriteLock implements Lock {
 									System.out.println("releasing blocking thread " + owner_.getName());
 									owner_ = caller;
 									while (!modeStack.isEmpty()) {
-								    	Integer top = (Integer)modeStack.peek();
+								    	Integer top = (Integer)modeStack.pop();
 								    	top = null;
 									}
 									holds_ = 1;
