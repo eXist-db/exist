@@ -87,7 +87,7 @@ public class FuzzyMatchAll extends AbstractMatchFunction {
 					context.getBroker().getTextEngine().getNodes(
 					    context,
 						nodes.getDocumentSet(),
-						nodes, null,
+						nodes, NodeSet.ANCESTOR, null,
 						matcher, term.substring(0, 1));
 			}
 		}

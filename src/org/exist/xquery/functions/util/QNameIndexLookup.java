@@ -25,6 +25,7 @@ package org.exist.xquery.functions.util;
 import java.util.List;
 
 import org.exist.dom.QName;
+import org.exist.dom.NodeSet;
 import org.exist.storage.Indexable;
 import org.exist.storage.NativeValueIndex;
 import org.exist.xquery.AnalyzeContextInfo;
@@ -134,8 +135,8 @@ public class QNameIndexLookup extends Function {
         if (comparisonCriterium instanceof Indexable) {
             NativeValueIndex valueIndex = context.getBroker().getValueIndex();
             result =
-                valueIndex.find(Constants.EQ, contextSequence.getDocumentSet(), null,
-                        qname, comparisonCriterium);
+                valueIndex.find(Constants.EQ, contextSequence.getDocumentSet(), null, NodeSet.ANCESTOR,
+            qname, comparisonCriterium);
         } else {
             String message = "The comparison criterium must be an Indexable: " +
             	"boolean, numeric, string; instead your criterium has type " +

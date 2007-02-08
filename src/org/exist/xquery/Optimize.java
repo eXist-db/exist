@@ -44,7 +44,7 @@ public class Optimize extends Pragma {
     private final static Logger LOG = Logger.getLogger(TimerPragma.class);
 
     private XQueryContext context;
-    private Optimizable optimizable;
+    private Optimizable optimizables[];
     private Expression innerExpr;
     private LocationStep contextStep = null;
 
@@ -54,39 +54,64 @@ public class Optimize extends Pragma {
     }
 
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-        boolean optimize = optimizable != null && optimizable.canOptimize(contextSequence, contextItem);
+        if (contextItem != null)
+                contextSequence = contextItem.toSequence();
+        // check if all Optimizable expressions signal that they can indeed optimize
+        // in the current context
+        boolean optimize = false;
+        if (optimizables.length > 0) {
+            for (int i = 0; i < optimizables.length; i++) {
+                if (optimizables[i].canOptimize(contextSequence))
+                    optimize = true;
+                else {
+                    optimize = false;
+                    break;
+                }
+            }
+        }
         if (optimize) {
-            NodeSet contextSet = contextSequence.toNodeSet();
-            NodeSet selection = optimizable.preSelect(contextSequence, contextItem);
-            if (LOG.isTraceEnabled())
-                LOG.trace("exist:optimize: pre-selection: " + selection.getLength());
-            NodeSet ancestors;
-            if (contextStep == null) {
-                ancestors = selection.selectAncestorDescendant(contextSet, NodeSet.ANCESTOR, true, -1);
-                return innerExpr.eval(ancestors);
-            } else {
-                NodeSelector selector;
-                long start = System.currentTimeMillis();
-                selector = new AncestorSelector(selection, -1, true);
-                ElementIndex index = context.getBroker().getElementIndex();
-                QName ancestorQN = contextStep.getTest().getName();
-                if (optimizable.optimizeOnSelf()) {
-                    ancestors = selection;
-                } else
-                    ancestors = index.findElementsByTagName(ancestorQN.getNameType(), selection.getDocumentSet(),
-                        ancestorQN, selector);
-                LOG.debug("Ancestor selection took " + (System.currentTimeMillis() - start));
-
-                contextStep.setPreloadNodeSets(true);
-                contextStep.setPreloadedData(ancestors.getDocumentSet(), ancestors);
+            NodeSet originalContext = contextSequence.toNodeSet(); // contextSequence will be overwritten
+            NodeSet ancestors = null;
+            NodeSet result = null;
+            for (int current = 0; current < optimizables.length; current++) {
+                NodeSet selection = optimizables[current].preSelect(contextSequence, current > 0);
                 if (LOG.isTraceEnabled())
-                    LOG.trace("exist:optimize: context after optimize: " + ancestors.getLength());
-                start = System.currentTimeMillis();
-                contextSequence = filterDocuments(contextSet, ancestors);
-                Sequence result = innerExpr.eval(contextSequence);
+                    LOG.trace("exist:optimize: pre-selection: " + selection.getLength());
+                if (contextStep == null || current > 0) {
+                    ancestors = selection.selectAncestorDescendant(contextSequence.toNodeSet(), NodeSet.ANCESTOR, true, -1);
+                } else {
+                    NodeSelector selector;
+                    long start = System.currentTimeMillis();
+                    selector = new AncestorSelector(selection, -1, true);
+                    ElementIndex index = context.getBroker().getElementIndex();
+                    QName ancestorQN = contextStep.getTest().getName();
+                    if (optimizables[current].optimizeOnSelf()) {
+                        ancestors = selection;
+                    } else
+                        ancestors = index.findElementsByTagName(ancestorQN.getNameType(), selection.getDocumentSet(),
+                                ancestorQN, selector);
+                    LOG.trace("Ancestor selection took " + (System.currentTimeMillis() - start));
+                    LOG.trace("Found: " + ancestors.getLength());
+                }
+//                if (result == null)
+                    result = ancestors;
+//                else
+//                    result = result.intersection(ancestors);
+                contextSequence = result;
+            }
+            if (contextStep == null) {
+                return innerExpr.eval(result);
+            } else {
+                contextStep.setPreloadNodeSets(true);
+                contextStep.setPreloadedData(result.getDocumentSet(), result);
+                if (LOG.isTraceEnabled())
+                    LOG.trace("exist:optimize: context after optimize: " + result.getLength());
+                long start = System.currentTimeMillis();
+                contextSequence = filterDocuments(originalContext, result);
+                Sequence seq = innerExpr.eval(contextSequence);
                 if (LOG.isTraceEnabled())
                     LOG.trace("exist:optimize: inner expr took " + (System.currentTimeMillis() - start));
-                return result;
+                return seq;
             }
         } else {
             if (LOG.isTraceEnabled())
@@ -119,13 +144,13 @@ public class Optimize extends Pragma {
             public void visitFtExpression(ExtFulltext fulltext) {
                 if (LOG.isTraceEnabled())
                     LOG.trace("exist:optimize: found optimizable: " + fulltext.getClass().getName());
-                optimizable = fulltext;
+                addOptimizable(fulltext);
             }
 
             public void visitGeneralComparison(GeneralComparison comparison) {
                 if (LOG.isTraceEnabled())
                     LOG.trace("exist:optimize: found optimizable: " + comparison.getClass().getName());
-                optimizable = comparison;
+                addOptimizable(comparison);
             }
 
             public void visitPredicate(Predicate predicate) {
@@ -136,7 +161,7 @@ public class Optimize extends Pragma {
                 if (function instanceof Optimizable) {
                     if (LOG.isTraceEnabled())
                         LOG.trace("exist:optimize: found optimizable function: " + function.getClass().getName());
-                    optimizable = (Optimizable) function;
+                    addOptimizable((Optimizable) function);
                 }
             }
         });
@@ -151,6 +176,17 @@ public class Optimize extends Pragma {
     public void after(XQueryContext context, Expression expression) throws XPathException {
     }
 
+    private void addOptimizable(Optimizable optimizable) {
+        if (optimizables == null) {
+            optimizables = new Optimizable[1];
+            optimizables[0] = optimizable;
+        } else {
+            Optimizable o[] = new Optimizable[optimizables.length + 1];
+            System.arraycopy(optimizables, 0, o, 0, optimizables.length);
+            o[optimizables.length] = optimizable;
+            optimizables = o;
+        }
+    }
 
     /**
      * Check every collection in the context sequence for an existing range index by QName.

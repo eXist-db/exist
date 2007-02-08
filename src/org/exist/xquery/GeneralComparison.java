@@ -179,7 +179,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
         }
     }
 
-    public boolean canOptimize(Sequence contextSequence, Item contextItem) {
+    public boolean canOptimize(Sequence contextSequence) {
         if (contextQName == null)
             return false;
         return Optimize.getQNameIndexType(context, contextSequence, contextQName) != Type.ITEM;
@@ -224,10 +224,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
         return this.relation;
     }
     
-    public NodeSet preSelect(Sequence contextSequence, Item contextItem) throws XPathException {
-        if (contextItem != null) {
-            contextSequence = contextItem.toSequence();
-        }
+    public NodeSet preSelect(Sequence contextSequence, boolean useContext) throws XPathException {
         int indexType = Optimize.getQNameIndexType(context, contextSequence, contextQName);
         if (LOG.isTraceEnabled())
             LOG.trace("Using QName index on type " + Type.getTypeName(indexType));
@@ -262,13 +259,16 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
                 if (LOG.isTraceEnabled())
                     LOG.trace("Using QName range index for key: " + key.getStringValue());
                 NodeSet temp;
+                NodeSet contextSet = useContext ? contextSequence.toNodeSet() : null;
                 if(truncation == Constants.TRUNC_NONE) {
                     temp =
-                        context.getBroker().getValueIndex().find(relation, contextSequence.getDocumentSet(), null, contextQName, (Indexable)key);
+                        context.getBroker().getValueIndex().find(relation, contextSequence.getDocumentSet(),
+                                contextSet, NodeSet.DESCENDANT, contextQName, (Indexable)key);
                 } else {
                     try {
-                        temp = context.getBroker().getValueIndex().match(contextSequence.getDocumentSet(), null,
-                                            getRegexp(key.getStringValue()).toString(), contextQName, DBBroker.MATCH_REGEXP);
+                        temp = context.getBroker().getValueIndex().match(contextSequence.getDocumentSet(), contextSet,
+                                NodeSet.DESCENDANT, getRegexp(key.getStringValue()).toString(),
+                                contextQName, DBBroker.MATCH_REGEXP);
                     } catch (EXistException e) {
                         throw new XPathException(getASTNode(), "Error during index lookup: " + e.getMessage(), e);
                     }
@@ -529,7 +529,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
 		                    context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "OPTIMIZATION", "Using value index '" + context.getBroker().getValueIndex().toString() +
 		                    		"' to find key '" + Type.getTypeName(key.getType()) + "(" + key.getStringValue() + ")'");
 
-		                    NodeSet ns = context.getBroker().getValueIndex().find(relation, docs, nodes, null, (Indexable)key);
+		                    NodeSet ns = context.getBroker().getValueIndex().find(relation, docs, nodes, NodeSet.ANCESTOR, null, (Indexable)key);
 		                    hasUsedIndex = true;
 
 		                    if (result == null)
@@ -547,7 +547,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
 			        			LOG.trace("Using range index for key: " + key.getStringValue());
 
                             try {
-								NodeSet ns = context.getBroker().getValueIndex().match(docs, nodes,
+								NodeSet ns = context.getBroker().getValueIndex().match(docs, nodes, NodeSet.ANCESTOR,
                                         getRegexp(key.getStringValue()).toString(), null, DBBroker.MATCH_REGEXP);
 								hasUsedIndex = true;
 

@@ -76,9 +76,7 @@ public class ExtNear extends ExtFulltext {
 		}
 	}
 
-    public NodeSet preSelect(Sequence contextSequence, Item contextItem) throws XPathException {
-        if (contextItem != null)
-			contextSequence = contextItem.toSequence();
+    public NodeSet preSelect(Sequence contextSequence, boolean useContext) throws XPathException {
         if (maxDistance != null) {
 			max_distance = ((IntegerValue) maxDistance.eval(contextSequence).convertTo(Type.INTEGER)).getInt();
 		}
@@ -95,7 +93,8 @@ public class ExtNear extends ExtFulltext {
 			throw new XPathException(e.getMessage(), e);
 		}
         // lookup the terms in the fulltext index. returns one node set for each term
-        NodeSet[] hits = getMatches(contextSequence.getDocumentSet(), null, contextQName, terms);
+        NodeSet[] hits = getMatches(contextSequence.getDocumentSet(), useContext ? contextSequence.toNodeSet() : null,
+                NodeSet.DESCENDANT, contextQName, terms);
         // walk through the matches and compute the combined node set
         preselectResult = hits[0];
         if (preselectResult != null) {

@@ -581,10 +581,10 @@ public class NativeValueIndex implements ContentLoadingObserver {
 	/** find
 	 * @param relation binary operator used for the comparison
 	 * @param value right hand comparison value */
-    public NodeSet find(int relation, DocumentSet docs, NodeSet contextSet, QName qname, Indexable value)
+    public NodeSet find(int relation, DocumentSet docs, NodeSet contextSet, int axis, QName qname, Indexable value)
             throws TerminatedException {        
         final NodeSet result = new ExtArrayNodeSet();
-        final SearchCallback cb = new SearchCallback(docs, contextSet, result, true);
+        final SearchCallback cb = new SearchCallback(docs, contextSet, result, axis == NodeSet.ANCESTOR);
         final Lock lock = dbValues.getLock();
         for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
 			try {
@@ -617,16 +617,16 @@ public class NativeValueIndex implements ContentLoadingObserver {
         return result;
     }
     
-    public NodeSet match(DocumentSet docs, NodeSet contextSet, String expr, QName qname, int type)
+    public NodeSet match(DocumentSet docs, NodeSet contextSet, int axis, String expr, QName qname, int type)
             throws TerminatedException, EXistException {
-        return match(docs, contextSet, expr, qname, type, 0, true);
+        return match(docs, contextSet, axis, expr, qname, type, 0, true);
     }
     
 	/** Regular expression search
 	 * @param type  like type argument for {@link org.exist.storage.RegexMatcher} constructor
 	 * @param flags like flags argument for {@link org.exist.storage.RegexMatcher} constructor
 	 *  */
-    public NodeSet match(DocumentSet docs, NodeSet contextSet, String expr, QName qname, int type, int flags, boolean caseSensitiveQuery)
+    public NodeSet match(DocumentSet docs, NodeSet contextSet, int axis, String expr, QName qname, int type, int flags, boolean caseSensitiveQuery)
         throws TerminatedException, EXistException {        
     	// if the regexp starts with a char sequence, we restrict the index scan to entries starting with
     	// the same sequence. Otherwise, we have to scan the whole index.
@@ -645,7 +645,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         }
 		final TermMatcher comparator = new RegexMatcher(expr, type, flags);
         final NodeSet result = new ExtArrayNodeSet();
-        final RegexCallback cb = new RegexCallback(docs, contextSet, result, comparator);
+        final RegexCallback cb = new RegexCallback(docs, contextSet, result, comparator, axis == NodeSet.ANCESTOR);
         final Lock lock = dbValues.getLock();
         for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {			
 			try {
@@ -872,8 +872,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
     	private TermMatcher matcher;
     	private XMLString key = new XMLString(128);
         
-    	public RegexCallback(DocumentSet docs, NodeSet contextSet, NodeSet result, TermMatcher matcher) {
-    		super(docs, contextSet, result, true);
+    	public RegexCallback(DocumentSet docs, NodeSet contextSet, NodeSet result, TermMatcher matcher, boolean returnAncestor) {
+    		super(docs, contextSet, result, returnAncestor);
     		this.matcher = matcher;
     	}
 

@@ -111,7 +111,7 @@ public class FtIndexLookup extends Function {
                     context.getBroker().getTextEngine().getNodesContaining(
                             context,
                             contextSet.getDocumentSet(),
-                            null, null,
+                            null, NodeSet.DESCENDANT, null,
                             terms[k],
                             DBBroker.MATCH_EXACT);
             hits[k] = getArgument(0).eval(hits[k]).toNodeSet();
