@@ -60,7 +60,7 @@ public class GClockCache implements Cache {
 		this.size = size;
         this.growthFactor = growthFactor;
 		this.items = new Cacheable[size];
-		this.map = new Long2ObjectHashMap(size);
+		this.map = new Long2ObjectHashMap(size * 2);
         accounting = new Accounting(growthThreshold);
         accounting.setTotalSize(size);
 	}
@@ -207,7 +207,7 @@ public class GClockCache implements Cache {
             shrink(newSize);
         } else {
             Cacheable[] newItems = new Cacheable[newSize];
-            Long2ObjectHashMap newMap = new Long2ObjectHashMap(newSize);
+            Long2ObjectHashMap newMap = new Long2ObjectHashMap(newSize * 2);
             for (int i = 0; i < count; i++) {
                 newItems[i] = items[i];
                 newMap.put(items[i].getKey(), items[i]);
@@ -223,7 +223,7 @@ public class GClockCache implements Cache {
     protected void shrink(int newSize) {
         flush();
         items = new Cacheable[newSize];
-        map = new Long2ObjectHashMap(newSize);
+        map = new Long2ObjectHashMap(newSize * 2);
         size = newSize;
         count = 0;
         used = 0;
