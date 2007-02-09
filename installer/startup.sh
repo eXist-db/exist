@@ -39,7 +39,7 @@ fi
 LANG=en_US.UTF-8
 
 if [ -z "$JAVA_OPTIONS" ]; then
-    export JAVA_OPTIONS="-Xms16000k -Xmx128000k -Dfile.encoding=UTF-8"
+	JAVA_OPTIONS="-Xms16000k -Xmx128000k -Dfile.encoding=UTF-8"
 fi
 JAVA_ENDORSED_DIRS="$EXIST_HOME"/lib/endorsed
 

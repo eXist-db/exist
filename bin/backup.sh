@@ -34,7 +34,7 @@ OPTIONS="-Dexist.home=$EXIST_HOME"
 
 # set java options
 if [ -z "$JAVA_OPTIONS" ]; then
-    export JAVA_OPTIONS="-Xms32000k -Xmx256000k -Dfile.encoding=UTF-8"
+	JAVA_OPTIONS="-Xms32000k -Xmx256000k -Dfile.encoding=UTF-8"
 fi
 
 $JAVA_HOME/bin/java $JAVA_OPTIONS $OPTIONS -jar "$EXIST_HOME/start.jar" backup $*

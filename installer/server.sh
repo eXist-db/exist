@@ -40,7 +40,7 @@ fi
 LANG=en_US.UTF-8
 
 if [ -z "$JAVA_OPTIONS" ]; then
-    export JAVA_OPTIONS="-Xms16000k -Xmx256000k -Dfile.encoding=UTF-8"
+	JAVA_OPTIONS="-Xms16000k -Xmx256000k -Dfile.encoding=UTF-8"
 fi
 
 cd $EXIST_HOME
