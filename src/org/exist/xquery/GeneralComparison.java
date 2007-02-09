@@ -25,16 +25,16 @@ import java.text.Collator;
 import java.util.Iterator;
 
 import org.exist.EXistException;
-import org.exist.xmldb.XmldbURI;
-import org.exist.collections.Collection;
 import org.exist.dom.ContextItem;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.dom.VirtualNodeSet;
 import org.exist.dom.QName;
-import org.exist.storage.*;
+import org.exist.dom.VirtualNodeSet;
+import org.exist.storage.DBBroker;
+import org.exist.storage.ElementValue;
+import org.exist.storage.Indexable;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.BooleanValue;
@@ -316,7 +316,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
                 if(contextItem != null)
                     contextSequence = contextItem.toSequence();
 
-                if ((rightOpDeps & Dependency.CONTEXT_ITEM) == 0) {
+                if ((!Dependency.dependsOn(rightOpDeps, Dependency.CONTEXT_ITEM))) {
                     result = quickNodeSetCompare(contextSequence);
                 } else {
                     result = nodeSetCompare(contextSequence);
@@ -353,20 +353,17 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
 		final Sequence ls = getLeft().eval(contextSequence, contextItem);
 		final Sequence rs = getRight().eval(contextSequence, contextItem);
 		final Collator collator = getCollator(contextSequence);
-		AtomicValue lv, rv;
 		if (ls.hasOne() && rs.hasOne()) {
-			lv = ls.itemAt(0).atomize();
-			rv = rs.itemAt(0).atomize();
-			return BooleanValue.valueOf(compareValues(collator, lv, rv));
+			return BooleanValue.valueOf(compareValues(collator, ls.itemAt(0).atomize(), rs.itemAt(0).atomize()));
 		} else {
 			for (SequenceIterator i1 = ls.iterate(); i1.hasNext();) {
-				lv = i1.nextItem().atomize();
-				if (rs.hasOne()	&&  compareValues(collator, lv, rs.itemAt(0).atomize()))
-					return BooleanValue.TRUE;
-				else {
+				AtomicValue lv = i1.nextItem().atomize();
+				if (rs.hasOne()) {
+					return compareValues(collator, lv, rs.itemAt(0).atomize()) ? 
+							BooleanValue.TRUE : BooleanValue.FALSE;
+				} else {
 					for (SequenceIterator i2 = rs.iterate(); i2.hasNext();) {
-						rv = i2.nextItem().atomize();
-						if (compareValues(collator, lv, rv))
+						if (compareValues(collator, lv, i2.nextItem().atomize()))
 							return BooleanValue.TRUE;
 					}
 				}
@@ -396,41 +393,43 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
 		{
 			//TODO : it is probably possible to merge this code with the one below...
 			if (!contextSequence.getDocumentSet().contains(nodes.getDocumentSet())) {
-				for (Iterator i = nodes.iterator(); i.hasNext();) {
-			    	NodeProxy item = (NodeProxy) i.next();
-					AtomicValue lv = item.atomize();					
-					for (SequenceIterator si = getRight().eval(contextSequence).iterate(); si.hasNext();)	{
-						AtomicValue rv = si.nextItem().atomize();
+				for (Iterator i1 = nodes.iterator(); i1.hasNext();) {
+			    	NodeProxy item = (NodeProxy) i1.next();
+					AtomicValue lv = item.atomize();
+					Sequence rs = getRight().eval(contextSequence);
+					for (SequenceIterator i2 = rs.iterate(); i2.hasNext();)	{
+						AtomicValue rv = i2.nextItem().atomize();
 						if (compareValues(collator, lv, rv))
 							result.add(item);
 					}
 				}
 			} else {
-				for (Iterator i = nodes.iterator(); i.hasNext();) {
-					NodeProxy current = (NodeProxy) i.next();
-					ContextItem context = current.getContext();
+				for (Iterator i1 = nodes.iterator(); i1.hasNext();) {
+					NodeProxy item = (NodeProxy) i1.next();
+					ContextItem context = item.getContext();
 					if (context == null)
 						throw new XPathException(getASTNode(), "Internal error: context node missing");
-					AtomicValue lv = current.atomize();
+					AtomicValue lv = item.atomize();
 					do
 					{
 						Sequence rs = getRight().eval(context.getNode().toSequence());
-						for (SequenceIterator si = rs.iterate(); si.hasNext();)
+						for (SequenceIterator i2 = rs.iterate(); i2.hasNext();)
 						{
-							AtomicValue rv = si.nextItem().atomize();
+							AtomicValue rv = i2.nextItem().atomize();
 							if (compareValues(collator, lv, rv))
-								result.add(current);
+								result.add(item);
 						}
 					} while ((context = context.getNextDirect()) != null);
 				}
 			}			
 		} else { 
-			for (Iterator i = nodes.iterator(); i.hasNext();) {
-		    	NodeProxy current = (NodeProxy) i.next();
+			for (Iterator i1 = nodes.iterator(); i1.hasNext();) {
+		    	NodeProxy current = (NodeProxy) i1.next();
 				AtomicValue lv = current.atomize();
-				Sequence rs = getRight().eval(null);
-				for (SequenceIterator si = rs.iterate(); si.hasNext();)	{
-					AtomicValue rv = si.nextItem().atomize();
+				//TODO : eval against contextSequence and merge with code above ?
+				Sequence rs = getRight().eval(null);				
+				for (SequenceIterator i2 = rs.iterate(); i2.hasNext();)	{
+					AtomicValue rv = i2.nextItem().atomize();
 					if (compareValues(collator, lv, rv))
 						result.add(current);
 				}
@@ -798,8 +797,8 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
               Type.subTypeOf(getRight().returnsType(), Type.NODE))
 			switchOperands();
         //Prefer fewer items at the left hand
-		else if ((getLeft().getCardinality() & Cardinality.MANY) != 0 && 
-                 (getRight().getCardinality() & Cardinality.MANY) == 0)
+		else if ((Cardinality.checkCardinality(Cardinality.MANY, getLeft().getCardinality())) && 
+                 !(Cardinality.checkCardinality(Cardinality.MANY, getRight().getCardinality())))
 			switchOperands();
 	}
 	
