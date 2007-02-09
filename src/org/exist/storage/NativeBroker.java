@@ -1311,7 +1311,12 @@ public class NativeBroker extends DBBroker {
             else
             {
             	//lock the temp collection
-            	transaction.registerLock(temp.getLock(), Lock.WRITE_LOCK);
+                if(transaction==null) {
+                       temp.getLock().release(Lock.WRITE_LOCK);
+               } else {
+                       //lock the temp collection
+                       transaction.registerLock(temp.getLock(), Lock.WRITE_LOCK);
+               }
             }
             
             //create a temporary document
