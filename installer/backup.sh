@@ -39,7 +39,7 @@ LANG=en_US.UTF-8
 
 # set java options
 if [ -z "$JAVA_OPTIONS" ]; then
-    export JAVA_OPTIONS="-Xms16000k -Xmx256000k -Dfile.encoding=UTF-8"
+	JAVA_OPTIONS="-Xms16000k -Xmx256000k -Dfile.encoding=UTF-8"
 fi
 
 # save LD_LIBRARY_PATH
@@ -47,7 +47,7 @@ if [ -n "$LD_LIBRARY_PATH" ]; then
 	OLD_LIBRARY_PATH="$LD_LIBRARY_PATH"
 fi
 # add lib/core to LD_LIBRARY_PATH for readline support
-export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$EXIST_HOME/lib/core"
+LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$EXIST_HOME/lib/core"
 JAVA_ENDORSED_DIRS="$EXIST_HOME"/lib/endorsed
 
 $JAVA_CMD $JAVA_OPTIONS $OPTIONS \

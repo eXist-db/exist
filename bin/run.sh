@@ -24,7 +24,7 @@ fi
 JAVA_ENDORSED_DIRS="$EXIST_HOME"/lib/endorsed
 
 PROFILER_OPTS=-agentlib:yjpagent
-export LD_LIBRARY_PATH="$YJP_HOME/bin/linux-amd64/"
+LD_LIBRARY_PATH="$YJP_HOME/bin/linux-amd64/"
 
 $JAVA_HOME/bin/java $JAVA_OPTS \
 	-Djava.endorsed.dirs=$JAVA_ENDORSED_DIRS \
