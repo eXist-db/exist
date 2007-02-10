@@ -73,8 +73,8 @@
                 <exclude name="**/.*"/>
             </fileset>
             <fileset targetdir="$INSTALL_PATH/build/scripts" dir="build/scripts">
-                <include name="*.xml"/>
-                <include name="*.xsl"/>
+                <exclude name="**/.*"/>
+                <exclude name="**/*~"/>
             </fileset>
             <fileset targetdir="$INSTALL_PATH/tools" dir="tools">
                 <include name="**/*.jar"/>
