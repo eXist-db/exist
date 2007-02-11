@@ -209,8 +209,13 @@ public class QName implements Comparable {
 		h += 31*h + (prefix_ == null ? 1 : prefix_.hashCode());
 		return h;
 	}
-	
-	/**
+
+    public javax.xml.namespace.QName toJavaQName() {
+        return new javax.xml.namespace.QName(namespaceURI_ == null ? "" : namespaceURI_, localName_,
+                prefix_ == null ? "" : prefix_);
+    }
+    
+    /**
 	 * Extract the prefix from a QName string.
 	 *  
 	 * @param qname

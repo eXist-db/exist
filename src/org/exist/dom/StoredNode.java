@@ -22,14 +22,19 @@
 package org.exist.dom;
 
 import java.util.Iterator;
+import java.io.IOException;
 
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NodePath;
 import org.exist.storage.Signatures;
+import org.exist.stax.EmbeddedXMLStreamReader;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+
+import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.XMLStreamException;
 
 /**
  *  The base class for all persistent DOM nodes in the database.
@@ -41,11 +46,11 @@ public class StoredNode extends NodeImpl implements Visitable {
     public final static long UNKNOWN_NODE_IMPL_ADDRESS = -1;
 	
     protected NodeId nodeId = null;
+
+    protected DocumentImpl ownerDocument = null;
     
     private long internalAddress = UNKNOWN_NODE_IMPL_ADDRESS;
     private long oldInternalAddress = UNKNOWN_NODE_IMPL_ADDRESS;
-
-    private DocumentImpl ownerDocument = null;
     
 	private short nodeType = NodeProxy.UNKNOWN_NODE_TYPE;
     
@@ -264,12 +269,30 @@ public class StoredNode extends NodeImpl implements Visitable {
 	 * @see org.w3c.dom.Node#getPreviousSibling()
 	 */
 	public Node getPreviousSibling() {
-        Node parent = getParentNode();
+        StoredNode parent = (StoredNode) getParentNode();
         if (parent.getNodeType() == Node.DOCUMENT_NODE)
             return null;
-        PreviousSiblingVisitor visitor = new PreviousSiblingVisitor(this);
-        ((StoredNode) parent).accept(visitor);
-        return visitor.last;
+        try {
+            EmbeddedXMLStreamReader reader = ownerDocument.getBroker().getXMLStreamReader(parent, true);
+            StoredNode last = null;
+            while (reader.hasNext()) {
+                int status = reader.next();
+                NodeId currentId = (NodeId) reader.getProperty("node-id");
+                if (status != XMLStreamReader.END_ELEMENT && currentId.getTreeLevel() == nodeId.getTreeLevel()) {
+                    if (currentId.equals(nodeId))
+                        return last;
+                    last = reader.getNode();
+                }
+            }
+        } catch (IOException e) {
+            LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
+        } catch (XMLStreamException e) {
+            LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
+        }
+        return null;
+//        PreviousSiblingVisitor visitor = new PreviousSiblingVisitor(this);
+//        ((StoredNode) parent).accept(visitor);
+//        return visitor.last;
 	}
     
 	/**
@@ -288,11 +311,25 @@ public class StoredNode extends NodeImpl implements Visitable {
         return null;
 	}
     
-    protected StoredNode getLastNode(StoredNode node) {        
-        final Iterator iterator = getBroker().getNodeIterator(node);
-        //TODO : hasNext() test ? -pb
-        iterator.next();
-        return getLastNode(iterator, node);
+    protected StoredNode getLastNode(StoredNode node) {
+        if (!node.hasChildNodes())
+            return node;
+        try {
+            EmbeddedXMLStreamReader reader = ownerDocument.getBroker().getXMLStreamReader(node, true);
+            while (reader.hasNext()) {
+                reader.next();
+            }
+            return reader.getPreviousNode();
+        } catch (IOException e) {
+            LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
+        } catch (XMLStreamException e) {
+            LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
+        }
+        return null;
+//        final Iterator iterator = getBroker().getNodeIterator(node);
+//        //TODO : hasNext() test ? -pb
+//        iterator.next();
+//        return getLastNode(iterator, node);
     }
 
     protected StoredNode getLastNode(Iterator iterator, StoredNode node) {

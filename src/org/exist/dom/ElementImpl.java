@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.TreeSet;
 
 import org.exist.Namespaces;
+import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.numbering.NodeId;
 import org.exist.storage.NodePath;
 import org.exist.storage.RangeIndexSpec;
@@ -48,6 +49,9 @@ import org.exist.util.UTF8;
 import org.exist.xquery.Constants;
 import org.exist.xquery.value.StringValue;
 import org.w3c.dom.*;
+
+import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.XMLStreamException;
 
 /**
  * ElementImpl.java
@@ -383,8 +387,9 @@ public class ElementImpl extends NamedNode implements Element {
                     StoredNode last = (StoredNode) cl.item(child - 2);
                     insertAfter(transaction, nodes, getLastNode(last));
                 } else {
-                    NodeList cl = getChildNodes();
-                    StoredNode last = (StoredNode) cl.item(cl.getLength() - 1); 
+//                    NodeList cl = getChildNodes();
+                    StoredNode last = (StoredNode) getLastChild();
+//                    StoredNode last = (StoredNode) cl.item(cl.getLength() - 1);
                     appendChildren(transaction, last.getNodeId().nextSibling(), 
                             new NodeImplRef(getLastNode(last)), getPath(), nodes, true);
                 }
@@ -675,14 +680,26 @@ public class ElementImpl extends NamedNode implements Element {
 
     public NodeList getChildNodes() {
         final NodeListImpl childList = new NodeListImpl(1);
-        accept(new NodeVisitor() {
-            public boolean visit(StoredNode node) {
-//                if (node.getNodeType() != Node.ATTRIBUTE_NODE && 
-                if(node.nodeId.isChildOf(nodeId))
-                    childList.add(node);
-                return true;
+        try {
+            for (EmbeddedXMLStreamReader reader = ownerDocument.getBroker().getXMLStreamReader(this, true); reader.hasNext(); ) {
+                int status = reader.next();
+                if (status != XMLStreamReader.END_ELEMENT) {
+                    if (((NodeId) reader.getProperty("node-id")).isChildOf(nodeId))
+                        childList.add(reader.getNode());
+                }
             }
-        });
+        } catch (IOException e) {
+            LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
+        } catch (XMLStreamException e) {
+            LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
+        }
+//        accept(new NodeVisitor() {
+//            public boolean visit(StoredNode node) {
+//                if(node.nodeId.isChildOf(nodeId))
+//                    childList.add(node);
+//                return true;
+//            }
+//        });
         return childList;
     }
     
@@ -722,8 +739,17 @@ public class ElementImpl extends NamedNode implements Element {
     public Node getLastChild() {
         if (!hasChildNodes())
             return null;
-        NodeList cl = getChildNodes();
-        return cl.item(cl.getLength() - 1);
+//        NodeId child = nodeId.newChild();
+//        for (int i = 0; i < children - 1; i++) {
+//            child = child.nextSibling();
+//        }
+//        Node node = getBroker().objectWith(ownerDocument, child);
+        Node node = null;
+        if (node == null) {
+            NodeList cl = getChildNodes();
+            return cl.item(cl.getLength() - 1);
+        }
+        return node;
     }
 
     /**
