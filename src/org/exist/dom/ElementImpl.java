@@ -40,6 +40,7 @@ import org.exist.storage.NodePath;
 import org.exist.storage.RangeIndexSpec;
 import org.exist.storage.Signatures;
 import org.exist.storage.ElementValue;
+import org.exist.storage.btree.Value;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -52,6 +53,7 @@ import org.w3c.dom.*;
 
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.namespace.*;
 
 /**
  * ElementImpl.java
@@ -267,6 +269,32 @@ public class ElementImpl extends NamedNode implements Element {
             }
         }
         return node;
+    }
+
+    public static QName readQName(Value value, DocumentImpl document, NodeId nodeId) {
+        final byte[] data = value.data();
+            int offset = value.start();
+            byte idSizeType = (byte) (data[offset] & 0x03);
+            boolean hasNamespace = (data[offset] & 0x10) == 0x10;
+            offset += 9 + nodeId.size();
+            short id = (short) Signatures.read(idSizeType, data, offset);
+            offset += Signatures.getLength(idSizeType);
+            short nsId = 0;
+            String prefix = null;
+            if (hasNamespace) {
+                nsId = ByteConversion.byteToShort(data, offset);
+                offset += 2;
+                int prefixLen = ByteConversion.byteToShort(data, offset);
+                offset += 2;
+                if (prefixLen > 0)
+                    prefix = UTF8.decode(data, offset, prefixLen).toString();
+                offset += prefixLen;
+            }
+            String name = document.getSymbols().getName(id);
+            String namespace = "";
+            if (nsId != 0)
+                namespace = document.getSymbols().getNamespace(nsId);
+            return new QName(name, namespace, prefix == null ? "" : prefix);
     }
 
     public void addNamespaceMapping(String prefix, String ns) {
