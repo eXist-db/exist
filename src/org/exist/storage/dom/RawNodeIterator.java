@@ -88,14 +88,14 @@ public class RawNodeIterator {
                         throw new IOException("Node not found.");
                     rec = db.findRecord(addr);
                 } catch (BTreeException e) {
-                    throw new IOException("Node not found.", e);
+                    throw new IOException("Node not found.");
                 }
             }
             page = rec.getPage().getPageNum();
             offset = rec.offset - 2;
             p = rec.getPage();
         } catch (LockException e) {
-            throw new IOException("Exception while scanning document: " + e.getMessage(), e);
+            throw new IOException("Exception while scanning document: " + e.getMessage());
         } finally {
             lock.release(Lock.READ_LOCK);
         }
