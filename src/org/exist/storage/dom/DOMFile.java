@@ -1800,10 +1800,12 @@ public class DOMFile extends BTree implements Lockable {
 		if (obj == null) {
 			LOG.warn("setOwnerObject(null)");
 		}	
+		/*
 		if (owner != null && owner != obj) {
 			if (!(obj instanceof NativeBroker))
 				LOG.warn("changing owner from " + owner + " to " + obj);			
 		}
+		*/
 		owner = obj;
 	}
 
