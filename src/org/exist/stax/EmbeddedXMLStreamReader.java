@@ -21,10 +21,7 @@
  */
 package org.exist.stax;
 
-import org.exist.dom.AttrImpl;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.StoredNode;
-import org.exist.dom.CharacterDataImpl;
+import org.exist.dom.*;
 import org.exist.numbering.NodeId;
 import org.exist.storage.Signatures;
 import org.exist.storage.btree.Value;
@@ -382,31 +379,9 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
         if (qname != null)
             return qname;
         if (state == START_ELEMENT || state == END_ELEMENT) {
-            final byte[] data = current.data();
-            int offset = current.start();
             if (nodeId == null)
                 readNodeId();
-            byte idSizeType = (byte) (data[offset] & 0x03);
-            boolean hasNamespace = (data[offset] & 0x10) == 0x10;
-            offset += 9 + nodeId.size();
-            short id = (short) Signatures.read(idSizeType, data, offset);
-            offset += Signatures.getLength(idSizeType);
-            short nsId = 0;
-            String prefix = null;
-            if (hasNamespace) {
-                nsId = ByteConversion.byteToShort(data, offset);
-                offset += 2;
-                int prefixLen = ByteConversion.byteToShort(data, offset);
-                offset += 2;
-                if (prefixLen > 0)
-                    prefix = UTF8.decode(data, offset, prefixLen).toString();
-                offset += prefixLen;
-            }
-            String name = document.getSymbols().getName(id);
-            String namespace = "";
-            if (nsId != 0)
-                namespace = document.getSymbols().getNamespace(nsId);
-            qname = new QName(namespace, name, prefix == null ? "" : prefix);
+            qname = ElementImpl.readQName(current, document, nodeId).toJavaQName();
         }
         return qname;
     }
