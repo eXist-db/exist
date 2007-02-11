@@ -23,6 +23,8 @@ package org.exist.dom;
 
 import org.exist.numbering.NodeId;
 import org.exist.util.XMLString;
+import org.exist.util.UTF8;
+import org.exist.storage.btree.Value;
 import org.w3c.dom.CharacterData;
 import org.w3c.dom.DOMException;
 
@@ -156,5 +158,10 @@ public class CharacterDataImpl extends StoredNode implements CharacterData {
     	cdata.release();
     	super.release();
     }    
-  
+
+    public static XMLString readData(NodeId nodeId, Value value, XMLString string) {
+        final int nodeIdLen = nodeId.size();
+        UTF8.decode(value.data(), value.start() + 3 + nodeIdLen, value.getLength() - 3 - nodeIdLen, string);
+        return string;
+    }
 }

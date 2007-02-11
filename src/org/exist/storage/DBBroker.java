@@ -24,6 +24,7 @@ package org.exist.storage;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.IOException;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,6 +34,7 @@ import java.util.Observable;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.collections.Collection;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
@@ -46,11 +48,14 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.Txn;
+import org.exist.storage.dom.RawNodeIterator;
 import org.exist.util.Configuration;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XQuery;
 import org.w3c.dom.Document;
+
+import javax.xml.stream.XMLStreamException;
 
 /**
  * This is the base class for all database backends. All the basic database
@@ -858,4 +863,7 @@ public abstract class DBBroker extends Observable {
 	}
 
 	public abstract int getBackendType();
+
+    public abstract EmbeddedXMLStreamReader getXMLStreamReader(StoredNode node, boolean reportAttributes)
+            throws IOException, XMLStreamException;
 }

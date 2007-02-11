@@ -22,6 +22,7 @@
 package org.exist.util.serializer;
 
 import org.exist.dom.QName;
+import org.exist.dom.AttrImpl;
 
 /**
  * Represents a list of attributes. Each attribute is defined by
@@ -35,7 +36,8 @@ public class AttrList {
 
 	protected QName names[] = new QName[4];
 	protected String values[] = new String[4];
-	protected int size = 0;
+    protected int type[] = new int[4];
+    protected int size = 0;
 	
 	/**
 	 * 
@@ -44,11 +46,16 @@ public class AttrList {
 		super();
 	}
 
-	public void addAttribute(QName name, String value) {
+    public void addAttribute(QName name, String value) {
+        addAttribute(name, value, AttrImpl.CDATA);
+    }
+
+    public void addAttribute(QName name, String value, int attrType) {
 		ensureCapacity();
 		names[size] = name;
 		values[size] = value;
-		size++;
+        type[size] = attrType;
+        size++;
 	}
 	
 	public int getLength() {
@@ -70,8 +77,12 @@ public class AttrList {
 		}
 		return null;
 	}
-	
-	private void ensureCapacity() {
+
+    public int getType(int pos) {
+        return type[pos];
+    }
+    
+    private void ensureCapacity() {
 		if(size == names.length) {
 			// resize
 			final int newSize = names.length * 3 / 2;
@@ -80,9 +91,13 @@ public class AttrList {
 			
 			String tvalues[] = new String[newSize];
 			System.arraycopy(values, 0, tvalues, 0, values.length);
-			
-			names = tnames;
+
+            int ttype[] = new int[newSize];
+            System.arraycopy(type, 0, ttype, 0, type.length);
+
+            names = tnames;
 			values = tvalues;
-		}
+            type = ttype;
+        }
 	}
 }

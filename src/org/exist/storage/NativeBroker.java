@@ -22,6 +22,7 @@
 package org.exist.storage;
 
 import org.exist.EXistException;
+import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfiguration;
@@ -54,10 +55,7 @@ import org.exist.storage.btree.IndexQuery;
 import org.exist.storage.btree.Paged;
 import org.exist.storage.btree.Paged.Page;
 import org.exist.storage.btree.Value;
-import org.exist.storage.dom.DOMFile;
-import org.exist.storage.dom.DOMFileIterator;
-import org.exist.storage.dom.DOMTransaction;
-import org.exist.storage.dom.NodeIterator;
+import org.exist.storage.dom.*;
 import org.exist.storage.index.BFile;
 import org.exist.storage.index.CollectionStore;
 import org.exist.storage.io.VariableByteInput;
@@ -84,6 +82,7 @@ import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import javax.xml.stream.XMLStreamException;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
@@ -191,8 +190,10 @@ public class NativeBroker extends DBBroker {
 	private final Runtime run = Runtime.getRuntime();
 
     private NodeProcessor nodeProcessor = new NodeProcessor();
-    
-	/** initialize database; read configuration, etc. */
+
+    private EmbeddedXMLStreamReader streamReader = null;
+
+    /** initialize database; read configuration, etc. */
 	public NativeBroker(BrokerPool pool, Configuration config) throws EXistException {
 		super(pool, config);
 		LOG.debug("Initializing broker " + hashCode());
@@ -542,6 +543,17 @@ public class NativeBroker extends DBBroker {
             LOG.warn("failed to create DOM iterator", e);
         }
         return null;
+    }
+
+    public EmbeddedXMLStreamReader getXMLStreamReader(StoredNode node, boolean reportAttributes)
+            throws IOException, XMLStreamException {
+        if (streamReader == null) {
+            RawNodeIterator iterator = new RawNodeIterator(this, domDb, node);
+            streamReader = new EmbeddedXMLStreamReader((DocumentImpl) node.getOwnerDocument(), iterator, reportAttributes);
+        } else {
+            streamReader.reposition(node, reportAttributes);
+        }
+        return streamReader;
     }
 
     public Iterator getNodeIterator(StoredNode node) {

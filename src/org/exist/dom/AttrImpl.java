@@ -25,9 +25,11 @@ import java.io.UnsupportedEncodingException;
 
 import org.exist.numbering.NodeId;
 import org.exist.storage.Signatures;
+import org.exist.storage.DBBroker;
 import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
 import org.exist.util.UTF8;
+import org.exist.util.serializer.AttrList;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
@@ -163,6 +165,48 @@ public class AttrImpl extends NamedNode implements Attr {
         	throw new RuntimeException("no node id " + id);
         attr.setType( attrType );
         return attr;
+    }
+
+    public static void addToList(DBBroker broker, byte[] data, int start, int len, AttrList list) {
+        int next = start;
+        byte idSizeType = (byte) ( data[next] & 0x3 );
+        boolean hasNamespace = (data[next] & 0x10) == 0x10;
+        int attrType = ( data[next++] & 0x4 ) >> 0x2;
+        int dlnLen = ByteConversion.byteToShort(data, next);
+        next += 2;
+        NodeId dln = broker.getBrokerPool().getNodeFactory().createFromData(dlnLen, data, next);
+        next += dln.size();
+
+        short id = (short) Signatures.read( idSizeType, data, next );
+        next += Signatures.getLength(idSizeType);
+        String name = broker.getSymbols().getName( id );
+        if(name == null)
+            throw new RuntimeException("no symbol for id " + id);
+        short nsId = 0;
+        String prefix = null;
+        if (hasNamespace) {
+            nsId = ByteConversion.byteToShort(data, next);
+            next += 2;
+            int prefixLen = ByteConversion.byteToShort(data, next);
+            next += 2;
+            if(prefixLen > 0)
+                prefix = UTF8.decode(data, next, prefixLen).toString();
+            next += prefixLen;
+        }
+        String namespace = nsId == 0 ? "" : broker.getSymbols().getNamespace(nsId);
+        String value;
+        try {
+            value =
+                    new String( data, next,
+                            len - (next - start),
+                            "UTF-8" );
+        } catch ( UnsupportedEncodingException uee ) {
+            LOG.warn(uee);
+            value =
+                    new String( data, next,
+                            len - (next - start));
+        }
+        list.addAttribute(broker.getSymbols().getQName(Node.ATTRIBUTE_NODE, namespace, name, prefix), value, attrType);
     }
 
     public String getName() {
