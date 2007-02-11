@@ -3062,7 +3062,7 @@ public class NativeBroker extends DBBroker {
             	depth = defaultIndexDepth;
             if (mode == MODE_STORE && node.getNodeType() == Node.ELEMENT_NODE && level <= depth) {
             	//TODO : use NativeBroker.this to avoid owner change ?
-                new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
+                new DOMTransaction(NativeBroker.this, domDb, Lock.WRITE_LOCK) {
                     public Object start() throws ReadOnlyException {
                         try {
                             domDb.addValue(transaction, new NodeRef(doc.getDocId(), node.getNodeId()), address);
