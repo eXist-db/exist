@@ -88,6 +88,12 @@
                     <lib>optional/resolver-1.2.jar</lib>
                     <homepage>http://jedit.org/</homepage>
                 </file>
+                <file>
+                    <title>StAX</title>
+                    <description>StAX interfaces</description>
+                    <used-by>exist</used-by>
+                    <lib>optional/stax-api-1.0.1.jar</lib>
+                </file>
             </xsl:if>
         </jars>
     </xsl:template>
