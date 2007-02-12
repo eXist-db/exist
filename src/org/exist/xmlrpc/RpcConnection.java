@@ -644,8 +644,10 @@ public class RpcConnection extends Thread {
                 return result;
             }
         } finally {
-            if(collection != null)
+            if(collection != null) {
                 collection.releaseDocument(doc, Lock.READ_LOCK);
+                collection.getLock().release(Lock.READ_LOCK);
+            }
             brokerPool.release(broker);
         }
     }
