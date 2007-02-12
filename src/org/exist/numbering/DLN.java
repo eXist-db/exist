@@ -151,7 +151,19 @@ public class DLN extends DLNBase implements NodeId {
         sibling.incrementLevelId();
         return sibling;
     }
-    
+
+    public NodeId precedingSibling() {
+        DLN sibling = new DLN(this);
+        sibling.decrementLevelId();
+        return sibling;
+    }
+
+    public NodeId getChild(int child) {
+        DLN nodeId = new DLN(this);
+        nodeId.addLevelId(child, false);
+        return nodeId;
+    }
+
     public NodeId insertNode(NodeId right) {
         DLN rightNode = (DLN) right;
         if (right == null)

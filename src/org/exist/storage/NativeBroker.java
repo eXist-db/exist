@@ -2227,7 +2227,7 @@ public class NativeBroker extends DBBroker {
         final short nodeType = node.getNodeType();
         new DOMTransaction(this, domDb, Lock.WRITE_LOCK, doc) {
             public Object start() throws ReadOnlyException {
-                long address = BFile.UNKNOWN_ADDRESS;
+                long address;
                 final byte data[] = node.serialize();
                 int depth = doc.getCollection().getIndexDepth(NativeBroker.this);
                 if (depth == -1) 
@@ -2235,7 +2235,7 @@ public class NativeBroker extends DBBroker {
                 if (nodeType == Node.TEXT_NODE
                     || nodeType == Node.ATTRIBUTE_NODE
                     || nodeType == Node.CDATA_SECTION_NODE
-                    || node.getNodeId().getTreeLevel() > depth + 1)
+                    || node.getNodeId().getTreeLevel() > depth)
                     address = domDb.add(transaction, data);
                 else {
                     address = domDb.put(transaction, new NodeRef(doc.getDocId(), node.getNodeId()), data);
@@ -2332,11 +2332,12 @@ public class NativeBroker extends DBBroker {
             endElement(node, currentPath, null);
             //restore old value, whatever it was
             node.setOldInternalAddress(address);
+            ((ElementImpl)node).setDirty(false);
         }
         if (node.getNodeId().getTreeLevel() == 1)
             newDoc.appendChild(node);
         node.setOwnerDocument(doc);
-        
+
         if (node.hasChildNodes()) {
             int count = node.getChildCount();
             NodeId nodeId = node.getNodeId();
