@@ -88,7 +88,7 @@ public class RawNodeIterator {
                         throw new IOException("Node not found.");
                     rec = db.findRecord(addr);
                 } catch (BTreeException e) {
-                    throw new IOException("Node not found.");
+                    throw new IOException("Node not found: " + e.getMessage());
                 }
             }
             page = rec.getPage().getPageNum();
@@ -210,4 +210,8 @@ public class RawNodeIterator {
 			lock.release(Lock.READ_LOCK);
 		}
 	}
+
+    public void closeDocument() {
+        db.closeDocument();
+    }
 }

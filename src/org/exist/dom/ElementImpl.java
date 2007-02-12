@@ -712,7 +712,7 @@ public class ElementImpl extends NamedNode implements Element {
             for (EmbeddedXMLStreamReader reader = ownerDocument.getBroker().getXMLStreamReader(this, true); reader.hasNext(); ) {
                 int status = reader.next();
                 if (status != XMLStreamReader.END_ELEMENT) {
-                    if (((NodeId) reader.getProperty("node-id")).isChildOf(nodeId))
+                    if (((NodeId) reader.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID)).isChildOf(nodeId))
                         childList.add(reader.getNode());
                 }
             }
