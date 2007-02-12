@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 The eXist Project
+ *  Copyright (C) 2001-07 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -27,17 +27,19 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Hashtable;
 import java.util.Vector;
+
 import org.apache.xmlrpc.XmlRpc;
 import org.apache.xmlrpc.XmlRpcClient;
 import org.apache.xmlrpc.XmlRpcException;
+
 import org.exist.xmldb.XmldbURI;
 
 /**
  *  Example code for demonstrating XMLRPC methods getDocumentData
  * and getNextChunk. Please run 'admin-examples setup' first, this will
- * download the required mondial.xml document.
+ * download the required macbeth.xml document.
  *
- * @author dizzzz
+ * @author Dannes Wessels
  */
 public class RetrieveChunked {
     
@@ -47,16 +49,15 @@ public class RetrieveChunked {
     public static void main(String[] args) {
         
         // Download file (ohoh not in spec) using xmldb url
-        String xmldbUri = "xmldb:exist://guest:guest@localhost:8080/exist/xmlrpc/db/mondial/mondial.xml";
+        String xmldbUri = "xmldb:exist://localhost:8080/exist/xmlrpc/db/shakespeare/plays/macbeth.xml";
         XmldbURI uri = XmldbURI.create(xmldbUri);
         
         // Construct url for xmlrpc, without collections / document
-        // username/password yet hardcoded, need to update XmldbUri fir this
-        String url = "http://guest:guest@" + uri.getAuthority() + uri.getContext();
+        String url = "http://" + uri.getAuthority() + uri.getContext();
         String path =uri.getCollectionPath();
         
         // Hardcoded yet too
-        String filename="mondial.xml";
+        String filename="macbeth.xml";
         
         try {
             // Setup xmlrpc client
