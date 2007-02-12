@@ -44,7 +44,7 @@ public interface NodeId extends Comparable {
     public final static int IS_CHILD = 1;
     public final static int IS_DESCENDANT = 2;
     public final static int IS_SELF = 3;
-    
+
     /**
      * Returns a new NodeId representing the first child
      * node of this node. The returned id can be used
@@ -57,6 +57,18 @@ public interface NodeId extends Comparable {
     NodeId newChild();
 
     /**
+     * Returns a new NodeId representing the nth child node
+     * of this node. The returned id can be used
+     * to create new child nodes. The actual id of the
+     * child might be different, depending on the
+     * implementation.
+     * 
+     * @param child
+     * @return
+     */
+    NodeId getChild(int child);
+
+    /**
      * Returns a new NodeId representing the next following
      * sibling of this node. The returned id can be used
      * to create new sibling nodes. The actual id of the
@@ -67,10 +79,21 @@ public interface NodeId extends Comparable {
      */
     NodeId nextSibling();
 
+    /**
+     * Returns a new NodeId representing the prececing
+     * sibling of this node. The returned id can be used
+     * to create new sibling nodes. The actual id of the
+     * next sibling might be different, depending on the
+     * implementation.
+     *
+     * @return new sibling node id.
+     */
+    NodeId precedingSibling();
+
     NodeId insertNode(NodeId right);
-    
+
     NodeId insertBefore();
-    
+
     /**
      * Returns a new NodeId representing the parent
      * of the current node. If the parent is the document,
@@ -86,24 +109,24 @@ public interface NodeId extends Comparable {
      * Returns true if the node represented by this node id comes
      * after the argument node in document order. If isFollowing is set to true, the method
      * behaves as if called to evaluate a following::* XPath select, i.e. it
-     * returns false for descendants of the current node. 
-     *  
+     * returns false for descendants of the current node.
+     *
      * @param other
      * @param isFollowing
      */
     boolean after(NodeId other, boolean isFollowing);
-    
+
     /**
      * Returns true if the node represented by this node id comes
      * before the argument node in document order. If isPreceding is set to true, the method
      * behaves as if called to evaluate a preceding::* XPath select, i.e. it
-     * returns false for ancestors of the current node. 
-     *  
+     * returns false for ancestors of the current node.
+     *
      * @param other
      * @param isPreceding
      */
     boolean before(NodeId other, boolean isPreceding);
-    
+
     /**
      * Is the current node id a descendant of the specified node?
      *
@@ -116,7 +139,7 @@ public interface NodeId extends Comparable {
 
     /**
      * Is the current node a child node of the specified parent?
-     * 
+     *
      * @param parent the parent node
      */
     boolean isChildOf(NodeId parent);
@@ -127,14 +150,14 @@ public interface NodeId extends Comparable {
      * the relation. Possible relations are: {@link #IS_CHILD}, {@link #IS_DESCENDANT}
      * or {@link #IS_SELF}. If the nodes are not in a ancestor-descendant relation,
      * the method returns -1.
-     * 
+     *
      * @param ancestor the (potential) ancestor node to check against
      * @return an int value indicating the relation
      */
     int computeRelation(NodeId ancestor);
-    
+
     boolean isSiblingOf(NodeId sibling);
-    
+
     /**
      * Returns the level within the document tree at which
      * this node occurs.
@@ -144,7 +167,7 @@ public interface NodeId extends Comparable {
     int compareTo(NodeId other);
 
     boolean equals(NodeId other);
-    
+
     /**
      * Returns the size (in bytes) of this node id. Depends on
      * the concrete implementation.
@@ -163,7 +186,7 @@ public interface NodeId extends Comparable {
      * @param offset offset into the array
      */
     void serialize(byte[] data, int offset);
-    
+
     /**
      * Write the node id to a {@link org.exist.storage.io.VariableByteOutputStream}.
      *

@@ -53,7 +53,6 @@ import org.w3c.dom.*;
 
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.namespace.*;
 
 /**
  * ElementImpl.java
@@ -69,6 +68,7 @@ public class ElementImpl extends NamedNode implements Element {
     private Map namespaceMappings = null;
     private int indexType = RangeIndexSpec.NO_INDEX;
     private boolean preserveWS = false;
+    private boolean isDirty = false;
 
     public ElementImpl() {
         super(Node.ELEMENT_NODE);
@@ -114,6 +114,14 @@ public class ElementImpl extends NamedNode implements Element {
 
     public int getIndexType() {
         return indexType;
+    }
+
+    public boolean isDirty() {
+        return isDirty;
+    }
+
+    public void setDirty(boolean dirty) {
+        this.isDirty = dirty;
     }
 
     public void setPosition(int position) {
@@ -165,6 +173,8 @@ public class ElementImpl extends NamedNode implements Element {
                         : 0;
                 signature |= 0x10;
             }
+            if (isDirty)
+                signature |= 0x8;
             final int nodeIdLen = nodeId.size();
             byte[] data =
                     ByteArrayPool.getByteArray(8
@@ -210,7 +220,9 @@ public class ElementImpl extends NamedNode implements Element {
                                        boolean pooled) {
         int end = start + len;
         byte idSizeType = (byte) (data[start] & 0x03);
+        boolean isDirty = (data[start] & 0x8) == 0x8;
         boolean hasNamespace = (data[start++] & 0x10) == 0x10;
+
         int children = ByteConversion.byteToInt(data, start);
         start += 4;
         int dlnLen = ByteConversion.byteToShort(data, start);
@@ -251,6 +263,7 @@ public class ElementImpl extends NamedNode implements Element {
         node.nodeName = doc.getSymbols().getQName(Node.ELEMENT_NODE, namespace, name, prefix);
         node.children = children;
         node.attributes = attributes;
+        node.isDirty = isDirty;
         node.setOwnerDocument(doc);
         if (end > next) {
             byte[] pfxData = new byte[end - next];
@@ -415,9 +428,7 @@ public class ElementImpl extends NamedNode implements Element {
                     StoredNode last = (StoredNode) cl.item(child - 2);
                     insertAfter(transaction, nodes, getLastNode(last));
                 } else {
-//                    NodeList cl = getChildNodes();
                     StoredNode last = (StoredNode) getLastChild();
-//                    StoredNode last = (StoredNode) cl.item(cl.getLength() - 1);
                     appendChildren(transaction, last.getNodeId().nextSibling(), 
                             new NodeImplRef(getLastNode(last)), getPath(), nodes, true);
                 }
@@ -767,12 +778,11 @@ public class ElementImpl extends NamedNode implements Element {
     public Node getLastChild() {
         if (!hasChildNodes())
             return null;
-//        NodeId child = nodeId.newChild();
-//        for (int i = 0; i < children - 1; i++) {
-//            child = child.nextSibling();
-//        }
-//        Node node = getBroker().objectWith(ownerDocument, child);
         Node node = null;
+        if (!isDirty) {
+            NodeId child = nodeId.getChild(children);
+            node = getBroker().objectWith(ownerDocument, child);
+        }
         if (node == null) {
             NodeList cl = getChildNodes();
             return cl.item(cl.getLength() - 1);
@@ -1027,6 +1037,7 @@ public class ElementImpl extends NamedNode implements Element {
             appendChildren(transaction, newId, new NodeImplRef(getLastNode(previous)), 
                     getPath(), nodes, false);
         }
+        setDirty(true);
         getBroker().updateNode(transaction, this);
         getBroker().flush();
     }
@@ -1048,6 +1059,7 @@ public class ElementImpl extends NamedNode implements Element {
         NodeId newNodeId = previous.getNodeId().insertNode(following == null ? null : following.getNodeId());
         appendChildren(transaction, newNodeId, 
                 new NodeImplRef(getLastNode(previous)), getPath(), nodes, false);
+        setDirty(true);
         getBroker().updateNode(transaction, this);
         getBroker().flush();
     }
@@ -1144,6 +1156,7 @@ public class ElementImpl extends NamedNode implements Element {
         if (oldChild.getNodeType() == Node.ATTRIBUTE_NODE)
             --attributes;
         getBroker().endRemove();
+        setDirty(true);
         getBroker().updateNode(transaction, this);
         getBroker().flush();
         return oldNode;
@@ -1185,7 +1198,8 @@ public class ElementImpl extends NamedNode implements Element {
                     appendChildren(transaction, newNodeId, new NodeImplRef(visitor.lastAttrib), 
                     		getPath(), appendList, true);
 		        }
-			}
+                setDirty(true);
+            }
 			attributes += appendList.getLength();
 		} finally {
             getBroker().updateNode(transaction, this);

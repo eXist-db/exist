@@ -177,6 +177,15 @@ public class DLNBase {
         setCurrentLevelId(getLevelId(last) + 1);
     }
 
+    public void decrementLevelId() {
+        final int last = lastFieldPosition();
+        bitIndex = last - 1;
+        int levelId = getLevelId(last) - 1;
+        if (levelId < 1)
+            levelId = 0;
+        setCurrentLevelId(levelId);
+    }
+
     /**
      * Set the level id for the last level that has been written.
      * The data array will be resized automatically if the bit set is

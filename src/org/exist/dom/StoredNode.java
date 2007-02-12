@@ -223,9 +223,22 @@ public class StoredNode extends NodeImpl implements Visitable {
      */
     public void setOldInternalAddress(long oldInternalAddress) {
         this.oldInternalAddress = oldInternalAddress;
-    }     
+    }
 
-	/**
+    /**
+     * Returns true if the node was modified recently and nodes
+     * were inserted at the start or in the middle of its children.
+     *
+     * @return
+     */
+    public boolean isDirty() {
+        return true;
+    }
+
+    public void setDirty(boolean dirty) {
+    }
+
+    /**
 	 * @see org.w3c.dom.Node#getNodeType()
 	 */
 	public short getNodeType() {
@@ -272,25 +285,33 @@ public class StoredNode extends NodeImpl implements Visitable {
         StoredNode parent = (StoredNode) getParentNode();
         if (parent.getNodeType() == Node.DOCUMENT_NODE)
             return null;
-        try {
-            EmbeddedXMLStreamReader reader = ownerDocument.getBroker().getXMLStreamReader(parent, true);
-            int level = nodeId.getTreeLevel();
-            StoredNode last = null;
-            while (reader.hasNext()) {
-                int status = reader.next();
-                NodeId currentId = (NodeId) reader.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID);
-                if (status != XMLStreamReader.END_ELEMENT && currentId.getTreeLevel() == level) {
-                    if (currentId.equals(nodeId))
-                        return last;
-                    last = reader.getNode();
+        if (parent.isDirty()) {
+            try {
+                EmbeddedXMLStreamReader reader = ownerDocument.getBroker().getXMLStreamReader(parent, true);
+                int level = nodeId.getTreeLevel();
+                StoredNode last = null;
+                while (reader.hasNext()) {
+                    int status = reader.next();
+                    NodeId currentId = (NodeId) reader.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID);
+                    if (status != XMLStreamReader.END_ELEMENT && currentId.getTreeLevel() == level) {
+                        if (currentId.equals(nodeId))
+                            return last;
+                        last = reader.getNode();
+                    }
                 }
+            } catch (IOException e) {
+                LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
+            } catch (XMLStreamException e) {
+                LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
             }
-        } catch (IOException e) {
-            LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
-        } catch (XMLStreamException e) {
-            LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
+            return null;
+        } else {
+            NodeId firstChild = parent.getNodeId().newChild();
+            if (nodeId.equals(firstChild))
+                return null;
+            NodeId siblingId = nodeId.precedingSibling();
+            return ownerDocument.getNode(siblingId);
         }
-        return null;
 //        PreviousSiblingVisitor visitor = new PreviousSiblingVisitor(this);
 //        ((StoredNode) parent).accept(visitor);
 //        return visitor.last;
@@ -303,25 +324,30 @@ public class StoredNode extends NodeImpl implements Visitable {
         if (nodeId.getTreeLevel() == 2 && ((DocumentImpl)getOwnerDocument()).getCollection().isTempCollection())
             return null;
         final StoredNode parent = (StoredNode) getParentNode();
-        if (parent.getNodeType() == Node.DOCUMENT_NODE)
+        if (parent == null || parent.getNodeType() == Node.DOCUMENT_NODE)
             return null;
-        try {
-            final EmbeddedXMLStreamReader reader = ownerDocument.getBroker().getXMLStreamReader(parent, true);
-            final int level = nodeId.getTreeLevel();
-            while (reader.hasNext()) {
-                int status = reader.next();
-                NodeId currentId = (NodeId) reader.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID);
-                if (status != XMLStreamReader.END_ELEMENT && currentId.getTreeLevel() == level) {
-                    if (currentId.compareTo(nodeId) > 0)
-                        return reader.getNode();
+        if (parent.isDirty()) {
+            try {
+                final EmbeddedXMLStreamReader reader = ownerDocument.getBroker().getXMLStreamReader(parent, true);
+                final int level = nodeId.getTreeLevel();
+                while (reader.hasNext()) {
+                    int status = reader.next();
+                    NodeId currentId = (NodeId) reader.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID);
+                    if (status != XMLStreamReader.END_ELEMENT && currentId.getTreeLevel() == level) {
+                        if (currentId.compareTo(nodeId) > 0)
+                            return reader.getNode();
+                    }
                 }
+            } catch (IOException e) {
+                LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
+            } catch (XMLStreamException e) {
+                LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
             }
-        } catch (IOException e) {
-            LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
-        } catch (XMLStreamException e) {
-            LOG.warn("Internal error while reading child nodes: " + e.getMessage(), e);
+            return null;
+        } else {
+            NodeId siblingId = nodeId.nextSibling();
+            return ownerDocument.getNode(siblingId);
         }
-        return null;
 
 //        Iterator iterator = getBroker().getNodeIterator(this);
 //        iterator.next();

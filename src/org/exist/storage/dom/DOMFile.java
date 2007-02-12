@@ -1141,7 +1141,7 @@ public class DOMFile extends BTree implements Lockable {
 	private long findNode(StoredNode node, NodeId target, Iterator iter) {
 		if (!lock.hasLock())
 			LOG.warn("the file doesn't own a lock");
-		if (node.hasChildNodes()) {			
+        if (node.hasChildNodes()) {
 			for (int i = 0; i < node.getChildCount(); i++) {
 				StoredNode child = (StoredNode) iter.next();
 
@@ -1163,7 +1163,7 @@ public class DOMFile extends BTree implements Lockable {
 	 * ancestor is found, it is traversed to locate the specified descendant
 	 * node.
 	 * 
-	 * @param lock
+	 * @param lockObject
 	 * @param node
 	 * @return The node's adress or <code>KEY_NOT_FOUND</code> if the node can not be found.
 	 * @throws IOException
@@ -1178,7 +1178,8 @@ public class DOMFile extends BTree implements Lockable {
 		// first try to find the node in the index
 		final long p = findValue(nodeRef);
 		if (p == KEY_NOT_FOUND) {
-			// node not found in index: try to find the nearest available
+//            Thread.dumpStack();
+            // node not found in index: try to find the nearest available
 			// ancestor and traverse it
 			NodeId id = node.getNodeId();
 			long parentPointer = KEY_NOT_FOUND;
@@ -1200,7 +1201,7 @@ public class DOMFile extends BTree implements Lockable {
 			final StoredNode n = (StoredNode) iter.next();
 			final long address = findNode(n, node.getNodeId(), iter);
 			if (address == StoredNode.UNKNOWN_NODE_IMPL_ADDRESS) {
-				LOG.warn("Node data location not found for node " + node);
+				LOG.warn("Node data location not found for node " + node.getNodeId());
 				return KEY_NOT_FOUND;
 			} else
 				return address;
@@ -1320,7 +1321,7 @@ public class DOMFile extends BTree implements Lockable {
 		try {
 			final long p = findValue(owner, node);
 			if (p == KEY_NOT_FOUND) {
-				LOG.warn("node value not found : " + node);
+				LOG.warn("node value not found : " + node.getNodeId());
 				return null;
 			}
 			return get(p);
