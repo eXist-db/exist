@@ -50,6 +50,8 @@ import java.io.IOException;
  */
 public class EmbeddedXMLStreamReader implements XMLStreamReader {
 
+    public final static String PROPERTY_NODE_ID = "node-id";
+
     private RawNodeIterator iterator;
 
     private Value current = null;
@@ -204,7 +206,7 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
     }
 
     public Object getProperty(String string) throws IllegalArgumentException {
-        if (string.equals("node-id")) {
+        if (string.equals(PROPERTY_NODE_ID)) {
             if (nodeId == null)
                 readNodeId();
             return nodeId;
@@ -221,7 +223,7 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
     }
 
     public void close() throws XMLStreamException {
-        throw new UnsupportedOperationException();
+        iterator.closeDocument();
     }
 
     public boolean isStartElement() {
