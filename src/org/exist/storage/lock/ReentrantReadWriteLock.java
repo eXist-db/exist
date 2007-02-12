@@ -106,7 +106,8 @@ public class ReentrantReadWriteLock implements Lock {
 							if (waitTime <= 0) {
 								// blocking thread found: if the lock is read only, remove it
 								if (writeLocks == 0) {
-									System.out.println("releasing blocking thread " + owner_.getName());
+									System.out.println("releasing blocking thread " + owner_.getName() + " on " + id_ + " (" + modeStack.size() + " locks)");
+									Thread.dumpStack();
 									owner_ = caller;
 									while (!modeStack.isEmpty()) {
 								    	Integer top = (Integer)modeStack.pop();
