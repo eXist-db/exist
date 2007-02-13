@@ -30,14 +30,16 @@ import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Stack;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.StoredNode;
 import org.exist.numbering.DLNBase;
 import org.exist.numbering.NodeId;
+import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BufferStats;
 import org.exist.storage.NativeBroker;
@@ -66,11 +68,7 @@ import org.exist.util.ReadOnlyException;
 import org.exist.util.hashtable.Object2LongIdentityHashMap;
 import org.exist.util.sanity.SanityCheck;
 import org.exist.xquery.TerminatedException;
-import org.exist.stax.EmbeddedXMLStreamReader;
 import org.w3c.dom.Node;
-
-import javax.xml.stream.XMLStreamReader;
-import javax.xml.stream.XMLStreamException;
 
 /**
  * This is the main storage for XML nodes. Nodes are stored in document order.
@@ -116,9 +114,10 @@ public class DOMFile extends BTree implements Lockable {
 
     public static final int LENGTH_TID = 2; //sizeof short
     public static final int LENGTH_DATA_LENGTH = 2; //sizeof short
-    public static final int LENGTH_ORIGINAL_LOCATION = 8; //sizeof long
-    public static final int LENGTH_FORWARD_LOCATION = 8; //sizeof long
-    public static final int LENGTH_OVERFLOW_LOCATION = 8; //sizeof long
+    public static final int LENGTH_LINK = 8; //sizeof long
+    public static final int LENGTH_ORIGINAL_LOCATION = LENGTH_LINK;
+    public static final int LENGTH_FORWARD_LOCATION = LENGTH_LINK;
+    public static final int LENGTH_OVERFLOW_LOCATION = LENGTH_LINK;
     public static final int LENGTH_ELEMENT_CHILD_COUNT = 4; //sizeof int
     public static final int LENGTH_ATTRIBUTES_COUNT = 2; //sizeof short
     public static final int LENGTH_DLN_LENGTH = 2; //sizeof short    
@@ -754,7 +753,7 @@ public class DOMFile extends BTree implements Lockable {
 			// read data length
 			final short vlen = ByteConversion.byteToShort(oldData, pos);
 			pos += LENGTH_DATA_LENGTH;
-			// if this is an overflow page, the real data length is always 8
+			// if this is an overflow page, the real data length is always LENGTH_LINK
 			// byte for the page number of the overflow page
 			final short realLen = (vlen == OVERFLOW ? LENGTH_OVERFLOW_LOCATION : vlen);
 
@@ -1103,15 +1102,15 @@ public class DOMFile extends BTree implements Lockable {
 		return cb.getValues();
 	}
 	
-	private final static class ChildNode {
-		StoredNode node;
-		int index = 0;
-		
-		public ChildNode(StoredNode node) {
-			this.node = node;
-		}
-	}
-	
+//	private final static class ChildNode {
+//		StoredNode node;
+//		int index = 0;
+//		
+//		public ChildNode(StoredNode node) {
+//			this.node = node;
+//		}
+//	}
+//	
 //	private long findNode(StoredNode node, NodeId target, Iterator iter) {
 //		if (!lock.hasLock())
 //			LOG.warn("the file doesn't own a lock");
@@ -1550,17 +1549,17 @@ public class DOMFile extends BTree implements Lockable {
 		final DOMFilePageHeader ph = rec.getPage().getPageHeader();
 		
 		if (isTransactional && transaction != null) {
-            byte[] data = new byte[8];
-            System.arraycopy(rec.getPage().data, rec.offset, data, 0, 8);
+            byte[] data = new byte[LENGTH_LINK];
+            System.arraycopy(rec.getPage().data, rec.offset, data, 0, LENGTH_LINK);
             RemoveValueLoggable loggable = new RemoveValueLoggable(transaction,
                     rec.getPage().getPageNum(), rec.getTID(), rec.offset - 2, data, false, 0);
             writeToLog(loggable, rec.getPage().page);
         }
 		
-		final int end = rec.offset + 8;
+		final int end = rec.offset + LENGTH_LINK;
 		System.arraycopy(rec.getPage().data, end, rec.getPage().data,
 				rec.offset - 2, rec.getPage().len - end);
-		rec.getPage().len = rec.getPage().len - (LENGTH_TID + 8);
+		rec.getPage().len = rec.getPage().len - (LENGTH_TID + LENGTH_LINK);
 		if (rec.getPage().len < 0)
 			LOG.warn("page length < 0");
 		ph.setDataLength(rec.getPage().len);		
@@ -2781,6 +2780,12 @@ public class DOMFile extends BTree implements Lockable {
 		protected long prevDataPage = Page.NO_PAGE;
 		protected short tid = ItemId.UNKNOWN_ID;
 		protected short records = 0;
+		
+		public final static short LENGTH_RECORDS_COUNT = 2; //sizeof short
+		public final static int LENGTH_DATA_LENGTH = 4; //sizeof int
+		public final static long LENGTH_NEXT_PAGE_POINTER = 8; //sizeof long
+		public final static long LENGTH_PREV_PAGE_POINTER = 8; //sizeof long
+		public final static short LENGTH_CURRENT_TID = 2; //sizeof short
 
 		public DOMFilePageHeader() {
 			super();
@@ -2837,29 +2842,29 @@ public class DOMFile extends BTree implements Lockable {
 		public int read(byte[] data, int offset) throws IOException {
 			offset = super.read(data, offset);
 			records = ByteConversion.byteToShort(data, offset);
-			offset += 2;
+			offset += LENGTH_RECORDS_COUNT;
 			dataLen = ByteConversion.byteToInt(data, offset);
-			offset += 4;
+			offset += LENGTH_DATA_LENGTH;
 			nextDataPage = ByteConversion.byteToLong(data, offset);
-			offset += 8;
+			offset += LENGTH_NEXT_PAGE_POINTER;
 			prevDataPage = ByteConversion.byteToLong(data, offset);
-			offset += 8;
+			offset += LENGTH_PREV_PAGE_POINTER;
 			tid = ByteConversion.byteToShort(data, offset);
-			return offset + 2;
+			return offset + LENGTH_CURRENT_TID;
 		}
 
 		public int write(byte[] data, int offset) throws IOException {
 			offset = super.write(data, offset);
 			ByteConversion.shortToByte(records, data, offset);
-			offset += 2;
+			offset += LENGTH_RECORDS_COUNT;
 			ByteConversion.intToByte(dataLen, data, offset);
-			offset += 4;
+			offset += LENGTH_DATA_LENGTH;
 			ByteConversion.longToByte(nextDataPage, data, offset);
-			offset += 8;
+			offset += LENGTH_NEXT_PAGE_POINTER;
 			ByteConversion.longToByte(prevDataPage, data, offset);
-			offset += 8;
+			offset += LENGTH_PREV_PAGE_POINTER;
 			ByteConversion.shortToByte(tid, data, offset);
-			return offset + 2;
+			return offset + LENGTH_CURRENT_TID;
 		}
 
 		public void setDataLength(int len) {
