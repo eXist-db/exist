@@ -64,7 +64,7 @@ public interface NodeId extends Comparable {
      * implementation.
      * 
      * @param child
-     * @return
+     * @return new node id
      */
     NodeId getChild(int child);
 

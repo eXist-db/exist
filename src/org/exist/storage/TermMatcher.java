@@ -30,7 +30,7 @@ import org.exist.xquery.XQueryContext;
 
 /**
  * Implementations of this interface can be passed to method
-* {@link org.exist.storage.TextSearchEngine#getNodes(XQueryContext context, DocumentSet docs, NodeSet contextSet, QName qname,
+* {@link org.exist.storage.TextSearchEngine#getNodes(XQueryContext context, DocumentSet docs, NodeSet contextSet, int axis, QName qname,
 	        TermMatcher matcher, CharSequence startTerm)} 
  * to check if an index entry matches a given search term.
  * 

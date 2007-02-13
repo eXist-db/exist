@@ -91,7 +91,7 @@ import org.xml.sax.XMLReader;
  *
  * Collections are shared between {@link org.exist.storage.DBBroker} instances. The caller
  * is responsible to lock/unlock the collection. Call {@link DBBroker#openCollection(XmldbURI, int)}
- * to get a collection with a read or write lock and {@link #release()} to release the lock.
+ * to get a collection with a read or write lock and {@link #release(int)} to release the lock.
  *
  * @author wolf
  */
