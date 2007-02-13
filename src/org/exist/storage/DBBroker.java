@@ -318,24 +318,6 @@ public abstract class DBBroker extends Observable {
 	}
 
 	/**
-	 * Return a {@link org.exist.storage.dom.DOMFileIterator} starting at the
-	 * specified node.
-	 * 
-	 */
-	public Iterator getDOMIterator(Document doc, long gid) {
-		throw new RuntimeException("not implemented for this storage backend");
-	}
-
-	/**
-	 * Return a {@link org.exist.storage.dom.DOMFileIterator} starting at the
-	 * specified node.
-	 * 
-	 */
-	public Iterator getDOMIterator(StoredNode node) {
-		throw new RuntimeException("not implemented for this storage backend");
-	}
-
-	/**
 	 * Return a {@link org.exist.storage.dom.NodeIterator} starting at the
 	 * specified node.
 	 * 

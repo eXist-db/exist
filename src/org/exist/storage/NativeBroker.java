@@ -533,17 +533,6 @@ public class NativeBroker extends DBBroker {
     public TextSearchEngine getTextEngine() {
         return textEngine;
     }
-    
-    public Iterator getDOMIterator(StoredNode node) {
-        try {
-            return new DOMFileIterator(this, domDb, new NodeProxy(node));
-        } catch (BTreeException e) {
-            LOG.warn("failed to create DOM iterator", e);
-        } catch (IOException e) {
-            LOG.warn("failed to create DOM iterator", e);
-        }
-        return null;
-    }
 
     public EmbeddedXMLStreamReader getXMLStreamReader(StoredNode node, boolean reportAttributes)
             throws IOException, XMLStreamException {
