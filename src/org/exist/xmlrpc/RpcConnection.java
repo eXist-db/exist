@@ -1265,13 +1265,16 @@ public class RpcConnection extends Thread {
             InputSource source = null;
 
             collection = broker.openCollection(docUri.removeLastSegment(), Lock.WRITE_LOCK);
-            // keep the write lock in the transaction
-            transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);  
             
             if (collection == null) {
                 transact.abort(transaction);
                 throw new EXistException("Collection " + docUri.removeLastSegment() + " not found");
             }
+            
+            // keep the write lock in the transaction
+            transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);  
+
+            
             if (!replace) {
                 DocumentImpl old = collection.getDocument(broker, docUri.lastSegment());
                 if (old != null) {
