@@ -37,9 +37,13 @@ public class ReentrantReadWriteLock implements Lock {
 	private long timeOut_ = 240000L;
 	private Stack modeStack = new Stack();
 	private int writeLocks = 0;
+	private boolean DEBUG = false;
+	private Stack seStack;
 
 	public ReentrantReadWriteLock(String id) {
 		id_ = id;
+		if (DEBUG)
+			seStack = new Stack(); 
 	}
 	
 	/* @deprecated Use other method
@@ -63,6 +67,10 @@ public class ReentrantReadWriteLock implements Lock {
 				modeStack.push(new Integer(mode));
 				if (mode == Lock.WRITE_LOCK)
 					writeLocks++;
+				if (DEBUG) {
+					Throwable t = new Throwable();
+					seStack.push(t.getStackTrace());
+				}
 				mode_ = mode;
 //				System.out.println("thread " + caller.getName() + " acquired lock on " + id_ +
 //					"; locks held = " + holds_);
@@ -73,6 +81,10 @@ public class ReentrantReadWriteLock implements Lock {
 				modeStack.push(new Integer(mode));
 				if (mode== Lock.WRITE_LOCK)
 					writeLocks++;
+				if (DEBUG) {
+					Throwable t = new Throwable();
+					seStack.push(t.getStackTrace());
+				}				
 				mode_ = mode;
 //				System.out.println("thread " + caller.getName() + " acquired lock on " + id_);
 				return true;
@@ -87,6 +99,10 @@ public class ReentrantReadWriteLock implements Lock {
 							modeStack.push(new Integer(mode));
 							if (mode == Lock.WRITE_LOCK)
 								writeLocks++;
+							if (DEBUG) {
+								Throwable t = new Throwable();
+								seStack.push(t.getStackTrace());
+							}
 							mode_ = mode;
 //							System.out.println("thread " + caller.getName() + " acquired lock on " + id_ +
 //								"; locks held = " + holds_);
@@ -97,6 +113,10 @@ public class ReentrantReadWriteLock implements Lock {
 							modeStack.push(new Integer(mode));
 							if (mode == Lock.WRITE_LOCK)
 								writeLocks++;
+							if (DEBUG) {
+								Throwable t = new Throwable();
+								seStack.push(t.getStackTrace());
+							}
 							mode_ = mode;
 //							System.out.println("thread " + caller.getName() + " acquired lock on " + id_ +
 //								"; locks held = " + holds_);
@@ -113,8 +133,18 @@ public class ReentrantReadWriteLock implements Lock {
 								    	Integer top = (Integer)modeStack.pop();
 								    	top = null;
 									}
+									if (DEBUG) {
+										while (!seStack.isEmpty()) {
+											StackTraceElement[] se = (StackTraceElement[])seStack.pop();
+									    	se = null;
+										}
+									}									
 									holds_ = 1;
 									modeStack.push(new Integer(mode));
+									if (DEBUG) {
+										Throwable t = new Throwable();
+										seStack.push(t.getStackTrace());
+									}
 									mode_ = mode;
 //									System.out.println("thread " + caller.getName() + " acquired lock on " + id_ +
 //										"; locks held = " + holds_);
@@ -140,6 +170,10 @@ public class ReentrantReadWriteLock implements Lock {
 				modeStack.push(new Integer(mode));
 				if (mode == Lock.WRITE_LOCK)
 					writeLocks++;
+				if (DEBUG) {
+					Throwable t = new Throwable();
+					seStack.push(t.getStackTrace());
+				}				
 				mode_ = mode;
 //				System.out.println("thread " + caller.getName() + " acquired lock on " + id_ +
 //					"; locks held = " + holds_);
@@ -150,6 +184,10 @@ public class ReentrantReadWriteLock implements Lock {
 				modeStack.push(new Integer(mode));
 				if (mode == Lock.WRITE_LOCK)
 					writeLocks++;
+				if (DEBUG) {
+					Throwable t = new Throwable();
+					seStack.push(t.getStackTrace());
+				}				
 				mode_ = mode;
 //				System.out.println("thread " + caller.getName() + " acquired lock on " + id_);
 				return true;
@@ -187,6 +225,10 @@ public class ReentrantReadWriteLock implements Lock {
 	    		LOG.warn("Released lock of different type " + top.intValue() + " expected " + mode);
 	    		Thread.dumpStack();    		
 	    	}
+	    	if (DEBUG) {
+	    		StackTraceElement[] se = (StackTraceElement[])seStack.peek();
+	    		se = null;
+	    	}
 	    	mode_ = top.intValue();
 	    	top = null;
 			if (mode_ == Lock.WRITE_LOCK)
@@ -200,6 +242,8 @@ public class ReentrantReadWriteLock implements Lock {
 			}
     	} finally {
     		modeStack.pop();
+    		if (DEBUG)
+    			seStack.pop();
     	}
     }
     
