@@ -91,6 +91,7 @@ import org.exist.xquery.functions.response.ResponseModule;
 import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.AnyURIValue;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
 import org.w3c.dom.Document;
@@ -230,7 +231,7 @@ public class RESTServer {
                         "Parameter _howmany should be an int");
             }
         }
-        String p_start = (String) request.getParameter("_start");
+        String p_start = request.getParameter("_start");
         if (p_start != null) {
             try {
                 start = Integer.parseInt(p_start);
@@ -494,7 +495,7 @@ public class RESTServer {
         try {
             // check if path leads to an XQuery resource.
             // if yes, the resource is loaded and the XQuery executed.
-            resource = (DocumentImpl) broker.getXMLResource(pathUri, Lock.READ_LOCK);
+            resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
             if (resource != null) {
                 if (resource.getResourceType() == DocumentImpl.BINARY_FILE &&
                         "application/xquery".equals(resource.getMetadata().getMimeType())) {
@@ -531,7 +532,7 @@ public class RESTServer {
             DocumentBuilderFactory docFactory = DocumentBuilderFactory
                     .newInstance();
             docFactory.setNamespaceAware(true);
-            DocumentBuilder docBuilder = null;
+            DocumentBuilder docBuilder;
             try {
                 docBuilder = docFactory.newDocumentBuilder();
             } catch (ParserConfigurationException e) {
@@ -585,15 +586,12 @@ public class RESTServer {
                                     next = next.getNextSibling();
                                 }
                                 query = buf.toString();
-                            } else if (child.getLocalName()
-                            .equals("properties")) {
+                            } else if (child.getLocalName().equals("properties")) {
                                 Node node = child.getFirstChild();
                                 while (node != null) {
                                     if (node.getNodeType() == Node.ELEMENT_NODE
-                                            && node.getNamespaceURI()
-                                            .equals(NS)
-                                            && node.getLocalName().equals(
-                                            "property")) {
+                                            && node.getNamespaceURI().equals(NS)
+                                            && node.getLocalName().equals("property")) {
                                         Element property = (Element) node;
                                         String key = property
                                                 .getAttribute("name");
@@ -894,6 +892,7 @@ public class RESTServer {
             else
                 context = compiled.getContext();
             context.setStaticallyKnownDocuments(new XmldbURI[] { pathUri });
+            context.setBaseURI(new AnyURIValue(pathUri.toString()));
             declareVariables(context, request, response);
             
             if (compiled == null)
