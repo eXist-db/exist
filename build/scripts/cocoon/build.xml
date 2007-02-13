@@ -97,6 +97,7 @@
                 <include name="excalibur-cli*.jar"/>
                 <include name="commons-pool*.jar"/>
                 <include name="antlr*.jar"/>
+				<include name="stax*.jar"/>
             </fileset>
             <fileset dir="${exist.home}/lib/optional">
                 <include name="commons-fileupload*.jar"/>

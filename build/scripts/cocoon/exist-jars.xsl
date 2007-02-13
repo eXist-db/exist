@@ -79,7 +79,7 @@
                     <description>JLine</description>
                     <used-by>exist</used-by>
                     <lib>optional/jline-0_9_5.jar</lib>
-                    <homepage>http://jedit.org/</homepage>
+                    <homepage>http://jline.sourceforge.net/</homepage>
                 </file>
                 <file>
                     <title>Resolver</title>
@@ -93,6 +93,7 @@
                     <description>StAX interfaces</description>
                     <used-by>exist</used-by>
                     <lib>optional/stax-api-1.0.1.jar</lib>
+					<homepage>http://stax.codehaus.org/</homepage>
                 </file>
             </xsl:if>
         </jars>
