@@ -267,7 +267,7 @@ public class RawNodeIterator {
      * Returns the internal virtual storage address of the node at the cursor's current
      * position.
      *
-     * @return
+     * @return internal virtual storage address of the node
      */
     public long currentAddress() {
 		return StorageAddress.createPointer((int) page, ItemId.getId(lastTID));

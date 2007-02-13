@@ -2707,7 +2707,7 @@ public class RpcConnection extends Thread {
      *   Validate if specified document is Valid.
      *
      * @param user      Name of user
-     * @param docPath   Path to XML document in database
+     * @param documentPath   Path to XML document in database
      * @throws java.lang.Exception  Generic exception
      * @throws PermissionDeniedException  User is not allowed to perform action.
      * @return TRUE if document is valid, FALSE if not or errors or.....

@@ -453,7 +453,7 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
      * Returns the (internal) address of the node at the cursor's current
      * position.
      * 
-     * @return
+     * @return internal address of node
      */
     public long getCurrentPosition() {
         return iterator.currentAddress();

@@ -457,10 +457,10 @@ public class RemoteUserManagementService implements UserManagementService {
 	}
 
 	/**
-	 *  Description of the Method
+	 *  Remove user.
 	 *
-	 *@param  name                Description of the Parameter
-	 *@exception  XMLDBException  Description of the Exception
+	 *@param  u   User
+	 *@exception  XMLDBException
 	 */
 	public void removeUser(User u) throws XMLDBException {
 		try {

@@ -131,7 +131,7 @@ public interface UserManagementService extends Service {
      * if no lock has been set on the resource.
      * 
      * @param res
-     * @return
+     * @return Name of the owner of the lock
      * @throws XMLDBException
      */
     public String hasUserLock(Resource res) throws XMLDBException;
@@ -189,7 +189,7 @@ public interface UserManagementService extends Service {
 	 * Please note: new groups are created automatically if a new group
 	 * is assigned to a user. You can't add or remove them.
 	 * 
-	 * @return
+	 * @return List of all existing groups.
 	 * @throws XMLDBException
 	 */
 	public String[] getGroups() throws XMLDBException;
@@ -268,8 +268,8 @@ public interface UserManagementService extends Service {
     /**
      *  Delete a user from the database
      *
-     *@param  name                Description of the Parameter
-     *@exception  XMLDBException  Description of the Exception
+     *@param  user                User
+     *@exception  XMLDBException
      */
     public void removeUser( User user ) throws XMLDBException;
     

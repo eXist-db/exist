@@ -229,7 +229,7 @@ public class StoredNode extends NodeImpl implements Visitable {
      * Returns true if the node was modified recently and nodes
      * were inserted at the start or in the middle of its children.
      *
-     * @return
+     * @return TRUE when node is 'dirty'
      */
     public boolean isDirty() {
         return true;

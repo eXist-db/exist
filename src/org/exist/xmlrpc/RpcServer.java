@@ -1179,10 +1179,6 @@ public class RpcServer implements RpcAPI {
      *                   the document containing the node
      * @param id
      *                   the node's internal id
-     * @param prettyPrint
-     *                   result is pretty printed if >0
-     * @param encoding
-     *                   character encoding to use
      * @param user
      *                   Description of the Parameter
      * @return Description of the Return Value
@@ -1456,7 +1452,7 @@ public class RpcServer implements RpcAPI {
      *                   The new user value
      * @param groups
      *                   The new user's group value
-     * @param rgroups
+     * @param rgroup
      *                   The group to remove value 
      * @return Description of the Return Value
      * @exception EXistException

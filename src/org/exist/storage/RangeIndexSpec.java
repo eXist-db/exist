@@ -189,7 +189,7 @@ public abstract class RangeIndexSpec {
      * Returns the QName for which this index is created. Might be
      * null if it is a generic index.
      * 
-     * @return
+     * @return qname
      */
     public QName getQName() {
         return null;

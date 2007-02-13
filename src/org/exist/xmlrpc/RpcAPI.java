@@ -118,7 +118,6 @@ public interface RpcAPI {
 	 * @param user
 	 * @param name
 	 * @param parameters
-	 * @return
 	 * @throws EXistException
 	 * @throws PermissionDeniedException
 	 */
@@ -236,9 +235,9 @@ public interface RpcAPI {
 	 * Returns the number of resources in the collection identified by
 	 * collectionName.
 	 * 
-	 * @param user
-	 * @param collection
-	 * @return
+	 * @param user 
+	 * @param collectionName
+	 * @return Number of resources
 	 * @throws EXistException
 	 * @throws PermissionDeniedException
 	 */
@@ -265,8 +264,6 @@ public interface RpcAPI {
 	 *
 	 *@param  doc                            the document containing the node
 	 *@param  id                             the node's internal id
-	 *@param  prettyPrint                    result is pretty printed if >0
-	 *@param  encoding                       character encoding to use
 	 *@param  user                           Description of the Parameter
 	 *@return                                Description of the Return Value
 	 *@exception  EXistException             Description of the Exception
@@ -294,19 +291,15 @@ public interface RpcAPI {
 	 *  starting at position <code>start</code>. If <code>prettyPrint</code> is
 	 *  set to >0 (true), results are pretty printed.
 	 *
-	 *@param  xpath                          the XPath query to execute
 	 *@param  howmany                        maximum number of results to
 	 *      return.
 	 *@param  start                          item in the result set to start
 	 *      with.
-	 *@param  prettyPrint                    turn on pretty printing if >0.
-	 *@param  encoding                       the character encoding to use.
-	 *@param  sortExpr                       Description of the Parameter
 	 *@param  user                           Description of the Parameter
 	 *@return                                Description of the Return Value
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
-	 *@depreceated                           use Vector query() or int
+	 *@deprecated                           use Vector query() or int
 	 *      executeQuery() instead
 	 */
 	byte[] query(
@@ -377,12 +370,12 @@ public interface RpcAPI {
 	 *  the following structure: docId (int), docName (string), hits (int) The
 	 *  doctype entry has this structure: doctypeName (string), hits (int)
 	 *
-	 *@param  xpath                          Description of the Parameter
+	 *@param  xquery                         Description of the Parameter
 	 *@param  user                           Description of the Parameter
 	 *@return                                Description of the Return Value
 	 *@exception  EXistException             Description of the Exception
 	 *@exception  PermissionDeniedException  Description of the Exception
-	 *@depreceated                           use Vector query() or int
+	 *@deprecated                           use Vector query() or int
 	 *      executeQuery() instead
 	 */
 	Hashtable querySummary(User user, String xquery)
@@ -395,7 +388,6 @@ public interface RpcAPI {
 	 * 
 	 * @param user
 	 * @param query
-	 * @return
 	 * @throws EXistException
 	 */
 	public String printDiagnostics(User user, String query, Hashtable parameters) 
@@ -414,7 +406,6 @@ public interface RpcAPI {
 	 *
 	 *@param  xmlData                        The document data
 	 *@param  docName                      The path where the document will be stored 
-	 *@return                                		
 	 *@exception  EXistException
 	 *@exception  PermissionDeniedException
 	 */
@@ -432,7 +423,6 @@ public interface RpcAPI {
 	 *@param  xmlData                        The document data
 	 *@param  docName                      The path where the document will be stored 
 	 *@param  overwrite                      Overwrite an existing document with the same path?
-	 *@return                                		
 	 *@exception  EXistException
 	 *@exception  PermissionDeniedException
 	 */
@@ -509,7 +499,6 @@ public interface RpcAPI {
 	 * @param data the data to be stored
 	 * @param docName the path to the new document
 	 * @param replace if true, an old document with the same path will be overwritten
-	 * @return
 	 * @throws EXistException
 	 * @throws PermissionDeniedException
 	 */
@@ -535,7 +524,6 @@ public interface RpcAPI {
 	 *
 	 *@param  name path to the collection to be removed.
 	 *@param  user
-	 *@return
 	 *@exception  EXistException             
 	 *@exception  PermissionDeniedException 
 	 */
@@ -545,9 +533,8 @@ public interface RpcAPI {
 	/** 
 	 * Create a new collection on the database.
 	 * 
-	 * @param user
+	 * @param user User
 	 * @param name the path to the new collection.
-	 * @return
 	 * @throws EXistException
 	 * @throws PermissionDeniedException
 	 */
@@ -677,8 +664,6 @@ public interface RpcAPI {
 	 *
 	 *@param  resultId                       Description of the Parameter
 	 *@param  num                            Description of the Parameter
-	 *@param  prettyPrint                    Description of the Parameter
-	 *@param  encoding                       Description of the Parameter
 	 *@param  user                           Description of the Parameter
 	 *@return                                Description of the Return Value
 	 *@exception  EXistException             Description of the Exception
