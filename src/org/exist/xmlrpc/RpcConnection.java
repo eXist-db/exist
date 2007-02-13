@@ -140,7 +140,7 @@ public class RpcConnection extends Thread {
     
     private static final int MAX_DOWNLOAD_CHUNK_SIZE = 0x40000;
     
-    /** id of the database registred against the BrokerPool */
+    /** id of the database registered against the BrokerPool */
     protected String databaseid = BrokerPool.DEFAULT_INSTANCE_NAME;
 
     
@@ -191,24 +191,24 @@ public class RpcConnection extends Thread {
         DBBroker broker = null;
         Collection collection = null;
         TransactionManager transact = brokerPool.getTransactionManager();
-        Txn txn = transact.beginTransaction();
+        Txn transaction = transact.beginTransaction();
         try {
             broker = brokerPool.get(user);
             collection = broker.openCollection(collUri, Lock.READ_LOCK);
+            // keep the read lock in the transaction
+            transaction.registerLock(collection.getLock(), Lock.READ_LOCK);             
             if (collection == null) {
-                transact.abort(txn);
+                transact.abort(transaction);
                 throw new EXistException("collection " + collUri + " not found!");
             }
             CollectionConfigurationManager mgr = brokerPool.getConfigurationManager();
-            mgr.addConfiguration(txn, broker, collection, configuration);
-            transact.commit(txn);
+            mgr.addConfiguration(transaction, broker, collection, configuration);
+            transact.commit(transaction);
             LOG.info("Configured '" + collection.getURI() + "'");  
         } catch (CollectionConfigurationException e) {
-            transact.abort(txn);
+            transact.abort(transaction);
             throw new EXistException(e.getMessage());
         } finally {
-            if(collection != null)
-                collection.release(Lock.READ_LOCK);
             brokerPool.release(broker);
         }
     }
@@ -223,8 +223,7 @@ public class RpcConnection extends Thread {
         try {
             collection = broker.openCollection(collUri, Lock.READ_LOCK);
             if (collection == null)
-                throw new EXistException("collection " + collUri
-                        + " not found!");
+                throw new EXistException("collection " + collUri + " not found!");
             XmldbURI id;
             Random rand = new Random();
             boolean ok;
@@ -378,8 +377,7 @@ public class RpcConnection extends Thread {
     
     protected String formatErrorMsg(String type, String message) {
         StringBuffer buf = new StringBuffer();
-        buf
-                .append("<exist:result xmlns:exist=\"http://exist.sourceforge.net/NS/exist\" ");
+        buf.append("<exist:result xmlns:exist=\"http://exist.sourceforge.net/NS/exist\" ");
         buf.append("hitCount=\"0\">");
         buf.append('<');
         buf.append(type);
@@ -403,19 +401,15 @@ public class RpcConnection extends Thread {
         try {           
             collection = broker.openCollection(rootUri, Lock.READ_LOCK);
             if (collection == null)
-                throw new EXistException("collection " + rootUri
-                        + " not found!");
+                throw new EXistException("collection " + rootUri + " not found!");
             Hashtable desc = new Hashtable();
             Vector docs = new Vector();
             Vector collections = new Vector();
-            if (collection.getPermissions().validate(user, Permission.READ)) {
-                DocumentImpl doc;
-                Hashtable hash;
-                Permission perms;
+            if (collection.getPermissions().validate(user, Permission.READ)) {                      
                 for (Iterator i = collection.iterator(broker); i.hasNext(); ) {
-                    doc = (DocumentImpl) i.next();
-                    perms = doc.getPermissions();
-                    hash = new Hashtable(4);
+                	DocumentImpl doc = (DocumentImpl) i.next();
+                	Permission perms = doc.getPermissions();
+                	Hashtable hash = new Hashtable(4);
                     hash.put("name", doc.getFileURI().toString());
                     hash.put("owner", perms.getOwner());
                     hash.put("group", perms.getOwnerGroup());
@@ -468,9 +462,7 @@ public class RpcConnection extends Thread {
             hash.put("name", resourceUri.toString());
             hash.put("owner", perms.getOwner());
             hash.put("group", perms.getOwnerGroup());
-            hash
-                    .put("permissions", new Integer(perms
-                    .getPermissions()));
+            hash.put("permissions", new Integer(perms.getPermissions()));
             hash.put("type",
                     doc.getResourceType() == DocumentImpl.BINARY_FILE
                     ? "BinaryResource"
@@ -497,8 +489,7 @@ public class RpcConnection extends Thread {
         try {
             collection = broker.openCollection(collUri, Lock.READ_LOCK);
             if (collection == null)
-                throw new EXistException("collection " + collUri
-                        + " not found!");
+                throw new EXistException("collection " + collUri + " not found!");
             Hashtable desc = new Hashtable();
             Vector collections = new Vector();
             if (collection.getPermissions().validate(user, Permission.READ)) {
@@ -571,9 +562,7 @@ public class RpcConnection extends Thread {
         DBBroker broker = null;
         try {
             broker = brokerPool.get(user);
-            XmldbURI docURI = XmldbURI.xmldbUriFor(docName);
-            
-            
+            XmldbURI docURI = XmldbURI.xmldbUriFor(docName);  
             collection = broker.openCollection(docURI.removeLastSegment(), Lock.READ_LOCK);
             if (collection == null) {
                 LOG.debug("collection " + docURI.removeLastSegment() + " not found!");
@@ -728,8 +717,7 @@ public class RpcConnection extends Thread {
             Collection collection = broker.getCollection(collUri);
             if (collection == null) {
                 transact.abort(transaction);
-                throw new EXistException("collection " + collUri
-                        + " not found");
+                throw new EXistException("collection " + collUri + " not found");
             }
             DocumentSet docs = collection.allDocs(broker, new DocumentSet(),
                     true, true);
@@ -943,19 +931,14 @@ public class RpcConnection extends Thread {
                 throw new PermissionDeniedException(
                         "not allowed to read collection " + collUri);
             Hashtable result = new Hashtable(collection.getDocumentCount());
-            DocumentImpl doc;
-            Permission perm;
-            Vector tmp;
-            String docName;
             for (Iterator i = collection.iterator(broker); i.hasNext(); ) {
-                doc = (DocumentImpl) i.next();
-                perm = doc.getPermissions();
-                tmp = new Vector(3);
+            	DocumentImpl doc = (DocumentImpl) i.next();
+            	Permission perm = doc.getPermissions();
+            	Vector tmp = new Vector(3);
                 tmp.addElement(perm.getOwner());
                 tmp.addElement(perm.getOwnerGroup());
                 tmp.addElement(new Integer(perm.getPermissions()));
-                docName = doc.getFileURI().toString();
-                result.put(docName, tmp);
+                result.put(doc.getFileURI().toString(), tmp);
             }
             return result;
         } finally {
@@ -979,20 +962,14 @@ public class RpcConnection extends Thread {
             if (collection == null)
                 throw new EXistException("Collection " + collUri + " not found");
             if (!collection.getPermissions().validate(user, Permission.READ))
-                throw new PermissionDeniedException(
-                        "not allowed to read collection " + collUri);
-            Hashtable result = new Hashtable(collection
-                    .getChildCollectionCount());
-            XmldbURI child, path;
-            Collection childColl;
-            Permission perm;
-            Vector tmp;
+                throw new PermissionDeniedException("not allowed to read collection " + collUri);
+            Hashtable result = new Hashtable(collection.getChildCollectionCount());       
             for (Iterator i = collection.collectionIterator(); i.hasNext(); ) {
-                child = (XmldbURI) i.next();
-                path = collUri.append(child);
-                childColl = broker.getCollection(path);
-                perm = childColl.getPermissions();
-                tmp = new Vector(3);
+            	XmldbURI child = (XmldbURI) i.next();
+            	XmldbURI path = collUri.append(child);
+                Collection childColl = broker.getCollection(path);
+                Permission perm = childColl.getPermissions();
+                Vector tmp = new Vector(3);
                 tmp.addElement(perm.getOwner());
                 tmp.addElement(perm.getOwnerGroup());
                 tmp.addElement(new Integer(perm.getPermissions()));
@@ -1066,8 +1043,7 @@ public class RpcConnection extends Thread {
             broker = brokerPool.get(user);
             collection = broker.openCollection(collUri, Lock.READ_LOCK);
             if (collection == null)
-                throw new EXistException("collection " + collUri
-                        + " not found");
+                throw new EXistException("collection " + collUri + " not found");
             return new Date(collection.getCreationTime());
         } finally {
             if(collection != null)
@@ -1192,53 +1168,49 @@ public class RpcConnection extends Thread {
     }
     public boolean parse(User user, byte[] xml, XmldbURI docUri,
             boolean replace, Date created, Date modified) throws Exception {
-        DBBroker broker = null;
-        Collection collection = null;
+        DBBroker broker = null;       
         TransactionManager transact = brokerPool.getTransactionManager();
-        Txn txn = transact.beginTransaction();
+        Txn transaction = transact.beginTransaction();
         try {
             long startTime = System.currentTimeMillis();
             broker = brokerPool.get(user);
             InputSource source;
             IndexInfo info;
-            try {
-                collection = broker.openCollection(docUri.removeLastSegment(), Lock.WRITE_LOCK);
-                if (collection == null) {
-                    transact.abort(txn);
-                    throw new EXistException("Collection " + docUri.removeLastSegment()
-                            + " not found");
-                }
-                if (!replace) {
-                    DocumentImpl old = collection.getDocument(broker, docUri.lastSegment());
-                    if (old != null) {
-                        transact.abort(txn);
-                        throw new PermissionDeniedException(
-                                "Document exists and overwrite is not allowed");
-                    }
-                }
-                InputStream is = new ByteArrayInputStream(xml);
-                source = new InputSource(is);
-                info = collection.validateXMLResource(txn, broker, docUri.lastSegment(), source);
-            } finally {
-                if(collection != null)
-                    collection.release(Lock.WRITE_LOCK);
+            Collection collection = broker.openCollection(docUri.removeLastSegment(), Lock.WRITE_LOCK);
+            // keep the write lock in the transaction
+            transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);  
+            if (collection == null) {
+                transact.abort(transaction);
+                throw new EXistException("Collection " + docUri.removeLastSegment()
+                        + " not found");
             }
+            if (!replace) {
+                DocumentImpl old = collection.getDocument(broker, docUri.lastSegment());
+                if (old != null) {
+                    transact.abort(transaction);
+                    throw new PermissionDeniedException(
+                            "Document exists and overwrite is not allowed");
+                }
+            }
+            InputStream is = new ByteArrayInputStream(xml);
+            source = new InputSource(is);
+            info = collection.validateXMLResource(transaction, broker, docUri.lastSegment(), source);
             
             if (created != null)
-                info.getDocument().getMetadata().setCreated( created.getTime());
-            
+                info.getDocument().getMetadata().setCreated( created.getTime());            
             
             if (modified != null)
                 info.getDocument().getMetadata().setLastModified( modified.getTime());
-            collection.store(txn, broker, info, source, false);
-            transact.commit(txn);
+            
+            collection.store(transaction, broker, info, source, false);
+            transact.commit(transaction);
             
             LOG.debug("parsing " + docUri + " took "
                     + (System.currentTimeMillis() - startTime) + "ms.");
             documentCache.clear();
             return true;
         } catch (Exception e) {
-            transact.abort(txn);
+            transact.abort(transaction);
             LOG.debug(e.getMessage(), e);
             throw e;
         } finally {
@@ -1277,7 +1249,7 @@ public class RpcConnection extends Thread {
         if (!file.canRead())
             throw new EXistException("unable to read file " + localFile);
         TransactionManager transact = brokerPool.getTransactionManager();
-        Txn txn = transact.beginTransaction();
+        Txn transaction = transact.beginTransaction();
         DBBroker broker = null;
         DocumentImpl doc = null;
         
@@ -1290,40 +1262,34 @@ public class RpcConnection extends Thread {
             broker = brokerPool.get(user);
             Collection collection = null;
             IndexInfo info=null;
-            InputSource source=null;
-            try {
-                collection = broker.openCollection(docUri.removeLastSegment(), Lock.WRITE_LOCK);
-                if (collection == null) {
-                    transact.abort(txn);
-                    throw new EXistException("Collection " + docUri.removeLastSegment()
-                            + " not found");
-                }
-                if (!replace) {
-                    DocumentImpl old = collection.getDocument(broker, docUri.lastSegment());
-                    if (old != null) {
-                        transact.abort(txn);
-                        throw new PermissionDeniedException(
-                                "Old document exists and overwrite is not allowed");
-                    }
-                }
-                
-                //XML
-                if(mime.isXMLType()) {
-                    source = new InputSource(file.toURI().toASCIIString());
-                    info = collection.validateXMLResource(txn, broker, docUri.lastSegment(), source);
-                    
-                } else {
-                    FileInputStream is = new FileInputStream(file);
-                    doc = collection.addBinaryResource(txn, broker, docUri.lastSegment(), is, 
-                            mime.getName(), (int) file.length());
-                    is.close();
+            InputSource source = null;
 
-                    
+            collection = broker.openCollection(docUri.removeLastSegment(), Lock.WRITE_LOCK);
+            // keep the write lock in the transaction
+            transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);  
+            
+            if (collection == null) {
+                transact.abort(transaction);
+                throw new EXistException("Collection " + docUri.removeLastSegment() + " not found");
+            }
+            if (!replace) {
+                DocumentImpl old = collection.getDocument(broker, docUri.lastSegment());
+                if (old != null) {
+                    transact.abort(transaction);
+                    throw new PermissionDeniedException("Old document exists and overwrite is not allowed");
                 }
-            } finally {
-                // DWES originally before set time ; is this ok?
-                if(collection != null)
-                    collection.release(Lock.WRITE_LOCK);
+            }
+            
+            //XML
+            if(mime.isXMLType()) {
+                source = new InputSource(file.toURI().toASCIIString());
+                info = collection.validateXMLResource(transaction, broker, docUri.lastSegment(), source);
+                
+            } else {
+                FileInputStream is = new FileInputStream(file);
+                doc = collection.addBinaryResource(transaction, broker, docUri.lastSegment(), is, 
+                        mime.getName(), (int) file.length());
+                is.close();
             }
             
             if(mime.isXMLType()){
@@ -1332,22 +1298,20 @@ public class RpcConnection extends Thread {
                 
                 if (modified != null)
                     info.getDocument().getMetadata().setLastModified(modified.getTime());
-                collection.store(txn, broker, info, source, false);
+                collection.store(transaction, broker, info, source, false);
                 
             } else {
                 //DWES... add created/modified?
                 if (created != null)
                     doc.getMetadata().setCreated(created.getTime());
                 if (modified != null)
-                    doc.getMetadata().setLastModified(modified.getTime());
-                
+                    doc.getMetadata().setLastModified(modified.getTime());                
             }
-
             
             // generic
-            transact.commit(txn);
+            transact.commit(transaction);
         } catch (Exception e) {
-            transact.abort(txn);
+            transact.abort(transaction);
             throw e;
         } finally {
             brokerPool.release(broker);
@@ -1378,36 +1342,37 @@ public class RpcConnection extends Thread {
     public boolean storeBinary(User user, byte[] data, XmldbURI docUri, String mimeType,
             boolean replace, Date created, Date modified) throws Exception {
         DBBroker broker = null;
-        DocumentImpl doc = null;
-        Collection collection = null;
+        DocumentImpl doc = null;   
         TransactionManager transact = brokerPool.getTransactionManager();
-        Txn txn = transact.beginTransaction();
+        Txn transaction = transact.beginTransaction();
         try {
             broker = brokerPool.get(user);
-            collection = broker.openCollection(docUri.removeLastSegment(), Lock.WRITE_LOCK);
-            if (collection == null)
-                throw new EXistException("Collection " + docUri.removeLastSegment()
-                        + " not found");
+            Collection collection = broker.openCollection(docUri.removeLastSegment(), Lock.WRITE_LOCK);
+            // keep the write lock in the transaction
+            transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
+            if (collection == null) {
+            	transact.abort(transaction);
+                throw new EXistException("Collection " + docUri.removeLastSegment() + " not found");
+            }
             if (!replace) {
                 DocumentImpl old = collection.getDocument(broker, docUri.lastSegment());
-                if (old != null)
-                    throw new PermissionDeniedException(
-                            "Old document exists and overwrite is not allowed");
+                if (old != null) {
+                	transact.abort(transaction);
+                    throw new PermissionDeniedException("Old document exists and overwrite is not allowed");
+                }
             }
             LOG.debug("Storing binary resource to collection " + collection.getURI());
             
-            doc = collection.addBinaryResource(txn, broker, docUri.lastSegment(), data, mimeType);
+            doc = collection.addBinaryResource(transaction, broker, docUri.lastSegment(), data, mimeType);
             if (created != null)
                 doc.getMetadata().setCreated(created.getTime());
             if (modified != null)
                 doc.getMetadata().setLastModified(modified.getTime());
-            transact.commit(txn);
+            transact.commit(transaction);
         } catch (Exception e) {
-            transact.abort(txn);
+            transact.abort(transaction);
             throw e;
         } finally {
-            if(collection != null)
-                collection.release(Lock.WRITE_LOCK);
             brokerPool.release(broker);
         }
         documentCache.clear();
@@ -1716,60 +1681,62 @@ public class RpcConnection extends Thread {
     }    
     public void remove(User user, XmldbURI docUri) throws Exception {
         TransactionManager transact = brokerPool.getTransactionManager();
-        Txn txn = transact.beginTransaction();
+        Txn transaction = transact.beginTransaction();
         DBBroker broker = null;
         Collection collection = null;
         try {
             broker = brokerPool.get(user);
             collection = broker.openCollection(docUri.removeLastSegment(), Lock.WRITE_LOCK);
+            // keep the write lock in the transaction
+            transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
             if (collection == null) {
-                transact.abort(txn);
-                throw new EXistException("Collection " + docUri.removeLastSegment()
-                        + " not found");
+                transact.abort(transaction);
+                throw new EXistException("Collection " + docUri.removeLastSegment() + " not found");
             }
             DocumentImpl doc = collection.getDocument(broker, docUri.lastSegment());
-            if(doc == null) {
-                transact.abort(txn);
+            if (doc == null) {
+                transact.abort(transaction);
                 throw new EXistException("Document " + docUri + " not found");
             }
             
             if(doc.getResourceType() == DocumentImpl.BINARY_FILE)
-                collection.removeBinaryResource(txn, broker, doc);
+                collection.removeBinaryResource(transaction, broker, doc);
             else
-                collection.removeXMLResource(txn, broker, docUri.lastSegment());
-            transact.commit(txn);
+                collection.removeXMLResource(transaction, broker, docUri.lastSegment());
+            transact.commit(transaction);
             documentCache.clear();
         } finally {
-            if(collection != null)
-                collection.release(Lock.WRITE_LOCK);
             brokerPool.release(broker);
         }
     }
     
     public boolean removeCollection(User user, String collectionName) throws Exception, URISyntaxException {
     	return removeCollection(user,XmldbURI.xmldbUriFor(collectionName));
-    }    
+    } 
+    
     public boolean removeCollection(User user, XmldbURI collURI) throws Exception {
         TransactionManager transact = brokerPool.getTransactionManager();
-        Txn txn = transact.beginTransaction();
+        Txn transaction = transact.beginTransaction();
         DBBroker broker = null;
         Collection collection = null;
         try {
             broker = brokerPool.get(user);
             collection = broker.openCollection(collURI, Lock.WRITE_LOCK);
-            if (collection == null)
+            // keep the write lock in the transaction
+            transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
+            if (collection == null) {
+            	transact.abort(transaction);
                 return false;
+            }
             LOG.debug("removing collection " + collURI);
             documentCache.clear();
-            boolean removed = broker.removeCollection(txn, collection);
-            transact.commit(txn);
+            boolean removed = broker.removeCollection(transaction, collection);
+            transact.commit(transaction);
             return removed;
         } catch (Exception e) {
-            transact.abort(txn);
+            transact.abort(transaction);
             throw e;
         } finally {
-            if(collection != null)
-                collection.getLock().release(Lock.WRITE_LOCK);
             brokerPool.release(broker);
         }
     }
@@ -1926,11 +1893,14 @@ public class RpcConnection extends Thread {
             org.exist.security.SecurityManager manager = brokerPool
                     .getSecurityManager();
             collection = broker.openCollection(uri, Lock.WRITE_LOCK);
+            // keep the write lock in the transaction
+            transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);            
             if (collection == null) {
                 doc = broker.getXMLResource(uri, Lock.WRITE_LOCK);
-                if (doc == null)
-                    throw new EXistException("document or collection "
-                            + uri + " not found");
+                if (doc == null) {
+                	transact.abort(transaction);
+                	throw new EXistException("document or collection " + uri + " not found");
+                }
                 LOG.debug("changing permissions on document " + uri);
                 Permission perm = doc.getPermissions();
                 if (perm.getOwner().equals(user.getName())
@@ -1963,16 +1933,13 @@ public class RpcConnection extends Thread {
                             manager.addGroup(ownerGroup);
                         perm.setGroup(ownerGroup);
                     }
-                    // keep the write lock in the transaction
-                    transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
                     broker.saveCollection(transaction, collection);
                     transact.commit(transaction);
                     broker.flush();
                     return true;
                 }
                 transact.abort(transaction);
-                throw new PermissionDeniedException(
-                        "not allowed to change permissions");
+                throw new PermissionDeniedException("not allowed to change permissions");
             }
         } catch (SyntaxException e) {
             transact.abort(transaction);
@@ -2002,14 +1969,16 @@ public class RpcConnection extends Thread {
         Txn transaction = transact.beginTransaction();
         try {
             broker = brokerPool.get(user);
-            org.exist.security.SecurityManager manager = brokerPool
-                    .getSecurityManager();
+            org.exist.security.SecurityManager manager = brokerPool.getSecurityManager();
             collection = broker.openCollection(uri, Lock.WRITE_LOCK);
+            //keep the write lock in the transaction
+            transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
             if (collection == null) {
                 doc = broker.getXMLResource(uri, Lock.WRITE_LOCK);
-                if (doc == null)
-                    throw new EXistException("document or collection "
-                            + uri + " not found");
+                if (doc == null) {
+                	transact.abort(transaction);
+                	throw new EXistException("document or collection " + uri + " not found");
+                }
                 LOG.debug("changing permissions on document " + uri);
                 Permission perm = doc.getPermissions();
                 if (perm.getOwner().equals(user.getName())
@@ -2039,8 +2008,7 @@ public class RpcConnection extends Thread {
                     if (!manager.hasGroup(ownerGroup))
                         manager.addGroup(ownerGroup);
                     perm.setGroup(ownerGroup);
-                }
-                transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
+                }                
                 broker.saveCollection(transaction, collection);
                 transact.commit(transaction);
                 broker.flush();
@@ -2422,8 +2390,7 @@ public class RpcConnection extends Thread {
             broker = brokerPool.get(user);
             collection = broker.openCollection(collUri, Lock.READ_LOCK);
             if (collection == null)
-                throw new EXistException("collection " + collUri
-                        + " not found");
+                throw new EXistException("collection " + collUri + " not found");
             Occurrences occurrences[] = broker.getElementIndex().scanIndexedElements(collection,
                     inclusive);
             Vector result = new Vector(occurrences.length);
@@ -2458,8 +2425,7 @@ public class RpcConnection extends Thread {
             broker = brokerPool.get(user);
             collection = broker.openCollection(collUri, Lock.READ_LOCK);
             if (collection == null)
-                throw new EXistException("collection " + collUri
-                        + " not found");
+                throw new EXistException("collection " + collUri + " not found");
             DocumentSet docs = new DocumentSet();
             collection.allDocs(broker, docs, inclusive, true);
             NodeSet nodes = docs.toNodeSet();
@@ -2613,12 +2579,12 @@ public class RpcConnection extends Thread {
         Collection destination = null;
         DocumentImpl doc = null;
         try {
+        	//TODO : use  transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
             broker = brokerPool.get(user);
             collection = broker.openCollection(docUri.removeLastSegment(), move ? Lock.WRITE_LOCK : Lock.READ_LOCK);
             if (collection == null) {
                 transact.abort(transaction);
-                throw new EXistException("Collection " + docUri.removeLastSegment()
-                        + " not found");
+                throw new EXistException("Collection " + docUri.removeLastSegment() + " not found");
             }
             doc = collection.getDocumentWithLock(broker, docUri.lastSegment(), Lock.WRITE_LOCK);
             if(doc == null) {
@@ -2659,6 +2625,7 @@ public class RpcConnection extends Thread {
     	return moveOrCopyCollection(user,XmldbURI.xmldbUriFor(collectionName),
     			XmldbURI.xmldbUriFor(destinationPath),XmldbURI.xmldbUriFor(newName),move);
     }    
+    
     public boolean moveOrCopyCollection(User user, XmldbURI collUri, XmldbURI destUri,
             XmldbURI newName, boolean move)
             throws EXistException, PermissionDeniedException {
@@ -2670,11 +2637,11 @@ public class RpcConnection extends Thread {
         try {
             broker = brokerPool.get(user);
             // get source document
+            //TODO : use  transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
             collection = broker.openCollection(collUri, move ? Lock.WRITE_LOCK : Lock.READ_LOCK);
             if (collection == null) {
                 transact.abort(transaction);
-                throw new EXistException("Collection " + collUri
-                        + " not found");
+                throw new EXistException("Collection " + collUri + " not found");
             }
             // get destination collection
             destination = broker.openCollection(destUri, Lock.WRITE_LOCK);
@@ -2844,17 +2811,18 @@ public class RpcConnection extends Thread {
             broker = brokerPool.get(user);
             doc = broker.getXMLResource(docUri, Lock.WRITE_LOCK);
             if (doc == null) {
-                throw new EXistException("Resource "
-                        + docUri + " not found");
+            	transact.abort(transaction);
+                throw new EXistException("Resource " + docUri + " not found");
             }
-            if (!doc.getPermissions().validate(user, Permission.UPDATE))
-                throw new PermissionDeniedException("User is not allowed to lock resource " + docUri);
+            if (!doc.getPermissions().validate(user, Permission.UPDATE)) {
+            	transact.abort(transaction);
+            	throw new PermissionDeniedException("User is not allowed to lock resource " + docUri);
+            }
             
-            if (!doctypename.equals("") ) {
+            if (!"".equals(doctypename)) {
             	result = new DocumentTypeImpl(doctypename,
-            			publicid.equals("") ? null : publicid,
-            			systemid.equals("") ? null : systemid );
-            	
+            			"".equals(publicid) ? null : publicid,
+            			"".equals(systemid) ? null : systemid );            	
             }
             	            
             doc.setDocumentType(result);
