@@ -66,7 +66,11 @@ import org.exist.util.ReadOnlyException;
 import org.exist.util.hashtable.Object2LongIdentityHashMap;
 import org.exist.util.sanity.SanityCheck;
 import org.exist.xquery.TerminatedException;
+import org.exist.stax.EmbeddedXMLStreamReader;
 import org.w3c.dom.Node;
+
+import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.XMLStreamException;
 
 /**
  * This is the main storage for XML nodes. Nodes are stored in document order.
@@ -1108,77 +1112,86 @@ public class DOMFile extends BTree implements Lockable {
 		}
 	}
 	
-	/* TODO: Non-recursive implementation. Should be faster, but no measurable 
-	 * difference observed so far. Keep as reference for future uses. */
-	private long findNode2(StoredNode node, NodeId target, Iterator iter) {
-		Stack stack = new Stack();
-		stack.push(new ChildNode(node));
-		while(!stack.isEmpty()) {
-			StoredNode temp = ((ChildNode) stack.peek()).node;
-			int index = ((ChildNode) stack.peek()).index;
-			if (index < temp.getChildCount()) {
-				((ChildNode) stack.peek()).index++;
-				temp = (StoredNode) iter.next();
-				if (target.equals(temp.getNodeId()))
-					return ((NodeIterator) iter).currentAddress();
-				if (temp.hasChildNodes()) {
-					stack.push(new ChildNode(temp));
-					index = 0;
-				}
-			}
-			while (index == temp.getChildCount()) {
-				stack.pop();
-				if (!stack.isEmpty()) {
-					index = ((ChildNode) stack.peek()).index;
-					temp = ((ChildNode) stack.peek()).node;
-				} else
-					break;
-			}
-		}
-		return StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;
-	}
-	
-	private long findNode(StoredNode node, NodeId target, Iterator iter) {
-		if (!lock.hasLock())
-			LOG.warn("the file doesn't own a lock");
-        if (node.hasChildNodes()) {
-			for (int i = 0; i < node.getChildCount(); i++) {
-				StoredNode child = (StoredNode) iter.next();
-
-				SanityCheck.ASSERT(child != null, "Next node missing.");
-
-				if (target.equals(child.getNodeId())) {
-					return ((NodeIterator) iter).currentAddress();
-				}
-				long p;
-				if ((p = findNode(child, target, iter)) != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
-					return p;
-			}
-		}
-		return StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;
-	}
+//	private long findNode(StoredNode node, NodeId target, Iterator iter) {
+//		if (!lock.hasLock())
+//			LOG.warn("the file doesn't own a lock");
+//        if (node.hasChildNodes()) {
+//			for (int i = 0; i < node.getChildCount(); i++) {
+//				StoredNode child = (StoredNode) iter.next();
+//
+//				SanityCheck.ASSERT(child != null, "Next node missing.");
+//
+//				if (target.equals(child.getNodeId())) {
+//					return ((NodeIterator) iter).currentAddress();
+//				}
+//				long p;
+//				if ((p = findNode(child, target, iter)) != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
+//					return p;
+//			}
+//		}
+//		return StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;
+//	}
 
 	/**
 	 * Find a node by searching for a known ancestor in the index. If an
 	 * ancestor is found, it is traversed to locate the specified descendant
 	 * node.
-	 * 
+	 *
 	 * @param lockObject
 	 * @param node
 	 * @return The node's adress or <code>KEY_NOT_FOUND</code> if the node can not be found.
 	 * @throws IOException
 	 * @throws BTreeException
 	 */
-	protected long findValue(Object lockObject, NodeProxy node) throws IOException,
+//	protected long findValue2(Object lockObject, NodeProxy node) throws IOException,
+//			BTreeException {
+//		if (!lock.hasLock())
+//			LOG.warn("the file doesn't own a lock");
+//		final DocumentImpl doc = (DocumentImpl) node.getDocument();
+//		final NativeBroker.NodeRef nodeRef = new NativeBroker.NodeRef(doc.getDocId(), node.getNodeId());
+//		// first try to find the node in the index
+//		final long p = findValue(nodeRef);
+//		if (p == KEY_NOT_FOUND) {
+//            Thread.dumpStack();
+//            // node not found in index: try to find the nearest available
+//			// ancestor and traverse it
+//			NodeId id = node.getNodeId();
+//			long parentPointer = KEY_NOT_FOUND;
+//			do {
+//				id = id.getParentId();
+//				if (id == NodeId.DOCUMENT_NODE) {
+//					SanityCheck.TRACE("Node " + node.getDocument().getDocId() + ":" + node.getNodeId() + " not found.");
+//					throw new BTreeException("node " + node.getNodeId() + " not found.");
+//				}
+//				NativeBroker.NodeRef parentRef = new NativeBroker.NodeRef(doc.getDocId(), id);
+//				try {
+//					parentPointer = findValue(parentRef);
+//				} catch (BTreeException bte) {
+//					LOG.info("report me", bte);
+//				}
+//			} while (parentPointer == KEY_NOT_FOUND);
+//
+//			final Iterator iter = new NodeIterator(lockObject, this, node.getDocument(), parentPointer);
+//			final StoredNode n = (StoredNode) iter.next();
+//			final long address = findNode(n, node.getNodeId(), iter);
+//			if (address == StoredNode.UNKNOWN_NODE_IMPL_ADDRESS) {
+//				LOG.warn("Node data location not found for node " + node.getNodeId());
+//				return KEY_NOT_FOUND;
+//			} else
+//				return address;
+//		} else
+//			return p;
+//	}
+
+    protected long findValue(Object lockObject, NodeProxy node) throws IOException,
 			BTreeException {
 		if (!lock.hasLock())
 			LOG.warn("the file doesn't own a lock");
-		final DocumentImpl doc = (DocumentImpl) node.getDocument();
+		final DocumentImpl doc = node.getDocument();
 		final NativeBroker.NodeRef nodeRef = new NativeBroker.NodeRef(doc.getDocId(), node.getNodeId());
 		// first try to find the node in the index
 		final long p = findValue(nodeRef);
 		if (p == KEY_NOT_FOUND) {
-//            Thread.dumpStack();
             // node not found in index: try to find the nearest available
 			// ancestor and traverse it
 			NodeId id = node.getNodeId();
@@ -1197,19 +1210,28 @@ public class DOMFile extends BTree implements Lockable {
 				}
 			} while (parentPointer == KEY_NOT_FOUND);
 
-			final Iterator iter = new NodeIterator(lockObject, this, node.getDocument(), parentPointer);
-			final StoredNode n = (StoredNode) iter.next();
-			final long address = findNode(n, node.getNodeId(), iter);
-			if (address == StoredNode.UNKNOWN_NODE_IMPL_ADDRESS) {
-				LOG.warn("Node data location not found for node " + node.getNodeId());
-				return KEY_NOT_FOUND;
-			} else
-				return address;
+            try {
+                final NodeProxy parent = new NodeProxy(doc, id, parentPointer);
+                final EmbeddedXMLStreamReader cursor = doc.getBroker().getXMLStreamReader(parent, true);
+                while(cursor.hasNext()) {
+                    int status = cursor.next();
+                    if (status != XMLStreamReader.END_ELEMENT) {
+                        NodeId nextId = (NodeId) cursor.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID);
+                        if (nextId.equals(node.getNodeId()))
+                            return cursor.getCurrentPosition();
+                    }
+                }
+                LOG.warn("Node " + node.getNodeId() + " could not be found. Giving up.");
+                return KEY_NOT_FOUND;
+            } catch (XMLStreamException e) {
+                SanityCheck.TRACE("Node " + node.getDocument().getDocId() + ":" + node.getNodeId() + " not found.");
+                throw new BTreeException("node " + node.getNodeId() + " not found.");
+            }
 		} else
 			return p;
 	}
 
-	/**
+    /**
 	 * Find matching nodes for the given query.
 	 * 
 	 * @param query

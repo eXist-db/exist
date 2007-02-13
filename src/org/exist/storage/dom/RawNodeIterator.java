@@ -69,6 +69,21 @@ public class RawNodeIterator {
     }
 
     /**
+     * Construct the iterator. The iterator will be positioned before the specified
+     * start node.
+     *
+     * @param lockKey the owner object used to acquire a lock on the underlying data file (usually a DBBroker)
+     * @param db the underlying data file
+     * @param proxy the start node where the iterator will be positioned.
+     * @throws IOException
+     */
+    public RawNodeIterator(Object lockKey, DOMFile db, NodeProxy proxy) throws IOException {
+        this.db = db;
+		this.lockKey = (lockKey == null ? this : lockKey);
+        seek(proxy);
+    }
+
+    /**
      * Reposition the iterator to the start of the specified node.
      *
      * @param node the start node where the iterator will be positioned.
@@ -84,6 +99,39 @@ public class RawNodeIterator {
             if (rec == null) {
                 try {
                     long addr = db.findValue(lockKey, new NodeProxy(node));
+                    if (addr == BTree.KEY_NOT_FOUND)
+                        throw new IOException("Node not found.");
+                    rec = db.findRecord(addr);
+                } catch (BTreeException e) {
+                    throw new IOException("Node not found: " + e.getMessage());
+                }
+            }
+            page = rec.getPage().getPageNum();
+            offset = rec.offset - 2;
+            p = rec.getPage();
+        } catch (LockException e) {
+            throw new IOException("Exception while scanning document: " + e.getMessage());
+        } finally {
+            lock.release(Lock.READ_LOCK);
+        }
+    }
+
+    /**
+     * Reposition the iterator to the start of the specified node.
+     *
+     * @param proxy the start node where the iterator will be positioned.
+     * @throws IOException
+     */
+    public void seek(NodeProxy proxy) throws IOException {
+        Lock lock = db.getLock();
+        try {
+            lock.acquire(Lock.READ_LOCK);
+            RecordPos rec = null;
+            if (proxy.getInternalAddress() != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
+                rec = db.findRecord(proxy.getInternalAddress());
+            if (rec == null) {
+                try {
+                    long addr = db.findValue(lockKey, proxy);
                     if (addr == BTree.KEY_NOT_FOUND)
                         throw new IOException("Node not found.");
                     rec = db.findRecord(addr);
@@ -214,4 +262,14 @@ public class RawNodeIterator {
     public void closeDocument() {
         db.closeDocument();
     }
+
+    /**
+     * Returns the internal virtual storage address of the node at the cursor's current
+     * position.
+     *
+     * @return
+     */
+    public long currentAddress() {
+		return StorageAddress.createPointer((int) page, ItemId.getId(lastTID));
+	}
 }

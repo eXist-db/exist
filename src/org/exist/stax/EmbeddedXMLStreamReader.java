@@ -107,6 +107,24 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
         iterator.seek(node);
     }
 
+    /**
+     * Reposition the stream reader to another start node, maybe in a different document.
+     *
+     * @param proxy the new start node.
+     * @param reportAttributes if set to true, attributes will be reported as top-level events.
+     * @throws IOException
+     */
+    public void reposition(NodeProxy proxy, boolean reportAttributes) throws IOException {
+        reset();
+        this.current = null;
+        this.previous = null;
+        this.elementStack.clear();
+        this.state = START_DOCUMENT;
+        this.reportAttribs = reportAttributes;
+        this.document = (DocumentImpl) proxy.getOwnerDocument();
+        iterator.seek(proxy);
+    }
+
     private void initNode() {
         final short type = Signatures.getType(current.data()[current.start()]);
         switch (type) {
@@ -430,7 +448,17 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
         node.setInternalAddress(previous.getAddress());
         return node;
     }
-    
+
+    /**
+     * Returns the (internal) address of the node at the cursor's current
+     * position.
+     * 
+     * @return
+     */
+    public long getCurrentPosition() {
+        return iterator.currentAddress();
+    }
+
     public String getVersion() {
         return "1.0";
     }
