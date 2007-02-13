@@ -195,12 +195,12 @@ public class RpcConnection extends Thread {
         try {
             broker = brokerPool.get(user);
             collection = broker.openCollection(collUri, Lock.READ_LOCK);
-            // keep the read lock in the transaction
-            transaction.registerLock(collection.getLock(), Lock.READ_LOCK);             
             if (collection == null) {
                 transact.abort(transaction);
                 throw new EXistException("collection " + collUri + " not found!");
             }
+            // keep the read lock in the transaction
+            transaction.registerLock(collection.getLock(), Lock.READ_LOCK);             
             CollectionConfigurationManager mgr = brokerPool.getConfigurationManager();
             mgr.addConfiguration(transaction, broker, collection, configuration);
             transact.commit(transaction);
@@ -1177,19 +1177,18 @@ public class RpcConnection extends Thread {
             InputSource source;
             IndexInfo info;
             Collection collection = broker.openCollection(docUri.removeLastSegment(), Lock.WRITE_LOCK);
-            // keep the write lock in the transaction
-            transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);  
             if (collection == null) {
                 transact.abort(transaction);
                 throw new EXistException("Collection " + docUri.removeLastSegment()
                         + " not found");
             }
+            // keep the write lock in the transaction
+            transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);  
             if (!replace) {
                 DocumentImpl old = collection.getDocument(broker, docUri.lastSegment());
                 if (old != null) {
                     transact.abort(transaction);
-                    throw new PermissionDeniedException(
-                            "Document exists and overwrite is not allowed");
+                    throw new PermissionDeniedException("Document exists and overwrite is not allowed");
                 }
             }
             InputStream is = new ByteArrayInputStream(xml);
@@ -1261,20 +1260,17 @@ public class RpcConnection extends Thread {
         try {
             broker = brokerPool.get(user);
             Collection collection = null;
-            IndexInfo info=null;
+            IndexInfo info = null;
             InputSource source = null;
 
             collection = broker.openCollection(docUri.removeLastSegment(), Lock.WRITE_LOCK);
-            
             if (collection == null) {
                 transact.abort(transaction);
                 throw new EXistException("Collection " + docUri.removeLastSegment() + " not found");
             }
-            
+
             // keep the write lock in the transaction
             transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);  
-
-            
             if (!replace) {
                 DocumentImpl old = collection.getDocument(broker, docUri.lastSegment());
                 if (old != null) {
@@ -1351,12 +1347,12 @@ public class RpcConnection extends Thread {
         try {
             broker = brokerPool.get(user);
             Collection collection = broker.openCollection(docUri.removeLastSegment(), Lock.WRITE_LOCK);
-            // keep the write lock in the transaction
-            transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
             if (collection == null) {
             	transact.abort(transaction);
                 throw new EXistException("Collection " + docUri.removeLastSegment() + " not found");
             }
+            // keep the write lock in the transaction
+            transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
             if (!replace) {
                 DocumentImpl old = collection.getDocument(broker, docUri.lastSegment());
                 if (old != null) {
@@ -1690,12 +1686,13 @@ public class RpcConnection extends Thread {
         try {
             broker = brokerPool.get(user);
             collection = broker.openCollection(docUri.removeLastSegment(), Lock.WRITE_LOCK);
-            // keep the write lock in the transaction
-            transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
             if (collection == null) {
                 transact.abort(transaction);
                 throw new EXistException("Collection " + docUri.removeLastSegment() + " not found");
             }
+            // keep the write lock in the transaction
+            transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
+
             DocumentImpl doc = collection.getDocument(broker, docUri.lastSegment());
             if (doc == null) {
                 transact.abort(transaction);
@@ -1725,12 +1722,12 @@ public class RpcConnection extends Thread {
         try {
             broker = brokerPool.get(user);
             collection = broker.openCollection(collURI, Lock.WRITE_LOCK);
-            // keep the write lock in the transaction
-            transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
             if (collection == null) {
             	transact.abort(transaction);
                 return false;
             }
+            // keep the write lock in the transaction
+            transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
             LOG.debug("removing collection " + collURI);
             documentCache.clear();
             boolean removed = broker.removeCollection(transaction, collection);
@@ -1896,8 +1893,6 @@ public class RpcConnection extends Thread {
             org.exist.security.SecurityManager manager = brokerPool
                     .getSecurityManager();
             collection = broker.openCollection(uri, Lock.WRITE_LOCK);
-            // keep the write lock in the transaction
-            transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);            
             if (collection == null) {
                 doc = broker.getXMLResource(uri, Lock.WRITE_LOCK);
                 if (doc == null) {
@@ -1924,6 +1919,8 @@ public class RpcConnection extends Thread {
                 transact.abort(transaction);
                 throw new PermissionDeniedException("not allowed to change permissions");
             } else {
+                // keep the write lock in the transaction
+                transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);            
                 LOG.debug("changing permissions on collection " + uri);
                 Permission perm = collection.getPermissions();
                 if (perm.getOwner().equals(user.getName())
@@ -1974,8 +1971,6 @@ public class RpcConnection extends Thread {
             broker = brokerPool.get(user);
             org.exist.security.SecurityManager manager = brokerPool.getSecurityManager();
             collection = broker.openCollection(uri, Lock.WRITE_LOCK);
-            //keep the write lock in the transaction
-            transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
             if (collection == null) {
                 doc = broker.getXMLResource(uri, Lock.WRITE_LOCK);
                 if (doc == null) {
@@ -2001,6 +1996,8 @@ public class RpcConnection extends Thread {
                 transact.abort(transaction);
                 throw new PermissionDeniedException("not allowed to change permissions");
             }
+            //keep the write lock in the transaction
+            transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);
             LOG.debug("changing permissions on collection " + uri);
             Permission perm = collection.getPermissions();
             if (perm.getOwner().equals(user.getName())
