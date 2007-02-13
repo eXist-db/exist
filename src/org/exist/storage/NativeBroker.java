@@ -556,6 +556,17 @@ public class NativeBroker extends DBBroker {
         return streamReader;
     }
 
+    public EmbeddedXMLStreamReader getXMLStreamReader(NodeProxy proxy, boolean reportAttributes)
+            throws IOException, XMLStreamException {
+        if (streamReader == null) {
+            RawNodeIterator iterator = new RawNodeIterator(this, domDb, proxy);
+            streamReader = new EmbeddedXMLStreamReader((DocumentImpl) proxy.getOwnerDocument(), iterator, reportAttributes);
+        } else {
+            streamReader.reposition(proxy, reportAttributes);
+        }
+        return streamReader;
+    }
+
     public Iterator getNodeIterator(StoredNode node) {
        if (node == null)
           throw new IllegalArgumentException("The node parameter cannot be null.");
