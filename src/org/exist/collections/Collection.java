@@ -894,8 +894,9 @@ public  class Collection extends Observable
             doParse.run();
             
             broker.storeXMLResource(transaction, document);
-            broker.closeDocument();
             broker.flush();
+            broker.closeDocument();
+            
 //			broker.checkTree(document);
             LOG.debug("document stored.");
             // if we are running in privileged mode (e.g. backup/restore), notify the SecurityManager about changes
