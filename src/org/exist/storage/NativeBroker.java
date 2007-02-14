@@ -1349,8 +1349,8 @@ public class NativeBroker extends DBBroker {
             //store the temporary document
             temp.addDocument(transaction, this, targetDoc);
             storeXMLResource(transaction, targetDoc);
-            closeDocument();
             flush();
+            closeDocument();            
         
             //commit the transaction
             transact.commit(transaction);
