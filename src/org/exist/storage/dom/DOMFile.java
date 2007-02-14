@@ -54,6 +54,7 @@ import org.exist.storage.btree.Value;
 import org.exist.storage.cache.Cache;
 import org.exist.storage.cache.Cacheable;
 import org.exist.storage.cache.LRUCache;
+import org.exist.storage.io.VariableByteArrayInput;
 import org.exist.storage.journal.LogEntryTypes;
 import org.exist.storage.journal.Loggable;
 import org.exist.storage.journal.Lsn;
@@ -1021,25 +1022,154 @@ public class DOMFile extends BTree implements Lockable {
 		for (int pos = 0; pos < dlen; count++) {
 			final short tid = ByteConversion.byteToShort(page.data, pos);
 			pos += LENGTH_TID;
-            if (ItemId.isLink(tid))
+            if (ItemId.isLink(tid)) {
                 buf.append('L');
-            else if (ItemId.isRelocated(tid))
+            } else if (ItemId.isRelocated(tid)) {            
                 buf.append('R');
+            }             	
 			buf.append(ItemId.getId(tid) + "[" + pos);
 			if (ItemId.isLink(tid)) {
-				buf.append(':').append(LENGTH_FORWARD_LOCATION).append("] ");
+				final long forwardLink = ByteConversion.byteToLong(page.data, pos);
+				buf.append(':').append(forwardLink).append("] ");
 				pos += LENGTH_FORWARD_LOCATION;
 			} else {
 				final short vlen = ByteConversion.byteToShort(page.data, pos);
                 pos += LENGTH_DATA_LENGTH;
 				if (vlen < 0) {
 					LOG.warn("Illegal length: " + vlen);
-					return buf.toString();
+					return buf.append(":illegal length] ").toString();
+				}	
+                if (ItemId.isRelocated(tid)) {
+                	//TODO : output to buffer ?
+                    pos += LENGTH_ORIGINAL_LOCATION; 
+				}	
+				
+				switch (Signatures.getType(page.data[pos])) {
+					case Node.ELEMENT_NODE : {
+							buf.append(':').append("element");
+							int readOffset = pos;
+							readOffset += 1;
+							final int children = ByteConversion.byteToInt(page.data, readOffset);
+				            readOffset += LENGTH_ELEMENT_CHILD_COUNT;
+				            final int dlnLen = ByteConversion.byteToShort(page.data, readOffset);
+				            readOffset += LENGTH_DLN_LENGTH;
+			                //That might happen during recovery runs : TODO, investigate
+			                if (owner == null) {
+			                	buf.append("(can't read data, owner is null)");
+			                } else {
+			                	final int nodeIdLen = ((NativeBroker)owner).getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, page.data, readOffset);
+			                	final VariableByteArrayInput is = new VariableByteArrayInput(page.data, readOffset, nodeIdLen);
+			                	readOffset += nodeIdLen;
+				                try {				                	
+				                	final NodeId nodeId = ((NativeBroker)owner).getBrokerPool().getNodeFactory().createFromStream(is);					                
+					                buf.append("(" + nodeId.toString() + ")");
+				                } catch (Exception e) {				                		
+				                	buf.append("(unable to read node ID)");
+				                }	
+				                final short attributes = ByteConversion.byteToShort(page.data, readOffset);				         						
+								buf.append(" children : " + children);
+								buf.append(" attributes : " + attributes);					                
+							}	
+			                buf.append( "] ");
+							break;
+						}
+					case Node.TEXT_NODE:
+					case Node.CDATA_SECTION_NODE: {
+							if (Signatures.getType(page.data[pos]) == Node.TEXT_NODE)
+									buf.append(':').append("text");		
+							else
+								buf.append(':').append("CDATA");		
+							int readOffset = pos;
+							readOffset += 1;
+				            final int dlnLen = ByteConversion.byteToShort(page.data, readOffset);
+				            readOffset += LENGTH_DLN_LENGTH;
+			                //That might happen during recovery runs : TODO, investigate
+			                if (owner == null) {
+			                	buf.append("(can't read data, owner is null)");
+			                } else {
+			                	final int nodeIdLen = ((NativeBroker)owner).getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, page.data, readOffset);		                
+			                	final VariableByteArrayInput is = new VariableByteArrayInput(page.data, readOffset, nodeIdLen);
+			                	readOffset += nodeIdLen;
+				                try {
+				                	final NodeId nodeId = ((NativeBroker)owner).getBrokerPool().getNodeFactory().createFromStream(is);					                
+					                buf.append("(" + nodeId.toString() + ")");
+				                } catch (Exception e) {
+				                	buf.append("(unable to read node ID)");                
+				                }	
+				                final ByteArrayOutputStream os = new ByteArrayOutputStream();
+				                os.write(page.data, readOffset, vlen - (readOffset - pos));
+				                String value;
+				                try {
+				                	value = new String(os.toByteArray(),"UTF-8");
+				                	if (value.length() > 15) {
+				                		value = value.substring(0,8) + "..." + value.substring(value.length() - 8);
+				                	}
+				                } catch (UnsupportedEncodingException e) {
+				                	value = "can't decode value string";
+				                }
+				                buf.append(":'" + value + "'");		
+				            } 
+			                buf.append("] ");
+							break;
+						}
+			        case Node.ATTRIBUTE_NODE: {
+				        	buf.append(':').append("attribute");
+				        	int readOffset = pos;
+				        	final byte idSizeType = (byte) (page.data[readOffset] & 0x3);
+							final boolean hasNamespace = (page.data[readOffset] & 0x10) == 0x10;
+							readOffset += 1;
+			                final int dlnLen = ByteConversion.byteToShort(page.data, readOffset);	
+			                readOffset += LENGTH_DLN_LENGTH;
+			                //That might happen during recovery runs : TODO, investigate
+			                if (owner == null) {
+			                	buf.append("(can't read data, owner is null)");
+			                } else {
+			                	final int nodeIdLen = ((NativeBroker)owner).getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, page.data, readOffset);			                	
+			                	final VariableByteArrayInput is = new VariableByteArrayInput(page.data, readOffset, nodeIdLen);
+			                	readOffset += nodeIdLen;
+				                try {
+				                	final NodeId nodeId = ((NativeBroker)owner).getBrokerPool().getNodeFactory().createFromStream(is);					                
+					                buf.append("(" + nodeId.toString() + ")");
+				                } catch (Exception e) {
+				                	buf.append("(unable to read node ID)");                
+				                }		                
+				                readOffset += Signatures.getLength(idSizeType); 
+				                if (hasNamespace) {
+				                	//Untested
+				                	final short NSId = ByteConversion.byteToShort(page.data, readOffset);
+				                	readOffset += 2;
+				                	final String NsURI = ((NativeBroker)owner).getSymbols().getNamespace(NSId);					                	
+									final short prefixLen = ByteConversion.byteToShort(page.data, readOffset);
+									readOffset += prefixLen + 2; 
+									final ByteArrayOutputStream os = new ByteArrayOutputStream();
+					                os.write(page.data, readOffset, vlen - (readOffset - prefixLen));
+					                String prefix = "";
+					                try {
+					                	prefix = new String(os.toByteArray(),"UTF-8");				                	
+					                } catch (UnsupportedEncodingException e) {
+					                	LOG.error("can't decode prefix string");
+					                }		
+					                buf.append(prefix + "{" + NsURI + "}");
+								}		                
+				                final ByteArrayOutputStream os = new ByteArrayOutputStream();
+				                os.write(page.data, readOffset, vlen - (readOffset - pos));
+				                String value;
+				                try {
+				                	value = new String(os.toByteArray(),"UTF-8");
+				                	if (value.length() > 15) {
+				                		value = value.substring(0,8) + "..." + value.substring(value.length() - 8);
+				                	}
+				                } catch (UnsupportedEncodingException e) {
+				                	value = "can't decode value string";
+				                }
+				                buf.append(":'" + value + "'");
+							}
+							buf.append("] ");
+			                break;
+			        	}
+			        default:
+			        	buf.append(':').append("UNKNOWN !").append("]");
 				}
-				buf.append(':').append(vlen).append("]");
-                if (ItemId.isRelocated(tid))
-                    pos += LENGTH_ORIGINAL_LOCATION;
-                buf.append(':').append(Signatures.getType(page.data[pos])).append(' ');
                 pos += vlen;
 			}
 		}
@@ -1886,6 +2016,9 @@ public class DOMFile extends BTree implements Lockable {
 		} else {
             
 			if (isTransactional && transaction != null) {
+				if (rec.getTID() < 0) {
+					LOG.warn("tid < 0");
+				}
                 Loggable loggable = new UpdateValueLoggable(transaction, rec.getPage().getPageNum(), 
                 		rec.getTID(), value, rec.getPage().data, rec.offset);
                 writeToLog(loggable, rec.getPage().page);
@@ -2016,8 +2149,9 @@ public class DOMFile extends BTree implements Lockable {
 	            readOffset += doc.getBroker().getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, data, readOffset);
 	            final short attributes = ByteConversion.byteToShort(data, readOffset);
 	            rec.offset += realLen + LENGTH_ATTRIBUTES_COUNT;
+	            final boolean extraWhitespace = addWhitespace && (children - attributes) > 1;	
 				for (int i = 0; i < children; i++) {
-		            final boolean extraWhitespace = addWhitespace && (children - attributes) > 1;			
+		            		
 					//recursive call
 					getNodeValue(doc, os, rec, false, addWhitespace);
 					if (extraWhitespace)
@@ -2210,8 +2344,8 @@ public class DOMFile extends BTree implements Lockable {
 		// remove old value
 		System.arraycopy(page.data, end, page.data, startOffset, dlen - end);
 		page.len = dlen - (LENGTH_TID + LENGTH_DATA_LENGTH + vlen);		
-		if (page.len <= 0)
-			LOG.warn("page length <= 0");
+		if (page.len < 0)
+			LOG.warn("page length < 0");
 		ph.setDataLength(page.len);		
 		ph.decRecordCount();
 		//page.cleanUp();
@@ -2282,8 +2416,8 @@ public class DOMFile extends BTree implements Lockable {
     			page.setDirty(true);
     			page.len = dlen - (LENGTH_TID + LENGTH_DATA_LENGTH + l);
             }
-			if (page.len <= 0)
-				LOG.warn("page length <= 0");
+			if (page.len < 0)
+				LOG.warn("page length < 0");
 			ph.setDataLength(page.len);
 			ph.decRecordCount();
             ph.setLsn(loggable.getLsn());
@@ -2570,8 +2704,8 @@ public class DOMFile extends BTree implements Lockable {
             }
             page.len = dlen - (LENGTH_TID + LENGTH_DATA_LENGTH + l);
         }
-		if (page.len <= 0)
-			LOG.warn("page length <= 0");        
+		if (page.len < 0)
+			LOG.warn("page length < 0");        
         ph.setDataLength(page.len);
         ph.decRecordCount();      
         ph.setLsn(loggable.getLsn());
@@ -2588,8 +2722,8 @@ public class DOMFile extends BTree implements Lockable {
             page.data = new byte[fileHeader.getWorkSize()];
             System.arraycopy(oldData, 0, page.data, 0, loggable.splitOffset);
             page.len = loggable.splitOffset;
-    		if (page.len <= 0)
-    			LOG.warn("page length <= 0");              
+    		if (page.len < 0)
+    			LOG.warn("page length < 0");              
             ph.setDataLength(page.len);
             ph.setRecordCount(countRecordsInPage(page));
             page.setDirty(true);
@@ -2602,8 +2736,8 @@ public class DOMFile extends BTree implements Lockable {
         final DOMFilePageHeader ph = page.getPageHeader();
         page.data = loggable.oldData;
         page.len = loggable.oldLen;
-		if (page.len <= 0)
-			LOG.warn("page length <= 0");          
+		if (page.len < 0)
+			LOG.warn("page length < 0");          
         ph.setDataLength(page.len);
         ph.setLsn(loggable.getLsn());
         //page.cleanUp();
@@ -2636,8 +2770,8 @@ public class DOMFile extends BTree implements Lockable {
         final int end = rec.offset + LENGTH_FORWARD_LOCATION;
         System.arraycopy(page.data, end, page.data, rec.offset - 2, page.len - end);
         page.len = page.len - (LENGTH_TID + LENGTH_FORWARD_LOCATION);
-		if (page.len <= 0)
-			LOG.warn("page length <= 0");        
+		if (page.len < 0)
+			LOG.warn("page length < 0");        
         ph.setDataLength(page.len);
         ph.decRecordCount();        
         ph.setLsn(loggable.getLsn());
@@ -2721,8 +2855,8 @@ public class DOMFile extends BTree implements Lockable {
                     "; offset: " + (rec.offset - 2) + "; end: " + end + "; len: " + (dlen - end));
         }
         page.len = dlen - (LENGTH_TID + LENGTH_DATA_LENGTH + LENGTH_ORIGINAL_LOCATION + vlen);
-		if (page.len <= 0)
-			LOG.warn("page length <= 0");        
+		if (page.len < 0)
+			LOG.warn("page length < 0");        
         ph.setDataLength(page.len);
         ph.decRecordCount();
         ph.setLsn(loggable.getLsn());
