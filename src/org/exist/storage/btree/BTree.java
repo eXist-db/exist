@@ -188,7 +188,8 @@ public class BTree extends Paged {
 	}
 	
 	public short getFileVersion() {
-		throw new RuntimeException("getFileVersion() called");
+        return -1;
+//		throw new RuntimeException("getFileVersion() called");
 	}
 
 	public boolean open(short expectedVersion) throws DBException {
@@ -354,7 +355,6 @@ public class BTree extends Paged {
      * Read a node from the given page.
      * 
      * @param page
-     * @param parent
      * @return The BTree node
      */
 	private BTreeNode getBTreeNode(long page) {
@@ -1332,7 +1332,7 @@ public class BTree extends Paged {
 								for (int i = 0; i < nPtrs; i++)
 									if (!pos || i == leftIdx)
 										getChildNode(i).query(query, callback);
-
+                                break;
 							case IndexQuery.LT :
 							case IndexQuery.GEQ :
 								for (int i = 0; i < nPtrs; i++)
