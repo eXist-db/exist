@@ -601,7 +601,10 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 }
                 final int idxOp =  checkRelationOp(relation);
                 final IndexQuery query = new IndexQuery(idxOp, searchKey);
-                dbValues.query(query, prefixKey, cb);
+                if (idxOp == IndexQuery.EQ)
+                    dbValues.query(query, cb);
+                else
+                    dbValues.query(query, prefixKey, cb);
 			} catch (EXistException e) {
                 LOG.error(e.getMessage(), e);				
 			} catch (LockException e) {
