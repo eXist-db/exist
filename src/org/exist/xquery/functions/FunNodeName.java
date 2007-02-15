@@ -85,11 +85,13 @@ public class FunNodeName extends Function {
             if (!Type.subTypeOf(item.getType(), Type.NODE))
             	throw new XPathException(getASTNode(), "XPTY0004: item is not a node; got '" + Type.getTypeName(item.getType()) + "'");
             //TODO : how to improve performance ?
-            Node n = ((NodeValue)item).getNode();            
+            Node n = ((NodeValue)item).getNode(); 
+            //Returns an expanded-QName for node kinds that can have names.
             if (n instanceof QNameable)
             	result = new QNameValue(context, ((QNameable)n).getQName());
+            //For other kinds of nodes it returns the empty sequence.
             else
-            	result = new QNameValue(context, QName.EMPTY_QNAME);
+            	result = Sequence.EMPTY_SEQUENCE;
         }
         
         if (context.getProfiler().isEnabled()) 
