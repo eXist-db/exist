@@ -1323,11 +1323,10 @@ public class NativeBroker extends DBBroker {
             else
             {
             	//lock the temp collection
-                if(transaction==null) {
-                       temp.getLock().release(Lock.WRITE_LOCK);
+                if (transaction == null) {
+                	temp.getLock().release(Lock.WRITE_LOCK);
                } else {
-                       //lock the temp collection
-                       transaction.registerLock(temp.getLock(), Lock.WRITE_LOCK);
+            	   transaction.registerLock(temp.getLock(), Lock.WRITE_LOCK);
                }
             }
             
@@ -1409,7 +1408,7 @@ public class NativeBroker extends DBBroker {
     /** remove from the temporary collection of the database a given list of Documents. */
     public void cleanUpTempResources(List docs) {
         Collection temp = openCollection(XmldbURI.TEMP_COLLECTION_URI, Lock.WRITE_LOCK);
-        if(temp == null)
+        if (temp == null)
             return;
         TransactionManager transact = pool.getTransactionManager();
         Txn txn = transact.beginTransaction();
