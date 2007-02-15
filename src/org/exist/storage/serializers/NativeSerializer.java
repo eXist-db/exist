@@ -97,7 +97,6 @@ public class NativeSerializer extends Serializer {
     	}
     	setDocument(p.getDocument());
     	if (generateDocEvent) receiver.startDocument();
-    	//TODO : is this StoredNode construction necessary ?
         Iterator domIter = broker.getNodeIterator(new StoredNode(p));
         serializeToReceiver(null, domIter, p.getDocument(), true, p.getMatches(), new TreeSet());
         if (generateDocEvent) receiver.endDocument();
@@ -119,9 +118,9 @@ public class NativeSerializer extends Serializer {
     	// iterate through children
     	for (int i = 0; i < children.getLength(); i++) {
     		StoredNode node = (StoredNode) children.item(i);
-    		NodeProxy p = new NodeProxy(node);
     		Iterator domIter = broker.getNodeIterator(node);
     		domIter.next();
+    		NodeProxy p = new NodeProxy(node);
     		serializeToReceiver(node, domIter, (DocumentImpl)node.getOwnerDocument(), 
     				true, p.getMatches(), new TreeSet());
     	}
