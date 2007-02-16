@@ -88,13 +88,19 @@ public class FunDateTime extends BasicFunction {
     			}
     		}
         	String dtv = dv.convertTo(Type.DATE_TIME).getStringValue();
-        	if (dv.getTimezone().isEmpty())
+        	if (dv.getTimezone().isEmpty()) {
         		dtv = dtv.substring(0, dtv.length() - 8);
-        	else if (((DayTimeDurationValue)dv.getTimezone().itemAt(0)).getStringValue().equals("PT0S"))
+        		result = new DateTimeValue(dtv + tv.getStringValue());
+        	} else if (((DayTimeDurationValue)dv.getTimezone().itemAt(0)).getStringValue().equals("PT0S")) {
         		dtv = dtv.substring(0, dtv.length() - 9);
-        	else
+        		if (tv.getTimezone().isEmpty())
+        			result = new DateTimeValue(dtv + tv.getStringValue() + "Z");
+        		else
+        			result = new DateTimeValue(dtv + tv.getStringValue());
+        	} else {
         		dtv = dtv.substring(0, dtv.length() - 14);    
-        	result = new DateTimeValue(dtv + tv.getStringValue());
+        		result = new DateTimeValue(dtv + tv.getStringValue());
+        	}
         }
         
         if (context.getProfiler().isEnabled()) 
