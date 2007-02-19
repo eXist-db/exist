@@ -78,9 +78,9 @@ import org.chiba.xml.xslt.impl.FileResourceResolver;
  * Currently borrows heavily from org.chiba.web.servlet.* in particular ChibaServlet
  * 
  * 
- * @author Adam Retter
- * @version 1.2
- * @serial 2006-12-15T13:41
+ * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @version 1.3
+ * @serial 2007-02-19T13:51
  * 
  * 
  * Initialization parameters for the ServletFilter
@@ -122,7 +122,8 @@ public class XFormsFilter implements Filter
 	private int CHIBA_XFORMS_SESSION_TIMEOUT = DEFAULT_CHIBA_XFORMS_SESSION_TIMEOUT;
 	
 	
-	protected static final String HTML_CONTENT_TYPE = "text/html;charset=UTF-8";
+	private static final String XFORMS_NS = "http://www.w3.org/2002/xforms";
+	private static final String HTML_CONTENT_TYPE = "text/html;charset=UTF-8";
 	
 	private final static String[] CHIBA_QUERYSTRING_PARAMS = {
 		"form",
@@ -413,9 +414,19 @@ public class XFormsFilter implements Filter
 	{
 		String strResponse = bufResponse.getDataAsString(); 
 		
-		if(strResponse.contains(new String("<xforms:model")) && strResponse.contains(new String("<xforms:instance")))
+		//find the xforms namespace local name
+		int xfNSDeclEnd = strResponse.indexOf("=\"" + XFORMS_NS + "\"");
+		if(xfNSDeclEnd != -1)
 		{
-			return true;
+			String temp = strResponse.substring(0, xfNSDeclEnd);
+			int xfNSDeclStart = temp.lastIndexOf(':') + 1;
+			String xfNSLocal = temp.substring(xfNSDeclStart);
+			
+			//check for xforms model and instance elements
+			if(strResponse.contains('<' + xfNSLocal + ":model") && strResponse.contains('<' + xfNSLocal + ":instance"))
+			{
+				return true;
+			}
 		}
 		
 		return false;
