@@ -13,9 +13,10 @@
     <xsl:variable name="trigger-prefix" select="'t_'"/>
     <xsl:variable name="remove-upload-prefix" select="'ru_'"/>
     <xsl:variable name="dateTime-prefix" select="'dt_'"/>
+    <xsl:variable name="dayTimeDuration-prefix" select="'dtd_'"/>
         
     <!-- change this to your ShowAttachmentServlet -->
-    <xsl:variable name="show-attachment-action" select="'http://localhost:8080/chiba-1.0.0/ShowAttachmentServlet'"/>
+    <xsl:variable name="show-attachment-action" select="'http://localhost:8080/exist/servlet/db/CommunityDirectory/index.xql?action=getimage'"/>
     
     
     <!-- ############################################ OUTPUT ################################################### -->
@@ -75,6 +76,167 @@
                     <xsl:attribute name="value">21</xsl:attribute>
                     <xsl:apply-templates select="xforms:hint"/>
                 </input>
+            </xsl:when>
+            <!-- dayTimeDuration control -->
+            <xsl:when test="$type='dayTimeDuration'">
+                <!-- days value -->
+                <xsl:variable name="days">
+                    <xsl:choose>
+                        <xsl:when test="chiba:data/text() = ''">
+                            <!-- default days -->0
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="days-from-duration(chiba:data/text())"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:variable>
+                <!-- hours value -->
+                <xsl:variable name="hours">
+                    <xsl:choose>
+                        <xsl:when test="chiba:data/text() = ''">
+                            <!-- default hours -->0
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="hours-from-duration(chiba:data/text())"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:variable>
+                <!-- minutes value -->
+                <xsl:variable name="minutes">
+                    <xsl:choose>
+                        <xsl:when test="chiba:data/text() = ''">
+                            <!-- default minutes -->0
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="minutes-from-duration(chiba:data/text())"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:variable>
+                <!-- seconds value -->
+                <xsl:variable name="seconds">
+                    <xsl:choose>
+                        <xsl:when test="chiba:data/text() = ''">
+                            <!-- seconds hours -->0
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="seconds-from-duration(chiba:data/text())"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:variable>
+                <fieldset>
+                <!-- days input -->
+                    Days
+                    <xsl:element name="select">
+                        <xsl:attribute name="id">
+                            <xsl:value-of select="concat($id,'-value')"/>
+                        </xsl:attribute>
+                        <xsl:attribute name="name">
+                            <xsl:value-of select="concat($dayTimeDuration-prefix,'days_',$id)"/>
+                        </xsl:attribute>
+                        <xsl:if test="chiba:data/@chiba:readonly='true'">
+                            <xsl:attribute name="disabled">disabled</xsl:attribute>
+                        </xsl:if>
+                        <xsl:attribute name="class">value</xsl:attribute>
+                        <xsl:apply-templates select="xforms:hint"/>
+                        <xsl:call-template name="build-items">
+                            <xsl:with-param name="parent">
+                                <xsl:for-each select="(1 to 31)">
+                                    <xforms:item id="">
+                                        <xsl:if test=". = $days">
+                                            <xsl:attribute name="selected">true</xsl:attribute>
+                                        </xsl:if>
+                                        <xforms:label><xsl:value-of select="."/></xforms:label>
+                                        <xforms:value><xsl:value-of select="."/></xforms:value>
+                                    </xforms:item>
+                                </xsl:for-each>
+                            </xsl:with-param>
+                        </xsl:call-template>
+                    </xsl:element>
+                    <!-- Hours input -->
+                    Hours
+                    <xsl:element name="select">
+                        <xsl:attribute name="id">
+                            <xsl:value-of select="concat($id,'-value')"/>
+                        </xsl:attribute>
+                        <xsl:attribute name="name">
+                            <xsl:value-of select="concat($dayTimeDuration-prefix,'hours_',$id)"/>
+                        </xsl:attribute>
+                        <xsl:if test="chiba:data/@chiba:readonly='true'">
+                            <xsl:attribute name="disabled">disabled</xsl:attribute>
+                        </xsl:if>
+                        <xsl:attribute name="class">value</xsl:attribute>
+                        <xsl:apply-templates select="xforms:hint"/>
+                        <xsl:call-template name="build-items">
+                            <xsl:with-param name="parent">
+                                <xsl:for-each select="(1 to 23)">
+                                    <xforms:item id="">
+                                        <xsl:if test=". = $hours">
+                                            <xsl:attribute name="selected">true</xsl:attribute>
+                                        </xsl:if>
+                                        <xforms:label><xsl:value-of select="."/></xforms:label>
+                                        <xforms:value><xsl:value-of select="."/></xforms:value>
+                                    </xforms:item>
+                                </xsl:for-each>
+                            </xsl:with-param>
+                        </xsl:call-template>
+                    </xsl:element>
+                    <!-- minutes input -->
+                    Minutes
+                    <xsl:element name="select">
+                        <xsl:attribute name="id">
+                            <xsl:value-of select="concat($id,'-value')"/>
+                        </xsl:attribute>
+                        <xsl:attribute name="name">
+                            <xsl:value-of select="concat($dayTimeDuration-prefix,'minutes_',$id)"/>
+                        </xsl:attribute>
+                        <xsl:if test="chiba:data/@chiba:readonly='true'">
+                            <xsl:attribute name="disabled">disabled</xsl:attribute>
+                        </xsl:if>
+                        <xsl:attribute name="class">value</xsl:attribute>
+                        <xsl:apply-templates select="xforms:hint"/>
+                        <xsl:call-template name="build-items">
+                            <xsl:with-param name="parent">
+                                <xsl:for-each select="(1 to 59)">
+                                    <xforms:item id="">
+                                        <xsl:if test=". = $minutes">
+                                            <xsl:attribute name="selected">true</xsl:attribute>
+                                        </xsl:if>
+                                        <xforms:label><xsl:value-of select="."/></xforms:label>
+                                        <xforms:value><xsl:value-of select="."/></xforms:value>
+                                    </xforms:item>
+                                </xsl:for-each>
+                            </xsl:with-param>
+                        </xsl:call-template>
+                    </xsl:element>  
+                    <!-- seconds input -->
+                    Seconds
+                    <xsl:element name="select">
+                        <xsl:attribute name="id">
+                            <xsl:value-of select="concat($id,'-value')"/>
+                        </xsl:attribute>
+                        <xsl:attribute name="name">
+                            <xsl:value-of select="concat($dayTimeDuration-prefix,'seconds_',$id)"/>
+                        </xsl:attribute>
+                        <xsl:if test="chiba:data/@chiba:readonly='true'">
+                            <xsl:attribute name="disabled">disabled</xsl:attribute>
+                        </xsl:if>
+                        <xsl:attribute name="class">value</xsl:attribute>
+                        <xsl:apply-templates select="xforms:hint"/>
+                        <xsl:call-template name="build-items">
+                            <xsl:with-param name="parent">
+                                <xsl:for-each select="(1 to 59)">
+                                    <xforms:item id="">
+                                        <xsl:if test=". = $seconds">
+                                            <xsl:attribute name="selected">true</xsl:attribute>
+                                        </xsl:if>
+                                        <xforms:label><xsl:value-of select="."/></xforms:label>
+                                        <xforms:value><xsl:value-of select="."/></xforms:value>
+                                    </xforms:item>
+                                </xsl:for-each>
+                            </xsl:with-param>
+                        </xsl:call-template>
+                    </xsl:element>  
+                </fieldset>
             </xsl:when>
             <!-- date drop down controls -->
             <xsl:when test="($type='date' or $type='dateTime') and $scripted != 'true'">
@@ -265,7 +427,7 @@
                             <xsl:apply-templates select="xforms:hint"/>
                             <xsl:call-template name="build-items">
                                 <xsl:with-param name="parent">
-                                    <xsl:for-each select="(1 to 24)">
+                                    <xsl:for-each select="(0 to 23)">
                                         <xforms:item id="">
                                             <xsl:if test=". = $hour">
                                                 <xsl:attribute name="selected">true</xsl:attribute>
@@ -497,7 +659,9 @@
                         <xsl:value-of select="concat($id,'-value')"/>
                     </xsl:attribute>
                     <xsl:attribute name="src">
-                        <xsl:value-of select="chiba:data/text()"/>
+                        <xsl:variable name="src" select="substring-after($action-url, '&amp;page=')"/>
+                        <xsl:variable name="path" select="@ref"/>
+                        <xsl:value-of select="concat($show-attachment-action, '&amp;src=', $src, '&amp;image=', $path) "/>
                     </xsl:attribute>
                     <xsl:attribute name="alt"><xsl:value-of select="xforms:label"/></xsl:attribute>
                     <xsl:apply-templates select="xforms:hint"/>
@@ -1093,7 +1257,7 @@
                         </xsl:if>
 -->
                     </xsl:element>
-                    <xsl:if test="$repeat-id">
+                    <xsl:if test="$repeat-id and $scripted = 'true'">
                         <script type="text/javascript">
                             dojo.event.connect("before",dojo.byId("<xsl:value-of select="concat($id,'-value')"/>"),"onclick","setRepeatIndex");
                         </script>
