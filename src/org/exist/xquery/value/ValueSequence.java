@@ -276,8 +276,7 @@ public class ValueSequence extends AbstractSequence {
 
     public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
         for (int i = 0; i <= size; i++) {
-            if (Type.subTypeOf(values[i].getType(), Type.NODE))
-                ((NodeValue) values[i]).nodeMoved(oldNodeId, newNode);
+            values[i].nodeMoved(oldNodeId, newNode);
         }
     }
 
