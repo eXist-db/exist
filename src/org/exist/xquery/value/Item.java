@@ -23,6 +23,8 @@ package org.exist.xquery.value;
 import org.exist.memtree.DocumentBuilderReceiver;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.XPathException;
+import org.exist.numbering.NodeId;
+import org.exist.dom.StoredNode;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -74,4 +76,15 @@ public interface Item {
 	public int conversionPreference(Class javaClass);
 	
 	public Object toJavaObject(Class target) throws XPathException;
+
+    /**
+     * Nodes may implement this method to be informed of storage address
+     * and node id changes after updates.
+     *
+     * @see org.exist.storage.UpdateListener
+     *
+     * @param oldNodeId
+     * @param newNode
+     */
+    void nodeMoved(NodeId oldNodeId, StoredNode newNode);
 }
