@@ -22,40 +22,22 @@
 package org.exist.storage;
 
 import org.exist.EXistException;
-import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.AttrImpl;
-import org.exist.dom.BinaryDocument;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentMetadata;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
-import org.exist.dom.SymbolTable;
-import org.exist.dom.TextImpl;
+import org.exist.dom.*;
 import org.exist.memtree.DOMIndexer;
 import org.exist.numbering.NodeId;
-import org.exist.security.MD5;
-import org.exist.security.Permission;
-import org.exist.security.PermissionDeniedException;
+import org.exist.security.*;
 import org.exist.security.SecurityManager;
-import org.exist.security.User;
-import org.exist.storage.btree.BTree;
-import org.exist.storage.btree.BTreeCallback;
-import org.exist.storage.btree.BTreeException;
-import org.exist.storage.btree.DBException;
-import org.exist.storage.btree.IndexQuery;
-import org.exist.storage.btree.Paged;
+import org.exist.stax.EmbeddedXMLStreamReader;
+import org.exist.storage.btree.*;
 import org.exist.storage.btree.Paged.Page;
-import org.exist.storage.btree.Value;
-import org.exist.storage.dom.*;
+import org.exist.storage.dom.DOMFile;
+import org.exist.storage.dom.DOMTransaction;
+import org.exist.storage.dom.NodeIterator;
+import org.exist.storage.dom.RawNodeIterator;
 import org.exist.storage.index.BFile;
 import org.exist.storage.index.CollectionStore;
 import org.exist.storage.io.VariableByteInput;
@@ -67,36 +49,20 @@ import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.ByteArrayPool;
-import org.exist.util.ByteConversion;
-import org.exist.util.Collations;
-import org.exist.util.Configuration;
-import org.exist.util.LockException;
-import org.exist.util.ReadOnlyException;
+import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.Constants;
 import org.exist.xquery.TerminatedException;
-import org.exist.xquery.value.StringValue;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import javax.xml.stream.XMLStreamException;
-import java.io.EOFException;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.text.Collator;
+import java.io.*;
 import java.text.NumberFormat;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Observer;
 import java.util.Stack;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  *  Main class for the native XML storage backend.
@@ -474,10 +440,6 @@ public class NativeBroker extends DBBroker {
      * must be called after one or more call to {@link #removeNode(Txn, StoredNode, NodePath, String)}. */
     public void endRemove() {
         notifyRemove();
-    }
-    
-    public int getBackendType() {
-        return NATIVE;
     }
     
     public boolean isReadOnly() {
@@ -1405,33 +1367,6 @@ public class NativeBroker extends DBBroker {
         }
     }
     
-    /** remove from the temporary collection of the database a given list of Documents. */
-    public void cleanUpTempResources(List docs) {
-        Collection temp = openCollection(XmldbURI.TEMP_COLLECTION_URI, Lock.WRITE_LOCK);
-        if (temp == null)
-            return;
-        TransactionManager transact = pool.getTransactionManager();
-        Txn txn = transact.beginTransaction();
-        txn.registerLock(temp.getLock(), Lock.WRITE_LOCK);
-        try {
-            for(Iterator i = docs.iterator(); i.hasNext(); )
-                temp.removeXMLResource(txn, this, XmldbURI.create((String) i.next()));
-            transact.commit(txn);
-        } catch (PermissionDeniedException e) {
-            transact.abort(txn);
-            LOG.warn(TEMP_FRAGMENT_REMOVE_ERROR, e);
-        } catch (TriggerException e) {
-            transact.abort(txn);
-            LOG.warn(TEMP_FRAGMENT_REMOVE_ERROR, e);
-        } catch (LockException e) {
-            transact.abort(txn);
-            LOG.warn(TEMP_FRAGMENT_REMOVE_ERROR, e);
-        } catch (TransactionException e) {
-            transact.abort(txn);
-            LOG.warn(TEMP_FRAGMENT_REMOVE_ERROR, e);
-        }
-    }
-    
     /** store Document entry into its collection. */
     public void storeXMLResource(final Txn transaction, final DocumentImpl doc) {
         Lock lock = collectionsDb.getLock();
@@ -2228,13 +2163,10 @@ public class NativeBroker extends DBBroker {
             public Object start() throws ReadOnlyException {
                 long address;
                 final byte data[] = node.serialize();
-                int depth = doc.getCollection().getIndexDepth(NativeBroker.this);
-                if (depth == -1) 
-                	depth = defaultIndexDepth;
                 if (nodeType == Node.TEXT_NODE
                     || nodeType == Node.ATTRIBUTE_NODE
                     || nodeType == Node.CDATA_SECTION_NODE
-                    || node.getNodeId().getTreeLevel() > depth)
+                    || node.getNodeId().getTreeLevel() > defaultIndexDepth)
                     address = domDb.add(transaction, data);
                 else {
                     address = domDb.put(transaction, new NodeRef(doc.getDocId(), node.getNodeId()), data);
@@ -2566,99 +2498,7 @@ public class NativeBroker extends DBBroker {
             currentPath.removeLastComponent();
         }
     }
-    
-    /**
-     *  Do a sequential search through the DOM-file.
-     *
-     *@param  context     Description of the Parameter
-     *@param  doc         Description of the Parameter
-     *@param  relation    Description of the Parameter
-     *@param  truncation  Description of the Parameter
-     *@param  expr        Description of the Parameter
-     *@return             Description of the Return Value
-     */
-    protected NodeSet scanNodesSequential(NodeSet context, DocumentSet doc, 
-            int relation, int truncation, String expr, Collator collator) {
-        ExtArrayNodeSet resultNodeSet = new ExtArrayNodeSet();        
-        Pattern regexp = null;        
-        if (relation == Constants.REGEXP) {
-                regexp = Pattern.compile(expr.toLowerCase(), Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-                truncation = Constants.REGEXP;
-        }
-        for (Iterator i = context.iterator(); i.hasNext();) {
-            NodeProxy p = (NodeProxy) i.next();
-            String content;
-            try {
-                domDb.getLock().acquire(Lock.READ_LOCK);
-                domDb.setOwnerObject(this);                
-                content = domDb.getNodeValue(new StoredNode(p), false);
-            } catch (LockException e) {
-            	LOG.warn("Failed to acquire read lock on " + domDb.getFile().getName());
-                continue;
-            } finally {
-                domDb.getLock().release(Lock.READ_LOCK);
-            }
-            String cmp;
-            if (isCaseSensitive())
-                cmp = StringValue.collapseWhitespace(content);
-            else {
-                cmp = StringValue.collapseWhitespace(content.toLowerCase());
-            }
-            switch (truncation) {
-                case Constants.TRUNC_LEFT :
-                    if (Collations.endsWith(collator, cmp, expr))
-                        resultNodeSet.add(p);
-                    break;
-                case Constants.TRUNC_RIGHT :
-                    if (Collations.startsWith(collator, cmp, expr))
-                        resultNodeSet.add(p);
-                    break;
-                case Constants.TRUNC_BOTH :
-                    if (Collations.indexOf(collator, cmp, expr) != Constants.STRING_NOT_FOUND)
-                        resultNodeSet.add(p);
-                    break;
-                case Constants.TRUNC_NONE :             
-                    int result = Collations.compare(collator, cmp, expr);
-                    switch (relation) {
-                        case Constants.LT :
-                            if (result < 0)
-                                resultNodeSet.add(p);
-                            break;
-                        case Constants.LTEQ :
-                            if (result <= 0)
-                                resultNodeSet.add(p);
-                            break;
-                        case Constants.GT :
-                            if (result > 0)
-                                resultNodeSet.add(p);
-                            break;
-                        case Constants.GTEQ :
-                            if (result >= 0)
-                                resultNodeSet.add(p);
-                            break;
-                        case Constants.EQ :
-                            if (result == Constants.EQUAL)
-                                resultNodeSet.add(p);
-                            break;
-                        case Constants.NEQ :
-                            if (result != Constants.EQUAL)
-                                resultNodeSet.add(p);
-                            break;
-                        default:
-                            throw new IllegalArgumentException("Illegal argument 'relation': " + relation);
-                    }
-                    break;
-                case Constants.REGEXP :
-                    Matcher matcher = regexp.matcher(cmp);
-                    if (regexp != null && matcher.find()) {
-                        resultNodeSet.add(p);
-                    }
-                    break;
-            }
-        }
-        return resultNodeSet;
-    } 
-	
+    	
 	public String getNodeValue(final StoredNode node, final boolean addWhitespace) {
 		return (String) new DOMTransaction(this, domDb, Lock.READ_LOCK) {
 			public Object start() {
@@ -2666,13 +2506,6 @@ public class NativeBroker extends DBBroker {
 			}
 		}
 		.run();
-	}
-
-	public NodeSet getNodesEqualTo(NodeSet context, DocumentSet docs, 
-            int relation, int truncation, String expr, Collator collator) {
-		if (!isCaseSensitive())
-			expr = expr.toLowerCase();
-		return scanNodesSequential(context, docs, relation, truncation, expr, collator);		
 	}
     
     public StoredNode objectWith(final Document doc, final NodeId nodeId) {    
@@ -2694,7 +2527,7 @@ public class NativeBroker extends DBBroker {
 
 	public StoredNode objectWith(final NodeProxy p) {       
 		if (p.getInternalAddress() == StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
-			return (StoredNode) objectWith(p.getDocument(), p.getNodeId());
+			return objectWith(p.getDocument(), p.getNodeId());
 		return (StoredNode) new DOMTransaction(this, domDb, Lock.READ_LOCK) {
 			public Object start() {
 				Value val = domDb.get(p.getInternalAddress());
@@ -3057,10 +2890,7 @@ public class NativeBroker extends DBBroker {
         /** Stores this node into the database, if it's an element */
         public void store() {
             final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
-            int depth = doc.getCollection().getIndexDepth(NativeBroker.this);
-            if (depth == -1) 
-            	depth = defaultIndexDepth;
-            if (mode == MODE_STORE && node.getNodeType() == Node.ELEMENT_NODE && level <= depth) {
+            if (mode == MODE_STORE && node.getNodeType() == Node.ELEMENT_NODE && level <= defaultIndexDepth) {
             	//TODO : used to be this, but NativeBroker.this avoids an owner change
                 new DOMTransaction(NativeBroker.this, domDb, Lock.WRITE_LOCK) {
                     public Object start() throws ReadOnlyException {

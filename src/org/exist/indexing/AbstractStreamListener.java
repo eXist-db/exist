@@ -1,0 +1,67 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-07 The eXist Project
+ *  http://exist-db.org
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ *  $Id$
+ */
+package org.exist.indexing;
+
+import org.exist.storage.txn.Txn;
+import org.exist.storage.NodePath;
+import org.exist.dom.ElementImpl;
+import org.exist.dom.AttrImpl;
+import org.exist.dom.TextImpl;
+import org.apache.log4j.Logger;
+
+/**
+ * 
+ */
+public class AbstractStreamListener implements StreamListener {
+
+    protected final static Logger LOG = Logger.getLogger(AbstractStreamListener.class);
+    
+    private StreamListener next = null;
+
+    public void setNextInChain(StreamListener listener) {
+        this.next = listener;
+    }
+
+    public void startElement(Txn transaction, ElementImpl element, NodePath path) {
+        if (next != null)
+            next.startElement(transaction, element, path);
+    }
+
+
+    public void attribute(Txn transaction, AttrImpl attrib, NodePath path) {
+        if (next != null) {
+            next.attribute(transaction, attrib, path);
+        }
+    }
+
+    public void endElement(Txn transaction, ElementImpl element, NodePath path) {
+        if (next != null) {
+            next.endElement(transaction, element, path);
+        }
+    }
+
+    public void characters(Txn transaction, TextImpl text, NodePath path) {
+        if (next != null) {
+            next.characters(transaction, text, path);
+        }
+    }
+}

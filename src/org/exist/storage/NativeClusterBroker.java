@@ -82,8 +82,4 @@ public class NativeClusterBroker extends NativeBroker {
             LOG.warn("ERROR IN JOURNAL SYNCHRONIZATION",e);
         }
     }
-
-    public int getBackendType() {
-        return NATIVE_CLUSTER;
-    }
 }

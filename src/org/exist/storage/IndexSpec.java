@@ -61,8 +61,7 @@ public class IndexSpec {
     private static final String CREATE_ELEMENT = "create";
     private static final String QNAME_ATTRIB = "qname";
     private static final String FULLTEXT_ELEMENT = "fulltext";
-    private static final String INDEX_DEPTH_ATTRIB = "index-depth";
-    
+
     private final static Logger LOG = Logger.getLogger(IndexSpec.class);
     
     /**
@@ -72,8 +71,6 @@ public class IndexSpec {
 
     private GeneralRangeIndexSpec specs[] = null;
     private Map qnameSpecs = new TreeMap();
-    
-    protected int depth = 1;
     
     public IndexSpec(Element index) throws DatabaseConfigurationException {
         read(index);
@@ -90,12 +87,6 @@ public class IndexSpec {
      */
     public void read(Element index) throws DatabaseConfigurationException {
         Map namespaces = getNamespaceMap(index);
-        String indexDepth = index.getAttribute(INDEX_DEPTH_ATTRIB);
-		if (indexDepth != null && indexDepth.length() > 0)
-			try {
-				setIndexDepth(Integer.parseInt(indexDepth));
-			} catch (NumberFormatException e) {
-			}
 			
         NodeList cl = index.getChildNodes();
         for(int i = 0; i < cl.getLength(); i++) {
@@ -123,35 +114,6 @@ public class IndexSpec {
             }
         }
     }
-
-    /**
-     * Returns the current index depth, i.e. the level in the tree up to which
-     * node ids are added to the B+-tree in the main dom.dbx. Nodes below
-     * the current index depth are not added. The main B+-tree is only required when
-     * retrieving nodes for display. Usually, it is not necessary to add all node levels
-     * there. Nodes in lower levels of the tree can be retrieved via their parent
-     * nodes.
-     * 
-     * @return Current index depth.
-     */
-    public int getIndexDepth() {
-		return depth;
-	}
-	
-    /**
-     * Set the current index depth.
-     * 
-     * @see #getIndexDepth()
-     * @param depth Current index depth
-     */
-	public void setIndexDepth( int depth ) {
-		if (depth < 3) {
-			LOG.warn("parameter index-depth should be >= 3 or you will experience a severe " +
-				"performance loss for node updates (XUpdate or XQuery update extensions)");
-			depth = 3;
-		}
-		this.depth = depth;
-	}
 	
     /**
      * Returns the fulltext index configuration object for the current
@@ -219,9 +181,6 @@ public class IndexSpec {
     
     public String toString() {
 		StringBuffer result = new StringBuffer();
-        result.append("\n\tindex-depth: ");
-        result.append(depth);
-        result.append('\n');
 		if (ftSpec != null)
 			result.append(ftSpec.toString()).append('\n');
 		if(specs!= null) {

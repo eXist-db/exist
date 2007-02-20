@@ -532,8 +532,10 @@ public class AtomServlet extends HttpServlet {
          }
       } catch ( EXistException e ) {
          throw new ServletException( e.getMessage() );
+      } catch (DatabaseConfigurationException e) {
+          throw new ServletException( e.getMessage() );
       }
-      try {
+       try {
          LOG.info("registering XMLDB driver");
          Class clazz = Class.forName("org.exist.xmldb.DatabaseImpl");
          Database database = (Database)clazz.newInstance();
