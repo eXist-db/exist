@@ -247,7 +247,101 @@
                 <xquery collection="/db/library" query="//((#exist:optimize#) { inproceedings[year > 2005] })"/>
                 <xquery collection="/db/library" query="//inproceedings[year &lt; 2000] "/>
                 <xquery collection="/db/library" query="//((#exist:optimize#) { inproceedings[year &lt; 2000] })"/>
+				
+				<xquery collection="/db/library" query="//inproceedings[title &amp;= 'xslt'][year = 2006]"/>
+				<xquery collection="/db/library" query="//((#exist:optimize#) { inproceedings[title &amp;= 'xslt'][year = 2006] })"/>
+				<xquery collection="/db/library" query="//inproceedings[title &amp;= 'xml'][year = 2005]"/>
+                <xquery collection="/db/library" query="//((#exist:optimize#) { inproceedings[title &amp;= 'xml'][year = 2005] })"/>
+				<xquery collection="/db/library" query="//*[title &amp;= 'xml'][year = 2005]"/>
+                <xquery collection="/db/library" query="//((#exist:optimize#) { *[title &amp;= 'xml'][year = 2005] })"/>
+				<xquery collection="/db/library" query="//*[author &amp;= 'brian kernighan'][title &amp;= 'C']"/>
+                <xquery collection="/db/library" query="//((#exist:optimize#) { *[author &amp;= 'brian kernighan'][title &amp;= 'C'] })"/>
             </sequence>
+        </thread>
+    </group>
+    <group name="updates">
+        <setup connection="con">
+            <create-collection parent="/db/system/config" name="db"/>
+            <create-collection parent="/db/system/config/db" name="updates"/>
+            <store collection="/db/system/config/db" name="collection.xconf">
+                <collection xmlns="http://exist-db.org/collection-config/1.0">
+                    <index>
+                        <fulltext default="all" attributes="false">
+                        </fulltext>
+                        <create path="//product/@num" type="xs:integer"/>
+                    </index>
+                </collection>
+            </store>
+            <create-collection parent="/db" name="updates"/>
+            <store collection="/db/updates" name="test.xml">
+                <products xmlns=""/>
+            </store>
+        </setup>
+        <thread connection="con" name="main">
+            <xquery collection="/db/updates"><![CDATA[
+                for $current in 1 to 1000
+                return
+                    update insert
+                        <product id='id{$current}' num='{$current}'>
+                            <description>Description {$current}</description>
+                            <price>{$current + 1.0}</price>
+                            <stock>{$current * 10}</stock>
+                        </product>
+                    into /products
+            ]]></xquery>
+            <xquery collection="/db/updates"><![CDATA[
+                for $current in 1 to 1000
+                return
+                    update insert
+                        attribute name { concat('n', $current) }
+                    into //product[@num = $current]
+            ]]></xquery>
+            <xquery collection="/db/updates"><![CDATA[
+                for $current in 1001 to 2000
+                return
+                    update insert
+                        <product id='id{$current}' num='{$current}'>
+                            <description>Description {$current}</description>
+                            <price>{$current + 1.0}</price>
+                            <stock>{$current * 10}</stock>
+                        </product>
+                    preceding //product[1]
+            ]]></xquery>
+            <xquery collection="/db/updates"><![CDATA[
+                for $current in 2001 to 3000
+                return
+                    update insert
+                        <product id='id{$current}' num='{$current}'>
+                            <description>Description {$current}</description>
+                            <price>{$current + 1.0}</price>
+                            <stock>{$current * 10}</stock>
+                        </product>
+                    following //product[1]
+            ]]></xquery>
+            <xquery collection="/db/updates"><![CDATA[
+                for $prod at $current in //product
+                return
+                    update value $prod/description
+                    with concat('Updated Description', $current)
+            ]]></xquery>
+            <xquery collection="/db/updates"><![CDATA[
+                for $prod at $count in //product
+                return
+                    update value $prod/stock/text()
+                    with (400 + $count)
+            ]]></xquery>
+            <xquery collection="/db/updates"><![CDATA[
+                for $prod in //product
+                return
+                    update value $prod/@num
+                    with xs:int($prod/@num) * 3
+            ]]></xquery>
+            <xquery collection="/db/updates"><![CDATA[
+                for $prod in //product
+                return
+                    update value $prod/stock
+                    with (<local>10</local>,<external>1</external>)
+            ]]></xquery>
         </thread>
     </group>
 </test>
