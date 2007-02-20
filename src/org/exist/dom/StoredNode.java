@@ -395,7 +395,7 @@ public class StoredNode extends NodeImpl implements Visitable {
     
     public NodePath getPath() {
         NodePath path = new NodePath();
-        if (getNodeType() != NodeImpl.ATTRIBUTE_NODE)
+        if (getNodeType() == NodeImpl.ELEMENT_NODE)
             path.addComponent(getQName());
         NodeImpl parent = (NodeImpl)getParentNode();
         while (parent != null && parent.getNodeType() != NodeImpl.DOCUMENT_NODE) {
@@ -405,7 +405,13 @@ public class StoredNode extends NodeImpl implements Visitable {
         return path;
     }    
 
-	public String toString() {
+    public NodePath getPath(NodePath parentPath) {
+        if (getNodeType() == NodeImpl.ELEMENT_NODE)
+            parentPath.addComponent(getQName());
+        return parentPath;
+    }
+
+    public String toString() {
 		StringBuffer buf = new StringBuffer();
 		buf.append(nodeId.toString());
 		buf.append('\t');

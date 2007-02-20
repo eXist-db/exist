@@ -93,6 +93,8 @@ public class DatabaseAdminServlet extends HttpServlet {
             output.flush();
         } catch ( EXistException e ) {
             throw new ServletException( e.getMessage() );
+        } catch (DatabaseConfigurationException e) {
+            throw new ServletException( e.getMessage() );
         }
     }
 
@@ -159,8 +161,10 @@ public class DatabaseAdminServlet extends HttpServlet {
                 BrokerPool.configure( 1, 5, configuration );
         } catch ( EXistException e ) {
             throw new ServletException( e.getMessage() );
+        } catch (DatabaseConfigurationException e) {
+            throw new ServletException( e.getMessage() );
         }
-		try {
+        try {
 			this.log("registering XMLDB driver");
 			String driver = "org.exist.xmldb.DatabaseImpl";
 			Class clazz = Class.forName(driver);

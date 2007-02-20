@@ -586,9 +586,11 @@ public class EXistServlet extends HttpServlet {
 			if ( !BrokerPool.isConfigured() )
 				BrokerPool.configure( 1, 5, configuration );
 		} catch ( EXistException e ) {
-			throw new ServletException( e.getMessage() );
-		}
-		try {
+			throw new ServletException( e.getMessage(), e );
+		} catch (DatabaseConfigurationException e) {
+            throw new ServletException( e.getMessage(), e );
+        }
+        try {
 			LOG.info("registering XMLDB driver");
 			Class clazz = Class.forName("org.exist.xmldb.DatabaseImpl");
 			Database database = (Database)clazz.newInstance();

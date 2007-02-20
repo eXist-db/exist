@@ -117,7 +117,32 @@ public class Configuration implements ErrorHandler {
             return params;
         }
     }
-    
+
+    public static final class IndexModuleConfig {
+
+        private String id;
+        private String className;
+        private Element config;
+
+        public IndexModuleConfig(String id, String className, Element config) {
+            this.id = id;
+            this.className = className;
+            this.config = config;
+        }
+
+        public String getClassName() {
+            return className;
+        }
+
+        public Element getConfig() {
+            return config;
+        }
+
+        public String getId() {
+            return id;
+        }
+    }
+
     public Configuration() throws DatabaseConfigurationException {
         this("conf.xml", null);
     }
@@ -470,8 +495,6 @@ public class Configuration implements ErrorHandler {
     
     /**
      * Reads the scheduler configuration
-     *
-     * @param transformers A Node List of all the transformers nodes
      */
     private void configureScheduler(NodeList Schedulers) {
         Element scheduler = (Element)Schedulers.item(0);
@@ -978,7 +1001,7 @@ public class Configuration implements ErrorHandler {
             config.put(TextSearchEngine.PROPERTY_TOKENIZER, tokenizer);
             LOG.debug(TextSearchEngine.PROPERTY_TOKENIZER + ": " + config.get(TextSearchEngine.PROPERTY_TOKENIZER));
         }
-        int depth = 2;
+        int depth = 3;
         String indexDepth = p.getAttribute("index-depth");
         if (indexDepth != null) {
             try {
@@ -1006,7 +1029,6 @@ public class Configuration implements ErrorHandler {
         if (cl.getLength() > 0) {
             Element elem = (Element) cl.item(0);
             IndexSpec spec = new IndexSpec(elem);
-            spec.setIndexDepth(depth);
             config.put("indexer.config", spec);
         }
         
@@ -1020,7 +1042,25 @@ public class Configuration implements ErrorHandler {
                 LOG.debug("stopwords: " + config.get("stopwords"));
             }
         }
-        
+
+        // index modules
+        NodeList modules = p.getElementsByTagName("modules");
+        if (modules.getLength() > 0) {
+            modules = ((Element) modules.item(0)).getElementsByTagName("module");
+            IndexModuleConfig modConfig[] = new IndexModuleConfig[modules.getLength()];
+            for (int i = 0; i < modules.getLength(); i++) {
+                Element elem = (Element) modules.item(i);
+                String className = elem.getAttribute("class");
+                String id = elem.getAttribute("id");
+                if (className == null || className.length() == 0)
+                    throw new DatabaseConfigurationException("Required attribute class is missing for module");
+                if (id == null || id.length() == 0)
+                    throw new DatabaseConfigurationException("Required attribute id is missing for module");
+                modConfig[i] = new IndexModuleConfig(id, className, elem);
+            }
+            config.put("indexer.modules", modConfig);
+        }
+
         //TODO : what does the following code makes here ??? -pb
         
         eXistCatalogResolver resolver = (eXistCatalogResolver) config.get("resolver");

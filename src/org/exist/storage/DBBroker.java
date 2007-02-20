@@ -25,7 +25,6 @@ package org.exist.storage;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.IOException;
-import java.text.Collator;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -34,13 +33,13 @@ import java.util.Observable;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.indexing.IndexController;
 import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.collections.Collection;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
 import org.exist.dom.StoredNode;
 import org.exist.dom.SymbolTable;
 import org.exist.numbering.NodeId;
@@ -48,7 +47,6 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.Txn;
-import org.exist.storage.dom.RawNodeIterator;
 import org.exist.util.Configuration;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
@@ -72,10 +70,6 @@ public abstract class DBBroker extends Observable {
 
 	public final static int MATCH_WILDCARDS = 2;
 
-	public final static int NATIVE = 0;
-
-	public final static int NATIVE_CLUSTER = 1;
-
 	public final static String ROOT_COLLECTION_NAME = "db";
 
 	public final static String ROOT_COLLECTION = "/" + ROOT_COLLECTION_NAME;
@@ -89,48 +83,47 @@ public abstract class DBBroker extends Observable {
 
 	public final static String COLLECTION_CONFIG_FILENAME = "collection.xconf";
 
-	protected final static Logger LOG = Logger.getLogger(DBBroker.class);
+    //TODO : move elsewhere
+    public static String PROPERTY_XUPDATE_GROWTH_FACTOR = "xupdate.growth-factor";
 
-	protected boolean caseSensitive = true;
+    //TODO : move elsewhere
+    public static String PROPERTY_XUPDATE_FRAGMENTATION_FACTOR = "xupdate.fragmentation";
 
-	protected Configuration config;
+    //TODO : move elsewhere
+    public static String PROPERTY_XUPDATE_CONSISTENCY_CHECKS = "xupdate.consistency-checks";
 
-	protected BrokerPool pool;
+    protected final static Logger LOG = Logger.getLogger(DBBroker.class);
 
-	protected User user = null;
+    protected boolean caseSensitive = true;
 
-	protected XQuery xqueryService;
+    protected Configuration config;
 
-	private int referenceCount = 0;
+    protected BrokerPool pool;
 
-	//TODO : move elsewhere
-	public static String PROPERTY_XUPDATE_GROWTH_FACTOR = "xupdate.growth-factor";	
+    protected User user = null;
 
-	//TODO : move elsewhere
-	public static String PROPERTY_XUPDATE_FRAGMENTATION_FACTOR = "xupdate.fragmentation";	
+    protected XQuery xqueryService;
 
-	//TODO : move elsewhere
-	public static String PROPERTY_XUPDATE_CONSISTENCY_CHECKS = "xupdate.consistency-checks";	
+    private int referenceCount = 0;
 
-	protected String id;
-	
-	//TODO : use a property object
+    protected String id;
+
+    protected IndexController indexDispatch;
+
+    //TODO : use a property object
 	public HashMap customProperties = new HashMap();
 
-	//TODO : give more abstraction in the future (Symbolprovider or something like this)
-	public abstract SymbolTable getSymbols();
-
-	public DBBroker(BrokerPool pool, Configuration config) throws EXistException {
+    public DBBroker(BrokerPool pool, Configuration config) throws EXistException {
 		this.config = config;
 		Boolean temp = (Boolean) config.getProperty(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE);
 		if (temp != null)
 			caseSensitive = temp.booleanValue();
 
-		//Copy specific properties 
+		//Copy specific properties
 		//TODO : think about an automatic copy
-		customProperties.put(PROPERTY_XUPDATE_GROWTH_FACTOR, 
+		customProperties.put(PROPERTY_XUPDATE_GROWTH_FACTOR,
 				new Integer(config.getInteger(PROPERTY_XUPDATE_GROWTH_FACTOR)));
-		customProperties.put(PROPERTY_XUPDATE_FRAGMENTATION_FACTOR, 
+		customProperties.put(PROPERTY_XUPDATE_FRAGMENTATION_FACTOR,
 				new Integer(config.getInteger(PROPERTY_XUPDATE_FRAGMENTATION_FACTOR)));
 		temp = (Boolean) config.getProperty(PROPERTY_XUPDATE_CONSISTENCY_CHECKS);
 		if (temp != null)
@@ -138,11 +131,12 @@ public abstract class DBBroker extends Observable {
 
 		this.pool = pool;
 		xqueryService = new XQuery(this);
-	}
+        indexDispatch = new IndexController(this);
+    }
 
-	/**
+    /**
 	 * Set the user that is currently using this DBBroker object.
-	 * 
+	 *
 	 * @param user
 	 */
 	public void setUser(User user) {
@@ -154,21 +148,28 @@ public abstract class DBBroker extends Observable {
 		 */// debugging user escalation permissions problem - deliriumsky.
 	}
 
-	/**
+    /**
 	 * @return The user that is currently using this DBBroker object
 	 */
 	public User getUser() {
 		return user;
 	}
 
-	/**
+    public IndexController getIndexDispatcher() {
+        return indexDispatch;
+    }
+
+    //TODO : give more abstraction in the future (Symbolprovider or something like this)
+    public abstract SymbolTable getSymbols();
+
+    /**
 	 * @return A reference to the global {@link XQuery} service.
 	 */
 	public XQuery getXQueryService() {
 		return xqueryService;
 	}
 
-	public abstract ElementIndex getElementIndex();
+    public abstract ElementIndex getElementIndex();
 
 	/** Flush all data that has not been written before. */
 	public void flush() {
@@ -384,22 +385,6 @@ public abstract class DBBroker extends Observable {
 	}
 
 	/**
-	 * Find all Nodes whose string value is equal to expr in the document set.
-	 * 
-	 * @param context
-	 *            the set of nodes to process
-	 * @param docs
-	 *            the current set of documents
-	 * @param relation
-	 *            less-than, equal etc. One of the constants specified in
-	 *            {@link org.exist.xquery.Constants}
-	 * @param expr
-	 *            the string value to search for
-	 */
-	public abstract NodeSet getNodesEqualTo(NodeSet context, DocumentSet docs,
-			int relation, int truncation, String expr, Collator collator);
-
-	/**
 	 * Get an instance of the Serializer used for converting nodes back to XML.
 	 * Subclasses of DBBroker may have specialized subclasses of Serializer to
 	 * convert a node into an XML-string
@@ -413,14 +398,6 @@ public abstract class DBBroker extends Observable {
 	public abstract TextSearchEngine getTextEngine();
 
 	public abstract NativeValueIndex getValueIndex();
-
-	/**
-	 * Is string comparison case sensitive?
-	 * 
-	 */
-	public boolean isCaseSensitive() {
-		return caseSensitive;
-	}
 
 	public abstract Serializer newSerializer();
 
@@ -584,45 +561,11 @@ public abstract class DBBroker extends Observable {
 	 *            the destination collection
 	 * @param newName
 	 *            the new name the collection should have in the destination
-	 *            collection deprecated Use XmldbURI instead
-	 * 
-	 * public abstract void moveCollection(Txn transaction, Collection
-	 * collection, Collection destination, String newName) throws
-	 * PermissionDeniedException, LockException;
-	 */
-
-	/**
-	 * Move a collection and all its subcollections to another collection and
-	 * rename it. Moving a collection just modifies the collection path and all
-	 * resource paths. The data itself remains in place.
-	 * 
-	 * @param collection
-	 *            the collection to move
-	 * @param destination
-	 *            the destination collection
-	 * @param newName
-	 *            the new name the collection should have in the destination
 	 *            collection
 	 */
 	public abstract void moveCollection(Txn transaction, Collection collection,
 			Collection destination, XmldbURI newName)
 			throws PermissionDeniedException, LockException;
-
-	/**
-	 * Move a resource to the destination collection and rename it.
-	 * 
-	 * @param doc
-	 *            the resource to move
-	 * @param destination
-	 *            the destination collection
-	 * @param new
-	 *            Name the new name the resource should have in the destination
-	 *            collection deprecated Use XmldbURI version instead
-	 * 
-	 * public abstract void moveXMLResource(Txn transaction, DocumentImpl doc,
-	 * Collection destination, String newName) throws PermissionDeniedException,
-	 * LockException;
-	 */
 
 	/**
 	 * Move a resource to the destination collection and rename it.
@@ -642,22 +585,6 @@ public abstract class DBBroker extends Observable {
 	/**
 	 * Copy a collection to the destination collection and rename it.
 	 * 
-	 * @param doc
-	 *            the resource to move
-	 * @param destination
-	 *            the destination collection
-	 * @param new
-	 *            Name the new name the resource should have in the destination
-	 *            collection deprecated Use XmldbURI version instead
-	 * 
-	 * public abstract void copyCollection(Txn transaction, Collection
-	 * collection, Collection destination, String newName) throws
-	 * PermissionDeniedException, LockException;
-	 */
-
-	/**
-	 * Copy a collection to the destination collection and rename it.
-	 * 
 	 * @param collection
 	 *            the resource to move
 	 * @param destination
@@ -669,25 +596,6 @@ public abstract class DBBroker extends Observable {
 	public abstract void copyCollection(Txn transaction, Collection collection,
 			Collection destination, XmldbURI newName)
 			throws PermissionDeniedException, LockException;
-
-	/**
-	 * Copy a resource to the destination collection and rename it.
-	 * 
-	 * @param doc
-	 *            the resource to copy
-	 * @param destination
-	 *            the destination collection
-	 * @param newName
-	 *            the new name the resource should have in the destination
-	 *            collection
-	 * @throws PermissionDeniedException
-	 * @throws LockException
-	 *             deprecated Use XmldbURI version instead
-	 * 
-	 * public abstract void copyXMLResource(Txn transaction, DocumentImpl doc,
-	 * Collection destination, String newName) throws PermissionDeniedException,
-	 * LockException;
-	 */
 
 	/**
 	 * Copy a resource to the destination collection and rename it.
@@ -804,13 +712,6 @@ public abstract class DBBroker extends Observable {
 	public abstract void cleanUpTempResources();
 
 	/**
-	 * Remove the temporary document fragments specified by a list of names.
-	 * 
-	 * @param docs
-	 */
-	public abstract void cleanUpTempResources(List docs);
-
-	/**
 	 * 
 	 */
 	public abstract DocumentSet getXMLResourcesByDoctype(String doctype,
@@ -843,8 +744,6 @@ public abstract class DBBroker extends Observable {
 	public String toString() {
 		return id;
 	}
-
-	public abstract int getBackendType();
 
     public abstract EmbeddedXMLStreamReader getXMLStreamReader(StoredNode node, boolean reportAttributes)
             throws IOException, XMLStreamException;

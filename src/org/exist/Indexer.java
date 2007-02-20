@@ -55,6 +55,7 @@ import org.exist.util.XMLChar;
 import org.exist.util.XMLString;
 import org.exist.xquery.Constants;
 import org.exist.xquery.value.StringValue;
+import org.exist.indexing.StreamListener;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
@@ -86,6 +87,8 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 	protected DBBroker broker = null;
     protected Txn transaction;
 
+    protected StreamListener indexListener;
+    
     protected FulltextIndexSpec ftIdx = null;
     protected XMLString charBuf = new XMLString();
     protected boolean inCDATASection = false;
@@ -153,6 +156,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 	public Indexer(DBBroker broker, Txn transaction, boolean priv) throws EXistException {
 		this.broker = broker;
         this.transaction = transaction;
+
         //TODO : move the configuration in the constructor or in a dedicated method
 		Configuration config = broker.getConfiguration();
 		String suppressWS =	(String) config.getProperty(PROPERTY_SUPPRESS_WHITESPACE);
@@ -169,7 +173,9 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 		if ((temp = (Boolean) config.getProperty("indexer.preserve-whitespace-mixed-content"))
 			!= null)
 			suppressWSmixed = temp.booleanValue();
-	}
+
+        this.indexListener = broker.getIndexDispatcher().getStreamListener();
+    }
 
 	public void setValidating(boolean validate) {
 		this.validate = validate;
@@ -312,10 +318,14 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
                 elemContent = (XMLString) nodeContentStack.pop();
             }
 			
-			if (!validate)
-			    broker.endElement(last, currentPath, elemContent == null ? null : elemContent.toString());
+			if (!validate) {
+                final String content = elemContent == null ? null : elemContent.toString();
+                broker.endElement(last, currentPath, content);
+                if (indexListener != null)
+                    indexListener.endElement(transaction, last, currentPath);
+            }
 
-			currentPath.removeLastComponent();
+            currentPath.removeLastComponent();
 			if (validate) {
 			    if (childCnt != null)
 			        setChildCount(last);
@@ -484,8 +494,8 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 				--attrLength;
 		}
 
-		ElementImpl last = null;
-		ElementImpl node = null;
+		ElementImpl last;
+		ElementImpl node;
 		int p = qname.indexOf(':');
 		String prefix = (p != Constants.STRING_NOT_FOUND) ? qname.substring(0, p) : "";
 		QName qn = broker.getSymbols().getQName(Node.ELEMENT_NODE, namespace, name, prefix);
@@ -566,7 +576,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
                 if (childCnt != null)
                     node.setChildCount(childCnt[node.getPosition()]);
 				storeElement(node);
-			}
+            }
 			document.appendChild(node);
 		}
 
@@ -601,9 +611,12 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 				}
 				node.appendChildInternal(prevNode, attr);
                setPrevious(attr);
-				if (!validate)
-					broker.storeNode(transaction, attr, currentPath);
-			}
+				if (!validate) {
+                    broker.storeNode(transaction, attr, currentPath);
+                    if (indexListener != null)
+                        indexListener.attribute(transaction, attr, currentPath);
+                }
+            }
 		}
 		if (attrLength > 0)
 			node.setAttributes((short) attrLength);
@@ -628,10 +641,15 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 			}
 		}
 		broker.storeNode(transaction, text, currentPath);
-	}
+        if (indexListener != null) {
+            indexListener.characters(transaction, text, currentPath);
+        }
+    }
     
 	private void storeElement(ElementImpl node) {
 		broker.storeNode(transaction, node, currentPath);
+        if (indexListener != null)
+            indexListener.startElement(transaction, node, currentPath);
         node.setChildCount(0);
 		if (GeneralRangeIndexSpec.hasQNameOrValueIndex(node.getIndexType()) ||
                 (ftIdx != null && ftIdx.hasQNameIndex(node.getQName()))) {

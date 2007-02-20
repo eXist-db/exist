@@ -200,7 +200,7 @@ public class BTree extends Paged {
 			return false;
 	}
 	
-	protected boolean create(short fixedKeyLen) throws DBException {
+	public boolean create(short fixedKeyLen) throws DBException {
         if (super.create()) {
             initCache();
 			try {    

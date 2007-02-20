@@ -1093,7 +1093,7 @@ public class ElementImpl extends NamedNode implements Element {
         children = i;
         NodeId newNodeId = last == this ? nodeId.newChild() : last.nodeId.nextSibling();
         // append new content
-        appendChildren(transaction, newNodeId, new NodeImplRef(last), getPath(), newContent, true);
+        appendChildren(transaction, newNodeId, new NodeImplRef(last), path, newContent, true);
         getBroker().updateNode(transaction, this);
         // reindex if required
         getBroker().flush();
@@ -1130,11 +1130,12 @@ public class ElementImpl extends NamedNode implements Element {
             previousNode = this;
         else
             previousNode = getLastNode(previousNode);
-        getBroker().removeNode(transaction, oldNode, oldNode.getPath(), null);
+        final NodePath currentPath = getPath();
+        getBroker().removeNode(transaction, oldNode, oldNode.getPath(currentPath), null);
         getBroker().endRemove();
         newNode.nodeId = oldNode.nodeId;
         getBroker().insertNodeAfter(transaction, previousNode, newNode);
-        NodePath path = newNode.getPath();
+        final NodePath path = newNode.getPath(currentPath);
         getBroker().indexNode(transaction, newNode, path);
 		if (newNode.getNodeType() == Node.ELEMENT_NODE)
             getBroker().endElement(newNode, path, null);

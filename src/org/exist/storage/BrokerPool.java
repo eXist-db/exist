@@ -33,6 +33,7 @@ import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.indexing.IndexManager;
 import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.numbering.DLNFactory;
@@ -49,10 +50,8 @@ import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.Configuration;
-import org.exist.util.ReadOnlyException;
-import org.exist.util.XMLReaderObjectFactory;
-import org.exist.util.XMLReaderPool;
+import org.exist.storage.btree.DBException;
+import org.exist.util.*;
 import org.exist.xmldb.ShutdownListener;
 import org.exist.xmldb.XmldbURI;
 /**
@@ -140,7 +139,7 @@ public class BrokerPool {
 	 */
 	//TODO : in the future, we should implement a Configurable interface	
 	public final static void configure(int minBrokers, int maxBrokers, Configuration config)
-		throws EXistException {
+            throws EXistException, DatabaseConfigurationException {
 		configure(DEFAULT_INSTANCE_NAME, minBrokers, maxBrokers, config);
 	}
 
@@ -161,7 +160,7 @@ public class BrokerPool {
 		int minBrokers,
 		int maxBrokers,
 		Configuration config)
-		throws EXistException {
+            throws EXistException, DatabaseConfigurationException {
 		//Check if there is a database instance in the pool with the same id
 		BrokerPool instance = (BrokerPool) instances.get(instanceName);
 		if (instance == null) {
@@ -381,7 +380,12 @@ public class BrokerPool {
 	 * The scheduler for the database instance.
 	 */
 	private Scheduler scheduler;
-	
+
+    /**
+     * Manages pluggable index structures. 
+     */
+    private IndexManager indexManager;
+
     /**
 	 * Cache synchronization on the database instance.
 	 */
@@ -467,11 +471,9 @@ public class BrokerPool {
 	 * @param conf The configuration object for the database instance
 	 * @throws EXistException If the initialization fails.
     */
-	//TODO : shouldn't this constructor be private ? as such it *must* remain under configure() control !
 	//TODO : Then write a configure(int minBrokers, int maxBrokers, Configuration conf) method
-	// WM: yes, could be private.
-	public BrokerPool(String instanceName, int minBrokers, int maxBrokers, Configuration conf)
-		throws EXistException {
+	private BrokerPool(String instanceName, int minBrokers, int maxBrokers, Configuration conf)
+            throws EXistException, DatabaseConfigurationException {
 		
 		Integer anInteger;
 		Long aLong;
@@ -637,7 +639,7 @@ public class BrokerPool {
 	/**Initializes the database instance.
 	 * @throws EXistException
 	 */
-	protected void initialize() throws EXistException {
+	protected void initialize() throws EXistException, DatabaseConfigurationException {
         if (LOG.isDebugEnabled())
             LOG.debug("initializing database instance '" + instanceName + "'...");
         
@@ -661,7 +663,7 @@ public class BrokerPool {
         collectionCacheMgr = new CollectionCacheManager(conf, collectionCache);
         
         notificationService = new NotificationService();
-        
+
         //REFACTOR : construct then... configure
         //TODO : journal directory *may* be different from "db-connection.data-dir"
         transactionManager = new TransactionManager(this, new File((String) conf.getProperty("db-connection.data-dir")), isTransactional());		
@@ -671,6 +673,8 @@ public class BrokerPool {
             LOG.warn(e.getMessage() + ". Switching to read-only mode!!!");
             isReadOnly = true;
         }
+
+        indexManager = new IndexManager(this, conf);
         
         //TODO : replace the following code by get()/release() statements ?
         // WM: I would rather tend to keep this broker reserved as a system broker.
@@ -915,6 +919,16 @@ public class BrokerPool {
 	 */	
     public DefaultCacheManager getCacheManager() {
         return cacheManager;
+    }
+
+    /**
+     * Returns the index manager which handles all additional indexes not
+     * being part of the database core.
+     * 
+     * @return
+     */
+    public IndexManager getIndexManager() {
+        return indexManager;
     }
 
     /**
@@ -1335,7 +1349,14 @@ public class BrokerPool {
 		}
 		LOG.debug("calling shutdown ...");
 
-		//TODO : replace the following code by get()/release() statements ?
+        // closing down external indexes
+        try {
+            indexManager.shutdown();
+        } catch (DBException e) {
+            LOG.warn("Error during index shutdown: " + e.getMessage(), e);
+        }
+
+        //TODO : replace the following code by get()/release() statements ?
         // WM: deadlock risk if not all brokers returned properly.
 		DBBroker broker = null;
 		if (inactiveBrokers.isEmpty())
@@ -1349,7 +1370,8 @@ public class BrokerPool {
 			//TODO : use get() then release the broker ?
 		    // WM: deadlock risk if not all brokers returned properly.
 			broker = (DBBroker)inactiveBrokers.peek();
-		//TOUNDERSTAND (pb) : shutdown() is called on only *one* broker ?
+
+        //TOUNDERSTAND (pb) : shutdown() is called on only *one* broker ?
         // WM: yes, the database files are shared, so only one broker is needed to close them for all
         if (broker != null) {
             broker.setUser(SecurityManager.SYSTEM_USER);

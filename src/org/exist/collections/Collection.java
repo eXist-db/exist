@@ -1600,9 +1600,4 @@ public  class Collection extends Observable
     	IndexSpec idxSpec = getIndexConfiguration(broker);
     	return (idxSpec == null) ? null : idxSpec.getFulltextIndexSpec();
     }
-    
-    public int getIndexDepth(DBBroker broker) {
-    	IndexSpec idxSpec = getIndexConfiguration(broker);
-    	return (idxSpec == null) ? -1 : idxSpec.getIndexDepth();    	
-    }
 }
