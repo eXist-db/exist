@@ -79,7 +79,7 @@ public class StreamBinary extends BasicFunction {
 
     public Sequence eval(Sequence[] args, Sequence contextSequence)
             throws XPathException {
-        if (args[0].getLength() == 0)
+        if (args[0].isEmpty())
             return Sequence.EMPTY_SEQUENCE;
         Base64Binary binary = (Base64Binary) args[0].itemAt(0);
         String contentType = args[1].getStringValue();

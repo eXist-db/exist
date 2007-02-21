@@ -39,7 +39,7 @@ public class TriggerSystemTask extends BasicFunction {
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         String className = args[0].getStringValue();
         Properties properties = new Properties();
-        if (args[1].getLength() == 1) {
+        if (args[1].hasOne()) {
             parseParameters(((NodeValue) args[1].itemAt(0)).getNode(), properties);
         }
         try {
