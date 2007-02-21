@@ -117,7 +117,10 @@ public class FunBaseURI extends BasicFunction {
                 NodeImpl domNode = (NodeImpl) node.getNode();
                 String base = domNode.getBaseURI();
                 if (base == null)
-                    result = Sequence.EMPTY_SEQUENCE;
+                	if (context.getBaseURI() != null)
+                		result = context.getBaseURI();
+                	else
+                		result = Sequence.EMPTY_SEQUENCE;
                 else
                     result = new StringValue(base);
             } else {
