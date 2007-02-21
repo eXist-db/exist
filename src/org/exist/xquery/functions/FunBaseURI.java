@@ -99,7 +99,7 @@ public class FunBaseURI extends BasicFunction {
             result = context.getBaseURI();
         } else {
             if (args.length == 0) {
-                if (contextSequence == null || contextSequence.getLength() == 0)
+                if (contextSequence == null || contextSequence.isEmpty())
                     throw new XPathException(getASTNode(), "XPDY0002: context sequence is empty and no argument specified");
                 Item item = contextSequence.itemAt(0);
                 if (!Type.subTypeOf(item.getType(), Type.NODE))

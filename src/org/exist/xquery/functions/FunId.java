@@ -109,7 +109,7 @@ public class FunId extends Function {
                 // second argument should be a node, whose owner document will be
                 // searched for the id
                 Sequence nodes = getArgument(1).eval(contextSequence);
-                if (nodes.getLength() == 0)
+                if (nodes.isEmpty())
                     throw new XPathException(getASTNode(), 
                             "XPDY0002: no node or context item for fn:id");
                 if (!Type.subTypeOf(nodes.itemAt(0).getType(), Type.NODE)) 
