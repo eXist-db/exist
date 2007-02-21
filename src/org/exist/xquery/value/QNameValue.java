@@ -127,6 +127,8 @@ public class QNameValue extends AtomicValue {
 					return cmp == 0;
 				case Constants.NEQ :
 					return cmp != 0;
+				/*
+				 * QNames are unordered
 				case Constants.GT :
 					return cmp > 0;
 				case Constants.GTEQ :
@@ -135,8 +137,9 @@ public class QNameValue extends AtomicValue {
 					return cmp < 0;
 				case Constants.LTEQ :
 					return cmp >= 0;
+				*/
 				default :
-					throw new XPathException("Type error: cannot apply operator to QName");
+					throw new XPathException("XPTY0004 : cannot apply operator to QName");
 			}
 		} else
 			throw new XPathException(
