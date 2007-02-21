@@ -174,8 +174,6 @@ public class DOMStreamer {
 						}
 					} else if (attrName.indexOf(':') > 0) {
 						prefix = nextAttr.getPrefix();
-                        if (prefix == null)
-                            System.out.println(attrName + " -> " + prefix);
                         uri = nextAttr.getNamespaceURI();
 						if (nsSupport.getURI(prefix) == null) {
 							namespaceDecls.put(prefix, uri);
