@@ -262,9 +262,17 @@ public class AnyURIValue extends AtomicValue {
 					return cmp == 0;
 				case Constants.NEQ :
 					return cmp != 0;
+				case Constants.GT :
+					return cmp > 0;
+				case Constants.GTEQ :
+					return cmp >= 0;
+				case Constants.LT :
+					return cmp < 0;
+				case Constants.LTEQ :
+					return cmp >= 0;					
 				default :
 					throw new XPathException(
-						"Type error: cannot apply operator "
+						"XPTY0004: cannot apply operator "
 							+ Constants.OPS[operator]
 							+ " to xs:anyURI");
 			}
