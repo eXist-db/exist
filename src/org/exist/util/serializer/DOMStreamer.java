@@ -174,7 +174,9 @@ public class DOMStreamer {
 						}
 					} else if (attrName.indexOf(':') > 0) {
 						prefix = nextAttr.getPrefix();
-						uri = nextAttr.getNamespaceURI();
+                        if (prefix == null)
+                            System.out.println(attrName + " -> " + prefix);
+                        uri = nextAttr.getNamespaceURI();
 						if (nsSupport.getURI(prefix) == null) {
 							namespaceDecls.put(prefix, uri);
 							nsSupport.declarePrefix(prefix, uri);
@@ -222,9 +224,12 @@ public class DOMStreamer {
 					node.getNodeName(), saxAttrs);
 				break;
 			case Node.TEXT_NODE :
-			case Node.CDATA_SECTION_NODE :
-				cdata = ((CharacterData) node).getData();
-				if(lexicalHandler != null)
+                cdata = ((CharacterData) node).getData();
+                contentHandler.characters(cdata.toCharArray(), 0, cdata.length());
+                break;
+            case Node.CDATA_SECTION_NODE :
+                cdata = ((CharacterData) node).getData();
+                if(lexicalHandler != null)
 					lexicalHandler.startCDATA();
 				contentHandler.characters(cdata.toCharArray(), 0, cdata.length());
 				if(lexicalHandler != null)
