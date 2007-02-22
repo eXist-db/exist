@@ -136,6 +136,8 @@ public class UntypedAtomicValue extends AtomicValue {
 	 * @see org.exist.xquery.value.AtomicValue#compareTo(int, org.exist.xquery.value.AtomicValue)
 	 */
 	public boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException {
+		if (other.isEmpty())
+			return false;
 		if (Type.subTypeOf(other.getType(), Type.STRING) ||
 				Type.subTypeOf(other.getType(), Type.UNTYPED_ATOMIC)) {
 			int cmp = Collations.compare(collator, value, other.getStringValue());

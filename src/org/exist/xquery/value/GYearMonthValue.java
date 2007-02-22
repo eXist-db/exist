@@ -21,12 +21,14 @@
  */
 package org.exist.xquery.value;
 
+import java.text.Collator;
 import java.util.GregorianCalendar;
 
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 
+import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 
 public class GYearMonthValue extends AbstractDateTimeValue {
@@ -88,6 +90,34 @@ public class GYearMonthValue extends AbstractDateTimeValue {
         return DatatypeConstants.GYEARMONTH;
     }
 
+	public int compareTo(Collator collator, AtomicValue other) throws XPathException {
+		if (other.getType() == getType()) {
+			if (!getTimezone().isEmpty()) {
+				if (!((AbstractDateTimeValue) other).getTimezone().isEmpty()) {
+					if (!((DayTimeDurationValue)getTimezone().itemAt(0)).compareTo(null, Constants.EQ, (DayTimeDurationValue)((AbstractDateTimeValue)other).getTimezone().itemAt(0))) {
+						return DatatypeConstants.LESSER;
+	    			} else {
+	    				if (!((DayTimeDurationValue)getTimezone().itemAt(0)).getStringValue().equals("PT0S"))
+	    					return DatatypeConstants.LESSER;
+	    			}
+	    		} else {
+	    			if (!((AbstractDateTimeValue)other).getTimezone().isEmpty()) {
+	    				if (!((DayTimeDurationValue)((AbstractDateTimeValue)other).getTimezone().itemAt(0)).getStringValue().equals("PT0S"))
+	    					return DatatypeConstants.LESSER;
+	    			}
+				}
+			}
+			// filling in missing timezones with local timezone, should be total order as per XPath 2.0 10.4
+			int r =	this.getTrimmedCalendar().compare(((AbstractDateTimeValue) other).getTrimmedCalendar());
+				//getImplicitCalendar().compare(((AbstractDateTimeValue) other).getImplicitCalendar());
+			if (r == DatatypeConstants.INDETERMINATE) throw new RuntimeException("indeterminate order between " + this + " and " + other);
+			return r;
+		}
+		throw new XPathException(
+			"Type error: cannot compare " + Type.getTypeName(getType()) + " to "
+				+ Type.getTypeName(other.getType()));
+	}
+    
     public ComputableValue minus(ComputableValue other) throws XPathException {
         throw new XPathException("Subtraction is not supported on values of type " +
                 Type.getTypeName(getType()));

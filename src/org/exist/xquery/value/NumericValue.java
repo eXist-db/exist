@@ -34,6 +34,8 @@ public abstract class NumericValue extends ComputableValue {
 	 */
 	public boolean compareTo(Collator collator, int operator, AtomicValue other)
 		throws XPathException {
+		if (other.isEmpty())
+			return false;
 		if(Type.subTypeOf(other.getType(), Type.NUMBER)) {
 			double otherVal = ((NumericValue)other).getDouble();
 			double val = getDouble();
