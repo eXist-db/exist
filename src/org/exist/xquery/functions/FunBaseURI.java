@@ -38,7 +38,6 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
 
@@ -114,15 +113,21 @@ public class FunBaseURI extends BasicFunction {
         }
         if (result == null && node != null) {
             if (node.getImplementationType() == NodeValue.IN_MEMORY_NODE) {
-                NodeImpl domNode = (NodeImpl) node.getNode();
-                String base = domNode.getBaseURI();
-                if (base == null)
-                	if (context.getBaseURI() != null)
-                		result = context.getBaseURI();
+                NodeImpl domNode = (NodeImpl) node.getNode(); 
+                short type = domNode.getNodeType();
+                // Only elements, document nodes and processing instructions have a base-uri
+                if (type == Node.ELEMENT_NODE || type == Node.DOCUMENT_NODE ||
+                        type == Node.PROCESSING_INSTRUCTION_NODE) {
+                	String base = domNode.getBaseURI();
+                	if (base == null)
+                		if (context.getBaseURI() != null)
+                			result = context.getBaseURI();
+                		else
+                			result = Sequence.EMPTY_SEQUENCE;
                 	else
-                		result = Sequence.EMPTY_SEQUENCE;
-                else
-                    result = new StringValue(base);
+                		result = new AnyURIValue(base);                	
+                } else
+                    result = Sequence.EMPTY_SEQUENCE;
             } else {
                 NodeProxy proxy = (NodeProxy) node;
                 short type = proxy.getNodeType();
