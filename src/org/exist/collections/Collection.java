@@ -176,10 +176,6 @@ public  class Collection extends Observable
         this.path=path;
     }
     
-    public Lock getLockOld() {
-        return getLock();
-    }
-    
     public Lock getLock() {
         return lock;
     }
@@ -726,6 +722,9 @@ public  class Collection extends Observable
         try {
         	//Doh ! READ lock ?
             getLock().acquire(Lock.READ_LOCK);
+            // keep the lock for the transaction
+            if (transaction != null)
+                transaction.registerLock(getLock(), Lock.READ_LOCK);            
             
             DocumentImpl doc = getDocument(broker, docUri);
             if (doc == null)
@@ -768,8 +767,9 @@ public  class Collection extends Observable
             broker.getBrokerPool().getNotificationService().notifyUpdate(doc, UpdateListener.REMOVE);
             
         } finally {
-        	//Doh ! A READ lock ?
-            getLock().release(Lock.READ_LOCK);
+        	if (transaction == null)
+        		//Doh ! A READ lock ?
+        		getLock().release(Lock.READ_LOCK);
         }
     }
     
@@ -778,6 +778,9 @@ public  class Collection extends Observable
         
         try {
             getLock().acquire(Lock.WRITE_LOCK);
+            // keep the lock for the transaction
+            if (transaction != null)
+                transaction.registerLock(getLock(), Lock.WRITE_LOCK);            
             DocumentImpl doc = getDocument(broker, uri);
             if(doc.isLockedForWrite())
                 throw new PermissionDeniedException("Document " + doc.getFileURI() +
@@ -790,7 +793,8 @@ public  class Collection extends Observable
             
             removeBinaryResource(transaction, broker, doc);
         } finally {
-            getLock().release(Lock.WRITE_LOCK);
+        	if (transaction == null)
+        		getLock().release(Lock.WRITE_LOCK);
         }
     }
     
@@ -802,6 +806,9 @@ public  class Collection extends Observable
         
         try {
             getLock().acquire(Lock.WRITE_LOCK);
+            // keep the lock for the transaction
+            if (transaction != null)
+                transaction.registerLock(getLock(), Lock.WRITE_LOCK);            
             if (doc.getResourceType() != DocumentImpl.BINARY_FILE)
                 throw new PermissionDeniedException("document " + doc.getFileURI()
                 + " is not a binary object");
@@ -832,7 +839,8 @@ public  class Collection extends Observable
                 trigger.finish(Trigger.REMOVE_DOCUMENT_EVENT, broker, transaction, null);
             }
         } finally {
-            getLock().release(Lock.WRITE_LOCK);
+        	if (transaction == null)
+        		getLock().release(Lock.WRITE_LOCK);
         }
     }
     
@@ -1001,6 +1009,9 @@ public  class Collection extends Observable
         boolean oldDocLocked = false;
         try {
             getLock().acquire(Lock.WRITE_LOCK);
+            // keep the lock for the transaction
+            if (transaction != null)
+                transaction.registerLock(getLock(), Lock.WRITE_LOCK);            
             oldDoc = (DocumentImpl) documents.get(docUri.getRawCollectionPath());
             document = new DocumentImpl(broker, this, docUri);
             
@@ -1039,6 +1050,7 @@ public  class Collection extends Observable
                 if (oldDoc.getResourceType() == DocumentImpl.BINARY_FILE) {
                     broker.removeBinaryResource(transaction, (BinaryDocument) oldDoc);
                     documents.remove(oldDoc.getFileURI().getRawCollectionPath());
+                    //TOUNDERSTAND : when is this lock released ?
                     document.getUpdateLock().acquire(Lock.WRITE_LOCK);
                     document.setDocId(broker.getNextResourceId(transaction, this));
                     addDocument(transaction, broker, document);
@@ -1050,6 +1062,7 @@ public  class Collection extends Observable
                     document = oldDoc;
                 }
             } else {
+            	//TOUNDERSTAND : when is this lock released ?
             	document.getUpdateLock().acquire(Lock.WRITE_LOCK);
                 document.setDocId(broker.getNextResourceId(transaction, this));
                 addDocument(transaction, broker, document);
@@ -1061,9 +1074,11 @@ public  class Collection extends Observable
         } finally {
             if (oldDocLocked) 
             	oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
+            //TOUNDERSTAND : see above
             //if (document != null)
             	//document.getUpdateLock().release(Lock.WRITE_LOCK);
-            getLock().release(Lock.WRITE_LOCK);
+            if (transaction == null)
+            	getLock().release(Lock.WRITE_LOCK);
         }
     }
     
@@ -1206,6 +1221,9 @@ public  class Collection extends Observable
 
         try {
             getLock().acquire(Lock.WRITE_LOCK);
+            // keep the lock for the transaction
+            if (transaction != null)
+                transaction.registerLock(getLock(), Lock.WRITE_LOCK);              
             checkPermissions(transaction, broker, oldDoc);
             DocumentTrigger trigger = null;
             int event = 0;
@@ -1250,7 +1268,8 @@ public  class Collection extends Observable
             }
             return blob;
         } finally {
-            getLock().release(Lock.WRITE_LOCK);
+        	if (transaction == null)
+        		getLock().release(Lock.WRITE_LOCK);
         }
     }
     
