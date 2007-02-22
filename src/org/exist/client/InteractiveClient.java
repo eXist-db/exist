@@ -2307,7 +2307,7 @@ public class InteractiveClient {
     
     public void printNotice() {
         
-        Properties sysProperties = ClientFrame.getSystemProperties();
+        Properties sysProperties = getSystemProperties();
         
         messageln(sysProperties.getProperty("product-name") + " version " 
                 + sysProperties.getProperty("product-version") 
@@ -2443,6 +2443,22 @@ public class InteractiveClient {
                 buf.append(' ');
         }
         return buf.toString();
+    }
+    
+    public static Properties getSystemProperties(){
+        
+        Properties sysProperties = new Properties();
+        try
+        {
+                sysProperties.load(InteractiveClient.class.getClassLoader().getResourceAsStream("org/exist/system.properties"));
+        }
+        catch (IOException e)
+        {
+                System.err.println("Unable to load system.properties from class loader");
+        }
+        
+        return sysProperties;
+        
     }
     
 }
