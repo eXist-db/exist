@@ -1436,25 +1436,9 @@ public class ClientFrame extends JFrame
         displayPrompt();
     }
     
-    public static Properties getSystemProperties(){
-        
-        Properties sysProperties = new Properties();
-        try
-        {
-                sysProperties.load(ClientFrame.class.getClassLoader().getResourceAsStream("org/exist/system.properties"));
-        }
-        catch (IOException e)
-        {
-                System.err.println("Unable to load system.properties from class loader");
-        }
-        
-        return sysProperties;
-        
-    }
-    
     private void AboutAction() {
         
-        Properties sysProperties = ClientFrame.getSystemProperties();
+        Properties sysProperties = InteractiveClient.getSystemProperties();
         
         // Original text eXist version 1.0, Copyright (C) 2001-2006 Wolfgang Meier
         JOptionPane.showMessageDialog(this, 
@@ -1650,7 +1634,7 @@ public class ClientFrame extends JFrame
     
     protected static Properties getLoginData(Properties properties) {
         
-        Properties sysProperties = ClientFrame.getSystemProperties();
+        Properties sysProperties = InteractiveClient.getSystemProperties();
 
         LoginPanel login = new LoginPanel(properties);
         if (JOptionPane.showOptionDialog(null, login, 
