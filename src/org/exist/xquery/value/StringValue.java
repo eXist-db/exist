@@ -120,6 +120,7 @@ public class StringValue extends AtomicValue {
 	 */
 	public AtomicValue convertTo(int requiredType) throws XPathException {
 		switch (requiredType) {
+			//TODO : should we allow these 2 type under-promotions ?
 			case Type.ATOMIC :
 			case Type.ITEM :
 			case Type.STRING :
@@ -175,7 +176,13 @@ public class StringValue extends AtomicValue {
 			case Type.TIME :
 				return new TimeValue(value);
 			case Type.DATE :
-				return new DateValue(value);
+            	DateValue dv = new DateValue(value);  
+        		//For still unknown reasons, negative dates are one year too early
+        		if (value.startsWith("-")) {
+        			dv.calendar.setYear(dv.calendar.getYear() + 1);
+        			return new DateValue(dv.calendar);
+        		}        			
+                return dv;
 			case Type.DURATION :
 				return new DurationValue(value);
 			case Type.YEAR_MONTH_DURATION : 
@@ -183,17 +190,31 @@ public class StringValue extends AtomicValue {
 			case Type.DAY_TIME_DURATION :	
 				return new DayTimeDurationValue(value);
             case Type.GYEAR :
-                return new GYearValue(value);
+            	GYearValue gyv = new GYearValue(value);  
+        		//For still unknown reasons, negative dates are one year too early
+        		if (value.startsWith("-")) {
+        			gyv.calendar.setYear(gyv.calendar.getYear() + 1);
+        			return new GYearValue(gyv.calendar);
+        		}        			
+                return gyv;
             case Type.GMONTH :
-                return new GMonthValue(value);
+        		return new GMonthValue(value);
             case Type.GDAY :
                 return new GDayValue(value);
             case Type.GYEARMONTH :
-                return new GYearMonthValue(value);
+            	GYearMonthValue gymv = new GYearMonthValue(value);  
+        		//For still unknown reasons, negative dates are one year too early
+        		if (value.startsWith("-")) {
+        			gymv.calendar.setYear(gymv.calendar.getYear() + 1);
+        			return new GYearMonthValue(gymv.calendar);
+        		}        			
+                return gymv;
             case Type.GMONTHDAY :
                 return new GMonthDayValue(value);
 			case Type.UNTYPED_ATOMIC :
 				return new UntypedAtomicValue(getStringValue());
+			case Type.QNAME :
+				return new QNameValue(null, new QName(value));
 			default :
 				throw new XPathException("FORG0001: cannot cast '" + 
 						Type.getTypeName(this.getItemType()) + "(\"" + getStringValue() + "\")' to " +

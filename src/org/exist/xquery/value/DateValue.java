@@ -77,12 +77,26 @@ public class DateValue extends AbstractDateTimeValue {
 		switch (requiredType) {
 			case Type.DATE :
 			case Type.ATOMIC :
-			case Type.ITEM :
-				return this;
+			case Type.ITEM : {
+            	DateValue dv = new DateValue(getStringValue()); 
+        		//For still unknown reasons, negative dates are one year too early
+        		if (getStringValue().startsWith("-")) {
+        			//Do not forget the -1 shift
+        			dv.calendar.setYear(dv.calendar.getYear() + 1 + 1);
+        			return new DateValue(dv.calendar);
+        		}
+        		return dv;
+			}
 			case Type.DATE_TIME :
 				return new DateTimeValue(calendar);
             case Type.GYEAR :
-                return new GYearValue(calendar);
+            	GYearValue gyv = new GYearValue(this.calendar); 
+        		//For still unknown reasons, negative dates are one year too early
+        		if (getStringValue().startsWith("-")) {
+        			gyv.calendar.setYear(gyv.calendar.getYear() + 1);
+        			return new GYearValue(gyv.calendar);
+        		}
+        		return gyv;
             case Type.GYEARMONTH :
                 return new GYearMonthValue(calendar);
             case Type.GMONTHDAY :
@@ -91,10 +105,27 @@ public class DateValue extends AbstractDateTimeValue {
                 return new GDayValue(calendar);
             case Type.GMONTH :
                 return new GMonthValue(calendar);
-			case Type.UNTYPED_ATOMIC:
-				return new UntypedAtomicValue(getStringValue());
-			case Type.STRING :
-				return new StringValue(getStringValue());
+			case Type.UNTYPED_ATOMIC: 
+				{
+	            	DateValue dv = new DateValue(getStringValue()); 
+	        		//For still unknown reasons, negative dates are one year too early
+	        		if (getStringValue().startsWith("-")) {
+	        			//Do not forget the -1 shift
+	        			dv.calendar.setYear(dv.calendar.getYear() + 1 + 1);
+	        			return new DateValue(dv.calendar);
+	        		}
+					return new UntypedAtomicValue(dv.getStringValue());
+				}				
+			case Type.STRING : {
+            	DateValue dv = new DateValue(getStringValue()); 
+        		//For still unknown reasons, negative dates are one year too early
+        		if (getStringValue().startsWith("-")) {
+        			//Do not forget the -1 shift
+        			dv.calendar.setYear(dv.calendar.getYear() + 1 + 1);
+        			return new DateValue(dv.calendar);
+        		}
+				return new StringValue(dv.getStringValue());
+			}
 			default :
 				throw new XPathException("FORG0001: can not convert " + 
 						Type.getTypeName(getType()) + "('" + getStringValue() + "') to " +

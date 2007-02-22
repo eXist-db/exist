@@ -97,6 +97,9 @@ public class CastableExpression extends AbstractExpression {
         }
         
         Sequence result;
+        //Maybe too strict ? Investigate...
+        if (Dependency.dependsOnVar(expression))
+        	throw new XPathException("Can not cast a variable reference");
 		Sequence seq = expression.eval(contextSequence, contextItem);
 		if(seq.isEmpty()) {
 			//If ? is specified after the target type, the result of the cast expression is an empty sequence.
