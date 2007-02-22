@@ -386,7 +386,77 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 		 * @see org.exist.xquery.value.AtomicValue#convertTo(int)
 		 */
 		public AtomicValue convertTo(int requiredType) throws XPathException {
-			throw new XPathException("cannot convert empty value to " + requiredType);
+			switch (requiredType) {
+				case Type.ATOMIC :
+				case Type.ITEM :
+				case Type.STRING :
+					return StringValue.EMPTY_STRING;
+				case Type.NORMALIZED_STRING:
+				case Type.TOKEN:
+				case Type.LANGUAGE:
+				case Type.NMTOKEN:
+				case Type.NAME:
+				case Type.NCNAME:
+				case Type.ID:
+				case Type.IDREF:
+				case Type.ENTITY:
+					return new StringValue("", requiredType);
+				case Type.ANY_URI :
+					return AnyURIValue.EMPTY_URI;
+				case Type.BOOLEAN :
+					return BooleanValue.FALSE;
+				//case Type.FLOAT :
+					//return new FloatValue(value); 
+				//case Type.DOUBLE :
+				//case Type.NUMBER :
+					//return new DoubleValue(this);
+				//case Type.DECIMAL :
+					//return new DecimalValue(value);
+				//case Type.INTEGER :
+				//case Type.NON_POSITIVE_INTEGER :
+				//case Type.NEGATIVE_INTEGER :
+				//case Type.POSITIVE_INTEGER :
+				//case Type.LONG :
+				//case Type.INT :
+				//case Type.SHORT :
+				//case Type.BYTE :
+				//case Type.NON_NEGATIVE_INTEGER :
+				//case Type.UNSIGNED_LONG :
+				//case Type.UNSIGNED_INT :
+				//case Type.UNSIGNED_SHORT :
+				//case Type.UNSIGNED_BYTE :
+					//return new IntegerValue(value, requiredType);
+				//case Type.BASE64_BINARY :
+					//return new Base64Binary(value);
+	            //case Type.HEX_BINARY :
+	                //return new HexBinary(value);
+				//case Type.DATE_TIME :
+					//return new DateTimeValue(value);
+				//case Type.TIME :
+					//return new TimeValue(value);
+				//case Type.DATE :
+					//return new DateValue(value);
+				//case Type.DURATION :
+					//return new DurationValue(value);
+				//case Type.YEAR_MONTH_DURATION : 
+					//return new YearMonthDurationValue(value);
+				//case Type.DAY_TIME_DURATION :	
+					//return new DayTimeDurationValue(value);
+	            //case Type.GYEAR :
+	                //return new GYearValue(value);
+	            //case Type.GMONTH :
+	                //return new GMonthValue(value);
+	            //case Type.GDAY :
+	                //return new GDayValue(value);
+	            //case Type.GYEARMONTH :
+	                //return new GYearMonthValue(value);
+	            //case Type.GMONTHDAY :
+	                //return new GMonthDayValue(value);
+				//case Type.UNTYPED_ATOMIC :
+					//return new UntypedAtomicValue(getStringValue());
+				default :
+					throw new XPathException("cannot convert empty value to " + requiredType);
+			}
 		}
 
 		/* (non-Javadoc)
@@ -397,6 +467,13 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 				return Constants.EQUAL;
 			else
 				return Constants.INFERIOR;
+		}
+
+		/* (non-Javadoc)
+		 * @see org.exist.xquery.value.AtomicValue#compareTo(int, org.exist.xquery.value.AtomicValue)
+		 */
+		public boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException {
+			return false;
 		}
 
 		/* (non-Javadoc)
@@ -426,13 +503,6 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 		public void add(Item item) throws XPathException {
 		}
 
-		/* (non-Javadoc)
-		 * @see org.exist.xquery.value.AtomicValue#compareTo(int, org.exist.xquery.value.AtomicValue)
-		 */
-		public boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException {
-			throw new XPathException("Cannot compare operand to empty value");
-		}
-		
 		/* (non-Javadoc)
 		 * @see org.exist.xquery.value.AtomicValue#min(org.exist.xquery.value.AtomicValue)
 		 */

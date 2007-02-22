@@ -21,17 +21,17 @@ abstract class OrderedDurationValue extends DurationValue {
 		int r = compareTo(collator, other);
 		switch (operator) {
 			case Constants.EQ :
-				return r == 0;
+				return r == DatatypeConstants.EQUAL;
 			case Constants.NEQ :
-				return r != 0;
+				return r != DatatypeConstants.EQUAL;
 			case Constants.LT :
-				return r < 0;
+				return r == DatatypeConstants.LESSER;
 			case Constants.LTEQ :
-				return r <= 0;
+				return r == DatatypeConstants.LESSER || r == DatatypeConstants.EQUAL;
 			case Constants.GT :
-				return r > 0;
+				return r == DatatypeConstants.GREATER;
 			case Constants.GTEQ :
-				return r >= 0;
+				return r == DatatypeConstants.GREATER || r == DatatypeConstants.EQUAL; 
 			default :
 				throw new XPathException("Unknown operator type in comparison");
 		}
@@ -39,9 +39,17 @@ abstract class OrderedDurationValue extends DurationValue {
 
 	public int compareTo(Collator collator, AtomicValue other) throws XPathException {
 		if (other.getType() == getType()) {
+			//Take care : this method doesn't seem to take ms into account 
 			int r = duration.compare(((OrderedDurationValue) other).duration);
 			if (r == DatatypeConstants.INDETERMINATE) throw new RuntimeException("indeterminate order between totally ordered duration values " + this + " and " + other);
 			return r;
+		/* TODO : consider this kind of design
+		} else if (Type.getCommonSuperType(getType(), other.getType()) == Type.DURATION) {
+			//Take care : this method doesn't seem to take ms into account 
+			int r = duration.compare(((DurationValue) other).duration);
+			if (r == DatatypeConstants.INDETERMINATE) throw new RuntimeException("indeterminate order between totally ordered duration values " + this + " and " + other);
+			return r;
+		*/
 		}
 		throw new XPathException(
 				"Type error: cannot compare " + Type.getTypeName(getType()) + " to "
