@@ -108,15 +108,33 @@ public class UntypedAtomicValue extends AtomicValue {
 			case Type.TIME :
 				return new TimeValue(value);
 			case Type.DATE :
-				return new DateValue(value);
+				DateValue dv = new DateValue(value);  
+        		//For still unknown reasons, negative dates are one year too early
+        		if (value.startsWith("-")) {
+        			dv.calendar.setYear(dv.calendar.getYear() + 1);
+        			return new DateValue(dv.calendar);
+        		}        			
+                return dv;
             case Type.GYEAR :
-                return new GYearValue(value);
+            	GYearValue gyv = new GYearValue(value);  
+        		//For still unknown reasons, negative dates are one year too early
+        		if (value.startsWith("-")) {
+        			gyv.calendar.setYear(gyv.calendar.getYear() + 1);
+        			return new GYearValue(gyv.calendar);
+        		}        			
+                return gyv;
             case Type.GMONTH :
                 return new GMonthValue(value);
             case Type.GDAY :
                 return new GDayValue(value);
             case Type.GYEARMONTH :
-                return new GYearMonthValue(value);
+            	GYearMonthValue gymv = new GYearMonthValue(value);  
+        		//For still unknown reasons, negative dates are one year too early
+        		if (value.startsWith("-")) {
+        			gymv.calendar.setYear(gymv.calendar.getYear() + 1);
+        			return new GYearMonthValue(gymv.calendar);
+        		}
+        		return gymv;
             case Type.GMONTHDAY :
                 return new GMonthDayValue(value);
 			case Type.DURATION :
