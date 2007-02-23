@@ -1443,6 +1443,8 @@ reservedKeywords returns [String name]
 	|
 	"for" { name= "for"; }
 	|
+	"in" { name = "in"; }
+	|
 	"let" { name= "let"; }
 	|
 	"default" { name= "default"; }
