@@ -32,6 +32,8 @@ import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 
 public class GMonthValue extends AbstractDateTimeValue {
+	
+	protected boolean addTrailingZ = false;
 
     public GMonthValue() throws XPathException {
         super(stripCalendar(TimeUtils.getInstance().newXMLGregorianCalendar(new GregorianCalendar())));
@@ -43,6 +45,13 @@ public class GMonthValue extends AbstractDateTimeValue {
 
     public GMonthValue(String timeValue) throws XPathException {
         super(fixTimezone(timeValue));
+        timeValue = timeValue.trim();
+        if (timeValue.endsWith("Z"))
+        	addTrailingZ = true;
+        if (timeValue.endsWith("-00:00"))      
+        	addTrailingZ = true;
+        if (timeValue.endsWith("+00:00")) 
+        	addTrailingZ = true;            
         try {
             if (calendar.getXMLSchemaType() != DatatypeConstants.GMONTH) throw new IllegalStateException();
         } catch (IllegalStateException e) {
@@ -90,6 +99,13 @@ public class GMonthValue extends AbstractDateTimeValue {
     protected QName getXMLSchemaType() {
         return DatatypeConstants.GMONTH;
     }
+    
+    public String getStringValue() throws XPathException {
+    	String r = super.getStringValue();
+    	if (addTrailingZ) 
+    		return r + "Z";
+    	return r;
+    }    
 
     public ComputableValue minus(ComputableValue other) throws XPathException {
         throw new XPathException("Subtraction is not supported on values of type " +
@@ -123,7 +139,7 @@ public class GMonthValue extends AbstractDateTimeValue {
 				+ Type.getTypeName(other.getType()));
 	}
     
-    private static String fixTimezone(String value) {
+    private static String fixTimezone(String value) {    	
     	//TODO : should we imply a default "Z" here ?
     	//TODO : should we raise an error on wrong TZ offsets (e.g. 60) ?
         int p = value.indexOf('Z');
@@ -134,7 +150,7 @@ public class GMonthValue extends AbstractDateTimeValue {
         	return value.substring(0, p);
         p = value.indexOf("+00:00");    
         if (p != Constants.STRING_NOT_FOUND)
-        	return value.substring(0, p);
+        	return value.substring(0, p);        
         return value;
     }
 }
