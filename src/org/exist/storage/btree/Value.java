@@ -223,4 +223,13 @@ public class Value implements Comparable {
 		}
 		return true;
 	}
+
+    public String dump() {
+        StringBuffer buf = new StringBuffer();
+        for (int i = 0; i < len; i++) {
+            buf.append(Integer.toHexString(data[pos + i] & 0xFF));
+            buf.append(' ');
+        }
+        return buf.toString();
+    }
 }
