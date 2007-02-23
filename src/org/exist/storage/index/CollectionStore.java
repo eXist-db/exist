@@ -15,6 +15,7 @@ import org.exist.storage.NativeBroker;
 import org.exist.storage.btree.DBException;
 import org.exist.storage.btree.Value;
 import org.exist.util.ByteConversion;
+import org.exist.util.UTF8;
 
 /**
  * Handles access to the central collection storage file (collections.dbx). 
@@ -27,7 +28,10 @@ public class CollectionStore extends BFile {
     public final static String NEXT_DOC_ID_KEY = "__next_doc_id";  
     public final static String FREE_COLLECTION_ID_KEY = "__free_collection_id";
     public final static String NEXT_COLLECTION_ID_KEY = "__next_collection_id";  
-    
+
+    public final static byte KEY_TYPE_COLLECTION = 0;
+    public final static byte KEY_TYPE_DOCUMENT = 1;
+
     /**
      * 
      * 
@@ -80,6 +84,38 @@ public class CollectionStore extends BFile {
             writer.write("Collection: ");
             writer.write(new String(value.data(), value.start(), value.getLength(), "UTF-8"));
             writer.write(']');
+        }
+    }
+
+    public static class DocumentKey extends Value {
+
+        public DocumentKey(short collectionId) {
+            data = new byte[3];
+            data[0] = KEY_TYPE_DOCUMENT;
+            ByteConversion.shortToByte(collectionId, data, 1);
+            len = 3;
+            pos = 0;
+        }
+
+        public DocumentKey(short collectionId, byte type, int docId) {
+            data = new byte[8];
+            data[0] = KEY_TYPE_DOCUMENT;
+            ByteConversion.shortToByte(collectionId, data, 1);
+            data[3] = type;
+            ByteConversion.intToByte(docId, data, 4);
+            len = 8;
+            pos = 0;
+        }
+    }
+
+    public static class CollectionKey extends Value {
+
+        public CollectionKey(String name) {
+            len = 1 + UTF8.encoded(name);
+            data = new byte[len];
+            data[0] = KEY_TYPE_COLLECTION;
+            UTF8.encode(name, data, 1);
+            pos = 0;
         }
     }
 }
