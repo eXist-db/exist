@@ -1288,11 +1288,11 @@ public  class Collection extends Observable
         }
         ostream.writeInt(permissions.getPermissions());
         ostream.writeLong(created);
-        DocumentImpl doc;
-        for (Iterator i = documents.values().iterator(); i.hasNext(); ) {
-            doc = (DocumentImpl) i.next();
-            doc.write(ostream);
-        }
+//        DocumentImpl doc;
+//        for (Iterator i = documents.values().iterator(); i.hasNext(); ) {
+//            doc = (DocumentImpl) i.next();
+//            doc.write(ostream);
+//        }
     }
     
     public CollectionConfiguration getConfiguration(DBBroker broker) {
