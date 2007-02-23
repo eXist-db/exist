@@ -176,13 +176,7 @@ public class StringValue extends AtomicValue {
 			case Type.TIME :
 				return new TimeValue(value);
 			case Type.DATE :
-            	DateValue dv = new DateValue(value);  
-        		//For still unknown reasons, negative dates are one year too early
-        		if (value.startsWith("-")) {
-        			dv.calendar.setYear(dv.calendar.getYear() + 1);
-        			return new DateValue(dv.calendar);
-        		}        			
-                return dv;
+            	return new DateValue(value);  
 			case Type.DURATION :
 				return new DurationValue(value);
 			case Type.YEAR_MONTH_DURATION : 
@@ -190,25 +184,13 @@ public class StringValue extends AtomicValue {
 			case Type.DAY_TIME_DURATION :	
 				return new DayTimeDurationValue(value);
             case Type.GYEAR :
-            	GYearValue gyv = new GYearValue(value);  
-        		//For still unknown reasons, negative dates are one year too early
-        		if (value.startsWith("-")) {
-        			gyv.calendar.setYear(gyv.calendar.getYear() + 1);
-        			return new GYearValue(gyv.calendar);
-        		}        			
-                return gyv;
+            	return new GYearValue(value);  
             case Type.GMONTH :
         		return new GMonthValue(value);
             case Type.GDAY :
                 return new GDayValue(value);
             case Type.GYEARMONTH :
-            	GYearMonthValue gymv = new GYearMonthValue(value);  
-        		//For still unknown reasons, negative dates are one year too early
-        		if (value.startsWith("-")) {
-        			gymv.calendar.setYear(gymv.calendar.getYear() + 1);
-        			return new GYearMonthValue(gymv.calendar);
-        		}        			
-                return gymv;
+            	return new GYearMonthValue(value);  
             case Type.GMONTHDAY :
                 return new GMonthDayValue(value);
 			case Type.UNTYPED_ATOMIC :
