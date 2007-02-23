@@ -410,6 +410,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
             lock.acquire(Lock.WRITE_LOCK);
             ArrayList elements = dbValues.findKeys(query);
             for (int i = 0; i < elements.size(); i++) {
+                if (value == null)
+                    continue;
                 boolean changed = false;
                 Value key = (Value) elements.get(i);
                 Value value = dbValues.get(key);                

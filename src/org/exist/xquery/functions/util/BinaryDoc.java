@@ -63,8 +63,9 @@ public class BinaryDoc extends BasicFunction {
         if (args[0].isEmpty())
             return Sequence.EMPTY_SEQUENCE;
         String path = args[0].getStringValue();
+        DocumentImpl doc = null;
         try {
-            DocumentImpl doc = context.getBroker().getXMLResource(XmldbURI.xmldbUriFor(path), Lock.READ_LOCK);
+            doc = context.getBroker().getXMLResource(XmldbURI.xmldbUriFor(path), Lock.READ_LOCK);
             if (doc == null)
                 return Sequence.EMPTY_SEQUENCE;
             if (doc.getResourceType() != DocumentImpl.BINARY_FILE)
@@ -76,6 +77,9 @@ public class BinaryDoc extends BasicFunction {
             throw new XPathException(getASTNode(), "Invalid resource uri",e);
         } catch (PermissionDeniedException e) {
             throw new XPathException(getASTNode(), path + ": permission denied to read resource");
+        } finally {
+            if (doc != null)
+                doc.getUpdateLock().release(Lock.READ_LOCK);
         }
     }
 }

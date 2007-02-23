@@ -78,7 +78,7 @@
                 </tr>
                 <tr>
                     <td>
-                        <a href="http://prdownloads.sourceforge.net/exist/eXist-1.0.1.jar">eXist-1.0.1.jar</a>
+                        <a href="http://prdownloads.sourceforge.net/exist/eXist-1.0.1-build4311.jar">eXist-1.0.1.jar</a>
                     </td>
                     <td> Installer based on IzPack. Includes source. Run with <tt>java -jar eXist-1.0.1.jar</tt></td>
                 </tr>
@@ -103,7 +103,7 @@
                 </tr>
                 <tr>
                     <td>
-                        <a href="http://prdownloads.sourceforge.net/exist/eXist-1.1.1-newcore.jar">eXist-1.1.1-newcore.jar</a>
+                        <a href="http://prdownloads.sourceforge.net/exist/eXist-1.1.1-newcore-build4311.jar">eXist-1.1.1-newcore.jar</a>
                     </td>
                     <td> Installer based on IzPack. Includes source. Run with <tt>java -jar eXist-1.1.1-newcore.jar</tt></td>
                 </tr>
@@ -113,6 +113,29 @@
                     </td>
                     <td>Web application archive, ready to be installed into an existing
                         servlet-engine like Tomcat or Jetty. </td>
+                </tr>
+                <tr>
+                    <th style="background-color: #C5DAFF" align="left" colspan="2">eXist as Cocoon block</th>
+                </tr>
+                <tr>
+                    <td align="left" colspan="2">
+                        The standard distribution already ships with Cocoon. However, this version is a bit
+                        older and offers only a subset of the available Cocoon modules (called "blocks" in Cocoon).
+                        If you work a lot with Cocoon, you might prefer to have eXist integrated into full
+                        Cocoon build. The installer-based distribution contains build 
+                        scripts to set up eXist as a block in Cocoon. Please refer to the <a href="building.xml">
+                        documentation</a>. As a service to Cocoon users, we also provide a pre-compiled Cocoon 2.1.9 
+                        below:
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <a href="http://prdownloads.sourceforge.net/exist/cocoon-2.1.9-with-eXist-1.1.1.war">
+                            cocoon-2.1.9-with-eXist-1.1.1.war
+                        </a>
+                    </td>
+                    <td>This is Cocoon version 2.1.9 build with standard options and eXist 1.1.1 as a block. You
+                        should find eXist in <tt>http://my-server:port/cocoon/samples/blocks/exist/</tt>.</td>
                 </tr>
             </table>
             
@@ -140,7 +163,7 @@
             <p>The project also has an <b>IRC channel</b>
                 <link href="http://irc.exist-db.org">#existdb</link> at <link
                     href="irc://irc.freenode.net/existdb">irc.freenode.net</link>. The channel is
-                open for general discussions on eXist and related subjects. </p>
+                open for general discussions on eXist and related subjects.</p>
 
         </section>
     </body>
