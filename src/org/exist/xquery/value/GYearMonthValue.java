@@ -65,13 +65,7 @@ public class GYearMonthValue extends AbstractDateTimeValue {
             case Type.GYEARMONTH :
             case Type.ATOMIC :
             case Type.ITEM :
-            	GYearMonthValue gymv = new GYearMonthValue(this.calendar); 
-        		//For still unknown reasons, negative dates are one year too early
-        		if (getStringValue().startsWith("-")) {
-        			gymv.calendar.setYear(gymv.calendar.getYear() + 1);
-        			return new GYearMonthValue(gymv.calendar);
-        		}
-        		return gymv;
+            	return new GYearMonthValue(this.calendar); 
             case Type.STRING :
                 return new StringValue(getStringValue());
             case Type.UNTYPED_ATOMIC :

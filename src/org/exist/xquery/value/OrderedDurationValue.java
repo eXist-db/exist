@@ -74,7 +74,7 @@ abstract class OrderedDurationValue extends DurationValue {
 				Duration b = ((OrderedDurationValue) other).getCanonicalDuration();	
 				Duration result = createSameKind(a.add(b)).getCanonicalDuration();
 				//TODO : move instantiation to the right place
-				return new DayTimeDurationValue(result); }				
+				return new DayTimeDurationValue(result); }			
 			case Type.YEAR_MONTH_DURATION: {
 				//if (getType() != other.getType()) throw new IllegalArgumentException();	// not a match after all
 				Duration a = getCanonicalDuration();
@@ -95,7 +95,10 @@ abstract class OrderedDurationValue extends DurationValue {
 				AbstractDateTimeValue date = (AbstractDateTimeValue) other;
 				XMLGregorianCalendar gc = (XMLGregorianCalendar) date.calendar.clone();
 				gc.add(duration);
-				return date.createSameKind(gc);
+				//Shift one year
+				if (gc.getYear() <0)
+					gc.setYear(gc.getYear() - 1);
+				return date.createSameKind(gc); 
 			default:
 				throw new XPathException("XPTY0004: cannot add " + 
 						Type.getTypeName(other.getType()) + "('" + other.getStringValue() + "') from " + 

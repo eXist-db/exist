@@ -49,7 +49,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 	public final XMLGregorianCalendar calendar;
 	private XMLGregorianCalendar implicitCalendar, canonicalCalendar, trimmedCalendar;
 	
-	protected static Pattern negativeDateStart = Pattern.compile("^\\d-(\\d+)-(.*)"); 
+	protected static Pattern negativeDateStart = Pattern.compile("^\\d\\d?-(\\d+)-(.*)"); 
 
 	public final static int YEAR = 0;
 	public final static int MONTH = 1;
@@ -154,14 +154,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 		
 		Matcher m = negativeDateStart.matcher(r);
 		if (m.matches()) {
-			//TODO : refactor this -1 shift :
-			//OK for : 
-			//(xs:dateTime("0001-01-01T01:01:01Z") + xs:yearMonthDuration("-P20Y07M"))			
-			//which goes from "0-20-06-01T01:01:01Z" to correct "-0021-06-01T01:01:01Z"
-			//not OK for : 
-			//xs:string("-0012-05:00") cast as xs:gYear
-			//which goes from "0-12-05:00" to incorrectly shifted "-0013-05:00"
-			int year = Integer.valueOf(m.group(1)).intValue() + 1;
+			int year = Integer.valueOf(m.group(1)).intValue();
 			DecimalFormat df = new DecimalFormat("0000");
 			r = "-" + df.format(year) + "-" + m.group(2);
 		}
