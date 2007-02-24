@@ -1634,7 +1634,9 @@ public class XQueryContext {
 	
     public Pragma getPragma(String name, String contents) throws XPathException {
         QName qname = QName.parse(this, name);
-        if (Namespaces.EXIST_NS.equals(qname.getNamespaceURI())) {
+        if ("".equals(qname.getNamespaceURI())) {
+        	throw new XPathException("XPST0081: pragma's ('" + name +"') namespace URI is empty");
+        } else if (Namespaces.EXIST_NS.equals(qname.getNamespaceURI())) {
             contents = StringValue.trimWhitespace(contents);
             if (TimerPragma.TIMER_PRAGMA.equalsSimple(qname)) {
                 return new TimerPragma(qname, contents);
