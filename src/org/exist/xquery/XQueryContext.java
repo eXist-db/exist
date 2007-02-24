@@ -1622,9 +1622,8 @@ public class XQueryContext {
 	
 	public Option getOption(QName qname) {
 		if(options != null) {
-			Option option;
 			for(int i = 0; i < options.size(); i++) {
-				option = (Option)options.get(i);
+				Option option = (Option)options.get(i);
 				if(qname.compareTo(option.getQName()) == 0)
 					return option;
 			}

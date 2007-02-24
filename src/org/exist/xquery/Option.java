@@ -49,7 +49,9 @@ public class Option {
 	private final QName qname;
 	private final String contents;
 	
-	public Option(QName qname, String contents) {
+	public Option(QName qname, String contents)  throws XPathException {
+		if (qname.getPrefix() == null || "".equals(qname.getPrefix()))
+			throw new XPathException("XPST0081: options must have a prefix"); 
 		this.qname = qname;
 		this.contents = contents;
 	}
