@@ -124,7 +124,8 @@ public class UntypedAtomicValue extends AtomicValue {
 			case Type.YEAR_MONTH_DURATION :
 				return new YearMonthDurationValue(value);
 			case Type.DAY_TIME_DURATION :
-				return new DayTimeDurationValue(value);
+				DayTimeDurationValue dtdv = new DayTimeDurationValue(value);
+				return new DayTimeDurationValue(dtdv.getCanonicalDuration());
 			default :
 				throw new XPathException("FORG0001: cannot cast '" + 
 						Type.getTypeName(this.getItemType()) + "(\"" + getStringValue() + "\")' to " +

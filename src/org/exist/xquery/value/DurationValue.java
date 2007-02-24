@@ -255,9 +255,11 @@ public class DurationValue extends ComputableValue {
 				else
 					return new DayTimeDurationValue(DayTimeDurationValue.CANONICAL_ZERO_DURATION);
 			case Type.STRING:
-				return new StringValue(canonicalDuration.toString());
+				canonicalize();
+				return new StringValue(getStringValue());
 			case Type.UNTYPED_ATOMIC :
-				return new UntypedAtomicValue(canonicalDuration.toString());
+				canonicalize();
+				return new UntypedAtomicValue(getStringValue());
 			default:
 				throw new XPathException(
 					"Type error: cannot cast ' + Type.getTypeName(getType()) 'to "
