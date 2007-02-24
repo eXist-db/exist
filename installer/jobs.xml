@@ -1,0 +1,11 @@
+<processing>
+    <job name="Set password for admin user ...">
+        <executefile name="$JAVA_HOME/bin/java">
+            <arg>-Dexist.home=$INSTALL_PATH</arg>
+            <arg>-jar</arg>
+            <arg>start.jar</arg>
+            <arg>org.exist.Setup</arg>
+            <arg>$adminPasswd</arg>
+        </executefile>
+    </job>
+</processing>
