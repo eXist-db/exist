@@ -72,6 +72,9 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 	
 	protected AbstractDateTimeValue(String lexicalValue) throws XPathException {
         lexicalValue = StringValue.trimWhitespace(lexicalValue);
+        //4 digits years should not have leading zeroes
+        //xs:gDay("---08-10:60") is invalid also
+        //TODO : where to enforce those lexical constains ?
 		try {
 			this.calendar = TimeUtils.getInstance().newXMLGregorianCalendar(lexicalValue);
 		} catch (IllegalArgumentException e) {
