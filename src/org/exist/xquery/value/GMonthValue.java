@@ -95,7 +95,7 @@ public class GMonthValue extends AbstractDateTimeValue {
     }
 
     public int getType() {
-        return Type.GYEAR;
+        return Type.GMONTH;
     }
     
     protected QName getXMLSchemaType() {
