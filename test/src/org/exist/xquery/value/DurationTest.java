@@ -64,7 +64,7 @@ public class DurationTest extends AbstractTimeRelatedTestCase {
 		assertEquals(Type.DURATION, dv.getType());
 	}
 	
-	public void testCompareSucceeds() throws XPathException {
+	public void testCompareSucceeds1() throws XPathException {
 		try {
 			DurationValue dv = new DurationValue("P1Y2M3DT4H5M6S");
 			//eq and ne comparison operators are allowed
@@ -74,6 +74,29 @@ public class DurationTest extends AbstractTimeRelatedTestCase {
 		}
 	}
 	
+	public void testCompareSucceeds2() throws XPathException {
+		try {
+			DurationValue dv1 = new DurationValue("P1Y2M3DT4H5M6S"), dv2 = new DayTimeDurationValue("P1D");
+			assertFalse(dv1.compareTo(null, Constants.EQ, dv2));
+			//Saxon returns false for :
+			//xs:duration("P1Y2M3DT4H5M6S") eq xs:dayTimeDuration("P1D")
+			//fail();
+		} catch (XPathException e) {
+			fail();
+		}
+	}
+	public void testCompareSucceeds3() throws XPathException {
+		try {
+			DurationValue dv1 = new DurationValue("P1Y2M3DT4H5M6S"), dv2 = new YearMonthDurationValue("P1Y");
+			assertFalse(dv1.compareTo(null, Constants.EQ, dv2));
+			//Saxon returns true for :
+			//xs:duration("P1Y2M3DT4H5M6S") ne xs:dayTimeDuration("P1D")
+			//fail();
+		} catch (XPathException e) {
+			fail();
+		}
+	}
+
 	public void testCompareFail1() throws XPathException {
 		try {
 			DurationValue dv = new DurationValue("P1Y2M3DT4H5M6S");
@@ -84,24 +107,6 @@ public class DurationTest extends AbstractTimeRelatedTestCase {
 		}
 	}	
 
-	public void testCompareFail3() throws XPathException {
-		try {
-			DurationValue dv1 = new DurationValue("P1Y2M3DT4H5M6S"), dv2 = new DayTimeDurationValue("P1D");
-			dv1.compareTo(null, Constants.EQ, dv2);
-			fail();
-		} catch (XPathException e) {
-			// expected
-		}
-	}
-	public void testCompareFail4() throws XPathException {
-		try {
-			DurationValue dv1 = new DurationValue("P1Y2M3DT4H5M6S"), dv2 = new YearMonthDurationValue("P1Y");
-			dv1.compareTo(null, Constants.EQ, dv2);
-			fail();
-		} catch (XPathException e) {
-			// expected
-		}
-	}
 	public void testCompareFail5() throws XPathException {
 		try {
 			DurationValue dv1 = new YearMonthDurationValue("P1Y"), dv2 = new DayTimeDurationValue("P1D");
