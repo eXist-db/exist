@@ -13,7 +13,7 @@
 
     <path id="classpath.izpack">
     	<pathelement path="${izpack.dir}/lib/installer.jar"/>
-    	<pathelement path="${main.dir}/lib/core/excalibur-cli-1.0.jar"/>
+    	<pathelement path="${izpack.dir}/bin/panels/UserInputPanel.jar"/>
     </path>
 
     <!-- =================================================================== -->
@@ -30,7 +30,7 @@
         <javac debug="${build.debug}" deprecation="${build.deprecation}" 
 			destdir="${classes}" encoding="UTF-8"
 			optimize="${build.optimize}" srcdir="${src}" 
-        	source="1.4">
+        	source="1.4" verbose="true">
 			<!-- jmv target="1.4" -->
             <classpath>
             	<path refid="classpath.izpack"/>

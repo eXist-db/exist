@@ -22,12 +22,11 @@
  */
 package org.exist.izpack;
 
-import java.io.BufferedWriter;
+import com.izforge.izpack.installer.AutomatedInstaller;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.Writer;
-
-import com.izforge.izpack.installer.AutomatedInstaller;
 
 /**
  * @author wolf
@@ -35,8 +34,8 @@ import com.izforge.izpack.installer.AutomatedInstaller;
  */
 public class CommandLineInstaller {
 
-	private final static int HELP_OPT = 'h';
-	private final static int PATH_OPT = 'p';
+	private final static String HELP_OPT = "-h";
+	private final static String PATH_OPT = "-p";
 	
 	/**
 	 * 
@@ -60,10 +59,10 @@ public class CommandLineInstaller {
  		} else {
             String installPath = System.getProperty("user.home") + "/eXist";
             for(int i = 0; i < args.length; i++) {
-                if (args[i].equals("-h")) {
+                if (args[i].equals(HELP_OPT)) {
                     printHelp();
                     return;
-                } else if (args[i].equals("-p")) {
+                } else if (args[i].equals(PATH_OPT)) {
                     if (++i == args.length) {
                         System.out.println("Option -p requires an argument: the path to the directory " +
                                 "where you want to have eXist installed.");
@@ -78,22 +77,31 @@ public class CommandLineInstaller {
             Writer w = new FileWriter(filename);
             w.write("<AutomatedInstallation langpack=\"eng\">\n");
 			w.write("<com.izforge.izpack.panels.HelloPanel/>\n" +
-					"    <com.izforge.izpack.panels.PacksPanel>\n" +
-					"        <selected>\n" +
-					"            <pack index=\"0\"/>\n" +
-					"            <pack index=\"1\"/>\n" +
-					"            <pack index=\"2\"/>\n" +
-					"        </selected>\n" +
-					"    </com.izforge.izpack.panels.PacksPanel>\n");
+                "<com.izforge.izpack.panels.PacksPanel>\n" +
+                "<pack name=\"core\" index=\"0\" selected=\"true\"/>\n" +
+                "<pack name=\"sources\" index=\"1\" selected=\"true\"/>\n" +
+                "<pack name=\"javadoc\" index=\"2\" selected=\"true\"/>\n" +
+                "</com.izforge.izpack.panels.PacksPanel>");
 			w.write("<com.izforge.izpack.panels.TargetPanel>\n" +
 					"        <installpath>" + installPath + "</installpath>\n" +
 					"    </com.izforge.izpack.panels.TargetPanel>\n");
-			w.write("<com.izforge.izpack.panels.InstallPanel/>\n");
-			w.write("<com.izforge.izpack.panels.FinishPanel/>\n");
+            w.write("<com.izforge.izpack.panels.UserInputPanel>\n" +
+                    "        <userInput>\n" +
+                    "            <entry key=\"adminPasswd\" value=\"\"/>\n" +
+                    "        </userInput>\n" +
+                    "    </com.izforge.izpack.panels.UserInputPanel>");
+			w.write("<com.izforge.izpack.panels.InstallPanel />\n" +
+                    "  <com.izforge.izpack.panels.ShortcutPanel>\n" +
+                    "       <programGroup/>" +
+                    "  </com.izforge.izpack.panels.ShortcutPanel>\n" +
+                    "  <com.izforge.izpack.panels.ProcessPanel />\n" +
+                    "  <com.izforge.izpack.panels.HTMLInfoPanel />\n" +
+                    "  <com.izforge.izpack.panels.FinishPanel />");
 			w.write("</AutomatedInstallation>");
 			w.close();
-			
-			new AutomatedInstaller(filename);
+
+            EXistAutomatedInstaller installer = new EXistAutomatedInstaller(filename);
+            installer.run();
 
             new File(filename).delete();
  		}
@@ -107,8 +115,23 @@ public class CommandLineInstaller {
         System.out.println("    -h");
         System.out.println("        Print this help message and exit");
     }
-	
-	/**
+
+    /**
+     * Workaround: AutomatedInstaller.doInstall is protected, so we can't call it
+     * directly. Instead we have to create a subclass which calls it.
+     */
+    private class EXistAutomatedInstaller extends AutomatedInstaller {
+
+        public EXistAutomatedInstaller(String string) throws Exception {
+            super(string);
+        }
+
+        public void run() throws Exception {
+            super.doInstall();
+        }
+    }
+
+    /**
 	 * @param args
 	 */
 	public static void main(String[] args) {
