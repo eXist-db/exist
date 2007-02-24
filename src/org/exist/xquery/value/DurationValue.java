@@ -271,12 +271,12 @@ public class DurationValue extends ComputableValue {
 		throws XPathException {		
 		switch (operator) {
 		case Constants.EQ :
-			if (!(other.getClass().isAssignableFrom(DurationValue.class))) 
+			if (!(DurationValue.class.isAssignableFrom(other.getClass()))) 
 				throw new XPathException("FORG0006: invalid operand type: " + Type.getTypeName(other.getType()));
 			//TODO : upgrade so that P365D is *not* equal to P1Y
 			return duration.equals(((DurationValue)other).duration);
 		case Constants.NEQ :
-			if (!(other.getClass().isAssignableFrom(DurationValue.class))) 
+			if (!(DurationValue.class.isAssignableFrom(other.getClass()))) 
 				throw new XPathException("FORG0006: invalid operand type: " + Type.getTypeName(other.getType()));
 			//TODO : upgrade so that P365D is *not* equal to P1Y
 			return !duration.equals(((DurationValue)other).duration);
@@ -290,7 +290,7 @@ public class DurationValue extends ComputableValue {
 	}	}
 
 	public int compareTo(Collator collator, AtomicValue other) throws XPathException {
-		if (!(other.getClass().isAssignableFrom(DurationValue.class))) 
+		if (!(DurationValue.class.isAssignableFrom(other.getClass()))) 
 			throw new XPathException("FORG0006: invalid operand type: " + Type.getTypeName(other.getType()));
 		//TODO : what to do with the collator ?
 		return duration.compare(((DurationValue)other).duration);
