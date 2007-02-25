@@ -268,10 +268,10 @@ public class NativeBroker extends DBBroker {
         }
     }
 
-    private void notifyStoreAttribute(AttrImpl attr, NodePath currentPath, int indexingHint, RangeIndexSpec spec) {
+    private void notifyStoreAttribute(AttrImpl attr, NodePath currentPath, int indexingHint, RangeIndexSpec spec, boolean remove) {
         for (int i = 0; i < contentLoadingObservers.size(); i++) {
             ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
-            observer.storeAttribute(attr, currentPath, indexingHint, spec);
+            observer.storeAttribute(attr, currentPath, indexingHint, spec, remove);
         }	
 	}	
 
@@ -356,7 +356,7 @@ public class NativeBroker extends DBBroker {
      * @param content contains the string value of the element. Needed if a range index
      * is defined on it.
      */
-    public void endElement(final StoredNode node, NodePath currentPath, String content) {
+    public void endElement(final StoredNode node, NodePath currentPath, String content, boolean remove) {
         final int indexType = ((ElementImpl) node).getIndexType();
         
         //TODO : do not care about the current code redundancy : this will move in the (near) future
@@ -373,7 +373,8 @@ public class NativeBroker extends DBBroker {
                 //p.setInternalAddress(node.getInternalAddress());
             }
             valueIndex.setDocument((DocumentImpl) node.getOwnerDocument());
-            valueIndex.storeElement((ElementImpl) node, content, RangeIndexSpec.indexTypeToXPath(indexType), NativeValueIndex.IDX_GENERIC);
+            valueIndex.storeElement((ElementImpl) node, content, RangeIndexSpec.indexTypeToXPath(indexType),
+                    NativeValueIndex.IDX_GENERIC, remove);
         }
         
         // TODO : move to NativeValueIndexByQName 
@@ -388,7 +389,8 @@ public class NativeBroker extends DBBroker {
                 //p.setInternalAddress(node.getInternalAddress());
             }
             valueIndex.setDocument((DocumentImpl) node.getOwnerDocument());
-            valueIndex.storeElement((ElementImpl) node, content, RangeIndexSpec.indexTypeToXPath(indexType), NativeValueIndex.IDX_QNAME);
+            valueIndex.storeElement((ElementImpl) node, content, RangeIndexSpec.indexTypeToXPath(indexType),
+                    NativeValueIndex.IDX_QNAME, remove);
 //            qnameValueIndex.setDocument((DocumentImpl) node.getOwnerDocument());
 //            qnameValueIndex.endElement((ElementImpl) node, currentPath, content);
         }
@@ -405,7 +407,7 @@ public class NativeBroker extends DBBroker {
                 //p.setInternalAddress(node.getInternalAddress());
             }
             textEngine.setDocument((DocumentImpl) node.getOwnerDocument());
-            textEngine.storeText(node, content, NativeTextEngine.FOURTH_OPTION, null);
+            textEngine.storeText(node, content, NativeTextEngine.FOURTH_OPTION, null, remove);
         }
 
         FulltextIndexSpec ftIdx = ((DocumentImpl)node.getOwnerDocument()).getCollection().getFulltextIndexConfiguration(this);
@@ -421,7 +423,7 @@ public class NativeBroker extends DBBroker {
             }
             //Grrr : unify with above !
             textEngine.setDocument((DocumentImpl) node.getOwnerDocument());
-            textEngine.storeText(node, content, NativeTextEngine.TEXT_BY_QNAME, ftIdx);
+            textEngine.storeText(node, content, NativeTextEngine.TEXT_BY_QNAME, ftIdx, remove);
         }
     }
 
@@ -658,7 +660,7 @@ public class NativeBroker extends DBBroker {
 	 *  Get collection object. If the collection does not exist, null is
 	 *  returned.
 	 *
-	 *@param  name  collection name
+	 *@param  uri  collection URI
 	 *@return       The collection value
 	 */
 	private Collection openCollection(XmldbURI uri, long addr, int lockMode) {
@@ -2327,12 +2329,13 @@ public class NativeBroker extends DBBroker {
                 GeneralRangeIndexSpec spec1 = doc.getCollection().getIndexByPathConfiguration(this, currentPath);
                 if(spec1 != null) {
                     valueIndex.setDocument(doc);
-                    valueIndex.storeElement((ElementImpl) node, content, spec1.getType(), NativeValueIndex.IDX_GENERIC);
+                    valueIndex.storeElement((ElementImpl) node, content, spec1.getType(), NativeValueIndex.IDX_GENERIC, false);
                 }
                 QNameRangeIndexSpec qnSpec = doc.getCollection().getIndexByQNameConfiguration(this, qname);
                 if (qnSpec != null) {
                     valueIndex.setDocument(doc);
-                    valueIndex.storeElement((ElementImpl) node, content, qnSpec.getType(), NativeValueIndex.IDX_QNAME);
+                    valueIndex.storeElement((ElementImpl) node, content, qnSpec.getType(),
+                            NativeValueIndex.IDX_QNAME, false);
                 }
                 break;
                 
@@ -2357,19 +2360,19 @@ public class NativeBroker extends DBBroker {
                 GeneralRangeIndexSpec spec2 = doc.getCollection().getIndexByPathConfiguration(this, currentPath);
                 if(spec2 != null) {
                     valueIndex.setDocument(doc);
-                    valueIndex.storeAttribute((AttrImpl) node, null, NativeValueIndex.WITHOUT_PATH, spec2);
+                    valueIndex.storeAttribute((AttrImpl) node, null, NativeValueIndex.WITHOUT_PATH, spec2, false);
                 }                   
                 qnSpec = doc.getCollection().getIndexByQNameConfiguration(this, qname);
                 if (qnSpec != null) {
                     valueIndex.setDocument(doc);
-                    valueIndex.storeAttribute((AttrImpl) node, null, NativeValueIndex.WITHOUT_PATH, qnSpec);
+                    valueIndex.storeAttribute((AttrImpl) node, null, NativeValueIndex.WITHOUT_PATH, qnSpec, false);
                 }
                 
                 // check if attribute value should be fulltext-indexed
                 // by calling IndexPaths.match(path) 
                 if(ftIdx != null && ftIdx.matchAttribute(currentPath)) {
                 	textEngine.setDocument(doc);
-                	textEngine.storeAttribute((AttrImpl) node, null, NativeTextEngine.ATTRIBUTE_NOT_BY_QNAME, ftIdx);
+                	textEngine.storeAttribute((AttrImpl) node, null, NativeTextEngine.ATTRIBUTE_NOT_BY_QNAME, ftIdx, false);
                 }
                 
                 currentPath.removeLastComponent();
@@ -2379,10 +2382,10 @@ public class NativeBroker extends DBBroker {
                 // by calling IndexPaths.match(path)
                 if (ftIdx == null) {
                 	textEngine.setDocument(doc);
-                	textEngine.storeText((TextImpl) node, NativeTextEngine.TOKENIZE, ftIdx);
+                	textEngine.storeText((TextImpl) node, NativeTextEngine.TOKENIZE, ftIdx, false);
                 } else if (ftIdx.match(currentPath)) {
                 	textEngine.setDocument(doc);
-                	textEngine.storeText((TextImpl) node, NativeTextEngine.DO_NOT_TOKENIZE, ftIdx);
+                	textEngine.storeText((TextImpl) node, NativeTextEngine.DO_NOT_TOKENIZE, ftIdx, false);
                 }
                 break;
         }
@@ -2494,7 +2497,7 @@ public class NativeBroker extends DBBroker {
             }
         }
         if (node.getNodeType() == Node.ELEMENT_NODE) {
-            endElement(node, currentPath, null);
+            endElement(node, currentPath, null, mode == NodeProcessor.MODE_REMOVE);
             currentPath.removeLastComponent();
         }
     }
@@ -2578,7 +2581,8 @@ public class NativeBroker extends DBBroker {
         	symbols.flush();
         } catch (EXistException e) {
             LOG.warn(e);
-        }	
+        }
+        indexController.flush();
         nodesCount = 0;
     } 
     
@@ -2815,7 +2819,8 @@ public class NativeBroker extends DBBroker {
                             if (rangeSpec != null) {
                                 valueIndex.setDocument((DocumentImpl)node.getOwnerDocument());
                                 //Oh dear : is it the right semantics then ?
-                                valueIndex.storeAttribute((AttrImpl) node, currentPath, NativeValueIndex.WITHOUT_PATH, rangeSpec);
+                                valueIndex.storeAttribute((AttrImpl) node, currentPath, NativeValueIndex.WITHOUT_PATH,
+                                        rangeSpec, mode == MODE_REMOVE);
                             }
                             QNameRangeIndexSpec qnIdx = idxSpec.getIndexByQName(node.getQName());
                             if (qnIdx != null) {
@@ -2824,18 +2829,21 @@ public class NativeBroker extends DBBroker {
                                     indexType |= qnIdx.getIndexType();
                                 valueIndex.setDocument((DocumentImpl)node.getOwnerDocument());
                                 //Oh dear : is it the right semantics then ?
-                                valueIndex.storeAttribute((AttrImpl) node, currentPath, NativeValueIndex.WITHOUT_PATH, qnIdx);
+                                valueIndex.storeAttribute((AttrImpl) node, currentPath, NativeValueIndex.WITHOUT_PATH,
+                                        qnIdx, mode == MODE_REMOVE);
                             }
                         }
                         //Special handling for fulltext index
 	                    //TODO : harmonize
 	                    if (fullTextIndexing && !isTemp ) {
 	                    	textEngine.setDocument((DocumentImpl)node.getOwnerDocument());
-	                    	textEngine.storeAttribute((AttrImpl) node, null, NativeTextEngine.ATTRIBUTE_NOT_BY_QNAME, ftIdx);
+	                    	textEngine.storeAttribute((AttrImpl) node, null, NativeTextEngine.ATTRIBUTE_NOT_BY_QNAME, ftIdx,
+                                    mode == MODE_REMOVE);
 	                    }	                        
 	                    if (ftIdx != null && ftIdx.hasQNameIndex(node.getQName())) {
 	                    	textEngine.setDocument((DocumentImpl)node.getOwnerDocument());
-	                        textEngine.storeAttribute((AttrImpl) node, null, NativeTextEngine.ATTRIBUTE_BY_QNAME, ftIdx);
+	                        textEngine.storeAttribute((AttrImpl) node, null, NativeTextEngine.ATTRIBUTE_BY_QNAME, ftIdx,
+                                    mode == MODE_REMOVE);
 	                    }
 	                    
 //	                    notifyStoreAttribute((AttrImpl)node, currentPath, NativeValueIndex.WITH_PATH, null);
@@ -2872,12 +2880,12 @@ public class NativeBroker extends DBBroker {
                 	if (fullTextIndex && !isTemp) {
 	                    if (ftIdx == null || currentPath == null) {
 	                    	textEngine.setDocument(doc);
-	                    	textEngine.storeText((TextImpl) node, NativeTextEngine.TOKENIZE, ftIdx);
+	                    	textEngine.storeText((TextImpl) node, NativeTextEngine.TOKENIZE, ftIdx, mode == MODE_REMOVE);
 	                    } else if (ftIdx.match(currentPath)) {
 	                    	int tokenize = ftIdx.preserveContent(currentPath) ? 
 	                        		NativeTextEngine.DO_NOT_TOKENIZE : NativeTextEngine.TOKENIZE;
 	                    	textEngine.setDocument(doc);
-	                        textEngine.storeText((TextImpl) node, tokenize, ftIdx);
+	                        textEngine.storeText((TextImpl) node, tokenize, ftIdx, mode == MODE_REMOVE);
 	                    }
                 	}
                     
@@ -2910,7 +2918,7 @@ public class NativeBroker extends DBBroker {
         
         /** check available memory */
         private void checkAvailableMemory() {
-            if (nodesCount > DEFAULT_NODES_BEFORE_MEMORY_CHECK) {
+            if (mode != MODE_REMOVE && nodesCount > DEFAULT_NODES_BEFORE_MEMORY_CHECK) {
                 final int percent = (int) (run.freeMemory() /
                         (run.totalMemory() / 100));
                 if (percent < memMinFree) {

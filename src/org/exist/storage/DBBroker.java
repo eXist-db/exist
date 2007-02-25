@@ -108,7 +108,7 @@ public abstract class DBBroker extends Observable {
 
     protected String id;
 
-    protected IndexController indexDispatch;
+    protected IndexController indexController;
 
     //TODO : use a property object
 	public HashMap customProperties = new HashMap();
@@ -131,7 +131,7 @@ public abstract class DBBroker extends Observable {
 
 		this.pool = pool;
 		xqueryService = new XQuery(this);
-        indexDispatch = new IndexController(this);
+        indexController = new IndexController(this);
     }
 
     /**
@@ -156,7 +156,7 @@ public abstract class DBBroker extends Observable {
 	}
 
     public IndexController getIndexDispatcher() {
-        return indexDispatch;
+        return indexController;
     }
 
     //TODO : give more abstraction in the future (Symbolprovider or something like this)
@@ -488,9 +488,13 @@ public abstract class DBBroker extends Observable {
 		storeNode(transaction, node, currentPath, true);
 	}
 
-	public abstract void endElement(final StoredNode node, NodePath currentPath, String content);
+	public void endElement(final StoredNode node, NodePath currentPath, String content) {
+        endElement(node, currentPath, content, false);
+    }
 
-	/**
+    public abstract void endElement(final StoredNode node, NodePath currentPath, String content, boolean remove);
+
+    /**
 	 * Store a document (descriptor) into the database.
 	 * 
 	 * @param doc
