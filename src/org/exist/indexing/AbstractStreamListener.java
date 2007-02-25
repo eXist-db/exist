@@ -29,7 +29,9 @@ import org.exist.dom.TextImpl;
 import org.apache.log4j.Logger;
 
 /**
- * 
+ * Default implementation of a StreamListener. By default forwards all events to
+ * the next listener in the chain (if there is any). Overwrite methods to handle events
+ * (but don't forget to call the super method as well).
  */
 public class AbstractStreamListener implements StreamListener {
 

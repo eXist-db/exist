@@ -32,7 +32,7 @@ import java.util.Map;
 import java.util.Iterator;
 
 /**
- *
+ * Manages all custom indexes registered with the database instance.
  */
 public class IndexManager {
 
@@ -42,6 +42,14 @@ public class IndexManager {
 
     private Map indexers = new HashMap();
 
+    /**
+     * Constructs a new IndexManager and registers the indexes specified in
+     * the global configuration object.
+     *
+     * @param pool the BrokerPool representing the current database instance
+     * @param config the configuration object
+     * @throws DatabaseConfigurationException
+     */
     public IndexManager(BrokerPool pool, Configuration config) throws DatabaseConfigurationException {
         this.pool = pool;
         Configuration.IndexModuleConfig modConf[] = (Configuration.IndexModuleConfig[])
@@ -79,6 +87,13 @@ public class IndexManager {
         return indexers.values().iterator();
     }
 
+    /**
+     * Returns a set of IndexWorkers, one for each registered index. The
+     * returned IndexWorkers are used by the DBBroker instances to do the
+     * actual work.
+     *
+     * @return
+     */
     public synchronized IndexWorker[] getWorkers() {
         final IndexWorker workers[] = new IndexWorker[indexers.size()];
         Index index;
@@ -90,6 +105,12 @@ public class IndexManager {
         return workers;
     }
 
+    /**
+     * Shutdown all registered indexes by calling {@link org.exist.indexing.Index#close()}
+     * on them.
+     *
+     * @throws DBException
+     */
     public void shutdown() throws DBException {
         Index index;
         for (Iterator i = iterator(); i.hasNext(); ) {
