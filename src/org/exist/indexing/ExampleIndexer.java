@@ -25,20 +25,30 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.NodePath;
 import org.exist.storage.index.BFile;
 import org.exist.storage.txn.Txn;
-import org.exist.storage.btree.BTree;
 import org.exist.storage.btree.DBException;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.TextImpl;
+import org.exist.dom.DocumentImpl;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Node;
+import org.apache.log4j.Logger;
 
 import java.io.File;
+import java.util.Map;
 
 /**
  *
  */
 public class ExampleIndexer implements Index {
+
+    private final static Logger LOG = Logger.getLogger(ExampleWorker.class);
+
+    private final static String INDEX_ID = ExampleIndexer.class.getName();
+
+    private final static String INDEX_ELEMENT = "dummy";
 
     private BFile db;
 
@@ -64,12 +74,37 @@ public class ExampleIndexer implements Index {
         return new ExampleWorker();
     }
 
+    class DummyConfig {
+
+        private String qname;
+
+        public DummyConfig(String qn) { qname = qn; }
+
+    }
+
     class ExampleWorker implements IndexWorker {
+
+        public String getIndexId() {
+            return INDEX_ID;
+        }
+
+        public Object configure(NodeList configNodes, Map namespaces) {
+            for (int i = 0; i < configNodes.getLength(); i++) {
+                Node node = configNodes.item(i);
+                if(node.getNodeType() == Node.ELEMENT_NODE &&
+                        INDEX_ELEMENT.equals(node.getLocalName())) {
+                    String qn = ((Element)node).getAttribute("qname");
+                    LOG.debug("Creating dummy index on " + qn);
+                    return new DummyConfig(qn);
+                }
+            }
+            return null;
+        }
 
         public void flush() {
         }
 
-        public StreamListener getListener() {
+        public StreamListener getListener(DocumentImpl document) {
             return new ExampleListener();
         }
     }

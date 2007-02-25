@@ -22,6 +22,13 @@
 package org.exist.indexing;
 
 import org.exist.storage.DBBroker;
+import org.exist.dom.DocumentImpl;
+import org.exist.util.DatabaseConfigurationException;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  *
@@ -34,12 +41,13 @@ public class IndexController {
         indexWorkers = broker.getBrokerPool().getIndexManager().getWorkers();
     }
 
-    public StreamListener getStreamListener() {
+    public StreamListener getStreamListener(DocumentImpl document) {
         StreamListener first = null;
         StreamListener listener, previous = null;
+        IndexWorker worker;
         for (int i = 0; i < indexWorkers.length; i++) {
-            IndexWorker worker = indexWorkers[i];
-            listener = worker.getListener();
+            worker = indexWorkers[i];
+            listener = worker.getListener(document);
             if (first == null) {
                 first = listener;
             } else {
@@ -48,5 +56,26 @@ public class IndexController {
             previous = listener;
         }
         return first;
+    }
+
+    public Map configure(NodeList configNodes, Map namespaces) throws DatabaseConfigurationException {
+        Map map = new HashMap();
+        IndexWorker indexWorker;
+        Object conf;
+        for (int i = 0; i < indexWorkers.length; i++) {
+            indexWorker = indexWorkers[i];
+            conf = indexWorker.configure(configNodes, namespaces);
+            if (conf != null)
+                map.put(indexWorker.getIndexId(), conf);
+        }
+        return map;
+    }
+
+    public void flush() {
+        IndexWorker indexWorker;
+        for (int i = 0; i < indexWorkers.length; i++) {
+            indexWorker = indexWorkers[i];
+            indexWorker.flush();
+        }
     }
 }
