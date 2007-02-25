@@ -1028,7 +1028,7 @@ public class Configuration implements ErrorHandler {
         NodeList cl = doc.getElementsByTagName("index");
         if (cl.getLength() > 0) {
             Element elem = (Element) cl.item(0);
-            IndexSpec spec = new IndexSpec(elem);
+            IndexSpec spec = new IndexSpec(null, elem);
             config.put("indexer.config", spec);
         }
         
