@@ -173,8 +173,6 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 		if ((temp = (Boolean) config.getProperty("indexer.preserve-whitespace-mixed-content"))
 			!= null)
 			suppressWSmixed = temp.booleanValue();
-
-        this.indexListener = broker.getIndexDispatcher().getStreamListener();
     }
 
 	public void setValidating(boolean validate) {
@@ -197,6 +195,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
         rootNode = null;
         setPrevious(null);
         ftIdx = doc.getCollection().getFulltextIndexConfiguration(broker);
+        this.indexListener = broker.getIndexDispatcher().getStreamListener(document);
     }
     
 	/**

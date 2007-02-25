@@ -27,7 +27,10 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.btree.DBException;
 
 /**
- * 
+ * Represents an arbitrary index structure that can be used by eXist. This is the
+ * main interface to be registered with the database instance. It provides methods
+ * to configure, open and close the index. These methods will be called by the main
+ * database instance.
  */
 public interface Index {
 
@@ -35,7 +38,7 @@ public interface Index {
 
     void close() throws DBException;
     
-    void sync();
+    void sync() throws DBException;
 
     IndexWorker getWorker();
 }

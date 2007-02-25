@@ -130,9 +130,9 @@ public class CollectionConfiguration {
 			        Element elem = (Element) node;
                     try {
                         if(indexSpec == null)
-                            indexSpec = new IndexSpec(elem);
+                            indexSpec = new IndexSpec(broker, elem);
                         else
-                            indexSpec.read(elem);
+                            indexSpec.read(broker, elem);
                     } catch (DatabaseConfigurationException e) {
                         throw new CollectionConfigurationException(e.getMessage(), e);
                     }
@@ -162,7 +162,7 @@ public class CollectionConfiguration {
                     LOG.info("Ignored node '" + node.getLocalName() + "' in configuration document");
                     //TODO : throw an exception like above ? -pb
                 }
-			} else {
+			} else if (node.getNodeType() == Node.ELEMENT_NODE) {
                 LOG.info("Ignored node '" + node.getLocalName() + "' in namespace '" + 
                         node.getNamespaceURI() + "' in configuration document");                
             }
