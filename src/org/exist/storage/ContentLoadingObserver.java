@@ -43,7 +43,7 @@ public interface ContentLoadingObserver {
 
 	/** store and index given attribute */
 	//TODO : remove the RangeIndexSpec dependency ASAP
-	public void storeAttribute(AttrImpl node, NodePath currentPath, int indexingHint, RangeIndexSpec spec);
+	public void storeAttribute(AttrImpl node, NodePath currentPath, int indexingHint, RangeIndexSpec spec, boolean remove);
 
 	/** store and index given text node */ 
 	public void storeText(TextImpl node, NodePath currentPath, int indexingHint);

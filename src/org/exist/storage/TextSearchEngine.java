@@ -156,8 +156,8 @@ public abstract class TextSearchEngine extends Observable {
 	 * @param indexSpec
 	 * @param node
 	 */
-	public abstract void storeText(TextImpl node, int indexingHint, FulltextIndexSpec indexSpec);
-    public abstract void storeText(StoredNode parent, String text, int indexingHint, FulltextIndexSpec indexSpec);
+	public abstract void storeText(TextImpl node, int indexingHint, FulltextIndexSpec indexSpec, boolean remove);
+    public abstract void storeText(StoredNode parent, String text, int indexingHint, FulltextIndexSpec indexSpec, boolean remove);
 
 	public abstract void flush();
 	public abstract boolean close() throws DBException;

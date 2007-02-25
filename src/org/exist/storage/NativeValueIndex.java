@@ -189,7 +189,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
      * @param node The element
      * @param content The string representation of the value
      */
-    public void storeElement(ElementImpl node, String content, int xpathType, byte indexType) {
+    public void storeElement(ElementImpl node, String content, int xpathType, byte indexType, boolean remove) {
     	if (doc.getDocId() != node.getDocId()) {
     		throw new IllegalArgumentException("Document id ('" + doc.getDocId() + "') and proxy id ('" + 
     				node.getDocId() + "') differ !");
@@ -204,17 +204,23 @@ public class NativeValueIndex implements ContentLoadingObserver {
             key = new QNameKey(node.getQName(), atomic);
         } else
             key = atomic;
-        ArrayList buf;
-        //Is this indexable value already pending ?
-        if (pending[indexType].containsKey(key))
-            buf = (ArrayList) pending[indexType].get(key);
-        else {
-            //Create a NodeId list
-            buf = new ArrayList(8);
-            pending[indexType].put(key, buf);
+
+        if (!remove) {
+            ArrayList buf;
+            //Is this indexable value already pending ?
+            if (pending[indexType].containsKey(key))
+                buf = (ArrayList) pending[indexType].get(key);
+            else {
+                //Create a NodeId list
+                buf = new ArrayList(8);
+                pending[indexType].put(key, buf);
+            }
+            //Add node's NodeId to the list
+            buf.add(node.getNodeId());
+        } else {
+            if (!pending[indexType].containsKey(key))
+                pending[indexType].put(key, null);
         }
-        //Add node's NodeId to the list
-        buf.add(node.getNodeId());
     }
     
 
@@ -222,7 +228,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
      * @param spec The index specification
      * @param node The attribute
      */
-    public void storeAttribute(AttrImpl node, NodePath currentPath, int indexingHint, RangeIndexSpec spec) {
+    public void storeAttribute(AttrImpl node, NodePath currentPath, int indexingHint, RangeIndexSpec spec, boolean remove) {
         //Return early
     	if (indexingHint != WITHOUT_PATH)
     		return;
@@ -242,18 +248,23 @@ public class NativeValueIndex implements ContentLoadingObserver {
             key = new QNameKey(node.getQName(), atomic);
         } else
             key = atomic;
-        ArrayList buf;
-        //Is this indexable value already pending ?
-        if (pending[indexType].containsKey(key))
-            //Reuse the existing NodeId list
-            buf = (ArrayList) pending[indexType].get(key);
-        else {
-            //Create a NodeId list
-            buf = new ArrayList(8);
-            pending[indexType].put(key, buf);
+        if (!remove) {
+            ArrayList buf;
+            //Is this indexable value already pending ?
+            if (pending[indexType].containsKey(key))
+                //Reuse the existing NodeId list
+                buf = (ArrayList) pending[indexType].get(key);
+            else {
+                //Create a NodeId list
+                buf = new ArrayList(8);
+                pending[indexType].put(key, buf);
+            }
+            //Add node's GID to the list
+            buf.add(node.getNodeId());
+        } else {
+            if (!pending[indexType].containsKey(key))
+                pending[indexType].put(key, null);
         }
-        //Add node's GID to the list
-        buf.add(node.getNodeId());
     }
     
     public void storeText(TextImpl node, NodePath currentPath, int indexingHint) {

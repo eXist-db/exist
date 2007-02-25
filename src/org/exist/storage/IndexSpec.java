@@ -63,17 +63,16 @@ public class IndexSpec {
     private static final String FULLTEXT_ELEMENT = "fulltext";
 
     private final static Logger LOG = Logger.getLogger(IndexSpec.class);
-    
-    /**
-     * @uml.associationEnd multiplicity="(0 1)"
-     */
+
     private FulltextIndexSpec ftSpec = null;
 
     private GeneralRangeIndexSpec specs[] = null;
     private Map qnameSpecs = new TreeMap();
-    
-    public IndexSpec(Element index) throws DatabaseConfigurationException {
-        read(index);
+
+    private Map customIndexSpecs = null;
+
+    public IndexSpec(DBBroker broker, Element index) throws DatabaseConfigurationException {
+        read(broker, index);
     }
     
     /**
@@ -85,9 +84,9 @@ public class IndexSpec {
      * @param index
      * @throws DatabaseConfigurationException
      */
-    public void read(Element index) throws DatabaseConfigurationException {
+    public void read(DBBroker broker, Element index) throws DatabaseConfigurationException {
         Map namespaces = getNamespaceMap(index);
-			
+		
         NodeList cl = index.getChildNodes();
         for(int i = 0; i < cl.getLength(); i++) {
             Node node = cl.item(i);
@@ -113,6 +112,11 @@ public class IndexSpec {
 	            }
             }
         }
+
+        // configure custom indexes, but not if broker is null (which means we are reading
+        // the default index config from conf.xml)
+        if (broker != null)
+            customIndexSpecs = broker.getIndexDispatcher().configure(cl, namespaces);
     }
 	
     /**
@@ -122,7 +126,18 @@ public class IndexSpec {
     public FulltextIndexSpec getFulltextIndexSpec() {
         return ftSpec;
     }
-    
+
+    /**
+     * Returns the configuration object registered for the non-core
+     * index identified by id.
+     *
+     * @param id the id used to identify this index.
+     * @return the configuration object registered for the index or null.
+     */
+    public Object getCustomIndexSpec(String id) {
+        return customIndexSpecs == null ? null : customIndexSpecs.get(id);
+    }
+
     /**
      * Returns the {@link GeneralRangeIndexSpec} defined for the given
      * node path or null if no index has been configured.

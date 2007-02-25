@@ -1322,22 +1322,22 @@ public class DOMFile extends BTree implements Lockable {
 		final long p = findValue(nodeRef);
 		if (p == KEY_NOT_FOUND) {
             // node not found in index: try to find the nearest available
-			// ancestor and traverse it
-			NodeId id = node.getNodeId();
-			long parentPointer = KEY_NOT_FOUND;
-			do {
-				id = id.getParentId();
-				if (id == NodeId.DOCUMENT_NODE) {
-					SanityCheck.TRACE("Node " + node.getDocument().getDocId() + ":" + node.getNodeId() + " not found.");
-					throw new BTreeException("node " + node.getNodeId() + " not found.");
-				}
-				NativeBroker.NodeRef parentRef = new NativeBroker.NodeRef(doc.getDocId(), id);
-				try {
-					parentPointer = findValue(parentRef);
-				} catch (BTreeException bte) {
-					LOG.info("report me", bte);
-				}
-			} while (parentPointer == KEY_NOT_FOUND);
+            // ancestor and traverse it
+            NodeId id = node.getNodeId();
+            long parentPointer = KEY_NOT_FOUND;
+            do {
+                id = id.getParentId();
+                if (id == NodeId.DOCUMENT_NODE) {
+                    SanityCheck.TRACE("Node " + node.getDocument().getDocId() + ":" + node.getNodeId() + " not found.");
+                    throw new BTreeException("node " + node.getNodeId() + " not found.");
+                }
+                NativeBroker.NodeRef parentRef = new NativeBroker.NodeRef(doc.getDocId(), id);
+                try {
+                    parentPointer = findValue(parentRef);
+                } catch (BTreeException bte) {
+                    LOG.info("report me", bte);
+                }
+            } while (parentPointer == KEY_NOT_FOUND);
 
             try {
                 final NodeProxy parent = new NodeProxy(doc, id, parentPointer);
@@ -2016,9 +2016,9 @@ public class DOMFile extends BTree implements Lockable {
 		} else {
             
 			if (isTransactional && transaction != null) {
-				if (rec.getTID() < 0) {
-					LOG.warn("tid < 0");
-				}
+//				if (rec.getTID() < 0) {
+//					LOG.warn("tid < 0");
+//				}
                 Loggable loggable = new UpdateValueLoggable(transaction, rec.getPage().getPageNum(), 
                 		rec.getTID(), value, rec.getPage().data, rec.offset);
                 writeToLog(loggable, rec.getPage().page);

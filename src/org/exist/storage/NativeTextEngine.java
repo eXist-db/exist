@@ -222,7 +222,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
      * @param node The attribute to be indexed
      */
     //TODO : unify functionalities with storeText -pb
-    public void storeAttribute(AttrImpl node, NodePath currentPath, int indexingHint, FulltextIndexSpec indexSpec) {
+    public void storeAttribute(AttrImpl node, NodePath currentPath, int indexingHint, FulltextIndexSpec indexSpec, boolean remove) {
     	if ((indexingHint & ATTRIBUTE_BY_QNAME) == ATTRIBUTE_BY_QNAME || 
     			(indexingHint & ATTRIBUTE_NOT_BY_QNAME) == ATTRIBUTE_NOT_BY_QNAME) {
 	        //final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
@@ -242,9 +242,9 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     continue;
 	            }
 	            if (indexingHint == ATTRIBUTE_BY_QNAME)
-	                invertedIndex.addAttribute(token, node);
+	                invertedIndex.addAttribute(token, node, remove);
 	            else
-	                invertedIndex.addAttribute(token, node.getNodeId());
+	                invertedIndex.addAttribute(token, node.getNodeId(), remove);
 	        }
     	}
     }
@@ -252,7 +252,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     //TODO : unify with above choosing one of these 2 strategies :
     //1) compute the indexing strategy from thhe broker (introduce some kind of dependency)
     //2) read the configuration from the indexer (possible performance loss)
-	public void storeAttribute(AttrImpl node, NodePath currentPath, int indexingHint, RangeIndexSpec idx) {
+	public void storeAttribute(AttrImpl node, NodePath currentPath, int indexingHint, RangeIndexSpec idx, boolean remove) {
 	}
     
     /**
@@ -265,7 +265,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
      *                if <code>false</code>, it is tokenized before being indexed
      */
     //TODO : use an indexSpec member in order to get rid of <code>noTokenizing</code>
-    public void storeText(TextImpl node, int indexingHint, FulltextIndexSpec indexSpec) {
+    public void storeText(TextImpl node, int indexingHint, FulltextIndexSpec indexSpec, boolean remove) {
     	if (indexingHint == TOKENIZE || indexingHint == DO_NOT_TOKENIZE) {
 	        //final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
 	        //TODO : case conversion should be handled by the tokenizer -pb
@@ -274,7 +274,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	        if (indexingHint == DO_NOT_TOKENIZE) {            
 	            token = new TextToken(TextToken.ALPHA, t, 0, t.length());
 	            //invertedIndex.setDocument(doc);
-	            invertedIndex.addText(token, node.getNodeId());
+	            invertedIndex.addText(token, node.getNodeId(), remove);
 	        } else if (indexingHint == TOKENIZE){
 	            tokenizer.setText(t);
 	            while (null != (token = tokenizer.nextToken())) {
@@ -292,13 +292,13 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	                    }
 	                }                
 	                //invertedIndex.setDocument(doc);
-	                invertedIndex.addText(token, node.getNodeId());
+	                invertedIndex.addText(token, node.getNodeId(), remove);
 	            }
 	        }
     	}
     } 
 
-    public void storeText(StoredNode parent, String text, int indexingHint, FulltextIndexSpec indexSpec) {
+    public void storeText(StoredNode parent, String text, int indexingHint, FulltextIndexSpec indexSpec, boolean remove) {
         //final DocumentImpl doc = (DocumentImpl)parent.getOwnerDocument();
         //TODO : case conversion should be handled by the tokenizer -pb
         TextToken token;
@@ -319,9 +319,9 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             }
             //invertedIndex.setDocument(doc);
             if (indexingHint == TEXT_BY_QNAME)
-                invertedIndex.addText(token, (ElementImpl) parent);
+                invertedIndex.addText(token, (ElementImpl) parent, remove);
             else
-                invertedIndex.addText(token, parent.getNodeId());
+                invertedIndex.addText(token, parent.getNodeId(), remove);
         }
     }
 
@@ -843,62 +843,82 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
             this.doc = document;
         }        
 
-		public void addText(TextToken token, NodeId nodeId) {
-            //Is this token already pending ?
-            OccurrenceList list = (OccurrenceList) words[TEXT_NODES].get(token);
-            //Create a GIDs list
-            if (list == null) {
-                list = new OccurrenceList();
-                list.add(nodeId, token.startOffset());
-                words[TEXT_NODES].put(token.getText(), list);
+		public void addText(TextToken token, NodeId nodeId, boolean remove) {
+            if (!remove) {
+                //Is this token already pending ?
+                OccurrenceList list = (OccurrenceList) words[TEXT_NODES].get(token);
+                //Create a GIDs list
+                if (list == null) {
+                    list = new OccurrenceList();
+                    list.add(nodeId, token.startOffset());
+                    words[TEXT_NODES].put(token.getText(), list);
+                } else {
+                    //Add node's GID to the list
+                    list.add(nodeId, token.startOffset());
+                }
             } else {
-                //Add node's GID to the list
-                list.add(nodeId, token.startOffset());
+                if (!words[TEXT_NODES].containsKey(token))
+                    words[TEXT_NODES].put(token, null);
             }
-		}
+        }
 
-        public void addText(TextToken token, ElementImpl ancestor) {
+        public void addText(TextToken token, ElementImpl ancestor, boolean remove) {
             QNameTerm term = new QNameTerm(ancestor.getQName(), token.getText());
-            //Is this token already pending ?
-            OccurrenceList list = (OccurrenceList) words[BY_QNAME].get(term);
-            //Create a GIDs list
-            if (list == null) {
-                list = new OccurrenceList();
-                list.add(ancestor.getNodeId(), token.startOffset());
-                words[BY_QNAME].put(term, list);
+            if (!remove) {
+                //Is this token already pending ?
+                OccurrenceList list = (OccurrenceList) words[BY_QNAME].get(term);
+                //Create a GIDs list
+                if (list == null) {
+                    list = new OccurrenceList();
+                    list.add(ancestor.getNodeId(), token.startOffset());
+                    words[BY_QNAME].put(term, list);
+                } else {
+                    //Add node's GID to the list
+                    list.add(ancestor.getNodeId(), token.startOffset());
+                }
             } else {
-                //Add node's GID to the list
-                list.add(ancestor.getNodeId(), token.startOffset());
+                if (!words[BY_QNAME].containsKey(term))
+                    words[BY_QNAME].put(term, null);
             }
         }
 
         //TODO : unify functionalities with addText -pb
-		public void addAttribute(TextToken token, NodeId nodeId) {
+		public void addAttribute(TextToken token, NodeId nodeId, boolean remove) {
             //Is this token already pending ?
-            OccurrenceList list = (OccurrenceList) words[ATTRIBUTE_NODES].get(token);
-            //Create a GIDs list
-            if (list == null) {
-                list = new OccurrenceList();
-                list.add(nodeId, token.startOffset());
-                words[ATTRIBUTE_NODES].put(token.getText(), list);
+            if (!remove) {
+                OccurrenceList list = (OccurrenceList) words[ATTRIBUTE_NODES].get(token);
+                //Create a GIDs list
+                if (list == null) {
+                    list = new OccurrenceList();
+                    list.add(nodeId, token.startOffset());
+                    words[ATTRIBUTE_NODES].put(token.getText(), list);
+                } else {
+                    //Add node's GID to the list
+                    list.add(nodeId, token.startOffset());
+                }
             } else {
-                //Add node's GID to the list
-                list.add(nodeId, token.startOffset());
+                if (!words[ATTRIBUTE_NODES].containsKey(token))
+                    words[ATTRIBUTE_NODES].put(token, null);
             }
-		}
+        }
 
-        public void addAttribute(TextToken token, AttrImpl attr) {
+        public void addAttribute(TextToken token, AttrImpl attr, boolean remove) {
             QNameTerm term = new QNameTerm(attr.getQName(), token.getText());
-            //Is this token already pending ?
-            OccurrenceList list = (OccurrenceList) words[2].get(term);
-            //Create a GIDs list
-            if (list == null) {
-                list = new OccurrenceList();
-                list.add(attr.getNodeId(), token.startOffset());
-                words[2].put(term, list);
+            if (!remove) {
+                //Is this token already pending ?
+                OccurrenceList list = (OccurrenceList) words[BY_QNAME].get(term);
+                //Create a GIDs list
+                if (list == null) {
+                    list = new OccurrenceList();
+                    list.add(attr.getNodeId(), token.startOffset());
+                    words[BY_QNAME].put(term, list);
+                } else {
+                    //Add node's GID to the list
+                    list.add(attr.getNodeId(), token.startOffset());
+                }
             } else {
-                //Add node's GID to the list
-                list.add(attr.getNodeId(), token.startOffset());
+                if (!words[BY_QNAME].containsKey(term))
+                    words[BY_QNAME].put(term, null);
             }
         }
 
