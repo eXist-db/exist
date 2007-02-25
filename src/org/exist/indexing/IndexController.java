@@ -31,7 +31,9 @@ import java.util.Map;
 import java.util.HashMap;
 
 /**
- *
+ * Internally used by the {@link DBBroker} to dispatch an operation to each of the
+ * registered indexes.
+ * 
  */
 public class IndexController {
 
