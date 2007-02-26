@@ -916,7 +916,15 @@ public class XQueryContext {
 	public void declareFunction(UserDefinedFunction function) throws XPathException {
         // TODO: redeclaring functions should be forbidden. however, throwing an
         // exception will currently break util:eval.
-        declaredFunctions.put(function.getSignature().getFunctionId(), function);
+		if (Namespaces.XML_NS.equals(function.getSignature().getName().getNamespaceURI()))
+			throw new XPathException("XQST0045: function is in the forbidden namespace '" + Namespaces.XML_NS + "'");
+		if (Namespaces.SCHEMA_NS.equals(function.getSignature().getName().getNamespaceURI()))
+			throw new XPathException("XQST0045: function is in the forbidden namespace '" + Namespaces.SCHEMA_NS + "'");
+		if (Namespaces.SCHEMA_INSTANCE_NS.equals(function.getSignature().getName().getNamespaceURI()))
+			throw new XPathException("XQST0045: function is in the forbidden namespace '" + Namespaces.SCHEMA_INSTANCE_NS + "'");
+		//TODO : forbid "http://www.w3.org/2005/xpath-functions"
+		
+		declaredFunctions.put(function.getSignature().getFunctionId(), function);
 //		if (declaredFunctions.get(function.getSignature().getFunctionId()) == null)
 //				declaredFunctions.put(function.getSignature().getFunctionId(), function);
 //		else
