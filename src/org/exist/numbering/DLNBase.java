@@ -145,6 +145,18 @@ public class DLNBase {
         bitIndex = bitCnt - 1;
     }
 
+    public DLNBase(byte prefixLen, DLNBase previous, short bitCnt, VariableByteInput is) throws IOException {
+        int blen = bitCnt / 8;
+        if (bitCnt % 8 > 0)
+        	++blen;
+        bits = new byte[blen];
+        if (previous.bits.length < prefixLen)
+            throw new IOException("Found wrong prefix len: " + prefixLen + ". Previous: " + previous.toString());
+        System.arraycopy(previous.bits, 0, bits, 0, prefixLen);
+        is.read(bits, prefixLen, blen - prefixLen);
+        bitIndex = bitCnt - 1;
+    }
+
     /**
      * Set the level id which starts at offset to the
      * given id value.

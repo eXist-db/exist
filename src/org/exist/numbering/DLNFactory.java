@@ -45,6 +45,14 @@ public class DLNFactory implements NodeIdFactory {
         return bitCnt == 0 ? DLN.END_OF_DOCUMENT : new DLN(bitCnt, is);
     }
 
+    public NodeId createFromStream(NodeId previous, VariableByteInput is) throws IOException {
+        if (previous == null)
+            return createFromStream(is);
+        byte prefix = is.readByte();
+        short bitCnt = is.readShort();
+        return bitCnt == 0 ? DLN.END_OF_DOCUMENT : new DLN(prefix, (DLN) previous, bitCnt, is);
+    }
+
     public NodeId createFromData(int sizeHint, byte[] data, int startOffset) {
         return new DLN(sizeHint, data, startOffset);
     }

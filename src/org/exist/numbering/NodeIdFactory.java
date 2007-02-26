@@ -56,12 +56,28 @@ public interface NodeIdFactory {
     /**
      * Read a NodeId from the given input stream.
      *
+     * @see NodeId#write(org.exist.storage.io.VariableByteOutputStream)
+     *
      * @param is the input stream to read from
      * @return the NodeId read
-     * @throws IOException
+     * @throws IOException if there's a problem with the underlying input stream
      */
     NodeId createFromStream(VariableByteInput is) throws IOException;
 
+    /**
+     * Read a NodeId from the given input stream. Assumes that the node id was
+     * stored with prefix-compression, i.e. only the bytes differing from the previous
+     * node were written out.
+     *
+     * @see NodeId#write(NodeId, org.exist.storage.io.VariableByteOutputStream)
+     * 
+     * @param previous the previous node id read or null if there is none
+     * @param is the input stream to read from
+     * @return the NodeId read
+     * @throws IOException if there's a problem with the underlying input stream
+     */
+    NodeId createFromStream(NodeId previous, VariableByteInput is) throws IOException;
+    
     /**
      * Read a NodeId from the given byte array. Start to read at
      * startOffset. sizeHint indicates the length of the id in an

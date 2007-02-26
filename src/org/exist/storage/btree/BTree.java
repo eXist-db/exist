@@ -164,8 +164,10 @@ public class BTree extends Paged {
     protected boolean isTransactional;
     
     protected BrokerPool pool;
+
+    protected TreeMetrics metrics = new TreeMetrics();
     
-	protected BTree(BrokerPool pool, byte fileId, boolean transactional, DefaultCacheManager cacheManager, double growthThreshold)
+    protected BTree(BrokerPool pool, byte fileId, boolean transactional, DefaultCacheManager cacheManager, double growthThreshold)
 	throws DBException {
 		super();
 		this.pool = pool;
@@ -398,7 +400,8 @@ public class BTree extends Paged {
 			node.setParent(parent);
 			node.write();
 			//cache.add(node);
-			return node;
+            metrics.addPage(status);
+            return node;
 		} catch (IOException e) {
             LOG.warn("Failed to create a btree node", e);
 			return null;
@@ -2048,7 +2051,8 @@ public class BTree extends Paged {
 		//buf.append(cache.getHits()).append(" / ");
 		//buf.append(cache.getFails());
 		LOG.info(buf.toString());
-	}
+//        metrics.toLogger();
+    }
 
 	protected class BTreeFileHeader extends FileHeader {
 		private long rootPage = 0;
