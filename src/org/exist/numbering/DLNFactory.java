@@ -70,6 +70,7 @@ public class DLNFactory implements NodeIdFactory {
     }
     
     public void writeEndOfDocument(VariableByteOutputStream os) {
+        os.writeByte((byte) 0);
         os.writeShort(0);
     }
 }

@@ -40,6 +40,8 @@ public interface NodeId extends Comparable {
     public final static NodeId DOCUMENT_NODE = new DLN(0);
  
     public final static NodeId END_OF_DOCUMENT = new DLN(0);
+
+    public final static NodeId ROOT_NODE = new DLN(1);
     
     public final static int IS_CHILD = 1;
     public final static int IS_DESCENDANT = 2;

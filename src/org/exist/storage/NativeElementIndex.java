@@ -222,6 +222,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
             int lenOffset = os.position();
             os.writeFixedInt(0);  
             //Compute the GIDs list
+            NodeId previous = null;
             for (int j = 0; j < gidsCount; j++) {
                 NodeProxy storedNode = (NodeProxy) gids.get(j);
                 if (doc.getDocId() != storedNode.getDocument().getDocId()) {
@@ -229,7 +230,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                             storedNode.getDocument().getDocId() + "') differ !");
                 }
                 try {
-                    storedNode.getNodeId().write(os);
+                    previous = storedNode.getNodeId().write(previous, os);
                 } catch (IOException e) {
                     LOG.warn("IO error while writing structural index: " + e.getMessage(), e);
                 }
@@ -316,17 +317,20 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                             } else {
                                 // data are related to our document:
                                 // feed the new list with the GIDs
+                                NodeId previous = null;
+                                NodeId nodeId;
+                                long address;
                                 for (int j = 0; j < gidsCount; j++) {
-                                	NodeId nodeId = 
-                                		broker.getBrokerPool().getNodeFactory().createFromStream(is);                                        
-                                    long address = StorageAddress.read(is);
+                                    nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(previous, is);
+                                    previous = nodeId;
+                                    address = StorageAddress.read(is);
                                     // add the node to the new list if it is not 
                                     // in the list of removed nodes
                                     if (!containsNode(storedGIDList, nodeId)) {
                                         newGIDList.add(new NodeProxy(doc, nodeId, address));
                                     }
                                 }
-                                broker.getBrokerPool().getNodeFactory().createFromStream(is);
+                                broker.getBrokerPool().getNodeFactory().createFromStream(NodeId.ROOT_NODE, is);
                             }
                         }
                     } catch (EOFException e) {
@@ -344,14 +348,16 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                         //TOUNDERSTAND -pb
                         int lenOffset = os.position();
                         os.writeFixedInt(0);
+                        NodeId previous = null;
+                        NodeProxy storedNode;
                         for (int j = 0; j < gidsCount; j++) {
-                            NodeProxy storedNode = (NodeProxy) newGIDList.get(j);
+                            storedNode = (NodeProxy) newGIDList.get(j);
                             if (doc.getDocId() != storedNode.getDocument().getDocId()) {
                                 throw new IllegalArgumentException("Document id ('" + doc.getDocId() + "') and proxy id ('" + 
                                         storedNode.getDocument().getDocId() + "') differ !");
                             }
                             try {
-                                storedNode.getNodeId().write(os);
+                                previous = storedNode.getNodeId().write(previous, os);
                             } catch (IOException e) {
                                 LOG.warn("IO error while writing structural index: " + e.getMessage(), e);
                                 //TODO : throw exception ?
@@ -524,8 +530,10 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                     }               
                     //Process the nodes
                     NodeId nodeId;
+                    NodeId previous = null;
                     for (int k = 0; k < gidsCount; k++) {
-                        nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
+                        nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(previous, is);
+                        previous = nodeId;
                         if (selector == null) {
                             long address = StorageAddress.read(is);
                             NodeProxy storedNode = new NodeProxy(storedDocument, nodeId, nodeType, address);
@@ -545,7 +553,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                             }
                         }
                     }
-                    nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
+                    nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(NodeId.ROOT_NODE, is);
                     result.setSorted(storedDocument, ordered == ENTRIES_ORDERED);
                 }
             } catch (EOFException e) {
@@ -647,11 +655,14 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                     NodeId ancestorId = ancestor.getNodeId();
                     long prevPosition = ((BFile.PageInputStream)is).position();
                     long markedPosition = prevPosition;
+                    NodeId markedId = null;
                     NodeId lastMarked = ancestorId;
+                    NodeId previousId = null;
                     NodeProxy lastAncestor = null;
 
                     // Process the nodes for the current document
-                    NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
+                    NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(previousId, is);
+                    previousId = nodeId;
                     long address = StorageAddress.read(is);
  
                     while (true) {
@@ -672,7 +683,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                                     storedNode.copyContext(ancestor);
                             }
                             prevPosition = ((BFile.PageInputStream)is).position();
-                            NodeId next = broker.getBrokerPool().getNodeFactory().createFromStream(is);
+                            NodeId next = broker.getBrokerPool().getNodeFactory().createFromStream(previousId, is);
+                            previousId = next;
                             if (next != DLN.END_OF_DOCUMENT) {
                                 // retrieve the next descendant from the stream
                                 nodeId = next;
@@ -688,7 +700,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                                     if (nextNode.getNodeId().isDescendantOf(ancestorId)) {
                                         prevPosition = markedPosition;
                                         ((BFile.PageInputStream)is).seek(markedPosition);
-                                        nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
+                                        nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(markedId, is);
+                                        previousId = nodeId;
                                         address = StorageAddress.read(is);
                                         ancestor = citer.nextNode();
                                         ancestorId = ancestor.getNodeId();
@@ -715,20 +728,22 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                                         // rewind the input stream to the position from where we started
                                         // for the previous ancestor node
                                         ((BFile.PageInputStream)is).seek(markedPosition);
-                                        nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
+                                        nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(markedId, is);
+                                        previousId = nodeId;
                                         address = StorageAddress.read(is);
                                     } else {
                                         // mark the current position in the input stream
                                         if (!next.getNodeId().isDescendantOf(lastMarked)) {
                                             lastMarked = next.getNodeId();
                                             markedPosition = prevPosition;
+                                            markedId = lastMarked;
                                         }
                                     }
                                     ancestor = next;
                                     ancestorId = ancestor.getNodeId();
                                 } else {
                                     // no more ancestors: skip the remaining descendants for this document
-                                    while (broker.getBrokerPool().getNodeFactory().createFromStream(is) 
+                                    while ((previousId = broker.getBrokerPool().getNodeFactory().createFromStream(previousId, is))
                                             != DLN.END_OF_DOCUMENT) {
                                         StorageAddress.read(is);
                                     }
@@ -737,7 +752,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                             } else {
                                 // load the next descendant from the input stream
                                 prevPosition = ((BFile.PageInputStream)is).position();
-                                NodeId nextId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
+                                NodeId nextId = broker.getBrokerPool().getNodeFactory().createFromStream(previousId, is);
+                                previousId = nextId;
                                 if (nextId != DLN.END_OF_DOCUMENT) {
                                     nodeId = nextId;
                                     address = StorageAddress.read(is);
@@ -758,7 +774,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                                             // for the previous ancestor node
                                             prevPosition = markedPosition;
                                             ((BFile.PageInputStream)is).seek(markedPosition);
-                                            nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
+                                            nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(markedId, is);
+                                            previousId = nodeId;
                                             address = StorageAddress.read(is);
                                             ancestorId = ancestor.getNodeId();
                                         } else {
@@ -920,9 +937,12 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                             is.skip(gidsCount * 4);
                         } else {
                             // data are related to our document:
-                            // check   
+                            // check
+                            NodeId previous = null;
+                            NodeId nodeId;
                             for (int j = 0; j < gidsCount; j++) {
-                            	NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);                                
+                                nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(previous, is);
+                                previous = nodeId;
                                 long address = StorageAddress.read(is);
                                 Node storedNode = broker.objectWith(new NodeProxy(doc, nodeId, address));
                                 if (storedNode == null) {
