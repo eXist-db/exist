@@ -49,7 +49,7 @@ public class XMLDBChangeUser extends BasicFunction {
 	public final static FunctionSignature signature = new FunctionSignature(
 			new QName("change-user", XMLDBModule.NAMESPACE_URI,
 					XMLDBModule.PREFIX),
-			"Change properties of an existing user. $a is the username, $b is the password, " +
+			"Change properties of an existing user, you must have appropriate permissions to do this. $a is the username, $b is the password, " +
 			"$c is the sequence of group memberships, $d is the home collection. The username is mandatory but other values are optional, where if empty the existing value is used.",
 			new SequenceType[]{
 					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
