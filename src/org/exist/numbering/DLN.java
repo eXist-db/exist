@@ -23,6 +23,7 @@ package org.exist.numbering;
 
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
+import org.exist.storage.io.VariableByteArrayInput;
 
 import java.io.IOException;
 
@@ -115,6 +116,10 @@ public class DLN extends DLNBase implements NodeId {
      */
     public DLN(short bitCnt, VariableByteInput is) throws IOException {
         super(bitCnt, is);
+    }
+
+    public DLN(byte prefixLen, DLN previous, short bitCnt, VariableByteInput is) throws IOException {
+        super(prefixLen, previous, bitCnt, is);
     }
 
     /**
@@ -328,19 +333,66 @@ public class DLN extends DLNBase implements NodeId {
         os.write(bits, 0, bits.length);
     }
 
-    public static void main(String[] args) {
-        DLN id0 = new DLN("1.1.7");
-        DLN id1 = new DLN("1.1.6");
-        DLN id2 = new DLN("1.1.7.1");
-        DLN id3 = new DLN("1.1.7/1");
+    public NodeId write(NodeId prevId, VariableByteOutputStream os) throws IOException {
+        if (prevId == null) {
+            write(os);
+            return this;
+        }
+        DLN previous = (DLN) prevId;
+        final int len = Math.min(bits.length, previous.bits.length);
+        int i = 0;
+        for ( ; i < len; i++) {
+            byte b = bits[i];
+            if (b != previous.bits[i])
+                break;
+        }
+        os.writeByte((byte) i);
+        os.writeShort((short) units());
+        os.write(bits, i, bits.length - i);
+        return this;
+    }
 
-        System.out.println(id0.debug());
-        System.out.println(id1.debug());
-        System.out.println(id0.toString() + " -> " + id1.toString() + ": " + id0.isSiblingOf(id1));
-        System.out.println(id1.toString() + " -> " + id0.toString() + ": " + id1.isSiblingOf(id0));
-        System.out.println(id2.toString() + " -> " + id0.toString() + ": " + id2.isSiblingOf(id0));
-        System.out.println(id0.toString() + " -> " + id2.toString() + ": " + id0.isSiblingOf(id2));
-        System.out.println(id3.toString() + " -> " + id0.toString() + ": " + id3.isSiblingOf(id0));
-        System.out.println(id0.toString() + " -> " + id3.toString() + ": " + id0.isSiblingOf(id3));
+    public static void main(String[] args) throws IOException {
+        DLN ids[] = {
+                new DLN("1.1.7.2.1"),
+                new DLN("1.1.7.2.2"),
+                new DLN("1.1.8"),
+                new DLN("1.1.8.1.1"),
+                new DLN("1.1.8.1.1/1"),
+                new DLN("1.1.8.1.1/2"),
+                new DLN("1.1.8.1.2.1.5"),
+                new DLN("1.1.8.1.2.1.7"),
+                new DLN("1.2")
+    };
+
+        VariableByteOutputStream os = new VariableByteOutputStream();
+        DLN previous = null;
+        for (int i = 0; i < ids.length; i++) {
+            DLN id = ids[i];
+            System.out.println(id.debug());
+            id.write(previous, os);
+            previous = id;
+        }
+
+        byte[] data = os.toByteArray();
+        System.out.println("Data length: " + data.length);
+
+        VariableByteArrayInput is = new VariableByteArrayInput(data);
+        DLNFactory fact = new DLNFactory();
+        previous = null;
+        for (int i = 0; i < ids.length; i++) {
+            previous = (DLN) fact.createFromStream(previous, is);
+            System.out.println(previous.debug());
+        }
+
+        os = new VariableByteOutputStream();
+        for (int i = 0; i < ids.length; i++) {
+            DLN id = ids[i];
+            System.out.println(id.debug());
+            id.write(os);
+        }
+
+        data = os.toByteArray();
+        System.out.println("Data length: " + data.length);
     }
 }

@@ -329,10 +329,12 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 //Dummy value : actual one will be written below
                 os.writeFixedInt(0);
                 //Compute the GID list
+                NodeId nodeId, previous = null;
                 for (int j = 0; j < gidsCount; j++) {
-                    NodeId nodeId = (NodeId) gids.get(j);
+                    nodeId = (NodeId) gids.get(j);
                     try {
-                        nodeId.write(os);
+                        previous = nodeId.write(previous, os);
+//                        nodeId.write(os);
                     } catch (IOException e) {
                         LOG.warn("IO error while writing range index: " + e.getMessage(), e);
                         //TODO : throw exception?
@@ -420,8 +422,10 @@ public class NativeValueIndex implements ContentLoadingObserver {
                             } else {
                                 // data are related to our document:
                                 // feed the new list with the GIDs
+                                NodeId previous = null;
                                 for (int j = 0; j < gidsCount; j++) {
-                                    NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
+                                    NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(previous, is);
+                                    previous = nodeId;
                                     // add the node to the new list if it is not
                                     // in the list of removed nodes
                                     if (!containsNode(storedGIDList, nodeId)) {
@@ -853,10 +857,14 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         continue;                        
                     }
                 	//Process the nodes
-                	for (int j = 0; j < gidsCount; j++) {
-                		NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);                        
-                        NodeProxy storedNode = new NodeProxy(storedDocument, nodeId);					
-                		// if a context set is specified, we can directly check if the
+                    NodeId previous = null;
+                    NodeId nodeId;
+                    NodeProxy storedNode;
+                    for (int j = 0; j < gidsCount; j++) {
+                        nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(previous, is);
+                        previous = nodeId;
+                        storedNode = new NodeProxy(storedDocument, nodeId);
+                        // if a context set is specified, we can directly check if the
                 		// matching node is a descendant of one of the nodes
                 		// in the context set.
                 		if (contextSet != null) {
@@ -956,10 +964,14 @@ public class NativeValueIndex implements ContentLoadingObserver {
                         continue;
                     }                    
                     NodeId lastParentId = null;
+                    NodeId previous = null;
+                    NodeId nodeId;
+                    NodeProxy parentNode;
                     for (int j = 0; j < gidsCount; j++) {
-                    	NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);                        
-                        if (contextSet != null) {                        	
-                            NodeProxy parentNode = contextSet.parentWithChild(storedDocument, nodeId, false, true);                            
+                        nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(previous, is);
+                        previous = nodeId;
+                        if (contextSet != null) {
+                            parentNode = contextSet.parentWithChild(storedDocument, nodeId, false, true);
                             if (parentNode != null) {                                
                                 if (oc == null) {
                                     oc = new ValueOccurrences(atomic);

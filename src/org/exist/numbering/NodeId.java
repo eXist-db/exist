@@ -63,7 +63,7 @@ public interface NodeId extends Comparable {
      * child might be different, depending on the
      * implementation.
      * 
-     * @param child
+     * @param child the position of the child
      * @return new node id
      */
     NodeId getChild(int child);
@@ -111,8 +111,9 @@ public interface NodeId extends Comparable {
      * behaves as if called to evaluate a following::* XPath select, i.e. it
      * returns false for descendants of the current node.
      *
-     * @param other
-     * @param isFollowing
+     * @param other the node id to compare with
+     * @param isFollowing if true, return false for descendants of the current node 
+     * @return true true if the current node comes after the other node in document order
      */
     boolean after(NodeId other, boolean isFollowing);
 
@@ -122,8 +123,9 @@ public interface NodeId extends Comparable {
      * behaves as if called to evaluate a preceding::* XPath select, i.e. it
      * returns false for ancestors of the current node.
      *
-     * @param other
-     * @param isPreceding
+     * @param other the node id to compare with
+     * @param isPreceding if true, return false for ancestors of the current node
+     * @return true if the current node comes before the other node in document order.
      */
     boolean before(NodeId other, boolean isPreceding);
 
@@ -141,6 +143,7 @@ public interface NodeId extends Comparable {
      * Is the current node a child node of the specified parent?
      *
      * @param parent the parent node
+     * @return true if the current node is a child of the specified parent
      */
     boolean isChildOf(NodeId parent);
 
@@ -161,6 +164,8 @@ public interface NodeId extends Comparable {
     /**
      * Returns the level within the document tree at which
      * this node occurs.
+     *
+     * @return the tree level
      */
     int getTreeLevel();
 
@@ -190,8 +195,19 @@ public interface NodeId extends Comparable {
     /**
      * Write the node id to a {@link org.exist.storage.io.VariableByteOutputStream}.
      *
-     * @param os
-     * @throws java.io.IOException
+     * @param os the output stream
+     * @throws java.io.IOException if there's a problem with the underlying output stream
      */
     void write(VariableByteOutputStream os) throws IOException;
+
+    /**
+     * Write the node id to a {@link org.exist.storage.io.VariableByteOutputStream}. To save
+     * storage space, only store those byte which are different from the previous node id.
+     *
+     * @param previous the node id previously written or null
+     * @param os the output stream
+     * @return this node id
+     * @throws IOException if there's a problem with the underlying output stream
+     */
+    NodeId write(NodeId previous, VariableByteOutputStream os) throws IOException;
 }

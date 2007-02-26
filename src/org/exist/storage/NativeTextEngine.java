@@ -469,8 +469,11 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                         continue;
                     }
                     //Process the nodes
-					for (int m = 0; m < gidsCount; m++) {
-                        NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
+                    NodeId previous = null;
+                    for (int m = 0; m < gidsCount; m++) {
+//                        NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
+                        NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(previous, is);
+                        previous = nodeId;
                         int freq = is.readInt();
                         NodeProxy storedNode;
                         switch (storedSection) {
@@ -958,9 +961,11 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     int lenOffset = os.position();
                     //Dummy value : actual one will be written below
                     os.writeFixedInt(0);
+                    NodeId previous = null;
                     for (int m = 0; m < occurences.getSize(); ) {
                         try {
-                            occurences.nodes[m].write(os);
+                            previous = occurences.nodes[m].write(previous, os);
+//                            occurences.nodes[m].write(os);
                         } catch (IOException e) {
                             LOG.error("IOException while writing fulltext index: " + e.getMessage(), e);
                         }
@@ -972,7 +977,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                         m += freq;                        
                     }
                     //Write (variable) length of node IDs + frequency + offsets 
-                    os.writeFixedInt(lenOffset, os.position() - lenOffset - LENGTH_NODE_IDS_FREQ_OFFSETS);                    
+                    os.writeFixedInt(lenOffset, os.position() - lenOffset - LENGTH_NODE_IDS_FREQ_OFFSETS);
                     flushWord(currentSection, collectionId, token, os.data());
                     progress.setValue(count);
                     if (progress.changed()) {
@@ -1168,8 +1173,10 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                             } else {
                                 // data are related to our section and document:
                                 // feed the new list with the GIDs
+                                NodeId previous = null;
                                 for (int m = 0; m < termCount; m++) {
-                                    NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
+                                    NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(previous, is);
+                                    previous = nodeId;
                                     int freq = is.readInt();
                                     // add the node to the new list if it is not
                                     // in the list of removed nodes
@@ -1194,8 +1201,9 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                             int lenOffset = os.position();
                             //Dummy value : actual one will be written below
                             os.writeFixedInt(0);
+                            NodeId previous = null;
                             for (int m = 0; m < newOccurencesList.getSize(); ) {
-                                newOccurencesList.nodes[m].write(os);
+                                previous = newOccurencesList.nodes[m].write(previous, os);
                                 int freq = newOccurencesList.getOccurrences(m);
                                 os.writeInt(freq);
                                 for (int n = 0; n < freq; n++) {
@@ -1316,8 +1324,10 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 							is.skipBytes(length);
 							continue;
 						}
-						for (int m = 0; m < termCount; m++) {
-                            NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
+                        NodeId previous = null;
+                        for (int m = 0; m < termCount; m++) {
+                            NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(previous, is);
+                            previous = nodeId;
                             int freq = is.readInt();
                             NodeProxy storedNode;
                             switch (storedSection) {
@@ -1434,10 +1444,12 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 					if (storedDocument == null) {
 						is.skipBytes(length);
 						continue;
-					}					
-					for (int m = 0; m < termCount; m++) {
-                        NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(is);
-                        int freq = is.readInt();                        
+					}
+                    NodeId previous = null;
+                    for (int m = 0; m < termCount; m++) {
+                        NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(previous, is);
+                        previous = nodeId;
+                        int freq = is.readInt();
                         is.skip(freq);
 						if (contextSet != null) {
                             boolean include = false;
