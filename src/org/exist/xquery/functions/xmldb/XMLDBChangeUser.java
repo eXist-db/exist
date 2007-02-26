@@ -49,8 +49,8 @@ public class XMLDBChangeUser extends BasicFunction {
 	public final static FunctionSignature signature = new FunctionSignature(
 			new QName("change-user", XMLDBModule.NAMESPACE_URI,
 					XMLDBModule.PREFIX),
-			"Change properties of an existing user. Parameters are: username, password, " +
-			"group memberships, home collection.",
+			"Change properties of an existing user. $a is the username, $b is the password, " +
+			"$c is the sequence of group memberships, $d is the home collection. The username is mandatory but other values are optional, where if empty the existing value is used.",
 			new SequenceType[]{
 					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
 					new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
@@ -66,11 +66,13 @@ public class XMLDBChangeUser extends BasicFunction {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
 	 */
-	public Sequence eval(Sequence[] args, Sequence contextSequence)
-			throws XPathException {
+	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
+	{
 		String userName = args[0].getStringValue();
 		Collection collection = null;
-		try {
+		
+		try
+		{
             collection = new LocalCollection(context.getUser(), context.getBroker().getBrokerPool(), XmldbURI.ROOT_COLLECTION_URI, context.getAccessContext());
 			UserManagementService ums = (UserManagementService) collection.getService("UserManagementService", "1.0");
 			User oldUser = ums.getUser(userName);
