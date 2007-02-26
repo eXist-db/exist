@@ -353,7 +353,7 @@ public class DLN extends DLNBase implements NodeId {
     }
 
     public static void main(String[] args) throws IOException {
-        DLN ids[] = {
+        NodeId ids[] = {
                 new DLN("1.1.7.2.1"),
                 new DLN("1.1.7.2.2"),
                 new DLN("1.1.8"),
@@ -362,14 +362,16 @@ public class DLN extends DLNBase implements NodeId {
                 new DLN("1.1.8.1.1/2"),
                 new DLN("1.1.8.1.2.1.5"),
                 new DLN("1.1.8.1.2.1.7"),
-                new DLN("1.2")
+                new DLN("1.2"),
+                DLN.END_OF_DOCUMENT,
+                DLN.END_OF_DOCUMENT
     };
 
         VariableByteOutputStream os = new VariableByteOutputStream();
-        DLN previous = null;
+        NodeId previous = null;
         for (int i = 0; i < ids.length; i++) {
-            DLN id = ids[i];
-            System.out.println(id.debug());
+            NodeId id = ids[i];
+            System.out.println(id.toString());
             id.write(previous, os);
             previous = id;
         }
@@ -381,14 +383,14 @@ public class DLN extends DLNBase implements NodeId {
         DLNFactory fact = new DLNFactory();
         previous = null;
         for (int i = 0; i < ids.length; i++) {
-            previous = (DLN) fact.createFromStream(previous, is);
-            System.out.println(previous.debug());
+            previous = fact.createFromStream(previous, is);
+            System.out.println(previous.toString());
         }
 
         os = new VariableByteOutputStream();
         for (int i = 0; i < ids.length; i++) {
-            DLN id = ids[i];
-            System.out.println(id.debug());
+            NodeId id = ids[i];
+            System.out.println(id.toString());
             id.write(os);
         }
 
