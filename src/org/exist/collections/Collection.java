@@ -916,6 +916,7 @@ public  class Collection extends Observable
                 broker.getBrokerPool().reloadSecurityManager(broker);
             }
         } finally {
+        	//This lock has been acquired in validateXMLResourceInternal()
             document.getUpdateLock().release(Lock.WRITE_LOCK);
             releaseReader(broker, info.getReader());
         }
@@ -1062,7 +1063,8 @@ public  class Collection extends Observable
                     document = oldDoc;
                 }
             } else {
-            	//TOUNDERSTAND : when is this lock released ?
+            	//This lock is released in storeXMLInternal()
+            	//TODO : check that we go until there to ensure the lock is released
             	document.getUpdateLock().acquire(Lock.WRITE_LOCK);
                 document.setDocId(broker.getNextResourceId(transaction, this));
                 addDocument(transaction, broker, document);
@@ -1074,9 +1076,6 @@ public  class Collection extends Observable
         } finally {
             if (oldDocLocked) 
             	oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
-            //TOUNDERSTAND : see above
-            //if (document != null)
-            	//document.getUpdateLock().release(Lock.WRITE_LOCK);
             if (transaction == null)
             	getLock().release(Lock.WRITE_LOCK);
         }
