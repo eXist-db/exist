@@ -713,13 +713,15 @@ public class LocalCollection extends Observable implements CollectionImpl {
                     info = collection.validateXMLResource(txn, broker, resURI, res.root);
                 else
                     info = collection.validateXMLResource(txn, broker, resURI, res.content);
+                //Notice : the document should now have a Lock.WRITE_LOCK update lock
+                //TODO : check that no exception occurs in order to allow it to be released
                 info.getDocument().getMetadata().setMimeType(res.getMimeType());
                 
                 if (res.datecreated  != null)
                     info.getDocument().getMetadata().setCreated( res.datecreated.getTime());
                 
                 if (res.datemodified != null)
-                    info.getDocument().getMetadata().setLastModified( res.datemodified.getTime());
+                    info.getDocument().getMetadata().setLastModified( res.datemodified.getTime());          
             } finally {
                 collection.release(Lock.WRITE_LOCK);
             }
@@ -730,12 +732,12 @@ public class LocalCollection extends Observable implements CollectionImpl {
             } else {
                 collection.store(txn, broker, info, res.content, false);
             }
+            //Notice : the document should now have its update lock released
             transact.commit(txn);
             collection.deleteObservers();
         } catch (Exception e) {
             transact.abort(txn);
-            LOG.debug(e);
-            
+            LOG.error(e);            
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         } finally {
             brokerPool.release(broker);
