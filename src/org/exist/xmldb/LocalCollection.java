@@ -573,43 +573,43 @@ public class LocalCollection extends Observable implements CollectionImpl {
         Collection collection = null;
         DBBroker broker = null;
         TransactionManager transact = brokerPool.getTransactionManager();
-        Txn txn = transact.beginTransaction();
+        Txn transaction = transact.beginTransaction();
         try {
             LOG.debug("removing " + resURI);
             
             broker = brokerPool.get(user);
             collection = broker.openCollection(path, Lock.WRITE_LOCK);
             if(collection == null) {
-                transact.abort(txn);
+                transact.abort(transaction);
                 throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
             }
+            // keep the lock for the transaction
+            if (transaction != null)
+                transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);              
             DocumentImpl doc = collection.getDocument(broker, resURI);
             if (doc == null) {
-                transact.abort(txn);
-                throw new XMLDBException(
-                        ErrorCodes.INVALID_RESOURCE,
-                        "resource " + resURI + " not found");
+                transact.abort(transaction);
+                throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "resource " + resURI + " not found");
             }
             if (res.getResourceType().equals("XMLResource"))
-                collection.removeXMLResource(txn, broker, resURI);
+                collection.removeXMLResource(transaction, broker, resURI);
             else
-                collection.removeBinaryResource(txn, broker, resURI);
-            transact.commit(txn);
+                collection.removeBinaryResource(transaction, broker, resURI);
+            transact.commit(transaction);
         } catch (EXistException e) {
-            transact.abort(txn);
+            transact.abort(transaction);
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         } catch (PermissionDeniedException e) {
-            transact.abort(txn);
+            transact.abort(transaction);
             throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
         } catch (TriggerException e) {
-            transact.abort(txn);
+            transact.abort(transaction);
             throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, e.getMessage(), e);
         } catch (LockException e) {
-            transact.abort(txn);
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
-                    "Failed to acquire lock on collections.dbx", e);
+            transact.abort(transaction);
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         } finally {
-            if(collection != null)
+            if (transaction != null && collection != null)
                 collection.getLock().release(Lock.WRITE_LOCK);
             brokerPool.release(broker);
         }
