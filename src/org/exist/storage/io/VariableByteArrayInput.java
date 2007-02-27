@@ -173,4 +173,17 @@ public class VariableByteArrayInput extends AbstractVariableByteInput {
         for(long i = 0; i < count && position < end; i++)
             position++;
     }
+    
+    public String toString(int len) {
+    	byte[] subArray = new byte[len];
+        System.arraycopy(data, position, subArray, 0, len);    	
+    	StringBuffer buf = new StringBuffer("[");
+    	for (int i = 0 ; i < len; i++) {
+    		if (i > 0)
+    			buf.append(" ");
+    		buf.append(subArray[i]);
+    	}
+    	buf.append("]");
+    	return buf.toString();
+    }
 }

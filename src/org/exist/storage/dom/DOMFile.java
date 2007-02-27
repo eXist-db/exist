@@ -1064,7 +1064,7 @@ public class DOMFile extends BTree implements Lockable {
 				                	final NodeId nodeId = ((NativeBroker)owner).getBrokerPool().getNodeFactory().createFromStream(is);					                
 					                buf.append("(" + nodeId.toString() + ")");
 				                } catch (Exception e) {				                		
-				                	buf.append("(unable to read node ID)");
+				                	buf.append("(unable to build node ID from: " + is.toString(nodeIdLen));   
 				                }	
 				                final short attributes = ByteConversion.byteToShort(page.data, readOffset);				         						
 								buf.append(" children : " + children);
@@ -1094,7 +1094,7 @@ public class DOMFile extends BTree implements Lockable {
 				                	final NodeId nodeId = ((NativeBroker)owner).getBrokerPool().getNodeFactory().createFromStream(is);					                
 					                buf.append("(" + nodeId.toString() + ")");
 				                } catch (Exception e) {
-				                	buf.append("(unable to read node ID)");                
+				                	buf.append("(unable to build node ID from: " + is.toString(nodeIdLen));                   
 				                }	
 				                final ByteArrayOutputStream os = new ByteArrayOutputStream();
 				                os.write(page.data, readOffset, vlen - (readOffset - pos));
@@ -1131,7 +1131,7 @@ public class DOMFile extends BTree implements Lockable {
 				                	final NodeId nodeId = ((NativeBroker)owner).getBrokerPool().getNodeFactory().createFromStream(is);					                
 					                buf.append("(" + nodeId.toString() + ")");
 				                } catch (Exception e) {
-				                	buf.append("(unable to read node ID)");                
+				                	buf.append("(unable to build node ID from: " + is.toString(nodeIdLen));   
 				                }		                
 				                readOffset += Signatures.getLength(idSizeType); 
 				                if (hasNamespace) {
@@ -2016,9 +2016,11 @@ public class DOMFile extends BTree implements Lockable {
 		} else {
             
 			if (isTransactional && transaction != null) {
-//				if (rec.getTID() < 0) {
-//					LOG.warn("tid < 0");
-//				}
+
+				if (ItemId.getId(rec.getTID()) < 0) {
+					LOG.warn("tid < 0");
+				}
+
                 Loggable loggable = new UpdateValueLoggable(transaction, rec.getPage().getPageNum(), 
                 		rec.getTID(), value, rec.getPage().data, rec.offset);
                 writeToLog(loggable, rec.getPage().page);
