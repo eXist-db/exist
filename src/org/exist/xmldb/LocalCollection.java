@@ -584,8 +584,8 @@ public class LocalCollection extends Observable implements CollectionImpl {
                 throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
             }
             // keep the lock for the transaction
-            if (transaction != null)
-                transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);              
+            //if (transaction != null)
+            //    transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);              
             DocumentImpl doc = collection.getDocument(broker, resURI);
             if (doc == null) {
                 transact.abort(transaction);
