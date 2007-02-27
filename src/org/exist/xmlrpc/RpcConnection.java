@@ -165,6 +165,7 @@ public class RpcConnection extends Thread {
         try {
             broker = brokerPool.get(user);
             Collection current = broker.getOrCreateCollection(transaction, collUri);
+            //TODO : register a lock (wich one ?) within the transaction ?
             if (created != null)
                 current.setCreationTime( created.getTime());
             LOG.debug("creating collection " + collUri);
@@ -719,11 +720,10 @@ public class RpcConnection extends Thread {
                 transact.abort(transaction);
                 throw new EXistException("collection " + collUri + " not found");
             }
-            DocumentSet docs = collection.allDocs(broker, new DocumentSet(),
-                    true, true);
+            //TODO : register a lock (which one ?) in the transaction ?
+            DocumentSet docs = collection.allDocs(broker, new DocumentSet(), true, true);
             XUpdateProcessor processor = new XUpdateProcessor(broker, docs, AccessContext.XMLRPC);
-            Modification modifications[] = processor.parse(new InputSource(
-                    new StringReader(xupdate)));
+            Modification modifications[] = processor.parse(new InputSource(new StringReader(xupdate)));
             long mods = 0;
             for (int i = 0; i < modifications.length; i++) {
                 mods += modifications[i].process(transaction);
@@ -760,6 +760,7 @@ public class RpcConnection extends Thread {
                 transact.abort(transaction);
                 throw new EXistException("document " + docUri + " not found");
             }
+            //TODO : register a lock (which one ?) within the transaction ?
             if(!doc.getPermissions().validate(user, Permission.READ)) {
                 transact.abort(transaction);
                 throw new PermissionDeniedException("Insufficient privileges to read resource");
@@ -1174,8 +1175,7 @@ public class RpcConnection extends Thread {
         try {
             long startTime = System.currentTimeMillis();
             broker = brokerPool.get(user);
-            InputSource source;
-            IndexInfo info;
+         
             Collection collection = broker.openCollection(docUri.removeLastSegment(), Lock.WRITE_LOCK);
             if (collection == null) {
                 transact.abort(transaction);
@@ -1186,14 +1186,15 @@ public class RpcConnection extends Thread {
             transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);  
             if (!replace) {
                 DocumentImpl old = collection.getDocument(broker, docUri.lastSegment());
+                //TODO : register the lock within the transaction ?
                 if (old != null) {
                     transact.abort(transaction);
                     throw new PermissionDeniedException("Document exists and overwrite is not allowed");
                 }
             }
             InputStream is = new ByteArrayInputStream(xml);
-            source = new InputSource(is);
-            info = collection.validateXMLResource(transaction, broker, docUri.lastSegment(), source);
+            InputSource source = new InputSource(is);
+            IndexInfo info = collection.validateXMLResource(transaction, broker, docUri.lastSegment(), source);
             
             if (created != null)
                 info.getDocument().getMetadata().setCreated( created.getTime());            
@@ -1899,6 +1900,7 @@ public class RpcConnection extends Thread {
                 	transact.abort(transaction);
                 	throw new EXistException("document or collection " + uri + " not found");
                 }
+                //TODO : register the lock within the transaction ?
                 LOG.debug("changing permissions on document " + uri);
                 Permission perm = doc.getPermissions();
                 if (perm.getOwner().equals(user.getName())
@@ -1977,6 +1979,7 @@ public class RpcConnection extends Thread {
                 	transact.abort(transaction);
                 	throw new EXistException("document or collection " + uri + " not found");
                 }
+                //TODO : register the lock within the transaction ?
                 LOG.debug("changing permissions on document " + uri);
                 Permission perm = doc.getPermissions();
                 if (perm.getOwner().equals(user.getName())
@@ -2151,11 +2154,11 @@ public class RpcConnection extends Thread {
         Txn transaction = transact.beginTransaction();
         try {
             broker = brokerPool.get(user);
-            doc = broker.getXMLResource(docURI, Lock.WRITE_LOCK);
+            doc = broker.getXMLResource(docURI, Lock.WRITE_LOCK);           
             if (doc == null) {
-                throw new EXistException("Resource "
-                        + docURI + " not found");
+                throw new EXistException("Resource " + docURI + " not found");
             }
+            //TODO : register the lock within the transaction ?
             if (!doc.getPermissions().validate(user, Permission.UPDATE))
                 throw new PermissionDeniedException("User is not allowed to lock resource " + docURI);
             org.exist.security.SecurityManager manager = brokerPool.getSecurityManager();
@@ -2221,8 +2224,9 @@ public class RpcConnection extends Thread {
             if(lockOwner != null && (!lockOwner.equals(user)) && (!manager.hasAdminPrivileges(user)))
                 throw new PermissionDeniedException("Resource is already locked by user " +
                         lockOwner.getName());
+            //TODO : start the transaction earlier and register the lock within it ?
             TransactionManager transact = brokerPool.getTransactionManager();
-            Txn transaction = transact.beginTransaction();
+            Txn transaction = transact.beginTransaction();            
             doc.setUserLock(null);
             broker.storeXMLResource(transaction, doc);
             transact.commit(transaction);
@@ -2585,12 +2589,13 @@ public class RpcConnection extends Thread {
             if (collection == null) {
                 transact.abort(transaction);
                 throw new EXistException("Collection " + docUri.removeLastSegment() + " not found");
-            }
+            }           
             doc = collection.getDocumentWithLock(broker, docUri.lastSegment(), Lock.WRITE_LOCK);
             if(doc == null) {
                 transact.abort(transaction);
                 throw new EXistException("Document " + docUri + " not found");
             }
+            //TODO : register the lock within the transaction ?
             
             // get destination collection
             destination = broker.openCollection(destUri, Lock.WRITE_LOCK);
@@ -2642,13 +2647,13 @@ public class RpcConnection extends Thread {
             if (collection == null) {
                 transact.abort(transaction);
                 throw new EXistException("Collection " + collUri + " not found");
-            }
+            }            
             // get destination collection
             destination = broker.openCollection(destUri, Lock.WRITE_LOCK);
             if(destination == null) {
                 transact.abort(transaction);
                 throw new EXistException("Destination collection " + destUri + " not found");
-            }
+            }            
             if(move)
                 broker.moveCollection(transaction, collection, destination, newName);
             else
@@ -2672,6 +2677,7 @@ public class RpcConnection extends Thread {
     PermissionDeniedException, URISyntaxException {
     	reindexCollection(user,XmldbURI.xmldbUriFor(collectionName));
     }    
+    
     public void reindexCollection(User user, XmldbURI collUri) throws Exception,
     PermissionDeniedException {
         DBBroker broker = null;
@@ -2715,7 +2721,8 @@ public class RpcConnection extends Thread {
     public boolean isValid(User user, String documentPath)
     throws PermissionDeniedException, Exception, URISyntaxException {
     	return isValid(user,XmldbURI.xmldbUriFor(documentPath));
-    }    
+    }   
+    
     public boolean isValid(User user, XmldbURI docUri)
                                    throws PermissionDeniedException, Exception{
         boolean retVal=false;
@@ -2751,6 +2758,7 @@ public class RpcConnection extends Thread {
     throws PermissionDeniedException, EXistException, URISyntaxException {
     	return getDocType(user,XmldbURI.xmldbUriFor(documentPath));
     }    
+    
     public Vector getDocType(User user, XmldbURI docUri)
     throws PermissionDeniedException, EXistException {
         DBBroker broker = null;
@@ -2809,11 +2817,12 @@ public class RpcConnection extends Thread {
         Txn transaction = transact.beginTransaction();
         try {
             broker = brokerPool.get(user);
-            doc = broker.getXMLResource(docUri, Lock.WRITE_LOCK);
+            doc = broker.getXMLResource(docUri, Lock.WRITE_LOCK);          
             if (doc == null) {
             	transact.abort(transaction);
                 throw new EXistException("Resource " + docUri + " not found");
             }
+            //TODO : register the lock within the transaction ?
             if (!doc.getPermissions().validate(user, Permission.UPDATE)) {
             	transact.abort(transaction);
             	throw new PermissionDeniedException("User is not allowed to lock resource " + docUri);
