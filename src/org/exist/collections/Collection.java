@@ -214,7 +214,6 @@ public  class Collection extends Observable
      * the current thread. This is a shortcut for getLock().release().
      */
     public void release(int mode) {
-//		LOG.debug("releasing lock on " + name);
         getLock().release(mode);
     }
     
@@ -490,7 +489,7 @@ public  class Collection extends Observable
             getLock().acquire(Lock.READ_LOCK);
             DocumentImpl doc = (DocumentImpl) documents.get(path.getRawCollectionPath());
             if(doc == null)
-                LOG.debug("Document " + path + " not found!");
+            	LOG.debug("Document " + path + " not found!");
             return doc;
         } catch (LockException e) {
             LOG.warn(e.getMessage(), e);
@@ -530,8 +529,9 @@ public  class Collection extends Observable
             getLock().acquire(Lock.READ_LOCK);
             DocumentImpl doc = (DocumentImpl) documents.get(uri.getRawCollectionPath());
             if(doc == null)
-                return null;
-            doc.getUpdateLock().acquire(lockMode);
+            	LOG.debug("Document " + path + " not found!");
+            else
+            	doc.getUpdateLock().acquire(lockMode);
             return doc;
         } finally {
             getLock().release(Lock.READ_LOCK);
@@ -986,6 +986,10 @@ public  class Collection extends Observable
         }
     }
     
+    private interface ValidateBlock {
+        public void run(IndexInfo info) throws SAXException, EXistException;
+    }
+
     /** Validates an XML document et prepares it for further storage. Launches prepare and postValidate triggers.
      * Since the process is dependant from the collection configuration, the collection acquires a write lock during the process.
      * @param transaction
@@ -1055,33 +1059,6 @@ public  class Collection extends Observable
                 info.getDOMStreamer().serialize(node, true);
             }
         });
-    }
-    
-    private interface ValidateBlock {
-        public void run(IndexInfo info) throws SAXException, EXistException;
-    }
-    
-    private void checkConfigurationDocument(Txn transaction, DBBroker broker, XmldbURI docUri) throws EXistException, PermissionDeniedException {
-//    	Is it a collection configuration file ?
-        if (!getURI().startsWith(CollectionConfigurationManager.CONFIG_COLLECTION_URI))
-        	return;
-        if (!docUri.endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX_URI))
-        	return;
-        //Allow just one configuration document per collection
-        //TODO : do not throw the exception if a system property allows several ones -pb
-    	for(Iterator i = iterator(broker); i.hasNext(); ) {
-	        DocumentImpl confDoc = (DocumentImpl) i.next();
-	        XmldbURI currentConfDocName = confDoc.getFileURI();
-	        if(currentConfDocName != null && !currentConfDocName.equals(docUri)) {
-	        	throw new EXistException("Could not store configuration '" + docUri + "': A configuration document with a different name ("
-	        			+ currentConfDocName + ") already exists in this collection (" + getURI() + ")");
-	        }
-        }
-    	
-        broker.saveCollection(transaction, this);
-        CollectionConfigurationManager confMgr = broker.getBrokerPool().getConfigurationManager();
-        if(confMgr != null)
-        	confMgr.invalidateAll(getURI());
     }
     
     /** Validates an XML document et prepares it for further storage. Launches prepare and postValidate triggers.
@@ -1179,6 +1156,29 @@ public  class Collection extends Observable
         }
     }
     
+    private void checkConfigurationDocument(Txn transaction, DBBroker broker, XmldbURI docUri) throws EXistException, PermissionDeniedException {
+    	//Is it a collection configuration file ?
+        if (!getURI().startsWith(CollectionConfigurationManager.CONFIG_COLLECTION_URI))
+        	return;
+        if (!docUri.endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX_URI))
+        	return;
+        //Allow just one configuration document per collection
+        //TODO : do not throw the exception if a system property allows several ones -pb
+    	for(Iterator i = iterator(broker); i.hasNext(); ) {
+	        DocumentImpl confDoc = (DocumentImpl) i.next();
+	        XmldbURI currentConfDocName = confDoc.getFileURI();
+	        if(currentConfDocName != null && !currentConfDocName.equals(docUri)) {
+	        	throw new EXistException("Could not store configuration '" + docUri + "': A configuration document with a different name ("
+	        			+ currentConfDocName + ") already exists in this collection (" + getURI() + ")");
+	        }
+        }
+    	
+        broker.saveCollection(transaction, this);
+        CollectionConfigurationManager confMgr = broker.getBrokerPool().getConfigurationManager();
+        if(confMgr != null)
+        	confMgr.invalidateAll(getURI());
+    }
+    
     /** add observers to the indexer
      * @param broker
      * @param indexer
@@ -1198,7 +1198,7 @@ public  class Collection extends Observable
      * @param document
      */
     private void manageDocumentInformation(DBBroker broker, DocumentImpl oldDoc,
-            DocumentImpl document ) {
+            DocumentImpl document) {
     	DocumentMetadata metadata = new DocumentMetadata();
         if (oldDoc != null) {
             metadata = oldDoc.getMetadata();
@@ -1208,8 +1208,7 @@ public  class Collection extends Observable
         } else {
             metadata.setCreated(System.currentTimeMillis());
             document.getPermissions().setOwner(broker.getUser());
-            document.getPermissions().setGroup(
-                    broker.getUser().getPrimaryGroup());
+            document.getPermissions().setGroup(broker.getUser().getPrimaryGroup());
         }
         document.setMetadata(metadata);
     }
@@ -1243,8 +1242,7 @@ public  class Collection extends Observable
                 throw new PermissionDeniedException(
                         "Document exists and update is not allowed for the collection");
             // do we have write permissions?
-        } else if (!getPermissions().validate(broker.getUser(),
-                Permission.WRITE))
+        } else if (!getPermissions().validate(broker.getUser(), Permission.WRITE))
             throw new PermissionDeniedException(
                     "User '" + broker.getUser().getName() + "' not allowed to write to collection '" + getURI() + "'");
     }
