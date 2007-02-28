@@ -719,83 +719,79 @@ public  class Collection extends Observable
      */
     public void removeXMLResource(Txn transaction, DBBroker broker, XmldbURI docUri)
     throws PermissionDeniedException, TriggerException, LockException {
-        try {
-        	//Doh ! READ lock ?
-            getLock().acquire(Lock.READ_LOCK);
-            // keep the lock for the transaction
-            if (transaction != null)
-                transaction.registerLock(getLock(), Lock.READ_LOCK);            
-            
-            DocumentImpl doc = getDocument(broker, docUri);
-            if (doc == null)
-                return;
-            if(doc.isLockedForWrite())
-                throw new PermissionDeniedException("Document " + doc.getFileURI() +
-                        " is locked for write");
-            if (!getPermissions().validate(broker.getUser(), Permission.WRITE))
-                throw new PermissionDeniedException(
-                        "Write access to collection denied; user=" + broker.getUser().getName());
-            if (!doc.getPermissions().validate(broker.getUser(), Permission.WRITE))
-                throw new PermissionDeniedException("Permission to remove document denied");
-            
-            DocumentTrigger trigger = null;
-            if (!CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE_URI.equals(docUri)) {
-                if (triggersEnabled) {
-                    CollectionConfiguration config = getConfiguration(broker);
-                    if (config != null)
-                        trigger = (DocumentTrigger) config.getTrigger(Trigger.REMOVE_DOCUMENT_EVENT);
-                }
-            } else {
-                // we remove a collection.xconf configuration file: tell the configuration manager to
-                // reload the configuration.
-                CollectionConfigurationManager confMgr = broker.getBrokerPool().getConfigurationManager();
-                confMgr.invalidateAll(getURI());
-            }
-            
-            if (trigger != null) {
-                trigger.prepare(Trigger.REMOVE_DOCUMENT_EVENT, broker, transaction,
-                        getURI().append(docUri), doc);
-            }
-            
-            broker.removeXMLResource(transaction, doc);
-            documents.remove(docUri.getRawCollectionPath());
-            
-            if (trigger != null) {
-                trigger.finish(Trigger.REMOVE_DOCUMENT_EVENT, broker, transaction, doc);
-            }
-            
-            broker.getBrokerPool().getNotificationService().notifyUpdate(doc, UpdateListener.REMOVE);
-            
-        } finally {
-        	if (transaction == null)
-        		//Doh ! A READ lock ?
-        		getLock().release(Lock.READ_LOCK);
-        }
+    	
+    	try {
+       
+	    	//Doh ! READ lock ?
+	        getLock().acquire(Lock.READ_LOCK);        
+	        
+	        DocumentImpl doc = getDocument(broker, docUri);
+	        if (doc == null)
+	            return;
+	        if(doc.isLockedForWrite())
+	            throw new PermissionDeniedException("Document " + doc.getFileURI() +
+	                    " is locked for write");
+	        if (!getPermissions().validate(broker.getUser(), Permission.WRITE))
+	            throw new PermissionDeniedException(
+	                    "Write access to collection denied; user=" + broker.getUser().getName());
+	        if (!doc.getPermissions().validate(broker.getUser(), Permission.WRITE))
+	            throw new PermissionDeniedException("Permission to remove document denied");
+	        
+	        DocumentTrigger trigger = null;
+	        if (!CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE_URI.equals(docUri)) {
+	            if (triggersEnabled) {
+	                CollectionConfiguration config = getConfiguration(broker);
+	                if (config != null)
+	                    trigger = (DocumentTrigger) config.getTrigger(Trigger.REMOVE_DOCUMENT_EVENT);
+	            }
+	        } else {
+	            // we remove a collection.xconf configuration file: tell the configuration manager to
+	            // reload the configuration.
+	            CollectionConfigurationManager confMgr = broker.getBrokerPool().getConfigurationManager();
+	            confMgr.invalidateAll(getURI());
+	        }
+	        
+	        if (trigger != null) {
+	            trigger.prepare(Trigger.REMOVE_DOCUMENT_EVENT, broker, transaction,
+	                    getURI().append(docUri), doc);
+	        }
+	        
+	        broker.removeXMLResource(transaction, doc);
+	        documents.remove(docUri.getRawCollectionPath());
+	        
+	        if (trigger != null) {
+	            trigger.finish(Trigger.REMOVE_DOCUMENT_EVENT, broker, transaction, doc);
+	        }
+	        
+	        broker.getBrokerPool().getNotificationService().notifyUpdate(doc, UpdateListener.REMOVE);
+    	} finally {
+    		//Doh ! A READ lock ?
+    		getLock().release(Lock.READ_LOCK);
+    	}
     }
     
     public void removeBinaryResource(Txn transaction, DBBroker broker, XmldbURI uri)
     throws PermissionDeniedException, LockException, TriggerException {
-        
-        try {
-            getLock().acquire(Lock.WRITE_LOCK);
-            // keep the lock for the transaction
-            if (transaction != null)
-                transaction.registerLock(getLock(), Lock.WRITE_LOCK);            
-            DocumentImpl doc = getDocument(broker, uri);
-            if(doc.isLockedForWrite())
-                throw new PermissionDeniedException("Document " + doc.getFileURI() +
-                        " is locked for write");
-            if (!getPermissions().validate(broker.getUser(), Permission.WRITE))
-                throw new PermissionDeniedException(
-                        "write access to collection denied; user=" + broker.getUser().getName());
-            if (!doc.getPermissions().validate(broker.getUser(), Permission.WRITE))
-                throw new PermissionDeniedException("permission to remove document denied");
-            
-            removeBinaryResource(transaction, broker, doc);
-        } finally {
-        	if (transaction == null)
-        		getLock().release(Lock.WRITE_LOCK);
-        }
+
+    	try {
+	        getLock().acquire(Lock.WRITE_LOCK);
+	     
+	        DocumentImpl doc = getDocument(broker, uri);
+	        if(doc.isLockedForWrite())
+	            throw new PermissionDeniedException("Document " + doc.getFileURI() +
+	                    " is locked for write");
+	        if (!getPermissions().validate(broker.getUser(), Permission.WRITE))
+	            throw new PermissionDeniedException(
+	                    "write access to collection denied; user=" + broker.getUser().getName());
+	        if (!doc.getPermissions().validate(broker.getUser(), Permission.WRITE))
+	            throw new PermissionDeniedException("permission to remove document denied");
+	        
+	        removeBinaryResource(transaction, broker, doc);
+	        
+    	} finally {
+    		getLock().release(Lock.WRITE_LOCK);
+    	}
+
     }
     
     public void removeBinaryResource(Txn transaction, DBBroker broker, DocumentImpl doc)
@@ -805,10 +801,7 @@ public  class Collection extends Observable
             return;
         
         try {
-            getLock().acquire(Lock.WRITE_LOCK);
-            // keep the lock for the transaction
-            if (transaction != null)
-                transaction.registerLock(getLock(), Lock.WRITE_LOCK);            
+            getLock().acquire(Lock.WRITE_LOCK);       
             if (doc.getResourceType() != DocumentImpl.BINARY_FILE)
                 throw new PermissionDeniedException("document " + doc.getFileURI()
                 + " is not a binary object");
@@ -839,11 +832,23 @@ public  class Collection extends Observable
                 trigger.finish(Trigger.REMOVE_DOCUMENT_EVENT, broker, transaction, null);
             }
         } finally {
-        	if (transaction == null)
-        		getLock().release(Lock.WRITE_LOCK);
+       		getLock().release(Lock.WRITE_LOCK);
         }
     }
     
+    /** Stores an XML document in the database. {@link #validateXMLResourceInternal(Txn, DBBroker, XmldbURI, org.exist.collections.Collection.ValidateBlock)} 
+     * should have been called previously in order to acquire a write lock for the document. Launches the finish trigger.
+     * @param transaction
+     * @param broker
+     * @param info
+     * @param source
+     * @param privileged
+     * @throws EXistException
+     * @throws PermissionDeniedException
+     * @throws TriggerException
+     * @throws SAXException
+     * @throws LockException
+     */
     public void store(Txn transaction, DBBroker broker, final IndexInfo info, final InputSource source, boolean privileged)
     throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
         storeXMLInternal(transaction, broker, info, privileged, new StoreBlock() {
@@ -869,6 +874,19 @@ public  class Collection extends Observable
         });
     }
     
+    /** Stores an XML document in the database. {@link #validateXMLResourceInternal(Txn, DBBroker, XmldbURI, org.exist.collections.Collection.ValidateBlock)} 
+     * should have been called previously in order to acquire a write lock for the document. Launches the finish trigger.
+     * @param transaction
+     * @param broker
+     * @param info
+     * @param data
+     * @param privileged
+     * @throws EXistException
+     * @throws PermissionDeniedException
+     * @throws TriggerException
+     * @throws SAXException
+     * @throws LockException
+     */
     public void store(Txn transaction, DBBroker broker, final IndexInfo info, final String data, boolean privileged)
     throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
         storeXMLInternal(transaction, broker, info, privileged, new StoreBlock() {
@@ -882,6 +900,19 @@ public  class Collection extends Observable
         });
     }
     
+    /** Stores an XML document in the database. {@link #validateXMLResourceInternal(Txn, DBBroker, XmldbURI, org.exist.collections.Collection.ValidateBlock)} 
+     * should have been called previously in order to acquire a write lock for the document. Launches the finish trigger.
+     * @param transaction
+     * @param broker
+     * @param info
+     * @param node
+     * @param privileged
+     * @throws EXistException
+     * @throws PermissionDeniedException
+     * @throws TriggerException
+     * @throws SAXException
+     * @throws LockException
+     */  
     public void store(Txn transaction, DBBroker broker, final IndexInfo info, final Node node, boolean privileged)
     throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
         storeXMLInternal(transaction, broker, info, privileged, new StoreBlock() {
@@ -895,9 +926,23 @@ public  class Collection extends Observable
         public void run() throws EXistException, SAXException;
     }
     
+    /** Stores an XML document in the database. {@link #validateXMLResourceInternal(Txn, DBBroker, XmldbURI, org.exist.collections.Collection.ValidateBlock)} 
+     * should have been called previously in order to acquire a write lock for the document. Launches the finish trigger.
+     * @param transaction
+     * @param broker
+     * @param info
+     * @param privileged
+     * @param doParse
+     * @throws EXistException
+     * @throws SAXException
+     */
     private void storeXMLInternal(Txn transaction, DBBroker broker, IndexInfo info, boolean privileged, StoreBlock doParse) throws EXistException, SAXException {
         DocumentImpl document = info.getIndexer().getDocument();
         LOG.debug("storing document " + document.getDocId() + " ...");
+        //Sanity check
+    	if (!document.getUpdateLock().isLockedForWrite()) {
+    		LOG.warn("document is not locked for write !");
+    	}
         try {
             doParse.run();
             
@@ -929,6 +974,7 @@ public  class Collection extends Observable
         
         //Is it a collection configuration file ?
         XmldbURI docName = document.getFileURI();
+        //WARNING : there is no reason to lock the collection since setPath() is normally called in a safe way
         if (getURI().startsWith(CollectionConfigurationManager.CONFIG_COLLECTION_URI)
         		&& docName.endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX_URI)) {
         	
@@ -940,12 +986,38 @@ public  class Collection extends Observable
         }
     }
     
+    /** Validates an XML document et prepares it for further storage. Launches prepare and postValidate triggers.
+     * Since the process is dependant from the collection configuration, the collection acquires a write lock during the process.
+     * @param transaction
+     * @param broker
+     * @param docUri   
+     * @param data  
+     * @return An {@link IndexInfo} with a write lock on the document. 
+     * @throws EXistException
+     * @throws PermissionDeniedException
+     * @throws TriggerException
+     * @throws SAXException
+     * @throws LockException
+     */    
     public IndexInfo validateXMLResource(Txn transaction, DBBroker broker, XmldbURI docUri, String data)
     throws EXistException, PermissionDeniedException, TriggerException,
             SAXException, LockException {
         return validateXMLResource(transaction, broker, docUri, new InputSource(new StringReader(data)));
     }
     
+    /** Validates an XML document et prepares it for further storage. Launches prepare and postValidate triggers.
+     * Since the process is dependant from the collection configuration, the collection acquires a write lock during the process.
+     * @param transaction
+     * @param broker
+     * @param docUri
+     * @param source
+     * @return An {@link IndexInfo} with a write lock on the document. 
+     * @throws EXistException
+     * @throws PermissionDeniedException
+     * @throws TriggerException
+     * @throws SAXException
+     * @throws LockException
+     */    
     public IndexInfo validateXMLResource(Txn transaction, final DBBroker broker, XmldbURI docUri, final InputSource source)
     throws EXistException, PermissionDeniedException, TriggerException,
             SAXException, LockException {
@@ -961,6 +1033,19 @@ public  class Collection extends Observable
         });
     }
     
+    /** Validates an XML document et prepares it for further storage. Launches prepare and postValidate triggers.
+     * Since the process is dependant from the collection configuration, the collection acquires a write lock during the process.
+     * @param transaction
+     * @param broker
+     * @param docUri
+     * @param node
+     * @return An {@link IndexInfo} with a write lock on the document. 
+     * @throws EXistException
+     * @throws PermissionDeniedException
+     * @throws TriggerException
+     * @throws SAXException
+     * @throws LockException
+     */    
     public IndexInfo validateXMLResource(Txn transaction, final DBBroker broker, XmldbURI docUri, final Node node)
     throws EXistException, PermissionDeniedException, TriggerException,
             SAXException, LockException {
@@ -976,7 +1061,7 @@ public  class Collection extends Observable
         public void run(IndexInfo info) throws SAXException, EXistException;
     }
     
-    private void checkConfiguration(Txn transaction, DBBroker broker, XmldbURI docUri) throws EXistException, PermissionDeniedException {
+    private void checkConfigurationDocument(Txn transaction, DBBroker broker, XmldbURI docUri) throws EXistException, PermissionDeniedException {
 //    	Is it a collection configuration file ?
         if (!getURI().startsWith(CollectionConfigurationManager.CONFIG_COLLECTION_URI))
         	return;
@@ -999,23 +1084,32 @@ public  class Collection extends Observable
         	confMgr.invalidateAll(getURI());
     }
     
+    /** Validates an XML document et prepares it for further storage. Launches prepare and postValidate triggers.
+     * Since the process is dependant from the collection configuration, the collection acquires a write lock during the process.
+     * @param transaction
+     * @param broker
+     * @param docUri
+     * @param doValidate
+     * @return An {@link IndexInfo} with a write lock on the document. 
+     * @throws EXistException
+     * @throws PermissionDeniedException
+     * @throws TriggerException
+     * @throws SAXException
+     * @throws LockException
+     */
     private IndexInfo validateXMLResourceInternal(Txn transaction, DBBroker broker, XmldbURI docUri, ValidateBlock doValidate)
     throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
-        
-        checkConfiguration(transaction, broker, docUri);
+    	//Make the necessary operations if we process a collection configuration document
+        checkConfigurationDocument(transaction, broker, docUri);
 
-        if (broker.isReadOnly()) throw new PermissionDeniedException("Database is read-only");
-        DocumentImpl document = null;
+        if (broker.isReadOnly()) throw new PermissionDeniedException("Database is read-only");     
         DocumentImpl oldDoc = null;
         boolean oldDocLocked = false;
         try {
-            getLock().acquire(Lock.WRITE_LOCK);
-            // keep the lock for the transaction
-            if (transaction != null)
-                transaction.registerLock(getLock(), Lock.WRITE_LOCK);            
-            oldDoc = (DocumentImpl) documents.get(docUri.getRawCollectionPath());
-            document = new DocumentImpl(broker, this, docUri);
+            getLock().acquire(Lock.WRITE_LOCK);   
+            DocumentImpl document = new DocumentImpl(broker, this, docUri);
             
+            oldDoc = (DocumentImpl) documents.get(docUri.getRawCollectionPath());
             if (oldDoc == null) {
                 CollectionConfiguration config = getConfiguration(broker);
                 if (config != null) {
@@ -1038,7 +1132,7 @@ public  class Collection extends Observable
                     setupTriggers(broker, docUri, oldDoc != null),
                     oldDoc == null ? Trigger.STORE_DOCUMENT_EVENT : Trigger.UPDATE_DOCUMENT_EVENT);
             
-             info.prepareTrigger(broker, transaction, getURI().append(docUri), oldDoc);
+            info.prepareTrigger(broker, transaction, getURI().append(docUri), oldDoc);
             
             LOG.debug("Scanning document " + getURI().append(docUri));
             doValidate.run(info);
@@ -1049,19 +1143,24 @@ public  class Collection extends Observable
                 oldDoc.getUpdateLock().acquire(Lock.WRITE_LOCK);
                 oldDocLocked = true;
                 if (oldDoc.getResourceType() == DocumentImpl.BINARY_FILE) {
+                    //TODO : use a more elaborated method ? No triggers...
                     broker.removeBinaryResource(transaction, (BinaryDocument) oldDoc);
                     documents.remove(oldDoc.getFileURI().getRawCollectionPath());
-                    //TOUNDERSTAND : when is this lock released ?
+                    //This lock is released in storeXMLInternal()
+                	//TODO : check that we go until there to ensure the lock is released
                     document.getUpdateLock().acquire(Lock.WRITE_LOCK);
                     document.setDocId(broker.getNextResourceId(transaction, this));
                     addDocument(transaction, broker, document);
                 } else {
+                    //TODO : use a more elaborated method ? No triggers...
                     broker.removeXMLResource(transaction, oldDoc, false);
                     oldDoc.copyOf(document);
                     indexer.setDocumentObject(oldDoc);
-                    oldDocLocked = false;		// old has become new at this point
+                    //old has become new at this point
                     document = oldDoc;
+                    oldDocLocked = false;		
                 }
+                LOG.debug("removed old document " + oldDoc.getFileURI());
             } else {
             	//This lock is released in storeXMLInternal()
             	//TODO : check that we go until there to ensure the lock is released
@@ -1076,8 +1175,7 @@ public  class Collection extends Observable
         } finally {
             if (oldDocLocked) 
             	oldDoc.getUpdateLock().release(Lock.WRITE_LOCK);
-            if (transaction == null)
-            	getLock().release(Lock.WRITE_LOCK);
+            getLock().release(Lock.WRITE_LOCK);
         }
     }
     
@@ -1211,64 +1309,66 @@ public  class Collection extends Observable
     public BinaryDocument addBinaryResource(Txn transaction, DBBroker broker,
     		XmldbURI docUri, InputStream is, String mimeType, int size, Date created, Date modified)
             throws EXistException, PermissionDeniedException, LockException, TriggerException {
+    	
         if (broker.isReadOnly())
             throw new PermissionDeniedException("Database is read-only");
-        BinaryDocument blob = null;
+        
+        BinaryDocument blob = new BinaryDocument(broker, this, docUri);
+        
+        //TODO : move later, i.e. after the collection lock is acquired ?
         DocumentImpl oldDoc = getDocument(broker, docUri);
-
-        blob = new BinaryDocument(broker, this, docUri);
-
+        
         try {
-            getLock().acquire(Lock.WRITE_LOCK);
-            // keep the lock for the transaction
-            if (transaction != null)
-                transaction.registerLock(getLock(), Lock.WRITE_LOCK);              
-            checkPermissions(transaction, broker, oldDoc);
-            DocumentTrigger trigger = null;
-            int event = 0;
-            if (triggersEnabled) {
-                CollectionConfiguration config = getConfiguration(broker);
-                if (config != null) {
-                    event = oldDoc != null ? Trigger.UPDATE_DOCUMENT_EVENT : Trigger.STORE_DOCUMENT_EVENT;
-                    trigger = (DocumentTrigger) config.getTrigger(event);
-                    if (trigger != null) {
-                        trigger.prepare(event, broker, transaction, blob.getURI(), blob);
-                    }
-                }
-            }
-            
-            manageDocumentInformation(broker, oldDoc, blob );
-            DocumentMetadata metadata = blob.getMetadata();
-            metadata.setMimeType(mimeType == null ? MimeType.BINARY_TYPE.getName() : mimeType);
-            
-            if (oldDoc != null) {
-                LOG.debug("removing old document " + oldDoc.getFileURI());
-                if (oldDoc instanceof BinaryDocument)
-                    broker.removeBinaryResource(transaction, (BinaryDocument) oldDoc);
-                else
-                    broker.removeXMLResource(transaction, oldDoc);
-            }
-            
-            if(created != null)
-                metadata.setCreated(created.getTime());
-            
-            if(modified != null)
-            	metadata.setLastModified(modified.getTime());
-            blob.setContentLength(size);
-            broker.storeBinaryResource(transaction, blob, is);
-            addDocument(transaction, broker, blob);
-            
-            broker.storeXMLResource(transaction, blob);
-            
-            broker.closeDocument();
-            
-            if (trigger != null) {
-                trigger.finish(event, broker, transaction, blob);
-            }
-            return blob;
+
+        	getLock().acquire(Lock.WRITE_LOCK);
+	        
+	        checkPermissions(transaction, broker, oldDoc);
+	        DocumentTrigger trigger = null;
+	        int event = 0;
+	        if (triggersEnabled) {
+	            CollectionConfiguration config = getConfiguration(broker);
+	            if (config != null) {
+	                event = oldDoc != null ? Trigger.UPDATE_DOCUMENT_EVENT : Trigger.STORE_DOCUMENT_EVENT;
+	                trigger = (DocumentTrigger) config.getTrigger(event);
+	                if (trigger != null) {
+	                    trigger.prepare(event, broker, transaction, blob.getURI(), blob);
+	                }
+	            }
+	        }
+	        
+	        manageDocumentInformation(broker, oldDoc, blob );
+	        DocumentMetadata metadata = blob.getMetadata();
+	        metadata.setMimeType(mimeType == null ? MimeType.BINARY_TYPE.getName() : mimeType);
+	        
+	        if (oldDoc != null) {
+	            LOG.debug("removing old document " + oldDoc.getFileURI());
+	            if (oldDoc instanceof BinaryDocument)
+	                broker.removeBinaryResource(transaction, (BinaryDocument) oldDoc);
+	            else
+	                broker.removeXMLResource(transaction, oldDoc);
+	        }
+	        
+	        if(created != null)
+	            metadata.setCreated(created.getTime());
+	        
+	        if(modified != null)
+	        	metadata.setLastModified(modified.getTime());
+	        
+	        blob.setContentLength(size);
+	        broker.storeBinaryResource(transaction, blob, is);
+	        addDocument(transaction, broker, blob);
+	        
+	        broker.storeXMLResource(transaction, blob);
+	        
+	        broker.closeDocument();
+	        
+	        if (trigger != null) {
+	            trigger.finish(event, broker, transaction, blob);
+	        }
+	        return blob;
+	        
         } finally {
-        	if (transaction == null)
-        		getLock().release(Lock.WRITE_LOCK);
+        	getLock().release(Lock.WRITE_LOCK);  	
         }
     }
     

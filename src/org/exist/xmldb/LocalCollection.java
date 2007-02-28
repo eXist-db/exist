@@ -564,12 +564,14 @@ public class LocalCollection extends Observable implements CollectionImpl {
     public void removeResource(Resource res) throws XMLDBException {
         if (res == null)
             return;
+        
         XmldbURI resURI;
         try {
             resURI = XmldbURI.xmldbUriFor(res.getId());
         } catch(URISyntaxException e) {
             throw new XMLDBException(ErrorCodes.INVALID_URI,e);
         }
+        
         Collection collection = null;
         DBBroker broker = null;
         TransactionManager transact = brokerPool.getTransactionManager();
@@ -583,14 +585,14 @@ public class LocalCollection extends Observable implements CollectionImpl {
                 transact.abort(transaction);
                 throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
             }
-            // keep the lock for the transaction
-            //if (transaction != null)
-            //    transaction.registerLock(collection.getLock(), Lock.WRITE_LOCK);              
+           
+            //Check that the document exists
             DocumentImpl doc = collection.getDocument(broker, resURI);
             if (doc == null) {
                 transact.abort(transaction);
                 throw new XMLDBException(ErrorCodes.INVALID_RESOURCE, "resource " + resURI + " not found");
             }
+            
             if (res.getResourceType().equals("XMLResource"))
                 collection.removeXMLResource(transaction, broker, resURI);
             else
@@ -609,7 +611,7 @@ public class LocalCollection extends Observable implements CollectionImpl {
             transact.abort(transaction);
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage(), e);
         } finally {
-            if (transaction != null && collection != null)
+            if (collection != null)
                 collection.getLock().release(Lock.WRITE_LOCK);
             brokerPool.release(broker);
         }
