@@ -10,7 +10,6 @@ import java.io.StringReader;
 import junit.framework.TestCase;
 
 import org.exist.EXistException;
-import org.exist.test.TestConstants;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.security.User;
@@ -19,6 +18,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.parser.XQueryLexer;

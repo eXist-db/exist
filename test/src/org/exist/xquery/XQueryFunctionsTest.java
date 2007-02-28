@@ -12,7 +12,7 @@ import junit.framework.TestCase;
 import junit.textui.TestRunner;
 
 import org.exist.storage.DBBroker;
-import org.exist.util.Configuration;
+import org.exist.util.ConfigurationHelper;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -780,7 +780,8 @@ public class XQueryFunctionsTest extends TestCase {
 	    	CollectionManagementService colService = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
 			Collection testCollection = colService.createCollection(TEST_BINARY_COLLECTION);
 			assertNotNull(testCollection);
-			File home = Configuration.getExistHome();
+	        // TODO: *CONFIG_REFACORTING* This should read the ecist home from the database configuration stored in the active instances Configuration object.
+			File home = ConfigurationHelper.getExistHome();
             File fLogo;
             if (home != null)
                 fLogo = new File(home, "webapp/" + BINARY_RESOURCE_FILENAME);

@@ -91,7 +91,8 @@ public class DOMTestJUnit extends TestCase {
 					}
 				}				
 			}
-		} catch(Exception e) {			
+		} catch(Exception e) {	
+			e.printStackTrace();
 			fail(e.getMessage());
 		}			
 	}	

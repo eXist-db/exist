@@ -33,9 +33,9 @@ import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.indexing.IndexManager;
 import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfigurationManager;
+import org.exist.indexing.IndexManager;
 import org.exist.numbering.DLNFactory;
 import org.exist.numbering.NodeIdFactory;
 import org.exist.scheduler.Scheduler;
@@ -43,6 +43,7 @@ import org.exist.scheduler.SystemTaskJob;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
+import org.exist.storage.btree.DBException;
 import org.exist.storage.lock.FileLock;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.ReentrantReadWriteLock;
@@ -50,8 +51,12 @@ import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.storage.btree.DBException;
-import org.exist.util.*;
+import org.exist.util.Configuration;
+import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.ReadOnlyException;
+import org.exist.util.SingleInstanceConfiguration;
+import org.exist.util.XMLReaderObjectFactory;
+import org.exist.util.XMLReaderPool;
 import org.exist.xmldb.ShutdownListener;
 import org.exist.xmldb.XmldbURI;
 /**
@@ -749,7 +754,7 @@ public class BrokerPool {
 		//Schedule the system tasks	            
 	    for (int i = 0; i < systemTasks.size(); i++) {
 	    	//TODO : remove first argument when SystemTask has a getPeriodicity() method
-	        initSystemTask((Configuration.SystemTaskConfig) systemTasksPeriods.get(i), (SystemTask)systemTasks.get(i));
+	        initSystemTask((SingleInstanceConfiguration.SystemTaskConfig) systemTasksPeriods.get(i), (SystemTask)systemTasks.get(i));
 	    }		
 		systemTasksPeriods = null;
         
@@ -759,7 +764,7 @@ public class BrokerPool {
 	    
 	//TODO : remove the period argument when SystemTask has a getPeriodicity() method
 	//TODO : make it protected ?
-    private void initSystemTask(Configuration.SystemTaskConfig config, SystemTask task) throws EXistException {
+    private void initSystemTask(SingleInstanceConfiguration.SystemTaskConfig config, SystemTask task) throws EXistException {
         try {
             if (config.getCronExpr() == null) {
                 LOG.debug("Scheduling system maintenance task " + task.getClass().getName() + " every " +

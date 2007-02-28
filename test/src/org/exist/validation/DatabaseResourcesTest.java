@@ -32,6 +32,7 @@ import junit.framework.TestSuite;
 
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
+import org.exist.util.ConfigurationHelper;
 import org.exist.validation.internal.DatabaseResources;
 import org.exist.xmldb.XmldbURI;
 
@@ -85,7 +86,7 @@ public class DatabaseResourcesTest extends TestCase {
     public void testStart() {
         System.out.println(">>> testStart");
         
-        eXistHome = Configuration.getExistHome().getAbsolutePath();
+        eXistHome = ConfigurationHelper.getExistHome().getAbsolutePath();
         pool = startDB();
         validator = new Validator(pool);
         dbResources = validator.getDatabaseResources();

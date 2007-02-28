@@ -1,15 +1,22 @@
 package org.exist.xmlrpc;
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
-import javax.servlet.*;
-import javax.servlet.http.*;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
-import org.apache.xmlrpc.*;
+import org.apache.xmlrpc.Base64;
+import org.apache.xmlrpc.XmlRpc;
+import org.apache.xmlrpc.XmlRpcException;
+import org.apache.xmlrpc.XmlRpcServer;
 import org.exist.EXistException;
 import org.exist.http.Descriptor;
 import org.exist.http.servlets.HttpServletRequestWrapper;
 import org.exist.storage.BrokerPool;
-
 import org.exist.util.Configuration;
 
 public class RpcServlet extends HttpServlet {
@@ -108,4 +115,5 @@ public class RpcServlet extends HttpServlet {
         }
     }
 }
+
 

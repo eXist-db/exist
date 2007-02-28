@@ -23,18 +23,20 @@
 
 package org.exist.storage;
 
-import org.apache.log4j.Logger;
-import org.exist.EXistException;
-import org.exist.storage.btree.Paged;
-import org.exist.util.Configuration;
-
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import java.util.zip.ZipEntry; 
-import java.io.*;
+
+import org.apache.log4j.Logger;
+import org.exist.EXistException;
+import org.exist.storage.btree.Paged;
+import org.exist.util.Configuration;
 
 public class DataBackup implements SystemTask {
 
@@ -113,4 +115,5 @@ public class DataBackup implements SystemTask {
 		}
 	}
 }
+
 

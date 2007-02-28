@@ -21,15 +21,16 @@
  */
 package org.exist.indexing;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 import org.apache.log4j.Logger;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.btree.DBException;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Iterator;
+import org.exist.util.SingleInstanceConfiguration;
 
 /**
  * Manages all custom indexes registered with the database instance.

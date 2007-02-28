@@ -4,6 +4,8 @@ $Id$
  */
 package org.exist.storage.report;
 
+import java.util.Map;
+
 import org.exist.storage.IndexStats;
 import org.exist.storage.NativeElementIndex;
 import org.exist.storage.NativeTextEngine;
@@ -12,8 +14,6 @@ import org.exist.storage.dom.DOMFile;
 import org.exist.storage.index.BFile;
 import org.exist.storage.index.CollectionStore;
 import org.exist.util.Configuration;
-
-import java.util.Map;
 
 /**
  * @author jmv

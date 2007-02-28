@@ -237,7 +237,7 @@ public class AtomServlet extends HttpServlet {
       modules = new HashMap();
       noAuth = new HashMap();
       
-      File dbHome = Configuration.getExistHome();
+      File dbHome = pool.getConfiguration().getExistHome();
       File atomConf = new File(dbHome,"atom-services.xml");
       config.getServletContext().log("Checking for atom configuration in "+atomConf.getAbsolutePath());
       if (atomConf.exists()) {

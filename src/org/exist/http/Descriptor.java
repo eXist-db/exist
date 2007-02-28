@@ -37,7 +37,8 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Logger;
 import org.exist.memtree.SAXAdapter;
-import org.exist.util.Configuration;
+import org.exist.util.ConfigurationHelper;
+import org.exist.util.SingleInstanceConfiguration;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -89,7 +90,7 @@ public class Descriptor implements ErrorHandler
 
         	// First, try to read Descriptor from file. Guess the location if necessary
         	// from the home folder.
-        	File f = Configuration.lookup(file);
+        	File f = ConfigurationHelper.lookup(file);
             if(! f.canRead())
             {
                 LOG.warn("Giving up unable to read descriptor file from " + f);
@@ -212,7 +213,7 @@ public class Descriptor implements ErrorHandler
             	return;
             }
             path=path.replaceAll("\\$\\{WEBAPP_HOME\\}", 
-                    Configuration.getWebappHome().getAbsolutePath().replace('\\','/') );
+                    SingleInstanceConfiguration.getWebappHome().getAbsolutePath().replace('\\','/') );
 
             //store the path
             allowSourceXQueryList[i] = path;
@@ -251,7 +252,7 @@ public class Descriptor implements ErrorHandler
             	return;
             }           
             path=path.replaceAll("\\$\\{WEBAPP_HOME\\}", 
-                    Configuration.getWebappHome().getAbsolutePath().replace('\\','/') );
+                    SingleInstanceConfiguration.getWebappHome().getAbsolutePath().replace('\\','/') );
             
             //must be a view to map to
             if(view == null)
@@ -260,7 +261,7 @@ public class Descriptor implements ErrorHandler
             	return;
             }
             view=view.replaceAll("\\$\\{WEBAPP_HOME\\}", 
-                    Configuration.getWebappHome().getAbsolutePath().replace('\\','/') );
+                    SingleInstanceConfiguration.getWebappHome().getAbsolutePath().replace('\\','/') );
             
             //store what to map from
            /* if(path != null)

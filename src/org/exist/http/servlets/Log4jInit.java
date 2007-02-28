@@ -39,6 +39,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.xml.DOMConfigurator;
 import org.exist.util.Configuration;
+import org.exist.util.ConfigurationHelper;
 import org.exist.util.DatabaseConfigurationException;
 
 
@@ -158,7 +159,7 @@ public class Log4jInit extends HttpServlet {
      */
     public boolean isInWarFile(){
         boolean retVal =true;
-        if (new File(Configuration.getExistHome(), "lib/core").isDirectory()) {
+        if (new File(ConfigurationHelper.getExistHome(), "lib/core").isDirectory()) {
             retVal=false;
         }
         return retVal;

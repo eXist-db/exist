@@ -22,19 +22,19 @@
  */
 package org.exist.storage;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
 
+import javax.xml.stream.XMLStreamException;
+
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.indexing.IndexController;
-import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.collections.Collection;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
@@ -42,18 +42,19 @@ import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.StoredNode;
 import org.exist.dom.SymbolTable;
+import org.exist.indexing.IndexController;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
+import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.LockException;
+import org.exist.util.SingleInstanceConfiguration;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XQuery;
 import org.w3c.dom.Document;
-
-import javax.xml.stream.XMLStreamException;
 
 /**
  * This is the base class for all database backends. All the basic database

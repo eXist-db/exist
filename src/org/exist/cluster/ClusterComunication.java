@@ -1,19 +1,24 @@
 //$Id$
 package org.exist.cluster;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Vector;
+
 import org.apache.log4j.Logger;
+import org.exist.cluster.cocoon.ConsoleInfo;
 import org.exist.cluster.journal.JournalIdGenerator;
 import org.exist.cluster.journal.JournalManager;
-import org.exist.cluster.cocoon.ConsoleInfo;
 import org.exist.util.Configuration;
-import org.jgroups.*;
-import org.jgroups.util.RspList;
+import org.exist.util.SingleInstanceConfiguration;
+import org.jgroups.Address;
+import org.jgroups.JChannel;
+import org.jgroups.MembershipListener;
+import org.jgroups.SuspectedException;
+import org.jgroups.View;
 import org.jgroups.blocks.GroupRequest;
 import org.jgroups.blocks.RpcDispatcher;
-
-import java.util.ArrayList;
-import java.util.Vector;
-import java.util.HashMap;
+import org.jgroups.util.RspList;
 
 /**
  * Manage the Cluster communication via RPC JGroups

@@ -1,12 +1,12 @@
 package org.exist.xmldb;
 
+import java.util.Map;
+import java.util.TreeMap;
+
 import org.exist.storage.BrokerPool;
 import org.exist.storage.IndexStats;
 import org.exist.storage.report.Statistics;
 import org.exist.util.Configuration;
-
-import java.util.Map;
-import java.util.TreeMap;
 
 public class DatabaseStatus {
 

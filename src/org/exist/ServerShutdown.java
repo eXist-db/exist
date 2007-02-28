@@ -18,7 +18,7 @@ import org.apache.avalon.excalibur.cli.CLOption;
 import org.apache.avalon.excalibur.cli.CLOptionDescriptor;
 import org.apache.avalon.excalibur.cli.CLUtil;
 import org.exist.storage.DBBroker;
-import org.exist.util.Configuration;
+import org.exist.util.ConfigurationHelper;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -112,7 +112,7 @@ public class ServerShutdown {
     private static Properties loadProperties() {
 
         Properties clientProps = new Properties();
-        File propFile = Configuration.lookup("client.properties");
+        File propFile = ConfigurationHelper.lookup("client.properties");
         InputStream pin = null;
 
         // Try to load from file
