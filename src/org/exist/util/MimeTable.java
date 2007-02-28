@@ -133,7 +133,7 @@ public class MimeTable {
     
     private void load() {
         boolean loaded = false;
-        File f = Configuration.lookup(MIME_TYPES_XML);
+        File f = ConfigurationHelper.lookup(MIME_TYPES_XML);
         if (f.canRead()) {
             try {
                 System.out.println("Loading mime table from file " + f.getAbsolutePath());

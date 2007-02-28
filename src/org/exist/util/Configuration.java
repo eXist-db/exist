@@ -26,7 +26,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Properties;
@@ -53,11 +52,9 @@ import org.exist.storage.TextSearchEngine;
 import org.exist.storage.XQueryPool;
 import org.exist.validation.resolver.eXistCatalogResolver;
 import org.exist.xquery.XQueryWatchDog;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -65,29 +62,18 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 
 public class Configuration implements ErrorHandler {
-    
-        /* FIXME:  It's not clear whether this class is meant to be a singleton (due to the static
-         * file and existHome fields and static methods), or if we should allow many instances to
-         * run around in the system.  Right now, any attempts to create multiple instances will
-         * likely get the system confused.  Let's decide which one it should be and fix it properly.
-         *
-         * This class cannot be a singleton as it is possible to run multiple instances of the database
-         * on the same system.
-         */
-    
     private final static Logger LOG = Logger.getLogger(Configuration.class); //Logger
-    protected static String file = null; //config file (conf.xml by default)
-    protected static File existHome = null;
-    
+    protected String configFilePath = null;
+    protected File existHome = null;
+
     protected DocumentBuilder builder = null;
     protected HashMap config = new HashMap(); //Configuration
     
     public static final class SystemTaskConfig {
-        
-        private String className;
-        private long period = -1;
-        private String cronExpr = null;
-        private Properties params = new Properties();
+    	protected String className;
+    	protected long period = -1;
+    	protected String cronExpr = null;
+    	protected Properties params = new Properties();
         
         public SystemTaskConfig(String className) {
             this.className = className;
@@ -119,10 +105,9 @@ public class Configuration implements ErrorHandler {
     }
 
     public static final class IndexModuleConfig {
-
-        private String id;
-        private String className;
-        private Element config;
+    	protected String id;
+    	protected String className;
+    	protected Element config;
 
         public IndexModuleConfig(String id, String className, Element config) {
             this.id = id;
@@ -174,19 +159,19 @@ public class Configuration implements ErrorHandler {
             // otherwise, secondly try to read configuration from file. Guess the
             // location if necessary
             if (is == null) {
-                Configuration.existHome = (existHomeDirname != null) ? new File(existHomeDirname) : getExistHome(existHomeDirname);
-                if (Configuration.existHome == null) {
+            	existHome = (existHomeDirname != null) ? new File(existHomeDirname) : ConfigurationHelper.getExistHome();
+                if (existHome == null) {
                     // EB: try to create existHome based on location of config file
                     // when config file points to absolute file location
                     File absoluteConfigFile = new File(configFilename);
                     if (absoluteConfigFile.isAbsolute() &&
                             absoluteConfigFile.exists() && absoluteConfigFile.canRead())
-                        Configuration.existHome = absoluteConfigFile.getParentFile();
+                        existHome = absoluteConfigFile.getParentFile();
                 }
-                File configFile = lookup(configFilename);
+                File configFile = ConfigurationHelper.lookup(configFilename);
                 if (!configFile.exists() || !configFile.canRead())
                     throw new DatabaseConfigurationException("Unable to read configuration file at " + config);
-                Configuration.file = configFile.getAbsolutePath();
+                configFilePath = configFile.getAbsolutePath();
                 is = new FileInputStream(configFile);
                 // set dbHome to parent of the conf file found, to resolve relative
                 // path from conf file
@@ -369,18 +354,6 @@ public class Configuration implements ErrorHandler {
         }
     }
     
-    public Object getProperty(String name) {
-        return config.get(name);
-    }
-    
-    public boolean hasProperty(String name) {
-        return config.containsKey(name);
-    }
-    
-    public void setProperty(String name, Object obj) {
-        config.put(name, obj);
-    }
-    
     private void configureXACML(Element xacml) {
         String enable = xacml.getAttribute(XACMLConstants.ENABLE_XACML_ATTRIBUTE);
         config.put(XACMLConstants.ENABLE_XACML_PROPERTY, parseBoolean(enable, false));
@@ -389,24 +362,6 @@ public class Configuration implements ErrorHandler {
         String loadDefaults = xacml.getAttribute(XACMLConstants.LOAD_DEFAULT_POLICIES_ATTRIBUTE);
         config.put(XACMLConstants.LOAD_DEFAULT_POLICIES_PROPERTY, parseBoolean(loadDefaults, true));
         LOG.debug(XACMLConstants.LOAD_DEFAULT_POLICIES_PROPERTY + ": " + config.get(XACMLConstants.LOAD_DEFAULT_POLICIES_PROPERTY));
-    }
-    
-    /**
-     * Takes the passed string and converts it to a non-null
-     * <code>Boolean</code> object.  If value is null, the specified
-     * default value is used.  Otherwise, Boolean.TRUE is returned if
-     * and only if the passed string equals &quot;yes&quot; or
-     * &quot;true&quot;, ignoring case.
-     *
-     * @param value The string to parse
-     * @param defaultValue The default if the string is null
-     * @return The parsed <code>Boolean</code>
-     */
-    private Boolean parseBoolean(String value, boolean defaultValue) {
-        if(value == null)
-            return Boolean.valueOf(defaultValue);
-        value = value.toLowerCase();
-        return Boolean.valueOf(value.equals("yes") || value.equals("true"));
     }
     
     /**
@@ -548,7 +503,7 @@ public class Configuration implements ErrorHandler {
         // directory for database files
         String dataFiles = con.getAttribute("files");
         if (dataFiles != null) {
-            File df = lookup(dataFiles, dbHome);
+            File df = ConfigurationHelper.lookup(dataFiles, dbHome);
             if (!df.canRead())
                 throw new DatabaseConfigurationException(
                         "cannot read data directory: "
@@ -1036,7 +991,7 @@ public class Configuration implements ErrorHandler {
         NodeList stopwords = p.getElementsByTagName("stopwords");
         if (stopwords.getLength() > 0) {
             String stopwordFile = ((Element) stopwords.item(0)).getAttribute("file");
-            File sf = lookup(stopwordFile, dbHome);
+            File sf = ConfigurationHelper.lookup(stopwordFile, dbHome);
             if (sf.canRead()) {
                 config.put("stopwords", stopwordFile);
                 LOG.debug("stopwords: " + config.get("stopwords"));
@@ -1076,7 +1031,7 @@ public class Configuration implements ErrorHandler {
             for (int i = 0; i < catalogs.getLength(); i++) {
                 String catalog = ((Element) catalogs.item(i)).getAttribute("file");
                 
-                File catalogFile = lookup(catalog, dbHome);
+                File catalogFile = ConfigurationHelper.lookup(catalog, dbHome);
                 if (catalogFile!=null && catalogFile.exists()) {
                     LOG.info("Loading catalog '"+catalogFile.getAbsolutePath()+"'.");
                     // TODO dizzzz remove debug
@@ -1103,6 +1058,44 @@ public class Configuration implements ErrorHandler {
         }
     }
     
+    public String getConfigFilePath() {
+    	return configFilePath;
+    }
+    
+    public File getExistHome() {
+    	return existHome;
+    }
+    
+    public Object getProperty(String name) {
+        return config.get(name);
+    }
+    
+    public boolean hasProperty(String name) {
+        return config.containsKey(name);
+    }
+    
+    public void setProperty(String name, Object obj) {
+        config.put(name, obj);
+    }
+    
+    /**
+     * Takes the passed string and converts it to a non-null
+     * <code>Boolean</code> object.  If value is null, the specified
+     * default value is used.  Otherwise, Boolean.TRUE is returned if
+     * and only if the passed string equals &quot;yes&quot; or
+     * &quot;true&quot;, ignoring case.
+     *
+     * @param value The string to parse
+     * @param defaultValue The default if the string is null
+     * @return The parsed <code>Boolean</code>
+     */
+    private Boolean parseBoolean(String value, boolean defaultValue) {
+        if(value == null)
+            return Boolean.valueOf(defaultValue);
+        value = value.toLowerCase();
+        return Boolean.valueOf(value.equals("yes") || value.equals("true"));
+    }
+    
     public int getInteger(String name) {
         Object obj = getProperty(name);
         
@@ -1111,216 +1104,7 @@ public class Configuration implements ErrorHandler {
         
         return ((Integer) obj).intValue();
     }
-    
-    /**
-     * Returns the absolute path to the configuration file.
-     *
-     * @return the path to the configuration file
-     */
-    public static String getPath() {
-        if (file == null) {
-            File f = lookup("conf.xml");
-            return f.getAbsolutePath();
-        }
-        return file;
-    }
-    
-    /**
-     * Returns a file handle for the given path, while <code>path</code> specifies
-     * the path to an eXist configuration file or directory.
-     * <br>
-     * Note that relative paths are being interpreted relative to <code>exist.home</code>
-     * or the current working directory, in case <code>exist.home</code> was not set.
-     *
-     * @param path the file path
-     * @return the file handle
-     */
-    public static File lookup(String path) {
-        return lookup(path, null);
-    }
-    
-    /**
-     * Returns a file handle for the given path, while <code>path</code> specifies
-     * the path to an eXist configuration file or directory.
-     * <br>
-     * If <code>parent</code> is null, then relative paths are being interpreted
-     * relative to <code>exist.home</code> or the current working directory, in
-     * case <code>exist.home</code> was not set.
-     *
-     * @param path path to the file or directory
-     * @param parent parent directory used to lookup <code>path</code>
-     * @return the file handle
-     */
-    public static File lookup(String path, String parent) {
-        // resolvePath is used for things like ~user/folder
-        File f = new File(resolvePath(path));
-        if (f.isAbsolute()) return f;
-        if (parent == null) {
-            File home = getExistHome();
-            if (home == null)
-                home = new File(System.getProperty("user.dir"));
-            parent = home.getPath();
-        }
-        return new File(parent, path);
-    }
-    
-    /**
-     * Returns a file handle for eXist's home directory.
-     * <p>
-     * If either none of the directories identified by the system properties
-     * <code>exist.home</code> and <code>user.home</code> exist or none of
-     * them contain a configuration file, this method returns <code>null</code>.
-     *
-     * @return the file handle or <code>null</code>
-     */
-    public static File getExistHome() {
-        return getExistHome(null);
-    }
-    
-    /**
-     * Returns a file handle for eXist's home directory.
-     * Order of tests is designed with the idea, the more precise it is,
-     * the more the developper know what he is doing
-     * <ol>
-     *   <li>proposed path   : if exists
-     *   <li>exist.home      : if exists
-     *   <li>user.home       : if exists, with a conf.xml file
-     *   <li>user.dir        : if exists, with a conf.xml file
-     *   <li>classpath entry : if exists, with a conf.xml file
-     * </ol>
-     *
-     * @param path path to eXist home directory
-     * @return the file handle or <code>null</code>
-     */
-    public static File getExistHome(String path) {
-        if (existHome != null) return existHome;
-        
-        String config = "conf.xml";
-        
-        // try path argument
-        if (path != null) {
-            existHome = new File(path);
-            if (existHome.isDirectory()) {
-                LOG.debug("Got eXist home from provided argument:" + existHome);
-                return existHome;
-            }
-        }
-        // try exist.home
-        if (System.getProperty("exist.home") != null) {
-            existHome = new File(resolvePath(System.getProperty("exist.home")));
-            if (existHome.isDirectory()) {
-                LOG.debug("Got eXist home from system property 'exist.home': " + existHome);
-                return existHome;
-            }
-        }
-        
-        // try user.home
-        existHome = new File(System.getProperty("user.home"));
-        if (existHome.isDirectory() && new File(existHome, config).isFile()) {
-            LOG.debug("Got eXist home from system property 'user.home': " + existHome);
-            return existHome;
-        }
-        
-        
-        // try user.dir
-        existHome = new File(System.getProperty("user.dir"));
-        if (existHome.isDirectory() && new File(existHome, config).isFile()) {
-            LOG.debug("Got eXist home from system property 'user.dir': " + existHome);
-            return existHome;
-        }
-        
-        // try classpath
-        URL configUrl = Configuration.class.getClassLoader().getResource(config);
-        if (configUrl != null) {
-            existHome = new File(configUrl.getPath()).getParentFile();
-            LOG.debug("Got eXist home from classpath: " + existHome);
-            return existHome;
-        }
-        
-        existHome = null;
-        return existHome;
-    }
-    
-    /**
-     *  Check wether exist runs in Servlet container (as war file).
-     * @return TRUE if exist runs in servlet container.
-     */
-    public static boolean isInWarFile(){
-        
-        boolean retVal =true;
-        
-        // if existHome is not set,try to do so.
-        if (existHome == null){
-            getExistHome();
-        }
-        
-        if( new File(existHome, "lib/core").isDirectory() ) {
-            retVal=false;
-        }
-        return retVal;
-    }
-    
-    /**
-     *  Get folder in which the exist webapplications are found.
-     * For default install ("jar install") and in webcontainer ("war install")
-     * the location is different. (EXIST_HOME/webapps vs. TOMCAT/webapps/exist)
-     *
-     * @return folder.
-     */
-    public static File getWebappHome(){
-        
-        File webappFolder =null;
-        
-        // if existHome is not set,try to do so.
-        if (existHome == null){
-            getExistHome();
-        }
-        
-        if(isInWarFile()){
-            webappFolder= new File(existHome, "..");
-        } else {
-            webappFolder= new File(existHome, "webapp");
-        }
-        
-        // convert to real path
-        try {
-            File tmpFolder = webappFolder.getCanonicalFile();
-            webappFolder=tmpFolder;
-        } catch (IOException ex) {
-            // oops ; use previous path
-        }
-        
-        return webappFolder;
-    }
-    
-    /**
-     * Returns <code>true</code> if the directory <code>dir</code> contains a file
-     * named <tt>conf.xml</tt>.
-     *
-     * @param dir the directory
-     * @return <code>true</code> if the directory contains a configuration file
-     */
-    private static boolean containsConfig(File dir, String config) {
-        if (dir != null && dir.exists() && dir.isDirectory() && dir.canRead()) {
-            File c = new File(dir, config);
-            return c.exists() && c.isFile() && c.canRead();
-        }
-        return false;
-    }
-    
-    /**
-     * Resolves the given path by means of eventually replacing <tt>~</tt> with the users
-     * home directory, taken from the system property <code>user.home</code>.
-     *
-     * @param path the path to resolve
-     * @return the resolved path
-     */
-    private static String resolvePath(String path) {
-        if (path != null && path.startsWith("~") && path.length() > 1) {
-            path = System.getProperty("user.home") + path.substring(1);
-        }
-        return path;
-    }
+
     
     /*
      * (non-Javadoc)

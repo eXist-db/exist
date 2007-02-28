@@ -24,16 +24,16 @@ package org.exist.xquery.functions.system;
 
 
 import org.exist.dom.QName;
-import org.exist.util.Configuration;
-import org.exist.xquery.Cardinality;
+import org.exist.util.ConfigurationHelper;
 import org.exist.xquery.BasicFunction;
+import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
 import org.exist.xquery.value.StringValue;
+import org.exist.xquery.value.Type;
 
 /**
  * Return the eXist home.
@@ -57,6 +57,7 @@ public class GetExistHome extends BasicFunction {
          * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
          */
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        return new StringValue( Configuration.getExistHome().getAbsolutePath() );
+        // TODO: *CONFIG_REFACORTING* This should read the ecist home from the database configuration stored in the active instances Configuration object.
+    	return new StringValue( ConfigurationHelper.getExistHome().getAbsolutePath() );
     }
 }

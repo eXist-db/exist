@@ -51,7 +51,7 @@ public class XMLStatistics {
 			this.contentHandler.startElement(NAMESPACE, "database-instance", 
 				PREFIX + ":database-instance", atts);
 			atts.clear();
-			addValue("configuration", instance.getConfiguration().getPath());
+			addValue("configuration", instance.getConfiguration().getConfigFilePath());
 			addValue("data-directory", (String)instance.getConfiguration().getProperty("db-connection.data-dir"));
 
             // values added for cache used % calc - Gary Larsen

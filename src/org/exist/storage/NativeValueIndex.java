@@ -40,9 +40,9 @@ import org.exist.dom.ElementImpl;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
-import org.exist.dom.TextImpl;
 import org.exist.dom.QName;
 import org.exist.dom.SymbolTable;
+import org.exist.dom.TextImpl;
 import org.exist.numbering.NodeId;
 import org.exist.storage.btree.BTreeCallback;
 import org.exist.storage.btree.BTreeException;
@@ -66,7 +66,6 @@ import org.exist.xquery.Constants;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
-import org.exist.xquery.value.Item;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 

@@ -21,18 +21,52 @@
  */
 package org.exist.storage;
 
+import org.exist.storage.DBBroker;
+
+import java.io.EOFException;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.text.NumberFormat;
+import java.util.Iterator;
+import java.util.Observer;
+import java.util.Stack;
+
+import javax.xml.stream.XMLStreamException;
+
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.*;
+import org.exist.dom.AttrImpl;
+import org.exist.dom.BinaryDocument;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentMetadata;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.ElementImpl;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.QName;
+import org.exist.dom.StoredNode;
+import org.exist.dom.SymbolTable;
+import org.exist.dom.TextImpl;
 import org.exist.memtree.DOMIndexer;
 import org.exist.numbering.NodeId;
-import org.exist.security.*;
+import org.exist.security.MD5;
+import org.exist.security.Permission;
+import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
+import org.exist.security.User;
 import org.exist.stax.EmbeddedXMLStreamReader;
-import org.exist.storage.btree.*;
+import org.exist.storage.btree.BTree;
+import org.exist.storage.btree.BTreeCallback;
+import org.exist.storage.btree.BTreeException;
+import org.exist.storage.btree.DBException;
+import org.exist.storage.btree.IndexQuery;
+import org.exist.storage.btree.Paged;
+import org.exist.storage.btree.Value;
 import org.exist.storage.btree.Paged.Page;
 import org.exist.storage.dom.DOMFile;
 import org.exist.storage.dom.DOMTransaction;
@@ -49,20 +83,17 @@ import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.*;
+import org.exist.util.ByteArrayPool;
+import org.exist.util.ByteConversion;
+import org.exist.util.Configuration;
+import org.exist.util.LockException;
+import org.exist.util.ReadOnlyException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.TerminatedException;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import javax.xml.stream.XMLStreamException;
-import java.io.*;
-import java.text.NumberFormat;
-import java.util.Iterator;
-import java.util.Observer;
-import java.util.Stack;
 
 /**
  *  Main class for the native XML storage backend.

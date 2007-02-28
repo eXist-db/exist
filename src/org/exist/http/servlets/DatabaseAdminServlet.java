@@ -74,7 +74,7 @@ public class DatabaseAdminServlet extends HttpServlet {
                     "<th colspan=\"2\" align=\"left\" bgcolor=\"#0086b2\"><b>Status</b></th></tr>" );
                 output.println( "<tr><td>Address:</td><td>" + request.getRequestURI() +
                     "</td></tr>" );
-                output.println( "<tr><td>Configuration:</td><td>" + conf.getPath() + "</td></tr>" );
+                output.println( "<tr><td>Configuration:</td><td>" + conf.getConfigFilePath() + "</td></tr>" );
                 output.println( "<tr><td>Data directory:</td><td>" +
                     (String) conf.getProperty( "db-connection.data-dir" ) +
                     "</td></tr>" );
@@ -182,4 +182,5 @@ public class DatabaseAdminServlet extends HttpServlet {
 		}
     }
 }
+
 

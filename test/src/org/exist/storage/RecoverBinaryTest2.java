@@ -42,6 +42,7 @@ import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
+import org.exist.util.ConfigurationHelper;
 import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
@@ -165,7 +166,7 @@ public class RecoverBinaryTest2 extends TestCase {
     private void storeFiles(DBBroker broker, Txn transaction, Collection test2) throws FileNotFoundException, EXistException, PermissionDeniedException, LockException, TriggerException {
         
         // Get absolute path
-        File dir = new File(Configuration.getExistHome(), directory);
+        File dir = new File(ConfigurationHelper.getExistHome(), directory);
         
         // Get files in directory
         File files[] = dir.listFiles();

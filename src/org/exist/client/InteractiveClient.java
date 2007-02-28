@@ -77,7 +77,7 @@ import org.exist.dom.XMLUtil;
 import org.exist.security.Permission;
 import org.exist.security.User;
 import org.exist.util.CollectionScanner;
-import org.exist.util.Configuration;
+import org.exist.util.ConfigurationHelper;
 import org.exist.util.DirectoryScanner;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
@@ -1587,7 +1587,7 @@ public class InteractiveClient {
     private Properties loadClientProperties(){
         
         Properties clientProps = new Properties();
-        File propFile = Configuration.lookup("client.properties");
+        File propFile = ConfigurationHelper.lookup("client.properties");
         InputStream pin = null;
         
         // Try to load from file
@@ -2008,7 +2008,7 @@ public class InteractiveClient {
             printNotice();
 
         // Get exist home directory
-        File home = Configuration.getExistHome();
+        File home = ConfigurationHelper.getExistHome();
 
         // initialize with default properties, before add client properties
         properties = new Properties(defaultProps);
@@ -2016,9 +2016,8 @@ public class InteractiveClient {
         // get default configuration filename from the driver class and set it in properties
         Class cl = Class.forName(properties.getProperty(DRIVER));
         Field CONF_XML = cl.getDeclaredField("CONF_XML");
-        File existHome = Configuration.getExistHome();
-        if (CONF_XML != null && existHome != null) {
-        	   File configuration = Configuration.lookup((String)CONF_XML.get(new String()));
+        if (CONF_XML != null && home != null) {
+        	   File configuration = ConfigurationHelper.lookup((String)CONF_XML.get(new String()));
             properties.setProperty(CONFIGURATION, configuration.getAbsolutePath());
         }
 

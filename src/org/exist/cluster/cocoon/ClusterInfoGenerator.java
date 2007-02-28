@@ -131,7 +131,6 @@ public class ClusterInfoGenerator extends AbstractGenerator {
 
             Configuration conf = cluster.getConfiguration();
 
-
             atts = new AttributesImpl();
             atts.addAttribute("", "type", "type", "CDATA", "jgroups");
             this.contentHandler.startElement(NAMESPACE, "info", PREFIX + ":info", atts);

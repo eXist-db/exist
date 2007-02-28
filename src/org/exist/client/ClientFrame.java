@@ -98,7 +98,7 @@ import org.exist.security.Permission;
 import org.exist.security.PermissionFactory;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
-import org.exist.util.Configuration;
+import org.exist.util.SingleInstanceConfiguration;
 import org.exist.util.MimeTable;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
@@ -1070,7 +1070,7 @@ public class ClientFrame extends JFrame
     
     private void uploadAction(ActionEvent ev) {
         // TODO store last file choose in properties
-        String dir = properties.getProperty(Messages.getString("ClientFrame.145"), Configuration.getPath()); //$NON-NLS-1$
+        String dir = properties.getProperty(Messages.getString("ClientFrame.145"), SingleInstanceConfiguration.getPath()); //$NON-NLS-1$
         JFileChooser chooser = new JFileChooser(dir);
         chooser.setMultiSelectionEnabled(true);
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);

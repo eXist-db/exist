@@ -18,7 +18,7 @@ import org.apache.avalon.excalibur.cli.CLOption;
 import org.apache.avalon.excalibur.cli.CLOptionDescriptor;
 import org.apache.avalon.excalibur.cli.CLUtil;
 import org.exist.storage.DBBroker;
-import org.exist.util.Configuration;
+import org.exist.util.ConfigurationHelper;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XmldbURI;
 import org.xml.sax.SAXException;
@@ -101,7 +101,7 @@ public class Main {
 		// read properties
 		Properties properties = new Properties();
 		try {
-			File propFile = Configuration.lookup("backup.properties");
+			File propFile = ConfigurationHelper.lookup("backup.properties");
 			InputStream pin;
 			if (propFile.canRead())
 				pin = new FileInputStream(propFile);

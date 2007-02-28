@@ -88,7 +88,8 @@ public class RemoteDatabaseImplTest extends RemoteDBTest {
 					}
 				}
 			}
-        } catch (Exception e) {            
+        } catch (Exception e) {
+        	e.printStackTrace();
             fail(e.getMessage()); 
         }
 	}  		

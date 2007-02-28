@@ -27,9 +27,10 @@ import org.exist.cluster.ClusterComunication;
 import org.exist.cluster.ClusterException;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
+import org.exist.util.SingleInstanceConfiguration;
+import org.exist.validation.XmlLibraryChecker;
 import org.exist.xmldb.DatabaseImpl;
 import org.exist.xmldb.ShutdownListener;
-import org.exist.validation.XmlLibraryChecker;
 import org.mortbay.jetty.Server;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
@@ -80,13 +81,13 @@ public class JettyStart {
 		boolean registerShutdownHook = shutdownHookOption.equals("true");
 		
 		// configure database
-		System.out.println("Configuring eXist from " + Configuration.getPath());
+		System.out.println("Configuring eXist from " + SingleInstanceConfiguration.getPath());
 		try {
 			// we register our own shutdown hook
 			BrokerPool.setRegisterShutdownHook(false);
 			
 			// configure the database instance
-			Configuration config = new Configuration();
+			SingleInstanceConfiguration config = new SingleInstanceConfiguration();
 			BrokerPool.configure(1, 5, config);
 			
 			// register the XMLDB driver

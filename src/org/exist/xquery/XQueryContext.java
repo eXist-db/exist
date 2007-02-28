@@ -75,7 +75,14 @@ import org.exist.xquery.functions.session.SessionModule;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
-import org.exist.xquery.value.*;
+import org.exist.xquery.value.AnyURIValue;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.JavaObjectValue;
+import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.StringValue;
+import org.exist.xquery.value.Type;
 
 import antlr.RecognitionException;
 import antlr.TokenStreamException;

@@ -23,8 +23,10 @@
 package org.exist.webstart;
 
 import java.io.File;
+
 import org.apache.log4j.Logger;
-import org.exist.util.Configuration;
+import org.exist.util.ConfigurationHelper;
+import org.exist.util.SingleInstanceConfiguration;
 
 /**
  *  Helper class for webstart.
@@ -34,7 +36,7 @@ import org.exist.util.Configuration;
 public class JnlpHelper {
     
     private static Logger logger = Logger.getLogger(JnlpHelper.class);
-    private File existHome=Configuration.getExistHome();
+    private File existHome = ConfigurationHelper.getExistHome();
     
     private File coreJarsFolder=null;
     private File existJarFolder=null;
@@ -44,7 +46,7 @@ public class JnlpHelper {
     public JnlpHelper() {
         
         // Setup path based on installation (in jetty, container)
-        if(Configuration.isInWarFile()){
+        if(SingleInstanceConfiguration.isInWarFile()){
             // all files mixed in existHome/lib/
             logger.debug("eXist is running in container (.war).");
             coreJarsFolder= new File(existHome, "lib/");
@@ -57,7 +59,7 @@ public class JnlpHelper {
             existJarFolder= existHome;
         }
         
-        webappFolder=Configuration.getWebappHome();
+        webappFolder=SingleInstanceConfiguration.getWebappHome();
         
         logger.debug("CORE jars location="+coreJarsFolder.getAbsolutePath());
         logger.debug("EXIST jars location="+existJarFolder.getAbsolutePath());

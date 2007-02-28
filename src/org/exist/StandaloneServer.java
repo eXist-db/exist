@@ -49,6 +49,7 @@ import org.apache.xmlrpc.XmlRpc;
 import org.exist.memtree.SAXAdapter;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
+import org.exist.util.ConfigurationHelper;
 import org.exist.xmldb.ShutdownListener;
 import org.mortbay.http.HttpContext;
 import org.mortbay.http.HttpServer;
@@ -167,10 +168,10 @@ public class StandaloneServer {
             System.err.println("port needs to be number");
             return;
         }
-        
-        System.out.println( "Loading configuration from " + Configuration.getExistHome().getAbsolutePath() +
+
+        System.out.println( "Loading configuration from " + ConfigurationHelper.getExistHome().getAbsolutePath() +
                 File.separatorChar + "conf.xml" );
-        Configuration config = new Configuration( "conf.xml");
+        Configuration config = new Configuration("conf.xml");
         BrokerPool.configure( 1, threads, config );
         BrokerPool.getInstance().registerShutdownListener(new ShutdownListenerImpl());
         initXMLDB();
@@ -352,7 +353,7 @@ public class StandaloneServer {
         // necessary
         InputStream is = null;
         String file = System.getProperty("server.xml", "server.xml");
-        File f = Configuration.lookup(file);
+        File f = ConfigurationHelper.lookup(file);
         if (!f.canRead()) {
             is = StandaloneServer.class.getClassLoader().getResourceAsStream("org/exist/server.xml");
             if (is == null)

@@ -46,12 +46,13 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Vector;
 import java.util.WeakHashMap;
+
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 
-import org.exist.backup.Backup;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.backup.Backup;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
@@ -2848,6 +2849,7 @@ public class RpcConnection extends Thread {
         }
     }
 }
+
 
 
 

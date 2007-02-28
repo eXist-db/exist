@@ -21,14 +21,14 @@
  */
 package org.exist.scheduler;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
 import java.util.Properties;
-import java.io.InputStream;
-import java.io.IOException;
 
 import org.exist.EXistException;
 import org.exist.security.SecurityManager;
@@ -38,9 +38,9 @@ import org.exist.util.Configuration;
 import org.quartz.CronTrigger;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
-import org.quartz.SimpleTrigger;
 import org.quartz.SchedulerException;
 import org.quartz.SchedulerFactory;
+import org.quartz.SimpleTrigger;
 import org.quartz.impl.StdSchedulerFactory;
 
 
