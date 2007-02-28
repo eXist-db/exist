@@ -72,8 +72,6 @@ public class ReentrantReadWriteLock implements Lock {
 					seStack.push(t.getStackTrace());
 				}
 				mode_ = mode;
-//				System.out.println("thread " + caller.getName() + " acquired lock on " + id_ +
-//					"; locks held = " + holds_);
 				return true;
 			} else if (owner_ == null) {
 				owner_ = caller;
@@ -86,7 +84,6 @@ public class ReentrantReadWriteLock implements Lock {
 					seStack.push(t.getStackTrace());
 				}				
 				mode_ = mode;
-//				System.out.println("thread " + caller.getName() + " acquired lock on " + id_);
 				return true;
 			} else {
 				long waitTime = timeOut_;
@@ -104,8 +101,6 @@ public class ReentrantReadWriteLock implements Lock {
 								seStack.push(t.getStackTrace());
 							}
 							mode_ = mode;
-//							System.out.println("thread " + caller.getName() + " acquired lock on " + id_ +
-//								"; locks held = " + holds_);
 							return true;
 						} else if (owner_ == null) {
 							owner_ = caller;
@@ -118,26 +113,25 @@ public class ReentrantReadWriteLock implements Lock {
 								seStack.push(t.getStackTrace());
 							}
 							mode_ = mode;
-//							System.out.println("thread " + caller.getName() + " acquired lock on " + id_ +
-//								"; locks held = " + holds_);
 							return true;
 						} else {
 							waitTime = timeOut_ - (System.currentTimeMillis() - start);
 							if (waitTime <= 0) {
 								// blocking thread found: if the lock is read only, remove it
 								if (writeLocks == 0) {
-									System.out.println("releasing blocking thread " + owner_.getName() + " on " + id_ + " (" + modeStack.size() + " locks)");
-									Thread.dumpStack();
+									System.out.println("releasing blocking thread " + owner_.getName() + " on " + id_ + " (" + modeStack.size() + " acquisitions)");
+									if (DEBUG) {
+										LOG.debug("Lock was acquired by :");
+										while (!seStack.isEmpty()) {
+											StackTraceElement[] se = (StackTraceElement[])seStack.pop();
+											LOG.debug(se);
+									    	se = null;
+										}
+									}
 									owner_ = caller;
 									while (!modeStack.isEmpty()) {
 								    	Integer top = (Integer)modeStack.pop();
 								    	top = null;
-									}
-									if (DEBUG) {
-										while (!seStack.isEmpty()) {
-											StackTraceElement[] se = (StackTraceElement[])seStack.pop();
-									    	se = null;
-										}
 									}									
 									holds_ = 1;
 									modeStack.push(new Integer(mode));
@@ -146,10 +140,17 @@ public class ReentrantReadWriteLock implements Lock {
 										seStack.push(t.getStackTrace());
 									}
 									mode_ = mode;
-//									System.out.println("thread " + caller.getName() + " acquired lock on " + id_ +
-//										"; locks held = " + holds_);
 									return true;
 								} else
+									LOG.warn("Write lock timed out");
+									if (DEBUG) {
+										LOG.debug("Lock was acquired by :");
+										while (!seStack.isEmpty()) {
+											StackTraceElement[] se = (StackTraceElement[])seStack.pop();
+											LOG.debug(se);
+									    	se = null;
+										}
+									}									
 									throw new LockException("time out while acquiring a lock");
 							}
 						}
@@ -175,8 +176,6 @@ public class ReentrantReadWriteLock implements Lock {
 					seStack.push(t.getStackTrace());
 				}				
 				mode_ = mode;
-//				System.out.println("thread " + caller.getName() + " acquired lock on " + id_ +
-//					"; locks held = " + holds_);
 				return true;
 			} else if (owner_ == null) {
 				owner_ = caller;
@@ -189,7 +188,6 @@ public class ReentrantReadWriteLock implements Lock {
 					seStack.push(t.getStackTrace());
 				}				
 				mode_ = mode;
-//				System.out.println("thread " + caller.getName() + " acquired lock on " + id_);
 				return true;
 			} else {
 				return false;
@@ -212,39 +210,39 @@ public class ReentrantReadWriteLock implements Lock {
      * @see org.exist.util.Lock#release(int)
      */
     public synchronized void release(int mode) {
-    	try {
-	        if (Thread.currentThread() != owner_) {
-	            LOG.warn("Possible lock problem: thread " + Thread.currentThread() +
-	                    " released a lock it didn't hold. Either the " +
-	                    "thread was interrupted or it never acquired the lock. The lock was owned by: "
-	                    + owner_);
-	            return;
-	        }
-	    	Integer top = (Integer)modeStack.peek();
-	    	if (top.intValue() != mode) {
-	    		LOG.warn("Released lock of different type " + top.intValue() + " expected " + mode);
-	    		Thread.dumpStack();    		
-	    	}
-	    	if (DEBUG) {
-	    		StackTraceElement[] se = (StackTraceElement[])seStack.peek();
-	    		se = null;
-	    	}
-	    	mode_ = top.intValue();
-	    	top = null;
-			if (mode_ == Lock.WRITE_LOCK)
-				writeLocks--;   	
-			if (--holds_ == 0) {
-	//			System.out.println("thread " + owner_.getName() + " released lock on " + id_ +
-	//				"; locks held = " + holds_);
-				owner_ = null;
-				mode_ = Lock.NO_LOCK;
-				notify();
-			}
-    	} finally {
-    		modeStack.pop();
-    		if (DEBUG)
-    			seStack.pop();
-    	}
+        if (Thread.currentThread() != owner_) {
+            LOG.warn("Possible lock problem: thread " + Thread.currentThread() +
+                    " released a lock it didn't hold. Either the " +
+                    "thread was interrupted or it never acquired the lock. The lock was owned by: "
+                    + owner_);
+			if (DEBUG) {
+				LOG.debug("Lock was acquired by :");
+				while (!seStack.isEmpty()) {
+					StackTraceElement[] se = (StackTraceElement[])seStack.pop();
+					LOG.debug(se);
+			    	se = null;
+				}
+			}            
+            return;
+        }
+    	Integer top = (Integer)modeStack.pop();
+    	mode_ = top.intValue();
+    	top = null; 	
+    	if (mode_ != mode) {
+    		LOG.warn("Released lock of different type. Expected " + mode_ + " got " + mode);
+    		Thread.dumpStack();    		
+    	}      	
+		if (mode_ == Lock.WRITE_LOCK)
+			writeLocks--;   	
+    	if (DEBUG) {
+    		StackTraceElement[] se = (StackTraceElement[])seStack.pop();
+    		se = null;
+    	} 
+    	if (--holds_ == 0) {
+			owner_ = null;
+			mode_ = Lock.NO_LOCK;
+			notify();
+		}
     }
     
 	/**
