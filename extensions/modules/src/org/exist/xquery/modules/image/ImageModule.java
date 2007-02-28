@@ -64,8 +64,10 @@ public class ImageModule extends AbstractInternalModule {
 	private final static FunctionDef[] functions = {
 		new FunctionDef(GetWidthFunction.signature, GetWidthFunction.class),
 		new FunctionDef(GetHeightFunction.signature, GetHeightFunction.class),
+		new FunctionDef(GetMetadataFunction.signature, GetMetadataFunction.class),
 		new FunctionDef(ScaleFunction.signature, ScaleFunction.class),
 		new FunctionDef(GetThumbnailsFunction.signature, GetThumbnailsFunction.class)
+		
 	};
 	
 	public ImageModule() {
@@ -85,6 +87,23 @@ public class ImageModule extends AbstractInternalModule {
 	}
 	
 	/**
+	 * Get's an the raw binary data from base64 binary encoded image data
+	 * 
+	 * @param imgBase64Data	The base64 encoded image data
+	 * 
+	 * @return The raw binary data
+	 */
+	protected static byte[] getImageData(Base64Binary imgBase64Data) throws XPathException
+	{
+		//decode the base64 image data
+		Base64Decoder dec = new Base64Decoder();
+        dec.translate(imgBase64Data.getStringValue());
+        
+        //return the raw binary data
+        return dec.getByteArray();
+	}
+	
+	/**
 	 * Get's an Image object from base64 binary encoded image data
 	 * 
 	 * @param imgBase64Data	The base64 encoded image data
@@ -93,15 +112,8 @@ public class ImageModule extends AbstractInternalModule {
 	 */
 	protected static Image getImage(Base64Binary imgBase64Data) throws IOException, XPathException
 	{
-		//decode the base64 image data
-		Base64Decoder dec = new Base64Decoder();
-        dec.translate(imgBase64Data.getStringValue());
-        
-        //get the raw binary data
-		byte[] imgData = dec.getByteArray();
-                
         //Create an Image object from the byte array
-        return ImageIO.read(new ByteArrayInputStream(imgData));
+        return ImageIO.read(new ByteArrayInputStream(getImageData(imgBase64Data)));
 	}
 	
 	/**

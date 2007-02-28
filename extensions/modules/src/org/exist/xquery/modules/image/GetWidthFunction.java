@@ -82,7 +82,7 @@ public class GetWidthFunction extends BasicFunction
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
-		//was a image speficifed
+		//was an image speficifed
 		if (args[0].isEmpty())
             return Sequence.EMPTY_SEQUENCE;
 		
