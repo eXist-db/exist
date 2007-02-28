@@ -444,10 +444,11 @@ public class NativeValueIndex implements ContentLoadingObserver {
                             int nodeIDsLength = os.position();
                             //Dummy value : actual one will be written below
                             os.writeFixedInt(0);
+                            NodeId previous = null;
                             for (int j = 0; j < gidsCount; j++) {
                                 NodeId nodeId = (NodeId) newGIDList.get(j);
                                 try {
-                                    nodeId.write(os);
+                                    previous = nodeId.write(previous, os);
                                 } catch (IOException e) {
                                     LOG.warn("IO error while writing range index: " + e.getMessage(), e);
                                     //TODO : throw exception ?
