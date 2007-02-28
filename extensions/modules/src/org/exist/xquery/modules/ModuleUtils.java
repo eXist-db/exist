@@ -50,7 +50,7 @@ public class ModuleUtils
 			reader.setContentHandler(receiver);
 			reader.parse(src);
 			Document doc = receiver.getDocument();
-			return (NodeValue)doc.getDocumentElement();
+			return (NodeValue)doc;
 		}
 		catch (ParserConfigurationException e)
 		{				
