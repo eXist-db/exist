@@ -21,16 +21,15 @@
  */
 package org.exist.indexing;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-
 import org.apache.log4j.Logger;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.btree.DBException;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
-import org.exist.util.SingleInstanceConfiguration;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Iterator;
 
 /**
  * Manages all custom indexes registered with the database instance.
@@ -67,7 +66,8 @@ public class IndexManager {
                                 Index.class.getName());
                     }
                     Index index = (Index) clazz.newInstance();
-                    index.open(pool, dataDir, modConf[i].getConfig());
+                    index.configure(pool, dataDir, modConf[i].getConfig());
+                    index.open();
                     indexers.put(modConf[i].getId(), index);
                     if (LOG.isInfoEnabled())
                         LOG.info("Registered index " + className + " as " + modConf[i].getId());
@@ -117,6 +117,22 @@ public class IndexManager {
         for (Iterator i = iterator(); i.hasNext(); ) {
             index = (Index) i.next();
             index.close();
+        }
+    }
+
+    public void removeIndexes() throws DBException {
+        Index index;
+        for (Iterator i = iterator(); i.hasNext();) {
+            index = (Index) i.next();
+            index.remove();
+        }
+    }
+
+    public void reopenIndexes() throws DatabaseConfigurationException {
+        Index index;
+        for (Iterator i = iterator(); i.hasNext();) {
+            index = (Index) i.next();
+            index.open();
         }
     }
 }

@@ -37,6 +37,7 @@ import java.util.Stack;
 import javax.xml.stream.XMLStreamException;
 
 import org.exist.EXistException;
+import org.exist.indexing.StreamListener;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfiguration;
@@ -83,11 +84,7 @@ import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.ByteArrayPool;
-import org.exist.util.ByteConversion;
-import org.exist.util.Configuration;
-import org.exist.util.LockException;
-import org.exist.util.ReadOnlyException;
+import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.TerminatedException;
 import org.w3c.dom.Document;
@@ -929,7 +926,9 @@ public class NativeBroker extends DBBroker {
             final String collName = uri.getRawCollectionPath();
             final boolean isRoot = collection.getParentURI() == null;
             //Drop all index entries
-            notifyDropIndex(collection);            
+            notifyDropIndex(collection);
+            // Drop custom indexes
+            indexController.removeCollection(collection);
             if (!isRoot) {
                 // remove from parent collection
             	//TODO : resolve URIs ! (uri.resolve(".."))
@@ -1260,6 +1259,7 @@ public class NativeBroker extends DBBroker {
                     collection.getURI());
         
         notifyDropIndex(collection);
+        indexController.removeCollection(collection);
         
         for (Iterator i = collection.iterator(this); i.hasNext();) {
             final DocumentImpl doc = (DocumentImpl) i.next();
@@ -1843,14 +1843,16 @@ public class NativeBroker extends DBBroker {
     }
 
     private void dropIndex(Txn transaction, DocumentImpl document) throws ReadOnlyException {
+        StreamListener listener = indexController.getStreamListener(document, StreamListener.REMOVE);
         NodeList nodes = document.getChildNodes();
         for (int i = 0; i < nodes.getLength(); i++) {
             StoredNode node = (StoredNode) nodes.item(i);
             Iterator iterator = getNodeIterator(node);
             iterator.next();
-            scanNodes(transaction, iterator, node, new NodePath(), NodeProcessor.MODE_REMOVE);
+            scanNodes(transaction, iterator, node, new NodePath(), NodeProcessor.MODE_REMOVE, listener);
         }
         notifyDropIndex(document);
+        indexController.flush();
     }
 
     public void removeBinaryResource(final Txn transaction, final BinaryDocument blob)
@@ -2009,12 +2011,13 @@ public class NativeBroker extends DBBroker {
     private void reindexXMLResource(Txn transaction, DocumentImpl doc, int mode) {
         if(CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE.equals(doc.getFileURI()))
             doc.getCollection().setConfigEnabled(false);
+        StreamListener listener = indexController.getStreamListener(doc, StreamListener.STORE);
         NodeList nodes = doc.getChildNodes();
         for (int i = 0; i < nodes.getLength(); i++) {
         	StoredNode node = (StoredNode) nodes.item(i);
         	Iterator iterator = getNodeIterator(node);
             iterator.next();
-            scanNodes(transaction, iterator, node, new NodePath(), mode);
+            scanNodes(transaction, iterator, node, new NodePath(), mode, listener);
         }
         flush();
         if(CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE.equals(doc.getFileURI()))
@@ -2511,10 +2514,23 @@ public class NativeBroker extends DBBroker {
      * @param currentPath
      */
     private void scanNodes(Txn transaction, Iterator iterator, StoredNode node, NodePath currentPath,
-            int mode) {
+            int mode, StreamListener listener) {
         if (node.getNodeType() == Node.ELEMENT_NODE)
             currentPath.addComponent(node.getQName());
         indexNode(transaction, node, currentPath, mode);
+        switch (node.getNodeType()) {
+            case Node.TEXT_NODE :
+                listener.characters(transaction, (TextImpl) node, currentPath);
+                break;
+            case Node.ELEMENT_NODE :
+                listener.startElement(transaction, (ElementImpl) node, currentPath);
+                break;
+            case Node.ATTRIBUTE_NODE :
+                listener.attribute(transaction, (AttrImpl) node, currentPath);
+                break;
+            default :
+                LOG.debug("Unhandled node type: " + node.getNodeType());
+        }
         if (node.hasChildNodes()) {
             final int count = node.getChildCount();
             for (int i = 0; i < count; i++) {
@@ -2524,15 +2540,16 @@ public class NativeBroker extends DBBroker {
                             "; children = " + node.getChildCount());
                     throw new IllegalStateException("Wrong node id");
                 }
-                scanNodes(transaction, iterator, child, currentPath, mode);
+                scanNodes(transaction, iterator, child, currentPath, mode, listener);
             }
         }
         if (node.getNodeType() == Node.ELEMENT_NODE) {
             endElement(node, currentPath, null, mode == NodeProcessor.MODE_REMOVE);
+            listener.endElement(transaction, (ElementImpl) node, currentPath);
             currentPath.removeLastComponent();
         }
     }
-    	
+
 	public String getNodeValue(final StoredNode node, final boolean addWhitespace) {
 		return (String) new DOMTransaction(this, domDb, Lock.READ_LOCK) {
 			public Object start() {
@@ -2590,7 +2607,12 @@ public class NativeBroker extends DBBroker {
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
         
         LOG.info("Removing index files ..."); 
-        notifyCloseAndRemove();  
+        notifyCloseAndRemove();
+        try {
+            pool.getIndexManager().removeIndexes();
+        } catch (DBException e) {
+            LOG.warn("Failed to remove index failes during repair: " + e.getMessage(), e);
+        }
 
         LOG.info("Recreating index files ...");
         try {
@@ -2600,7 +2622,12 @@ public class NativeBroker extends DBBroker {
         } catch (DBException e) {
             LOG.warn("Exception during repair: " + e.getMessage(), e);
         }
-        
+
+        try {
+            pool.getIndexManager().reopenIndexes();
+        } catch (DatabaseConfigurationException e) {
+            LOG.warn("Failed to reopen index files after repair: " + e.getMessage(), e);
+        }
         LOG.info("Reindexing database files ...");
         //Reindex from root collection
         reindexCollection(null, getCollection(XmldbURI.ROOT_COLLECTION_URI), NodeProcessor.MODE_REPAIR);

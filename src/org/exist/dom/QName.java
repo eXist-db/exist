@@ -44,7 +44,7 @@ public class QName implements Comparable {
 	private String localName_ = null;
 	private String namespaceURI_ = null;
 	private String prefix_ = null;
-	private byte nameType_ = ElementValue.ELEMENT;
+    private byte nameType_ = ElementValue.ELEMENT;
 
 	/**
 	 * Construct a QName. The prefix might be null for the default namespace or if no prefix 

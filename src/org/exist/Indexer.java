@@ -195,7 +195,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
         rootNode = null;
         setPrevious(null);
         ftIdx = doc.getCollection().getFulltextIndexConfiguration(broker);
-        this.indexListener = broker.getIndexDispatcher().getStreamListener(document);
+        this.indexListener = broker.getIndexDispatcher().getStreamListener(document, StreamListener.STORE);
     }
     
 	/**

@@ -22,13 +22,18 @@
 package org.exist.indexing;
 
 import org.exist.storage.DBBroker;
-import org.exist.dom.DocumentImpl;
+import org.exist.storage.NodePath;
+import org.exist.storage.txn.Txn;
+import org.exist.dom.*;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.collections.Collection;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.Node;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Iterator;
 
 /**
  * Internally used by the {@link DBBroker} to dispatch an operation to each of the
@@ -37,19 +42,30 @@ import java.util.HashMap;
  */
 public class IndexController {
 
-    protected IndexWorker indexWorkers[];
+    protected Map indexWorkers = new HashMap();
+
+    protected StreamListener listener = null;
 
     public IndexController(DBBroker broker) {
-        indexWorkers = broker.getBrokerPool().getIndexManager().getWorkers();
+        IndexWorker[] workers = broker.getBrokerPool().getIndexManager().getWorkers();
+        for (int i = 0; i < workers.length; i++) {
+            indexWorkers.put(workers[i].getIndexId(), workers[i]);
+        }
     }
 
-    public StreamListener getStreamListener(DocumentImpl document) {
+    public IndexWorker getIndexWorker(String indexId) {
+        return (IndexWorker) indexWorkers.get(indexId);
+    }
+    
+    public StreamListener getStreamListener(DocumentImpl document, int mode) {
+        if (listener != null)
+            return listener;
         StreamListener first = null;
         StreamListener listener, previous = null;
         IndexWorker worker;
-        for (int i = 0; i < indexWorkers.length; i++) {
-            worker = indexWorkers[i];
-            listener = worker.getListener(document);
+        for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
+            worker = (IndexWorker) i.next();
+            listener = worker.getListener(mode, document);
             if (first == null) {
                 first = listener;
             } else {
@@ -57,15 +73,16 @@ public class IndexController {
             }
             previous = listener;
         }
-        return first;
+        listener = first;
+        return listener;
     }
-
+    
     public Map configure(NodeList configNodes, Map namespaces) throws DatabaseConfigurationException {
         Map map = new HashMap();
         IndexWorker indexWorker;
         Object conf;
-        for (int i = 0; i < indexWorkers.length; i++) {
-            indexWorker = indexWorkers[i];
+        for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
+            indexWorker = (IndexWorker) i.next();
             conf = indexWorker.configure(configNodes, namespaces);
             if (conf != null)
                 map.put(indexWorker.getIndexId(), conf);
@@ -75,9 +92,17 @@ public class IndexController {
 
     public void flush() {
         IndexWorker indexWorker;
-        for (int i = 0; i < indexWorkers.length; i++) {
-            indexWorker = indexWorkers[i];
+        for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
+            indexWorker = (IndexWorker) i.next();
             indexWorker.flush();
+        }
+    }
+
+    public void removeCollection(Collection collection) {
+        IndexWorker indexWorker;
+        for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
+            indexWorker = (IndexWorker) i.next();
+            indexWorker.removeCollection(collection);
         }
     }
 }

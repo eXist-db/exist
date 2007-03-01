@@ -964,7 +964,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                     NodeId previous = null;
                     for (int m = 0; m < occurences.getSize(); ) {
                         try {
-                            previous = occurences.nodes[m].write(previous, os);
+                            previous = occurences.getNode(m).write(previous, os);
 //                            occurences.nodes[m].write(os);
                         } catch (IOException e) {
                             LOG.error("IOException while writing fulltext index: " + e.getMessage(), e);
@@ -972,7 +972,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                         int freq = occurences.getOccurrences(m);
                         os.writeInt(freq);
                         for (int n = 0; n < freq; n++) {
-                            os.writeInt(occurences.offsets[m + n]);
+                            os.writeInt(occurences.getOffset(m + n));
                         }
                         m += freq;                        
                     }
@@ -1203,11 +1203,11 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                             os.writeFixedInt(0);
                             NodeId previous = null;
                             for (int m = 0; m < newOccurencesList.getSize(); ) {
-                                previous = newOccurencesList.nodes[m].write(previous, os);
+                                previous = newOccurencesList.getNode(m).write(previous, os);
                                 int freq = newOccurencesList.getOccurrences(m);
                                 os.writeInt(freq);
                                 for (int n = 0; n < freq; n++) {
-                                    os.writeInt(newOccurencesList.offsets[m + n]);
+                                    os.writeInt(newOccurencesList.getOffset(m + n));
                                 }
                                 m += freq;
                             }
@@ -1489,110 +1489,8 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 			return true;
 		}
 	}
-	
-    private static class OccurrenceList {
 
-        private NodeId nodes[] = new NodeId[4];
-        private int offsets[] = new int[4];
-        
-        private int position = 0;
-        
-        void add(NodeId id, int offset) {
-            ensureCapacity(position);
-            nodes[position] = id;
-            offsets[position++] = offset;
-        }
-        
-        int getSize() {
-            return position;
-        }
-        
-        int getTermCount() {
-            int count = 1;
-            for (int i = 1; i < position; i++) {
-                if (!nodes[i].equals(nodes[i - 1]))
-                    count++;
-            }
-            return count;
-        }
-        
-        int getOccurrences(int start) {
-            int count = 1;
-            for (int i = start + 1; i < position; i++) {
-                if (nodes[i].equals(nodes[start]))
-                    count++;
-                else
-                    break;
-            }
-            return count;
-        }
-        
-        boolean contains(NodeId id) {
-            for (int i = 0; i < position; i++)
-                if (nodes[i].equals(id))
-                    return true;
-            return false;
-        }
-        
-        private void ensureCapacity(int count) {
-            if (count == nodes.length) {
-                NodeId[] nn = new NodeId[count * 2];
-                int[] no = new int[nn.length];
-                System.arraycopy(nodes, 0, nn, 0, count);
-                System.arraycopy(offsets, 0, no, 0, count);
-                nodes = nn;
-                offsets = no;
-            }
-        }
-        
-        void sort() {
-            sort(0, position - 1);
-        }
-        
-        /** Standard quicksort */
-        //TODO : use methods in org.exist.util ?
-        private void sort(int lo0, int hi0) {
-            int lo = lo0;
-            int hi = hi0;
-            
-            if ( hi0 > lo0) {
-                int mid = ( lo0 + hi0 ) / 2;
-
-                while ( lo <= hi ) {
-                    while (( lo < hi0 ) && ( nodes[lo].compareTo(nodes[mid]) < 0 ))
-                        ++lo;
-                    while (( hi > lo0 ) && ( nodes[hi].compareTo(nodes[mid]) > 0))
-                        --hi;
-                    if ( lo <= hi ) {
-                        if (lo!=hi) {
-                            // swap
-                            NodeId id = nodes[lo];
-                            nodes[lo] = nodes[hi];
-                            nodes[hi] = id;
-                            
-                            int i = offsets[lo];
-                            offsets[lo] = offsets[hi];
-                            offsets[hi] = i;
-                            
-                            if (lo==mid) {
-                                mid=hi;
-                            } else if (hi==mid) {
-                                mid=lo;
-                            }
-                        }
-                        ++lo;
-                        --hi;
-                    }
-                }
-                if ( lo0 < hi )
-                    sort( lo0, hi );
-                if ( lo < hi0 )
-                    sort( lo, hi0 );
-            }
-        }
-    }
-    
-	private static class TermFrequencyList {
+    private static class TermFrequencyList {
 		
 		protected static class TermFreq implements Comparable {
 			

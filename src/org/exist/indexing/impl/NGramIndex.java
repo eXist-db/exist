@@ -36,12 +36,18 @@ import java.io.File;
  */
 public class NGramIndex implements Index {
 
+    public final static String ID = NGramIndex.class.getName();
+
     private final static Logger LOG = Logger.getLogger(NGramIndex.class);
 
-    private BFile db;
-    private int gramSize = 3;
+    protected BrokerPool pool;
+    protected BFile db;
 
-    public void open(BrokerPool pool, String dataDir, Element config) throws DatabaseConfigurationException {
+    private int gramSize = 3;
+    private File dataFile = null;
+
+    public void configure(BrokerPool pool, String dataDir, Element config) throws DatabaseConfigurationException {
+        this.pool = pool;
         String fileName = "ngram.dbx";
         if (config.hasAttribute("file"))
             fileName = config.getAttribute("file");
@@ -51,15 +57,22 @@ public class NGramIndex implements Index {
             } catch (NumberFormatException e) {
                 throw new DatabaseConfigurationException("Configuration parameter 'n' should be an integer.");
             }
-        File file = new File(dataDir, fileName);
+        dataFile = new File(dataDir, fileName);
+    }
+
+    public void open() throws DatabaseConfigurationException {
         try {
-            db = new BFile(pool, (byte) 0, false, file, pool.getCacheManager(), 0.1, 0.1, 0.1);
+            db = new BFile(pool, (byte) 0, false, dataFile, pool.getCacheManager(), 0.1, 0.1, 0.1);
         } catch (DBException e) {
-            throw new DatabaseConfigurationException("Failed to create index file: " + file.getAbsolutePath() + ": " +
+            throw new DatabaseConfigurationException("Failed to create index file: " + dataFile.getAbsolutePath() + ": " +
                 e.getMessage());
         }
         if (LOG.isDebugEnabled())
-            LOG.debug("Created NGram index: " + file.getAbsolutePath());
+            LOG.debug("Created NGram index: " + dataFile.getAbsolutePath());
+    }
+
+    public void reopen() {
+
     }
 
     public void close() throws DBException {
@@ -76,5 +89,9 @@ public class NGramIndex implements Index {
 
     public int getN() {
         return gramSize;
+    }
+
+    public void remove() throws DBException {
+        db.closeAndRemove();
     }
 }
