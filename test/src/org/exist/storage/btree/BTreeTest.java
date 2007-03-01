@@ -178,7 +178,7 @@ public class BTreeTest extends TestCase {
             int prefix = ByteConversion.byteToInt(value.data(), value.start());
             assertEquals(prefix, 99);
             XMLString key = UTF8.decode(value.data(), value.start() + 4, value.getLength() - 4);
-            System.out.println(prefix + " : " + key);
+//            System.out.println(prefix + " : " + key);
             count++;
             return false;
         }
