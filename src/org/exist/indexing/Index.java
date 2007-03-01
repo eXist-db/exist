@@ -35,7 +35,7 @@ import org.exist.storage.btree.DBException;
 public interface Index {
 
     /**
-     * Open and configure the index and all resources associated with it. This method
+     * Configure the index and all resources associated with it. This method
      * is called while the database instance is initializing..
      *
      * @param pool the BrokerPool representing the current database instance.
@@ -43,8 +43,16 @@ public interface Index {
      * @param config the module element which configures this index, as found in conf.xml
      * @throws DatabaseConfigurationException
      */
-    void open(BrokerPool pool, String dataDir, Element config) throws DatabaseConfigurationException;
+    void configure(BrokerPool pool, String dataDir, Element config) throws DatabaseConfigurationException;
 
+    /**
+     * Open the index for writing and reading. Will be called during initialization, but also
+     * if the database had to be restarted.
+     *
+     * @throws DatabaseConfigurationException
+     */
+    void open() throws DatabaseConfigurationException;
+    
     /**
      * Close the index and all associated resources.
      *
@@ -73,4 +81,11 @@ public interface Index {
      * @return a new IndexWorker that can be used for concurrent access to the index.
      */
     IndexWorker getWorker();
+
+    /**
+     * Close the index and remove it completely, including all resources and files
+     * associated to it. This method is called during database repair before the
+     * db contents are reindexed.
+     */
+    void remove() throws DBException;
 }

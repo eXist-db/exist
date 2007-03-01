@@ -24,6 +24,7 @@ package org.exist.indexing;
 import org.w3c.dom.NodeList;
 import org.exist.dom.DocumentImpl;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.collections.Collection;
 
 import java.util.Map;
 
@@ -74,8 +75,19 @@ public interface IndexWorker {
      * StreamListener being used per thread, so it is safe for the implementation to reuse a
      * single StreamListener.
      *
+     * Parameter mode specifies the type of the current operation. 
+     *
+     * @param mode one of {@link StreamListener#STORE} or {@link StreamListener#REMOVE}
      * @param document the document to be indexed.
      * @return a StreamListener
      */
-    StreamListener getListener(DocumentImpl document);
+    StreamListener getListener(int mode, DocumentImpl document);
+
+    /**
+     * Remove all indexes for the given collection, its subcollections and
+     * all resources..
+     *
+     * @param collection
+     */
+    void removeCollection(Collection collection);
 }

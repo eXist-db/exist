@@ -33,6 +33,11 @@ import org.exist.dom.TextImpl;
  */
 public interface StreamListener {
 
+    public final static int STORE = 0;
+
+    public final static int REMOVE = 1;
+
+    public final static int REMOVE_NODES = 2;
     /**
      * Set the next stream listener in the chain. Events should always be forwarded
      * to the next listener.
