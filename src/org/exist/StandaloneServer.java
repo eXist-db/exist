@@ -169,8 +169,7 @@ public class StandaloneServer {
             return;
         }
 
-        System.out.println( "Loading configuration from " + ConfigurationHelper.getExistHome().getAbsolutePath() +
-                File.separatorChar + "conf.xml" );
+        System.out.println( "Loading configuration ...");
         Configuration config = new Configuration("conf.xml");
         BrokerPool.configure( 1, threads, config );
         BrokerPool.getInstance().registerShutdownListener(new ShutdownListenerImpl());
