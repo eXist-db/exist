@@ -72,7 +72,6 @@ public class OverflowRemoveLoggable extends AbstractBFileLoggable {
      * @see org.exist.storage.log.Loggable#write(java.nio.ByteBuffer)
      */
     public void write(ByteBuffer out) {
-        System.out.println("Length = " + length);
         super.write(out);
         out.put(status);
         out.putInt((int) pageNum);
