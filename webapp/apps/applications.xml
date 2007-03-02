@@ -206,22 +206,24 @@
 
     <application>
         <dc:title>TELOTA - Project Of The Month</dc:title>
-        <dc:description> Initiative to inspirit the electronic life of the academy. Every m onth the
+        <dc:description>Initiative to inspirit the electronic life of the academy. Every month the
             data of a selected academy project is processed, (re-)structured and presented on the
-            web to give scientists and the interested public a new view in the extensive knowl edge
+            web to give researchers, scholars and the interested public a new view in the extensive knowledge
             inventory of the academy. We use eXist as backend for web applications in several
-            projects, like dictionarie s and digital editions as well as storage tool in local
-            applications for improving workfl ow. Two exemplary demonstrations are listed below. </dc:description>
+            projects, like dictionaries and digital editions as well as storage tool in local
+            applications for improving workflow. Two exemplary demonstrations are listed below. </dc:description>
         <dc:creator>Alexander Czmiel</dc:creator>
         <creator-site>http://www.bbaw.de/pom.html</creator-site>
-        <dc:publisher> Berlin-Brandenburg Academy of Sciences and Humanities </dc:publisher>
+        <dc:publisher>Berlin-Brandenburg Academy of Sciences and Humanities</dc:publisher>
         <dc:subject>humanities</dc:subject>
         <dc:subject>dictionaries</dc:subject>
         <dc:subject>digital editions</dc:subject>
         <demo-site>http://pom.bbaw.de/JDG/</demo-site>
-        <demo-site>http://www.dwds.de/</demo-site>
+        <demo-site>http://pom.bbaw.de/cmg/</demo-site>
+        <demo-site>http://pom.bbaw.de/pmbz/</demo-site>
         <dev-notes>XQuery, Java, XSLT, Perl</dev-notes>
     </application>
+
     <application>
         <dc:creator>Bruno Chatel</dc:creator>
         <creator-site>http://www.chadocs.com/</creator-site>
