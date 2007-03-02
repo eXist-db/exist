@@ -57,7 +57,6 @@ public class GetExistHome extends BasicFunction {
          * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
          */
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        // TODO: *CONFIG_REFACORTING* This should read the ecist home from the database configuration stored in the active instances Configuration object.
-    	return new StringValue( ConfigurationHelper.getExistHome().getAbsolutePath() );
+    	return new StringValue( context.getBroker().getConfiguration().getExistHome().getAbsolutePath() );
     }
 }
