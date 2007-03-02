@@ -165,10 +165,17 @@ public class Configuration implements ErrorHandler {
                     // when config file points to absolute file location
                     File absoluteConfigFile = new File(configFilename);
                     if (absoluteConfigFile.isAbsolute() &&
-                            absoluteConfigFile.exists() && absoluteConfigFile.canRead())
+                            absoluteConfigFile.exists() && absoluteConfigFile.canRead()) {
                         existHome = absoluteConfigFile.getParentFile();
+                        configFilename = absoluteConfigFile.getName();
+                    }
                 }
-                File configFile = ConfigurationHelper.lookup(configFilename);
+                File configFile = null;
+                if (existHome != null)
+                    // try the passed or constructed existHome first
+                    configFile = new File(existHome, configFilename);
+                if (configFile == null)
+                    configFile = ConfigurationHelper.lookup(configFilename);
                 if (!configFile.exists() || !configFile.canRead())
                     throw new DatabaseConfigurationException("Unable to read configuration file at " + config);
                 configFilePath = configFile.getAbsolutePath();
