@@ -2518,18 +2518,20 @@ public class NativeBroker extends DBBroker {
         if (node.getNodeType() == Node.ELEMENT_NODE)
             currentPath.addComponent(node.getQName());
         indexNode(transaction, node, currentPath, mode);
-        switch (node.getNodeType()) {
-            case Node.TEXT_NODE :
-                listener.characters(transaction, (TextImpl) node, currentPath);
-                break;
-            case Node.ELEMENT_NODE :
-                listener.startElement(transaction, (ElementImpl) node, currentPath);
-                break;
-            case Node.ATTRIBUTE_NODE :
-                listener.attribute(transaction, (AttrImpl) node, currentPath);
-                break;
-            default :
-                LOG.debug("Unhandled node type: " + node.getNodeType());
+        if (listener != null) {
+            switch (node.getNodeType()) {
+                case Node.TEXT_NODE :
+                    listener.characters(transaction, (TextImpl) node, currentPath);
+                    break;
+                case Node.ELEMENT_NODE :
+                    listener.startElement(transaction, (ElementImpl) node, currentPath);
+                    break;
+                case Node.ATTRIBUTE_NODE :
+                    listener.attribute(transaction, (AttrImpl) node, currentPath);
+                    break;
+                default :
+                    LOG.debug("Unhandled node type: " + node.getNodeType());
+            }
         }
         if (node.hasChildNodes()) {
             final int count = node.getChildCount();
@@ -2545,7 +2547,8 @@ public class NativeBroker extends DBBroker {
         }
         if (node.getNodeType() == Node.ELEMENT_NODE) {
             endElement(node, currentPath, null, mode == NodeProcessor.MODE_REMOVE);
-            listener.endElement(transaction, (ElementImpl) node, currentPath);
+            if (listener != null)
+                listener.endElement(transaction, (ElementImpl) node, currentPath);
             currentPath.removeLastComponent();
         }
     }
