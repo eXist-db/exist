@@ -780,7 +780,7 @@ public class XQueryFunctionsTest extends TestCase {
 	    	CollectionManagementService colService = (CollectionManagementService) root.getService("CollectionManagementService", "1.0");
 			Collection testCollection = colService.createCollection(TEST_BINARY_COLLECTION);
 			assertNotNull(testCollection);
-	        // TODO: *CONFIG_REFACORTING* This should read the ecist home from the database configuration stored in the active instances Configuration object.
+
 			File home = ConfigurationHelper.getExistHome();
             File fLogo;
             if (home != null)
