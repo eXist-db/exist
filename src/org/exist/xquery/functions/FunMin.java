@@ -120,18 +120,21 @@ public class FunMin extends CollatingFunction {
                     //Any value of type xdt:untypedAtomic is cast to xs:double
                     if (value.getType() == Type.ATOMIC) 
                     	value = value.convertTo(Type.DOUBLE);
-                	//Ugly test
-	                if (value instanceof NumericValue) {
+                	//Numeric tests
+	                if (Type.subTypeOf(value.getType(), Type.NUMBER)) {
 	                	//Don't mix comparisons
 	                	if (!Type.subTypeOf(min.getType(), Type.NUMBER))
 	                		throw new XPathException("FORG0006: Cannot compare " + Type.getTypeName(min.getType()) + 
 	                				" and " + Type.getTypeName(value.getType()));
 	                	if (((NumericValue) value).isNaN()) {
+	                		//Type NaN correctly
+	                		value = value.promote(min);	                		
                            if (value.getType() == Type.FLOAT)
                                min = FloatValue.NaN;
                            else
                                min = DoubleValue.NaN;
-                           break;
+                           //although result will be NaN, we need to continue on order to type correctly 
+                           continue;
 	                	} 
 	                	min = min.promote(value);
 	                }
@@ -140,6 +143,8 @@ public class FunMin extends CollatingFunction {
                         if (!(min instanceof ComputableValue))
                             throw new XPathException("FORG0006: Cannot compare " + Type.getTypeName(min.getType()) + 
                                     " and " + Type.getTypeName(value.getType()));
+	                	//Type value correctly
+	                	value = value.promote(min);
 	                    min = min.min(collator, value);
 	                    computableProcessing = true;
                 	} else {
