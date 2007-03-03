@@ -110,7 +110,7 @@ public class FunSum extends Function {
         		if (!(value instanceof ComputableValue))
     				throw new XPathException("XPTY0004: '" + Type.getTypeName(value.getType()) + "(" + value + ")' can not be an operand in a sum");
     			if (Type.subTypeOf(value.getType(), Type.NUMBER) && ((NumericValue)value).isNaN()) {
-                    result = DoubleValue.NaN;
+                    sum = DoubleValue.NaN;
                     break;
                 }
     			//Aggregate next values
