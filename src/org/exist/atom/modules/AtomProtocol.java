@@ -284,9 +284,12 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                transact.commit(transaction);
                response.setStatusCode(204);
                response.setHeader("Location",request.getModuleBase()+request.getPath());
+            } catch (IOException ex) {
+                transact.abort(transaction);
+                throw new EXistException("IO error: "+ex.getMessage(),ex);
             } catch (SAXException ex) {
-               transact.abort(transaction);
-               throw new EXistException("SAX error: "+ex.getMessage(),ex);
+                transact.abort(transaction);
+                throw new EXistException("SAX error: "+ex.getMessage(),ex);
             } catch (TriggerException ex) {
                transact.abort(transaction);
                throw new EXistException("Trigger failed: "+ex.getMessage(),ex);
@@ -618,7 +621,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
    }
    
    public void doDelete(DBBroker broker,IncomingMessage request,OutgoingMessage response)
-      throws BadRequestException,PermissionDeniedException,NotFoundException,EXistException
+      throws BadRequestException,PermissionDeniedException,NotFoundException,EXistException,IOException
    {
       XmldbURI pathUri = XmldbURI.create(request.getPath());
       XmldbURI srcUri = null;      

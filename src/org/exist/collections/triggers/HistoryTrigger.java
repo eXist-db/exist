@@ -1,5 +1,6 @@
 package org.exist.collections.triggers;
 
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -73,6 +74,8 @@ public class HistoryTrigger extends FilteringTrigger implements DocumentTrigger 
             Collection destination = broker.getOrCreateCollection(transaction, path);
             broker.saveCollection(transaction, destination);
             broker.copyXMLResource(transaction, doc, destination, name);
+        } catch(IOException exception) {
+            throw new TriggerException(exception);
         }
         catch(PermissionDeniedException exception) {
             throw new TriggerException(exception);

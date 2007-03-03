@@ -1,6 +1,8 @@
 //$Id$
 package org.exist.storage;
 
+import java.io.IOException;
+
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.cluster.ClusterCollection;
@@ -46,7 +48,8 @@ public class NativeClusterBroker extends NativeBroker {
 
     }
 
-    public void saveCollection(Txn transaction, Collection collection) throws PermissionDeniedException {
+    public void saveCollection(Txn transaction, Collection collection) throws PermissionDeniedException,
+    	IOException {
         super.saveCollection( transaction, new ClusterCollection( collection ));
     }
 
@@ -61,7 +64,8 @@ public class NativeClusterBroker extends NativeBroker {
      * @throws org.exist.security.PermissionDeniedException
      *          Description of the Exception
      */
-    public Collection getOrCreateCollection(Txn transaction, XmldbURI name) throws PermissionDeniedException {
+    public Collection getOrCreateCollection(Txn transaction, XmldbURI name) throws PermissionDeniedException,
+    	IOException {
         Collection c=   super.getOrCreateCollection(transaction, name);
         return c==null?null:new ClusterCollection(c);
 

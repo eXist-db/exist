@@ -22,6 +22,7 @@
  */
 package org.exist.security;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -372,6 +373,8 @@ public class XMLSecurityManager implements SecurityManager {
             sysCollection.store(transaction, broker, info, data, false);
 			doc.setPermissions(0770);
 			broker.saveCollection(transaction, doc.getCollection());
+		} catch (IOException e) {
+			throw new EXistException(e.getMessage());
 		} catch (SAXException e) {
 			throw new EXistException(e.getMessage());
 		} catch (PermissionDeniedException e) {
@@ -408,6 +411,9 @@ public class XMLSecurityManager implements SecurityManager {
 		} catch (EXistException e) {
             transact.abort(txn);
 			LOG.debug("error while creating user", e);
+		} catch (IOException e) {
+            transact.abort(txn);
+			LOG.debug("error while creating home collection", e);
 		} catch (PermissionDeniedException e) {
             transact.abort(txn);
 			LOG.debug("error while creating home collection", e);
@@ -425,7 +431,7 @@ public class XMLSecurityManager implements SecurityManager {
 	}
 	
 	private void createUserHome(DBBroker broker, Txn transaction, User user) 
-	throws EXistException, PermissionDeniedException {
+	throws EXistException, PermissionDeniedException, IOException {
 		if(user.getHome() == null)
 			return;
 		broker.setUser(getUser(DBA_USER));

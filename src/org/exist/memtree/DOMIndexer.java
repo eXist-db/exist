@@ -294,10 +294,12 @@ public class DOMIndexer {
     
     private void setPrevious(StoredNode previous) {
         if (prevNode != null) {
-            if (prevNode.getNodeType() == Node.TEXT_NODE ||
-                    prevNode.getNodeType() == Node.COMMENT_NODE ||
-                    prevNode.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE)
-                    prevNode.clear();
+            if (prevNode.getNodeType() == Node.TEXT_NODE 
+            		|| prevNode.getNodeType() == Node.COMMENT_NODE 
+            		|| prevNode.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE
+            		)
+            		if (previous == null || prevNode.getNodeType() != previous.getNodeType())
+            			prevNode.clear();
         }
         prevNode = previous;
     }

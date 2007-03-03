@@ -22,6 +22,7 @@
  */
 package org.exist.xmldb;
 
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Date;
 
@@ -103,6 +104,10 @@ public class LocalCollectionManagementService implements CollectionManagementSer
             transact.abort(transaction);
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
                 "failed to create collection " + collName, e);
+        } catch ( IOException e ) {
+            transact.abort(transaction);
+            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
+                "failed to create collection " + collName, e);
         } catch ( PermissionDeniedException e ) {
             transact.abort(transaction);
             throw new XMLDBException( ErrorCodes.PERMISSION_DENIED,
@@ -171,6 +176,11 @@ public class LocalCollectionManagementService implements CollectionManagementSer
         	e.printStackTrace();
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
                 "failed to remove collection " + collName, e );
+        } catch ( IOException e ) {
+            transact.abort(transaction);
+        	e.printStackTrace();
+            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
+                "failed to remove collection " + collName, e );
         } catch ( PermissionDeniedException e ) {
             transact.abort(transaction);
             throw new XMLDBException( ErrorCodes.PERMISSION_DENIED,
@@ -220,6 +230,11 @@ public class LocalCollectionManagementService implements CollectionManagementSer
             broker.moveCollection(transaction, collection, destination, newName);
             transact.commit(transaction);
         } catch ( EXistException e ) {
+            transact.abort(transaction);
+        	e.printStackTrace();
+            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
+                "failed to move collection " + collectionPath, e );
+        } catch ( IOException e ) {
             transact.abort(transaction);
         	e.printStackTrace();
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
@@ -282,9 +297,14 @@ public class LocalCollectionManagementService implements CollectionManagementSer
             if (newName == null)
                 newName = resourcePath.lastSegment();
             
-	    broker.moveXMLResource(transaction, doc, destination, newName);
+            broker.moveXMLResource(transaction, doc, destination, newName);
             transact.commit(transaction);
         } catch ( EXistException e ) {
+            transact.abort(transaction);
+        	e.printStackTrace();
+            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
+                "failed to move resource " + resourcePath, e );
+        } catch ( IOException e ) {
             transact.abort(transaction);
         	e.printStackTrace();
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
@@ -346,6 +366,11 @@ public class LocalCollectionManagementService implements CollectionManagementSer
             broker.copyCollection(transaction, collection, destination, newName);
             transact.commit(transaction);
         } catch ( EXistException e ) {
+            transact.abort(transaction);
+        	e.printStackTrace();
+            throw new XMLDBException( ErrorCodes.VENDOR_ERROR,
+                "failed to move collection " + collectionPath, e );
+        } catch ( IOException e ) {
             transact.abort(transaction);
         	e.printStackTrace();
             throw new XMLDBException( ErrorCodes.VENDOR_ERROR,

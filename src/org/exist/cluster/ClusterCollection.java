@@ -329,21 +329,21 @@ public final class ClusterCollection extends Collection {
 
     public IndexInfo validateXMLResource(Txn txn, DBBroker broker, XmldbURI name, InputSource source)
             throws EXistException, PermissionDeniedException, TriggerException,
-            SAXException, LockException {
+            SAXException, LockException, IOException {
         return collection.validateXMLResource(txn, broker, name, source);
     }
 
 
     public IndexInfo validateXMLResource(Txn txn, DBBroker broker, XmldbURI name, String data)
             throws EXistException, PermissionDeniedException, TriggerException,
-            SAXException, LockException {
+            SAXException, LockException,IOException {
         return collection.validateXMLResource(txn, broker, name, data);
     }
 
 
     public IndexInfo validateXMLResource(Txn txn, DBBroker broker, XmldbURI name, Node node)
             throws EXistException, PermissionDeniedException, TriggerException,
-            SAXException, LockException {
+            SAXException, LockException, IOException {
         return collection.validateXMLResource(txn, broker, name, node);
     }
 

@@ -13,9 +13,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+
 import org.exist.EXistException;
 import org.exist.atom.AtomModule;
 import org.exist.atom.IncomingMessage;
@@ -48,7 +46,7 @@ public class AtomModuleBase implements AtomModule {
    }
    
    public void process(DBBroker broker,IncomingMessage request,OutgoingMessage response) 
-      throws BadRequestException,PermissionDeniedException,NotFoundException,EXistException
+      throws BadRequestException,PermissionDeniedException,NotFoundException,EXistException,IOException
    {
       String method = request.getMethod();
       if (method.equals("GET")) {
@@ -87,7 +85,7 @@ public class AtomModuleBase implements AtomModule {
       throw new BadRequestException("Method "+request.getMethod()+" is not supported by this module.");
    }
    public void doDelete(DBBroker broker,IncomingMessage request,OutgoingMessage response) 
-      throws BadRequestException,PermissionDeniedException,NotFoundException,EXistException
+      throws BadRequestException,PermissionDeniedException,NotFoundException,EXistException, IOException
    {
       throw new BadRequestException("Method "+request.getMethod()+" is not supported by this module.");
    }

@@ -586,6 +586,9 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             }
             transact.abort(transaction);
             throw new PermissionDeniedException("not allowed to change permissions");
+        } catch (IOException e) {
+            transact.abort(transaction);
+            throw new RemoteException(e.getMessage());
         } catch (PermissionDeniedException e) {
             transact.abort(transaction);
             throw new RemoteException(e.getMessage());
@@ -664,6 +667,8 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             throw new RemoteException("Could not move/copy document " + docPath);
         } catch (TransactionException e) {
             throw new RemoteException("Error commiting transaction " + e.getMessage());
+        } catch (IOException e) {
+            throw new RemoteException(e.getMessage());
         } catch (EXistException e) {
             throw new RemoteException(e.getMessage());
         } finally {
@@ -718,6 +723,8 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
             transact.commit(transaction);
 //            documentCache.clear();
             return true;
+        } catch (IOException e) {
+            throw new RemoteException(e.getMessage());            
         } catch (LockException e) {
             transact.abort(transaction);
             throw new PermissionDeniedException(e.getMessage());
