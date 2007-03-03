@@ -31,6 +31,7 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.ComputableValue;
 import org.exist.xquery.value.DoubleValue;
+import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
@@ -39,6 +40,9 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 public class FunSum extends Function {
+	
+	//Used to detect overflows : currently not used.
+	private boolean gotInfinity = false;
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
@@ -86,7 +90,8 @@ public class FunSum extends Function {
         
 		Sequence inner = getArgument(0).eval(contextSequence, contextItem);	
 		if (inner.isEmpty()) {
-			Sequence zero = DoubleValue.ZERO;
+			//If $zero is not specified, then the value returned for an empty sequence is the xs:integer value 0
+			Sequence zero = IntegerValue.ZERO;
 			if(getSignature().getArgumentCount() == 2)
 				zero = getArgument(1).eval(contextSequence, contextItem);
 			result = zero;
@@ -109,16 +114,27 @@ public class FunSum extends Function {
                 	value = value.convertTo(Type.DOUBLE);
         		if (!(value instanceof ComputableValue))
     				throw new XPathException("XPTY0004: '" + Type.getTypeName(value.getType()) + "(" + value + ")' can not be an operand in a sum");
-    			if (Type.subTypeOf(value.getType(), Type.NUMBER) && ((NumericValue)value).isNaN()) {
-                    sum = DoubleValue.NaN;
-                    break;
-                }
+    			if (Type.subTypeOf(value.getType(), Type.NUMBER)) {
+    				if (((NumericValue)value).isInfinite())
+    					gotInfinity = true;    					
+    				if (((NumericValue)value).isNaN()) {
+    					sum = DoubleValue.NaN;
+    					break;
+    				}
+    			}
+    			sum = (ComputableValue)sum.promote(value);
     			//Aggregate next values
     			sum = sum.plus((ComputableValue) value);
     		}
     		result = sum;
         }
         
+		if (!gotInfinity) {
+			if (Type.subTypeOf(result.getItemType(), Type.NUMBER) && ((NumericValue)result).isInfinite()) {
+				//Throw an overflow eception here since we get an infinity 
+				//whereas is hasn't been provided by the sequence
+			}
+		}
 
         if (context.getProfiler().isEnabled())
             context.getProfiler().end(this, "", result);
