@@ -170,8 +170,8 @@ public class Configuration implements ErrorHandler {
                         configFilename = absoluteConfigFile.getName();
                     }
                 }
-                File configFile = null;
-                if (existHome != null)
+                File configFile = new File(configFilename);
+                if (!configFile.isAbsolute() && existHome != null)
                     // try the passed or constructed existHome first
                     configFile = new File(existHome, configFilename);
                 if (configFile == null)
