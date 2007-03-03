@@ -32,8 +32,10 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.ComputableValue;
+import org.exist.xquery.value.DoubleValue;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
@@ -43,6 +45,9 @@ import org.exist.xquery.value.Type;
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
 public class FunAvg extends Function {
+	
+	//Used to detect overflows : currently not used.
+	private boolean gotInfinity = false;
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
@@ -77,31 +82,51 @@ public class FunAvg extends Function {
 		if (inner.isEmpty())
             result = Sequence.EMPTY_SEQUENCE;
         else {
-        	SequenceIterator iter = inner.unorderedIterator();
-    		//SequenceIterator iter = inner.iterate();    		
-    		ComputableValue sum = null;
+    		SequenceIterator iter = inner.iterate();
+    		Item item = iter.nextItem();
+    		AtomicValue value = item.atomize();
+            //Any values of type xdt:untypedAtomic in the sequence $arg are cast to xs:double
+            if (value.getType() == Type.UNTYPED_ATOMIC) 
+            	value = value.convertTo(Type.DOUBLE);
+    		if (!(value instanceof ComputableValue))
+				throw new XPathException("XPTY0004: '" + Type.getTypeName(value.getType()) + "(" + value + ")' can not be an operand in a sum");
+    		//Set the first value
+    		ComputableValue sum = (ComputableValue) value;
     		while (iter.hasNext()) {
-    			Item item = iter.nextItem();
-    			AtomicValue value = item.atomize();
+    			item = iter.nextItem();
+    			value = item.atomize();
                 //Any values of type xdt:untypedAtomic in the sequence $arg are cast to xs:double
-                if (value.getType() == Type.UNTYPED_ATOMIC) value = value.convertTo(Type.DOUBLE);
+                if (value.getType() == Type.UNTYPED_ATOMIC) 
+                	value = value.convertTo(Type.DOUBLE);
         		if (!(value instanceof ComputableValue))
-    				throw new XPathException("XPTY0004: '" + Type.getTypeName(value.getType()) + "(" + value + ")' can not be an operand in an average");
-    			if (sum == null)
-    				sum = (ComputableValue)value;
-    			else {
-    				try {
-    					sum = (ComputableValue)sum.promote(value);
-    					sum = sum.plus((ComputableValue)value);
-    				} catch(XPathException e) {
-    					throw new XPathException("FORG0006: " + e.getMessage(), e);    					
+    				throw new XPathException("XPTY0004: '" + Type.getTypeName(value.getType()) + "(" + value + ")' can not be an operand in a sum");
+    			if (Type.subTypeOf(value.getType(), Type.NUMBER)) {
+    				if (((NumericValue)value).isInfinite())
+    					gotInfinity = true;    					
+    				if (((NumericValue)value).isNaN()) {
+    					sum = DoubleValue.NaN;
+    					break;
     				}
     			}
+    			try {
+    				sum = (ComputableValue)sum.promote(value);
+	    			//Aggregate next values	    	
+    				sum = sum.plus((ComputableValue) value);
+				} catch(XPathException e) {
+					throw new XPathException("FORG0006: " + e.getMessage(), e);    					
+				}
     		}
     		result = sum.div(new IntegerValue(inner.getLength()));
         }
         
-        if (context.getProfiler().isEnabled()) 
+		if (!gotInfinity) {
+			if (Type.subTypeOf(result.getItemType(), Type.NUMBER) && ((NumericValue)result).isInfinite()) {
+				//Throw an overflow eception here since we get an infinity 
+				//whereas is hasn't been provided by the sequence
+			}
+		}
+
+		if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result);        
         
         return result;        
