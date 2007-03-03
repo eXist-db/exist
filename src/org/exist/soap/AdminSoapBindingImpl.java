@@ -665,10 +665,11 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
         } catch (PermissionDeniedException e) {
             transact.abort(transaction);
             throw new RemoteException("Could not move/copy document " + docPath);
+        } catch (IOException e) {
+            transact.abort(transaction);
+            throw new RemoteException(e.getMessage());
         } catch (TransactionException e) {
             throw new RemoteException("Error commiting transaction " + e.getMessage());
-        } catch (IOException e) {
-            throw new RemoteException(e.getMessage());
         } catch (EXistException e) {
             throw new RemoteException(e.getMessage());
         } finally {
@@ -724,9 +725,10 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 //            documentCache.clear();
             return true;
         } catch (IOException e) {
+        	transact.abort(transaction);
             throw new RemoteException(e.getMessage());            
         } catch (LockException e) {
-            transact.abort(transaction);
+        	transact.abort(transaction);
             throw new PermissionDeniedException(e.getMessage());
         } finally {
             if(collection != null)

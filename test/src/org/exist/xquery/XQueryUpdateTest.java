@@ -41,7 +41,7 @@ public class XQueryUpdateTest extends TestCase {
     protected static String UPDATE_XML =
         "<progress total=\"100\" done=\"0\" failed=\"0\" passed=\"0\"/>";
     
-    protected final static int ITEMS_TO_APPEND = 2000;
+    protected final static int ITEMS_TO_APPEND = 1000;
     
     private BrokerPool pool;
     
