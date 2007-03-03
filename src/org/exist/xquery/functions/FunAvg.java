@@ -91,6 +91,7 @@ public class FunAvg extends Function {
     				sum = (ComputableValue)value;
     			else {
     				try {
+    					sum = (ComputableValue)sum.promote(value);
     					sum = sum.plus((ComputableValue)value);
     				} catch(XPathException e) {
     					throw new XPathException("FORG0006: " + e.getMessage(), e);    					
