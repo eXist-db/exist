@@ -51,7 +51,6 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.LockException;
-import org.exist.util.SingleInstanceConfiguration;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XQuery;
 import org.w3c.dom.Document;
@@ -305,10 +304,8 @@ public abstract class DBBroker extends Observable {
 	 * 
 	 * @return collection or null if no collection matches the path
 	 */
-	public Collection getOrCreateCollection(Txn transaction, XmldbURI uri)
-			throws PermissionDeniedException {
-		return null;
-	}
+	public abstract Collection getOrCreateCollection(Txn transaction, XmldbURI uri)
+			throws PermissionDeniedException, IOException;
 
 	/**
 	 * Returns the configuration object used to initialize the current database
@@ -419,7 +416,7 @@ public abstract class DBBroker extends Observable {
 	 * 
 	 */
 	public abstract boolean removeCollection(Txn transaction,
-			Collection collection) throws PermissionDeniedException;
+			Collection collection) throws PermissionDeniedException, IOException;
 
 	/**
 	 * Remove a document from the database.
@@ -459,7 +456,7 @@ public abstract class DBBroker extends Observable {
      * @throws org.exist.security.PermissionDeniedException 
      */
 	public abstract void saveCollection(Txn transaction, Collection collection)
-			throws PermissionDeniedException;
+			throws PermissionDeniedException, IOException;
 
 	public void closeDocument() {
 	}
@@ -570,7 +567,7 @@ public abstract class DBBroker extends Observable {
 	 */
 	public abstract void moveCollection(Txn transaction, Collection collection,
 			Collection destination, XmldbURI newName)
-			throws PermissionDeniedException, LockException;
+			throws PermissionDeniedException, LockException, IOException;
 
 	/**
 	 * Move a resource to the destination collection and rename it.
@@ -585,7 +582,7 @@ public abstract class DBBroker extends Observable {
 	 */
 	public abstract void moveXMLResource(Txn transaction, DocumentImpl doc,
 			Collection destination, XmldbURI newName)
-			throws PermissionDeniedException, LockException;
+			throws PermissionDeniedException, LockException, IOException;
 
 	/**
 	 * Copy a collection to the destination collection and rename it.
@@ -600,7 +597,7 @@ public abstract class DBBroker extends Observable {
 	 */
 	public abstract void copyCollection(Txn transaction, Collection collection,
 			Collection destination, XmldbURI newName)
-			throws PermissionDeniedException, LockException;
+			throws PermissionDeniedException, LockException, IOException;
 
 	/**
 	 * Copy a resource to the destination collection and rename it.
@@ -708,7 +705,7 @@ public abstract class DBBroker extends Observable {
 	 * Clean up any temporary resources.
 	 * 
 	 */
-	public abstract void cleanUpTempCollection();
+	public abstract void cleanUpTempCollection() throws IOException;
 
 	/**
 	 * Clean up temporary resources. Called by the sync daemon.

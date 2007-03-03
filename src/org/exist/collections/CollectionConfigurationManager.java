@@ -21,6 +21,7 @@
  */
 package org.exist.collections;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
@@ -95,6 +96,8 @@ public class CollectionConfigurationManager {
 			IndexInfo info = confCol.validateXMLResource(transaction, broker, configurationDocumentName, config);
 			confCol.store(transaction, broker, info, config, false);
 			//broker.sync(Sync.MAJOR_SYNC);
+		} catch (IOException e) {
+			throw new CollectionConfigurationException("Failed to store collection configuration: " + e.getMessage(), e);
 		} catch (PermissionDeniedException e) {
 			throw new CollectionConfigurationException("Failed to store collection configuration: " + e.getMessage(), e);
 		} catch (CollectionConfigurationException e) {
@@ -244,6 +247,9 @@ public class CollectionConfigurationManager {
     			broker.saveCollection(txn, root);
                 transact.commit(txn);
     		}
+    	} catch (IOException e) {
+    		transact.abort(txn);
+    		throw new EXistException("Failed to initialize '" + CONFIG_COLLECTION + "' : " + e.getMessage());
     	} catch (PermissionDeniedException e) {
     		transact.abort(txn);
     		throw new EXistException("Failed to initialize '" + CONFIG_COLLECTION + "' : " + e.getMessage());

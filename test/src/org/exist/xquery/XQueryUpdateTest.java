@@ -1,5 +1,7 @@
 package org.exist.xquery;
 
+import java.io.IOException;
+
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
 
@@ -20,14 +22,9 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.CompiledXQuery;
-import org.exist.xquery.XQuery;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.xml.sax.SAXException;
-import org.apache.log4j.BasicConfigurator;
 
 public class XQueryUpdateTest extends TestCase {
 
@@ -44,7 +41,7 @@ public class XQueryUpdateTest extends TestCase {
     protected static String UPDATE_XML =
         "<progress total=\"100\" done=\"0\" failed=\"0\" passed=\"0\"/>";
     
-    protected final static int ITEMS_TO_APPEND = 1000;
+    protected final static int ITEMS_TO_APPEND = 2000;
     
     private BrokerPool pool;
     
@@ -519,16 +516,20 @@ public class XQueryUpdateTest extends TestCase {
 		Txn transaction = mgr.beginTransaction();        
 		System.out.println("Transaction started ...");
 		
-		Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION);
-		broker.saveCollection(transaction, root);
-		
-		IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create(docName), data);
-		root.store(transaction, broker, info, data, false);
-   
-		mgr.commit(transaction);
-		
-		DocumentImpl doc = root.getDocument(broker, XmldbURI.create(docName));
-	    broker.getSerializer().serialize(doc);
+		try {
+			Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION);
+			broker.saveCollection(transaction, root);
+			
+			IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create(docName), data);
+			root.store(transaction, broker, info, data, false);
+	   
+			mgr.commit(transaction);
+			
+			DocumentImpl doc = root.getDocument(broker, XmldbURI.create(docName));
+		    broker.getSerializer().serialize(doc);
+		} catch (IOException e) {
+			fail();
+		}
 	}
     
     protected BrokerPool startDB() {

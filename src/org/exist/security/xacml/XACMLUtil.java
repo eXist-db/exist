@@ -231,6 +231,12 @@ public class XACMLUtil implements UpdateListener
 				broker.saveCollection(txn, policyCollection);
 				transact.commit(txn);
 			}
+			catch (IOException e)
+			{
+				transact.abort(txn);
+				LOG.error("Error creating policy collection", e);
+				return null;
+			}
 			catch (EXistException e)
 			{
 				transact.abort(txn);

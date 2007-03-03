@@ -1005,7 +1005,7 @@ public  class Collection extends Observable
      */    
     public IndexInfo validateXMLResource(Txn transaction, DBBroker broker, XmldbURI docUri, String data)
     throws EXistException, PermissionDeniedException, TriggerException,
-            SAXException, LockException {
+            SAXException, LockException, IOException {
         return validateXMLResource(transaction, broker, docUri, new InputSource(new StringReader(data)));
     }
     
@@ -1024,7 +1024,7 @@ public  class Collection extends Observable
      */    
     public IndexInfo validateXMLResource(Txn transaction, final DBBroker broker, XmldbURI docUri, final InputSource source)
     throws EXistException, PermissionDeniedException, TriggerException,
-            SAXException, LockException {
+            SAXException, LockException, IOException {
         return validateXMLResourceInternal(transaction, broker, docUri, new ValidateBlock() {
             public void run(IndexInfo info) throws SAXException, EXistException {
                 info.setReader(getReader(broker), Collection.this);
@@ -1052,7 +1052,7 @@ public  class Collection extends Observable
      */    
     public IndexInfo validateXMLResource(Txn transaction, final DBBroker broker, XmldbURI docUri, final Node node)
     throws EXistException, PermissionDeniedException, TriggerException,
-            SAXException, LockException {
+            SAXException, LockException, IOException {
         return validateXMLResourceInternal(transaction, broker, docUri, new ValidateBlock() {
             public void run(IndexInfo info) throws SAXException {
                 info.setDOMStreamer(new DOMStreamer());
@@ -1075,7 +1075,7 @@ public  class Collection extends Observable
      * @throws LockException
      */
     private IndexInfo validateXMLResourceInternal(Txn transaction, DBBroker broker, XmldbURI docUri, ValidateBlock doValidate)
-    throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException {
+    throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
     	//Make the necessary operations if we process a collection configuration document
         checkConfigurationDocument(transaction, broker, docUri);
 
@@ -1156,7 +1156,8 @@ public  class Collection extends Observable
         }
     }
     
-    private void checkConfigurationDocument(Txn transaction, DBBroker broker, XmldbURI docUri) throws EXistException, PermissionDeniedException {
+    private void checkConfigurationDocument(Txn transaction, DBBroker broker, XmldbURI docUri) throws EXistException, PermissionDeniedException,
+    	IOException {
     	//Is it a collection configuration file ?
         if (!getURI().startsWith(CollectionConfigurationManager.CONFIG_COLLECTION_URI))
         	return;

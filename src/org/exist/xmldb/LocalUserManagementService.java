@@ -1,5 +1,6 @@
 package org.exist.xmldb;
 
+import java.io.IOException;
 import java.util.Iterator;
 
 import org.exist.EXistException;
@@ -109,6 +110,12 @@ public class LocalUserManagementService implements UserManagementService {
 			broker.saveCollection(transaction, coll);
             transact.commit(transaction);
 			broker.flush();
+		} catch (IOException e) {
+            transact.abort(transaction);
+			throw new XMLDBException(
+				ErrorCodes.VENDOR_ERROR,
+				e.getMessage(),
+				e);
 		} catch (EXistException e) {
             transact.abort(transaction);
 			throw new XMLDBException(
@@ -167,6 +174,12 @@ public class LocalUserManagementService implements UserManagementService {
 			throw new XMLDBException(
 				ErrorCodes.VENDOR_ERROR,
 				"Failed to acquire lock on collections.dbx",
+				e);
+		} catch (IOException e) {
+            transact.abort(transaction);
+			throw new XMLDBException(
+				ErrorCodes.VENDOR_ERROR,
+				e.getMessage(),
 				e);
 		} catch (EXistException e) {
             transact.abort(transaction);
@@ -240,6 +253,12 @@ public class LocalUserManagementService implements UserManagementService {
 			broker.saveCollection(transaction, coll);
             transact.commit(transaction);
 			broker.flush();
+		} catch (IOException e) {
+            transact.abort(transaction);
+			throw new XMLDBException(
+				ErrorCodes.VENDOR_ERROR,
+				e.getMessage(),
+				e);
 		} catch (EXistException e) {
             transact.abort(transaction);
 			throw new XMLDBException(
@@ -325,6 +344,12 @@ public class LocalUserManagementService implements UserManagementService {
             transact.commit(transaction);
 			broker.flush();
 			//broker.sync();
+		} catch (IOException e) {
+            transact.abort(transaction);
+			throw new XMLDBException(
+				ErrorCodes.VENDOR_ERROR,
+				e.getMessage(),
+				e);
 		} catch (EXistException e) {
             transact.abort(transaction);
 			throw new XMLDBException(

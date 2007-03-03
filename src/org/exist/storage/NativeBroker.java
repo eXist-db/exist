@@ -582,7 +582,8 @@ public class NativeBroker extends DBBroker {
     }
     
     /** create temporary collection */  
-    private Collection createTempCollection(Txn transaction) throws LockException, PermissionDeniedException {
+    private Collection createTempCollection(Txn transaction) throws LockException, PermissionDeniedException,
+    		IOException {
         User u = user;
         Lock lock = collectionsDb.getLock();
         try {           
@@ -599,7 +600,7 @@ public class NativeBroker extends DBBroker {
     } 
     
     /** remove temporary collection */  
-    public void cleanUpTempCollection() {
+    public void cleanUpTempCollection() throws IOException {
         Collection temp = getCollection(XmldbURI.TEMP_COLLECTION_URI);
         if(temp == null)
             return;
@@ -617,7 +618,8 @@ public class NativeBroker extends DBBroker {
         }
     }
     
-    public Collection getOrCreateCollection(Txn transaction, XmldbURI name) throws PermissionDeniedException {
+    public Collection getOrCreateCollection(Txn transaction, XmldbURI name) throws PermissionDeniedException,
+    	IOException {
     	name = prepend(name.normalizeCollectionPath());
         final CollectionCache collectionsCache = pool.getCollectionsCache();
         synchronized(collectionsCache) {
@@ -754,7 +756,7 @@ public class NativeBroker extends DBBroker {
 	}
     
    public void copyCollection(Txn transaction, Collection collection, Collection destination, XmldbURI newUri)
-   	throws PermissionDeniedException, LockException {
+   	throws PermissionDeniedException, LockException, IOException {
        if (readOnly)
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
        //TODO : resolve URIs !!!
@@ -837,7 +839,7 @@ public class NativeBroker extends DBBroker {
     }
     
     public void moveCollection(Txn transaction, Collection collection, Collection destination, XmldbURI newName) 
-    throws PermissionDeniedException, LockException {
+    throws PermissionDeniedException, LockException, IOException {
         if (readOnly)
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
  	   if(newName!=null && newName.numSegments()!=1) {
@@ -914,7 +916,8 @@ public class NativeBroker extends DBBroker {
         }
     }    
     
-    public boolean removeCollection(final Txn transaction, Collection collection) throws PermissionDeniedException {
+    public boolean removeCollection(final Txn transaction, Collection collection) throws PermissionDeniedException,
+    	IOException {
         if (readOnly)
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);        
         if (!collection.getPermissions().validate(user, Permission.WRITE))
@@ -1056,7 +1059,8 @@ public class NativeBroker extends DBBroker {
      * 
      * Note: appending a new document to a collection does not require a save.
      */
-    public void saveCollection(Txn transaction, Collection collection) throws PermissionDeniedException {
+    public void saveCollection(Txn transaction, Collection collection) throws 
+    	PermissionDeniedException, IOException {
         if (collection == null) {
             LOG.error("NativeBroker.saveCollection called with collection == null! Aborting.");
             return;
@@ -1076,20 +1080,17 @@ public class NativeBroker extends DBBroker {
 
             Value name = new CollectionStore.CollectionKey(collection.getURI().toString());
             
-            try {
-                final VariableByteOutputStream ostream = new VariableByteOutputStream(8);
-                collection.write(this, ostream);
-                final long addr = collectionsDb.put(transaction, name, ostream.data(), true);
-                if (addr == BFile.UNKNOWN_ADDRESS) {
-                    //TODO : exception !!! -pb
-                    LOG.warn("could not store collection data for '" + collection.getURI()+ "'");
-                    return;
-                }
-                collection.setAddress(addr);
-                ostream.close();
-            } catch (IOException ioe) {
-                LOG.warn(ioe);
+            final VariableByteOutputStream ostream = new VariableByteOutputStream(8);
+            collection.write(this, ostream);
+            final long addr = collectionsDb.put(transaction, name, ostream.data(), true);
+            if (addr == BFile.UNKNOWN_ADDRESS) {
+                //TODO : exception !!! -pb
+                LOG.warn("could not store collection data for '" + collection.getURI()+ "'");
+                return;
             }
+            collection.setAddress(addr);
+            ostream.close();
+
         } catch (ReadOnlyException e) {
             LOG.warn(DATABASE_IS_READ_ONLY);
         } catch (LockException e) {
@@ -1314,6 +1315,9 @@ public class NativeBroker extends DBBroker {
             {
             	//creates temp collection with lock
                 temp = createTempCollection(transaction);
+                if (temp == null) {
+                	LOG.warn("Failed to create temporary collection");
+                }
             }
             else
             {
@@ -1353,7 +1357,7 @@ public class NativeBroker extends DBBroker {
         }
         catch (Exception e)
         {
-            LOG.warn("Failed to store temporary fragment: " + e.getMessage(), e);
+        	LOG.warn("Failed to store temporary fragment: " + e.getMessage(), e);
          
             //abort the transaction
             transact.abort(transaction);
@@ -1394,6 +1398,9 @@ public class NativeBroker extends DBBroker {
                 transact.abort(txn);
                 LOG.warn("Transaction aborted: " + e.getMessage(), e);
             } catch (PermissionDeniedException e) {
+                transact.abort(txn);
+                LOG.warn("Failed to remove temp collection: " + e.getMessage(), e);
+            } catch (IOException e) {
                 transact.abort(txn);
                 LOG.warn("Failed to remove temp collection: " + e.getMessage(), e);
             }
@@ -1714,7 +1721,7 @@ public class NativeBroker extends DBBroker {
     
     /** move Resource to another collection, with possible rename */
     public void moveXMLResource(Txn transaction, DocumentImpl doc, Collection destination, XmldbURI newName)
-    throws PermissionDeniedException, LockException {
+    throws PermissionDeniedException, LockException, IOException {
         if (readOnly)
             throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
         

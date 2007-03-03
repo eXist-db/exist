@@ -21,6 +21,7 @@
 package org.exist.storage;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -707,9 +708,11 @@ public class BrokerPool {
             			//TODO : use a root collection final member
             			broker.getOrCreateCollection(txn, XmldbURI.ROOT_COLLECTION_URI);
             			transactionManager.commit(txn);
-            		} catch (PermissionDeniedException e) {
+            		} catch (IOException e) {
             			transactionManager.abort(txn);
-            		}
+	        		} catch (PermissionDeniedException e) {
+	        			transactionManager.abort(txn);
+	        		}
             	}
             }
         }
@@ -719,7 +722,11 @@ public class BrokerPool {
         // either normal startup or recovery.
         
         // remove temporary docs
-		broker.cleanUpTempCollection();
+		try {
+			broker.cleanUpTempCollection();
+		} catch (IOException e) {
+			LOG.warn("Can not cleaup tempcollection", e);
+		}
         
         //create the security manager
 		//TODO : why only the first broker has a security manager ? Global or attached to each broker ?

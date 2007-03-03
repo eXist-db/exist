@@ -23,6 +23,7 @@
  */
 package org.exist.xmldb;
 
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -176,6 +177,9 @@ public class LocalCollection extends Observable implements CollectionImpl {
                 throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
             broker.saveCollection(transaction, collection);
             transact.commit(transaction);
+        } catch (IOException e) {
+            transact.abort(transaction);
+            throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
         } catch (EXistException e) {
             transact.abort(transaction);
             throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, e.getMessage(), e);
@@ -663,18 +667,13 @@ public class LocalCollection extends Observable implements CollectionImpl {
                 transact.abort(txn);
                 throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
             }
-            collection.addBinaryResource(txn,
-                    broker,
-                    resURI,
-                    (byte[]) res.getContent(),
-                    res.getMimeType(), res.datecreated, res.datemodified  );
+            collection.addBinaryResource(txn, broker, resURI, (byte[]) res.getContent(),
+                    res.getMimeType(), res.datecreated, res.datemodified);
             transact.commit(txn);
         } catch (Exception e) {
             transact.abort(txn);
-            throw new XMLDBException(
-                    ErrorCodes.VENDOR_ERROR,
-                    "Exception while storing binary resource: " + e.getMessage(),
-                    e);
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR,
+                    "Exception while storing binary resource: " + e.getMessage(), e);
         } finally {
             if(collection != null)
                 collection.getLock().release(Lock.WRITE_LOCK);
@@ -697,8 +696,9 @@ public class LocalCollection extends Observable implements CollectionImpl {
             String uri = null;
             if(res.file != null) uri = res.file.toURI().toASCIIString();
             IndexInfo info = null;
-            Collection collection = broker.openCollection(path, Lock.WRITE_LOCK);
+            Collection collection = null;
             try {
+                collection = broker.openCollection(path, Lock.WRITE_LOCK);
                 if(collection == null) {
                     transact.abort(txn);
                     throw new XMLDBException(ErrorCodes.INVALID_COLLECTION, "Collection " + path + " not found");
@@ -717,15 +717,15 @@ public class LocalCollection extends Observable implements CollectionImpl {
                     info = collection.validateXMLResource(txn, broker, resURI, res.content);
                 //Notice : the document should now have a Lock.WRITE_LOCK update lock
                 //TODO : check that no exception occurs in order to allow it to be released
-                info.getDocument().getMetadata().setMimeType(res.getMimeType());
-                
+                info.getDocument().getMetadata().setMimeType(res.getMimeType());                
                 if (res.datecreated  != null)
                     info.getDocument().getMetadata().setCreated( res.datecreated.getTime());
                 
                 if (res.datemodified != null)
                     info.getDocument().getMetadata().setLastModified( res.datemodified.getTime());          
             } finally {
-                collection.release(Lock.WRITE_LOCK);
+            	if (collection != null)
+            		collection.release(Lock.WRITE_LOCK);
             }
             if (uri != null) {
                 collection.store(txn, broker, info, new InputSource(uri), false);
