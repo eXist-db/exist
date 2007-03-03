@@ -124,23 +124,28 @@ public class FunMax extends CollatingFunction {
                     //Any value of type xdt:untypedAtomic is cast to xs:double
                     if (value.getType() == Type.UNTYPED_ATOMIC) 
                     	value = value.convertTo(Type.DOUBLE);                	
-                	//Ugly test
-	                if (value instanceof NumericValue) {
+                	//Numeric tests
+	                if (Type.subTypeOf(value.getType(), Type.NUMBER)) {
 	                	//Don't mix comparisons
 	                	if (!Type.subTypeOf(max.getType(), Type.NUMBER))
 	                		throw new XPathException("FORG0006: Cannot compare " + Type.getTypeName(max.getType()) + 
 	                				" and " + Type.getTypeName(value.getType()));
 	                	if (((NumericValue) value).isNaN()) {
+	                		//Type NaN correctly
+	                		value = value.promote(max);
                             if (value.getType() == Type.FLOAT)
                                    max = FloatValue.NaN;
                                else
                                    max = DoubleValue.NaN;
-                           break;
-	                	}
-	                	max = max.promote(value);
+                            //although result will be NaN, we need to continue on order to type correctly 
+                            continue;
+	                	} else
+	                		max = max.promote(value);
 	                }
 	                //Ugly test
 	                if (max instanceof ComputableValue && value instanceof ComputableValue) {
+	                	//Type value correctly
+	                	value = value.promote(max);
 	                    max = (ComputableValue) max.max(collator, value);
 	                    computableProcessing = true;
                 	} else {
