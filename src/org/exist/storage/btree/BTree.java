@@ -845,6 +845,8 @@ public class BTree extends Paged {
                 currentDataLen += nKeys - 1;
             for (int i = 0; i < nKeys; i++) {
                 if (ph.getStatus() == LEAF && i > 0) {
+                    // if this is a leaf page, we use prefix compression to store the keys,
+                    // so subtract the size of the prefix
                     int prefix = keys[i].commonPrefix(keys[i - 1]);
                     currentDataLen += keys[i].getLength() - prefix;
                 } else
@@ -905,11 +907,17 @@ public class BTree extends Paged {
 					p += 2;
 				}
                 if (ph.getStatus() == LEAF && i > 0) {
+                    // for leaf pages, we use prefix compression to increase the number of
+                    // keys that can be stored on one page. Each key is stored as follows:
+                    // [valSize, prefixLen, value], where prefixLen specifies the number of
+                    // leading bytes the key has in common with the previous key.
                     int prefixLen = (data[p++] & 0xFF);
                     try {
                         byte[] t = new byte[valSize];
                         if (prefixLen > 0)
+                            // copy prefixLen leading bytes from the previous key
                             System.arraycopy(keys[i - 1].data(), keys[i - 1].start(), t, 0, prefixLen);
+                        // read the remaining bytes
                         System.arraycopy(data, p, t, prefixLen, valSize - prefixLen);
                         p += valSize - prefixLen;
                         keys[i] = new Value(t);
@@ -951,10 +959,16 @@ public class BTree extends Paged {
 					p += 2;
 				}
                 if (ph.getStatus() == LEAF && i > 0) {
-                    int prefixLen = keys[i].commonPrefix(keys[i - 1]);
-                    if (prefixLen < 0 || prefixLen > 255)
+                    // for leaf pages, we use prefix compression to increase the number of
+                    // keys that can be stored on one page. Each key is stored as follows:
+                    // [valSize, prefixLen, value], where prefixLen specifies the number of
+                    // leading bytes the key has in common with the previous key.
+                    int prefixLen = keys[i].commonPrefix(keys[i - 1]);  // determine the common prefix
+                    if (prefixLen < 0 || prefixLen > Byte.MAX_VALUE)
                         prefixLen = 0;
+                    // store the length of the prefix
                     temp[p++] = (byte) prefixLen;
+                    // copy the remaining bytes, starting at prefixLen
                     System.arraycopy(keys[i].data(), keys[i].start() + prefixLen, temp, p, keys[i].getLength() - prefixLen);
                     p += keys[i].getLength() - prefixLen;
                 } else {
@@ -2084,17 +2098,6 @@ public class BTree extends Paged {
 		//buf.append(cache.getFails());
 		LOG.info(buf.toString());
 //        metrics.toLogger();
-//        if (getFile().getName().equals("values.dbx")) {
-//            StringWriter writer = new StringWriter();
-//            try {
-//                dump(writer);
-//            } catch (IOException e) {
-//                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-//            } catch (BTreeException e) {
-//                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-//            }
-//            LOG.debug(writer.toString());
-//        }
     }
 
 	protected class BTreeFileHeader extends FileHeader {
