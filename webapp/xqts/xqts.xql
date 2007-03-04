@@ -191,9 +191,10 @@ declare function xqts:check-output($query as xs:string, $result as item()*, $cas
                 let $xmlFrag := concat("<f>", $expectedFrag, "</f>")
                 let $log := util:log("DEBUG", ("Frag stored: ", $xmlFrag))
                 let $expected := doc(xdb:store("/db", "temp.xml", $xmlFrag, "text/xml")) 
+                let $doh := doc(xdb:store("/db", $case/@name, $xmlFrag, "text/xml")) 
                 let $test := xdiff:compare($expected, <f>{$result}</f>)
                 return
-                    xqts:print-result($case/@name, $test, $query, $result, $expected, $case),
+                    xqts:print-result($case/@name, $test, $query, <f>{$result}</f>, $expected, $case),
                 (: Handle unexpected exceptions :)
                 <test-case name="{$case/@name}" result="fail" dateRun="{util:system-time()}">
                    <exception>Exception while loading expected result fragment: {$util:exception-message}</exception>
@@ -243,7 +244,7 @@ declare function xqts:run-test-case( $testCase as element(catalog:test-case)) as
        			}
        			</static-context>
            let $result :=
-               util:eval-with-context($query, $context, false())
+               util:eval-with-context($query, $context, false(), xqts:get-context-item($testCase/catalog:contextItem))
            return
                xqts:check-output($query, $result, $testCase),
            if ($testCase//catalog:expected-error) then
@@ -350,6 +351,19 @@ declare function xqts:get-input-value($input as element(catalog:input-file)) as 
            else
                doc(concat("/db/XQTS/", $source/@FileName))
    )
+};
+
+declare function xqts:get-context-item($input as element(catalog:contextItem)?) as item()* {
+	if (empty($input)) then
+       ()
+	else (
+	   let $source := root($input)//catalog:source[@ID = $input/text()]
+		return
+   	   	if (empty($source)) then
+			concat("no input found: ", $input/text()) 
+       	else
+			doc(concat("/db/XQTS/", $source/@FileName))
+	)
 };
 
 declare function xqts:overall-result() {
