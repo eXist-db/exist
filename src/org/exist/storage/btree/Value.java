@@ -139,7 +139,7 @@ public class Value implements Comparable {
 	}
 
 	public String toString() {
-		return new String(getData());
+		return dump();
 	}
 
 	public int hashCode() {
@@ -216,7 +216,7 @@ public class Value implements Comparable {
 		return true;
 	}
 
-	public final boolean endsWith(Value value) {
+    public final boolean endsWith(Value value) {
 		if (len < value.len)
 			return false;
 		byte[] vdata = value.data;
@@ -229,10 +229,35 @@ public class Value implements Comparable {
 		return true;
 	}
 
+    /**
+     * Returns the length of the common prefix this value
+     * shares with the specified other value (if any).
+     *
+     * @param other the other value
+     * @return length of the common prefix, 0 if there is none
+     */
+    public int commonPrefix(Value other) {
+        final int l = Math.min(len, other.len);
+        int i = 0;
+        for ( ; i < l; i++) {
+            byte b = data[pos + i];
+            if (b != other.data[other.pos + i])
+                break;
+        }
+        return i;
+    }
+
+    public Value getSeparator(Value other) {
+        int offset = commonPrefix(other) + 1;
+        byte[] data = new byte[Math.abs(offset)];
+        System.arraycopy(other.getData(), 0, data, 0, data.length);
+        return new Value(data);
+    }
+    
     public String dump() {
         StringBuffer buf = new StringBuffer();
         for (int i = 0; i < len; i++) {
-            buf.append(Integer.toHexString(data[pos + i] & 0xFF));
+            buf.append(Integer.toString(data[pos + i] & 0xFF));
             buf.append(' ');
         }
         return buf.toString();
