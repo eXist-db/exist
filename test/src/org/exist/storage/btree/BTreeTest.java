@@ -13,13 +13,10 @@ import org.exist.EXistException;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
 
 /**
- * Created by IntelliJ IDEA.
- * User: wolf
- * Date: 14.02.2007
- * Time: 20:00:28
- * To change this template use File | Settings | File Templates.
+ * Low-level tests on the B+tree.
  */
 public class BTreeTest extends TestCase {
 
@@ -27,16 +24,17 @@ public class BTreeTest extends TestCase {
     private File file = null;
 
     private int count = 0;
-    private static final int COUNT = 10000;
+    private static final int COUNT = 20000;
 
     public void testStrings() {
         System.out.println("------------------ testStrings: START -------------------------");
+        BTree btree = null;
         try {
-            BTree btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file, 0.1);
+            btree = new BTree(pool, (byte) 0, false, pool.getCacheManager(), file, 0.1);
             btree.create((short) -1);
 
             int prefix = 99;
-            String prefixStr = "Common prefix to all keys in this btree ";
+            String prefixStr = "C";
             for (int i = 1; i <= COUNT; i++) {
                 Value value = new PrefixValue(prefix, prefixStr + Integer.toString(i));
                 btree.addValue(value, i);
@@ -44,6 +42,10 @@ public class BTreeTest extends TestCase {
 
             btree.flush();
             System.out.println("BTree size: " + file.length());
+
+            StringWriter writer = new StringWriter();
+            btree.dump(writer);
+            System.out.println(writer.toString());
             
             for (int i = 1; i <= COUNT; i++) {
                 long p = btree.findValue(new PrefixValue(99, prefixStr + Integer.toString(i)));
@@ -68,8 +70,6 @@ public class BTreeTest extends TestCase {
             query = new IndexQuery(IndexQuery.LT, new PrefixValue(99, "C"));
             btree.query(query, new IndexCallback());
             assertEquals(count, 0);
-
-            btree.close();
         } catch (DBException e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -79,6 +79,12 @@ public class BTreeTest extends TestCase {
         } catch (TerminatedException e) {
             e.printStackTrace();
             fail(e.getMessage());
+        } finally {
+            if (btree != null)
+                try {
+                    btree.close();
+                } catch (DBException e) {
+                }
         }
         System.out.println("------------------ testStrings: END -------------------------");
     }
@@ -158,6 +164,7 @@ public class BTreeTest extends TestCase {
 
             file = new File(System.getProperty("exist.home", ".") + "/test/junit/test.dbx");
         } catch (Exception e) {
+            e.printStackTrace();
             fail(e.getMessage());
         }
     }
