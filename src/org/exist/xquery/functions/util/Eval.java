@@ -44,11 +44,11 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.LocalVariable;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.LocalVariable;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.EmptySequence;
 import org.exist.xquery.value.Item;
@@ -56,7 +56,6 @@ import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-import org.exist.xquery.value.StringValue;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -124,6 +123,28 @@ public class Eval extends BasicFunction {
 					new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
 					new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
 					new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
+				},
+				new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)),
+		new FunctionSignature(
+				new QName("eval-with-context", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+				"Dynamically evaluates an XPath/XQuery expression. " +
+                "If the first argument is of type xs:string, the function " +
+                "tries to execute this string as the query. If the first argument is of type xs:anyURI, " +
+                "the function will try to load the query from the resource to which the URI resolves. " +
+                "If the URI has no scheme, it is assumed that the query is stored in the db and the " +
+                "URI is interpreted as a database path. This is the same as calling " +
+                "util:eval('xmldb:exist:///db/test/test.xq'). " +                
+				"The query inherits the context described by the XML fragment in the second parameter. " +
+				"It should have the format: <static-context><variable name=\"qname\">" +
+				"variable value</variable></static-context>. " +
+				"The third argument specifies if the compiled query expression " +
+				"should be cached. The cached query will be globally available within the db instance." +
+				"The fourth argument specifies the context item against which the expression will be evaluated.",
+				new SequenceType[] {
+					new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
+					new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
+					new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE),
+					new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE)
 				},
 				new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)),
 		new FunctionSignature(
@@ -247,6 +268,17 @@ public class Eval extends BasicFunction {
 			} else {
 				compiled.setContext(innerContext);
 			}
+			
+			if (this.getArgumentCount() == 4) {
+				NodeValue contextItem = (NodeValue)args[3].itemAt(0);
+				if (contextItem != null) {
+					//TODO : sort this out
+					if (exprContext != null)
+						LOG.warn("exprContext and contextItem are not null");
+					exprContext = contextItem.toSequence();
+				}
+			}	
+				
 			sequence = xquery.execute(compiled, exprContext, false);
             if (innerContext != this.context)
                 innerContext.reset();
@@ -348,8 +380,7 @@ public class Eval extends BasicFunction {
 		NodeList cl = root.getChildNodes();
 		for (int i = 0; i < cl.getLength(); i++) {
 			Node child = cl.item(i);
-			if (child.getNodeType() == Node.ELEMENT_NODE && 
-				"variable".equals(child.getLocalName())) {
+			if (child.getNodeType() == Node.ELEMENT_NODE &&	"variable".equals(child.getLocalName())) {
 				Element elem = (Element) child;
 				String qname = elem.getAttribute("name");
 				NodeValue value = (NodeValue) elem.getFirstChild();
