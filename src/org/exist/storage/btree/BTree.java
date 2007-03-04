@@ -841,9 +841,16 @@ public class BTree extends Paged {
 			currentDataLen = ptrs == null ? 0 : nPtrs << 3;
 			if(fileHeader.getFixedKeyLen() < 0)
 				currentDataLen += 2 * nKeys;
-			for (int i = 0; i < nKeys; i++)
-				currentDataLen += keys[i].getLength();
-			return currentDataLen;
+            if (ph.getStatus() == LEAF)
+                currentDataLen += nKeys - 1;
+            for (int i = 0; i < nKeys; i++) {
+                if (ph.getStatus() == LEAF && i > 0) {
+                    int prefix = keys[i].commonPrefix(keys[i - 1]);
+                    currentDataLen += keys[i].getLength() - prefix;
+                } else
+                    currentDataLen += keys[i].getLength();
+            }
+            return currentDataLen;
 		}
 		
         /**
@@ -897,9 +904,25 @@ public class BTree extends Paged {
 					valSize = ByteConversion.byteToShort(data, p);
 					p += 2;
 				}
-                keys[i] = new Value(data, p, valSize);
-				p += valSize;
-			}
+                if (ph.getStatus() == LEAF && i > 0) {
+                    int prefixLen = (data[p++] & 0xFF);
+                    try {
+                        byte[] t = new byte[valSize];
+                        if (prefixLen > 0)
+                            System.arraycopy(keys[i - 1].data(), keys[i - 1].start(), t, 0, prefixLen);
+                        System.arraycopy(data, p, t, prefixLen, valSize - prefixLen);
+                        p += valSize - prefixLen;
+                        keys[i] = new Value(t);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        LOG.warn("prefixLen = " + prefixLen + "; i = " + i + "; nKeys = " + nKeys);
+                        throw new IOException(e.getMessage());
+                    }
+                } else {
+                    keys[i] = new Value(data, p, valSize);
+                    p += valSize;
+                }
+            }
 
 			//	Read in the pointers
 			nPtrs = ph.getPointerCount();
@@ -927,12 +950,21 @@ public class BTree extends Paged {
 					ByteConversion.shortToByte((short) keys[i].getLength(), temp, p);
 					p += 2;
 				}
-				data = keys[i].getData();
-				if(p + data.length > temp.length)
-					throw new IOException("calculated: " + getDataLen() + "; required: " + (p + data.length));
-				System.arraycopy(data, 0, temp, p, data.length);
-				p += data.length;
-			}
+                if (ph.getStatus() == LEAF && i > 0) {
+                    int prefixLen = keys[i].commonPrefix(keys[i - 1]);
+                    if (prefixLen < 0 || prefixLen > 255)
+                        prefixLen = 0;
+                    temp[p++] = (byte) prefixLen;
+                    System.arraycopy(keys[i].data(), keys[i].start() + prefixLen, temp, p, keys[i].getLength() - prefixLen);
+                    p += keys[i].getLength() - prefixLen;
+                } else {
+                    data = keys[i].getData();
+                    if(p + data.length > temp.length)
+                        throw new IOException("calculated: " + getDataLen() + "; required: " + (p + data.length));
+                    System.arraycopy(data, 0, temp, p, data.length);
+                    p += data.length;
+                }
+            }
 
 			for (int i = 0; i < nPtrs; i++) {
 				ByteConversion.longToByte(ptrs[i], temp, p);
@@ -963,9 +995,8 @@ public class BTree extends Paged {
 			int idx = searchKey(key);
 			switch (ph.getStatus()) {
 				case BRANCH :
-					if (idx < 0)
-						idx = - (idx + 1);
-					return getChildNode(idx).removeValue(transaction, key);
+                    idx = idx < 0 ? - (idx + 1) : idx + 1;
+                    return getChildNode(idx).removeValue(transaction, key);
 				case LEAF :
 					if (idx < 0)
 						return KEY_NOT_FOUND;
@@ -1000,8 +1031,7 @@ public class BTree extends Paged {
 
 			switch (ph.getStatus()) {
 				case BRANCH :
-					if (idx < 0)
-						idx = - (idx + 1);
+                    idx = idx < 0 ? - (idx + 1) : idx + 1;
 					return getChildNode(idx).addValue(transaction, value, pointer);
 				case LEAF :
 					if (idx >= 0) {
@@ -1049,8 +1079,7 @@ public class BTree extends Paged {
 		private void promoteValue(Txn transaction, Value value, BTreeNode rightNode)
 			throws IOException, BTreeException {
 			int idx = searchKey(value);
-			if (idx < 0)
-				idx = - (idx + 1);
+            idx = idx < 0 ? -( idx + 1) : idx + 1;
             
             insertKey(value, idx);
             insertPointer(rightNode.page.getPageNum(), idx + 1);
@@ -1112,7 +1141,7 @@ public class BTree extends Paged {
                     System.arraycopy(keys, leftVals.length, rightVals, 0, rightVals.length);
                     System.arraycopy(ptrs, leftPtrs.length, rightPtrs, 0, rightPtrs.length);
 
-                    separator = leftVals[leftVals.length - 1];
+                    separator = leftVals[leftVals.length - 1].getSeparator(rightVals[0]);
                     break;
                 default :
                     throw new BTreeException("Invalid Page Type In split");
@@ -1231,8 +1260,8 @@ public class BTree extends Paged {
 			int idx = searchKey(value);
 			switch (ph.getStatus()) {
 				case BRANCH :
-					if (idx < 0)
-						idx = - (idx + 1);
+					idx = idx < 0 ? - (idx + 1) : idx + 1;
+
 					BTreeNode child = getChildNode(idx);
 					if (child == null)
 						throw new BTreeException(
@@ -1254,6 +1283,16 @@ public class BTree extends Paged {
 					throw new BTreeException("Invalid Page Type In findValue");
 			}
 		}
+
+
+        public String toString() {
+            StringWriter writer = new StringWriter();
+            try {
+                dump(writer);
+            } catch (Exception e) {   
+            }
+            return writer.toString();
+        }
 
         /**
          * Prints out a debug view of the node to the given writer.
@@ -1313,10 +1352,8 @@ public class BTree extends Paged {
 				switch (ph.getStatus()) {
 
 					case BRANCH :
-						if (leftIdx < 0)
-							leftIdx = - (leftIdx + 1);
-						if (rightIdx < 0)
-							rightIdx = - (rightIdx + 1);
+                        leftIdx = leftIdx < 0 ? - (leftIdx + 1) : leftIdx + 1;
+                        rightIdx = rightIdx < 0 ? - (rightIdx + 1) : rightIdx + 1;
 
 						switch (query.getOperator()) {
 							case IndexQuery.BWX :
@@ -1480,10 +1517,8 @@ public class BTree extends Paged {
                 
                     switch (ph.getStatus()) {
                         case BRANCH :
-                            if (leftIdx < 0)
-                                leftIdx = - (leftIdx + 1);
-                            if (pfxIdx < 0)
-                                pfxIdx = - (pfxIdx + 1);
+                            leftIdx = leftIdx < 0 ? - (leftIdx + 1) : leftIdx + 1;
+                            pfxIdx = pfxIdx < 0 ? - (pfxIdx + 1) : pfxIdx + 1;
                             
                             switch (query.getOperator()) {
                                 case IndexQuery.EQ :
@@ -1521,8 +1556,7 @@ public class BTree extends Paged {
                             }
                             break;
                         case LEAF :
-                            if (pfxIdx < 0)
-                                pfxIdx = - (pfxIdx + 1);
+                            pfxIdx = pfxIdx < 0 ? - (pfxIdx + 1) : pfxIdx + 1;
                             switch (query.getOperator()) {
                                 case IndexQuery.EQ :
                                     if (leftIdx >= 0)
@@ -1618,10 +1652,8 @@ public class BTree extends Paged {
 				switch (ph.getStatus()) {
 
 					case BRANCH :
-						if (leftIdx < 0)
-							leftIdx = - (leftIdx + 1);
-						if (rightIdx < 0)
-							rightIdx = - (rightIdx + 1);
+                        leftIdx = leftIdx < 0 ? - (leftIdx + 1) : leftIdx + 1;
+                        rightIdx = rightIdx < 0 ? - (rightIdx + 1) : rightIdx + 1;
 
 						switch (query.getOperator()) {
 							case IndexQuery.BWX :
@@ -2052,6 +2084,17 @@ public class BTree extends Paged {
 		//buf.append(cache.getFails());
 		LOG.info(buf.toString());
 //        metrics.toLogger();
+//        if (getFile().getName().equals("values.dbx")) {
+//            StringWriter writer = new StringWriter();
+//            try {
+//                dump(writer);
+//            } catch (IOException e) {
+//                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+//            } catch (BTreeException e) {
+//                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+//            }
+//            LOG.debug(writer.toString());
+//        }
     }
 
 	protected class BTreeFileHeader extends FileHeader {
