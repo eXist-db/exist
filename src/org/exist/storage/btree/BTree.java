@@ -848,6 +848,8 @@ public class BTree extends Paged {
                     // if this is a leaf page, we use prefix compression to store the keys,
                     // so subtract the size of the prefix
                     int prefix = keys[i].commonPrefix(keys[i - 1]);
+                    if (prefix < 0 || prefix > Byte.MAX_VALUE)
+                        prefix = 0;
                     currentDataLen += keys[i].getLength() - prefix;
                 } else
                     currentDataLen += keys[i].getLength();
