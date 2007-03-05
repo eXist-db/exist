@@ -256,6 +256,22 @@ public class FloatValue extends NumericValue {
 	 * @see org.exist.xquery.value.NumericValue#div(org.exist.xquery.value.NumericValue)
 	 */
 	public ComputableValue div(ComputableValue other) throws XPathException {
+		if (Type.subTypeOf(other.getType(), Type.NUMBER)) {
+			//Positive or negative zero divided by positive or negative zero returns NaN.
+			if (this.isZero() && ((NumericValue)other).isZero())
+				return NaN;
+			//A negative number divided by positive zero returns -INF.
+			if (this.compareTo(ZERO) != Constants.SUPERIOR  && ((NumericValue)other).isZero() && ((NumericValue)other).compareTo(ZERO) != Constants.INFERIOR)
+				return new FloatValue(Float.NEGATIVE_INFINITY);
+			//Division by negative zero returns -INF and INF, respectively. 
+			if (((NumericValue)other).isZero() && ((NumericValue)other).compareTo(ZERO) != Constants.SUPERIOR)
+				return new FloatValue(Float.NEGATIVE_INFINITY);
+			if (((NumericValue)other).isZero() && ((NumericValue)other).compareTo(ZERO) != Constants.INFERIOR)
+				return new FloatValue(Float.POSITIVE_INFINITY);
+			//Also, INF or -INF divided by INF or -INF returns NaN.
+			if (this.isInfinite() && ((NumericValue)other).isInfinite())
+				return NaN;
+		}
 		if (Type.subTypeOf(other.getType(), Type.FLOAT))
 			return new FloatValue(value / ((FloatValue) other).value);
 		else
