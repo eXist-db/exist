@@ -126,33 +126,24 @@ public class OpNumeric extends BinaryOp {
     			if (!(rvalue instanceof ComputableValue))
     				throw new XPathException("XPTY0004: '" + Type.getTypeName(rvalue.getType()) + "(" + rvalue + ")' can not be an operand for " + Constants.OPS[operator]);
 
+    			//TODO : move to implementations
     			if (operator == Constants.IDIV) {    				
     				if (!Type.subTypeOf(lvalue.getType(), Type.NUMBER))
         				throw new XPathException("XPTY0004: '" + Type.getTypeName(lvalue.getType()) + "(" + lvalue + ")' can not be an operand for " + Constants.OPS[operator]);
     				if (!Type.subTypeOf(rvalue.getType(), Type.NUMBER))
     					throw new XPathException("XPTY0004: '" + Type.getTypeName(rvalue.getType()) + "(" + rvalue + ")' can not be an operand for " + Constants.OPS[operator]);
-    				//TODO : move to implementations ?
+					//If the divisor is (positive or negative) zero, then an error is raised [err:FOAR0001]
     				if (((NumericValue)rvalue).isZero())
-    					//If the divisor is (positive or negative) zero, then an error is raised [err:FOAR0001]
     				    throw new XPathException("FOAR0001: division by zero");
-    				if (((NumericValue)lvalue).isNaN() || ((NumericValue)lvalue).isInfinite())
-    					//If either operand is NaN or if $arg1 is INF or -INF then an error is raised [err:FOAR0002].
+    				//If either operand is NaN then an error is raised [err:FOAR0002].
+    				if (((NumericValue)lvalue).isNaN())
+    				    throw new XPathException("FOAR0002: division of " + Type.getTypeName(lvalue.getType()) + "(" + lvalue + ")'");
+    				//If either operand is NaN then an error is raised [err:FOAR0002].
+    				if (((NumericValue)rvalue).isNaN())
     				    throw new XPathException("FOAR0002: division of " + Type.getTypeName(rvalue.getType()) + "(" + rvalue + ")'");
-    				if (((NumericValue)rvalue).isNaN() || ((NumericValue)rvalue).isInfinite())
-    					//If either operand is NaN or if $arg1 is INF or -INF then an error is raised [err:FOAR0002].
-    				    throw new XPathException("FOAR0002: division by " + Type.getTypeName(rvalue.getType()) + "(" + rvalue + ")'");
-    				if (((NumericValue)rvalue).isZero())
-    					//If the divisor is (positive or negative) zero, then an error is raised [err:FOAR0001]
-    				    throw new XPathException("FOAR0001: division by zero");
-    				
-    				//WARNING :
-    				//Here are the specs for op:numeric-divide :
-    				//For xs:float or xs:double values, a positive number divided by positive zero returns INF. 
-    				//A negative number divided by positive zero returns -INF. Division by negative zero returns -INF and INF, 
-    				//respectively. Positive or negative zero divided by positive or negative zero returns NaN. 
-    				//Also, INF or -INF divided by INF or -INF returns NaN.    
-    				//BUT it looks like the XQTS (and thus Saxon) also follows this rule for op:numeric-integer-divide
-    				//WHAT TO DO THEN ? -pb
+					//If $arg1 is INF or -INF then an error is raised [err:FOAR0002].
+    				if (((NumericValue)lvalue).isInfinite())
+    					throw new XPathException("FOAR0002: division of " + Type.getTypeName(lvalue.getType()) + "(" + lvalue + ")'");
                     result = ((NumericValue) lvalue).idiv((NumericValue) rvalue);
     			} else {
                     result = applyOperator((ComputableValue) lvalue, (ComputableValue) rvalue);
