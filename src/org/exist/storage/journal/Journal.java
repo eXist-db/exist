@@ -198,6 +198,8 @@ public class Journal {
      * @throws TransactionException
      */
     public synchronized void writeToLog(Loggable loggable) throws TransactionException {
+        if (currentBuffer == null)
+            throw new TransactionException("Database is shut down.");
         SanityCheck.ASSERT(!inRecovery, "Write to log during recovery. Should not happen!");
         final int size = loggable.getLogSize();
         final int required = size + LOG_ENTRY_BASE_LEN;

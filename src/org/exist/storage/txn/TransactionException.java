@@ -34,6 +34,10 @@ public class TransactionException extends EXistException {
      */
     private static final long serialVersionUID = 3617572708582437173L;
 
+    public TransactionException(String message) {
+        super(message);
+    }
+    
     public TransactionException(String message, Throwable cause) {
         super(message, cause);
     }
