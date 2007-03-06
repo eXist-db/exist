@@ -224,20 +224,25 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                
                response.setStatusCode(201);
                response.setHeader("Location",request.getModuleBase()+request.getPath()+"?id="+id);
+               getEntryById(broker,request.getPath(),id,response);
+               /*
                response.setContentType(Atom.MIME_TYPE+"; charset="+charset);
                OutputStreamWriter w = new OutputStreamWriter(response.getOutputStream(),charset);
                Transformer identity = TransformerFactory.newInstance().newTransformer();
                identity.transform(new DOMSource(doc),new StreamResult(w));
                w.flush();
                w.close();
+                */
                
             } catch (LockException ex) {
                transact.abort(transaction);
                throw new EXistException("Cannot acquire write lock.",ex);
+               /*
             } catch (IOException ex) {
                throw new EXistException("Internal error while serializing result.",ex);
             } catch (TransformerException ex) {
                throw new EXistException("Serialization error.",ex);
+                */
             } finally {
                if (feedDoc!=null) {
                   feedDoc.getUpdateLock().release(Lock.WRITE_LOCK);
@@ -531,6 +536,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                transact.commit(transaction);
                
                // Send back the changed entry
+               response.setStatusCode(200);
                getEntryById(broker,request.getPath(),id,response);
                /*
                response.setStatusCode(200);
