@@ -97,8 +97,10 @@ public class CastableExpression extends AbstractExpression {
         }
         
         Sequence result;
-        //Maybe too strict ? Investigate...
-        if (Dependency.dependsOnVar(expression))
+        //See : http://article.gmane.org/gmane.text.xml.xquery.general/1413
+        //... for the rationale
+        //may be more complicated : let's see with following XQTS versions
+        if (requiredType == Type.QNAME && Dependency.dependsOnVar(expression))
         	result = BooleanValue.FALSE;
         else {
 			Sequence seq = expression.eval(contextSequence, contextItem);
