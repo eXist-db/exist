@@ -531,6 +531,8 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                transact.commit(transaction);
                
                // Send back the changed entry
+               getEntryById(broker,request.getPath(),id,response);
+               /*
                response.setStatusCode(200);
                response.setContentType(Atom.MIME_TYPE+"; charset="+charset);
                OutputStreamWriter w = new OutputStreamWriter(response.getOutputStream(),charset);
@@ -538,13 +540,16 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                identity.transform(new DOMSource(entry),new StreamResult(w));
                w.flush();
                w.close();
+                */
             } catch (LockException ex) {
                transact.abort(transaction);
                throw new EXistException("Cannot acquire write lock.",ex);
+               /*
             } catch (IOException ex) {
                throw new EXistException("I/O exception during serialization of entry response.",ex);
             } catch (TransformerException ex) {
                throw new EXistException("Serialization error.",ex);
+                */
             } finally {
                if (feedDoc!=null) {
                   feedDoc.getUpdateLock().release(Lock.WRITE_LOCK);
@@ -759,7 +764,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                   // Skip the edit link relations
                   if (lname.equals("link")) {
                      String rel = ((Element)child).getAttribute("rel");
-                     if (!rel.equals("edit") && !rel.equals("edit-media")) {
+                     if (rel.equals("edit") || rel.equals("edit-media")) {
                         return;
                      }
                   }
