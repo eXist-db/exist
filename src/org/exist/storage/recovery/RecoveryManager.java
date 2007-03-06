@@ -126,10 +126,11 @@ public class RecoveryManager {
 	        				lastLsn = next.getLsn();
 	        			}
 	                } catch (LogException e) {
-	                    e.printStackTrace();
-	                    if (LOG.isDebugEnabled())
-	                        LOG.debug("Last readable log entry lsn: " + Lsn.dump(lastLsn));
-	                }
+	                    if (LOG.isDebugEnabled()) {
+                            LOG.debug("Caught exception while reading log", e);
+                            LOG.debug("Last readable log entry lsn: " + Lsn.dump(lastLsn));
+                        }
+                    }
 	                
 	    			// if the last checkpoint record is not the last record in the file
 	    			// we need a recovery.

@@ -62,14 +62,18 @@ import org.apache.log4j.Logger;
  */
 
 public class Value implements Comparable {
-	protected long address = -1;
-	protected byte[] data = null;
-	protected int pos = 0;
-	protected int len = -1;
-	
-	private static Logger LOG = Logger.getLogger(Value.class.getName());
 
-	public Value() {
+    public final static Value EMPTY_VALUE = new Value(new byte[0]);
+
+    private static Logger LOG = Logger.getLogger(Value.class.getName());
+
+    protected long address = -1;
+    protected byte[] data = null;
+    protected int pos = 0;
+
+    protected int len = -1;
+
+    public Value() {
 	}
 
 	public Value(Value value) {
@@ -203,8 +207,30 @@ public class Value implements Comparable {
         }
         return 0;
     }
-    
-	public final boolean startsWith(Value value) {
+
+    public final int comparePrefix(Value prefix, Value keyPrefix) {
+        if (keyPrefix.getLength() >= prefix.getLength()) {
+            int cmp = keyPrefix.comparePrefix(prefix);
+            if (cmp != 0 || keyPrefix.getLength() == prefix.getLength())
+                return cmp;
+            for (int i = prefix.getLength(); i < keyPrefix.getLength(); i++) {
+                final byte b1 = data[pos + i];
+                final byte b2 = keyPrefix.data[keyPrefix.pos + i];
+                if (b1 == b2)
+                    continue;
+                else {
+                    final short s1 = (short) (b1 & 0xFF);
+                    final short s2 = (short) (b2 & 0xFF);
+                    return s1 > s2 ? (i + 1) : - (i + 1);
+                }
+            }
+            return 0;
+        } else {
+            return prefix.comparePrefix(keyPrefix);
+        }
+    }
+
+    public final boolean startsWith(Value value) {
 		if (len < value.len)
 			return false;
 		byte[] vdata = value.data;
@@ -247,6 +273,15 @@ public class Value implements Comparable {
         return i;
     }
 
+    public int checkPrefix(Value prefix) {
+        int l = Math.min(prefix.len, len);
+        for (int i = 0; i < l; i++) {
+            if (prefix.data[prefix.pos + i] != data[pos + i])
+                return i;
+        }
+        return l;
+    }
+    
     public Value getSeparator(Value other) {
         int offset = commonPrefix(other) + 1;
         byte[] data = new byte[Math.abs(offset)];

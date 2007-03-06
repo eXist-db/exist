@@ -37,13 +37,15 @@ public class InsertValueLoggable extends BTAbstractLoggable {
     protected long pageNum;
     protected int idx;
     protected long pointer;
+    protected int pointerIdx;
     protected Value key;
     
-    public InsertValueLoggable(Txn transaction, byte fileId, long pageNum, int idx, Value key, long pointer) {
+    public InsertValueLoggable(Txn transaction, byte fileId, long pageNum, int idx, Value key, int pointerIdx, long pointer) {
         super(BTree.LOG_INSERT_VALUE, fileId, transaction);
         this.pageNum = pageNum;
         this.idx = idx;
         this.key = key;
+        this.pointerIdx = pointerIdx;
         this.pointer = pointer;
     }
     
@@ -58,6 +60,7 @@ public class InsertValueLoggable extends BTAbstractLoggable {
         super.write(out);
         out.putInt((int) pageNum);
         out.putShort((short) idx);
+        out.putShort((short) pointerIdx);
         out.putLong(pointer);
         out.putShort((short) key.getLength());
         out.put(key.data(), key.start(), key.getLength());
@@ -70,6 +73,7 @@ public class InsertValueLoggable extends BTAbstractLoggable {
         super.read(in);
         pageNum = in.getInt();
         idx = in.getShort();
+        pointerIdx = in.getShort();
         pointer = in.getLong();
         byte[] data = new byte[in.getShort()];
         in.get(data);
@@ -80,7 +84,7 @@ public class InsertValueLoggable extends BTAbstractLoggable {
      * @see org.exist.storage.log.Loggable#getLogSize()
      */
     public int getLogSize() {
-        return super.getLogSize() + 16 + key.getLength();
+        return super.getLogSize() + 18 + key.getLength();
     }
 	
     public void redo() throws LogException {

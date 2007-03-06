@@ -159,7 +159,7 @@ public class DOMFile extends BTree implements Lockable {
         LogEntryTypes.addEntryType(LOG_UPDATE_LINK, UpdateLinkLoggable.class);
 	}
 
-	public final static short FILE_FORMAT_VERSION_ID = 5;
+	public final static short FILE_FORMAT_VERSION_ID = 6;
 
 	// page types
 	public final static byte LOB = 21;
@@ -2894,7 +2894,9 @@ public class DOMFile extends BTree implements Lockable {
     }
     
 	protected void dumpValue(Writer writer, Value key) throws IOException {
-		writer.write(Integer.toString(ByteConversion.byteToInt(key.data(), key.start())));
+        if (key.getLength() == 0)
+            return;
+        writer.write(Integer.toString(ByteConversion.byteToInt(key.data(), key.start())));
 		writer.write(':');
 		try {
             int bytes = key.getLength() - 4;
