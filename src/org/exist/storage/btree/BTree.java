@@ -546,7 +546,7 @@ public class BTree extends Paged {
         BTreeNode node = getBTreeNode(loggable.pageNum);
         if (requiresRedo(loggable, node.page)) {
             node.insertKey(loggable.key, loggable.idx);
-            node.insertPointer(loggable.pointer, loggable.idx);
+            node.insertPointer(loggable.pointer, loggable.pointerIdx);
             node.adjustDataLen(loggable.key);
             node.ph.setLsn(loggable.getLsn());
         }
@@ -618,6 +618,7 @@ public class BTree extends Paged {
     protected void redoUpdatePage(UpdatePageLoggable loggable) throws LogException {
         BTreeNode node = getBTreeNode(loggable.pageNum);
         if (requiresRedo(loggable, node.page)) {
+            node.prefix = loggable.prefix;
             node.keys = loggable.values;
             node.nKeys = loggable.values.length;
             node.ph.setValueCount((short) node.nKeys);
@@ -660,7 +661,9 @@ public class BTree extends Paged {
 		
         /** stores the keys in this page */
 		private Value[] keys;
-        
+
+        private Value prefix = Value.EMPTY_VALUE;
+
         /** the number of keys currently stored */
         private int nKeys = 0;
         
@@ -841,6 +844,8 @@ public class BTree extends Paged {
 			currentDataLen = ptrs == null ? 0 : nPtrs << 3;
 			if(fileHeader.getFixedKeyLen() < 0)
 				currentDataLen += 2 * nKeys;
+            if (ph.getStatus() == BRANCH)
+                currentDataLen += prefix.getLength() + 2;
             if (ph.getStatus() == LEAF)
                 currentDataLen += nKeys - 1;
             for (int i = 0; i < nKeys; i++) {
@@ -900,9 +905,20 @@ public class BTree extends Paged {
 			byte[] data = page.read();
 			short keyLen = fileHeader.getFixedKeyLen();
 			short valSize = keyLen;
+            int p = 0;
+            // it this is a branch node, read the common prefix
+            if (ph.getStatus() == BRANCH) {
+                short prefixSize = ByteConversion.byteToShort(data, p);
+                p += 2;
+                if (prefixSize == 0) {
+                    prefix = Value.EMPTY_VALUE;
+                } else {
+                    prefix = new Value(data, p, prefixSize);
+                    p += prefixSize;
+                }
+            }
             nKeys = ph.getValueCount();
             keys = new Value[(nKeys * 3) / 2 + 1];
-			int p = 0;
 			for (int i = 0; i < nKeys; i++) {
 				if (keyLen < 0) {
 					valSize = ByteConversion.byteToShort(data, p);
@@ -954,7 +970,16 @@ public class BTree extends Paged {
 			byte[] data;
             if (nKeys != ph.getValueCount())
                 throw new RuntimeException("nkeys: " + nKeys + " valueCount: " + ph.getValueCount());
-			final int keyLen = fileHeader.getFixedKeyLen();
+            // if this is a branch node, write out the common prefix
+            if (ph.getStatus() == BRANCH) {
+                ByteConversion.shortToByte((short) prefix.getLength(), temp, p);
+                p += 2;
+                if (prefix.getLength() > 0) {
+                    System.arraycopy(prefix.data(), prefix.start(), temp, p, prefix.getLength());
+                    p += prefix.getLength();
+                }
+            }
+            final int keyLen = fileHeader.getFixedKeyLen();
 			for (int i = 0; i < nKeys; i++) {
 				if (keyLen < 0) {
 					ByteConversion.shortToByte((short) keys[i].getLength(), temp, p);
@@ -1071,7 +1096,7 @@ public class BTree extends Paged {
                         if (transaction != null && isTransactional) {
                             InsertValueLoggable loggable = 
                                 new InsertValueLoggable(transaction, fileId, page.getPageNum(), idx,
-                                    value, pointer);
+                                    value, idx, pointer);
                             writeToLog(loggable, this);
                         }
                         insertKey(value, idx);
@@ -1096,7 +1121,13 @@ public class BTree extends Paged {
 			throws IOException, BTreeException {
 			int idx = searchKey(value);
             idx = idx < 0 ? -( idx + 1) : idx + 1;
-            
+
+            if (transaction != null && isTransactional) {
+                InsertValueLoggable loggable =
+                    new InsertValueLoggable(transaction, fileId, page.getPageNum(), idx,
+                        value, idx + 1, rightNode.page.getPageNum());
+                writeToLog(loggable, this);
+            }
             insertKey(value, idx);
             insertPointer(rightNode.page.getPageNum(), idx + 1);
 			if (transaction != null && isTransactional) {
@@ -1108,10 +1139,10 @@ public class BTree extends Paged {
             rightNode.saved = false;
             cache.add(rightNode);
             
-            if (transaction != null && isTransactional) {
-                Loggable log = new UpdatePageLoggable(transaction, fileId, page.getPageNum(), keys, nKeys, ptrs, nPtrs);
-                writeToLog(log, this);
-            }
+//            if (transaction != null && isTransactional) {
+//                Loggable log = new UpdatePageLoggable(transaction, fileId, page.getPageNum(), prefix, keys, nKeys, ptrs, nPtrs);
+//                writeToLog(log, this);
+//            }
             
 			boolean split = recalculateDataLen() > fileHeader.getWorkSize();
 
@@ -1145,6 +1176,12 @@ public class BTree extends Paged {
                     System.arraycopy(ptrs, leftPtrs.length, rightPtrs, 0, rightPtrs.length);
 
                     separator = keys[leftVals.length];
+                    if (prefix != null) {
+                        byte[] t = new byte[prefix.getLength() + separator.getLength()];
+                        System.arraycopy(prefix.data(), prefix.start(), t, 0, prefix.getLength());
+                        System.arraycopy(separator.data(), separator.start(), t, prefix.getLength(), separator.getLength());
+                        separator = new Value(t);
+                    }
                     break;
                 case LEAF :
                     leftVals = new Value[pivot];
@@ -1165,7 +1202,7 @@ public class BTree extends Paged {
 
             // Log the update of the current page
             if (transaction != null && isTransactional) {
-                Loggable log = new UpdatePageLoggable(transaction, fileId, page.getPageNum(), leftVals, leftVals.length, leftPtrs, leftPtrs.length);
+                Loggable log = new UpdatePageLoggable(transaction, fileId, page.getPageNum(), prefix, leftVals, leftVals.length, leftPtrs, leftPtrs.length);
                 writeToLog(log, this);
             }
             
@@ -1190,26 +1227,31 @@ public class BTree extends Paged {
 
                 final BTreeNode rNode = createBTreeNode(transaction, ph.getStatus(), parent, false);
                 
-                // Log update of the right node
-                if (isTransactional && transaction != null) {
-                    Loggable log = 
-                        new UpdatePageLoggable(transaction, fileId, rNode.page.getPageNum(), rightVals, rightVals.length, rightPtrs, rightPtrs.length);
-                    writeToLog(log, rNode);
-                }
-                
+
                 rNode.setValues(rightVals);
                 rNode.setPointers(rightPtrs);
                 rNode.setAsParent(transaction);
+                if (ph.getStatus() == BRANCH) {
+                    rNode.prefix = prefix;
+                    rNode.growPrefix();
+                }
+                // Log update of the right node
+                if (isTransactional && transaction != null) {
+                    Loggable log =
+                            new UpdatePageLoggable(transaction, fileId, rNode.page.getPageNum(), rNode.prefix, rNode.keys, rNode.nKeys, rightPtrs, rightPtrs.length);
+                    writeToLog(log, rNode);
+                }
                 rNode.recalculateDataLen();
                 cache.add(rNode);
-                
-                parent.setValues(new Value[] { separator });
+
+                parent.prefix = separator;
+                parent.setValues(new Value[] { Value.EMPTY_VALUE });
                 parent.setPointers(new long[] { page.getPageNum(), rNode.page.getPageNum()});
                 
                 // Log update of the parent node
                 if (isTransactional && transaction != null) {
                     Loggable log =
-                        new UpdatePageLoggable(transaction, fileId, parent.page.getPageNum(), parent.keys, parent.keys.length, 
+                        new UpdatePageLoggable(transaction, fileId, parent.page.getPageNum(), parent.prefix, parent.keys, parent.keys.length,
                                 parent.ptrs, parent.ptrs.length);
                     writeToLog(log, parent);
                 }
@@ -1224,17 +1266,21 @@ public class BTree extends Paged {
             } else {
                 final BTreeNode rNode = createBTreeNode(transaction, ph.getStatus(), parent, false);
                 
-                // Log update of the right node
-                if (isTransactional && transaction != null) {
-                    Loggable log = 
-                        new UpdatePageLoggable(transaction, fileId, rNode.page.getPageNum(), rightVals, rightVals.length, 
-                                rightPtrs, rightPtrs.length);
-                    writeToLog(log, rNode);
-                }
-                
+
                 rNode.setValues(rightVals);
                 rNode.setPointers(rightPtrs);
                 rNode.setAsParent(transaction);
+                if (ph.getStatus() == BRANCH) {
+                    rNode.prefix = prefix;
+                    rNode.growPrefix();
+                }
+                // Log update of the right node
+                if (isTransactional && transaction != null) {
+                    Loggable log =
+                            new UpdatePageLoggable(transaction, fileId, rNode.page.getPageNum(), rNode.prefix, rNode.keys,
+                                    rNode.nKeys, rightPtrs, rightPtrs.length);
+                    writeToLog(log, rNode);
+                }
                 rNode.recalculateDataLen();
                 cache.add(rNode);
                 parent.promoteValue(transaction, separator, rNode);
@@ -1314,11 +1360,17 @@ public class BTree extends Paged {
          * Prints out a debug view of the node to the given writer.
          */
         private void dump(Writer writer) throws IOException, BTreeException {
+            if (ph.getStatus() == LEAF) return;
             if (page.getPageNum() == fileHeader.getRootPage())
                 writer.write("ROOT: ");
             writer.write(page.getPageNum() + ": ");
             writer.write(ph.getStatus() == BRANCH ? "BRANCH: " : "LEAF: ");
             writer.write(saved ? "SAVED: " : "DIRTY: ");
+            if (ph.getStatus() == BRANCH) {
+                writer.write("PREFIX: ");
+                dumpValue(writer, prefix);
+                writer.write(": ");
+            }
             for (int i = 0; i < nKeys; i++) {
                 if (i > 0)
                     writer.write(' ');
@@ -1436,7 +1488,7 @@ public class BTree extends Paged {
 									}
 								break;
 							case IndexQuery.TRUNC_RIGHT :
-								if (leftIdx < 0)
+                                if (leftIdx < 0)
 									leftIdx = - (leftIdx + 1);
 								if (rightIdx < 0)
 									rightIdx = - (rightIdx + 1);
@@ -1514,7 +1566,7 @@ public class BTree extends Paged {
         /**
          * Search for keys matching the given {@link IndexQuery} and
          * report the to the specified {@link BTreeCallback}. This specialized
-         * method only considers keys whose value starts with the specified prefix. 
+         * method only considers keys whose value starts with the specified keyPrefix.
          * 
          * @param query
          * @param callback
@@ -1522,14 +1574,14 @@ public class BTree extends Paged {
          * @throws BTreeException
          * @throws TerminatedException
          */
-        private void query(IndexQuery query, Value prefix, BTreeCallback callback)
+        private void query(IndexQuery query, Value keyPrefix, BTreeCallback callback)
         throws IOException, BTreeException, TerminatedException {
             if (query != null
                     && query.getOperator() != IndexQuery.ANY
                     && query.getOperator() != IndexQuery.TRUNC_LEFT) {
                 Value[] qvals = query.getValues();
                 int leftIdx = searchKey(qvals[0]);
-                int pfxIdx = searchKey(prefix);
+                int pfxIdx = searchKey(keyPrefix);
                 
                     switch (ph.getStatus()) {
                         case BRANCH :
@@ -1538,34 +1590,36 @@ public class BTree extends Paged {
                             
                             switch (query.getOperator()) {
                                 case IndexQuery.EQ :
-                                    getChildNode(leftIdx).query(query, prefix, callback);
+                                    getChildNode(leftIdx).query(query, keyPrefix, callback);
                                     break;
                                 case IndexQuery.NEQ :
-                                    for (int i = 0; i < nPtrs; i++)
-                                        if (i != leftIdx && keys[i].startsWith(prefix))
-                                            getChildNode(i).query(query, prefix, callback);
+                                    for (int i = pfxIdx; i < nPtrs; i++) {
+                                        getChildNode(i).query(query, keyPrefix, callback);
+                                        if (i < nKeys && keys[i].comparePrefix(prefix, keyPrefix) > 0)
+                                            break;
+                                    }
                                     break;
                                 case IndexQuery.LT :
                                     for (int i = pfxIdx; i <= leftIdx && i < nPtrs; i++) {
-                                        getChildNode(i).query(query, prefix, callback);
+                                        getChildNode(i).query(query, keyPrefix, callback);
                                     }
                                     break;
                                 case IndexQuery.LEQ :
                                     for (int i = pfxIdx; i <= leftIdx && i < nPtrs; i++) {
-                                        getChildNode(i).query(query, prefix, callback);
+                                        getChildNode(i).query(query, keyPrefix, callback);
                                     }
                                     break;
                                 case IndexQuery.GT :
                                     for (int i = leftIdx; i < nPtrs; i++) {
-                                    	getChildNode(i).query(query, prefix, callback);
-                                        if (i < nKeys && keys[i].comparePrefix(prefix) > 0)
+                                    	getChildNode(i).query(query, keyPrefix, callback);
+                                        if (i < nKeys && keys[i].comparePrefix(prefix, keyPrefix) > 0)
                                             break;
                                     }
                                     break;
                                 case IndexQuery.GEQ :
                                     for (int i = leftIdx; i < nPtrs; i++) {
-                                    	getChildNode(i).query(query, prefix, callback);
-                                        if (i < nKeys && keys[i].comparePrefix(prefix) > 0)
+                                    	getChildNode(i).query(query, keyPrefix, callback);
+                                        if (i < nKeys && keys[i].comparePrefix(prefix, keyPrefix) > 0)
                                             break;
                                     }
                                     break;
@@ -1579,9 +1633,12 @@ public class BTree extends Paged {
                                         callback.indexInfo(keys[leftIdx], ptrs[leftIdx]);
                                     break;
                                 case IndexQuery.NEQ :
-                                    for (int i = 0; i < nPtrs; i++)
+                                    for (int i = pfxIdx; i < nPtrs; i++) {
+                                        if (keys[i].comparePrefix(keyPrefix) > 0)
+                                            break;
                                         if (i != leftIdx)
                                             callback.indexInfo(keys[i], ptrs[i]);
+                                    }
                                     break;
                                 case IndexQuery.LT :
                                     if (leftIdx < 0)
@@ -1603,7 +1660,7 @@ public class BTree extends Paged {
                                     if (leftIdx < 0)
                                         leftIdx = - (leftIdx + 1);
                                     for (int i = leftIdx; i < nPtrs; i++) {
-                                        if (keys[i].comparePrefix(prefix) > 0)
+                                        if (keys[i].comparePrefix(keyPrefix) > 0)
                                             break;
                                         if (query.testValue(keys[i]))
                                             callback.indexInfo(keys[i], ptrs[i]);
@@ -1613,7 +1670,7 @@ public class BTree extends Paged {
                                     if (leftIdx < 0)
                                         leftIdx = - (leftIdx + 1);
                                     for (int i = leftIdx; i < nPtrs; i++) {
-                                        if (keys[i].comparePrefix(prefix) > 0)
+                                        if (keys[i].comparePrefix(keyPrefix) > 0)
                                             break;
                                         if (query.testValue(keys[i]))
                                             callback.indexInfo(keys[i], ptrs[i]);
@@ -1937,13 +1994,73 @@ public class BTree extends Paged {
 						throw new BTreeException("Invalid Page Type In query");
 				}
 		}
-        
+
+        private void growPrefix() {
+            if (nKeys == 1) {
+                prefix = keys[0];
+                keys[0] = Value.EMPTY_VALUE;
+                return;
+            }
+            int idx;
+            int max = Integer.MAX_VALUE;
+            Value first = keys[0];
+            for (int i = 1; i < nKeys; i++) {
+                Value value = keys[i];
+                idx = Math.abs(value.compareTo(first));
+                if (idx < max)
+                    max = idx;
+            }
+            int addChars = max - 1;
+            if (addChars > 0) {
+                // create new prefix with the additional characters
+                byte[] pdata = new byte[prefix.getLength() + addChars];
+                System.arraycopy(prefix.data(), prefix.start(), pdata, 0, prefix.getLength());
+                System.arraycopy(keys[0].data(), keys[0].start(), pdata, prefix.getLength(), addChars);
+                prefix = new Value(pdata);
+
+                // shrink the keys by addChars characters
+                Value key;
+                for (int i = 0; i < nKeys; i++) {
+                    key = keys[i];
+                    keys[i] = new Value(key.data(), key.start() + addChars, key.getLength() - addChars);
+                }
+                recalculateDataLen();
+            }
+        }
+
+        private void shrinkPrefix(int newLen) {
+            int diff = prefix.getLength() - newLen;
+            Value[] nv = new Value[nKeys];
+            for (int i = 0; i < nKeys; i++) {
+                Value value = keys[i];
+                byte[] ndata = new byte[value.getLength() + diff];
+                System.arraycopy(prefix.data(), prefix.start() + newLen, ndata, 0, diff);
+                System.arraycopy(value.data(), value.start(), ndata, diff, value.getLength());
+                nv[i] = new Value(ndata);
+            }
+            keys = nv;
+            prefix = new Value(prefix.data(), prefix.start(), newLen);
+        }
+
         /**
          * Insert a key into the array of keys.
          * @param val
          * @param idx
          */
         private void insertKey(Value val, int idx) {
+            if (ph.getStatus() == BRANCH) {
+                // in a leaf page we might have to adjust the prefix
+                if (nKeys == 0) {
+                    prefix = val;
+                    val = Value.EMPTY_VALUE;
+                } else {
+                    int pfxLen = val.checkPrefix(prefix);
+                    if (pfxLen < prefix.getLength()) {
+                        shrinkPrefix(pfxLen);
+                    }
+                    val = new Value(val.data(), val.start() + pfxLen, val.getLength() - pfxLen);
+                }
+            }
             resizeKeys(nKeys + 1);
             System.arraycopy(keys, idx, keys, idx + 1, nKeys - idx);
             keys[idx] = val;
@@ -1991,6 +2108,18 @@ public class BTree extends Paged {
          * @return
          */
         private int searchKey(Value key) {
+            if (ph.getStatus() == BRANCH && prefix != null) {
+                // if this is a leaf page, check the common prefix first
+                if (key.getLength() < prefix.getLength())
+                    return key.compareTo(prefix) <= 0 ? -1 : -(nKeys + 1);
+                final int pfxCmp = key.comparePrefix(prefix);
+                if (pfxCmp < 0)
+                    return -1;
+                if (pfxCmp > 0)
+                    return -(nKeys + 1);
+
+                key = new Value(key.data(), prefix.getLength(), key.getLength() - prefix.getLength());
+            }
             int low = 0;
             int high = nKeys - 1;
 
@@ -2008,7 +2137,7 @@ public class BTree extends Paged {
             }
             return -(low + 1);  // key not found.
         }
-        
+
         private void resizeKeys(int minCapacity) {
             int oldCapacity = keys.length;
             if (minCapacity > oldCapacity) {
