@@ -123,6 +123,7 @@ public class AtomFeeds extends AtomModuleBase implements Atom {
                         throw new BadRequestException("Error while serializing XML: " + saxe.getMessage());
                      }
                   } else {
+                     response.setStatusCode(200);
                      getEntryById(broker,request.getPath(),id,response);
                   }
                } else {
@@ -209,7 +210,6 @@ public class AtomFeeds extends AtomModuleBase implements Atom {
             throw new BadRequestException("No topic was found.");
          }
          String charset = getContext().getDefaultCharset();
-         response.setStatusCode(200);
          response.setContentType("application/atom+xml; charset="+charset);
          Serializer serializer = broker.getSerializer();
          serializer.reset();
