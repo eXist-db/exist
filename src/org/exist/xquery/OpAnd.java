@@ -65,9 +65,13 @@ public class OpAnd extends LogicalOp {
     			NodeSet rr = right.eval(contextSequence, null).toNodeSet();
     			rr = rr.getContextNodes(contextId);
     			result = rr.intersection(rl);
+    			//<test>{() and ()}</test> should return <test>false</test>
+    			/*
     			if (contextSequence.isEmpty()) {
     				result = result.isEmpty() ? BooleanValue.FALSE : BooleanValue.TRUE;
     			}
+    			*/
+    			
     		} else {
     			boolean ls = left.eval(contextSequence).effectiveBooleanValue();
     			// immediately return false if the left operand is false
