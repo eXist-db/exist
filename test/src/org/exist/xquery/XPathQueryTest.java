@@ -970,6 +970,14 @@ public class XPathQueryTest extends XMLTestCase {
             result = queryResource(service, "numbers.xml", query, 1);
             assertEquals("3", result.getResource(0).getContent().toString());
 
+            //The collection doesn't exist : let's see how the query behaves with empty sequences               
+            query = "let $checkDate := xs:date(adjust-date-to-timezone(current-date(), ()))" +
+            "for $x in " +
+            "collection(\"/db/lease\")//Lease/Events/Type/Event[(When/Date<=$checkDate or " +
+            "When/EstimateDate<=$checkDate) and not(Status='Complete')] " +
+            "return $x";
+            result = queryResource(service, "numbers.xml", query, 0);           
+
         } catch (XMLDBException e) {
             e.printStackTrace();
             fail(e.getMessage());
