@@ -226,6 +226,11 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 	 * @see org.exist.xquery.value.Sequence#toNodeSet()
 	 */
 	public NodeSet toNodeSet() throws XPathException {
+		//TODO : solution that may be worth to investigate
+		/*
+		if (!effectiveBooleanValue())
+			return NodeSet.EMPTY_SET;
+		*/
 		throw new XPathException(
 			"cannot convert value of type "
 				+ Type.getTypeName(getType())
