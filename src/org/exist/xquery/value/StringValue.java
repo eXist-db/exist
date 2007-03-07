@@ -101,7 +101,7 @@ public class StringValue extends AtomicValue {
 	 * @see org.exist.xquery.value.AtomicValue#getType()
 	 */
 	public int getType() {
-		return Type.STRING;
+		return type;
 	}
 
 	/* (non-Javadoc)
