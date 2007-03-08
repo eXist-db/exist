@@ -715,7 +715,11 @@ public class ElementImpl extends NamedNode implements Element {
     	NamedNodeMap map = getAttributes();
     	for (int i = 0; i < attrs.getLength(); i++) {
     		Node attr = attrs.item(i);
-    		Node duplicate = map.getNamedItemNS(attr.getNamespaceURI(), attr.getLocalName());
+            // Workaround: xerces sometimes returns null for getLocalName() !!!!
+            String localName = attr.getLocalName();
+            if (localName == null)
+                localName = attr.getNodeName();
+            Node duplicate = map.getNamedItemNS(attr.getNamespaceURI(), localName);
     		if (duplicate != null) {
     			if (dupList == null)
             		dupList = new NodeListImpl();
@@ -1193,7 +1197,8 @@ public class ElementImpl extends NamedNode implements Element {
 						if (!old.nodeId.isChildOf(nodeId))
 							throw new DOMException(DOMException.NOT_FOUND_ERR, "node " + old.nodeId.getParentId() + 
 									" is not a child of element " + nodeId);
-						getBroker().removeNode(transaction, old, old.getPath(), null);
+                        getBroker().getIndexDispatcher().removeNode(transaction, old);
+                        getBroker().removeNode(transaction, old, old.getPath(), null);
 						children--;
 						attributes--;
 					}
