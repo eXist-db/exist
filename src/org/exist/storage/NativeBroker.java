@@ -38,6 +38,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.exist.EXistException;
 import org.exist.indexing.StreamListener;
+import org.exist.indexing.IndexUtils;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfiguration;
@@ -2229,7 +2230,7 @@ public class NativeBroker extends DBBroker {
         nodeProcessor.doIndex();
     }
     
-    public void updateNode(final Txn transaction, final StoredNode node) {
+    public void updateNode(final Txn transaction, final StoredNode node, boolean reindex) {
         try {
             final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
             final long internalAddress = node.getInternalAddress();
@@ -2258,6 +2259,10 @@ public class NativeBroker extends DBBroker {
                     + node.getNodeId()
                     + "; old = " + old.getNodeName(),
                 e);
+        }
+        if (reindex) {
+            StreamListener listener = indexController.getStreamListener(node.getDocument(), StreamListener.STORE);
+            IndexUtils.scanNode(transaction, node, listener);
         }
     }
 
@@ -2435,19 +2440,21 @@ public class NativeBroker extends DBBroker {
     public void removeAllNodes(Txn transaction, StoredNode node, NodePath currentPath) {
         Iterator iterator = getNodeIterator(node);
         iterator.next();
+        StreamListener listener = indexController.getStreamListener(node.getDocument(), StreamListener.REMOVE_NODES);
         Stack stack = new Stack();
-        collectNodesForRemoval(stack, iterator, node, currentPath);
+        collectNodesForRemoval(transaction, stack, iterator, listener, node, currentPath);
         while (!stack.isEmpty()) {
         	RemovedNode next = (RemovedNode) stack.pop();
             removeNode(transaction, next.node, next.path, next.content);
         }
     }
     
-    private void collectNodesForRemoval(Stack stack, Iterator iterator, StoredNode node, NodePath currentPath) {
+    private void collectNodesForRemoval(Txn transaction, Stack stack, Iterator iterator, StreamListener listener, StoredNode node,
+                                        NodePath currentPath) {
         RemovedNode removed;
         switch (node.getNodeType()) {
             case Node.ELEMENT_NODE:
-                DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
+                DocumentImpl doc = node.getDocument();
                 String content = null;
                 GeneralRangeIndexSpec spec = doc.getCollection().getIndexByPathConfiguration(this, currentPath);
                 if (spec != null) {
@@ -2461,22 +2468,38 @@ public class NativeBroker extends DBBroker {
                 removed = new RemovedNode(node, new NodePath(currentPath), content);
                 stack.push(removed);
 
+                if (listener != null) {
+                    listener.startElement(transaction, (ElementImpl) node, currentPath);
+                }
                 if (node.hasChildNodes()) {
                     int childCount = node.getChildCount();
                     for (int i = 0; i < childCount; i++) {
                     	StoredNode child = (StoredNode) iterator.next();
                         if (child.getNodeType() == Node.ELEMENT_NODE)
-                            currentPath.addComponent(((ElementImpl) child).getQName());
-                        collectNodesForRemoval(stack, iterator, child, currentPath);
+                            currentPath.addComponent(child.getQName());
+                        collectNodesForRemoval(transaction, stack, iterator, listener, child, currentPath);
                         if (child.getNodeType() == Node.ELEMENT_NODE)
                             currentPath.removeLastComponent();
                     }
                 }
+                if (listener != null) {
+                    listener.endElement(transaction, (ElementImpl) node, currentPath);
+                }
                 break;
-            default :
-                removed = new RemovedNode(node, new NodePath(currentPath), null);
-                stack.push(removed);
+            case Node.TEXT_NODE :
+                if (listener != null) {
+                    listener.characters(transaction, (TextImpl) node, currentPath);
+                }
                 break;
+            case Node.ATTRIBUTE_NODE :
+                if (listener != null) {
+                    listener.attribute(transaction, (AttrImpl) node, currentPath);
+                }
+                break;
+        }
+        if (node.getNodeType() != Node.ELEMENT_NODE) {
+            removed = new RemovedNode(node, new NodePath(currentPath), null);
+            stack.push(removed);
         }
     }
     

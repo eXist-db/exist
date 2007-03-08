@@ -655,7 +655,7 @@ public abstract class DBBroker extends Observable {
 	 * @param node
 	 *            Description of the Parameter
 	 */
-	public abstract void updateNode(Txn transaction, StoredNode node);
+	public abstract void updateNode(Txn transaction, StoredNode node, boolean reindex);
 
 	/**
 	 * Is the database running read-only? Returns false by default. Storage

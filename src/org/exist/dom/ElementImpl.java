@@ -434,7 +434,7 @@ public class ElementImpl extends NamedNode implements Element {
                 }
             }
         }
-        getBroker().updateNode(transaction, this);
+        getBroker().updateNode(transaction, this, true);
         getBroker().flush();
     }
 
@@ -1038,7 +1038,7 @@ public class ElementImpl extends NamedNode implements Element {
                     getPath(), nodes, false);
         }
         setDirty(true);
-        getBroker().updateNode(transaction, this);
+        getBroker().updateNode(transaction, this, true);
         getBroker().flush();
     }
 
@@ -1060,7 +1060,7 @@ public class ElementImpl extends NamedNode implements Element {
         appendChildren(transaction, newNodeId, 
                 new NodeImplRef(getLastNode(previous)), getPath(), nodes, false);
         setDirty(true);
-        getBroker().updateNode(transaction, this);
+        getBroker().updateNode(transaction, this, true);
         getBroker().flush();
     }
 
@@ -1094,7 +1094,7 @@ public class ElementImpl extends NamedNode implements Element {
         NodeId newNodeId = last == this ? nodeId.newChild() : last.nodeId.nextSibling();
         // append new content
         appendChildren(transaction, newNodeId, new NodeImplRef(last), path, newContent, true);
-        getBroker().updateNode(transaction, this);
+        getBroker().updateNode(transaction, this, true);
         // reindex if required
         getBroker().flush();
     }
@@ -1131,14 +1131,17 @@ public class ElementImpl extends NamedNode implements Element {
         else
             previousNode = getLastNode(previousNode);
         final NodePath currentPath = getPath();
+        getBroker().getIndexDispatcher().removeNode(transaction, oldNode);
         getBroker().removeNode(transaction, oldNode, oldNode.getPath(currentPath), null);
         getBroker().endRemove();
+        
         newNode.nodeId = oldNode.nodeId;
         getBroker().insertNodeAfter(transaction, previousNode, newNode);
         final NodePath path = newNode.getPath(currentPath);
         getBroker().indexNode(transaction, newNode, path);
 		if (newNode.getNodeType() == Node.ELEMENT_NODE)
             getBroker().endElement(newNode, path, null);
+        getBroker().updateNode(transaction, this, true);
         getBroker().flush();
     }
     
@@ -1158,7 +1161,7 @@ public class ElementImpl extends NamedNode implements Element {
             --attributes;
         getBroker().endRemove();
         setDirty(true);
-        getBroker().updateNode(transaction, this);
+        getBroker().updateNode(transaction, this, false);
         getBroker().flush();
         return oldNode;
     }
@@ -1203,7 +1206,7 @@ public class ElementImpl extends NamedNode implements Element {
             }
 			attributes += appendList.getLength();
 		} finally {
-            getBroker().updateNode(transaction, this);
+            getBroker().updateNode(transaction, this, true);
             getBroker().flush();
 		}
 	}
@@ -1244,6 +1247,7 @@ public class ElementImpl extends NamedNode implements Element {
         // reindex if required
         final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
         getBroker().storeXMLResource(transaction, owner);
+        getBroker().updateNode(transaction, this, true);
         getBroker().flush();
         return oldChild;	// method is spec'd to return the old child, even though that's probably useless in this case
     }

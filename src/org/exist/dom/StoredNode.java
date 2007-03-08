@@ -252,6 +252,10 @@ public class StoredNode extends NodeImpl implements Visitable {
 		return ownerDocument;
 	}
 
+    public DocumentImpl getDocument() {
+        return ownerDocument;
+    }
+    
     /**
      *  Set the owner document.
      *

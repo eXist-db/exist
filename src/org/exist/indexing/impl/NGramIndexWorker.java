@@ -25,6 +25,7 @@ import org.exist.dom.*;
 import org.exist.indexing.IndexWorker;
 import org.exist.indexing.StreamListener;
 import org.exist.indexing.AbstractStreamListener;
+import org.exist.indexing.IndexUtils;
 import org.exist.util.*;
 import org.exist.storage.index.BFile;
 import org.exist.storage.txn.Txn;
@@ -35,6 +36,7 @@ import org.exist.storage.ElementValue;
 import org.exist.storage.btree.Value;
 import org.exist.storage.btree.IndexQuery;
 import org.exist.storage.btree.BTreeException;
+import org.exist.storage.btree.BTreeCallback;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.io.VariableByteInput;
@@ -52,6 +54,7 @@ import org.apache.log4j.Logger;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
 /**
  *
@@ -80,6 +83,7 @@ public class NGramIndexWorker implements IndexWorker {
 
     public NGramIndexWorker(NGramIndex index) {
         this.index = index;
+        Arrays.fill(buf, ' ');
     }
 
     public String getIndexId() {
@@ -406,10 +410,36 @@ public class NGramIndexWorker implements IndexWorker {
         return result;
     }
 
+    public Occurrences[] scanIndex(DocumentSet docs) {
+        final IndexScanCallback cb = new IndexScanCallback(docs);
+        final Lock lock = index.db.getLock();
+		for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
+            final short collectionId = ((Collection) i.next()).getId();
+            Value ref = new NGramKey(collectionId);
+            final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+			try {
+				lock.acquire(Lock.READ_LOCK);
+				index.db.query(query, cb);
+			} catch (LockException e) {
+                LOG.warn("Failed to acquire lock for '" + index.db.getFile().getName() + "'", e);
+			} catch (IOException e) {
+                LOG.error(e.getMessage(), e);
+			} catch (BTreeException e) {
+                LOG.error(e.getMessage(), e);
+			} catch (TerminatedException e) {
+                LOG.warn(e.getMessage(), e);
+            } finally {
+				lock.release(Lock.READ_LOCK);
+			}
+		}
+		Occurrences[] result = new Occurrences[cb.map.size()];
+		return (Occurrences[]) cb.map.values().toArray(result);
+    }
+
     public StreamListener getListener(int mode, DocumentImpl document) {
         this.currentDoc = document;
         this.mode = mode;
-        return new NGramStreamListener(document);
+        return new NGramStreamListener(document, mode);
     }
 
     private void indexText(NodeId nodeId, QName qname, XMLString text) {
@@ -419,7 +449,8 @@ public class NGramIndexWorker implements IndexWorker {
         for (int i = 0; i < len; i++) {
             checkBuffer();
             for (int j = 0; j < gramSize && i + j < len; j++) {
-                buf[currentChar + j] = text.charAt(i + j);
+                // TODO: case sensitivity should be configurable
+                buf[currentChar + j] = Character.toLowerCase(text.charAt(i + j));
             }
             ngram = new String(buf, currentChar, gramSize);
             QNameTerm key = new QNameTerm(qname, ngram);
@@ -445,26 +476,79 @@ public class NGramIndexWorker implements IndexWorker {
 
     private class NGramStreamListener extends AbstractStreamListener {
 
+        private boolean top = true;
         private Map config;
         private Stack contentStack = null;
         
-        public NGramStreamListener(DocumentImpl document) {
-            setDocument(document);
+        public NGramStreamListener(DocumentImpl document, int mode) {
+            setDocument(document, mode);
         }
 
-        private void setDocument(DocumentImpl document) {
+        public void setDocument(DocumentImpl document, int newMode) {
+            currentDoc = document;
+            config = null;
+            top = true;
+            contentStack = null;
             IndexSpec indexConf = document.getCollection().getIndexConfiguration(document.getBroker());
             if (indexConf != null)
                 config = (Map) indexConf.getCustomIndexSpec(NGramIndex.ID);
+            mode = newMode;
         }
 
         public void startElement(Txn transaction, ElementImpl element, NodePath path) {
+            if (top && mode == REMOVE_NODES) {
+                // if a node is removed from a lower tree level, we also have to check its
+                // ancestors and maybe reindex them
+                checkAncestors(transaction, element, path, config);
+            }
             if (config != null && config.get(element.getQName()) != null) {
                 if (contentStack == null) contentStack = new Stack();
                 XMLString contentBuf = new XMLString();
                 contentStack.push(contentBuf);
             }
+            top = false;
             super.startElement(transaction, element, path);
+        }
+
+        /**
+         * When removing nodes at a lower level of the document tree, we also need to check
+         * the ancestor nodes of the removed node for potential indexes. If indexes are found,
+         * we need to reindex those ancestor nodes.
+         *
+         * @param transaction
+         * @param element
+         * @param path
+         * @param config
+         * @return
+         */
+        private boolean checkAncestors(Txn transaction, StoredNode element, NodePath path, Map config) {
+            if (config == null) // no index defined
+                return false;
+            boolean reindexRequired = false;
+            int len = element.getNodeType() == Node.ELEMENT_NODE ? path.length() - 1 : path.length();
+            for (int i = 0; i < len; i++) {
+                QName qn = path.getComponent(i);
+                if (config.get(qn) != null) {
+                    reindexRequired = true;
+                    break;
+                }
+            }
+            if (reindexRequired) {
+                StoredNode top = null;
+                StoredNode parent = (StoredNode) element.getParentNode();
+                while (parent != null) {
+                    if (config.get(parent.getQName()) != null)
+                        top = parent;
+                    parent = (StoredNode) parent.getParentNode();
+                }
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("NGramIndexWorker$NGramStreamListener.checkAncestors: Indexing " +
+                            top.getQName() + " for " + element.getNodeName());
+                }
+                IndexUtils.scanNode(transaction, top, this);
+                return true;
+            }
+            return false;
         }
 
         public void attribute(Txn transaction, AttrImpl attrib, NodePath path) {
@@ -480,6 +564,9 @@ public class NGramIndexWorker implements IndexWorker {
         }
 
         public void characters(Txn transaction, TextImpl text, NodePath path) {
+            if (top && mode == REMOVE_NODES) {
+                checkAncestors(transaction, text, path, config);
+            }
             if (contentStack != null && !contentStack.isEmpty()) {
                 for (int i = 0; i < contentStack.size(); i++) {
                     XMLString next = (XMLString) contentStack.get(i);
@@ -525,4 +612,72 @@ public class NGramIndexWorker implements IndexWorker {
             UTF8.encode(ngram, data, 2);
         }
     }
+
+    private final class IndexScanCallback implements BTreeCallback {
+
+		private DocumentSet docs;
+		private Map map = new TreeMap();
+
+		IndexScanCallback(DocumentSet docs) {
+			this.docs = docs;
+		}
+
+		/* (non-Javadoc)
+		 * @see org.dbxml.core.filer.BTreeCallback#indexInfo(org.dbxml.core.data.Value, long)
+		 */
+		public boolean indexInfo(Value key, long pointer) throws TerminatedException {
+            String term;
+            try {
+                term = new String(key.getData(), 2, key.getLength() - 2, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                LOG.error(e.getMessage(), e);
+                return true;
+            }
+            VariableByteInput is;
+            try {
+                is = index.db.getAsStream(pointer);
+            } catch (IOException e) {
+                LOG.error(e.getMessage(), e);
+                return true;
+            }
+			try {
+				while (is.available() > 0) {
+                    boolean docAdded = false;
+
+                    int storedDocId = is.readInt();
+                    byte nameType = is.readByte();
+                    int occurrences = is.readInt();
+                    //Read (variable) length of node IDs + frequency + offsets
+                    int length = is.readFixedInt();
+
+                    DocumentImpl storedDocument = docs.getDoc(storedDocId);
+                    //Exit if the document is not concerned
+					if (storedDocument == null) {
+						is.skipBytes(length);
+						continue;
+					}
+                    NodeId previous = null;
+                    for (int m = 0; m < occurrences; m++) {
+                        NodeId nodeId = index.pool.getNodeFactory().createFromStream(previous, is);
+                        previous = nodeId;
+                        int freq = is.readInt();
+                        is.skip(freq);
+                        Occurrences oc = (Occurrences) map.get(term);
+                        if (oc == null) {
+                            oc = new Occurrences(term);
+                            map.put(term, oc);
+                        }
+                        if (!docAdded) {
+                            oc.addDocument(storedDocument);
+                            docAdded = true;
+                        }
+                        oc.addOccurrences(freq);
+                    }
+                }
+			} catch(IOException e) {
+                LOG.error(e.getMessage() + " in '" + index.db.getFile().getName() + "'", e);
+			}
+			return true;
+		}
+	}
 }

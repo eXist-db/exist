@@ -26,6 +26,7 @@ import org.exist.storage.NodePath;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.TextImpl;
+import org.exist.dom.DocumentImpl;
 
 /**
  * Callback interface which receives index events. StreamListeners are chained;
@@ -45,6 +46,8 @@ public interface StreamListener {
      * @param listener the next listener in the chain.
      */
     void setNextInChain(StreamListener listener);
+
+    void setDocument(DocumentImpl doc, int mode);
 
     /**
      * Processed the opening tag of an element.
@@ -80,4 +83,6 @@ public interface StreamListener {
      * @param path the current node path
      */
     void characters(Txn transaction, TextImpl text, NodePath path);
+
+    StreamListener getNextInChain();
 }

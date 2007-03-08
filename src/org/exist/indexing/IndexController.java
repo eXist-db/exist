@@ -58,20 +58,26 @@ public class IndexController {
     }
     
     public StreamListener getStreamListener(DocumentImpl document, int mode) {
-        if (listener != null)
+        if (listener != null) {
+            StreamListener next = listener;
+            while (next != null) {
+                next.setDocument(document, mode);
+                next = next.getNextInChain();
+            }
             return listener;
+        }
         StreamListener first = null;
-        StreamListener listener, previous = null;
+        StreamListener current, previous = null;
         IndexWorker worker;
         for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
             worker = (IndexWorker) i.next();
-            listener = worker.getListener(mode, document);
+            current = worker.getListener(mode, document);
             if (first == null) {
-                first = listener;
+                first = current;
             } else {
-                previous.setNextInChain(listener);
+                previous.setNextInChain(current);
             }
-            previous = listener;
+            previous = current;
         }
         listener = first;
         return listener;
@@ -104,5 +110,11 @@ public class IndexController {
             indexWorker = (IndexWorker) i.next();
             indexWorker.removeCollection(collection);
         }
+    }
+
+    public void removeNode(Txn transaction, StoredNode node) {
+        getStreamListener(node.getDocument(), StreamListener.REMOVE_NODES);
+        IndexUtils.scanNode(transaction, node, listener);
+        flush();
     }
 }

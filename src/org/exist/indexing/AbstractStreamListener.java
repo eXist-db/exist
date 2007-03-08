@@ -23,9 +23,7 @@ package org.exist.indexing;
 
 import org.exist.storage.txn.Txn;
 import org.exist.storage.NodePath;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.AttrImpl;
-import org.exist.dom.TextImpl;
+import org.exist.dom.*;
 import org.apache.log4j.Logger;
 
 /**
@@ -39,10 +37,17 @@ public class AbstractStreamListener implements StreamListener {
     
     private StreamListener next = null;
 
+    public void setDocument(DocumentImpl doc, int mode) {
+    }
+
     public void setNextInChain(StreamListener listener) {
         this.next = listener;
     }
 
+    public StreamListener getNextInChain() {
+        return next;
+    }
+    
     public void startElement(Txn transaction, ElementImpl element, NodePath path) {
         if (next != null)
             next.startElement(transaction, element, path);
