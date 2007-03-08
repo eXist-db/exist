@@ -35,6 +35,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import org.exist.dom.DocumentImpl;
+import org.exist.dom.ElementImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.StoredNode;
 import org.exist.numbering.DLNBase;
@@ -119,9 +120,6 @@ public class DOMFile extends BTree implements Lockable {
     public static final int LENGTH_ORIGINAL_LOCATION = LENGTH_LINK;
     public static final int LENGTH_FORWARD_LOCATION = LENGTH_LINK;
     public static final int LENGTH_OVERFLOW_LOCATION = LENGTH_LINK;
-    public static final int LENGTH_ELEMENT_CHILD_COUNT = 4; //sizeof int
-    public static final int LENGTH_ATTRIBUTES_COUNT = 2; //sizeof short
-    public static final int LENGTH_DLN_LENGTH = 2; //sizeof short    
 
     /*
 	 * Byte ids for the records written to the log file.
@@ -1050,9 +1048,9 @@ public class DOMFile extends BTree implements Lockable {
 							int readOffset = pos;
 							readOffset += 1;
 							final int children = ByteConversion.byteToInt(page.data, readOffset);
-				            readOffset += LENGTH_ELEMENT_CHILD_COUNT;
+				            readOffset += ElementImpl.LENGTH_ELEMENT_CHILD_COUNT;
 				            final int dlnLen = ByteConversion.byteToShort(page.data, readOffset);
-				            readOffset += LENGTH_DLN_LENGTH;
+				            readOffset += NodeId.LENGTH_NODE_ID_UNITS;
 			                //That might happen during recovery runs : TODO, investigate
 			                if (owner == null) {
 			                	buf.append("(can't read data, owner is null)");
@@ -1082,7 +1080,7 @@ public class DOMFile extends BTree implements Lockable {
 							int readOffset = pos;
 							readOffset += 1;
 				            final int dlnLen = ByteConversion.byteToShort(page.data, readOffset);
-				            readOffset += LENGTH_DLN_LENGTH;
+				            readOffset += NodeId.LENGTH_NODE_ID_UNITS;
 			                //That might happen during recovery runs : TODO, investigate
 			                if (owner == null) {
 			                	buf.append("(can't read data, owner is null)");
@@ -1119,7 +1117,7 @@ public class DOMFile extends BTree implements Lockable {
 							final boolean hasNamespace = (page.data[readOffset] & 0x10) == 0x10;
 							readOffset += 1;
 			                final int dlnLen = ByteConversion.byteToShort(page.data, readOffset);	
-			                readOffset += LENGTH_DLN_LENGTH;
+			                readOffset += NodeId.LENGTH_NODE_ID_UNITS;
 			                //That might happen during recovery runs : TODO, investigate
 			                if (owner == null) {
 			                	buf.append("(can't read data, owner is null)");
@@ -2145,13 +2143,14 @@ public class DOMFile extends BTree implements Lockable {
 		switch (type) {
 		case Node.ELEMENT_NODE: {
 				final int children = ByteConversion.byteToInt(data, readOffset);
-	            readOffset += LENGTH_ELEMENT_CHILD_COUNT;
+	            readOffset += ElementImpl.LENGTH_ELEMENT_CHILD_COUNT;
 	            final int dlnLen = ByteConversion.byteToShort(data, readOffset);
-	            readOffset += LENGTH_DLN_LENGTH;
+	            readOffset += NodeId.LENGTH_NODE_ID_UNITS;
 	            readOffset += doc.getBroker().getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, data, readOffset);
 	            final short attributes = ByteConversion.byteToShort(data, readOffset);
-	            rec.offset += realLen + LENGTH_ATTRIBUTES_COUNT;
-	            final boolean extraWhitespace = addWhitespace && (children - attributes) > 1;	
+	            rec.offset += realLen + ElementImpl.LENGTH_ATTRIBUTES_COUNT;
+	            final boolean extraWhitespace = addWhitespace && (children - attributes) > 1;
+	            //TODO : where is NS info ?
 				for (int i = 0; i < children; i++) {
 		            		
 					//recursive call
@@ -2164,7 +2163,7 @@ public class DOMFile extends BTree implements Lockable {
 		case Node.TEXT_NODE:
         case Node.CDATA_SECTION_NODE: {
 	            final int dlnLen = ByteConversion.byteToShort(data, readOffset);
-	            readOffset += LENGTH_DLN_LENGTH;
+	            readOffset += NodeId.LENGTH_NODE_ID_UNITS;
 	            final int nodeIdLen = doc.getBroker().getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, data, readOffset);
 	            readOffset += nodeIdLen;
 	            os.write(data, readOffset, realLen - (1 + 2 + nodeIdLen));
@@ -2178,7 +2177,7 @@ public class DOMFile extends BTree implements Lockable {
                 final byte idSizeType = (byte) (data[start] & 0x3);
 				final boolean hasNamespace = (data[start] & 0x10) == 0x10;
                 final int dlnLen = ByteConversion.byteToShort(data, readOffset);
-                readOffset += LENGTH_DLN_LENGTH;
+                readOffset += NodeId.LENGTH_NODE_ID_UNITS;
                 final int nodeIdLen = doc.getBroker().getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, data, readOffset);
                 readOffset += nodeIdLen;
                 readOffset += Signatures.getLength(idSizeType); 

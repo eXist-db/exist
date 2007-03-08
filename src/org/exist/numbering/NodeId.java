@@ -33,6 +33,8 @@ import org.exist.storage.io.VariableByteOutputStream;
  * of the node it represents to any other node in the same document.
  */
 public interface NodeId extends Comparable {
+	
+	public static final int LENGTH_NODE_ID_UNITS = 2; //sizeof short
 
     /**
      * Static field representing the document node.
