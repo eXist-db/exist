@@ -61,6 +61,21 @@ public class TextImpl extends CharacterDataImpl implements Text {
         return "";
 	}		
     
+    public byte[] serialize() {
+        final int nodeIdLen = nodeId.size();
+        byte[] data = ByteArrayPool.getByteArray(LENGTH_SIGNATURE_LENGTH + nodeIdLen + 
+        		NodeId.LENGTH_NODE_ID_UNITS + cdata.UTF8Size());
+        int pos = 0;
+        data[pos] = (byte) ( Signatures.Char << 0x5 );
+        pos += LENGTH_SIGNATURE_LENGTH;
+        ByteConversion.shortToByte((short) nodeId.units(), data, pos);
+        pos += NodeId.LENGTH_NODE_ID_UNITS;
+        nodeId.serialize(data, pos);
+        pos += nodeIdLen;
+        cdata.UTF8Encode(data, pos);
+        return data;
+    }
+
     public static StoredNode deserialize(byte[] data,
                                        int start,
                                        int len,
@@ -71,12 +86,15 @@ public class TextImpl extends CharacterDataImpl implements Text {
             text = (TextImpl)NodeObjectPool.getInstance().borrowNode(TextImpl.class);
         else
             text = new TextImpl();
-        int dlnLen = ByteConversion.byteToShort(data, start + 1);
-        NodeId dln =
-                doc.getBroker().getBrokerPool().getNodeFactory().createFromData(dlnLen, data, start + 3);
+        int pos = start;
+        pos += LENGTH_SIGNATURE_LENGTH;
+        int dlnLen = ByteConversion.byteToShort(data, pos);
+        pos += NodeId.LENGTH_NODE_ID_UNITS;
+        NodeId dln = doc.getBroker().getBrokerPool().getNodeFactory().createFromData(dlnLen, data, pos);
         text.setNodeId(dln);
         int nodeIdLen = dln.size();
-        text.cdata = UTF8.decode(data, start + nodeIdLen + 3, len - nodeIdLen - 3);
+        pos += nodeIdLen;
+        text.cdata = UTF8.decode(data, pos, len - (LENGTH_SIGNATURE_LENGTH + nodeIdLen + NodeId.LENGTH_NODE_ID_UNITS));
         return text;
     }
 
@@ -106,16 +124,6 @@ public class TextImpl extends CharacterDataImpl implements Text {
 
     public void replaceData( int offset, int count, String arg ) throws DOMException {
         super.replaceData( offset, count, arg );
-    }
-
-    public byte[] serialize() {
-        final int nodeIdLen = nodeId.size();
-        byte[] data = ByteArrayPool.getByteArray(cdata.UTF8Size() + nodeIdLen + 3);
-        data[0] = (byte) ( Signatures.Char << 0x5 );
-        ByteConversion.shortToByte((short) nodeId.units(), data, 1);
-        nodeId.serialize(data, 3);
-        cdata.UTF8Encode(data, nodeIdLen + 3);
-        return data;
     }
 
     public void setNodeValue( String value ) throws DOMException {

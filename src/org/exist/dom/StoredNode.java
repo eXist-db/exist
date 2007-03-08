@@ -43,7 +43,8 @@ import javax.xml.stream.XMLStreamException;
  */
 public class StoredNode extends NodeImpl implements Visitable {
 	
-    public final static long UNKNOWN_NODE_IMPL_ADDRESS = -1;
+	public final static int LENGTH_SIGNATURE_LENGTH = 1; //sizeof byte
+	public final static long UNKNOWN_NODE_IMPL_ADDRESS = -1;
 	
     protected NodeId nodeId = null;
 
