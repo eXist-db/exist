@@ -33,13 +33,16 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeSet;
 
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+
 import org.exist.Namespaces;
-import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.numbering.NodeId;
+import org.exist.stax.EmbeddedXMLStreamReader;
+import org.exist.storage.ElementValue;
 import org.exist.storage.NodePath;
 import org.exist.storage.RangeIndexSpec;
 import org.exist.storage.Signatures;
-import org.exist.storage.ElementValue;
 import org.exist.storage.btree.Value;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
@@ -49,10 +52,18 @@ import org.exist.util.ByteConversion;
 import org.exist.util.UTF8;
 import org.exist.xquery.Constants;
 import org.exist.xquery.value.StringValue;
-import org.w3c.dom.*;
-
-import javax.xml.stream.XMLStreamReader;
-import javax.xml.stream.XMLStreamException;
+import org.w3c.dom.Attr;
+import org.w3c.dom.CDATASection;
+import org.w3c.dom.Comment;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.ProcessingInstruction;
+import org.w3c.dom.Text;
+import org.w3c.dom.TypeInfo;
+import org.w3c.dom.UserDataHandler;
 
 /**
  * ElementImpl.java
@@ -61,6 +72,9 @@ import javax.xml.stream.XMLStreamException;
  */
 public class ElementImpl extends NamedNode implements Element {
 
+    public static final int LENGTH_ELEMENT_CHILD_COUNT = 4; //sizeof int
+    public static final int LENGTH_ATTRIBUTES_COUNT = 2; //sizeof short
+	
     private short attributes = 0;
     private int children = 0;
 
@@ -177,7 +191,8 @@ public class ElementImpl extends NamedNode implements Element {
                 signature |= 0x8;
             final int nodeIdLen = nodeId.size();
             byte[] data =
-                    ByteArrayPool.getByteArray(8
+                    ByteArrayPool.getByteArray(
+                    LENGTH_ELEMENT_CHILD_COUNT + NodeId.LENGTH_NODE_ID_UNITS + LENGTH_ATTRIBUTES_COUNT
                     + Signatures.getLength(idSizeType)
                     + (hasNamespace ? prefixLen + 4 : 0)
                     + (prefixData != null ? prefixData.length : 0)
@@ -185,14 +200,13 @@ public class ElementImpl extends NamedNode implements Element {
             int next = 0;
             data[next++] = signature;
             ByteConversion.intToByte(children, data, next);
-            next += 4;
+            next += LENGTH_ELEMENT_CHILD_COUNT;
             ByteConversion.shortToByte((short) nodeId.units(), data, next);
-            next += 2;
+            next += NodeId.LENGTH_NODE_ID_UNITS;
             nodeId.serialize(data, next);
             next += nodeIdLen;
-
             ByteConversion.shortToByte(attributes, data, next);
-            next += 2;
+            next += LENGTH_ATTRIBUTES_COUNT;
             Signatures.write(idSizeType, id, data, next);
             next += Signatures.getLength(idSizeType);
             if (hasNamespace) {
@@ -224,14 +238,14 @@ public class ElementImpl extends NamedNode implements Element {
         boolean hasNamespace = (data[start++] & 0x10) == 0x10;
 
         int children = ByteConversion.byteToInt(data, start);
-        start += 4;
+        start += LENGTH_ELEMENT_CHILD_COUNT;
         int dlnLen = ByteConversion.byteToShort(data, start);
-        start += 2;
+        start += NodeId.LENGTH_NODE_ID_UNITS;
         NodeId dln =
                 doc.getBroker().getBrokerPool().getNodeFactory().createFromData(dlnLen, data, start);
         start += dln.size();
         short attributes = ByteConversion.byteToShort(data, start);
-        start += 2;
+        start += LENGTH_ATTRIBUTES_COUNT;
 
 //        LOG.debug("children: " + children + "; attributes: " + attributes + "; nodeId: " + dln +
 //                "; dln-size: " + dln.size());
@@ -274,7 +288,8 @@ public class ElementImpl extends NamedNode implements Element {
                 short prefixCount = in.readShort();
                 for (int i = 0; i < prefixCount; i++) {
                     prefix = in.readUTF();
-                    nsId = in.readShort();                    node.addNamespaceMapping(prefix, doc.getSymbols().getNamespace(nsId));
+                    nsId = in.readShort();                    
+                    node.addNamespaceMapping(prefix, doc.getSymbols().getNamespace(nsId));
                 }
             }
             catch (IOException e) {
