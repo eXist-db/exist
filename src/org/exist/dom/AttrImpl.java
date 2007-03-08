@@ -39,6 +39,9 @@ import org.w3c.dom.UserDataHandler;
 
 public class AttrImpl extends NamedNode implements Attr {
 	
+	public static final int LENGTH_NS_ID = 2; //sizeof short
+	public static final int LENGTH_PREFIX_LENGTH = 2; //sizeof short
+	
     public final static int CDATA = 0;
 	public final static int ID = 1;
     
@@ -93,7 +96,7 @@ public class AttrImpl extends NamedNode implements Attr {
         pos++;
         
         ByteConversion.shortToByte((short) nodeId.units(), data, pos);
-        pos += 2;
+        pos += NodeId.LENGTH_NODE_ID_UNITS;
         nodeId.serialize(data, pos);
         pos += nodeIdLen;
         
@@ -102,9 +105,9 @@ public class AttrImpl extends NamedNode implements Attr {
         if(nodeName.needsNamespaceDecl()) {
             final short nsId = getBroker().getSymbols().getNSSymbol(nodeName.getNamespaceURI());
             ByteConversion.shortToByte(nsId, data, pos);
-            pos += 2;
+            pos += LENGTH_NS_ID;
             ByteConversion.shortToByte((short)prefixLen, data, pos);
-            pos += 2;
+            pos += LENGTH_PREFIX_LENGTH;
             if(nodeName.getPrefix() != null && nodeName.getPrefix().length() > 0)
                 UTF8.encode(nodeName.getPrefix(), data, pos);
             pos += prefixLen;
@@ -119,7 +122,7 @@ public class AttrImpl extends NamedNode implements Attr {
 		boolean hasNamespace = (data[next] & 0x10) == 0x10;
         int attrType = ( data[next++] & 0x4 ) >> 0x2;
         int dlnLen = ByteConversion.byteToShort(data, next);
-        next += 2;
+        next += NodeId.LENGTH_NODE_ID_UNITS;
         NodeId dln =
                 doc.getBroker().getBrokerPool().getNodeFactory().createFromData(dlnLen, data, next);
         next += dln.size();
@@ -133,9 +136,9 @@ public class AttrImpl extends NamedNode implements Attr {
         String prefix = null;
 		if (hasNamespace) {
 			nsId = ByteConversion.byteToShort(data, next);
-			next += 2;
+			next += LENGTH_NS_ID;
 			int prefixLen = ByteConversion.byteToShort(data, next);
-			next += 2;
+			next += LENGTH_PREFIX_LENGTH;
 			if(prefixLen > 0)
 				prefix = UTF8.decode(data, next, prefixLen).toString();
 			next += prefixLen;
@@ -173,7 +176,7 @@ public class AttrImpl extends NamedNode implements Attr {
         boolean hasNamespace = (data[next] & 0x10) == 0x10;
         int attrType = ( data[next++] & 0x4 ) >> 0x2;
         int dlnLen = ByteConversion.byteToShort(data, next);
-        next += 2;
+        next += NodeId.LENGTH_NODE_ID_UNITS;
         NodeId dln = broker.getBrokerPool().getNodeFactory().createFromData(dlnLen, data, next);
         next += dln.size();
 
@@ -186,9 +189,9 @@ public class AttrImpl extends NamedNode implements Attr {
         String prefix = null;
         if (hasNamespace) {
             nsId = ByteConversion.byteToShort(data, next);
-            next += 2;
+            next += LENGTH_NS_ID;
             int prefixLen = ByteConversion.byteToShort(data, next);
-            next += 2;
+            next += LENGTH_PREFIX_LENGTH;
             if(prefixLen > 0)
                 prefix = UTF8.decode(data, next, prefixLen).toString();
             next += prefixLen;
