@@ -442,7 +442,7 @@ public class NGramIndexWorker implements IndexWorker {
         return new NGramStreamListener(document, mode);
     }
 
-    private void indexText(NodeId nodeId, QName qname, XMLString text) {
+    private void indexText(NodeId nodeId, QName qname, CharSequence text) {
         int len = text.length();
         int gramSize = index.getN();
         String ngram;
@@ -510,6 +510,34 @@ public class NGramIndexWorker implements IndexWorker {
             super.startElement(transaction, element, path);
         }
 
+        public void attribute(Txn transaction, AttrImpl attrib, NodePath path) {
+            if (config != null && config.get(attrib.getQName()) != null) {
+                indexText(attrib.getNodeId(), attrib.getQName(), attrib.getValue());
+            }
+            super.attribute(transaction, attrib, path);
+        }
+
+        public void endElement(Txn transaction, ElementImpl element, NodePath path) {
+            if (config != null && config.get(element.getQName()) != null) {
+                XMLString content = (XMLString) contentStack.pop();
+                indexText(element.getNodeId(), element.getQName(), content);
+            }
+            super.endElement(transaction, element, path);
+        }
+
+        public void characters(Txn transaction, TextImpl text, NodePath path) {
+            if (top && mode == REMOVE_NODES) {
+                checkAncestors(transaction, text, path, config);
+            }
+            if (contentStack != null && !contentStack.isEmpty()) {
+                for (int i = 0; i < contentStack.size(); i++) {
+                    XMLString next = (XMLString) contentStack.get(i);
+                    next.append(text.getXMLString());
+                }
+            }
+            super.characters(transaction, text, path);
+        }
+
         /**
          * When removing nodes at a lower level of the document tree, we also need to check
          * the ancestor nodes of the removed node for potential indexes. If indexes are found,
@@ -549,31 +577,6 @@ public class NGramIndexWorker implements IndexWorker {
                 return true;
             }
             return false;
-        }
-
-        public void attribute(Txn transaction, AttrImpl attrib, NodePath path) {
-            super.attribute(transaction, attrib, path);
-        }
-
-        public void endElement(Txn transaction, ElementImpl element, NodePath path) {
-            if (config != null && config.get(element.getQName()) != null) {
-                XMLString content = (XMLString) contentStack.pop();
-                indexText(element.getNodeId(), element.getQName(), content);
-            }
-            super.endElement(transaction, element, path);
-        }
-
-        public void characters(Txn transaction, TextImpl text, NodePath path) {
-            if (top && mode == REMOVE_NODES) {
-                checkAncestors(transaction, text, path, config);
-            }
-            if (contentStack != null && !contentStack.isEmpty()) {
-                for (int i = 0; i < contentStack.size(); i++) {
-                    XMLString next = (XMLString) contentStack.get(i);
-                    next.append(text.getXMLString());
-                }
-            }
-            super.characters(transaction, text, path);
         }
     }
 

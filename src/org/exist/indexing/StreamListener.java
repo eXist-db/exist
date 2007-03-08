@@ -39,6 +39,7 @@ public interface StreamListener {
     public final static int REMOVE = 1;
 
     public final static int REMOVE_NODES = 2;
+
     /**
      * Set the next stream listener in the chain. Events should always be forwarded
      * to the next listener.
@@ -47,6 +48,22 @@ public interface StreamListener {
      */
     void setNextInChain(StreamListener listener);
 
+    /**
+     * Returns the next stream listener in the chain. This should usually be the one
+     * that was passed in from {@link #setNextInChain(StreamListener)}.
+     *
+     * @return the next listener in the chain.
+     */
+    StreamListener getNextInChain();
+
+    /**
+     * Reset this listener to operate on the specified document, using the mode
+     * given. mode will be one of {@link #STORE}, {@link #REMOVE} or
+     * {@link #REMOVE_NODES}.
+     *
+     * @param doc the document which is processed
+     * @param mode the current operation mode
+     */
     void setDocument(DocumentImpl doc, int mode);
 
     /**
@@ -83,6 +100,4 @@ public interface StreamListener {
      * @param path the current node path
      */
     void characters(Txn transaction, TextImpl text, NodePath path);
-
-    StreamListener getNextInChain();
 }

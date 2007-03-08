@@ -71,10 +71,6 @@ public class NGramIndex implements Index {
             LOG.debug("Created NGram index: " + dataFile.getAbsolutePath());
     }
 
-    public void reopen() {
-
-    }
-
     public void close() throws DBException {
         db.close();
     }
