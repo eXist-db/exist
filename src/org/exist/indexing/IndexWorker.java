@@ -23,7 +23,9 @@ package org.exist.indexing;
 
 import org.w3c.dom.NodeList;
 import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.Occurrences;
 import org.exist.collections.Collection;
 
 import java.util.Map;
@@ -90,4 +92,6 @@ public interface IndexWorker {
      * @param collection
      */
     void removeCollection(Collection collection);
+
+    Occurrences[] scanIndex(DocumentSet docs);
 }

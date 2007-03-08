@@ -92,6 +92,16 @@ public class NodePath {
     public void removeLastComponent() {
         components[--pos] = null;
     }
+
+    public int length() {
+        return pos;
+    }
+
+    public QName getComponent(int at) {
+        if (at < 0 || at >= pos)
+            throw new ArrayIndexOutOfBoundsException(at);
+        return components[at];
+    }
     
     public final boolean match(NodePath other) {
         boolean skip = false;
