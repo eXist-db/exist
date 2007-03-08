@@ -118,6 +118,7 @@ public class Lock extends AbstractWebDAVMethod {
 	                LOG.debug("Storing NULL xml resource");
 	                
 	                IndexInfo info = collection.validateXMLResource(txn, broker, docName, "<nullresource/>");
+	                //TODO : unlock the collection here ?
 	                resource = info.getDocument();
 	                info.getDocument().getMetadata().setMimeType(contentType);
 	                

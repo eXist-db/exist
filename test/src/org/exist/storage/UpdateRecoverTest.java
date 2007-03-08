@@ -93,6 +93,8 @@ public class UpdateRecoverTest extends TestCase {
             
             IndexInfo info = test2.validateXMLResource(transaction, broker, TestConstants.TEST_XML_URI, TEST_XML);
             assertNotNull(info);
+            //TODO : unlock the collection here ?
+            
             test2.store(transaction, broker, info, TEST_XML, false);
             
             transact.commit(transaction);

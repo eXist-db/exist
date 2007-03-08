@@ -259,6 +259,7 @@ public class NodeTest extends XMLTestCase {
             broker.saveCollection(transaction, root);
             
             IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), XML);
+            //TODO : unlock the collection here ?
             assertNotNull(info);
             root.store(transaction, broker, info, XML, false);
             

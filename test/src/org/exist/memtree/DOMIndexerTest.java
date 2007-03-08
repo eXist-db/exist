@@ -122,6 +122,7 @@ public class DOMIndexerTest extends TestCase {
             broker = pool.get(user);
             Collection collection = broker.getOrCreateCollection(null, TestConstants.TEST_COLLECTION_URI);
             IndexInfo info = collection.validateXMLResource(null, broker, TestConstants.TEST_XML_URI, XML);
+            //TODO : unlock the collection here ?
             collection.store(null, broker, info, XML, false);
             org.exist.dom.DocumentImpl doc = info.getDocument();
             broker.flush();

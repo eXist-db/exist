@@ -368,6 +368,7 @@ public class XMLSecurityManager implements SecurityManager {
 			Collection sysCollection = broker.getCollection(XmldbURI.SYSTEM_COLLECTION_URI);
             String data = buf.toString();
             IndexInfo info = sysCollection.validateXMLResource(transaction, broker, ACL_FILE_URI, data);
+            //TODO : unlock the collection here ?
             DocumentImpl doc = info.getDocument();
             doc.getMetadata().setMimeType(MimeType.XML_TYPE.getName());
             sysCollection.store(transaction, broker, info, data, false);

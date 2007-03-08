@@ -89,6 +89,7 @@ public class LexerTest extends TestCase {
             broker.saveCollection(transaction, collection);
 
             IndexInfo info = collection.validateXMLResource(transaction, broker, XmldbURI.create("test.xml"), xml);
+            //TODO : unlock the collection here ?
             collection.store(transaction, broker, info, xml, false);
             transact.commit(transaction);
             

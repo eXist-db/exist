@@ -119,6 +119,7 @@ public class DLNStorageTest extends TestCase {
 
             IndexInfo info = test.validateXMLResource(transaction, broker, XmldbURI.create("test_string.xml"), 
             		TEST_XML);
+            //TODO : unlock the collection here ?
             assertNotNull(info);
 
             test.store(transaction, broker, info, TEST_XML, false);
