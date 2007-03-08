@@ -521,6 +521,7 @@ public class XQueryUpdateTest extends TestCase {
 			broker.saveCollection(transaction, root);
 			
 			IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create(docName), data);
+			//TODO : unlock the collection here ?
 			root.store(transaction, broker, info, data, false);
 	   
 			mgr.commit(transaction);

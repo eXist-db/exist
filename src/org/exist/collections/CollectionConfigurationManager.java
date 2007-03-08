@@ -94,6 +94,7 @@ public class CollectionConfigurationManager {
                 configurationDocumentName = CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE_URI;
             //broker.saveCollection(transaction, confCol);
 			IndexInfo info = confCol.validateXMLResource(transaction, broker, configurationDocumentName, config);
+			//TODO : unlock the collection here ?
 			confCol.store(transaction, broker, info, config, false);
 			//broker.sync(Sync.MAJOR_SYNC);
 		} catch (IOException e) {

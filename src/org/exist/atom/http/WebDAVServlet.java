@@ -358,6 +358,7 @@ public class WebDAVServlet extends HttpServlet {
             editLink.setAttribute("href","#");
             root.appendChild(editLink);
             IndexInfo info = collection.validateXMLResource(transaction,broker,AtomProtocol.FEED_DOCUMENT_URI,doc);
+            //TODO : we should probably unlock the collection here
             collection.store(transaction,broker,info,doc,false);
             transact.commit(transaction);
          } catch (ParserConfigurationException ex) {

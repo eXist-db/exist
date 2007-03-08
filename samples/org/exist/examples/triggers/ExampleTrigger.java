@@ -107,6 +107,7 @@ public class ExampleTrigger extends FilteringTrigger {
                 // We would end up in infinite recursion if we don't do that
                 parent.setTriggersEnabled(false);
 				IndexInfo info = parent.validateXMLResource(null, broker, contentsFile, "<?xml version=\"1.0\"?><contents></contents>");
+				//TODO : unlock the collection here ?
                 parent.store(null, broker, info, "<?xml version=\"1.0\"?><contents></contents>", false);
                 this.doc = info.getDocument();
 			} catch (Exception e) {

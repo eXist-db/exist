@@ -441,6 +441,7 @@ public class BasicNodeSetTest extends TestCase {
             }
             
             info = root.validateXMLResource(transaction, broker, XmldbURI.create("nested.xml"), NESTED_XML);
+            //TODO : unlock the collection here ?
             assertNotNull(info);
             root.store(transaction, broker, info, NESTED_XML, false);
             

@@ -138,6 +138,7 @@ public class RecoveryTest extends TestCase {
     
             info = test2.validateXMLResource(transaction, broker, XmldbURI.create("test_string.xml"), TEST_XML);
             assertNotNull(info);
+            //TODO : unlock the collection here ?
             
             test2.store(transaction, broker, info, TEST_XML, false);            
             // remove last document

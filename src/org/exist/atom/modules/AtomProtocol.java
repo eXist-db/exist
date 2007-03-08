@@ -285,6 +285,7 @@ public class AtomProtocol extends AtomFeeds implements Atom {
                selfLink.setAttribute("href","#");
                root.appendChild(selfLink);
                IndexInfo info = collection.validateXMLResource(transaction,broker,FEED_DOCUMENT_URI,doc);
+               //TODO : We should probably unlock the collection here
                collection.store(transaction,broker,info,doc,false);
                transact.commit(transaction);
                response.setStatusCode(204);
