@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.exist.dom.AttrImpl;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.ElementImpl;
 import org.exist.dom.NodeProxy;
@@ -1135,10 +1136,9 @@ public class DOMFile extends BTree implements Lockable {
 				                if (hasNamespace) {
 				                	//Untested
 				                	final short NSId = ByteConversion.byteToShort(page.data, readOffset);
-				                	readOffset += 2;
-				                	final String NsURI = ((NativeBroker)owner).getSymbols().getNamespace(NSId);					                	
+				                	readOffset += AttrImpl.LENGTH_NS_ID;
 									final short prefixLen = ByteConversion.byteToShort(page.data, readOffset);
-									readOffset += prefixLen + 2; 
+									readOffset += AttrImpl.LENGTH_PREFIX_LENGTH + prefixLen; 
 									final ByteArrayOutputStream os = new ByteArrayOutputStream();
 					                os.write(page.data, readOffset, vlen - (readOffset - prefixLen));
 					                String prefix = "";
@@ -1147,6 +1147,7 @@ public class DOMFile extends BTree implements Lockable {
 					                } catch (UnsupportedEncodingException e) {
 					                	LOG.error("can't decode prefix string");
 					                }		
+				                	final String NsURI = ((NativeBroker)owner).getSymbols().getNamespace(NSId);					                	
 					                buf.append(prefix + "{" + NsURI + "}");
 								}		                
 				                final ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -2182,9 +2183,9 @@ public class DOMFile extends BTree implements Lockable {
                 readOffset += nodeIdLen;
                 readOffset += Signatures.getLength(idSizeType); 
                 if (hasNamespace) {
-					readOffset += 2; // skip namespace id
+					readOffset += AttrImpl.LENGTH_NS_ID; // skip namespace id
 					final short prefixLen = ByteConversion.byteToShort(data, readOffset);
-					readOffset += prefixLen + 2; // skip prefix
+					readOffset += AttrImpl.LENGTH_PREFIX_LENGTH + prefixLen; // skip prefix
 				}
                 os.write(rec.getPage().data, readOffset, realLen - (readOffset - start));
 			}
