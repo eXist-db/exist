@@ -378,7 +378,12 @@
         tokenizer="org.exist.storage.analysis.SimpleTokenizer"
         track-term-freq="yes" validation="auto">
 
-        <!-- 
+        <modules>
+            <module id="ngram-index" class="org.exist.indexing.impl.NGramIndex"
+                    file="ngram.dbx" n="3"/>
+        </modules>
+
+        <!--
             The file for this element points to a file containing a list of 
             stopwords. Note that stopwords are NOT added to the fullext index.
         -->
