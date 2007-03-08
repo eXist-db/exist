@@ -34,7 +34,7 @@ public class CustomIndexTest extends TestCase {
 
     private static String XML =
             "<test>" +
-            "   <item id='1'><name>First</name></item>" +
+            "   <item id='1' attr='attribute'><name>First</name></item>" +
             "   <item id='2'><name>Second</name></item>" +
             "   <item id='3'><name>Third</name></item>" +
             "</test>";
@@ -45,6 +45,7 @@ public class CustomIndexTest extends TestCase {
     	"		<fulltext default=\"all\">" +
     	"		</fulltext>" +
     	"		<ngram qname=\"item\"/>" +
+        "		<ngram qname=\"@attr\"/>" +
         "	</index>" +
     	"</collection>";
 
@@ -106,6 +107,21 @@ public class CustomIndexTest extends TestCase {
 
             checkIndex(broker, docs, "thi", 0);
 
+            checkIndex(broker, docs, "att", 1);
+
+            proc.setBroker(broker);
+            proc.setDocumentSet(docs);
+            xupdate =
+                    XUPDATE_START +
+                    "   <xu:remove select=\"//item[@id='1']/@attr\"/>" +
+                    XUPDATE_END;
+            modifications = proc.parse(new InputSource(new StringReader(xupdate)));
+            assertNotNull(modifications);
+            modifications[0].process(transaction);
+            proc.reset();
+
+            checkIndex(broker, docs, "att", 0);
+
             checkIndex(broker, docs, "rst", 1);
             proc.setBroker(broker);
             proc.setDocumentSet(docs);
@@ -119,7 +135,7 @@ public class CustomIndexTest extends TestCase {
             proc.reset();
 
             checkIndex(broker, docs, "rst", 0);
-
+            
             transact.commit(transaction);
         } catch (Exception e) {
             e.printStackTrace();
@@ -193,6 +209,22 @@ public class CustomIndexTest extends TestCase {
 
             checkIndex(broker, docs, "ins", 1);
 
+            checkIndex(broker, docs, "att", 1);
+            proc.setBroker(broker);
+            proc.setDocumentSet(docs);
+            xupdate =
+                    XUPDATE_START +
+                    "       <xu:append select=\"//item[@id = '1']\">" +
+                    "           <xu:attribute name=\"attr\">abc</xu:attribute>" +
+                    "       </xu:append>" +
+                    XUPDATE_END;
+            modifications = proc.parse(new InputSource(new StringReader(xupdate)));
+            assertNotNull(modifications);
+            modifications[0].process(transaction);
+            proc.reset();
+            checkIndex(broker, docs, "att", 0);
+            checkIndex(broker, docs, "abc", 1);
+
             transact.commit(transaction);
         } catch (Exception e) {
             e.printStackTrace();
@@ -250,6 +282,18 @@ public class CustomIndexTest extends TestCase {
             proc.reset();
 
             checkIndex(broker, docs, "ced", 1);
+
+            proc.setBroker(broker);
+            proc.setDocumentSet(docs);
+            xupdate =
+                    XUPDATE_START +
+                    "   <xu:update select=\"//item[@id = '1']/@attr\">abc</xu:update>" +
+                    XUPDATE_END;
+            modifications = proc.parse(new InputSource(new StringReader(xupdate)));
+            assertNotNull(modifications);
+            modifications[0].process(transaction);
+            proc.reset();
+            checkIndex(broker, docs, "abc", 1);
 
             transact.commit(transaction);
         } catch (Exception e) {
@@ -360,7 +404,7 @@ public class CustomIndexTest extends TestCase {
             }
         }
     }
-
+ 
     public void testReindex() {
         DBBroker broker = null;
         try {
@@ -465,6 +509,7 @@ public class CustomIndexTest extends TestCase {
 
             transact.commit(transaction);
         } catch (Exception e) {
+            e.printStackTrace();
             fail(e.getMessage());
         } finally {
             if (pool != null)
