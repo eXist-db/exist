@@ -334,17 +334,19 @@ public class DLN extends DLNBase implements NodeId {
     }
 
     public NodeId write(NodeId prevId, VariableByteOutputStream os) throws IOException {
-        if (prevId == null) {
-            write(os);
-            return this;
-        }
-        DLN previous = (DLN) prevId;
-        final int len = Math.min(bits.length, previous.bits.length);
+//        if (prevId == null) {
+//            write(os);
+//            return this;
+//        }
         int i = 0;
-        for ( ; i < len; i++) {
-            byte b = bits[i];
-            if (b != previous.bits[i])
-                break;
+        if (prevId != null) {
+            DLN previous = (DLN) prevId;
+            final int len = Math.min(bits.length, previous.bits.length);
+            for ( ; i < len; i++) {
+                byte b = bits[i];
+                if (b != previous.bits[i])
+                    break;
+            }
         }
         os.writeByte((byte) i);
         os.writeShort((short) units());
