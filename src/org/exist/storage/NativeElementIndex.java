@@ -433,7 +433,9 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                 boolean changed = false;
                 Value key = (Value) elements.get(i);
                 VariableByteInput is = dbNodes.getAsStream(key);
-                os.clear();  
+                if (is == null)
+                    continue;
+                os.clear();
                 try {              
                     while (is.available() > 0) {
                         int storedDocId = is.readInt();
