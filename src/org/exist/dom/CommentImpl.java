@@ -45,20 +45,27 @@ public class CommentImpl extends CharacterDataImpl implements Comment {
         try {
             s = StringValue.expand(cdata);
         } catch (XPathException e) {
+        	LOG.warn(e);
             s = cdata.toString();
         }
         byte[] cd;
         try {
             cd = s.getBytes( "UTF-8" );
-        } catch ( UnsupportedEncodingException uee ) {
+        } catch (UnsupportedEncodingException uee) {
+        	LOG.warn(uee);
             cd = s.getBytes();
         }
         int nodeIdLen = nodeId.size();
-        byte[] data = new byte[cd.length + nodeIdLen + 3];
-        data[0] = (byte) ( Signatures.Comm << 0x5 );
-        ByteConversion.shortToByte((short) nodeId.units(), data, 1);
-        nodeId.serialize(data, 3);
-        System.arraycopy( cd, 0, data, 3 + nodeIdLen, cd.length );
+        byte[] data = new byte[StoredNode.LENGTH_SIGNATURE_LENGTH + NodeId.LENGTH_NODE_ID_UNITS +
+                               + nodeIdLen + cd.length];
+        int pos = 0;
+        data[pos] = (byte) ( Signatures.Comm << 0x5 );
+        pos += StoredNode.LENGTH_SIGNATURE_LENGTH;
+        ByteConversion.shortToByte((short) nodeId.units(), data, pos);
+        pos += NodeId.LENGTH_NODE_ID_UNITS;
+        nodeId.serialize(data, pos);
+        pos += nodeIdLen;
+        System.arraycopy( cd, 0, data, pos, cd.length );
         return data;
     }
 
@@ -67,25 +74,28 @@ public class CommentImpl extends CharacterDataImpl implements Comment {
                                        int len,
                                        DocumentImpl doc,
                                        boolean pooled) {
-        int dlnLen = ByteConversion.byteToShort(data, start + 1);
-        NodeId dln =
-                doc.getBroker().getBrokerPool().getNodeFactory().createFromData(dlnLen, data, start + 3);
+    	int pos = start;
+    	pos += StoredNode.LENGTH_SIGNATURE_LENGTH;
+        int dlnLen = ByteConversion.byteToShort(data, pos);
+        pos += NodeId.LENGTH_NODE_ID_UNITS;
+        NodeId dln = doc.getBroker().getBrokerPool().getNodeFactory().createFromData(dlnLen, data, pos);
         int nodeIdLen = dln.size();
-
+        pos += nodeIdLen;
         String cdata;
         try {
-            cdata = new String( data, start + nodeIdLen + 3, len - nodeIdLen - 3, "UTF-8" );
+            cdata = new String(data, pos, len - (pos - start), "UTF-8" );
         } catch ( UnsupportedEncodingException uee ) {
-            cdata = new String( data, start + nodeIdLen + 3, len - nodeIdLen - 3 );
+        	LOG.warn(uee);
+            cdata = new String(data, pos, len - (pos - start));
         }
+        //OK : we have the necessary material to build the comment
         CommentImpl comment;
         if(pooled)
-            comment = (CommentImpl)
-				NodeObjectPool.getInstance().borrowNode(CommentImpl.class);
+            comment = (CommentImpl)NodeObjectPool.getInstance().borrowNode(CommentImpl.class);
         else
             comment = new CommentImpl();
         comment.setNodeId(dln);
-        comment.appendData( cdata );
+        comment.appendData(cdata);
         return comment;
     }
     
