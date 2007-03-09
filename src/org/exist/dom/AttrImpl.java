@@ -78,29 +78,27 @@ public class AttrImpl extends NamedNode implements Attr {
         final byte idSizeType = Signatures.getSizeType( id );
         int prefixLen = 0;
         if (nodeName.needsNamespaceDecl()) {
-            prefixLen = nodeName.getPrefix() != null && nodeName.getPrefix().length() > 0 ?
-                UTF8.encoded(nodeName.getPrefix()) : 0;
+            if (nodeName.getPrefix() != null && nodeName.getPrefix().length() > 0)
+            	prefixLen = UTF8.encoded(nodeName.getPrefix());
         }
         final int nodeIdLen = nodeId.size();
-        final byte[] data = ByteArrayPool.getByteArray(UTF8.encoded(value) +
-                Signatures.getLength( idSizeType ) +
-                nodeIdLen +
-                (nodeName.needsNamespaceDecl() ? prefixLen + 4 : 0) + 
-                3);
+        final byte[] data = ByteArrayPool.getByteArray(
+        		LENGTH_SIGNATURE_LENGTH + NodeId.LENGTH_NODE_ID_UNITS + nodeIdLen +
+                Signatures.getLength(idSizeType) +
+                (nodeName.needsNamespaceDecl() ? LENGTH_NS_ID + LENGTH_PREFIX_LENGTH + prefixLen : 0) + 
+        		UTF8.encoded(value));
         int pos = 0;
         data[pos] = (byte) ( Signatures.Attr << 0x5 );
         data[pos] |= idSizeType;
         data[pos] |= (byte) (attributeType << 0x2);
         if(nodeName.needsNamespaceDecl())
-            data[pos] |= 0x10;
-        pos++;
-        
+            data[pos] |= 0x10;        
+        pos += StoredNode.LENGTH_SIGNATURE_LENGTH;        
         ByteConversion.shortToByte((short) nodeId.units(), data, pos);
         pos += NodeId.LENGTH_NODE_ID_UNITS;
         nodeId.serialize(data, pos);
-        pos += nodeIdLen;
-        
-        Signatures.write( idSizeType, id, data, pos );
+        pos += nodeIdLen;        
+        Signatures.write(idSizeType, id, data, pos);
         pos += Signatures.getLength(idSizeType);
         if(nodeName.needsNamespaceDecl()) {
             final short nsId = getBroker().getSymbols().getNSSymbol(nodeName.getNamespaceURI());
@@ -108,7 +106,7 @@ public class AttrImpl extends NamedNode implements Attr {
             pos += LENGTH_NS_ID;
             ByteConversion.shortToByte((short)prefixLen, data, pos);
             pos += LENGTH_PREFIX_LENGTH;
-            if(nodeName.getPrefix() != null && nodeName.getPrefix().length() > 0)
+            if (nodeName.getPrefix() != null && nodeName.getPrefix().length() > 0)
                 UTF8.encode(nodeName.getPrefix(), data, pos);
             pos += prefixLen;
         }
@@ -117,97 +115,87 @@ public class AttrImpl extends NamedNode implements Attr {
     }
     
     public static StoredNode deserialize( byte[] data, int start, int len, DocumentImpl doc, boolean pooled ) {
-        int next = start;
-        byte idSizeType = (byte) ( data[next] & 0x3 );
-		boolean hasNamespace = (data[next] & 0x10) == 0x10;
-        int attrType = ( data[next++] & 0x4 ) >> 0x2;
-        int dlnLen = ByteConversion.byteToShort(data, next);
-        next += NodeId.LENGTH_NODE_ID_UNITS;
-        NodeId dln =
-                doc.getBroker().getBrokerPool().getNodeFactory().createFromData(dlnLen, data, next);
-        next += dln.size();
-
-        short id = (short) Signatures.read( idSizeType, data, next );
-		next += Signatures.getLength(idSizeType);
-        String name = doc.getSymbols().getName( id );
-        if(name == null)
+        int pos = start;
+        byte idSizeType = (byte) ( data[pos] & 0x3 );
+		boolean hasNamespace = (data[pos] & 0x10) == 0x10;
+        int attrType = ( data[pos] & 0x4 ) >> 0x2;
+        pos += StoredNode.LENGTH_SIGNATURE_LENGTH;
+        int dlnLen = ByteConversion.byteToShort(data, pos);
+        pos += NodeId.LENGTH_NODE_ID_UNITS;
+        NodeId dln = doc.getBroker().getBrokerPool().getNodeFactory().createFromData(dlnLen, data, pos);
+        pos += dln.size();
+        short id = (short) Signatures.read(idSizeType, data, pos);
+		pos += Signatures.getLength(idSizeType);
+        String name = doc.getSymbols().getName(id);
+        if (name == null)
             throw new RuntimeException("no symbol for id " + id);
         short nsId = 0;
         String prefix = null;
 		if (hasNamespace) {
-			nsId = ByteConversion.byteToShort(data, next);
-			next += LENGTH_NS_ID;
-			int prefixLen = ByteConversion.byteToShort(data, next);
-			next += LENGTH_PREFIX_LENGTH;
-			if(prefixLen > 0)
-				prefix = UTF8.decode(data, next, prefixLen).toString();
-			next += prefixLen;
+			nsId = ByteConversion.byteToShort(data, pos);
+			pos += LENGTH_NS_ID;
+			int prefixLen = ByteConversion.byteToShort(data, pos);
+			pos += LENGTH_PREFIX_LENGTH;
+			if (prefixLen > 0)
+				prefix = UTF8.decode(data, pos, prefixLen).toString();
+			pos += prefixLen;
 		}
 		String namespace = nsId == 0 ? "" : doc.getSymbols().getNamespace(nsId);
         String value;
         try {
-            value =
-                new String( data, next,
-                len - (next - start),
-                "UTF-8" );
-        } catch ( UnsupportedEncodingException uee ) {
+            value = new String(data, pos, len - (pos - start), "UTF-8");
+        } catch (UnsupportedEncodingException uee) {
         	LOG.warn(uee);
-            value =
-                new String( data, next,
-               		len - (next - start));
+            value = new String(data, pos, len - (pos - start));
         }
+        //OK : we have the necessary material to build the attribute
         AttrImpl attr;
         if(pooled)
             attr = (AttrImpl)NodeObjectPool.getInstance().borrowNode(AttrImpl.class);
         else
             attr = new AttrImpl();
-        attr.nodeName = doc.getSymbols().getQName(Node.ATTRIBUTE_NODE, namespace, name, prefix);
-        attr.value = value;
-        attr.nodeId = dln;
+        attr.setNodeName(doc.getSymbols().getQName(Node.ATTRIBUTE_NODE, namespace, name, prefix));
+        attr.setValue(value);
+        attr.setNodeId(dln);
         if (dln == null)
         	throw new RuntimeException("no node id " + id);
-        attr.setType( attrType );
+        attr.setType(attrType);
         return attr;
     }
 
     public static void addToList(DBBroker broker, byte[] data, int start, int len, AttrList list) {
-        int next = start;
-        byte idSizeType = (byte) ( data[next] & 0x3 );
-        boolean hasNamespace = (data[next] & 0x10) == 0x10;
-        int attrType = ( data[next++] & 0x4 ) >> 0x2;
-        int dlnLen = ByteConversion.byteToShort(data, next);
-        next += NodeId.LENGTH_NODE_ID_UNITS;
-        NodeId dln = broker.getBrokerPool().getNodeFactory().createFromData(dlnLen, data, next);
-        next += dln.size();
-
-        short id = (short) Signatures.read( idSizeType, data, next );
-        next += Signatures.getLength(idSizeType);
-        String name = broker.getSymbols().getName( id );
-        if(name == null)
+        int pos = start;
+        byte idSizeType = (byte) ( data[pos] & 0x3 );
+        boolean hasNamespace = (data[pos] & 0x10) == 0x10;
+        int attrType = ( data[pos] & 0x4 ) >> 0x2;
+        pos += StoredNode.LENGTH_SIGNATURE_LENGTH;
+        int dlnLen = ByteConversion.byteToShort(data, pos);
+        pos += NodeId.LENGTH_NODE_ID_UNITS;
+        NodeId dln = broker.getBrokerPool().getNodeFactory().createFromData(dlnLen, data, pos);
+        pos += dln.size();
+        short id = (short) Signatures.read(idSizeType, data, pos);
+        pos += Signatures.getLength(idSizeType);
+        String name = broker.getSymbols().getName(id);
+        if (name == null)
             throw new RuntimeException("no symbol for id " + id);
         short nsId = 0;
         String prefix = null;
         if (hasNamespace) {
-            nsId = ByteConversion.byteToShort(data, next);
-            next += LENGTH_NS_ID;
-            int prefixLen = ByteConversion.byteToShort(data, next);
-            next += LENGTH_PREFIX_LENGTH;
-            if(prefixLen > 0)
-                prefix = UTF8.decode(data, next, prefixLen).toString();
-            next += prefixLen;
+            nsId = ByteConversion.byteToShort(data, pos);
+            pos += LENGTH_NS_ID;
+            int prefixLen = ByteConversion.byteToShort(data, pos);
+            pos += LENGTH_PREFIX_LENGTH;
+            if (prefixLen > 0)
+                prefix = UTF8.decode(data, pos, prefixLen).toString();
+            pos += prefixLen;
         }
         String namespace = nsId == 0 ? "" : broker.getSymbols().getNamespace(nsId);
         String value;
         try {
-            value =
-                    new String( data, next,
-                            len - (next - start),
-                            "UTF-8" );
-        } catch ( UnsupportedEncodingException uee ) {
+            value = new String( data, pos, len - (pos - start), "UTF-8" );
+        } catch (UnsupportedEncodingException uee) {
             LOG.warn(uee);
-            value =
-                    new String( data, next,
-                            len - (next - start));
+            value = new String( data, pos, len - (pos - start));
         }
         list.addAttribute(broker.getSymbols().getQName(Node.ATTRIBUTE_NODE, namespace, name, prefix), value, attrType);
     }
