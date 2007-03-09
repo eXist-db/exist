@@ -81,11 +81,16 @@ public class CDATASectionImpl extends CharacterDataImpl implements CDATASection 
     
     public byte[] serialize() {
         final int nodeIdLen = nodeId.size();
-        byte[] data = ByteArrayPool.getByteArray(cdata.UTF8Size() + nodeIdLen + 3);
-        data[0] = (byte) ( Signatures.Cdata << 0x5 );
-        ByteConversion.shortToByte((short) nodeId.units(), data, 1);
-        nodeId.serialize(data, 3);
-        cdata.UTF8Encode(data, nodeIdLen + 3);
+        byte[] data = ByteArrayPool.getByteArray(LENGTH_SIGNATURE_LENGTH + NodeId.LENGTH_NODE_ID_UNITS +
+        		nodeIdLen + cdata.UTF8Size());
+        int pos = 0;
+        data[pos] = (byte) ( Signatures.Cdata << 0x5 );
+        pos += LENGTH_SIGNATURE_LENGTH;
+        ByteConversion.shortToByte((short) nodeId.units(), data, pos);
+        pos += NodeId.LENGTH_NODE_ID_UNITS;
+        nodeId.serialize(data, pos);
+        pos += nodeIdLen;
+        cdata.UTF8Encode(data, pos);
         return data;
     }
     
@@ -94,12 +99,15 @@ public class CDATASectionImpl extends CharacterDataImpl implements CDATASection 
             int len,
             DocumentImpl doc,
             boolean pooled) {
-        int dlnLen = ByteConversion.byteToShort(data, start + 1);
-        NodeId dln =
-            doc.getBroker().getBrokerPool().getNodeFactory().createFromData(dlnLen, data, start + 3);
-        CDATASectionImpl cdata = new CDATASectionImpl(dln);
+    	int pos = start;
+    	pos += LENGTH_SIGNATURE_LENGTH;
+        int dlnLen = ByteConversion.byteToShort(data, pos);
+        pos += NodeId.LENGTH_NODE_ID_UNITS;
+        NodeId dln = doc.getBroker().getBrokerPool().getNodeFactory().createFromData(dlnLen, data, pos);        
         int nodeIdLen = dln.size();
-        cdata.cdata = UTF8.decode(data, start + nodeIdLen + 3, len - nodeIdLen - 3);
+        pos += nodeIdLen;
+        CDATASectionImpl cdata = new CDATASectionImpl(dln);
+        cdata.cdata = UTF8.decode(data, pos, len - (pos - start));
         return cdata;
     }
 }
