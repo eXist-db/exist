@@ -75,7 +75,7 @@ public class CommentImpl extends CharacterDataImpl implements Comment {
                                        DocumentImpl doc,
                                        boolean pooled) {
     	int pos = start;
-    	pos += StoredNode.LENGTH_SIGNATURE_LENGTH;
+    	pos += LENGTH_SIGNATURE_LENGTH;
         int dlnLen = ByteConversion.byteToShort(data, pos);
         pos += NodeId.LENGTH_NODE_ID_UNITS;
         NodeId dln = doc.getBroker().getBrokerPool().getNodeFactory().createFromData(dlnLen, data, pos);
