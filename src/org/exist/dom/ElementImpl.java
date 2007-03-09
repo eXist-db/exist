@@ -246,20 +246,18 @@ public class ElementImpl extends NamedNode implements Element {
         pos += dln.size();
         short attributes = ByteConversion.byteToShort(data, pos);
         pos += LENGTH_ATTRIBUTES_COUNT;
-
-        int next = pos;
-        short id = (short) Signatures.read(idSizeType, data, next);
-        next += Signatures.getLength(idSizeType);
+        short id = (short) Signatures.read(idSizeType, data, pos);
+        pos += Signatures.getLength(idSizeType);
         short nsId = 0;
         String prefix = null;
         if (hasNamespace) {
-            nsId = ByteConversion.byteToShort(data, next);
-            next += 2;
-            int prefixLen = ByteConversion.byteToShort(data, next);
-            next += 2;
+            nsId = ByteConversion.byteToShort(data, pos);
+            pos += LENGTH_NS_ID;
+            int prefixLen = ByteConversion.byteToShort(data, pos);
+            pos += LENGTH_PREFIX_LENGTH;
             if (prefixLen > 0)
-                prefix = UTF8.decode(data, next, prefixLen).toString();
-            next += prefixLen;
+                prefix = UTF8.decode(data, pos, prefixLen).toString();
+            pos += prefixLen;
         }
         String name = doc.getSymbols().getName(id);
         String namespace = "";
@@ -277,9 +275,10 @@ public class ElementImpl extends NamedNode implements Element {
         node.attributes = attributes;
         node.isDirty = isDirty;
         node.setOwnerDocument(doc);
-        if (end > next) {
-            byte[] pfxData = new byte[end - next];
-            System.arraycopy(data, next, pfxData, 0, end - next);
+        //TO UNDERSTAND : why is this code here ?  
+        if (end > pos) {
+            byte[] pfxData = new byte[end - pos];
+            System.arraycopy(data, pos, pfxData, 0, end - pos);
             ByteArrayInputStream bin = new ByteArrayInputStream(pfxData);
             DataInputStream in = new DataInputStream(bin);
             try {
@@ -302,16 +301,17 @@ public class ElementImpl extends NamedNode implements Element {
         int offset = value.start();
         byte idSizeType = (byte) (data[offset] & 0x03);
         boolean hasNamespace = (data[offset] & 0x10) == 0x10;
-        offset += 9 + nodeId.size();
+        offset += LENGTH_SIGNATURE_LENGTH;
+        offset += 8 + nodeId.size();
         short id = (short) Signatures.read(idSizeType, data, offset);
         offset += Signatures.getLength(idSizeType);
         short nsId = 0;
         String prefix = null;
         if (hasNamespace) {
             nsId = ByteConversion.byteToShort(data, offset);
-            offset += 2;
+            offset += LENGTH_NS_ID;
             int prefixLen = ByteConversion.byteToShort(data, offset);
-            offset += 2;
+            offset += LENGTH_PREFIX_LENGTH;
             if (prefixLen > 0)
                 prefix = UTF8.decode(data, offset, prefixLen).toString();
             offset += prefixLen;
