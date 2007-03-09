@@ -15,6 +15,8 @@ import org.w3c.dom.ProcessingInstruction;
  * @author wolf
  */
 public class ProcessingInstructionImpl extends StoredNode implements ProcessingInstruction {
+	
+	public static final int LENGTH_TARGET_DATA = 4; //Sizeof int;
 
     protected String target = null;
     protected String data = null;
@@ -107,56 +109,71 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
 
     public byte[] serialize() {
         byte[] td;
-        byte[] dd;
         try {
             td = target.getBytes( "UTF-8" );
+        } catch ( UnsupportedEncodingException uee ) {
+        	LOG.warn(uee);
+            td = target.getBytes();
+        }
+        byte[] dd;
+        try {
             dd = data.getBytes( "UTF-8" );
         } catch ( UnsupportedEncodingException uee ) {
-            td = target.getBytes();
+        	LOG.warn(uee);
             dd = data.getBytes();
         }
         int nodeIdLen = nodeId.size();
         byte[] d = new byte[td.length + dd.length + nodeIdLen + 7];
         int pos = 0;
-        d[pos++] = (byte) ( Signatures.Proc << 0x5 );
+        d[pos] = (byte) ( Signatures.Proc << 0x5 );
+        pos += LENGTH_SIGNATURE_LENGTH; 
         ByteConversion.shortToByte((short) nodeId.units(), d, pos);
-        pos += 2;
+        pos += NodeId.LENGTH_NODE_ID_UNITS;
         nodeId.serialize(d, pos);
         pos += nodeIdLen;
-        ByteConversion.intToByte( td.length, d, pos);
-        pos += 4;
-        System.arraycopy( td, 0, d, pos, td.length );
+        ByteConversion.intToByte(td.length, d, pos);
+        pos += LENGTH_TARGET_DATA;
+        System.arraycopy( td, 0, d, pos, td.length);
         pos += td.length;
-        System.arraycopy( dd, 0, d, pos, dd.length );
+        System.arraycopy( dd, 0, d, pos, dd.length);
         return d;
     }
 
     public static StoredNode deserialize( byte[] data, int start, int len, DocumentImpl doc, boolean pooled ) {
-        int dlnLen = ByteConversion.byteToShort(data, start + 1);
-        NodeId dln =
-                doc.getBroker().getBrokerPool().getNodeFactory().createFromData(dlnLen, data, start + 3);
+    	int pos = start;
+    	pos += LENGTH_SIGNATURE_LENGTH;
+        int dlnLen = ByteConversion.byteToShort(data, pos);
+        pos += NodeId.LENGTH_NODE_ID_UNITS;
+        NodeId dln = doc.getBroker().getBrokerPool().getNodeFactory().createFromData(dlnLen, data, pos);
         int nodeIdLen = dln.size();
-
-        int l = ByteConversion.byteToInt( data, start + 3 + nodeIdLen);
-
+        pos += nodeIdLen;
+        int l = ByteConversion.byteToInt(data, pos);
+        pos += LENGTH_TARGET_DATA;
         String target;
+        try {
+            target = new String(data, pos, l, "UTF-8");
+        } catch (UnsupportedEncodingException uee) {
+        	LOG.warn(uee);
+            target = new String(data, pos, l);
+        }
+        pos += l;
         String cdata;
         try {
-            target = new String( data, start + 7 + nodeIdLen, l, "UTF-8" );
-            cdata = new String( data, start + 7 + nodeIdLen + l, len - 7 - l - nodeIdLen, "UTF-8" );
-        } catch ( UnsupportedEncodingException uee ) {
-            target = new String( data, start + 7 + nodeIdLen, l );
-            cdata = new String( data, start + 7 + nodeIdLen + l, len - 7 - l - nodeIdLen);
+            cdata = new String(data, pos, len - (pos - start), "UTF-8");
+        } catch (UnsupportedEncodingException uee) {
+        	LOG.warn(uee);
+            cdata = new String(data, pos, len - (pos - start));
         }
+        //OK : we have the necessary material to build the processing instruction
         ProcessingInstructionImpl pi;
         if(pooled)
             pi = (ProcessingInstructionImpl)
 				NodeObjectPool.getInstance().borrowNode(ProcessingInstructionImpl.class);
         else
             pi = new ProcessingInstructionImpl();
-        pi.target = target;
+        pi.setTarget(target);
         pi.data = cdata;
-        pi.nodeId = dln;
+        pi.setNodeId(dln);
         return pi;
     }
     
