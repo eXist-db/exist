@@ -74,6 +74,8 @@ public class ElementImpl extends NamedNode implements Element {
 
     public static final int LENGTH_ELEMENT_CHILD_COUNT = 4; //sizeof int
     public static final int LENGTH_ATTRIBUTES_COUNT = 2; //sizeof short
+	public static final int LENGTH_NS_ID = 2; //sizeof short
+	public static final int LENGTH_PREFIX_LENGTH = 2; //sizeof short
 	
     private short attributes = 0;
     private int children = 0;
@@ -180,11 +182,8 @@ public class ElementImpl extends NamedNode implements Element {
             byte signature = (byte) ((Signatures.Elem << 0x5) | idSizeType);
             int prefixLen = 0;
             if (hasNamespace) {
-                prefixLen =
-                        nodeName.getPrefix() != null
-                        && nodeName.getPrefix().length() > 0
-                        ? UTF8.encoded(nodeName.getPrefix())
-                        : 0;
+                if (nodeName.getPrefix() != null && nodeName.getPrefix().length() > 0)
+                	prefixLen = UTF8.encoded(nodeName.getPrefix());
                 signature |= 0x10;
             }
             if (isDirty)
@@ -192,13 +191,15 @@ public class ElementImpl extends NamedNode implements Element {
             final int nodeIdLen = nodeId.size();
             byte[] data =
                     ByteArrayPool.getByteArray(
-                    LENGTH_ELEMENT_CHILD_COUNT + NodeId.LENGTH_NODE_ID_UNITS + LENGTH_ATTRIBUTES_COUNT
+                    LENGTH_SIGNATURE_LENGTH + LENGTH_ELEMENT_CHILD_COUNT + NodeId.LENGTH_NODE_ID_UNITS + 
+                    + nodeIdLen + LENGTH_ATTRIBUTES_COUNT
                     + Signatures.getLength(idSizeType)
                     + (hasNamespace ? prefixLen + 4 : 0)
                     + (prefixData != null ? prefixData.length : 0)
-                    + nodeIdLen + 1);
+                    );
             int next = 0;
-            data[next++] = signature;
+            data[next] = signature;
+            next += LENGTH_SIGNATURE_LENGTH;
             ByteConversion.intToByte(children, data, next);
             next += LENGTH_ELEMENT_CHILD_COUNT;
             ByteConversion.shortToByte((short) nodeId.units(), data, next);
@@ -211,9 +212,9 @@ public class ElementImpl extends NamedNode implements Element {
             next += Signatures.getLength(idSizeType);
             if (hasNamespace) {
                 ByteConversion.shortToByte(nsId, data, next);
-                next += 2;
+                next += LENGTH_NS_ID;
                 ByteConversion.shortToByte((short) prefixLen, data, next);
-                next += 2;
+                next += LENGTH_PREFIX_LENGTH;
                 if (nodeName.getPrefix() != null && nodeName.getPrefix().length() > 0)
                     UTF8.encode(nodeName.getPrefix(), data, next);
                 next += prefixLen;
@@ -221,8 +222,7 @@ public class ElementImpl extends NamedNode implements Element {
             if (prefixData != null)
                 System.arraycopy(prefixData, 0, data, next, prefixData.length);
             return data;
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             return null;
         }
     }
@@ -233,24 +233,21 @@ public class ElementImpl extends NamedNode implements Element {
                                        DocumentImpl doc,
                                        boolean pooled) {
         int end = start + len;
-        byte idSizeType = (byte) (data[start] & 0x03);
-        boolean isDirty = (data[start] & 0x8) == 0x8;
-        boolean hasNamespace = (data[start++] & 0x10) == 0x10;
+        int pos = start;
+        byte idSizeType = (byte) (data[pos] & 0x03);
+        boolean isDirty = (data[pos] & 0x8) == 0x8;
+        boolean hasNamespace = (data[pos] & 0x10) == 0x10;
+        pos += LENGTH_SIGNATURE_LENGTH;
+        int children = ByteConversion.byteToInt(data, pos);
+        pos += LENGTH_ELEMENT_CHILD_COUNT;
+        int dlnLen = ByteConversion.byteToShort(data, pos);
+        pos += NodeId.LENGTH_NODE_ID_UNITS;
+        NodeId dln = doc.getBroker().getBrokerPool().getNodeFactory().createFromData(dlnLen, data, pos);
+        pos += dln.size();
+        short attributes = ByteConversion.byteToShort(data, pos);
+        pos += LENGTH_ATTRIBUTES_COUNT;
 
-        int children = ByteConversion.byteToInt(data, start);
-        start += LENGTH_ELEMENT_CHILD_COUNT;
-        int dlnLen = ByteConversion.byteToShort(data, start);
-        start += NodeId.LENGTH_NODE_ID_UNITS;
-        NodeId dln =
-                doc.getBroker().getBrokerPool().getNodeFactory().createFromData(dlnLen, data, start);
-        start += dln.size();
-        short attributes = ByteConversion.byteToShort(data, start);
-        start += LENGTH_ATTRIBUTES_COUNT;
-
-//        LOG.debug("children: " + children + "; attributes: " + attributes + "; nodeId: " + dln +
-//                "; dln-size: " + dln.size());
-        
-        int next = start;
+        int next = pos;
         short id = (short) Signatures.read(idSizeType, data, next);
         next += Signatures.getLength(idSizeType);
         short nsId = 0;
@@ -268,6 +265,7 @@ public class ElementImpl extends NamedNode implements Element {
         String namespace = "";
         if (nsId != 0)
             namespace = doc.getSymbols().getNamespace(nsId);
+        
         ElementImpl node;
         if (pooled)
             node = (ElementImpl) NodeObjectPool.getInstance().borrowNode(ElementImpl.class);
@@ -301,28 +299,28 @@ public class ElementImpl extends NamedNode implements Element {
 
     public static QName readQName(Value value, DocumentImpl document, NodeId nodeId) {
         final byte[] data = value.data();
-            int offset = value.start();
-            byte idSizeType = (byte) (data[offset] & 0x03);
-            boolean hasNamespace = (data[offset] & 0x10) == 0x10;
-            offset += 9 + nodeId.size();
-            short id = (short) Signatures.read(idSizeType, data, offset);
-            offset += Signatures.getLength(idSizeType);
-            short nsId = 0;
-            String prefix = null;
-            if (hasNamespace) {
-                nsId = ByteConversion.byteToShort(data, offset);
-                offset += 2;
-                int prefixLen = ByteConversion.byteToShort(data, offset);
-                offset += 2;
-                if (prefixLen > 0)
-                    prefix = UTF8.decode(data, offset, prefixLen).toString();
-                offset += prefixLen;
-            }
-            String name = document.getSymbols().getName(id);
-            String namespace = "";
-            if (nsId != 0)
-                namespace = document.getSymbols().getNamespace(nsId);
-            return new QName(name, namespace, prefix == null ? "" : prefix);
+        int offset = value.start();
+        byte idSizeType = (byte) (data[offset] & 0x03);
+        boolean hasNamespace = (data[offset] & 0x10) == 0x10;
+        offset += 9 + nodeId.size();
+        short id = (short) Signatures.read(idSizeType, data, offset);
+        offset += Signatures.getLength(idSizeType);
+        short nsId = 0;
+        String prefix = null;
+        if (hasNamespace) {
+            nsId = ByteConversion.byteToShort(data, offset);
+            offset += 2;
+            int prefixLen = ByteConversion.byteToShort(data, offset);
+            offset += 2;
+            if (prefixLen > 0)
+                prefix = UTF8.decode(data, offset, prefixLen).toString();
+            offset += prefixLen;
+        }
+        String name = document.getSymbols().getName(id);
+        String namespace = "";
+        if (nsId != 0)
+            namespace = document.getSymbols().getNamespace(nsId);
+        return new QName(name, namespace, prefix == null ? "" : prefix);
     }
 
     public void addNamespaceMapping(String prefix, String ns) {
