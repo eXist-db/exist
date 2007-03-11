@@ -116,7 +116,7 @@ public class IndexSpec {
         // configure custom indexes, but not if broker is null (which means we are reading
         // the default index config from conf.xml)
         if (broker != null)
-            customIndexSpecs = broker.getIndexDispatcher().configure(cl, namespaces);
+            customIndexSpecs = broker.getIndexController().configure(cl, namespaces);
     }
 	
     /**

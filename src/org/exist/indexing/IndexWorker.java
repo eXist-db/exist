@@ -24,9 +24,11 @@ package org.exist.indexing;
 import org.w3c.dom.NodeList;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
+import org.exist.dom.StoredNode;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.Occurrences;
 import org.exist.collections.Collection;
+import org.exist.storage.NodePath;
 
 import java.util.Map;
 
@@ -58,12 +60,12 @@ public interface IndexWorker {
      * with each collection. It can later be retrieved from the collection configuration, e.g. to
      * check if a given node should be indexed or not.
      *
-     * @param configNodes
-     * @param namespaces
-     * @return
-     * @throws DatabaseConfigurationException
+     * @param configNodes lists the top-level child nodes below the &lt;index&gt; element in collection.xconf
+     * @param namespaces the active prefix/namespace map
+     * @return an arbitrary configuration object to be kept for this index in the collection configuration
+     * @throws DatabaseConfigurationException if a configuration error occurs
      */
-    Object configure(NodeList configNodes, Map namespaces) throws DatabaseConfigurationException;
+    Object configure(IndexController controller, NodeList configNodes, Map namespaces) throws DatabaseConfigurationException;
 
     /**
      * Flush the index. This method will be called when indexing a document. The implementation should
@@ -94,4 +96,18 @@ public interface IndexWorker {
     void removeCollection(Collection collection);
 
     Occurrences[] scanIndex(DocumentSet docs);
+
+    /**
+     * When adding or removing nodes to or from the document tree, it might become
+     * necessary to reindex some parts of the tree, in particular if indexes are defined
+     * on mixed content nodes. This method will call
+     * {@link IndexWorker#getReindexRoot(org.exist.dom.StoredNode, org.exist.storage.NodePath, boolean)}
+     * on each configured index. It will then return the top-most root.
+     *
+     * @param node the node to be modified.
+     * @param path path the NodePath of the node
+     * @param includeSelf if set to true, the current node itself will be included in the check
+     * @return the top-most root node to be reindexed
+     */
+    StoredNode getReindexRoot(StoredNode node, NodePath path, boolean includeSelf);
 }

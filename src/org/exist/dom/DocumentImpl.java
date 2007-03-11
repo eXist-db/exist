@@ -425,7 +425,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
                     DOMException.INVALID_MODIFICATION_ERR,
                     "A node replacing the document root needs to be an element");
             broker.removeNode(transaction, oldNode, oldNode.getPath(), null);
-            broker.endRemove();
+            broker.endRemove(transaction);
             newNode.setNodeId(oldNode.getNodeId());
             broker.insertNodeAfter(null, previousNode, newNode);
             NodePath path = newNode.getPath();
@@ -434,7 +434,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
             broker.flush();
         } else {
             broker.removeNode(transaction, oldNode, oldNode.getPath(), null);
-            broker.endRemove();
+            broker.endRemove(transaction);
             newNode.setNodeId(oldNode.getNodeId());
             broker.insertNodeAfter(transaction, previousNode, newNode);
         }

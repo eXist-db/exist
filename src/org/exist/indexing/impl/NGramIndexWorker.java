@@ -22,10 +22,7 @@
 package org.exist.indexing.impl;
 
 import org.exist.dom.*;
-import org.exist.indexing.IndexWorker;
-import org.exist.indexing.StreamListener;
-import org.exist.indexing.AbstractStreamListener;
-import org.exist.indexing.IndexUtils;
+import org.exist.indexing.*;
 import org.exist.util.*;
 import org.exist.storage.index.BFile;
 import org.exist.storage.txn.Txn;
@@ -77,7 +74,8 @@ public class NGramIndexWorker implements IndexWorker {
     private char[] buf = new char[1024];
     private int currentChar = 0;
     private DocumentImpl currentDoc = null;
-
+    private IndexController controller;
+    
     private Map ngrams = new TreeMap();
     private VariableByteOutputStream os = new VariableByteOutputStream(7);
 
@@ -90,7 +88,8 @@ public class NGramIndexWorker implements IndexWorker {
         return NGramIndex.ID;
     }
 
-    public Object configure(NodeList configNodes, Map namespaces) throws DatabaseConfigurationException {
+    public Object configure(IndexController controller, NodeList configNodes, Map namespaces) throws DatabaseConfigurationException {
+        this.controller = controller;
         // We use a map to store the QNames to be indexed
         Map map = new TreeMap();
         Node node;
@@ -442,18 +441,59 @@ public class NGramIndexWorker implements IndexWorker {
         return new NGramStreamListener(document, mode);
     }
 
-    private void indexText(NodeId nodeId, QName qname, CharSequence text) {
+    public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean includeSelf) {
+        if (node.getNodeType() == Node.ATTRIBUTE_NODE)
+            return null;
+        IndexSpec indexConf = node.getDocument().getCollection().getIndexConfiguration(node.getDocument().getBroker());
+        if (indexConf != null) {
+            Map config = (Map) indexConf.getCustomIndexSpec(NGramIndex.ID);
+            if (config == null)
+                return null;
+            boolean reindexRequired = false;
+            int len = node.getNodeType() == Node.ELEMENT_NODE && !includeSelf ? path.length() - 1 : path.length();
+            for (int i = 0; i < len; i++) {
+                QName qn = path.getComponent(i);
+                if (config.get(qn) != null) {
+                    reindexRequired = true;
+                    break;
+                }
+            }
+            if (reindexRequired) {
+                StoredNode top = null;
+                StoredNode next = node;
+                while (next != null) {
+                    if (config.get(next.getQName()) != null)
+                        top = next;
+                    next = (StoredNode) next.getParentNode();
+                }
+                return top;
+            }
+        }
+        return null;
+    }
+
+    public String[] tokenize(CharSequence text) {
         int len = text.length();
         int gramSize = index.getN();
-        String ngram;
+        String ngrams[] = new String[len];
+        int next = 0;
         for (int i = 0; i < len; i++) {
             checkBuffer();
             for (int j = 0; j < gramSize && i + j < len; j++) {
                 // TODO: case sensitivity should be configurable
                 buf[currentChar + j] = Character.toLowerCase(text.charAt(i + j));
             }
-            ngram = new String(buf, currentChar, gramSize);
-            QNameTerm key = new QNameTerm(qname, ngram);
+            ngrams[next++] = new String(buf, currentChar, gramSize);
+            currentChar += gramSize;
+        }
+        return ngrams;
+    }
+
+    private void indexText(NodeId nodeId, QName qname, CharSequence text) {
+        String ngram[] = tokenize(text);
+        int len = ngram.length;
+        for (int i = 0; i < len; i++) {
+            QNameTerm key = new QNameTerm(qname, ngram[i]);
             OccurrenceList list = (OccurrenceList) ngrams.get(key);
             if (list == null) {
                 list = new OccurrenceList();
@@ -462,7 +502,6 @@ public class NGramIndexWorker implements IndexWorker {
             } else {
                 list.add(nodeId, i);
             }
-            currentChar += gramSize;
         }
     }
 
@@ -476,7 +515,6 @@ public class NGramIndexWorker implements IndexWorker {
 
     private class NGramStreamListener extends AbstractStreamListener {
 
-        private boolean top = true;
         private Map config;
         private Stack contentStack = null;
         
@@ -487,7 +525,6 @@ public class NGramIndexWorker implements IndexWorker {
         public void setDocument(DocumentImpl document, int newMode) {
             currentDoc = document;
             config = null;
-            top = true;
             contentStack = null;
             IndexSpec indexConf = document.getCollection().getIndexConfiguration(document.getBroker());
             if (indexConf != null)
@@ -496,17 +533,11 @@ public class NGramIndexWorker implements IndexWorker {
         }
 
         public void startElement(Txn transaction, ElementImpl element, NodePath path) {
-            if (top && mode == REMOVE_NODES) {
-                // if a node is removed from a lower tree level, we also have to check its
-                // ancestors and maybe reindex them
-                checkAncestors(transaction, element, path, config);
-            }
             if (config != null && config.get(element.getQName()) != null) {
                 if (contentStack == null) contentStack = new Stack();
                 XMLString contentBuf = new XMLString();
                 contentStack.push(contentBuf);
             }
-            top = false;
             super.startElement(transaction, element, path);
         }
 
@@ -526,9 +557,6 @@ public class NGramIndexWorker implements IndexWorker {
         }
 
         public void characters(Txn transaction, TextImpl text, NodePath path) {
-            if (top && mode == REMOVE_NODES) {
-                checkAncestors(transaction, text, path, config);
-            }
             if (contentStack != null && !contentStack.isEmpty()) {
                 for (int i = 0; i < contentStack.size(); i++) {
                     XMLString next = (XMLString) contentStack.get(i);
@@ -536,47 +564,6 @@ public class NGramIndexWorker implements IndexWorker {
                 }
             }
             super.characters(transaction, text, path);
-        }
-
-        /**
-         * When removing nodes at a lower level of the document tree, we also need to check
-         * the ancestor nodes of the removed node for potential indexes. If indexes are found,
-         * we need to reindex those ancestor nodes.
-         *
-         * @param transaction
-         * @param element
-         * @param path
-         * @param config
-         * @return
-         */
-        private boolean checkAncestors(Txn transaction, StoredNode element, NodePath path, Map config) {
-            if (config == null) // no index defined
-                return false;
-            boolean reindexRequired = false;
-            int len = element.getNodeType() == Node.ELEMENT_NODE ? path.length() - 1 : path.length();
-            for (int i = 0; i < len; i++) {
-                QName qn = path.getComponent(i);
-                if (config.get(qn) != null) {
-                    reindexRequired = true;
-                    break;
-                }
-            }
-            if (reindexRequired) {
-                StoredNode top = null;
-                StoredNode parent = (StoredNode) element.getParentNode();
-                while (parent != null) {
-                    if (config.get(parent.getQName()) != null)
-                        top = parent;
-                    parent = (StoredNode) parent.getParentNode();
-                }
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("NGramIndexWorker$NGramStreamListener.checkAncestors: Indexing " +
-                            top.getQName() + " for " + element.getNodeName());
-                }
-                IndexUtils.scanNode(transaction, top, this);
-                return true;
-            }
-            return false;
         }
     }
 
