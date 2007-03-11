@@ -467,7 +467,7 @@ public class CustomIndexTest extends TestCase {
     }
 
     private void checkIndex(DBBroker broker, DocumentSet docs, String term, int count) {
-        NGramIndexWorker index = (NGramIndexWorker) broker.getIndexDispatcher().getIndexWorker(NGramIndex.ID);
+        NGramIndexWorker index = (NGramIndexWorker) broker.getIndexController().getIndexWorker(NGramIndex.ID);
         Occurrences[] occurrences = index.scanIndex(docs);
         int found = 0;
         for (int i = 0; i < occurrences.length; i++) {
