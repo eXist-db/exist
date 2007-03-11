@@ -137,6 +137,39 @@
                     </listitem>
                 </itemizedlist>
             </section>
+
+            <section>
+                <title>Implement an XSLT 2.0 processor</title>
+
+                <para>eXist aims to be compliant with XQuery 2.0 specifications. It would be interesting that the "sister" recommendation, XSLT 2.0, should be implemented as well,
+                	thus allowing XSLT 2.0 processing on (huge ?) persistent documents.
+                  	Most of the code is already here since both recommandations are built on-top of XPath 2.0. </para>
+                  	<para>However, this is still to be implemented:</para>
+                <itemizedlist>
+                    <listitem>
+                        <para>Clean separation of XPath 2.0 and XQuery 1.0 code. 
+                        Exist used to have a dedicated package for XPath in the past: it somehow has to be revived and the XQuery 1.0 specific classes have to be moved to a dedicated package. 
+                        Functions, including experimental grouping ones (which have to be improved with regard to performance) have to be moved as well.</para>
+                    </listitem>
+                    <listitem>
+                        <para>Writing a dedicated XSLT 2.0 parser. The existing XQuery 1.0 parser is probably a good source of inspiration.</para>
+                    </listitem>
+                    <listitem>
+                        <para>Attention should be drawn to performance concerns. Recent code is definitely more friendly to the programmer with regard to performance. Implementing an XSLT 2.0 processor could help in bringing even more improvements in this area.</para>
+                    </listitem>
+                </itemizedlist>
+                
+                <para><emphasis>Resources:</emphasis></para>
+
+                <itemizedlist>
+                    <listitem>
+                        <para><ulink url="http://www.w3.org/TR/xslt20/">XSL Transformations (XSLT) Version 2.0</ulink>. W3C Recommendation.</para>
+                    </listitem>
+                    <listitem>
+                        <para><ulink url="http://monet.nag.co.uk/xq2xml//xsltest-20061026.zip">XQ2XML: XML syntaxes for XQuery</ulink>. A test suite by David Carlisle that provides an XSLT 2.0 syntax for some of the <ulink url="http://www.w3.org/XML/Query/test-suite/">XQuery test suite</ulink> tests.</para>
+                    </listitem>
+                </itemizedlist>
+            </section>
         </section>
     </chapter>
 </book>
