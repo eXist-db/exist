@@ -469,7 +469,7 @@ public class NativeBroker extends DBBroker {
 
     /** Takes care of actually remove entries from the indices;
      * must be called after one or more call to {@link #removeNode(Txn, StoredNode, NodePath, String)}. */
-    public void endRemove() {
+    public void endRemove(Txn transaction) {
         notifyRemove();
     }
     
@@ -2260,10 +2260,10 @@ public class NativeBroker extends DBBroker {
                     + "; old = " + old.getNodeName(),
                 e);
         }
-        if (reindex) {
-            StreamListener listener = indexController.getStreamListener(node.getDocument(), StreamListener.STORE);
-            IndexUtils.scanNode(transaction, node, listener);
-        }
+//        if (reindex) {
+//            StreamListener listener = indexController.getStreamListener(node.getDocument(), StreamListener.STORE);
+//            IndexUtils.scanNode(transaction, node, listener);
+//        }
     }
 
     /**
@@ -2437,10 +2437,9 @@ public class NativeBroker extends DBBroker {
         }
     }
 
-    public void removeAllNodes(Txn transaction, StoredNode node, NodePath currentPath) {
+    public void removeAllNodes(Txn transaction, StoredNode node, NodePath currentPath, StreamListener listener) {
         Iterator iterator = getNodeIterator(node);
         iterator.next();
-        StreamListener listener = indexController.getStreamListener(node.getDocument(), StreamListener.REMOVE_NODES);
         Stack stack = new Stack();
         collectNodesForRemoval(transaction, stack, iterator, listener, node, currentPath);
         while (!stack.isEmpty()) {

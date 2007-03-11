@@ -37,6 +37,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import org.exist.Namespaces;
+import org.exist.indexing.StreamListener;
 import org.exist.numbering.NodeId;
 import org.exist.stax.EmbeddedXMLStreamReader;
 import org.exist.storage.ElementValue;
@@ -375,29 +376,6 @@ public class ElementImpl extends NamedNode implements Element {
     public void appendAttributes(Txn transaction, NodeList attribs) throws DOMException {
     	NodeList duplicateAttrs = findDupAttributes(attribs);
     	removeAppendAttributes(transaction, duplicateAttrs, attribs);
-//    	if(duplicateAttrs != null) {
-//    		removeAppendAttributes(transaction, duplicateAttrs, attribs);
-//    	} else {
-//    		NodeImplRef last = new NodeImplRef(this);
-//            final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
-//	        if (children == 0) {
-//	            // no children: append a new child
-//	            appendChildren(transaction, nodeId.newChild(), -1, last, getPath(), attribs, true);
-//	        }
-//	        else {
-//	        	NamedNodeMap attrs = getAttributes();
-//                final StoredNode lastAttrib = (StoredNode) attrs.item(attrs.getLength() - 1);
-//	            if (lastAttrib == null || attrs.getLength() == children) {
-//                    appendChildren(transaction, null, firstChildID() + 1, last, getPath(), attribs, true);
-//	            } else {
-//                   	last.setNode(lastAttrib);
-//                    appendChildren(transaction, null, lastChildID() + 1, last, getPath(), attribs, true);
-//	            }
-//	        }
-//	        attributes += attribs.getLength();
-//            getBroker().updateNode(transaction, this);
-//            getBroker().reindexXMLResource(transaction, owner, owner, null);
-//    	}
     }
 
     private NodeList checkForAttributes(Txn transaction, NodeList nodes) throws DOMException {
@@ -427,9 +405,18 @@ public class ElementImpl extends NamedNode implements Element {
         nodes = checkForAttributes(transaction, nodes);
         if (nodes == null || nodes.getLength() == 0)
             return;
+        NodePath path = getPath();
+        StreamListener listener = null;
+        StoredNode reindexRoot = getBroker().getIndexController().getReindexRoot(this, path);
+        if (reindexRoot == null) {
+            listener = getBroker().getIndexController().getStreamListener(ownerDocument, StreamListener.STORE);
+        } else {
+            getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
+        }
+
         if (children == 0) {
             // no children: append a new child
-            appendChildren(transaction, nodeId.newChild(), new NodeImplRef(this), getPath(), nodes, true);
+            appendChildren(transaction, nodeId.newChild(), new NodeImplRef(this), path, nodes, listener);
         } else {
             if (child == 1) {
                 Node firstChild = getFirstChild();
@@ -443,11 +430,12 @@ public class ElementImpl extends NamedNode implements Element {
                 } else {
                     StoredNode last = (StoredNode) getLastChild();
                     appendChildren(transaction, last.getNodeId().nextSibling(), 
-                            new NodeImplRef(getLastNode(last)), getPath(), nodes, true);
+                            new NodeImplRef(getLastNode(last)), path, nodes, listener);
                 }
             }
         }
-        getBroker().updateNode(transaction, this, true);
+        getBroker().updateNode(transaction, this, false);
+        getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
         getBroker().flush();
     }
 
@@ -456,19 +444,18 @@ public class ElementImpl extends NamedNode implements Element {
      *    
      * @throws DOMException
      */
-    protected void appendChildren(Txn transaction, NodeId newNodeId, NodeImplRef last, NodePath lastPath, NodeList nodes,
-            boolean index) throws DOMException {
+    protected void appendChildren(Txn transaction, NodeId newNodeId, NodeImplRef last, NodePath lastPath, NodeList nodes, StreamListener listener) throws DOMException {
         if (last == null || last.getNode() == null || last.getNode().getOwnerDocument() == null)
             throw new DOMException(DOMException.INVALID_MODIFICATION_ERR, "invalid node");
         children += nodes.getLength();
         for (int i = 0; i < nodes.getLength(); i++) {
             Node child = nodes.item(i);
-            appendChild(transaction, newNodeId, last, lastPath, child, index);
+            appendChild(transaction, newNodeId, last, lastPath, child, listener);
             newNodeId = newNodeId.nextSibling();
         }
     }
 
-    private Node appendChild(Txn transaction, NodeId newNodeId, NodeImplRef last, NodePath lastPath, Node child, boolean index)
+    private Node appendChild(Txn transaction, NodeId newNodeId, NodeImplRef last, NodePath lastPath, Node child, StreamListener listener)
             throws DOMException {
         if (last == null || last.getNode() == null)
             //TODO : same test as above ? -pb
@@ -476,7 +463,7 @@ public class ElementImpl extends NamedNode implements Element {
         final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
         switch (child.getNodeType()) {
     		case Node.DOCUMENT_FRAGMENT_NODE :
-    		    appendChildren(transaction, newNodeId, last, lastPath, child.getChildNodes(),index);
+    		    appendChildren(transaction, newNodeId, last, lastPath, child.getChildNodes(), listener);
     		    return null;    // TODO: implement document fragments so we can return all newly appended children
             case Node.ELEMENT_NODE :
                 // create new element
@@ -514,15 +501,16 @@ public class ElementImpl extends NamedNode implements Element {
 
                 // index now?
                 getBroker().indexNode(transaction, elem, lastPath);
+                getBroker().getIndexController().indexNode(transaction, elem, lastPath, listener);
 
                 elem.setChildCount(0);
 
                 // process child nodes
                 last.setNode(elem);
-                elem.appendChildren(transaction, newNodeId.newChild(), last, lastPath, ch, index);
+                elem.appendChildren(transaction, newNodeId.newChild(), last, lastPath, ch, listener);
 
                 getBroker().endElement(elem, lastPath, null);
-
+                getBroker().getIndexController().indexEndElement(transaction, elem, lastPath, listener);
                 lastPath.removeLastComponent();
                 return elem;
             case Node.TEXT_NODE :
@@ -531,6 +519,7 @@ public class ElementImpl extends NamedNode implements Element {
                 // insert the node
                 getBroker().insertNodeAfter(transaction, last.getNode(), text);
                 getBroker().indexNode(transaction, text, lastPath);
+                getBroker().getIndexController().indexNode(transaction, text, lastPath, listener);
                 last.setNode(text);
                 return text;
             case Node.CDATA_SECTION_NODE :
@@ -560,6 +549,8 @@ public class ElementImpl extends NamedNode implements Element {
                 getBroker().insertNodeAfter(transaction, last.getNode(), attrib);
                 // index now?
                 getBroker().indexNode(transaction, attrib, lastPath);
+                getBroker().getIndexController().indexNode(transaction, attrib, lastPath, listener);
+
                 last.setNode(attrib);
                 return attrib;
             case Node.COMMENT_NODE:
@@ -1044,18 +1035,27 @@ public class ElementImpl extends NamedNode implements Element {
         }
         if (!(refChild instanceof StoredNode))
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "wrong node type");
+        NodePath path = getPath();
+        StreamListener listener = null;
+        StoredNode reindexRoot = getBroker().getIndexController().getReindexRoot(this, path, true);
+        if (reindexRoot == null) {
+            listener = getBroker().getIndexController().getStreamListener(ownerDocument, StreamListener.STORE);
+        } else {
+            getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
+        }
         StoredNode following = (StoredNode) refChild;
         StoredNode previous = (StoredNode) following.getPreviousSibling();
         if (previous == null)
             appendChildren(transaction, following.getNodeId().insertBefore(), 
-                    new NodeImplRef(this), getPath(), nodes, false);
+                    new NodeImplRef(this), path, nodes, listener);
         else {
             NodeId newId = previous.getNodeId().insertNode(following.getNodeId());
             appendChildren(transaction, newId, new NodeImplRef(getLastNode(previous)), 
-                    getPath(), nodes, false);
+                    path, nodes, listener);
         }
         setDirty(true);
         getBroker().updateNode(transaction, this, true);
+        getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
         getBroker().flush();
     }
 
@@ -1071,13 +1071,22 @@ public class ElementImpl extends NamedNode implements Element {
         }
         if (!(refChild instanceof StoredNode))
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "wrong node type: ");
+        NodePath path = getPath();
+        StreamListener listener = null;
+        StoredNode reindexRoot = getBroker().getIndexController().getReindexRoot(this, path, true);
+        if (reindexRoot == null) {
+            listener = getBroker().getIndexController().getStreamListener(ownerDocument, StreamListener.STORE);
+        } else {
+            getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
+        }
         StoredNode previous = (StoredNode) refChild;
         StoredNode following = (StoredNode) previous.getNextSibling();
         NodeId newNodeId = previous.getNodeId().insertNode(following == null ? null : following.getNodeId());
         appendChildren(transaction, newNodeId, 
-                new NodeImplRef(getLastNode(previous)), getPath(), nodes, false);
+                new NodeImplRef(getLastNode(previous)), path, nodes, listener);
         setDirty(true);
         getBroker().updateNode(transaction, this, true);
+        getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
         getBroker().flush();
     }
 
@@ -1092,6 +1101,15 @@ public class ElementImpl extends NamedNode implements Element {
         final NodePath path = getPath();        
         // remove old child nodes
         NodeList nodes = getChildNodes();
+
+        StreamListener listener = null;
+        StoredNode reindexRoot = getBroker().getIndexController().getReindexRoot(this, path);
+        if (reindexRoot == null) {
+            listener = getBroker().getIndexController().getStreamListener(ownerDocument, StreamListener.REMOVE_NODES);
+        } else {
+            getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.REMOVE_NODES);
+        }
+
         StoredNode child, last = this;
         int i = nodes.getLength();
         for (; i > 0; i--) {
@@ -1102,17 +1120,20 @@ public class ElementImpl extends NamedNode implements Element {
             }
             if (child.getNodeType() == Node.ELEMENT_NODE)
                 path.addComponent(child.getQName());
-            getBroker().removeAllNodes(transaction, child, path);
+
+            getBroker().removeAllNodes(transaction, child, path, listener);
             if (child.getNodeType() == Node.ELEMENT_NODE)
                 path.removeLastComponent();
         }
-        getBroker().endRemove();
+        getBroker().getIndexController().flush();
+        getBroker().getIndexController().getStreamListener(ownerDocument, StreamListener.STORE);
+        getBroker().endRemove(transaction);
         children = i;
         NodeId newNodeId = last == this ? nodeId.newChild() : last.nodeId.nextSibling();
         // append new content
-        appendChildren(transaction, newNodeId, new NodeImplRef(last), path, newContent, true);
-        getBroker().updateNode(transaction, this, true);
-        // reindex if required
+        appendChildren(transaction, newNodeId, new NodeImplRef(last), path, newContent, listener);
+        getBroker().updateNode(transaction, this, false);
+        getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
         getBroker().flush();
     }
 
@@ -1148,17 +1169,29 @@ public class ElementImpl extends NamedNode implements Element {
         else
             previousNode = getLastNode(previousNode);
         final NodePath currentPath = getPath();
-        getBroker().getIndexDispatcher().removeNode(transaction, oldNode);
-        getBroker().removeNode(transaction, oldNode, oldNode.getPath(currentPath), null);
-        getBroker().endRemove();
+        final NodePath oldPath = oldNode.getPath(currentPath);
+
+        // check if the change affects any ancestor nodes, which then need to be reindexed later
+        StoredNode reindexRoot = getBroker().getIndexController().getReindexRoot(oldNode, oldPath);
+        // Remove indexes
+        if (reindexRoot == null)
+            reindexRoot = oldNode;
+        getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.REMOVE_NODES);
+
+        // Remove the actual node data
+        getBroker().removeNode(transaction, oldNode, oldPath, null);
+        getBroker().endRemove(transaction);
         
         newNode.nodeId = oldNode.nodeId;
+        // Reinsert the new node data
         getBroker().insertNodeAfter(transaction, previousNode, newNode);
         final NodePath path = newNode.getPath(currentPath);
         getBroker().indexNode(transaction, newNode, path);
 		if (newNode.getNodeType() == Node.ELEMENT_NODE)
             getBroker().endElement(newNode, path, null);
         getBroker().updateNode(transaction, this, true);
+        // Recreate indexes on ancestor nodes
+        getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
         getBroker().flush();
     }
     
@@ -1172,14 +1205,23 @@ public class ElementImpl extends NamedNode implements Element {
         if (!oldNode.nodeId.getParentId().equals(nodeId))
             throw new DOMException(DOMException.NOT_FOUND_ERR,
                     "node is not a child of this element");
-        getBroker().removeAllNodes(transaction, oldNode, oldNode.getPath());
+        NodePath oldPath = oldNode.getPath();
+        StreamListener listener = null;
+        StoredNode reindexRoot = getBroker().getIndexController().getReindexRoot(oldNode, oldPath);
+        if (reindexRoot == null) {
+            listener = getBroker().getIndexController().getStreamListener(ownerDocument, StreamListener.REMOVE_NODES);
+        } else {
+            getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.REMOVE_NODES);
+        }
+        getBroker().removeAllNodes(transaction, oldNode, oldPath, listener);
         --children;
         if (oldChild.getNodeType() == Node.ATTRIBUTE_NODE)
             --attributes;
-        getBroker().endRemove();
+        getBroker().endRemove(transaction);
         setDirty(true);
         getBroker().updateNode(transaction, this, false);
         getBroker().flush();
+        getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
         return oldNode;
     }
 	
@@ -1195,35 +1237,39 @@ public class ElementImpl extends NamedNode implements Element {
 						if (!old.nodeId.isChildOf(nodeId))
 							throw new DOMException(DOMException.NOT_FOUND_ERR, "node " + old.nodeId.getParentId() + 
 									" is not a child of element " + nodeId);
-                        getBroker().getIndexDispatcher().removeNode(transaction, old);
-                        getBroker().removeNode(transaction, old, old.getPath(), null);
+                        final NodePath oldPath = old.getPath();
+                        // remove old custom indexes
+                        getBroker().getIndexController().reindex(transaction, old, StreamListener.REMOVE_NODES);
+                        getBroker().removeNode(transaction, old, oldPath, null);
 						children--;
 						attributes--;
 					}
 				} finally {
-					getBroker().endRemove();
+					getBroker().endRemove(transaction);
 				}
 			}
-			if (children == 0) {
+            NodePath path = getPath();
+            StreamListener listener = getBroker().getIndexController().getStreamListener(ownerDocument, StreamListener.STORE);
+            if (children == 0) {
 			   appendChildren(transaction, nodeId.newChild(), 
-					   new NodeImplRef(this), getPath(), appendList, true);
+					   new NodeImplRef(this), path, appendList, listener);
 			} else {
 		        if (attributes == 0) {
 		        	StoredNode firstChild = (StoredNode) getFirstChild();
 		        	NodeId newNodeId = firstChild.nodeId.insertBefore();
-                    appendChildren(transaction, newNodeId, new NodeImplRef(this), getPath(), appendList, true);                    
+                    appendChildren(transaction, newNodeId, new NodeImplRef(this), path, appendList, listener);
 		        } else {
 		        	AttribVisitor visitor = new AttribVisitor();
 			        accept(visitor);
 			        NodeId firstChildId = visitor.firstChild == null ? null : visitor.firstChild.nodeId;
 			        NodeId newNodeId = visitor.lastAttrib.nodeId.insertNode(firstChildId);
                     appendChildren(transaction, newNodeId, new NodeImplRef(visitor.lastAttrib), 
-                    		getPath(), appendList, true);
+                    		path, appendList, listener);
 		        }
                 setDirty(true);
             }
 			attributes += appendList.getLength();
-		} finally {
+        } finally {
             getBroker().updateNode(transaction, this, true);
             getBroker().flush();
 		}
@@ -1259,13 +1305,25 @@ public class ElementImpl extends NamedNode implements Element {
             previous = this;
         else
             previous = getLastNode(previous);
-        getBroker().removeAllNodes(transaction, oldNode, oldNode.getPath());
-        getBroker().endRemove();
-        appendChild(transaction, oldNode.nodeId, new NodeImplRef(previous), getPath(), newChild, true);
+
+        NodePath oldPath = oldNode.getPath();
+        StreamListener listener = null;
+        StoredNode reindexRoot = getBroker().getIndexController().getReindexRoot(oldNode, oldPath);
+        if (reindexRoot == null) {
+            listener = getBroker().getIndexController().getStreamListener(ownerDocument, StreamListener.REMOVE_NODES);
+        } else {
+            getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.REMOVE_NODES);
+        }
+
+        getBroker().removeAllNodes(transaction, oldNode, oldPath, listener);
+        getBroker().endRemove(transaction);
+        listener = getBroker().getIndexController().getStreamListener(ownerDocument, StreamListener.STORE);
+        appendChild(transaction, oldNode.nodeId, new NodeImplRef(previous), getPath(), newChild, listener);
         // reindex if required
         final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
         getBroker().storeXMLResource(transaction, owner);
-        getBroker().updateNode(transaction, this, true);
+        getBroker().updateNode(transaction, this, false);
+        getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
         getBroker().flush();
         return oldChild;	// method is spec'd to return the old child, even though that's probably useless in this case
     }

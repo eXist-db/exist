@@ -43,6 +43,7 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.StoredNode;
 import org.exist.dom.SymbolTable;
 import org.exist.indexing.IndexController;
+import org.exist.indexing.StreamListener;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
@@ -155,7 +156,7 @@ public abstract class DBBroker extends Observable {
 		return user;
 	}
 
-    public IndexController getIndexDispatcher() {
+    public IndexController getIndexController() {
         return indexController;
     }
 
@@ -684,9 +685,9 @@ public abstract class DBBroker extends Observable {
 			NodePath currentPath, String content);
 
 	public abstract void removeAllNodes(Txn transaction, StoredNode node,
-			NodePath currentPath);
+			NodePath currentPath, StreamListener listener);
 
-	public abstract void endRemove();
+	public abstract void endRemove(Txn transaction);
 
 	/**
 	 * Create a temporary document in the temp collection and store the supplied

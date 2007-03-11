@@ -1,7 +1,6 @@
 package org.exist.xquery.functions.text;
 
 import org.exist.xquery.*;
-import org.exist.xquery.util.*;
 import org.exist.xquery.util.Error;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -12,7 +11,6 @@ import org.exist.dom.NodeSet;
 import org.exist.dom.DocumentSet;
 import org.exist.indexing.impl.NGramIndex;
 import org.exist.indexing.impl.NGramIndexWorker;
-import org.exist.indexing.IndexWorker;
 
 import java.util.List;
 
@@ -66,7 +64,7 @@ public class NGramSearch extends Function {
             DocumentSet docs = nodes.getDocumentSet();
             String key = getArgument(1).eval(contextSequence, contextItem).getStringValue();
             NGramIndexWorker index = (NGramIndexWorker)
-                    context.getBroker().getIndexDispatcher().getIndexWorker(NGramIndex.ID);
+                    context.getBroker().getIndexController().getIndexWorker(NGramIndex.ID);
             result = index.search(docs, key, context, nodes, NodeSet.ANCESTOR);
         }
         return result;

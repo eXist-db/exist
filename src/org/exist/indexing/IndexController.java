@@ -36,8 +36,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 /**
- * Internally used by the {@link DBBroker} to dispatch an operation to each of the
- * registered indexes.
+ * Internally used to dispatch an operation to each of the
+ * registered indexes. An IndexController instance can be
+ * retrieved via {@link org.exist.storage.DBBroker#getIndexController()}.
  * 
  */
 public class IndexController {
@@ -46,6 +47,8 @@ public class IndexController {
 
     protected StreamListener listener = null;
 
+    protected StoredNode reindexNode = null;
+    
     public IndexController(DBBroker broker) {
         IndexWorker[] workers = broker.getBrokerPool().getIndexManager().getWorkers();
         for (int i = 0; i < workers.length; i++) {
@@ -53,10 +56,26 @@ public class IndexController {
         }
     }
 
+    /**
+     * Returns an {@link org.exist.indexing.IndexWorker} instance corresponding
+     * to the specified type of index in indexId. The indexId should be the same one
+     * as returned by {@link org.exist.indexing.IndexWorker#getIndexId()}.
+     * 
+     * @param indexId
+     * @return
+     */
     public IndexWorker getIndexWorker(String indexId) {
         return (IndexWorker) indexWorkers.get(indexId);
     }
-    
+
+    /**
+     * Returns a chain of {@link org.exist.indexing.StreamListener}, one
+     * for each index configured.
+     *
+     * @param document
+     * @param mode
+     * @return
+     */
     public StreamListener getStreamListener(DocumentImpl document, int mode) {
         if (listener != null) {
             StreamListener next = listener;
@@ -82,20 +101,31 @@ public class IndexController {
         listener = first;
         return listener;
     }
-    
+
+    /**
+     * Configures all index modules registered with the db instance.
+     * 
+     * @param configNodes lists the top-level child nodes below the &lt;index&gt; element in collection.xconf
+     * @param namespaces the active prefix/namespace map
+     * @return an arbitrary configuration object to be kept for this index in the collection configuration
+     * @throws DatabaseConfigurationException if a configuration error occurs
+     */
     public Map configure(NodeList configNodes, Map namespaces) throws DatabaseConfigurationException {
         Map map = new HashMap();
         IndexWorker indexWorker;
         Object conf;
         for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
             indexWorker = (IndexWorker) i.next();
-            conf = indexWorker.configure(configNodes, namespaces);
+            conf = indexWorker.configure(this, configNodes, namespaces);
             if (conf != null)
                 map.put(indexWorker.getIndexId(), conf);
         }
         return map;
     }
 
+    /**
+     * Flushes all index modules.
+     */
     public void flush() {
         IndexWorker indexWorker;
         for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
@@ -104,17 +134,111 @@ public class IndexController {
         }
     }
 
+    /**
+     * When adding or removing nodes to or from the document tree, it might become
+     * necessary to reindex some parts of the tree, in particular if indexes are defined
+     * on mixed content nodes. This method will call
+     * {@link IndexWorker#getReindexRoot(org.exist.dom.StoredNode, org.exist.storage.NodePath, boolean)}
+     * on each configured index. It will then return the top-most root.
+     *
+     * @param node the node to be modified.
+     * @param path the NodePath of the node
+     * @return the top-most root node to be reindexed
+     */
+    public StoredNode getReindexRoot(StoredNode node, NodePath path) {
+        return getReindexRoot(node, path, false);
+    }
+
+    /**
+     * When adding or removing nodes to or from the document tree, it might become
+     * necessary to reindex some parts of the tree, in particular if indexes are defined
+     * on mixed content nodes. This method will call
+     * {@link IndexWorker#getReindexRoot(org.exist.dom.StoredNode, org.exist.storage.NodePath, boolean)}
+     * on each configured index. It will then return the top-most root.
+     *
+     * @param node the node to be modified.
+     * @param path path the NodePath of the node
+     * @param includeSelf if set to true, the current node itself will be included in the check
+     * @return the top-most root node to be reindexed
+     */
+    public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean includeSelf) {
+        IndexWorker indexWorker;
+        StoredNode next, top = null;
+        for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
+            indexWorker = (IndexWorker) i.next();
+            next = indexWorker.getReindexRoot(node, path, includeSelf);
+            if (next != null && (top == null || top.getNodeId().isDescendantOf(next.getNodeId())))
+                top = next;
+        }
+        if (top != null && top.getNodeId().equals(node.getNodeId()))
+            top = node;
+        return top;
+    }
+
+    /**
+     * Reindex all nodes below the specified root node, using the given mode. mode should be
+     * one of {@link StreamListener#STORE} or {@link StreamListener#REMOVE_NODES}.
+     *
+     * @param transaction the current transaction
+     * @param reindexRoot the root node to reindex
+     * @param mode one of {@link StreamListener#STORE} or {@link StreamListener#REMOVE_NODES}.
+     */
+    public void reindex(Txn transaction, StoredNode reindexRoot, int mode) {
+        if (reindexRoot == null)
+            return;
+        reindexRoot = reindexRoot.getDocument().getBroker().objectWith(new NodeProxy(reindexRoot.getDocument(), reindexRoot.getNodeId()));
+        getStreamListener(reindexRoot.getDocument(), mode);
+        IndexUtils.scanNode(transaction, reindexRoot, listener);
+        flush();
+    }
+
+    /**
+     * Helper method: index a single node which has been added during an XUpdate or XQuery update expression.
+     *
+     * @param transaction the current transaction
+     * @param node the node to index
+     * @param path the node's NodePath
+     * @param listener the StreamListener which receives the index events
+     */
+    public void indexNode(Txn transaction, StoredNode node, NodePath path, StreamListener listener) {
+        if (listener != null) {
+            switch (node.getNodeType()) {
+                case Node.ELEMENT_NODE:
+                    listener.startElement(transaction, (ElementImpl) node, path);
+                    break;
+                case Node.TEXT_NODE :
+                    listener.characters(transaction, (TextImpl) node, path);
+                    break;
+                case Node.ATTRIBUTE_NODE :
+                    listener.attribute(transaction, (AttrImpl) node, path);
+                    break;
+            }
+        }
+    }
+
+    /**
+     * Helper method: dispatch a single endElement event to the specified listener.
+     *
+     * @param transaction the current transaction
+     * @param node the node to index
+     * @param path the node's NodePath
+     * @param listener the StreamListener which receives index events
+     */
+    public void indexEndElement(Txn transaction, ElementImpl node, NodePath path, StreamListener listener) {
+        if (listener != null)
+            listener.endElement(transaction, node, path);
+    }
+
+    /**
+     * Remove all indexes defined on the specified collection.
+     *
+     * @param collection the collection to remove
+     */
     public void removeCollection(Collection collection) {
         IndexWorker indexWorker;
         for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
             indexWorker = (IndexWorker) i.next();
             indexWorker.removeCollection(collection);
         }
-    }
-
-    public void removeNode(Txn transaction, StoredNode node) {
-        getStreamListener(node.getDocument(), StreamListener.REMOVE_NODES);
-        IndexUtils.scanNode(transaction, node, listener);
-        flush();
     }
 }
