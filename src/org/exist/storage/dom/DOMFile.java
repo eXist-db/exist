@@ -1680,14 +1680,16 @@ public class DOMFile extends BTree implements Lockable {
 		if (isTransactional && transaction != null) {
             byte[] data = new byte[LENGTH_LINK];
             System.arraycopy(rec.getPage().data, rec.offset, data, 0, LENGTH_LINK);
+            //Position the stream at the very beginning of the record
             RemoveValueLoggable loggable = new RemoveValueLoggable(transaction,
-                    rec.getPage().getPageNum(), rec.getTID(), rec.offset - 2, data, false, 0);
+                    rec.getPage().getPageNum(), rec.getTID(), rec.offset - LENGTH_TID, data, false, 0);
             writeToLog(loggable, rec.getPage().page);
         }
 		
 		final int end = rec.offset + LENGTH_LINK;
+		//Position the stream at the very beginning of the record
 		System.arraycopy(rec.getPage().data, end, rec.getPage().data,
-				rec.offset - 2, rec.getPage().len - end);
+				rec.offset - LENGTH_TID, rec.getPage().len - end);
 		rec.getPage().len = rec.getPage().len - (LENGTH_TID + LENGTH_LINK);
 		if (rec.getPage().len < 0)
 			LOG.warn("page length < 0");
@@ -1730,7 +1732,8 @@ public class DOMFile extends BTree implements Lockable {
 		if (!lock.isLockedForWrite())
 			LOG.warn("the file doesn't own a write lock");
 		final RecordPos rec = findRecord(p);
-		final int startOffset = rec.offset - 2;
+		//Position the stream at the very beginning of the record
+		final int startOffset = rec.offset - LENGTH_TID;
 		final DOMFilePageHeader ph = rec.getPage().getPageHeader();
 		final short vlen = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
 		rec.offset += LENGTH_DATA_LENGTH;
@@ -2106,9 +2109,10 @@ public class DOMFile extends BTree implements Lockable {
 				}
 				rec.setPage(getCurrentPage(nextPage));
 				dataCache.add(rec.getPage());
-				rec.offset = 2;
+				rec.offset = LENGTH_TID;
 			}			
-			short tid = ByteConversion.byteToShort(rec.getPage().data, rec.offset - 2); 
+			//Position the stream at the very beginning of the record
+			short tid = ByteConversion.byteToShort(rec.getPage().data, rec.offset - LENGTH_TID); 
 			rec.setTID(tid);
 			if (ItemId.isLink(rec.getTID())) {
 				// this is a link: skip it
@@ -2147,14 +2151,17 @@ public class DOMFile extends BTree implements Lockable {
 	            readOffset += ElementImpl.LENGTH_ELEMENT_CHILD_COUNT;
 	            final int dlnLen = ByteConversion.byteToShort(data, readOffset);
 	            readOffset += NodeId.LENGTH_NODE_ID_UNITS;
-	            readOffset += doc.getBroker().getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, data, readOffset);
+	            final int nodeIdLen = doc.getBroker().getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, data, readOffset);
+	            readOffset += nodeIdLen;
 	            final short attributes = ByteConversion.byteToShort(data, readOffset);
 	            rec.offset += realLen + ElementImpl.LENGTH_ATTRIBUTES_COUNT;
 	            final boolean extraWhitespace = addWhitespace && (children - attributes) > 1;
 	            //TODO : where is NS info ?
 				for (int i = 0; i < children; i++) {
-		            		
+
 					//recursive call
+					//TOUNDERSTAND : usually the method is called after a findRecord
+					//which sets the offset after the TID. How is it handled here ?
 					getNodeValue(doc, os, rec, false, addWhitespace);
 					if (extraWhitespace)
 						os.write((byte) ' ');
@@ -2167,14 +2174,14 @@ public class DOMFile extends BTree implements Lockable {
 	            readOffset += NodeId.LENGTH_NODE_ID_UNITS;
 	            final int nodeIdLen = doc.getBroker().getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, data, readOffset);
 	            readOffset += nodeIdLen;
-	            os.write(data, readOffset, realLen - (1 + 2 + nodeIdLen));
+	            os.write(data, readOffset, realLen - (StoredNode.LENGTH_SIGNATURE_LENGTH + NodeId.LENGTH_NODE_ID_UNITS + nodeIdLen));
 				break;
 			}
 		case Node.ATTRIBUTE_NODE:
 			// use attribute value if the context node is an attribute, i.e.
 			// if this is the first call to the method
 			if (firstCall) {
-                int start = readOffset - 1;
+                final int start = readOffset - StoredNode.LENGTH_SIGNATURE_LENGTH;
                 final byte idSizeType = (byte) (data[start] & 0x3);
 				final boolean hasNamespace = (data[start] & 0x10) == 0x10;
                 final int dlnLen = ByteConversion.byteToShort(data, readOffset);
@@ -2185,7 +2192,8 @@ public class DOMFile extends BTree implements Lockable {
                 if (hasNamespace) {
 					readOffset += AttrImpl.LENGTH_NS_ID; // skip namespace id
 					final short prefixLen = ByteConversion.byteToShort(data, readOffset);
-					readOffset += AttrImpl.LENGTH_PREFIX_LENGTH + prefixLen; // skip prefix
+					readOffset += AttrImpl.LENGTH_PREFIX_LENGTH; 
+					readOffset += prefixLen; // skip prefix
 				}
                 os.write(rec.getPage().data, readOffset, realLen - (readOffset - start));
 			}
@@ -2193,7 +2201,7 @@ public class DOMFile extends BTree implements Lockable {
 		}
 		if (!inOverflow)
 			// if it isn't an overflow value, add the value length to the current offset
-			rec.offset += realLen + 2;
+			rec.offset += realLen + LENGTH_TID;
 	}
 
 	protected RecordPos findRecord(long p) {
@@ -2337,7 +2345,8 @@ public class DOMFile extends BTree implements Lockable {
 		final DOMFilePageHeader ph = page.getPageHeader();
 		RecordPos pos = page.findRecord(ItemId.getId(loggable.tid));
 		SanityCheck.ASSERT(pos != null, "Record not found!");
-		final int startOffset = pos.offset - 2;
+		//Position the stream at the very beginning of the record
+		final int startOffset = pos.offset - LENGTH_TID;
 		// get the record length
 		final short vlen = ByteConversion.byteToShort(page.data, pos.offset);
 		// end offset
@@ -2396,10 +2405,11 @@ public class DOMFile extends BTree implements Lockable {
 			RecordPos pos = page.findRecord(ItemId.getId(loggable.tid));
 			SanityCheck.ASSERT(pos != null, "Record not found: " + ItemId.getId(loggable.tid) + ": "
 					+ page.page.getPageInfo() + "\n" + debugPageContents(page));
-            final int startOffset = pos.offset - 2;
+			//Position the stream at the very beginning of the record
+            final int startOffset = pos.offset - LENGTH_TID;
             if (ItemId.isLink(loggable.tid)) {
                 final int end = pos.offset + LENGTH_FORWARD_LOCATION;
-                System.arraycopy(page.data, end, page.data, pos.offset - 2, page.len - end);
+                System.arraycopy(page.data, end, page.data, startOffset, page.len - end);
                 page.len = page.len - (LENGTH_DATA_LENGTH + LENGTH_FORWARD_LOCATION);
             } else {
     			// get the record length
@@ -2770,7 +2780,8 @@ public class DOMFile extends BTree implements Lockable {
         final DOMFilePageHeader ph = page.getPageHeader();
         RecordPos rec = page.findRecord(loggable.tid);
         final int end = rec.offset + LENGTH_FORWARD_LOCATION;
-        System.arraycopy(page.data, end, page.data, rec.offset - 2, page.len - end);
+        //Position the stream at the very beginning of the record
+        System.arraycopy(page.data, end, page.data, rec.offset - LENGTH_TID, page.len - end);
         page.len = page.len - (LENGTH_TID + LENGTH_FORWARD_LOCATION);
 		if (page.len < 0)
 			LOG.warn("page length < 0");        
@@ -2849,12 +2860,13 @@ public class DOMFile extends BTree implements Lockable {
         final int dlen = ph.getDataLength();
         // remove value
         try {
-            System.arraycopy(page.data, end, page.data, rec.offset - 2, dlen - end);
+        	//Position the stream at the very beginning of the record
+            System.arraycopy(page.data, end, page.data, rec.offset - LENGTH_TID, dlen - end);
         } catch (ArrayIndexOutOfBoundsException e) {
         	LOG.warn(e);
             SanityCheck.TRACE("Error while copying data on page " + page.getPageNum() +
                     "; tid: " + loggable.tid +
-                    "; offset: " + (rec.offset - 2) + "; end: " + end + "; len: " + (dlen - end));
+                    "; offset: " + (rec.offset - LENGTH_TID) + "; end: " + end + "; len: " + (dlen - end));
         }
         page.len = dlen - (LENGTH_TID + LENGTH_DATA_LENGTH + LENGTH_ORIGINAL_LOCATION + vlen);
 		if (page.len < 0)

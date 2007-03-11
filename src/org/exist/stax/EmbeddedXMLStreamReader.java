@@ -183,9 +183,9 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
     }
     
     private void readNodeId() {
-        int offset = current.start() + StoredNode.LENGTH_SIGNATURE_LENGTH +
-        	//what is that 4 for ?
-                (state == START_ELEMENT || state == END_ELEMENT ? 4 : 0);
+        int offset = current.start() + StoredNode.LENGTH_SIGNATURE_LENGTH;
+        if (state == START_ELEMENT || state == END_ELEMENT)
+        	offset += ElementImpl.LENGTH_ELEMENT_CHILD_COUNT;
         int dlnLen = ByteConversion.byteToShort(current.data(), offset);
         offset += NodeId.LENGTH_NODE_ID_UNITS;
         nodeId = document.getBroker().getBrokerPool().getNodeFactory().createFromData(dlnLen, current.data(), offset);
