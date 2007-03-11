@@ -107,7 +107,8 @@ public class RawNodeIterator {
                 }
             }
             page = rec.getPage().getPageNum();
-            offset = rec.offset - 2;
+            //Position the stream at the very beginning of the record
+            offset = rec.offset - DOMFile.LENGTH_TID;
             p = rec.getPage();
         } catch (LockException e) {
             throw new IOException("Exception while scanning document: " + e.getMessage());
@@ -140,7 +141,8 @@ public class RawNodeIterator {
                 }
             }
             page = rec.getPage().getPageNum();
-            offset = rec.offset - 2;
+            //Position the stream at the very beginning of the record
+            offset = rec.offset - DOMFile.LENGTH_TID;
             p = rec.getPage();
         } catch (LockException e) {
             throw new IOException("Exception while scanning document: " + e.getMessage());
