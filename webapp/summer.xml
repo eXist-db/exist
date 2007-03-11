@@ -34,7 +34,7 @@
                 Java program. From a developer's perspective, the XQJ is much simpler to learn and
                 understand. On the other hand, it does not cover subjects like data manipulation or database
                 administration. However, eXist provides a large number of XQuery extension functions to acomplish
-                these tasks, so the lack of functionality in the API is </para>
+                these tasks, so the lack of functionality in the API is compensated.</para>
 
                 <para>Since eXist can be used as an embedded library as well as a server process, two drivers will
                 be needed for the XQJ: one that directly connects to the embedded database and another one that
