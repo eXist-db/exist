@@ -2115,8 +2115,9 @@ public class DOMFile extends BTree implements Lockable {
 			short tid = ByteConversion.byteToShort(rec.getPage().data, rec.offset - LENGTH_TID); 
 			rec.setTID(tid);
 			if (ItemId.isLink(rec.getTID())) {
-				// this is a link: skip it
-				rec.offset += (LENGTH_TID + LENGTH_FORWARD_LOCATION);
+				// this is a link: skip it 
+				//We position the offset *after* the next TID
+				rec.offset += (LENGTH_FORWARD_LOCATION + LENGTH_TID);
 			} else
 				// ok: node found
 				foundNext = true;
@@ -2135,7 +2136,7 @@ public class DOMFile extends BTree implements Lockable {
 			// if we have an overflow value, load it from the overflow page
 			final long op = ByteConversion.byteToLong(data, rec.offset);
 			data = getOverflowValue(op);
-			//We position the offset *after* the TID
+			//We position the offset *after* the next TID
 			rec.offset += LENGTH_OVERFLOW_LOCATION + LENGTH_TID;
 			realLen = data.length;
 			readOffset = 0;
@@ -2154,14 +2155,13 @@ public class DOMFile extends BTree implements Lockable {
 	            final int nodeIdLen = doc.getBroker().getBrokerPool().getNodeFactory().lengthInBytes(dlnLen, data, readOffset);
 	            readOffset += nodeIdLen;
 	            final short attributes = ByteConversion.byteToShort(data, readOffset);
-	            rec.offset += realLen + ElementImpl.LENGTH_ATTRIBUTES_COUNT;
+	            //Ignore the following NS data which are of no use
+	            //We position the offset *after* the next TID
+	            rec.offset += realLen + LENGTH_TID;
 	            final boolean extraWhitespace = addWhitespace && (children - attributes) > 1;
-	            //TODO : where is NS info ?
 				for (int i = 0; i < children; i++) {
 
 					//recursive call
-					//TOUNDERSTAND : usually the method is called after a findRecord
-					//which sets the offset after the TID. How is it handled here ?
 					getNodeValue(doc, os, rec, false, addWhitespace);
 					if (extraWhitespace)
 						os.write((byte) ' ');
@@ -2201,6 +2201,7 @@ public class DOMFile extends BTree implements Lockable {
 		}
 		if (!inOverflow)
 			// if it isn't an overflow value, add the value length to the current offset
+			//We position the offset *after* the next TID
 			rec.offset += realLen + LENGTH_TID;
 	}
 
@@ -2689,11 +2690,14 @@ public class DOMFile extends BTree implements Lockable {
         final DOMFilePageHeader ph = page.getPageHeader();
         if (ItemId.isLink(loggable.tid)) {
             final int end = loggable.offset + LENGTH_FORWARD_LOCATION;
-            System.arraycopy(page.data, end, page.data, loggable.offset - 2, page.len - end);
+            //Position the stream at the very beginning of the record
+            System.arraycopy(page.data, end, page.data, loggable.offset - LENGTH_TID, page.len - end);
             page.len = page.len - (LENGTH_DATA_LENGTH + LENGTH_FORWARD_LOCATION);
         } else {
             // get the record length
             int offset = loggable.offset + 2;
+            //TODO : strange : what are the semantics of 2 here ?
+            //Probably LENGTH_DATA_LENGTH but... isn't the offset computed too early ?
             short l = ByteConversion.byteToShort(page.data, offset);
             if (ItemId.isRelocated(loggable.tid)) {
                 offset += LENGTH_ORIGINAL_LOCATION;
