@@ -170,6 +170,23 @@
                     </listitem>
                 </itemizedlist>
             </section>
+
+            <section>
+                <title>Distributed Search</title>
+
+                <para>Implement a federated search service over distributed eXist databases. There are various reasons why users may
+                    have more than one database instance deployed, for example, to distribute load or to keep sensitive data in its own
+                    data store. Unfortunately, there's no simple way to combine results from distributed data stores in a single XQuery. eXist's
+                    query engine can only operate on local resources. It can retrieve data from external locations, but only to store them into a
+                    local, temporary resource, which is then used for querying.</para>
+
+                <para>A distributed search facility would allow eXist to directly forward parts of an expression to a remote database
+                instance. The XQuery specification already provides the necessary framework: the collection() and doc() functions
+                both accept arbitrary URIs, so collections as well as resources can be at external locations.</para>
+
+                <para>The main challenge will be to properly merge intermediate results from different database instances and track references
+                to remote node sequences throughout the query.</para>
+            </section>
         </section>
     </chapter>
 </book>
