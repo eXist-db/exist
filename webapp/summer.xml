@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<book>
+    <bookinfo>
+        <graphic fileref="logo.jpg"/>
+        <productname>Open Source Native XML Database</productname>
+        <title>Google Summer of Code 2007</title>
+        <author>
+            <firstname>Wolfgang M.</firstname>
+            <surname>Meier</surname>
+        </author>
+    </bookinfo>
+
+    <ci:include xmlns:ci="http://apache.org/cocoon/include/1.0" src="sidebar.xml"/>
+
+    <chapter>
+        <title>Google Summer of Code 2007</title>
+
+        <section>
+            <title>Project Ideas</title>
+
+            <section>
+                <title>Implement JSR 225: XQuery API for Java</title>
+
+                <para>The XQuery API for Java (XQJ) attempts to provide a common API
+                for access to XML databases, very similar to the JDBC API for relational
+                databases. Though it is still an early draft, the XQJ is already available for a
+                number of XQuery enabled systems, including <ulink href="http://saxon.sf.net">saxon</ulink>.
+                </para>
+
+                <para>eXist currently uses the XML:DB API as its main Java interface. However, the
+                XML:DB initiative, which proposed the specification, has been dead since quite some time
+                and the API is no longer maintained. Compared to the XML:DB, the XQuery API for Java limits
+                itself to a single job: executing XQuery expressions and integrating the results into the calling
+                Java program. From a developer's perspective, the XQJ is much simpler to learn and
+                understand. On the other hand, it does not cover subjects like data manipulation or database
+                administration. However, eXist provides a large number of XQuery extension functions to acomplish
+                these tasks, so the lack of functionality in the API is </para>
+
+                <para>Since eXist can be used as an embedded library as well as a server process, two drivers will
+                be needed for the XQJ: one that directly connects to the embedded database and another one that
+                communicates with a remote DB.</para>
+
+                <para><emphasis>Resources:</emphasis></para>
+
+                <itemizedlist>
+                    <listitem>
+                        <para><ulink url="http://jcp.org/aboutJava/communityprocess/edr/jsr225/">JSR 225</ulink></para>
+                    </listitem>
+                    <listitem>
+                        <para><ulink url="http://www.saxonica.com/documentation/using-xquery/xqj.html">XQJ in
+                            the saxon XSLT/XQuery engine</ulink></para>
+                    </listitem>
+                    <listitem>
+                        <para><ulink url="http://www.datadirect.com/developer/xquery/topics/xqj_tutorial/index.ssp">Tutorial
+                        using DataDirect's query engine</ulink></para>
+                    </listitem>
+                </itemizedlist>
+            </section>
+
+            <section>
+                <title>Remote Debugging Interface</title>
+
+                <para>XQuery programs can get quite complex (scripts with more than 1000 lines are not uncommon), especially
+                if they use a lot of modules. However, debugging the code is currently a tedious, time-consuming job due to the lack
+                of tool support. While some commercial XML editors do already include XQuery debuggers (e.g. Oxygen), eXist lacks an appropriate
+                debugging API to interface with them.</para>
+
+                <para>A remote debugging API should be implemented on top of the eXist server. This should at least include the
+                ability to stop XQuery execution at predefined breakpoints, inspect the current query context and switch into single-step
+                execution. A basic command-line or graphical debugging interface should be shipped with eXist. The Oxygen team
+                already expressed their interest to support eXist from their commercial XQuery debugger.</para>
+
+                <para><emphasis>Resources:</emphasis></para>
+
+                <itemizedlist>
+                    <listitem>
+                        <para>see the debugging API in <ulink url="saxon.sf.net">saxon</ulink></para>
+                    </listitem>
+                    <listitem>
+                        <para>XQuery debugger in <ulink url="http://www.oxygenxml.com/xquery_debugger.html">Oxygen</ulink> (commercial product)</para>
+                    </listitem>
+                </itemizedlist>
+            </section>
+
+            <section>
+                <title>Implement Full ACID Transaction Support</title>
+
+                <para>Transaction support in eXist is currently limited to the functionality needed for crash recovery. Though eXist
+                    maintains transactions internally, they are currently not exposed to applications. Also, read operations are
+                    not transactional right now. In order to allow full user-controlled ACID transactions, some missing functionality
+                    needs to be implemented:</para>
+
+                <itemizedlist>
+                    <listitem>
+                        <para>Concurrency control: eXist currently implements locking on the level of documents and collections. For
+                        better transaction support, we need a more fine-grained concurrency control within the core B+-tree and an improved
+                        lock management to detect or avoid deadlock situations.</para>
+                    </listitem>
+
+                    <listitem>
+                        <para>While eXist does already support full redo/undo operations during crash recovery, it does not provide a
+                            rollback facility at runtime. Users can not explicitely abort and roll back a transaction (that's why we don't
+                            expose transactions to the user at all). Performing a rollback on the core db files would be easily possible, but
+                            we also need to take care of any indexes defined on the data.</para>
+                    </listitem>
+                </itemizedlist>
+            </section>
+        </section>
+    </chapter>
+</book>
