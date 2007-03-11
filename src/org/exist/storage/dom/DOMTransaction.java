@@ -3,7 +3,6 @@ package org.exist.storage.dom;
 import org.apache.log4j.Logger;
 import org.exist.dom.DocumentImpl;
 import org.exist.storage.lock.Lock;
-import org.exist.storage.lock.MultiReadReentrantLock;
 import org.exist.util.LockException;
 import org.exist.util.ReadOnlyException;
 

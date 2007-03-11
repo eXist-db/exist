@@ -975,6 +975,7 @@ public  class Collection extends Observable
         //Is it a collection configuration file ?
         XmldbURI docName = document.getFileURI();
         //WARNING : there is no reason to lock the collection since setPath() is normally called in a safe way
+        //TODO: resolve URI against CollectionConfigurationManager.CONFIG_COLLECTION_URI 
         if (getURI().startsWith(CollectionConfigurationManager.CONFIG_COLLECTION_URI)
         		&& docName.endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX_URI)) {
         	

@@ -78,9 +78,8 @@ public class UntypedValueCheck extends AbstractExpression {
         
 		Sequence seq = expression.eval(contextSequence, contextItem);
 		ValueSequence result = new ValueSequence();
-		Item item;
 		for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
-			item = i.nextItem();
+			Item item = i.nextItem();
 			//System.out.println(item.getStringValue() + " converting to " + Type.getTypeName(requiredType));
 			//Type untyped values or... refine existing type
 			if (item.getType() == Type.UNTYPED_ATOMIC || Type.subTypeOf(requiredType, Type.NUMBER) && Type.subTypeOf(item.getType(), Type.NUMBER)) {
