@@ -83,17 +83,17 @@
             </section>
 
             <section>
-                <title>Extend and Improve eXist Full-Text Search Extensions</title>
+                <title>Extend and Improve eXist's Full-Text Search Extensions</title>
 
                 <para>eXist always featured a set of special functions and operators to support full-text search, i.e. queries on
                 tokens and phrases rather than substrings. However, the available functions just help to select a distinct text or
                     attribute node in the document. Unlike traditional full-text systems, eXist does not rank the text match
-                    in comparison to other matches. Dedicated systems like Lucene assign a score to each match, which - in simple words -
+                    in comparison to other matches. Dedicated systems like Apache's Lucene assign a score to each match, which - in simple words -
                     expresses the assumed "quality" of the match with respect to the user's query.</para>
 
                 <para>The algorithms used in document-oriented full-text retrieval system can not be directly applied to an
-                    XML query engine, though. For the document-oriented system, the context of a query is always the same: the entire document.
-                    In XQuery, the context is ever changing: there's basically no limit to the complexity of the query. The user can restrict
+                    XML query engine though. For the document-oriented system, the context of a query is usually always the same: the entire 
+                    document (or a pre-defined "field"). In XQuery, the context is ever changing: there's basically no limit to the complexity of the query. The user can restrict
                     his search to arbitrary nodes in the document or even combinations of nodes.</para>
 
                 <para>The various existing approaches and algorithms thus need to be adopted to an XML context and properly integrated
@@ -107,6 +107,9 @@
                 <itemizedlist>
                     <listitem>
                         <para><ulink url="http://www.w3.org/TR/xquery-full-text/">XQuery 1.0 and XPath 2.0 Full-Text</ulink>. W3C Working Draft.</para>
+                    </listitem>
+                    <listitem>
+                        <para>Current <ulink url="http://localhost:8080/exist/xquery.xml#ext">full-text search extensions</ulink> in eXist.</para>
                     </listitem>
                 </itemizedlist>
             </section>
