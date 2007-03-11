@@ -5,7 +5,6 @@ import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
 import org.exist.security.xacml.AccessContext;
-import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
@@ -20,7 +19,6 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xupdate.XUpdateProcessor;
 import org.exist.xupdate.Modification;
 import org.exist.dom.DocumentSet;
-import org.exist.EXistException;
 import org.exist.indexing.impl.NGramIndexWorker;
 import org.exist.indexing.impl.NGramIndex;
 import org.xml.sax.InputSource;
@@ -34,9 +32,9 @@ public class CustomIndexTest extends TestCase {
 
     private static String XML =
             "<test>" +
-            "   <item id='1' attr='attribute'><name>First</name></item>" +
-            "   <item id='2'><name>Second</name></item>" +
-            "   <item id='3'><name>Third</name></item>" +
+            "   <item id='1' attr='attribute'><description>Chair</description></item>" +
+            "   <item id='2'><description>Table</description><price>892.25</price></item>" +
+            "   <item id='3'><description>Cabinet</description><price>1525.00</price></item>" +
             "</test>";
 
     private static String COLLECTION_CONFIG =
@@ -69,11 +67,12 @@ public class CustomIndexTest extends TestCase {
             TransactionManager transact = pool.getTransactionManager();
             Txn transaction = transact.beginTransaction();
             
-            checkIndex(broker, docs, "ond", 1);
+            checkIndex(broker, docs, "cha", 1);
+            checkIndex(broker, docs, "le8", 1);
 
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
-            Sequence seq = xquery.execute("//item[text:ngram-contains(., 'ond')]", null, AccessContext.TEST);
+            Sequence seq = xquery.execute("//item[text:ngram-contains(., 'cha')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getLength());
 
@@ -83,29 +82,31 @@ public class CustomIndexTest extends TestCase {
             proc.setDocumentSet(docs);
             String xupdate =
                     XUPDATE_START +
-                    "   <xu:remove select=\"//item[@id='2']/name\"/>" +
+                    "   <xu:remove select=\"//item[@id='2']/price\"/>" +
                     XUPDATE_END;
             Modification[] modifications = proc.parse(new InputSource(new StringReader(xupdate)));
             assertNotNull(modifications);
             modifications[0].process(transaction);
             proc.reset();
 
-            checkIndex(broker, docs, "ond", 0);
+            checkIndex(broker, docs, "892", 0);
+            checkIndex(broker, docs, "tab", 1);
+            checkIndex(broker, docs, "le8", 0);
 
-            checkIndex(broker, docs, "thi", 1);
+            checkIndex(broker, docs, "cab", 1);
 
             proc.setBroker(broker);
             proc.setDocumentSet(docs);
             xupdate =
                     XUPDATE_START +
-                    "   <xu:remove select=\"//item[@id='3']/name/text()\"/>" +
+                    "   <xu:remove select=\"//item[@id='3']/description/text()\"/>" +
                     XUPDATE_END;
             modifications = proc.parse(new InputSource(new StringReader(xupdate)));
             assertNotNull(modifications);
             modifications[0].process(transaction);
             proc.reset();
 
-            checkIndex(broker, docs, "thi", 0);
+            checkIndex(broker, docs, "cab", 0);
 
             checkIndex(broker, docs, "att", 1);
 
@@ -122,7 +123,7 @@ public class CustomIndexTest extends TestCase {
 
             checkIndex(broker, docs, "att", 0);
 
-            checkIndex(broker, docs, "rst", 1);
+            checkIndex(broker, docs, "cha", 1);
             proc.setBroker(broker);
             proc.setDocumentSet(docs);
             xupdate =
@@ -134,7 +135,7 @@ public class CustomIndexTest extends TestCase {
             modifications[0].process(transaction);
             proc.reset();
 
-            checkIndex(broker, docs, "rst", 0);
+            checkIndex(broker, docs, "cha", 0);
             
             transact.commit(transaction);
         } catch (Exception e) {
@@ -154,11 +155,12 @@ public class CustomIndexTest extends TestCase {
             TransactionManager transact = pool.getTransactionManager();
             Txn transaction = transact.beginTransaction();
 
-            checkIndex(broker, docs, "ond", 1);
+            checkIndex(broker, docs, "cha", 1);
+            checkIndex(broker, docs, "le8", 1);
 
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
-            Sequence seq = xquery.execute("//item[text:ngram-contains(., 'ond')]", null, AccessContext.TEST);
+            Sequence seq = xquery.execute("//item[text:ngram-contains(., 'cha')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getLength());
 
@@ -168,8 +170,8 @@ public class CustomIndexTest extends TestCase {
             proc.setDocumentSet(docs);
             String xupdate =
                     XUPDATE_START +
-                    "   <xu:append select=\"//item\">" +
-                    "       <item id='4'><name>Fourth</name></item>" +
+                    "   <xu:append select=\"/test\">" +
+                    "       <item id='4'><description>Armchair</description><price>340</price></item>" +
                     "   </xu:append>" +
                     XUPDATE_END;
             Modification[] modifications = proc.parse(new InputSource(new StringReader(xupdate)));
@@ -177,14 +179,14 @@ public class CustomIndexTest extends TestCase {
             modifications[0].process(transaction);
             proc.reset();
 
-            checkIndex(broker, docs, "fou", 1);
+            checkIndex(broker, docs, "arm", 1);
 
             proc.setBroker(broker);
             proc.setDocumentSet(docs);
             xupdate =
                     XUPDATE_START +
                     "       <xu:insert-before select=\"//item[@id = '1']\">" +
-                    "           <item id='0'><name>Zero</name></item>" +
+                    "           <item id='0'><description>Wheelchair</description><price>1230</price></item>" +
                     "       </xu:insert-before>" +
                     XUPDATE_END;
             modifications = proc.parse(new InputSource(new StringReader(xupdate)));
@@ -192,14 +194,14 @@ public class CustomIndexTest extends TestCase {
             modifications[0].process(transaction);
             proc.reset();
 
-            checkIndex(broker, docs, "zer", 1);
+            checkIndex(broker, docs, "hee", 1);
 
             proc.setBroker(broker);
             proc.setDocumentSet(docs);
             xupdate =
                     XUPDATE_START +
                     "       <xu:insert-after select=\"//item[@id = '1']\">" +
-                    "           <item id='1.1'><name>Inserted</name></item>" +
+                    "           <item id='1.1'><description>refrigerator</description><price>777</price></item>" +
                     "       </xu:insert-after>" +
                     XUPDATE_END;
             modifications = proc.parse(new InputSource(new StringReader(xupdate)));
@@ -207,7 +209,41 @@ public class CustomIndexTest extends TestCase {
             modifications[0].process(transaction);
             proc.reset();
 
-            checkIndex(broker, docs, "ins", 1);
+            checkIndex(broker, docs, "ref", 1);
+
+            proc.setBroker(broker);
+            proc.setDocumentSet(docs);
+            xupdate =
+                    XUPDATE_START +
+                    "       <xu:insert-after select=\"//item[@id = '1']/description\">" +
+                    "           <price>999</price>" +
+                    "       </xu:insert-after>" +
+                    XUPDATE_END;
+            modifications = proc.parse(new InputSource(new StringReader(xupdate)));
+            assertNotNull(modifications);
+            modifications[0].process(transaction);
+            proc.reset();
+
+            checkIndex(broker, docs, "999", 1);
+            checkIndex(broker, docs, "cha", 1);
+            checkIndex(broker, docs, "ir9", 1);
+
+            proc.setBroker(broker);
+            proc.setDocumentSet(docs);
+            xupdate =
+                    XUPDATE_START +
+                    "       <xu:insert-before select=\"//item[@id = '1']/description\">" +
+                    "           <price>888</price>" +
+                    "       </xu:insert-before>" +
+                    XUPDATE_END;
+            modifications = proc.parse(new InputSource(new StringReader(xupdate)));
+            assertNotNull(modifications);
+            modifications[0].process(transaction);
+            proc.reset();
+
+            checkIndex(broker, docs, "999", 1);
+            checkIndex(broker, docs, "888", 1);
+            checkIndex(broker, docs, "88c", 1);
 
             checkIndex(broker, docs, "att", 1);
             proc.setBroker(broker);
@@ -243,11 +279,12 @@ public class CustomIndexTest extends TestCase {
             TransactionManager transact = pool.getTransactionManager();
             Txn transaction = transact.beginTransaction();
 
-            checkIndex(broker, docs, "ond", 1);
+            checkIndex(broker, docs, "cha", 1);
+            checkIndex(broker, docs, "le8", 1);
 
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
-            Sequence seq = xquery.execute("//item[text:ngram-contains(., 'ond')]", null, AccessContext.TEST);
+            Sequence seq = xquery.execute("//item[text:ngram-contains(., 'cha')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getLength());
 
@@ -257,31 +294,28 @@ public class CustomIndexTest extends TestCase {
             proc.setDocumentSet(docs);
             String xupdate =
                     XUPDATE_START +
-                    "   <xu:update select=\"//item[@id = '1']\">" +
-                    "       Updated text" +
-                    "   </xu:update>" +
+                    "   <xu:update select=\"//item[@id = '1']/description\">wardrobe</xu:update>" +
                     XUPDATE_END;
             Modification[] modifications = proc.parse(new InputSource(new StringReader(xupdate)));
             assertNotNull(modifications);
             modifications[0].process(transaction);
             proc.reset();
 
-            checkIndex(broker, docs, "tex", 1);
+            checkIndex(broker, docs, "war", 1);
+            checkIndex(broker, docs, "cha", 0);
 
             proc.setBroker(broker);
             proc.setDocumentSet(docs);
             xupdate =
                     XUPDATE_START +
-                    "   <xu:update select=\"//item[@id = '1']/text()\">" +
-                    "       Replaced text" +
-                    "   </xu:update>" +
+                    "   <xu:update select=\"//item[@id = '1']/description/text()\">Wheelchair</xu:update>" +
                     XUPDATE_END;
             modifications = proc.parse(new InputSource(new StringReader(xupdate)));
             assertNotNull(modifications);
             modifications[0].process(transaction);
             proc.reset();
 
-            checkIndex(broker, docs, "ced", 1);
+            checkIndex(broker, docs, "whe", 1);
 
             proc.setBroker(broker);
             proc.setDocumentSet(docs);
@@ -313,11 +347,12 @@ public class CustomIndexTest extends TestCase {
             TransactionManager transact = pool.getTransactionManager();
             Txn transaction = transact.beginTransaction();
 
-            checkIndex(broker, docs, "ond", 1);
+            checkIndex(broker, docs, "cha", 1);
+            checkIndex(broker, docs, "le8", 1);
 
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
-            Sequence seq = xquery.execute("//item[text:ngram-contains(., 'ond')]", null, AccessContext.TEST);
+            Sequence seq = xquery.execute("//item[text:ngram-contains(., 'cha')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getLength());
 
@@ -328,7 +363,7 @@ public class CustomIndexTest extends TestCase {
             String xupdate =
                     XUPDATE_START +
                     "   <xu:replace select=\"//item[@id = '1']\">" +
-                    "       <item id='4'><name>Fourth</name></item>" +
+                    "       <item id='4'><description>Wheelchair</description><price>809.50</price></item>" +
                     "   </xu:replace>" +
                     XUPDATE_END;
             Modification[] modifications = proc.parse(new InputSource(new StringReader(xupdate)));
@@ -336,14 +371,14 @@ public class CustomIndexTest extends TestCase {
             modifications[0].process(transaction);
             proc.reset();
 
-            checkIndex(broker, docs, "fou", 1);
+            checkIndex(broker, docs, "whe", 1);
 
             proc.setBroker(broker);
             proc.setDocumentSet(docs);
             xupdate =
                     XUPDATE_START +
-                    "   <xu:replace select=\"//item[@id = '4']/name\">" +
-                    "       <name>Replaced</name>" +
+                    "   <xu:replace select=\"//item[@id = '4']/description\">" +
+                    "       <description>Armchair</description>" +
                     "   </xu:replace>" +
                     XUPDATE_END;
             modifications = proc.parse(new InputSource(new StringReader(xupdate)));
@@ -351,7 +386,8 @@ public class CustomIndexTest extends TestCase {
             modifications[0].process(transaction);
             proc.reset();
 
-            checkIndex(broker, docs, "ced", 1);
+            checkIndex(broker, docs, "whe", 0);
+            checkIndex(broker, docs, "arm", 1);
 
             transact.commit(transaction);
         } catch (Exception e) {
@@ -371,11 +407,12 @@ public class CustomIndexTest extends TestCase {
             TransactionManager transact = pool.getTransactionManager();
             Txn transaction = transact.beginTransaction();
 
-            checkIndex(broker, docs, "ond", 1);
+            checkIndex(broker, docs, "cha", 1);
+            checkIndex(broker, docs, "le8", 1);
 
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
-            Sequence seq = xquery.execute("//item[text:ngram-contains(., 'ond')]", null, AccessContext.TEST);
+            Sequence seq = xquery.execute("//item[text:ngram-contains(., 'cha')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getLength());
 
@@ -392,7 +429,7 @@ public class CustomIndexTest extends TestCase {
             modifications[0].process(transaction);
             proc.reset();
 
-            checkIndex(broker, docs, "ond", 0);
+            checkIndex(broker, docs, "tab", 0);
 
             transact.commit(transaction);
         } catch (Exception e) {
@@ -414,11 +451,12 @@ public class CustomIndexTest extends TestCase {
 
             broker.reindexCollection(XmldbURI.xmldbUriFor("/db"));
 
-            checkIndex(broker, docs, "ond", 1);
+            checkIndex(broker, docs, "cha", 1);
+            checkIndex(broker, docs, "le8", 1);
             
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
-            Sequence seq = xquery.execute("//item[text:ngram-contains(., 'ond')]", null, AccessContext.TEST);
+            Sequence seq = xquery.execute("//item[text:ngram-contains(., 'cha')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getLength());
 
@@ -440,20 +478,21 @@ public class CustomIndexTest extends TestCase {
 
             XQuery xquery = broker.getXQueryService();
             assertNotNull(xquery);
-            Sequence seq = xquery.execute("//item[text:ngram-contains(., 'ond')]", null, AccessContext.TEST);
+            Sequence seq = xquery.execute("//item[text:ngram-contains(., 'cha')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getLength());
 
-            checkIndex(broker, docs, "ond", 1);
+            checkIndex(broker, docs, "cha", 1);
+            checkIndex(broker, docs, "le8", 1);
 
             Collection root = broker.openCollection(TestConstants.TEST_COLLECTION_URI, Lock.WRITE_LOCK);
             assertNotNull(root);
 
             root.removeXMLResource(transaction, broker, XmldbURI.create("test_string.xml"));
 
-            checkIndex(broker, docs, "ond", 0);
+            checkIndex(broker, docs, "cha", 0);
 
-            seq = xquery.execute("//item[text:ngram-contains(., 'ond')]", null, AccessContext.TEST);
+            seq = xquery.execute("//item[text:ngram-contains(., 'cha')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(0, seq.getLength());
 
