@@ -21,26 +21,31 @@
  */
 package org.exist.stax;
 
-import org.exist.dom.*;
-import org.exist.numbering.NodeId;
-import org.exist.storage.Signatures;
-import org.exist.storage.btree.Value;
-import org.exist.storage.dom.RawNodeIterator;
-import org.exist.util.ByteConversion;
-import org.exist.util.UTF8;
-import org.exist.util.XMLString;
-import org.exist.util.serializer.AttrList;
-import org.w3c.dom.Node;
-import org.w3c.dom.ProcessingInstruction;
+import java.io.IOException;
+import java.util.NoSuchElementException;
+import java.util.Stack;
 
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-import java.util.NoSuchElementException;
-import java.util.Stack;
-import java.io.IOException;
+
+import org.exist.dom.AttrImpl;
+import org.exist.dom.CharacterDataImpl;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.ElementImpl;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.StoredNode;
+import org.exist.numbering.NodeId;
+import org.exist.storage.Signatures;
+import org.exist.storage.btree.Value;
+import org.exist.storage.dom.RawNodeIterator;
+import org.exist.util.ByteConversion;
+import org.exist.util.XMLString;
+import org.exist.util.serializer.AttrList;
+import org.w3c.dom.Node;
+import org.w3c.dom.ProcessingInstruction;
 
 /**
  * Lazy implementation of a StAX {@link javax.xml.stream.XMLStreamReader}, which directly reads
@@ -178,10 +183,11 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
     }
     
     private void readNodeId() {
-        int offset = current.start() +
-                (state == START_ELEMENT || state == END_ELEMENT ? 5 : 1);
+        int offset = current.start() + StoredNode.LENGTH_SIGNATURE_LENGTH +
+        	//what is that 4 for ?
+                (state == START_ELEMENT || state == END_ELEMENT ? 4 : 0);
         int dlnLen = ByteConversion.byteToShort(current.data(), offset);
-        offset += 2;
+        offset += NodeId.LENGTH_NODE_ID_UNITS;
         nodeId = document.getBroker().getBrokerPool().getNodeFactory().createFromData(dlnLen, current.data(), offset);
     }
     

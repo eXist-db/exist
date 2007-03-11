@@ -941,9 +941,8 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                             // data are related to our document:
                             // check
                             NodeId previous = null;
-                            NodeId nodeId;
                             for (int j = 0; j < gidsCount; j++) {
-                                nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(previous, is);
+                            	NodeId nodeId = broker.getBrokerPool().getNodeFactory().createFromStream(previous, is);
                                 previous = nodeId;
                                 long address = StorageAddress.read(is);
                                 Node storedNode = broker.objectWith(new NodeProxy(doc, nodeId, address));

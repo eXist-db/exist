@@ -114,14 +114,13 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     public static int TEXT_BY_QNAME = 2;
     public static int FOURTH_OPTION = 3;
     
-    public final static int OFFSET_NODE_TYPE = 0;    
     public final static int LENGTH_NODE_TYPE = 1; //sizeof byte
+    public final static int OFFSET_NODE_TYPE = 0;    
     public final static int OFFSET_ELEMENT_CHILDREN_COUNT = OFFSET_NODE_TYPE + LENGTH_NODE_TYPE; //1
     public final static int OFFSET_ATTRIBUTE_DLN_LENGTH = OFFSET_NODE_TYPE + LENGTH_NODE_TYPE; //1
     public final static int OFFSET_TEXT_DLN_LENGTH = OFFSET_NODE_TYPE + LENGTH_NODE_TYPE; //1
-    public final static int LENGTH_DLN = 2; //sizeof int
-    public final static int OFFSET_DLN = OFFSET_TEXT_DLN_LENGTH + LENGTH_DLN;
-    public static int LENGTH_NODE_IDS_FREQ_OFFSETS = 4; //sizeof int
+    public final static int OFFSET_DLN = OFFSET_TEXT_DLN_LENGTH + NodeId.LENGTH_NODE_ID_UNITS;
+    public final static int LENGTH_NODE_IDS_FREQ_OFFSETS = 4; //sizeof int
 
     /** Length limit for the tokens */
 	public final static int MAX_TOKEN_LENGTH = 2048;
