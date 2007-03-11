@@ -2092,7 +2092,7 @@ public class DOMFile extends BTree implements Lockable {
 	 * and all its descendants.
 	 */
 	private void getNodeValue(DocumentImpl doc, ByteArrayOutputStream os, RecordPos rec,
-			boolean firstCall, boolean addWhitespace) {
+			boolean acceptAttributeValue, boolean addWhitespace) {
 		if (!lock.hasLock())
 			LOG.warn("the file doesn't own a lock");
 		// locate the next real node, skipping relocated nodes
@@ -2144,7 +2144,8 @@ public class DOMFile extends BTree implements Lockable {
 		}
 
 		// check the type of the node
-		final short type = Signatures.getType(data[readOffset++]);
+		final short type = Signatures.getType(data[readOffset]);
+		readOffset += StoredNode.LENGTH_SIGNATURE_LENGTH;
 		// switch on the node type
 		switch (type) {
 		case Node.ELEMENT_NODE: {
@@ -2161,7 +2162,7 @@ public class DOMFile extends BTree implements Lockable {
 	            final boolean extraWhitespace = addWhitespace && (children - attributes) > 1;
 				for (int i = 0; i < children; i++) {
 
-					//recursive call
+					//recursive call : we ignore attributes children
 					getNodeValue(doc, os, rec, false, addWhitespace);
 					if (extraWhitespace)
 						os.write((byte) ' ');
@@ -2178,9 +2179,7 @@ public class DOMFile extends BTree implements Lockable {
 				break;
 			}
 		case Node.ATTRIBUTE_NODE:
-			// use attribute value if the context node is an attribute, i.e.
-			// if this is the first call to the method
-			if (firstCall) {
+			if (acceptAttributeValue) {
                 final int start = readOffset - StoredNode.LENGTH_SIGNATURE_LENGTH;
                 final byte idSizeType = (byte) (data[start] & 0x3);
 				final boolean hasNamespace = (data[start] & 0x10) == 0x10;
@@ -2695,12 +2694,10 @@ public class DOMFile extends BTree implements Lockable {
             page.len = page.len - (LENGTH_DATA_LENGTH + LENGTH_FORWARD_LOCATION);
         } else {
             // get the record length
-            int offset = loggable.offset + 2;
-            //TODO : strange : what are the semantics of 2 here ?
-            //Probably LENGTH_DATA_LENGTH but... isn't the offset computed too early ?
+            int offset = loggable.offset + LENGTH_TID;
+            //TOUNDERSTAND Strange : in the lines above, the offset seems to be positionned after the TID
             short l = ByteConversion.byteToShort(page.data, offset);
             if (ItemId.isRelocated(loggable.tid)) {
-                offset += LENGTH_ORIGINAL_LOCATION;
                 l += LENGTH_ORIGINAL_LOCATION;
             }
             if (l == OVERFLOW)
