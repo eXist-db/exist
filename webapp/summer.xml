@@ -139,11 +139,10 @@
             </section>
 
             <section>
-                <title>Implement an XSLT 2.0 processor</title>
+                <title>Implement an XSLT 2.0 Processor</title>
 
                 <para>eXist aims to be compliant with XQuery 2.0 specifications. It would be interesting that the "sister" recommendation, XSLT 2.0, should be implemented as well,
-                	thus allowing XSLT 2.0 processing on (huge ?) persistent documents.
-                  	Most of the code is already here since both recommandations are built on-top of XPath 2.0. </para>
+                	thus allowing XSLT 2.0 processing on (huge ?) persistent documents. Most of the code is already here since both recommandations are built on-top of XPath 2.0. </para>
                   	<para>However, this is still to be implemented:</para>
                 <itemizedlist>
                     <listitem>
@@ -152,7 +151,7 @@
                         Functions, including experimental grouping ones (which have to be improved with regard to performance) have to be moved as well.</para>
                     </listitem>
                     <listitem>
-                        <para>Writing a dedicated XSLT 2.0 parser. The existing XQuery 1.0 parser is probably a good source of inspiration.</para>
+                        <para>Write a dedicated XSLT 2.0 frontend to the existing XQuery 1.0 parser.</para>
                     </listitem>
                     <listitem>
                         <para>Attention should be drawn to performance concerns. Recent code is definitely more friendly to the programmer with regard to performance. Implementing an XSLT 2.0 processor could help in bringing even more improvements in this area.</para>
@@ -176,11 +175,11 @@
 
                 <para>Implement a federated search service over distributed eXist databases. There are various reasons why users may
                     have more than one database instance deployed, for example, to distribute load or to keep sensitive data in its own
-                    data store. Unfortunately, there's no simple way to combine results from distributed data stores in a single XQuery. eXist's
-                    query engine can only operate on local resources. It can retrieve data from external locations, but only to store them into a
-                    local, temporary resource, which is then used for querying.</para>
+                    data store. Another important area of application would be in the context of grid computing.</para>
 
-                <para>A distributed search facility would allow eXist to directly forward parts of an expression to a remote database
+                <para>Unfortunately, there's no simple way to combine results from distributed data stores in a single XQuery. eXist's
+                    query engine can only operate on local resources. It can retrieve data from external locations, but only to store them into a
+                    local, temporary resource, which is then used for querying. A distributed search facility would allow eXist to directly forward parts of an expression to a remote database
                 instance. The XQuery specification already provides the necessary framework: the collection() and doc() functions
                 both accept arbitrary URIs, so collections as well as resources can be at external locations.</para>
 
