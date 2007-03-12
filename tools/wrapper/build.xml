@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
+<!-- $Id$ -->
 <!-- ======================================================================= -->
 <!-- Compile the wrapper class to start eXist as a service                   -->
 <!-- ======================================================================= -->
@@ -42,7 +42,7 @@
     	<filter token="app.description" value="eXist Database Server"/>
     	<filter token="jetty.dir" value="${jetty.dir}"/>
     	<filter token="java.vm" value="java"/>
-    	<copy file="${conf}/wrapper.conf.in" tofile="${conf}/wrapper.conf" filtering="true"/>
+    	<copy file="${conf}/wrapper.conf.in" tofile="${conf}/wrapper.conf" filtering="true" overwrite="false" />
     	<filter token="java.vm" value="$JAVA_HOME/bin/java"/>
     	<copy file="${conf}/wrapper.conf.in" tofile="${conf}/wrapper.conf.install" filtering="true"/>
     	<copy file="${bin}/exist.sh.in" tofile="${bin}/exist.sh" filtering="true"/>
@@ -69,8 +69,7 @@
 	
 	<target name="clean">
 		<delete dir="${classes}"/>
-		<delete file="${conf}/wrapper.conf.installl"/>
-		<delete file="${conf}/wrapper.conf"/>
+		<delete file="${conf}/wrapper.conf.install"/>
 		<delete file="${bin}/exist.sh"/>
 	</target>
 </project>
