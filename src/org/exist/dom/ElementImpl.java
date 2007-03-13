@@ -1291,7 +1291,15 @@ public class ElementImpl extends NamedNode implements Element {
         }
 	}
 	
-    /* (non-Javadoc)
+    /**
+     * Replaces the oldNode with the newChild
+     * 
+     * @param transaction
+     * @param newChild
+     * @param oldChild
+     * 
+     * @returns The new node (this differs from the {@link org.w3c.dom.Node#replaceChild(Node, Node)} specification)
+     * 
      * @see org.w3c.dom.Node#replaceChild(org.w3c.dom.Node, org.w3c.dom.Node)
      */
     public Node replaceChild(Txn transaction, Node newChild, Node oldChild) throws DOMException {
@@ -1319,14 +1327,16 @@ public class ElementImpl extends NamedNode implements Element {
         getBroker().removeAllNodes(transaction, oldNode, oldPath, listener);
         getBroker().endRemove(transaction);
         listener = getBroker().getIndexController().getStreamListener(ownerDocument, StreamListener.STORE);
-        appendChild(transaction, oldNode.nodeId, new NodeImplRef(previous), getPath(), newChild, listener);
+        Node newNode = appendChild(transaction, oldNode.nodeId, new NodeImplRef(previous), getPath(), newChild, listener);
         // reindex if required
         final DocumentImpl owner = (DocumentImpl)getOwnerDocument();
         getBroker().storeXMLResource(transaction, owner);
         getBroker().updateNode(transaction, this, false);
         getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
         getBroker().flush();
-        return oldChild;	// method is spec'd to return the old child, even though that's probably useless in this case
+
+        //return oldChild;	// method is spec'd to return the old child, even though that's probably useless in this case
+        return newNode; //returning the newNode is more sensible than returning the oldNode
     }
 
     private String escapeXml(Node child) {
