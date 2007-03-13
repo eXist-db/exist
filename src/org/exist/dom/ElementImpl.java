@@ -1145,7 +1145,7 @@ public class ElementImpl extends NamedNode implements Element {
      * @param newChild
      * @throws DOMException
      */
-    public void updateChild(Txn transaction, Node oldChild, Node newChild) throws DOMException {
+    public StoredNode updateChild(Txn transaction, Node oldChild, Node newChild) throws DOMException {
         if (!(oldChild instanceof StoredNode))
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "wrong node type");
         if (!(newChild instanceof StoredNode))
@@ -1193,6 +1193,7 @@ public class ElementImpl extends NamedNode implements Element {
         // Recreate indexes on ancestor nodes
         getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
         getBroker().flush();
+        return newNode;
     }
     
     /**

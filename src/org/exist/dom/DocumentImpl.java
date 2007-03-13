@@ -409,7 +409,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
     /* (non-Javadoc)
      * @see org.exist.dom.NodeImpl#updateChild(org.w3c.dom.Node, org.w3c.dom.Node)
      */
-    public void updateChild(Txn transaction, Node oldChild, Node newChild) throws DOMException {
+    public StoredNode updateChild(Txn transaction, Node oldChild, Node newChild) throws DOMException {
         if (!(oldChild instanceof StoredNode))
             throw new DOMException(DOMException.WRONG_DOCUMENT_ERR, "Node does not belong to this document");
         final StoredNode oldNode = (StoredNode) oldChild;
@@ -438,6 +438,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
             newNode.setNodeId(oldNode.getNodeId());
             broker.insertNodeAfter(transaction, previousNode, newNode);
         }
+        return newNode;
     }
 
     /*
