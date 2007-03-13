@@ -125,13 +125,22 @@ public class FulltextIndexSpec {
                 }
             } else if(EXCLUDE_INTERFACE.equals(next.getLocalName())) {
 		        ps = ((Element) next).getAttribute(PATH_ATTRIB);
+                if (ps == null || ps.length() == 0) {
+                    throw new DatabaseConfigurationException("exclude element requires an attribute 'path' in collection configuration.");
+                }
                 excludeList.add( new NodePath(namespaces, ps) );
-		    } else if(PRESERVE_CONTENT_ELEMENT.equals(next.getLocalName())) {
+            } else if(PRESERVE_CONTENT_ELEMENT.equals(next.getLocalName())) {
 		        ps = ((Element) next).getAttribute(PATH_ATTRIB);
+                if (ps == null || ps.length() == 0) {
+                    throw new DatabaseConfigurationException("preserveContent element requires an attribute 'path' in collection configuration.");
+                }
                 preserveList.add( new NodePath(namespaces, ps) );
 		    } else if(CREATE_ELEMENT.equals(next.getLocalName())) {
                 elem = (Element) next;
                 String name = elem.getAttribute(QNAME_ATTRIB);
+                if (name == null || name.length() == 0) {
+                    throw new DatabaseConfigurationException("create element requires an attribute 'qname' in collection configuration.");
+                }
                 boolean isAttribute = false;
                 if (name.startsWith("@")) {
                     isAttribute = true;
