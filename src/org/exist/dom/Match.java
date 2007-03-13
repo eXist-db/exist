@@ -127,8 +127,18 @@ public class Match implements Comparable {
     public Offset getOffset(int pos) {
         return new Offset(offsets[pos], lengths[pos]);
     }
-    
-	public Match getNextMatch() {
+
+    public boolean isNear(Match other, int distance) {
+        for (int i = 0; i < currentOffset; i++) {
+            for (int j = 0; j < other.currentOffset; j++) {
+                if (offsets[i] + distance == other.offsets[j])
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    public Match getNextMatch() {
 		return nextMatch;
 	}
 	
