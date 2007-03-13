@@ -125,6 +125,7 @@ public final class NodeIterator implements Iterator {
 						if (nextPage == Page.NO_PAGE) {
                             SanityCheck.TRACE("bad link to next " + p.page.getPageInfo() + "; previous: " +
 									ph.getPrevDataPage() + "; offset = " + offset + "; lastTID = " + lastTID);
+    					    System.out.println(db.debugPageContents(p));
 							return null;
 						}
 						page = nextPage;
@@ -183,6 +184,7 @@ public final class NodeIterator implements Iterator {
                             LOG.warn("Error while deserializing node: " + e.getMessage(), e);
                             LOG.warn("Reading from offset: " + offset + "; len = " + vlen);
                             LOG.debug(db.debugPageContents(p));
+    					    System.out.println(db.debugPageContents(p));
                             throw new RuntimeException(e);
                         }
 					}
@@ -191,8 +193,7 @@ public final class NodeIterator implements Iterator {
 					            "; next = " + p.getPageHeader().getNextDataPage() + "; prev = " + 
 					            p.getPageHeader().getPrevDataPage() + "; offset = " + (offset - vlen) +
 					            "; len = " + p.getPageHeader().getDataLength());
-					    //LOG.debug(db.debugPageContents(p));
-					    //LOG.debug(p.dumpPage());
+					    System.out.println(db.debugPageContents(p));					    
 					    return null;
 					}
 					if(ItemId.isRelocated(lastTID)) {
@@ -231,23 +232,27 @@ public final class NodeIterator implements Iterator {
             }
 			page = rec.getPage().getPageNum();
 			p = rec.getPage();
-			offset = rec.offset - 2;
+			//Position the stream at the very beginning of the record
+			offset = rec.offset - DOMFile.LENGTH_TID;
 			node = null;
+			return true;
 		} else if (startAddress != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS) {
 			final RecordPos rec = db.findRecord(startAddress);
 			if(rec == null)
 				throw new IOException("Node not found at specified address.");
 			page = rec.getPage().getPageNum();
-			offset = rec.offset - 2;
+			//Position the stream at the very beginning of the record
+			offset = rec.offset - DOMFile.LENGTH_TID;
 			p = rec.getPage();
 			startAddress = StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;
+			return true;
 		} else if (page != Page.NO_PAGE) {
 			p = db.getCurrentPage(page);
 			db.addToBuffer(p);
 //			LOG.debug("reading " + p.page.getPageNum() + "; " + p.page.hashCode());
-		} else
-			return false;
-		return true;
+			return true;
+		}
+		return false;
 	}
 	
 	/**
@@ -267,7 +272,7 @@ public final class NodeIterator implements Iterator {
 	 *@param  node  The new to value
 	 */
 	public void setTo(StoredNode node) {
-		if (-1 < node.getInternalAddress()) {
+		if (node.getInternalAddress() != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS) {
 			startAddress = node.getInternalAddress();
 		} else {
 			this.node = node;
