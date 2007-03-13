@@ -115,6 +115,9 @@ public class FulltextIndexSpec {
                 elem = (Element) next;
                 content = elem.getAttribute(CONTENT_ATTRIB);
                 ps = elem.getAttribute(PATH_ATTRIB);
+                if (ps == null || ps.length() == 0) {
+                    throw new DatabaseConfigurationException("include element requires an attribute 'path' in collection configuration.");
+                }
                 if (content != null && content.length() != 0 && CONTENT_MIXED.equals(content)) {
                     mixedList.add(new NodePath(namespaces, ps, false));
                 } else {
