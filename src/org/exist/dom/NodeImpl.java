@@ -72,7 +72,7 @@ public abstract class NodeImpl implements Node, QNameable {
      * @param newChild
      * @throws DOMException
      */
-    public void updateChild(Txn transaction, Node oldChild, Node newChild) throws DOMException {
+    public StoredNode updateChild(Txn transaction, Node oldChild, Node newChild) throws DOMException {
         throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class " + getClass().getName());
     }    
     
