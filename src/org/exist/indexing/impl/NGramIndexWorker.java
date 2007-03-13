@@ -88,6 +88,14 @@ public class NGramIndexWorker implements IndexWorker {
         return NGramIndex.ID;
     }
 
+    public Index getIndex() {
+        return index;
+    }
+
+    public int getN() {
+        return index.getN();
+    }
+    
     public Object configure(IndexController controller, NodeList configNodes, Map namespaces) throws DatabaseConfigurationException {
         this.controller = controller;
         // We use a map to store the QNames to be indexed
@@ -317,90 +325,15 @@ public class NGramIndexWorker implements IndexWorker {
             final Lock lock = index.db.getLock();
 			try {
 				lock.acquire(Lock.READ_LOCK);
-                VariableByteInput is = index.db.getAsStream(key);
-                //Does the token already has data in the index ?
-				if (is == null)
-					continue;
-				while (is.available() > 0) {
-                    int storedDocId = is.readInt();
-                    byte nameType = is.readByte();
-                    int occurrences = is.readInt();
-                    //Read (variable) length of node IDs + frequency + offsets
-                    int length = is.readFixedInt();
-                    DocumentImpl storedDocument = docs.getDoc(storedDocId);
-                    //Exit if the document is not concerned
-                    if (storedDocument == null) {
-                        is.skipBytes(length);
-                        continue;
-                    }
-                    NodeId previous = null;
-                    for (int m = 0; m < occurrences; m++) {
-                        NodeId nodeId = index.pool.getNodeFactory().createFromStream(previous, is);
-                        previous = nodeId;
-                        int freq = is.readInt();
-                        NodeProxy storedNode;
-                        switch (nameType) {
-                            case ElementValue.ATTRIBUTE :
-                                storedNode = new NodeProxy(storedDocument, nodeId, Node.ATTRIBUTE_NODE);
-                                break;
-                            case ElementValue.ELEMENT :
-                                storedNode = new NodeProxy(storedDocument, nodeId, Node.TEXT_NODE);
-                                break;
-                            default :
-                                throw new IllegalArgumentException("Invalid section type in '" + index.db.getFile().getName() + "'");
-                        }
-                        // if a context set is specified, we can directly check if the
-						// matching text node is a descendant of one of the nodes
-						// in the context set.
-						if (contextSet != null) {
-                            NodeProxy parent;
-                            switch(nameType) {
-                                case ElementValue.ATTRIBUTE :
-                                    if (contextSet instanceof VirtualNodeSet) {
-                                        parent = contextSet.parentWithChild(storedNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
-                                        if (parent != null && !parent.getNodeId().equals(storedNode.getNodeId()))
-                                            parent = null;
-                                    } else
-                                        parent = contextSet.get(storedNode);
-                                    break;
-                                case ElementValue.ELEMENT :
-                                    parent = contextSet.parentWithChild(storedNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
-                                    break;
-                                default :
-                                    throw new IllegalArgumentException("Invalid section type in '" + index.db.getFile().getName() + "'");
-                            }
-                            if (parent != null) {
-                                Match match = new Match(nodeId, ngram, freq);
-                                for (int n = 0; n < freq; n++) {
-                                    match.addOffset(is.readInt(), ngram.length());
-                                }
-                                if (axis == NodeSet.ANCESTOR) {
-                                    parent.addMatch(match);
-                                    int sizeHint = contextSet.getSizeHint(storedDocument);
-                                    result.add(parent, sizeHint);
-                                } else {
-                                    storedNode.addMatch(match);
-                                    int sizeHint = contextSet.getSizeHint(storedDocument);
-                                    result.add(storedNode, sizeHint);
-                                }
-                            } else {
-							    is.skip(freq);
-                            }
-						// otherwise, we add all text nodes without check
-						} else {
-                            Match match = new Match(nodeId, ngram, freq);
-                            for (int n = 0; n < freq; n++) {
-                                match.addOffset(is.readInt(), ngram.length());
-                            }
-                            storedNode.addMatch(match);
-							result.add(storedNode, Constants.NO_SIZE_HINT);
-						}
-						context.proceed();
-					}
-                }
+                SearchCallback cb = new SearchCallback(docs, contextSet, context, result, axis == NodeSet.ANCESTOR);
+                int op = ngram.length() < getN() ? IndexQuery.TRUNC_RIGHT : IndexQuery.EQ;
+                final IndexQuery query = new IndexQuery(op, key);
+                index.db.query(query, cb);
             } catch (LockException e) {
                 LOG.warn("Failed to acquire lock for '" + index.db.getFile().getName() + "'", e);
             } catch (IOException e) {
+                LOG.error(e.getMessage() + " in '" + index.db.getFile().getName() + "'", e);
+            } catch (BTreeException e) {
                 LOG.error(e.getMessage() + " in '" + index.db.getFile().getName() + "'", e);
             } finally {
                 lock.release(Lock.READ_LOCK);
@@ -487,6 +420,28 @@ public class NGramIndexWorker implements IndexWorker {
             currentChar += gramSize;
         }
         return ngrams;
+    }
+
+    public String[] getDistinctNGrams(CharSequence text) {
+        int ngramSize = index.getN();
+        int count = text.length() / ngramSize;
+        int remainder = text.length() % ngramSize;
+        String[] n = new String[(remainder > 0 ? count + 1 : count)];
+        int pos = 0;
+        for (int i = 0; i < count; i++) {
+            char ch[] = new char[ngramSize];
+            for (int j = 0; j < ngramSize; j++) {
+                ch[j] = text.charAt(pos++);
+            }
+            n[i] = new String(ch);
+        }
+        if (remainder > 0) {
+            char ch[] = new char[remainder];
+            for (int i = 0; i < remainder; i++)
+                ch[i] = text.charAt(pos++);
+            n[count] = new String(ch);
+        }
+        return n;
     }
 
     private void indexText(NodeId nodeId, QName qname, CharSequence text) {
@@ -600,6 +555,100 @@ public class NGramIndexWorker implements IndexWorker {
             data = new byte[len];
             ByteConversion.shortToByte(collectionId, data, 0);
             UTF8.encode(ngram, data, 2);
+        }
+    }
+
+    private final class SearchCallback implements BTreeCallback {
+
+        private DocumentSet docs;
+        private NodeSet contextSet;
+        private XQueryContext context;
+        private NodeSet resultSet;
+        private boolean returnAncestor;
+
+        public SearchCallback(DocumentSet docs, NodeSet contextSet, XQueryContext context, NodeSet result, boolean returnAncestor) {
+            this.docs = docs;
+            this.context = context;
+            this.contextSet = contextSet;
+            this.resultSet = result;
+            this.returnAncestor = returnAncestor;
+        }
+
+        public boolean indexInfo(Value key, long pointer) throws TerminatedException {
+            String ngram;
+            try {
+                ngram = new String(key.getData(), 2, key.getLength() - 2, "UTF-8");
+                System.out.println("ngram: " + ngram);
+            } catch (UnsupportedEncodingException e) {
+                LOG.error(e.getMessage(), e);
+                return true;
+            }
+            VariableByteInput is = null;
+            try {
+                is = index.db.getAsStream(pointer);
+                //Does the token already has data in the index ?
+                if (is == null)
+                    return true;
+                while (is.available() > 0) {
+                    int storedDocId = is.readInt();
+                    byte nameType = is.readByte();
+                    int occurrences = is.readInt();
+                    //Read (variable) length of node IDs + frequency + offsets
+                    int length = is.readFixedInt();
+                    DocumentImpl storedDocument = docs.getDoc(storedDocId);
+                    //Exit if the document is not concerned
+                    if (storedDocument == null) {
+                        is.skipBytes(length);
+                        continue;
+                    }
+                    NodeId previous = null;
+                    for (int m = 0; m < occurrences; m++) {
+                        NodeId nodeId = index.pool.getNodeFactory().createFromStream(previous, is);
+                        previous = nodeId;
+                        int freq = is.readInt();
+                        NodeProxy storedNode = new NodeProxy(storedDocument, nodeId);
+
+                        // if a context set is specified, we can directly check if the
+                        // matching node is a descendant of one of the nodes
+                        // in the context set.
+                        if (contextSet != null) {
+                            int sizeHint = contextSet.getSizeHint(storedDocument);
+                            if (returnAncestor) {
+                                NodeProxy parentNode = contextSet.parentWithChild(storedNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
+                                Match match = new Match(nodeId, ngram, freq);
+                                for (int n = 0; n < freq; n++) {
+                                    match.addOffset(is.readInt(), ngram.length());
+                                }
+                                parentNode.addMatch(match);
+                                if (parentNode != null)
+                                    resultSet.add(parentNode, sizeHint);
+                                else
+                                    is.skip(freq);
+                            } else {
+                                Match match = new Match(nodeId, ngram, freq);
+                                for (int n = 0; n < freq; n++) {
+                                    match.addOffset(is.readInt(), ngram.length());
+                                }
+                                storedNode.addMatch(match);
+                                resultSet.add(storedNode, sizeHint);
+                            }
+                            // otherwise, we add all text nodes without check
+                        } else {
+                            Match match = new Match(nodeId, ngram, freq);
+                            for (int n = 0; n < freq; n++) {
+                                match.addOffset(is.readInt(), ngram.length());
+                            }
+                            storedNode.addMatch(match);
+                            resultSet.add(storedNode, Constants.NO_SIZE_HINT);
+                        }
+                        context.proceed();
+                    }
+                }
+                return false;
+            } catch (IOException e) {
+                LOG.error(e.getMessage(), e);
+                return true;
+            }
         }
     }
 

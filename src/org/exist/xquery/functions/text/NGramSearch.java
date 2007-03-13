@@ -6,13 +6,12 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Item;
-import org.exist.dom.QName;
-import org.exist.dom.NodeSet;
-import org.exist.dom.DocumentSet;
+import org.exist.dom.*;
 import org.exist.indexing.impl.NGramIndex;
 import org.exist.indexing.impl.NGramIndexWorker;
 
 import java.util.List;
+import java.util.Iterator;
 
 /**
  * Created by IntelliJ IDEA.
@@ -56,16 +55,45 @@ public class NGramSearch extends Function {
         if (contextItem != null)
 			contextSequence = contextItem.toSequence();
         Sequence input = getArgument(0).eval(contextSequence, contextItem);
-        Sequence result;
+        NodeSet result = null;
         if (input.isEmpty())
-            result = Sequence.EMPTY_SEQUENCE;
+            result = NodeSet.EMPTY_SET;
         else {
-            NodeSet nodes = input.toNodeSet();
-            DocumentSet docs = nodes.getDocumentSet();
-            String key = getArgument(1).eval(contextSequence, contextItem).getStringValue();
+            NodeSet inNodes = input.toNodeSet();
+            DocumentSet docs = inNodes.getDocumentSet();
             NGramIndexWorker index = (NGramIndexWorker)
                     context.getBroker().getIndexController().getIndexWorker(NGramIndex.ID);
-            result = index.search(docs, key, context, nodes, NodeSet.ANCESTOR);
+            String key = getArgument(1).eval(contextSequence, contextItem).getStringValue();
+            String[] ngrams = index.getDistinctNGrams(key);
+            for (int i = 0; i < ngrams.length; i++) {
+                NodeSet nodes = index.search(docs, ngrams[i], context, inNodes, NodeSet.ANCESTOR);
+                if (result == null)
+                    result = nodes;
+                else {
+                    NodeSet temp = new ExtArrayNodeSet();
+                    for (NodeSetIterator iterator = nodes.iterator(); iterator.hasNext();) {
+                        NodeProxy next = (NodeProxy) iterator.next();
+                        NodeProxy before = result.get(next);
+                        if (before != null) {
+                            boolean found = false;
+                            Match mb = before.getMatches();
+                            while (mb != null && !found) {
+                                Match mn = next.getMatches();
+                                while (mn != null && !found) {
+                                    if (mb.isNear(mn, index.getN()))
+                                        found = true;
+                                    mn = mn.getNextMatch();
+                                }
+                                mb = mb.getNextMatch();
+                            }
+                            if (found)
+                                temp.add(next);
+                        }
+                    }
+                    result = temp;
+                    LOG.debug("Found " + temp.getLength() + " for: " + ngrams[i]);
+                }
+            }
         }
         return result;
     }
