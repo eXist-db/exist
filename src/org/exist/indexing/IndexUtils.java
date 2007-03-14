@@ -1,13 +1,14 @@
 package org.exist.indexing;
 
-import org.exist.dom.*;
-import org.exist.storage.txn.Txn;
-import org.exist.storage.NodePath;
-import org.exist.storage.GeneralRangeIndexSpec;
-import org.exist.storage.QNameRangeIndexSpec;
-import org.w3c.dom.Node;
-
 import java.util.Iterator;
+
+import org.exist.dom.AttrImpl;
+import org.exist.dom.ElementImpl;
+import org.exist.dom.StoredNode;
+import org.exist.dom.TextImpl;
+import org.exist.storage.NodePath;
+import org.exist.storage.txn.Txn;
+import org.w3c.dom.Node;
 
 /**
  * Various utility methods to be used by Index implementations.

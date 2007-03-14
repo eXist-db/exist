@@ -21,19 +21,23 @@
  */
 package org.exist.indexing;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
+import org.exist.collections.Collection;
+import org.exist.dom.AttrImpl;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.ElementImpl;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.StoredNode;
+import org.exist.dom.TextImpl;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NodePath;
 import org.exist.storage.txn.Txn;
-import org.exist.dom.*;
 import org.exist.util.DatabaseConfigurationException;
-import org.exist.collections.Collection;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
-
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Iterator;
+import org.w3c.dom.NodeList;
 
 /**
  * Internally used to dispatch an operation to each of the
