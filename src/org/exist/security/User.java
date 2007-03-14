@@ -393,7 +393,6 @@ public class User {
         if (!CHECK_PASSWORDS)
             return true;
 
-       SecurityManager sm;
        if (password==null && digestPassword==null) {
             return true;
        }
