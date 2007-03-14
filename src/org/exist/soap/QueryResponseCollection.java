@@ -7,6 +7,8 @@
 
 package org.exist.soap;
 
+import org.exist.Namespaces;
+
 public class QueryResponseCollection  implements java.io.Serializable {
     private java.lang.String collectionName;
     private org.exist.soap.QueryResponseDocuments documents;
@@ -109,7 +111,7 @@ public class QueryResponseCollection  implements java.io.Serializable {
         org.apache.axis.description.ElementDesc elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("collectionName");
         elemField.setXmlName(new javax.xml.namespace.QName("urn:exist", "collectionName"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        elemField.setXmlType(new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "string"));
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
         elemField = new org.apache.axis.description.ElementDesc();

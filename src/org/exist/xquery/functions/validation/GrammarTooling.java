@@ -24,6 +24,7 @@
 package org.exist.xquery.functions.validation;
 
 import org.apache.xerces.xni.grammars.Grammar;
+import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.storage.BrokerPool;
 import org.exist.validation.GrammarPool;
@@ -50,7 +51,7 @@ import org.exist.xquery.value.ValueSequence;
 public class GrammarTooling extends BasicFunction  {
     
     private static final String TYPE_DTD="http://www.w3.org/TR/REC-xml";
-    private static final String TYPE_XSD="http://www.w3.org/2001/XMLSchema";
+    private static final String TYPE_XSD=Namespaces.SCHEMA_NS;
     
     private final Validator validator;
     private final BrokerPool brokerPool;

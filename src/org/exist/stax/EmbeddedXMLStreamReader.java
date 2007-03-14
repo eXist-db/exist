@@ -512,7 +512,7 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
 
         public ElementEvent(Value data) {
             this.data = data;
-            childCount = ByteConversion.byteToInt(data.data(), data.start() + 1);
+            childCount = ByteConversion.byteToInt(data.data(), data.start() + StoredNode.LENGTH_SIGNATURE_LENGTH);
         }
 
         public Value getData() {

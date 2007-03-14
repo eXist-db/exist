@@ -7,6 +7,8 @@
 
 package org.exist.soap;
 
+import org.exist.Namespaces;
+
 public class QueryResponse  implements java.io.Serializable {
     private org.exist.soap.QueryResponseCollections collections;
     private int hits;
@@ -136,13 +138,13 @@ public class QueryResponse  implements java.io.Serializable {
         elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("hits");
         elemField.setXmlName(new javax.xml.namespace.QName("urn:exist", "hits"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"));
+        elemField.setXmlType(new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "int"));
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
         elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("queryTime");
         elemField.setXmlName(new javax.xml.namespace.QName("urn:exist", "queryTime"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "long"));
+        elemField.setXmlType(new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "long"));
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
     }
