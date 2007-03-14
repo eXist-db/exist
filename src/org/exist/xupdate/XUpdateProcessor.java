@@ -42,6 +42,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.log4j.Logger;
+import org.exist.Namespaces;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeListImpl;
 import org.exist.dom.NodeSetHelper;
@@ -209,7 +210,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		this.builder = factory.newDocumentBuilder();
 		this.broker = broker;
 		this.documentSet = docs;
-		//namespaces.put("xml", "http://www.w3.org/XML/1998/namespace");
+		//namespaces.put("xml", Namespaces.XML_NS);
 		//TODO : move this to a dedicated configure() method.
 		if (broker != null) {
 			Configuration config = broker.getConfiguration();
@@ -655,7 +656,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	}
     
     private void setWhitespaceHandling(Element e) {
-        String wsSetting = e.getAttributeNS("http://www.w3.org/XML/1998/namespace", "space");
+        String wsSetting = e.getAttributeNS(Namespaces.XML_NS, "space");
         if ("preserve".equals(wsSetting)) {
             this.spaceStack.push(wsSetting);
             this.preserveWhitespace = true;
@@ -667,7 +668,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
     }
     
     private void resetWhitespaceHandling(Element e) {
-        String wsSetting = e.getAttributeNS("http://www.w3.org/XML/1998/namespace", "space");
+        String wsSetting = e.getAttributeNS(Namespaces.XML_NS, "space");
         if ("preserve".equals(wsSetting) || "default".equals(wsSetting)) {
             // Since an opinion was expressed, restore what was previously set:
             this.spaceStack.pop();
@@ -857,6 +858,6 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		this.variables.clear();
 		this.namespaces.clear();
 		this.conditionals.clear();
-		//this.namespaces.put("xml", "http://www.w3.org/XML/1998/namespace");
+		//this.namespaces.put("xml", Namespaces.XML_NS);
 	}
 }

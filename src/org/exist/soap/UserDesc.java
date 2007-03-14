@@ -7,6 +7,8 @@
 
 package org.exist.soap;
 
+import org.exist.Namespaces;
+
 public class UserDesc  implements java.io.Serializable {
     private java.lang.String name;
     private org.exist.soap.Strings groups;
@@ -138,7 +140,7 @@ public class UserDesc  implements java.io.Serializable {
         org.apache.axis.description.ElementDesc elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("name");
         elemField.setXmlName(new javax.xml.namespace.QName("urn:exist", "name"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        elemField.setXmlType(new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "string"));
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
         elemField = new org.apache.axis.description.ElementDesc();
@@ -150,7 +152,7 @@ public class UserDesc  implements java.io.Serializable {
         elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("home");
         elemField.setXmlName(new javax.xml.namespace.QName("urn:exist", "home"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        elemField.setXmlType(new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "string"));
         elemField.setNillable(true);
         typeDesc.addFieldDesc(elemField);
     }

@@ -646,7 +646,7 @@ public class ElementImpl extends NamedNode implements Element {
                 Map.Entry entry = (Map.Entry) i.next();
                 String prefix = entry.getKey().toString();
                 String ns = entry.getValue().toString();
-                QName attrName = new QName(prefix, "http://www.w3.org/XML/1998/namespace", "xmlns");
+                QName attrName = new QName(prefix, Namespaces.XML_NS, "xmlns");
                 AttrImpl attr = new AttrImpl(attrName, ns);
                 map.setNamedItem(attr);
             }

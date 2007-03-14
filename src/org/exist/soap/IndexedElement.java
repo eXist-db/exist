@@ -7,6 +7,8 @@
 
 package org.exist.soap;
 
+import org.exist.Namespaces;
+
 public class IndexedElement  implements java.io.Serializable {
     private java.lang.String localName;
     private java.lang.String namespaceURI;
@@ -163,25 +165,25 @@ public class IndexedElement  implements java.io.Serializable {
         org.apache.axis.description.ElementDesc elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("localName");
         elemField.setXmlName(new javax.xml.namespace.QName("urn:exist", "localName"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        elemField.setXmlType(new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "string"));
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
         elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("namespaceURI");
         elemField.setXmlName(new javax.xml.namespace.QName("urn:exist", "namespaceURI"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        elemField.setXmlType(new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "string"));
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
         elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("prefix");
         elemField.setXmlName(new javax.xml.namespace.QName("urn:exist", "prefix"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        elemField.setXmlType(new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "string"));
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
         elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("occurences");
         elemField.setXmlName(new javax.xml.namespace.QName("urn:exist", "occurences"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"));
+        elemField.setXmlType(new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "int"));
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
     }

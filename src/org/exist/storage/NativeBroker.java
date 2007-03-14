@@ -21,8 +21,6 @@
  */
 package org.exist.storage;
 
-import org.exist.storage.DBBroker;
-
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
@@ -37,8 +35,6 @@ import java.util.Stack;
 import javax.xml.stream.XMLStreamException;
 
 import org.exist.EXistException;
-import org.exist.indexing.StreamListener;
-import org.exist.indexing.IndexUtils;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionCache;
 import org.exist.collections.CollectionConfiguration;
@@ -54,6 +50,7 @@ import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
 import org.exist.dom.SymbolTable;
 import org.exist.dom.TextImpl;
+import org.exist.indexing.StreamListener;
 import org.exist.memtree.DOMIndexer;
 import org.exist.numbering.NodeId;
 import org.exist.security.MD5;
@@ -85,7 +82,12 @@ import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
-import org.exist.util.*;
+import org.exist.util.ByteArrayPool;
+import org.exist.util.ByteConversion;
+import org.exist.util.Configuration;
+import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.LockException;
+import org.exist.util.ReadOnlyException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.TerminatedException;
 import org.w3c.dom.Document;

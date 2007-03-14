@@ -7,6 +7,8 @@
 
 package org.exist.soap;
 
+import org.exist.Namespaces;
+
 public class QuerySoapBindingSkeleton implements org.exist.soap.Query, org.apache.axis.wsdl.Skeleton {
     private org.exist.soap.Query impl;
     private static java.util.Map _myOperations = new java.util.Hashtable();
@@ -31,13 +33,13 @@ public class QuerySoapBindingSkeleton implements org.exist.soap.Query, org.apach
         org.apache.axis.description.FaultDesc _fault;
         org.apache.axis.description.ParameterDesc [] _params;
         _params = new org.apache.axis.description.ParameterDesc [] {
-            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "sessionId"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
-            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "path"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
-            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "indent"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"), boolean.class, false, false), 
-            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "xinclude"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"), boolean.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "sessionId"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "string"), java.lang.String.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "path"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "string"), java.lang.String.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "indent"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "boolean"), boolean.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "xinclude"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "boolean"), boolean.class, false, false), 
         };
         _oper = new org.apache.axis.description.OperationDesc("getResource", _params, new javax.xml.namespace.QName("urn:exist", "getResourceReturn"));
-        _oper.setReturnType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        _oper.setReturnType(new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "string"));
         _oper.setElementQName(new javax.xml.namespace.QName("urn:exist", "getResource"));
         _oper.setSoapAction("");
         _myOperationsList.add(_oper);
@@ -46,8 +48,8 @@ public class QuerySoapBindingSkeleton implements org.exist.soap.Query, org.apach
         }
         ((java.util.List)_myOperations.get("getResource")).add(_oper);
         _params = new org.apache.axis.description.ParameterDesc [] {
-            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "sessionId"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
-            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "xpath"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "sessionId"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "string"), java.lang.String.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "xpath"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "string"), java.lang.String.class, false, false), 
         };
         _oper = new org.apache.axis.description.OperationDesc("query", _params, new javax.xml.namespace.QName("urn:exist", "queryReturn"));
         _oper.setReturnType(new javax.xml.namespace.QName("urn:exist", "QueryResponse"));
@@ -59,11 +61,11 @@ public class QuerySoapBindingSkeleton implements org.exist.soap.Query, org.apach
         }
         ((java.util.List)_myOperations.get("query")).add(_oper);
         _params = new org.apache.axis.description.ParameterDesc [] {
-            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "userId"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
-            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "password"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "userId"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "string"), java.lang.String.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "password"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "string"), java.lang.String.class, false, false), 
         };
         _oper = new org.apache.axis.description.OperationDesc("connect", _params, new javax.xml.namespace.QName("urn:exist", "connectReturn"));
-        _oper.setReturnType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        _oper.setReturnType(new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "string"));
         _oper.setElementQName(new javax.xml.namespace.QName("urn:exist", "connect"));
         _oper.setSoapAction("");
         _myOperationsList.add(_oper);
@@ -72,15 +74,15 @@ public class QuerySoapBindingSkeleton implements org.exist.soap.Query, org.apach
         }
         ((java.util.List)_myOperations.get("connect")).add(_oper);
         _params = new org.apache.axis.description.ParameterDesc [] {
-            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "sessionId"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
-            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "start"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"), int.class, false, false), 
-            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "howmany"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"), int.class, false, false), 
-            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "indent"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"), boolean.class, false, false), 
-            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "xinclude"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"), boolean.class, false, false), 
-            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "highlight"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "sessionId"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "string"), java.lang.String.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "start"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "int"), int.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "howmany"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "int"), int.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "indent"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "boolean"), boolean.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "xinclude"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "boolean"), boolean.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "highlight"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "string"), java.lang.String.class, false, false), 
         };
         _oper = new org.apache.axis.description.OperationDesc("retrieve", _params, new javax.xml.namespace.QName("urn:exist", "retrieveReturn"));
-        _oper.setReturnType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        _oper.setReturnType(new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "string"));
         _oper.setElementQName(new javax.xml.namespace.QName("urn:exist", "retrieve"));
         _oper.setSoapAction("");
         _myOperationsList.add(_oper);
@@ -89,7 +91,7 @@ public class QuerySoapBindingSkeleton implements org.exist.soap.Query, org.apach
         }
         ((java.util.List)_myOperations.get("retrieve")).add(_oper);
         _params = new org.apache.axis.description.ParameterDesc [] {
-            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "sessionId"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "sessionId"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "string"), java.lang.String.class, false, false), 
         };
         _oper = new org.apache.axis.description.OperationDesc("disconnect", _params, null);
         _oper.setElementQName(new javax.xml.namespace.QName("urn:exist", "disconnect"));
@@ -100,14 +102,14 @@ public class QuerySoapBindingSkeleton implements org.exist.soap.Query, org.apach
         }
         ((java.util.List)_myOperations.get("disconnect")).add(_oper);
         _params = new org.apache.axis.description.ParameterDesc [] {
-            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "sessionId"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
-            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "path"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
-            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "indent"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"), boolean.class, false, false), 
-            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "xinclude"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"), boolean.class, false, false), 
-            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "processXSLPI"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"), boolean.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "sessionId"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "string"), java.lang.String.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "path"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "string"), java.lang.String.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "indent"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "boolean"), boolean.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "xinclude"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "boolean"), boolean.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "processXSLPI"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "boolean"), boolean.class, false, false), 
         };
         _oper = new org.apache.axis.description.OperationDesc("getResourceData", _params, new javax.xml.namespace.QName("urn:exist", "getResourceDataReturn"));
-        _oper.setReturnType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "base64Binary"));
+        _oper.setReturnType(new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "base64Binary"));
         _oper.setElementQName(new javax.xml.namespace.QName("urn:exist", "getResourceData"));
         _oper.setSoapAction("");
         _myOperationsList.add(_oper);
@@ -116,8 +118,8 @@ public class QuerySoapBindingSkeleton implements org.exist.soap.Query, org.apach
         }
         ((java.util.List)_myOperations.get("getResourceData")).add(_oper);
         _params = new org.apache.axis.description.ParameterDesc [] {
-            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "sessionId"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
-            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "xquery"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "base64Binary"), byte[].class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "sessionId"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "string"), java.lang.String.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "xquery"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "base64Binary"), byte[].class, false, false), 
         };
         _oper = new org.apache.axis.description.OperationDesc("xquery", _params, new javax.xml.namespace.QName("urn:exist", "xqueryReturn"));
         _oper.setReturnType(new javax.xml.namespace.QName("urn:exist", "QueryResponse"));
@@ -129,12 +131,12 @@ public class QuerySoapBindingSkeleton implements org.exist.soap.Query, org.apach
         }
         ((java.util.List)_myOperations.get("xquery")).add(_oper);
         _params = new org.apache.axis.description.ParameterDesc [] {
-            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "sessionId"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
-            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "start"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"), int.class, false, false), 
-            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "howmany"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"), int.class, false, false), 
-            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "indent"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"), boolean.class, false, false), 
-            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "xinclude"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"), boolean.class, false, false), 
-            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "highlight"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "sessionId"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "string"), java.lang.String.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "start"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "int"), int.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "howmany"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "int"), int.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "indent"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "boolean"), boolean.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "xinclude"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "boolean"), boolean.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "highlight"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "string"), java.lang.String.class, false, false), 
         };
         _oper = new org.apache.axis.description.OperationDesc("retrieveData", _params, new javax.xml.namespace.QName("urn:exist", "retrieveDataReturn"));
         _oper.setReturnType(new javax.xml.namespace.QName("urn:exist", "Base64BinaryArray"));
@@ -146,16 +148,16 @@ public class QuerySoapBindingSkeleton implements org.exist.soap.Query, org.apach
         }
         ((java.util.List)_myOperations.get("retrieveData")).add(_oper);
         _params = new org.apache.axis.description.ParameterDesc [] {
-            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "sessionId"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
-            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "start"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"), int.class, false, false), 
-            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "howmany"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"), int.class, false, false), 
-            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "path"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
-            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "indent"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"), boolean.class, false, false), 
-            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "xinclude"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"), boolean.class, false, false), 
-            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "highlight"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "sessionId"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "string"), java.lang.String.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "start"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "int"), int.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "howmany"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "int"), int.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "path"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "string"), java.lang.String.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "indent"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "boolean"), boolean.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "xinclude"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "boolean"), boolean.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "highlight"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "string"), java.lang.String.class, false, false), 
         };
         _oper = new org.apache.axis.description.OperationDesc("retrieveByDocument", _params, new javax.xml.namespace.QName("urn:exist", "retrieveByDocumentReturn"));
-        _oper.setReturnType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        _oper.setReturnType(new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "string"));
         _oper.setElementQName(new javax.xml.namespace.QName("urn:exist", "retrieveByDocument"));
         _oper.setSoapAction("");
         _myOperationsList.add(_oper);
@@ -164,8 +166,8 @@ public class QuerySoapBindingSkeleton implements org.exist.soap.Query, org.apach
         }
         ((java.util.List)_myOperations.get("retrieveByDocument")).add(_oper);
         _params = new org.apache.axis.description.ParameterDesc [] {
-            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "sessionId"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
-            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "path"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "sessionId"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "string"), java.lang.String.class, false, false), 
+            new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("urn:exist", "path"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName(Namespaces.SCHEMA_NS, "string"), java.lang.String.class, false, false), 
         };
         _oper = new org.apache.axis.description.OperationDesc("listCollection", _params, new javax.xml.namespace.QName("urn:exist", "listCollectionReturn"));
         _oper.setReturnType(new javax.xml.namespace.QName("urn:exist", "Collection"));
