@@ -489,7 +489,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 		for (int i = 0; i < attributes.getLength(); i++) {
 			attrNS = attributes.getURI(i);
 			attrQName = attributes.getQName(i);
-			if (attrQName.startsWith("xmlns") || attrNS.equals(Serializer.EXIST_NS))
+			if (attrQName.startsWith("xmlns") || attrNS.equals(Namespaces.EXIST_NS))
 				--attrLength;
 		}
 
@@ -588,7 +588,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 			attrLocalName = attributes.getLocalName(i);
 			attrQName = attributes.getQName(i);
 			// skip xmlns-attributes and attributes in eXist's namespace
-			if (attrQName.startsWith("xmlns") || attrNS.equals(Serializer.EXIST_NS))
+			if (attrQName.startsWith("xmlns") || attrNS.equals(Namespaces.EXIST_NS))
 				--attrLength;
 			else {
 				p = attrQName.indexOf(':');
@@ -662,7 +662,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 
 	public void startPrefixMapping(String prefix, String uri) {
 		// skip the eXist namespace
-//		if (uri.equals("http://exist.sourceforge.net/NS/exist")) {
+//		if (uri.equals(Namespaces.EXIST_NS)) {
 //			ignorePrefix = prefix;
 //			return;
 //		}

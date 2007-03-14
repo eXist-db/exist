@@ -22,11 +22,12 @@
  */
 package org.exist.dom;
 
+import org.exist.Namespaces;
+import org.exist.numbering.NodeId;
 import org.exist.storage.Signatures;
 import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
 import org.exist.util.UTF8;
-import org.exist.numbering.NodeId;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.w3c.dom.Text;
@@ -142,7 +143,7 @@ public class TextImpl extends CharacterDataImpl implements Text {
         if ( top ) {
             StringBuffer result = new StringBuffer();
             result.append( "<exist:text " );
-            result.append( "xmlns:exist=\"http://exist.sourceforge.net/NS/exist\" " );
+            result.append( "xmlns:exist=\"" + Namespaces.EXIST_NS + "\" " );
             result.append( "exist:id=\"" );
             result.append( getNodeId() );
             result.append( "\" exist:source=\"" );

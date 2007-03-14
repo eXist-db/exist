@@ -23,9 +23,10 @@ package org.exist.dom;
 
 import java.io.UnsupportedEncodingException;
 
+import org.exist.Namespaces;
 import org.exist.numbering.NodeId;
-import org.exist.storage.Signatures;
 import org.exist.storage.DBBroker;
+import org.exist.storage.Signatures;
 import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
 import org.exist.util.UTF8;
@@ -247,7 +248,7 @@ public class AttrImpl extends NamedNode implements Attr {
         if ( top ) {
             StringBuffer result = new StringBuffer();
             result.append( "<exist:attribute " );
-            result.append( "xmlns:exist=\"http://exist.sourceforge.net/NS/exist\" " );
+            result.append( "xmlns:exist=\"" + Namespaces.EXIST_NS + "\" " );
             result.append( "exist:id=\"" );
             result.append( getNodeId() );
             result.append( "\" exist:source=\"" );

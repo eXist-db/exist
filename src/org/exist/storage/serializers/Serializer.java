@@ -48,6 +48,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.log4j.Logger;
+import org.exist.Namespaces;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
@@ -106,8 +107,6 @@ public abstract class Serializer implements XMLReader {
 
 	protected final static Logger LOG = Logger.getLogger(Serializer.class);
 
-	public final static String EXIST_NS = "http://exist.sourceforge.net/NS/exist";
-	
 	// constants to configure the highlighting of matches in text and attributes
 	public final static int TAG_NONE = 0x0;
 	public final static int TAG_ELEMENT_MATCHES = 0x1;
@@ -117,12 +116,12 @@ public abstract class Serializer implements XMLReader {
 	public final static String GENERATE_DOC_EVENTS = "sax-document-events";
 	public final static String ENCODING = "encoding";
 
-	protected final static QName ATTR_HITS_QNAME = new QName("hits", EXIST_NS, "exist");
-	protected final static QName ATTR_START_QNAME = new QName("start", EXIST_NS, "exist");
-	protected final static QName ATTR_COUNT_QNAME = new QName("count", EXIST_NS, "exist");
-	protected final static QName ELEM_RESULT_QNAME = new QName("result", EXIST_NS, "exist");
-	protected final static QName ATTR_TYPE_QNAME = new QName("type", EXIST_NS, "exist");
-	protected final static QName ELEM_VALUE_QNAME = new QName("value", EXIST_NS, "exist");
+	protected final static QName ATTR_HITS_QNAME = new QName("hits", Namespaces.EXIST_NS, "exist");
+	protected final static QName ATTR_START_QNAME = new QName("start", Namespaces.EXIST_NS, "exist");
+	protected final static QName ATTR_COUNT_QNAME = new QName("count", Namespaces.EXIST_NS, "exist");
+	protected final static QName ELEM_RESULT_QNAME = new QName("result", Namespaces.EXIST_NS, "exist");
+	protected final static QName ATTR_TYPE_QNAME = new QName("type", Namespaces.EXIST_NS, "exist");
+	protected final static QName ELEM_VALUE_QNAME = new QName("value", Namespaces.EXIST_NS, "exist");
 	
 	protected DBBroker broker;
 	protected String encoding = "UTF-8";
@@ -733,7 +732,7 @@ public abstract class Serializer implements XMLReader {
 		
 		receiver.startDocument();
 		if(wrap) {
-			receiver.startPrefixMapping("exist", EXIST_NS);
+			receiver.startPrefixMapping("exist", Namespaces.EXIST_NS);
 			receiver.startElement(ELEM_RESULT_QNAME, attrs);
 		}
 		

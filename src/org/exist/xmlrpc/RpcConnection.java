@@ -52,6 +52,7 @@ import javax.xml.transform.OutputKeys;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.Namespaces;
 import org.exist.backup.Backup;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
@@ -129,8 +130,6 @@ import org.xml.sax.helpers.AttributesImpl;
 public class RpcConnection extends Thread {
     
     private final static Logger LOG = Logger.getLogger(RpcConnection.class);
-    
-    public final static String EXIST_NS = "http://exist.sourceforge.net/NS/exist";
     
     protected BrokerPool brokerPool;
     protected WeakHashMap documentCache = new WeakHashMap();
@@ -379,7 +378,7 @@ public class RpcConnection extends Thread {
     
     protected String formatErrorMsg(String type, String message) {
         StringBuffer buf = new StringBuffer();
-        buf.append("<exist:result xmlns:exist=\"http://exist.sourceforge.net/NS/exist\" ");
+        buf.append("<exist:result xmlns:exist=\""+ Namespaces.EXIST_NS + "\" ");
         buf.append("hitCount=\"0\">");
         buf.append('<');
         buf.append(type);
@@ -1418,7 +1417,7 @@ public class RpcConnection extends Thread {
             int start, Hashtable properties, long queryTime) throws Exception {
         if (resultSet.isEmpty())
             return "<?xml version=\"1.0\"?>\n"
-                    + "<exist:result xmlns:exist=\"http://exist.sourceforge.net/NS/exist\" "
+                    + "<exist:result xmlns:exist=\""+ Namespaces.EXIST_NS + "\" "
                     + "hitCount=\"0\"/>";
         if (howmany > resultSet.getLength() || howmany == 0)
             howmany = resultSet.getLength();
@@ -1428,7 +1427,7 @@ public class RpcConnection extends Thread {
         
         StringWriter writer = new StringWriter();
         writer.write("<exist:result xmlns:exist=\"");
-        writer.write(EXIST_NS);
+        writer.write(Namespaces.EXIST_NS);
         writer.write("\" hits=\"");
         writer.write(Integer.toString(resultSet.getLength()));
         writer.write("\" start=\"");
@@ -1498,7 +1497,7 @@ public class RpcConnection extends Thread {
                 throw qr.getException();
             if (qr == null)
                 return "<?xml version=\"1.0\"?>\n"
-                        + "<exist:result xmlns:exist=\"http://exist.sourceforge.net/NS/exist\" "
+                        + "<exist:result xmlns:exist=\"" + Namespaces.EXIST_NS + "\" "
                         + "hitCount=\"0\"/>";
             
             result = printAll(broker, qr.result, howmany, start, parameters,
@@ -1842,7 +1841,7 @@ public class RpcConnection extends Thread {
             
 //			serialize results
             handler.startDocument();
-            handler.startPrefixMapping("exist", Serializer.EXIST_NS);
+            handler.startPrefixMapping("exist", Namespaces.EXIST_NS);
             AttributesImpl attribs = new AttributesImpl();
             attribs.addAttribute(
                     "",
@@ -1851,7 +1850,7 @@ public class RpcConnection extends Thread {
                     "CDATA",
                     Integer.toString(qr.result.getLength()));
             handler.startElement(
-                    Serializer.EXIST_NS,
+            		Namespaces.EXIST_NS,
                     "result",
                     "exist:result",
                     attribs);
@@ -1866,7 +1865,7 @@ public class RpcConnection extends Thread {
                     handler.characters(value, 0, value.length);
                 }
             }
-            handler.endElement(Serializer.EXIST_NS, "result", "exist:result");
+            handler.endElement(Namespaces.EXIST_NS, "result", "exist:result");
             handler.endPrefixMapping("exist");
             handler.endDocument();
             SerializerPool.getInstance().returnObject(handler);

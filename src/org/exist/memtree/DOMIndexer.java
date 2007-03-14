@@ -27,6 +27,7 @@ import java.util.Stack;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.Namespaces;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.CommentImpl;
 import org.exist.dom.DocumentTypeImpl;
@@ -38,7 +39,6 @@ import org.exist.dom.TextImpl;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NodePath;
-import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.Txn;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
@@ -59,7 +59,7 @@ public class DOMIndexer {
 
     private static final Logger LOG = Logger.getLogger(DOMIndexer.class);
     
-    public final static QName ROOT_QNAME = new QName("temp", Serializer.EXIST_NS, "exist");
+    public final static QName ROOT_QNAME = new QName("temp", Namespaces.EXIST_NS, "exist");
 	
     private DBBroker broker;
     private Txn transaction;
@@ -100,7 +100,7 @@ public class DOMIndexer {
         elem.setNodeId(broker.getBrokerPool().getNodeFactory().createInstance());
     	elem.setOwnerDocument(targetDoc);
         elem.setChildCount(doc.getChildCount());
-        elem.addNamespaceMapping("exist", Serializer.EXIST_NS);
+        elem.addNamespaceMapping("exist", Namespaces.EXIST_NS);
         NodePath path = new NodePath();
         path.addComponent(ROOT_QNAME);
         
