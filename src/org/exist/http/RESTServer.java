@@ -111,8 +111,6 @@ import org.xml.sax.helpers.AttributesImpl;
  */
 public class RESTServer {
     
-    protected final static String XUPDATE_NS = "http://www.xmldb.org/xupdate";
-    
     protected final static Logger LOG = Logger.getLogger(RESTServer.class);
     
     protected final static Properties defaultProperties = new Properties();
@@ -616,7 +614,7 @@ public class RESTServer {
                     transact.abort(transaction);
                     throw new BadRequestException("No query specified");
                 }
-            } else if (rootNS != null && rootNS.equals(XUPDATE_NS)) {
+            } else if (rootNS != null && rootNS.equals(XUpdateProcessor.XUPDATE_NS)) {
                 LOG.debug("Got xupdate request: " + content);
                 DocumentSet docs = new DocumentSet();
                 Collection collection = broker.getCollection(pathUri);

@@ -43,54 +43,6 @@ import org.exist.dom.QName;
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
 public interface Module {
-
-	/**
-	 * Namespace for the built-in xmldb module.
-	 */
-	public final static String XMLDB_FUNCTION_NS =
-		"http://exist-db.org/xquery/xmldb";
-
-	/**
-	 * Namespace for the built-in utility module.
-	 */
-	public final static String UTIL_FUNCTION_NS =
-		"http://exist-db.org/xquery/util";
-	
-	/**
-	 * Namespace for the built-in request module.
-	 */
-	public final static String REQUEST_FUNCTION_NS =
-		"http://exist-db.org/xquery/request";
-	
-	/**
-	 * Namespace for the built-in response module.
-	 */
-	public final static String RESPONSE_FUNCTION_NS =
-		"http://exist-db.org/xquery/response";
-	
-	/**
-	 * Namespace for the built-in session module.
-	 */
-	public final static String SESSION_FUNCTION_NS =
-		"http://exist-db.org/xquery/session";
-        
-	/**
-	 * Namespace for the built-in system module.
-	 */
-	public final static String SYSTEM_FUNCTION_NS =
-		"http://exist-db.org/xquery/system";
-	
-	/**
-	 * Namespace for the built-in transform module.
-	 */
-	public final static String TRANSFORM_FUNCTION_NS =
-		"http://exist-db.org/xquery/transform";
-	
-	/**
-	 * Namespace for the built-in text module.
-	 */
-	public final static String TEXT_FUNCTION_NS =
-		"http://exist-db.org/xquery/text";
 	
 	/**
 	 * Returns the namespace URI that uniquely identifies this module.

@@ -5,6 +5,7 @@ import java.io.File;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XQueryService;
+import org.exist.xupdate.XUpdateProcessor;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -31,7 +32,7 @@ public class MultipleDatabases {
 	protected static String URI_DB2 = "xmldb:test://" + DBBroker.ROOT_COLLECTION;
 
 	protected static String XUPDATE_1 =
-		"<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
+		"<xu:modifications version=\"1.0\" xmlns:xu=\"" + XUpdateProcessor.XUPDATE_NS + "\">" +
 		"<xu:insert-after select=\"//SPEECH/LINE[. &amp;= 'loving']\">" +
 		"<TEST>New line inserted</TEST>" +
 		"</xu:insert-after>" +
