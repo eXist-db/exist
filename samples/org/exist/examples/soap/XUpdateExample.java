@@ -7,6 +7,7 @@ import org.exist.soap.Query;
 import org.exist.soap.QueryService;
 import org.exist.soap.QueryServiceLocator;
 import org.exist.storage.DBBroker;
+import org.exist.xupdate.XUpdateProcessor;
 
 public class XUpdateExample {
 
@@ -18,7 +19,7 @@ public class XUpdateExample {
 	
 	private final static String xupdate =
 		"<?xml version=\"1.0\"?>" +
-		"<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
+		"<xu:modifications version=\"1.0\" xmlns:xu=\"" + XUpdateProcessor.XUPDATE_NS + "\">" +
 		"<xu:insert-after select=\"//note[1]\">" +
 		"<xu:element name=\"note\">" +
 		"<xu:attribute name=\"id\">2</xu:attribute>" +

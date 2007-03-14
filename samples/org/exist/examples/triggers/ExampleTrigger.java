@@ -43,14 +43,14 @@ public class ExampleTrigger extends FilteringTrigger {
 		if(event == STORE_DOCUMENT_EVENT)
 			// create XUpdate command for inserts
 			xupdate = "<?xml version=\"1.0\"?>" +
-				"<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
+				"<xu:modifications version=\"1.0\" xmlns:xu=\"" + XUpdateProcessor.XUPDATE_NS + "\">" +
 				"<xu:append select='/contents'><xu:element name='file'>" +
 				documentName.toString() +
 				"</xu:element></xu:append></xu:modifications>";
 		else if(event == REMOVE_DOCUMENT_EVENT)
 			// create XUpdate command for removals
 			xupdate = "<?xml version=\"1.0\"?>" +
-				"<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">" +
+				"<xu:modifications version=\"1.0\" xmlns:xu=\""+ XUpdateProcessor.XUPDATE_NS + "\">" +
 				"<xu:remove select=\"//file[text()='" + documentName.toString() + "']\"></xu:remove>" +
 				"</xu:modifications>";
 		else

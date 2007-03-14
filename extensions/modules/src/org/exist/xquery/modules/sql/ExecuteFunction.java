@@ -30,6 +30,7 @@ import java.sql.Statement;
 import java.sql.Types;
 import java.util.HashMap;
 
+import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -162,7 +163,7 @@ public class ExecuteFunction extends BasicFunction
 					
 					iRows++;
 				}
-				xmlBuf.insert(0, "<sql:result xmlns:sql=\"" + SQLModule.NAMESPACE_URI + "\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" count=\"" + iRows + "\">");
+				xmlBuf.insert(0, "<sql:result xmlns:sql=\"" + SQLModule.NAMESPACE_URI + "\" xmlns:xs=\"" + Namespaces.SCHEMA_NS + "\" count=\"" + iRows + "\">");
 				xmlBuf.append("</sql:result>");
 			}
 			else

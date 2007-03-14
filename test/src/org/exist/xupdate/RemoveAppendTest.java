@@ -50,7 +50,7 @@ public class RemoveAppendTest extends TestCase {
     private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
     
     private final static String XU_INSERT_START =
-        "<xu:modifications xmlns:xu=\"http://www.xmldb.org/xupdate\" version=\"1.0\">" +
+        "<xu:modifications xmlns:xu=\""+ XUpdateProcessor.XUPDATE_NS + "\" version=\"1.0\">" +
         "   <xu:insert-before select=\"/test/item[@id='5']\">";
     
     private final static String XU_INSERT_END =
@@ -58,7 +58,7 @@ public class RemoveAppendTest extends TestCase {
         "</xu:modifications>";
     
     private final static String XU_REMOVE =
-        "<xu:modifications xmlns:xu=\"http://www.xmldb.org/xupdate\" version=\"1.0\">" +
+        "<xu:modifications xmlns:xu=\""+ XUpdateProcessor.XUPDATE_NS + "\" version=\"1.0\">" +
         "   <xu:remove select=\"/test/item[@id='5'][2]\"/>" +
         "</xu:modifications>";
     
