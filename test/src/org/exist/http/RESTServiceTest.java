@@ -36,6 +36,7 @@ import java.util.Map;
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
 
+import org.exist.Namespaces;
 import org.exist.StandaloneServer;
 import org.exist.storage.DBBroker;
 import org.exist.util.Base64Encoder;
@@ -66,7 +67,7 @@ public class RESTServiceTest extends TestCase {
             + "</xu:append>" + "</xu:modifications>";
 
     private final static String QUERY_REQUEST = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-            + "<query xmlns=\"http://exist.sourceforge.net/NS/exist\">"
+            + "<query xmlns=\""+ Namespaces.EXIST_NS + "\">"
             + "<properties>"
             + "<property name=\"indent\" value=\"yes\"/>"
             + "<property name=\"encoding\" value=\"UTF-8\"/>"

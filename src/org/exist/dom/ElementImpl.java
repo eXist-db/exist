@@ -926,7 +926,7 @@ public class ElementImpl extends NamedNode implements Element {
         buf.append(nodeName);
         //Remove false to have a verbose output
         if (top && false) {
-            buf.append(" xmlns:exist=\"http://exist.sourceforge.net/NS/exist\"");
+            buf.append(" xmlns:exist=\""+ Namespaces.EXIST_NS + "\"");
             buf.append(" exist:id=\"");
             buf.append(getNodeId());
             buf.append("\" exist:document=\"");

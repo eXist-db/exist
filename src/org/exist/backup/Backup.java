@@ -22,7 +22,11 @@
 package org.exist.backup;
 
 import java.awt.Dimension;
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Properties;
@@ -30,9 +34,10 @@ import java.util.Properties;
 import javax.swing.JFrame;
 import javax.xml.transform.OutputKeys;
 
+import org.exist.Namespaces;
 import org.exist.security.Permission;
-import org.exist.storage.NativeBroker;
 import org.exist.storage.DBBroker;
+import org.exist.storage.NativeBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
@@ -60,8 +65,6 @@ public class Backup {
 
 	private static final int currVersion = 1;
 	
-	public final static String NS = "http://exist.sourceforge.net/NS/exist";
-
 	public Properties defaultOutputProperties = new Properties();
 	{
 		defaultOutputProperties.setProperty(OutputKeys.INDENT, "no");
@@ -227,28 +230,28 @@ public class Backup {
 		serializer.setOutput(contents, contentsOutputProps);
 		
 		serializer.startDocument();
-		serializer.startPrefixMapping("", NS);
+		serializer.startPrefixMapping("", Namespaces.EXIST_NS);
 		// write <collection> element
 		CollectionImpl cur = (CollectionImpl)current;
 		AttributesImpl attr = new AttributesImpl();
 		//The name should have come from an XmldbURI.toString() call
-		attr.addAttribute(NS, "name", "name", "CDATA", current.getName());
-		attr.addAttribute(NS, "owner", "owner", "CDATA", currentPerms.getOwner());
-		attr.addAttribute(NS, "group", "group", "CDATA", currentPerms.getOwnerGroup());
+		attr.addAttribute(Namespaces.EXIST_NS, "name", "name", "CDATA", current.getName());
+		attr.addAttribute(Namespaces.EXIST_NS, "owner", "owner", "CDATA", currentPerms.getOwner());
+		attr.addAttribute(Namespaces.EXIST_NS, "group", "group", "CDATA", currentPerms.getOwnerGroup());
 		attr.addAttribute(
-			NS,
+				Namespaces.EXIST_NS,
 			"mode",
 			"mode",
 			"CDATA",
 			Integer.toOctalString(currentPerms.getPermissions()));
 		attr.addAttribute(
-				NS,
+				Namespaces.EXIST_NS,
 				"created",
 				"created",
 				"CDATA",
 				""+new DateTimeValue(cur.getCreationTime()));
-		attr.addAttribute(NS, "version", "version", "CDATA", String.valueOf(currVersion));
-		serializer.startElement(NS, "collection", "collection", attr);
+		attr.addAttribute(Namespaces.EXIST_NS, "version", "version", "CDATA", String.valueOf(currVersion));
+		serializer.startElement(Namespaces.EXIST_NS, "collection", "collection", attr);
 
 		// scan through resources
 		Resource resource;
@@ -295,12 +298,12 @@ public class Backup {
                 
                 //store permissions
                 attr.clear();
-                attr.addAttribute(NS, "type", "type", "CDATA", resource.getResourceType());
-                attr.addAttribute(NS, "name", "name", "CDATA", resources[i]);
-                attr.addAttribute(NS, "owner", "owner", "CDATA", perms[i].getOwner());
-                attr.addAttribute(NS, "group", "group", "CDATA", perms[i].getOwnerGroup());
+                attr.addAttribute(Namespaces.EXIST_NS, "type", "type", "CDATA", resource.getResourceType());
+                attr.addAttribute(Namespaces.EXIST_NS, "name", "name", "CDATA", resources[i]);
+                attr.addAttribute(Namespaces.EXIST_NS, "owner", "owner", "CDATA", perms[i].getOwner());
+                attr.addAttribute(Namespaces.EXIST_NS, "group", "group", "CDATA", perms[i].getOwnerGroup());
                 attr.addAttribute(
-                        NS,
+                		Namespaces.EXIST_NS,
                         "mode",
                         "mode",
                         "CDATA",
@@ -308,7 +311,7 @@ public class Backup {
                 Date date = ris.getCreationTime();
                 if (date != null)
                     attr.addAttribute(
-                            NS,
+                    		Namespaces.EXIST_NS,
                             "created",
                             "created",
                             "CDATA",
@@ -316,21 +319,21 @@ public class Backup {
                 date = ris.getLastModificationTime();
                 if (date != null)
                     attr.addAttribute(
-                            NS,
+                    		Namespaces.EXIST_NS,
                             "modified",
                             "modified",
                             "CDATA",
                             ""+new DateTimeValue(date));
                 
                 attr.addAttribute(
-                        NS,
+                		Namespaces.EXIST_NS,
                         "filename",
                         "filename",
                         "CDATA",
                         encode( URIUtils.urlDecodeUtf8(resources[i]) )
                 );
                 attr.addAttribute(
-                        NS,
+                		Namespaces.EXIST_NS,
                         "mimetype",
                         "mimetype",
                         "CDATA",
@@ -340,21 +343,21 @@ public class Backup {
                 if (!resource.getResourceType().equals("BinaryResource")) {
 					if (ris.getDocType() != null) {
 						if (ris.getDocType().getName() != null) {
-							attr.addAttribute(NS, "namedoctype", "namedoctype",
+							attr.addAttribute(Namespaces.EXIST_NS, "namedoctype", "namedoctype",
 									"CDATA", ris.getDocType().getName());
 						}
 						if (ris.getDocType().getPublicId() != null) {
-							attr.addAttribute(NS, "publicid", "publicid",
+							attr.addAttribute(Namespaces.EXIST_NS, "publicid", "publicid",
 									"CDATA", ris.getDocType().getPublicId());
 						}
 						if (ris.getDocType().getSystemId() != null) {
-							attr.addAttribute(NS, "systemid", "systemid",
+							attr.addAttribute(Namespaces.EXIST_NS, "systemid", "systemid",
 									"CDATA", ris.getDocType().getSystemId());
 						}					
 					}
 				}
-                serializer.startElement(NS, "resource", "resource", attr);
-                serializer.endElement(NS, "resource", "resource");
+                serializer.startElement(Namespaces.EXIST_NS, "resource", "resource", attr);
+                serializer.endElement(Namespaces.EXIST_NS, "resource", "resource");
             } catch(XMLDBException e) {
                 System.err.println("Failed to backup resource " + resources[i] + " from collection " + current.getName());
             }
@@ -365,13 +368,13 @@ public class Backup {
 			if (current.getName().equals(NativeBroker.SYSTEM_COLLECTION) && collections[i].equals("temp"))
 				continue;
 			attr.clear();
-			attr.addAttribute(NS, "name", "name", "CDATA", collections[i]);
-			attr.addAttribute(NS, "filename", "filename", "CDATA", encode(URIUtils.urlDecodeUtf8(collections[i])));
-			serializer.startElement(NS, "subcollection", "subcollection", attr);
-			serializer.endElement(NS, "subcollection", "subcollection");
+			attr.addAttribute(Namespaces.EXIST_NS, "name", "name", "CDATA", collections[i]);
+			attr.addAttribute(Namespaces.EXIST_NS, "filename", "filename", "CDATA", encode(URIUtils.urlDecodeUtf8(collections[i])));
+			serializer.startElement(Namespaces.EXIST_NS, "subcollection", "subcollection", attr);
+			serializer.endElement(Namespaces.EXIST_NS, "subcollection", "subcollection");
 		}
 		// close <collection>
-		serializer.endElement(NS, "collection", "collection");
+		serializer.endElement(Namespaces.EXIST_NS, "collection", "collection");
 		serializer.endPrefixMapping("");
 		serializer.endDocument();
 		output.closeContents();

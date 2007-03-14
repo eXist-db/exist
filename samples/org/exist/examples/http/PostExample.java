@@ -22,13 +22,15 @@
  */
 package org.exist.examples.http;
 
-import org.exist.storage.DBBroker;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+
+import org.exist.Namespaces;
+import org.exist.storage.DBBroker;
 
 /**
  * PostExample
@@ -38,11 +40,9 @@ import java.net.URL;
  */
 public class PostExample {
 
-	public final static String REQUEST_NS = "http://exist.sourceforge.net/NS/exist";
-	
 	public final static String REQUEST_HEADER =
 		"<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-		"<query xmlns=\"" + REQUEST_NS + "\" ";
+		"<query xmlns=\"" + Namespaces.EXIST_NS + "\" ";
 	
 	public final static String REQUEST_FOOTER =
 		"</query>";

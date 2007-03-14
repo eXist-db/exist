@@ -1,6 +1,7 @@
 package org.exist.xmldb;
 
 import org.custommonkey.xmlunit.XMLTestCase;
+import org.exist.Namespaces;
 import org.exist.storage.DBBroker;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
@@ -23,13 +24,13 @@ public class SerializationTest extends XMLTestCase {
 		"</root>";
 	
 	private static final String XML_EXPECTED1 =
-		"<exist:result xmlns:exist=\"http://exist.sourceforge.net/NS/exist\" hitCount=\"2\">\n" + 
+		"<exist:result xmlns:exist=\"" + Namespaces.EXIST_NS + "\" hitCount=\"2\">\n" + 
 		"    <entry xmlns=\"http://foo.com\">1</entry>\n" + 
 		"    <entry xmlns=\"http://foo.com\">2</entry>\n" + 
 		"</exist:result>";
 	
 	private static final String XML_EXPECTED2 =
-		"<exist:result xmlns:exist=\"http://exist.sourceforge.net/NS/exist\" hitCount=\"1\">\n" +
+		"<exist:result xmlns:exist=\"" + Namespaces.EXIST_NS + "\" hitCount=\"1\">\n" +
 		"    <c:Site xmlns:c=\"urn:content\" xmlns=\"urn:content\">\n"+
 		//BUG : we should have
 		//<config xmlns="urn:config">123</config>

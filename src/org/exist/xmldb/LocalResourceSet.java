@@ -6,6 +6,7 @@ import java.util.Properties;
 import java.util.Vector;
 
 import org.exist.EXistException;
+import org.exist.Namespaces;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.SortedNodeSet;
 import org.exist.security.User;
@@ -112,7 +113,7 @@ public class LocalResourceSet implements ResourceSet {
 
 			//	serialize results
 			handler.startDocument();
-			handler.startPrefixMapping("exist", Serializer.EXIST_NS);
+			handler.startPrefixMapping("exist", Namespaces.EXIST_NS);
 			AttributesImpl attribs = new AttributesImpl();
 			attribs.addAttribute(
 				"",
@@ -121,7 +122,7 @@ public class LocalResourceSet implements ResourceSet {
 				"CDATA",
 				Integer.toString(resources.size()));
 			handler.startElement(
-						Serializer.EXIST_NS,
+					Namespaces.EXIST_NS,
 						"result",
 						"exist:result",
 						attribs);
@@ -136,7 +137,7 @@ public class LocalResourceSet implements ResourceSet {
 					handler.characters(value, 0, value.length);
 				}
 			}
-			handler.endElement(Serializer.EXIST_NS, "result", "exist:result");
+			handler.endElement(Namespaces.EXIST_NS, "result", "exist:result");
 			handler.endPrefixMapping("exist");
 			handler.endDocument();
 		} catch (EXistException e) {

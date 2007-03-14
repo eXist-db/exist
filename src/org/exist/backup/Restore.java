@@ -18,6 +18,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.exist.Namespaces;
 import org.exist.dom.DocumentTypeImpl;
 import org.exist.security.SecurityManager;
 import org.exist.security.User;
@@ -60,8 +61,6 @@ public class Restore extends DefaultHandler {
 	private int version=0;
 	
 	private static final int strictUriVersion = 1;
-
-	public final static String NS = "http://exist.sourceforge.net/NS/exist";
 
 	/**
 	 * Constructor for Restore.
@@ -157,7 +156,7 @@ public class Restore extends DefaultHandler {
 	 */
 	public void startElement(String namespaceURI, String localName, String qName, Attributes atts)
 		throws SAXException {
-		if (namespaceURI.equals(NS)) {
+		if (namespaceURI.equals(Namespaces.EXIST_NS)) {
 			if (localName.equals("collection")) {
 				final String name = atts.getValue("name");
 				final String owner = atts.getValue("owner");

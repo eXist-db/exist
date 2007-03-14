@@ -116,7 +116,7 @@ public class MemTreeBuilder {
                 String attrQName = attributes.getQName(i);
 				// skip xmlns-attributes and attributes in eXist's namespace
 				if (!(attrQName.startsWith("xmlns"))) {
-//					|| attrNS.equals("http://exist.sourceforge.net/NS/exist"))) {
+//					|| attrNS.equals(Namespaces.EXIST_NS))) {
                     int p = attrQName.indexOf(':');
                     String attrPrefix = (p != Constants.STRING_NOT_FOUND) ? attrQName.substring(0, p) : null;
                     QName attrQn = new QName(attrLocalName, attrNS, attrPrefix);

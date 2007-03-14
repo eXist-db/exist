@@ -49,6 +49,7 @@ import javax.xml.transform.TransformerConfigurationException;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.Namespaces;
 import org.exist.collections.Collection;
 import org.exist.collections.IndexInfo;
 import org.exist.collections.triggers.TriggerException;
@@ -89,9 +90,9 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.functions.response.ResponseModule;
 import org.exist.xquery.functions.session.SessionModule;
+import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.AnyURIValue;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
 import org.w3c.dom.Document;
@@ -109,8 +110,6 @@ import org.xml.sax.helpers.AttributesImpl;
  *
  */
 public class RESTServer {
-    
-    protected final static String NS = "http://exist.sourceforge.net/NS/exist";
     
     protected final static String XUPDATE_NS = "http://www.xmldb.org/xupdate";
     
@@ -543,7 +542,7 @@ public class RESTServer {
             Document doc = docBuilder.parse(src);
             Element root = doc.getDocumentElement();
             String rootNS = root.getNamespaceURI();
-            if (rootNS != null && rootNS.equals(NS)) {
+            if (rootNS != null && rootNS.equals(Namespaces.EXIST_NS)) {
                 if (root.getLocalName().equals("query")) {
                     // process <query>xpathQuery</query>
                     String option = root.getAttribute("start");
@@ -575,7 +574,7 @@ public class RESTServer {
                     for (int i = 0; i < children.getLength(); i++) {
                         Node child = children.item(i);
                         if (child.getNodeType() == Node.ELEMENT_NODE
-                                && child.getNamespaceURI().equals(NS)) {
+                                && child.getNamespaceURI().equals(Namespaces.EXIST_NS)) {
                             if (child.getLocalName().equals("text")) {
                                 StringBuffer buf = new StringBuffer();
                                 Node next = child.getFirstChild();
@@ -590,7 +589,7 @@ public class RESTServer {
                                 Node node = child.getFirstChild();
                                 while (node != null) {
                                     if (node.getNodeType() == Node.ELEMENT_NODE
-                                            && node.getNamespaceURI().equals(NS)
+                                            && node.getNamespaceURI().equals(Namespaces.EXIST_NS)
                                             && node.getLocalName().equals("property")) {
                                         Element property = (Element) node;
                                         String key = property
@@ -650,7 +649,7 @@ public class RESTServer {
                 // FD : Returns an XML doc
                 writeResponse(response,
                         "<?xml version='1.0'?>\n"
-                        + "<exist:modifications xmlns:exist='" + NS
+                        + "<exist:modifications xmlns:exist='" + Namespaces.EXIST_NS
                         + "' count='" + mods + "'>" + mods
                         + "modifications processed.</exist:modifications>",
                         "text/xml", "UTF-8");
@@ -1036,15 +1035,14 @@ public class RESTServer {
             AttributesImpl attrs = new AttributesImpl();
             
             serializer.startDocument();
-            serializer.startPrefixMapping("exist", NS);
-            serializer.startElement(NS, "result", "exist:result", attrs);
+            serializer.startPrefixMapping("exist", Namespaces.EXIST_NS);
+            serializer.startElement(Namespaces.EXIST_NS, "result", "exist:result", attrs);
             
             attrs.addAttribute("", "name", "name", "CDATA", collection
                     .getURI().toString());
             printPermissions(attrs, collection.getPermissions());
             
-            serializer
-                    .startElement(NS, "collection", "exist:collection", attrs);
+            serializer.startElement(Namespaces.EXIST_NS, "collection", "exist:collection", attrs);
             
             for (Iterator i = collection.collectionIterator(); i.hasNext();) {
                 XmldbURI child = (XmldbURI) i.next();
@@ -1067,9 +1065,9 @@ public class RESTServer {
                     }
                     
                     printPermissions(attrs, childCollection.getPermissions());
-                    serializer.startElement(NS, "collection",
+                    serializer.startElement(Namespaces.EXIST_NS, "collection",
                             "exist:collection", attrs);
-                    serializer.endElement(NS, "collection", "exist:collection");
+                    serializer.endElement(Namespaces.EXIST_NS, "collection", "exist:collection");
                 }
             }
             
@@ -1107,14 +1105,14 @@ public class RESTServer {
                     }
                    
                     printPermissions(attrs, doc.getPermissions());
-                    serializer.startElement(NS, "resource", "exist:resource",
+                    serializer.startElement(Namespaces.EXIST_NS, "resource", "exist:resource",
                             attrs);
-                    serializer.endElement(NS, "resource", "exist:resource");
+                    serializer.endElement(Namespaces.EXIST_NS, "resource", "exist:resource");
                 }
             }
             
-            serializer.endElement(NS, "collection", "exist:collection");
-            serializer.endElement(NS, "result", "exist:result");
+            serializer.endElement(Namespaces.EXIST_NS, "collection", "exist:collection");
+            serializer.endElement(Namespaces.EXIST_NS, "result", "exist:result");
             
             serializer.endDocument();
         } catch (SAXException e) {

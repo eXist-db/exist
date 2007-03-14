@@ -30,6 +30,7 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.exist.Namespaces;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.CDATASectionImpl;
 import org.exist.dom.CommentImpl;
@@ -67,11 +68,11 @@ public class NativeSerializer extends Serializer {
 
     // private final static AttributesImpl EMPTY_ATTRIBUTES = new AttributesImpl();
     
-    private final static QName MATCH_ELEMENT = new QName("match", EXIST_NS, "exist");
-    private final static QName TEXT_ELEMENT = new QName("text", EXIST_NS, "exist");
-    private final static QName ATTRIB_ELEMENT = new QName("attribute", EXIST_NS, "exist");
-    private final static QName SOURCE_ATTRIB = new QName("source", EXIST_NS, "exist");
-    private final static QName ID_ATTRIB = new QName("id", EXIST_NS, "exist");
+    private final static QName MATCH_ELEMENT = new QName("match", Namespaces.EXIST_NS, "exist");
+    private final static QName TEXT_ELEMENT = new QName("text", Namespaces.EXIST_NS, "exist");
+    private final static QName ATTRIB_ELEMENT = new QName("attribute", Namespaces.EXIST_NS, "exist");
+    private final static QName SOURCE_ATTRIB = new QName("source", Namespaces.EXIST_NS, "exist");
+    private final static QName ID_ATTRIB = new QName("id", Namespaces.EXIST_NS, "exist");
     
     private int showId = EXIST_ID_ELEMENT;
 
