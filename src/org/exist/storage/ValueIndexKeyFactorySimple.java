@@ -25,11 +25,13 @@ public class ValueIndexKeyFactorySimple implements ValueIndexKeyFactory {
 	 * @deprecated
 	 * @see org.exist.storage.ValueIndexKeyFactory#serialize(short, boolean)
 	 */
+	/*
 	public byte[] serialize(short collectionId, boolean caseSensitive)  throws EXistException {
         final byte[] data = indexable.serializeValue(OFFSET_VALUE, caseSensitive);
         ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
 		return data;
 	}
+	*/
 
 	/* provides the persistent storage key : collectionId + qname + indexType + indexData
 	 * @see org.exist.storage.ValueIndexKeyFactory#serialize(short, boolean)

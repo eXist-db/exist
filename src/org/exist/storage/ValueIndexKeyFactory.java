@@ -10,5 +10,5 @@ public interface ValueIndexKeyFactory extends Comparable {
 
 	/** this is called from {@link NativeValueIndex} 
 	 * @return the persistant storage key */
-	public byte[] serialize(short collectionId, boolean caseSensitive) throws EXistException;
+	//public byte[] serialize(short collectionId, boolean caseSensitive) throws EXistException;
 }
