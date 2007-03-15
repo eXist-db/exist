@@ -14,7 +14,17 @@
 
   <chapter>
     <title>Google Summer of Code 2007</title>
-
+    
+        <para>eXist is participating in the Google Summer of Code 2007. Applications can
+        be submitted between <emphasis>March 14 and 24</emphasis>. This means you have to hurry up to get your
+        application ready until next week! Some project ideas are listed below. However, don't
+        understand this list as being complete. If you want to work on a completely different
+        idea, just propose it to us. For all questions concerning the Summmer of Code,
+        contact our GSoC administrator, Adam Retter, send an email to the
+        exist-open <ulink url="http://sourceforge.net/mail/?group_id=17691">mailing list</ulink>
+        or meet us in <ulink url="http://irc.exist-db.org/">IRC</ulink>. For short questions, IRC
+        is the preferred medium.</para>
+                
     <section>
       <title>Project Ideas</title>
 
@@ -204,5 +214,31 @@
 	</itemizedlist>
       </section>
     </section>
+        
+    <section>
+        <title>Mentors</title>
+        
+        <para>The following people are available as mentors. Once your project has been accepted,
+        you will be assigned one or two mentors to support you.</para>
+        
+        <itemizedlist>
+            <listitem>
+                <para>Adam Retter</para>
+            </listitem>
+            <listitem>
+                <para>Pierrick Brihaye</para>
+            </listitem>
+            <listitem>
+                <para>Leif-Jöran Olsson</para>
+            </listitem>
+            <listitem>
+                <para>Dannes Wessels</para>
+            </listitem>
+            <listitem>
+                <para>Wolfgang Meier</para>
+            </listitem>
+        </itemizedlist>
+        
+     </section>
   </chapter>
 </book>
