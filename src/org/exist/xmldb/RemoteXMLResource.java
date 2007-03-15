@@ -22,6 +22,7 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.log4j.Logger;
 import org.apache.xmlrpc.XmlRpcException;
+import org.exist.Namespaces;
 import org.exist.dom.DocumentTypeImpl;
 import org.exist.security.Permission;
 import org.exist.storage.serializers.EXistOutputKeys;
@@ -222,8 +223,8 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
 	try {
 	    reader.setContentHandler(handler);
 	    if(lexicalHandler != null) {
-                reader.setProperty("http://xml.org/sax/properties/lexical-handler", lexicalHandler);
-            }
+	    	reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, lexicalHandler);
+        }
 	    reader.parse(new InputSource(new StringReader(content)));
         } catch (SAXException saxe) {
             saxe.printStackTrace();

@@ -246,9 +246,9 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 		throws ParserConfigurationException, IOException, SAXException {
 		XMLReader reader = broker.getBrokerPool().getParserPool().borrowXMLReader();
 		try {
-			reader.setProperty("http://xml.org/sax/properties/lexical-handler", this);
-            reader.setFeature("http://xml.org/sax/features/namespaces", true);
-            reader.setFeature("http://xml.org/sax/features/namespace-prefixes", false);
+			reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, this);
+            reader.setFeature(Namespaces.SAX_NAMESPACES, true);
+            reader.setFeature(Namespaces.SAX_NAMESPACES_PREFIXES, false);
 			reader.setContentHandler(this);
 			
 			reader.parse(is);

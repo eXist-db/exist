@@ -2,7 +2,6 @@ package org.exist.irc;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -15,6 +14,7 @@ import java.util.regex.Pattern;
 import org.exist.security.Permission;
 import org.exist.security.PermissionFactory;
 import org.exist.xmldb.UserManagementService;
+import org.exist.xupdate.XUpdateProcessor;
 import org.jibble.pircbot.IrcException;
 import org.jibble.pircbot.NickAlreadyInUseException;
 import org.jibble.pircbot.PircBot;
@@ -60,7 +60,7 @@ public class XBot extends PircBot {
     }
 	
 	private final static String XUPDATE_START =
-		"<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">\n" +
+		"<xu:modifications version=\"1.0\" xmlns:xu=\"" + XUpdateProcessor.XUPDATE_NS + "\">\n" +
 		"	<xu:variable name=\"now\" select=\"current-time()\"/>\n";
 	
 	private final static String URL_REGEX =

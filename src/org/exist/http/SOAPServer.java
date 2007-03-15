@@ -24,13 +24,13 @@ package org.exist.http;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.util.Enumeration;
-import java.util.Properties;
 import java.util.HashMap;
+import java.util.Properties;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -38,17 +38,17 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TemplatesHandler;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-
+import org.exist.Namespaces;
 import org.exist.dom.BinaryDocument;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.QName;
@@ -570,7 +570,7 @@ public class SOAPServer
 		//TODO: validate the SOAP Request
 		
 		// 4) Extract the function call from the SOAP Request
-		NodeList nlBody = soapRequest.getDocumentElement().getElementsByTagNameNS("http://schemas.xmlsoap.org/soap/envelope/", "Body");
+		NodeList nlBody = soapRequest.getDocumentElement().getElementsByTagNameNS(Namespaces.SOAP_ENVELOPE, "Body");
 		//NodeList nlBody = soapRequest.getElementsByTagName("SOAP-ENV:Body");
 		Node nSOAPBody = nlBody.item(0);
 		NodeList nlBodyChildren = nSOAPBody.getChildNodes();

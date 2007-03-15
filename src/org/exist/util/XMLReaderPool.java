@@ -22,6 +22,7 @@ package org.exist.util;
 
 import org.apache.commons.pool.PoolableObjectFactory;
 import org.apache.commons.pool.impl.StackObjectPool;
+import org.exist.Namespaces;
 import org.exist.storage.BrokerPool;
 import org.xml.sax.XMLReader;
 import org.xml.sax.ext.DefaultHandler2;
@@ -62,7 +63,7 @@ public class XMLReaderPool extends StackObjectPool {
         try {
             reader.setContentHandler(DUMMY_HANDLER);
             reader.setErrorHandler(DUMMY_HANDLER);
-            reader.setProperty("http://xml.org/sax/properties/lexical-handler", DUMMY_HANDLER);
+            reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, DUMMY_HANDLER);
             returnObject(reader);
         } catch (Exception e) {
             throw new IllegalStateException("error while returning XMLReader: " + e.getMessage());
