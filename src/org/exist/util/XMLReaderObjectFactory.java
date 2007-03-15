@@ -82,21 +82,16 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
 		try {
 			saxFactory.setFeature(Namespaces.SAX_NAMESPACES_PREFIXES, true);
 			try {
-                                // TODO check does this work?
-                                // http://xerces.apache.org/xerces2-j/features.html
-				saxFactory.setFeature("http://xml.org/sax/features/validation",
-						validation == VALIDATION_AUTO
-                                                || validation == VALIDATION_ENABLED);
-     
+                // TODO check does this work?
+                // http://xerces.apache.org/xerces2-j/features.html
+				saxFactory.setFeature(Namespaces.SAX_VALIDATION,
+						validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED);     
 				saxFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd",
-						validation == VALIDATION_AUTO
-                                                || validation == VALIDATION_ENABLED);
-                                
-				saxFactory.setFeature("http://apache.org/xml/features/validation/dynamic",
+						validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED);                                
+				saxFactory.setFeature(Namespaces.SAX_VALIDATION_DYNAMIC,
 						validation == VALIDATION_AUTO);
 				saxFactory.setFeature("http://apache.org/xml/features/validation/schema",
-						validation == VALIDATION_AUTO
-						|| validation == VALIDATION_ENABLED);
+						validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED);
                                 
 			} catch (SAXNotRecognizedException e1) {
 				// ignore: feature only recognized by xerces

@@ -3,6 +3,7 @@ package org.exist.cocoon;
 import java.io.IOException;
 
 import org.apache.excalibur.xml.sax.SAXParser;
+import org.exist.Namespaces;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.DTDHandler;
 import org.xml.sax.EntityResolver;
@@ -134,7 +135,7 @@ public class XMLReaderWrapper implements XMLReader {
      * @see org.xml.sax.XMLReader#getProperty(java.lang.String)
      */
     public Object getProperty(String name) throws SAXNotRecognizedException, SAXNotSupportedException {
-        if (name.equals("http://xml.org/sax/properties/lexical-handler")) {
+        if (name.equals(Namespaces.SAX_LEXICAL_HANDLER)) {
             return lexicalHandler;
         } else {
             throw new SAXNotRecognizedException("Property " + name + " not recognized");
@@ -148,7 +149,7 @@ public class XMLReaderWrapper implements XMLReader {
      * @see org.xml.sax.XMLReader#setProperty(java.lang.String, java.lang.Object)
      */
     public void setProperty(String name, Object value) throws SAXNotRecognizedException, SAXNotSupportedException {
-        if (name.equals("http://xml.org/sax/properties/lexical-handler")) {
+        if (name.equals(Namespaces.SAX_LEXICAL_HANDLER)) {
             if (!(value instanceof LexicalHandler)) {
                 throw new SAXNotSupportedException("Value not of type LexicalHandler");
             }
