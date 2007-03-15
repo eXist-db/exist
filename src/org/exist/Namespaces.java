@@ -29,5 +29,12 @@ public interface Namespaces {
 	
 	/** QName representing xml:space */
 	public final static QName XML_SPACE_QNAME = new QName("space", XML_NS, "xml");
+	
+	public final static String SAX_LEXICAL_HANDLER = "http://xml.org/sax/properties/lexical-handler";
+	
+	public final static String SOAP_ENVELOPE = "http://schemas.xmlsoap.org/soap/envelope/";
 
+	public final static String SAX_NAMESPACES = "http://xml.org/sax/features/namespaces";
+	
+	public final static String SAX_NAMESPACES_PREFIXES = "http://xml.org/sax/features/namespace-prefixes";
 }

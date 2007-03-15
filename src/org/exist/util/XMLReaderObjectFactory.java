@@ -26,6 +26,7 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.commons.pool.BasePoolableObjectFactory;
 import org.exist.EXistException;
+import org.exist.Namespaces;
 import org.exist.storage.BrokerPool;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
@@ -79,7 +80,7 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
 			saxFactory.setValidating(false);
 		saxFactory.setNamespaceAware(true);
 		try {
-			saxFactory.setFeature("http://xml.org/sax/features/namespace-prefixes", true);
+			saxFactory.setFeature(Namespaces.SAX_NAMESPACES_PREFIXES, true);
 			try {
                                 // TODO check does this work?
                                 // http://xerces.apache.org/xerces2-j/features.html

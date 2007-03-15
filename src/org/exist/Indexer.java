@@ -48,7 +48,6 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.FulltextIndexSpec;
 import org.exist.storage.GeneralRangeIndexSpec;
 import org.exist.storage.NodePath;
-import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.ProgressIndicator;

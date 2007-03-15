@@ -192,7 +192,7 @@ public abstract class Serializer implements XMLReader {
 		String key;
 		for(Enumeration e = properties.propertyNames(); e.hasMoreElements(); ) {
 		    key = (String)e.nextElement();
-		    if(key.equals("http://xml.org/sax/properties/lexical-handler"))
+		    if(key.equals(Namespaces.SAX_LEXICAL_HANDLER))
 		        lexicalHandler = (LexicalHandler)properties.get(key);
 		    else
 		        setProperty(key, properties.getProperty(key));
@@ -211,7 +211,7 @@ public abstract class Serializer implements XMLReader {
 	
 	public void setProperty(String prop, Object value)
 		throws SAXNotRecognizedException, SAXNotSupportedException {
-		if (prop.equals("http://xml.org/sax/properties/lexical-handler")) {
+		if (prop.equals(Namespaces.SAX_LEXICAL_HANDLER)) {
 			lexicalHandler = (LexicalHandler) value;
 		} else {
 			outputProperties.put(prop, value);
@@ -285,15 +285,15 @@ public abstract class Serializer implements XMLReader {
 
 	public boolean getFeature(String name)
 		throws SAXNotRecognizedException, SAXNotSupportedException {
-		if (name.equals("http://xml.org/sax/features/namespaces")
-			|| name.equals("http://xml.org/sax/features/namespace-prefixes"))
+		if (name.equals(Namespaces.SAX_NAMESPACES)
+			|| name.equals(Namespaces.SAX_NAMESPACES_PREFIXES))
 			throw new SAXNotSupportedException(name);
 		throw new SAXNotRecognizedException(name);
 	}
 
 	public Object getProperty(String name)
 		throws SAXNotRecognizedException, SAXNotSupportedException {
-		if (name.equals("http://xml.org/sax/properties/lexical-handler"))
+		if (name.equals(Namespaces.SAX_LEXICAL_HANDLER))
 			return lexicalHandler;
 		throw new SAXNotRecognizedException(name);
 	}
@@ -487,8 +487,8 @@ public abstract class Serializer implements XMLReader {
 	 */
 	public void setFeature(String name, boolean value)
 		throws SAXNotRecognizedException, SAXNotSupportedException {
-		if (name.equals("http://xml.org/sax/features/namespaces")
-			|| name.equals("http://xml.org/sax/features/namespace-prefixes"))
+		if (name.equals(Namespaces.SAX_NAMESPACES)
+			|| name.equals(Namespaces.SAX_NAMESPACES_PREFIXES))
 			throw new SAXNotSupportedException(name);
 		throw new SAXNotRecognizedException(name);
 	}

@@ -21,9 +21,8 @@
  */
 package org.exist.xquery;
 
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.Item;
 import org.exist.dom.NodeSet;
+import org.exist.xquery.value.Sequence;
 
 /**
  *

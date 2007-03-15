@@ -21,6 +21,7 @@
 package org.exist.collections;
 
 import org.exist.Indexer;
+import org.exist.Namespaces;
 import org.exist.collections.triggers.DocumentTrigger;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.DocumentImpl;
@@ -67,7 +68,7 @@ public class IndexInfo {
 		reader.setEntityResolver(entityResolver);
 		LexicalHandler lexicalHandler = trigger == null ? indexer : trigger.getLexicalInputHandler();
 		ContentHandler contentHandler = trigger == null ? indexer : trigger.getInputHandler();
-		reader.setProperty(	"http://xml.org/sax/properties/lexical-handler", lexicalHandler);
+		reader.setProperty(Namespaces.SAX_LEXICAL_HANDLER, lexicalHandler);
 		reader.setContentHandler(contentHandler);
 		reader.setErrorHandler(indexer);
 	}
