@@ -26,15 +26,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Logger;
-
+import org.exist.Namespaces;
 import org.exist.storage.BrokerPool;
 import org.exist.validation.internal.DatabaseResources;
-
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
@@ -59,10 +59,6 @@ public class Validator {
     private static BrokerPool brokerPool ;
     
     // Xerces feature and property names
-    final static String FEATURE_VALIDATION
-            ="http://xml.org/sax/features/validation";
-    final static String FEATURE_DYNAMIC
-            ="http://apache.org/xml/features/validation/dynamic";
     final static String FEATURE_SCHEMA
             ="http://apache.org/xml/features/validation/schema";
     final static String PROPERTIES_GRAMMARPOOL
@@ -71,8 +67,7 @@ public class Validator {
             ="http://apache.org/xml/properties/internal/entity-resolver";
     final static String PROPERTIES_LOAD_EXT_DTD
             ="http://apache.org/xml/features/nonvalidating/load-external-dtd";
-    final static String PROPERTIES_NS_PRFXS
-            ="http://xml.org/sax/features/namespace-prefixes";
+
     /**
      *  Setup Validator object with brokerpool as centre.
      */
@@ -117,11 +112,11 @@ public class Validator {
             
             try{
                 // Enable validation features of xerces
-                saxFactory.setFeature(FEATURE_VALIDATION, true);
-                saxFactory.setFeature(FEATURE_DYNAMIC, false);
+                saxFactory.setFeature(Namespaces.SAX_VALIDATION, true);
+                saxFactory.setFeature(Namespaces.SAX_VALIDATION_DYNAMIC, false);
                 saxFactory.setFeature(FEATURE_SCHEMA,true);
                 saxFactory.setFeature(PROPERTIES_LOAD_EXT_DTD, true);
-                saxFactory.setFeature(PROPERTIES_NS_PRFXS, true);
+                saxFactory.setFeature(Namespaces.SAX_NAMESPACES_PREFIXES, true);
                 
             } catch (ParserConfigurationException ex){
                 logger.error(ex);
