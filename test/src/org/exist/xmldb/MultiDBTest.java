@@ -119,6 +119,8 @@ public class MultiDBTest extends TestCase {
         String homeDir = SingleInstanceConfiguration.getPath();
 		if (homeDir == null)
 			homeDir = ".";
+		else
+			homeDir = (new File(homeDir)).getParent();
         File testDir = new File(homeDir + File.separatorChar + "test");
         if (!testDir.canWrite())
             testDir.mkdirs();
