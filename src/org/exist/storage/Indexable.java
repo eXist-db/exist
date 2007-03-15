@@ -43,7 +43,7 @@ public interface Indexable extends Comparable {
      * @param collectionId the collection id to use
      */
 	//TODO : better exception ?
-    public byte[] serialize(short collectionId) throws EXistException;
+    //public byte[] serialize(short collectionId) throws EXistException;
 
     /**
      * Serialize the value plus collection and possibly element information
@@ -60,7 +60,7 @@ public interface Indexable extends Comparable {
      * strings should be serialized in lower case
      */
 	//TODO : better exception ?
-    public byte[] serialize(short collectionId, boolean caseSensitive) throws EXistException;
+    //public byte[] serialize(short collectionId, boolean caseSensitive) throws EXistException;
 
     /** Serialize the value to an array of bytes for the persistant storage.
      * 
@@ -74,7 +74,7 @@ public interface Indexable extends Comparable {
      * @return the size actually writen in the array argument
      */
     //TODO : better exception ?
-	public byte[] serializeValue(int offset, boolean caseSensitive) throws EXistException;
+	//public byte[] serializeValue(int offset, boolean caseSensitive) throws EXistException;
 
     /** Serialize the value to an array of bytes for the persistant storage.
      * 

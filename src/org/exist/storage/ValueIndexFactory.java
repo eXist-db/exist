@@ -134,10 +134,12 @@ public class ValueIndexFactory {
 		}
 	}
 	
+	/*
 	public final static byte[] serialize(Indexable value, short collectionId) throws EXistException {
 		//TODO : refactor (only strings are case sensitive)
 		return  serialize(value, collectionId, true);
 	}	
+	*/
 
 	/**
 	 * @deprecated
@@ -146,10 +148,11 @@ public class ValueIndexFactory {
 	 * @param caseSensitive
 	 * @throws EXistException
 	 */
+	/*
 	public final static byte[] serialize(Indexable value, short collectionId, boolean caseSensitive) 
 		throws EXistException {	
 
-		/* xs:string */
+		// xs:string
 		if (Type.subTypeOf(value.getType(), Type.STRING))
 		{			
 			final String val = caseSensitive ? 
@@ -162,7 +165,7 @@ public class ValueIndexFactory {
 			return data;
 		}
 		
-		/* xs:dateTime */
+		// xs:dateTime 
 		else if(Type.subTypeOf(value.getType(), Type.DATE_TIME))		{
 	    	GregorianCalendar utccal = ((AbstractDateTimeValue)value).calendar.normalize().toGregorianCalendar();	//Get the dateTime (XMLGregorianCalendar) normalized to UTC (as a GregorianCalendar)
 			long millis = utccal.getTimeInMillis();			//Get the normalized dateTime as a long (milliseconds since the Epoch)
@@ -174,7 +177,7 @@ public class ValueIndexFactory {
 			return(data);			
 		}
 		
-		/* xs:integer */
+		// xs:integer 
 		else if(Type.subTypeOf(value.getType(), Type.INTEGER))
 		{
 	        long l = ((IntegerValue)value).getValue() - Long.MIN_VALUE;
@@ -185,7 +188,7 @@ public class ValueIndexFactory {
 			return data;
 		}
 		
-		/* xs:double */
+		// xs:double 
 		else if (value.getType() == Type.DOUBLE)
 		{
 	        final byte[] data = new byte[(Collection.LENGTH_COLLECTION_ID + ValueIndexFactory.LENGTH_VALUE_TYPE) + 8];
@@ -196,7 +199,7 @@ public class ValueIndexFactory {
 	        return data;
 		}
 		
-		/* xs:float */
+		// xs:float 
 		else if (value.getType() == Type.FLOAT)
 		{
 	        final byte[] data = new byte[(Collection.LENGTH_COLLECTION_ID + ValueIndexFactory.LENGTH_VALUE_TYPE) + 4];
@@ -207,7 +210,7 @@ public class ValueIndexFactory {
 	        return data;
 		}
 	
-		/* xs:boolean */
+		// xs:boolean 
 		else if(value.getType() == Type.BOOLEAN)
 		{
 			byte[] data = new byte[(Collection.LENGTH_COLLECTION_ID + ValueIndexFactory.LENGTH_VALUE_TYPE) + 1];
@@ -218,12 +221,13 @@ public class ValueIndexFactory {
 		}
 		
 		
-		/* unknown! */
+		// unknown! 
 		else
 		{
 			throw new EXistException("Unknown data type for serialization: " + Type.getTypeName(value.getType()));
 		}	
 	}
+	*/
 	
 	public final static byte[] serialize(Indexable value, int offset) throws EXistException {
 		//TODO : refactor (only strings are case sensitive)
