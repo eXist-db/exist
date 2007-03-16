@@ -937,7 +937,7 @@ public class BrokerPool {
      * Returns the index manager which handles all additional indexes not
      * being part of the database core.
      * 
-     * @return
+     * @return The IndexManager
      */
     public IndexManager getIndexManager() {
         return indexManager;

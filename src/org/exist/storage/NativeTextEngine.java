@@ -115,12 +115,13 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
     public static int FOURTH_OPTION = 3;
     
     public final static int LENGTH_NODE_TYPE = 1; //sizeof byte
+    public final static int LENGTH_NODE_IDS_FREQ_OFFSETS = 4; //sizeof int
+    
     public final static int OFFSET_NODE_TYPE = 0;    
     public final static int OFFSET_ELEMENT_CHILDREN_COUNT = OFFSET_NODE_TYPE + LENGTH_NODE_TYPE; //1
     public final static int OFFSET_ATTRIBUTE_DLN_LENGTH = OFFSET_NODE_TYPE + LENGTH_NODE_TYPE; //1
     public final static int OFFSET_TEXT_DLN_LENGTH = OFFSET_NODE_TYPE + LENGTH_NODE_TYPE; //1
-    public final static int OFFSET_DLN = OFFSET_TEXT_DLN_LENGTH + NodeId.LENGTH_NODE_ID_UNITS;
-    public final static int LENGTH_NODE_IDS_FREQ_OFFSETS = 4; //sizeof int
+    public final static int OFFSET_DLN = OFFSET_TEXT_DLN_LENGTH + NodeId.LENGTH_NODE_ID_UNITS; //3    
 
     /** Length limit for the tokens */
 	public final static int MAX_TOKEN_LENGTH = 2048;
@@ -1575,8 +1576,9 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 
 	private final static class WordRef extends Value {
 		
-		public static int OFFSET_IDX_TYPE = 0;
 		public static int LENGTH_IDX_TYPE = 1; //sizeof byte
+		
+		public static int OFFSET_IDX_TYPE = 0;		
 		public static int OFFSET_COLLECTION_ID = OFFSET_IDX_TYPE + WordRef.LENGTH_IDX_TYPE; //1
 		public static int OFFSET_WORD = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //3
 		
@@ -1588,7 +1590,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		}
 
 		public WordRef(short collectionId, String word) {
-			len = UTF8.encoded(word) + Collection.LENGTH_COLLECTION_ID + WordRef.LENGTH_IDX_TYPE;
+			len = WordRef.LENGTH_IDX_TYPE + Collection.LENGTH_COLLECTION_ID + UTF8.encoded(word);
 			data = new byte[len];
             data[OFFSET_IDX_TYPE] = IDX_GENERIC;
             ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
@@ -1610,12 +1612,13 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 	//TODO : extend WordRef ?
     private final static class QNameWordRef extends Value {
 
-    	public static int OFFSET_IDX_TYPE = 0;
 		public static int LENGTH_IDX_TYPE = 1; //sizeof byte
-		public static int OFFSET_COLLECTION_ID = OFFSET_IDX_TYPE + QNameWordRef.LENGTH_IDX_TYPE; //1
-		public static int OFFSET_QNAME = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //3
 		public static int LENGTH_QNAME_TYPE = 1; //sizeof byte
-		public static int OFFSET_NS_URI = OFFSET_QNAME + LENGTH_QNAME_TYPE; //4
+		
+    	public static int OFFSET_IDX_TYPE = 0;
+		public static int OFFSET_COLLECTION_ID = OFFSET_IDX_TYPE + QNameWordRef.LENGTH_IDX_TYPE; //1
+		public static int OFFSET_QNAME_TYPE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //3
+		public static int OFFSET_NS_URI = OFFSET_QNAME_TYPE + LENGTH_QNAME_TYPE; //4
 		public static int OFFSET_LOCAL_NAME = OFFSET_NS_URI + SymbolTable.LENGTH_NS_URI; //6
 		public static int OFFSET_WORD = OFFSET_LOCAL_NAME + SymbolTable.LENGTH_LOCAL_NAME; //8
 		
@@ -1635,7 +1638,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 			final short localNameId = symbols.getSymbol(qname.getLocalName());
 			data[OFFSET_IDX_TYPE] = IDX_QNAME;
             ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
-			data[OFFSET_QNAME] = qname.getNameType();
+			data[OFFSET_QNAME_TYPE] = qname.getNameType();
             ByteConversion.shortToByte(namespaceId, data, OFFSET_NS_URI);
 			ByteConversion.shortToByte(localNameId, data, OFFSET_LOCAL_NAME);            
         }
@@ -1648,7 +1651,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 			final short localNameId = symbols.getSymbol(qname.getLocalName());
             data[OFFSET_IDX_TYPE] = IDX_QNAME;
             ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
-			data[OFFSET_QNAME] = qname.getNameType();
+			data[OFFSET_QNAME_TYPE] = qname.getNameType();
             ByteConversion.shortToByte(namespaceId, data, OFFSET_NS_URI);
 			ByteConversion.shortToByte(localNameId, data, OFFSET_LOCAL_NAME);            
 			UTF8.encode(word, data, OFFSET_WORD);

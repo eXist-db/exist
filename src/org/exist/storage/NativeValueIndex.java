@@ -101,11 +101,12 @@ public class NativeValueIndex implements ContentLoadingObserver {
     public static final double DEFAULT_VALUE_KEY_THRESHOLD = 0.01;
     public static final double DEFAULT_VALUE_VALUE_THRESHOLD = 0.04;
     
+	public static final int LENGTH_VALUE_TYPE = 1; //sizeof byte
+	public static final int LENGTH_NODE_IDS = 4; //sizeof int
+
 	public static final int OFFSET_COLLECTION_ID = 0;	
 	public static final int OFFSET_VALUE_TYPE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //2
-	public static final int LENGTH_VALUE_TYPE = 1; //sizeof byte
 	public static final int OFFSET_DATA = OFFSET_VALUE_TYPE + NativeValueIndex.LENGTH_VALUE_TYPE; //3
-	public static final int LENGTH_NODE_IDS = 4; //sizeof int
 
     public final static byte IDX_GENERIC = 0;
     public final static byte IDX_QNAME = 1;
@@ -1066,12 +1067,13 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
     private static class QNameValue extends Value {
 
-        public static int OFFSET_IDX_TYPE = 0;
-		public static int LENGTH_IDX_TYPE = 1; //sizeof byte
+    	public static int LENGTH_IDX_TYPE = 1; //sizeof byte
+    	public static int LENGTH_QNAME_TYPE = 1; //sizeof byte
+    	
+    	public static int OFFSET_IDX_TYPE = 0;		
 		public static int OFFSET_COLLECTION_ID = OFFSET_IDX_TYPE + LENGTH_IDX_TYPE; //1
-		public static int OFFSET_QNAME = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //3
-        public static int LENGTH_QNAME_TYPE = 1; //sizeof byte
-		public static int OFFSET_NS_URI = OFFSET_QNAME + LENGTH_QNAME_TYPE; //4
+		public static int OFFSET_QNAME_TYPE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //3        
+		public static int OFFSET_NS_URI = OFFSET_QNAME_TYPE + LENGTH_QNAME_TYPE; //4
 		public static int OFFSET_LOCAL_NAME = OFFSET_NS_URI + SymbolTable.LENGTH_NS_URI; //6
 		public static int OFFSET_VALUE = OFFSET_LOCAL_NAME + SymbolTable.LENGTH_LOCAL_NAME; //8
 
@@ -1091,7 +1093,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             final short localNameId = symbols.getSymbol(qname.getLocalName());
             data[OFFSET_IDX_TYPE] = IDX_QNAME;
             ByteConversion.shortToByte(collectionId, data, OFFSET_COLLECTION_ID);
-            data[OFFSET_QNAME] = qname.getNameType();
+            data[OFFSET_QNAME_TYPE] = qname.getNameType();
             ByteConversion.shortToByte(namespaceId, data, OFFSET_NS_URI);
             ByteConversion.shortToByte(localNameId, data, OFFSET_LOCAL_NAME);
         }
@@ -1108,7 +1110,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
             ByteConversion.shortToByte(collectionId, data, QNameValue.OFFSET_COLLECTION_ID);
             final short namespaceId = symbols.getNSSymbol(qname.getNamespaceURI());
             final short localNameId = symbols.getSymbol(qname.getLocalName());
-            data[QNameValue.OFFSET_QNAME] = qname.getNameType();
+            data[QNameValue.OFFSET_QNAME_TYPE] = qname.getNameType();
             ByteConversion.shortToByte(namespaceId, data, QNameValue.OFFSET_NS_URI);
             ByteConversion.shortToByte(localNameId, data, QNameValue.OFFSET_LOCAL_NAME);
             data[QNameValue.OFFSET_VALUE] = (byte) type;
