@@ -375,9 +375,9 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
     public void readDocumentMeta(VariableByteInput istream) {
         // skip over already known document data
         try {
-            istream.skip(1);
-            istream.readUTF();
-            istream.skip(4);
+            istream.skip(1); //docId
+            istream.readUTF(); //fileURI.toString()
+            istream.skip(2 + 2); //uid, gid
             istream.skip(children * 2);
 
             metadata = new DocumentMetadata();
