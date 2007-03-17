@@ -229,6 +229,12 @@ public class ValueIndexFactory {
 	}
 	*/
 	
+	/**
+	 * @param value
+	 * @param offset
+	 * @return
+	 * @throws EXistException
+	 */
 	public final static byte[] serialize(Indexable value, int offset) throws EXistException {
 		//TODO : refactor (only strings are case sensitive)
 		return  serialize(value, offset, true);

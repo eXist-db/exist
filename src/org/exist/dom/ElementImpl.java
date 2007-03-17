@@ -303,7 +303,10 @@ public class ElementImpl extends NamedNode implements Element {
         byte idSizeType = (byte) (data[offset] & 0x03);
         boolean hasNamespace = (data[offset] & 0x10) == 0x10;
         offset += LENGTH_SIGNATURE_LENGTH;
-        offset += 8 + nodeId.size();
+        offset += LENGTH_ELEMENT_CHILD_COUNT;
+        offset += NodeId.LENGTH_NODE_ID_UNITS;
+        offset += nodeId.size();
+        offset += LENGTH_ATTRIBUTES_COUNT;
         short id = (short) Signatures.read(idSizeType, data, offset);
         offset += Signatures.getLength(idSizeType);
         short nsId = 0;

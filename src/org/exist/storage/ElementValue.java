@@ -37,9 +37,10 @@ public class ElementValue extends Value {
 	public static final byte ATTRIBUTE = 1;
 	public static final byte ATTRIBUTE_ID = 2;
 	
+	public static int LENGTH_TYPE = 1; //sizeof byte
+
 	public static int OFFSET_COLLECTION_ID = 0;	
 	public static int OFFSET_TYPE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //2
-	public static int LENGTH_TYPE = 1; //sizeof byte
 	public static int OFFSET_SYMBOL = OFFSET_TYPE + ElementValue.LENGTH_TYPE; //3
 	public static int OFFSET_NSSYMBOL = OFFSET_SYMBOL + SymbolTable.LENGTH_LOCAL_NAME; //5
 	public static int OFFSET_ID_STRING_VALUE = OFFSET_TYPE + LENGTH_TYPE; //3

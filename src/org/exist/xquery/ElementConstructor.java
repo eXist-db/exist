@@ -26,7 +26,6 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
-import org.exist.memtree.DocumentImpl;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.memtree.NodeImpl;
 import org.exist.util.XMLChar;
