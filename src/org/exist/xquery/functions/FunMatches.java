@@ -35,14 +35,33 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.storage.DBBroker;
-import org.exist.storage.NativeValueIndex;
 import org.exist.storage.ElementValue;
-import org.exist.storage.Indexable;
-import org.exist.xquery.*;
+import org.exist.storage.NativeValueIndex;
+import org.exist.xquery.AnalyzeContextInfo;
+import org.exist.xquery.Atomize;
+import org.exist.xquery.BasicExpressionVisitor;
+import org.exist.xquery.Cardinality;
+import org.exist.xquery.Constants;
+import org.exist.xquery.Dependency;
+import org.exist.xquery.DynamicCardinalityCheck;
+import org.exist.xquery.Expression;
+import org.exist.xquery.Function;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.LocationStep;
+import org.exist.xquery.NodeTest;
+import org.exist.xquery.Optimizable;
+import org.exist.xquery.Optimize;
+import org.exist.xquery.Profiler;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.Error;
 import org.exist.xquery.util.RegexTranslator;
 import org.exist.xquery.util.RegexTranslator.RegexSyntaxException;
-import org.exist.xquery.value.*;
+import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.Type;
 
 /**
  * Implements the fn:matches() function.

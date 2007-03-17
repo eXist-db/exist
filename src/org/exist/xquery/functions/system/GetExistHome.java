@@ -24,7 +24,6 @@ package org.exist.xquery.functions.system;
 
 
 import org.exist.dom.QName;
-import org.exist.util.ConfigurationHelper;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
