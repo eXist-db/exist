@@ -40,8 +40,6 @@ import org.exist.xquery.value.Type;
  */
 public class UUID extends Function {
     
-    private UUIDGenerator ug;
-    
     public final static FunctionSignature signature =
             new FunctionSignature(
             new QName("uuid", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),

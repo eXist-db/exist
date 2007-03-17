@@ -37,7 +37,6 @@ import org.exist.xquery.value.DateValue;
 import org.exist.xquery.value.DayTimeDurationValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.TimeValue;
 import org.exist.xquery.value.Type;
 

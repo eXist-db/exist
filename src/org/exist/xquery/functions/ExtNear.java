@@ -44,7 +44,6 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
-import org.exist.xquery.value.Item;
 
 /**
  * near() function.
