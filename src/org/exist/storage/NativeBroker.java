@@ -2342,7 +2342,7 @@ public class NativeBroker extends DBBroker {
     
     /** Removes the Node Reference from the database.
      * The index will be updated later, i.e. after all nodes have been physically 
-     * removed. See {@link #endRemove()}. 
+     * removed. See {@link #endRemove(org.exist.storage.txn.Txn)}.
      * removeNode() just adds the node ids to the list in elementIndex 
      * for later removal.
      */
