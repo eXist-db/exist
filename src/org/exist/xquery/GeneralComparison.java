@@ -355,6 +355,11 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
 		final Collator collator = getCollator(contextSequence);
 		if (ls.isEmpty() && rs.isEmpty()) {
 			return BooleanValue.valueOf(compareValues(collator, AtomicValue.EMPTY_VALUE, AtomicValue.EMPTY_VALUE));
+		} else if (ls.isEmpty() && !rs.isEmpty()) {
+			for (SequenceIterator i2 = rs.iterate(); i2.hasNext();) {
+				if (compareValues(collator, AtomicValue.EMPTY_VALUE, i2.nextItem().atomize()))
+					return BooleanValue.TRUE;
+			}
 		} else if (!ls.isEmpty()&& rs.isEmpty()) {
 			for (SequenceIterator i1 = ls.iterate(); i1.hasNext();) {
 				AtomicValue lv = i1.nextItem().atomize();
