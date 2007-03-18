@@ -298,7 +298,6 @@ public class BFile extends BTree {
         try {
             SinglePage page = new SinglePage();
             dataCache.add(page, 2);
-            metrics.addDataPage();
             return page;
         } catch (IOException ioe) {
             LOG.warn(ioe);
