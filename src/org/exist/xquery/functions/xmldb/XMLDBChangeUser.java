@@ -82,8 +82,13 @@ public class XMLDBChangeUser extends BasicFunction {
 			if(!args[1].isEmpty()) {
 				// set password
 				user.setPassword(args[1].getStringValue());
-			} else
-				user.setPasswordDigest(oldUser.getPassword());
+			}
+			else
+			{
+				//use the old password
+				user.setEncodedPassword(oldUser.getPassword());
+				user.setPasswordDigest(oldUser.getDigestPassword());
+			}
 			if(!args[2].isEmpty()) {
 				// set groups
 				for(SequenceIterator i = args[2].iterate(); i.hasNext(); ) {
