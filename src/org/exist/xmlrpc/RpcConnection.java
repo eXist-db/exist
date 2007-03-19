@@ -1315,6 +1315,7 @@ public class RpcConnection extends Thread {
             		collection.release(Lock.WRITE_LOCK);
             }
 
+            // DWES why seperate store?
             if(mime.isXMLType()){
                 collection.store(transaction, broker, info, source, false);
             }
@@ -1327,7 +1328,10 @@ public class RpcConnection extends Thread {
         } finally {
             brokerPool.release(broker);
         }
+        
+        // DWES there are situations the file is not cleaned up
         file.delete();
+        
         documentCache.clear();
         return true; // when arrived here, insert/update was successfull
     }
