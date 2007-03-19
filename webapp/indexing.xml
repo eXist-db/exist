@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<book>
+<book xmlns="http://docbook.org/ns/docbook" xmlns:ci="http://apache.org/cocoon/include/1.0">
     <bookinfo>
         <graphic fileref="logo.jpg"/>
         <productname>Open Source Native XML Database</productname>
         <title>Configuring Database Indexes</title>
         <orgname>The eXist Project</orgname>
     </bookinfo>
-    <ci:include xmlns:ci="http://apache.org/cocoon/include/1.0" src="sidebar.xml"/>
+    <ci:include src="sidebar.xml"/>
     <chapter>
         <title>Configuring Database Indexes</title>
         <section>
@@ -311,11 +311,9 @@
                 define the default global <emphasis>index creation policy</emphasis>.</para>
 
             <para>To configure indexes for a given collection - for example:
-                <filename>/db/foo</filename> - you must create a new <filename>.xconf</filename>
+                <filename>/db/foo</filename> - you must create a new <filename>collection.xconf</filename>
                 configuration file and store it in the system collection (e.g.
-                    <filename>/db/system/config/db/foo</filename>). You can choose any name for this
-                document so long as it has the <filename>.xconf</filename> extension, although
-                <filename>collection.xconf</filename> is recommended. Note that
+                    <filename>/db/system/config/db/foo</filename>). Note that
                 since subcollections will inherit the configuration policy of their parent
                 collections, you are not required to specify a configuration for every collection.</para>
 
