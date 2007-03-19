@@ -140,16 +140,16 @@ public class Configuration implements ErrorHandler {
         try {
             InputStream is = null;
             
+            if (configFilename == null) {
+                // Default file name
+                configFilename = "conf.xml";
+            }
+
             // firstly, try to read the configuration from a file within the
             // classpath
             try {
-                if (configFilename != null) {
-                    is = Configuration.class.getClassLoader().getResourceAsStream(configFilename);
-                    if (is != null) LOG.info("Reading configuration from classloader");
-                } else {
-                    // Default file name
-                    configFilename = "conf.xml";
-                }
+                is = Configuration.class.getClassLoader().getResourceAsStream(configFilename);
+                if (is != null) LOG.info("Reading configuration from classloader");
             } catch (Exception e) {
                 // EB: ignore and go forward, e.g. in case there is an absolute
                 // file name for configFileName
