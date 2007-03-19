@@ -1915,7 +1915,7 @@ options {
 	|
 	ncname:NCNAME { $setType(ncname.getType()); }
 	|
-	{ parseStringLiterals }?
+	{ parseStringLiterals && !inElementContent }?
 	STRING_LITERAL { $setType(STRING_LITERAL); }
 	|
 	( '.' '.' ) =>
