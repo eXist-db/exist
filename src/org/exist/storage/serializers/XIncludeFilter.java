@@ -70,15 +70,17 @@ public class XIncludeFilter implements Receiver {
 	private final static Logger LOG = Logger.getLogger(XIncludeFilter.class);
 
 	public final static String XINCLUDE_NS = "http://www.w3.org/2001/XInclude";
-	
-	private final static QName HREF_ATTRIB = new QName("href", "");
-	
-	private Receiver receiver;
-	private Serializer serializer;
-	private DocumentImpl document = null;
-	private HashMap namespaces = new HashMap(10);
 
-	public XIncludeFilter(Serializer serializer, Receiver receiver) {
+    private final static QName HREF_ATTRIB = new QName("href", "");
+
+    private static final QName XPOINTER_ATTRIB = new QName("xpointer", "");
+    
+    private Receiver receiver;
+    private Serializer serializer;
+    private DocumentImpl document = null;
+    private HashMap namespaces = new HashMap(10);
+
+    public XIncludeFilter(Serializer serializer, Receiver receiver) {
 		this.receiver = receiver;
 		this.serializer = serializer;
 	}
@@ -168,7 +170,7 @@ public class XIncludeFilter implements Receiver {
 		if (qname.getNamespaceURI() != null && qname.getNamespaceURI().equals(XINCLUDE_NS)) {
 			if (qname.getLocalName().equals("include")) {
 				LOG.debug("processing include ...");
-				processXInclude(attribs.getValue(HREF_ATTRIB));
+				processXInclude(attribs.getValue(HREF_ATTRIB), attribs.getValue(XPOINTER_ATTRIB));
 			}
 		} else {
 			//LOG.debug("start: " + qName);
@@ -181,7 +183,7 @@ public class XIncludeFilter implements Receiver {
 		receiver.documentType(name, publicId, systemId);
 	}
 
-    protected void processXInclude(String href) throws SAXException {
+    protected void processXInclude(String href, String xpointer) throws SAXException {
         if(href == null)
             throw new SAXException("No href attribute found in XInclude include element");
         // save some settings
@@ -214,22 +216,26 @@ public class XIncludeFilter implements Receiver {
         LOG.debug("found href=\"" + href + "\"");
         //String xpointer = null;
         //String docName = href;
-        String xpointer = docUri.getFragment();
-        if(xpointer!=null) {
-            try {
-                xpointer = XMLUtil.decodeAttrMarkup(URLDecoder.decode(xpointer, "UTF-8"));
-            } catch (UnsupportedEncodingException e) {
-            	LOG.warn(e);
-            }
-            // remove the fragment part from the URI for further processing
-            URI u = docUri.getURI();
-            try {
-                u = new URI(u.getScheme(), u.getUserInfo(), u.getHost(), u.getPort(), u.getPath(), u.getQuery(), null);
-                docUri = XmldbURI.xmldbUriFor(u);
-            } catch (URISyntaxException e) {
-                throw new IllegalArgumentException("Stylesheet URI could not be parsed: " + e.getMessage());
-            }
-        }
+        String fragment = docUri.getFragment();
+        if (!(fragment == null || fragment.length() == 0))
+            throw new SAXException("Fragment identifiers must not be used in an xinclude href attribute. To specify an " +
+                    "xpointer, use the xpointer attribute.");
+
+//        if(xpointer!=null) {
+//            try {
+//                xpointer = XMLUtil.decodeAttrMarkup(URLDecoder.decode(xpointer, "UTF-8"));
+//            } catch (UnsupportedEncodingException e) {
+//            	LOG.warn(e);
+//            }
+//            // remove the fragment part from the URI for further processing
+//            URI u = docUri.getURI();
+//            try {
+//                u = new URI(u.getScheme(), u.getUserInfo(), u.getHost(), u.getPort(), u.getPath(), u.getQuery(), null);
+//                docUri = XmldbURI.xmldbUriFor(u);
+//            } catch (URISyntaxException e) {
+//                throw new IllegalArgumentException("Stylesheet URI could not be parsed: " + e.getMessage());
+//            }
+//        }
 
         // extract possible parameters in the URI
         Map params = null;
