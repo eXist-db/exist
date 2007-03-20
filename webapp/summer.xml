@@ -213,8 +213,29 @@
 	  </listitem>
 	</itemizedlist>
       </section>
+
+        <section>
+          <title>Add index-support for order-by, distinct-values and aggregate functions</title>
+
+            <para>Sorting a set of nodes is a frequent operation in many XQuery applications. The "order by" clause in XQuery is
+            very powerful and allows the definition of an arbitrary number of ordering specificiations to be applied on the tuple stream
+            returned by a FLWOR expression.</para>
+
+            <para>However, ordering is quite expensive: for each tuple in the return sequence we have to evaluate all ordering expressions once
+                and atomize the result, i.e. transform it into an atomic sequence. Atomization requires access to the actual node stored
+                in the db, thus generating a huge amount of IO. As a result, "order by" expressions should always be applied with care. Query execution times will increase linearily with
+                the size of the return sequence.</para>
+
+            <para>To improve this, eXist should at least provide indexed access to the atomized values needed for the ordering.
+                Unfortunately, the existing index structures can not be directly used: the range index maps atomized node values to
+                a sequence of node ids, while order by would need to order node ids by their node value. So either the existing range
+                index has to be extended to support value lookups by node id or a new index structure has to be implemented.</para>
+
+            <para>Other XQuery operations could benefit from such an index as well: this includes the aggregate functions min, max
+            and sum, as well as distinct-values.</para>
+      </section>
     </section>
-        
+
     <section>
         <title>Mentors</title>
         
