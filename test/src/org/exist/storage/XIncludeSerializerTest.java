@@ -70,7 +70,7 @@ public class XIncludeSerializerTest extends XMLTestCase {
     private final static String XML_DATA2 =
     	"<html>" +
     	"<head>" +
-    	"<metatag name='test' description='test'/>" +
+    	"<metatag xml:id='metatag' name='test' description='test'/>" +
     	"</head>" +
     	"</html>";
 
@@ -87,17 +87,37 @@ public class XIncludeSerializerTest extends XMLTestCase {
     	"<xi:include href='data/metatags.xml'/>" +
     	"</root>" +
     	"</test>";
-    
+
+    private final static String XML_DATA5 =
+        "<test xmlns:xi='http://www.w3.org/2001/XInclude'>" +
+    	"<root>" +
+    	"<xi:include href='data/metatags.xml' xpointer='xpointer(//metatag)'/>" +
+    	"</root>" +
+    	"</test>";
+
+    private final static String XML_DATA6 =
+        "<test xmlns:xi='http://www.w3.org/2001/XInclude'>" +
+    	"<root>" +
+    	"<xi:include href='data/metatags.xml' xpointer='metatag'/>" +
+    	"</root>" +
+    	"</test>";
+
     private final static String XML_RESULT ="<test xmlns:xi='http://www.w3.org/2001/XInclude'>"+
     "<root>" +
     "<html>" +
     "<head>"+
-    "<metatag name='test' description='test'/>" +
+    "<metatag xml:id='metatag' name='test' description='test'/>" +
     "</head>" +
     "</html>" +
     "</root>"+
     "</test>";
-      
+
+    private final static String XML_RESULT_XPOINTER = "<test xmlns:xi='http://www.w3.org/2001/XInclude'>"+
+    "<root>" +
+    "<metatag xml:id='metatag' name='test' description='test'/>" +
+    "</root>"+
+    "</test>";
+
     public XIncludeSerializerTest() {
         try {
 	    setUp();
@@ -210,7 +230,64 @@ public class XIncludeSerializerTest extends XMLTestCase {
          
      }//testRELSimpleREST
 
-    
+    public void testXPointerREST3() {
+        try {
+            String uri = REST_URI + "/test_xpointer1.xml?_indent=no&_wrap=no";
+
+            HttpURLConnection connect = getConnection(uri);
+            connect.setRequestMethod("GET");
+            connect.connect();
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(connect.getInputStream(), "UTF-8"));
+            String line;
+            StringBuffer out = new StringBuffer();
+            while ((line = reader.readLine()) != null) {
+                out.append(line);
+                out.append("\r\n");
+            }
+            String responseXML = out.toString();
+
+            System.out.println("response XML:"+ responseXML);
+            System.out.println("control XML" + XML_RESULT_XPOINTER);
+
+            Diff myDiff = new Diff(XML_RESULT_XPOINTER, responseXML);
+            assertTrue("pieces of XML are similar " + myDiff, myDiff.similar());
+            assertTrue("but are they identical? " + myDiff, myDiff.identical());
+
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+    }
+
+    public void testXPointerREST4() {
+        try {
+            String uri = REST_URI + "/test_xpointer2.xml?_indent=no&_wrap=no";
+
+            HttpURLConnection connect = getConnection(uri);
+            connect.setRequestMethod("GET");
+            connect.connect();
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(connect.getInputStream(), "UTF-8"));
+            String line;
+            StringBuffer out = new StringBuffer();
+            while ((line = reader.readLine()) != null) {
+                out.append(line);
+                out.append("\r\n");
+            }
+            String responseXML = out.toString();
+
+            System.out.println("response XML:"+ responseXML);
+            System.out.println("control XML" + XML_RESULT_XPOINTER);
+
+            Diff myDiff = new Diff(XML_RESULT_XPOINTER, responseXML);
+            assertTrue("pieces of XML are similar " + myDiff, myDiff.similar());
+            assertTrue("but are they identical? " + myDiff, myDiff.identical());
+
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+    }
+
     // @TODO add full url test e.g. http://www.example.org/test.xml for xinclude
     
     
@@ -355,6 +432,17 @@ public class XIncludeSerializerTest extends XMLTestCase {
 			params.addElement(new Integer(1));			
 			Boolean resultFile6 = (Boolean)xmlrpc.execute("parse", params);
 
+            params.clear();
+			params.addElement(XML_DATA5);
+			params.addElement("/db/xinclude_test/test_xpointer1.xml");
+			params.addElement(new Integer(1));
+			Boolean resultFile7 = (Boolean)xmlrpc.execute("parse", params);
+
+            params.clear();
+			params.addElement(XML_DATA6);
+			params.addElement("/db/xinclude_test/test_xpointer2.xml");
+			params.addElement(new Integer(1));
+			Boolean resultFile8 = (Boolean)xmlrpc.execute("parse", params);
         } catch (Exception e) {
             fail(e.getMessage());
         }
