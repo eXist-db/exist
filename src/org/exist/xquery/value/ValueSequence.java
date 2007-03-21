@@ -373,8 +373,9 @@ public class ValueSequence extends AbstractSequence {
     	try{
     		String hashKey = "";
     		for(SequenceIterator i = iterate();i.hasNext();){
-     			Item current = i.nextItem();
+     			Item current = i.nextItem();     			
     			hashKey+=current.getStringValue();
+    			hashKey+="&&";  //bv : sentinel value to separate grouping keys values
      		}
       		return hashKey;
     	} catch (XPathException e) {
