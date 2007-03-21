@@ -50,6 +50,8 @@ public class XQueryGroupByTest  extends XMLTestCase {
  
     private static final String BINARYTABLE_XML = "binaryTable.xml"; 
     private static final String BEYER_XML = "beyer.xml"; 
+    private static final String ITEMS_XML = "items.xml"; 
+    
      
     private final static String binaryTable = 
         "<items>" 
@@ -93,6 +95,13 @@ public class XQueryGroupByTest  extends XMLTestCase {
         "    </book>"+ 
         "</books>"; 
      
+    private final static String items = 
+        "<items>" 
+        +     "<item><key1>11</key1><key2>1</key2></item>" 
+        +    "<item><key1>1</key1><key2>11</key2></item>" 
+        +"</items>";     
+    
+    
     private Collection testCollection; 
     private Database database; 
     private CollectionManagementService testService; 
@@ -443,6 +452,33 @@ public class XQueryGroupByTest  extends XMLTestCase {
                fail(e.getMessage()); 
         } 
     }     
+    
+    public void testHashKey(){ 
+        ResourceSet result; 
+        String query; 
+        try { 
+            XPathQueryService service =  
+                storeXMLStringAndGetQueryService(ITEMS_XML, items); 
+             
+            //test if they are two group (11,1) and (1,11) and not only one
+            //bug corrected with the patch 1681499 on subversion tracker
+            System.out.println("testGroupBy hashkey: ========" ); 
+            query = "for $item in //item group $item as $partition by $item/key1/text() "+ 
+                    "as $key1, $item/key2/text() as $key2" +
+                    " return <group/>" ;
+            result = service.queryResource(ITEMS_XML, query ); 
+            printResult(result); 
+            assertEquals( "XQuery: " + query, 2, result.getSize() ); 
+             
+             
+        } 
+        catch (Exception e) { 
+               System.out.println("testGroupByClause : XMLDBException: "+e); 
+               fail(e.getMessage()); 
+        }             
+    } 
+    
+    
      
     protected XPathQueryService storeXMLStringAndGetQueryService(String documentName, 
             String content) throws XMLDBException { 
