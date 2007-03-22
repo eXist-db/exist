@@ -230,7 +230,7 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
         Context context = ObjectModelHelper.getContext(objectModel);
         String dbHome = context.getRealPath("WEB-INF");
 		try {
-			Class driver = Class.forName(DRIVER);
+			Class driver = Class.forName(getDriverName());
 			Database database = (Database)driver.newInstance();
             database.setProperty("create-database", "true");
             database.setProperty("configuration", dbHome + File.separatorChar + "conf.xml");
@@ -417,5 +417,9 @@ public class XQueryGenerator extends ServiceableGenerator implements Configurabl
     		HttpServletRequest servletRequest = generator.getRequest();
     		descriptor.doLogRequestInReplayLog( servletRequest );
     	}
+	}
+	
+	public String getDriverName() {
+		return DRIVER;
 	}
 }
