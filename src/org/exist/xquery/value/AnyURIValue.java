@@ -36,6 +36,7 @@ import java.util.BitSet;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.functions.FunEscapeURI;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
@@ -105,7 +106,7 @@ public class AnyURIValue extends AtomicValue {
 	}
 	public AnyURIValue(String s) throws XPathException {
 		String escapedString = escape(StringValue.trimWhitespace(s));
-		try {
+        try {
 			new URI(escapedString);
 		} catch (URISyntaxException e) {
 			try {
@@ -128,89 +129,92 @@ public class AnyURIValue extends AtomicValue {
 	 * @return An escaped string representation of the provided xs:anyURI
 	 */
 	 public static String escape(String uri) {
-			//TODO: TEST TEST TEST!
-			// basically copied from URLEncoder.encode
-		try {
-			boolean needToChange = false;
-			boolean wroteUnencodedChar = false; 
-			int maxBytesPerChar = 10; // rather arbitrary limit, but safe for now
-			StringBuffer out = new StringBuffer(uri.length());
-			ByteArrayOutputStream buf = new ByteArrayOutputStream(maxBytesPerChar);
-			
-			OutputStreamWriter writer = new OutputStreamWriter(buf, "UTF-8");
-			
-			for (int i = 0; i < uri.length(); i++) {
-				int c = (int) uri.charAt(i);
-				if (c>127 || needEncoding.get(c)) {
-					try {
-						if (wroteUnencodedChar) { // Fix for 4407610
-							writer = new OutputStreamWriter(buf, "UTF-8");
-							wroteUnencodedChar = false;
-						}
-						writer.write(c);
-						/*
-						 * If this character represents the start of a Unicode
-						 * surrogate pair, then pass in two characters. It's not
-						 * clear what should be done if a bytes reserved in the 
-						 * surrogate pairs range occurs outside of a legal
-						 * surrogate pair. For now, just treat it as if it were 
-						 * any other character.
-						 */
-						if (c >= 0xD800 && c <= 0xDBFF) {
-							/*
-							 System.out.println(Integer.toHexString(c) 
-							 + " is high surrogate");
-							 */
-							if ( (i+1) < uri.length()) {
-								int d = (int) uri.charAt(i+1);
-								/*
-								 System.out.println("\tExamining " 
-								 + Integer.toHexString(d));
-								 */
-								if (d >= 0xDC00 && d <= 0xDFFF) {
-									/*
-									 System.out.println("\t" 
-									 + Integer.toHexString(d) 
-									 + " is low surrogate");
-									 */
-									writer.write(d);
-									i++;
-								}
-							}
-						}
-						writer.flush();
-					} catch(IOException e) {
-						buf.reset();
-						continue;
-					}
-					byte[] ba = buf.toByteArray();
-					for (int j = 0; j < ba.length; j++) {
-						out.append('%');
-						char ch = Character.forDigit((ba[j] >> 4) & 0xF, 16);
-						// converting to use uppercase letter as part of
-						// the hex value if ch is a letter.
-						if (Character.isLetter(ch)) {
-							ch -= caseDiff;
-						}
-						out.append(ch);
-						ch = Character.forDigit(ba[j] & 0xF, 16);
-						if (Character.isLetter(ch)) {
-							ch -= caseDiff;
-						}
-						out.append(ch);
-					}
-					buf.reset();
-					needToChange = true;
-				} else {
-					out.append((char)c);
-					wroteUnencodedChar = true;
-				}
-			}
-			
-			return (needToChange? out.toString() : uri);
-		} catch(UnsupportedEncodingException e) {
-			throw new RuntimeException(e);
-		}
+
+        return FunEscapeURI.escape(uri, false);
+
+        //TODO: TEST TEST TEST!
+//			// basically copied from URLEncoder.encode
+//		try {
+//			boolean needToChange = false;
+//			boolean wroteUnencodedChar = false;
+//			int maxBytesPerChar = 10; // rather arbitrary limit, but safe for now
+//			StringBuffer out = new StringBuffer(uri.length());
+//			ByteArrayOutputStream buf = new ByteArrayOutputStream(maxBytesPerChar);
+//
+//			OutputStreamWriter writer = new OutputStreamWriter(buf, "UTF-8");
+//
+//			for (int i = 0; i < uri.length(); i++) {
+//				int c = (int) uri.charAt(i);
+//				if (c>127 || needEncoding.get(c)) {
+//					try {
+//						if (wroteUnencodedChar) { // Fix for 4407610
+//							writer = new OutputStreamWriter(buf, "UTF-8");
+//							wroteUnencodedChar = false;
+//						}
+//						writer.write(c);
+//						/*
+//						 * If this character represents the start of a Unicode
+//						 * surrogate pair, then pass in two characters. It's not
+//						 * clear what should be done if a bytes reserved in the
+//						 * surrogate pairs range occurs outside of a legal
+//						 * surrogate pair. For now, just treat it as if it were
+//						 * any other character.
+//						 */
+//						if (c >= 0xD800 && c <= 0xDBFF) {
+//							/*
+//							 System.out.println(Integer.toHexString(c)
+//							 + " is high surrogate");
+//							 */
+//							if ( (i+1) < uri.length()) {
+//								int d = (int) uri.charAt(i+1);
+//								/*
+//								 System.out.println("\tExamining "
+//								 + Integer.toHexString(d));
+//								 */
+//								if (d >= 0xDC00 && d <= 0xDFFF) {
+//									/*
+//									 System.out.println("\t"
+//									 + Integer.toHexString(d)
+//									 + " is low surrogate");
+//									 */
+//									writer.write(d);
+//									i++;
+//								}
+//							}
+//						}
+//						writer.flush();
+//					} catch(IOException e) {
+//						buf.reset();
+//						continue;
+//					}
+//					byte[] ba = buf.toByteArray();
+//					for (int j = 0; j < ba.length; j++) {
+//						out.append('%');
+//						char ch = Character.forDigit((ba[j] >> 4) & 0xF, 16);
+//						// converting to use uppercase letter as part of
+//						// the hex value if ch is a letter.
+//						if (Character.isLetter(ch)) {
+//							ch -= caseDiff;
+//						}
+//						out.append(ch);
+//						ch = Character.forDigit(ba[j] & 0xF, 16);
+//						if (Character.isLetter(ch)) {
+//							ch -= caseDiff;
+//						}
+//						out.append(ch);
+//					}
+//					buf.reset();
+//					needToChange = true;
+//				} else {
+//					out.append((char)c);
+//					wroteUnencodedChar = true;
+//				}
+//			}
+//
+//			return (needToChange? out.toString() : uri);
+//		} catch(UnsupportedEncodingException e) {
+//			throw new RuntimeException(e);
+//		}
 	}
 	
 	/* (non-Javadoc)
@@ -357,7 +361,7 @@ public class AnyURIValue extends AtomicValue {
 	
 	public XmldbURI toXmldbURI() throws XPathException {
 		try {
-			return XmldbURI.xmldbUriFor(escape(uri));
+			return XmldbURI.xmldbUriFor(uri, false);
 		} catch (URISyntaxException e) {
 			throw new XPathException(
 				"failed to convert " + uri + " into an XmldbURI: " + e.getMessage(),
