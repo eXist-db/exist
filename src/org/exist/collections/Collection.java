@@ -528,9 +528,7 @@ public  class Collection extends Observable
         try {
             getLock().acquire(Lock.READ_LOCK);
             DocumentImpl doc = (DocumentImpl) documents.get(uri.getRawCollectionPath());
-            if(doc == null)
-            	LOG.debug("Document " + path + " not found!");
-            else
+            if(doc != null)
             	doc.getUpdateLock().acquire(lockMode);
             return doc;
         } finally {

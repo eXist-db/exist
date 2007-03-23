@@ -1513,7 +1513,7 @@ public class NativeBroker extends DBBroker {
         try {
             DocumentImpl doc = collection.getDocumentWithLock(this, docUri, lockMode);
             if (doc == null) {
-                LOG.debug("document '" + fileName + "' not found!");
+//                LOG.debug("document '" + fileName + "' not found!");
                 return null;
             }
             
