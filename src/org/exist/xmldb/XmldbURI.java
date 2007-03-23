@@ -83,10 +83,14 @@ public class XmldbURI implements Comparable {
 	public static XmldbURI xmldbUriFor(URI uri) throws URISyntaxException {
 		return getXmldbURI(uri);
 	}
-	
-	public static XmldbURI xmldbUriFor(String xmldbURI) throws URISyntaxException {
+
+    public static XmldbURI xmldbUriFor(String xmldbURI) throws URISyntaxException {
+        return xmldbUriFor(xmldbURI, true);
+    }
+
+    public static XmldbURI xmldbUriFor(String xmldbURI, boolean escape) throws URISyntaxException {
         if (xmldbURI==null) return null;
-		URI uri = new URI(AnyURIValue.escape(xmldbURI));
+		URI uri = new URI(escape ? AnyURIValue.escape(xmldbURI) : xmldbURI);
 		return getXmldbURI(uri);
 	}
 	
@@ -583,7 +587,9 @@ public class XmldbURI implements Comparable {
 	public XmldbURI resolveCollectionPath(XmldbURI child) throws NullPointerException, IllegalArgumentException {	
 		if (child == null)
 			throw new NullPointerException("The provided child URI is null");
-		//Old method:
+//        if (child.isAbsolute())
+//            return child;
+        //Old method:
 		/*
 		String collectionPath = this.encodedCollectionPath;
 		if (collectionPath == null)
