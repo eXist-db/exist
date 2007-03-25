@@ -17,6 +17,8 @@
         <res id="shortcutSpec.xml" src="installer/shortcutSpec.xml"/>
         <res id="Unix_shortcutSpec.xml" src="installer/UnixShortcutSpec.xml"/>
         <res id="HTMLInfoPanel.info" src="installer/readme.html"/>
+        <res id="userInputSpec.xml" src="installer/userInput.xml"/>
+        <res id="ProcessPanel.Spec.xml" src="installer/jobs.xml"/>
     </resources>
 
     <jar src="tools/izpack/clinstaller.jar" stage="install"/>
@@ -30,8 +32,10 @@
         <panel classname="HelloPanel"/>
         <panel classname="PacksPanel"/>
         <panel classname="TargetPanel"/>
+        <panel classname="UserInputPanel"/>
         <panel classname="InstallPanel"/>
         <panel classname="ShortcutPanel"/>
+        <panel classname="ProcessPanel"/>
         <panel classname="HTMLInfoPanel"/>
         <panel classname="FinishPanel"/>
     </panels>
