@@ -36,9 +36,15 @@
         <test:benchmark outputFile="${benchmark.output}/ft-tests-result.xml"
                 source="${benchmark.src}/org/exist/performance/test.xml"
                 group="ft-tests"/>
-        <test:benchmark outputFile="${benchmark.output}/dblp-result.xml"
+        <test:benchmark outputFile="${benchmark.output}/large-optimized-result.xml"
+                source="${benchmark.src}/org/exist/performance/test.xml"
+                group="large-documents-optimized"/>
+        <test:benchmark outputFile="${benchmark.output}/large-docs-result.xml"
                 source="${benchmark.src}/org/exist/performance/test.xml"
                 group="large-documents"/>
+        <!--test:benchmark outputFile="${benchmark.output}/updates-result.xml"
+                source="${benchmark.src}/org/exist/performance/test.xml"
+                group="updates"/-->
     </target>
 
     <target name="post-process-benchmark" xmlns:xdb="http://exist-db.org/ant">
@@ -79,6 +85,8 @@
         <echo>Downloading XML data: this may take a few minutes ...</echo>
         <mkdir dir="${benchmark.data}"/>
         <mkdir dir="${benchmark.data}/dblp"/>
+        <get src="http://dblp.uni-trier.de/xml/dblp.dtd"
+            dest="${benchmark.data}/dblp/dblp.dtd" verbose="on"/>
         <get src="http://dblp.uni-trier.de/xml/dblp.xml.gz"
             dest="${benchmark.data}/dblp.xml.gz" verbose="on"/>
         <gunzip src="${benchmark.data}/dblp.xml.gz"
