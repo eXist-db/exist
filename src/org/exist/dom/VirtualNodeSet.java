@@ -32,6 +32,7 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.Element;
 
 /**
  * This node set is called virtual because it is just a placeholder for
@@ -59,8 +60,9 @@ public class VirtualNodeSet extends AbstractNodeSet {
 	protected boolean inPredicate = false;
 	protected boolean useSelfAsContext = false;
 	protected int contextId = Expression.NO_CONTEXT_ID;
+    private static final int MAX_CHILD_COUNT_FOR_OPTIMIZE = 5;
 
-	public VirtualNodeSet(int axis, NodeTest test, int contextId, NodeSet context) {
+    public VirtualNodeSet(int axis, NodeTest test, int contextId, NodeSet context) {
 		this.axis = axis;
 		this.test = test;
 		this.context = context;
@@ -308,7 +310,25 @@ public class VirtualNodeSet extends AbstractNodeSet {
 		realSetIsComplete = true;
 	}
 
-	public void setSelfIsContext() {
+    public boolean preferTreeTraversal() {
+        if (realSet != null && realSetIsComplete)
+            return true;
+        if (axis != Constants.CHILD_AXIS)
+            return false;
+        int contextLen = context.getLength();
+        int docs = context.getDocumentSet().getLength();
+        if (contextLen > docs * MAX_CHILD_COUNT_FOR_OPTIMIZE)
+            return false;   // more than 5 nodes per document
+        for (Iterator i = context.iterator(); i.hasNext();) {
+            NodeProxy p = (NodeProxy) i.next();
+            StoredNode n = (StoredNode) p.getNode();
+            if (n.getNodeType() == Node.ELEMENT_NODE && n.getChildCount() > MAX_CHILD_COUNT_FOR_OPTIMIZE)
+                return false;
+        }
+        return true;
+    }
+
+    public void setSelfIsContext() {
 		useSelfAsContext = true;
 	}
 
