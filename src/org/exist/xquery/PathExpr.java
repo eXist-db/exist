@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.DocumentSet;
+import org.exist.dom.VirtualNodeSet;
 import org.exist.security.xacml.XACMLSource;
 import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.util.ExpressionDumper;
@@ -221,7 +222,8 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 //TOUNDERSTAND : why did I have to write this test :-) ? -pb
                 //it looks like an empty sequence could be considered as a sub-type of Type.NODE
                 //well, no so stupid I think...    
-                if (steps.size() > 1 && !result.isEmpty() && !Type.subTypeOf(result.getItemType(), Type.NODE))
+                if (steps.size() > 1 && !(result instanceof VirtualNodeSet) && !result.isEmpty() &&
+                        !Type.subTypeOf(result.getItemType(), Type.NODE))
                     gotAtomicResult = true;
 
                 if(steps.size() > 1)
