@@ -388,7 +388,7 @@ public class Lock extends AbstractWebDAVMethod {
             LockToken lockToken) throws ServletException, IOException {
         
         response.setStatus(HttpServletResponse.SC_OK);
-        response.setContentType("text/xml; charset=UTF-8");
+        response.setContentType(MimeType.XML_CONTENT_TYPE.getName());
 //        response.setCharacterEncoding("utf-8");
         
         ServletOutputStream sos = response.getOutputStream();

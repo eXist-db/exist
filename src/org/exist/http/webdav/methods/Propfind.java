@@ -55,6 +55,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.XmldbURI;
@@ -536,7 +537,7 @@ public class Propfind extends AbstractWebDAVMethod {
     private void writeResponse(HttpServletResponse response, String content)
     throws IOException {
         response.setStatus(WebDAV.SC_MULTI_STATUS);
-        response.setContentType("text/xml; charset=UTF-8");
+        response.setContentType(MimeType.XML_CONTENT_TYPE.getName());
         byte[] data = content.getBytes("UTF-8");
         response.setContentLength(data.length);
         OutputStream os = response.getOutputStream();

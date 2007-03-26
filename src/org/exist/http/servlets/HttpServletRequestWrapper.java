@@ -43,6 +43,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.exist.util.MimeType;
 
 /** A wrapper for HttpServletRequest
  * - differentiates between POST parameters in the URL or Content Body
@@ -244,7 +245,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest
 					//Parse out parameters from the Content Body
 					parseContentBodyParameters();
 					
-				} else if ( contentType.equals("text/xml") ) {
+				} else if (contentType.equals(MimeType.XML_TYPE.getName())) {
 					// if an XML-RPC
 					contentBodyAsString = getContentBody();
 				}

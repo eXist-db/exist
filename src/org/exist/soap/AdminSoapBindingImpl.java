@@ -29,6 +29,7 @@ import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
 import org.exist.util.Occurrences;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
@@ -225,7 +226,7 @@ public class AdminSoapBindingImpl implements org.exist.soap.Admin {
 // TODO check XML/Binary resource
 //          IndexInfo info = collection.validate(txn, broker, path, new InputSource(new ByteArrayInputStream(data)));
             IndexInfo info = collection.validateXMLResource(txn, broker, docUri, new InputSource(new ByteArrayInputStream(data)));
-            info.getDocument().getMetadata().setMimeType("text/xml");
+            info.getDocument().getMetadata().setMimeType(MimeType.XML_TYPE.getName());
             collection.store(txn, broker, info, new InputSource(new ByteArrayInputStream(data)), false);
             transact.commit(txn);
             LOG.debug(

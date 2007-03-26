@@ -39,6 +39,7 @@ import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
+import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
 
 /**
@@ -55,8 +56,8 @@ public class WebDAV {
     public final static int DIGEST_AUTH = 1;
     
     //	default content types
-    public final static String BINARY_CONTENT = "application/octet-stream";
-    public final static String XML_CONTENT = "text/xml";
+    public final static String BINARY_CONTENT = MimeType.BINARY_TYPE.getName();
+    public final static String XML_CONTENT = MimeType.XML_TYPE.getName();
     /** id of the database registred against the BrokerPool */
     protected String databaseid = BrokerPool.DEFAULT_INSTANCE_NAME;
     

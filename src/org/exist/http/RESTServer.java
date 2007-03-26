@@ -352,7 +352,7 @@ public class RESTServer {
                             throw new PermissionDeniedException(
                                     "Not allowed to read collection");
                         // return a listing of the collection contents
-                        writeResponse(response, printCollection(broker, collection), "text/xml", encoding);
+                        writeResponse(response, printCollection(broker, collection), MimeType.XML_TYPE.getName(), encoding);
                     } else {
                         throw new NotFoundException("Document " + path
                                 + " not found");
@@ -519,7 +519,7 @@ public class RESTServer {
         int howmany = 10;
         int start = 1;
         boolean enclose = true;
-        String mime = "text/xml";
+        String mime = MimeType.XML_TYPE.getName();
         String query = null;
         TransactionManager transact = broker.getBrokerPool().getTransactionManager();
         Txn transaction = transact.beginTransaction();
@@ -563,7 +563,7 @@ public class RESTServer {
                     }
                     
                     option = root.getAttribute("mime");
-                    mime = "text/xml";
+                    mime = MimeType.XML_TYPE.getName();
                     if ((option != null) && (!option.equals(""))) {
                         mime = option;
                     }
@@ -650,7 +650,7 @@ public class RESTServer {
                         + "<exist:modifications xmlns:exist='" + Namespaces.EXIST_NS
                         + "' count='" + mods + "'>" + mods
                         + "modifications processed.</exist:modifications>",
-                        "text/xml", "UTF-8");
+                        MimeType.XML_TYPE.getName(), "UTF-8");
                 // END FD
             } else {
                 transact.abort(transaction);

@@ -24,6 +24,7 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
+import org.exist.util.MimeType;
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.util.serializer.DOMStreamer;
 import org.exist.util.serializer.SAXSerializer;
@@ -66,7 +67,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 
 	public LocalXMLResource(User user, BrokerPool pool, LocalCollection parent,
 			XmldbURI did) throws XMLDBException {
-		super(user, pool, parent, did, "text/xml");
+		super(user, pool, parent, did, MimeType.XML_TYPE.getName());
 	}
 
 	public LocalXMLResource(User user, BrokerPool pool, LocalCollection parent,

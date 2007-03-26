@@ -27,6 +27,7 @@ import java.io.IOException;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.exist.util.MimeType;
 
 public class Response {
 	
@@ -40,7 +41,7 @@ public class Response {
 	private String content = null;
 	private byte[] binaryContent = null;
 	private String encoding = "UTF-8";
-	private String contentType = "text/xml";
+	private String contentType = MimeType.XML_TYPE.getName();
 	
 	public Response() {
 	}
