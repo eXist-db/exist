@@ -27,6 +27,8 @@ import java.util.StringTokenizer;
 
 import org.exist.dom.QName;
 import org.exist.util.DirectoryScanner;
+import org.exist.util.MimeTable;
+import org.exist.util.MimeType;
 import org.exist.xmldb.EXistResource;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -139,11 +141,13 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
         LOG.debug("Loading files from directory: " + baseDir);
         Sequence patterns = args[2];
         String resourceType = "XMLResource";
-        String mimeType = "text/xml";
+        String mimeType = MimeType.XML_TYPE.getName();
         boolean keepDirStructure = false;
         if(getSignature().getArgumentCount() > 3) {
             mimeType = args[3].getStringValue();
-            if(!("text/xml".equals(mimeType) || "application/xml".equals(mimeType)))
+	    MimeType mime = MimeTable.getInstance().getContentType(mimeType);
+	    
+            if(mime != null && !mime.isXMLType())
                 resourceType = "BinaryResource";
         }
         if (getSignature().getArgumentCount() == 5)

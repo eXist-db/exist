@@ -11,6 +11,8 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.exist.util.MimeType;
+
 public class NodeTransferable implements Transferable
 {
 	private static final String FLAVOR_DESCRIPTION = "XACML Element";
@@ -27,7 +29,7 @@ public class NodeTransferable implements Transferable
 	public static final DataFlavor ABSTRACT_NODE_FLAVOR = createFlavor(AbstractTreeNode.class);
 	public static final DataFlavor NODE_FLAVOR = createFlavor(XACMLTreeNode.class);
 	
-	public static final DataFlavor TEXT_XML_FLAVOR = new DataFlavor("text/xml", FLAVOR_DESCRIPTION + " (XML)");
+	public static final DataFlavor TEXT_XML_FLAVOR = new DataFlavor(MimeType.XML_TYPE.getName(), FLAVOR_DESCRIPTION + " (XML)");
 	public static final DataFlavor APPLICATION_XML_FLAVOR = new DataFlavor("application/xml", FLAVOR_DESCRIPTION + " (XML)");
 	
 	

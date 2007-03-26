@@ -68,6 +68,7 @@ import org.exist.storage.XQueryPool;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.serializers.WSDLFilter;
+import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.CompiledXQuery;
@@ -489,7 +490,7 @@ public class SOAPServer
 	        	result = description.getWSDL();
 
 	        	//set output content type for wsdl
-	            response.setContentType("text/xml");
+	            response.setContentType(MimeType.XML_TYPE.getName());
 	        }
 	        else if(request.getParameter("function") != null)
 	        {
@@ -627,7 +628,7 @@ public class SOAPServer
         	byte[] result = description.getSOAPResponse(funcName, xqwsResult, request);
 
         	// 7) Send the SOAP Response to the http servlet response
-        	response.setContentType("text/xml");
+        	response.setContentType(MimeType.XML_TYPE.getName());
 			ServletOutputStream os = response.getOutputStream();
 			BufferedOutputStream bos = new BufferedOutputStream(os);
 			bos.write(result);

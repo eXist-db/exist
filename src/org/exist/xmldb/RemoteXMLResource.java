@@ -27,6 +27,7 @@ import org.exist.dom.DocumentTypeImpl;
 import org.exist.security.Permission;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.Compressor;
+import org.exist.util.MimeType;
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.util.serializer.SAXSerializer;
 import org.w3c.dom.Document;
@@ -412,7 +413,7 @@ public class RemoteXMLResource implements XMLResource, EXistResource {
      * @see org.exist.xmldb.EXistResource#getMimeType()
      */
     public String getMimeType() {
-        return "text/xml";
+        return MimeType.XML_TYPE.getName();
     }
 
 

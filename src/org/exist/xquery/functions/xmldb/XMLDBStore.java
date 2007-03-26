@@ -121,13 +121,13 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 		else 
 			docName = new AnyURIValue(docName).toXmldbURI().toString();
 		
-        String mimeType = "text/xml";
+        String mimeType = MimeType.XML_TYPE.getName();
 		boolean binary = false;
 		if(getSignature().getArgumentCount() == 4) {
-			mimeType = args[3].getStringValue();
-            MimeType mime = MimeTable.getInstance().getContentType(mimeType);
-            if (mime != null)
-                binary = !mime.isXMLType();
+		    mimeType = args[3].getStringValue();
+		    MimeType mime = MimeTable.getInstance().getContentType(mimeType);
+		    if (mime != null)
+			binary = !mime.isXMLType();
 		} else if (docName != null){
 		    MimeType mime = MimeTable.getInstance().getContentTypeFor(docName);
             if (mime != null) {
@@ -179,7 +179,7 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 			}
 		} catch (XMLDBException e) {
 			throw new XPathException(
-				"XMLDB reported an exception while storing document",
+				"XMLDB reported an exception while storing document" + e,
 				e);
 		} catch (SAXException e) {
 			throw new XPathException(

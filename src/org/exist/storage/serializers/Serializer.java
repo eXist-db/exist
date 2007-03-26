@@ -59,6 +59,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
+import org.exist.util.MimeType;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.Receiver;
 import org.exist.util.serializer.ReceiverToSAX;
@@ -835,7 +836,7 @@ public abstract class Serializer implements XMLReader {
 				// found <?xml-stylesheet?>
 				xsl = ((ProcessingInstruction) node).getData();
 				type = XMLUtil.parseValue(xsl, "type");
-				if(type != null && (type.equals("text/xml") || type.equals("text/xsl") || type.equals("application/xslt+xml"))) {
+				if(type != null && (type.equals(MimeType.XML_TYPE.getName()) || type.equals(MimeType.XSL_TYPE.getName()) || type.equals(MimeType.XSLT_TYPE.getName()))) {
 					href = XMLUtil.parseValue(xsl, "href");
 					if (href == null)
 						continue;
