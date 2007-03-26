@@ -55,7 +55,7 @@ public class FunDoc extends Function {
 		new FunctionSignature(
 			new QName("doc", Function.BUILTIN_FUNCTION_NS),
 			"Returns the documents specified in the input sequence. " +  
-            "The arguments are either document pathes like '" +
+            "The arguments are either document paths like '" +
 			DBBroker.ROOT_COLLECTION + "/shakespeare/plays/hamlet.xml' or " +
 			"XMLDB URIs like 'xmldb:exist://localhost:8081/" +
 			DBBroker.ROOT_COLLECTION + "/shakespeare/plays/hamlet.xml' or " +  
