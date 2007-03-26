@@ -28,9 +28,8 @@ public class Compile extends BasicFunction {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("compile", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-			"Dynamically evaluates the XPath/XQuery expression specified in $b within " +
-			"the current instance of the query engine. The evaluation context is taken from " +
-			"argument $a.",
+			"Dynamically evaluates the XPath/XQuery expression specified in $a within " +
+			"the current instance of the query engine.",
 			new SequenceType[] {
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
 			},
