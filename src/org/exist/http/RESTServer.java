@@ -118,6 +118,7 @@ public class RESTServer {
     static {
         defaultProperties.setProperty(OutputKeys.INDENT, "yes");
         defaultProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
+        defaultProperties.setProperty(OutputKeys.MEDIA_TYPE, MimeType.XML_TYPE.getName());
         defaultProperties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes");
         defaultProperties.setProperty(EXistOutputKeys.HIGHLIGHT_MATCHES, "elements");
         defaultProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "yes");
@@ -214,7 +215,7 @@ public class RESTServer {
         int start = 1;
         boolean wrap = true;
         boolean source = false;
-        Properties outputProperties = new Properties();
+        Properties outputProperties = new Properties(defaultProperties);
         String query = request.getParameter("_xpath");
         if (query == null)
             query = request.getParameter("_query");
@@ -238,23 +239,28 @@ public class RESTServer {
             }
         }
         String option;
-        if ((option = request.getParameter("_wrap")) != null)
+        if ((option = request.getParameter("_wrap")) != null) {
             wrap = option.equals("yes");
-        if ((option = request.getParameter("_indent")) != null)
+	}
+        if ((option = request.getParameter("_indent")) != null) {
             outputProperties.setProperty(OutputKeys.INDENT, option);
-        if((option = request.getParameter("_source")) != null)
+	}
+        if((option = request.getParameter("_source")) != null) {
         	source = option.equals("yes");
+	}
         String stylesheet;
         if ((stylesheet = request.getParameter("_xsl")) != null) {
             if (stylesheet.equals("no")) {
                 outputProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "no");
                 outputProperties.remove(EXistOutputKeys.STYLESHEET);
                 stylesheet = null;
-            } else
+            } else {
                 outputProperties.setProperty(EXistOutputKeys.STYLESHEET,
                         stylesheet);
-        } else
+	    }
+        } else {
             outputProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "yes");
+	}
         LOG.debug("stylesheet = " + stylesheet);
         LOG.debug("query = " + query);
         String encoding;
@@ -262,6 +268,8 @@ public class RESTServer {
             outputProperties.setProperty(OutputKeys.ENCODING, encoding);
         else
             encoding = "UTF-8";
+
+	String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE);
         
         // Process the request
         DocumentImpl resource = null;
@@ -269,56 +277,46 @@ public class RESTServer {
         try {
             // check if path leads to an XQuery resource
             resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
-            if (resource != null)
-            {
-                if (resource.getResourceType() == DocumentImpl.BINARY_FILE && "application/xquery".equals(resource.getMetadata().getMimeType()))
-                {
-                	// found an XQuery resource
+            if (resource != null) {
+                if (resource.getResourceType() == DocumentImpl.BINARY_FILE && MimeType.XQUERY_TYPE.getName().equals(resource.getMetadata().getMimeType())) {
+		    // found an XQuery resource
                     
-                	//Should we display the source of the XQuery or execute it
-                	Descriptor descriptor = Descriptor.getDescriptorSingleton();
-                	if(source && descriptor != null)
-                	{
-                		//show the source
-                		
-                		//check are we allowed to show the xquery source - descriptor.xml
-                		if(descriptor.allowSourceXQuery(path))
-                		{
-                			//TODO: change writeResourceAs to use a serializer that will serialize xquery to syntax coloured xhtml, replace the asMimeType parameter with a method for specifying the serializer, or split the code into two methods. - deliriumsky
-                			
-                			//Show the source of the XQuery
-                			writeResourceAs(resource, broker, stylesheet, encoding, "text/plain", outputProperties, response);
-                		}
-                		else
-                		{
-                			//we are not allowed to show the source - query not allowed in descriptor.xml
+		    //Should we display the source of the XQuery or execute it
+		    Descriptor descriptor = Descriptor.getDescriptorSingleton();
+		    if(source && descriptor != null) {
+			//show the source
+			
+			//check are we allowed to show the xquery source - descriptor.xml
+			if(descriptor.allowSourceXQuery(path)) {
+			    //TODO: change writeResourceAs to use a serializer that will serialize xquery to syntax coloured xhtml, replace the asMimeType parameter with a method for specifying the serializer, or split the code into two methods. - deliriumsky
+			    
+			    //Show the source of the XQuery
+			    writeResourceAs(resource, broker, stylesheet, encoding, MimeType.TEXT_TYPE.getName(), outputProperties, response);
+			} else {
+			    //we are not allowed to show the source - query not allowed in descriptor.xml
                             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Permission to view XQuery source for: " + path + " denied. Must be explicitly defined in descriptor.xml");
-                			return;
-                		}
-                	}
-                	else
-            		{
-            			//Execute the XQuery
-            			try
-						{
+			    return;
+			}
+		    } else { //Execute the XQuery
+			try {
                             String result = executeXQuery(broker, resource, request, response, outputProperties);
-                            encoding = outputProperties.getProperty(OutputKeys.ENCODING, encoding);
+                            encoding = outputProperties.getProperty(OutputKeys.ENCODING);
+			    mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE);
                             
-                        	//only write the response if it is not already committed,
-                        	//some xquery functions can write directly to the response
-                            if(!response.isCommitted())
-                            {
-                                String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE, "text/html");
-                            	
-                            	writeResponse(response, result, mimeType, encoding);
+			    //only write the response if it is not already committed,
+			    //some xquery functions can write directly to the response
+                            if(!response.isCommitted()) {
+                           	writeResponse(response, result, mimeType, encoding);
                             }
-                        }
-            			catch (XPathException e)
-						{
+                        } catch (XPathException e) {
                             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                            writeResponse(response, formatXPathException(query, path, e), "text/html", encoding);
+			    if (MimeType.XML_TYPE.getName().equals(mimeType)) {
+				writeResponse(response, formatXPathException(query, path, e), mimeType, encoding);				
+			    } else {
+				writeResponse(response, formatXPathExceptionHtml(query, path, e), MimeType.HTML_TYPE.getName(), encoding);
+			    }
                         }
-            		}
+		    }
                     return;
                 }
             }
@@ -326,20 +324,23 @@ public class RESTServer {
                 // query parameter specified
                 try {
                     String result = search(broker, query, path, howmany, start, outputProperties, wrap, request, response);
-                    encoding = outputProperties.getProperty(OutputKeys.ENCODING, encoding);
+                    encoding = outputProperties.getProperty(OutputKeys.ENCODING);
+		    mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE);
                     
                 	//only write the response if it is not already committed,
                 	//some xquery functions can write directly to the response
-                    if(!response.isCommitted())
-                    {
-                    	String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE, "text/html");
+                    if(!response.isCommitted()) {
                     	writeResponse(response, result, mimeType, encoding);
                     }
                     
                 } catch (XPathException e) {
                     response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    writeResponse(response, formatXPathException(query, path, e), "text/html", encoding);
-                }
+		    if (MimeType.XML_TYPE.getName().equals(mimeType)) {
+			writeResponse(response, formatXPathException(query, path, e), mimeType, encoding);				
+		    } else {
+                        writeResponse(response, formatXPathExceptionHtml(query, path, e), MimeType.HTML_TYPE.getName(), encoding);
+                    }
+	       }
             } else {
                 // no query parameter: try to load a document from the specified
                 // path
@@ -348,7 +349,7 @@ public class RESTServer {
                     Collection collection = broker.getCollection(pathUri);
                     if (collection != null) {
                         if (!collection.getPermissions().validate(
-                                broker.getUser(), Permission.READ))
+			    broker.getUser(), Permission.READ))
                             throw new PermissionDeniedException(
                                     "Not allowed to read collection");
                         // return a listing of the collection contents
@@ -369,71 +370,56 @@ public class RESTServer {
     }
     
     //writes out a resource, uses asMimeType as the specified mime-type or if null uses the type of the resource
-    private void writeResourceAs(DocumentImpl resource, DBBroker broker, String stylesheet, String encoding, String asMimeType, Properties outputProperties, HttpServletResponse response) throws BadRequestException, PermissionDeniedException, IOException
-    {
+    private void writeResourceAs(DocumentImpl resource, DBBroker broker, String stylesheet, String encoding, String asMimeType, Properties outputProperties, HttpServletResponse response) throws BadRequestException, PermissionDeniedException, IOException {
     	//Do we have permission to read the resource
-    	if (!resource.getPermissions().validate(broker.getUser(), Permission.READ))
-    		throw new PermissionDeniedException("Not allowed to read resource");
+    	if (!resource.getPermissions().validate(broker.getUser(), Permission.READ)) {
+	    throw new PermissionDeniedException("Not allowed to read resource");
+	}
     	
-        if (resource.getResourceType() == DocumentImpl.BINARY_FILE)
-        {
-        	// binary resource
-        	if(asMimeType != null) //was a mime-type specified?
-        	{
-        		response.setContentType(asMimeType);
-        	}
-        	else
-        	{
-        		response.setContentType(resource.getMetadata().getMimeType());
-        	}
-        	OutputStream os = response.getOutputStream();
-        	broker.readBinaryResource((BinaryDocument) resource, os);
-        	os.flush();
-        }
-        else
-        {
+        if (resource.getResourceType() == DocumentImpl.BINARY_FILE) {
+	    // binary resource
+	    if(asMimeType != null)  { //was a mime-type specified?
+		
+		response.setContentType(asMimeType);
+	    } else {
+		response.setContentType(resource.getMetadata().getMimeType());
+	    }
+	    OutputStream os = response.getOutputStream();
+	    broker.readBinaryResource((BinaryDocument) resource, os);
+	    os.flush();
+        } else {
             // xml resource
             Serializer serializer = broker.getSerializer();
             serializer.reset();
             
-
+	    
             //Serialize the document
-            try
-			{
+            try {
                 //use a stylesheet if specified in query parameters
-                if (stylesheet != null)
-                {
+                if (stylesheet != null) {
                     serializer.setStylesheet(resource, stylesheet);
                 }
                 serializer.setProperties(outputProperties);
                 serializer.prepareStylesheets(resource);
-                if(asMimeType != null) //was a mime-type specified?
-                {
-                	response.setContentType(asMimeType+"; charset="+encoding);
-                }
-                else
-                {
-	                if (serializer.isStylesheetApplied() || serializer.hasXSLPi(resource) != null)
-	                {
-	                	asMimeType = serializer.getStylesheetProperty(OutputKeys.MEDIA_TYPE);
-	                	if (!useDynamicContentType || asMimeType == null)
-	                		asMimeType = "text/html";
-	                	LOG.debug("media-type: " + asMimeType);
-	                    response.setContentType(asMimeType + "; charset="+encoding);
-	                }
-	                else
-	                {
-	                    response.setContentType(resource.getMetadata().getMimeType()+"; charset="+encoding);
-	                }
+                if(asMimeType != null) { //was a mime-type specified?
+		    response.setContentType(asMimeType+"; charset="+encoding);
+                } else {
+		    if (serializer.isStylesheetApplied() || serializer.hasXSLPi(resource) != null) {
+			asMimeType = serializer.getStylesheetProperty(OutputKeys.MEDIA_TYPE);
+			if (!useDynamicContentType || asMimeType == null)
+			    asMimeType = MimeType.HTML_TYPE.getName();
+			LOG.debug("media-type: " + asMimeType);
+			response.setContentType(asMimeType + "; charset="+encoding);
+		    } else {
+			response.setContentType(resource.getMetadata().getMimeType()+"; charset="+encoding);
+		    }
                 }
                 OutputStream is = response.getOutputStream();
                 Writer w = new OutputStreamWriter(is,encoding);
                 serializer.serialize(resource,w);
                 w.flush();
                 w.close();
-            }
-            catch (SAXException saxe)
-			{
+            } catch (SAXException saxe) {
                 LOG.warn(saxe);
                 throw new BadRequestException("Error while serializing XML: " + saxe.getMessage());
             } catch (TransformerConfigurationException e) {
@@ -489,22 +475,29 @@ public class RESTServer {
         Properties outputProperties = new Properties(defaultProperties);
         XmldbURI pathUri = XmldbURI.create(path);
         DocumentImpl resource = null;
+	
+	String encoding = outputProperties.getProperty(OutputKeys.ENCODING);
+	String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE);
         try {
             // check if path leads to an XQuery resource.
             // if yes, the resource is loaded and the XQuery executed.
             resource = broker.getXMLResource(pathUri, Lock.READ_LOCK);
             if (resource != null) {
                 if (resource.getResourceType() == DocumentImpl.BINARY_FILE &&
-                        "application/xquery".equals(resource.getMetadata().getMimeType())) {
+		    MimeType.XQUERY_TYPE.getName().equals(resource.getMetadata().getMimeType())) {
                     // found an XQuery resource
                     try {
                         String result = executeXQuery(broker, resource, request, response, outputProperties);
-                        String encoding = outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
-                        String mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE, "text/html");
+			encoding = outputProperties.getProperty(OutputKeys.ENCODING);
+                        mimeType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE);
                         writeResponse(response, result, mimeType, encoding);
                     } catch (XPathException e) {
                         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                        writeResponse(response, formatXPathException(null, path, e), "text/html", "UTF-8");
+			if (MimeType.XML_TYPE.getName().equals(mimeType)) {
+			    writeResponse(response, formatXPathException(null, path, e), mimeType, encoding);				
+			} else {
+			    writeResponse(response, formatXPathExceptionHtml(null, path, e), MimeType.HTML_TYPE.getName(), encoding);
+			}
                     }
                     return;
                 }
@@ -609,7 +602,7 @@ public class RESTServer {
                 if (query != null) {
                     writeResponse(response, search(broker, query, path, howmany,
                             start, outputProperties, enclose, request, response), mime,
-                            outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8"));
+                            outputProperties.getProperty(OutputKeys.ENCODING));
                 } else {
                     transact.abort(transaction);
                     throw new BadRequestException("No query specified");
@@ -974,9 +967,10 @@ public class RESTServer {
     
     /**
      * @param query
+     * @param path
      * @param e
      */
-    private String formatXPathException(String query, String path, XPathException e) {
+    private String formatXPathExceptionHtml(String query, String path, XPathException e) {
         StringWriter writer = new StringWriter();
         writer.write(QUERY_ERROR_HEAD);
         writer.write("<p class=\"path\"><span class=\"high\">Path</span>: ");
@@ -995,6 +989,29 @@ public class RESTServer {
             writer.write("</pre>");
         }
         writer.write("</body></html>");
+        return writer.toString();
+    }
+
+    /**
+     * @param query
+     * @param path
+     * @param e
+     */
+    private String formatXPathException(String query, String path, XPathException e) {
+        StringWriter writer = new StringWriter();
+        writer.write("<xml version=\"1.0\" />");
+        writer.write("<exception><path>");
+        writer.write(path);
+        writer.write("</path>");
+        writer.write("<message>");
+        writer.write(e.getMessage());
+        writer.write("</message>");
+        if(query != null) {
+            writer.write("<query>");
+            writer.write(query);
+            writer.write("</query>");
+        }
+        writer.write("</exception>");
         return writer.toString();
     }
     

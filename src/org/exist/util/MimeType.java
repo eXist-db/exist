@@ -36,15 +36,18 @@ public class MimeType {
     //    new MimeType("application/xml", XML);
     public final static MimeType XML_CONTENT_TYPE =
         new MimeType("text/xml; charset=UTF-8", XML);
-
     public final static MimeType XSL_TYPE =
         new MimeType("text/xsl", XML);
     public final static MimeType XSLT_TYPE =
         new MimeType("application/xslt+xml", XML);
+    public final static MimeType XQUERY_TYPE =
+        new MimeType("application/xquery", BINARY);
     public final static MimeType CSS_TYPE =
         new MimeType("text/css", BINARY);
     public final static MimeType HTML_TYPE =
         new MimeType("text/html", BINARY);
+    public final static MimeType TEXT_TYPE =
+        new MimeType("text/plain", BINARY);
 
 
     private String name;
