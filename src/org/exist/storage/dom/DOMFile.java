@@ -2924,7 +2924,7 @@ public class DOMFile extends BTree implements Lockable {
 		}
 	}
 
-	protected final static class DOMFilePageHeader extends BTreePageHeader {
+	protected final class DOMFilePageHeader extends BTreePageHeader {
 
 		protected int dataLen = 0;
 		protected long nextDataPage = Page.NO_PAGE;
@@ -3019,8 +3019,7 @@ public class DOMFile extends BTree implements Lockable {
 		}
 
 		public void setDataLength(int len) {
-			//TODO : how can we get 4032 ?
-			if (len > 4032)
+			if (len > fileHeader.getWorkSize())
 				LOG.warn("too long !");
 			dataLen = len;
 		}
