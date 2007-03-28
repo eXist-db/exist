@@ -298,7 +298,7 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
                 collections = collectQueryInfo(scanResults(seq));
             session.addQueryResult(seq);
             resp.setCollections(new QueryResponseCollections(collections));
-            resp.setHits(seq.getLength());
+            resp.setHits(seq.getItemCount());
             resp.setQueryTime(System.currentTimeMillis() - start);
             expr.reset();
             context.reset();
@@ -335,11 +335,11 @@ public class QuerySoapBindingImpl implements org.exist.soap.Query {
             if (queryResult == null)
                 throw new RemoteException("result set unknown or timed out");
             Sequence seq = (Sequence) queryResult.result;
-            if (start < 1 || start > seq.getLength())
+            if (start < 1 || start > seq.getItemCount())
                 throw new RuntimeException(
-                        "index " + start + " out of bounds (" + seq.getLength() + ")");
-            if (start + howmany > seq.getLength() || howmany == 0)
-                howmany = seq.getLength() - start + 1;
+                        "index " + start + " out of bounds (" + seq.getItemCount() + ")");
+            if (start + howmany > seq.getItemCount() || howmany == 0)
+                howmany = seq.getItemCount() - start + 1;
             
             String xml[] = new String[howmany];
             Serializer serializer = broker.getSerializer();

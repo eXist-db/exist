@@ -47,9 +47,9 @@ public class EmptySequence extends AbstractSequence {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.Sequence#getLength()
+	 * @see org.exist.xquery.value.Sequence#getItemCount()
 	 */
-	public int getLength() {
+	public int getItemCount() {
 		return 0;
 	}
 

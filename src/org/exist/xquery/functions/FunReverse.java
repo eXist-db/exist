@@ -56,7 +56,7 @@ public class FunReverse extends Function {
                     tmp.add(item);
                 }
                 result = new ValueSequence();
-                for (int i = seq.getLength() - 1; i >= 0; i--) {
+                for (int i = seq.getItemCount() - 1; i >= 0; i--) {
                     result.add(tmp.itemAt(i));
                 }
         }

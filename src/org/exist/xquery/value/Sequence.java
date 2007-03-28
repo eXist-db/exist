@@ -98,9 +98,9 @@ public interface Sequence {
      * Call this method <strong>only</strong> when necessary, 
      * since it can be resource consuming. 
 	 * 
-	 * @return The sequence's length
+	 * @return The number of items in the sequence
 	 */
-	public int getLength();
+	public int getItemCount();
 
 	/**
 	 * Returns whether the sequence is empty or not.

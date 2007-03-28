@@ -158,7 +158,7 @@ public class SequenceType {
      */
 	public void checkCardinality(Sequence seq) throws XPathException {
 		if (!seq.isEmpty() && cardinality == Cardinality.EMPTY)
-			throw new XPathException("Empty sequence expected; got " + seq.getLength());
+			throw new XPathException("Empty sequence expected; got " + seq.getItemCount());
 		if (seq.isEmpty() && (cardinality & Cardinality.ZERO) == 0)
 			throw new XPathException("Empty sequence is not allowed here");
 		else if (seq.hasMany() && (cardinality & Cardinality.MANY) == 0)

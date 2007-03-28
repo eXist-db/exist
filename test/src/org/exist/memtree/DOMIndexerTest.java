@@ -142,7 +142,7 @@ public class DOMIndexerTest extends TestCase {
             broker = pool.get(SecurityManager.SYSTEM_USER);
             XQuery xquery = broker.getXQueryService();
             Sequence result = xquery.execute(XQUERY, null, AccessContext.TEST);
-            System.out.println("Found: " + result.getLength());
+            System.out.println("Found: " + result.getItemCount());
             StringWriter out = new StringWriter();
             Properties props = new Properties();
             props.setProperty(OutputKeys.INDENT, "yes");

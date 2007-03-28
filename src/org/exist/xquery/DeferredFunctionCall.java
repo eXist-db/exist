@@ -128,10 +128,10 @@ public abstract class DeferredFunctionCall implements Sequence {
         }
     }
 
-    public int getLength() {
+    public int getItemCount() {
         try {
             realize();
-            return sequence.getLength();
+            return sequence.getItemCount();
         } catch (XPathException e) {
             LOG.error("Exception in deferred function: " + e.getMessage());
             return 0;

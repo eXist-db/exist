@@ -42,7 +42,7 @@ public class DLNStorageTest extends TestCase {
             // test element ids
             Sequence seq = xquery.execute("doc('/db/test/test_string.xml')/test/para",
                     null, AccessContext.TEST);
-            assertEquals(3, seq.getLength());
+            assertEquals(3, seq.getItemCount());
             NodeProxy comment = (NodeProxy) seq.itemAt(0);
             assertEquals(comment.getNodeId().toString(), "1.1");
             comment = (NodeProxy) seq.itemAt(1);
@@ -52,14 +52,14 @@ public class DLNStorageTest extends TestCase {
 
             seq = xquery.execute("doc('/db/test/test_string.xml')/test//a",
                     null, AccessContext.TEST);
-            assertEquals(1, seq.getLength());
+            assertEquals(1, seq.getItemCount());
             NodeProxy a = (NodeProxy) seq.itemAt(0);
             assertEquals("1.3.2", a.getNodeId().toString());
 
             // test attribute id
             seq = xquery.execute("doc('/db/test/test_string.xml')/test//a/@href",
                     null, AccessContext.TEST);
-            assertEquals(1, seq.getLength());
+            assertEquals(1, seq.getItemCount());
             NodeProxy href = (NodeProxy) seq.itemAt(0);
             System.out.println(StorageAddress.toString(href.getInternalAddress()));
             assertEquals("1.3.2.1", href.getNodeId().toString());
@@ -76,7 +76,7 @@ public class DLNStorageTest extends TestCase {
             // test text node
             seq = xquery.execute("doc('/db/test/test_string.xml')/test//b/text()",
                     null, AccessContext.TEST);
-            assertEquals(1, seq.getLength());
+            assertEquals(1, seq.getItemCount());
             NodeProxy text = (NodeProxy) seq.itemAt(0);
             assertEquals("1.5.2.1", text.getNodeId().toString());
             // test DOMFile.getNodeValue()

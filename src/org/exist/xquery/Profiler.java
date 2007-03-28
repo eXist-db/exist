@@ -234,7 +234,7 @@ public class Profiler {
                 else if (verbosity >= SEQUENCE_PREVIEW)
                     buf.append(sequencePreview(result));
                 else*/ if (verbosity >= ITEM_COUNT) 
-                    buf.append(result.getLength() + " item(s)");   
+                    buf.append(result.getItemCount() + " item(s)");   
                 buf.append("\t");     
                 printPosition(e.expr);   
                 buf.append(expr.toString());
@@ -298,7 +298,7 @@ public class Profiler {
         else if (verbosity >= SEQUENCE_PREVIEW)
             buf.append(sequencePreview(sequence));
         else */ if (verbosity >= ITEM_COUNT) 
-            buf.append(sequence.getLength() + " item(s)"); 
+            buf.append(sequence.getItemCount() + " item(s)"); 
         buf.append("\t"); 
         buf.append(expr.toString());        
     	log.debug(buf.toString());        

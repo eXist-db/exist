@@ -71,7 +71,7 @@ public class OrderedValueSequence extends AbstractSequence {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Sequence#getLength()
 	 */
-	public int getLength() {
+	public int getItemCount() {
 		return (items == null) ? 0 : count;
 	}
 	
@@ -218,7 +218,7 @@ public class OrderedValueSequence extends AbstractSequence {
 				} else if(seq.hasMany())
 					throw new XPathException("expected a single value for order expression " +
 						ExpressionDumper.dump(orderSpecs[i].getSortExpression()) + 
-						" ; found: " + seq.getLength());
+						" ; found: " + seq.getItemCount());
 			}
 		}
 

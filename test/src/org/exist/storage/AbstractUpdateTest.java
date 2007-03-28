@@ -71,7 +71,7 @@ public abstract class AbstractUpdateTest extends TestCase {
             
             XQuery xquery = broker.getXQueryService();
             Sequence seq = xquery.execute("/products/product[last()]", null, AccessContext.TEST);
-            System.out.println("Found: " + seq.getLength());
+            System.out.println("Found: " + seq.getItemCount());
             for (SequenceIterator i = seq.iterate(); i.hasNext(); ) {
                 Item next = i.nextItem();
                 System.out.println(serializer.serialize((NodeValue) next));

@@ -90,7 +90,7 @@ public class ShutdownTest extends TestCase {
             assertNotNull(xquery); 
             Sequence result = xquery.execute("//SPEECH[LINE &= 'love']", Sequence.EMPTY_SEQUENCE, AccessContext.TEST);
             assertNotNull(result); 
-            assertEquals(result.getLength(), 160);
+            assertEquals(result.getItemCount(), 160);
             
             transact.commit(transaction);
             System.out.println("Transaction commited ...");

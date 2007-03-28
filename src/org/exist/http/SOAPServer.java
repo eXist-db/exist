@@ -1434,7 +1434,7 @@ public class SOAPServer
         			//sequence of values
         			builderFunction.startElement(new QName("sequence", null, null), null);
         			
-        			for(int i=0; i < functionResult.getLength(); i++)
+        			for(int i=0; i < functionResult.getItemCount(); i++)
         			{
             			builderFunction.startElement(new QName("value", null, null), null);
             			functionResult.itemAt(i).copyTo(broker, receiver);

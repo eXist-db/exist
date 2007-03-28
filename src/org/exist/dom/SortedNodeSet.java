@@ -152,6 +152,11 @@ public class SortedNodeSet extends AbstractNodeSet {
 		return list.size();
 	}
 
+    //TODO : evaluate both semantics
+	public int getItemCount() {
+		return list.size();
+	}	
+
 	public Node item(int pos) {
 		NodeProxy p = ((IteratorItem) list.get(pos)).proxy;
 		return p == null ? null : p.getDocument().getNode(p);

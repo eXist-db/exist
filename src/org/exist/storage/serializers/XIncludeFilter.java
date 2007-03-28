@@ -337,7 +337,7 @@ public class XIncludeFilter implements Receiver {
 
                 if(Type.subTypeOf(seq.getItemType(), Type.NODE)) {
                     if (LOG.isDebugEnabled())
-                        LOG.debug("xpointer found: " + seq.getLength());
+                        LOG.debug("xpointer found: " + seq.getItemCount());
 
                     NodeValue node;
                     for (SequenceIterator i = seq.iterate(); i.hasNext();) {
@@ -346,7 +346,7 @@ public class XIncludeFilter implements Receiver {
                     }
                 } else {
                     String val;
-                    for (int i = 0; i < seq.getLength(); i++) {
+                    for (int i = 0; i < seq.getItemCount(); i++) {
                         val = seq.itemAt(i).getStringValue();
                         characters(val);
                     }

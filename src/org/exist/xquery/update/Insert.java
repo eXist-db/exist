@@ -128,7 +128,7 @@ public class Insert extends Modification {
         
         if (!inSeq.isEmpty()) {
         	if (LOG.isDebugEnabled())
-        		LOG.debug("Found: " + inSeq.getLength() + " nodes");   
+        		LOG.debug("Found: " + inSeq.getItemCount() + " nodes");   
             
         	context.pushInScopeNamespaces();
             contentSeq = deepCopy(contentSeq);

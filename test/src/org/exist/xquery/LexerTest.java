@@ -119,7 +119,7 @@ public class LexerTest extends TestCase {
 
 			// check results
 			System.out.println("----------------------------------");
-			System.out.println("found: " + result.getLength());
+			System.out.println("found: " + result.getItemCount());
 		} catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());

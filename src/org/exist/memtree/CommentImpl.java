@@ -59,6 +59,10 @@ public class CommentImpl extends NodeImpl implements Comment {
 		return new String(document.characters, document.alpha[nodeNumber],
 			document.alphaLen[nodeNumber]);
 	}
+	
+    public int getLength() {
+    	return getData().length();
+    }
 
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.CharacterData#setData(java.lang.String)

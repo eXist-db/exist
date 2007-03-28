@@ -58,7 +58,7 @@ public abstract class AbstractSequence implements Sequence {
 
 	public abstract SequenceIterator unorderedIterator();
 	
-	public abstract int getLength();
+	public abstract int getItemCount();
 
 	public int getCardinality() {
 		if (isEmpty())
@@ -211,7 +211,7 @@ public abstract class AbstractSequence implements Sequence {
 		} else if(target.isArray()) {
 			Class componentType = target.getComponentType();
 			// assume single-dimensional, then double-check that instance really matches desired type
-			Object array = Array.newInstance(componentType, getLength());
+			Object array = Array.newInstance(componentType, getItemCount());
 			if (!target.isInstance(array)) return null;
 			int index = 0;
 			for(SequenceIterator i = iterate(); i.hasNext(); index++) {
@@ -221,7 +221,7 @@ public abstract class AbstractSequence implements Sequence {
 			}
 			return array;
 		} else if(target.isAssignableFrom(List.class)) {
-			List l = new ArrayList(getLength());
+			List l = new ArrayList(getItemCount());
 			for(SequenceIterator i = iterate(); i.hasNext(); ) {
 				l.add(i.nextItem());
 			}

@@ -74,7 +74,7 @@ public class CustomIndexTest extends TestCase {
             assertNotNull(xquery);
             Sequence seq = xquery.execute("//item[text:ngram-contains(., 'cha')]", null, AccessContext.TEST);
             assertNotNull(seq);
-            assertEquals(1, seq.getLength());
+            assertEquals(1, seq.getItemCount());
 
             XUpdateProcessor proc = new XUpdateProcessor(broker, docs, AccessContext.TEST);
             assertNotNull(proc);
@@ -162,7 +162,7 @@ public class CustomIndexTest extends TestCase {
             assertNotNull(xquery);
             Sequence seq = xquery.execute("//item[text:ngram-contains(., 'cha')]", null, AccessContext.TEST);
             assertNotNull(seq);
-            assertEquals(1, seq.getLength());
+            assertEquals(1, seq.getItemCount());
 
             XUpdateProcessor proc = new XUpdateProcessor(broker, docs, AccessContext.TEST);
             assertNotNull(proc);
@@ -286,7 +286,7 @@ public class CustomIndexTest extends TestCase {
             assertNotNull(xquery);
             Sequence seq = xquery.execute("//item[text:ngram-contains(., 'cha')]", null, AccessContext.TEST);
             assertNotNull(seq);
-            assertEquals(1, seq.getLength());
+            assertEquals(1, seq.getItemCount());
 
             XUpdateProcessor proc = new XUpdateProcessor(broker, docs, AccessContext.TEST);
             assertNotNull(proc);
@@ -354,7 +354,7 @@ public class CustomIndexTest extends TestCase {
             assertNotNull(xquery);
             Sequence seq = xquery.execute("//item[text:ngram-contains(., 'cha')]", null, AccessContext.TEST);
             assertNotNull(seq);
-            assertEquals(1, seq.getLength());
+            assertEquals(1, seq.getItemCount());
 
             XUpdateProcessor proc = new XUpdateProcessor(broker, docs, AccessContext.TEST);
             assertNotNull(proc);
@@ -414,7 +414,7 @@ public class CustomIndexTest extends TestCase {
             assertNotNull(xquery);
             Sequence seq = xquery.execute("//item[text:ngram-contains(., 'cha')]", null, AccessContext.TEST);
             assertNotNull(seq);
-            assertEquals(1, seq.getLength());
+            assertEquals(1, seq.getItemCount());
 
             XUpdateProcessor proc = new XUpdateProcessor(broker, docs, AccessContext.TEST);
             assertNotNull(proc);
@@ -458,7 +458,7 @@ public class CustomIndexTest extends TestCase {
             assertNotNull(xquery);
             Sequence seq = xquery.execute("//item[text:ngram-contains(., 'cha')]", null, AccessContext.TEST);
             assertNotNull(seq);
-            assertEquals(1, seq.getLength());
+            assertEquals(1, seq.getItemCount());
 
             transact.commit(transaction);
         } catch (Exception e) {
@@ -480,7 +480,7 @@ public class CustomIndexTest extends TestCase {
             assertNotNull(xquery);
             Sequence seq = xquery.execute("//item[text:ngram-contains(., 'cha')]", null, AccessContext.TEST);
             assertNotNull(seq);
-            assertEquals(1, seq.getLength());
+            assertEquals(1, seq.getItemCount());
 
             checkIndex(broker, docs, "cha", 1);
             checkIndex(broker, docs, "le8", 1);
@@ -494,7 +494,7 @@ public class CustomIndexTest extends TestCase {
 
             seq = xquery.execute("//item[text:ngram-contains(., 'cha')]", null, AccessContext.TEST);
             assertNotNull(seq);
-            assertEquals(0, seq.getLength());
+            assertEquals(0, seq.getItemCount());
 
             transact.commit(transaction);
         } catch (Exception e) {

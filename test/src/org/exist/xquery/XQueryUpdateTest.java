@@ -69,16 +69,16 @@ public class XQueryUpdateTest extends TestCase {
             }
             
             Sequence seq = xquery.execute("/products", null, AccessContext.TEST);
-            assertEquals(seq.getLength(), 1);
+            assertEquals(seq.getItemCount(), 1);
             
             Serializer serializer = broker.getSerializer();
             System.out.println(serializer.serialize((NodeValue) seq.itemAt(0)));
             
             seq = xquery.execute("//product", null, AccessContext.TEST);
-            assertEquals(ITEMS_TO_APPEND, seq.getLength());
+            assertEquals(ITEMS_TO_APPEND, seq.getItemCount());
             
             seq = xquery.execute("//product[price > 0.0]", null, AccessContext.TEST);
-            assertEquals(ITEMS_TO_APPEND, seq.getLength());
+            assertEquals(ITEMS_TO_APPEND, seq.getItemCount());
             System.out.println("testAppend: PASS");
         } catch (Exception e) {
             e.printStackTrace();
@@ -109,16 +109,16 @@ public class XQueryUpdateTest extends TestCase {
             }
 
             Sequence seq = xquery.execute("/products", null, AccessContext.TEST);
-            assertEquals(seq.getLength(), 1);
+            assertEquals(seq.getItemCount(), 1);
 
             Serializer serializer = broker.getSerializer();
             System.out.println(serializer.serialize((NodeValue) seq.itemAt(0)));
 
             seq = xquery.execute("//product", null, AccessContext.TEST);
-            assertEquals(ITEMS_TO_APPEND, seq.getLength());
+            assertEquals(ITEMS_TO_APPEND, seq.getItemCount());
 
             seq = xquery.execute("//product[@name = 'n20']", null, AccessContext.TEST);
-            assertEquals(1, seq.getLength());
+            assertEquals(1, seq.getItemCount());
 
             store(broker, "attribs.xml", "<test attr1='aaa' attr2='bbb'>ccc</test>");
             query = "update insert attribute attr1 { 'eee' } into /test";
@@ -127,7 +127,7 @@ public class XQueryUpdateTest extends TestCase {
             xquery.execute(query, null, AccessContext.TEST);
 
             seq = xquery.execute("document('" + TEST_COLLECTION + "/attribs.xml')/test[@attr1 = 'eee']", null, AccessContext.TEST);
-            assertEquals(1, seq.getLength());
+            assertEquals(1, seq.getItemCount());
             System.out.println(serializer.serialize((NodeValue) seq.itemAt(0)));
 
             System.out.println("testAppendAttributes: PASS");
@@ -174,16 +174,16 @@ public class XQueryUpdateTest extends TestCase {
             }
 
             Sequence seq = xquery.execute("/products", null, AccessContext.TEST);
-            assertEquals(seq.getLength(), 1);
+            assertEquals(seq.getItemCount(), 1);
 
             Serializer serializer = broker.getSerializer();
             System.out.println(serializer.serialize((NodeValue) seq.itemAt(0)));
 
             seq = xquery.execute("//product", null, AccessContext.TEST);
-            assertEquals(ITEMS_TO_APPEND + 1, seq.getLength());
+            assertEquals(ITEMS_TO_APPEND + 1, seq.getItemCount());
 
             seq = xquery.execute("//product[price > 0.0]", null, AccessContext.TEST);
-            assertEquals(ITEMS_TO_APPEND, seq.getLength());
+            assertEquals(ITEMS_TO_APPEND, seq.getItemCount());
             System.out.println("testInsertBefore: PASS");
         } catch (Exception e) {
             e.printStackTrace();
@@ -228,16 +228,16 @@ public class XQueryUpdateTest extends TestCase {
             }
 
             Sequence seq = xquery.execute("/products", null, AccessContext.TEST);
-            assertEquals(seq.getLength(), 1);
+            assertEquals(seq.getItemCount(), 1);
 
             Serializer serializer = broker.getSerializer();
             System.out.println(serializer.serialize((NodeValue) seq.itemAt(0)));
 
             seq = xquery.execute("//product", null, AccessContext.TEST);
-            assertEquals(ITEMS_TO_APPEND + 1, seq.getLength());
+            assertEquals(ITEMS_TO_APPEND + 1, seq.getItemCount());
 
             seq = xquery.execute("//product[price > 0.0]", null, AccessContext.TEST);
-            assertEquals(ITEMS_TO_APPEND, seq.getLength());
+            assertEquals(ITEMS_TO_APPEND, seq.getItemCount());
             System.out.println("testInsertAfter: PASS");
         } catch (Exception e) {
             e.printStackTrace();
@@ -264,18 +264,18 @@ public class XQueryUpdateTest extends TestCase {
             Sequence seq = xquery.execute(query, null, AccessContext.TEST);
 
             seq = xquery.execute("//product[starts-with(description, 'Updated')]", null, AccessContext.TEST);
-            assertEquals(seq.getLength(), ITEMS_TO_APPEND);
+            assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
 
             Serializer serializer = broker.getSerializer();
             System.out.println(serializer.serialize((NodeValue) seq.itemAt(0)));
 
             for (int i = 1; i <= ITEMS_TO_APPEND; i++) {
                 seq = xquery.execute("//product[description &= 'Description" + i + "']", null, AccessContext.TEST);
-                assertEquals(1, seq.getLength());
+                assertEquals(1, seq.getItemCount());
                 System.out.println(serializer.serialize((NodeValue) seq.itemAt(0)));
             }
             seq = xquery.execute("//product[description &= 'Updated']", null, AccessContext.TEST);
-            assertEquals(seq.getLength(), ITEMS_TO_APPEND);
+            assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
 
             System.out.println(serializer.serialize((NodeValue) seq.itemAt(0)));
             
@@ -287,9 +287,9 @@ public class XQueryUpdateTest extends TestCase {
             seq = xquery.execute(query, null, AccessContext.TEST);
             
             seq = xquery.execute("//product[stock > 400]", null, AccessContext.TEST);
-            assertEquals(seq.getLength(), ITEMS_TO_APPEND);
+            assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
             seq = xquery.execute("//product[stock &= '401']", null, AccessContext.TEST);
-            assertEquals(seq.getLength(), 1);
+            assertEquals(seq.getItemCount(), 1);
 
             System.out.println(serializer.serialize((NodeValue) seq.itemAt(0)));
             
@@ -301,10 +301,10 @@ public class XQueryUpdateTest extends TestCase {
             seq = xquery.execute(query, null, AccessContext.TEST);
             
             seq = xquery.execute("/products", null, AccessContext.TEST);
-            assertEquals(seq.getLength(), 1);
+            assertEquals(seq.getItemCount(), 1);
             
             seq = xquery.execute("//product[@num = 3]", null, AccessContext.TEST);
-            assertEquals(seq.getLength(), 1);
+            assertEquals(seq.getItemCount(), 1);
             
             System.out.println(serializer.serialize((NodeValue) seq.itemAt(0)));
             
@@ -316,10 +316,10 @@ public class XQueryUpdateTest extends TestCase {
             seq = xquery.execute(query, null, AccessContext.TEST);
             
             seq = xquery.execute("/products", null, AccessContext.TEST);
-            assertEquals(seq.getLength(), 1);
+            assertEquals(seq.getItemCount(), 1);
             
             seq = xquery.execute("//product/stock/external[. = 1]", null, AccessContext.TEST);
-            assertEquals(seq.getLength(), ITEMS_TO_APPEND);
+            assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
             
             System.out.println("testUpdate: PASS");
         } catch (Exception e) {
@@ -345,7 +345,7 @@ public class XQueryUpdateTest extends TestCase {
         	Sequence seq = xquery.execute(query, null, AccessContext.TEST);
 
         	seq = xquery.execute("//product", null, AccessContext.TEST);
-        	assertEquals(seq.getLength(), 0);
+        	assertEquals(seq.getItemCount(), 0);
 
         	System.out.println("testRemove: PASS");
         } catch (Exception e) {
@@ -371,7 +371,7 @@ public class XQueryUpdateTest extends TestCase {
             Sequence seq = xquery.execute(query, null, AccessContext.TEST);
 
             seq = xquery.execute("//product/desc", null, AccessContext.TEST);
-            assertEquals(seq.getLength(), ITEMS_TO_APPEND);
+            assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
 
             query =
             	"for $prod in //product return\n" +
@@ -379,7 +379,7 @@ public class XQueryUpdateTest extends TestCase {
             seq = xquery.execute(query, null, AccessContext.TEST);
 
             seq = xquery.execute("//product/@count", null, AccessContext.TEST);
-            assertEquals(seq.getLength(), ITEMS_TO_APPEND);
+            assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
 
             System.out.println("testUpdate: PASS");
         } catch (Exception e) {
@@ -405,7 +405,7 @@ public class XQueryUpdateTest extends TestCase {
             Sequence seq = xquery.execute(query, null, AccessContext.TEST);
 
             seq = xquery.execute("//product/desc", null, AccessContext.TEST);
-            assertEquals(seq.getLength(), ITEMS_TO_APPEND);
+            assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
 
             query =
             	"for $prod in //product return\n" +
@@ -413,7 +413,7 @@ public class XQueryUpdateTest extends TestCase {
             seq = xquery.execute(query, null, AccessContext.TEST);
 
             seq = xquery.execute("//product/@num", null, AccessContext.TEST);
-            assertEquals(seq.getLength(), ITEMS_TO_APPEND);
+            assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
 
             query =
             	"for $prod in //product return\n" +
@@ -421,7 +421,7 @@ public class XQueryUpdateTest extends TestCase {
             seq = xquery.execute(query, null, AccessContext.TEST);
 
             seq = xquery.execute("//product[starts-with(desc, 'A new')]", null, AccessContext.TEST);
-            assertEquals(seq.getLength(), ITEMS_TO_APPEND);
+            assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
 
             System.out.println("testUpdate: PASS");
         } catch (Exception e) {
@@ -480,13 +480,13 @@ public class XQueryUpdateTest extends TestCase {
             }
 
             Sequence seq = xquery.execute("/products", null, AccessContext.TEST);
-            assertEquals(seq.getLength(), 1);
+            assertEquals(seq.getItemCount(), 1);
 
             Serializer serializer = broker.getSerializer();
             System.out.println(serializer.serialize((NodeValue) seq.itemAt(0)));
 
             seq = xquery.execute("//product", null, AccessContext.TEST);
-            assertEquals(ITEMS_TO_APPEND, seq.getLength());
+            assertEquals(ITEMS_TO_APPEND, seq.getItemCount());
 
             System.out.println("testAppendCDATA: PASS");
         } catch (Exception e) {

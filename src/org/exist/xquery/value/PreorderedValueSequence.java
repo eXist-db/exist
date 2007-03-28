@@ -50,7 +50,7 @@ public class PreorderedValueSequence extends AbstractSequence {
 	
 	public PreorderedValueSequence(OrderSpec specs[], Sequence input, int contextId) throws XPathException {
 		this.orderSpecs = specs;
-		nodes = new OrderedNodeProxy[input.getLength()];
+		nodes = new OrderedNodeProxy[input.getItemCount()];
 		int j = 0;
 		for(SequenceIterator i = input.unorderedIterator(); i.hasNext(); j++) {
 			NodeProxy p = (NodeProxy)i.nextItem();
@@ -110,7 +110,7 @@ public class PreorderedValueSequence extends AbstractSequence {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AbstractSequence#getLength()
 	 */
-	public int getLength() {
+	public int getItemCount() {
 		return nodes.length;
 	}
 	

@@ -61,7 +61,7 @@ public class GroupedValueSequence extends AbstractSequence {
         this.items = new Entry[size]; 
         this.groupKey = keySequence; 
         this.context = aContext; 
-        this.groupKeyLength = groupKey.getLength();
+        this.groupKeyLength = groupKey.getItemCount();
     } 
      
     /* (non-Javadoc) 
@@ -81,7 +81,7 @@ public class GroupedValueSequence extends AbstractSequence {
     /* (non-Javadoc) 
      * @see org.exist.xquery.value.Sequence#getLength() 
      */ 
-    public int getLength() { 
+    public int getItemCount() { 
         return (items == null) ? 0 : count; 
     } 
      
@@ -201,7 +201,7 @@ public class GroupedValueSequence extends AbstractSequence {
                 } else if(seq.hasMany()) 
                     throw new XPathException("expected a single value for group by expression " + 
                         ExpressionDumper.dump(groupSpecs[i].getGroupExpression()) +  
-                        " ; found: " + seq.getLength()); 
+                        " ; found: " + seq.getItemCount()); 
             } 
         } 
  

@@ -86,7 +86,7 @@ public class XMLDBCreateUser extends BasicFunction {
         // changed by wolf: the first group is always the primary group, so we don't need
         // an additional argument
         Sequence groups = args[2];
-        int len = groups.getLength();
+        int len = groups.getItemCount();
         for (int x = 0; x < len; x++)
             userObj.addGroup(groups.itemAt(x).getStringValue());
         
