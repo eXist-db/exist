@@ -550,7 +550,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
     }    
     
     public Attr createAttribute(String name) throws DOMException {
-        AttrImpl attr = new AttrImpl(new QName(name, "", null), null);
+        AttrImpl attr = new AttrImpl(new QName(name, "", null));
         attr.setOwnerDocument(this);
         return attr;
     }
@@ -566,7 +566,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
             prefix = qualifiedName.substring(0, p);
             name = qualifiedName.substring(p); 
         }
-        AttrImpl attr = new AttrImpl(new QName(name, namespaceURI, prefix), null);
+        AttrImpl attr = new AttrImpl(new QName(name, namespaceURI, prefix));
         attr.setOwnerDocument(this);
         return attr;
     }

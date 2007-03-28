@@ -30,6 +30,7 @@ import org.exist.storage.Signatures;
 import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
 import org.exist.util.UTF8;
+import org.exist.util.XMLString;
 import org.exist.util.serializer.AttrList;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
@@ -49,15 +50,24 @@ public class AttrImpl extends NamedNode implements Attr {
     public final static int DEFAULT_ATTRIBUTE_TYPE = CDATA;
 	
 	protected int attributeType = DEFAULT_ATTRIBUTE_TYPE;
-    protected String value = null;
+    protected XMLString value = null;
 
     public AttrImpl() {
     	super(Node.ATTRIBUTE_NODE);
     }
 
-    public AttrImpl( QName name, String value ) {
+    public AttrImpl (QName name) {
+        super( Node.ATTRIBUTE_NODE, name);
+    }
+
+    public AttrImpl( QName name, XMLString value ) {
         super( Node.ATTRIBUTE_NODE, name);
 		this.value = value;
+    }
+
+    public AttrImpl (QName name, String str) {
+        super( Node.ATTRIBUTE_NODE, name);
+        this.value = new XMLString( str.toCharArray() );
     }
 
     public AttrImpl(AttrImpl other) {
@@ -87,7 +97,7 @@ public class AttrImpl extends NamedNode implements Attr {
         		LENGTH_SIGNATURE_LENGTH + NodeId.LENGTH_NODE_ID_UNITS + nodeIdLen +
                 Signatures.getLength(idSizeType) +
                 (nodeName.needsNamespaceDecl() ? LENGTH_NS_ID + LENGTH_PREFIX_LENGTH + prefixLen : 0) + 
-        		UTF8.encoded(value));
+        		value.UTF8Size());
         int pos = 0;
         data[pos] = (byte) ( Signatures.Attr << 0x5 );
         data[pos] |= idSizeType;
@@ -111,7 +121,7 @@ public class AttrImpl extends NamedNode implements Attr {
                 UTF8.encode(nodeName.getPrefix(), data, pos);
             pos += prefixLen;
         }
-        UTF8.encode(value, data, pos);
+        value.UTF8Encode(data, pos);
         return data;
     }
     
@@ -142,13 +152,8 @@ public class AttrImpl extends NamedNode implements Attr {
 			pos += prefixLen;
 		}
 		String namespace = nsId == 0 ? "" : doc.getSymbols().getNamespace(nsId);
-        String value;
-        try {
-            value = new String(data, pos, len - (pos - start), "UTF-8");
-        } catch (UnsupportedEncodingException uee) {
-        	LOG.warn(uee);
-            value = new String(data, pos, len - (pos - start));
-        }
+        XMLString value = UTF8.decode(data, pos, len - (pos - start));
+
         //OK : we have the necessary material to build the attribute
         AttrImpl attr;
         if(pooled)
@@ -156,7 +161,7 @@ public class AttrImpl extends NamedNode implements Attr {
         else
             attr = new AttrImpl();
         attr.setNodeName(doc.getSymbols().getQName(Node.ATTRIBUTE_NODE, namespace, name, prefix));
-        attr.setValue(value);
+        attr.value = value;
         attr.setNodeId(dln);
         if (dln == null)
         	throw new RuntimeException("no node id " + id);
@@ -215,17 +220,17 @@ public class AttrImpl extends NamedNode implements Attr {
 	}
 
     public String getValue() {
-        return value;
+        return value.toString();
     }
     
     public String getNodeValue() {
-        return value;
+        return value.toString();
     }    
     
-    public void setValue( String value ) throws DOMException {
-        this.value = value;
-    } 
-    
+    public void setValue(String str) throws DOMException {
+        this.value = new XMLString(str.toCharArray());
+    }
+
     public Element getOwnerElement() {
         return (Element) ((DocumentImpl)getOwnerDocument()).getNode( nodeId.getParentId() );
     }
