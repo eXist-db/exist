@@ -317,7 +317,7 @@ public class RESTServiceTest extends TestCase {
 	            if (semicolon > 0) {
 	                contentType = contentType.substring(0, semicolon).trim();
 	            }
-	            assertEquals("Server returned content type " + contentType, "text/html", contentType);
+	            assertEquals("Server returned content type " + contentType, "text/xml", contentType);
 	
 	            //get the response of the query
 	            String response = readResponse(connect.getInputStream());
