@@ -16,7 +16,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
- * $Id: FunEndsWith.java 4163 2006-08-24 14:23:13Z wolfgang_m $
+ * $Id$
  */
 
 package org.exist.xquery.functions;
