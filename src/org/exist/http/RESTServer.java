@@ -1,23 +1,22 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist-db.org
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2007 The eXist team
+ * http://exist-db.org
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
  *  $Id$
  */
 package org.exist.http;
@@ -113,6 +112,7 @@ public class RESTServer {
     
     protected final static Logger LOG = Logger.getLogger(RESTServer.class);
     
+    // Should we not obey the instance's defaults? /ljo
     protected final static Properties defaultProperties = new Properties();
     
     static {
@@ -122,6 +122,14 @@ public class RESTServer {
         defaultProperties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes");
         defaultProperties.setProperty(EXistOutputKeys.HIGHLIGHT_MATCHES, "elements");
         defaultProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "yes");
+    }
+
+    protected final static Properties defaultOutputKeysProperties = new Properties();
+    
+    static {
+        defaultOutputKeysProperties.setProperty(OutputKeys.INDENT, "yes");
+        defaultOutputKeysProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
+        defaultOutputKeysProperties.setProperty(OutputKeys.MEDIA_TYPE, MimeType.XML_TYPE.getName());
     }
     
     private final static String QUERY_ERROR_HEAD =
@@ -215,7 +223,7 @@ public class RESTServer {
         int start = 1;
         boolean wrap = true;
         boolean source = false;
-        Properties outputProperties = new Properties(defaultProperties);
+        Properties outputProperties = new Properties(defaultOutputKeysProperties);
         String query = request.getParameter("_xpath");
         if (query == null)
             query = request.getParameter("_query");
@@ -411,11 +419,11 @@ public class RESTServer {
 			LOG.debug("media-type: " + asMimeType);
 			response.setContentType(asMimeType + "; charset="+encoding);
 		    } else {
-			response.setContentType(resource.getMetadata().getMimeType()+"; charset="+encoding);
+			response.setContentType(resource.getMetadata().getMimeType() + "; charset=" + encoding);
 		    }
                 }
                 OutputStream is = response.getOutputStream();
-                Writer w = new OutputStreamWriter(is,encoding);
+                Writer w = new OutputStreamWriter(is, encoding);
                 serializer.serialize(resource,w);
                 w.flush();
                 w.close();
@@ -472,7 +480,7 @@ public class RESTServer {
     	if (request.getCharacterEncoding() == null)
 			request.setCharacterEncoding(formEncoding);
     
-        Properties outputProperties = new Properties(defaultProperties);
+        Properties outputProperties = new Properties(defaultOutputKeysProperties);
         XmldbURI pathUri = XmldbURI.create(path);
         DocumentImpl resource = null;
 	
@@ -999,7 +1007,7 @@ public class RESTServer {
      */
     private String formatXPathException(String query, String path, XPathException e) {
         StringWriter writer = new StringWriter();
-        writer.write("<xml version=\"1.0\" />");
+        writer.write("<?xml version=\"1.0\" ?>");
         writer.write("<exception><path>");
         writer.write(path);
         writer.write("</path>");
