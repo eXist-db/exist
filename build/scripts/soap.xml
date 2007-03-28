@@ -8,7 +8,10 @@
 
     <description>Build Axis SOAP interface</description>
 
-    <target name="wsdl2java">
+	<!-- import common targets -->
+	<import file="../../build.xml"/>
+
+	<target name="wsdl2java">
         <mkdir dir="${build.soap}"/>
         <delete failonerror="no" file="${build.soap}/org/exist/soap/AdminSoapBindingImpl.java"/>
         <delete failonerror="no" file="${build.soap}/org/exist/soap/QuerySoapBindingImpl.java"/>
