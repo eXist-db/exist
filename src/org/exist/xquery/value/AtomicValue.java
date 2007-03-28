@@ -116,7 +116,7 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Sequence#getLength()
 	 */
-	public int getLength() {
+	public int getItemCount() {
 		return 1;
 	}
 

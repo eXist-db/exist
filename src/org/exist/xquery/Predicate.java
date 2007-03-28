@@ -226,7 +226,7 @@ public class Predicate extends PathExpr {
 		int p;
 		if (contextSequence instanceof NodeSet && ((NodeSet)contextSequence).getProcessInReverseOrder()) {
 			//This one may be expensive...
-			p = contextSequence.getLength();
+			p = contextSequence.getItemCount();
 			for (SequenceIterator i = contextSequence.iterate(); i.hasNext(); p--) {
 				//0-based
 	            context.setContextPosition(p - 1); 
@@ -343,15 +343,16 @@ public class Predicate extends PathExpr {
         		
         		NodeSet outerNodeSet;
         		
-        		//Ugly and costly processing of VirtualNodeSEts
+        		//Ugly and costly processing of VirtualNodeSets
         		//TODO : CORRECT THIS !!!
         		
         		if (outerSequence instanceof VirtualNodeSet) {
 
         			outerNodeSet = new ExtArrayNodeSet();
-        			for (int i = 0 ; i < outerSequence.getLength() ; i++) {
+        			for (int i = 0 ; i < outerSequence.getItemCount() ; i++) {
         				outerNodeSet.add(outerSequence.itemAt(i));
         			}
+        			
         		} else outerNodeSet = outerSequence.toNodeSet();       		
         		
         		//Comment the line below if you have uncommented the lines above :-)
@@ -442,9 +443,9 @@ public class Predicate extends PathExpr {
                         Sequence innerSeq = inner.eval(contextSequence);                        
                         for(SequenceIterator j = innerSeq.iterate(); j.hasNext(); ) {                    
                             NumericValue v = (NumericValue)j.nextItem().convertTo(Type.NUMBER);                             
-                            int pos = (reverseAxis ? temp.getLength() - v.getInt() : v.getInt() - 1);
+                            int pos = (reverseAxis ? temp.getItemCount() - v.getInt() : v.getInt() - 1);
                             //Other positions are ignored
-                            if (pos >= 0 && pos < temp.getLength()) {
+                            if (pos >= 0 && pos < temp.getItemCount()) {
                                 NodeProxy t = (NodeProxy) temp.itemAt(pos);
                                 // for the current context: filter out those context items
                                 // not selected by the positional predicate
@@ -472,7 +473,7 @@ public class Predicate extends PathExpr {
 				NumericValue v = (NumericValue)i.nextItem().convertTo(Type.NUMBER);
 				int pos = v.getInt() - 1;
                 //Other positions are ignored    
-				if(pos >= 0 && pos < contextSequence.getLength())
+				if(pos >= 0 && pos < contextSequence.getItemCount())
 					result.add(contextSequence.itemAt(pos));                            
 			}
 			return result;

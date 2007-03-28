@@ -83,8 +83,8 @@ public class FunDeepEqual extends Function {
         
         Sequence result;
 		Sequence[] args = getArguments(contextSequence, contextItem);
-		int length = args[0].getLength();
-		if (length != args[1].getLength()) 
+		int length = args[0].getItemCount();
+		if (length != args[1].getItemCount()) 
             result = BooleanValue.FALSE;
         else {
         	result = BooleanValue.TRUE;

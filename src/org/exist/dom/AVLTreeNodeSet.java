@@ -41,6 +41,11 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
     public int getLength() {
         return size;
     }
+    
+    //TODO : evaluate both semantics
+    public int getItemCount() {
+    	return size;
+    }
 
     /* (non-Javadoc)
       * @see org.exist.dom.NodeSet#item(int)

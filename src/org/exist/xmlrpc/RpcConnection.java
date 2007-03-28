@@ -991,7 +991,7 @@ public class RpcConnection extends Thread {
         qr.timestamp = System.currentTimeMillis();
         if (qr.result == null)
             return 0;
-        return qr.result.getLength();
+        return qr.result.getItemCount();
     }
     
     public Hashtable getPermissions(User user, String name)
@@ -1423,17 +1423,17 @@ public class RpcConnection extends Thread {
             return "<?xml version=\"1.0\"?>\n"
                     + "<exist:result xmlns:exist=\""+ Namespaces.EXIST_NS + "\" "
                     + "hitCount=\"0\"/>";
-        if (howmany > resultSet.getLength() || howmany == 0)
-            howmany = resultSet.getLength();
+        if (howmany > resultSet.getItemCount() || howmany == 0)
+            howmany = resultSet.getItemCount();
         
-        if (start < 1 || start > resultSet.getLength())
+        if (start < 1 || start > resultSet.getItemCount())
             throw new EXistException("start parameter out of range");
         
         StringWriter writer = new StringWriter();
         writer.write("<exist:result xmlns:exist=\"");
         writer.write(Namespaces.EXIST_NS);
         writer.write("\" hits=\"");
-        writer.write(Integer.toString(resultSet.getLength()));
+        writer.write(Integer.toString(resultSet.getItemCount()));
         writer.write("\" start=\"");
         writer.write(Integer.toString(start));
         writer.write("\" count=\"");
@@ -1562,7 +1562,7 @@ public class RpcConnection extends Thread {
             }
             resultSeq = queryResult.result;
             if (LOG.isDebugEnabled())
-            	LOG.debug("found " + resultSeq.getLength());
+            	LOG.debug("found " + resultSeq.getItemCount());
             
             if (sortBy != null) {
                 SortedNodeSet sorted = new SortedNodeSet(brokerPool, user,
@@ -1636,7 +1636,7 @@ public class RpcConnection extends Thread {
             }
             resultSeq = queryResult.result;
             if (LOG.isDebugEnabled())
-            	LOG.debug("found " + resultSeq.getLength());
+            	LOG.debug("found " + resultSeq.getItemCount());
             
             if (sortBy != null) {
                 SortedNodeSet sorted = new SortedNodeSet(brokerPool, user,
@@ -1852,7 +1852,7 @@ public class RpcConnection extends Thread {
                     "hitCount",
                     "hitCount",
                     "CDATA",
-                    Integer.toString(qr.result.getLength()));
+                    Integer.toString(qr.result.getItemCount()));
             handler.startElement(
             		Namespaces.EXIST_NS,
                     "result",

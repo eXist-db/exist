@@ -49,7 +49,7 @@ public class FunRemove extends Function {
         else {            
             //TODO : explain this Double conversion -pb
     		int pos = ((DoubleValue)getArgument(1).eval(contextSequence, contextItem).convertTo(Type.DOUBLE)).getInt();
-    		if (pos < 1 || pos > seq.getLength()) 
+    		if (pos < 1 || pos > seq.getItemCount()) 
                 result= seq;
             else {
         		pos--;
@@ -59,7 +59,7 @@ public class FunRemove extends Function {
         			result = ((NodeSet)result).except((NodeSet) seq.itemAt(pos));
         		} else {
         			result = new ValueSequence();
-        			for (int i = 0; i < seq.getLength(); i++) {
+        			for (int i = 0; i < seq.getItemCount(); i++) {
         				if (i != pos) result.add(seq.itemAt(i));
         			}        			
         		}

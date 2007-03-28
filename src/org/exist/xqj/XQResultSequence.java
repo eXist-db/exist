@@ -42,7 +42,7 @@ public class XQResultSequence implements javax.xml.xquery.XQResultSequence {
 	public XQResultSequence(Sequence resultSequence)
 	{
 		this.resultSequence = resultSequence;
-		iLength = resultSequence.getLength(); //do this once here as getLength() is expensive
+		iLength = resultSequence.getItemCount(); //do this once here as getLength() is expensive
 	}
 	
 	/* (non-Javadoc)

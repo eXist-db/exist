@@ -91,6 +91,11 @@ public final class EmptyNodeSet extends AbstractNodeSet {
     public int getLength() {
 	    return 0;
     }
+
+    //TODO : evaluate both semantics
+    public int getItemCount() {
+	    return 0;
+    }
     
     public Node item(int pos) {
 	    return null;

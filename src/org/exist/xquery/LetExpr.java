@@ -185,7 +185,7 @@ public class LetExpr extends BindingExpression {
             // order expressions for every item when it is added to the result sequence.
             if(resultSequence == null) {            
                 if(orderSpecs != null && !fastOrderBy)
-                    resultSequence = new OrderedValueSequence(orderSpecs, in.getLength());
+                    resultSequence = new OrderedValueSequence(orderSpecs, in.getItemCount());
             }
             
             if(groupedSequence==null){ 

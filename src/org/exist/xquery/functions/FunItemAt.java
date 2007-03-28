@@ -80,14 +80,14 @@ public class FunItemAt extends Function {
 		IntegerValue posArg = (IntegerValue)
 			getArgument(1).eval(contextSequence, contextItem).convertTo(Type.INTEGER);
 		long pos = posArg.getValue();
-		if (pos < 1 || pos > seq.getLength())
+		if (pos < 1 || pos > seq.getItemCount())
 			throw new XPathException("Invalid position: " + pos);
 		Item item = seq.itemAt((int)pos - 1);
         
         Sequence result;
 		if(item == null) {
             //TODO : throw an exception ? -pb
-			LOG.debug("Item is null: " + seq.getClass().getName() + "; len = " + seq.getLength());
+			LOG.debug("Item is null: " + seq.getClass().getName() + "; len = " + seq.getItemCount());
 			result = Sequence.EMPTY_SEQUENCE;
 		}
         else result = item.toSequence();

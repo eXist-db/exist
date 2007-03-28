@@ -116,7 +116,7 @@ public class FunAvg extends Function {
 					throw new XPathException("FORG0006: " + e.getMessage(), e);    					
 				}
     		}
-    		result = sum.div(new IntegerValue(inner.getLength()));
+    		result = sum.div(new IntegerValue(inner.getItemCount()));
         }
         
 		if (!gotInfinity) {

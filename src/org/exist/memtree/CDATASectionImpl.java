@@ -66,6 +66,10 @@ public class CDATASectionImpl extends NodeImpl implements CDATASection {
     	return getData();
     }
     
+    public int getLength() {
+    	return getData().length();
+    }
+    
     /* (non-Javadoc)
      * @see org.w3c.dom.CharacterData#substringData(int, int)
      */

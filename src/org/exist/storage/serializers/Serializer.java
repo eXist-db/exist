@@ -727,7 +727,7 @@ public abstract class Serializer implements XMLReader {
         }
         setXSLHandler();
 		AttrList attrs = new AttrList();
-		attrs.addAttribute(ATTR_HITS_QNAME, Integer.toString(seq.getLength()));
+		attrs.addAttribute(ATTR_HITS_QNAME, Integer.toString(seq.getItemCount()));
 		attrs.addAttribute(ATTR_START_QNAME, Integer.toString(start));
 		attrs.addAttribute(ATTR_COUNT_QNAME, Integer.toString(count));
 		

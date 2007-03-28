@@ -180,7 +180,7 @@ public abstract class Modification {
 			throw new EXistException("select expression should evaluate to a node-set; got " +
 			        Type.getTypeName(resultSeq.getItemType()));
 		if (LOG.isDebugEnabled())
-			LOG.debug("found " + resultSeq.getLength() + " for select: " + selectStmt);
+			LOG.debug("found " + resultSeq.getItemCount() + " for select: " + selectStmt);
 		return (NodeList)resultSeq.toNodeSet();
 	}
 

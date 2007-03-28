@@ -312,6 +312,13 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
             sort(); // sort to remove duplicates
         return size;
     }
+    
+    //TODO : evaluate both semantics    
+    public int getItemCount() {
+        if (!isSorted())
+            sort(); // sort to remove duplicates
+        return size;
+    }
 
     /*
      * (non-Javadoc)

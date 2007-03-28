@@ -526,12 +526,16 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.exist.xquery.value.Sequence#getLength()
+	 * @see org.exist.xquery.value.Sequence#getItemCount()
 	 */
-	public int getLength() {
+	public int getItemCount() {
 		return 1;
 	}
-
+	
+	public int getLength() {
+		//Let the derived classes do it...
+		throw new RuntimeException("Can not call getLength() on node type " + this.getNodeType());
+	}
 	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Sequence#getCardinality()

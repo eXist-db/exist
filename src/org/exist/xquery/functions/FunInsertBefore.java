@@ -64,11 +64,11 @@ public class FunInsertBefore extends Function {
     		if (pos <= 0) {
     			result.addAll(seq2);
     			result.addAll(seq1);
-    		} else if (pos >= seq1.getLength()) {
+    		} else if (pos >= seq1.getItemCount()) {
     			result.addAll(seq1);
     			result.addAll(seq2);
     		} else {
-    			for (int i=0; i<seq1.getLength(); i++) {
+    			for (int i=0; i<seq1.getItemCount(); i++) {
     				if (i == pos) result.addAll(seq2);
     				result.add(seq1.itemAt(i));
     			}

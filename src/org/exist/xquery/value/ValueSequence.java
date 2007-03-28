@@ -69,7 +69,7 @@ public class ValueSequence extends AbstractSequence {
 	}
 	
 	public ValueSequence(Sequence otherSequence) throws XPathException {
-		values = new Item[otherSequence.getLength()];
+		values = new Item[otherSequence.getItemCount()];
 		addAll(otherSequence);
 	}
 	
@@ -143,7 +143,7 @@ public class ValueSequence extends AbstractSequence {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Sequence#getLength()
 	 */
-	public int getLength() {
+	public int getItemCount() {
 //		removeDuplicates();
 		return size + 1;
 	}

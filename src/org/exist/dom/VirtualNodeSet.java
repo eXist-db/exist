@@ -32,7 +32,6 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.Element;
 
 /**
  * This node set is called virtual because it is just a placeholder for
@@ -381,6 +380,12 @@ public class VirtualNodeSet extends AbstractNodeSet {
 	}
 
 	public int getLength() {
+		realize();
+		return realSet.getLength();
+	}
+	
+    //TODO : evaluate both semantics	
+	public int getItemCount() {
 		realize();
 		return realSet.getLength();
 	}

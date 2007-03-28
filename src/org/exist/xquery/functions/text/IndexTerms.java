@@ -125,7 +125,7 @@ public class IndexTerms extends BasicFunction {
                 data.clear();
             }
             if (LOG.isDebugEnabled()) 
-            	LOG.debug("Returning: " + result.getLength());
+            	LOG.debug("Returning: " + result.getItemCount());
             return result;
         } catch (PermissionDeniedException e) {
         	throw new XPathException(getASTNode(), e.getMessage(), e);

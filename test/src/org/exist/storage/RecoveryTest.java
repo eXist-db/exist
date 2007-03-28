@@ -207,7 +207,7 @@ public class RecoveryTest extends TestCase {
             assertNotNull(xquery);
             Sequence seq = xquery.execute("//SPEECH[LINE &= 'king']", null, AccessContext.TEST);
             assertNotNull(seq);
-            System.out.println("Found: " + seq.getLength());
+            System.out.println("Found: " + seq.getItemCount());
             for (SequenceIterator i = seq.iterate(); i.hasNext(); ) {
                 Item next = i.nextItem();
                 System.out.println(serializer.serialize((NodeValue) next));

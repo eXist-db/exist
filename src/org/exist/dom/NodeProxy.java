@@ -772,7 +772,13 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 	/* (non-Javadoc)
 	 * @see org.w3c.dom.NodeList#getLength()
 	 */
-	public int getLength() {
+    public int getLength() {
+    	//TODO : how to delegate to the real node implementation's getLength() ?
+		return 1;
+	}	
+    
+    //TODO : evaluate both semantics    
+    public int getItemCount() {
 		return 1;
 	}
 

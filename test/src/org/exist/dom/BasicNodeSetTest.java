@@ -226,7 +226,7 @@ public class BasicNodeSetTest extends TestCase {
             NodeSet lines = broker.getElementIndex().findElementsByTagName(ElementValue.ELEMENT,
                     docs, test.getName(), null);
             System.out.println("LINE: " + lines.getLength());
-            System.out.println("SPEAKER: " + largeSet.getLength());
+            System.out.println("SPEAKER: " + largeSet.getItemCount());
             result = ((AbstractNodeSet) lines).selectFollowingSiblings(largeSet.toNodeSet(), -1);
             assertEquals(1451, result.getLength());
             
@@ -383,8 +383,8 @@ public class BasicNodeSetTest extends TestCase {
 		assertNotNull(xquery);
 		Sequence seq = xquery.execute(query, null, AccessContext.TEST);
 		assertNotNull(seq);
-		assertEquals(expected, seq.getLength());
-		System.out.println("Found: " + seq.getLength() + " for query:\n" + query);
+		assertEquals(expected, seq.getItemCount());
+		System.out.println("Found: " + seq.getItemCount() + " for query:\n" + query);
 		if (expectedResult != null) {
 	        Item item = seq.itemAt(0);
 	        String value = serialize(broker, item);
