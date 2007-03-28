@@ -1,5 +1,6 @@
 /* eXist Native XML Database
  * Copyright (C) 2000-2006, The eXist team
+ * http://exist-db.org/
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public License
@@ -51,8 +52,7 @@ public class FunNormalizeUnicode extends Function {
     public final static FunctionSignature signatures [] = {
     	new FunctionSignature(
 	      new QName("normalize-unicode", Function.BUILTIN_FUNCTION_NS),
-	      "Returns the value of $a normalized according to the normalization criteria for a " +
-	      "normalization form identified by the value of $b. ",
+	      "Returns the value of $a normalized according to the normalization form NFC. ",
 	      new SequenceType[] {
 	    	  new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
 	      },
