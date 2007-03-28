@@ -25,6 +25,8 @@ import java.text.Collator;
 import java.util.Iterator;
 
 import org.exist.EXistException;
+import org.exist.xmldb.XmldbURI;
+import org.exist.collections.Collection;
 import org.exist.dom.ContextItem;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
@@ -543,7 +545,12 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
 		                    context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "OPTIMIZATION", "Using value index '" + context.getBroker().getValueIndex().toString() +
 		                    		"' to find key '" + Type.getTypeName(key.getType()) + "(" + key.getStringValue() + ")'");
 
-		                    NodeSet ns = context.getBroker().getValueIndex().find(relation, docs, nodes, NodeSet.ANCESTOR, null, (Indexable)key);
+                            if (!checkForQNameIndex(contextSequence)) {
+                                LOG.trace("Cannot use QName index");
+                                contextQName = null;
+                            }
+                            
+                            NodeSet ns = context.getBroker().getValueIndex().find(relation, docs, nodes, NodeSet.ANCESTOR, contextQName, (Indexable)key);
 		                    hasUsedIndex = true;
 
 		                    if (result == null)
@@ -814,8 +821,27 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
 	public void setCollation(Expression collationArg) {
 		this.collationArg = collationArg;
 	}
-	
-	/* (non-Javadoc)
+
+    private boolean checkForQNameIndex(Sequence contextSequence) {
+        if (contextSequence == null || contextQName == null)
+            return false;
+        boolean hasQNameIndex = true;
+        for (Iterator i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
+            Collection collection = (Collection) i.next();
+            if (collection.getURI().equals(XmldbURI.SYSTEM_COLLECTION_URI))
+                continue;
+            hasQNameIndex = collection.getIndexByQNameConfiguration(context.getBroker(), contextQName) != null;
+            if (!hasQNameIndex) {
+                if (LOG.isTraceEnabled())
+                    LOG.trace("cannot use index on QName: " + contextQName + ". Collection " + collection.getURI() +
+                        " does not define an index");
+                break;
+            }
+        }
+        return hasQNameIndex;
+    }
+
+    /* (non-Javadoc)
 	 * @see org.exist.xquery.PathExpr#resetState()
 	 */
 	public void resetState() {
