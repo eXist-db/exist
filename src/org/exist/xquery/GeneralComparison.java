@@ -828,7 +828,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
         boolean hasQNameIndex = true;
         for (Iterator i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
             Collection collection = (Collection) i.next();
-            if (collection.getURI().equals(XmldbURI.SYSTEM_COLLECTION_URI))
+            if (collection.getURI().equalsInternal(XmldbURI.SYSTEM_COLLECTION_URI))
                 continue;
             hasQNameIndex = collection.getIndexByQNameConfiguration(context.getBroker(), contextQName) != null;
             if (!hasQNameIndex) {
