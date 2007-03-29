@@ -551,10 +551,9 @@ public class NodeSetHelper {
     public final static void copyChildren(Document new_doc, Node node,
             Node new_node) {
         NodeList children = node.getChildNodes();
-        Node child;
         Node new_child;
         for (int i = 0; i < children.getLength(); i++) {
-            child = children.item(i);
+        	Node child = children.item(i);
             if (child == null)
                 continue;
             switch (child.getNodeType()) {
