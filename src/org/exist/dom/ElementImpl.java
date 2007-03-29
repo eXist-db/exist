@@ -967,9 +967,8 @@ public class ElementImpl extends NamedNode implements Element {
             buf.append("\" ");
         }
         NodeList childNodes = getChildNodes();
-        Node child;
         for (int i = 0; i < childNodes.getLength(); i++) {
-            child = childNodes.item(i);
+        	Node child = childNodes.item(i);
             switch (child.getNodeType()) {
                 case Node.ATTRIBUTE_NODE:
                     attributes.append(' ');
@@ -1113,10 +1112,10 @@ public class ElementImpl extends NamedNode implements Element {
             getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.REMOVE_NODES);
         }
 
-        StoredNode child, last = this;
+        StoredNode last = this;
         int i = nodes.getLength();
         for (; i > 0; i--) {
-            child = (StoredNode) nodes.item(i - 1);
+        	StoredNode child = (StoredNode) nodes.item(i - 1);
             if (child.getNodeType() == Node.ATTRIBUTE_NODE) {
                 last = child;
                 break;
