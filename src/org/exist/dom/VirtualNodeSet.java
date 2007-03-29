@@ -60,6 +60,11 @@ public class VirtualNodeSet extends AbstractNodeSet {
 	protected boolean useSelfAsContext = false;
 	protected int contextId = Expression.NO_CONTEXT_ID;
     private static final int MAX_CHILD_COUNT_FOR_OPTIMIZE = 5;
+    
+    private boolean knownCardinality = false;
+    private boolean isEmpty = true;
+    private boolean hasOne = false;    
+    private boolean hasMany = false;    
 
     public VirtualNodeSet(int axis, NodeTest test, int contextId, NodeSet context) {
 		this.axis = axis;
@@ -191,6 +196,14 @@ public class VirtualNodeSet extends AbstractNodeSet {
 	private void addInternal(NodeProxy p) {
 		if (realSet == null)
 			realSet = new ExtArrayNodeSet(256);
+		knownCardinality = true;
+		if (isEmpty) {
+			isEmpty = false;
+			hasOne= true;
+		} else if (hasOne) {
+			hasOne = false;
+			hasMany = true;	
+		}
 		realSet.add(p);
 		realSetIsComplete = false;
 	}
@@ -306,6 +319,10 @@ public class VirtualNodeSet extends AbstractNodeSet {
 		if (realSet != null && realSetIsComplete)
 			return;
         realSet = getNodes();
+		knownCardinality = true;
+		isEmpty = realSet.isEmpty();
+		hasOne = realSet.hasOne();
+		hasMany = realSet.hasMany();        
 		realSetIsComplete = true;
 	}
 
@@ -349,14 +366,22 @@ public class VirtualNodeSet extends AbstractNodeSet {
 	 */	
 
 	public boolean isEmpty() {		
-		//TODO : fix this terrible performance gap !!!
-		return getLength() == 0;
+		if (knownCardinality)
+			return isEmpty;
+		return getItemCount() == 0;
 	}
 
     public boolean hasOne() {
-		//TODO : fix this terrible performance gap !!!
-		return getLength() == 1;
+		if (knownCardinality)
+			return hasOne;
+		return getItemCount() == 1;
     }
+
+    public boolean hasMany() {
+		if (knownCardinality)
+			return hasMany;
+		return getItemCount() > 1;
+    }    
 
     public void add(DocumentImpl doc, long nodeId) {
 	}
@@ -387,7 +412,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
     //TODO : evaluate both semantics	
 	public int getItemCount() {
 		realize();
-		return realSet.getLength();
+		return realSet.getItemCount();
 	}
 
 	public Node item(int pos) {
