@@ -61,7 +61,9 @@ public class VirtualNodeSet extends AbstractNodeSet {
 	protected int contextId = Expression.NO_CONTEXT_ID;
     private static final int MAX_CHILD_COUNT_FOR_OPTIMIZE = 5;
     
-    private boolean knownCardinality = false;
+    private boolean knownIsEmptyCardinality = false;
+    private boolean knownHasOneCardinality = false;
+    private boolean knownHasManyCardinality = false;
     private boolean isEmpty = true;
     private boolean hasOne = false;    
     private boolean hasMany = false;    
@@ -196,12 +198,14 @@ public class VirtualNodeSet extends AbstractNodeSet {
 	private void addInternal(NodeProxy p) {
 		if (realSet == null)
 			realSet = new ExtArrayNodeSet(256);
-		knownCardinality = true;
-		if (isEmpty) {
+	    knownIsEmptyCardinality = true;
+	    if (isEmpty) {
 			isEmpty = false;
+			knownHasOneCardinality = true;
 			hasOne= true;
 		} else if (hasOne) {
 			hasOne = false;
+			knownHasManyCardinality = true;
 			hasMany = true;	
 		}
 		realSet.add(p);
@@ -212,6 +216,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
             int level) {
 		NodeProxy first = getFirstParent(proxy, null, includeSelf, directParent, 0);
 		if (first != null)
+			//TODO : should we set an empty cardinality here ?
 			addInternal(first);
 		return first;
 	}
@@ -219,6 +224,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
     public NodeProxy parentWithChild(DocumentImpl doc, NodeId nodeId, boolean directParent, boolean includeSelf) {
     	NodeProxy first = getFirstParent(new NodeProxy(doc, nodeId), null, includeSelf, directParent, 0);
 		if (first != null)
+			//TODO : should we set an empty cardinality here ?
 			addInternal(first);
 		return first;
     }
@@ -319,7 +325,9 @@ public class VirtualNodeSet extends AbstractNodeSet {
 		if (realSet != null && realSetIsComplete)
 			return;
         realSet = getNodes();
-		knownCardinality = true;
+	    knownIsEmptyCardinality = true;
+	    knownHasOneCardinality = true;
+	    knownHasManyCardinality = true;
 		isEmpty = realSet.isEmpty();
 		hasOne = realSet.hasOne();
 		hasMany = realSet.hasMany();        
@@ -366,21 +374,21 @@ public class VirtualNodeSet extends AbstractNodeSet {
 	 */	
 
 	public boolean isEmpty() {		
-		if (knownCardinality)
+	    if (knownIsEmptyCardinality)
 			return isEmpty;
-		return getItemCount() == 0;
+		return getLength() == 0;
 	}
 
     public boolean hasOne() {
-		if (knownCardinality)
+		if (knownHasOneCardinality)
 			return hasOne;
-		return getItemCount() == 1;
+		return getLength() == 1;
     }
 
     public boolean hasMany() {
-		if (knownCardinality)
+		if (knownHasManyCardinality)
 			return hasMany;
-		return getItemCount() > 1;
+		return getLength() > 1;
     }    
 
     public void add(DocumentImpl doc, long nodeId) {
