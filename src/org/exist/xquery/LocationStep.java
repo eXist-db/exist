@@ -369,10 +369,14 @@ public class LocationStep extends Step {
             // if there's just a single known node in the context, it is faster
             // do directly search for the attribute in the parent node.
         }
-        boolean selectDirect = useDirectAttrSelect && axis == Constants.ATTRIBUTE_AXIS
-                && contextSet.getLength() < ATTR_DIRECT_SELECT_THRESHOLD;
-        if (contextSet instanceof VirtualNodeSet)
-            selectDirect = selectDirect && ((VirtualNodeSet) contextSet).preferTreeTraversal();
+        boolean selectDirect = false;
+        if (useDirectAttrSelect && axis == Constants.ATTRIBUTE_AXIS) {
+            if (contextSet instanceof VirtualNodeSet)
+                selectDirect = ((VirtualNodeSet) contextSet).preferTreeTraversal()
+                        && contextSet.getLength() < ATTR_DIRECT_SELECT_THRESHOLD;
+            else
+                selectDirect = contextSet.getLength() < ATTR_DIRECT_SELECT_THRESHOLD;
+        }
         if (selectDirect) {
             if (context.getProfiler().isEnabled())
                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
