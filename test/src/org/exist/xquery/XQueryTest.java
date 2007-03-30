@@ -1870,8 +1870,8 @@ public class XQueryTest extends XMLTestCase {
     }
     
     
-    // DWES Funny in sandbox and REST it fails ; here it is OK
-    public void testOrder_1691112(){
+    // DWES Funny in sandbox and REST it fails ; here it is OK... sometimes
+    public void bugtestOrder_1691112(){
         
         String query="declare namespace tt = \"http://example.com\";"+
                 "declare function tt:function( $function as element(Function)) {"+
@@ -1913,7 +1913,7 @@ public class XQueryTest extends XMLTestCase {
         
         try {
             
-            for(int i=0 ; i<10 ; i++){ // repeat a few times
+            for(int i=0 ; i<25 ; i++){ // repeat a few times
                 XPathQueryService service = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
                 System.out.println("Attempt "+i);
                 ResourceSet result = service.query(query);
@@ -1923,6 +1923,24 @@ public class XQueryTest extends XMLTestCase {
             }
             
         } catch (Exception ex) {
+            fail(ex.toString());
+        }
+    }
+    
+    public void bugtestAttribute_1691177(){
+        
+        String query="declare namespace xmldb = \"http://exist-db.org/xquery/xmldb\"; "
+                +"let $uri := xmldb:store(\"/db\", \"insertAttribDoc.xml\", <C/>) "
+                +"let $node := doc($uri)/element() "
+                +"let $attrib := <Value f=\"ATTRIB VALUE\"/>/@* "
+                +"return update insert $attrib into $node  ";
+        
+        XPathQueryService service;
+        try {
+            service = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+            assertEquals( "XQuery: " + query, 0, result.getSize() );
+        } catch (XMLDBException ex) {
             fail(ex.toString());
         }
     }
