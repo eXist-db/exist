@@ -32,6 +32,7 @@ import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
 import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
+import org.exist.storage.FulltextIndexSpec;
 import org.exist.storage.analysis.Tokenizer;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.AnalyzeContextInfo;
@@ -246,7 +247,11 @@ public class ExtFulltext extends Function implements Optimizable {
             Collection collection = (Collection) i.next();
             if (collection.getURI().equals(XmldbURI.SYSTEM_COLLECTION_URI))
                 continue;
-            hasQNameIndex = collection.getFulltextIndexConfiguration(context.getBroker()).hasQNameIndex(contextQName);
+            FulltextIndexSpec config = collection.getFulltextIndexConfiguration(context.getBroker());
+            //We have a fulltext index
+            if (config != null) {            	
+            	hasQNameIndex = config.hasQNameIndex(contextQName);
+            }
             if (!hasQNameIndex) {
                 if (LOG.isTraceEnabled())
                     LOG.trace("cannot use index on QName: " + contextQName + ". Collection " + collection.getURI() +
