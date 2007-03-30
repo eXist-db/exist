@@ -2,6 +2,7 @@ package org.exist.xquery;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -10,6 +11,7 @@ import java.net.URLConnection;
 import javax.xml.transform.OutputKeys;
 
 import org.custommonkey.xmlunit.DetailedDiff;
+import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.DatabaseInstanceManager;
@@ -1866,6 +1868,66 @@ public class XQueryTest extends XMLTestCase {
             fail(ex.toString());
         }
     }
+    
+    
+    // DWES Funny in sandbox and REST it fails ; here it is OK
+    public void testOrder_1691112(){
+        
+        String query="declare namespace tt = \"http://example.com\";"+
+                "declare function tt:function( $function as element(Function)) {"+
+                "  let $functions :="+
+                "    for $subfunction in $function/Function"+
+                "    return tt:function($subfunction)"+
+                "   let $unused := distinct-values($functions/NonExistingElement)"+
+                "  return"+
+                "  <Function>"+
+                "  {"+
+                "    $function/Name,"+
+                "    $functions"+
+                "  }"+
+                "  </Function>"+
+                "};"+
+                "let $funcs :="+
+                "  <Function>"+
+                "      <Name>Airmount 1</Name>"+
+                "      <Function>"+
+                "          <Name>Position</Name>"+
+                "      </Function>"+
+                "      <Function>"+
+                "          <Name>Velocity</Name>"+
+                "      </Function>"+
+                "  </Function>"+
+                "return"+
+                "  tt:function($funcs)";
+        
+        String expectedresult=
+                "<Function>\n"+
+                "    <Name>Airmount 1</Name>\n"+
+                "    <Function>\n"+
+                "        <Name>Position</Name>\n"+
+                "    </Function>\n"+
+                "    <Function>\n"+
+                "        <Name>Velocity</Name>\n"+
+                "    </Function>\n"+
+                "</Function>";
+        
+        try {
+            
+            for(int i=0 ; i<10 ; i++){ // repeat a few times
+                XPathQueryService service = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+                System.out.println("Attempt "+i);
+                ResourceSet result = service.query(query);
+                assertEquals( 1, result.getSize() );
+                printResult(result);
+                assertEquals(expectedresult, result.getResource(0).getContent().toString());
+            }
+            
+        } catch (Exception ex) {
+            fail(ex.toString());
+        }
+    }
+
+    // ======================================
     
 	/**
 	 * @return
