@@ -1871,6 +1871,7 @@ public class XQueryTest extends XMLTestCase {
     
     
     // DWES Funny in sandbox and REST it fails ; here it is OK... sometimes
+    // http://sourceforge.net/tracker/index.php?func=detail&aid=1691112&group_id=17691&atid=117691
     public void bugtestOrder_1691112(){
         
         String query="declare namespace tt = \"http://example.com\";"+
@@ -1927,6 +1928,7 @@ public class XQueryTest extends XMLTestCase {
         }
     }
     
+    // http://sourceforge.net/tracker/index.php?func=detail&aid=1691177&group_id=17691&atid=117691
     public void bugtestAttribute_1691177(){
         
         String query="declare namespace xmldb = \"http://exist-db.org/xquery/xmldb\"; "
@@ -1944,6 +1946,31 @@ public class XQueryTest extends XMLTestCase {
             fail(ex.toString());
         }
     }
+    
+    // http://sourceforge.net/tracker/index.php?func=detail&aid=1691174&group_id=17691&atid=117691
+    public void bugtestAttribute_1691174(){
+        String query="declare function local:show($el1, $el2) { "
+                +"	<Foobar> "
+                +"	{ (\"first: \", $el1, \" second: \", $el2) } "
+                +"	</Foobar> "
+                +"}; "
+                +"declare function local:attrib($n as node()) { "
+                +"	<Attrib>{$n}</Attrib> "
+                +"}; "
+                +"local:show( "
+                +"	<Attrib name=\"value\"/>, "
+                +"	local:attrib(attribute name {\"value\"})  (: Exist bug! :) "
+                +")  ";
+        XPathQueryService service;
+        try {
+            service = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+            assertEquals( "XQuery: " + query, 0, result.getSize() );
+        } catch (XMLDBException ex) {
+            fail(ex.toString());
+        }
+    }
+    
 
     // ======================================
     
