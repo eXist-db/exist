@@ -688,9 +688,8 @@ public class XmldbURI implements Comparable {
 		return trimFromBeginning(XmldbURI.xmldbUriFor(string)); 	
 	}
 	
-	public String toString() {	
-		//TODO : trim trailing slash if necessary
-		return getXmldbURI().toString();
+	public String toString() {
+		return encodedCollectionPath;
 	}
     
     public static String[] getPathComponents(String collectionPath) {       

@@ -234,8 +234,13 @@ public class FullXmldbURI extends XmldbURI {
 			contextURI = URI.create(context);		
 		return contextURI.resolve(uri);	
 	}
-	
-	/* (non-Javadoc)
+
+
+    public String toString() {
+        return XMLDB_URI_PREFIX + wrappedURI.toString();
+    }
+
+    /* (non-Javadoc)
 	 * @see java.net.URI#getAuthority()
 	 */
 	public String getAuthority() {
