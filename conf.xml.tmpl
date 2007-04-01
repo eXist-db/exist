@@ -481,9 +481,13 @@
         
             - enable-java-binding:
                 eXist supports calls to arbitrary Java methods from within 
-                XQuery. Setting to "yes" might introduce a security risk.  
+                XQuery. Setting to "yes" might introduce a security risk.
+            - enable-query-rewriting:
+                Set to "yes" to enable the new query-rewriting optimizer. This is
+                work in progress and may lead to incorrect queries. Use at your own
+                risk.
     -->
-    <xquery enable-java-binding="no">
+    <xquery enable-java-binding="no" enable-query-rewriting="no">
         <builtin-modules>
             <module class="org.exist.xquery.functions.util.UtilModule"
                 uri="http://exist-db.org/xquery/util" />
