@@ -37,6 +37,12 @@ public class CustomIndexTest extends TestCase {
             "   <item id='3'><description>Cabinet</description><price>1525.00</price></item>" +
             "</test>";
 
+    private static String XML2 =
+            "<section>" +
+            "   <para>01234</para>" +
+            "   <para>56789</para>" +
+            "</section>";
+    
     private static String COLLECTION_CONFIG =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
     	"	<index>" +
@@ -44,6 +50,7 @@ public class CustomIndexTest extends TestCase {
     	"		</fulltext>" +
     	"		<ngram qname=\"item\"/>" +
         "		<ngram qname=\"@attr\"/>" +
+        "        <ngram qname=\"para\"/>" +
         "	</index>" +
     	"</collection>";
 
@@ -460,6 +467,14 @@ public class CustomIndexTest extends TestCase {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
+            seq = xquery.execute("//section[text:ngram-contains(., '123')]", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+
+            seq = xquery.execute("//section[text:ngram-contains(para, '123')]", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+
             transact.commit(transaction);
         } catch (Exception e) {
             e.printStackTrace();
@@ -505,6 +520,37 @@ public class CustomIndexTest extends TestCase {
         }
     }
 
+    public void testQuery() {
+        DBBroker broker = null;
+        try {
+        	broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+
+            XQuery xquery = broker.getXQueryService();
+            assertNotNull(xquery);
+            Sequence seq = xquery.execute("//item[text:ngram-contains(., 'cha')]", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+
+            seq = xquery.execute("//section[text:ngram-contains(., '123')]", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+
+            seq = xquery.execute("//section[text:ngram-contains(para, '123')]", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+
+            seq = xquery.execute("//*[text:ngram-contains(., '567')]", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            pool.release(broker);
+        }
+    }
+
     private void checkIndex(DBBroker broker, DocumentSet docs, String term, int count) {
         NGramIndexWorker index = (NGramIndexWorker) broker.getIndexController().getIndexWorker(NGramIndex.ID);
         Occurrences[] occurrences = index.scanIndex(docs);
@@ -539,11 +585,18 @@ public class CustomIndexTest extends TestCase {
             CollectionConfigurationManager mgr = pool.getConfigurationManager();
             mgr.addConfiguration(transaction, broker, root, COLLECTION_CONFIG);
 
+            docs = new DocumentSet();
+
             IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create("test_string.xml"), XML);
             assertNotNull(info);
             root.store(transaction, broker, info, XML, false);
 
-            docs = new DocumentSet();
+            docs.add(info.getDocument());
+
+            info = root.validateXMLResource(transaction, broker, XmldbURI.create("test_string2.xml"), XML2);
+            assertNotNull(info);
+            root.store(transaction, broker, info, XML2, false);
+
             docs.add(info.getDocument());
 
             transact.commit(transaction);

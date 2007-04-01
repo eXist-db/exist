@@ -66,7 +66,7 @@ public class NGramSearch extends Function {
             String key = getArgument(1).eval(contextSequence, contextItem).getStringValue();
             String[] ngrams = index.getDistinctNGrams(key);
             for (int i = 0; i < ngrams.length; i++) {
-                NodeSet nodes = index.search(docs, ngrams[i], context, inNodes, NodeSet.ANCESTOR);
+                NodeSet nodes = index.search(docs, null, ngrams[i], context, inNodes, NodeSet.ANCESTOR);
                 if (result == null)
                     result = nodes;
                 else {

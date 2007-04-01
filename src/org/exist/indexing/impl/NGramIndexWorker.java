@@ -23,25 +23,11 @@ package org.exist.indexing.impl;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Stack;
-import java.util.TreeMap;
+import java.util.*;
 
 import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
-import org.exist.dom.AttrImpl;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.Match;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
-import org.exist.dom.TextImpl;
+import org.exist.dom.*;
 import org.exist.indexing.AbstractStreamListener;
 import org.exist.indexing.Index;
 import org.exist.indexing.IndexController;
@@ -51,6 +37,7 @@ import org.exist.numbering.NodeId;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NodePath;
 import org.exist.storage.OccurrenceList;
+import org.exist.storage.DBBroker;
 import org.exist.storage.btree.BTreeCallback;
 import org.exist.storage.btree.BTreeException;
 import org.exist.storage.btree.IndexQuery;
@@ -90,14 +77,16 @@ public class NGramIndexWorker implements IndexWorker {
 
     private static final String QNAME_ATTR = "qname";
 
+    private static final byte IDX_QNAME = 0;
+    private static final byte IDX_GENERIC = 1;
+    
     private int mode = 0;
-
     private NGramIndex index;
     private char[] buf = new char[1024];
     private int currentChar = 0;
     private DocumentImpl currentDoc = null;
+
     private IndexController controller;
-    
     private Map ngrams = new TreeMap();
     private VariableByteOutputStream os = new VariableByteOutputStream(7);
 
@@ -190,7 +179,8 @@ public class NGramIndexWorker implements IndexWorker {
             try {
                 lock.acquire(Lock.WRITE_LOCK);
 
-                NGramKey value = new NGramKey(currentDoc.getCollection().getId(), key.term);
+                NGramQNameKey value = new NGramQNameKey(currentDoc.getCollection().getId(), key.qname,
+                        currentDoc.getBroker().getSymbols(), key.term);
                 index.db.append(value, data);
             } catch (LockException e) {
                 LOG.warn("Failed to acquire lock for file " + index.db.getFile().getName(), e);
@@ -220,7 +210,8 @@ public class NGramIndexWorker implements IndexWorker {
             try {
                 lock.acquire(Lock.WRITE_LOCK);
 
-                NGramKey value = new NGramKey(currentDoc.getCollection().getId(), key.term);
+                NGramQNameKey value = new NGramQNameKey(currentDoc.getCollection().getId(), key.qname,
+                        currentDoc.getBroker().getSymbols(), key.term);
                 boolean changed = false;
                 os.clear();
                 VariableByteInput is = index.db.getAsStream(value);
@@ -326,7 +317,7 @@ public class NGramIndexWorker implements IndexWorker {
         try {
             lock.acquire(Lock.WRITE_LOCK);
             // remove generic index
-            Value value = new NGramKey(collection.getId());
+            Value value = new NGramQNameKey(collection.getId());
             index.db.removeAll(null, new IndexQuery(IndexQuery.TRUNC_RIGHT, value));
         } catch (LockException e) {
             LOG.warn("Failed to acquire lock for '" + index.db.getFile().getName() + "'", e);
@@ -339,29 +330,60 @@ public class NGramIndexWorker implements IndexWorker {
         }
     }
 
-    public NodeSet search(DocumentSet docs, String ngram, XQueryContext context, NodeSet contextSet, int axis) throws TerminatedException {
+    public NodeSet search(DocumentSet docs, List qnames, String ngram, XQueryContext context, NodeSet contextSet, int axis) throws TerminatedException {
+        if (qnames == null)
+            qnames = getDefinedIndexes(context.getBroker(), docs);
         final NodeSet result = new ExtArrayNodeSet(docs.getLength(), 250);
         for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
             final short collectionId = ((org.exist.collections.Collection) iter.next()).getId();
-            NGramKey key = new NGramKey(collectionId, ngram);
-            final Lock lock = index.db.getLock();
-			try {
-				lock.acquire(Lock.READ_LOCK);
-                SearchCallback cb = new SearchCallback(docs, contextSet, context, result, axis == NodeSet.ANCESTOR);
-                int op = ngram.length() < getN() ? IndexQuery.TRUNC_RIGHT : IndexQuery.EQ;
-                final IndexQuery query = new IndexQuery(op, key);
-                index.db.query(query, cb);
-            } catch (LockException e) {
-                LOG.warn("Failed to acquire lock for '" + index.db.getFile().getName() + "'", e);
-            } catch (IOException e) {
-                LOG.error(e.getMessage() + " in '" + index.db.getFile().getName() + "'", e);
-            } catch (BTreeException e) {
-                LOG.error(e.getMessage() + " in '" + index.db.getFile().getName() + "'", e);
-            } finally {
-                lock.release(Lock.READ_LOCK);
+            for (int i = 0; i < qnames.size(); i++) {
+                QName qname = (QName) qnames.get(i);
+                NGramQNameKey key = new NGramQNameKey(collectionId, qname, context.getBroker().getSymbols(), ngram);
+                final Lock lock = index.db.getLock();
+                try {
+                    lock.acquire(Lock.READ_LOCK);
+                    SearchCallback cb = new SearchCallback(docs, contextSet, context, result, axis == NodeSet.ANCESTOR);
+                    int op = ngram.length() < getN() ? IndexQuery.TRUNC_RIGHT : IndexQuery.EQ;
+                    final IndexQuery query = new IndexQuery(op, key);
+                    index.db.query(query, cb);
+                } catch (LockException e) {
+                    LOG.warn("Failed to acquire lock for '" + index.db.getFile().getName() + "'", e);
+                } catch (IOException e) {
+                    LOG.error(e.getMessage() + " in '" + index.db.getFile().getName() + "'", e);
+                } catch (BTreeException e) {
+                    LOG.error(e.getMessage() + " in '" + index.db.getFile().getName() + "'", e);
+                } finally {
+                    lock.release(Lock.READ_LOCK);
+                }
             }
         }
         return result;
+    }
+
+    /**
+     * Check index configurations for all collection in the given DocumentSet and return
+     * a list of QNames, which have indexes defined on them.
+     *
+     * @param broker
+     * @param docs
+     * @return
+     */
+    private List getDefinedIndexes(DBBroker broker, DocumentSet docs) {
+        List indexes = new ArrayList(20);
+        for (Iterator i = docs.getCollectionIterator(); i.hasNext(); ) {
+            Collection collection = (Collection) i.next();
+            IndexSpec idxConf = collection.getIndexConfiguration(broker);
+            if (idxConf != null) {
+                Map config = (Map) idxConf.getCustomIndexSpec(NGramIndex.ID);
+                if (config != null) {
+                    for (Iterator ci = config.keySet().iterator(); ci.hasNext();) {
+                        QName qn = (QName) ci.next();
+                        indexes.add(qn);
+                    }
+                }
+            }
+        }
+        return indexes;
     }
 
     public Occurrences[] scanIndex(DocumentSet docs) {
@@ -369,7 +391,7 @@ public class NGramIndexWorker implements IndexWorker {
         final Lock lock = index.db.getLock();
 		for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
             final short collectionId = ((Collection) i.next()).getId();
-            Value ref = new NGramKey(collectionId);
+            Value ref = new NGramQNameKey(collectionId);
             final IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
 			try {
 				lock.acquire(Lock.READ_LOCK);
@@ -564,19 +586,39 @@ public class NGramIndexWorker implements IndexWorker {
         }
     }
 
-    private class NGramKey extends Value {
+    private class NGramQNameKey extends Value {
 
-        public NGramKey(short collectionId) {
-            len = 2;
+        public NGramQNameKey(short collectionId) {
+            len = 3;
             data = new byte[len];
-            ByteConversion.shortToByte(collectionId, data, 0);
+            data[0] = IDX_QNAME;
+            ByteConversion.shortToByte(collectionId, data, 1);
         }
 
-        public NGramKey(short collectionId, String ngram) {
-            len = UTF8.encoded(ngram) + 2;
+        public NGramQNameKey(short collectionId, QName qname, SymbolTable symbols) {
+            len = 8;
             data = new byte[len];
-            ByteConversion.shortToByte(collectionId, data, 0);
-            UTF8.encode(ngram, data, 2);
+            data[0] = IDX_QNAME;
+            ByteConversion.shortToByte(collectionId, data, 1);
+            final short namespaceId = symbols.getNSSymbol(qname.getNamespaceURI());
+			final short localNameId = symbols.getSymbol(qname.getLocalName());
+            data[3] = qname.getNameType();
+            ByteConversion.shortToByte(namespaceId, data, 4);
+			ByteConversion.shortToByte(localNameId, data, 6);
+        }
+
+        public NGramQNameKey(short collectionId, QName qname, SymbolTable symbols, String ngram) {
+            len = UTF8.encoded(ngram) + 8;
+            data = new byte[len];
+            data[0] = IDX_QNAME;
+            ByteConversion.shortToByte(collectionId, data, 1);
+            final short namespaceId = symbols.getNSSymbol(qname.getNamespaceURI());
+			final short localNameId = symbols.getSymbol(qname.getLocalName());
+            data[3] = qname.getNameType();
+            ByteConversion.shortToByte(namespaceId, data, 4);
+			ByteConversion.shortToByte(localNameId, data, 6);
+
+            UTF8.encode(ngram, data, 8);
         }
     }
 
@@ -599,7 +641,7 @@ public class NGramIndexWorker implements IndexWorker {
         public boolean indexInfo(Value key, long pointer) throws TerminatedException {
             String ngram;
             try {
-                ngram = new String(key.getData(), 2, key.getLength() - 2, "UTF-8");
+                ngram = new String(key.getData(), 8, key.getLength() - 8, "UTF-8");
                 System.out.println("ngram: " + ngram);
             } catch (UnsupportedEncodingException e) {
                 LOG.error(e.getMessage(), e);
@@ -641,10 +683,10 @@ public class NGramIndexWorker implements IndexWorker {
                                 for (int n = 0; n < freq; n++) {
                                     match.addOffset(is.readInt(), ngram.length());
                                 }
-                                parentNode.addMatch(match);
-                                if (parentNode != null)
+                                if (parentNode != null) {
+                                    parentNode.addMatch(match);
                                     resultSet.add(parentNode, sizeHint);
-                                else
+                                } else
                                     is.skip(freq);
                             } else {
                                 Match match = new Match(nodeId, ngram, freq);
@@ -689,7 +731,7 @@ public class NGramIndexWorker implements IndexWorker {
 		public boolean indexInfo(Value key, long pointer) throws TerminatedException {
             String term;
             try {
-                term = new String(key.getData(), 2, key.getLength() - 2, "UTF-8");
+                term = new String(key.getData(), 8, key.getLength() - 8, "UTF-8");
             } catch (UnsupportedEncodingException e) {
                 LOG.error(e.getMessage(), e);
                 return true;
