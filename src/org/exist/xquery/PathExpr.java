@@ -111,11 +111,19 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
         if (e instanceof Step) ((Step) e).addPredicate(pred);
     }
 
+    public void replaceExpression(Expression oldExpr, Expression newExpr) {
+        int idx = steps.indexOf(oldExpr);
+        if (idx < 0) {
+            LOG.warn("Expression not found: " + ExpressionDumper.dump(oldExpr) + "; in: " + ExpressionDumper.dump(this));
+            return;
+        }
+        steps.set(idx, newExpr);
+    }
+
     /* (non-Javadoc)
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-    	contextInfo.setParent(this);
         inPredicate = (contextInfo.getFlags() & IN_PREDICATE) > 0;
         contextId = contextInfo.getContextId();
         
@@ -135,6 +143,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
             }
             if (i > 1)
                 contextInfo.setContextStep((Expression) steps.get(i - 1));
+            contextInfo.setParent(this);
             expr.analyze(contextInfo);
         }
     }

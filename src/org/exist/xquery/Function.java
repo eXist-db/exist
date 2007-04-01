@@ -434,7 +434,6 @@ public abstract class Function extends PathExpr {
 		return astNode;
 	}
 
-
     public void accept(ExpressionVisitor visitor) {
         visitor.visitFunction(this);
     }

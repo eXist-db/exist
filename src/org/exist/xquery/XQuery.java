@@ -143,14 +143,21 @@ public class XQuery {
             		treeParser.getErrorMessage(),
             		treeParser.getLastException());
             }
-            
+
+            expr.analyze(new AnalyzeContextInfo());
+
+            if (broker.getConfiguration().getProperty("xquery.enable-query-rewriting").equals("yes")) {
+                Optimizer optimizer = new Optimizer(context);
+                expr.accept(optimizer);
+            }
+
             // Log the query if it is not too large, but avoid
             // dumping huge queries to the log
-            if (context.getExpressionCount() < 150)
-            	LOG.debug("Query diagnostics:\n" + ExpressionDumper.dump(expr));
-            else
-            	LOG.debug("Query diagnostics:\n" + "[skipped: more than 150 expressions]");
-            expr.analyze(new AnalyzeContextInfo());
+            if (context.getExpressionCount() < 150) {
+                LOG.debug("Query diagnostics:\n" + ExpressionDumper.dump(expr));
+            } else {
+                LOG.debug("Query diagnostics:\n" + "[skipped: more than 150 expressions]");
+            }
             if (LOG.isDebugEnabled()) {
             	NumberFormat nf = NumberFormat.getNumberInstance();
             	LOG.debug("Compilation took "  +  nf.format(System.currentTimeMillis() - start) + " ms");
