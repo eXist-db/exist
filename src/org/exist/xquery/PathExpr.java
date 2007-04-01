@@ -111,6 +111,12 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
         if (e instanceof Step) ((Step) e).addPredicate(pred);
     }
 
+    /**
+     * Replace the given expression by a new expression.
+     *
+     * @param oldExpr the old expression
+     * @param newExpr the new expression to replace the old
+     */
     public void replaceExpression(Expression oldExpr, Expression newExpr) {
         int idx = steps.indexOf(oldExpr);
         if (idx < 0) {

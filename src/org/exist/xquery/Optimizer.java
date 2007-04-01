@@ -54,8 +54,12 @@ public class Optimizer extends BasicExpressionVisitor {
 
     public void visitLocationStep(LocationStep locationStep) {
         boolean optimize = false;
+        // only location steps with predicates can be optimized:
         if (locationStep.hasPredicates()) {
             List preds = locationStep.getPredicates();
+            // walk through the predicates attached to the current location step.
+            // try to find a predicate containing an expression which is an instance
+            // of Optimizable.
             for (Iterator i = preds.iterator(); i.hasNext(); ) {
                 Predicate pred = (Predicate) i.next();
                 FindOptimizable find = new FindOptimizable();
@@ -66,6 +70,8 @@ public class Optimizer extends BasicExpressionVisitor {
             }
         }
         if (optimize) {
+            // we found at least one Optimizable. Rewrite the whole expression and
+            // enclose it in an (#exist:optimize#) pragma.
             Expression parent = locationStep.getParent();
             if (!(parent instanceof PathExpr)) {
                 LOG.warn("Parent expression of step is not a PathExpr: " + parent);
@@ -74,15 +80,16 @@ public class Optimizer extends BasicExpressionVisitor {
             if (LOG.isTraceEnabled())
                 LOG.trace("Rewriting expression: " + ExpressionDumper.dump(locationStep));
             PathExpr path = (PathExpr) parent;
-            ExtensionExpression extension = new ExtensionExpression(context);
             try {
+                // Create the pragma
+                ExtensionExpression extension = new ExtensionExpression(context);
                 extension.addPragma(new Optimize(context, Optimize.OPTIMIZE_PRAGMA, null));
+                extension.setExpression(locationStep);
+                // Replace the old expression with the pragma
+                path.replaceExpression(locationStep, extension);
             } catch (XPathException e) {
                 LOG.warn("Failed to optimize expression: " + locationStep + ": " + e.getMessage(), e);
-                return;
             }
-            extension.setExpression(locationStep);
-            path.replaceExpression(locationStep, extension);
         }
     }
 
@@ -109,6 +116,9 @@ public class Optimizer extends BasicExpressionVisitor {
         letExpr.getReturnExpression().accept(this);
     }
 
+    /**
+     * Try to find an expression object implementing interface Optimizable.
+     */
     private class FindOptimizable extends BasicExpressionVisitor {
 
         List optimizables = new ArrayList();
