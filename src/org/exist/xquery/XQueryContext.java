@@ -782,8 +782,9 @@ public class XQueryContext {
 		lastVar = null;
 		fragmentStack = new Stack();
 		callStack.clear();
+        globalVariables.clear();
         
-		//remove the context-vars, subsequent execution of the query
+        //remove the context-vars, subsequent execution of the query
 		//may generate different values for the vars based on the
 		//content of the db
 		XQueryContextVars.clear();
