@@ -60,7 +60,8 @@ public class Optimizer extends BasicExpressionVisitor {
                 Predicate pred = (Predicate) i.next();
                 FindOptimizable find = new FindOptimizable();
                 pred.accept(find);
-                optimize = true;
+                if (find.getOptimizables().size() > 0)
+                    optimize = true;
                 break;
             }
         }
