@@ -811,6 +811,10 @@ public class LocationStep extends Step {
         return ds;
     }
 
+    public Expression getParent() {
+        return this.parent;
+    }
+    
     public void setUseDirectAttrSelect(boolean useDirectAttrSelect) {
         this.useDirectAttrSelect = useDirectAttrSelect;
     }

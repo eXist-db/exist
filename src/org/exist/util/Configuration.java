@@ -338,6 +338,12 @@ public class Configuration implements ErrorHandler {
             config.put("xquery.enable-java-binding", javabinding);
             LOG.debug("xquery.enable-java-binding: " + config.get("xquery.enable-java-binding"));
         }
+
+        String optimize = xquery.getAttribute("enable-query-rewriting");
+        if (optimize != null && optimize.length() > 0) {
+            config.put("xquery.enable-query-rewriting", optimize);
+            LOG.debug("xquery.enable-query-rewriting: " + config.get("xquery.enable-query-rewriting"));
+        }
         
         //builin-modules
         NodeList builtins = xquery.getElementsByTagName("builtin-modules");

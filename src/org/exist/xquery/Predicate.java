@@ -56,7 +56,7 @@ public class Predicate extends PathExpr {
     private int outerContextId;
     
     private boolean innerExpressionDot = false; 
-    
+
 	public Predicate(XQueryContext context) {
 		super(context);
 	}
@@ -76,7 +76,7 @@ public class Predicate extends PathExpr {
 			deps = deps & ~Dependency.CONTEXT_ITEM;
 		return deps;
 	}
-	
+
     /* (non-Javadoc)
      * @see org.exist.xquery.PathExpr#analyze(org.exist.xquery.AnalyzeContextInfo)
      */
@@ -479,7 +479,7 @@ public class Predicate extends PathExpr {
 			return result;
 		}
 	}
-	
+
 	public void setContextDocSet(DocumentSet contextSet) {
 		super.setContextDocSet(contextSet);
 		if (getLength() > 0)
@@ -491,7 +491,7 @@ public class Predicate extends PathExpr {
 	 */
 	public void resetState() {       
 		super.resetState();
-		cached = null;		
+		cached = null;
 	}
 
     public void accept(ExpressionVisitor visitor) {

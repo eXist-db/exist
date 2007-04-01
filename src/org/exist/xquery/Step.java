@@ -23,6 +23,7 @@ package org.exist.xquery;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.exist.xquery.util.ExpressionDumper;
@@ -58,6 +59,14 @@ public abstract class Step extends AbstractExpression {
         predicates.add( expr );
     }
 
+    public boolean hasPredicates() {
+        return predicates.size() > 0;
+    }
+
+    public List getPredicates() {
+        return predicates;
+    }
+    
     /* (non-Javadoc)
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.AnalyzeContextInfo)
      */
