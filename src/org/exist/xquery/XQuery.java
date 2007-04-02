@@ -146,7 +146,7 @@ public class XQuery {
 
             expr.analyze(new AnalyzeContextInfo());
 
-            if (broker.getConfiguration().getProperty("xquery.enable-query-rewriting").equals("yes")) {
+            if (context.optimizationsEnabled()) {
                 Optimizer optimizer = new Optimizer(context);
                 expr.accept(optimizer);
             }
