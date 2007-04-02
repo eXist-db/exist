@@ -707,7 +707,7 @@ declare function f:term-callback($term as xs:string, $data as xs:int+) as elemen
 };
 util:index-keys(//city/name, "T", util:function("f:term-callback", 2), 1000)]]></programlisting>
             </example>
-            <para>This query will show you all keys (starting with the letter 'T') indexed for the element selected by the 
+            <para>This query will show you 1000 keys (starting with the letter 'T') indexed for the element selected by the 
                 path expression <option>//city/name</option> together with some information about this key.</para>
         </section>
     </chapter>
