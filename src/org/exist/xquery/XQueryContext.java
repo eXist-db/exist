@@ -1930,7 +1930,8 @@ public class XQueryContext {
 			//TODO : ignored because it should never happen
 		}
 
-        enableOptimizer = getBroker().getConfiguration().getProperty("xquery.enable-query-rewriting").equals("yes");
+        String param = (String) getBroker().getConfiguration().getProperty("xquery.enable-query-rewriting");
+        enableOptimizer = param == null ? true : param.equals("yes");
         
         // load built-in modules
 		
