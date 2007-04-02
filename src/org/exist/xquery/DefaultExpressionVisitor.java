@@ -21,12 +21,16 @@
  */
 package org.exist.xquery;
 
+import java.util.Stack;
+
 /**
  * An {@link org.exist.xquery.ExpressionVisitor} which traverses the entire
  * expression tree. Methods may be overwritten by subclasses to filter out the
  * events they need.
  */
 public class DefaultExpressionVisitor extends BasicExpressionVisitor {
+
+    private Stack functionStack = new Stack();
 
     public void visitPathExpr(PathExpr expression) {
         for (int i = 0; i < expression.getLength(); i++) {
@@ -36,7 +40,11 @@ public class DefaultExpressionVisitor extends BasicExpressionVisitor {
     }
 
     public void visitUserFunction(UserDefinedFunction function) {
+        if (functionStack.contains(function))
+            return;
+        functionStack.push(function);
         function.getFunctionBody().accept(this);
+        functionStack.pop();
     }
 
     public void visitForExpression(ForExpr forExpr) {
