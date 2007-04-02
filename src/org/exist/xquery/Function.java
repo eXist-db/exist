@@ -185,8 +185,6 @@ public abstract class Function extends PathExpr {
 	}
 
     /**
-     * @param arguments
-     * @param argumentTypes
      * @throws XPathException
      */
     protected void checkArguments() throws XPathException {
@@ -435,6 +433,6 @@ public abstract class Function extends PathExpr {
 	}
 
     public void accept(ExpressionVisitor visitor) {
-        visitor.visitFunction(this);
+        visitor.visitBuiltinFunction(this);
     }
 }

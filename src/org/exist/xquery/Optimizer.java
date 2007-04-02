@@ -47,7 +47,7 @@ import java.util.List;
  * <pre>declare option exist:optimize "enable=yes|no";</pre>
  *
  */
-public class Optimizer extends BasicExpressionVisitor {
+public class Optimizer extends DefaultExpressionVisitor {
 
     private static final Logger LOG = Logger.getLogger(Optimizer.class);
 
@@ -98,29 +98,6 @@ public class Optimizer extends BasicExpressionVisitor {
         }
     }
 
-    public void visitPathExpr(PathExpr expression) {
-        for (int i = 0; i < expression.getLength(); i++) {
-            Expression next = expression.getExpression(i);
-            next.accept(this);
-        }
-    }
-
-    public void visitForExpression(ForExpr forExpr) {
-        forExpr.getInputSequence().accept(this);
-        Expression where = forExpr.getWhereExpression();
-        if (where != null)
-            where.accept(this);
-        forExpr.getReturnExpression().accept(this);
-    }
-
-    public void visitLetExpression(LetExpr letExpr) {
-        letExpr.getInputSequence().accept(this);
-        Expression where = letExpr.getWhereExpression();
-        if (where != null)
-            where.accept(this);
-        letExpr.getReturnExpression().accept(this);
-    }
-
     /**
      * Try to find an expression object implementing interface Optimizable.
      */
@@ -151,7 +128,7 @@ public class Optimizer extends BasicExpressionVisitor {
             predicate.accept(this);
         }
 
-        public void visitFunction(Function function) {
+        public void visitBuiltinFunction(Function function) {
             if (function instanceof Optimizable) {
                 optimizables.add(function);
             }

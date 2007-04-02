@@ -40,5 +40,9 @@ public interface ExpressionVisitor {
 
     public void visitLetExpression(LetExpr letExpr);
 
-    public void visitFunction(Function function);
+    public void visitBuiltinFunction(Function function);
+
+    public void visitUserFunction(UserDefinedFunction function);
+
+    public void visitConditional(ConditionalExpression conditional);
 }
