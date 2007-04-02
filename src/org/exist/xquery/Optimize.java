@@ -43,6 +43,7 @@ public class Optimize extends Pragma {
 
     private final static Logger LOG = Logger.getLogger(TimerPragma.class);
 
+    private boolean enabled = true;
     private XQueryContext context;
     private Optimizable optimizables[];
     private Expression innerExpr;
@@ -51,6 +52,15 @@ public class Optimize extends Pragma {
     public Optimize(XQueryContext context, QName pragmaName, String contents) throws XPathException {
         super(pragmaName, contents);
         this.context = context;
+        this.enabled = context.optimizationsEnabled();
+        if (contents != null && contents.length() > 0) {
+            String param[] = Option.parseKeyValuePair(contents);
+            if (param == null)
+                throw new XPathException("Invalid content found for pragma exist:optimize: " + contents);
+            if ("enable".equals(param[0])) {
+                enabled = "yes".equals(param[1]);
+            }
+        }
     }
 
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
@@ -59,7 +69,7 @@ public class Optimize extends Pragma {
         // check if all Optimizable expressions signal that they can indeed optimize
         // in the current context
         boolean optimize = false;
-        if (optimizables.length > 0) {
+        if (optimizables != null && optimizables.length > 0) {
             for (int i = 0; i < optimizables.length; i++) {
                 if (optimizables[i].canOptimize(contextSequence))
                     optimize = true;
@@ -128,6 +138,8 @@ public class Optimize extends Pragma {
 
     public void before(XQueryContext context, Expression expression) throws XPathException {
         innerExpr = expression;
+        if (!enabled)
+            return;
         innerExpr.accept(new BasicExpressionVisitor() {
 
             public void visitPathExpr(PathExpr expression) {

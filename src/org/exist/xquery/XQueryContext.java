@@ -264,7 +264,9 @@ public class XQueryContext {
 	private AccessContext accessCtx;
     
 	private ContextUpdateListener updateListener = null;
-	
+
+    private boolean enableOptimizer = true;
+
     private XQueryContext() {}
 	
 	protected XQueryContext(AccessContext accessCtx) {
@@ -1603,8 +1605,12 @@ public class XQueryContext {
 			call.resolveForwardReference(func);
 		}
 	}
-	
-	public void addOption(String qnameString, String contents) throws XPathException {
+
+    public boolean optimizationsEnabled() {
+        return enableOptimizer;
+    }
+    
+    public void addOption(String qnameString, String contents) throws XPathException {
 		QName qn = QName.parse(this, qnameString, defaultFunctionNamespace);
 
 		Option option = new Option(qn, contents);
@@ -1634,7 +1640,19 @@ public class XQueryContext {
 			watchdog.setTimeoutFromOption(option);
         else if(Option.OUTPUT_SIZE_QNAME.compareTo(qn) == 0)
 			watchdog.setMaxNodesFromOption(option);
-	}
+        else if (Option.OPTIMIZE_QNAME.compareTo(qn) == 0) {
+            String params[] = option.tokenizeContents();
+            if (params.length > 0) {
+                String[] param = Option.parseKeyValuePair(params[0]);
+                if ("enable".equals(param[0])) {
+                    if ("yes".equals(param[1]))
+                        enableOptimizer = true;
+                    else
+                        enableOptimizer = false;
+                }
+            }
+        }
+    }
 	
 	public Option getOption(QName qname) {
 		if(options != null) {
@@ -1912,7 +1930,9 @@ public class XQueryContext {
 			//TODO : ignored because it should never happen
 		}
 
-		// load built-in modules
+        enableOptimizer = getBroker().getConfiguration().getProperty("xquery.enable-query-rewriting").equals("yes");
+        
+        // load built-in modules
 		
 		// these modules are loaded dynamically. It is not an error if the
 		// specified module class cannot be found in the classpath.

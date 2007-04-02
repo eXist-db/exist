@@ -39,8 +39,9 @@ public class Option {
 	public final static QName OUTPUT_SIZE_QNAME = new QName("output-size-limit", Namespaces.EXIST_NS);
 	public final static QName SERIALIZE_QNAME = new QName("serialize", Namespaces.EXIST_NS);
     public final static QName PROFILE_QNAME = new QName("profiling", Namespaces.EXIST_NS);
+    public final static QName OPTIMIZE_QNAME = new QName("optimize", Namespaces.EXIST_NS);
 	
-	private final static String paramPattern =
+    private final static String paramPattern =
 		"\\s*([\\w\\.-]+)\\s*=\\s*('[^']*'|\"[^\"]*\"|[^\\s]+)";
 	
 	private final static Pattern pattern = Pattern.compile(paramPattern);

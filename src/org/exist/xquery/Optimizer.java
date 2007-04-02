@@ -21,13 +21,13 @@
  */
 package org.exist.xquery;
 
+import org.apache.log4j.Logger;
 import org.exist.xquery.functions.ExtFulltext;
 import org.exist.xquery.util.ExpressionDumper;
-import org.apache.log4j.Logger;
 
-import java.util.List;
-import java.util.Iterator;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Analyzes the query and marks optimizable expressions for the query engine.
@@ -41,6 +41,11 @@ import java.util.ArrayList;
  * to yes in conf.xml:
  *
  *  &lt;xquery enable-java-binding="no" enable-query-rewriting="yes"&gt;...
+ * 
+ * To enable/disable the optimizer for a single query, use an option:
+ *
+ * <pre>declare option exist:optimize "enable=yes|no";</pre>
+ *
  */
 public class Optimizer extends BasicExpressionVisitor {
 
