@@ -908,7 +908,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
 
             public Object next() {
                 hasNext = false;
-                return NodeProxy.this;
+                return NodeProxy.this.getDocument().getCollection();
             }
 
             public void remove() {
