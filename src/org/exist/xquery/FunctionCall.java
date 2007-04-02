@@ -231,7 +231,13 @@ public class FunctionCall extends Function {
 		functionDef.resetState();
         //TODO : reset expression ?        
 	}
-    
+
+
+    public void accept(ExpressionVisitor visitor) {
+        // forward to the called function
+        functionDef.accept(visitor);
+    }
+
     private class DeferredFunctionCallImpl extends DeferredFunctionCall {
 
         private Sequence contextSequence;

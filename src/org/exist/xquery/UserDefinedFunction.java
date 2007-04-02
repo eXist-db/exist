@@ -51,8 +51,12 @@ public class UserDefinedFunction extends Function {
 	public void setFunctionBody(Expression body) {
 		this.body = body;
 	}
-	
-	public void addVariable(String varName) throws XPathException {
+
+    public Expression getFunctionBody() {
+        return body;
+    }
+    
+    public void addVariable(String varName) throws XPathException {
 		QName qname = QName.parse(context, varName, null);
 		parameters.add(qname);
 	}
@@ -166,4 +170,8 @@ public class UserDefinedFunction extends Function {
 		}
 		currentArguments = null;
 	}
+
+    public void accept(ExpressionVisitor visitor) {
+        visitor.visitUserFunction(this);
+    }
 }

@@ -169,7 +169,7 @@ public class Optimize extends Pragma {
                 predicate.accept(this);
             }
 
-            public void visitFunction(Function function) {
+            public void visitBuiltinFunction(Function function) {
                 if (function instanceof Optimizable) {
                     if (LOG.isTraceEnabled())
                         LOG.trace("exist:optimize: found optimizable function: " + function.getClass().getName());

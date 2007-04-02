@@ -35,26 +35,40 @@ import org.exist.xquery.value.Type;
  */
 public class ConditionalExpression extends AbstractExpression {
 
-	private final Expression testExpr;
-	private final Expression thenExpr;
-	private final Expression elseExpr;
-	
-	public ConditionalExpression(XQueryContext context, Expression testExpr, Expression thenExpr,
+    private final Expression testExpr;
+
+    private final Expression thenExpr;
+
+    private final Expression elseExpr;
+
+    public ConditionalExpression(XQueryContext context, Expression testExpr, Expression thenExpr,
 		Expression elseExpr) {
 		super(context);
 		this.testExpr = testExpr;
 		this.thenExpr = thenExpr;
 		this.elseExpr = elseExpr;
 	}
-	
-	/* (non-Javadoc)
+
+    /* (non-Javadoc)
 	 * @see org.exist.xquery.AbstractExpression#getDependencies()
 	 */
 	public int getDependencies() {
 		return Dependency.CONTEXT_SET | Dependency.CONTEXT_ITEM;
 	}
-	
-	/* (non-Javadoc)
+
+    public Expression getTestExpr() {
+        return testExpr;
+    }
+
+    public Expression getThenExpr() {
+        return thenExpr;
+    }
+
+    public Expression getElseExpr() {
+        return elseExpr;
+    }
+
+    /* (non-Javadoc)
 	 * @see org.exist.xquery.AbstractExpression#getCardinality()
 	 */
 	public int getCardinality() {
@@ -148,4 +162,8 @@ public class ConditionalExpression extends AbstractExpression {
 		elseExpr.resetState();
 	}
 
+
+    public void accept(ExpressionVisitor visitor) {
+        visitor.visitConditional(this);
+    }
 }
