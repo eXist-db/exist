@@ -848,8 +848,9 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
 		super.resetState();
 		getLeft().resetState();
 		getRight().resetState();
-		cached = null;        
-		hasUsedIndex = false;
+		cached = null;
+        preselectResult = null;
+        hasUsedIndex = false;
 	}
 
     public void accept(ExpressionVisitor visitor) {
