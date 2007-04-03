@@ -24,33 +24,33 @@ package org.exist.xquery.functions;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Iterator;
 
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
+import org.exist.dom.DocumentSet;
 import org.exist.storage.DBBroker;
-import org.exist.xquery.CachedResult;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Constants;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.Expression;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Profiler;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.XPathException;
+import org.exist.storage.ElementValue;
+import org.exist.storage.FulltextIndexSpec;
+import org.exist.storage.analysis.Tokenizer;
+import org.exist.xquery.*;
 import org.exist.xquery.util.RegexTranslator;
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.util.RegexTranslator.RegexSyntaxException;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.exist.EXistException;
+import org.exist.xmldb.XmldbURI;
+import org.exist.collections.Collection;
 
 /**
  * @author wolf
  */
-public class ExtRegexp extends Function {
+public class ExtRegexp extends Function implements Optimizable {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
@@ -59,23 +59,28 @@ public class ExtRegexp extends Function {
 			"strings passed in $b and all following parameters against the keywords contained in " +
 			"the fulltext index. The keywords found are then compared to the node set in $a. Every " +
 			"node containing all of the keywords is copied to the result sequence.",
-			new SequenceType[] { 
+			new SequenceType[] {
 				new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-				new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE) 
+				new SequenceType(Type.STRING, Cardinality.ONE_OR_MORE)
 			},
 			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
 			true,
             "This function is eXist-specific and should not be in the standard functions namespace. Please " +
             "use text:match-all instead."
         );
-			
+
 	protected int type = Constants.FULLTEXT_AND;
 	protected CachedResult cached = null;
-	
-	public ExtRegexp(XQueryContext context) {
+
+    private LocationStep contextStep = null;
+    protected QName contextQName = null;
+    protected boolean optimizeSelf = false;
+    protected NodeSet preselectResult = null;
+
+    public ExtRegexp(XQueryContext context) {
 		super(context, signature);
 	}
-	
+
 	/**
 	 * @param type
 	 */
@@ -88,8 +93,173 @@ public class ExtRegexp extends Function {
 		super(context, signature);
 		this.type = type;
 	}
-	
-	/* (non-Javadoc)
+
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+        super.analyze(contextInfo);
+        LocationStep step = BasicExpressionVisitor.findFirstStep(getArgument(0));
+        if (step != null) {
+            if (step.getAxis() == Constants.SELF_AXIS) {
+                Expression outerExpr = contextInfo.getContextStep();
+                if (outerExpr != null && outerExpr instanceof LocationStep) {
+                    LocationStep outerStep = (LocationStep) outerExpr;
+                    NodeTest test = outerStep.getTest();
+                    if (!test.isWildcardTest() && test.getName() != null) {
+                        contextQName = new QName(test.getName());
+                        if (step.getAxis() == Constants.ATTRIBUTE_AXIS || step.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
+                            contextQName.setNameType(ElementValue.ATTRIBUTE);
+                        contextStep = step;
+                        optimizeSelf = true;
+                    }
+                }
+            } else {
+                NodeTest test = step.getTest();
+                if (!test.isWildcardTest() && test.getName() != null) {
+                    contextQName = new QName(test.getName());
+                    if (step.getAxis() == Constants.ATTRIBUTE_AXIS || step.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
+                        contextQName.setNameType(ElementValue.ATTRIBUTE);
+                    contextStep = step;
+                }
+            }
+        }
+    }
+
+    public boolean canOptimize(Sequence contextSequence) {
+        if (contextQName == null)
+            return false;
+        return checkForQNameIndex(contextSequence);
+    }
+
+    public boolean optimizeOnSelf() {
+        return optimizeSelf;
+    }
+
+    public NodeSet preSelect(Sequence contextSequence, boolean useContext) throws XPathException {
+        // get the search terms
+        List terms = getSearchTerms(contextSequence);
+
+        // lookup the terms in the fulltext index. returns one node set for each term
+        NodeSet[] hits = getMatches(contextSequence.getDocumentSet(),
+                useContext ? contextSequence.toNodeSet() : null, NodeSet.DESCENDANT, contextQName, terms);
+        // walk through the matches and compute the combined node set
+        preselectResult = hits[0];
+        if (preselectResult != null) {
+            for(int k = 1; k < hits.length; k++) {
+                if(hits[k] != null) {
+                    preselectResult = (type == Constants.FULLTEXT_AND ? preselectResult.deepIntersection(hits[k])
+                            : preselectResult.union(hits[k]));
+                }
+            }
+        } else {
+            preselectResult = NodeSet.EMPTY_SET;
+        }
+        return preselectResult;
+    }
+
+    public Sequence eval(
+		Sequence contextSequence,
+		Item contextItem)
+		throws XPathException {
+        // if we were optimizing and the preselect did not return anything,
+        // we won't have any matches and can return
+        if (preselectResult != null && preselectResult.isEmpty())
+            return Sequence.EMPTY_SEQUENCE;
+
+        if (contextItem != null)
+			contextSequence = contextItem.toSequence();
+
+        if (preselectResult == null && !checkForQNameIndex(contextSequence))
+            contextQName = null;
+
+        Expression path = getArgument(0);
+        NodeSet result;
+		// if the expression does not depend on the current context item,
+		// we can evaluate it in one single step
+		if (path == null || !Dependency.dependsOn(path, Dependency.CONTEXT_ITEM)) {
+			boolean canCache =
+                (getTermDependencies() & Dependency.CONTEXT_ITEM) == Dependency.NO_DEPENDENCY;
+            if(	canCache && cached != null && cached.isValid(contextSequence)) {
+				return cached.getResult();
+			}
+            // do we optimize this expression?
+            if (contextStep == null || preselectResult == null) {
+                // no optimization: process the whole expression
+                NodeSet nodes =
+                    path == null
+                        ? contextSequence.toNodeSet()
+                        : path.eval(contextSequence).toNodeSet();
+                List terms = getSearchTerms(contextSequence);
+                result = evalQuery(nodes, terms).toNodeSet();
+            } else {
+                contextStep.setPreloadNodeSets(true);
+                contextStep.setPreloadedData(preselectResult.getDocumentSet(), preselectResult);
+
+                result = path.eval(contextSequence).toNodeSet();
+            }
+            if(canCache && contextSequence instanceof NodeSet)
+				cached = new CachedResult((NodeSet)contextSequence, result);
+
+		// otherwise we have to walk through each item in the context
+		} else {
+			Item current;
+			String arg;
+			NodeSet nodes;
+			result = new ExtArrayNodeSet();
+			Sequence temp;
+			for (SequenceIterator i = contextSequence.iterate(); i.hasNext();) {
+				current = i.nextItem();
+				List terms = getSearchTerms(contextSequence);
+				nodes =
+					path == null
+					? contextSequence.toNodeSet()
+							: path
+							.eval(current.toSequence()).toNodeSet();
+				temp = evalQuery(nodes, terms);
+				result.addAll(temp);
+			}
+		}
+        preselectResult = null;
+        return result;
+	}
+
+    private boolean checkForQNameIndex(Sequence contextSequence) {
+        if (contextSequence == null || contextQName == null)
+            return false;
+        boolean hasQNameIndex = true;
+        for (Iterator i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
+            Collection collection = (Collection) i.next();
+            if (collection.getURI().equals(XmldbURI.SYSTEM_COLLECTION_URI))
+                continue;
+            FulltextIndexSpec config = collection.getFulltextIndexConfiguration(context.getBroker());
+            //We have a fulltext index
+            if (config != null) {
+            	hasQNameIndex = config.hasQNameIndex(contextQName);
+            }
+            if (!hasQNameIndex) {
+                if (LOG.isTraceEnabled())
+                    LOG.trace("cannot use index on QName: " + contextQName + ". Collection " + collection.getURI() +
+                        " does not define an index");
+                break;
+            }
+        }
+        return hasQNameIndex;
+    }
+
+    protected String[] getSearchTerms(String searchString)
+		throws EXistException {
+		List tokens = new ArrayList();
+		Tokenizer tokenizer = context.getBroker().getTextEngine().getTokenizer();
+		tokenizer.setText(searchString);
+		org.exist.storage.analysis.TextToken token;
+		String word;
+		while (null != (token = tokenizer.nextToken(true))) {
+			word = token.getText();
+			tokens.add(word);
+		}
+		String[] terms = new String[tokens.size()];
+		return (String[]) tokens.toArray(terms);
+    }
+
+    /* (non-Javadoc)
 	 * @see org.exist.xquery.functions.Function#getDependencies()
 	 */
 	public int getDependencies() {
@@ -98,66 +268,7 @@ public class ExtRegexp extends Function {
 			deps = deps | getArgument(i).getDependencies();
 		return deps;
 	}
-	
-	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-		
-        if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
-            if (contextItem != null)
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
-        }
-        
-		if(getArgumentCount() < 2)
-			throw new XPathException(getASTNode(), "function requires at least two arguments");
-		
-		if (contextItem != null)
-			contextSequence = contextItem.toSequence();
-		
-		Expression path = getArgument(0);
-		Sequence result;
-		
-		if (!Dependency.dependsOn(path, Dependency.CONTEXT_ITEM)) {
-			
-			boolean canCache = (getTermDependencies() & Dependency.CONTEXT_ITEM)
-				== Dependency.NO_DEPENDENCY;
-			
-			if(	canCache && cached != null && cached.isValid(contextSequence)) {
-				return cached.getResult();
-			}
-			
-			NodeSet nodes =
-				path == null
-					? contextSequence.toNodeSet()
-					: path.eval(contextSequence).toNodeSet();
-			List terms = getSearchTerms(contextSequence);
-			result = evalQuery(nodes, terms);
-			
-			if(canCache && contextSequence instanceof NodeSet)
-				cached = new CachedResult((NodeSet)contextSequence, result);
-			
-		} else {			
-			result = new ExtArrayNodeSet();
-			for (SequenceIterator i = contextSequence.iterate(); i.hasNext();) {
-				Item current = i.nextItem();
-				List terms = getSearchTerms(current.toSequence());
-				NodeSet nodes =
-					path == null
-						? contextSequence.toNodeSet()
-						: path.eval(current.toSequence()).toNodeSet();
-				Sequence temp = evalQuery(nodes, terms);
-				result.addAll(temp);
-			}
-		}
-		
-        if (context.getProfiler().isEnabled()) 
-            context.getProfiler().end(this, "", result); 
 
-		return result;
-	}
-	
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.functions.ExtFulltext#evalQuery(org.exist.xquery.StaticContext, org.exist.dom.DocumentSet, java.lang.String, org.exist.dom.NodeSet)
 	 */
@@ -167,28 +278,36 @@ public class ExtRegexp extends Function {
 		throws XPathException {
 		if(terms == null || terms.size() == 0)
 			return Sequence.EMPTY_SEQUENCE;	// no search terms
-		NodeSet hits[] = new NodeSet[terms.size()];
-		for (int k = 0; k < terms.size(); k++) {
-			hits[k] =
-				context.getBroker().getTextEngine().getNodesContaining(
-				    context,
-					nodes.getDocumentSet(),
-					nodes, NodeSet.ANCESTOR, null,
-					(String)terms.get(k), DBBroker.MATCH_REGEXP);
-		}
+        NodeSet[] hits = getMatches(nodes.getDocumentSet(), nodes, NodeSet.ANCESTOR, contextQName, terms);
 		NodeSet result = hits[0];
 		if(result != null) {
 			for(int k = 1; k < hits.length; k++) {
 				if(hits[k] != null)
-					result = (type == Constants.FULLTEXT_AND ? 
+					result = (type == Constants.FULLTEXT_AND ?
 							result.deepIntersection(hits[k]) : result.union(hits[k]));
 			}
 			return result;
 		} else
 			return NodeSet.EMPTY_SET;
 	}
-	
-	protected List getSearchTerms(Sequence contextSequence) throws XPathException {
+
+    protected NodeSet[] getMatches(DocumentSet docs, NodeSet contextSet, int axis, QName qname, List terms)
+    throws XPathException {
+        NodeSet hits[] = new NodeSet[terms.size()];
+        for (int k = 0; k < terms.size(); k++) {
+            hits[k] =
+                    context.getBroker().getTextEngine().getNodesContaining(
+                            context,
+                            docs,
+                            contextSet, axis,
+                            qname, (String) terms.get(k),
+                            DBBroker.MATCH_REGEXP);
+            LOG.debug("Matches for " + terms.get(k) + ": " + hits[k].getLength());
+        }
+        return hits;
+    }
+
+    protected List getSearchTerms(Sequence contextSequence) throws XPathException {
 		if(getArgumentCount() < 2)
 			throw new XPathException(getASTNode(), "function requires at least 2 arguments");
 		List terms = new ArrayList();
@@ -196,7 +315,7 @@ public class ExtRegexp extends Function {
 		Sequence seq;
 		for(int i = 1; i < getLength(); i++) {
 			next = getArgument(i);
-			seq = next.eval(contextSequence);			
+			seq = next.eval(contextSequence);
 			if(seq.hasOne())
 			    terms.add(translateRegexp(seq.itemAt(0).getStringValue()));
 			else {
@@ -207,17 +326,14 @@ public class ExtRegexp extends Function {
 		}
 		return terms;
 	}
-	
+
 	protected int getTermDependencies() throws XPathException {
 		int deps = 0;
-		Expression next;
-		for(int i = 1; i < getLength(); i++) {
-			next = getArgument(i);
-			deps |= next.getDependencies();
-		}
+		for(int i = 0; i < getArgumentCount(); i++)
+			deps = deps | getArgument(i).getDependencies();
 		return deps;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.PathExpr#resetState()
 	 */
@@ -225,11 +341,11 @@ public class ExtRegexp extends Function {
 		super.resetState();
 		cached = null;
 	}
-	
+
 	/**
 	 * Translates the regular expression from XPath2 syntax to java regex
 	 * syntax.
-	 * 
+	 *
 	 * @param pattern
 	 * @return
 	 * @throws XPathException

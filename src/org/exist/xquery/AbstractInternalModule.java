@@ -22,14 +22,11 @@
  */
 package org.exist.xquery;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.TreeMap;
-
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.value.Sequence;
+
+import java.util.*;
 
 /**
  * Abstract base class for an {@link org.exist.xquery.InternalModule}. 
@@ -44,19 +41,28 @@ import org.exist.xquery.value.Sequence;
 public abstract class AbstractInternalModule implements InternalModule {
 
 	private final static Logger LOG = Logger.getLogger(AbstractInternalModule.class);
-	
-	protected final TreeMap mFunctionMap = new TreeMap();
-	protected FunctionDef[] mFunctions;
-	
-	protected final TreeMap mGlobalVariables = new TreeMap();
-	
-	public AbstractInternalModule(FunctionDef[] functions) {
-		mFunctions = functions;
-		for(int i = 0; i < functions.length; i++) {
-			FunctionSignature signature = functions[i].getSignature();
-			mFunctionMap.put(signature.getFunctionId(), functions[i]);
-		}
-	}
+
+    public static class FunctionComparator implements Comparator {
+        public int compare(Object o1, Object o2) {
+            FunctionDef d1 = (FunctionDef) o1;
+            return d1.getSignature().getFunctionId().compareTo(((FunctionDef) o2).getSignature().getFunctionId());
+        }
+    };
+
+    protected FunctionDef[] mFunctions;
+
+    protected boolean ordered = false;
+
+    protected final TreeMap mGlobalVariables = new TreeMap();
+
+    public AbstractInternalModule(FunctionDef[] functions) {
+        this(functions, false);
+    }
+
+    public AbstractInternalModule(FunctionDef[] functions, boolean functionsOrdered) {
+		this.mFunctions = functions;
+        this.ordered = functionsOrdered;
+    }
 
 	private AbstractInternalModule() {
 	}
@@ -102,23 +108,49 @@ public abstract class AbstractInternalModule implements InternalModule {
 	 * @see org.exist.xquery.Module#getClassForFunction(org.exist.dom.QName)
 	 */
 	public FunctionDef getFunctionDef(QName qname, int arity) {
-		final FunctionId id = new FunctionId(qname, arity);
-		return (FunctionDef)mFunctionMap.get(id);
-	}
-	
-	public List getFunctionsByName(QName qname) {
+        FunctionId id = new FunctionId(qname, arity);
+        if (ordered) {
+            return binarySearch(id);
+        } else {
+            for (int i = 0; i < mFunctions.length; i++) {
+                if (id.compareTo(mFunctions[i].getSignature().getFunctionId()) == 0)
+                    return mFunctions[i];
+            }
+        }
+        return null;
+    }
+
+    private FunctionDef binarySearch(FunctionId id) {
+        int low = 0;
+        int high = mFunctions.length - 1;
+
+        while (low <= high) {
+            int mid = (low + high) >>> 1;
+            FunctionDef midVal = mFunctions[mid];
+            int cmp = midVal.getSignature().getFunctionId().compareTo(id);
+
+            if (cmp < 0)
+                low = mid + 1;
+            else if (cmp > 0)
+                high = mid - 1;
+            else
+                return midVal; // key found
+        }
+        return null;  // key not found.
+    }
+
+    public List getFunctionsByName(QName qname) {
 		List funcs = new ArrayList();
-		for (Iterator i = mFunctionMap.values().iterator(); i.hasNext(); ) {
-			FunctionDef def = (FunctionDef) i.next();
-			FunctionSignature sig = def.getSignature();
+		for (int i = 0; i < mFunctions.length; i++) {
+			FunctionSignature sig = mFunctions[i].getSignature();
 			if (sig.getName().compareTo(qname) == 0) {
 				funcs.add(sig);
 			}
 		}
 		return funcs;
 	}
-	
-	public Variable declareVariable(QName qname, Object value) throws XPathException {
+
+    public Variable declareVariable(QName qname, Object value) throws XPathException {
 		Sequence val = XPathUtil.javaObjectToXPath(value, null);
 		Variable var = (Variable)mGlobalVariables.get(qname);
 		if(var == null) {
@@ -128,23 +160,23 @@ public abstract class AbstractInternalModule implements InternalModule {
 		var.setValue(val);
 		return var;
 	}
-	
+
     public Variable declareVariable(Variable var) {
         mGlobalVariables.put(var.getQName(), var);
         return var;
     }
-    
-	/* (non-Javadoc)
+
+    /* (non-Javadoc)
 	 * @see org.exist.xquery.Module#resolveVariable(org.exist.dom.QName)
 	 */
 	public Variable resolveVariable(QName qname) throws XPathException {
 		return (Variable)mGlobalVariables.get(qname);
 	}
-	
+
     public boolean isVarDeclared(QName qname) {
         return mGlobalVariables.get(qname) != null;
     }
-    
-	public void reset() {
+
+    public void reset() {
 	}
 }

@@ -25,6 +25,8 @@ package org.exist.xquery.functions.xmldb;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 
+import java.util.Arrays;
+
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  *
@@ -90,9 +92,13 @@ public class XMLDBModule extends AbstractInternalModule {
                 new FunctionDef(XMLDBURIFunctions.signatures[3], XMLDBURIFunctions.class),
                 new FunctionDef(XMLDBGetMimeType.signature, XMLDBGetMimeType.class)
     };
-    
+
+    static {
+        Arrays.sort(functions, new FunctionComparator());
+    }
+
     public XMLDBModule() {
-        super(functions);
+        super(functions, true);
     }
     
         /* (non-Javadoc)

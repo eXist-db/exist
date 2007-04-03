@@ -141,7 +141,6 @@ public class ExtFulltext extends Function implements Optimizable {
         return checkForQNameIndex(contextSequence);
     }
 
-
     public boolean optimizeOnSelf() {
         return optimizeSelf;
     }
