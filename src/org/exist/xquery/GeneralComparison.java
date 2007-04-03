@@ -266,11 +266,13 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
                     temp =
                         context.getBroker().getValueIndex().find(relation, contextSequence.getDocumentSet(),
                                 contextSet, NodeSet.DESCENDANT, contextQName, (Indexable)key);
+                    hasUsedIndex = true;
                 } else {
                     try {
                         temp = context.getBroker().getValueIndex().match(contextSequence.getDocumentSet(), contextSet,
                                 NodeSet.DESCENDANT, getRegexp(key.getStringValue()).toString(),
                                 contextQName, DBBroker.MATCH_REGEXP);
+                        hasUsedIndex = true;
                     } catch (EXistException e) {
                         throw new XPathException(getASTNode(), "Error during index lookup: " + e.getMessage(), e);
                     }
