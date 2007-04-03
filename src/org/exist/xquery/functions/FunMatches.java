@@ -428,5 +428,14 @@ public class FunMatches extends Function implements Optimizable {
     	super.reset();
 		hasUsedIndex = false;
 	}
-    
+
+    /*
+    * (non-Javadoc)
+    *
+    * @see org.exist.xquery.AbstractExpression#resetState()
+    */
+    public void resetState() {
+        super.resetState();
+        preselectResult = null;
+    }
 }
