@@ -26,6 +26,9 @@ import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionDef;
 
+import java.util.Arrays;
+import java.util.Comparator;
+
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
@@ -185,9 +188,13 @@ public class ModuleImpl extends AbstractInternalModule {
 		new FunctionDef(QNameFunctions.namespaceURIFromQName, QNameFunctions.class),
         new FunctionDef(FunResolveQName.signature, FunResolveQName.class)
 	};
-	
-	public ModuleImpl() {
-		super(functions);
+    
+    static {
+        Arrays.sort(functions, new FunctionComparator());
+    }
+
+    public ModuleImpl() {
+		super(functions, true);
 	}
 	
 	/* (non-Javadoc)

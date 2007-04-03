@@ -28,6 +28,8 @@ import org.exist.xquery.FunctionDef;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.functions.system.GetVersion;
 
+import java.util.Arrays;
+
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
@@ -91,14 +93,19 @@ public class UtilModule extends AbstractInternalModule {
         // deprecated functions
         new FunctionDef(GetVersion.deprecated, GetVersion.class),
 	};
-	
-	public final static QName EXCEPTION_QNAME = 
+
+    static {
+        Arrays.sort(functions, new FunctionComparator());
+    }
+
+    public final static QName EXCEPTION_QNAME =
 	    new QName("exception", UtilModule.NAMESPACE_URI, UtilModule.PREFIX);
+
     public final static QName EXCEPTION_MESSAGE_QNAME = 
         new QName("exception-message", UtilModule.NAMESPACE_URI, UtilModule.PREFIX);
     
 	public UtilModule() throws XPathException {
-		super(functions);
+		super(functions, true);
 		declareVariable(EXCEPTION_QNAME, null);
         declareVariable(EXCEPTION_MESSAGE_QNAME, null);
 	}

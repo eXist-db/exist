@@ -38,6 +38,8 @@ import org.exist.xquery.functions.session.SetAttribute;
 import org.exist.xquery.functions.session.SetCurrentUser;
 import org.exist.xquery.functions.util.FunUnEscapeURI;
 
+import java.util.Arrays;
+
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
@@ -86,9 +88,13 @@ public class RequestModule extends AbstractInternalModule {
 		new FunctionDef(FunUnEscapeURI.deprecated, FunUnEscapeURI.class)
 		
 	};
-	
-	public RequestModule() throws XPathException {
-		super(functions);
+
+    static {
+        Arrays.sort(functions, new FunctionComparator());
+    }
+
+    public RequestModule() throws XPathException {
+		super(functions, true);
 		// predefined module global variables:
 		declareVariable(REQUEST_VAR, null);
 	}
