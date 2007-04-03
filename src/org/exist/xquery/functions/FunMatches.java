@@ -178,6 +178,7 @@ public class FunMatches extends Function implements Optimizable {
             preselectResult = context.getBroker().getValueIndex().match(contextSequence.getDocumentSet(),
                     useContext ? contextSequence.toNodeSet() : null, NodeSet.DESCENDANT, pattern,
                     contextQName, DBBroker.MATCH_REGEXP, flags, caseSensitive);
+            hasUsedIndex = true;
         } catch (EXistException e) {
             throw new XPathException(getASTNode(), "Error during index lookup: " + e.getMessage(), e);
         }
