@@ -244,21 +244,6 @@ public class ExtRegexp extends Function implements Optimizable {
         return hasQNameIndex;
     }
 
-    protected String[] getSearchTerms(String searchString)
-		throws EXistException {
-		List tokens = new ArrayList();
-		Tokenizer tokenizer = context.getBroker().getTextEngine().getTokenizer();
-		tokenizer.setText(searchString);
-		org.exist.storage.analysis.TextToken token;
-		String word;
-		while (null != (token = tokenizer.nextToken(true))) {
-			word = token.getText();
-			tokens.add(word);
-		}
-		String[] terms = new String[tokens.size()];
-		return (String[]) tokens.toArray(terms);
-    }
-
     /* (non-Javadoc)
 	 * @see org.exist.xquery.functions.Function#getDependencies()
 	 */
