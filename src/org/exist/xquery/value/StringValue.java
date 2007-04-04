@@ -287,6 +287,13 @@ public class StringValue extends AtomicValue {
 	 * @see org.exist.xquery.value.AtomicValue#compareTo(org.exist.xquery.value.AtomicValue)
 	 */
 	public int compareTo(Collator collator, AtomicValue other) throws XPathException {
+		if (Type.subTypeOf(other.getType(),Type.NUMBER)) {
+			//No possible comparisons
+			if (((NumericValue)other).isNaN())
+				return Constants.INFERIOR;
+			if (((NumericValue)other).isInfinite())
+				return Constants.INFERIOR;
+		}			
 		return Collations.compare(collator, value, other.getStringValue());
 	}
 
