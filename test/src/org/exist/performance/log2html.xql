@@ -18,9 +18,9 @@ declare function t:process-action($group as element(t:group), $action as element
     return (
         <tr>
             <td class="{if ($isSeq) then 'sequence' else ''}">{string($action[1]/@name)}</td>
-            <td class="timing">{round(t:median($action/@elapsed))}</td>
-            <td class="timing">{round(avg($action/@elapsed))}</td>
-            <td class="timing">{sum($action/@elapsed)}</td>
+            <td class="timing">{xs:decimal(round(t:median($action/@elapsed)))}</td>
+            <td class="timing">{xs:decimal(round(avg($action/@elapsed)))}</td>
+            <td class="timing">{xs:decimal(sum($action/@elapsed))}</td>
             <td class="timing">{string($action[1]/@result)}</td>
             <td class="desc">{string($action[1]/@description)}</td>
         </tr>,
