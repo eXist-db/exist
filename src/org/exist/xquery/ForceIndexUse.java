@@ -19,8 +19,6 @@
  */
 package org.exist.xquery;
 
-import java.util.Iterator;
-
 import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.xquery.functions.FunMatches;
@@ -28,7 +26,7 @@ import org.exist.xquery.functions.FunMatches;
 public class ForceIndexUse extends Pragma {
 	
 	Expression expression;
-	boolean bailout = false;
+	boolean bailout = true;
 
 	public static final QName EXCEPTION_IF_INDEX_NOT_USED_PRAGMA = 
 		 new QName("force-index-use", Namespaces.EXIST_NS, "exist");
@@ -41,6 +39,20 @@ public class ForceIndexUse extends Pragma {
     }
     
     public void after(XQueryContext context, Expression expression) throws XPathException {
+    	expression.accept(new DefaultExpressionVisitor() {
+        	public void visitGeneralComparison(GeneralComparison expression) {
+        		bailout = !expression.hasUsedIndex();
+        	}
+        	public void visitBuiltinFunction(Function expression) {
+                if (expression instanceof FunMatches)
+                	bailout = !((FunMatches)expression).hasUsedIndex();        	
+            }
+    	});
+    	
+    	if (bailout)
+    		throw new XPathException(expression.getASTNode(), "XQDYxxxx: Can not use index on expression '" + expression + "'");
+        	
+    	/*
     	if (expression instanceof PathExpr) {
     		PathExpr pe = (PathExpr)expression;
     		for (Iterator i = pe.steps.iterator(); i.hasNext();) {
@@ -55,6 +67,7 @@ public class ForceIndexUse extends Pragma {
                 } 
             }
     	}
+    	*/
     }
 
 }

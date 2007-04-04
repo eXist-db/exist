@@ -68,4 +68,9 @@ public class DefaultExpressionVisitor extends BasicExpressionVisitor {
         conditional.getThenExpr().accept(this);
         conditional.getElseExpr().accept(this);
     }
+    
+    public void visitPredicate(Predicate predicate) {
+    	predicate.accept(this);
+    }
+    
 }
