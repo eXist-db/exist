@@ -299,42 +299,66 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
 
-        // if we were optimizing and the preselect did not return anything,
-        // we won't have any matches and can return
-        if (preselectResult != null && preselectResult.isEmpty())
-            return Sequence.EMPTY_SEQUENCE;
-
         Sequence result;
 
-        if (contextStep == null || preselectResult == null) {
-            /*
-             * If we are inside a predicate and one of the arguments is a node set,
-             * we try to speed up the query by returning nodes from the context set.
-             * This works only inside a predicate. The node set will always be the left
-             * operand.
-             */
-            if (inPredicate && !invalidNodeEvaluation &&
-                    !Dependency.dependsOn(this, Dependency.CONTEXT_ITEM) &&
-                    Type.subTypeOf(getLeft().returnsType(), Type.NODE)) {
+        // if the context sequence hasn't changed we can return a cached result
+		if (cached != null && cached.isValid(contextSequence)) {
+			LOG.debug("Using cached results");
+            if(context.getProfiler().isEnabled())
+                context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "OPTIMIZATION", "Returned cached result");
+			result = cached.getResult();
+		
+		} else {
 
-                if(contextItem != null)
-                    contextSequence = contextItem.toSequence();
+			// if we were optimizing and the preselect did not return anything,
+	        // we won't have any matches and can return
+	        if (preselectResult != null && preselectResult.isEmpty())
+	            result = Sequence.EMPTY_SEQUENCE;
+	        
+	        else {
+		        if (contextStep == null || preselectResult == null) {
+		            /*
+		             * If we are inside a predicate and one of the arguments is a node set,
+		             * we try to speed up the query by returning nodes from the context set.
+		             * This works only inside a predicate. The node set will always be the left
+		             * operand.
+		             */
+		            if (inPredicate && !invalidNodeEvaluation &&
+		                    !Dependency.dependsOn(this, Dependency.CONTEXT_ITEM) &&
+		                    Type.subTypeOf(getLeft().returnsType(), Type.NODE)) {
+		
+		                if(contextItem != null)
+		                    contextSequence = contextItem.toSequence();
+		
+		                if ((!Dependency.dependsOn(rightOpDeps, Dependency.CONTEXT_ITEM))) {
+		                    result = quickNodeSetCompare(contextSequence);
+		                } else {
+		                    result = nodeSetCompare(contextSequence);
+		                }
+		            } else {
+		                result = genericCompare(contextSequence, contextItem);
+		            }
+		        } else {
+		            contextStep.setPreloadNodeSets(true);
+		            contextStep.setPreloadedData(preselectResult.getDocumentSet(), preselectResult);
+		
+		            result = getLeft().eval(contextSequence).toNodeSet();
+		 
+		        }
+		    }
+	        
+			// can this result be cached? Don't cache if the result depends on local variables.
+		    boolean canCache = contextSequence instanceof NodeSet &&
+		    	!Dependency.dependsOn(getLeft(), Dependency.CONTEXT_ITEM) &&
+		    	!Dependency.dependsOn(getRight(), Dependency.CONTEXT_ITEM) &&
+		    	!Dependency.dependsOnVar(getLeft()) &&
+		    	!Dependency.dependsOnVar(getRight());
 
-                if ((!Dependency.dependsOn(rightOpDeps, Dependency.CONTEXT_ITEM))) {
-                    result = quickNodeSetCompare(contextSequence);
-                } else {
-                    result = nodeSetCompare(contextSequence);
-                }
-            } else {
-                result = genericCompare(contextSequence, contextItem);
-            }
-        } else {
-            contextStep.setPreloadNodeSets(true);
-            contextStep.setPreloadedData(preselectResult.getDocumentSet(), preselectResult);
+		    if(canCache)
+				cached = new CachedResult((NodeSet)contextSequence, result);
 
-            result = getLeft().eval(contextSequence).toNodeSet();
-        }
-
+		}
+		
         if (context.getProfiler().isEnabled())
             context.getProfiler().end(this, "", result);
 
@@ -468,27 +492,24 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
 		if (context.getProfiler().isEnabled())
 			context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "quickNodeSetCompare");
 
-		// if the context sequence hasn't changed we can return a cached result
-		if(cached != null && cached.isValid(contextSequence)) {
-			LOG.debug("Using cached results");
-            if(context.getProfiler().isEnabled())
-                context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "OPTIMIZATION", "Returned cached result");
-			return(cached.getResult());
-		}
-
 		//get the NodeSet on the left
 		NodeSet nodes = (NodeSet) getLeft().eval(contextSequence);
-		if(!(nodes instanceof VirtualNodeSet) && nodes.isEmpty()) //nothing on the left, so nothing to do
-            return(Sequence.EMPTY_SEQUENCE);
+		//nothing on the left, so nothing to do
+		if(!(nodes instanceof VirtualNodeSet) && nodes.isEmpty()) {
+			//Well, we might discuss this one ;-)
+			hasUsedIndex= true;
+            return Sequence.EMPTY_SEQUENCE;
+		}
 
         //get the Sequence on the right
 		Sequence rightSeq = getRight().eval(contextSequence);
-		if(rightSeq.isEmpty())	//nothing on the right, so nothing to do
-            return(Sequence.EMPTY_SEQUENCE);
-
-		//Holds the result
-		NodeSet result = null;
-
+		//nothing on the right, so nothing to do
+		if(rightSeq.isEmpty()) {
+			//Well, we might discuss this one ;-)
+			hasUsedIndex= true;
+            return Sequence.EMPTY_SEQUENCE;
+		}
+		
 		//get the type of a possible index
 		int indexType = nodes.getIndexType();
         
@@ -501,6 +522,9 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
 
 	    	//Get the documents from the node set
 			DocumentSet docs = nodes.getDocumentSet();
+			
+	        //Holds the result
+    		NodeSet result = null;
 
 			//Iterate through the right hand sequence
 			for (SequenceIterator itRightSeq = rightSeq.iterate(); itRightSeq.hasNext();) {
@@ -594,18 +618,22 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
 		                	LOG.trace("Cannot use range index: key is of type: " + Type.getTypeName(key.getType()) + ") whereas index is of type '" +
 		                			Type.getTypeName(indexType));
 
-		                return(nodeSetCompare(nodes, contextSequence));
-			        }
+		                return nodeSetCompare(nodes, contextSequence);
+			        }		        	
 		        } else {
-		        	//the datatype of our key does not implement org.exist.storage.Indexable
+		        	//our key does not implement org.exist.storage.Indexable
 	                if(context.getProfiler().isEnabled())
 	                    context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION FALLBACK", "Falling back to nodeSetCompare (key is not an indexable type: " +
 	                    		key.getClass().getName());
 
-	                return(nodeSetCompare(nodes, contextSequence));
+	                if (LOG.isTraceEnabled())
+	                	LOG.trace("Cannot use key which is of type '"  + key.getClass().getName());
+
+	                return nodeSetCompare(nodes, contextSequence);
 
 		        }
             }
+        	return result;
 		} else {
 	    	if (LOG.isTraceEnabled())
 	    		LOG.trace("No suitable index found for key: " + rightSeq.getStringValue());
@@ -614,19 +642,8 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
             if(context.getProfiler().isEnabled())
                 context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION FALLBACK", "falling back to nodeSetCompare (no index available)");
 
-            return(nodeSetCompare(nodes, contextSequence));
+            return nodeSetCompare(nodes, contextSequence);
 		}
-
-		// can this result be cached? Don't cache if the result depends on local variables.
-	    boolean canCache = contextSequence instanceof NodeSet &&
-	    	!Dependency.dependsOnVar(getLeft()) &&
-	    	!Dependency.dependsOnVar(getRight());
-
-	    if(canCache)
-			cached = new CachedResult((NodeSet)contextSequence, result);
-
-		//return the result of the range index lookup(s) :-)
-		return result;
 	}
 
     private CharSequence getRegexp(String expr) {
