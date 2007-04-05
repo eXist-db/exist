@@ -20,6 +20,8 @@
 
 package org.exist.xquery.functions;
 
+import java.text.Collator;
+
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.memtree.NodeImpl;
@@ -48,22 +50,34 @@ import org.w3c.dom.Node;
  *
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
  */
-public class FunDeepEqual extends Function {
+public class FunDeepEqual extends CollatingFunction {
 
-	public final static FunctionSignature signature =
+	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("deep-equal", Function.BUILTIN_FUNCTION_NS),
 			"Returns true iff every item in $a is deep-equal to the item at the same position in $b, " +
-			"false otherwise. If both $a and $b are the empty sequence, returns true. " +
-			"TODO: collation as argument $c",
+			"false otherwise. If both $a and $b are the empty sequence, returns true. ",
 			new SequenceType[] {
 					new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE), 
 					new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
 			},
-			new SequenceType(Type.BOOLEAN, Cardinality.ONE));
-//	TODO: collation as argument
+			new SequenceType(Type.BOOLEAN, Cardinality.ONE)
+		),
+		new FunctionSignature(
+			new QName("deep-equal", Function.BUILTIN_FUNCTION_NS),
+			"Returns true iff every item in $a is deep-equal to the item at the same position in $b, " +
+			"false otherwise. If both $a and $b are the empty sequence, returns true. " +
+			"Comparison collation is pecficied by $c",
+			new SequenceType[] {
+				new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE), 
+				new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE),
+				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+			},
+			new SequenceType(Type.BOOLEAN, Cardinality.ONE)		
+		)
+	};
 
-	public FunDeepEqual(XQueryContext context) {
+	public FunDeepEqual(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 
@@ -83,13 +97,14 @@ public class FunDeepEqual extends Function {
         
         Sequence result;
 		Sequence[] args = getArguments(contextSequence, contextItem);
+		Collator collator = getCollator(contextSequence, contextItem, 3);		
 		int length = args[0].getItemCount();
 		if (length != args[1].getItemCount()) 
             result = BooleanValue.FALSE;
         else {
         	result = BooleanValue.TRUE;
     		for (int i = 0; i < length; i++) {
-    			if (!deepEquals(args[0].itemAt(i), args[1].itemAt(i))) {
+    			if (!deepEquals(args[0].itemAt(i), args[1].itemAt(i), collator)) {
                     result = BooleanValue.FALSE;
                     break;
                 }   
@@ -102,7 +117,7 @@ public class FunDeepEqual extends Function {
         return result;
 	}
 	
-	private boolean deepEquals(Item a, Item b) {
+	private boolean deepEquals(Item a, Item b, Collator collator) {
 		try {
 			final boolean aAtomic = Type.subTypeOf(a.getType(), Type.ATOMIC);
 			final boolean bAtomic = Type.subTypeOf(b.getType(), Type.ATOMIC);
@@ -110,7 +125,7 @@ public class FunDeepEqual extends Function {
 				if (!aAtomic || !bAtomic) return false;
 				try {
 					return GeneralComparison.compareAtomic(
-						context.getDefaultCollator(), (AtomicValue) a, (AtomicValue) b, 
+						collator, (AtomicValue) a, (AtomicValue) b, 
 						context.isBackwardsCompatible(), Constants.TRUNC_NONE, Constants.EQ);
 				} catch (XPathException e) {
 					return false;
