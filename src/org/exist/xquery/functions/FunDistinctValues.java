@@ -46,18 +46,29 @@ import org.exist.xquery.value.ValueSequence;
  * 
  * @author wolf
  */
-public class FunDistinctValues extends Function {
+public class FunDistinctValues extends CollatingFunction {
 
-	public final static FunctionSignature signature =
+	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("distinct-values", Function.BUILTIN_FUNCTION_NS, ModuleImpl.PREFIX),
-			"Returns a sequence where duplicate values, based on value equality, " + 
+			"Returns a sequence where duplicate values of $a, based on value equality, " + 
 			"have been deleted.",
 			new SequenceType[] { new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE)},
-			new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE));
-//	TODO: collation as argument
+			new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE)
+		),
+		new FunctionSignature(
+				new QName("distinct-values", Function.BUILTIN_FUNCTION_NS, ModuleImpl.PREFIX),
+				"Returns a sequence where duplicate values of $a, based on value equality specified by collation $b, " + 
+				"have been deleted.",
+				new SequenceType[] { 
+					new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE),
+					new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+				},
+				new SequenceType(Type.ATOMIC, Cardinality.ZERO_OR_MORE)
+		)		
+	};
 
-	public FunDistinctValues(XQueryContext context) {
+	public FunDistinctValues(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 
@@ -95,7 +106,8 @@ public class FunDistinctValues extends Function {
 			contextSequence = contextItem.toSequence();
 
 		Sequence values = getArgument(0).eval(contextSequence);
-		TreeSet set = new TreeSet(new ValueComparator(context.getCollator(null)));
+		Collator collator = getCollator(contextSequence, contextItem, 2);		
+		TreeSet set = new TreeSet(new ValueComparator(collator));
 		ValueSequence result = new ValueSequence();
 		Item item;
 		AtomicValue value;
