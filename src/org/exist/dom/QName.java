@@ -35,11 +35,17 @@ import org.exist.xquery.XQueryContext;
  */
 public class QName implements Comparable {
 
+	/*
     public final static QName DOCUMENT_QNAME = new QName("#document", "", null);
 	public final static QName TEXT_QNAME = new QName("#text", "", null);
 	public final static QName COMMENT_QNAME = new QName("#comment", "", null);
-	public final static QName DOCTYPE_QNAME = new QName("#doctype", "", null); 
+	public final static QName DOCTYPE_QNAME = new QName("#doctype", "", null);
+	*/ 
 	public final static QName EMPTY_QNAME = new QName("", "", null);
+    public final static QName DOCUMENT_QNAME = EMPTY_QNAME;
+	public final static QName TEXT_QNAME = EMPTY_QNAME;
+	public final static QName COMMENT_QNAME = EMPTY_QNAME;
+	public final static QName DOCTYPE_QNAME = EMPTY_QNAME; 
 	
 	private String localName_ = null;
 	private String namespaceURI_ = null;
