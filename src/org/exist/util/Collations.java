@@ -108,6 +108,11 @@ public class Collations {
                 throw new XPathException("The specified collator class " + uri
                         + " could not be found", e);
             }
+        } else if (CODEPOINT.equals(uri)) {
+        	return null;
+        //newest form : todo upgrade..
+        } else if ("http://www.w3.org/2005/xpath-functions/collation/codepoint".equals(uri)) {
+        	return null;
         } else
             throw new XPathException("FOCH0002: Unknown collation : '" + uri + "'");           
     }
