@@ -20,33 +20,25 @@
  *  
  *  $Id: ExtRegexp.java 5578 2007-04-03 20:34:57Z wolfgang_m $
  */
-package org.exist.xquery.functions;
+package org.exist.xquery.functions.text;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Iterator;
-
+import org.exist.collections.Collection;
+import org.exist.dom.DocumentSet;
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
-import org.exist.dom.DocumentSet;
 import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
 import org.exist.storage.FulltextIndexSpec;
-import org.exist.storage.analysis.Tokenizer;
-import org.exist.xquery.*;
-import org.exist.xquery.functions.text.TextModule;
-import org.exist.xquery.util.RegexTranslator;
-import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.util.RegexTranslator.RegexSyntaxException;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-import org.exist.EXistException;
 import org.exist.xmldb.XmldbURI;
-import org.exist.collections.Collection;
+import org.exist.xquery.*;
+import org.exist.xquery.util.RegexTranslator;
+import org.exist.xquery.util.RegexTranslator.RegexSyntaxException;
+import org.exist.xquery.value.*;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author wolf
