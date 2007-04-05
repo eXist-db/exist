@@ -82,7 +82,6 @@ public interface Sequence {
 	 * items are returned in document order where applicable.
 	 * 
 	 * @throws XPathException TODO
-	 * @throws XPathException TODO
 	 */
 	public SequenceIterator iterate() throws XPathException;
 	
