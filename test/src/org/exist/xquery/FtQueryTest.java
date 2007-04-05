@@ -127,56 +127,56 @@ public class FtQueryTest extends XMLTestCase {
 		}
 	}
 
-    public void testFtMatchFunctions() {
-        try {
-	    	System.out.println("----- testFtOperators -----");
-	        XQueryService service = (XQueryService)
-	            testCollection.getService("XQueryService", "1.0");
-	        ResourceSet result = service.query("//SPEECH[match-all(LINE, 'love')]");
-	        assertEquals(160, result.getSize());
-            result = service.query("//SPEECH[text:match-all(LINE, 'love')]");
-	        assertEquals(190, result.getSize());
-            result = service.query("//SPEECH[text:match-all(LINE, 'love$')]");
-	        assertEquals(160, result.getSize());
-
-            result = service.query("//SPEECH[match-all(LINE, 'fenny', 'snake')]/LINE[1]");
-	        assertEquals(1, result.getSize());
-	        assertXMLEqual(result.getResource(0).getContent().toString(), "<LINE>Fillet of a fenny snake,</LINE>");
-
-            result = service.query("//SPEECH[text:match-all(LINE, ('fenny', 'snake'))]/LINE[1]");
-	        assertEquals(1, result.getSize());
-	        assertXMLEqual(result.getResource(0).getContent().toString(), "<LINE>Fillet of a fenny snake,</LINE>");
-
-            result = service.query("//SPEECH[text:match-all(LINE, 'god.*')]");
-	        assertEquals(79, result.getSize());
-
-            result = service.query("//SPEECH[LINE &= 'god in heaven']");
-	        assertEquals(2, result.getSize());
-	        result = service.query("//SPEECH[SPEAKER &= 'Nurse']");
-	        assertEquals(90, result.getSize());
-	        result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; //mods:titleInfo[text:match-all(mods:title, 'self.*')]");
-	        assertEquals(2, result.getSize());
-	        result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; //mods:titleInfo[text:match-all(mods:title, ('self', 'employed'))]");
-	        assertEquals(1, result.getSize());
-	        result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; //mods:titleInfo[text:match-all(mods:title, '.*ploy.*')]");
-	        assertEquals(3, result.getSize());
-
-            result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; " +
-                    "//mods:titleInfo/mods:title[. &= 'alternative']");
-            assertEquals(0, result.getSize());
-
+//    public void testFtMatchFunctions() {
+//        try {
+//	    	System.out.println("----- testFtOperators -----");
+//	        XQueryService service = (XQueryService)
+//	            testCollection.getService("XQueryService", "1.0");
+//	        ResourceSet result = service.query("//SPEECH[match-all(LINE, 'love')]");
+//	        assertEquals(160, result.getSize());
+//            result = service.query("//SPEECH[text:match-all(LINE, 'love')]");
+//	        assertEquals(190, result.getSize());
+//            result = service.query("//SPEECH[text:match-all(LINE, 'love$')]");
+//	        assertEquals(160, result.getSize());
+//
+//            result = service.query("//SPEECH[match-all(LINE, 'fenny', 'snake')]/LINE[1]");
+//	        assertEquals(1, result.getSize());
+//	        assertXMLEqual(result.getResource(0).getContent().toString(), "<LINE>Fillet of a fenny snake,</LINE>");
+//
+//            result = service.query("//SPEECH[text:match-all(LINE, ('fenny', 'snake'))]/LINE[1]");
+//	        assertEquals(1, result.getSize());
+//	        assertXMLEqual(result.getResource(0).getContent().toString(), "<LINE>Fillet of a fenny snake,</LINE>");
+//
+//            result = service.query("//SPEECH[text:match-all(LINE, 'god.*')]");
+//	        assertEquals(79, result.getSize());
+//
+//            result = service.query("//SPEECH[LINE &= 'god in heaven']");
+//	        assertEquals(2, result.getSize());
+//	        result = service.query("//SPEECH[SPEAKER &= 'Nurse']");
+//	        assertEquals(90, result.getSize());
+//	        result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; //mods:titleInfo[text:match-all(mods:title, 'self.*')]");
+//	        assertEquals(2, result.getSize());
+//	        result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; //mods:titleInfo[text:match-all(mods:title, ('self', 'employed'))]");
+//	        assertEquals(1, result.getSize());
+//	        result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; //mods:titleInfo[text:match-all(mods:title, '.*ploy.*')]");
+//	        assertEquals(3, result.getSize());
+//
 //            result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; " +
-//                    "//mods:titleInfo/mods:title[text:match-all(attribute(), 'alternative')]");
+//                    "//mods:titleInfo/mods:title[. &= 'alternative']");
+//            assertEquals(0, result.getSize());
+//
+////            result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; " +
+////                    "//mods:titleInfo/mods:title[text:match-all(attribute(), 'alternative')]");
+////            assertEquals(9, result.getSize());
+//
+//            result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; " +
+//                    "//mods:titleInfo/mods:title[text:match-all(@type, 'alternative')]");
 //            assertEquals(9, result.getSize());
-
-            result = service.query("declare namespace mods='http://www.loc.gov/mods/v3'; " +
-                    "//mods:titleInfo/mods:title[text:match-all(@type, 'alternative')]");
-            assertEquals(9, result.getSize());
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-		}
-    }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            fail(e.getMessage());
+//		}
+//    }
 
     public void testFtScan() {
     	try {
