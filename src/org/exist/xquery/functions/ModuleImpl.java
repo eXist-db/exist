@@ -22,12 +22,11 @@
  */
 package org.exist.xquery.functions;
 
+import java.util.Arrays;
+
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionDef;
-
-import java.util.Arrays;
-import java.util.Comparator;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
@@ -56,8 +55,9 @@ public class ModuleImpl extends AbstractInternalModule {
 		new FunctionDef(FunCurrentDateTime.fnCurrentDateTime, FunCurrentDateTime.class),
 		new FunctionDef(FunCurrentDateTime.fnCurrentTime, FunCurrentDateTime.class),
 		new FunctionDef(FunData.signature, FunData.class),
-		new FunctionDef(FunDateTime.signature, FunDateTime.class),
-		new FunctionDef(FunDeepEqual.signature, FunDeepEqual.class),
+		new FunctionDef(FunDateTime.signature, FunDateTime.class),		
+		new FunctionDef(FunDeepEqual.signatures[0], FunDeepEqual.class),
+		new FunctionDef(FunDeepEqual.signatures[1], FunDeepEqual.class),
 		new FunctionDef(FunDistinctValues.signatures[0], FunDistinctValues.class),
 		new FunctionDef(FunDistinctValues.signatures[1], FunDistinctValues.class),
 		new FunctionDef(FunDoc.signature, FunDoc.class),
