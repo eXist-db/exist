@@ -29,6 +29,7 @@ import java.util.TreeMap;
 import org.apache.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.Namespaces;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -184,6 +185,7 @@ public class IndexSpec {
      */
     private Map getNamespaceMap(Element elem) {
         HashMap map = new HashMap();
+        map.put("xml", Namespaces.XML_NS);
         NamedNodeMap attrs = elem.getAttributes();
         for(int i = 0; i < attrs.getLength(); i++) {
             Attr attr = (Attr) attrs.item(i);
