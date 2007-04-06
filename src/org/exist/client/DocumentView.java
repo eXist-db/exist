@@ -91,7 +91,7 @@ class DocumentView extends JFrame {
 	
 	public DocumentView(InteractiveClient client, XmldbURI resourceName, Properties properties) throws XMLDBException
 	{
-		super(Messages.getString("DocumentView.0")); //$NON-NLS-1$
+        super( URIUtils.urlDecodeUtf8(resourceName.lastSegment()) ); 
 		this.resourceName = resourceName;
 		this.resource = client.retrieve(resourceName, properties.getProperty(OutputKeys.INDENT, "yes")); //$NON-NLS-1$
 		this.client = client;
