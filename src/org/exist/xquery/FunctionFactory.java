@@ -62,7 +62,7 @@ public class FunctionFactory {
 			// near(node-set, string)
 			if (local.equals("near")) {
 				if (params.size() < 2)
-					throw new XPathException(ast, "Function near requires two arguments");
+					throw new XPathException(ast, "XPST0017: Function near() requires two arguments");
 				PathExpr p1 = (PathExpr) params.get(1);
 				if (p1.getLength() == 0)
 					throw new XPathException(ast, "Second argument to near is empty");
@@ -94,7 +94,7 @@ public class FunctionFactory {
 			// phrase(node-set, string)
             if (local.equals("phrase")) {
                 if (params.size() < 2)
-                    throw new XPathException(ast, "Function phrase requires two arguments");
+                    throw new XPathException(ast, "XPST0017: Function phrase() requires two arguments");
                 PathExpr p1 = (PathExpr) params.get(1);
                 if (p1.getLength() == 0)
                     throw new XPathException(ast, "Second argument to phrase is empty");   
@@ -109,7 +109,9 @@ public class FunctionFactory {
 			// starts-with(node-set, string)
 			if (local.equals("starts-with")) {
 				if (params.size() < 2)
-					throw new XPathException(ast, "Function starts-with requires two arguments");
+					throw new XPathException(ast, "XPST0017: Function starts-with() requires two or three arguments");
+				if (params.size() > 3)
+					throw new XPathException(ast, "XPST0017: Function starts-with() requires two or three arguments");
 				PathExpr p0 = (PathExpr) params.get(0);
 				PathExpr p1 = (PathExpr) params.get(1);
 				if (p1.getLength() == 0)
@@ -128,7 +130,9 @@ public class FunctionFactory {
 			// ends-with(node-set, string)
 			if (local.equals("ends-with")) {
 				if (params.size() < 2)
-					throw new XPathException(ast, "Function ends-with requires two arguments");
+					throw new XPathException(ast, "XPST0017 : Function ends-with() requires two or three arguments");
+				if (params.size() > 3)
+					throw new XPathException(ast, "XPST0017 : Function ends-with() requires two or three arguments");
 				PathExpr p0 = (PathExpr) params.get(0);
 				PathExpr p1 = (PathExpr) params.get(1);
 				if (p1.getLength() == 0)
@@ -147,7 +151,9 @@ public class FunctionFactory {
 			// contains(node-set, string)
 			if (local.equals("contains")) {
 				if (params.size() < 2)
-					throw new XPathException(ast, "Function contains requires two arguments");
+					throw new XPathException(ast, "XPST0017: Function contains() requires two or three arguments");
+				if (params.size() > 3)
+					throw new XPathException(ast, "XPST0017: Function contains() requires two or three arguments");
 				PathExpr p0 = (PathExpr) params.get(0);
 				PathExpr p1 = (PathExpr) params.get(1);
 				if (p1.getLength() == 0)
