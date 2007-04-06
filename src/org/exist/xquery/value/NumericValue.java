@@ -37,6 +37,11 @@ public abstract class NumericValue extends ComputableValue {
 		if (other.isEmpty())
 			return false;
 		if(Type.subTypeOf(other.getType(), Type.NUMBER)) {
+			if (isNaN()) {
+				//NaN does not equal itself.
+				if (((NumericValue)other).isNaN())
+				return false;
+			}			
 			double otherVal = ((NumericValue)other).getDouble();
 			double val = getDouble();
 			switch(operator) {
@@ -66,6 +71,11 @@ public abstract class NumericValue extends ComputableValue {
 	 */
 	public int compareTo(Collator collator, AtomicValue other) throws XPathException {
 		if(Type.subTypeOf(other.getType(), Type.NUMBER)) {
+			if (isNaN()) {
+				//NaN does not equal itself.
+				if (((NumericValue)other).isNaN())
+				return Constants.INFERIOR;
+			}
 			double otherVal = ((NumericValue)other).getDouble();
 			double val = getDouble();
 			if(val == otherVal)
