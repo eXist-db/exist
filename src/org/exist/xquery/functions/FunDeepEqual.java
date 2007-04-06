@@ -39,6 +39,7 @@ import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
@@ -124,6 +125,11 @@ public class FunDeepEqual extends CollatingFunction {
 			if (aAtomic || bAtomic) {
 				if (!aAtomic || !bAtomic) return false;
 				try {
+					if (Type.subTypeOf(((AtomicValue) a).getType(), Type.NUMBER) && Type.subTypeOf(((AtomicValue) b).getType(), Type.NUMBER)) {
+						//or if both values are NaN
+						if (((NumericValue)a).isNaN() && ((NumericValue)b).isNaN())
+							return true;
+					}
 					return GeneralComparison.compareAtomic(
 						collator, (AtomicValue) a, (AtomicValue) b, 
 						context.isBackwardsCompatible(), Constants.TRUNC_NONE, Constants.EQ);
