@@ -67,7 +67,7 @@ public class FunDeepEqual extends CollatingFunction {
 			new QName("deep-equal", Function.BUILTIN_FUNCTION_NS),
 			"Returns true iff every item in $a is deep-equal to the item at the same position in $b, " +
 			"false otherwise. If both $a and $b are the empty sequence, returns true. " +
-			"Comparison collation is specficied by $c",
+			"Comparison collation is specified by $c",
 			new SequenceType[] {
 				new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE), 
 				new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE),
