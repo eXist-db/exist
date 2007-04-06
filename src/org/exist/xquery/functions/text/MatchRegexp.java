@@ -1,44 +1,51 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2007 The eXist team
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *  
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *  
- *  $Id: ExtRegexp.java 5578 2007-04-03 20:34:57Z wolfgang_m $
+ *  $Id$
  */
 package org.exist.xquery.functions.text;
 
-import org.exist.collections.Collection;
-import org.exist.dom.DocumentSet;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Iterator;
+
 import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
+import org.exist.dom.DocumentSet;
 import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
 import org.exist.storage.FulltextIndexSpec;
-import org.exist.xmldb.XmldbURI;
+import org.exist.storage.analysis.Tokenizer;
 import org.exist.xquery.*;
+import org.exist.xquery.functions.text.TextModule;
 import org.exist.xquery.util.RegexTranslator;
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.util.RegexTranslator.RegexSyntaxException;
-import org.exist.xquery.value.*;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.Type;
+import org.exist.EXistException;
+import org.exist.xmldb.XmldbURI;
+import org.exist.collections.Collection;
 
 /**
  * @author wolf
