@@ -345,6 +345,8 @@ public class VirtualNodeSet extends AbstractNodeSet {
             return false;   // more than 5 nodes per document
         for (Iterator i = context.iterator(); i.hasNext();) {
             NodeProxy p = (NodeProxy) i.next();
+            if (p.getNodeId() == NodeId.DOCUMENT_NODE)
+                return false;
             StoredNode n = (StoredNode) p.getNode();
             if (n.getNodeType() == Node.ELEMENT_NODE && n.getChildCount() > MAX_CHILD_COUNT_FOR_OPTIMIZE)
                 return false;
