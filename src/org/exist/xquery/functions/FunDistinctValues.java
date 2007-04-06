@@ -35,6 +35,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
@@ -111,14 +112,27 @@ public class FunDistinctValues extends CollatingFunction {
 		ValueSequence result = new ValueSequence();
 		Item item;
 		AtomicValue value;
+		boolean hasAlreadyNaN = false;
 		for (SequenceIterator i = values.iterate(); i.hasNext();) {
 			item = i.nextItem();
 			value = item.atomize();
-			//TODO : use a real comparison. Nothing should be filtered in :
-			//fn:distinct-values((xs:float('NaN'), 'NaN'))
 			if (!set.contains(value)) {
-				set.add(value);
-				result.add(value);
+				if (Type.subTypeOf(value.getType(), Type.NUMBER)) {
+					if (((NumericValue)value).isNaN()) {
+						//although NaN does not equal itself, if $arg contains multiple NaN values a single NaN is returned.
+						if (!hasAlreadyNaN) {
+							set.add(value);
+							result.add(value);	
+							hasAlreadyNaN = true;
+						}
+					} else {
+						set.add(value);
+						result.add(value);
+					}
+				} else {
+					set.add(value);
+					result.add(value);
+				}
 			}			
 		}
 
