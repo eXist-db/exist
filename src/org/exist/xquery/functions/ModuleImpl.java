@@ -58,6 +58,7 @@ public class ModuleImpl extends AbstractInternalModule {
 		new FunctionDef(FunDateTime.signature, FunDateTime.class),		
 		new FunctionDef(FunDeepEqual.signatures[0], FunDeepEqual.class),
 		new FunctionDef(FunDeepEqual.signatures[1], FunDeepEqual.class),
+		new FunctionDef(FunDefaultCollation.signature, FunDefaultCollation.class),		
 		new FunctionDef(FunDistinctValues.signatures[0], FunDistinctValues.class),
 		new FunctionDef(FunDistinctValues.signatures[1], FunDistinctValues.class),
 		new FunctionDef(FunDoc.signature, FunDoc.class),

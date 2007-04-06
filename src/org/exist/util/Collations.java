@@ -28,7 +28,8 @@ public class Collations {
      * The default unicode codepoint collation URI as defined by the XQuery
      * spec.
      */
-    public final static String CODEPOINT = "http://www.w3.org/2004/07/xpath-functions/collation/codepoint";
+    //public final static String CODEPOINT = "http://www.w3.org/2004/07/xpath-functions/collation/codepoint";
+    public final static String CODEPOINT = "http://www.w3.org/2005/xpath-functions/collation/codepoint";
 
     /**
      * Short string to select the default codepoint collation
@@ -109,9 +110,6 @@ public class Collations {
                         + " could not be found", e);
             }
         } else if (CODEPOINT.equals(uri)) {
-        	return null;
-        //newest form : todo upgrade..
-        } else if ("http://www.w3.org/2005/xpath-functions/collation/codepoint".equals(uri)) {
         	return null;
         } else
             throw new XPathException("FOCH0002: Unknown collation : '" + uri + "'");           
