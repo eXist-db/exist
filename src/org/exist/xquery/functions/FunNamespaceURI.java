@@ -52,16 +52,18 @@ public class FunNamespaceURI extends Function {
 				" Raises an error if the context item is undefined or not a node.",
 				new SequenceType[0],
 				new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE),
-				true),
+				false),
 		new FunctionSignature(
 			new QName("namespace-uri", Function.BUILTIN_FUNCTION_NS),
 			"Returns the namespace URI of the xs:QName value of $a" +
 			"If $a is in no namespace or is neither an element nor attribute node, " +
 				"returns the xs:anyURI eqvivalent to the zero-length string." +
 				" Raises an error if the context item is undefined or not a node.",
-			new SequenceType[] { new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE) },
+			new SequenceType[] { 
+				new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE) 
+			},
 			new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE),
-			true)
+			false)
 	};
 
 	public FunNamespaceURI(XQueryContext context, FunctionSignature signature) {
