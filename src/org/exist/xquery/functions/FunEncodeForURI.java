@@ -64,7 +64,8 @@ public class FunEncodeForURI extends Function {
         Sequence result;
 		Sequence seq = getArgument(0).eval(contextSequence);
 		if(seq.isEmpty())
-            result = Sequence.EMPTY_SEQUENCE;
+			//If $uri-part is the empty sequence, returns the zero-length string.
+            result = StringValue.EMPTY_STRING;
         else {
     		String value; 
    			value = URIUtils.encodeForURI(seq.getStringValue());

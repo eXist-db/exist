@@ -39,16 +39,16 @@ public class URIUtils {
 	public static String encodeForURI(String uriPart) {
 		String result = urlEncodeUtf8(uriPart);
 		result = result.replaceAll("\\+", "%20");
-		result = result.replaceAll("%23", "#");
+		//result = result.replaceAll("%23", "#");		
 		result = result.replaceAll("%2D", "-");
 		result = result.replaceAll("%5F", "_");
 		result = result.replaceAll("%2E", ".");
-		result = result.replaceAll("%21", "!");
+		//result = result.replaceAll("%21", "!");
 		result = result.replaceAll("%7E", "~");
-		result = result.replaceAll("%2A", "*");
-		result = result.replaceAll("%27", "'");
-		result = result.replaceAll("%28", "(");
-		result = result.replaceAll("%29", ")");
+		result = result.replaceAll("\\*", "%2A");
+		//result = result.replaceAll("%27", "'");
+		//result = result.replaceAll("%28", "(");
+		//result = result.replaceAll("%29", ")");
 		return result;
 	}
 	
