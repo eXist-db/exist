@@ -1,5 +1,4 @@
 #eXist build info
-#Sat Apr 07 14:15:57 CEST 2007
 project.version=1.1.2dev
-project.build=20070407
-svn.revision=5610
+project.build=20010101
+svn.revision=0000
