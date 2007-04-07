@@ -124,6 +124,7 @@
                 <uri type="append" src="indexing.xml"/>
                 <uri type="append" src="facts.xml"/>
                 <uri type="append" src="extensions.xml"/>
+                <uri type="append" src="summer.xml"/>
             </uris>
         </cocoon>
 

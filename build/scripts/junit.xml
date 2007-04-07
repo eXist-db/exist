@@ -14,21 +14,24 @@
         <pathelement path="${junit.reports}/classes"/>
     </path>
 
+    <condition property="java14-only">
+        <equals arg1="${ant.java.version}" arg2="1.4"/>
+    </condition>
+
     <target name="test"
-            depends="test-prepare,test-recovery, test-local, test-jetty, test-concurrent, test-remote, test-wrapup"
+            depends="check-java-version, test-prepare,test-recovery, test-local, test-jetty, test-concurrent, test-remote, test-wrapup"
             description="Run jUnit tests"/>
 
     <!-- Extra jUnit properties -->
     <property name="junit.reports.dat" value="${junit.reports}/junit/data"/>
     <property name="junit.reports.html" value="${junit.reports}/junit/html"/>
 
-    <target name="test-compile">
-    <mkdir dir="${junit.reports}/classes"/>
+    <target name="test-compile" unless="java14-only" >
+        <mkdir dir="${junit.reports}/classes"/>
        <javac debug="${build.debug}" deprecation="${build.deprecation}"
             destdir="${junit.reports}/classes" encoding="UTF-8"
             optimize="${build.optimize}" srcdir="${junit.reports}/src"
-            source="${build.compiler.source}" target="${build.compiler.target}">
-
+            source="1.5" target="${build.compiler.target}">
             <classpath>
                 <path refid="classpath.core"/>
                 <path refid="classpath.jetty"/>
@@ -38,6 +41,14 @@
               file="${junit.reports}/src/org/exist/performance/ant/antlib.xml"/>
         <copy todir="${junit.reports}/classes/org/exist/performance"
             file="${junit.reports}/src/org/exist/performance/log2html.xql"/>
+    </target>
+
+    <target name="check-java-version" if="java14-only">
+        <echo message="Java version warning"/>
+        <echo message="--------------------"/>
+        <echo message="Java 5 is required to compile and run the test suite. Your version is ${ant.java.version}."/>
+        <echo message="You can still run and compile eXist itself, but not the test cases."/>
+        <fail message="Cannot run test suite."/>
     </target>
 
     <!-- Seperate target for creating folders -->
