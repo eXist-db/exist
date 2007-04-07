@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="iso-8859-1" ?>
 
 <!-- 
-Test the quality of code with PMD, JDepend, ...
-Designed to be imported by main build.xml , 
-so don't worry about eclipse editor's message about target "compile".
-
-Tested with eclipse Version: 3.2.0 Build id: I20060217-1115
-$Header$
+		Test the quality of code with PMD, JDepend, ...
+		Designed to be imported by main build.xml , 
+		so don't worry about eclipse editor's message about target "compile".
+		
+		Tested with eclipse Version: 3.2.0 Build id: I20060217-1115
+		
+		$Id$
 -->
 
 <project basedir="../.." default="pmd" name="quality-tests">

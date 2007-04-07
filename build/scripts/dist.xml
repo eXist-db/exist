@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="iso-8859-1" ?>
-
+<!-- $Id$ -->
 <project basedir="../.." default="dist" name="dist">
-
-    <description>Create eXist distribution</description>
+	
+  <description>Create eXist distribution</description>
 	
 	<!-- import common targets -->
 	<import file="../../build.xml"/>

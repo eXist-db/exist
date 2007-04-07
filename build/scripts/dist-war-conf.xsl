@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
 <xsl:transform version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
-    <!-- $Id$ -->
     <!-- Convert conf.xml for use in war-file -->
     <xsl:output method="xml"/>
 
