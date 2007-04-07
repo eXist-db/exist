@@ -16,7 +16,7 @@
     
     DWE 2005-05-29
     
-    $Id: jarsigner.xml 4072 2006-08-14 17:18:44Z dizzzz $
+    $Id$
 -->
 <project name="Sign eXist jarfiles" default="jnlp-sign-all" basedir="../..">
     

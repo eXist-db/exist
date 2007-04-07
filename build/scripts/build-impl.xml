@@ -4,7 +4,7 @@
 <!-- eXist build file                                                        -->
 <!-- ======================================================================= -->
 
-<!-- $Id: build-impl.xml 4297 2006-09-05 09:55:37Z brihaye $ -->
+<!-- $Id$ -->
 
 <project basedir="../.." default="all" name="exist">
 
