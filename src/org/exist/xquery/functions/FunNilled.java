@@ -21,6 +21,7 @@
 
 package org.exist.xquery.functions;
 
+import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -30,6 +31,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -71,7 +73,15 @@ public class FunNilled extends BasicFunction {
             if (!(n.getNodeType() == Node.ELEMENT_NODE))
             	result = Sequence.EMPTY_SEQUENCE;
             else {
-            	throw new XPathException(getASTNode(), "How to process fn:nilled() ?");
+            	//TODO : think more...
+            	if (n.hasAttributes()) {
+            		Node nilled =n.getAttributes().getNamedItemNS(Namespaces.SCHEMA_INSTANCE_NS, "nil");
+            		if (nilled != null)
+            			result = new BooleanValue(nilled.getNodeValue() == "false");
+            		else
+            			result = BooleanValue.FALSE;
+            	} else
+            		result = BooleanValue.FALSE;
             }
         }
         	

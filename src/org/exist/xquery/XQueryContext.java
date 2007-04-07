@@ -1921,11 +1921,14 @@ public class XQueryContext {
 			namespaces.put("xml", Namespaces.XML_NS);
 			prefixes.put(Namespaces.XML_NS, "xml");			
 			declareNamespace("xs", Namespaces.SCHEMA_NS);
+			declareNamespace("xsi", Namespaces.SCHEMA_INSTANCE_NS);	
+			//required for backward compatibility
 			declareNamespace("xdt", Namespaces.XPATH_DATATYPES_NS);
-			declareNamespace("local", XQUERY_LOCAL_NS);
 			declareNamespace("fn", Function.BUILTIN_FUNCTION_NS);
+			declareNamespace("local", XQUERY_LOCAL_NS);
 			//*not* as standard NS
 			declareNamespace("exist", Namespaces.EXIST_NS);
+			//TODO : include err namespace ?
 		} catch (XPathException e) {
 			//TODO : ignored because it should never happen
 		}
