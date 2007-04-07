@@ -129,6 +129,7 @@ public class ModuleImpl extends AbstractInternalModule {
 		new FunctionDef(FunNamespaceURI.signatures[0], FunNamespaceURI.class),
 		new FunctionDef(FunNamespaceURI.signatures[1], FunNamespaceURI.class),
 		new FunctionDef(FunNamespaceURIForPrefix.signature, FunNamespaceURIForPrefix.class),
+		new FunctionDef(FunNilled.signature, FunNilled.class),
 		new FunctionDef(FunNormalizeSpace.signatures[0], FunNormalizeSpace.class),
 		new FunctionDef(FunNormalizeSpace.signatures[1], FunNormalizeSpace.class),
 		new FunctionDef(FunNormalizeUnicode.signatures[0], FunNormalizeUnicode.class),
