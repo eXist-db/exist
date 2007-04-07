@@ -3,6 +3,8 @@
 <!-- ======================================================================= -->
 <!-- eXist build file : Run jUnit tests                                      -->
 <!-- ======================================================================= -->
+<!-- $Id$ -->
+
 <project basedir="../.." default="test" name="jUnit tests">
 	
     <description>jUnit tests for eXist</description>

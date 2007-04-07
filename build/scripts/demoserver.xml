@@ -3,10 +3,11 @@
 <!-- ======================================================================= -->
 <!-- eXist build file :  Create HTML files for docs on http://exist-db.org   -->
 <!-- ======================================================================= -->
+<!-- $Id$ -->
 
 <project basedir="../.." default="docs" name="Demoserver">
 
-    <description>Create HTML files for docs on http://exist-db.org </description>
+  <description>Create HTML files for docs on http://exist-db.org </description>
 	
 	<!-- import common targets -->
 	<import file="../../build.xml"/>	

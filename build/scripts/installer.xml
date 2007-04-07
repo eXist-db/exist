@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!-- ======================================================================= -->
 <!-- eXist build file : Build installer                                      -->
 <!-- ======================================================================= -->
+<!-- $Id$ -->
 <project basedir="../.." default="snapshot-installer" name="Build installer">
-
-    <description>Build installer</description>
+  
+  <description>Build installer</description>
 
 	<!-- import common targets -->
 	<import file="../../build.xml"/>
