@@ -120,7 +120,7 @@
       
       <svninfo url="https://exist.svn.sourceforge.net/svnroot/exist/trunk/eXist-1.0" username="anonymous" password="anonymous" />
       
-      <propertyfile file="VERSION.txt" comment="eXist build info (updated using svnkit">
+      <propertyfile file="VERSION.txt" comment="eXist build info (updated using svnkit)">
         <entry  key="project.version" value="${project.version}"/>
         <entry  key="project.build" value="${DSTAMP}"/>          
         <entry  key="svn.revision" value="${svn.revision}"/>
