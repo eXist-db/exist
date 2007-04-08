@@ -191,6 +191,12 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
         return false;
     }
 
+    public int getOptimizeAxis() {
+        if (contextStep == null)
+            return -1;
+        return contextStep.getAxis();
+    }
+
     /* (non-Javadoc)
 	 * @see org.exist.xquery.BinaryOp#returnsType()
 	 */
@@ -340,7 +346,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
 		            }
 		        } else {
 		            contextStep.setPreloadNodeSets(true);
-		            contextStep.setPreloadedData(preselectResult.getDocumentSet(), preselectResult);
+                    contextStep.setPreloadedData(contextSequence.getDocumentSet(), preselectResult);
 		
 		            result = getLeft().eval(contextSequence).toNodeSet();
 		 

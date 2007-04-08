@@ -151,7 +151,6 @@ public class FunMatches extends Function implements Optimizable {
         }
     }
 
-
     public boolean canOptimize(Sequence contextSequence) {
         if (contextQName == null)
             return false;
@@ -160,6 +159,12 @@ public class FunMatches extends Function implements Optimizable {
 
     public boolean optimizeOnSelf() {
         return false;
+    }
+
+    public int getOptimizeAxis() {
+        if (contextStep == null)
+            return -1;
+        return contextStep.getAxis();
     }
 
     public NodeSet preSelect(Sequence contextSequence, boolean useContext) throws XPathException {
@@ -265,7 +270,7 @@ public class FunMatches extends Function implements Optimizable {
             }
         } else {
             contextStep.setPreloadNodeSets(true);
-            contextStep.setPreloadedData(preselectResult.getDocumentSet(), preselectResult);
+            contextStep.setPreloadedData(contextSequence.getDocumentSet(), preselectResult);
 
             result = getArgument(0).eval(contextSequence).toNodeSet();
         }

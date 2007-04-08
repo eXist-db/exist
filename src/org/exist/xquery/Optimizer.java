@@ -69,9 +69,11 @@ public class Optimizer extends DefaultExpressionVisitor {
                 Predicate pred = (Predicate) i.next();
                 FindOptimizable find = new FindOptimizable();
                 pred.accept(find);
-                if (find.getOptimizables().size() > 0)
+                List list = find.getOptimizables();
+                if (list.size() > 0 && canOptimize(list)) {
                     optimize = true;
-                break;
+                    break;
+                }
             }
         }
         if (optimize) {
@@ -96,6 +98,18 @@ public class Optimizer extends DefaultExpressionVisitor {
                 LOG.warn("Failed to optimize expression: " + locationStep + ": " + e.getMessage(), e);
             }
         }
+    }
+
+    private boolean canOptimize(List list) {
+        for (int j = 0; j < list.size(); j++) {
+            Optimizable optimizable = (Optimizable) list.get(j);
+            int axis = optimizable.getOptimizeAxis();
+            if (!(axis == Constants.CHILD_AXIS || axis == Constants.DESCENDANT_AXIS ||
+                    axis == Constants.DESCENDANT_SELF_AXIS || axis == Constants.ATTRIBUTE_AXIS)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
