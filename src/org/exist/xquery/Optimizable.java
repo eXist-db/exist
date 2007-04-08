@@ -34,4 +34,6 @@ public interface Optimizable extends Expression {
     boolean optimizeOnSelf();
     
     NodeSet preSelect(Sequence contextSequence, boolean useContext) throws XPathException;
+
+    int getOptimizeAxis();
 }

@@ -172,6 +172,12 @@ public class MatchRegexp extends Function implements Optimizable {
         return optimizeSelf;
     }
 
+    public int getOptimizeAxis() {
+        if (contextStep == null)
+            return -1;
+        return contextStep.getAxis();
+    }
+
     public NodeSet preSelect(Sequence contextSequence, boolean useContext) throws XPathException {
         // get the search terms
         Expression termsExpr = getArgument(1);
@@ -237,7 +243,7 @@ public class MatchRegexp extends Function implements Optimizable {
                 result = evalQuery(nodes, terms, matchAll).toNodeSet();
             } else {
                 contextStep.setPreloadNodeSets(true);
-                contextStep.setPreloadedData(preselectResult.getDocumentSet(), preselectResult);
+                contextStep.setPreloadedData(contextSequence.getDocumentSet(), preselectResult);
 
                 result = path.eval(contextSequence).toNodeSet();
             }

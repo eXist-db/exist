@@ -170,7 +170,7 @@ public class ExtNear extends ExtFulltext {
 				} // that else would cause some words to be ignored in the
 					// matching
 				if (word.equalsIgnoreCase(term)) {
-					boolean withIn = current_distance >= min_distance ? true : false;
+					boolean withIn = current_distance >= min_distance;
 					current_distance = 0;
 					j++;
 					if (j == terms.length) {

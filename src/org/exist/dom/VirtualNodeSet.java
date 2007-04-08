@@ -480,8 +480,13 @@ public class VirtualNodeSet extends AbstractNodeSet {
 		realize();
 		return realSet.union(other);
 	}
-	
-	public void clearContext() {
+
+
+    public NodeSet filterDocuments(NodeSet otherSet) {
+        return this;
+    }
+
+    public void clearContext() {
 		// ignored for a virtual set
 	}
     

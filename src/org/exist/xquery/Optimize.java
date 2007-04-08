@@ -93,6 +93,15 @@ public class Optimize extends Pragma {
                     NodeSelector selector;
                     long start = System.currentTimeMillis();
                     selector = new AncestorSelector(selection, -1, true);
+//                    switch (optimizables[current].getOptimizeAxis()) {
+//                        case Constants.CHILD_AXIS:
+//                        case Constants.ATTRIBUTE_AXIS:
+//                            selector = new ParentSelector(selection, -1);
+//                            break;
+//                        default:
+//                            selector = new AncestorSelector(selection, -1, true);
+//                            break;
+//                    }
                     ElementIndex index = context.getBroker().getElementIndex();
                     QName ancestorQN = contextStep.getTest().getName();
                     if (optimizables[current].optimizeOnSelf()) {
@@ -103,10 +112,7 @@ public class Optimize extends Pragma {
                     LOG.trace("Ancestor selection took " + (System.currentTimeMillis() - start));
                     LOG.trace("Found: " + ancestors.getLength());
                 }
-//                if (result == null)
-                    result = ancestors;
-//                else
-//                    result = result.intersection(ancestors);
+                result = ancestors;
                 contextSequence = result;
             }
             if (contextStep == null) {
@@ -117,7 +123,7 @@ public class Optimize extends Pragma {
                 if (LOG.isTraceEnabled())
                     LOG.trace("exist:optimize: context after optimize: " + result.getLength());
                 long start = System.currentTimeMillis();
-                contextSequence = filterDocuments(originalContext, result);
+                contextSequence = originalContext.filterDocuments(result);
                 Sequence seq = innerExpr.eval(contextSequence);
                 if (LOG.isTraceEnabled())
                     LOG.trace("exist:optimize: inner expr took " + (System.currentTimeMillis() - start));
@@ -128,12 +134,6 @@ public class Optimize extends Pragma {
                 LOG.trace("exist:optimize: Cannot optimize expression.");
             return innerExpr.eval(contextSequence, contextItem);
         }
-    }
-
-    private Sequence filterDocuments(NodeSet contextSet, NodeSet ancestors) {
-        if (contextSet instanceof VirtualNodeSet)
-            return contextSet;
-        return contextSet.filterDocuments(ancestors);
     }
 
     public void before(XQueryContext context, Expression expression) throws XPathException {
