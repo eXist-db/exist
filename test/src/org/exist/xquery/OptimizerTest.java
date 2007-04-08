@@ -46,11 +46,14 @@ public class OptimizerTest {
     private final static String OPTIMIZE = "declare option exist:optimize 'enable=yes';";
     private final static String NO_OPTIMIZE = "declare option exist:optimize 'enable=no';";
     private final static String NAMESPACES = "declare namespace mods='http://www.loc.gov/mods/v3';";
-    
+
+    private static final String MSG_OPT_ERROR = "Optimized query should return same number of results.";
+
     private final static String XML =
             "<root>" +
             "   <a><b>one</b></a>" +
             "   <a><c><b>one</b></c></a>" +
+            "   <c><a><c><b>two</b></c></a></c>" +
             "</root>";
 
     private final static String COLLECTION_CONFIG =
@@ -67,7 +70,6 @@ public class OptimizerTest {
         "        <create qname=\"mods:internetMediaType\" type=\"xs:string\"/>" +
         "	</index>" +
     	"</collection>";
-
     private static Collection testCollection;
 
     @Test
@@ -80,76 +82,162 @@ public class OptimizerTest {
     @Test
     public void simplePredicates() {
         int r = execute("//SPEECH[LINE &= 'king']", false);
-        execute("//SPEECH[LINE &= 'king']", true, "Optimized query should return same number of results.", r);
+        execute("//SPEECH[LINE &= 'king']", true, MSG_OPT_ERROR, r);
+
         r = execute("//SPEECH[SPEAKER = 'HAMLET']", false);
-        execute("//SPEECH[SPEAKER = 'HAMLET']", true, "Optimized query should return same number of results.", r);
+        execute("//SPEECH[SPEAKER = 'HAMLET']", true, MSG_OPT_ERROR, r);
+
+        r = execute("//SPEECH[descendant::SPEAKER = 'HAMLET']", false);
+        execute("//SPEECH[descendant::SPEAKER = 'HAMLET']", true, MSG_OPT_ERROR, r);
+        
+        r = execute("//SCENE[descendant::LINE &= 'king']", false);
+        execute("//SCENE[descendant::LINE &= 'king']", true, MSG_OPT_ERROR, r);
+
         r = execute("//LINE[. &= 'king']", false);
-        execute("//LINE[. &= 'king']", true, "Optimized query should return same number of results.", r);
+        execute("//LINE[. &= 'king']", true, MSG_OPT_ERROR, r);
+
+        r = execute("//SPEAKER[. = 'HAMLET']", false);
+        execute("//SPEAKER[. = 'HAMLET']", true, MSG_OPT_ERROR, r);
+
+        r = execute("//LINE[descendant-or-self::LINE &= 'king']", false);
+        execute("//LINE[descendant-or-self::LINE &= 'king']", true, MSG_OPT_ERROR, r);
+
+        r = execute("//SPEAKER[descendant-or-self::SPEAKER = 'HAMLET']", false);
+        execute("//SPEAKER[descendant-or-self::SPEAKER = 'HAMLET']", true, MSG_OPT_ERROR, r);
+
         r = execute("//SPEECH/LINE[. &= 'king']", false);
-        execute("//SPEECH/LINE[. &= 'king']", true, "Optimized query should return same number of results.", r);
+        execute("//SPEECH/LINE[. &= 'king']", true, MSG_OPT_ERROR, r);
+        
         r = execute("//*[LINE &= 'king']", false);
-        execute("//*[LINE &= 'king']", true, "Optimized query should return same number of results.", r);
+        execute("//*[LINE &= 'king']", true, MSG_OPT_ERROR, r);
+
+        r = execute("//*[SPEAKER = 'HAMLET']", false);
+        execute("//*[SPEAKER = 'HAMLET']", true, MSG_OPT_ERROR, r);
     }
 
     @Test
     public void namespaces() {
         int r = execute("//mods:mods/mods:titleInfo[mods:title &= 'ethnic']", false);
-        execute("//mods:mods/mods:titleInfo[mods:title &= 'ethnic']", true, "Optimized query should return same number of results.", r);
+        execute("//mods:mods/mods:titleInfo[mods:title &= 'ethnic']", true, MSG_OPT_ERROR, r);
         r = execute("//mods:mods/mods:physicalDescription[mods:internetMediaType &= 'application/pdf']", false);
-        execute("//mods:mods/mods:physicalDescription[mods:internetMediaType &= 'application/pdf']", true, "Optimized query should return same number of results.", r);
+        execute("//mods:mods/mods:physicalDescription[mods:internetMediaType &= 'application/pdf']", true, MSG_OPT_ERROR, r);
         r = execute("//mods:mods/mods:*[mods:title &= 'ethnic']", false);
-        execute("//mods:mods/mods:*[mods:title &= 'ethnic']", true, "Optimized query should return same number of results.", r);
+        execute("//mods:mods/mods:*[mods:title &= 'ethnic']", true, MSG_OPT_ERROR, r);
     }
 
     @Test
     public void simplePredicatesRegex() {
         int r = execute("//SPEECH[LINE &= 'nor*']", false);
-        execute("//SPEECH[LINE &= 'nor*']", true, "Optimized query should return same number of results.", r);
+        execute("//SPEECH[LINE &= 'nor*']", true, MSG_OPT_ERROR, r);
         r = execute("//SPEECH[LINE &= 'skirts nor*']", false);
-        execute("//SPEECH[LINE &= 'skirts nor*']", true, "Optimized query should return same number of results.", r);
+        execute("//SPEECH[LINE &= 'skirts nor*']", true, MSG_OPT_ERROR, r);
         r = execute("//SPEECH[near(LINE, 'skirts nor*', 2)]", false);
-        execute("//SPEECH[near(LINE, 'skirts nor*', 2)]", true, "Optimized query should return same number of results.", r);
+        execute("//SPEECH[near(LINE, 'skirts nor*', 2)]", true, MSG_OPT_ERROR, r);
 
         r = execute("//SPEECH[match-all(LINE, 'skirts', 'nor.*')]", false);
-        execute("//SPEECH[match-all(LINE, 'skirts', 'nor.*')]", true, "Optimized query should return same number of results.", r);
+        execute("//SPEECH[match-all(LINE, 'skirts', 'nor.*')]", true, MSG_OPT_ERROR, r);
         execute("//SPEECH[text:match-all(LINE, ('skirts', 'nor.*'))]", false, "Query should return same number of results.", r);
 
         r = execute("//SPEECH[match-any(LINE, 'skirts', 'nor.*')]", false);
-        execute("//SPEECH[match-any(LINE, 'skirts', 'nor.*')]", true, "Optimized query should return same number of results.", r);
+        execute("//SPEECH[match-any(LINE, 'skirts', 'nor.*')]", true, MSG_OPT_ERROR, r);
         execute("//SPEECH[text:match-any(LINE, ('skirts', 'nor.*'), 'w')]", false, "Query should return same number of results.", r);
-        execute("//SPEECH[text:match-any(LINE, ('skirts', 'nor.*'), 'w')]", true, "Optimized query should return same number of results.", r);
-        execute("//SPEECH[text:match-any(LINE, ('skirts', '^nor.*$'))]", true, "Optimized query should return same number of results.", r);
+        execute("//SPEECH[text:match-any(LINE, ('skirts', 'nor.*'), 'w')]", true, MSG_OPT_ERROR, r);
+        execute("//SPEECH[text:match-any(LINE, ('skirts', '^nor.*$'))]", true, MSG_OPT_ERROR, r);
 
         r = execute("//SPEECH[matches(SPEAKER, '^HAM.*')]", false);
-        execute("//SPEECH[matches(SPEAKER, '^HAM.*')]", true, "Optimized query should return same number of results.", r);
+        execute("//SPEECH[matches(SPEAKER, '^HAM.*')]", true, MSG_OPT_ERROR, r);
         r = execute("//SPEECH[starts-with(SPEAKER, 'HAML')]", false);
-        execute("//SPEECH[starts-with(SPEAKER, 'HAML')]", true, "Optimized query should return same number of results.", r);
+        execute("//SPEECH[starts-with(SPEAKER, 'HAML')]", true, MSG_OPT_ERROR, r);
         r = execute("//SPEECH[ends-with(SPEAKER, 'EO')]", false);
-        execute("//SPEECH[ends-with(SPEAKER, 'EO')]", true, "Optimized query should return same number of results.", r);
+        execute("//SPEECH[ends-with(SPEAKER, 'EO')]", true, MSG_OPT_ERROR, r);
+        r = execute("//SPEECH[matches(descendant::SPEAKER, 'HAML.*')]", false);
+        execute("//SPEECH[matches(descendant::SPEAKER, 'HAML.*')]", true, MSG_OPT_ERROR, r);
     }
 
     @Test
     public void twoPredicates() {
         int r = execute("//SPEECH[LINE &= 'king'][SPEAKER='HAMLET']", false);
-        execute("//SPEECH[LINE &= 'king'][SPEAKER='HAMLET']", true, "Optimized query should return same number of results.", r);
+        execute("//SPEECH[LINE &= 'king'][SPEAKER='HAMLET']", true, MSG_OPT_ERROR, r);
         r = execute("//SPEECH[SPEAKER='HAMLET'][LINE &= 'king']", false);
-        execute("//SPEECH[SPEAKER='HAMLET'][LINE &= 'king']", true, "Optimized query should return same number of results.", r);
+        execute("//SPEECH[SPEAKER='HAMLET'][LINE &= 'king']", true, MSG_OPT_ERROR, r);
     }
 
-    @Ignore("not correctly optimized yet")
+    @Test
+    public void noOptimization() {
+        int r = execute("//mods:title[ancestor-or-self::mods:title &= 'ethnic']", false);
+        execute("//mods:title[ancestor-or-self::mods:title &= 'ethnic']", true, "Ancestor axis should not be optimized.", r);
+        r = execute("//node()[parent::mods:title &= 'ethnic']", false);
+        execute("//node()[parent::mods:title &= 'ethnic']", true, "Parent axis should not be optimized.", r);
+
+        r = execute("/root//b[parent::c/b = 'two']", false);
+        Assert.assertEquals(1, r);
+        execute("/root//b[parent::c/b = 'two']", true, "Parent axis should not be optimized.", r);
+        
+        r = execute("/root//b[ancestor::a/c/b = 'two']", false);
+        Assert.assertEquals(1, r);
+        execute("/root//b[ancestor::a/c/b = 'two']", true, "Ancestor axis should not be optimized.", r);
+
+        r = execute("/root//b[ancestor::a/b = 'two']", false);
+        Assert.assertEquals(0, r);
+        execute("/root//b[ancestor::a/b = 'two']", true, "Ancestor axis should not be optimized.", r);
+
+        r = execute("/root//b[text()/parent::b = 'two']", false);
+        Assert.assertEquals(1, r);
+        execute("/root//b[text()/parent::b = 'two']", true, "Parent axis should not be optimized.", r);
+
+        r = execute("/root//b[matches(text()/parent::b, 'two')]", false);
+        Assert.assertEquals(1, r);
+        execute("/root//b[matches(text()/parent::b, 'two')]", true, "Parent axis should not be optimized.", r);
+    }
+
     @Test
     public void complexPaths() {
         int r = execute("//mods:mods[mods:titleInfo/mods:title &= 'ethnic']", false);
-        execute("//mods:mods[mods:titleInfo/mods:title &= 'ethnic']", true, "Optimized query should return same number of results.", r);
+        execute("//mods:mods[mods:titleInfo/mods:title &= 'ethnic']", true, MSG_OPT_ERROR, r);
+
+        r = execute("//mods:mods[text:match-all(mods:titleInfo/mods:title, 'and')]", false);
+        execute("//mods:mods[text:match-all(mods:titleInfo/mods:title, 'and')]", true, MSG_OPT_ERROR, r);
+
+        r = execute("//mods:mods[./mods:titleInfo/mods:title &= 'ethnic']", false);
+        execute("//mods:mods[./mods:titleInfo/mods:title &= 'ethnic']", true, MSG_OPT_ERROR, r);
+
+        r = execute("//mods:mods[*/mods:title &= 'ethnic']", false);
+        execute("//mods:mods[*/mods:title &= 'ethnic']", true, MSG_OPT_ERROR, r);
+
+        r = execute("//mods:mods[mods:physicalDescription/mods:internetMediaType = 'text/html']", false);
+        execute("//mods:mods[mods:physicalDescription/mods:internetMediaType = 'text/html']", true, MSG_OPT_ERROR, r);
+
+        r = execute("//mods:mods[./mods:physicalDescription/mods:internetMediaType = 'text/html']", false);
+        execute("//mods:mods[./mods:physicalDescription/mods:internetMediaType = 'text/html']", true, MSG_OPT_ERROR, r);
+
+        r = execute("//mods:mods[*/mods:internetMediaType = 'text/html']", false);
+        execute("//mods:mods[*/mods:internetMediaType = 'text/html']", true, MSG_OPT_ERROR, r);
+
+        r = execute("//mods:mods[matches(mods:physicalDescription/mods:internetMediaType, 'text/html')]", false);
+        execute("//mods:mods[matches(mods:physicalDescription/mods:internetMediaType, 'text/html')]", true, MSG_OPT_ERROR, r);
+
+        r = execute("//mods:mods[matches(*/mods:internetMediaType, 'text/html')]", false);
+        execute("//mods:mods[matches(*/mods:internetMediaType, 'text/html')]", true, MSG_OPT_ERROR, r);
+    }
+
+    @Test
+    public void reversePaths() {
+        int r = execute("/root//b/parent::c[b = 'two']", false);
+        Assert.assertEquals(1, r);
+        execute("/root//b/parent::c[b = 'two']", true, MSG_OPT_ERROR, r);
+
+        r = execute("//mods:url/ancestor::mods:mods[mods:titleInfo/mods:title &= 'and']", false);
+        Assert.assertEquals(11, r);
+        execute("//mods:url/ancestor::mods:mods[mods:titleInfo/mods:title &= 'and']", true, MSG_OPT_ERROR, r);
     }
 
     @Ignore("not correctly optimized yet")
     @Test
     public void booleanOperator() {
         int r = execute("//SPEECH[LINE &= 'king' and SPEAKER='HAMLET']", false);
-        execute("//SPEECH[LINE &= 'king' and SPEAKER='HAMLET']", true, "Optimized query should return same number of results.", r);
+        execute("//SPEECH[LINE &= 'king' and SPEAKER='HAMLET']", true, MSG_OPT_ERROR, r);
         r = execute("//SPEECH[LINE &= 'king' or SPEAKER='HAMLET']", false);
-        execute("//SPEECH[LINE &= 'king' or SPEAKER='HAMLET']", true, "Optimized query should return same number of results.", r);
+        execute("//SPEECH[LINE &= 'king' or SPEAKER='HAMLET']", true, MSG_OPT_ERROR, r);
     }
 
     private int execute(String query, boolean optimize) {
@@ -162,6 +250,7 @@ public class OptimizerTest {
             else
                 query = NO_OPTIMIZE + query;
             ResourceSet result = service.query(query);
+            System.out.println("-- Found: " + result.getSize());
             return (int) result.getSize();
         } catch (XMLDBException e) {
             e.printStackTrace();
@@ -179,6 +268,7 @@ public class OptimizerTest {
             else
                 query = NAMESPACES + NO_OPTIMIZE + query;
             ResourceSet result = service.query(query);
+            System.out.println("-- Found: " + result.getSize());
             Assert.assertEquals(message, expected, result.getSize());
         } catch (XMLDBException e) {
             e.printStackTrace();
