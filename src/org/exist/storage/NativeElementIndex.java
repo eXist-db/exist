@@ -674,7 +674,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                             // current node is a descendant. walk through the descendants
                             // and add them to the result
                             if (((axis == Constants.CHILD_AXIS || axis == Constants.ATTRIBUTE_AXIS) && relation == NodeId.IS_CHILD) || 
-                            		(axis == Constants.DESCENDANT_AXIS && relation == NodeId.IS_DESCENDANT) ||
+                            		(axis == Constants.DESCENDANT_AXIS && (relation == NodeId.IS_DESCENDANT || relation == NodeId.IS_CHILD)) ||
                             		axis == Constants.DESCENDANT_SELF_AXIS || axis == Constants.DESCENDANT_ATTRIBUTE_AXIS
                         		) {
                                 NodeProxy storedNode = new NodeProxy(storedDocument, nodeId, nodeType, address);
