@@ -2,6 +2,9 @@ package org.exist.xquery;
 
 import org.exist.xquery.functions.ExtFulltext;
 
+import java.util.List;
+import java.util.ArrayList;
+
 /**
  * Basic implementation of the {@link ExpressionVisitor} interface.
  * This implementation will traverse a PathExpr object if it wraps
@@ -56,7 +59,7 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
         }
     }
 
-    public final static LocationStep findFirstStep(Expression expr) {
+    public static LocationStep findFirstStep(Expression expr) {
         if (expr instanceof LocationStep)
             return (LocationStep) expr;
         FirstStepVisitor visitor = new FirstStepVisitor();
@@ -64,6 +67,27 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
         return visitor.firstStep;
     }
 
+    public static List findLocationSteps(Expression expr) {
+        final List steps = new ArrayList(5);
+        if (expr instanceof LocationStep) {
+            steps.add(expr);
+            return steps;
+        }
+        expr.accept(new BasicExpressionVisitor() {
+            
+            public void visitPathExpr(PathExpr expression) {
+                for (int i = 0; i < expression.getLength(); i++) {
+                    Expression next = expression.getExpression(i);
+                    next.accept(this);
+                }
+            }
+
+            public void visitLocationStep(LocationStep locationStep) {
+                steps.add(locationStep);
+            }
+        });
+        return steps;
+    }
 
     public void visitForExpression(ForExpr forExpr) {
     }

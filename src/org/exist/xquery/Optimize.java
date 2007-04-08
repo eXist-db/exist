@@ -213,7 +213,7 @@ public class Optimize extends Pragma {
         int indexType = Type.ITEM;
         for (Iterator i = contextSequence.getCollectionIterator(); i.hasNext(); ) {
             Collection collection = (Collection) i.next();
-            if (collection.getURI().equals(XmldbURI.SYSTEM_COLLECTION_URI))
+            if (collection.getURI().startsWith(XmldbURI.SYSTEM_COLLECTION_URI))
                 continue;
             QNameRangeIndexSpec config = collection.getIndexByQNameConfiguration(context.getBroker(), qname);
             if (config == null)

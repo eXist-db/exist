@@ -107,6 +107,7 @@ public class FunMatches extends Function implements Optimizable {
 
     private LocationStep contextStep = null;
     private QName contextQName = null;
+    private int axis = Constants.UNKNOWN_AXIS;
     private NodeSet preselectResult = null;
 
     /**
@@ -139,14 +140,17 @@ public class FunMatches extends Function implements Optimizable {
             steps.add(arg);            
         }
 
-        LocationStep step = BasicExpressionVisitor.findFirstStep(path);
-        if (step != null) {
-            NodeTest test = step.getTest();
+        List steps = BasicExpressionVisitor.findLocationSteps(path);
+        if (!steps.isEmpty()) {
+            LocationStep firstStep = (LocationStep) steps.get(0);
+            LocationStep lastStep = (LocationStep) steps.get(steps.size() - 1);
+            NodeTest test = lastStep.getTest();
             if (!test.isWildcardTest() && test.getName() != null) {
                 contextQName = new QName(test.getName());
-                if (step.getAxis() == Constants.ATTRIBUTE_AXIS || step.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
+                if (lastStep.getAxis() == Constants.ATTRIBUTE_AXIS || lastStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
                     contextQName.setNameType(ElementValue.ATTRIBUTE);
-                contextStep = step;
+                axis = firstStep.getAxis();
+                contextStep = lastStep;
             }
         }
     }
@@ -162,9 +166,7 @@ public class FunMatches extends Function implements Optimizable {
     }
 
     public int getOptimizeAxis() {
-        if (contextStep == null)
-            return -1;
-        return contextStep.getAxis();
+        return axis;
     }
 
     public NodeSet preSelect(Sequence contextSequence, boolean useContext) throws XPathException {

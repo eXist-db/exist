@@ -75,6 +75,7 @@ public class ExtRegexp extends Function implements Optimizable {
     private LocationStep contextStep = null;
     protected QName contextQName = null;
     protected boolean optimizeSelf = false;
+    protected int axis = Constants.UNKNOWN_AXIS;
     protected NodeSet preselectResult = null;
 
     public ExtRegexp(XQueryContext context) {
@@ -96,28 +97,32 @@ public class ExtRegexp extends Function implements Optimizable {
 
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         super.analyze(contextInfo);
-        LocationStep step = BasicExpressionVisitor.findFirstStep(getArgument(0));
-        if (step != null) {
-            if (step.getAxis() == Constants.SELF_AXIS) {
+        List steps = BasicExpressionVisitor.findLocationSteps(getArgument(0));
+        if (!steps.isEmpty()) {
+            LocationStep firstStep = (LocationStep) steps.get(0);
+            LocationStep lastStep = (LocationStep) steps.get(steps.size() - 1);
+            if (steps.size() == 1 && firstStep.getAxis() == Constants.SELF_AXIS) {
                 Expression outerExpr = contextInfo.getContextStep();
                 if (outerExpr != null && outerExpr instanceof LocationStep) {
                     LocationStep outerStep = (LocationStep) outerExpr;
                     NodeTest test = outerStep.getTest();
                     if (!test.isWildcardTest() && test.getName() != null) {
                         contextQName = new QName(test.getName());
-                        if (step.getAxis() == Constants.ATTRIBUTE_AXIS || step.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
+                        if (outerStep.getAxis() == Constants.ATTRIBUTE_AXIS || outerStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
                             contextQName.setNameType(ElementValue.ATTRIBUTE);
-                        contextStep = step;
+                        contextStep = firstStep;
+                        axis = outerStep.getAxis();
                         optimizeSelf = true;
                     }
                 }
             } else {
-                NodeTest test = step.getTest();
+                NodeTest test = lastStep.getTest();
                 if (!test.isWildcardTest() && test.getName() != null) {
                     contextQName = new QName(test.getName());
-                    if (step.getAxis() == Constants.ATTRIBUTE_AXIS || step.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
+                    if (lastStep.getAxis() == Constants.ATTRIBUTE_AXIS || lastStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
                         contextQName.setNameType(ElementValue.ATTRIBUTE);
-                    contextStep = step;
+                    axis = firstStep.getAxis();
+                    contextStep = lastStep;
                 }
             }
         }
@@ -134,9 +139,7 @@ public class ExtRegexp extends Function implements Optimizable {
     }
 
     public int getOptimizeAxis() {
-        if (contextStep == null)
-            return -1;
-        return contextStep.getAxis();
+        return axis;
     }
     
     public NodeSet preSelect(Sequence contextSequence, boolean useContext) throws XPathException {
