@@ -23,7 +23,6 @@ package org.exist.xmldb.concurrent;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -70,14 +69,35 @@ public class DBUtils {
         }
     }
     
+    /**
+     * @param elementCnt
+     * @param attrCnt
+     * @param wordList
+     * @return File
+     */
     public static File generateXMLFile(int elementCnt, int attrCnt, String[] wordList) throws Exception {
         return generateXMLFile(elementCnt, attrCnt, wordList, false);
     }
     
+    /**
+     * @param elementCnt
+     * @param attrCnt
+     * @param wordList
+     * @param namespaces
+     * @return File
+     */
     public static File generateXMLFile(int elementCnt, int attrCnt, String[] wordList, boolean namespaces) throws Exception {
         return generateXMLFile(3, elementCnt, attrCnt, wordList, false);
     }
     
+    /**
+     * @param depth
+     * @param elementCnt
+     * @param attrCnt
+     * @param wordList
+     * @param namespaces
+     * @return File
+     */
 	public static File generateXMLFile(int depth, int elementCnt, int attrCnt, String[] wordList, boolean namespaces) throws Exception {
 		File file = File.createTempFile(Thread.currentThread().getName(), ".xml");
 		if(file.exists() && !file.canWrite())
@@ -163,9 +183,11 @@ public class DBUtils {
 				"XQueryService", "1.0");
 	}
 	
+	/**
+	 * @param root The root collection
+	 * */
 	public static String[] wordList(Collection root) throws XMLDBException {
-		IndexQueryService service = (IndexQueryService)
-		root.getService("IndexQueryService", "1.0");
+		IndexQueryService service = (IndexQueryService)root.getService("IndexQueryService", "1.0");
         ArrayList list = new ArrayList();
         String alphas = "abcdefghijklmnopqrstuvwxyz";
         for (int i = 0; i < alphas.length(); i++) {
