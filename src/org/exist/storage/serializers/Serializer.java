@@ -709,7 +709,7 @@ public abstract class Serializer implements XMLReader {
 	/**
 	 * Serialize the items in the given sequence to SAX, starting with item start. If parameter
 	 * wrap is set to true, output a wrapper element to enclose the serialized items. The
-	 * wrapper element will be in namespace {@link #EXIST_NS} and has the following form:
+	 * wrapper element will be in namespace {@link org.exist.Namespaces#EXIST_NS} and has the following form:
 	 * 
 	 * &lt;exist:result hits="sequence length" start="value of start" count="value of count">
 	 * 

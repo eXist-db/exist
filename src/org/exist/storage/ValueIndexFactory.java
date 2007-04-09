@@ -232,7 +232,6 @@ public class ValueIndexFactory {
 	/**
 	 * @param value
 	 * @param offset
-	 * @return
 	 * @throws EXistException
 	 */
 	public final static byte[] serialize(Indexable value, int offset) throws EXistException {

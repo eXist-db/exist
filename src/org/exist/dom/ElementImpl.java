@@ -1300,7 +1300,7 @@ public class ElementImpl extends NamedNode implements Element {
      * @param newChild
      * @param oldChild
      * 
-     * @returns The new node (this differs from the {@link org.w3c.dom.Node#replaceChild(Node, Node)} specification)
+     * @return The new node (this differs from the {@link org.w3c.dom.Node#replaceChild(Node, Node)} specification)
      * 
      * @see org.w3c.dom.Node#replaceChild(org.w3c.dom.Node, org.w3c.dom.Node)
      */
