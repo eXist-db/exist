@@ -21,7 +21,6 @@ public class ConfigurationHelper {
      *   <li>classpath entry : if exists, with a conf.xml file
      * </ol>
      *
-     * @param path path to eXist home directory
      * @return the file handle or <code>null</code>
      */
     public static File getExistHome() {

@@ -93,7 +93,7 @@ public class IndexManager {
      * returned IndexWorkers are used by the DBBroker instances to do the
      * actual work.
      *
-     * @return
+     * @return set of IndexWorkers
      */
     public synchronized IndexWorker[] getWorkers() {
         final IndexWorker workers[] = new IndexWorker[indexers.size()];

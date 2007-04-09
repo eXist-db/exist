@@ -21,7 +21,7 @@ import org.xmldb.api.base.XMLDBException;
  * other transactions will be allowed while the backup is in progress.
  *
  * The following properties can be used to configure the backup task if passed to the
- * {@link #configure(org.exist.util.SingleInstanceConfiguration, java.util.Properties)} method:
+ * {@link #configure(org.exist.util.Configuration, java.util.Properties)} method:
  *
  * <table>
  *      <tr>

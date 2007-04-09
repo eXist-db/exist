@@ -66,7 +66,7 @@ public class IndexController {
      * as returned by {@link org.exist.indexing.IndexWorker#getIndexId()}.
      * 
      * @param indexId
-     * @return
+     * @return instance of indexworker
      */
     public IndexWorker getIndexWorker(String indexId) {
         return (IndexWorker) indexWorkers.get(indexId);
@@ -78,7 +78,7 @@ public class IndexController {
      *
      * @param document
      * @param mode
-     * @return
+     * @return chain of StreamListeners
      */
     public StreamListener getStreamListener(DocumentImpl document, int mode) {
         if (listener != null) {
