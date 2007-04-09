@@ -366,7 +366,7 @@
     <library name="tools">
       <CLASSES>
         <root url="jar://$PROJECT_DIR$/tools/ant/lib/junit.jar!/" />
-        <root url="jar://$PROJECT_DIR$/tools/ant/lib/xmlunit1.0.jar!/" />
+        <root url="jar://$PROJECT_DIR$/tools/ant/lib/xmlunit-1.1.jar!/" />
         <root url="jar://$PROJECT_DIR$/tools/jetty/lib/org.mortbay.jetty.jar!/" />
       </CLASSES>
       <JAVADOC />
