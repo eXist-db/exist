@@ -18,7 +18,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id: EchoFunction.java 3063 2006-04-05 20:49:44Z brihaye $
+ *  $Id$
  */
 package org.exist.xquery.modules.html;
 
@@ -29,30 +29,24 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
 import org.exist.dom.QName;
 import org.exist.memtree.SAXAdapter;
 import org.exist.security.PermissionDeniedException;
-import org.exist.storage.DBBroker;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
-import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+
 import org.w3c.dom.Document;
+
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
+
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 
@@ -118,12 +112,8 @@ public class DocFunction extends BasicFunction {
 			//TODO : process pseudo-protocols URLs more efficiently.
 			org.exist.memtree.DocumentImpl memtreeDoc = null;
 			// we use eXist's in-memory DOM implementation
-			SAXParserFactory factory = SAXParserFactory.newInstance();
-			factory.setNamespaceAware(true);				
 			//TODO : we should be able to cope with context.getBaseURI()				
 			InputSource src = new InputSource(con.getInputStream());
-			SAXParser parser = factory.newSAXParser();
-			//XMLReader reader = parser.getXMLReader();
 			
 			//use Neko to parse the HTML content to XML
 			XMLReader reader = null;
@@ -153,10 +143,6 @@ public class DocFunction extends BasicFunction {
 		catch(MalformedURLException e)
 		{
 			throw new XPathException(e.getMessage(), e);					
-		}
-		catch(ParserConfigurationException e)
-		{				
-			throw new XPathException(e.getMessage(), e);		
 		}
 		catch(SAXException e)
 		{

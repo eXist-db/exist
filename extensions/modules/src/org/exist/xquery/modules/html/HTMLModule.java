@@ -18,7 +18,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id: ExampleModule.java 1173 2005-04-20 11:15:18Z wolfgang_m $
+ *  $Id$
  */
 package org.exist.xquery.modules.html;
 
