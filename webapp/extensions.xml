@@ -52,6 +52,21 @@
       </para>
     </section>        
     
+    <section id="module_html">
+      <title>HTML Module</title>
+      <para>Functions for working with HTML documents</para> 		    		
+      <para>
+	<command>Creator:</command>&#160;<dc:creator>Adam Retter</dc:creator>
+	<command>Licence:</command>&#160;LGPL
+	<command>Features Used:</command>&#160;NekoHTML
+	<command>Status:</command>&#160;production
+      </para>
+      <para>
+	<command>Class:</command>&#160;org.exist.xquery.modules.html.HTMLModule
+	<command>Namespace:</command>&#160;http://exist-db.org/xquery/html
+      </para>
+    </section>
+    
     <section id="module_image">
       <title>Image Module</title>
       <para>This modules provides operations on images stored in the db, including: Retreiving Image Dimensions, Creating Thumbnails and Resizing Images.</para> 		    		
