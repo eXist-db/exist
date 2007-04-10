@@ -647,7 +647,7 @@ public class XQueryContext {
 		if(staticDocuments != null)
             // the document set has already been built, return it
 			return staticDocuments;
-		staticDocuments = new DocumentSet();
+		staticDocuments = new DocumentSet(1031);
 		if(staticDocumentPaths == null)
             // no path defined: return all documents in the db 
 			broker.getAllXMLResources(staticDocuments);
@@ -656,20 +656,18 @@ public class XQueryContext {
 			Collection collection;
 			for(int i = 0; i < staticDocumentPaths.length; i++) {
 				try {
-					doc = broker.getXMLResource(staticDocumentPaths[i], Lock.READ_LOCK);
-					if(doc != null) {
-						if(doc.getPermissions().validate(broker.getUser(), Permission.READ)) {
-							staticDocuments.add(doc);
-						}
-						doc.getUpdateLock().release(Lock.READ_LOCK);
-						
-					} else {
-						collection = broker.getCollection(staticDocumentPaths[i]);
-						if(collection != null) {
-							LOG.debug("reading collection " + staticDocumentPaths[i]);
-							collection.allDocs(broker, staticDocuments, true, true);
-						}
-					}
+                    collection = broker.getCollection(staticDocumentPaths[i]);
+                    if (collection != null) {
+                        collection.allDocs(broker, staticDocuments, true, true);
+                    } else {
+                        doc = broker.getXMLResource(staticDocumentPaths[i], Lock.READ_LOCK);
+                        if(doc != null) {
+                            if(doc.getPermissions().validate(broker.getUser(), Permission.READ)) {
+                                staticDocuments.add(doc);
+                            }
+                            doc.getUpdateLock().release(Lock.READ_LOCK);
+                        }
+                    }
 				} catch(PermissionDeniedException e) {
 					LOG.warn("Permission denied to read resource " + staticDocumentPaths[i] + ". Skipping it.");
 				}
@@ -1934,7 +1932,7 @@ public class XQueryContext {
 		}
 
         String param = (String) getBroker().getConfiguration().getProperty("xquery.enable-query-rewriting");
-        enableOptimizer = param == null ? true : param.equals("yes");
+        enableOptimizer = param != null && param.equals("yes");
         
         // load built-in modules
 		
