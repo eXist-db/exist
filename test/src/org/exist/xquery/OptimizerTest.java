@@ -231,13 +231,34 @@ public class OptimizerTest {
         execute("//mods:url/ancestor::mods:mods[mods:titleInfo/mods:title &= 'and']", true, MSG_OPT_ERROR, r);
     }
 
-    @Ignore("not correctly optimized yet")
     @Test
     public void booleanOperator() {
-        int r = execute("//SPEECH[LINE &= 'king' and SPEAKER='HAMLET']", false);
+        int r = execute("//SPEECH[LINE &= 'king'][SPEAKER='HAMLET']", false);
+        execute("//SPEECH[LINE &= 'king' and SPEAKER='HAMLET']", false, MSG_OPT_ERROR, r);
         execute("//SPEECH[LINE &= 'king' and SPEAKER='HAMLET']", true, MSG_OPT_ERROR, r);
         r = execute("//SPEECH[LINE &= 'king' or SPEAKER='HAMLET']", false);
         execute("//SPEECH[LINE &= 'king' or SPEAKER='HAMLET']", true, MSG_OPT_ERROR, r);
+
+        r = execute("//SPEECH[LINE &= 'love' and LINE &= \"woman's\" and SPEAKER='HAMLET']", false);
+        execute("//SPEECH[LINE &= 'love' and LINE &= \"woman's\" and SPEAKER='HAMLET']", true, MSG_OPT_ERROR, r);
+
+        r = execute("//SPEECH[(LINE &= 'king' or LINE &= 'love') and SPEAKER='HAMLET']", false);
+        execute("//SPEECH[(LINE &= 'king' or LINE &= 'love') and SPEAKER='HAMLET']", true, MSG_OPT_ERROR, r);
+
+        r = execute("//SPEECH[(LINE &= 'juliet' and LINE &= 'romeo') or SPEAKER='HAMLET']", false);
+        Assert.assertEquals(368, r);
+        execute("//SPEECH[(LINE &= 'juliet' and LINE &= 'romeo') or SPEAKER='HAMLET']", true, MSG_OPT_ERROR, r);
+
+        r = execute("//SPEECH[(LINE &= 'juliet' and LINE &= 'romeo') and SPEAKER='HAMLET']", false);
+        Assert.assertEquals(0, r);
+        execute("//SPEECH[(LINE &= 'juliet' and LINE &= 'romeo') and SPEAKER='HAMLET']", true, MSG_OPT_ERROR, r);
+
+        r = execute("//SPEECH[LINE &= 'juliet' or (LINE &= 'king' and SPEAKER='HAMLET')]", false);
+        Assert.assertEquals(65, r);
+        execute("//SPEECH[LINE &= 'juliet' or (LINE &= 'king' and SPEAKER='HAMLET')]", true, MSG_OPT_ERROR, r);
+
+        execute("//SPEECH[true() and false()]", true, MSG_OPT_ERROR, 0);
+        execute("//SPEECH[true() and true()]", true, MSG_OPT_ERROR, 2628);
     }
 
     private int execute(String query, boolean optimize) {
