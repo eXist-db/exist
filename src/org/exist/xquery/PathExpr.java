@@ -56,7 +56,9 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     protected boolean inPredicate = false;
     
     protected XACMLSource source;
-    
+
+    protected Expression parent;
+
     public PathExpr(XQueryContext context) {
         super(context);
     }
@@ -126,10 +128,15 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
         steps.set(idx, newExpr);
     }
 
+    public Expression getParent() {
+        return this.parent;
+    }
+
     /* (non-Javadoc)
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+        this.parent = contextInfo.getParent();
         inPredicate = (contextInfo.getFlags() & IN_PREDICATE) > 0;
         contextId = contextInfo.getContextId();
         

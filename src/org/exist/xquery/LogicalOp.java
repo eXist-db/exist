@@ -41,8 +41,10 @@ public abstract class LogicalOp extends BinaryOp {
 	 * nodes from the context set.
 	 */
 	protected boolean optimize = false;
-	
-	/**
+
+    protected Expression parent;
+
+    /**
 	 * @param context
 	 */
 	public LogicalOp(XQueryContext context) {
@@ -60,8 +62,9 @@ public abstract class LogicalOp extends BinaryOp {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.BinaryOp#analyze(org.exist.xquery.Expression, int)
 	 */
-	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {		
-		super.analyze(contextInfo);	
+	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+        this.parent = contextInfo.getParent();
+        super.analyze(contextInfo);
 		//To optimize, we want nodes
 		if(Type.subTypeOf(getLeft().returnsType(), Type.NODE) &&
 				Type.subTypeOf(getRight().returnsType(), Type.NODE) &&
@@ -89,4 +92,8 @@ public abstract class LogicalOp extends BinaryOp {
 		else
 			return Dependency.CONTEXT_SET;
 	}
+
+    public Expression getParent() {
+        return this.parent;
+    }
 }

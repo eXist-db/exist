@@ -22,6 +22,7 @@
 package org.exist.xquery;
 
 import java.util.Stack;
+import java.util.List;
 
 /**
  * An {@link org.exist.xquery.ExpressionVisitor} which traverses the entire
@@ -68,9 +69,18 @@ public class DefaultExpressionVisitor extends BasicExpressionVisitor {
         conditional.getThenExpr().accept(this);
         conditional.getElseExpr().accept(this);
     }
-    
+
+
+    public void visitLocationStep(LocationStep locationStep) {
+        List predicates = locationStep.getPredicates();
+        for (int i = 0; i < predicates.size(); i++) {
+            Predicate pred = (Predicate) predicates.get(i);
+			pred.accept(this);
+        }
+    }
+
     public void visitPredicate(Predicate predicate) {
-    	predicate.accept(this);
+        predicate.getExpression(0).accept(this);
     }
     
 }

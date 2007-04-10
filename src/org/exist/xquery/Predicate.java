@@ -57,7 +57,9 @@ public class Predicate extends PathExpr {
     
     private boolean innerExpressionDot = false; 
 
-	public Predicate(XQueryContext context) {
+    private Expression parent;
+
+    public Predicate(XQueryContext context) {
 		super(context);
 	}
 
@@ -81,7 +83,8 @@ public class Predicate extends PathExpr {
      * @see org.exist.xquery.PathExpr#analyze(org.exist.xquery.AnalyzeContextInfo)
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-    	AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+        parent = contextInfo.getParent();
+        AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
     	newContextInfo.addFlag(IN_PREDICATE); // set flag to signal subexpression that we are in a predicate
     	newContextInfo.removeFlag(IN_WHERE_CLAUSE);	// remove where clause flag
     	newContextInfo.removeFlag(DOT_TEST);
@@ -494,8 +497,12 @@ public class Predicate extends PathExpr {
 		cached = null;
 	}
 
+    public Expression getParent() {
+        return parent;
+    }
+    
     public void accept(ExpressionVisitor visitor) {
-        getExpression(0).accept(visitor);
+        visitor.visitPredicate(this);
     }
     
     public void dump(ExpressionDumper dumper) {

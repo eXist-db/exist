@@ -43,6 +43,13 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
     public void visitUnionExpr(Union union) {
     }
 
+
+    public void visitAndExpr(OpAnd and) {
+    }
+
+    public void visitOrExpr(OpOr or) {
+    }
+
     public void visitLocationStep(LocationStep locationStep) {
     }
 

@@ -149,6 +149,8 @@ public class XQuery {
             if (context.optimizationsEnabled()) {
                 Optimizer optimizer = new Optimizer(context);
                 expr.accept(optimizer);
+                if (optimizer.hasOptimized())
+                    expr.analyze(new AnalyzeContextInfo());
             }
 
             // Log the query if it is not too large, but avoid
