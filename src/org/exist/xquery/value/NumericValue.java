@@ -35,19 +35,14 @@ public abstract class NumericValue extends ComputableValue {
 	public boolean compareTo(Collator collator, int operator, AtomicValue other)
 		throws XPathException {
 		if (other.isEmpty()) {
-			if (operator != Constants.NEQ)
-				return false;
-			else return
-				true;
+			//Never equal, or inequal...
+			return false;
 		}		
 		if(Type.subTypeOf(other.getType(), Type.NUMBER)) {
 			if (isNaN()) {
 				//NaN does not equal itself.
 				if (((NumericValue)other).isNaN()) {
-					if (operator != Constants.NEQ)
-						return false;
-					else return
-						true;
+					return operator == Constants.NEQ;
 				}
 			}			
 			double otherVal = ((NumericValue)other).getDouble();
