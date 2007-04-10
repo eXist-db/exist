@@ -21,15 +21,10 @@
 
 package org.exist.xquery.functions;
 
-import java.util.Iterator;
-
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
-import org.exist.numbering.NodeId;
-import org.exist.storage.ElementValue;
+import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
@@ -37,31 +32,48 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-import org.w3c.dom.Node;
 
 /**
  * Built-in function fn:lang().
  *
  */
 public class FunLang extends Function {
+	
+	public static String queryString = "(ancestor-or-self::*/@xml:lang)[last()]";
+	public CompiledXQuery query; 
 
-	public final static FunctionSignature signature =
+	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
 			new QName("lang", Function.BUILTIN_FUNCTION_NS),
 			"Returns true if the context items xml:lang attribute is equal " +
 			"to the value of $a, false otherwise.",
 			new SequenceType[] {
-				 new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
-			new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE));
+				 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)},
+			new SequenceType(Type.BOOLEAN, Cardinality.ONE)),
+		new FunctionSignature(
+				new QName("lang", Function.BUILTIN_FUNCTION_NS),
+				"Returns true if the context items xml:lang attribute is equal " +
+				"to the value of $a, false otherwise.",
+				new SequenceType[] {
+					 new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
+					 new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)},
+				new SequenceType(Type.BOOLEAN, Cardinality.ONE))		
+		};
 
-	public FunLang(XQueryContext context) {
+	public FunLang(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
 
+	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+		super.analyze(contextInfo);
+		query = context.getBroker().getXQueryService().compile(context, queryString);		
+	}
+	
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);       
@@ -75,45 +87,34 @@ public class FunLang extends Function {
 		if (contextItem != null)
 			contextSequence = contextItem.toSequence();
 		
+		if (getArgumentCount() == 2) 
+            contextSequence = getArgument(1).eval(contextSequence);
+		
 		if (contextSequence == null)
 			throw new XPathException(getASTNode(), "XPDY0002: Undefined context item");
 		
         Sequence result; 
 		if (!(Type.subTypeOf(contextSequence.getItemType(), Type.NODE)))
-            result = Sequence.EMPTY_SEQUENCE;
+			throw new XPathException(getASTNode(), "XPDY0004: Context item is not a node");
         else {
-            String lang = getArgument(0).eval(contextSequence).getStringValue();
-            QName qname = new QName("lang", context.getURIForPrefix("xml"), "xml");
-    		NodeSet attribs = context.getBroker().getElementIndex().findElementsByTagName(ElementValue.ATTRIBUTE, contextSequence.toNodeSet().getDocumentSet(), qname, null);
-    		NodeSet temp = new ExtArrayNodeSet(); 
-    		for (Iterator i = attribs.iterator(); i.hasNext();) {    			
-                NodeProxy p = (NodeProxy) i.next();
-                String langValue = p.getNodeValue();
-                boolean include = lang.equalsIgnoreCase(langValue);
-    			if (!include) {
-                    int hyphen = langValue.indexOf('-');
-    				if (hyphen != Constants.STRING_NOT_FOUND) {
-    					langValue = langValue.substring(0, hyphen);
-    					include = lang.equalsIgnoreCase(langValue);
-    				}
-    			}
-    			if (include) {
-                    NodeId parentID = p.getNodeId().getParentId();                
-    				if (parentID != NodeId.DOCUMENT_NODE) {
-                        NodeProxy parent = new NodeProxy(p.getDocument(), parentID, Node.ELEMENT_NODE);                       
-    					temp.add(parent);
-    				}
-    			}
-    		}
-    		if (!temp.isEmpty()) {
-    			result = ((NodeSet) contextSequence).selectAncestorDescendant(
-    					temp, NodeSet.DESCENDANT, true, contextId);
-    			for (Iterator i = ((NodeSet)result).iterator(); i.hasNext();) {
-                    NodeProxy p = (NodeProxy) i.next();
-    				p.addContextNode(contextId, p);
-    			}
-    		}
-            else result = Sequence.EMPTY_SEQUENCE;
+			String lang = getArgument(0).eval(contextSequence).getStringValue();
+			Sequence seq = query.eval(contextSequence);
+			if (seq.isEmpty()) {
+				result = BooleanValue.FALSE ;   
+			} else if (seq.hasOne()) {
+				String langValue = seq.getStringValue();
+	            boolean include = lang.equalsIgnoreCase(langValue);
+				if (!include) {
+	                int hyphen = langValue.indexOf('-');
+					if (hyphen != Constants.STRING_NOT_FOUND) {
+						langValue = langValue.substring(0, hyphen);
+						include = lang.equalsIgnoreCase(langValue);
+					}				
+				}
+				result = new BooleanValue(include);
+			}
+            else 
+            	throw new XPathException(getASTNode(), "XPDY0004: Sequence returned more than one item !");
         }
         
         if (context.getProfiler().isEnabled()) 
