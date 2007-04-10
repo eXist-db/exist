@@ -154,12 +154,11 @@
 xquery version "1.0";
 
 declare namespace request="http://exist-db.org/xquery/request";
-declare namespace math="java:java.lang.Math";
 
 declare function local:random($max as xs:integer) 
 as empty()
 {
-    let $r := ceiling(math:random() * $max) cast as xs:integer
+    let $r := ceiling(util:random() * $max) cast as xs:integer
     return
         request:set-session-attribute("random", $r)
 };
