@@ -345,6 +345,12 @@ public class Configuration implements ErrorHandler {
             LOG.debug("xquery.enable-query-rewriting: " + config.get("xquery.enable-query-rewriting"));
         }
         
+        String backwardCompatible = xquery.getAttribute("backwardCompatible");
+        if (backwardCompatible != null && backwardCompatible.length() > 0) {
+            config.put("xquery.backwardCompatible", backwardCompatible);
+            LOG.debug("xquery.backwardCompatible: " + config.get("xquery.backwardCompatible"));
+        }
+        
         //builin-modules
         NodeList builtins = xquery.getElementsByTagName("builtin-modules");
         if (builtins.getLength() > 0) {

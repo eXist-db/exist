@@ -486,8 +486,10 @@
                 Set to "yes" to enable the new query-rewriting optimizer. This is
                 work in progress and may lead to incorrect queries. Use at your own
                 risk.
+            -  backwardCompatible:
+            	Set to "yes" to enable backward compatibility (untyped argument checks for instance) 
     -->
-    <xquery enable-java-binding="no" enable-query-rewriting="no">
+    <xquery enable-java-binding="no" enable-query-rewriting="no"  backwardCompatible="yes">
         <builtin-modules>
             <module class="org.exist.xquery.functions.util.UtilModule"
                 uri="http://exist-db.org/xquery/util" />

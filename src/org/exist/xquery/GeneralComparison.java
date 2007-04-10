@@ -689,42 +689,44 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
 			//and the other is an instance of a numeric type,
 			//then the xdt:untypedAtomic value is cast to the type xs:double.
 			if (Type.subTypeOf(rtype, Type.NUMBER)) {
-			    if(isEmptyString(lv))
-			        return false;
+			    //if(isEmptyString(lv))
+			    //    return false;
 				lv = lv.convertTo(Type.DOUBLE);
 			//If one of the atomic values is an instance of xdt:untypedAtomic
 			//and the other is an instance of xdt:untypedAtomic or xs:string,
 			//then the xdt:untypedAtomic value (or values) is (are) cast to the type xs:string.
 			} else if (rtype == Type.UNTYPED_ATOMIC || rtype == Type.STRING) {
 				lv = lv.convertTo(Type.STRING);
-				if (rtype == Type.UNTYPED_ATOMIC)
-					rv = rv.convertTo(Type.STRING);
+				//if (rtype == Type.UNTYPED_ATOMIC)
+					//rv = rv.convertTo(Type.STRING);
 				//If one of the atomic values is an instance of xdt:untypedAtomic
 				//and the other is not an instance of xs:string, xdt:untypedAtomic, or any numeric type,
 				//then the xdt:untypedAtomic value is cast to the dynamic type of the other value.
 			} else
 				lv = lv.convertTo(rv.getType());
-		} else if (rtype == Type.UNTYPED_ATOMIC) {
+		} 
+		if (rtype == Type.UNTYPED_ATOMIC) {
 			//If one of the atomic values is an instance of xdt:untypedAtomic
 			//and the other is an instance of a numeric type,
 			//then the xdt:untypedAtomic value is cast to the type xs:double.
 			if (Type.subTypeOf(ltype, Type.NUMBER)) {
-			    if(isEmptyString(lv))
-			        return false;
+			    //if(isEmptyString(lv))
+			    //    return false;
 				rv = rv.convertTo(Type.DOUBLE);
 			//If one of the atomic values is an instance of xdt:untypedAtomic
 			//and the other is an instance of xdt:untypedAtomic or xs:string,
 			//then the xdt:untypedAtomic value (or values) is (are) cast to the type xs:string.
 			} else if (ltype == Type.UNTYPED_ATOMIC || ltype == Type.STRING) {
 				rv = rv.convertTo(Type.STRING);
-				if (ltype == Type.UNTYPED_ATOMIC)
-					lv = lv.convertTo(Type.STRING);
+				//if (ltype == Type.UNTYPED_ATOMIC)
+				//	lv = lv.convertTo(Type.STRING);
 			//If one of the atomic values is an instance of xdt:untypedAtomic
 			//and the other is not an instance of xs:string, xdt:untypedAtomic, or any numeric type,
 			//then the xdt:untypedAtomic value is cast to the dynamic type of the other value.
 			} else
 				rv = rv.convertTo(lv.getType());
 		}
+		/*
 		if (backwardsCompatible) {
 			if (!"".equals(lv.getStringValue()) && !"".equals(rv.getStringValue())) {
 				// in XPath 1.0 compatible mode, if one of the operands is a number, cast
@@ -736,6 +738,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
 				}
 			}
 		}
+		*/
         // if truncation is set, we always do a string comparison
         if (truncation != Constants.TRUNC_NONE) {
             lv = lv.convertTo(Type.STRING);
