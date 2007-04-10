@@ -1934,6 +1934,9 @@ public class XQueryContext {
         String param = (String) getBroker().getConfiguration().getProperty("xquery.enable-query-rewriting");
         enableOptimizer = param != null && param.equals("yes");
         
+        param = (String) getBroker().getConfiguration().getProperty("xquery.backwardCompatible");
+        backwardsCompatible = param == null ? true : param.equals("yes");
+        
         // load built-in modules
 		
 		// these modules are loaded dynamically. It is not an error if the
