@@ -53,11 +53,20 @@ public class Optimizer extends DefaultExpressionVisitor {
 
     private XQueryContext context;
 
+    private int predicates = 0;
+
+    private boolean hasOptimized = false;
+    
     public Optimizer(XQueryContext context) {
         this.context = context;
     }
 
+    public boolean hasOptimized() {
+        return hasOptimized;
+    }
+
     public void visitLocationStep(LocationStep locationStep) {
+        super.visitLocationStep(locationStep);
         boolean optimize = false;
         // only location steps with predicates can be optimized:
         if (locationStep.hasPredicates()) {
@@ -86,6 +95,7 @@ public class Optimizer extends DefaultExpressionVisitor {
             }
             if (LOG.isTraceEnabled())
                 LOG.trace("Rewriting expression: " + ExpressionDumper.dump(locationStep));
+            hasOptimized = true;
             PathExpr path = (PathExpr) parent;
             try {
                 // Create the pragma
@@ -98,6 +108,45 @@ public class Optimizer extends DefaultExpressionVisitor {
                 LOG.warn("Failed to optimize expression: " + locationStep + ": " + e.getMessage(), e);
             }
         }
+    }
+
+    public void visitAndExpr(OpAnd and) {
+        if (predicates > 0) {
+            Expression parent = and.getParent();
+            if (!(parent instanceof PathExpr)) {
+                LOG.warn("Parent expression of boolean operator is not a PathExpr: " + parent);
+                return;
+            }
+            PathExpr path;
+            Predicate predicate;
+            if (parent instanceof Predicate) {
+                predicate = (Predicate) parent;
+                path = predicate;
+            } else {
+                path = (PathExpr) parent;
+                parent = path.getParent();
+                if (!(parent instanceof Predicate) || path.getLength() > 1) {
+                    LOG.warn("Boolean operator is not a top-level expression in the predicate: " + parent.getClass().getName());
+                    return;
+                }
+                predicate = (Predicate) parent;
+            }
+            if (LOG.isTraceEnabled())
+                LOG.trace("Rewriting boolean expression: " + ExpressionDumper.dump(and));
+            hasOptimized = true;
+            LocationStep step = (LocationStep) predicate.getParent();
+            Predicate newPred = new Predicate(context);
+            newPred.add(and.getRight());
+            step.insertPredicate(predicate, newPred);
+            path.replaceExpression(and, and.getLeft());
+        }
+    }
+
+
+    public void visitPredicate(Predicate predicate) {
+        ++predicates;
+        super.visitPredicate(predicate);
+        --predicates;
     }
 
     private boolean canOptimize(List list) {
@@ -139,7 +188,7 @@ public class Optimizer extends DefaultExpressionVisitor {
         }
 
         public void visitPredicate(Predicate predicate) {
-            predicate.accept(this);
+            predicate.getExpression(0).accept(this);
         }
 
         public void visitBuiltinFunction(Function function) {

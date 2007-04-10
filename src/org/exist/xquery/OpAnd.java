@@ -91,7 +91,12 @@ public class OpAnd extends LogicalOp {
         
 	}
 
-	/* (non-Javadoc)
+
+    public void accept(ExpressionVisitor visitor) {
+        visitor.visitAndExpr(this);
+    }
+
+    /* (non-Javadoc)
      * @see org.exist.xquery.PathExpr#dump(org.exist.xquery.util.ExpressionDumper)
      */
     public void dump(ExpressionDumper dumper) {
@@ -103,8 +108,8 @@ public class OpAnd extends LogicalOp {
             getExpression(i).dump(dumper);
         }
     }
-    
-    public String toString() {        
+
+    public String toString() {
     	if (getLength() == 0)
             return "";
     	StringBuffer result = new StringBuffer("(");

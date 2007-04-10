@@ -83,8 +83,13 @@ public class OpOr extends LogicalOp {
         
         return result;
 	}
-	
-	/* (non-Javadoc)
+
+
+    public void accept(ExpressionVisitor visitor) {
+        visitor.visitOrExpr(this);
+    }
+
+    /* (non-Javadoc)
      * @see org.exist.xquery.PathExpr#dump(org.exist.xquery.util.ExpressionDumper)
      */
     public void dump(ExpressionDumper dumper) {

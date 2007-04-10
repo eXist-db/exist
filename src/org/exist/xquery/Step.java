@@ -59,6 +59,15 @@ public abstract class Step extends AbstractExpression {
         predicates.add( expr );
     }
 
+    public void insertPredicate(Expression previous, Expression predicate) {
+        int idx = predicates.indexOf(previous);
+        if (idx < 0) {
+            LOG.warn("Old predicate not found: " + ExpressionDumper.dump(previous) + "; in: " + ExpressionDumper.dump(this));
+            return;
+        }
+        predicates.add(idx + 1, predicate);
+    }
+
     public boolean hasPredicates() {
         return predicates.size() > 0;
     }
@@ -118,9 +127,7 @@ public abstract class Step extends AbstractExpression {
             dumper.display( "node()" );
         if ( predicates.size() > 0 )
             for ( Iterator i = predicates.iterator(); i.hasNext();  ) {
-                dumper.display( '[' );
                 ( (Predicate) i.next() ).dump(dumper);
-                dumper.display( ']' );
             }
     }
     

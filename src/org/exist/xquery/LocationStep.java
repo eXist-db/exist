@@ -860,10 +860,6 @@ public class LocationStep extends Step {
 
     public void accept(ExpressionVisitor visitor) {
         visitor.visitLocationStep(this);
-        for (Iterator i = predicates.iterator(); i.hasNext();) {
-			Predicate pred = (Predicate) i.next();
-			visitor.visitPredicate(pred);
-		}
     }
     
     /*

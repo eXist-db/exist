@@ -33,6 +33,10 @@ public interface ExpressionVisitor {
 	public void visitCastExpr(CastExpression expression);
 
     public void visitUnionExpr(Union union);
+
+    public void visitAndExpr(OpAnd and);
+
+    public void visitOrExpr(OpOr or);
     
     public void visitFtExpression(ExtFulltext fulltext);
 

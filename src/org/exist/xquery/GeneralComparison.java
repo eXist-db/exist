@@ -581,7 +581,8 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
 		                    		"' to find key '" + Type.getTypeName(key.getType()) + "(" + key.getStringValue() + ")'");
 
                             if (!checkForQNameIndex(contextSequence)) {
-                                LOG.trace("Cannot use QName index");
+                                if (LOG.isTraceEnabled())
+                                    LOG.trace("Cannot use QName index");
                                 contextQName = null;
                             }
                             

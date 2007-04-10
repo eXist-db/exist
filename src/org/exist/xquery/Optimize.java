@@ -36,6 +36,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 
 import java.util.Iterator;
+import java.util.List;
 
 public class Optimize extends Pragma {
 
@@ -109,8 +110,10 @@ public class Optimize extends Pragma {
                     } else
                         ancestors = index.findElementsByTagName(ancestorQN.getNameType(), selection.getDocumentSet(),
                                 ancestorQN, selector);
-                    LOG.trace("Ancestor selection took " + (System.currentTimeMillis() - start));
-                    LOG.trace("Found: " + ancestors.getLength());
+                    if (LOG.isTraceEnabled()) {
+                        LOG.trace("Ancestor selection took " + (System.currentTimeMillis() - start));
+                        LOG.trace("Found: " + ancestors.getLength());
+                    }
                 }
                 result = ancestors;
                 contextSequence = result;
@@ -149,6 +152,14 @@ public class Optimize extends Pragma {
                 }
             }
 
+            public void visitLocationStep(LocationStep locationStep) {
+                List predicates = locationStep.getPredicates();
+                for (int i = 0; i < predicates.size(); i++) {
+                    Predicate pred = (Predicate) predicates.get(i);
+                    pred.accept(this);
+                }
+            }
+
             public void visit(Expression expression) {
                 super.visit(expression);
             }
@@ -166,7 +177,7 @@ public class Optimize extends Pragma {
             }
 
             public void visitPredicate(Predicate predicate) {
-                predicate.accept(this);
+                predicate.getExpression(0).accept(this);
             }
 
             public void visitBuiltinFunction(Function function) {
