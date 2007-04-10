@@ -2739,7 +2739,7 @@ public class NativeBroker extends DBBroker {
             final double percent = ((double) run.freeMemory() / (double) run.maxMemory()) * 100;
             if (percent < memMinFree) {
                 flush();
-                System.gc();
+//                System.gc();
                 NumberFormat nf = NumberFormat.getNumberInstance();
                 LOG.info("total memory: " + nf.format(run.totalMemory()) + 
                 		"; free: " + nf.format(run.freeMemory()));
@@ -3017,7 +3017,7 @@ public class NativeBroker extends DBBroker {
                     //LOG.info(
                     //  "total memory: " + run.totalMemory() + "; free: " + run.freeMemory());
                     flush();
-                    System.gc();
+//                    System.gc();
                     LOG.info(
                         "total memory: " + run.totalMemory() + "; free: " + run.freeMemory());
                 }
