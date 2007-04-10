@@ -247,19 +247,21 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
 
             //if key has truncation, convert it to string
             if(truncation != Constants.TRUNC_NONE) {
-                //TODO : log this conversion ? -pb
-                //truncation is only possible on strings
-                key = key.convertTo(Type.STRING);
+            	if (!Type.subTypeOf(key.getType(), Type.STRING)) {
+            		LOG.info("Truncated key. Converted from " + Type.getTypeName(key.getType()) + " to xs:string");
+            		//truncation is only possible on strings
+            		key = key.convertTo(Type.STRING);
+            	}
             }
             //else if key is not the same type as the index
-            //TODO : use isSubType ??? -pb
+            //TODO : use Type.isSubType() ??? -pb
             else if (key.getType() != indexType) {
-                //try and convert the key to the index type
+                //try to convert the key to the index type
                 try	{
                     key = key.convertTo(indexType);
                 } catch(XPathException xpe)	{
                     if (LOG.isTraceEnabled())
-                        LOG.trace("Cannot convert key: " + Type.getTypeName(key.getType()) + " to required index type: " + Type.getTypeName(indexType));
+                    	LOG.trace("Cannot convert key: " + Type.getTypeName(key.getType()) + " to required index type: " + Type.getTypeName(indexType));
 
                     throw new XPathException(getASTNode(), "Cannot convert key to required index type");
                 }
@@ -342,7 +344,8 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
 		                if ((!Dependency.dependsOn(rightOpDeps, Dependency.CONTEXT_ITEM))) {
 		                    result = quickNodeSetCompare(contextSequence);
 		                } else {
-		                    result = nodeSetCompare(contextSequence);
+		            		NodeSet nodes = (NodeSet) getLeft().eval(contextSequence);
+		                    result = nodeSetCompare(nodes, contextSequence);
 		                }
 		            } else {
 		                result = genericCompare(contextSequence, contextItem);
@@ -431,11 +434,6 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
 	 * returns a node set. In this case, the left expression is executed first.
 	 * All matching context nodes are then passed to the right expression.
 	 */
-	protected Sequence nodeSetCompare(Sequence contextSequence)	throws XPathException {
-		NodeSet nodes = (NodeSet) getLeft().eval(contextSequence);
-		return nodeSetCompare(nodes, contextSequence);
-	}
-
     protected Sequence nodeSetCompare(NodeSet nodes, Sequence contextSequence) throws XPathException {
         if (context.getProfiler().isEnabled())
             context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "nodeSetCompare");
@@ -454,8 +452,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
 				do
 				{
 					Sequence rs = getRight().eval(context.getNode().toSequence());
-					for (SequenceIterator i2 = rs.iterate(); i2.hasNext();)
-					{
+					for (SequenceIterator i2 = rs.iterate(); i2.hasNext();) {
 						AtomicValue rv = i2.nextItem().atomize();
 						if (compareValues(collator, lv, rv))
 							result.add(item);
@@ -464,13 +461,13 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
 			}
 		} else { 
 			for (Iterator i1 = nodes.iterator(); i1.hasNext();) {
-		    	NodeProxy current = (NodeProxy) i1.next();
-				AtomicValue lv = current.atomize();
+		    	NodeProxy item = (NodeProxy) i1.next();
+				AtomicValue lv = item.atomize();
 				Sequence rs = getRight().eval(contextSequence);				
 				for (SequenceIterator i2 = rs.iterate(); i2.hasNext();)	{
 					AtomicValue rv = i2.nextItem().atomize();
 					if (compareValues(collator, lv, rv))
-						result.add(current);
+						result.add(item);
 				}
 		    }
 		}
@@ -490,12 +487,6 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
 		 * we have already processed in quickNodeSetCompare() and reprocessing all the nodes in NodeSetCompare().
 		 * Instead - Could we create a NodeCompare() (based on NodeSetCompare() code) to only compare a single node and then union the result?
 		 * - deliriumsky
-		 */
-
-		/* TODO think about caching of results in this function...
-		 * also examine and check if correct (line near the end) -
-		 * 	 boolean canCache = contextSequence instanceof NodeSet && (getRight().getDependencies() & Dependency.VARS) == 0 && (getLeft().getDependencies() & Dependency.VARS) == 0;
-		 *  - deliriumsky
 		 */
 
 		if (context.getProfiler().isEnabled())
@@ -523,14 +514,13 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
 		int indexType = nodes.getIndexType();
         
         //See if we have a range index defined on the nodes in this sequence
-        //TODO : use isSubType ??? -pb
-		//rememeber that Type.ITEM means... no index ;-)
+		//remember that Type.ITEM means... no index ;-)
 	    if(indexType != Type.ITEM) {
 	    	if (LOG.isTraceEnabled())
 	    		LOG.trace("found an index of type: " + Type.getTypeName(indexType));
 
 	    	//Get the documents from the node set
-			DocumentSet docs = nodes.getDocumentSet();
+			final DocumentSet docs = nodes.getDocumentSet();
 			
 	        //Holds the result
     		NodeSet result = null;
@@ -540,16 +530,18 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
 				//Get the index key
 				Item key = itRightSeq.nextItem().atomize();
 
-				//if key has truncation, convert it to string
-		        if(truncation != Constants.TRUNC_NONE) {
-		        	//TODO : log this conversion ? -pb
-		        	//truncation is only possible on strings
-		        	key = key.convertTo(Type.STRING);
-		        }
+	            //if key has truncation, convert it to string
+	            if(truncation != Constants.TRUNC_NONE) {
+	            	if (!Type.subTypeOf(key.getType(), Type.STRING)) {
+	            		LOG.info("Truncated key. Converted from " + Type.getTypeName(key.getType()) + " to xs:string");
+	            		//truncation is only possible on strings
+	            		key = key.convertTo(Type.STRING);
+	            	}
+	            }
 		        //else if key is not the same type as the index
-                //TODO : use isSubType ??? -pb
+                //TODO : use Type.isSubType() ??? -pb
 		        else if (key.getType() != indexType) {
-		        	//try and convert the key to the index type
+		        	//try to convert the key to the index type
 	            	try	{
 	            		key = key.convertTo(indexType);
 					} catch(XPathException xpe)	{
@@ -618,8 +610,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
 							}
 						}
 			        } else {
-			        	//the datatype of our key does not
-			        	//implement org.exist.storage.Indexable or is not of the correct type
+			        	//our key does is not of the correct type
 		                if(context.getProfiler().isEnabled())
 		                    context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION FALLBACK", "Falling back to nodeSetCompare (key is of type: " +
 		                    		Type.getTypeName(key.getType()) + ") whereas index is of type '" + Type.getTypeName(indexType) + "'");
@@ -703,7 +694,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
 				//and the other is not an instance of xs:string, xdt:untypedAtomic, or any numeric type,
 				//then the xdt:untypedAtomic value is cast to the dynamic type of the other value.
 			} else
-				lv = lv.convertTo(rv.getType());
+				lv = lv.convertTo(rtype);
 		} 
 		if (rtype == Type.UNTYPED_ATOMIC) {
 			//If one of the atomic values is an instance of xdt:untypedAtomic
@@ -724,7 +715,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
 			//and the other is not an instance of xs:string, xdt:untypedAtomic, or any numeric type,
 			//then the xdt:untypedAtomic value is cast to the dynamic type of the other value.
 			} else
-				rv = rv.convertTo(lv.getType());
+				rv = rv.convertTo(ltype);
 		}
 		/*
 		if (backwardsCompatible) {
@@ -741,6 +732,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
 		*/
         // if truncation is set, we always do a string comparison
         if (truncation != Constants.TRUNC_NONE) {
+        	//TODO : log this ?
             lv = lv.convertTo(Type.STRING);
         }
 //			System.out.println(
@@ -823,6 +815,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
 			case Constants.GTEQ :
 				relation = Constants.LTEQ;
 				break;
+			//What about Constants.EQ and Constants.NEQ ? Well, it seems to never be called 
 		}
 		Expression right = getRight();
 		setRight(getLeft());
