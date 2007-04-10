@@ -84,7 +84,7 @@ public class BooleanValue extends AtomicValue {
 				return new UntypedAtomicValue(getStringValue());				
 			default :
 				throw new XPathException(
-					"cannot convert 'xs:boolean(" + value + ")' to " + Type.getTypeName(requiredType));
+					"XPTY0004: cannot convert 'xs:boolean(" + value + ")' to " + Type.getTypeName(requiredType));
 		}
 	}
 
@@ -111,7 +111,7 @@ public class BooleanValue extends AtomicValue {
 					throw new XPathException("Type error: cannot apply this operator to a boolean value");
 			}
 		}
-		throw new XPathException("Type error: cannot convert operand to boolean");
+		throw new XPathException("XPTY0004: cannot convert 'xs:boolean(" + value + ")' to " + Type.getTypeName(other.getType()));
 	}
 
 	public int compareTo(Collator collator, AtomicValue other) throws XPathException {
