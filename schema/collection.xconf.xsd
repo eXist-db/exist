@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- 
+    Schema for eXist Collection Configuration files collection.xconf
+    
+    TODO: Remove optional attributes in favour of well defined/named parent elements
+-->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0"  targetNamespace="http://exist-db.org/collection-config/1.0">
+    <xs:element name="collection">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="index" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Index Configuration</xs:documentation>
+                    </xs:annotation>
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="fulltext">
+                                <xs:annotation>
+                                    <xs:documentation>Full Text Indexes</xs:documentation>
+                                </xs:annotation>
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="include" minOccurs="0" maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:attribute name="path" type="xs:string"/>
+                                            </xs:complexType>
+                                        </xs:element>
+                                        <xs:element name="exclude" minOccurs="0" maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:attribute name="path" type="xs:string"/>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                    <xs:attribute name="default" default="all">
+                                        <xs:simpleType>
+                                            <xs:restriction base="xs:string">
+                                                <xs:enumeration value="all"/>
+                                                <xs:enumeration value="none"/>
+                                            </xs:restriction>
+                                        </xs:simpleType>
+                                    </xs:attribute>
+                                    <xs:attribute name="attributes" type="xs:boolean" default="true"/>
+                                    <xs:attribute name="alphanum" type="xs:boolean" default="true"/>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="create" minOccurs="0" maxOccurs="unbounded">
+                                <xs:annotation>
+                                    <xs:documentation>Range/QName Indexes</xs:documentation>
+                                </xs:annotation>
+                                <xs:complexType>
+                                    <xs:attribute name="path" type="xs:string" use="optional"/>
+                                    <xs:attribute name="qname" type="xs:string" use="optional"/>
+                                    <xs:attribute name="type" type="xs:anySimpleType"/>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="triggers" minOccurs="0" maxOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>Trigger Configuration</xs:documentation>
+                    </xs:annotation>
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="trigger" minOccurs="1" maxOccurs="unbounded">
+                                <xs:complexType>
+                                            <xs:sequence>
+                                                <xs:element name="parameter" minOccurs="0" maxOccurs="unbounded">
+                                                    <xs:complexType>
+                                                        <xs:attribute name="name" type="xs:string"/>
+                                                        <xs:attribute name="value" type="xs:string"/>
+                                                    </xs:complexType>
+                                                </xs:element>
+                                            </xs:sequence>
+                                           <xs:attribute name="class" type="xs:string"/>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
