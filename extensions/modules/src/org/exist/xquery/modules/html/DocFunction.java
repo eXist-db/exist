@@ -127,7 +127,7 @@ public class DocFunction extends BasicFunction {
 			{
                 LOG.error("Error while involing NekoHTML parser. ("+e.getMessage()
                         +"). If you want to parse non-wellformed HTML files, put "
-                        +"nekohtml.jar into directory 'lib/optional'.", e);
+                        +"nekohtml.jar into directory 'lib/user'.", e);
                 throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "NekoHTML parser error", e);
             }
 			
