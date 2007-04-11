@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- 
+    Schema for eXist WebApp Descriptor Configuration file descriptor.xml
+-->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="xquery-app">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="allow-source">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="xquery" minOccurs="0" maxOccurs="unbounded">
+                                <xs:complexType>
+                                    <xs:attribute name="path" type="xs:string"/>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="maps">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="map" minOccurs="0" maxOccurs="unbounded">
+                                <xs:complexType>
+                                    <xs:attribute name="path" type="xs:string"/>
+                                    <xs:attribute name="view" type="xs:string"/>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute name="request-replay-log" type="xs:boolean" default="false"/>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
