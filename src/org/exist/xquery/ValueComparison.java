@@ -70,7 +70,7 @@ public class ValueComparison extends GeneralComparison {
 			lv = ls.itemAt(0).atomize();
 			rv = rs.itemAt(0).atomize();
             Collator collator = getCollator(contextSequence);
-			return BooleanValue.valueOf(compareValues(collator, lv, rv));
+			return BooleanValue.valueOf(compareValues(collator, lv, rv, Constants.TRUNC_NONE, relation));
 		} 
         throw new XPathException(getASTNode(), "Type error: sequence with more than one item is not allowed here");
 	}
@@ -93,7 +93,7 @@ public class ValueComparison extends GeneralComparison {
                     if (!rs.hasOne())
                         throw new XPathException(getASTNode(),
                                 "Type error: sequence with less or more than one item is not allowed here");                    
-                    if (compareValues(collator, lv, rs.itemAt(0).atomize()))
+                    if (compareValues(collator, lv, rs.itemAt(0).atomize(), Constants.TRUNC_NONE, Constants.EQ))
                         result.add(current);
                 } while ((context = context.getNextDirect()) != null);
             }
@@ -106,7 +106,7 @@ public class ValueComparison extends GeneralComparison {
             for (Iterator i = nodes.iterator(); i.hasNext();) {
                 NodeProxy current = (NodeProxy) i.next();
                 AtomicValue lv = current.atomize();
-                if (compareValues(collator, lv, rv))
+                if (compareValues(collator, lv, rv, Constants.TRUNC_NONE, Constants.EQ))
                     result.add(current);
             }
         }

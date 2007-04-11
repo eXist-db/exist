@@ -130,7 +130,7 @@ public class FunDeepEqual extends CollatingFunction {
 						if (((NumericValue)a).isNaN() && ((NumericValue)b).isNaN())
 							return true;
 					}
-					return GeneralComparison.compareAtomic(
+					return GeneralComparison.compareValues(
 						collator, (AtomicValue) a, (AtomicValue) b, Constants.TRUNC_NONE, Constants.EQ);
 				} catch (XPathException e) {
 					return false;
