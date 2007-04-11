@@ -38,18 +38,11 @@ abstract class OrderedDurationValue extends DurationValue {
 	}
 
 	public int compareTo(Collator collator, AtomicValue other) throws XPathException {
-		if (other.getType() == getType()) {
-			//Take care : this method doesn't seem to take ms into account 
-			int r = duration.compare(((OrderedDurationValue) other).duration);
-			if (r == DatatypeConstants.INDETERMINATE) throw new RuntimeException("indeterminate order between totally ordered duration values " + this + " and " + other);
-			return r;
-		/* TODO : consider this kind of design
-		} else if (Type.getCommonSuperType(getType(), other.getType()) == Type.DURATION) {
+		if (Type.subTypeOf(Type.getCommonSuperType(getType(), other.getType()), Type.DURATION)) {
 			//Take care : this method doesn't seem to take ms into account 
 			int r = duration.compare(((DurationValue) other).duration);
 			if (r == DatatypeConstants.INDETERMINATE) throw new RuntimeException("indeterminate order between totally ordered duration values " + this + " and " + other);
-			return r;
-		*/
+			return r;		
 		}
 		throw new XPathException(
 				"Type error: cannot compare " + Type.getTypeName(getType()) + " to "
