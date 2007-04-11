@@ -882,7 +882,10 @@ public class LocationStep extends Step {
             NodeProxy p;
             for (Iterator i = temp.iterator(); i.hasNext(); ) {
                 p = (NodeProxy) i.next();
+                /* ljo's modification, currently breaks the test suite (in-memory vs stored nodes ?) :
                 if (test.matches(p) && !(p.getNodeId().getParentId() == NodeId.DOCUMENT_NODE && test.getType() == Type.ELEMENT)) {
+				*/
+                if (test.matches(p)) {
 		    // For NodeId.DOCUMENT_NODE add only if  
 		    // parent::node() not parent::element().  		
                    result.add(p);

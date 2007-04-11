@@ -913,12 +913,15 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
             // check the last entry, which should avoid most of the likely
             // duplicates. The remaining duplicates are removed by
             // removeDuplicates().
-	    NodeId nodeId = p.getNodeId();
-	    if (!NodeId.ROOT_NODE.equals(nodeId)) {
-		if (length > 0 &&
-		    array[length - 1].getNodeId().equals(nodeId)) {
+		/* ljo's modification, currently breaks the test suite (in-memory vs stored nodes ?) :
+		NodeId nodeId = p.getNodeId();
+		if (!NodeId.ROOT_NODE.equals(nodeId)) {
+			if (length > 0 &&
+				array[length - 1].getNodeId().equals(nodeId)) {		 
+		*/
+		 if (length > 0 && array[length - 1].getNodeId().equals(p.getNodeId())) {
 		    return;
-		}
+		//} ljo's modification
 	    }
             if (length == array.length) {
                 //int newLength = (length * 3)/2 + 1;
@@ -1215,8 +1218,10 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
             int j = 0;
 	    // If NodeId.ROOT_NODE.equals(iOrjNodeId)
 	    // just keep them all /ljo
-            for (int i = 1; i < length; i++) {
-		NodeId ithId= array[i].getNodeId();
+            for (int i = 1; i < length; i++) { 
+		/*
+		ljo's modification, currently breaks the test suite (in-memory vs stored nodes ?) :
+        NodeId ithId= array[i].getNodeId();
 		NodeId jthId= array[j].getNodeId();
 		if (NodeId.ROOT_NODE.equals(ithId) ||
 		    NodeId.ROOT_NODE.equals(jthId)) {
@@ -1224,13 +1229,15 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
 		    continue;
 		} else {
 		    if (!ithId.equals(jthId)) {
+		*/
+		if (!array[i].getNodeId().equals(array[j].getNodeId())) {
 			if (i != ++j)
 			    array[j] = array[i];
 		    } else if (mergeContext) {
 			array[j].addContext(array[i]);
 		    }
 		}
-	    }
+	    //} //ljo's modification
             length = ++j;
             return length;
         }
