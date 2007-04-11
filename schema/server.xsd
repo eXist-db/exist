@@ -4,7 +4,7 @@
     Schema for eXist Server Configuration file server.xml
 -->
 
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0">
     <xs:simpleType name="yes_no">
         <xs:restriction base="xs:string">
             <xs:enumeration value="yes"/>

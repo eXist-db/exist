@@ -4,7 +4,7 @@
     Schema for eXist Mime Type Configuration file mime-types.xml
 -->
 
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0">
     <xs:element name="mime-types">
         <xs:complexType>
             <xs:sequence>
