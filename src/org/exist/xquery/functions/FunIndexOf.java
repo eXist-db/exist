@@ -31,8 +31,8 @@ import org.exist.xquery.Constants;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.GeneralComparison;
 import org.exist.xquery.Profiler;
+import org.exist.xquery.ValueComparison;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
@@ -109,7 +109,7 @@ public class FunIndexOf extends BasicFunction {
     		for (SequenceIterator i = args[0].iterate(); i.hasNext(); j++) {
     			AtomicValue next = i.nextItem().atomize();
     			try {
-	    			if (GeneralComparison.compareValues(collator, next, srch, Constants.TRUNC_NONE, Constants.EQ))
+	    			if (ValueComparison.compareAtomic(collator, next, srch, Constants.TRUNC_NONE, Constants.EQ))
 	    				result.add(new IntegerValue(j));
     			} catch (XPathException e) {
     				//Ignore me : values can not be compared

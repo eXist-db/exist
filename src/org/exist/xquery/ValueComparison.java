@@ -34,6 +34,7 @@ import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.Type;
 
 /**
  * @author Wolfgang Meier (wolfgang@exist-db.org)
@@ -70,7 +71,7 @@ public class ValueComparison extends GeneralComparison {
 			lv = ls.itemAt(0).atomize();
 			rv = rs.itemAt(0).atomize();
             Collator collator = getCollator(contextSequence);
-			return BooleanValue.valueOf(compareValues(collator, lv, rv, Constants.TRUNC_NONE, relation));
+			return BooleanValue.valueOf(compareAtomic(collator, lv, rv, Constants.TRUNC_NONE, relation));
 		} 
         throw new XPathException(getASTNode(), "Type error: sequence with more than one item is not allowed here");
 	}
@@ -93,7 +94,7 @@ public class ValueComparison extends GeneralComparison {
                     if (!rs.hasOne())
                         throw new XPathException(getASTNode(),
                                 "Type error: sequence with less or more than one item is not allowed here");                    
-                    if (compareValues(collator, lv, rs.itemAt(0).atomize(), Constants.TRUNC_NONE, Constants.EQ))
+                    if (compareAtomic(collator, lv, rs.itemAt(0).atomize(), Constants.TRUNC_NONE, Constants.EQ))
                         result.add(current);
                 } while ((context = context.getNextDirect()) != null);
             }
@@ -106,12 +107,96 @@ public class ValueComparison extends GeneralComparison {
             for (Iterator i = nodes.iterator(); i.hasNext();) {
                 NodeProxy current = (NodeProxy) i.next();
                 AtomicValue lv = current.atomize();
-                if (compareValues(collator, lv, rv, Constants.TRUNC_NONE, Constants.EQ))
+                if (compareAtomic(collator, lv, rv, Constants.TRUNC_NONE, Constants.EQ))
                     result.add(current);
             }
         }
         return result;
 	}
+	
+    /**
+	 * Cast the atomic operands into a comparable type
+	 * and compare them.
+	 */
+	public static boolean compareAtomic(Collator collator, AtomicValue lv, AtomicValue rv, int truncation, int relation) throws XPathException {
+		
+		//TODo : refactor casting according to the specs ; right now, copied from GeneralComparison		
+		
+		int ltype = lv.getType();
+		int rtype = rv.getType();
+		if (ltype == Type.UNTYPED_ATOMIC) {
+			//If one of the atomic values is an instance of xdt:untypedAtomic
+			//and the other is an instance of a numeric type,
+			//then the xdt:untypedAtomic value is cast to the type xs:double.
+			if (Type.subTypeOf(rtype, Type.NUMBER)) {
+			    //if(isEmptyString(lv))
+			    //    return false;
+				lv = lv.convertTo(Type.DOUBLE);
+			//If one of the atomic values is an instance of xdt:untypedAtomic
+			//and the other is an instance of xdt:untypedAtomic or xs:string,
+			//then the xdt:untypedAtomic value (or values) is (are) cast to the type xs:string.
+			} else if (rtype == Type.UNTYPED_ATOMIC || rtype == Type.STRING) {
+				lv = lv.convertTo(Type.STRING);
+				//if (rtype == Type.UNTYPED_ATOMIC)
+					//rv = rv.convertTo(Type.STRING);
+				//If one of the atomic values is an instance of xdt:untypedAtomic
+				//and the other is not an instance of xs:string, xdt:untypedAtomic, or any numeric type,
+				//then the xdt:untypedAtomic value is cast to the dynamic type of the other value.
+			} else
+				lv = lv.convertTo(rtype);
+		} 
+		if (rtype == Type.UNTYPED_ATOMIC) {
+			//If one of the atomic values is an instance of xdt:untypedAtomic
+			//and the other is an instance of a numeric type,
+			//then the xdt:untypedAtomic value is cast to the type xs:double.
+			if (Type.subTypeOf(ltype, Type.NUMBER)) {
+			    //if(isEmptyString(lv))
+			    //    return false;
+				rv = rv.convertTo(Type.DOUBLE);
+			//If one of the atomic values is an instance of xdt:untypedAtomic
+			//and the other is an instance of xdt:untypedAtomic or xs:string,
+			//then the xdt:untypedAtomic value (or values) is (are) cast to the type xs:string.
+			} else if (ltype == Type.UNTYPED_ATOMIC || ltype == Type.STRING) {
+				rv = rv.convertTo(Type.STRING);
+				//if (ltype == Type.UNTYPED_ATOMIC)
+				//	lv = lv.convertTo(Type.STRING);
+			//If one of the atomic values is an instance of xdt:untypedAtomic
+			//and the other is not an instance of xs:string, xdt:untypedAtomic, or any numeric type,
+			//then the xdt:untypedAtomic value is cast to the dynamic type of the other value.
+			} else
+				rv = rv.convertTo(ltype);
+		}
+		/*
+		if (backwardsCompatible) {
+			if (!"".equals(lv.getStringValue()) && !"".equals(rv.getStringValue())) {
+				// in XPath 1.0 compatible mode, if one of the operands is a number, cast
+				// both operands to xs:double
+				if (Type.subTypeOf(ltype, Type.NUMBER)
+					|| Type.subTypeOf(rtype, Type.NUMBER)) {
+						lv = lv.convertTo(Type.DOUBLE);
+						rv = rv.convertTo(Type.DOUBLE);
+				}
+			}
+		}
+		*/
+        // if truncation is set, we always do a string comparison
+        if (truncation != Constants.TRUNC_NONE) {
+        	//TODO : log this ?
+            lv = lv.convertTo(Type.STRING);
+        }
+//			System.out.println(
+//				lv.getStringValue() + Constants.OPS[relation] + rv.getStringValue());
+		switch(truncation) {
+			case Constants.TRUNC_RIGHT:
+				return lv.startsWith(collator, rv);
+			case Constants.TRUNC_LEFT:
+				return lv.endsWith(collator, rv);
+			case Constants.TRUNC_BOTH:
+				return lv.contains(collator, rv);
+			default:
+				return lv.compareTo(collator, relation, rv);
+		}
+	}	
     
     public void dump(ExpressionDumper dumper) {
         getLeft().dump(dumper);

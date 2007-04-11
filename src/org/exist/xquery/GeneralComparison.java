@@ -394,33 +394,33 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
 		final Sequence rs = getRight().eval(contextSequence, contextItem);
 		final Collator collator = getCollator(contextSequence);
 		if (ls.isEmpty() && rs.isEmpty()) {
-			return BooleanValue.valueOf(compareGeneralComparison(collator, AtomicValue.EMPTY_VALUE, AtomicValue.EMPTY_VALUE));
+			return BooleanValue.valueOf(compareAtomic(collator, AtomicValue.EMPTY_VALUE, AtomicValue.EMPTY_VALUE));
 		} else if (ls.isEmpty() && !rs.isEmpty()) {
 			for (SequenceIterator i2 = rs.iterate(); i2.hasNext();) {
-				if (compareGeneralComparison(collator, AtomicValue.EMPTY_VALUE, i2.nextItem().atomize()))
+				if (compareAtomic(collator, AtomicValue.EMPTY_VALUE, i2.nextItem().atomize()))
 					return BooleanValue.TRUE;
 			}
 		} else if (!ls.isEmpty()&& rs.isEmpty()) {
 			for (SequenceIterator i1 = ls.iterate(); i1.hasNext();) {
 				AtomicValue lv = i1.nextItem().atomize();
-				if (compareGeneralComparison(collator, lv, AtomicValue.EMPTY_VALUE))
+				if (compareAtomic(collator, lv, AtomicValue.EMPTY_VALUE))
 					return BooleanValue.TRUE;
 			}			
 		} else if (ls.hasOne() && rs.hasOne()) {
-			return BooleanValue.valueOf(compareGeneralComparison(collator, ls.itemAt(0).atomize(), rs.itemAt(0).atomize()));
+			return BooleanValue.valueOf(compareAtomic(collator, ls.itemAt(0).atomize(), rs.itemAt(0).atomize()));
 		} else {
 			for (SequenceIterator i1 = ls.iterate(); i1.hasNext();) {
 				AtomicValue lv = i1.nextItem().atomize();
 				if (rs.isEmpty()) {
-					if (compareGeneralComparison(collator, lv, AtomicValue.EMPTY_VALUE))
+					if (compareAtomic(collator, lv, AtomicValue.EMPTY_VALUE))
 						return BooleanValue.TRUE;
 				} else if (rs.hasOne()) {
-					if (compareGeneralComparison(collator, lv, rs.itemAt(0).atomize()))
+					if (compareAtomic(collator, lv, rs.itemAt(0).atomize()))
 						//return early if we are successful, continue otherwise
 						return BooleanValue.TRUE;
 				} else {
 					for (SequenceIterator i2 = rs.iterate(); i2.hasNext();) {
-						if (compareGeneralComparison(collator, lv, i2.nextItem().atomize()))
+						if (compareAtomic(collator, lv, i2.nextItem().atomize()))
 							return BooleanValue.TRUE;
 					}
 				}
@@ -454,7 +454,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
 					Sequence rs = getRight().eval(context.getNode().toSequence());
 					for (SequenceIterator i2 = rs.iterate(); i2.hasNext();) {
 						AtomicValue rv = i2.nextItem().atomize();
-						if (compareGeneralComparison(collator, lv, rv))
+						if (compareAtomic(collator, lv, rv))
 							result.add(item);
 					}
 				} while ((context = context.getNextDirect()) != null);
@@ -466,7 +466,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
 				Sequence rs = getRight().eval(contextSequence);				
 				for (SequenceIterator i2 = rs.iterate(); i2.hasNext();)	{
 					AtomicValue rv = i2.nextItem().atomize();
-					if (compareGeneralComparison(collator, lv, rv))
+					if (compareAtomic(collator, lv, rv))
 						result.add(item);
 				}
 		    }
@@ -662,98 +662,85 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
 	 * Cast the atomic operands into a comparable type
 	 * and compare them.
 	 */
-	protected boolean compareGeneralComparison(Collator collator, AtomicValue lv, AtomicValue rv) throws XPathException {
-		try {
-			return compareAtomic(collator, lv, rv, truncation, relation);
-		} catch (XPathException e) {
-			e.setASTNode(getASTNode());
-			throw e;
-		}
-	}
-	
-    /**
-	 * Cast the atomic operands into a comparable type
-	 * and compare them.
-	 */
-	public static boolean compareValues(Collator collator, AtomicValue lv, AtomicValue rv, int truncation, int relation) throws XPathException {
-		return compareAtomic(collator, lv, rv, truncation, relation);
-	}	
-
-    private static boolean compareAtomic(Collator collator, AtomicValue lv, AtomicValue rv,
-            int truncation, int relation) throws XPathException{
-		int ltype = lv.getType();
-		int rtype = rv.getType();
-		if (ltype == Type.UNTYPED_ATOMIC) {
-			//If one of the atomic values is an instance of xdt:untypedAtomic
-			//and the other is an instance of a numeric type,
-			//then the xdt:untypedAtomic value is cast to the type xs:double.
-			if (Type.subTypeOf(rtype, Type.NUMBER)) {
-			    //if(isEmptyString(lv))
-			    //    return false;
-				lv = lv.convertTo(Type.DOUBLE);
-			//If one of the atomic values is an instance of xdt:untypedAtomic
-			//and the other is an instance of xdt:untypedAtomic or xs:string,
-			//then the xdt:untypedAtomic value (or values) is (are) cast to the type xs:string.
-			} else if (rtype == Type.UNTYPED_ATOMIC || rtype == Type.STRING) {
-				lv = lv.convertTo(Type.STRING);
-				//if (rtype == Type.UNTYPED_ATOMIC)
-					//rv = rv.convertTo(Type.STRING);
+	private boolean compareAtomic(Collator collator, AtomicValue lv, AtomicValue rv) throws XPathException {
+		try {			
+			int ltype = lv.getType();
+			int rtype = rv.getType();
+			if (ltype == Type.UNTYPED_ATOMIC) {
+				//If one of the atomic values is an instance of xdt:untypedAtomic
+				//and the other is an instance of a numeric type,
+				//then the xdt:untypedAtomic value is cast to the type xs:double.
+				if (Type.subTypeOf(rtype, Type.NUMBER)) {
+				    //if(isEmptyString(lv))
+				    //    return false;
+					lv = lv.convertTo(Type.DOUBLE);
+				//If one of the atomic values is an instance of xdt:untypedAtomic
+				//and the other is an instance of xdt:untypedAtomic or xs:string,
+				//then the xdt:untypedAtomic value (or values) is (are) cast to the type xs:string.
+				} else if (rtype == Type.UNTYPED_ATOMIC || rtype == Type.STRING) {
+					lv = lv.convertTo(Type.STRING);
+					//if (rtype == Type.UNTYPED_ATOMIC)
+						//rv = rv.convertTo(Type.STRING);
+					//If one of the atomic values is an instance of xdt:untypedAtomic
+					//and the other is not an instance of xs:string, xdt:untypedAtomic, or any numeric type,
+					//then the xdt:untypedAtomic value is cast to the dynamic type of the other value.
+				} else
+					lv = lv.convertTo(rtype);
+			} 
+			if (rtype == Type.UNTYPED_ATOMIC) {
+				//If one of the atomic values is an instance of xdt:untypedAtomic
+				//and the other is an instance of a numeric type,
+				//then the xdt:untypedAtomic value is cast to the type xs:double.
+				if (Type.subTypeOf(ltype, Type.NUMBER)) {
+				    //if(isEmptyString(lv))
+				    //    return false;
+					rv = rv.convertTo(Type.DOUBLE);
+				//If one of the atomic values is an instance of xdt:untypedAtomic
+				//and the other is an instance of xdt:untypedAtomic or xs:string,
+				//then the xdt:untypedAtomic value (or values) is (are) cast to the type xs:string.
+				} else if (ltype == Type.UNTYPED_ATOMIC || ltype == Type.STRING) {
+					rv = rv.convertTo(Type.STRING);
+					//if (ltype == Type.UNTYPED_ATOMIC)
+					//	lv = lv.convertTo(Type.STRING);
 				//If one of the atomic values is an instance of xdt:untypedAtomic
 				//and the other is not an instance of xs:string, xdt:untypedAtomic, or any numeric type,
 				//then the xdt:untypedAtomic value is cast to the dynamic type of the other value.
-			} else
-				lv = lv.convertTo(rtype);
-		} 
-		if (rtype == Type.UNTYPED_ATOMIC) {
-			//If one of the atomic values is an instance of xdt:untypedAtomic
-			//and the other is an instance of a numeric type,
-			//then the xdt:untypedAtomic value is cast to the type xs:double.
-			if (Type.subTypeOf(ltype, Type.NUMBER)) {
-			    //if(isEmptyString(lv))
-			    //    return false;
-				rv = rv.convertTo(Type.DOUBLE);
-			//If one of the atomic values is an instance of xdt:untypedAtomic
-			//and the other is an instance of xdt:untypedAtomic or xs:string,
-			//then the xdt:untypedAtomic value (or values) is (are) cast to the type xs:string.
-			} else if (ltype == Type.UNTYPED_ATOMIC || ltype == Type.STRING) {
-				rv = rv.convertTo(Type.STRING);
-				//if (ltype == Type.UNTYPED_ATOMIC)
-				//	lv = lv.convertTo(Type.STRING);
-			//If one of the atomic values is an instance of xdt:untypedAtomic
-			//and the other is not an instance of xs:string, xdt:untypedAtomic, or any numeric type,
-			//then the xdt:untypedAtomic value is cast to the dynamic type of the other value.
-			} else
-				rv = rv.convertTo(ltype);
-		}
-		/*
-		if (backwardsCompatible) {
-			if (!"".equals(lv.getStringValue()) && !"".equals(rv.getStringValue())) {
-				// in XPath 1.0 compatible mode, if one of the operands is a number, cast
-				// both operands to xs:double
-				if (Type.subTypeOf(ltype, Type.NUMBER)
-					|| Type.subTypeOf(rtype, Type.NUMBER)) {
-						lv = lv.convertTo(Type.DOUBLE);
-						rv = rv.convertTo(Type.DOUBLE);
+				} else
+					rv = rv.convertTo(ltype);
+			}
+			/*
+			if (backwardsCompatible) {
+				if (!"".equals(lv.getStringValue()) && !"".equals(rv.getStringValue())) {
+					// in XPath 1.0 compatible mode, if one of the operands is a number, cast
+					// both operands to xs:double
+					if (Type.subTypeOf(ltype, Type.NUMBER)
+						|| Type.subTypeOf(rtype, Type.NUMBER)) {
+							lv = lv.convertTo(Type.DOUBLE);
+							rv = rv.convertTo(Type.DOUBLE);
+					}
 				}
 			}
-		}
-		*/
-        // if truncation is set, we always do a string comparison
-        if (truncation != Constants.TRUNC_NONE) {
-        	//TODO : log this ?
-            lv = lv.convertTo(Type.STRING);
-        }
-//			System.out.println(
-//				lv.getStringValue() + Constants.OPS[relation] + rv.getStringValue());
-		switch(truncation) {
-			case Constants.TRUNC_RIGHT:
-				return lv.startsWith(collator, rv);
-			case Constants.TRUNC_LEFT:
-				return lv.endsWith(collator, rv);
-			case Constants.TRUNC_BOTH:
-				return lv.contains(collator, rv);
-			default:
-				return lv.compareTo(collator, relation, rv);
+			*/
+	        // if truncation is set, we always do a string comparison
+	        if (truncation != Constants.TRUNC_NONE) {
+	        	//TODO : log this ?
+	            lv = lv.convertTo(Type.STRING);
+	        }
+//				System.out.println(
+//					lv.getStringValue() + Constants.OPS[relation] + rv.getStringValue());
+			switch(truncation) {
+				case Constants.TRUNC_RIGHT:
+					return lv.startsWith(collator, rv);
+				case Constants.TRUNC_LEFT:
+					return lv.endsWith(collator, rv);
+				case Constants.TRUNC_BOTH:
+					return lv.contains(collator, rv);
+				default:
+					return lv.compareTo(collator, relation, rv);
+			}			
+		} catch (XPathException e) {
+			e.setASTNode(getASTNode());
+			throw e;
 		}
 	}
 
