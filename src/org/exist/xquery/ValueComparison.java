@@ -119,73 +119,55 @@ public class ValueComparison extends GeneralComparison {
 	 * and compare them.
 	 */
 	public static boolean compareAtomic(Collator collator, AtomicValue lv, AtomicValue rv, int truncation, int relation) throws XPathException {
-		
-		//TODO : refactor casting according to the specs ; right now, copied from GeneralComparison		
-		
 		int ltype = lv.getType();
 		int rtype = rv.getType();
 		if (ltype == Type.UNTYPED_ATOMIC) {
-			//If one of the atomic values is an instance of xdt:untypedAtomic
-			//and the other is an instance of a numeric type,
-			//then the xdt:untypedAtomic value is cast to the type xs:double.
-			if (Type.subTypeOf(rtype, Type.NUMBER)) {
-			    //if(isEmptyString(lv))
-			    //    return false;
-				lv = lv.convertTo(Type.DOUBLE);
-			//If one of the atomic values is an instance of xdt:untypedAtomic
-			//and the other is an instance of xdt:untypedAtomic or xs:string,
-			//then the xdt:untypedAtomic value (or values) is (are) cast to the type xs:string.
-			} else if (rtype == Type.UNTYPED_ATOMIC || rtype == Type.STRING) {
-				lv = lv.convertTo(Type.STRING);
-				//if (rtype == Type.UNTYPED_ATOMIC)
-					//rv = rv.convertTo(Type.STRING);
-				//If one of the atomic values is an instance of xdt:untypedAtomic
-				//and the other is not an instance of xs:string, xdt:untypedAtomic, or any numeric type,
-				//then the xdt:untypedAtomic value is cast to the dynamic type of the other value.
-			} else
-				lv = lv.convertTo(rtype);
+			//If the atomized operand is of type xs:untypedAtomic, it is cast to xs:string.
+			lv = lv.convertTo(Type.STRING);
 		} 
 		if (rtype == Type.UNTYPED_ATOMIC) {
-			//If one of the atomic values is an instance of xdt:untypedAtomic
-			//and the other is an instance of a numeric type,
-			//then the xdt:untypedAtomic value is cast to the type xs:double.
-			if (Type.subTypeOf(ltype, Type.NUMBER)) {
-			    //if(isEmptyString(lv))
-			    //    return false;
-				rv = rv.convertTo(Type.DOUBLE);
-			//If one of the atomic values is an instance of xdt:untypedAtomic
-			//and the other is an instance of xdt:untypedAtomic or xs:string,
-			//then the xdt:untypedAtomic value (or values) is (are) cast to the type xs:string.
-			} else if (ltype == Type.UNTYPED_ATOMIC || ltype == Type.STRING) {
-				rv = rv.convertTo(Type.STRING);
-				//if (ltype == Type.UNTYPED_ATOMIC)
-				//	lv = lv.convertTo(Type.STRING);
-			//If one of the atomic values is an instance of xdt:untypedAtomic
-			//and the other is not an instance of xs:string, xdt:untypedAtomic, or any numeric type,
-			//then the xdt:untypedAtomic value is cast to the dynamic type of the other value.
-			} else
-				rv = rv.convertTo(ltype);
+			//If the atomized operand is of type xs:untypedAtomic, it is cast to xs:string.
+			rv = rv.convertTo(Type.STRING);
 		}
-		/*
-		if (backwardsCompatible) {
-			if (!"".equals(lv.getStringValue()) && !"".equals(rv.getStringValue())) {
-				// in XPath 1.0 compatible mode, if one of the operands is a number, cast
-				// both operands to xs:double
-				if (Type.subTypeOf(ltype, Type.NUMBER)
-					|| Type.subTypeOf(rtype, Type.NUMBER)) {
-						lv = lv.convertTo(Type.DOUBLE);
-						rv = rv.convertTo(Type.DOUBLE);
-				}
+		ltype = lv.getType();
+		rtype = rv.getType();
+		int ctype = Type.getCommonSuperType(ltype, rtype);
+		//Next, if possible, the two operands are converted to their least common type 
+		//by a combination of type promotion and subtype substitution.
+		if (ctype == Type.NUMBER) {
+			//Numeric type promotion:
+
+			//A value of type xs:decimal (or any type derived by restriction from xs:decimal) 
+			//can be promoted to either of the types xs:float or xs:double. The result of this promotion is created by casting the original value to the required type. This kind of promotion may cause loss of precision.
+			if (ltype == Type.DECIMAL) {
+				if (rtype == Type.FLOAT)
+					lv = lv.convertTo(Type.FLOAT);
+				else if (rtype == Type.DOUBLE)
+					lv = lv.convertTo(Type.DOUBLE);				
+			} else if (rtype == Type.DECIMAL) {
+				if (ltype == Type.FLOAT)
+					rv = rv.convertTo(Type.FLOAT);
+				else if (ltype == Type.DOUBLE)
+					rv = rv.convertTo(Type.DOUBLE);				
+			} else {
+				//A value of type xs:float (or any type derived by restriction from xs:float) 
+				//can be promoted to the type xs:double. 
+				//The result is the xs:double value that is the same as the original value.
+				if (ltype == Type.FLOAT && rtype == Type.DOUBLE)
+					lv = lv.convertTo(Type.DOUBLE);
+				if (rtype == Type.FLOAT && ltype == Type.DOUBLE)
+					rv = rv.convertTo(Type.DOUBLE);
 			}
+		} else {
+			lv = lv.convertTo(ctype);
+			rv = rv.convertTo(ctype);
 		}
-		*/
-        // if truncation is set, we always do a string comparison
+
+		// if truncation is set, we always do a string comparison
         if (truncation != Constants.TRUNC_NONE) {
         	//TODO : log this ?
             lv = lv.convertTo(Type.STRING);
         }
-//			System.out.println(
-//				lv.getStringValue() + Constants.OPS[relation] + rv.getStringValue());
 		switch(truncation) {
 			case Constants.TRUNC_RIGHT:
 				return lv.startsWith(collator, rv);
