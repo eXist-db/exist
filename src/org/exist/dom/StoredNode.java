@@ -43,8 +43,8 @@ import javax.xml.stream.XMLStreamException;
  */
 public class StoredNode extends NodeImpl implements Visitable {
 	
-	public final static int LENGTH_SIGNATURE_LENGTH = 1; //sizeof byte
-	public final static long UNKNOWN_NODE_IMPL_ADDRESS = -1;
+    public final static int LENGTH_SIGNATURE_LENGTH = 1; //sizeof byte
+    public final static long UNKNOWN_NODE_IMPL_ADDRESS = -1;
 	
     protected NodeId nodeId = null;
 
@@ -53,12 +53,23 @@ public class StoredNode extends NodeImpl implements Visitable {
     private long internalAddress = UNKNOWN_NODE_IMPL_ADDRESS;
     private long oldInternalAddress = UNKNOWN_NODE_IMPL_ADDRESS;
     
-	private short nodeType = NodeProxy.UNKNOWN_NODE_TYPE;
+    private short nodeType = NodeProxy.UNKNOWN_NODE_TYPE;
     
-	public StoredNode(short nodeType) {
+    /**
+     * Creates a new <code>StoredNode</code> instance.
+     *
+     * @param nodeType a <code>short</code> value
+     */
+    public StoredNode(short nodeType) {
         this.nodeType = nodeType;
-	}
+    }
 
+    /**
+     * Creates a new <code>StoredNode</code> instance.
+     *
+     * @param nodeType a <code>short</code> value
+     * @param nodeId a <code>NodeId</code> value
+     */
     public StoredNode(short nodeType, NodeId nodeId) {
         this.nodeType = nodeType;
         this.nodeId = nodeId;
@@ -66,8 +77,8 @@ public class StoredNode extends NodeImpl implements Visitable {
 
     /**
      * Copy constructor: creates a copy of the other node.
-     * 
-     * @param other
+     *
+     * @param other a <code>StoredNode</code> value
      */
     public StoredNode(StoredNode other) {
         this.nodeType = other.nodeType;
@@ -77,6 +88,11 @@ public class StoredNode extends NodeImpl implements Visitable {
         this.ownerDocument = other.ownerDocument;        
     }
     
+    /**
+     * Creates a new <code>StoredNode</code> instance.
+     *
+     * @param other a <code>NodeProxy</code> value
+     */
     public StoredNode(NodeProxy other) {
     	this.ownerDocument = other.getDocument();
     	this.nodeType = other.getNodeType();
@@ -182,10 +198,20 @@ public class StoredNode extends NodeImpl implements Visitable {
 		return ownerDocument.getBroker();
 	}
 
+    /**
+     * The method <code>setNodeId</code>
+     *
+     * @param dln a <code>NodeId</code> value
+     */
     public void setNodeId(NodeId dln) {
         this.nodeId = dln;
     }
     
+    /**
+     * The method <code>getNodeId</code>
+     *
+     * @return a <code>NodeId</code> value
+     */
     public NodeId getNodeId() {
         return nodeId;
     }
