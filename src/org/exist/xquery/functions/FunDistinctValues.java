@@ -31,6 +31,7 @@ import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
+import org.exist.xquery.ValueComparison;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
@@ -155,7 +156,15 @@ public class FunDistinctValues extends CollatingFunction {
 		 */
 		public int compare(Object o1, Object o2) {
 			try {
-				return ((AtomicValue) o1).compareTo(collator, (AtomicValue) o2);
+				if (ValueComparison.compareAtomic(collator, (AtomicValue) o1, (AtomicValue) o2, Constants.TRUNC_NONE, Constants.EQ))
+					return Constants.EQUAL;
+				else if (ValueComparison.compareAtomic(collator, (AtomicValue) o1, (AtomicValue) o2, Constants.TRUNC_NONE, Constants.LT))
+					return Constants.INFERIOR;
+				else if (ValueComparison.compareAtomic(collator, (AtomicValue) o1, (AtomicValue) o2, Constants.TRUNC_NONE, Constants.GT))
+					return Constants.SUPERIOR;
+				//Fallback
+				else
+					return ((AtomicValue) o1).compareTo(collator, (AtomicValue) o2);
 			} catch (XPathException e) {
 				//throw new IllegalArgumentException("cannot compare values");
                 //Values that cannot be compared, i.e. the eq operator is not defined for their types, are considered to be distinct

@@ -120,7 +120,7 @@ public class ValueComparison extends GeneralComparison {
 	 */
 	public static boolean compareAtomic(Collator collator, AtomicValue lv, AtomicValue rv, int truncation, int relation) throws XPathException {
 		
-		//TODo : refactor casting according to the specs ; right now, copied from GeneralComparison		
+		//TODO : refactor casting according to the specs ; right now, copied from GeneralComparison		
 		
 		int ltype = lv.getType();
 		int rtype = rv.getType();
