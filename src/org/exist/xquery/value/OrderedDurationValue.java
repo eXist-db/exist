@@ -18,7 +18,21 @@ abstract class OrderedDurationValue extends DurationValue {
 	}
 
 	public boolean compareTo(Collator collator, int operator, AtomicValue other) throws XPathException {
-		int r = compareTo(collator, other);
+		int r = compareTo(collator, other);	
+		if (operator != Constants.EQ && operator != Constants.NEQ){
+			if (getType() == Type.DURATION)
+				throw new XPathException(
+						"XPTY0004: cannot compare unordered " + Type.getTypeName(getType()) + " to "
+						+ Type.getTypeName(other.getType()));
+			if (other.getType()== Type.DURATION) 
+				throw new XPathException(
+					"XPTY0004: cannot compare " + Type.getTypeName(getType()) + " to unordered "
+					+ Type.getTypeName(other.getType()));
+			if (Type.getCommonSuperType(getType(), other.getType()) == Type.DURATION) 
+				throw new XPathException(
+					"XPTY0004: cannot compare " + Type.getTypeName(getType()) + " to "
+					+ Type.getTypeName(other.getType()));
+		}
 		switch (operator) {
 			case Constants.EQ :
 				return r == DatatypeConstants.EQUAL;
@@ -38,7 +52,7 @@ abstract class OrderedDurationValue extends DurationValue {
 	}
 
 	public int compareTo(Collator collator, AtomicValue other) throws XPathException {
-		if (Type.subTypeOf(Type.getCommonSuperType(getType(), other.getType()), Type.DURATION)) {
+		if (Type.subTypeOf(other.getType(), Type.DURATION)) {
 			//Take care : this method doesn't seem to take ms into account 
 			int r = duration.compare(((DurationValue) other).duration);
 			if (r == DatatypeConstants.INDETERMINATE) throw new RuntimeException("indeterminate order between totally ordered duration values " + this + " and " + other);
