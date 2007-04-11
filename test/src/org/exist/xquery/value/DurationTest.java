@@ -96,6 +96,39 @@ public class DurationTest extends AbstractTimeRelatedTestCase {
 			fail();
 		}
 	}
+	
+	public void testCompareSucceeds4() throws XPathException {
+		try {
+			DurationValue dv1 = new YearMonthDurationValue("P1Y"), dv2 = new DayTimeDurationValue("P1D");
+			assertFalse(dv1.compareTo(null, Constants.EQ, dv2));
+		} catch (XPathException e) {
+			fail();
+		}			
+	}
+	public void testCompareFail6() throws XPathException {
+		try {
+			DurationValue dv2 = new YearMonthDurationValue("P1Y"), dv1 = new DayTimeDurationValue("P1D");
+			assertFalse(dv1.compareTo(null, Constants.EQ, dv2));			
+		} catch (XPathException e) {
+			fail();
+		}
+	}
+	public void testCompareFail7() throws XPathException {
+		try {
+			DurationValue dv2 = new DurationValue("P1Y2M3DT4H5M6S"), dv1 = new DayTimeDurationValue("P1D");
+			assertFalse(dv1.compareTo(null, Constants.EQ, dv2));			
+		} catch (XPathException e) {
+			fail();
+		}
+	}
+	public void testCompareFail8() throws XPathException {
+		try {
+			DurationValue dv2 = new DurationValue("P1Y2M3DT4H5M6S"), dv1 = new YearMonthDurationValue("P1Y");
+			assertFalse(dv1.compareTo(null, Constants.EQ, dv2));			
+		} catch (XPathException e) {
+			fail();
+		}
+	}	
 
 	public void testCompareFail1() throws XPathException {
 		try {
@@ -107,42 +140,6 @@ public class DurationTest extends AbstractTimeRelatedTestCase {
 		}
 	}	
 
-	public void testCompareFail5() throws XPathException {
-		try {
-			DurationValue dv1 = new YearMonthDurationValue("P1Y"), dv2 = new DayTimeDurationValue("P1D");
-			dv1.compareTo(null, Constants.EQ, dv2);
-			fail();
-		} catch (XPathException e) {
-			// expected
-		}
-	}
-	public void testCompareFail6() throws XPathException {
-		try {
-			DurationValue dv2 = new YearMonthDurationValue("P1Y"), dv1 = new DayTimeDurationValue("P1D");
-			dv1.compareTo(null, Constants.EQ, dv2);
-			fail();
-		} catch (XPathException e) {
-			// expected
-		}
-	}
-	public void testCompareFail7() throws XPathException {
-		try {
-			DurationValue dv2 = new DurationValue("P1Y2M3DT4H5M6S"), dv1 = new DayTimeDurationValue("P1D");
-			dv1.compareTo(null, Constants.EQ, dv2);
-			fail();
-		} catch (XPathException e) {
-			// expected
-		}
-	}
-	public void testCompareFail8() throws XPathException {
-		try {
-			DurationValue dv2 = new DurationValue("P1Y2M3DT4H5M6S"), dv1 = new YearMonthDurationValue("P1Y");
-			dv1.compareTo(null, Constants.EQ, dv2);
-			fail();
-		} catch (XPathException e) {
-			// expected
-		}
-	}
 	public void testMinMaxFail() throws XPathException {
 		DurationValue dv1 = new DayTimeDurationValue("P1DT2H3M4S");
 		DurationValue dv2 = new YearMonthDurationValue("P1Y3M");
