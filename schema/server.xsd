@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Schema for eXist Server Configuration file server.xml
+-->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:simpleType name="yes_no">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="yes"/>
+            <xs:enumeration value="no"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:attributeGroup name="service">
+        <xs:attribute name="enabled" type="yes_no" default="yes"/>
+        <xs:attribute name="context" type="xs:string"/>
+    </xs:attributeGroup>
+    <xs:complexType name="service">
+        <xs:sequence>
+            <xs:element name="param" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:attribute name="name" type="xs:string"/>
+                    <xs:attribute name="value" type="xs:string"/>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attributeGroup ref="service"/>
+    </xs:complexType>
+    <xs:element name="server">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="webdav" type="service"/>
+                <xs:element name="xmlrpc" type="service"/>
+                <xs:element name="rest" type="service"/>
+                <xs:element name="servlet" minOccurs="0" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:attributeGroup ref="service"/>
+                        <xs:attribute name="class" type="xs:string"/>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="forwarding">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="root" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:attribute name="destination" type="xs:string"/>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="forward" minOccurs="0" maxOccurs="unbounded">
+                                <xs:complexType>
+                                    <xs:attribute name="path" type="xs:string"/>
+                                    <xs:attribute name="destination" type="xs:string"/>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute name="port" type="xs:integer" default="8088"/>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
