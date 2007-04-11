@@ -1,21 +1,22 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2000-04,  Wolfgang M. Meier (wolfgang@exist-db.org)
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2007 The eXist team
+ * http://exist-db.org
  *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Library General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
  *  $Id$
  */
 package org.exist.xquery;
@@ -74,10 +75,23 @@ public class LocationStep extends Step {
     // Cache for the current NodeTest type
     private Integer nodeTestType = null;
 
+    /**
+     * Creates a new <code>LocationStep</code> instance.
+     *
+     * @param context a <code>XQueryContext</code> value
+     * @param axis an <code>int</code> value
+     */
     public LocationStep(XQueryContext context, int axis) {
         super(context, axis);
     }
 
+    /**
+     * Creates a new <code>LocationStep</code> instance.
+     *
+     * @param context a <code>XQueryContext</code> value
+     * @param axis an <code>int</code> value
+     * @param test a <code>NodeTest</code> value
+     */
     public LocationStep(XQueryContext context, int axis, NodeTest test) {
         super(context, axis, test);
     }
@@ -119,15 +133,34 @@ public class LocationStep extends Step {
         return false;
     }
 
+    /**
+     * The method <code>setPreloadNodeSets</code>
+     *
+     * @param doPreload a <code>boolean</code> value
+     */
     public void setPreloadNodeSets(boolean doPreload) {
         this.preload = doPreload;
     }
 
+    /**
+     * The method <code>setPreloadedData</code>
+     *
+     * @param docs a <code>DocumentSet</code> value
+     * @param nodes a <code>NodeSet</code> value
+     */
     public void setPreloadedData(DocumentSet docs, NodeSet nodes) {
         this.currentDocs = docs;
         this.currentSet = nodes;
     }
     
+    /**
+     * The method <code>applyPredicate</code>
+     *
+     * @param outerSequence a <code>Sequence</code> value
+     * @param contextSequence a <code>Sequence</code> value
+     * @return a <code>Sequence</code> value
+     * @exception XPathException if an error occurs
+     */
     protected Sequence applyPredicate(Sequence outerSequence,
             Sequence contextSequence) throws XPathException {
         if (contextSequence == null)
@@ -173,6 +206,14 @@ public class LocationStep extends Step {
         super.analyze(contextInfo);
     }
 
+    /**
+     * The method <code>eval</code>
+     *
+     * @param contextSequence a <code>Sequence</code> value
+     * @param contextItem an <code>Item</code> value
+     * @return a <code>Sequence</code> value
+     * @exception XPathException if an error occurs
+     */
     public Sequence eval(Sequence contextSequence, Item contextItem)
             throws XPathException {
         if (context.getProfiler().isEnabled()) {
@@ -224,7 +265,7 @@ public class LocationStep extends Step {
                 case Constants.CHILD_AXIS:
                 	//VirtualNodeSets may have modified the axis ; checking the type
                 	//TODO : futher checks ?
-                	if (this.test.getType() == 2) {
+                	if (this.test.getType() == Type.ATTRIBUTE) {
                 		this.axis = Constants.ATTRIBUTE_AXIS;
                 		result = getAttributes(context, contextSequence.toNodeSet());
                 	} else
@@ -236,7 +277,7 @@ public class LocationStep extends Step {
                     break;
                 case Constants.PARENT_AXIS:
                     result = getParents(context, contextSequence.toNodeSet());
-                    break;
+		    break;
                 case Constants.SELF_AXIS:
                     if (!(contextSequence instanceof VirtualNodeSet)
                             && Type.subTypeOf(contextSequence.getItemType(),
@@ -263,8 +304,9 @@ public class LocationStep extends Step {
                     throw new IllegalArgumentException(
                             "Unsupported axis specified");
             }
-        } else
+        } else {
             result = NodeSet.EMPTY_SET;
+	}
 
         // Caches the result
         if (contextSequence instanceof NodeSet) {
@@ -307,9 +349,11 @@ public class LocationStep extends Step {
     }
 
     /**
-     * @param context
-     * @param contextSet
-     * @return
+     * The method <code>getSelf</code>
+     *
+     * @param context a <code>XQueryContext</code> value
+     * @param contextSet a <code>NodeSet</code> value
+     * @return a <code>Sequence</code> value
      */
     protected Sequence getSelf(XQueryContext context, NodeSet contextSet) {
         if (test.isWildcardTest()) {
@@ -322,7 +366,7 @@ public class LocationStep extends Step {
                         ((VirtualNodeSet) contextSet).setSelfIsContext();
                         ((VirtualNodeSet) contextSet).setContextId(contextId);
                     } else if (Type.subTypeOf(contextSet.getItemType(),
-                            Type.NODE)) {
+					      Type.NODE)) {
                         NodeProxy p;
                         for (Iterator i = contextSet.iterator(); i.hasNext();) {
                             p = (NodeProxy) i.next();
@@ -332,6 +376,7 @@ public class LocationStep extends Step {
                     }
                 }
                 return contextSet;
+
             } else {
                 VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId,
                         contextSet);
@@ -351,6 +396,13 @@ public class LocationStep extends Step {
         }
     }
 
+    /**
+     * The method <code>getSelfAtomic</code>
+     *
+     * @param contextSequence a <code>Sequence</code> value
+     * @return a <code>Sequence</code> value
+     * @exception XPathException if an error occurs
+     */
     protected Sequence getSelfAtomic(Sequence contextSequence)
             throws XPathException {
         if (!test.isWildcardTest())
@@ -359,6 +411,13 @@ public class LocationStep extends Step {
         return contextSequence;
     }
 
+    /**
+     * The method <code>getAttributes</code>
+     *
+     * @param context a <code>XQueryContext</code> value
+     * @param contextSet a <code>NodeSet</code> value
+     * @return a <code>NodeSet</code> value
+     */
     protected NodeSet getAttributes(XQueryContext context, NodeSet contextSet) {
         if (test.isWildcardTest()) {
             NodeSet result = new VirtualNodeSet(axis, test, contextId,
@@ -444,6 +503,13 @@ public class LocationStep extends Step {
         }
     }
 
+    /**
+     * The method <code>getChildren</code>
+     *
+     * @param context a <code>XQueryContext</code> value
+     * @param contextSet a <code>NodeSet</code> value
+     * @return a <code>NodeSet</code> value
+     */
     protected NodeSet getChildren(XQueryContext context, NodeSet contextSet) {
         if (test.isWildcardTest()) {
             // test is one out of *, text(), node()
@@ -488,6 +554,13 @@ public class LocationStep extends Step {
         }
     }
 
+    /**
+     * The method <code>getDescendants</code>
+     *
+     * @param context a <code>XQueryContext</code> value
+     * @param contextSet a <code>NodeSet</code> value
+     * @return a <code>NodeSet</code> value
+     */
     protected NodeSet getDescendants(XQueryContext context, NodeSet contextSet) {
         if (test.isWildcardTest()) {
             // test is one out of *, text(), node()
@@ -549,6 +622,13 @@ public class LocationStep extends Step {
         }
     }
 
+    /**
+     * The method <code>getSiblings</code>
+     *
+     * @param context a <code>XQueryContext</code> value
+     * @param contextSet a <code>NodeSet</code> value
+     * @return a <code>NodeSet</code> value
+     */
     protected NodeSet getSiblings(XQueryContext context, NodeSet contextSet) {
         if (test.isWildcardTest()) {
             ExtArrayNodeSet result = new ExtArrayNodeSet(contextSet.getLength());
@@ -626,6 +706,14 @@ public class LocationStep extends Step {
     	}
     }
 
+    /**
+     * The method <code>getPreceding</code>
+     *
+     * @param context a <code>XQueryContext</code> value
+     * @param contextSet a <code>NodeSet</code> value
+     * @return a <code>NodeSet</code> value
+     * @exception XPathException if an error occurs
+     */
     protected NodeSet getPreceding(XQueryContext context, NodeSet contextSet)
             throws XPathException {
         if (test.isWildcardTest()) {
@@ -649,6 +737,14 @@ public class LocationStep extends Step {
         }
     }
 
+    /**
+     * The method <code>getFollowing</code>
+     *
+     * @param context a <code>XQueryContext</code> value
+     * @param contextSet a <code>NodeSet</code> value
+     * @return a <code>NodeSet</code> value
+     * @exception XPathException if an error occurs
+     */
     protected NodeSet getFollowing(XQueryContext context, NodeSet contextSet)
             throws XPathException {
         if (test.isWildcardTest()) {
@@ -672,6 +768,13 @@ public class LocationStep extends Step {
         }
     }
 
+    /**
+     * The method <code>getAncestors</code>
+     *
+     * @param context a <code>XQueryContext</code> value
+     * @param contextSet a <code>NodeSet</code> value
+     * @return a <code>NodeSet</code> value
+     */
     protected NodeSet getAncestors(XQueryContext context, NodeSet contextSet) {
         if (test.isWildcardTest()) {
             NodeSet result = new ExtArrayNodeSet();
@@ -765,6 +868,13 @@ public class LocationStep extends Step {
         }
     }
 
+    /**
+     * The method <code>getParents</code>
+     *
+     * @param context a <code>XQueryContext</code> value
+     * @param contextSet a <code>NodeSet</code> value
+     * @return a <code>NodeSet</code> value
+     */
     protected NodeSet getParents(XQueryContext context, NodeSet contextSet) {
         if (test.isWildcardTest()) {
             NodeSet temp = contextSet.getParents(contextId);
@@ -772,8 +882,11 @@ public class LocationStep extends Step {
             NodeProxy p;
             for (Iterator i = temp.iterator(); i.hasNext(); ) {
                 p = (NodeProxy) i.next();
-                if (test.matches(p))
+                if (test.matches(p) && !(p.getNodeId().getParentId() == NodeId.DOCUMENT_NODE && test.getType() == Type.ELEMENT)) {
+		    // For NodeId.DOCUMENT_NODE add only if  
+		    // parent::node() not parent::element().  		
                    result.add(p);
+		}
             }
             return result;
         } else if (preloadNodeSets()) {
@@ -804,6 +917,12 @@ public class LocationStep extends Step {
         }
     }
 
+    /**
+     * The method <code>getDocumentSet</code>
+     *
+     * @param contextSet a <code>NodeSet</code> value
+     * @return a <code>DocumentSet</code> value
+     */
     protected DocumentSet getDocumentSet(NodeSet contextSet) {
         DocumentSet ds = getContextDocSet();
         if (ds == null)
@@ -811,14 +930,28 @@ public class LocationStep extends Step {
         return ds;
     }
 
+    /**
+     * The method <code>getParent</code>
+     *
+     * @return an <code>Expression</code> value
+     */
     public Expression getParent() {
         return this.parent;
     }
     
+    /**
+     * The method <code>setUseDirectAttrSelect</code>
+     *
+     * @param useDirectAttrSelect a <code>boolean</code> value
+     */
     public void setUseDirectAttrSelect(boolean useDirectAttrSelect) {
         this.useDirectAttrSelect = useDirectAttrSelect;
     }
 
+    /**
+     * The method <code>registerUpdateListener</code>
+     *
+     */
     protected void registerUpdateListener() {
         if (listener == null) {
             listener = new UpdateListener() {
@@ -858,6 +991,11 @@ public class LocationStep extends Step {
         }
     }
 
+    /**
+     * The method <code>accept</code>
+     *
+     * @param visitor an <code>ExpressionVisitor</code> value
+     */
     public void accept(ExpressionVisitor visitor) {
         visitor.visitLocationStep(this);
     }

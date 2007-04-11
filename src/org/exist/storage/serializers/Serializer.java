@@ -694,16 +694,17 @@ public abstract class Serializer implements XMLReader {
 	}
 	
 	public void toSAX(NodeProxy p) throws SAXException {
-        try {
-            setStylesheetFromProperties(p.getOwnerDocument());
-        } catch (TransformerConfigurationException e) {
-            throw new SAXException(e.getMessage(), e);
-        }
-        setXSLHandler();
-		if (p.getNodeId() == NodeId.DOCUMENT_NODE)
-			serializeToReceiver(p.getDocument(), getProperty(GENERATE_DOC_EVENTS, "false").equals("true"));
-		else
-			serializeToReceiver(p, getProperty(GENERATE_DOC_EVENTS, "false").equals("true"));
+	    try {
+		setStylesheetFromProperties(p.getOwnerDocument());
+	    } catch (TransformerConfigurationException e) {
+		throw new SAXException(e.getMessage(), e);
+	    }
+	    setXSLHandler();
+	    if (p.getNodeId() == NodeId.DOCUMENT_NODE) {
+		serializeToReceiver(p.getDocument(), getProperty(GENERATE_DOC_EVENTS, "false").equals("true"));
+	    } else {
+		serializeToReceiver(p, getProperty(GENERATE_DOC_EVENTS, "false").equals("true"));
+	    }
 	}
 
 	/**
