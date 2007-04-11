@@ -31,8 +31,8 @@ import org.exist.xquery.Constants;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.GeneralComparison;
 import org.exist.xquery.Profiler;
+import org.exist.xquery.ValueComparison;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
@@ -125,13 +125,15 @@ public class FunDeepEqual extends CollatingFunction {
 			if (aAtomic || bAtomic) {
 				if (!aAtomic || !bAtomic) return false;
 				try {
-					if (Type.subTypeOf(((AtomicValue) a).getType(), Type.NUMBER) && Type.subTypeOf(((AtomicValue) b).getType(), Type.NUMBER)) {
+					AtomicValue av = (AtomicValue) a;
+					AtomicValue bv = (AtomicValue) b;
+					if (Type.subTypeOf(av.getType(), Type.NUMBER) && Type.subTypeOf(bv.getType(), Type.NUMBER)) {
 						//or if both values are NaN
 						if (((NumericValue)a).isNaN() && ((NumericValue)b).isNaN())
 							return true;
 					}
-					return GeneralComparison.compareValues(
-						collator, (AtomicValue) a, (AtomicValue) b, Constants.TRUNC_NONE, Constants.EQ);
+					return ValueComparison.compareAtomic(
+						collator, av, bv, Constants.TRUNC_NONE, Constants.EQ);
 				} catch (XPathException e) {
 					return false;
 				}
