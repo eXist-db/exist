@@ -96,6 +96,9 @@ public class CastableExpression extends AbstractExpression {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
         }
         
+        if (requiredType == Type.ATOMIC)
+            throw new XPathException(getASTNode(), "XPST0080: cannot convert to " + Type.getTypeName(Type.ATOMIC));
+        
         Sequence result;
         //See : http://article.gmane.org/gmane.text.xml.xquery.general/1413
         //... for the rationale
