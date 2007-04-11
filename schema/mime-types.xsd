@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Schema for eXist Mime Type Configuration file mime-types.xml
+-->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="mime-types">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="mime-type">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="description" type="xs:string"/>
+                            <xs:element name="extensions" type="xs:string"/>
+                        </xs:sequence>
+                        <xs:attribute name="name" type="xs:string"/>
+                        <xs:attribute name="type">
+                            <xs:simpleType>
+                                <xs:restriction base="xs:string">
+                                    <xs:enumeration value="binary"/>
+                                    <xs:enumeration value="xml"/>
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:attribute>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
