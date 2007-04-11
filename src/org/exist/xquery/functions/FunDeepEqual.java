@@ -131,8 +131,7 @@ public class FunDeepEqual extends CollatingFunction {
 							return true;
 					}
 					return GeneralComparison.compareAtomic(
-						collator, (AtomicValue) a, (AtomicValue) b, 
-						context.isBackwardsCompatible(), Constants.TRUNC_NONE, Constants.EQ);
+						collator, (AtomicValue) a, (AtomicValue) b, Constants.TRUNC_NONE, Constants.EQ);
 				} catch (XPathException e) {
 					return false;
 				}

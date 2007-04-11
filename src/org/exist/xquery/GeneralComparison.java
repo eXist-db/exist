@@ -664,7 +664,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
 	 */
 	protected boolean compareValues(Collator collator, AtomicValue lv, AtomicValue rv) throws XPathException {
 		try {
-			return compareAtomic(collator, lv, rv, context.isBackwardsCompatible(), truncation, relation);
+			return compareAtomic(collator, lv, rv, truncation, relation);
 		} catch (XPathException e) {
 			e.setASTNode(getASTNode());
 			throw e;
@@ -672,7 +672,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
 	}
 
     public static boolean compareAtomic(Collator collator, AtomicValue lv, AtomicValue rv,
-            boolean backwardsCompatible, int truncation, int relation) throws XPathException{
+            int truncation, int relation) throws XPathException{
 		int ltype = lv.getType();
 		int rtype = rv.getType();
 		if (ltype == Type.UNTYPED_ATOMIC) {
