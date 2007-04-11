@@ -1510,7 +1510,7 @@ public class XQueryTest extends XMLTestCase {
 	{
 		System.out.println("testUserEscalationForInMemoryNodes 1: ========" );
 		 
-		String query = "xmldb:login(\"xmldb:exist:///db\", \"guest\", \"guest\"), xmldb:get-current-user(), let $node := <node id=\"1\">value</node>, $null := $node[@id eq 1] return xmldb:get-current-user()";
+		String query = "xmldb:login(\"xmldb:exist:///db\", \"guest\", \"guest\"), xmldb:get-current-user(), let $node := <node id=\"1\">value</node>, $null := $node[@id eq '1'] return xmldb:get-current-user()";
 
 		try
 		 {
