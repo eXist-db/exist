@@ -4,7 +4,7 @@
     Schema for eXist WebApp Descriptor Configuration file descriptor.xml
 -->
 
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0">
     <xs:element name="xquery-app">
         <xs:complexType>
             <xs:sequence>
