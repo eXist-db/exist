@@ -8,13 +8,19 @@
     <xs:element name="mime-types">
         <xs:complexType>
             <xs:sequence>
-                <xs:element name="mime-type">
+                <xs:element name="mime-type" maxOccurs="unbounded">
                     <xs:complexType>
                         <xs:sequence>
                             <xs:element name="description" type="xs:string"/>
                             <xs:element name="extensions" type="xs:string"/>
                         </xs:sequence>
-                        <xs:attribute name="name" type="xs:string"/>
+                        <xs:attribute name="name">
+                            <xs:simpleType>
+                                <xs:restriction base="xs:string">
+                                    <xs:pattern value="[a-z0-9]+\/[a-z0-9\.\-]+([\+][a-z0-9]+)?"/>
+                                </xs:restriction>
+                            </xs:simpleType>
+                        </xs:attribute>
                         <xs:attribute name="type">
                             <xs:simpleType>
                                 <xs:restriction base="xs:string">
