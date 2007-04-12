@@ -10,3 +10,8 @@ declare function echo:echoWithDate($value as xs:string) as xs:string
 {
     concat(current-dateTime(), ": ", $value)
 };
+
+declare function echo:echoConcat($value1 as xs:string, $value2 as xs:string) as xs:string
+{
+    concat($value1, $value2)
+};
