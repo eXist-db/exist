@@ -362,7 +362,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	    }
 	    if (parentID == NodeId.DOCUMENT_NODE) {
 		// fixme! slå ihop med ovanstående. /ljo
-		System.out.println("AbstractNodeSet::getParents() NodeId.DOCUMENT_NODE : type " + current.getNodeId());
+		//System.out.println("AbstractNodeSet::getParents() NodeId.DOCUMENT_NODE : type " + current.getNodeId());
 		parents.add(current);
 	    }
 	}
