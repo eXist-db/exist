@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!-- 
-    Schema for eXist Collection Configuration files collection.xconf
+    Schema for eXist Collection Configuration files /db/system/config/db/**/collection.xconf
     
     TODO: Remove optional attributes in favour of well defined/named parent elements
 -->
