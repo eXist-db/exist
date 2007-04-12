@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- 
+    Schema for eXist Users Authentication file /db/system/users.xml
+-->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0">
+    <xs:attribute name="last-id" type="xs:integer"/>
+    <xs:element name="auth">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="groups">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="group" minOccurs="2" maxOccurs="unbounded">
+                                <xs:annotation>
+                                    <xs:documentation>Must be at least guest and dba groups, hence minOccurs=2</xs:documentation>
+                                </xs:annotation>
+                                <xs:complexType>
+                                    <xs:attribute name="name" type="xs:string"/>
+                                    <xs:attribute name="id" type="xs:integer"/>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                        <xs:attribute ref="last-id"/>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="users">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="user" minOccurs="1" maxOccurs="unbounded">
+                                <xs:annotation>
+                                    <xs:documentation>Must contain the admin user at least, hence minOccurs=1</xs:documentation>
+                                </xs:annotation>
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="group" minOccurs="1" maxOccurs="unbounded" type="xs:string">
+                                            <xs:annotation>
+                                                <xs:documentation>Each user must be in at least one group, hence minOccurs=1</xs:documentation>
+                                            </xs:annotation>
+                                        </xs:element>
+                                    </xs:sequence>
+                                    <xs:attribute name="name" type="xs:string"/>
+                                    <xs:attribute name="uid" type="xs:integer"/>
+                                    <xs:attribute name="password" type="xs:string"/>
+                                    <xs:attribute name="digest-password" type="xs:string"/>
+                                    <xs:attribute name="home" type="xs:string"/>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                        <xs:attribute ref="last-id"/>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute name="version" type="xs:decimal" default="1.0"/>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
