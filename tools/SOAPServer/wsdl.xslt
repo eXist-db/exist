@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
-
+    
     NOTE - XSLT Processor dependency 
-        
-        Xalan and Saxon <8.2 uses distinct() from EXSLT
-        Saxon 8.2+ uses distinct-values() from XSLT 2.0
+    
+    Xalan and Saxon <8.2 uses distinct() from EXSLT
+    Saxon 8.2+ uses distinct-values() from XSLT 2.0
     
     We default to Xalan here as that is the default eXist XSLT Processor
     
+    Version 20070412
+    
 -->
-
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:set="http://exslt.org/sets" version="2.0">
     <xsl:output method="xml" version="1.0" encoding="UTF-8" indent="yes" media-type="text/xml" omit-xml-declaration="no"/>
     <xsl:template match="/webservice">
@@ -18,7 +19,7 @@
         <definitions name="{$webserviceName}" targetNamespace="{$webserviceURL}">
             <types>
                 <xs:schema elementFormDefault="qualified" targetNamespace="{$webserviceURL}">
-                    <xsl:for-each select="set:distinct(functions/function/parameters/parameter[cardinality >= 4]/type)">
+                    <xsl:for-each select="set:distinct(functions/function/parameters/parameter[cardinality &gt;= 4]/type)">
                         <xs:complexType name="{concat('arrayOf', translate(., ':', '_'))}">
                             <xs:sequence>
                                 <xs:element minOccurs="0" maxOccurs="unbounded" name="{substring-after(., ':')}" nillable="true" type="{.}"/>
@@ -28,57 +29,98 @@
                     <xsl:for-each select="functions/function">
                         <xsl:variable name="funName" select="name" as="xs:string"/>
                         <xs:element name="{$funName}">
-                            <xsl:for-each select="parameters/parameter">
-                                <xsl:variable name="name"><xsl:choose><xsl:when test="name != ''"><xsl:value-of select="name"/></xsl:when><xsl:otherwise><xsl:value-of select="concat('arg', position())"></xsl:value-of></xsl:otherwise></xsl:choose></xsl:variable>
-                                <xsl:variable name="cardinality" select="cardinality"/>
-                                <xsl:variable name="type" select="type"/>
+                            <xsl:if test="parameters/parameter">
                                 <xs:complexType>
                                     <xs:sequence>
-                                        <xsl:choose>
-                                            <xsl:when test="$cardinality &lt; 3">
-                                                 <!-- ZERO, ONE  -->
-                                                <xs:element name="{$name}" type="{$type}"/>
-                                            </xsl:when>
-                                            <xsl:when test="$cardinality = 3">
-                                                <!-- ZERO_OR_ONE -->
-                                                <xs:element name="{$name}" type="{$type}" minOccurs="0" maxOccurs="1"/>
-                                            </xsl:when>
-                                            <xsl:when test="$cardinality = 4 or $cardinality = 6">
-                                                <!-- MANY, ONE_OR_MANY -->
-                                                <xs:element name="{$name}" type="tns:arrayOf{translate($type,':','_')}" minOccurs="1" maxOccurs="1"/>
-                                            </xsl:when>
-                                            <xsl:when test="$cardinality = 7">
-                                                <!-- ZERO_OR_MORE -->
-                                                <xs:element name="{$name}" type="tns:arrayOf{translate($type,':','_')}" minOccurs="0" maxOccurs="1"/>
-                                            </xsl:when>
-                                        </xsl:choose>
+                                        <xsl:for-each select="parameters/parameter">
+                                            <xsl:variable name="name">
+                                                <xsl:choose>
+                                                    <xsl:when test="name != ''">
+                                                        <xsl:value-of select="name"/>
+                                                    </xsl:when>
+                                                    <xsl:otherwise>
+                                                        <xsl:value-of select="concat('arg', position())"/>
+                                                    </xsl:otherwise>
+                                                </xsl:choose>
+                                            </xsl:variable>
+                                            <xsl:variable name="cardinality" select="cardinality"/>
+                                            <xsl:variable name="type">
+                                                <xsl:choose>
+                                                    <xsl:when test="type = 'item'">
+                                                        <xsl:value-of select="'xs:anyType'"/>
+                                                    </xsl:when>
+                                                    <xsl:when test="type = 'element'">
+                                                        <xsl:value-of select="'xs:anyType'"/>
+                                                    </xsl:when>
+                                                    <xsl:when test="type = 'node'">
+                                                        <xsl:value-of select="'xs:anyType'"/>
+                                                    </xsl:when>
+                                                    <xsl:otherwise>
+                                                        <xsl:value-of select="type"/>
+                                                    </xsl:otherwise>
+                                                </xsl:choose>
+                                            </xsl:variable>
+                                            <xsl:choose>
+                                                <xsl:when test="$cardinality &lt; 3">
+                                                    <!-- ZERO, ONE  -->
+                                                    <xs:element name="{$name}" type="{$type}"/>
+                                                </xsl:when>
+                                                <xsl:when test="$cardinality = 3">
+                                                    <!-- ZERO_OR_ONE -->
+                                                    <xs:element name="{$name}" type="{$type}" minOccurs="0" maxOccurs="1"/>
+                                                </xsl:when>
+                                                <xsl:when test="$cardinality = 4 or $cardinality = 6">
+                                                    <!-- MANY, ONE_OR_MANY -->
+                                                    <xs:element name="{$name}" type="tns:arrayOf{translate($type,':','_')}" minOccurs="1" maxOccurs="1"/>
+                                                </xsl:when>
+                                                <xsl:when test="$cardinality = 7">
+                                                    <!-- ZERO_OR_MORE -->
+                                                    <xs:element name="{$name}" type="tns:arrayOf{translate($type,':','_')}" minOccurs="0" maxOccurs="1"/>
+                                                </xsl:when>
+                                            </xsl:choose>
+                                        </xsl:for-each>
                                     </xs:sequence>
                                 </xs:complexType>
-                            </xsl:for-each>
+                            </xsl:if>
                         </xs:element>
                         <xs:element name="{concat($funName, 'Response')}">
                             <xs:complexType>
                                 <xs:sequence>
                                     <xsl:variable name="name" select="concat($funName, 'Result')"/>
                                     <xsl:variable name="cardinality" select="return/cardinality"/>
-                                    <xsl:variable name="type" select="return/type"/>
+                                    <xsl:variable name="type">
+                                        <xsl:choose>
+                                            <xsl:when test="return/type = 'item'">
+                                                <xsl:value-of select="'xs:anyType'"/>
+                                            </xsl:when>
+                                            <xsl:when test="return/type = 'element'">
+                                                <xsl:value-of select="'xs:anyType'"/>
+                                            </xsl:when>
+                                            <xsl:when test="return/type = 'node'">
+                                                <xsl:value-of select="'xs:anyType'"/>
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <xsl:value-of select="return/type"/>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
+                                    </xsl:variable>
                                     <xsl:choose>
-                                            <xsl:when test="$cardinality &lt; 3">
-                                                <!-- ZERO, ONE  -->
-                                                <xs:element name="{$name}" type="{$type}"/>
-                                            </xsl:when>
-                                            <xsl:when test="$cardinality = 3">
-                                                <!-- ZERO_OR_ONE -->
-                                                <xs:element name="{$name}" type="{$type}" minOccurs="0" maxOccurs="1"/>
-                                            </xsl:when>
-                                            <xsl:when test="$cardinality = 4 or $cardinality = 6">
-                                                <!-- MANY, ONE_OR_MANY -->
-                                                <xs:element name="{$name}" type="tns:arrayOf{translate($type,':','_')}" minOccurs="1" maxOccurs="1"/>
-                                            </xsl:when>
-                                            <xsl:when test="$cardinality = 7">
-                                                <!-- ZERO_OR_MORE -->
-                                                <xs:element name="{$name}" type="tns:arrayOf{translate($type,':','_')}" minOccurs="0" maxOccurs="1"/>
-                                            </xsl:when>
+                                        <xsl:when test="$cardinality &lt; 3">
+                                            <!-- ZERO, ONE  -->
+                                            <xs:element name="{$name}" type="{$type}"/>
+                                        </xsl:when>
+                                        <xsl:when test="$cardinality = 3">
+                                            <!-- ZERO_OR_ONE -->
+                                            <xs:element name="{$name}" type="{$type}" minOccurs="0" maxOccurs="1"/>
+                                        </xsl:when>
+                                        <xsl:when test="$cardinality = 4 or $cardinality = 6">
+                                            <!-- MANY, ONE_OR_MANY -->
+                                            <xs:element name="{$name}" type="tns:arrayOf{translate($type,':','_')}" minOccurs="1" maxOccurs="1"/>
+                                        </xsl:when>
+                                        <xsl:when test="$cardinality = 7">
+                                            <!-- ZERO_OR_MORE -->
+                                            <xs:element name="{$name}" type="tns:arrayOf{translate($type,':','_')}" minOccurs="0" maxOccurs="1"/>
+                                        </xsl:when>
                                     </xsl:choose>
                                 </xs:sequence>
                             </xs:complexType>
