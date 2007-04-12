@@ -360,8 +360,9 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		}
                 parents.add(parent);
 	    }
-	    if (parentID == NodeId.DOCUMENT_NODE) {
-		// fixme! slå ihop med ovanstående. /ljo
+	    if (parentID == NodeId.DOCUMENT_NODE &&
+		  !current.getDocument().getCollection().isTempCollection()) {
+		// fixme! merge with above? /ljo
 		//System.out.println("AbstractNodeSet::getParents() NodeId.DOCUMENT_NODE : type " + current.getNodeId());
 		parents.add(current);
 	    }
@@ -370,6 +371,13 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	return parents;
     }
 
+    /**
+     * The method <code>getAncestors</code>
+     *
+     * @param contextId an <code>int</code> value
+     * @param includeSelf a <code>boolean</code> value
+     * @return a <code>NodeSet</code> value
+     */
     public NodeSet getAncestors(int contextId, boolean includeSelf) {
 	ExtArrayNodeSet ancestors = new ExtArrayNodeSet();
 	for (Iterator i = iterator(); i.hasNext();) {
