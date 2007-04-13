@@ -8,7 +8,7 @@
     
     We default to Xalan here as that is the default eXist XSLT Processor
     
-    Version 20070412
+    Version 20070413
     
 -->
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:set="http://exslt.org/sets" version="2.0">
@@ -19,7 +19,8 @@
         <definitions name="{$webserviceName}" targetNamespace="{$webserviceURL}">
             <types>
                 <xs:schema elementFormDefault="qualified" targetNamespace="{$webserviceURL}">
-                    <xsl:for-each select="set:distinct(functions/function/parameters/parameter[cardinality &gt;= 4]/type)">
+                    <!-- creates array types for parameters and returns -->
+                    <xsl:for-each select="set:distinct(functions/function/parameters/parameter[cardinality &gt;= 4]/type | functions/function/return[cardinality &gt;= 4]/type)">
                         <xs:complexType name="{concat('arrayOf', translate(., ':', '_'))}">
                             <xs:sequence>
                                 <xs:element minOccurs="0" maxOccurs="unbounded" name="{substring-after(., ':')}" nillable="true" type="{.}"/>
