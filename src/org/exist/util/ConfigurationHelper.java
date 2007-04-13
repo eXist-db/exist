@@ -15,6 +15,7 @@ public class ConfigurationHelper {
      * Order of tests is designed with the idea, the more precise it is,
      * the more the developper know what he is doing
      * <ol>
+     *   <li>Brokerpool      : if eXist was already configured.
      *   <li>exist.home      : if exists
      *   <li>user.home       : if exists, with a conf.xml file
      *   <li>user.dir        : if exists, with a conf.xml file
@@ -32,9 +33,12 @@ public class ConfigurationHelper {
     		BrokerPool broker = BrokerPool.getInstance();
     		if(broker != null) {
     			existHome = broker.getConfiguration().getExistHome();
+                        LOG.debug("Got eXist home from broker: " + existHome);
     			return existHome;
     		}
-    	} catch(Exception e) {
+    	} catch(Throwable e) {
+            // Catch all potential problems
+            LOG.debug("Could not retieve instance of brokerpool: " + e.getMessage());
     	}
     	
     	String config = "conf.xml";
