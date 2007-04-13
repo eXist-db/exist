@@ -5,6 +5,10 @@ declare function echo:echo($value as xs:string) as xs:string
     $value
 };
 
+declare function echo:echoSequence($values as xs:string*) as xs:string*
+{
+	$values
+};
 
 declare function echo:echoWithDate($value as xs:string) as xs:string
 {
