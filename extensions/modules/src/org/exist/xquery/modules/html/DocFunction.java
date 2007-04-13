@@ -120,8 +120,11 @@ public class DocFunction extends BasicFunction {
 			try
 			{
                 LOG.debug("Converting HTML to XML using NekoHTML parser for: " + path);
-                Class clazz = Class.forName("org.cyberneko.html.parsers.SAXParser");
-                reader = (XMLReader) clazz.newInstance();
+                reader = (XMLReader)Class.forName("org.cyberneko.html.parsers.SAXParser").newInstance();
+                
+                //do not modify the case of elements and attributes
+                reader.setProperty("http://cyberneko.org/html/properties/names/elems", "match");
+                reader.setProperty("http://cyberneko.org/html/properties/names/attrs", "no-change");  
             }
 			catch(Exception e)
 			{
