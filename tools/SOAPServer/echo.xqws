@@ -1,4 +1,4 @@
-module namespace echo = "http://exist-db.org/CommunityDirectory/echo";
+module namespace echo = "http://exist-db.org/xquery/soap/echo";
 
 declare function echo:echo($value as xs:string) as xs:string
 {
