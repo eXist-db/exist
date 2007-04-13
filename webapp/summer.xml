@@ -15,21 +15,56 @@
   <chapter>
     <title>Google Summer of Code 2007</title>
     
-        <para>eXist is participating in the Google Summer of Code 2007. Applications can
-        be submitted between <emphasis>March 14 and 24</emphasis>. This means you have to hurry up to get your
-        application ready until next week! Some project ideas are listed below. However, don't
-        understand this list as being complete. If you want to work on a completely different
-        idea, just propose it to us. For all questions concerning the Summmer of Code,
-        contact our GSoC administrator, Adam Retter, send an email to the
+        <para>eXist is participating in the Google Summer of Code 2007. Applications have been
+        evaluated by both eXist and Google and <emphasis>two</emphasis> projects have now been accepted, details are below.
+        Our original project ideas sumitted to Google are still listed below for informational purposes,
+        each of these could still be used for a small personal/academic project, if you are interested
+        please contact us.</para>
+        <para>For all questions concerning the Summmer of Code,
+        contact our GSoC administrators <ulink url="mailto:existadmin@gmail.com">eXistAdmin@gmail.com</ulink>, send an email to the
         exist-open <ulink url="http://sourceforge.net/mail/?group_id=17691">mailing list</ulink>
         or meet us in <ulink url="http://irc.exist-db.org/">IRC</ulink>. For short questions, IRC
         is the preferred medium.</para>
+    
+    <section>
+    	<title>Timeline</title>
+    	<itemizedlist>
+   	    	<listitem><del>5th - 12th March - eXist applies to Google Summer of Code</del></listitem>
+	    	<listitem><del>14th - 26th March - Student Applications</del></listitem>
+	    	<listitem><del>26th March - 10th April - Appraisal and evaluation of student applications</del></listitem>
+	    	<listitem><del>11th April - Succesfull student applications announced</del></listitem>
+	    	<listitem>11th April - 27th May - Students learn about eXist community and project</listitem>
+	    	<listitem>28th May - Students begin coding</listitem>
+	    	<listitem>9th July - Students upload work in progress / Mentors start mid-term evaluation</listitem>
+	    	<listitem>16th July - Mentors finish mid-term evaluation</listitem>
+	    	<listitem>20th August - Students finish coding and start evaluation / Mentors start final evalutaion</listitem>
+	    	<listitem>31st August - Students and Mentors finish final evaluation</listitem>
+    	</itemizedlist>
+    </section>
+    
+    <section>
+	    <title>Accepted Projects</title>
+	    <section>
+	    	<title><ulink url="http://code.google.com/soc/exist/appinfo.html?csaid=57CE1501A899507C">XQuery API for Java</ulink></title>
+	    	<para>
+	    		<orderedlist>
+                	<listitem>Student: Cherif YAYA</listitem>
+     	       		<listitem>Mentor: Adam Retter</listitem>
+                </orderedlist>
+	    	</para>
+	    </section>
+	    <section>
+	    	<title><ulink url="http://code.google.com/soc/exist/appinfo.html?csaid=69EADF1DA6525E5B">eXist eXtension to teXt Search</ulink></title>
+           	<listitem>Student: Akhil Kumar Meshram</listitem>
+       		<listitem>Mentor: Pierrick Brihayne</listitem>
+	    </section>
+    </section>
                 
     <section>
-      <title>Project Ideas</title>
+      <title>Suggested Project Ideas</title>
 
       <section>
-	<title>Implement JSR 225: XQuery API for Java</title>
+	<title>Implement JSR 225: XQuery API for Java <emphasis>(Accepted)</emphasis></title>
 
 	<para>The XQuery API for Java (XQJ) attempts to provide a common API
 	for access to XML databases, very similar to the JDBC API for relational
@@ -93,7 +128,7 @@
       </section>
 
       <section>
-	<title>Extend and Improve eXist's Full-Text Search Extensions</title>
+	<title>Extend and Improve eXist's Full-Text Search Extensions <emphasis>(Accepted)</emphasis></title>
 
 	<para>eXist always featured a set of special functions and operators to support full-text search, i.e. queries on
 	tokens and phrases rather than substrings. However, the available functions just help to select a distinct text or
@@ -244,7 +279,7 @@
         
         <itemizedlist>
             <listitem>
-                <para>Adam Retter</para>
+                <para>Adam Retter (GSoC Administrator)</para>
             </listitem>
             <listitem>
                 <para>Pierrick Brihaye</para>
