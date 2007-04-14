@@ -345,10 +345,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
             NodeId parentID = current.getNodeId().getParentId(); 
             //Filter out the temporary nodes wrapper element 
             if (parentID != NodeId.DOCUMENT_NODE && 
-		!(parentID.getTreeLevel() == 1 &&
-		  current.getDocument().getCollection().isTempCollection())) {                
-		if (parent == null ||
-		    parent.getDocument().getDocId() != current.getDocument().getDocId() || 
+                    !(parentID.getTreeLevel() == 1 && current.getDocument().getCollection().isTempCollection())) {
+				if (parent == null || parent.getDocument().getDocId() != current.getDocument().getDocId() ||
 		    !parent.getNodeId().equals(parentID)) {
                       parent = new NodeProxy(current.getDocument(), parentID, Node.ELEMENT_NODE,
 					     StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
@@ -367,7 +365,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		parents.add(current);
 	    }
 	}
-	
+
 	return parents;
     }
 
