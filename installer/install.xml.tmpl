@@ -37,7 +37,7 @@
         <panel classname="ShortcutPanel"/>
         <panel classname="ProcessPanel"/>
         <panel classname="HTMLInfoPanel"/>
-        <panel classname="FinishPanel"/>
+        <!--panel classname="FinishPanel"/-->
     </panels>
     <packs>
         <pack name="core" required="yes">
@@ -133,11 +133,13 @@
             <parsable targetfile="$INSTALL_PATH/bin/server.bat"/>
             <parsable targetfile="$INSTALL_PATH/bin/shutdown.bat"/>
             <parsable targetfile="$INSTALL_PATH/bin/backup.bat"/>
+            <parsable targetfile="$INSTALL_PATH/bin/setup.bat"/>
             <parsable targetfile="$INSTALL_PATH/build.bat"/>
             <singlefile src="tools/wrapper/conf/wrapper.conf.install"
                 target="$INSTALL_PATH/tools/wrapper/conf/wrapper.conf" override="true"/>
             <parsable targetfile="$INSTALL_PATH/tools/wrapper/conf/wrapper.conf"/>
             <executable targetfile="$INSTALL_PATH/bin/client.sh" stage="never" os="unix"/>
+            <executable targetfile="$INSTALL_PATH/bin/setup.sh" stage="never" os="unix"/>
             <executable targetfile="$INSTALL_PATH/bin/startup.sh" stage="never" os="unix"/>
             <executable targetfile="$INSTALL_PATH/bin/server.sh" stage="never" os="unix"/>
             <executable targetfile="$INSTALL_PATH/bin/shutdown.sh" stage="never" os="unix"/>
