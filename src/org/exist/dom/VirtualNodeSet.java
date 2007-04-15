@@ -440,7 +440,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
             NodeProxy p = (NodeProxy) i.next();
             if (p.getNodeId() == NodeId.DOCUMENT_NODE)
                 return false;
-            StoredNode n = (StoredNode) p.getNode();
+            NodeImpl n = (NodeImpl) p.getNode();
             if (n.getNodeType() == Node.ELEMENT_NODE && n.getChildCount() > MAX_CHILD_COUNT_FOR_OPTIMIZE)
                 return false;
         }
