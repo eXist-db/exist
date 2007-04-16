@@ -114,36 +114,42 @@ public abstract class Serializer implements XMLReader {
 	public final static int TAG_ATTRIBUTE_MATCHES = 0x2;
 	public final static int TAG_BOTH = 0x3;
 
-	public final static String GENERATE_DOC_EVENTS = "sax-document-events";
-	public final static String ENCODING = "encoding";
+    public final static int EXIST_ID_NONE = 0;
+    public final static int EXIST_ID_ELEMENT = 1;
+    public final static int EXIST_ID_ALL = 2;
 
-	protected final static QName ATTR_HITS_QNAME = new QName("hits", Namespaces.EXIST_NS, "exist");
-	protected final static QName ATTR_START_QNAME = new QName("start", Namespaces.EXIST_NS, "exist");
-	protected final static QName ATTR_COUNT_QNAME = new QName("count", Namespaces.EXIST_NS, "exist");
-	protected final static QName ELEM_RESULT_QNAME = new QName("result", Namespaces.EXIST_NS, "exist");
-	protected final static QName ATTR_TYPE_QNAME = new QName("type", Namespaces.EXIST_NS, "exist");
-	protected final static QName ELEM_VALUE_QNAME = new QName("value", Namespaces.EXIST_NS, "exist");
-	
-	protected DBBroker broker;
-	protected String encoding = "UTF-8";
-	private EntityResolver entityResolver = null;
-	private ErrorHandler errorHandler = null;
-	protected SAXTransformerFactory factory;
+    protected int showId = EXIST_ID_ELEMENT;
 
-	protected boolean createContainerElements = false;
+    public final static String GENERATE_DOC_EVENTS = "sax-document-events";
+    public final static String ENCODING = "encoding";
+    
+    protected final static QName ATTR_HITS_QNAME = new QName("hits", Namespaces.EXIST_NS, "exist");
+    protected final static QName ATTR_START_QNAME = new QName("start", Namespaces.EXIST_NS, "exist");
+    protected final static QName ATTR_COUNT_QNAME = new QName("count", Namespaces.EXIST_NS, "exist");
+    protected final static QName ELEM_RESULT_QNAME = new QName("result", Namespaces.EXIST_NS, "exist");
 
-	protected Properties defaultProperties = new Properties();
-	protected Properties outputProperties;
+    protected final static QName ATTR_TYPE_QNAME = new QName("type", Namespaces.EXIST_NS, "exist");
+    protected final static QName ELEM_VALUE_QNAME = new QName("value", Namespaces.EXIST_NS, "exist");
+    protected DBBroker broker;
+    protected String encoding = "UTF-8";
+    private EntityResolver entityResolver = null;
 
-	protected Templates templates = null;
-	protected TransformerHandler xslHandler = null;
-	protected XIncludeFilter xinclude;
-	protected Receiver receiver = null;
-	protected SAXSerializer xmlout = null;
-	protected LexicalHandler lexicalHandler = null;
-	protected User user = null;
+    private ErrorHandler errorHandler = null;
 
-	public Serializer(DBBroker broker, Configuration config) {
+    protected SAXTransformerFactory factory;
+    protected boolean createContainerElements = false;
+
+    protected Properties defaultProperties = new Properties();
+    protected Properties outputProperties;
+    protected Templates templates = null;
+    protected TransformerHandler xslHandler = null;
+    protected XIncludeFilter xinclude;
+    protected Receiver receiver = null;
+    protected SAXSerializer xmlout = null;
+    protected LexicalHandler lexicalHandler = null;
+    protected User user = null;
+
+    public Serializer(DBBroker broker, Configuration config) {
 		this.broker = broker;
 		factory = (SAXTransformerFactory) SAXTransformerFactory.newInstance();
 		xinclude = new XIncludeFilter(this);
@@ -164,7 +170,11 @@ public abstract class Serializer implements XMLReader {
 		if (option != null)
 			defaultProperties.setProperty(EXistOutputKeys.COMPRESS_OUTPUT, option);
 
-		boolean tagElements = true, tagAttributes = false;
+        option = (String) config.getProperty("serialization.add-exist-id");
+        if (option != null)
+            defaultProperties.setProperty(EXistOutputKeys.ADD_EXIST_ID, option);
+
+        boolean tagElements = true, tagAttributes = false;
 		if ((option =
 			(String) config.getProperty("serialization.match-tagging-elements"))
 			!= null)
@@ -214,7 +224,14 @@ public abstract class Serializer implements XMLReader {
 		throws SAXNotRecognizedException, SAXNotSupportedException {
 		if (prop.equals(Namespaces.SAX_LEXICAL_HANDLER)) {
 			lexicalHandler = (LexicalHandler) value;
-		} else {
+        } else if (EXistOutputKeys.ADD_EXIST_ID.equals(prop)) {
+            if (value.equals("element"))
+                showId = EXIST_ID_ELEMENT;
+            else if (value.equals("all"))
+                showId = EXIST_ID_ALL;
+            else
+                showId = EXIST_ID_NONE;
+        } else {
 			outputProperties.put(prop, value);
 		}
 	}
