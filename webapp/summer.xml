@@ -55,8 +55,12 @@
 	    </section>
 	    <section>
 	    	<title><ulink url="http://code.google.com/soc/exist/appinfo.html?csaid=69EADF1DA6525E5B">eXist eXtension to teXt Search</ulink></title>
-           	<listitem>Student: Akhil Kumar Meshram</listitem>
-       		<listitem>Mentor: Pierrick Brihayne</listitem>
+	    	<para>
+	    		<orderedList>
+		           	<listitem>Student: Akhil Kumar Meshram</listitem>
+	    	   		<listitem>Mentor: Pierrick Brihayne</listitem>
+    	   		</orderedList>
+       		</para>
 	    </section>
     </section>
                 
