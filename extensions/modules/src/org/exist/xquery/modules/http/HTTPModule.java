@@ -38,7 +38,8 @@ public class HTTPModule extends AbstractInternalModule
 	public final static String HTTP_MODULE_PERSISTENT_COOKIES = "_eXist_http_module_cookies";
 	
 	private final static FunctionDef[] functions = {
-		new FunctionDef(POSTFunction.signature, POSTFunction.class)
+		new FunctionDef(POSTFunction.signature, POSTFunction.class),
+		new FunctionDef(GETFunction.signature, GETFunction.class)
 	};
 	
 	public HTTPModule() {
@@ -95,7 +96,7 @@ public class HTTPModule extends AbstractInternalModule
 				if(current[c].equals(incoming[i]))
 				{
 					//replacement				
-					replacements.put(c, incoming[i]);
+					replacements.put(new Integer(c), incoming[i]);
 					cookieExists = true;
 					break;
 				}
@@ -112,10 +113,10 @@ public class HTTPModule extends AbstractInternalModule
 		//resolve replacements/copies
 		for(int c = 0; c < current.length; c++)
 		{
-			if(replacements.containsKey(c))
+			if(replacements.containsKey(new Integer(c)))
 			{
 				//replace
-				merged[c] = (Cookie)replacements.get(c);
+				merged[c] = (Cookie)replacements.get(new Integer(c));
 			}
 			else
 			{
