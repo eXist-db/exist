@@ -62,10 +62,6 @@ import org.xml.sax.SAXException;
  */
 public class NativeSerializer extends Serializer {
 
-    public final static int EXIST_ID_NONE = 0;
-    public final static int EXIST_ID_ELEMENT = 1;
-    public final static int EXIST_ID_ALL = 2;
-
     // private final static AttributesImpl EMPTY_ATTRIBUTES = new AttributesImpl();
     
     private final static QName MATCH_ELEMENT = new QName("match", Namespaces.EXIST_NS, "exist");
@@ -73,21 +69,9 @@ public class NativeSerializer extends Serializer {
     private final static QName ATTRIB_ELEMENT = new QName("attribute", Namespaces.EXIST_NS, "exist");
     private final static QName SOURCE_ATTRIB = new QName("source", Namespaces.EXIST_NS, "exist");
     private final static QName ID_ATTRIB = new QName("id", Namespaces.EXIST_NS, "exist");
-    
-    private int showId = EXIST_ID_ELEMENT;
 
     public NativeSerializer(DBBroker broker, Configuration config) {
         super(broker, config);
-        String showIdParam = (String) config
-                .getProperty("serialization.add-exist-id");
-        if (showIdParam != null) {
-            if (showIdParam.equals("element"))
-                showId = EXIST_ID_ELEMENT;
-            else if (showIdParam.equals("all"))
-                showId = EXIST_ID_ALL;
-            else
-                showId = EXIST_ID_NONE;
-        }
     }
 
     protected void serializeToReceiver(NodeProxy p, boolean generateDocEvent)
