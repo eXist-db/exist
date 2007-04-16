@@ -118,7 +118,7 @@ public abstract class Serializer implements XMLReader {
     public final static int EXIST_ID_ELEMENT = 1;
     public final static int EXIST_ID_ALL = 2;
 
-    protected int showId = EXIST_ID_ELEMENT;
+    protected int showId = EXIST_ID_NONE;
 
     public final static String GENERATE_DOC_EVENTS = "sax-document-events";
     public final static String ENCODING = "encoding";
