@@ -973,8 +973,8 @@ public  class Collection extends Observable
         //Is it a collection configuration file ?
         XmldbURI docName = document.getFileURI();
         //WARNING : there is no reason to lock the collection since setPath() is normally called in a safe way
-        //TODO: resolve URI against CollectionConfigurationManager.CONFIG_COLLECTION_URI 
-        if (getURI().startsWith(CollectionConfigurationManager.CONFIG_COLLECTION_URI)
+        //TODO: *resolve* URI against CollectionConfigurationManager.CONFIG_COLLECTION_URI 
+        if (getURI().startsWith(XmldbURI.CONFIG_COLLECTION_URI)
         		&& docName.endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX_URI)) {
         	
         	broker.sync(Sync.MAJOR_SYNC);
@@ -1158,7 +1158,8 @@ public  class Collection extends Observable
     private void checkConfigurationDocument(Txn transaction, DBBroker broker, XmldbURI docUri) throws EXistException, PermissionDeniedException,
     	IOException {
     	//Is it a collection configuration file ?
-        if (!getURI().startsWith(CollectionConfigurationManager.CONFIG_COLLECTION_URI))
+    	//TODO : use XmldbURI.resolve() !
+        if (!getURI().startsWith(XmldbURI.CONFIG_COLLECTION_URI))
         	return;
         if (!docUri.endsWith(CollectionConfiguration.COLLECTION_CONFIG_SUFFIX_URI))
         	return;

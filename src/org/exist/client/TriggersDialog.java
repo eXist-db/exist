@@ -50,6 +50,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
+import org.exist.collections.CollectionConfigurationManager;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.base.Collection;
@@ -133,7 +134,8 @@ class TriggersDialog extends JFrame {
             ArrayList alAllCollections = getCollections(root, new ArrayList());
             for(int i = 0; i < alAllCollections.size(); i++)
             {
-            	if(alAllCollections.get(i).toString().indexOf(DBBroker.CONFIG_COLLECTION)  == -1)
+            	//TODO : use XmldbURIs !
+            	if(alAllCollections.get(i).toString().indexOf(CollectionConfigurationManager.CONFIG_COLLECTION)  == -1)
             	{
             		alCollections.add(alAllCollections.get(i));
             	}

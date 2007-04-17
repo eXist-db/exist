@@ -33,7 +33,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.exist.storage.DBBroker;
+import org.exist.collections.CollectionConfigurationManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -78,14 +78,15 @@ public class CollectionXConf
 		this.client = client;
 		
 		//get configuration collection for the named collection
-		path = DBBroker.CONFIG_COLLECTION + CollectionName;
+		//TODO : use XmldbURIs
+		path = CollectionConfigurationManager.CONFIG_COLLECTION + CollectionName;
 		collection = client.getCollection(path);
 		
 		if(collection == null) //if no config collection for this collection exists, just return
 			return;
 		
 		//get the resource from the db
-		resConfig = collection.getResource(DBBroker.COLLECTION_CONFIG_FILENAME);
+		resConfig = collection.getResource(CollectionConfigurationManager.COLLECTION_CONFIG_FILENAME);
 		
 		if(resConfig == null) //if, no config file exists for that collection
 			return;
@@ -943,7 +944,7 @@ public class CollectionXConf
 					collection = client.getCollection(path);
 				}
 				
-				resConfig = collection.createResource(DBBroker.COLLECTION_CONFIG_FILENAME, "XMLResource");
+				resConfig = collection.createResource(CollectionConfigurationManager.COLLECTION_CONFIG_FILENAME, "XMLResource");
 			}
 			
 			//set the content of the collection.xconf
