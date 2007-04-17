@@ -2905,8 +2905,12 @@ public class DOMFile extends BTree implements Lockable {
         page.setDirty(true);
         dataCache.add(page, 2);
     }
-    
-    protected void dumpValue(Writer writer, Value key) throws IOException {
+
+	protected void dumpValue(Writer writer, Value key, int status) throws IOException {
+        if (status == BRANCH) {
+            super.dumpValue(writer, key, status);
+            return;
+        }
         if (key.getLength() == 0)
             return;
         writer.write(Integer.toString(ByteConversion.byteToInt(key.data(), key.start())));
