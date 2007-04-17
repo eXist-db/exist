@@ -21,7 +21,7 @@ import org.exist.xmldb.XmldbURI;
  * @author Michele Danieli aka mdanieli
  *         Date: 13-dic-2004
  *         Time: 17.12.51
- *         Revision $Revision$
+ *         Revision $Revision: 5432 $
  */
 public class NativeClusterBroker extends NativeBroker {
 

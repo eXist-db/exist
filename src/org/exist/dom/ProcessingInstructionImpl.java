@@ -1,3 +1,24 @@
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2007 The eXist team
+ * http://exist-db.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
+ *  $Id$
+ */
 
 package org.exist.dom;
 
@@ -25,8 +46,8 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
         super(Node.PROCESSING_INSTRUCTION_NODE);
     }
     
-    public ProcessingInstructionImpl( NodeId nodeId, String target, String data ) {
-        super( Node.PROCESSING_INSTRUCTION_NODE, nodeId);
+    public ProcessingInstructionImpl(NodeId nodeId, String target, String data) {
+        super(Node.PROCESSING_INSTRUCTION_NODE, nodeId);
         this.target = target;
         this.data = data;
     }
@@ -55,7 +76,7 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
      *
      *@param  target  The new target value
      */
-    public void setTarget( String target ) {
+    public void setTarget(final String target) {
         this.target = target;
     }
 
@@ -88,7 +109,7 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
      *
      *@param  data  The new data value
      */
-    public void setData( String data ) {
+    public void setData(final String data) {
         this.data = data;
     }
 
@@ -139,7 +160,7 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
         return d;
     }
 
-    public static StoredNode deserialize( byte[] data, int start, int len, DocumentImpl doc, boolean pooled ) {
+    public static StoredNode deserialize(byte[] data, int start, int len, DocumentImpl doc, boolean pooled) {
     	int pos = start;
     	pos += LENGTH_SIGNATURE_LENGTH;
         int dlnLen = ByteConversion.byteToShort(data, pos);
