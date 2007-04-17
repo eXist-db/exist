@@ -17,7 +17,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- *  $Id: NativeTextEngine.java 5405 2007-02-26 17:23:10Z wolfgang_m $
+ *  $Id$
  */
 package org.exist.storage;
 

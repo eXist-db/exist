@@ -358,6 +358,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		}
                 parents.add(parent);
 	    }
+
 	}
 
 	return parents;
