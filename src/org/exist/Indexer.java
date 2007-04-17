@@ -1,25 +1,23 @@
 /*
- *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  meier@ifs.tu-darmstadt.de
- *  http://exist.sourceforge.net
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2007 The eXist team
+ * http://exist-db.org
  *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public License
- *  as published by the Free Software Foundation; either version 2
- *  of the License, or (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *  
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
  *  $Id$
- * 
  */
 package org.exist;
 
@@ -76,14 +74,14 @@ import org.xml.sax.ext.LexicalHandler;
  */
 public class Indexer extends Observable implements ContentHandler, LexicalHandler, ErrorHandler {
 
-	private static final int CACHE_CHILD_COUNT_MAX = 0x10000;
+    private static final int CACHE_CHILD_COUNT_MAX = 0x10000;
 
-	private static final String ATTR_ID_TYPE = "ID";
+    private static final String ATTR_ID_TYPE = "ID";
 
     private final static Logger LOG =
-		Logger.getLogger(Indexer.class);
+	Logger.getLogger(Indexer.class);
 
-	protected DBBroker broker = null;
+    protected DBBroker broker = null;
     protected Txn transaction;
 
     protected StreamListener indexListener;
@@ -91,28 +89,28 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
     protected FulltextIndexSpec ftIdx = null;
     protected XMLString charBuf = new XMLString();
     protected boolean inCDATASection = false;
-	protected int currentLine = 0;  
-	protected NodePath currentPath = new NodePath();
+    protected int currentLine = 0;  
+    protected NodePath currentPath = new NodePath();
 	
-	protected DocumentImpl document = null;
+    protected DocumentImpl document = null;
 	
-	protected boolean insideDTD = false;
-	protected boolean validate = false;
-	protected int level = 0;
-	protected Locator locator = null;
-	protected int normalize = XMLString.SUPPRESS_BOTH;
-	protected Map nsMappings = new HashMap();
-	protected Element rootNode;
+    protected boolean insideDTD = false;
+    protected boolean validate = false;
+    protected int level = 0;
+    protected Locator locator = null;
+    protected int normalize = XMLString.SUPPRESS_BOTH;
+    protected Map nsMappings = new HashMap();
+    protected Element rootNode;
 	
-	protected Stack stack = new Stack();
-	protected Stack nodeContentStack = new Stack();
+    protected Stack stack = new Stack();
+    protected Stack nodeContentStack = new Stack();
 	
     protected StoredNode prevNode = null;
     
-	protected String ignorePrefix = null;
-	protected ProgressIndicator progress;
+    protected String ignorePrefix = null;
+    protected ProgressIndicator progress;
 	
-	protected boolean suppressWSmixed = false;
+    protected boolean suppressWSmixed = false;
 
     /* used to record the number of children of an element during 
      * validation phase. later, when storing the nodes, we already
@@ -123,60 +121,65 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
     
     // the current position in childCnt
     private int elementCnt = 0;
-    
-	// reusable fields
-	private TextImpl text = new TextImpl();
-	private Stack usedElements = new Stack();
-	
-	public static String PROPERTY_SUPPRESS_WHITESPACE = "indexer.suppress-whitespace";
-	
-	/**
-	 *  Create a new parser using the given database broker and
-	 * user to store the document.
-	 *
-	 *@param  broker
-	 *@exception  EXistException  
-	 */
-	public Indexer(DBBroker broker, Txn transaction) throws EXistException {
-		this(broker, transaction, false);
-	}
 
-	/**
-	 *  Create a new parser using the given database broker and
-	 * user to store the document.
-	 *
-	 *@param  broker              The database broker to use.
-         *@param  transaction         The transaction to use for indexing
-	 *@param  priv		      used by the security manager to
-	 *							  indicate that it needs privileged
-	 *                            access to the db.
-	 *@exception  EXistException  
-	 */
-	public Indexer(DBBroker broker, Txn transaction, boolean priv) throws EXistException {
-		this.broker = broker;
+    // the current nodeFactoryInstanceCnt
+    private int nodeFactoryInstanceCnt = 0;
+
+
+    
+    // reusable fields
+    private TextImpl text = new TextImpl();
+    private Stack usedElements = new Stack();
+	
+    public static String PROPERTY_SUPPRESS_WHITESPACE = "indexer.suppress-whitespace";
+	
+    /**
+     *  Create a new parser using the given database broker and
+     * user to store the document.
+     *
+     *@param  broker
+     *@exception  EXistException  
+     */
+    public Indexer(DBBroker broker, Txn transaction) throws EXistException {
+	this(broker, transaction, false);
+    }
+
+    /**
+     *  Create a new parser using the given database broker and
+     * user to store the document.
+     *
+     *@param  broker              The database broker to use.
+     *@param  transaction         The transaction to use for indexing
+     *@param  priv		      used by the security manager to
+     *							  indicate that it needs privileged
+     *                            access to the db.
+     *@exception  EXistException  
+     */
+    public Indexer(DBBroker broker, Txn transaction, boolean priv) throws EXistException {
+	this.broker = broker;
         this.transaction = transaction;
 
         //TODO : move the configuration in the constructor or in a dedicated method
-		Configuration config = broker.getConfiguration();
-		String suppressWS =	(String) config.getProperty(PROPERTY_SUPPRESS_WHITESPACE);
-		if (suppressWS != null) {
-			if ("leading".equals(suppressWS))
-				normalize = XMLString.SUPPRESS_LEADING_WS;
-			else if ("trailing".equals(suppressWS))
-				normalize = XMLString.SUPPRESS_TRAILING_WS;
-			else if ("none".equals(suppressWS))
-				normalize = 0;
-		}
+	Configuration config = broker.getConfiguration();
+	String suppressWS =	(String) config.getProperty(PROPERTY_SUPPRESS_WHITESPACE);
+	if (suppressWS != null) {
+	    if ("leading".equals(suppressWS))
+		normalize = XMLString.SUPPRESS_LEADING_WS;
+	    else if ("trailing".equals(suppressWS))
+		normalize = XMLString.SUPPRESS_TRAILING_WS;
+	    else if ("none".equals(suppressWS))
+		normalize = 0;
+	}
 		
-		Boolean temp;
-		if ((temp = (Boolean) config.getProperty("indexer.preserve-whitespace-mixed-content"))
-			!= null)
-			suppressWSmixed = temp.booleanValue();
+	Boolean temp;
+	if ((temp = (Boolean) config.getProperty("indexer.preserve-whitespace-mixed-content"))
+	    != null)
+	    suppressWSmixed = temp.booleanValue();
     }
 
-	public void setValidating(boolean validate) {
-		this.validate = validate;
-	}
+    public void setValidating(boolean validate) {
+	this.validate = validate;
+    }
 
     /**
      * Prepare the indexer for parsing a new document. This will
@@ -197,59 +200,62 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
         this.indexListener = broker.getIndexController().getStreamListener(document, StreamListener.STORE);
     }
     
-	/**
-	 * Set the document object to be used by this Indexer. This
-	 * method doesn't reset the internal state.
-	 * 
-	 * @param doc
-	 */
-	public void setDocumentObject(DocumentImpl doc) {
-	    document = doc;
-	}
+    /**
+     * Set the document object to be used by this Indexer. This
+     * method doesn't reset the internal state.
+     * 
+     * @param doc
+     */
+    public void setDocumentObject(DocumentImpl doc) {
+	document = doc;
+    }
 
-	public DocumentImpl getDocument() {
-		return document;
-	}
+    public DocumentImpl getDocument() {
+	return document;
+    }
 	
-	public void characters(char[] ch, int start, int length) {
-		if (length <= 0)
-			return;
-		if (charBuf != null) {
-			charBuf.append(ch, start, length);
-		} else {
-			charBuf = new XMLString(ch, start, length);
-		}
+    public void characters(char[] ch, int start, int length) {
+	if (length <= 0)
+	    return;
+	if (charBuf != null) {
+	    charBuf.append(ch, start, length);
+	} else {
+	    charBuf = new XMLString(ch, start, length);
 	}
+    }
 
-	public void comment(char[] ch, int start, int length) {
-		if (insideDTD)
-			return;
-		CommentImpl comment = new CommentImpl(ch, start, length);
-		comment.setOwnerDocument(document);
-		if (stack.empty()) {
-            comment.setNodeId(broker.getBrokerPool().getNodeFactory().createInstance());
-            if (!validate)
-				broker.storeNode(transaction, comment, currentPath);
-			document.appendChild(comment);
-		} else {
-			ElementImpl last = (ElementImpl) stack.peek();
+    public void comment(char[] ch, int start, int length) {
+	if (insideDTD)
+	    return;
+	CommentImpl comment = new CommentImpl(ch, start, length);
+	comment.setOwnerDocument(document);
+	if (stack.empty()) {
+            comment.setNodeId(broker.getBrokerPool().getNodeFactory().createInstance(nodeFactoryInstanceCnt++));
+            if (!validate) {
+		broker.storeNode(transaction, comment, currentPath);
+	    }
+	    document.appendChild(comment);
+	} else {
+	    ElementImpl last = (ElementImpl) stack.peek();
             if (charBuf != null && charBuf.length() > 0) {
                 text.setData(charBuf);
                 text.setOwnerDocument(document);
                 last.appendChildInternal(prevNode, text);
-                if (!validate)
+                if (!validate) {
                     storeText();
+		}
                 setPrevious(text);
                 charBuf.reset();
             }
-			last.appendChildInternal(prevNode, comment);
+	    last.appendChildInternal(prevNode, comment);
             setPrevious(comment);
-			if (!validate)
-				broker.storeNode(transaction, comment, currentPath);
-		}
+	    if (!validate) {
+		broker.storeNode(transaction, comment, currentPath);
+	    }
 	}
+    }
 
-	public void endCDATA() {
+    public void endCDATA() {
         if (!stack.isEmpty()) {
             ElementImpl last = (ElementImpl) stack.peek();
             if (charBuf != null && charBuf.length() > 0) {
@@ -270,53 +276,53 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
             }
         }
         inCDATASection = false;
-	}
+    }
 
-	public void endDTD() {
-		insideDTD = false;
-	}
+    public void endDTD() {
+	insideDTD = false;
+    }
 
-	public void endDocument() {
-		if (!validate) {
-			progress.finish();
-			setChanged();
-			notifyObservers(progress);
-		}
-//        LOG.debug("elementCnt = " + childCnt.length);
+    public void endDocument() {
+	if (!validate) {
+	    progress.finish();
+	    setChanged();
+	    notifyObservers(progress);
 	}
+	//        LOG.debug("elementCnt = " + childCnt.length);
+    }
 
-	public void endElement(String namespace, String name, String qname) {
-		final ElementImpl last = (ElementImpl) stack.peek();
-		if (last.getNodeName().equals(qname)) {
-			if (charBuf != null && charBuf.length() > 0) {
-				// remove whitespace if the node has just a single text child,
-				// keep whitespace for mixed content.
-				final XMLString normalized;
+    public void endElement(String namespace, String name, String qname) {
+	final ElementImpl last = (ElementImpl) stack.peek();
+	if (last.getNodeName().equals(qname)) {
+	    if (charBuf != null && charBuf.length() > 0) {
+		// remove whitespace if the node has just a single text child,
+		// keep whitespace for mixed content.
+		final XMLString normalized;
                 if((charBuf.isWhitespaceOnly() && suppressWSmixed) || last.preserveSpace()) {
                     normalized = charBuf;
                 } else {
-					normalized = last.getChildCount() == 0 ? charBuf.normalize(normalize) : 
-						(charBuf.isWhitespaceOnly() ? null : charBuf);
-				}
-				if (normalized != null && normalized.length() > 0) {
-				    text.setData(normalized);
-				    text.setOwnerDocument(document);
-				    last.appendChildInternal(prevNode, text);
-				    if (!validate)
-						storeText();
+		    normalized = last.getChildCount() == 0 ? charBuf.normalize(normalize) : 
+			(charBuf.isWhitespaceOnly() ? null : charBuf);
+		}
+		if (normalized != null && normalized.length() > 0) {
+		    text.setData(normalized);
+		    text.setOwnerDocument(document);
+		    last.appendChildInternal(prevNode, text);
+		    if (!validate)
+			storeText();
                     setPrevious(text);
-				}
-				charBuf.reset();
-			}
-			stack.pop();
+		}
+		charBuf.reset();
+	    }
+	    stack.pop();
 			
-			XMLString elemContent = null;
-			if (!validate && (GeneralRangeIndexSpec.hasQNameOrValueIndex(last.getIndexType()) ||
-                    (ftIdx != null && ftIdx.hasQNameIndex(last.getQName())))) {
+	    XMLString elemContent = null;
+	    if (!validate && (GeneralRangeIndexSpec.hasQNameOrValueIndex(last.getIndexType()) ||
+			      (ftIdx != null && ftIdx.hasQNameIndex(last.getQName())))) {
                 elemContent = (XMLString) nodeContentStack.pop();
             }
 			
-			if (!validate) {
+	    if (!validate) {
                 final String content = elemContent == null ? null : elemContent.toString();
                 broker.endElement(last, currentPath, content);
                 if (indexListener != null)
@@ -324,29 +330,29 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
             }
 
             currentPath.removeLastComponent();
-			if (validate) {
-			    if (childCnt != null)
-			        setChildCount(last);
-			} else {
-			    document.setOwnerDocument(document);
-			    if (childCnt == null && last.getChildCount() > 0) {
-			        broker.updateNode(transaction, last, false);
-			    }
-			}
-			setPrevious(last);
-			level--;
+	    if (validate) {
+		if (childCnt != null)
+		    setChildCount(last);
+	    } else {
+		document.setOwnerDocument(document);
+		if (childCnt == null && last.getChildCount() > 0) {
+		    broker.updateNode(transaction, last, false);
 		}
+	    }
+	    setPrevious(last);
+	    level--;
 	}
+    }
 
     /**
      * @param last
      */
     private void setChildCount(final ElementImpl last) {
         if (last.getPosition() >= childCnt.length) {
-        	if (childCnt.length > CACHE_CHILD_COUNT_MAX) {
-        		childCnt = null;
-        		return;
-        	}
+	    if (childCnt.length > CACHE_CHILD_COUNT_MAX) {
+		childCnt = null;
+		return;
+	    }
             int n[] = new int[childCnt.length * 2];
             System.arraycopy(childCnt, 0, n, 0, childCnt.length);
             childCnt = n;
@@ -354,94 +360,97 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
         childCnt[last.getPosition()] = last.getChildCount();
     }
 
-	public void endEntity(String name) {
-	}
+    public void endEntity(String name) {
+    }
 
-	public void endPrefixMapping(String prefix) {
-		if (ignorePrefix != null && prefix.equals(ignorePrefix)) {
-			ignorePrefix = null;
-		} else {
-			nsMappings.remove(prefix);
-		}
+    public void endPrefixMapping(String prefix) {
+	if (ignorePrefix != null && prefix.equals(ignorePrefix)) {
+	    ignorePrefix = null;
+	} else {
+	    nsMappings.remove(prefix);
 	}
+    }
 
-	public void error(SAXParseException e) throws SAXException {
-		LOG.debug("error at line " + e.getLineNumber(), e);
-		throw new SAXException(
-			"error at line " + e.getLineNumber() + ": " + e.getMessage(),
-			e);
-	}
+    public void error(SAXParseException e) throws SAXException {
+	LOG.debug("error at line " + e.getLineNumber(), e);
+	throw new SAXException(
+			       "error at line " + e.getLineNumber() + ": " + e.getMessage(),
+			       e);
+    }
 
-	public void fatalError(SAXParseException e) throws SAXException {
-		LOG.debug("fatal error at line " + e.getLineNumber());
-		throw new SAXException(
-			"fatal error at line " + e.getLineNumber() + ": " + e.getMessage(),
-			e);
-	}
+    public void fatalError(SAXParseException e) throws SAXException {
+	LOG.debug("fatal error at line " + e.getLineNumber());
+	throw new SAXException(
+			       "fatal error at line " + e.getLineNumber() + ": " + e.getMessage(),
+			       e);
+    }
 
-	public void ignorableWhitespace(char[] ch, int start, int length) {
-	}
+    public void ignorableWhitespace(char[] ch, int start, int length) {
+    }
 
-	public void processingInstruction(String target, String data) {
-		ProcessingInstructionImpl pi =
-			new ProcessingInstructionImpl(target, data);
-		pi.setOwnerDocument(document);
-		if (stack.isEmpty()) {
-            pi.setNodeId(broker.getBrokerPool().getNodeFactory().createInstance());
-            if (!validate)
-				broker.storeNode(transaction, pi, currentPath);
-			document.appendChild(pi);
-		} else {
-			ElementImpl last = (ElementImpl) stack.peek();
-			if (charBuf != null && charBuf.length() > 0) {
-				XMLString normalized = charBuf.normalize(normalize);
-				if (normalized.length() > 0) {
-					//TextImpl text =
-					//    new TextImpl( normalized );
-					text.setData(normalized);
-					text.setOwnerDocument(document);
-					last.appendChildInternal(prevNode, text);
-					if (!validate)
-						storeText();
+    public void processingInstruction(String target, String data) {
+	ProcessingInstructionImpl pi =
+	    new ProcessingInstructionImpl(target, data);
+	pi.setOwnerDocument(document);
+	if (stack.isEmpty()) {
+	    pi.setNodeId(broker.getBrokerPool().getNodeFactory().createInstance(nodeFactoryInstanceCnt++));
+            if (!validate) {
+		broker.storeNode(transaction, pi, currentPath);
+	    }
+	    document.appendChild(pi);
+	} else {
+	    ElementImpl last = (ElementImpl) stack.peek();
+	    if (charBuf != null && charBuf.length() > 0) {
+		XMLString normalized = charBuf.normalize(normalize);
+		if (normalized.length() > 0) {
+		    //TextImpl text =
+		    //    new TextImpl( normalized );
+		    text.setData(normalized);
+		    text.setOwnerDocument(document);
+		    last.appendChildInternal(prevNode, text);
+		    if (!validate) {
+			storeText();
+		    }
                     setPrevious(text);
-				}
-				charBuf.reset();
-			}
-			last.appendChildInternal(prevNode, pi);
+		}
+		charBuf.reset();
+	    }
+	    last.appendChildInternal(prevNode, pi);
             setPrevious(pi);
-			if (!validate)
-				broker.storeNode(transaction, pi, currentPath);
-		}
+	    if (!validate) {
+		broker.storeNode(transaction, pi, currentPath);
+	    }
 	}
+    }
 
-	public void setDocumentLocator(Locator locator) {
-		this.locator = locator;
+    public void setDocumentLocator(Locator locator) {
+	this.locator = locator;
+    }
+
+    /**
+     *  set SAX parser feature. This method will catch (and ignore) exceptions
+     *  if the used parser does not support a feature.
+     *
+     *@param  factory  
+     *@param  feature  
+     *@param  value    
+     */
+    private void setFeature(SAXParserFactory factory, String feature, boolean value) {
+	try {
+	    factory.setFeature(feature, value);
+	} catch (SAXNotRecognizedException e) {
+	    LOG.warn(e);
+	} catch (SAXNotSupportedException snse) {
+	    LOG.warn(snse);
+	} catch (ParserConfigurationException pce) {
+	    LOG.warn(pce);
 	}
+    }
 
-	/**
-	 *  set SAX parser feature. This method will catch (and ignore) exceptions
-	 *  if the used parser does not support a feature.
-	 *
-	 *@param  factory  
-	 *@param  feature  
-	 *@param  value    
-	 */
-	private void setFeature(SAXParserFactory factory, String feature, boolean value) {
-		try {
-			factory.setFeature(feature, value);
-		} catch (SAXNotRecognizedException e) {
-			LOG.warn(e);
-		} catch (SAXNotSupportedException snse) {
-			LOG.warn(snse);
-		} catch (ParserConfigurationException pce) {
-			LOG.warn(pce);
-		}
-	}
+    public void skippedEntity(String name) {
+    }
 
-	public void skippedEntity(String name) {
-	}
-
-	public void startCDATA() {
+    public void startCDATA() {
         if (!stack.isEmpty()) {
             ElementImpl last = (ElementImpl) stack.peek();
             if (charBuf != null && charBuf.length() > 0) {
@@ -455,241 +464,243 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
             }
         }
         inCDATASection = true;        
-	}
+    }
 
-	// Methods of interface LexicalHandler
-	// used to determine Doctype
+    // Methods of interface LexicalHandler
+    // used to determine Doctype
 
-	public void startDTD(String name, String publicId, String systemId) {
-		DocumentTypeImpl docType =
-			new DocumentTypeImpl(name, publicId, systemId);
-		document.setDocumentType(docType);
-		insideDTD = true;
-	}
+    public void startDTD(String name, String publicId, String systemId) {
+	DocumentTypeImpl docType =
+	    new DocumentTypeImpl(name, publicId, systemId);
+	document.setDocumentType(docType);
+	insideDTD = true;
+    }
 
-	public void startDocument() {
-		if (!validate) {
-			progress = new ProgressIndicator(currentLine, 100);
-			document.setChildCount(0);
+    public void startDocument() {
+	if (!validate) {
+	    progress = new ProgressIndicator(currentLine, 100);
+	    document.setChildCount(0);
             elementCnt = 0;
-		}
+	}
+    }
+
+    public void startElement(String namespace, String name, String qname,
+			     Attributes attributes) throws SAXException {
+	// calculate number of real attributes:
+	// don't store namespace declarations
+	int attrLength = attributes.getLength();
+	String attrQName;
+	String attrNS;
+	for (int i = 0; i < attributes.getLength(); i++) {
+	    attrNS = attributes.getURI(i);
+	    attrQName = attributes.getQName(i);
+	    if (attrQName.startsWith("xmlns") || attrNS.equals(Namespaces.EXIST_NS))
+		--attrLength;
 	}
 
-	public void startElement(
-		String namespace,
-		String name,
-		String qname,
-		Attributes attributes) throws SAXException {
-		// calculate number of real attributes:
-		// don't store namespace declarations
-		int attrLength = attributes.getLength();
-		String attrQName;
-		String attrNS;
-		for (int i = 0; i < attributes.getLength(); i++) {
-			attrNS = attributes.getURI(i);
-			attrQName = attributes.getQName(i);
-			if (attrQName.startsWith("xmlns") || attrNS.equals(Namespaces.EXIST_NS))
-				--attrLength;
-		}
-
-		ElementImpl last;
-		ElementImpl node;
-		int p = qname.indexOf(':');
-		String prefix = (p != Constants.STRING_NOT_FOUND) ? qname.substring(0, p) : "";
-		QName qn = broker.getSymbols().getQName(Node.ELEMENT_NODE, namespace, name, prefix);
-		if (!stack.empty()) {
-			last = (ElementImpl) stack.peek();
-			if (charBuf != null) {
-				if(charBuf.isWhitespaceOnly()) {
-					if (suppressWSmixed) {
-						if(charBuf.length() > 0 && last.getChildCount() > 0) {
-							text.setData(charBuf);
-							text.setOwnerDocument(document);
-							last.appendChildInternal(prevNode, text);
-							if (!validate)
-								storeText();
+	ElementImpl last;
+	ElementImpl node;
+	int p = qname.indexOf(':');
+	String prefix = (p != Constants.STRING_NOT_FOUND) ? qname.substring(0, p) : "";
+	QName qn = broker.getSymbols().getQName(Node.ELEMENT_NODE, namespace, name, prefix);
+	if (!stack.empty()) {
+	    last = (ElementImpl) stack.peek();
+	    if (charBuf != null) {
+		if(charBuf.isWhitespaceOnly()) {
+		    if (suppressWSmixed) {
+			if(charBuf.length() > 0 && last.getChildCount() > 0) {
+			    text.setData(charBuf);
+			    text.setOwnerDocument(document);
+			    last.appendChildInternal(prevNode, text);
+			    if (!validate)
+				storeText();
                             setPrevious(text);
-					   }
-					}
+			}
+		    }
 
-				} else if(charBuf.length() > 0) {
-					// mixed element content: don't normalize the text node, just check
-					// if there is any text at all
-					text.setData(charBuf);
-					text.setOwnerDocument(document);
-					last.appendChildInternal(prevNode, text);
-					if (!validate)
-						storeText();
+		} else if(charBuf.length() > 0) {
+		    // mixed element content: don't normalize the text node, just check
+		    // if there is any text at all
+		    text.setData(charBuf);
+		    text.setOwnerDocument(document);
+		    last.appendChildInternal(prevNode, text);
+		    if (!validate)
+			storeText();
                     setPrevious(text);
-				}
-				charBuf.reset();
-			}
-			if (!usedElements.isEmpty()) {
-				node = (ElementImpl) usedElements.pop();
-				node.setNodeName(qn);
-			} else
-				node = new ElementImpl(qn);
-			// copy xml:space setting
-			node.setPreserveSpace(last.preserveSpace());
-			// append the node to its parent 
-			// (computes the node id and updates the parent's child count)
-			last.appendChildInternal(prevNode, node);
-            setPrevious(null);
-			node.setOwnerDocument(document);
-			node.setAttributes((short) attrLength);
-			if (nsMappings != null && nsMappings.size() > 0) {
-				node.setNamespaceMappings(nsMappings);
-				nsMappings.clear();
-			}
-
-			stack.push(node);
-			currentPath.addComponent(qn);
-
-            node.setPosition(elementCnt++);
-			if (!validate) {
-                if (childCnt != null)
-                    node.setChildCount(childCnt[node.getPosition()]);
-				storeElement(node);
-			}
-		} else {
-			if (validate)
-				node = new ElementImpl(qn);
-			else
-			    node = new ElementImpl(qn);
-			rootNode = node;
-			setPrevious(null);
-			node.setNodeId(broker.getBrokerPool().getNodeFactory().createInstance());
-			node.setOwnerDocument(document);
-			node.setAttributes((short) attrLength);
-			if (nsMappings != null && nsMappings.size() > 0) {
-				node.setNamespaceMappings(nsMappings);
-				nsMappings.clear();
-			}
-
-			stack.push(node);
-			currentPath.addComponent(qn);
-
-            node.setPosition(elementCnt++);
-			if (!validate) {
-                if (childCnt != null)
-                    node.setChildCount(childCnt[node.getPosition()]);
-				storeElement(node);
-            }
-			document.appendChild(node);
 		}
+		charBuf.reset();
+	    }
+	    if (!usedElements.isEmpty()) {
+		node = (ElementImpl) usedElements.pop();
+		node.setNodeName(qn);
+	    } else
+		node = new ElementImpl(qn);
+	    // copy xml:space setting
+	    node.setPreserveSpace(last.preserveSpace());
+	    // append the node to its parent 
+	    // (computes the node id and updates the parent's child count)
+	    last.appendChildInternal(prevNode, node);
+            setPrevious(null);
+	    node.setOwnerDocument(document);
+	    node.setAttributes((short) attrLength);
+	    if (nsMappings != null && nsMappings.size() > 0) {
+		node.setNamespaceMappings(nsMappings);
+		nsMappings.clear();
+	    }
 
-		level++;
+	    stack.push(node);
+	    currentPath.addComponent(qn);
 
-		String attrPrefix;
-		String attrLocalName;
-		for (int i = 0; i < attributes.getLength(); i++) {
-			attrNS = attributes.getURI(i);
-			attrLocalName = attributes.getLocalName(i);
-			attrQName = attributes.getQName(i);
-			// skip xmlns-attributes and attributes in eXist's namespace
-			if (attrQName.startsWith("xmlns") || attrNS.equals(Namespaces.EXIST_NS))
-				--attrLength;
-			else {
-				p = attrQName.indexOf(':');
-				attrPrefix = (p != Constants.STRING_NOT_FOUND) ? attrQName.substring(0, p) : null;
-				final AttrImpl attr = (AttrImpl)NodeObjectPool.getInstance().borrowNode(AttrImpl.class);
-				attr.setNodeName(document.getSymbols().getQName(Node.ATTRIBUTE_NODE, attrNS, attrLocalName, attrPrefix));
-				attr.setValue(attributes.getValue(i));
-				attr.setOwnerDocument(document);
-				if (attributes.getType(i).equals(ATTR_ID_TYPE)) {
-					attr.setType(AttrImpl.ID);
-				} else if (attr.getQName().equalsSimple(Namespaces.XML_ID_QNAME)) {
-					// an xml:id attribute. Normalize the attribute and set its type to ID
-					attr.setValue(StringValue.trimWhitespace(StringValue.collapseWhitespace(attr.getValue())));
-					if (!XMLChar.isValidNCName(attr.getValue()))
-						throw new SAXException("Value of xml:id attribute is not a valid NCName: " + attr.getValue());
-					attr.setType(AttrImpl.ID);
-				} else if (attr.getQName().equalsSimple(Namespaces.XML_SPACE_QNAME)) {
-					node.setPreserveSpace("preserve".equals(attr.getValue()));
-				}
-				node.appendChildInternal(prevNode, attr);
-               setPrevious(attr);
-				if (!validate) {
+            node.setPosition(elementCnt++);
+	    if (!validate) {
+                if (childCnt != null) {
+                    node.setChildCount(childCnt[node.getPosition()]);
+		}
+		storeElement(node);
+	    }
+	} else {
+	    if (validate) {
+		node = new ElementImpl(qn);
+	    }
+	    else {
+		node = new ElementImpl(qn);
+	    }
+	    rootNode = node;
+	    setPrevious(null);
+	    node.setOwnerDocument(document);
+	    node.setNodeId(broker.getBrokerPool().getNodeFactory().createInstance(nodeFactoryInstanceCnt++));
+
+	    node.setAttributes((short) attrLength);
+	    if (nsMappings != null && nsMappings.size() > 0) {
+		node.setNamespaceMappings(nsMappings);
+		nsMappings.clear();
+	    }
+
+	    stack.push(node);
+	    currentPath.addComponent(qn);
+
+            node.setPosition(elementCnt++);
+	    if (!validate) {
+                if (childCnt != null) {
+                    node.setChildCount(childCnt[node.getPosition()]);
+		}
+		storeElement(node);
+            }
+	    document.appendChild(node);
+	}
+
+	level++;
+
+	String attrPrefix;
+	String attrLocalName;
+	for (int i = 0; i < attributes.getLength(); i++) {
+	    attrNS = attributes.getURI(i);
+	    attrLocalName = attributes.getLocalName(i);
+	    attrQName = attributes.getQName(i);
+	    // skip xmlns-attributes and attributes in eXist's namespace
+	    if (attrQName.startsWith("xmlns") || attrNS.equals(Namespaces.EXIST_NS))
+		--attrLength;
+	    else {
+		p = attrQName.indexOf(':');
+		attrPrefix = (p != Constants.STRING_NOT_FOUND) ? attrQName.substring(0, p) : null;
+		final AttrImpl attr = (AttrImpl)NodeObjectPool.getInstance().borrowNode(AttrImpl.class);
+		attr.setNodeName(document.getSymbols().getQName(Node.ATTRIBUTE_NODE, attrNS, attrLocalName, attrPrefix));
+		attr.setValue(attributes.getValue(i));
+		attr.setOwnerDocument(document);
+		if (attributes.getType(i).equals(ATTR_ID_TYPE)) {
+		    attr.setType(AttrImpl.ID);
+		} else if (attr.getQName().equalsSimple(Namespaces.XML_ID_QNAME)) {
+		    // an xml:id attribute. Normalize the attribute and set its type to ID
+		    attr.setValue(StringValue.trimWhitespace(StringValue.collapseWhitespace(attr.getValue())));
+		    if (!XMLChar.isValidNCName(attr.getValue()))
+			throw new SAXException("Value of xml:id attribute is not a valid NCName: " + attr.getValue());
+		    attr.setType(AttrImpl.ID);
+		} else if (attr.getQName().equalsSimple(Namespaces.XML_SPACE_QNAME)) {
+		    node.setPreserveSpace("preserve".equals(attr.getValue()));
+		}
+		node.appendChildInternal(prevNode, attr);
+		setPrevious(attr);
+		if (!validate) {
                     broker.storeNode(transaction, attr, currentPath);
                     if (indexListener != null)
                         indexListener.attribute(transaction, attr, currentPath);
                 }
             }
-		}
-		if (attrLength > 0)
-			node.setAttributes((short) attrLength);
-		// notify observers about progress every 100 lines
-		if (locator != null) {
-			currentLine = locator.getLineNumber();
-			if (!validate) {
-				progress.setValue(currentLine);
-				if (progress.changed()) {
-					setChanged();
-					notifyObservers(progress);
-				}
-			}
-		}
 	}
-
-	private void storeText() {
-		if (!nodeContentStack.isEmpty()) {
-			for (int i = 0; i < nodeContentStack.size(); i++) {
-				XMLString next = (XMLString) nodeContentStack.get(i);
-				next.append(charBuf);
-			}
+	if (attrLength > 0)
+	    node.setAttributes((short) attrLength);
+	// notify observers about progress every 100 lines
+	if (locator != null) {
+	    currentLine = locator.getLineNumber();
+	    if (!validate) {
+		progress.setValue(currentLine);
+		if (progress.changed()) {
+		    setChanged();
+		    notifyObservers(progress);
 		}
-		broker.storeNode(transaction, text, currentPath);
+	    }
+	}
+    }
+
+    private void storeText() {
+	if (!nodeContentStack.isEmpty()) {
+	    for (int i = 0; i < nodeContentStack.size(); i++) {
+		XMLString next = (XMLString) nodeContentStack.get(i);
+		next.append(charBuf);
+	    }
+	}
+	broker.storeNode(transaction, text, currentPath);
         if (indexListener != null) {
             indexListener.characters(transaction, text, currentPath);
         }
     }
     
-	private void storeElement(ElementImpl node) {
-		broker.storeNode(transaction, node, currentPath);
+    private void storeElement(ElementImpl node) {
+	broker.storeNode(transaction, node, currentPath);
         if (indexListener != null)
             indexListener.startElement(transaction, node, currentPath);
         node.setChildCount(0);
-		if (GeneralRangeIndexSpec.hasQNameOrValueIndex(node.getIndexType()) ||
-                (ftIdx != null && ftIdx.hasQNameIndex(node.getQName()))) {
+	if (GeneralRangeIndexSpec.hasQNameOrValueIndex(node.getIndexType()) ||
+	    (ftIdx != null && ftIdx.hasQNameIndex(node.getQName()))) {
             XMLString contentBuf = new XMLString();
             nodeContentStack.push(contentBuf);
         }
-	}
+    }
 
-	public void startEntity(String name) {
-	}
+    public void startEntity(String name) {
+    }
 
-	public void startPrefixMapping(String prefix, String uri) {
-		// skip the eXist namespace
-//		if (uri.equals(Namespaces.EXIST_NS)) {
-//			ignorePrefix = prefix;
-//			return;
-//		}
-		nsMappings.put(prefix, uri);
-	}
+    public void startPrefixMapping(String prefix, String uri) {
+	// skip the eXist namespace
+	//		if (uri.equals(Namespaces.EXIST_NS)) {
+	//			ignorePrefix = prefix;
+	//			return;
+	//		}
+	nsMappings.put(prefix, uri);
+    }
 
-	public void warning(SAXParseException e) throws SAXException {
-		LOG.debug("warning at line " + e.getLineNumber(), e);
-		throw new SAXException(
-			"warning at line " + e.getLineNumber() + ": " + e.getMessage(),
-			e);
-	}
+    public void warning(SAXParseException e) throws SAXException {
+	LOG.debug("warning at line " + e.getLineNumber(), e);
+	throw new SAXException(
+			       "warning at line " + e.getLineNumber() + ": " + e.getMessage(),
+			       e);
+    }
 	
     private void setPrevious(StoredNode previous) {
         if (prevNode != null) {
             switch (prevNode.getNodeType()) {
-                case Node.ATTRIBUTE_NODE :
-                    prevNode.release();
-                    break;
-                case Node.ELEMENT_NODE :
-                    if (prevNode != rootNode) {
-                        prevNode.clear();
-                        usedElements.push(prevNode);
-                    }
-                    break;
-                case Node.TEXT_NODE :
-                    prevNode.clear();
-                    break;
+	    case Node.ATTRIBUTE_NODE :
+		prevNode.release();
+		break;
+	    case Node.ELEMENT_NODE :
+		if (prevNode != rootNode) {
+		    prevNode.clear();
+		    usedElements.push(prevNode);
+		}
+		break;
+	    case Node.TEXT_NODE :
+		prevNode.clear();
+		break;
             }
         }
         prevNode = previous;
