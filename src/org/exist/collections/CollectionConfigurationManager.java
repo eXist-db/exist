@@ -54,9 +54,8 @@ public class CollectionConfigurationManager {
 	private static final Logger LOG = Logger.getLogger(CollectionConfigurationManager.class);
 	
     public final static String CONFIG_COLLECTION = DBBroker.SYSTEM_COLLECTION + "/config";
+    public final static String COLLECTION_CONFIG_FILENAME = "collection.xconf";
     
-    public final static XmldbURI CONFIG_COLLECTION_URI = XmldbURI.create(CONFIG_COLLECTION);
-
     private BrokerPool pool;
 	
     private Map cache = new TreeMap();
@@ -77,7 +76,8 @@ public class CollectionConfigurationManager {
     public void addConfiguration(Txn transaction, DBBroker broker, Collection collection, String config) 
     throws CollectionConfigurationException {
     	try {
-			XmldbURI path = CONFIG_COLLECTION_URI.append(collection.getURI());
+    		//TODO : use XmldbURI.resolve() !
+			XmldbURI path = XmldbURI.CONFIG_COLLECTION_URI.append(collection.getURI());
 			Collection confCol = broker.getOrCreateCollection(transaction, path);
 			if(confCol == null)
 				throw new CollectionConfigurationException("Failed to create config collection: " + path);
@@ -129,7 +129,7 @@ public class CollectionConfigurationManager {
 
     	CollectionConfiguration conf = new CollectionConfiguration(broker.getBrokerPool(), collection);
         boolean configFound = false;
-    	XmldbURI path = CONFIG_COLLECTION_URI.append(collection.getURI());
+    	XmldbURI path = XmldbURI.CONFIG_COLLECTION_URI.append(collection.getURI());
     	Collection coll = null;
     	/*
     	 * This used to go from the root collection (/db), and continue all the
@@ -138,7 +138,7 @@ public class CollectionConfigurationManager {
     	 * the root, stopping at the first config file it finds. This should be
     	 * more efficient, and fit more appropriately will the XmldbURI api
     	 */
-    	while(!configFound && !path.equals(CONFIG_COLLECTION_URI)) {
+    	while(!configFound && !path.equals(XmldbURI.CONFIG_COLLECTION_URI)) {
     		try {
     			coll = broker.openCollection(path,Lock.READ_LOCK);
     			if (coll != null && coll.getDocumentCount() > 0) {
@@ -189,9 +189,10 @@ public class CollectionConfigurationManager {
      * @param collectionPath
      */
     protected void invalidateAll(XmldbURI collectionPath) {
-        if (!collectionPath.startsWith(CONFIG_COLLECTION_URI))
-    		return;
-        collectionPath = collectionPath.trimFromBeginning(CONFIG_COLLECTION_URI);
+    	//TODO : use XmldbURI.resolve !
+        if (!collectionPath.startsWith(XmldbURI.CONFIG_COLLECTION_URI))
+    		return;        
+        collectionPath = collectionPath.trimFromBeginning(XmldbURI.CONFIG_COLLECTION_URI);
 		// we synchronize on the global CollectionCache to avoid deadlocks.
 		// the calling code does mostly already hold a lock on CollectionCache.
 		CollectionCache collectionCache = pool.getCollectionsCache();
@@ -217,9 +218,10 @@ public class CollectionConfigurationManager {
      * @param collectionPath
      */
     protected void invalidate(XmldbURI collectionPath) {
-    	if (!collectionPath.startsWith(CONFIG_COLLECTION_URI))
+    	//TODO : use XmldbURI.resolve !
+    	if (!collectionPath.startsWith(XmldbURI.CONFIG_COLLECTION_URI))
     		return;
-    	collectionPath = collectionPath.trimFromBeginning(CONFIG_COLLECTION_URI);
+    	collectionPath = collectionPath.trimFromBeginning(XmldbURI.CONFIG_COLLECTION_URI);
 		CollectionCache collectionCache = pool.getCollectionsCache();
 		synchronized (collectionCache) {
 	    	CollectionConfiguration config = (CollectionConfiguration) cache.get(collectionPath);
@@ -240,10 +242,10 @@ public class CollectionConfigurationManager {
         TransactionManager transact = pool.getTransactionManager();
         Txn txn = null;
     	try {
-    		Collection root = broker.getCollection(CONFIG_COLLECTION_URI);
+    		Collection root = broker.getCollection(XmldbURI.CONFIG_COLLECTION_URI);
     		if(root == null) {
     			txn = transact.beginTransaction();
-    			root = broker.getOrCreateCollection(txn, CONFIG_COLLECTION_URI);
+    			root = broker.getOrCreateCollection(txn, XmldbURI.CONFIG_COLLECTION_URI);
                 SanityCheck.THROW_ASSERT(root != null);
     			broker.saveCollection(txn, root);
                 transact.commit(txn);

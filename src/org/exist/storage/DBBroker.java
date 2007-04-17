@@ -79,11 +79,6 @@ public abstract class DBBroker extends Observable {
 
 	public final static String TEMP_COLLECTION = SYSTEM_COLLECTION + "/temp";
 
-	public final static String CONFIG_COLLECTION = SYSTEM_COLLECTION
-			+ "/config";
-
-	public final static String COLLECTION_CONFIG_FILENAME = "collection.xconf";
-
     //TODO : move elsewhere
     public static String PROPERTY_XUPDATE_GROWTH_FACTOR = "xupdate.growth-factor";
 
