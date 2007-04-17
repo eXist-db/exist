@@ -44,6 +44,8 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
+import org.xml.sax.SAXException;
+
 /**
  * eXist SQL Module Extension ExecuteFunction 
  * 
@@ -175,9 +177,13 @@ public class ExecuteFunction extends BasicFunction
 			//return the xml result set
 			return ModuleUtils.stringToXML(context, xmlBuf.toString());
 		}
+		catch(SAXException se)
+		{
+			throw new XPathException(se);
+		}
 		catch(SQLException e)
 		{
-			throw new XPathException(e.getMessage());
+			throw new XPathException(e);
 		}
 	}
 	
