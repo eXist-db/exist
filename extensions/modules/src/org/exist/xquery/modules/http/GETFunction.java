@@ -23,7 +23,6 @@
 package org.exist.xquery.modules.http;
 
 import org.apache.commons.httpclient.Cookie;
-import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpState;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -38,11 +37,15 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.modules.ModuleUtils;
-import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
+
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
 
 /**
  * @author Adam Retter <adam.retter@devon.gov.uk>
@@ -75,7 +78,7 @@ public class GETFunction extends BasicFunction {
 		//get the persist cookies
 		boolean persistCookies = args[1].effectiveBooleanValue();
 		
-		//setup get content
+		//setup get request
 		GetMethod get = new GetMethod(url);
 		
         //use existing cookies
@@ -92,11 +95,18 @@ public class GETFunction extends BasicFunction {
         }
         
 		//execute the request
-		int result = -1;
 		try
 		{
-			HttpClient http = new HttpClient();
-			result = http.executeMethod(get);
+			HttpClient http = null;
+			try
+			{
+				http = new HttpClient();
+				int result = http.executeMethod(get);
+			}
+			catch(IOException ioe)
+			{
+				throw new XPathException(ioe);
+			}
 			
 			//persist cookies
 			if(persistCookies)
@@ -107,52 +117,65 @@ public class GETFunction extends BasicFunction {
 				context.setXQueryContextVar(HTTPModule.HTTP_MODULE_PERSISTENT_COOKIES, HTTPModule.mergeCookies(currentCookies, incomingCookies));
 			}
 			
-			//determine the type of the response document
-			Header responseContentType = get.getResponseHeader("Content-Type");
-			String responseMimeType = responseContentType.getValue().substring(0, responseContentType.getValue().indexOf(';'));
+			//try and parse the response as XML
+			try
+			{
+				return ModuleUtils.stringToXML(context, get.getResponseBodyAsString());
+			}
+			catch(IOException ioe)
+			{
+				throw new XPathException(ioe);
+			}
+			catch(SAXException se)
+			{
+				//could not parse to xml
+			}
+			
+			//response is NOT parseable as XML, determine the type of the response document
+			String responseContentType = get.getResponseHeader("Content-Type").getValue();
+			int contentTypeEnd = responseContentType.indexOf(";");
+			if(contentTypeEnd == -1)
+			{
+				contentTypeEnd = responseContentType.length();
+			}
+			String responseMimeType = responseContentType.substring(0, contentTypeEnd);
 			MimeTable mimeTable = MimeTable.getInstance();
 			MimeType mimeType = mimeTable.getContentType(responseMimeType);
 			
-			//return the data
-			if(mimeType.isXMLType())
+			//is it a html document?
+			if(mimeType.getName().equals(MimeType.HTML_TYPE.getName()))
 			{
-				// xml response
-				return ModuleUtils.stringToXML(context, get.getResponseBodyAsString());
-			}
-			else
-			{
-				if(mimeType.getName().equals(MimeType.HTML_TYPE.getName()))
+				//html document
+				try
 				{
-					// html response
-					/*if(isValidXHTML)
-					{
-						return xhtml;
-					}
-					else
-					{
-						//tidy up the html
-					}*/
-					
-					return Sequence.EMPTY_SEQUENCE;
+					//parse html to xml(html)
+					return ModuleUtils.htmlToXHtml(context, url, new InputSource(get.getResponseBodyAsStream()));
 				}
-				else
+				catch(IOException ioe)
 				{
-					// assume binary response, encode as base64
-					Base64Encoder enc = new Base64Encoder();
-					enc.translate(get.getResponseBody());
-					return new StringValue(enc.getCharArray().toString());
+					throw new XPathException(ioe);
+				}
+				catch(SAXException se)
+				{
+					//counld not parse to xml(html)
 				}
 			}
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
-		}
+	
+			try
+			{
+				//other document type, assume binary so base64 encode
+				Base64Encoder enc = new Base64Encoder();
+				enc.translate(get.getResponseBody());
+				return new StringValue(enc.getCharArray().toString());
+			}
+			catch(IOException ioe)
+			{
+				throw new XPathException(ioe);
+			}
+		}	
 		finally
 		{
 			get.releaseConnection();
 		}
-		
-		return Sequence.EMPTY_SEQUENCE;
 	}
 }

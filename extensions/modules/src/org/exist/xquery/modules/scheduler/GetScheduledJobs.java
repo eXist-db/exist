@@ -40,6 +40,8 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
+import org.xml.sax.SAXException;
+
 /**
  * eXist Scheduler Module Extension GetScheduledJobs
  * 
@@ -145,6 +147,13 @@ public class GetScheduledJobs extends BasicFunction
 		xmlBuf.insert(0, "<scheduler:jobs xmlns:scheduler=\"" + SchedulerModule.NAMESPACE_URI + "\" count=\"" + iJobs + "\">");
 		xmlBuf.append("</scheduler:jobs>");
 		
-		return ModuleUtils.stringToXML(context, xmlBuf.toString());
+		try
+		{
+			return ModuleUtils.stringToXML(context, xmlBuf.toString());
+		}
+		catch(SAXException se)
+		{
+			throw new XPathException(se);
+		}
 	}
 }

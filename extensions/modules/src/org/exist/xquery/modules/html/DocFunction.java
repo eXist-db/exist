@@ -30,24 +30,20 @@ import java.net.URL;
 import java.net.URLConnection;
 
 import org.exist.dom.QName;
-import org.exist.memtree.SAXAdapter;
 import org.exist.security.PermissionDeniedException;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.modules.ModuleUtils;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
-import org.w3c.dom.Document;
-
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 
-import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 
 /**
@@ -86,9 +82,7 @@ public class DocFunction extends BasicFunction {
 	}
 
 	private Sequence getHTMLDocument(String path) throws PermissionDeniedException, XMLDBException, XPathException
-	{
-		Sequence document = Sequence.EMPTY_SEQUENCE;
-		
+	{	
 		try
 		{
 			//Basic tests on the URL				
@@ -104,44 +98,13 @@ public class DocFunction extends BasicFunction {
                 }
 				else if(httpConnection.getResponseCode() != HttpURLConnection.HTTP_OK)
 				{
-					//TODO : return another type 
+					//TODO : return another type
                     throw new PermissionDeniedException("Server returned code " + httpConnection.getResponseCode());	
                 }
 			}
 			
-			//TODO : process pseudo-protocols URLs more efficiently.
-			org.exist.memtree.DocumentImpl memtreeDoc = null;
-			// we use eXist's in-memory DOM implementation
-			//TODO : we should be able to cope with context.getBaseURI()				
-			InputSource src = new InputSource(con.getInputStream());
-			
-			//use Neko to parse the HTML content to XML
-			XMLReader reader = null;
-			try
-			{
-                LOG.debug("Converting HTML to XML using NekoHTML parser for: " + path);
-                reader = (XMLReader)Class.forName("org.cyberneko.html.parsers.SAXParser").newInstance();
-                
-                //do not modify the case of elements and attributes
-                reader.setProperty("http://cyberneko.org/html/properties/names/elems", "match");
-                reader.setProperty("http://cyberneko.org/html/properties/names/attrs", "no-change");  
-            }
-			catch(Exception e)
-			{
-                LOG.error("Error while involing NekoHTML parser. ("+e.getMessage()
-                        +"). If you want to parse non-wellformed HTML files, put "
-                        +"nekohtml.jar into directory 'lib/user'.", e);
-                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "NekoHTML parser error", e);
-            }
-			
-			
-			SAXAdapter adapter = new SAXAdapter();
-			reader.setContentHandler(adapter);
-			reader.parse(src);					
-			Document doc = adapter.getDocument();
-			memtreeDoc = (org.exist.memtree.DocumentImpl)doc;
-			memtreeDoc.setContext(context);
-			document = memtreeDoc;
+			//xml'ise the HTML
+			return ModuleUtils.htmlToXHtml(context, path, new InputSource(con.getInputStream()));
 		}
 		catch(MalformedURLException e)
 		{
@@ -163,6 +126,5 @@ public class DocFunction extends BasicFunction {
             	throw new XPathException(e.getMessage(), e);	
             }
 		}
-		return document;
 	}
 }
