@@ -521,7 +521,7 @@ public class BTree extends Paged {
 		return true;
 	}
 
-    protected void dumpValue(Writer writer, Value value) throws IOException {
+    protected void dumpValue(Writer writer, Value value, int status) throws IOException {
         byte[] data = value.getData();
         writer.write('[');
         for (int i = 0; i < data.length; i++) {
@@ -1438,7 +1438,7 @@ public class BTree extends Paged {
             writer.write(saved ? "SAVED: " : "DIRTY: ");
             if (ph.getStatus() == BRANCH) {
                 writer.write("PREFIX: ");
-                dumpValue(writer, prefix);
+                dumpValue(writer, prefix, ph.getStatus());
                 writer.write(": ");
             }
             writer.write("NEXT: ");
@@ -1447,7 +1447,7 @@ public class BTree extends Paged {
             for (int i = 0; i < nKeys; i++) {
                 if (i > 0)
                     writer.write(' ');
-                dumpValue(writer, keys[i]);
+                dumpValue(writer, keys[i], ph.getStatus());
             }
             writer.write('\n');
             
