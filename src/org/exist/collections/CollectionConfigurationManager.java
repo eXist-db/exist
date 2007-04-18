@@ -250,6 +250,19 @@ public class CollectionConfigurationManager {
     			broker.saveCollection(txn, root);
                 transact.commit(txn);
     		}
+    	} catch (IOException e) {
+    		transact.abort(txn);
+    		throw new EXistException("Failed to initialize '" + CONFIG_COLLECTION + "' : " + e.getMessage());
+    	} catch (PermissionDeniedException e) {
+    		transact.abort(txn);
+    		throw new EXistException("Failed to initialize '" + CONFIG_COLLECTION + "' : " + e.getMessage());
+    	}
+    }
+
+    public void checkRootCollectionConfigCollection(DBBroker broker) throws EXistException {
+        TransactionManager transact = pool.getTransactionManager();
+        Txn txn = null;
+    	try {
     		//Create a configuration collection for the root collection
     		Collection rootCollectionConfiguration = broker.getCollection(XmldbURI.ROOT_COLLECTION_CONFIG_URI);
     		if(rootCollectionConfiguration == null) {
@@ -258,8 +271,7 @@ public class CollectionConfigurationManager {
                 SanityCheck.THROW_ASSERT(rootCollectionConfiguration != null);
     			broker.saveCollection(txn, rootCollectionConfiguration);    			
                 transact.commit(txn);
-    		}
-    		
+    		}    		
     	} catch (IOException e) {
     		transact.abort(txn);
     		throw new EXistException("Failed to initialize '" + CONFIG_COLLECTION + "' : " + e.getMessage());
@@ -287,32 +299,35 @@ public class CollectionConfigurationManager {
 	    	"    </index>" +
 	    	"</collection>";
     	
-        Collection collection = null;
         TransactionManager transact = pool.getTransactionManager();
         Txn transaction = transact.beginTransaction();
-        try {          
-            collection = broker.openCollection(XmldbURI.ROOT_COLLECTION_URI, Lock.READ_LOCK);
-            if (collection == null) {
-                transact.abort(transaction);
-                throw new EXistException("collection " + XmldbURI.ROOT_COLLECTION_URI + " not found!");
+        try {    
+            Collection collection = null;
+        	try {
+	            collection = broker.openCollection(XmldbURI.ROOT_COLLECTION_URI, Lock.READ_LOCK);
+	            if (collection == null) {
+	                transact.abort(transaction);
+	                throw new EXistException("collection " + XmldbURI.ROOT_COLLECTION_URI + " not found!");
+	            }
+	            CollectionConfiguration conf = getConfiguration(broker, collection);
+	            if (conf != null) {
+	            	//We already have a configuration document : do not erase it
+	                if (conf.getDocName() != null) { 
+	                	transact.abort(transaction);
+	                    return;   
+	                }
+	            }
+            } finally {
+            	if (collection != null)
+            		collection.release(Lock.READ_LOCK);
             }
-            CollectionConfiguration conf = getConfiguration(broker, collection);
-            if (conf != null) {
-            	//We already have a configuration document : do not erase it
-                if (conf.getDocName() != null) { 
-                	transact.abort(transaction);
-                    return;   
-                }
-            }
+            //Configure the root collection
             addConfiguration(transaction, broker, collection, configuration);
             transact.commit(transaction);
             LOG.info("Configured '" + collection.getURI() + "'");  
         } catch (CollectionConfigurationException e) {
             transact.abort(transaction);
             throw new EXistException(e.getMessage());
-        } finally {
-        	if (collection != null)
-        		collection.release(Lock.READ_LOCK);
         } 
     }
     
