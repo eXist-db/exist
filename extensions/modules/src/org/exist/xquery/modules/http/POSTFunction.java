@@ -22,9 +22,6 @@
  */
 package org.exist.xquery.modules.http;
 
-import org.apache.commons.httpclient.Cookie;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpState;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
@@ -35,7 +32,6 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
@@ -44,11 +40,13 @@ import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.XMLWriter;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
-
 
 /**
  * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @serial 20070428
+ * @version 1.0
  */
 public class POSTFunction extends BasicFunction {
 
@@ -98,49 +96,26 @@ public class POSTFunction extends BasicFunction {
 			e.printStackTrace();
 		}
 		
-		//setup post content
+		//setup POST request
 		PostMethod post = new PostMethod(url);
 		RequestEntity entity = new ByteArrayRequestEntity(baos.toByteArray(), "text/xml; utf-8");
         post.setRequestEntity(entity);
-		
-        //use existing cookies
-        if(persistCookies)
-        {
-	        Cookie[] cookies = (Cookie[])context.getXQueryContextVar(HTTPModule.HTTP_MODULE_PERSISTENT_COOKIES);
-			if(cookies != null)
-			{
-				for(int c = 0; c < cookies.length; c++)
-				{
-					post.setRequestHeader("Cookie", cookies[c].toExternalForm());
-				}
-			}
-        }
-        
-		//execute the request
-		int result = -1;
+       
 		try
 		{
-			HttpClient http = new HttpClient();
-			result = http.executeMethod(post);
+			//execute the request
+			HTTPModule.doRequest(context, post, persistCookies);
 			
-			//persist cookies
-			if(persistCookies)
-			{
-				HttpState state = http.getState();
-				Cookie[] incomingCookies = state.getCookies();
-				Cookie[] currentCookies = (Cookie[])context.getXQueryContextVar(HTTPModule.HTTP_MODULE_PERSISTENT_COOKIES);
-				context.setXQueryContextVar(HTTPModule.HTTP_MODULE_PERSISTENT_COOKIES, HTTPModule.mergeCookies(currentCookies, incomingCookies));
-			}
+			//convert/parse and return the result
+			return HTTPModule.httpResponseDataToXQueryDataType(context, post);
 		}
-		catch(Exception e)
+		catch(IOException ioe)
 		{
-			e.printStackTrace();
+			throw new XPathException(ioe);
 		}
 		finally
 		{
 			post.releaseConnection();
 		}
-		
-		return new IntegerValue(result);
 	}
 }

@@ -18,11 +18,9 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *  
- *  $Id:$
+ *  $Id$
  */
 package org.exist.xquery.modules.http;
-
-import org.apache.commons.httpclient.methods.GetMethod;
 
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
@@ -34,60 +32,32 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
-import java.io.IOException;
-
 /**
  * @author Adam Retter <adam.retter@devon.gov.uk>
  * @serial 20070418
  * @version 1.0
  */
-public class GETFunction extends BasicFunction {
+
+public class ClearPersistentCookiesFunction extends BasicFunction {
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
-			new QName("get", HTTPModule.NAMESPACE_URI, HTTPModule.PREFIX),
-			"Performs a HTTP GET request. $a is the URL, $b determines if cookies persist for the query lifetime."
-			+ " XML data will be returned as a Node, HTML data will be tidied into an XML compatible form, any other content will be returned as xs:base64Binary encoded data.",
-			new SequenceType[] {
-				new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE),
-				new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
-			},
-			new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE));
+			new QName("clear-persistent-cookies", HTTPModule.NAMESPACE_URI, HTTPModule.PREFIX),
+			"Clears any persistent cookies.",
+			null,
+			new SequenceType(Type.ITEM, Cardinality.EMPTY)
+		);
 
-	public GETFunction(XQueryContext context)
+	public ClearPersistentCookiesFunction(XQueryContext context)
 	{
 		super(context, signature);
 	}
 
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
-		// must be a URL
-		if(args[0].isEmpty())
-			return Sequence.EMPTY_SEQUENCE;
+		context.setXQueryContextVar(HTTPModule.HTTP_MODULE_PERSISTENT_COOKIES, null);
 		
-		//get the url
-		String url = args[0].itemAt(0).getStringValue();
-		//get the persist cookies
-		boolean persistCookies = args[1].effectiveBooleanValue();
-		
-		//setup GET request
-		GetMethod get = new GetMethod(url);
-		
-		try
-		{
-			//execute the request
-			HTTPModule.doRequest(context, get, persistCookies);	
-			
-			//convert/parse and return the result
-			return HTTPModule.httpResponseDataToXQueryDataType(context, get);
-		}
-		catch(IOException ioe)
-		{
-			throw new XPathException(ioe);
-		}
-		finally
-		{
-			get.releaseConnection();
-		}
+		return Sequence.EMPTY_SEQUENCE;
 	}
+
 }

@@ -52,9 +52,9 @@
       </para>
     </section>        
     
-    <section id="module_html">
-      <title>HTML Module</title>
-      <para>Functions for working with HTML documents</para> 		    		
+    <section id="module_http">
+      <title>HTTP Module</title>
+      <para>Functions for performing HTTP requests</para> 		    		
       <para>
 	<command>Creator:</command>&#160;<dc:creator>Adam Retter</dc:creator>
 	<command>Licence:</command>&#160;LGPL
@@ -62,8 +62,8 @@
 	<command>Status:</command>&#160;production
       </para>
       <para>
-	<command>Class:</command>&#160;org.exist.xquery.modules.html.HTMLModule
-	<command>Namespace:</command>&#160;http://exist-db.org/xquery/html
+	<command>Class:</command>&#160;org.exist.xquery.modules.http.HTTPModule
+	<command>Namespace:</command>&#160;http://exist-db.org/xquery/http
       </para>
     </section>
     
