@@ -1971,6 +1971,22 @@ public class XQueryTest extends XMLTestCase {
         }
     }
     
+    public void bugtestQnameToString_1632365(){
+        String query="let $qname := QName(\"http://test.org\", \"test:name\") " +
+                "return xs:string($qname)";
+        String expectedresult="test:name";
+
+        try {
+            XPathQueryService service 
+                    = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+            assertEquals(expectedresult, result.getResource(0).getContent().toString());
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+        
+    }
 
     // ======================================
     
