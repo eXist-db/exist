@@ -62,7 +62,7 @@ public class CollectionConfigurationManager {
     
     public CollectionConfigurationManager(DBBroker broker) throws EXistException {
 		this.pool = broker.getBrokerPool();
-		checkConfigCollection(broker);
+		checkConfigCollection(broker);		
     }
     
 	/**
@@ -250,6 +250,16 @@ public class CollectionConfigurationManager {
     			broker.saveCollection(txn, root);
                 transact.commit(txn);
     		}
+    		//Create a configuration collection for the root collection
+    		Collection rootCollectionConfiguration = broker.getCollection(XmldbURI.ROOT_COLLECTION_CONFIG_URI);
+    		if(rootCollectionConfiguration == null) {
+    			txn = transact.beginTransaction();
+    			rootCollectionConfiguration = broker.getOrCreateCollection(txn, XmldbURI.ROOT_COLLECTION_CONFIG_URI);
+                SanityCheck.THROW_ASSERT(rootCollectionConfiguration != null);
+    			broker.saveCollection(txn, rootCollectionConfiguration);    			
+                transact.commit(txn);
+    		}
+    		
     	} catch (IOException e) {
     		transact.abort(txn);
     		throw new EXistException("Failed to initialize '" + CONFIG_COLLECTION + "' : " + e.getMessage());
@@ -258,4 +268,52 @@ public class CollectionConfigurationManager {
     		throw new EXistException("Failed to initialize '" + CONFIG_COLLECTION + "' : " + e.getMessage());
     	}
     }
+    
+    /** Create a stored default configuration document for the root collection 
+     * @param broker The broker which will do the operation
+     * @throws EXistException
+     */
+    public void checkRootCollectionConfig(DBBroker broker) throws EXistException {
+    	String configuration = 
+			"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
+	    	"    <index>" +
+	    	
+	    	//Copied from the legacy conf.xml in order to make the test suite work
+	    	//TODO : backward compatibility could be ensured by copying the relevant parts of conf.xml
+            "        <fulltext attributes=\"true\" default=\"all\">" +
+            "            <exclude path=\"/auth\" />" +
+            "        </fulltext>" +
+            
+	    	"    </index>" +
+	    	"</collection>";
+    	
+        Collection collection = null;
+        TransactionManager transact = pool.getTransactionManager();
+        Txn transaction = transact.beginTransaction();
+        try {          
+            collection = broker.openCollection(XmldbURI.ROOT_COLLECTION_URI, Lock.READ_LOCK);
+            if (collection == null) {
+                transact.abort(transaction);
+                throw new EXistException("collection " + XmldbURI.ROOT_COLLECTION_URI + " not found!");
+            }
+            CollectionConfiguration conf = getConfiguration(broker, collection);
+            if (conf != null) {
+            	//We already have a configuration document : do not erase it
+                if (conf.getDocName() != null) { 
+                	transact.abort(transaction);
+                    return;   
+                }
+            }
+            addConfiguration(transaction, broker, collection, configuration);
+            transact.commit(transaction);
+            LOG.info("Configured '" + collection.getURI() + "'");  
+        } catch (CollectionConfigurationException e) {
+            transact.abort(transaction);
+            throw new EXistException(e.getMessage());
+        } finally {
+        	if (collection != null)
+        		collection.release(Lock.READ_LOCK);
+        } 
+    }
+    
 }
