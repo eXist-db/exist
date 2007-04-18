@@ -743,7 +743,9 @@ public class BrokerPool {
 			securityManager.getPDP().initializePolicyCollection();
 		//Get a manager to handle further collectios configuration
 		collectionConfigurationManager = new CollectionConfigurationManager(broker);
-        
+		//Create a default configuration file for the root collection
+		//TODO : why can't we call this from within CollectionConfigurationManager ?
+		collectionConfigurationManager.checkRootCollectionConfig(broker);		
         //If necessary, launch a task to repair the DB
         //TODO : merge this with the recovery process ?
         if (recovered) {
