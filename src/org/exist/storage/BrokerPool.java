@@ -721,13 +721,6 @@ public class BrokerPool {
         // WM: attention: a small change in the sequence of calls can break
         // either normal startup or recovery.
         
-        // remove temporary docs
-		try {
-			broker.cleanUpTempCollection();
-		} catch (IOException e) {
-			LOG.warn("Can not cleaup tempcollection", e);
-		}
-        
         //create the security manager
 		//TODO : why only the first broker has a security manager ? Global or attached to each broker ?
         // WM: there's only one security manager per BrokerPool, but it needs a DBBroker instance to read
@@ -743,9 +736,6 @@ public class BrokerPool {
 			securityManager.getPDP().initializePolicyCollection();
 		//Get a manager to handle further collectios configuration
 		collectionConfigurationManager = new CollectionConfigurationManager(broker);
-		//Create a default configuration file for the root collection
-		//TODO : why can't we call this from within CollectionConfigurationManager ?
-		collectionConfigurationManager.checkRootCollectionConfig(broker);		
         //If necessary, launch a task to repair the DB
         //TODO : merge this with the recovery process ?
         if (recovered) {
@@ -756,16 +746,32 @@ public class BrokerPool {
                 LOG.warn("Error during recovery: " + e.getMessage(), e);
             }
         }
+
+        //OK : the DB is repaired; let's make a few RW operations
 		
-        //Create the minimal number of brokers required by the configuration 
-		for (int i = 1; i < minBrokers; i++)
-			createBroker();        
+        // remove temporary docs
+		try {
+			broker.cleanUpTempCollection();
+		} catch (IOException e) {
+			LOG.warn("Can not cleanup temp collection", e);
+		}
+
+		//Create a default configuration file for the root collection
+		//TODO : why can't we call this from within CollectionConfigurationManager ?
+		//TODO : understand why we get a test suite failure
+        //collectionConfigurationManager.checkRootCollectionConfigCollection(broker);
+        //collectionConfigurationManager.checkRootCollectionConfig(broker);		
+
 		//Schedule the system tasks	            
 	    for (int i = 0; i < systemTasks.size(); i++) {
 	    	//TODO : remove first argument when SystemTask has a getPeriodicity() method
 	        initSystemTask((SingleInstanceConfiguration.SystemTaskConfig) systemTasksPeriods.get(i), (SystemTask)systemTasks.get(i));
 	    }		
 		systemTasksPeriods = null;
+
+		//Create the minimal number of brokers required by the configuration 
+		for (int i = 1; i < minBrokers; i++)
+			createBroker();        
         
         if (LOG.isDebugEnabled())
             LOG.debug("database instance '" + instanceName + "' initialized");
