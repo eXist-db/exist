@@ -49,7 +49,8 @@ public class JnlpJarFiles {
         "excalibur-cli-%latest%",
         "jEdit-syntax",
         "jline-%latest%",
-        "log4j-%latest%"
+        "log4j-%latest%",
+        "stax-api-%latest%"
     };
     
     // Resolves jar file patterns from jars[].
