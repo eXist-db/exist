@@ -53,6 +53,8 @@ public class IndexController {
 
     protected StoredNode reindexNode = null;
     
+    protected int currentMode = StreamListener.UNKKNOWN;
+    
     public IndexController(DBBroker broker) {
         IndexWorker[] workers = broker.getBrokerPool().getIndexManager().getWorkers();
         for (int i = 0; i < workers.length; i++) {
@@ -75,13 +77,18 @@ public class IndexController {
     /**
      * Returns a chain of {@link org.exist.indexing.StreamListener}, one
      * for each index configured.
+     * Note that the chain is reinitialized when the operating mode changes.
+     * That allows workers to return different {@link org.exist.indexing.StreamListener}
+     * for each mode.  
      *
      * @param document
      * @param mode
      * @return chain of StreamListeners
      */
     public StreamListener getStreamListener(DocumentImpl document, int mode) {
-        if (listener != null) {
+    	if (currentMode != mode) {
+    		currentMode = mode;
+    	} else if (listener != null) {
             StreamListener next = listener;
             while (next != null) {
                 next.setDocument(document, mode);

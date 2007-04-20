@@ -75,9 +75,9 @@ public interface IndexWorker {
     void flush();
 
     /**
-     * Return a stream listener to index the specified document. There will never be more than one
-     * StreamListener being used per thread, so it is safe for the implementation to reuse a
-     * single StreamListener.
+     * Return a stream listener to index the specified document in the specified mode. 
+     * There will never be more than one StreamListener being used per thread, so it is safe 
+     * for the implementation to reuse a single StreamListener.
      *
      * Parameter mode specifies the type of the current operation. 
      *

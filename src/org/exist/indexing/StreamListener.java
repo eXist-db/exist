@@ -34,7 +34,9 @@ import org.exist.dom.DocumentImpl;
  */
 public interface StreamListener {
 
-    public final static int STORE = 0;
+	public final static int UNKKNOWN = -1;
+	
+	public final static int STORE = 0;
 
     public final static int REMOVE = 1;
 
