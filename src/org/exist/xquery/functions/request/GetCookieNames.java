@@ -76,22 +76,21 @@ public class GetCookieNames extends BasicFunction {
 		if (value.getObject() instanceof RequestWrapper)
 		{
 			Cookie[] cookies = ((RequestWrapper)value.getObject()).getCookies();
-			
-			if(cookies.length != 0)
+			if(cookies != null)
 			{
-				ValueSequence names = new ValueSequence();
-			
-				for(int c = 0; c < cookies.length; c++)
+				if(cookies.length != 0)
 				{
-					names.add(new StringValue(cookies[c].getName()));
-				}
+					ValueSequence names = new ValueSequence();
 				
-				return names;
+					for(int c = 0; c < cookies.length; c++)
+					{
+						names.add(new StringValue(cookies[c].getName()));
+					}
+					
+					return names;
+				}
 			}
-			else
-			{
-				return Sequence.EMPTY_SEQUENCE;
-			}
+			return Sequence.EMPTY_SEQUENCE;
 		}
 		else
 			throw new XPathException("Variable $request is not bound to a Request object.");
