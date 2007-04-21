@@ -1,17 +1,30 @@
 package org.exist.xquery.functions.text;
 
-import org.exist.xquery.*;
-import org.exist.xquery.util.Error;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.Item;
-import org.exist.dom.*;
+import java.util.List;
+
+import org.exist.dom.DocumentSet;
+import org.exist.dom.ExtArrayNodeSet;
+import org.exist.dom.Match;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
+import org.exist.dom.NodeSetIterator;
+import org.exist.dom.QName;
 import org.exist.indexing.impl.NGramIndex;
 import org.exist.indexing.impl.NGramIndexWorker;
-
-import java.util.List;
-import java.util.Iterator;
+import org.exist.xquery.Atomize;
+import org.exist.xquery.Cardinality;
+import org.exist.xquery.Dependency;
+import org.exist.xquery.DynamicCardinalityCheck;
+import org.exist.xquery.Expression;
+import org.exist.xquery.Function;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.util.Error;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.Type;
 
 /**
  * Created by IntelliJ IDEA.
@@ -62,7 +75,10 @@ public class NGramSearch extends Function {
             NodeSet inNodes = input.toNodeSet();
             DocumentSet docs = inNodes.getDocumentSet();
             NGramIndexWorker index = (NGramIndexWorker)
-                    context.getBroker().getIndexController().getIndexWorkerById(NGramIndex.ID);
+              context.getBroker().getIndexController().getIndexWorkerById(NGramIndex.ID);
+        	//Alternate design
+        	//NGramIndexWorker index = (NGramIndexWorker)context.getBroker().getBrokerPool().getIndexManager().getIndexById(NGramIndex.ID).getWorker();
+            
             String key = getArgument(1).eval(contextSequence, contextItem).getStringValue();
             String[] ngrams = index.getDistinctNGrams(key);
             for (int i = 0; i < ngrams.length; i++) {

@@ -88,6 +88,24 @@ public class IndexManager {
         return indexers.values().iterator();
     }
 
+    public synchronized Index getIndexById(String indexId) {
+    	for (Iterator i = iterator(); i.hasNext(); ) {
+    		Index indexer = (Index) i.next();
+    		//Awfully tricky !
+    		try {
+	    		if (indexId.equals(indexer.getClass().getField("ID")));
+	    			return indexer;
+    		} catch (NoSuchFieldException e) {
+    			
+    		}
+    	}
+    	return null;
+    }
+
+    public synchronized Index getIndexByName(String indexName) {
+        return (Index)indexers.get(indexName);
+    }
+    
     /**
      * Returns a set of IndexWorkers, one for each registered index. The
      * returned IndexWorkers are used by the DBBroker instances to do the
