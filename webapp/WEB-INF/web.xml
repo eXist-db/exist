@@ -11,8 +11,8 @@
      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
      xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd" version="2.4">
     
-	<display-name>eXist XML Database</display-name>
-	<description>eXist Open Source Native XML Database</description>
+    <description>eXist Open Source Native XML Database</description>
+    <display-name>eXist XML Database</display-name>
 
     <!-- 
         Initialize Log4j using a servlet.
