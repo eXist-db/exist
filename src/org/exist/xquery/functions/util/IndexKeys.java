@@ -120,6 +120,8 @@ public class IndexKeys extends BasicFunction {
         Sequence result = new ValueSequence();
         if (this.getArgumentCount() == 5) {
         	IndexWorker indexWorker = context.getBroker().getIndexController().getIndexWorkerByName(args[4].itemAt(0).getStringValue());
+        	//Alternate design
+        	//IndexWorker indexWorker = context.getBroker().getBrokerPool().getIndexManager().getIndexByName(args[4].itemAt(0).getStringValue()).getWorker();
         	if (indexWorker == null)
         		throw new XPathException("Unknown index: " + args[4].itemAt(0).getStringValue());
         	//TODO : how to take the nodes into account ?
