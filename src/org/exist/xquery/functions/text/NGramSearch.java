@@ -62,7 +62,7 @@ public class NGramSearch extends Function {
             NodeSet inNodes = input.toNodeSet();
             DocumentSet docs = inNodes.getDocumentSet();
             NGramIndexWorker index = (NGramIndexWorker)
-                    context.getBroker().getIndexController().getIndexWorker(NGramIndex.ID);
+                    context.getBroker().getIndexController().getIndexWorkerById(NGramIndex.ID);
             String key = getArgument(1).eval(contextSequence, contextItem).getStringValue();
             String[] ngrams = index.getDistinctNGrams(key);
             for (int i = 0; i < ngrams.length; i++) {

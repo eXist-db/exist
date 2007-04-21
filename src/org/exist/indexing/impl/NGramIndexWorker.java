@@ -98,6 +98,10 @@ public class NGramIndexWorker implements IndexWorker {
     public String getIndexId() {
         return NGramIndex.ID;
     }
+    
+    public String getIndexName() {
+        return index.getIndexName();
+    }    
 
     public Index getIndex() {
         return index;

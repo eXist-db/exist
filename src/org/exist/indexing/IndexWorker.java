@@ -48,6 +48,12 @@ public interface IndexWorker {
     String getIndexId();
 
     /**
+     * Returns an name which uniquely identifies this index.
+     * @return a unique name identifying this index.
+     */
+    String getIndexName();
+
+    /**
      * Read an index configuration from an collection.xconf configuration document.
      *
      * This method is called by the {@link org.exist.collections.CollectionConfiguration} while

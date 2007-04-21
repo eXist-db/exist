@@ -25,7 +25,9 @@ package org.exist.xquery.functions.util;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
+import org.exist.indexing.IndexWorker;
 import org.exist.storage.Indexable;
+import org.exist.util.Occurrences;
 import org.exist.util.ValueOccurrences;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -44,17 +46,30 @@ import org.exist.xquery.value.Type;
  */
 public class IndexKeyDocuments extends BasicFunction {
 
-	public final static FunctionSignature signature = new FunctionSignature(
-			new QName("index-key-documents", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-			"Return the number of documents for an indexed value. " +
-            "The first argument specifies the nodes whose content is indexed. " +
-            "The second argument specifies the value. ",
-			new SequenceType[] {
-					new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-					new SequenceType(Type.ATOMIC, Cardinality.EXACTLY_ONE) },
-			new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE));
+	public final static FunctionSignature[] signatures = {
+		new FunctionSignature(
+				new QName("index-key-documents", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+				"Return the number of documents for an indexed value. " +
+	            "The first argument specifies the nodes whose content is indexed. " +
+	            "The second argument specifies the value. ",
+				new SequenceType[] {
+						new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
+						new SequenceType(Type.ATOMIC, Cardinality.EXACTLY_ONE) },
+				new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE)),
+		new FunctionSignature(
+				new QName("index-key-documents", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+				"Return the number of documents for an indexed value. " +
+	            "The first argument specifies the nodes whose content is indexed. " +
+	            "The second argument specifies the value. " +
+	            "The third argument specifies the index in which the search is made",
+				new SequenceType[] {
+						new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
+						new SequenceType(Type.ATOMIC, Cardinality.EXACTLY_ONE), 
+						new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
+				new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE))				
+	};
 
-	public IndexKeyDocuments(XQueryContext context) {
+	public IndexKeyDocuments(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
     
@@ -72,12 +87,25 @@ public class IndexKeyDocuments extends BasicFunction {
     	else {
 	        NodeSet nodes = args[0].toNodeSet();
 	        DocumentSet docs = nodes.getDocumentSet();	        
-	        ValueOccurrences occur[] = context.getBroker().getValueIndex()
-	                .scanIndexKeys(docs, nodes, (Indexable) args[1]);
-	        if (occur.length == 0)
-	        	result= Sequence.EMPTY_SEQUENCE;
-	        else
-	        	result = new IntegerValue(occur[0].getDocuments());
+	        if (this.getArgumentCount() == 3) {
+	        	IndexWorker indexWorker = context.getBroker().getIndexController().getIndexWorkerByName(args[2].itemAt(0).getStringValue());
+	        	if (indexWorker == null)
+	        		throw new XPathException("Unknown index: " + args[2].itemAt(0).getStringValue());
+	        	//TODO : how to take the nodes into account ?
+	        	//TODO : how to take the start value into account as well ?
+	        	Occurrences[] occur = indexWorker.scanIndex(docs);
+		        if (occur.length == 0)
+		        	result= Sequence.EMPTY_SEQUENCE;
+		        else
+		        	result = new IntegerValue(occur[0].getDocuments());
+	        } else {
+		        ValueOccurrences occur[] = context.getBroker().getValueIndex()
+                .scanIndexKeys(docs, nodes, (Indexable) args[1]);
+		        if (occur.length == 0)
+		        	result= Sequence.EMPTY_SEQUENCE;
+		        else
+		        	result = new IntegerValue(occur[0].getDocuments());        	
+	        }
     	}
     	
         if (context.getProfiler().isEnabled()) 

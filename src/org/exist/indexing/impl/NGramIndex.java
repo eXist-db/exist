@@ -21,6 +21,8 @@
  */
 package org.exist.indexing.impl;
 
+import java.io.File;
+
 import org.apache.log4j.Logger;
 import org.exist.indexing.Index;
 import org.exist.indexing.IndexWorker;
@@ -30,25 +32,26 @@ import org.exist.storage.index.BFile;
 import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Element;
 
-import java.io.File;
-
 /**
  */
 public class NGramIndex implements Index {
-
+	
     public final static String ID = NGramIndex.class.getName();
 
     private final static Logger LOG = Logger.getLogger(NGramIndex.class);
 
     protected BrokerPool pool;
     protected BFile db;
+    private String name = null;
 
     private int gramSize = 3;
     private File dataFile = null;
-
+    
     public void configure(BrokerPool pool, String dataDir, Element config) throws DatabaseConfigurationException {
         this.pool = pool;
         String fileName = "ngram.dbx";
+        if (config.hasAttribute("id"))
+            name = config.getAttribute("id");
         if (config.hasAttribute("file"))
             fileName = config.getAttribute("file");
         if (config.hasAttribute("n"))
@@ -59,7 +62,11 @@ public class NGramIndex implements Index {
             }
         dataFile = new File(dataDir, fileName);
     }
-
+    
+    public String getIndexName() {
+    	return name;
+    }
+    
     public void open() throws DatabaseConfigurationException {
         try {
             db = new BFile(pool, (byte) 0, false, dataFile, pool.getCacheManager(), 0.1, 0.1, 0.1);

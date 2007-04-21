@@ -35,6 +35,12 @@ import org.exist.storage.btree.DBException;
 public interface Index {
 
     /**
+     * Returns a name which uniquely identifies this index. This is configured by the user
+     * @return a unique name identifying this index.
+     */
+    String getIndexName();
+
+	/**
      * Configure the index and all resources associated with it. This method
      * is called while the database instance is initializing..
      *
