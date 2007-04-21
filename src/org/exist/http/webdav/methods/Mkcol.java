@@ -93,7 +93,7 @@ public class Mkcol extends AbstractWebDAVMethod {
 		        }
             } finally {
             	if (collection != null)
-            		collection.release(Lock.READ_LOCK);
+            		collection.release(Lock.WRITE_LOCK);
             }
             
             TransactionManager transact = pool.getTransactionManager();
