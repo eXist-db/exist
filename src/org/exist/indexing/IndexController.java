@@ -68,12 +68,29 @@ public class IndexController {
      * as returned by {@link org.exist.indexing.IndexWorker#getIndexId()}.
      * 
      * @param indexId
-     * @return instance of indexworker
+     * @return instance of index worker
      */
-    public IndexWorker getIndexWorker(String indexId) {
+    public IndexWorker getIndexWorkerById(String indexId) {
         return (IndexWorker) indexWorkers.get(indexId);
     }
 
+    /**
+     * Returns an {@link org.exist.indexing.IndexWorker} instance corresponding
+     * to the specified index named by indexName. The indexName should be the same one
+     * as returned by {@link org.exist.indexing.IndexWorker#getIndexName()}.
+     * 
+     * @param indexName
+     * @return instance of index worker
+     */    
+    public IndexWorker getIndexWorkerByName(String indexName) {
+        for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
+        	IndexWorker worker = (IndexWorker) i.next();
+        	if (indexName.equals(worker.getIndexName()))
+        		return worker;
+        }
+        return null;
+    }
+    
     /**
      * Returns a chain of {@link org.exist.indexing.StreamListener}, one
      * for each index configured.

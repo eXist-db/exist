@@ -1,9 +1,19 @@
 package org.exist.indexing;
 
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.util.Properties;
+
+import javax.xml.transform.OutputKeys;
+
 import junit.framework.TestCase;
+
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.IndexInfo;
+import org.exist.dom.DocumentSet;
+import org.exist.indexing.impl.NGramIndex;
+import org.exist.indexing.impl.NGramIndexWorker;
 import org.exist.security.xacml.AccessContext;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -13,17 +23,15 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.TestConstants;
 import org.exist.util.Configuration;
 import org.exist.util.Occurrences;
+import org.exist.util.serializer.SAXSerializer;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XQuery;
+import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
-import org.exist.xupdate.XUpdateProcessor;
+import org.exist.xquery.value.SequenceIterator;
 import org.exist.xupdate.Modification;
-import org.exist.dom.DocumentSet;
-import org.exist.indexing.impl.NGramIndexWorker;
-import org.exist.indexing.impl.NGramIndex;
+import org.exist.xupdate.XUpdateProcessor;
 import org.xml.sax.InputSource;
-
-import java.io.StringReader;
 
 /**
  * 
@@ -551,8 +559,73 @@ public class CustomIndexTest extends TestCase {
         }
     }
 
+    public void testIndexKeys() {
+        DBBroker broker = null;
+        try {
+        	broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
+
+            XQuery xquery = broker.getXQueryService();
+            assertNotNull(xquery);
+            
+            Sequence seq = xquery.execute("util:index-key-occurrences(/test/item, 'cha', 'ngram-index')", null, AccessContext.TEST);
+            //Sequence seq = xquery.execute("util:index-key-occurrences(/test/item, 'cha', 'org.exist.indexing.impl.NGramIndex')", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+
+            seq = xquery.execute("util:index-key-occurrences(/test/item, 'le8', 'ngram-index')", null, AccessContext.TEST);
+            //seq = xquery.execute("util:index-key-occurrences(/test/item, 'le8', 'org.exist.indexing.impl.NGramIndex')", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+
+            seq = xquery.execute("util:index-key-documents(/test/item, 'le8', 'ngram-index')", null, AccessContext.TEST);
+            //seq = xquery.execute("util:index-key-documents(/test/item, 'le8', 'org.exist.indexing.impl.NGramIndex')", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+            
+            seq = xquery.execute("util:index-key-documents(/test/item, 'le8', 'ngram-index')", null, AccessContext.TEST);
+            //seq = xquery.execute("util:index-key-doucments(/test/item, 'le8', 'org.exist.indexing.impl.NGramIndex')", null, AccessContext.TEST);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+            
+            String queryBody =
+                "declare function local:callback($key as item(), $data as xs:int+)\n" +
+                "as element()+ {\n" + 
+                "    <item>\n" + 
+                "        <key>{$key}</key>\n" + 
+                "        <frequency>{$data[1]}</frequency>\n" + 
+                "    </item>\n" + 
+                "};\n" + 
+                "\n";
+            
+            String query = queryBody + "util:index-keys(/test/item, \'\', util:function(\'local:callback\', 2), 1000, 'ngram-index')";
+            //String query = queryBody + "util:index-keys(/test/item, \'\', util:function(\'local:callback\', 2), 1000, 'org.exist.indexing.impl.NGramIndex')";
+            seq = xquery.execute(query, null, AccessContext.TEST);
+            assertNotNull(seq);
+            //TODO : check cardinality
+            StringWriter out = new StringWriter();
+            Properties props = new Properties();
+            props.setProperty(OutputKeys.INDENT, "yes");
+            SAXSerializer serializer = new SAXSerializer(out, props);
+            serializer.startDocument();
+            for (SequenceIterator i = seq.iterate(); i.hasNext(); ) {
+                Item next = i.nextItem();
+                next.toSAX(broker, serializer);
+            }
+            serializer.endDocument();
+            //TODO : check content
+            System.out.println(out.toString());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            pool.release(broker);
+        }
+    }
+
+    //TODO : could be replaced by an XQuery call to index-keys(). See above
     private void checkIndex(DBBroker broker, DocumentSet docs, String term, int count) {
-        NGramIndexWorker index = (NGramIndexWorker) broker.getIndexController().getIndexWorker(NGramIndex.ID);
+        NGramIndexWorker index = (NGramIndexWorker) broker.getIndexController().getIndexWorkerById(NGramIndex.ID);
         Occurrences[] occurrences = index.scanIndex(docs);
         int found = 0;
         for (int i = 0; i < occurrences.length; i++) {

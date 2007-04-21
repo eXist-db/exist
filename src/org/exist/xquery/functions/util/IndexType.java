@@ -89,6 +89,7 @@ public class IndexType extends BasicFunction {
 	        else
 	        	result = new StringValue(Type.getTypeName(nodes.getIndexType()));  
     	}
+    	//TODO : consider modularized indexes. We should thus return a * sequence...
     	
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result); 

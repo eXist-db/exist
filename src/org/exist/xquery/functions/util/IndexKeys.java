@@ -24,7 +24,9 @@ package org.exist.xquery.functions.util;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
+import org.exist.indexing.IndexWorker;
 import org.exist.storage.Indexable;
+import org.exist.util.Occurrences;
 import org.exist.util.ValueOccurrences;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -36,6 +38,7 @@ import org.exist.xquery.value.FunctionReference;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
@@ -45,8 +48,9 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class IndexKeys extends BasicFunction {
 
-    public final static FunctionSignature signature = new FunctionSignature(
-            new QName("index-keys", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+    public final static FunctionSignature[] signatures = {
+    	new FunctionSignature(
+                new QName("index-keys", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
                 "Can be used to query existing range indexes defined on a set of nodes. " +
                 "All index keys defined for the given node set are reported to a callback function. " +
                 "The node set is specified in the first argument. The second argument specifies a start " +
@@ -57,19 +61,44 @@ public class IndexKeys extends BasicFunction {
                 "1) the current index key as found in the range index as an atomic value, 2) a sequence " +
                 "containing three int values: a) the overall frequency of the key within the node set, " +
                 "b) the number of distinct documents in the node set the key occurs in, " +
-                "c) the current position of the key in the whole list of keys returned.", 
+                "c) the current position of the key in the whole list of keys returned. " +
+                "The fourth argument is the maximum number of returned keys", 
                 new SequenceType[] {
                     new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
                     new SequenceType(Type.ATOMIC, Cardinality.EXACTLY_ONE),
-                    new SequenceType(Type.FUNCTION_REFERENCE,
-                            Cardinality.EXACTLY_ONE),
-                    new SequenceType(Type.INT, Cardinality.EXACTLY_ONE) },
-            new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE));
+                    new SequenceType(Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE),
+                    new SequenceType(Type.INT, Cardinality.EXACTLY_ONE)
+                 },
+            new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)),
+    	new FunctionSignature(
+                new QName("index-keys", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+                "Can be used to query existing range indexes defined on a set of nodes. " +
+                "All index keys defined for the given node set are reported to a callback function. " +
+                "The node set is specified in the first argument. The second argument specifies a start " +
+                "value. Only index keys of the same type but being greater than $b will be reported for non-string" +
+                "types. For string types, only keys starting with the given prefix are reported. " +
+                "The third arguments is a function reference as created by the util:function function. " +
+                "It can be an arbitrary user-defined function, but it should take exactly 2 arguments: " +
+                "1) the current index key as found in the range index as an atomic value, 2) a sequence " +
+                "containing three int values: a) the overall frequency of the key within the node set, " +
+                "b) the number of distinct documents in the node set the key occurs in, " +
+                "c) the current position of the key in the whole list of keys returned. " +
+                "The fourth argument is the maximum number of returned keys" +
+                "The fifth argument specifies the index in which the search is made", 
+                new SequenceType[] {
+                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
+                    new SequenceType(Type.ATOMIC, Cardinality.EXACTLY_ONE),
+                    new SequenceType(Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE),
+                    new SequenceType(Type.INT, Cardinality.EXACTLY_ONE),
+                    new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+                },
+            new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE))      
+    };
 
     /**
      * @param context
      */
-    public IndexKeys(XQueryContext context) {
+    public IndexKeys(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }
 
@@ -89,22 +118,45 @@ public class IndexKeys extends BasicFunction {
         int max = ((IntegerValue) args[3].itemAt(0)).getInt();
         FunctionCall call = ref.getFunctionCall();
         Sequence result = new ValueSequence();
-        ValueOccurrences occur[] = context.getBroker().getValueIndex()
-                .scanIndexKeys(docs, nodes, (Indexable) args[1]);
-        int len = (occur.length > max ? max : occur.length);
-        Sequence params[] = new Sequence[2];
-        ValueSequence data = new ValueSequence();
-        for (int j = 0; j < len; j++) {
-            params[0] = occur[j].getValue();
-            data.add(new IntegerValue(occur[j].getOccurrences(),
-                    Type.UNSIGNED_INT));
-            data.add(new IntegerValue(occur[j].getDocuments(),
-                    Type.UNSIGNED_INT));
-            data.add(new IntegerValue(j + 1, Type.UNSIGNED_INT));
-            params[1] = data;
-
-            result.addAll(call.evalFunction(contextSequence, null, params));
-            data.clear();
+        if (this.getArgumentCount() == 5) {
+        	IndexWorker indexWorker = context.getBroker().getIndexController().getIndexWorkerByName(args[4].itemAt(0).getStringValue());
+        	if (indexWorker == null)
+        		throw new XPathException("Unknown index: " + args[4].itemAt(0).getStringValue());
+        	//TODO : how to take the nodes into account ?
+        	//TODO : how to take the start value into account as well ?
+        	Occurrences[] occur = indexWorker.scanIndex(docs);
+	        int len = (occur.length > max ? max : occur.length);
+	        Sequence params[] = new Sequence[2];
+	        ValueSequence data = new ValueSequence();
+	        for (int j = 0; j < len; j++) {
+	            params[0] = new StringValue(occur[j].getTerm().toString());
+	            data.add(new IntegerValue(occur[j].getOccurrences(),
+	                    Type.UNSIGNED_INT));
+	            data.add(new IntegerValue(occur[j].getDocuments(),
+	                    Type.UNSIGNED_INT));
+	            data.add(new IntegerValue(j + 1, Type.UNSIGNED_INT));
+	            params[1] = data;
+	
+	            result.addAll(call.evalFunction(contextSequence, null, params));
+	            data.clear();
+	        }
+        } else {
+	        ValueOccurrences occur[] = context.getBroker().getValueIndex().scanIndexKeys(docs, nodes, (Indexable) args[1]);
+		    int len = (occur.length > max ? max : occur.length);
+		    Sequence params[] = new Sequence[2];
+		    ValueSequence data = new ValueSequence();
+		    for (int j = 0; j < len; j++) {
+		        params[0] = occur[j].getValue();
+		        data.add(new IntegerValue(occur[j].getOccurrences(),
+		                Type.UNSIGNED_INT));
+		        data.add(new IntegerValue(occur[j].getDocuments(),
+		                Type.UNSIGNED_INT));
+		        data.add(new IntegerValue(j + 1, Type.UNSIGNED_INT));
+		        params[1] = data;
+		
+		        result.addAll(call.evalFunction(contextSequence, null, params));
+		        data.clear();
+		    }
         }
         if (LOG.isDebugEnabled())
         	LOG.debug("Returning: " + result.getItemCount());
