@@ -81,6 +81,8 @@ public class Move extends AbstractWebDAVMethod {
 					return;
 				}
 			}
+			//TODO : release collection lock here ?
+			
 	        String destination = request.getHeader("Destination");
 	        XmldbURI destPath = null;
 	        try {
@@ -207,6 +209,8 @@ public class Move extends AbstractWebDAVMethod {
             }
     		
             DocumentImpl oldDoc = destCollection.getDocument(broker, docUri);
+            //TODO : release collection lock here ?
+            
             if(oldDoc != null) {
                 boolean overwrite = overwrite(request);
                 if(!overwrite) {

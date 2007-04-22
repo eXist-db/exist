@@ -89,6 +89,7 @@ public class Delete extends AbstractWebDAVMethod {
                 response.sendError(HttpServletResponse.SC_FORBIDDEN);
                 return;
             }
+            //TODO : release collection lock here ?
             
             if(resource == null) {
                 broker.removeCollection(txn, collection);

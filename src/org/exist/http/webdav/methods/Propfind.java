@@ -169,6 +169,8 @@ public class Propfind extends AbstractWebDAVMethod {
                     response.sendError(HttpServletResponse.SC_FORBIDDEN);
                     return;
                 }
+                //TODO : release collection lock here ?
+                //Take care however : collection is still used below
                 
                 // parse the request contents
                 DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
@@ -344,6 +346,7 @@ public class Propfind extends AbstractWebDAVMethod {
                             writeCollectionProperties(user, broker, searchedProperties, type, childCollection, serializer,
                                     servletPath, maxDepth, currentDepth);
                     } catch (Exception e) {
+                    	//Doh !
                     } finally {
                         if(childCollection != null)
                             childCollection.release(Lock.READ_LOCK);
