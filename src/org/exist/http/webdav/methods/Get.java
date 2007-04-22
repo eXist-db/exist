@@ -97,6 +97,7 @@ public class Get extends AbstractWebDAVMethod {
                     collectionListing(broker, collection, request, response);
                 }
                 return;
+                //TODO : release collection lock here ?
             }
             
             if(!resource.getPermissions().validate(user, Permission.READ)) {

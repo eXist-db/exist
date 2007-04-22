@@ -91,6 +91,8 @@ public class Unlock extends AbstractWebDAVMethod {
 	                            NOT_FOUND_ERR + " " + path);
 	                    return;
 	                }
+	                //TODO : release collection lock here ?
+	                //It is used below though...
 	            }
 	            
 	            User lock = resource.getUserLock();
@@ -121,6 +123,8 @@ public class Unlock extends AbstractWebDAVMethod {
 	                if(isNullResource){
 	                    LOG.debug("Unlock NullResource");
 	                    try {
+	                    	//TODO : if the collection lock has been released
+	                    	//Reacquire one here
 	                        if(resource.getResourceType() == DocumentImpl.BINARY_FILE)
 	                            collection.removeBinaryResource(transaction, broker, resource.getFileURI());
 	                        else

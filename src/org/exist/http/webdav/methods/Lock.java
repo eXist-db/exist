@@ -220,6 +220,8 @@ public class Lock extends AbstractWebDAVMethod {
                     return;
                 }
                 
+                //TODO : release collection lock here ?
+                
             } else {
                 
                 LOG.debug("Aquire lock for existing document");

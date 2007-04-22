@@ -89,6 +89,7 @@ public class Copy extends AbstractWebDAVMethod {
                     return;
                 }
             }
+            //TODO : release collection lock here ?
             
             String destination = request.getHeader("Destination");
             XmldbURI destPath = null;
@@ -178,6 +179,8 @@ public class Copy extends AbstractWebDAVMethod {
                 }
                 replaced = true;
             }
+            //TODO : release collection lock here ?
+            
             broker.copyXMLResource(transaction, resource, destCollection, newResourceName);
             transact.commit(transaction);
             if(replaced)
@@ -236,6 +239,8 @@ public class Copy extends AbstractWebDAVMethod {
                 }
                 replaced = true;
             }
+            //TODO : release collection lock here ?
+            
             broker.copyCollection(transaction, collection, destCollection, newCollectionName);
             transact.commit(transaction);
             if(replaced)
