@@ -154,9 +154,10 @@ public class TypeswitchExpression extends AbstractExpression {
         contextInfo.setParent(this);
         operand.analyze(contextInfo);
         
-        LocalVariable mark = context.markLocalVariables(false);
+        LocalVariable mark0 = context.markLocalVariables(false);
         
         for (int i = 0; i < cases.size(); i++) {
+            LocalVariable mark1 = context.markLocalVariables(false);
             Case next = (Case) cases.get(i);
             if (next.variable != null) {
                 LocalVariable var = new LocalVariable(next.variable);
@@ -164,14 +165,14 @@ public class TypeswitchExpression extends AbstractExpression {
                 context.declareVariableBinding(var);
             }
             next.returnClause.analyze(contextInfo);
-            context.popLocalVariables(mark);
+            context.popLocalVariables(mark1);
         }
         if (defaultClause.variable != null) {
             LocalVariable var = new LocalVariable(defaultClause.variable);
             context.declareVariableBinding(var);
         }
         defaultClause.returnClause.analyze(contextInfo);
-        context.popLocalVariables(mark);
+        context.popLocalVariables(mark0);
     }
 
     public void setContextDocSet(DocumentSet contextSet) {
