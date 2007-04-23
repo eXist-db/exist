@@ -59,16 +59,6 @@ public interface StreamListener {
     StreamListener getNextInChain();
 
     /**
-     * Reset this listener to operate on the specified document, using the mode
-     * given. mode will be one of {@link #STORE}, {@link #REMOVE} or
-     * {@link #REMOVE_NODES}.
-     *
-     * @param doc the document which is processed
-     * @param mode the current operation mode
-     */
-    void setDocument(DocumentImpl doc, int mode);
-
-    /**
      * Processed the opening tag of an element.
      *
      * @param transaction the current transaction

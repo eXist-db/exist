@@ -650,10 +650,14 @@ public class XmldbURI implements Comparable {
 	}
 	
 	//TODO: add unit test for this
+	//TODO : come on ! use a URI method name.
+	//resolve() is a must here
 	public boolean startsWith(XmldbURI xmldbUri) {
 		return (xmldbUri==null)? false : toString().startsWith(xmldbUri.toString()); 	
 	}
 	
+	//TODO : come on ! use a URI method name.
+	//resolve() is a must here	
 	public boolean startsWith(String string) throws URISyntaxException {
 		return startsWith(XmldbURI.xmldbUriFor(string)); 	
 	}

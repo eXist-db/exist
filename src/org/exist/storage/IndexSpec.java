@@ -110,6 +110,8 @@ public class IndexSpec {
 	                		" must have attribute " + PATH_ATTRIB + " or " + QNAME_ATTRIB;
 	                	throw new DatabaseConfigurationException(error_message);
 	                }
+	            } else {
+	            	LOG.info("Unable to process index configuration element :" + node.getLocalName());
 	            }
             }
         }
