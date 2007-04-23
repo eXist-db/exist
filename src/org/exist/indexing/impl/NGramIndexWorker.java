@@ -550,7 +550,7 @@ public class NGramIndexWorker implements IndexWorker {
     private class NGramStreamListener extends AbstractStreamListener {   
     	
         public NGramStreamListener(DocumentImpl document, int mode) {
-            //setDocument(document, mode);
+            setDocument(document, mode);
         }    	
 
         public void startElement(Txn transaction, ElementImpl element, NodePath path) {
