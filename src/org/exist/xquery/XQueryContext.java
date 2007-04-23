@@ -318,7 +318,7 @@ public class XQueryContext {
         ctx.watchdog = this.watchdog;
 
         ctx.lastVar = this.lastVar;
-        ctx.variableStackSize = this.variableStackSize;
+        ctx.variableStackSize = getCurrentStackSize();
         ctx.contextStack = this.contextStack;
         return ctx;
     }
@@ -980,7 +980,7 @@ public class XQueryContext {
 			lastVar.addAfter(var);
 			lastVar = var;
 		}
-		var.setStackPosition(variableStackSize);
+		var.setStackPosition(getCurrentStackSize());
 		return var;
 	}
 
@@ -992,7 +992,7 @@ public class XQueryContext {
 	 */
 	public Variable declareGlobalVariable(Variable var) throws XPathException {
 		globalVariables.put(var.getQName(), var);
-		var.setStackPosition(variableStackSize);
+		var.setStackPosition(getCurrentStackSize());
 		return var;
 	}
 	
