@@ -28,6 +28,7 @@ import org.exist.dom.StoredNode;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.Occurrences;
 import org.exist.collections.Collection;
+import org.exist.storage.IndexSpec;
 import org.exist.storage.NodePath;
 
 import java.util.Map;
@@ -79,6 +80,16 @@ public interface IndexWorker {
      * as it can and prepare for being reused for a different job.
      */
     void flush();
+    
+    /**
+     * Notify this worker to operate on the specified document, using the mode
+     * given. mode will be one of {@link #STORE}, {@link #REMOVE} or
+     * {@link #REMOVE_NODES}.
+     *
+     * @param doc the document which is processed
+     * @param mode the current operation mode
+     */
+    void setDocument(DocumentImpl doc, int mode);    
 
     /**
      * Return a stream listener to index the specified document in the specified mode. 

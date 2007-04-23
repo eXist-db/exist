@@ -37,9 +37,6 @@ public class AbstractStreamListener implements StreamListener {
     
     private StreamListener next = null;
 
-    public void setDocument(DocumentImpl doc, int mode) {
-    }
-
     public void setNextInChain(StreamListener listener) {
         this.next = listener;
     }

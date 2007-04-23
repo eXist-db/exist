@@ -36,6 +36,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.NodePath;
 import org.exist.storage.txn.Txn;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -107,8 +108,7 @@ public class IndexController {
     		currentMode = mode;
     	} else if (listener != null) {
             StreamListener next = listener;
-            while (next != null) {
-                next.setDocument(document, mode);
+            while (next != null) {                
                 next = next.getNextInChain();
             }
             return listener;
@@ -215,6 +215,7 @@ public class IndexController {
         if (reindexRoot == null)
             return;
         reindexRoot = reindexRoot.getDocument().getBroker().objectWith(new NodeProxy(reindexRoot.getDocument(), reindexRoot.getNodeId()));
+        setDocument(reindexRoot.getDocument(), mode);
         getStreamListener(reindexRoot.getDocument(), mode);
         IndexUtils.scanNode(transaction, reindexRoot, listener);
         flush();
@@ -255,6 +256,14 @@ public class IndexController {
     public void indexEndElement(Txn transaction, ElementImpl node, NodePath path, StreamListener listener) {
         if (listener != null)
             listener.endElement(transaction, node, path);
+    }
+    
+    public void setDocument(DocumentImpl doc, int mode) {
+        IndexWorker indexWorker;
+        for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
+            indexWorker = (IndexWorker) i.next();
+            indexWorker.setDocument(doc, mode);
+        }    	
     }
 
     /**

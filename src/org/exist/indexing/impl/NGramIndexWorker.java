@@ -23,21 +23,38 @@ package org.exist.indexing.impl;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
+import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
-import org.exist.dom.*;
+import org.exist.dom.AttrImpl;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.ElementImpl;
+import org.exist.dom.ExtArrayNodeSet;
+import org.exist.dom.Match;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
+import org.exist.dom.QName;
+import org.exist.dom.StoredNode;
+import org.exist.dom.SymbolTable;
+import org.exist.dom.TextImpl;
 import org.exist.indexing.AbstractStreamListener;
 import org.exist.indexing.Index;
 import org.exist.indexing.IndexController;
 import org.exist.indexing.IndexWorker;
 import org.exist.indexing.StreamListener;
 import org.exist.numbering.NodeId;
+import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NodePath;
 import org.exist.storage.OccurrenceList;
-import org.exist.storage.DBBroker;
 import org.exist.storage.btree.BTreeCallback;
 import org.exist.storage.btree.BTreeException;
 import org.exist.storage.btree.IndexQuery;
@@ -55,6 +72,7 @@ import org.exist.util.Occurrences;
 import org.exist.util.ReadOnlyException;
 import org.exist.util.UTF8;
 import org.exist.util.XMLString;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XQueryContext;
@@ -515,25 +533,25 @@ public class NGramIndexWorker implements IndexWorker {
             currentChar = 0;
         }
     }
+    
+    private Map config;
+    private Stack contentStack = null;
+    
+    public void setDocument(DocumentImpl document, int newMode) {
+        currentDoc = document;
+        //config = null;
+        contentStack = null;
+        IndexSpec indexConf = document.getCollection().getIndexConfiguration(document.getBroker());
+        if (indexConf != null)
+            config = (Map) indexConf.getCustomIndexSpec(NGramIndex.ID);
+        mode = newMode;
+    }    
 
-    private class NGramStreamListener extends AbstractStreamListener {
-
-        private Map config;
-        private Stack contentStack = null;
-        
+    private class NGramStreamListener extends AbstractStreamListener {   
+    	
         public NGramStreamListener(DocumentImpl document, int mode) {
-            setDocument(document, mode);
-        }
-
-        public void setDocument(DocumentImpl document, int newMode) {
-            currentDoc = document;
-            config = null;
-            contentStack = null;
-            IndexSpec indexConf = document.getCollection().getIndexConfiguration(document.getBroker());
-            if (indexConf != null)
-                config = (Map) indexConf.getCustomIndexSpec(NGramIndex.ID);
-            mode = newMode;
-        }
+            //setDocument(document, mode);
+        }    	
 
         public void startElement(Txn transaction, ElementImpl element, NodePath path) {
             if (config != null && config.get(element.getQName()) != null) {

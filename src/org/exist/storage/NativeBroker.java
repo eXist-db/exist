@@ -1853,6 +1853,7 @@ public class NativeBroker extends DBBroker {
     }
 
     private void dropIndex(Txn transaction, DocumentImpl document) throws ReadOnlyException {
+    	indexController.setDocument(document, StreamListener.REMOVE);
         StreamListener listener = indexController.getStreamListener(document, StreamListener.REMOVE);
         NodeList nodes = document.getChildNodes();
         for (int i = 0; i < nodes.getLength(); i++) {
@@ -2021,6 +2022,7 @@ public class NativeBroker extends DBBroker {
     private void reindexXMLResource(Txn transaction, DocumentImpl doc, int mode) {
         if(CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE.equals(doc.getFileURI()))
             doc.getCollection().setConfigEnabled(false);
+        indexController.setDocument(doc, StreamListener.STORE);
         StreamListener listener = indexController.getStreamListener(doc, StreamListener.STORE);
         NodeList nodes = doc.getChildNodes();
         for (int i = 0; i < nodes.getLength(); i++) {
