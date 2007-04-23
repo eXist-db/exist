@@ -114,15 +114,27 @@ public class ModuleContext extends XQueryContext {
 	public void pushDocumentContext() {
 		parentContext.pushDocumentContext();
 	}
-	
-	/* (non-Javadoc)
+
+    public LocalVariable markLocalVariables(boolean newContext) {
+        return parentContext.markLocalVariables(newContext);
+    }
+
+    public void popLocalVariables(LocalVariable var) {
+        parentContext.popLocalVariables(var);
+    }
+
+    public int getCurrentStackSize() {
+        return parentContext.getCurrentStackSize();
+    }
+
+    /* (non-Javadoc)
 	 * @see org.exist.xquery.XQueryContext#popDocumentContext()
 	 */
 	public void popDocumentContext() {
 		parentContext.popDocumentContext();
 	}
 	
-	public void registerUpdateListener(UpdateListener listener) {
+    public void registerUpdateListener(UpdateListener listener) {
 		parentContext.registerUpdateListener(listener);
 	}
 	
