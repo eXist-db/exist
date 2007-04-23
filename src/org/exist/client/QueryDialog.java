@@ -84,6 +84,7 @@ public class QueryDialog extends JFrame {
 	private DefaultComboBoxModel history= new DefaultComboBoxModel();
     private Font display = new Font("Monospaced", Font.BOLD, 12);
 	private JTextField statusMessage;
+	private JTextField queryPositionDisplay;
 	private JProgressBar progress;
 
 	public QueryDialog(InteractiveClient client, Collection collection, Properties properties) {
@@ -190,13 +191,17 @@ public class QueryDialog extends JFrame {
         vbox.add(tabs, BorderLayout.CENTER);
         
         Box statusbar = Box.createHorizontalBox();
-        statusbar.setBorder(BorderFactory
-        		.createBevelBorder(BevelBorder.LOWERED));
+        statusbar.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
         statusMessage = new JTextField(20);
         statusMessage.setEditable(false);
         statusMessage.setFocusable(true);
         statusbar.add(statusMessage);
-
+        queryPositionDisplay = new JTextField(5);
+        queryPositionDisplay.setEditable(false);
+        queryPositionDisplay.setFocusable(true);
+        statusbar.add(queryPositionDisplay);
+        query.setPositionOutputTextArea(queryPositionDisplay);
+        
         progress = new JProgressBar();
         progress.setPreferredSize(new Dimension(200, 30));
         progress.setVisible(false);

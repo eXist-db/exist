@@ -30,6 +30,7 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.JTextField;
 import javax.swing.text.PlainDocument;
 
 import org.jedit.syntax.DefaultInputHandler;
@@ -51,6 +52,8 @@ public class ClientTextArea extends JEditTextArea implements ActionListener {
 	private CutAction cut = new CutAction();
 	private PasteAction paste = new PasteAction();
 	
+	private JTextField txtPositionOutput = null;
+	
 	protected Font textFont = new Font("Monospaced", Font.PLAIN, 10);
 	
 	public ClientTextArea(boolean editable, String mode) {
@@ -59,6 +62,8 @@ public class ClientTextArea extends JEditTextArea implements ActionListener {
 		setFont(textFont);
 		setEditable(editable);
 		setPreferredSize(new Dimension(300, 200));
+		
+		this.addCaretListener(new CaretListener());
 		
 		SyntaxDocument doc = new SyntaxDocument();
 		doc.putProperty(PlainDocument.tabSizeAttribute, new Integer(4));
@@ -89,6 +94,11 @@ public class ClientTextArea extends JEditTextArea implements ActionListener {
 		inputHandler.addKeyBinding("C+v", paste);
 		inputHandler.addKeyBinding("C+x", cut);
 		setInputHandler(inputHandler);
+	}
+	
+	public void setPositionOutputTextArea(JTextField txtPositionOutput)
+	{
+		this.txtPositionOutput = txtPositionOutput;
 	}
 	
 	/* (non-Javadoc)
@@ -132,6 +142,18 @@ public class ClientTextArea extends JEditTextArea implements ActionListener {
 		 */
 		public void actionPerformed(ActionEvent e) {
 			cut();
+		}
+	}
+	
+	private class CaretListener implements javax.swing.event.CaretListener
+	{
+		public void caretUpdate(javax.swing.event.CaretEvent e)
+		{
+			if(txtPositionOutput != null)
+			{
+				ClientTextArea txt = (ClientTextArea)e.getSource();
+				txtPositionOutput.setText("Line: " + (txt.getCaretLine()+1) + " Column:" + ((txt.getCaretPosition() - txt.getLineStartOffset(txt.getCaretLine()))+1));
+			}
 		}
 	}
 }
