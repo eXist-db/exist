@@ -154,7 +154,9 @@ public class Journal {
                         
         String logDir = (String) pool.getConfiguration().getProperty("db-connection.recovery.journal-dir");
         if (logDir != null) {
-            File f = ConfigurationHelper.lookup(logDir);
+            File f = new File(logDir);
+            if (!f.isAbsolute())
+                f = new File(pool.getConfiguration().getExistHome(), logDir);
             if (!f.exists()) {
                 if (LOG.isDebugEnabled())
                     LOG.debug("Output directory for journal files does not exist. Creating " + f.getAbsolutePath());
