@@ -61,11 +61,11 @@ public class IndexManager {
                 String className = modConf[i].getClassName();
                 try {
                     Class clazz = Class.forName(className);
-                    if (!Index.class.isAssignableFrom(clazz)) {
+                    if (!AbstractIndex.class.isAssignableFrom(clazz)) {
                         throw new DatabaseConfigurationException("Class " + className + " does not implement " +
-                                Index.class.getName());
+                        		AbstractIndex.class.getName());
                     }
-                    Index index = (Index) clazz.newInstance();
+                    AbstractIndex index = (AbstractIndex)clazz.newInstance();
                     index.configure(pool, dataDir, modConf[i].getConfig());
                     index.open();
                     indexers.put(modConf[i].getId(), index);
@@ -91,13 +91,8 @@ public class IndexManager {
     public synchronized Index getIndexById(String indexId) {
     	for (Iterator i = iterator(); i.hasNext(); ) {
     		Index indexer = (Index) i.next();
-    		//Awfully tricky !
-    		try {
-	    		if (indexId.equals(indexer.getClass().getField("ID")));
-	    			return indexer;
-    		} catch (NoSuchFieldException e) {
-    			
-    		}
+    		if (indexId.equals(indexer.getIndexId()));
+    			return indexer;
     	}
     	return null;
     }

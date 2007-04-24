@@ -40,6 +40,14 @@ public interface Index {
      */
     String getIndexName();
 
+    /**
+     * Returns an id which uniquely identifies this index. This is usually the class name
+     * @return a unique name identifying this index.
+     */
+    String getIndexId();
+    
+    BrokerPool getBrokerPool();
+    
 	/**
      * Configure the index and all resources associated with it. This method
      * is called while the database instance is initializing..
