@@ -92,4 +92,6 @@ public interface StreamListener {
      * @param path the current node path
      */
     void characters(Txn transaction, TextImpl text, NodePath path);
+    
+    public IndexWorker getWorker(); 
 }

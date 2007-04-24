@@ -586,6 +586,10 @@ public class NGramIndexWorker implements IndexWorker {
             }
             super.characters(transaction, text, path);
         }
+        
+        public IndexWorker getWorker() {
+        	return NGramIndexWorker.this;
+        }             
     }
 
     private class QNameTerm implements Comparable {
