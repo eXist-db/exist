@@ -108,7 +108,8 @@ public class IndexController {
     		currentMode = mode;
     	} else if (listener != null) {
             StreamListener next = listener;
-            while (next != null) {                
+            while (next != null) {  
+            	next.getWorker().setDocument(document, mode);
                 next = next.getNextInChain();
             }
             return listener;

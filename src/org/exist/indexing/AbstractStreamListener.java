@@ -68,4 +68,8 @@ public class AbstractStreamListener implements StreamListener {
             next.characters(transaction, text, path);
         }
     }
+    
+    public IndexWorker getWorker() {
+    	return null;
+    }
 }
