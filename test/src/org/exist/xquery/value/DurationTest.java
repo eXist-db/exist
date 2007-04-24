@@ -105,7 +105,7 @@ public class DurationTest extends AbstractTimeRelatedTestCase {
 			fail();
 		}			
 	}
-	public void testCompareFail6() throws XPathException {
+	public void testCompareSucceeds5() throws XPathException {
 		try {
 			DurationValue dv2 = new YearMonthDurationValue("P1Y"), dv1 = new DayTimeDurationValue("P1D");
 			assertFalse(dv1.compareTo(null, Constants.EQ, dv2));			
@@ -113,7 +113,7 @@ public class DurationTest extends AbstractTimeRelatedTestCase {
 			fail();
 		}
 	}
-	public void testCompareFail7() throws XPathException {
+	public void testCompareSucceeds6() throws XPathException {
 		try {
 			DurationValue dv2 = new DurationValue("P1Y2M3DT4H5M6S"), dv1 = new DayTimeDurationValue("P1D");
 			assertFalse(dv1.compareTo(null, Constants.EQ, dv2));			
@@ -121,7 +121,7 @@ public class DurationTest extends AbstractTimeRelatedTestCase {
 			fail();
 		}
 	}
-	public void testCompareFail8() throws XPathException {
+	public void testCompareSucceeds7() throws XPathException {
 		try {
 			DurationValue dv2 = new DurationValue("P1Y2M3DT4H5M6S"), dv1 = new YearMonthDurationValue("P1Y");
 			assertFalse(dv1.compareTo(null, Constants.EQ, dv2));			
