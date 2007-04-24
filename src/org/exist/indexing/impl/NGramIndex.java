@@ -24,6 +24,7 @@ package org.exist.indexing.impl;
 import java.io.File;
 
 import org.apache.log4j.Logger;
+import org.exist.indexing.AbstractIndex;
 import org.exist.indexing.Index;
 import org.exist.indexing.IndexWorker;
 import org.exist.storage.BrokerPool;
@@ -34,24 +35,38 @@ import org.w3c.dom.Element;
 
 /**
  */
-public class NGramIndex implements Index {
+public class NGramIndex extends AbstractIndex {
 	
     public final static String ID = NGramIndex.class.getName();
 
     private final static Logger LOG = Logger.getLogger(NGramIndex.class);
 
-    protected BrokerPool pool;
-    protected BFile db;
-    private String name = null;
+	//We have a singleton
+	private static Index instance = null;
 
+	protected BFile db;
     private int gramSize = 3;
     private File dataFile = null;
     
+    public NGramIndex() {
+    	//TODO : introduce a null check
+    	instance = this;
+    }
+    
+    public Index getInstance() {
+        if (instance == null) {
+            instance = new NGramIndex();
+        }
+        return instance;        
+    }          
+    
+    public String getIndexId() {
+    	return ID;
+    }
+    
     public void configure(BrokerPool pool, String dataDir, Element config) throws DatabaseConfigurationException {
-        this.pool = pool;
+    	super.configure(pool, dataDir, config);
         String fileName = "ngram.dbx";
-        if (config.hasAttribute("id"))
-            name = config.getAttribute("id");
         if (config.hasAttribute("file"))
             fileName = config.getAttribute("file");
         if (config.hasAttribute("n"))
@@ -61,10 +76,6 @@ public class NGramIndex implements Index {
                 throw new DatabaseConfigurationException("Configuration parameter 'n' should be an integer.");
             }
         dataFile = new File(dataDir, fileName);
-    }
-    
-    public String getIndexName() {
-    	return name;
     }
     
     public void open() throws DatabaseConfigurationException {
@@ -86,7 +97,12 @@ public class NGramIndex implements Index {
         db.flush();
     }
 
+    public void remove() throws DBException {
+        db.closeAndRemove();
+    }
+
     public IndexWorker getWorker() {
+    	//TODO : ensure singleton ?
         return new NGramIndexWorker(this);
     }
 
@@ -94,7 +110,4 @@ public class NGramIndex implements Index {
         return gramSize;
     }
 
-    public void remove() throws DBException {
-        db.closeAndRemove();
-    }
 }

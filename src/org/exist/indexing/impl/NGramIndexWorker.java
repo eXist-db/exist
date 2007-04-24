@@ -264,7 +264,7 @@ public class NGramIndexWorker implements IndexWorker {
                             NodeId previous = null;
                             OccurrenceList newOccurrences = new OccurrenceList();
                             for (int m = 0; m < occurrences; m++) {
-                                NodeId nodeId = index.pool.getNodeFactory().createFromStream(previous, is);
+                                NodeId nodeId = index.getBrokerPool().getNodeFactory().createFromStream(previous, is);
                                 previous = nodeId;
                                 int freq = is.readInt();
                                 // add the node to the new list if it is not
@@ -688,7 +688,7 @@ public class NGramIndexWorker implements IndexWorker {
                     }
                     NodeId previous = null;
                     for (int m = 0; m < occurrences; m++) {
-                        NodeId nodeId = index.pool.getNodeFactory().createFromStream(previous, is);
+                        NodeId nodeId = index.getBrokerPool().getNodeFactory().createFromStream(previous, is);
                         previous = nodeId;
                         int freq = is.readInt();
                         NodeProxy storedNode = new NodeProxy(storedDocument, nodeId);
@@ -782,7 +782,7 @@ public class NGramIndexWorker implements IndexWorker {
 					}
                     NodeId previous = null;
                     for (int m = 0; m < occurrences; m++) {
-                        NodeId nodeId = index.pool.getNodeFactory().createFromStream(previous, is);
+                        NodeId nodeId = index.getBrokerPool().getNodeFactory().createFromStream(previous, is);
                         previous = nodeId;
                         int freq = is.readInt();
                         is.skip(freq);
