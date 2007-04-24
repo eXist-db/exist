@@ -33,6 +33,11 @@ public class FunImplicitTimezone extends Function {
         }
         
         //Sequence result = new DayTimeDurationValue(TimeUtils.getInstance().getLocalTimezoneOffsetMillis());
+        
+        //TODO : very ugly workaround that makes implicit-timeout() stable
+        //and independant from the context's implicit time zone 
+        //not counting that its stability might be discussed
+        
         Sequence result = new DateTimeValue(new Date(context.getWatchDog().getStartTime())).getTimezone();
         
         if (context.getProfiler().isEnabled()) 
