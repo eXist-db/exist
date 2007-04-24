@@ -449,10 +449,11 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
 		NodeProxy node;
 		Part part;
 		for (Iterator i = al.iterator(); i.hasNext(); ) {
-			node = (NodeProxy) i.next();
-			part = getPart(node.getDocument(), false, 0);
-	        if (part != null)
-	        	part.getDescendantsInSet(result, node, childOnly, includeSelf, mode, contextId);
+		    node = (NodeProxy) i.next();
+		    part = getPart(node.getDocument(), false, 0);
+		    if (part != null) {
+			part.getDescendantsInSet(result, node, childOnly, includeSelf, mode, contextId);
+		    }
 		}
 		return result;
     }
@@ -590,10 +591,11 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
      */
     public NodeSet selectAncestorDescendant(NodeSet al, int mode,
             boolean includeSelf, int contextId) {
-        sort();
-        if (al instanceof VirtualNodeSet)
+	sort();
+        if (al instanceof VirtualNodeSet) {
             return super.selectAncestorDescendant(al, mode, includeSelf,
-                    contextId);
+						  contextId);
+	}
         return getDescendantsInSet(al, false, includeSelf, mode, contextId);
     }
     
@@ -1100,8 +1102,8 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
         }
 
         /**
-         * Find all nodes in the current set being children or descendants of the given parent
-         * node.
+         * Find all nodes in the current set being children or descendants of 
+	 * the given parent node.
          * 
          * @param result the node set to which matching nodes will be appended.
          * @param parent the parent node to search for.
@@ -1136,40 +1138,47 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
             				result.add(array[i]);
             				break;
             			case NodeSet.ANCESTOR :
-            				if (Expression.NO_CONTEXT_ID != contextId)
-//            					parent.addContextNode(contextId, array[i]);
-                                parent.deepCopyContext(array[i], contextId);
-            				else
-            					parent.copyContext(array[i]);
-            				parent.addMatches(array[i]);
-            				result.add(parent, 1);
-            				break;
+				    if (Expression.NO_CONTEXT_ID != contextId) {
+					//parent.addContextNode(contextId, array[i]);
+					parent.deepCopyContext(array[i], contextId);
+				    } else {
+					parent.copyContext(array[i]);
+				    }
+				    parent.addMatches(array[i]);
+				    result.add(parent, 1);
+				    break;
             			}
             		}
             	}
             } else {
-            	// do a binary search to pick some node in the range of valid child
-            	// ids
+            	// do a binary search to pick some node in the range of valid
+		// child ids
             	int low = 0;
                 int high = length - 1;
                 int mid = 0;
                 int cmp;
+
             	while (low <= high) {
             		mid = (low + high) / 2;
             		p = array[mid];
-            		if (p.getNodeId().isDescendantOrSelfOf(parentId))
-            			break;	// found a child node, break out.
+            		if (p.getNodeId().isDescendantOrSelfOf(parentId)){
+			    break;	// found a child node, break out.
+			}
             		cmp = p.getNodeId().compareTo(parentId);
-            		if (cmp > 0)
-            			high = mid - 1;
-            		else
-            			low = mid + 1;
+            		if (cmp > 0) {
+			    high = mid - 1;
+			} else {
+			    low = mid + 1;
+			}
+
             	}
-            	if (low > high)
+            	if (low > high) {
             		return result; // no node found
+		}
             	// find the first child node in the range
-            	while (mid > 0 && array[mid - 1].getNodeId().compareTo(parentId) > 0)
-            		--mid;
+            	while (mid > 0 && array[mid - 1].getNodeId().compareTo(parentId) > -1) {
+		    --mid;
+		}
             	// walk through the range of child nodes we found
             	for (int i = mid; i < length; i++) {
             		cmp = array[i].getNodeId().computeRelation(parentId); 
@@ -1182,11 +1191,12 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
             			if (add) {
             				switch (mode) {
             				case NodeSet.DESCENDANT :
-            					if (Expression.NO_CONTEXT_ID != contextId)
-//            						array[i].addContextNode(contextId, parent);
-                                    array[i].deepCopyContext(parent, contextId);
-            					else
-            						array[i].copyContext(parent);
+					    if (Expression.NO_CONTEXT_ID != contextId) {
+						//array[i].addContextNode(contextId, parent);
+						array[i].deepCopyContext(parent, contextId);
+					    } else {
+      						array[i].copyContext(parent);
+					    }
             					array[i].addMatches(parent);
             					result.add(array[i]);
             					break;
@@ -1201,8 +1211,9 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
             					break;
             				}
             			}
-            		} else
-            			break;
+            		} else {
+			    break;
+			}
             	}
             }
             return result;
