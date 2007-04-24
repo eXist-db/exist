@@ -400,7 +400,7 @@ public class Journal {
 	public File[] getFiles() {
 		File files[] = dir.listFiles(new FilenameFilter() {
 			public boolean accept(File dir, String name) {
-				return name.endsWith(LOG_FILE_SUFFIX);
+				return name.endsWith(LOG_FILE_SUFFIX) && !name.endsWith("_index." + LOG_FILE_SUFFIX);
 			}
 		});
 		return files;
