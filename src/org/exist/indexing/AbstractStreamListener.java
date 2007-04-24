@@ -31,7 +31,7 @@ import org.apache.log4j.Logger;
  * the next listener in the chain (if there is any). Overwrite methods to handle events
  * (but don't forget to call the super method as well).
  */
-public class AbstractStreamListener implements StreamListener {
+public abstract class AbstractStreamListener implements StreamListener {
 
     protected final static Logger LOG = Logger.getLogger(AbstractStreamListener.class);
     
@@ -69,7 +69,5 @@ public class AbstractStreamListener implements StreamListener {
         }
     }
     
-    public IndexWorker getWorker() {
-    	return null;
-    }
+    public abstract IndexWorker getWorker();
 }
