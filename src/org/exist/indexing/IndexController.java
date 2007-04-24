@@ -36,7 +36,6 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.NodePath;
 import org.exist.storage.txn.Txn;
 import org.exist.util.DatabaseConfigurationException;
-import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -119,6 +118,7 @@ public class IndexController {
         IndexWorker worker;
         for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
             worker = (IndexWorker) i.next();
+            worker.setDocument(document, mode);
             current = worker.getListener(mode, document);
             if (first == null) {
                 first = current;

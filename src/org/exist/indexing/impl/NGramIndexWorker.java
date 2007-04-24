@@ -72,7 +72,6 @@ import org.exist.util.Occurrences;
 import org.exist.util.ReadOnlyException;
 import org.exist.util.UTF8;
 import org.exist.util.XMLString;
-import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XQueryContext;
@@ -437,7 +436,7 @@ public class NGramIndexWorker implements IndexWorker {
     public StreamListener getListener(int mode, DocumentImpl document) {
         this.currentDoc = document;
         this.mode = mode;
-        return new NGramStreamListener(document, mode);
+        return  new NGramStreamListener();
     }
 
     public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean includeSelf) {
@@ -548,10 +547,6 @@ public class NGramIndexWorker implements IndexWorker {
     }    
 
     private class NGramStreamListener extends AbstractStreamListener {   
-    	
-        public NGramStreamListener(DocumentImpl document, int mode) {
-            setDocument(document, mode);
-        }    	
 
         public void startElement(Txn transaction, ElementImpl element, NodePath path) {
             if (config != null && config.get(element.getQName()) != null) {
