@@ -116,7 +116,8 @@ public class RenameTest extends AbstractUpdateTest {
 //          Don't commit...            
             pool.getTransactionManager().getJournal().flushToLog(true);
             System.out.println("Transaction interrupted ...");
-	    } catch (Exception e) {            
+	    } catch (Exception e) {     
+	    	e.printStackTrace();
 	        fail(e.getMessage());               
         } finally {
             pool.release(broker);
