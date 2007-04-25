@@ -153,7 +153,7 @@ public class NGramIndexWorker implements IndexWorker {
             case StreamListener.STORE :
                 saveIndex();
                 break;
-            case StreamListener.REMOVE :
+            case StreamListener.REMOVE_ALL_NODES :
             case StreamListener.REMOVE_NODES :
                 dropIndex(mode);
                 break;
@@ -254,7 +254,7 @@ public class NGramIndexWorker implements IndexWorker {
                         is.copyRaw(os, length);
                     } else {
                         // data are related to our document:
-                        if (mode == StreamListener.REMOVE) {
+                        if (mode == StreamListener.REMOVE_ALL_NODES) {
                             // skip them
                             is.skipBytes(length);
                         } else {
