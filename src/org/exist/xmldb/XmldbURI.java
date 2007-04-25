@@ -68,6 +68,8 @@ public class XmldbURI implements Comparable {
 	//TODO : create using resolve()
 	public final static XmldbURI ROOT_COLLECTION_CONFIG_URI = create(CollectionConfigurationManager.CONFIG_COLLECTION + "/" + DBBroker.ROOT_COLLECTION_NAME);
 
+	public final static XmldbURI METADATA_COLLECTION_URI = create(DBBroker.SYSTEM_COLLECTION + "/metadata");
+	
 	public final static XmldbURI TEMP_COLLECTION_URI = create(DBBroker.TEMP_COLLECTION);
 
 	public final static XmldbURI EMPTY_URI = createInternal("");
