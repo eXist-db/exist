@@ -21,12 +21,11 @@
  */
 package org.exist.indexing;
 
-import org.exist.storage.txn.Txn;
-import org.exist.storage.NodePath;
-import org.exist.dom.ElementImpl;
 import org.exist.dom.AttrImpl;
+import org.exist.dom.ElementImpl;
 import org.exist.dom.TextImpl;
-import org.exist.dom.DocumentImpl;
+import org.exist.storage.NodePath;
+import org.exist.storage.txn.Txn;
 
 /**
  * Callback interface which receives index events. StreamListeners are chained;
@@ -37,9 +36,15 @@ public interface StreamListener {
 	public final static int UNKKNOWN = -1;
 	
 	public final static int STORE = 0;
+	
+    /**
+     * Mode for removing all the nodes of a document
+     */
+    public final static int REMOVE_ALL_NODES = 1;
 
-    public final static int REMOVE = 1;
-
+    /**
+     * Mode for removing some nodes of a document
+     */
     public final static int REMOVE_NODES = 2;
 
     /**

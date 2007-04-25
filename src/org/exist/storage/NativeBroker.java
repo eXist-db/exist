@@ -1853,8 +1853,8 @@ public class NativeBroker extends DBBroker {
     }
 
     private void dropIndex(Txn transaction, DocumentImpl document) throws ReadOnlyException {
-    	indexController.setDocument(document, StreamListener.REMOVE);
-        StreamListener listener = indexController.getStreamListener(document, StreamListener.REMOVE);
+    	indexController.setDocument(document, StreamListener.REMOVE_ALL_NODES);
+        StreamListener listener = indexController.getStreamListener(document, StreamListener.REMOVE_ALL_NODES);
         NodeList nodes = document.getChildNodes();
         for (int i = 0; i < nodes.getLength(); i++) {
             StoredNode node = (StoredNode) nodes.item(i);
