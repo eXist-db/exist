@@ -150,6 +150,9 @@ public class OrderedValueSequence extends AbstractSequence {
 	 * @see org.exist.xquery.value.Sequence#toNodeSet()
 	 */
 	public NodeSet toNodeSet() throws XPathException {
+		//return early
+		if (isEmpty())
+			return NodeSet.EMPTY_SET;
         // for this method to work, all items have to be nodes
 		if(itemType != Type.ANY_TYPE && Type.subTypeOf(itemType, Type.NODE)) {
 			NodeSet set = new ExtArrayNodeSet();
