@@ -178,7 +178,9 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
     }
 
     public void setValidating(boolean validate) {
-	this.validate = validate;
+	    this.validate = validate;
+        if (!validate)
+            this.indexListener = broker.getIndexController().getStreamListener(document, StreamListener.STORE);
     }
 
     /**
@@ -194,10 +196,10 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
         currentPath.reset();
         stack = new Stack();
         nsMappings.clear();
+        indexListener = null;
         rootNode = null;
         setPrevious(null);
         ftIdx = doc.getCollection().getFulltextIndexConfiguration(broker);
-        this.indexListener = broker.getIndexController().getStreamListener(document, StreamListener.STORE);
     }
     
     /**
