@@ -1005,9 +1005,11 @@ attributeNameOrWildcard
 	
 commentTest : "comment"^ LPAREN! RPAREN! ;
 
-piTest : "processing-instruction"^ LPAREN! RPAREN! ;
+piTest : "processing-instruction"^ LPAREN! ( NCNAME | STRING_LITERAL )? RPAREN! ;
 
-documentTest : "document-node"^ LPAREN! RPAREN! ;
+documentTest : "document-node"^ LPAREN! ( elementTest | schemaElementTest )? RPAREN! ;
+
+schemaElementTest : "schema-element"^ LPAREN! qName RPAREN! ;
 
 qName returns [String name]
 {
