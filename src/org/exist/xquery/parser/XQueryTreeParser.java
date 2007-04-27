@@ -7331,6 +7331,7 @@ public XQueryTreeParser() {
 		"DOUBLE_LITERAL",
 		"DECIMAL_LITERAL",
 		"INTEGER_LITERAL",
+		"\"schema-element\"",
 		"XML end tag",
 		"double quote '\\\"'",
 		"single quote '",
@@ -7371,7 +7372,7 @@ public XQueryTreeParser() {
 		data[0]=3478745251442229136L;
 		data[1]=24786891954980864L;
 		data[2]=2305735256134647799L;
-		data[3]=128L;
+		data[3]=256L;
 		return data;
 	}
 	public static final BitSet _tokenSet_0 = new BitSet(mk_tokenSet_0());
@@ -7380,7 +7381,7 @@ public XQueryTreeParser() {
 		data[0]=3478745251442229144L;
 		data[1]=24786891954980864L;
 		data[2]=2305735256134647799L;
-		data[3]=128L;
+		data[3]=256L;
 		return data;
 	}
 	public static final BitSet _tokenSet_1 = new BitSet(mk_tokenSet_1());
@@ -7389,7 +7390,7 @@ public XQueryTreeParser() {
 		data[0]=835628841828352L;
 		data[1]=33554432L;
 		data[2]=26388279066624L;
-		data[3]=128L;
+		data[3]=256L;
 		return data;
 	}
 	public static final BitSet _tokenSet_2 = new BitSet(mk_tokenSet_2());

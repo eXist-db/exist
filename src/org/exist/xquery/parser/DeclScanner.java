@@ -285,6 +285,7 @@ public DeclScanner(ParserSharedInputState state) {
 		"DOUBLE_LITERAL",
 		"DECIMAL_LITERAL",
 		"INTEGER_LITERAL",
+		"\"schema-element\"",
 		"XML end tag",
 		"double quote '\\\"'",
 		"single quote '",
