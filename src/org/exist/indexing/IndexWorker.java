@@ -25,6 +25,7 @@ import org.w3c.dom.NodeList;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
 import org.exist.dom.StoredNode;
+import org.exist.indexing.StreamListener;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.Occurrences;
 import org.exist.collections.Collection;
@@ -83,8 +84,8 @@ public interface IndexWorker {
     
     /**
      * Notify this worker to operate on the specified document, using the mode
-     * given. mode will be one of {@link #STORE}, {@link #REMOVE} or
-     * {@link #REMOVE_NODES}.
+     * given. mode will be one of {@link StreamListener#STORE}, {@link StreamListener#REMOVE_NODES} or
+     * {@link StreamListener#REMOVE_ALL_NODES}.
      *
      * @param doc the document which is processed
      * @param mode the current operation mode
@@ -98,7 +99,7 @@ public interface IndexWorker {
      *
      * Parameter mode specifies the type of the current operation. 
      *
-     * @param mode one of {@link StreamListener#STORE} or {@link StreamListener#REMOVE}
+     * @param mode one of {@link StreamListener#STORE}, {@link StreamListener#REMOVE_NODES} or {@link StreamListener#REMOVE_ALL_NODES}
      * @param document the document to be indexed.
      * @return a StreamListener
      */
