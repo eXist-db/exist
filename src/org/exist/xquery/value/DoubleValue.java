@@ -422,7 +422,7 @@ public class DoubleValue extends NumericValue {
 				+ target.getName());
 	}
 
-    /** size writen by {@link #serialize(short, boolean)} */
+    /** size writen by {link #serialize(short, boolean)} */
 	public int getSerializedSize() {
 		return 1 + 8;
 	}
