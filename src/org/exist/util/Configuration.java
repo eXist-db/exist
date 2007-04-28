@@ -257,16 +257,18 @@ public class Configuration implements ErrorHandler {
                 configureXACML((Element)xacml.item(0));
             }
             
-            /*
-            CLUSTER CONFIGURATION...
-             */
+            //Cluster configuration
             NodeList clusters = doc.getElementsByTagName("cluster");
             if(clusters.getLength() > 0) {
                 configureCluster((Element)clusters.item(0));
             }
-            /*
-            END CLUSTER CONFIGURATION....
-             */
+            
+            //Validation
+            NodeList validation = doc.getElementsByTagName("validation");
+            if (validation.getLength() > 0) {
+                configureValidation(existHomeDirname, doc, validation);
+            }
+
         } catch (SAXException e) {
             LOG.warn("error while reading config file: " + configFilename, e);
             throw new DatabaseConfigurationException(e.getMessage());
@@ -964,12 +966,6 @@ public class Configuration implements ErrorHandler {
             LOG.debug(Indexer.PROPERTY_SUPPRESS_WHITESPACE + ": " + config.get(Indexer.PROPERTY_SUPPRESS_WHITESPACE));
         }
         
-        String validation = p.getAttribute("validation");
-        if (validation != null) {
-            config.put(XMLReaderObjectFactory.PROPERTY_VALIDATION, validation);
-            LOG.debug(XMLReaderObjectFactory.PROPERTY_VALIDATION + ": " + config.get(XMLReaderObjectFactory.PROPERTY_VALIDATION));
-        }
-        
         String tokenizer = p.getAttribute("tokenizer");
         if (tokenizer != null) {
             config.put(TextSearchEngine.PROPERTY_TOKENIZER, tokenizer);
@@ -1034,9 +1030,19 @@ public class Configuration implements ErrorHandler {
             }
             config.put("indexer.modules", modConfig);
         }
-
-        //TODO : what does the following code makes here ??? -pb
+    }
+    
+    private void configureValidation(String dbHome, Document doc, NodeList validation) throws DatabaseConfigurationException {
+        Element p = (Element) validation.item(0);
         
+        // Determine validation mode
+        String mode = p.getAttribute("mode");
+        if (mode != null) {
+            config.put(XMLReaderObjectFactory.PROPERTY_VALIDATION, mode);
+            LOG.debug(XMLReaderObjectFactory.PROPERTY_VALIDATION + ": " + config.get(XMLReaderObjectFactory.PROPERTY_VALIDATION));
+        }
+        
+        // Extract catalogs      
         eXistCatalogResolver resolver = (eXistCatalogResolver) config.get("resolver");
         NodeList entityResolver = p.getElementsByTagName("entity-resolver");
         
@@ -1048,13 +1054,11 @@ public class Configuration implements ErrorHandler {
             System.out.println("Found "+catalogs.getLength()+" catalog entries.");
             
             for (int i = 0; i < catalogs.getLength(); i++) {
-                String catalog = ((Element) catalogs.item(i)).getAttribute("file");
+                String catalog = ((Element) catalogs.item(i)).getAttribute("uri");
                 
                 File catalogFile = ConfigurationHelper.lookup(catalog, dbHome);
                 if (catalogFile!=null && catalogFile.exists()) {
                     LOG.info("Loading catalog '"+catalogFile.getAbsolutePath()+"'.");
-                    // TODO dizzzz remove debug
-                    //System.out.println("Loading catalog '"+catalogFile.getAbsolutePath()+"'.");
                     try {
                         resolver.getCatalog()
                         .parseCatalog( catalogFile.getAbsolutePath() );
@@ -1076,7 +1080,8 @@ public class Configuration implements ErrorHandler {
             }
         }
     }
-    
+
+
     public String getConfigFilePath() {
     	return configFilePath;
     }
@@ -1124,8 +1129,7 @@ public class Configuration implements ErrorHandler {
         return ((Integer) obj).intValue();
     }
 
-    
-    /*
+    /**
      * (non-Javadoc)
      *
      * @see org.xml.sax.ErrorHandler#error(org.xml.sax.SAXParseException)
@@ -1136,7 +1140,7 @@ public class Configuration implements ErrorHandler {
                 + exception.getMessage());
     }
     
-    /*
+    /**
      * (non-Javadoc)
      *
      * @see org.xml.sax.ErrorHandler#fatalError(org.xml.sax.SAXParseException)
@@ -1147,7 +1151,7 @@ public class Configuration implements ErrorHandler {
                 + exception.getMessage());
     }
     
-    /*
+    /**
      * (non-Javadoc)
      *
      * @see org.xml.sax.ErrorHandler#warning(org.xml.sax.SAXParseException)

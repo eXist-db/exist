@@ -16,14 +16,15 @@
                 security
                 system-task
                 watchdog
-			scheduler
-				job
             indexer
+            scheduler
+                job
             serializer
             transformer
+            validation
             xquery
-            	builtin-modules
-            		module
+                builtin-modules
+                	module
             xupdate
     
     
@@ -295,39 +296,6 @@
 
     </db-connection>
 
-	<!--
-        Configures user jobs for the scheduler
-	-->
-	<scheduler>
-
-		<!-- 
-			Job definitions:
-		
-			- class:
-				If scheduling a Java job then this should be the name of the
-				class that extends org.exist.scheduler.UserJavaJob
-				
-			- xquery:
-				If scheduling an XQuery job then this should be a path to an XQuery
-				stored in the database. e.g. /db/myCollection/myJob.xql
-				XQuery job's will be launched under the guest account initially,
-				although the running XQuery may switch permisssions through
-				calls to the xmldb module
-				
-			- cron-trigger:
-				To define a firing pattern for the Job using Cron style syntax
-				use this attribute otherwise for a periodic job use the period
-				attribute.
-				
-			- period:
-				Can be used to define an explicit period for firing the job instead
-				of a Cron style syntax. The period should be in milliseconds. All
-				job's with a period trigger will be launched at startup.
-		-->
-		<!-- job class="bar.foo.myjob" period="600000" /-->
-		
-	</scheduler>
-
     <!-- 
         Settings for the indexer:
         
@@ -363,20 +331,12 @@
         
         - track-term-freq:
             not documented.
-        
-        - validation:
-            should XML source files be validated against a schema or DTD before
-            storing them? The setting is passed to the XML parser. The actual
-            effects depend on the parser you use. eXist comes with Xerces which 
-            can validate against both: schemas and DTDs. 
-            Possible values: "yes", "no", "auto". "auto" will leave validation 
-            to the parser.        
     -->
     <indexer caseSensitive="yes" index-depth="5"
         preserve-whitespace-mixed-content="no" stemming="no"
         suppress-whitespace="both"
         tokenizer="org.exist.storage.analysis.SimpleTokenizer"
-        track-term-freq="yes" validation="auto">
+        track-term-freq="yes">
 
         <modules>
             <module id="ngram-index" class="org.exist.indexing.impl.NGramIndex"
@@ -398,14 +358,6 @@
                 <exclude path="/auth" />
             </fulltext>
         </index>
-
-        <!-- 
-            Specify the location of one or more catalog files.
-            Catalogs are used to resolve external entities in XML documents.
-        -->
-        <entity-resolver>
-            <catalog file="webapp/WEB-INF/catalog.xml" />
-        </entity-resolver>
     </indexer>
 
     <!-- 
@@ -455,6 +407,39 @@
         match-tagging-elements="yes" />
 
     <!--
+        Configures user jobs for the scheduler
+    -->
+    <scheduler>
+
+        <!-- 
+            Job definitions:
+		
+            - class:
+                If scheduling a Java job then this should be the name of the
+                class that extends org.exist.scheduler.UserJavaJob
+				
+            - xquery:
+                If scheduling an XQuery job then this should be a path to an XQuery
+                stored in the database. e.g. /db/myCollection/myJob.xql
+                XQuery job's will be launched under the guest account initially,
+                although the running XQuery may switch permisssions through
+                calls to the xmldb module
+				
+            - cron-trigger:
+                To define a firing pattern for the Job using Cron style syntax
+                use this attribute otherwise for a periodic job use the period
+                attribute.
+				
+            - period:
+                Can be used to define an explicit period for firing the job instead
+                of a Cron style syntax. The period should be in milliseconds. All
+                job's with a period trigger will be launched at startup.
+        -->
+        <!-- job class="bar.foo.myjob" period="600000" /-->
+		
+    </scheduler>
+
+    <!--
         Default settings for the XSLT Transformer. Allow's for a choice of 
         implementation:
         
@@ -475,6 +460,27 @@
     -->
     <transformer class="org.apache.xalan.processor.TransformerFactoryImpl" />
 
+    <!--
+        Settings for XML validation
+        - mode
+            should XML source files be validated against a schema or DTD before
+            storing them? The setting is passed to the XML parser. The actual
+            effects depend on the parser you use. eXist comes with Xerces which 
+            can validate against both: schemas and DTDs.
+            
+            Possible values: "yes", "no", "auto". "auto" will leave validation 
+            to the parser.   
+            
+     -->
+    <validation mode="auto">
+        <!-- 
+            Specify the location of one or more catalog files.
+            Catalogs are used to resolve external entities in XML documents.
+        -->
+        <entity-resolver>
+            <catalog uri="webapp/WEB-INF/catalog.xml" />
+        </entity-resolver>
+    </validation>
 
     <!-- 
         Define modules that contain xQuery functions.
@@ -487,7 +493,7 @@
                 work in progress and may lead to incorrect queries. Use at your own
                 risk.
             -  backwardCompatible:
-            	Set to "yes" to enable backward compatibility (untyped argument checks for instance) 
+                Set to "yes" to enable backward compatibility (untyped argument checks for instance) 
     -->
     <xquery enable-java-binding="no" enable-query-rewriting="no"  backwardCompatible="yes">
         <builtin-modules>
@@ -536,7 +542,6 @@
                     uri="http://exist-db.org/xquery/xmldiff" /-->
         </builtin-modules>
     </xquery>
-
 
     <!-- 
       During XUpdates, the database needs to do a partial reindex of the
