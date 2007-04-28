@@ -15,7 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- * 
+ *
  *  $Id$
  */
 package org.exist.util;
@@ -25,9 +25,11 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.commons.pool.BasePoolableObjectFactory;
+
 import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.storage.BrokerPool;
+
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
@@ -35,75 +37,75 @@ import org.xml.sax.XMLReader;
 /**
  * Factory to create new XMLReader objects on demand. The factory is used
  * by {@link org.exist.util.XMLReaderPool}.
- * 
+ *
  * @author wolf
  */
 public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
-
-	private final static int VALIDATION_ENABLED = 0;
-	private final static int VALIDATION_AUTO = 1;
-	private final static int VALIDATION_DISABLED = 2;
-	
-	public static String PROPERTY_VALIDATION = "indexer.validation";
-	
-	private BrokerPool pool;
-	
-	/**
-	 * 
-	 */
-	public XMLReaderObjectFactory(BrokerPool pool) {
-		super();
-		this.pool = pool;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.apache.commons.pool.BasePoolableObjectFactory#makeObject()
-	 */
-	public Object makeObject() throws Exception {
-		Configuration config = pool.getConfiguration();
-		// get validation settings
-		int validation = VALIDATION_AUTO;
-		String option = (String) config.getProperty(PROPERTY_VALIDATION);
-		if (option != null) {
-			if (option.equals("true") || option.equals("yes"))
-				validation = VALIDATION_ENABLED;
-			else if (option.equals("auto"))
-				validation = VALIDATION_AUTO;
-			else
-				validation = VALIDATION_DISABLED;
-		}
-		// create a SAX parser
-		SAXParserFactory saxFactory = SAXParserFactory.newInstance();
-		if (validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED)
-			saxFactory.setValidating(true);
-		else
-			saxFactory.setValidating(false);
-		saxFactory.setNamespaceAware(true);
-		try {
-			saxFactory.setFeature(Namespaces.SAX_NAMESPACES_PREFIXES, true);
-			try {
+    
+    private final static int VALIDATION_ENABLED = 0;
+    private final static int VALIDATION_AUTO = 1;
+    private final static int VALIDATION_DISABLED = 2;
+    
+    public static String PROPERTY_VALIDATION = "validation.mode";
+    
+    private BrokerPool pool;
+    
+    /**
+     *
+     */
+    public XMLReaderObjectFactory(BrokerPool pool) {
+        super();
+        this.pool = pool;
+    }
+    
+    /** (non-Javadoc)
+     * @see org.apache.commons.pool.BasePoolableObjectFactory#makeObject()
+     */
+    public Object makeObject() throws Exception {
+        Configuration config = pool.getConfiguration();
+        // get validation settings
+        int validation = VALIDATION_AUTO;
+        String option = (String) config.getProperty(PROPERTY_VALIDATION);
+        if (option != null) {
+            if (option.equals("true") || option.equals("yes"))
+                validation = VALIDATION_ENABLED;
+            else if (option.equals("auto"))
+                validation = VALIDATION_AUTO;
+            else
+                validation = VALIDATION_DISABLED;
+        }
+        // create a SAX parser
+        SAXParserFactory saxFactory = SAXParserFactory.newInstance();
+        if (validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED)
+            saxFactory.setValidating(true);
+        else
+            saxFactory.setValidating(false);
+        saxFactory.setNamespaceAware(true);
+        try {
+            saxFactory.setFeature(Namespaces.SAX_NAMESPACES_PREFIXES, true);
+            try {
                 // TODO check does this work?
                 // http://xerces.apache.org/xerces2-j/features.html
-				saxFactory.setFeature(Namespaces.SAX_VALIDATION,
-						validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED);     
-				saxFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd",
-						validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED);                                
-				saxFactory.setFeature(Namespaces.SAX_VALIDATION_DYNAMIC,
-						validation == VALIDATION_AUTO);
-				saxFactory.setFeature("http://apache.org/xml/features/validation/schema",
-						validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED);
-                                
-			} catch (SAXNotRecognizedException e1) {
-				// ignore: feature only recognized by xerces
-			} catch (SAXNotSupportedException e1) {
-				// ignore: feature only recognized by xerces
-			}
-			SAXParser sax = saxFactory.newSAXParser();
-			XMLReader parser = sax.getXMLReader();
-			return parser;
-		} catch (ParserConfigurationException e) {
-			throw new EXistException(e);
-		}
-	}
-
+                saxFactory.setFeature(Namespaces.SAX_VALIDATION,
+                    validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED);
+                saxFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd",
+                    validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED);
+                saxFactory.setFeature(Namespaces.SAX_VALIDATION_DYNAMIC,
+                    validation == VALIDATION_AUTO);
+                saxFactory.setFeature("http://apache.org/xml/features/validation/schema",
+                    validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED);
+                
+            } catch (SAXNotRecognizedException e1) {
+                // ignore: feature only recognized by xerces
+            } catch (SAXNotSupportedException e1) {
+                // ignore: feature only recognized by xerces
+            }
+            SAXParser sax = saxFactory.newSAXParser();
+            XMLReader parser = sax.getXMLReader();
+            return parser;
+        } catch (ParserConfigurationException e) {
+            throw new EXistException(e);
+        }
+    }
+    
 }
