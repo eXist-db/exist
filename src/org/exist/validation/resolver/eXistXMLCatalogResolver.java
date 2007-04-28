@@ -23,6 +23,8 @@
 package org.exist.validation.resolver;
 
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.apache.xerces.util.XMLCatalogResolver;
@@ -44,6 +46,25 @@ import org.xml.sax.SAXException;
 public class eXistXMLCatalogResolver extends XMLCatalogResolver {
     
     private final static Logger LOG = Logger.getLogger(eXistXMLCatalogResolver.class);
+    
+    /**
+     *  Constructs a catalog resolver with the given list of entry files.
+     *
+     * @param catalogs List of Strings
+     *
+     *  TODO: check for non-String and NULL values.
+     */
+    public eXistXMLCatalogResolver(List catalogs){
+        super();
+        String[] allCatalogs = new String[catalogs.size()];
+        int counter=0;
+        for (Iterator it=catalogs.iterator(); it.hasNext(); ) {
+            String element = (String) it.next();
+            allCatalogs[counter]=element;
+            counter++;
+        }
+        super.setCatalogList(allCatalogs);
+    }
     
     /**
      * @see org.apache.xerces.util.XMLCatalogResolver#resolveEntity(String, String)
