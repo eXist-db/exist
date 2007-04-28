@@ -26,8 +26,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -159,7 +161,7 @@ public class Configuration implements ErrorHandler {
             // otherwise, secondly try to read configuration from file. Guess the
             // location if necessary
             if (is == null) {
-            	existHome = (existHomeDirname != null) ? new File(existHomeDirname) : ConfigurationHelper.getExistHome();
+                existHome = (existHomeDirname != null) ? new File(existHomeDirname) : ConfigurationHelper.getExistHome();
                 if (existHome == null) {
                     // EB: try to create existHome based on location of config file
                     // when config file points to absolute file location
@@ -186,13 +188,7 @@ public class Configuration implements ErrorHandler {
                 LOG.info("Reading configuration from file " + configFile);
             }
             
-            
-            // Create resolver
-            LOG.debug("Creating eXist catalog resolver");
-            System.setProperty("xml.catalog.verbosity", "10");
-            eXistCatalogResolver resolver = new eXistCatalogResolver(true);
-            config.put("resolver", resolver);
-            
+
             // initialize xml parser
             // we use eXist's in-memory DOM implementation to work
             // around a bug in Xerces
@@ -1033,6 +1029,14 @@ public class Configuration implements ErrorHandler {
     }
     
     private void configureValidation(String dbHome, Document doc, NodeList validation) throws DatabaseConfigurationException {
+
+        // TODO DWES remove next lines, resolver is not needed here.
+        // Create resolver
+        LOG.debug("Creating eXist catalog resolver");
+        System.setProperty("xml.catalog.verbosity", "10");
+        eXistCatalogResolver resolver = new eXistCatalogResolver(true);
+        // END
+        
         Element p = (Element) validation.item(0);
         
         // Determine validation mode
@@ -1041,43 +1045,61 @@ public class Configuration implements ErrorHandler {
             config.put(XMLReaderObjectFactory.PROPERTY_VALIDATION, mode);
             LOG.debug(XMLReaderObjectFactory.PROPERTY_VALIDATION + ": " + config.get(XMLReaderObjectFactory.PROPERTY_VALIDATION));
         }
+
         
-        // Extract catalogs      
-        eXistCatalogResolver resolver = (eXistCatalogResolver) config.get("resolver");
+        // Extract catalogs
         NodeList entityResolver = p.getElementsByTagName("entity-resolver");
         
         if (entityResolver.getLength() > 0) {
             Element r = (Element) entityResolver.item(0);
             NodeList catalogs = r.getElementsByTagName("catalog");
             
-            // TODO remove. log function does not work yet
-            System.out.println("Found "+catalogs.getLength()+" catalog entries.");
-            
-            for (int i = 0; i < catalogs.getLength(); i++) {
-                String catalog = ((Element) catalogs.item(i)).getAttribute("uri");
+            LOG.debug("Found "+catalogs.getLength()+" catalog uri entries.");
+            LOG.debug("Using dbHome="+dbHome);
                 
-                File catalogFile = ConfigurationHelper.lookup(catalog, dbHome);
-                if (catalogFile!=null && catalogFile.exists()) {
-                    LOG.info("Loading catalog '"+catalogFile.getAbsolutePath()+"'.");
-                    try {
-                        resolver.getCatalog()
-                        .parseCatalog( catalogFile.getAbsolutePath() );
-                        
-                    } catch (IOException e) {
-                        String message = "An exception occurred while reading catalog: "
-                                + catalogFile.getAbsolutePath() + ": "
-                                + e.getMessage();
-                        
-                        LOG.warn(message, e);
-                        System.out.println(message);
-                    }
-                } else {
-                    String message ="Could not load catalog '"
-                            +catalogFile.getAbsolutePath()+"'.";
-                    LOG.debug(message);
-                    System.out.println(message);
-                }
+            // Determine webapps directory. SingleInstanceConfiguration cannot
+            // be used at this phase. Trick is to check wether dbHOME is 
+            // pointing to a WEB-INF directory, meaning inside war file)
+            File webappHome=null;
+            if(dbHome==null){  /// DWES Why?
+                webappHome=new File(".");
+            } else if(dbHome.endsWith("WEB-INF")){
+                webappHome = new File(dbHome).getParentFile();
+            } else {
+                webappHome = new File(dbHome, "webapp");
             }
+            LOG.debug("using webappHome="+webappHome.toURI().toString());
+            
+            List allURIs= new ArrayList();
+            for (int i = 0; i < catalogs.getLength(); i++) {
+                String uri = ((Element) catalogs.item(i)).getAttribute("uri");
+                
+                if(uri!=null){ // when uri attribute is filled in
+                    
+                    // Substitute string, creating an uri from a local file
+                    if(uri.startsWith("${WEBAPP_HOME}")){
+                       uri=uri.replaceAll("\\$\\{WEBAPP_HOME\\}", webappHome.toURI().toString() );
+                    }
+                    
+                    // Add uri to confiuration
+                    LOG.info("Add catalog uri "+uri+"");
+                    allURIs.add(uri);
+                    
+                    // Register uri with catalog resolver
+                    // TODO remove this
+                    try {
+                        resolver.getCatalog().parseCatalog( new URL(uri) );
+                    } catch (Exception ex) {
+                        LOG.warn("Failed adding catalog uri", ex);
+                    } 
+                    
+                }
+
+            }
+            config.put("validation.catalog_uris", allURIs);
+            
+            // TODO DWES remove asap, kept for compatibility
+            config.put("resolver", resolver);
         }
     }
 

@@ -33,6 +33,7 @@ import junit.framework.TestSuite;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
 import org.exist.util.ConfigurationHelper;
+import org.exist.util.XMLReaderObjectFactory;
 import org.exist.validation.internal.DatabaseResources;
 import org.exist.xmldb.XmldbURI;
 
@@ -69,7 +70,7 @@ public class DatabaseResourcesTest extends TestCase {
     protected BrokerPool startDB() {
         try {
             Configuration config = new Configuration();
-            config.setProperty("indexer.validation","no");
+            config.setProperty(XMLReaderObjectFactory.PROPERTY_VALIDATION,"no");
             BrokerPool.configure(1, 5, config);
             return BrokerPool.getInstance();
         } catch (Exception e) {
