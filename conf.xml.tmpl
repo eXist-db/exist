@@ -360,6 +360,39 @@
         </index>
     </indexer>
 
+    <!--
+        Configures user jobs for the scheduler
+    -->
+    <scheduler>
+        
+        <!-- 
+            Job definitions:
+            
+            - class:
+            If scheduling a Java job then this should be the name of the
+            class that extends org.exist.scheduler.UserJavaJob
+            
+            - xquery:
+            If scheduling an XQuery job then this should be a path to an XQuery
+            stored in the database. e.g. /db/myCollection/myJob.xql
+            XQuery job's will be launched under the guest account initially,
+            although the running XQuery may switch permisssions through
+            calls to the xmldb module
+            
+            - cron-trigger:
+            To define a firing pattern for the Job using Cron style syntax
+            use this attribute otherwise for a periodic job use the period
+            attribute.
+            
+            - period:
+            Can be used to define an explicit period for firing the job instead
+            of a Cron style syntax. The period should be in milliseconds. All
+            job's with a period trigger will be launched at startup.
+        -->
+        <!-- job class="bar.foo.myjob" period="600000" /-->
+        
+    </scheduler>
+
     <!-- 
         Default settings for the serializer. Most of these can be changed
         by client code:
@@ -405,39 +438,6 @@
     <serializer add-exist-id="none" compress-output="no" enable-xinclude="yes"
         enable-xsl="no" indent="yes" match-tagging-attributes="no"
         match-tagging-elements="yes" />
-
-    <!--
-        Configures user jobs for the scheduler
-    -->
-    <scheduler>
-
-        <!-- 
-            Job definitions:
-		
-            - class:
-                If scheduling a Java job then this should be the name of the
-                class that extends org.exist.scheduler.UserJavaJob
-				
-            - xquery:
-                If scheduling an XQuery job then this should be a path to an XQuery
-                stored in the database. e.g. /db/myCollection/myJob.xql
-                XQuery job's will be launched under the guest account initially,
-                although the running XQuery may switch permisssions through
-                calls to the xmldb module
-				
-            - cron-trigger:
-                To define a firing pattern for the Job using Cron style syntax
-                use this attribute otherwise for a periodic job use the period
-                attribute.
-				
-            - period:
-                Can be used to define an explicit period for firing the job instead
-                of a Cron style syntax. The period should be in milliseconds. All
-                job's with a period trigger will be launched at startup.
-        -->
-        <!-- job class="bar.foo.myjob" period="600000" /-->
-		
-    </scheduler>
 
     <!--
         Default settings for the XSLT Transformer. Allow's for a choice of 
