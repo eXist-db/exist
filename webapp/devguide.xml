@@ -114,7 +114,7 @@
                     </listitem>
                 </varlistentry>
                 <varlistentry>
-                    <term>xml-commons-resolver-x.x.jar</term>
+                    <term>resolver-x.x.jar</term>
                     <listitem>
                         <para>A library for resolving XML external entities from the catalogue.
                             files.</para>

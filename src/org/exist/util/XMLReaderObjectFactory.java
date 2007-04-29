@@ -29,6 +29,7 @@ import org.apache.commons.pool.BasePoolableObjectFactory;
 import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.storage.BrokerPool;
+import org.exist.validation.resolver.eXistXMLCatalogResolver;
 
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
@@ -47,6 +48,11 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
     private final static int VALIDATION_DISABLED = 2;
     
     public static String PROPERTY_VALIDATION = "validation.mode";
+    public static String CATALOG_RESOLVER = "validation.resolver";
+    public static String CATALOG_URIS = "validation.catalog_uris";
+    
+    final static String PROPERTIES_RESOLVER
+        ="http://apache.org/xml/properties/internal/entity-resolver";
     
     private BrokerPool pool;
     
@@ -76,10 +82,11 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
         }
         // create a SAX parser
         SAXParserFactory saxFactory = SAXParserFactory.newInstance();
-        if (validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED)
+        if (validation == VALIDATION_AUTO || validation == VALIDATION_ENABLED){
             saxFactory.setValidating(true);
-        else
+        } else {
             saxFactory.setValidating(false);
+        }
         saxFactory.setNamespaceAware(true);
         try {
             saxFactory.setFeature(Namespaces.SAX_NAMESPACES_PREFIXES, true);
@@ -102,7 +109,11 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
             }
             SAXParser sax = saxFactory.newSAXParser();
             XMLReader parser = sax.getXMLReader();
+            
+            eXistXMLCatalogResolver resolver = (eXistXMLCatalogResolver) config.getProperty(CATALOG_RESOLVER);
+            parser.setProperty(PROPERTIES_RESOLVER, resolver);
             return parser;
+            
         } catch (ParserConfigurationException e) {
             throw new EXistException(e);
         }

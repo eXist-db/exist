@@ -54,8 +54,8 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
      *
      *  TODO: check for non-String and NULL values.
      */
-    public eXistXMLCatalogResolver(List catalogs){
-        super();
+    public void setCatalogs(List catalogs){
+//        super();
         String[] allCatalogs = new String[catalogs.size()];
         int counter=0;
         for (Iterator it=catalogs.iterator(); it.hasNext(); ) {
@@ -65,6 +65,8 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
         }
         super.setCatalogList(allCatalogs);
     }
+    
+
     
     /**
      * @see org.apache.xerces.util.XMLCatalogResolver#resolveEntity(String, String)

@@ -74,9 +74,10 @@ import org.exist.util.Configuration;
 import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import org.exist.util.SyntaxException;
+import org.exist.util.XMLReaderObjectFactory;
 import org.exist.util.hashtable.ObjectHashSet;
 import org.exist.util.serializer.DOMStreamer;
-import org.exist.validation.resolver.eXistCatalogResolver;
+import org.exist.validation.resolver.eXistXMLCatalogResolver;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.w3c.dom.Node;
@@ -138,7 +139,7 @@ public  class Collection extends Observable
     // creation time
     private long created = 0;
     
-    private eXistCatalogResolver resolver;
+    private eXistXMLCatalogResolver resolver;
     
     private Observer[] observers = null;
     
@@ -1531,7 +1532,7 @@ public  class Collection extends Observable
             return userReader;
         
         Configuration config = broker.getConfiguration();
-        resolver = (eXistCatalogResolver) config.getProperty("resolver");
+        resolver = (eXistXMLCatalogResolver) config.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER);
         return broker.getBrokerPool().getParserPool().borrowXMLReader();
     }
     
