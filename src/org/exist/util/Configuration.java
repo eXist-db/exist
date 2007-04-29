@@ -52,7 +52,7 @@ import org.exist.storage.NativeBroker;
 import org.exist.storage.NativeValueIndex;
 import org.exist.storage.TextSearchEngine;
 import org.exist.storage.XQueryPool;
-import org.exist.validation.resolver.eXistCatalogResolver;
+import org.exist.validation.resolver.eXistXMLCatalogResolver;
 import org.exist.xquery.XQueryWatchDog;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -67,15 +67,15 @@ public class Configuration implements ErrorHandler {
     private final static Logger LOG = Logger.getLogger(Configuration.class); //Logger
     protected String configFilePath = null;
     protected File existHome = null;
-
+    
     protected DocumentBuilder builder = null;
     protected HashMap config = new HashMap(); //Configuration
     
     public static final class SystemTaskConfig {
-    	protected String className;
-    	protected long period = -1;
-    	protected String cronExpr = null;
-    	protected Properties params = new Properties();
+        protected String className;
+        protected long period = -1;
+        protected String cronExpr = null;
+        protected Properties params = new Properties();
         
         public SystemTaskConfig(String className) {
             this.className = className;
@@ -105,31 +105,31 @@ public class Configuration implements ErrorHandler {
             return params;
         }
     }
-
+    
     public static final class IndexModuleConfig {
-    	protected String id;
-    	protected String className;
-    	protected Element config;
-
+        protected String id;
+        protected String className;
+        protected Element config;
+        
         public IndexModuleConfig(String id, String className, Element config) {
             this.id = id;
             this.className = className;
             this.config = config;
         }
-
+        
         public String getClassName() {
             return className;
         }
-
+        
         public Element getConfig() {
             return config;
         }
-
+        
         public String getId() {
             return id;
         }
     }
-
+    
     public Configuration() throws DatabaseConfigurationException {
         this("conf.xml", null);
     }
@@ -146,7 +146,7 @@ public class Configuration implements ErrorHandler {
                 // Default file name
                 configFilename = "conf.xml";
             }
-
+            
             // firstly, try to read the configuration from a file within the
             // classpath
             try {
@@ -167,7 +167,7 @@ public class Configuration implements ErrorHandler {
                     // when config file points to absolute file location
                     File absoluteConfigFile = new File(configFilename);
                     if (absoluteConfigFile.isAbsolute() &&
-                            absoluteConfigFile.exists() && absoluteConfigFile.canRead()) {
+                        absoluteConfigFile.exists() && absoluteConfigFile.canRead()) {
                         existHome = absoluteConfigFile.getParentFile();
                         configFilename = absoluteConfigFile.getName();
                     }
@@ -188,7 +188,7 @@ public class Configuration implements ErrorHandler {
                 LOG.info("Reading configuration from file " + configFile);
             }
             
-
+            
             // initialize xml parser
             // we use eXist's in-memory DOM implementation to work
             // around a bug in Xerces
@@ -264,7 +264,7 @@ public class Configuration implements ErrorHandler {
             if (validation.getLength() > 0) {
                 configureValidation(existHomeDirname, doc, validation);
             }
-
+            
         } catch (SAXException e) {
             LOG.warn("error while reading config file: " + configFilename, e);
             throw new DatabaseConfigurationException(e.getMessage());
@@ -336,7 +336,7 @@ public class Configuration implements ErrorHandler {
             config.put("xquery.enable-java-binding", javabinding);
             LOG.debug("xquery.enable-java-binding: " + config.get("xquery.enable-java-binding"));
         }
-
+        
         String optimize = xquery.getAttribute("enable-query-rewriting");
         if (optimize != null && optimize.length() > 0) {
             config.put("xquery.enable-query-rewriting", optimize);
@@ -392,21 +392,21 @@ public class Configuration implements ErrorHandler {
         if (growth != null) {
             config.put(DBBroker.PROPERTY_XUPDATE_GROWTH_FACTOR, new Integer(growth));
             LOG.debug(DBBroker.PROPERTY_XUPDATE_GROWTH_FACTOR + ": "
-                    + config.get(DBBroker.PROPERTY_XUPDATE_GROWTH_FACTOR));
+                + config.get(DBBroker.PROPERTY_XUPDATE_GROWTH_FACTOR));
         }
         
         String fragmentation = xupdate.getAttribute("allowed-fragmentation");
         if (fragmentation != null) {
             config.put(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR, new Integer(fragmentation));
             LOG.debug(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR + ": "
-                    + config.get(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR));
+                + config.get(DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR));
         }
         
         String consistencyCheck = xupdate.getAttribute("enable-consistency-checks");
         if (consistencyCheck != null) {
             config.put(DBBroker.PROPERTY_XUPDATE_CONSISTENCY_CHECKS, Boolean.valueOf(consistencyCheck.equals("yes")));
             LOG.debug(DBBroker.PROPERTY_XUPDATE_CONSISTENCY_CHECKS + ": "
-                    + config.get(DBBroker.PROPERTY_XUPDATE_CONSISTENCY_CHECKS));
+                + config.get(DBBroker.PROPERTY_XUPDATE_CONSISTENCY_CHECKS));
         }
     }
     
@@ -523,8 +523,8 @@ public class Configuration implements ErrorHandler {
             File df = ConfigurationHelper.lookup(dataFiles, dbHome);
             if (!df.canRead())
                 throw new DatabaseConfigurationException(
-                        "cannot read data directory: "
-                        + df.getAbsolutePath());
+                    "cannot read data directory: "
+                    + df.getAbsolutePath());
             config.put("db-connection.data-dir", df.getAbsolutePath());
             LOG.info("data directory = " + df.getAbsolutePath());
         }
@@ -741,7 +741,7 @@ public class Configuration implements ErrorHandler {
                     LOG.debug("indexer.permissions.collection: " + config.get("indexer.permissions.collection"));
                 } catch (NumberFormatException e) {
                     throw new DatabaseConfigurationException("collection attribute in default-permissions section needs " +
-                            "to be an octal number");
+                        "to be an octal number");
                 }
             }
             option = node.getAttribute("resource");
@@ -752,7 +752,7 @@ public class Configuration implements ErrorHandler {
                     LOG.debug("indexer.permissions.resource: " + config.get("indexer.permissions.resource"));
                 } catch (NumberFormatException e) {
                     throw new DatabaseConfigurationException("resource attribute in default-permissions section needs " +
-                            "to be an octal number");
+                        "to be an octal number");
                 }
             }
         }
@@ -974,7 +974,7 @@ public class Configuration implements ErrorHandler {
                 depth = Integer.parseInt(indexDepth);
                 if (depth < 3) {
                     LOG.warn("parameter index-depth should be >= 3 or you will experience a severe " +
-                            "performance loss for node updates (XUpdate or XQuery update extensions)");
+                        "performance loss for node updates (XUpdate or XQuery update extensions)");
                     depth = 3;
                 }
                 config.put(NativeBroker.PROPERTY_INDEX_DEPTH, new Integer(depth));
@@ -1008,7 +1008,7 @@ public class Configuration implements ErrorHandler {
                 LOG.debug("stopwords: " + config.get("stopwords"));
             }
         }
-
+        
         // index modules
         NodeList modules = p.getElementsByTagName("modules");
         if (modules.getLength() > 0) {
@@ -1029,13 +1029,6 @@ public class Configuration implements ErrorHandler {
     }
     
     private void configureValidation(String dbHome, Document doc, NodeList validation) throws DatabaseConfigurationException {
-
-        // TODO DWES remove next lines, resolver is not needed here.
-        // Create resolver
-        LOG.debug("Creating eXist catalog resolver");
-        System.setProperty("xml.catalog.verbosity", "10");
-        eXistCatalogResolver resolver = new eXistCatalogResolver(true);
-        // END
         
         Element p = (Element) validation.item(0);
         
@@ -1045,7 +1038,7 @@ public class Configuration implements ErrorHandler {
             config.put(XMLReaderObjectFactory.PROPERTY_VALIDATION, mode);
             LOG.debug(XMLReaderObjectFactory.PROPERTY_VALIDATION + ": " + config.get(XMLReaderObjectFactory.PROPERTY_VALIDATION));
         }
-
+        
         
         // Extract catalogs
         NodeList entityResolver = p.getElementsByTagName("entity-resolver");
@@ -1056,12 +1049,12 @@ public class Configuration implements ErrorHandler {
             
             LOG.debug("Found "+catalogs.getLength()+" catalog uri entries.");
             LOG.debug("Using dbHome="+dbHome);
-                
+            
             // Determine webapps directory. SingleInstanceConfiguration cannot
-            // be used at this phase. Trick is to check wether dbHOME is 
+            // be used at this phase. Trick is to check wether dbHOME is
             // pointing to a WEB-INF directory, meaning inside war file)
             File webappHome=null;
-            if(dbHome==null){  /// DWES Why?
+            if(dbHome==null){  /// DWES Why? makes jUnit happy
                 webappHome=new File(".");
             } else if(dbHome.endsWith("WEB-INF")){
                 webappHome = new File(dbHome).getParentFile();
@@ -1078,38 +1071,36 @@ public class Configuration implements ErrorHandler {
                     
                     // Substitute string, creating an uri from a local file
                     if(uri.startsWith("${WEBAPP_HOME}")){
-                       uri=uri.replaceAll("\\$\\{WEBAPP_HOME\\}", webappHome.toURI().toString() );
+                        uri=uri.replaceAll("\\$\\{WEBAPP_HOME\\}", webappHome.toURI().toString() );
                     }
                     
                     // Add uri to confiuration
                     LOG.info("Add catalog uri "+uri+"");
                     allURIs.add(uri);
-                    
-                    // Register uri with catalog resolver
-                    // TODO remove this
-                    try {
-                        resolver.getCatalog().parseCatalog( new URL(uri) );
-                    } catch (Exception ex) {
-                        LOG.warn("Failed adding catalog uri", ex);
-                    } 
-                    
                 }
-
+                
             }
-            config.put("validation.catalog_uris", allURIs);
             
-            // TODO DWES remove asap, kept for compatibility
-            config.put("resolver", resolver);
+            // Store all configured URI
+            config.put(XMLReaderObjectFactory.CATALOG_URIS, allURIs);
+            
+            // TODO DWES discuss ; this should not be here?
+            
+            // Create resolver
+            LOG.debug("Creating eXist catalog resolver");
+            eXistXMLCatalogResolver resolver = new eXistXMLCatalogResolver();
+            resolver.setCatalogs(allURIs);
+            config.put(XMLReaderObjectFactory.CATALOG_RESOLVER, resolver);
         }
     }
-
-
+    
+    
     public String getConfigFilePath() {
-    	return configFilePath;
+        return configFilePath;
     }
     
     public File getExistHome() {
-    	return existHome;
+        return existHome;
     }
     
     public Object getProperty(String name) {
@@ -1150,7 +1141,7 @@ public class Configuration implements ErrorHandler {
         
         return ((Integer) obj).intValue();
     }
-
+    
     /**
      * (non-Javadoc)
      *
@@ -1158,8 +1149,8 @@ public class Configuration implements ErrorHandler {
      */
     public void error(SAXParseException exception) throws SAXException {
         System.err.println("error occured while reading configuration file "
-                + "[line: " + exception.getLineNumber() + "]:"
-                + exception.getMessage());
+            + "[line: " + exception.getLineNumber() + "]:"
+            + exception.getMessage());
     }
     
     /**
@@ -1169,8 +1160,8 @@ public class Configuration implements ErrorHandler {
      */
     public void fatalError(SAXParseException exception) throws SAXException {
         System.err.println("error occured while reading configuration file "
-                + "[line: " + exception.getLineNumber() + "]:"
-                + exception.getMessage());
+            + "[line: " + exception.getLineNumber() + "]:"
+            + exception.getMessage());
     }
     
     /**
@@ -1180,8 +1171,8 @@ public class Configuration implements ErrorHandler {
      */
     public void warning(SAXParseException exception) throws SAXException {
         System.err.println("error occured while reading configuration file "
-                + "[line: " + exception.getLineNumber() + "]:"
-                + exception.getMessage());
+            + "[line: " + exception.getLineNumber() + "]:"
+            + exception.getMessage());
     }
     
 }
