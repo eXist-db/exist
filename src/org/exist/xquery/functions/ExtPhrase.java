@@ -136,7 +136,7 @@ public class ExtPhrase extends ExtFulltext {
 							if (j == terms.length) {
 								// all terms found
                                 if (match == null)
-                                    match = new Match(nodeId, matchTerm);
+                                    match = nextMatch.createInstance(getExpressionId(), nodeId, matchTerm);
                                 if (firstOffset < 0)
                                     firstOffset = token.startOffset();
                                 match.addOffset(firstOffset, token.endOffset() - firstOffset);
@@ -251,7 +251,7 @@ public class ExtPhrase extends ExtFulltext {
 									Match match = (Match)(matchTable.get(matchTerm));
                                     match.addOffset(token.startOffset(), matchTerm.length());
 								} else {
-									Match match = new Match(nodeId, matchTerm);
+									Match match = nextMatch.createInstance(getExpressionId(), nodeId, matchTerm);
                                     match.addOffset(token.startOffset(), matchTerm.length());
 									matchTable.put(matchTerm,match);
 								}

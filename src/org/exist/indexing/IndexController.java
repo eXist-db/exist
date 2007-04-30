@@ -103,12 +103,12 @@ public class IndexController {
      * @return chain of StreamListeners
      */
     public StreamListener getStreamListener(DocumentImpl document, int mode) {
-    	if (currentMode != mode) {
-    		currentMode = mode;
-    	} else if (listener != null) {
+        if (currentMode != mode) {
+            currentMode = mode;
+        } else if (listener != null) {
             StreamListener next = listener;
-            while (next != null) {  
-            	next.getWorker().setDocument(document, mode);
+            while (next != null) {
+                next.getWorker().setDocument(document, mode);
                 next = next.getNextInChain();
             }
             return listener;
@@ -116,7 +116,7 @@ public class IndexController {
         StreamListener first = null;
         StreamListener current, previous = null;
         IndexWorker worker;
-        for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
+        for (Iterator i = indexWorkers.values().iterator(); i.hasNext();) {
             worker = (IndexWorker) i.next();
             worker.setDocument(document, mode);
             current = worker.getListener(mode, document);
@@ -129,6 +129,25 @@ public class IndexController {
         }
         listener = first;
         return listener;
+    }
+
+    public MatchListener getMatchListener(NodeProxy proxy) {
+        MatchListener first = null;
+        MatchListener current, previous = null;
+        IndexWorker worker;
+        for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
+            worker = (IndexWorker) i.next();
+            current = worker.getMatchListener(proxy);
+            if (current != null) {
+                if (first == null) {
+                    first = current;
+                } else {
+                    previous.setNextInChain(current);
+                }
+                previous = current;
+            }
+        }
+        return first;
     }
 
     /**

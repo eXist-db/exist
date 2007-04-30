@@ -29,6 +29,7 @@ import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
 
 import org.exist.dom.QName;
+import org.exist.dom.StoredNode;
 import org.exist.util.XMLString;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -454,10 +455,14 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
 		throw new SAXException(e.getMessage(), e);
 	}
 }
-	
-	/* (non-Javadoc)
-	 * @see org.xml.sax.ext.LexicalHandler#startEntity(java.lang.String)
-	 */
+
+    public void highlightText(CharSequence seq) {
+        // not supported with this receiver
+    }
+
+    /* (non-Javadoc)
+      * @see org.xml.sax.ext.LexicalHandler#startEntity(java.lang.String)
+      */
 	public void startEntity(String arg0) throws SAXException {
 	}
 
@@ -490,4 +495,7 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
 		}
 	}
 
+    public void setCurrentNode(StoredNode node) {
+        // just ignore.
+    }
 }

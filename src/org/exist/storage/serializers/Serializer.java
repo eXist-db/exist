@@ -49,6 +49,8 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.log4j.Logger;
 import org.exist.Namespaces;
+import org.exist.indexing.IndexController;
+import org.exist.indexing.MatchListener;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
@@ -386,7 +388,7 @@ public abstract class Serializer implements XMLReader {
 		if (templates != null)
 			applyXSLHandler(writer);
 		else
-			setPrettyPrinter(writer, outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION, "yes").equals("no")); //setPrettyPrinter(writer, false);
+			setPrettyPrinter(writer, outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION, "yes").equals("no"), null); //setPrettyPrinter(writer, false);
 		
 		serializeToReceiver(doc, true);
 		releasePrettyPrinter();
@@ -403,7 +405,8 @@ public abstract class Serializer implements XMLReader {
 		if (templates != null)
 			applyXSLHandler(out);
 		else
-			setPrettyPrinter(out, outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION, "yes").equals("no")); //setPrettyPrinter(out, false);
+			setPrettyPrinter(out, outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION, "yes").equals("no"),
+                    n.getImplementationType() == NodeValue.PERSISTENT_NODE ? (NodeProxy)n : null); //setPrettyPrinter(out, false);
 		serializeToReceiver(n, true);
 		releasePrettyPrinter();
 		return out.toString();
@@ -426,7 +429,7 @@ public abstract class Serializer implements XMLReader {
 		if (templates != null)
 			applyXSLHandler(out);
 		else
-			setPrettyPrinter(out, outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION, "yes").equals("no")); //setPrettyPrinter(out, false);
+			setPrettyPrinter(out, outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION, "yes").equals("no"), p); //setPrettyPrinter(out, false);
 		serializeToReceiver(p, false);
 		releasePrettyPrinter();
 		return out.toString();
@@ -511,7 +514,7 @@ public abstract class Serializer implements XMLReader {
 		throw new SAXNotRecognizedException(name);
 	}
 
-	protected void setPrettyPrinter(Writer writer, boolean xmlDecl) {
+	protected void setPrettyPrinter(Writer writer, boolean xmlDecl, NodeProxy root) {
 		outputProperties.setProperty(	
 			OutputKeys.OMIT_XML_DECLARATION,
 			xmlDecl ? "no" : "yes");
@@ -523,7 +526,16 @@ public abstract class Serializer implements XMLReader {
 			receiver = xinclude;
 		} else
 			receiver = xmlout;
-	}
+        if (root != null && getHighlightingMode() > 0) {
+            IndexController controller = broker.getIndexController();
+            MatchListener listener = controller.getMatchListener(root);
+            if (listener != null) {
+                MatchListener last = (MatchListener) listener.getLastInChain();
+                last.setNextInChain(receiver);
+                receiver = listener;
+            }
+        }
+    }
 
 	protected void releasePrettyPrinter() {
 		if (xmlout != null)

@@ -22,6 +22,8 @@
 package org.exist.util.serializer;
 
 import org.exist.dom.QName;
+import org.exist.dom.StoredNode;
+import org.exist.Namespaces;
 import org.xml.sax.SAXException;
 
 /**
@@ -33,8 +35,11 @@ import org.xml.sax.SAXException;
  * @author wolf
  */
 public interface Receiver {
-	
-	public void startDocument() throws SAXException;
+
+    public final static QName MATCH_ELEMENT =
+            new QName("match", Namespaces.EXIST_NS, "exist");
+
+    public void startDocument() throws SAXException;
 
 	public void endDocument() throws SAXException;
 
@@ -59,4 +64,8 @@ public interface Receiver {
 	public void processingInstruction(String target, String data) throws SAXException;
 	
 	public void documentType(String name, String publicId, String systemId) throws SAXException;
+
+    public void highlightText(CharSequence seq) throws SAXException;
+    
+    public void setCurrentNode(StoredNode node);
 }

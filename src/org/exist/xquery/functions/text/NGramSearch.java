@@ -11,20 +11,17 @@ import org.exist.dom.NodeSetIterator;
 import org.exist.dom.QName;
 import org.exist.indexing.impl.NGramIndex;
 import org.exist.indexing.impl.NGramIndexWorker;
-import org.exist.xquery.Atomize;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Dependency;
-import org.exist.xquery.DynamicCardinalityCheck;
-import org.exist.xquery.Expression;
-import org.exist.xquery.Function;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.util.Error;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.exist.storage.ElementValue;
+
+import java.util.List;
+import java.util.Iterator;
+import java.util.ArrayList;
 
 /**
  * Created by IntelliJ IDEA.
@@ -39,17 +36,20 @@ public class NGramSearch extends Function {
             new FunctionSignature(
                     new QName("ngram-contains", TextModule.NAMESPACE_URI, TextModule.PREFIX),
                     "",
-                    new SequenceType[] {
+                    new SequenceType[]{
                             new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
                             new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
                     },
                     new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
             );
 
+    private LocationStep contextStep = null;
+    protected QName contextQName = null;
+    protected int axis = Constants.UNKNOWN_AXIS;
+
     public NGramSearch(XQueryContext context) {
         super(context, signature);
     }
-
 
     public void setArguments(List arguments) throws XPathException {
         Expression path = (Expression) arguments.get(0);
@@ -61,6 +61,20 @@ public class NGramSearch extends Function {
         if(!Type.subTypeOf(arg.returnsType(), Type.ATOMIC))
             arg = new Atomize(context, arg);
         steps.add(arg);
+
+        List steps = BasicExpressionVisitor.findLocationSteps(path);
+        if (!steps.isEmpty()) {
+            LocationStep firstStep = (LocationStep) steps.get(0);
+            LocationStep lastStep = (LocationStep) steps.get(steps.size() - 1);
+            NodeTest test = lastStep.getTest();
+            if (!test.isWildcardTest() && test.getName() != null) {
+                contextQName = new QName(test.getName());
+                if (lastStep.getAxis() == Constants.ATTRIBUTE_AXIS || lastStep.getAxis() == Constants.DESCENDANT_ATTRIBUTE_AXIS)
+                    contextQName.setNameType(ElementValue.ATTRIBUTE);
+                axis = firstStep.getAxis();
+                contextStep = lastStep;
+            }
+        }
     }
 
 
@@ -81,8 +95,13 @@ public class NGramSearch extends Function {
             
             String key = getArgument(1).eval(contextSequence, contextItem).getStringValue();
             String[] ngrams = index.getDistinctNGrams(key);
+            List qnames = null;
+            if (contextQName != null) {
+                qnames = new ArrayList(1);
+                qnames.add(contextQName);
+            }
             for (int i = 0; i < ngrams.length; i++) {
-                NodeSet nodes = index.search(docs, null, ngrams[i], context, inNodes, NodeSet.ANCESTOR);
+                NodeSet nodes = index.search(getExpressionId(), docs, qnames, ngrams[i], context, inNodes, NodeSet.ANCESTOR);
                 if (result == null)
                     result = nodes;
                 else {
@@ -91,23 +110,35 @@ public class NGramSearch extends Function {
                         NodeProxy next = (NodeProxy) iterator.next();
                         NodeProxy before = result.get(next);
                         if (before != null) {
+                            Match match = null;
                             boolean found = false;
                             Match mb = before.getMatches();
                             while (mb != null && !found) {
                                 Match mn = next.getMatches();
                                 while (mn != null && !found) {
-                                    if (mb.isNear(mn, index.getN()))
+                                    if ((match = mb.isAfter(mn)) != null) {
                                         found = true;
+                                    }
                                     mn = mn.getNextMatch();
                                 }
                                 mb = mb.getNextMatch();
                             }
-                            if (found)
+                            if (found) {
+                                Match m = next.getMatches();
+                                next.setMatches(null);
+                                while (m != null) {
+                                    if (m.getContextId() != getExpressionId())
+                                        next.addMatch(m);
+                                    m = m.getNextMatch();
+                                }
+                                next.addMatch(match);
                                 temp.add(next);
+                            }
                         }
                     }
                     result = temp;
-                    LOG.debug("Found " + temp.getLength() + " for: " + ngrams[i]);
+                    if (LOG.isDebugEnabled())
+                        LOG.debug("Found " + temp.getLength() + " for: " + ngrams[i]);
                 }
             }
         }

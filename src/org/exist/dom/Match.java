@@ -43,13 +43,13 @@ import org.exist.xquery.Constants;
  * 
  * @author wolf
  */
-public class Match implements Comparable {
+public abstract class Match implements Comparable {
 	
     public final static class Offset implements Comparable {
         private int offset;
         private int length;
         
-        private Offset(int offset, int length) {
+        public Offset(int offset, int length) {
             this.offset = offset;
             this.length = length;
         }
@@ -71,8 +71,9 @@ public class Match implements Comparable {
             return offset == otherOffset ? Constants.EQUAL : (offset < otherOffset ? Constants.INFERIOR : Constants.SUPERIOR);
         }
     }
-    
-	private NodeId nodeId;
+
+    private int context;
+    private NodeId nodeId;
     private String matchTerm;
     
     private int[] offsets;
@@ -81,20 +82,20 @@ public class Match implements Comparable {
 	private int currentOffset = 0;
     
 	protected Match nextMatch = null;
-	protected Match prevMatch = null;
 	
-    public Match(NodeId nodeId, String matchTerm) {
-        this( nodeId, matchTerm, 1);
+    protected Match(int contextId, NodeId nodeId, String matchTerm) {
+        this(contextId, nodeId, matchTerm, 1);
     }
     
-	public Match(NodeId nodeId, String matchTerm, int frequency) {
-		this.nodeId = nodeId;
+	protected Match(int contextId, NodeId nodeId, String matchTerm, int frequency) {
+        this.context = contextId;
+        this.nodeId = nodeId;
         this.matchTerm = matchTerm;
 		this.offsets = new int[frequency];
         this.lengths = new int[frequency];
 	}
 	
-	public Match(Match match) {
+	protected Match(Match match) {
 		this.nodeId = match.nodeId;
         this.matchTerm = match.matchTerm;
 		this.offsets = match.offsets;
@@ -109,7 +110,21 @@ public class Match implements Comparable {
 	public int getFrequency() {
 		return currentOffset;
 	}
-	
+
+    public String getMatchTerm() {
+        return matchTerm;
+    }
+
+    public int getContextId() {
+        return context;
+    }
+
+    public abstract Match createInstance(int contextId, NodeId nodeId, String matchTerm);
+
+    public abstract Match newCopy();
+
+    public abstract String getIndexId();
+    
     public void addOffset(int offset, int length) {
         if (currentOffset == offsets.length) {
             int noffsets[] = new int[currentOffset + 1];
@@ -128,20 +143,24 @@ public class Match implements Comparable {
         return new Offset(offsets[pos], lengths[pos]);
     }
 
-    public boolean isNear(Match other, int distance) {
+    public Match isAfter(Match other) {
+        Match m = null;
         for (int i = 0; i < currentOffset; i++) {
             for (int j = 0; j < other.currentOffset; j++) {
-                if (offsets[i] + distance == other.offsets[j])
-                    return true;
+                if (offsets[i] + lengths[i] == other.offsets[j]) {
+                    if (m == null)
+                        m = createInstance(context, nodeId, matchTerm + other.matchTerm);
+                    m.addOffset(offsets[i], lengths[i] + other.lengths[j]);
+                }
             }
         }
-        return false;
+        return m;
     }
 
     public Match getNextMatch() {
 		return nextMatch;
 	}
-	
+
 	public boolean equals(Object other) {
 		if(!(other instanceof Match))
 			return false;
@@ -159,4 +178,14 @@ public class Match implements Comparable {
 		Match other = (Match)o;
         return matchTerm.compareTo(other.matchTerm);
 	}
+
+    public String toString() {
+        StringBuffer buf = new StringBuffer(matchTerm);
+        for (int i = 0; i < currentOffset; i++) {
+            buf.append(" [");
+            buf.append(offsets[i]).append(':').append(lengths[i]);
+            buf.append("]");
+        }
+        return buf.toString();
+    }
 }

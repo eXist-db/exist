@@ -26,6 +26,7 @@ import java.util.HashSet;
 
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.dom.StoredNode;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.Receiver;
 import org.exist.xquery.XQueryContext;
@@ -230,5 +231,13 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
      * @see org.xml.sax.ext.LexicalHandler#startDTD(java.lang.String, java.lang.String, java.lang.String)
      */
     public void startDTD(String name, String publicId, String systemId) throws SAXException {
+    }
+
+    public void highlightText(CharSequence seq) {
+        // not supported with this receiver
+    }
+
+    public void setCurrentNode(StoredNode node) {
+        // ignored
     }
 }
