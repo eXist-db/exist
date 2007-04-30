@@ -2,19 +2,23 @@
 <xsl:stylesheet version="2.0"
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
     xpath-default-namespace="http://www.w3.org/1999/xhtml"
     xmlns:chiba="http://chiba.sourceforge.net/xforms"
     xmlns:xforms="http://www.w3.org/2002/xforms"
     exclude-result-prefixes="xforms chiba">
     
     <!-- ############################################ VARIABLES ################################################ -->
-    
+
     <xsl:variable name="data-prefix" select="'d_'"/>
     <xsl:variable name="trigger-prefix" select="'t_'"/>
     <xsl:variable name="remove-upload-prefix" select="'ru_'"/>
-    <xsl:variable name="dateTime-prefix" select="'dt_'"/>
-    <xsl:variable name="dayTimeDuration-prefix" select="'dtd_'"/>
-        
+
+    <xsl:variable name="compositeDate-prefix" as="xs:string" select="'c_dt_'"/>
+    <xsl:variable name="compositeTime-prefix" as="xs:string" select="'c_tm_'"/>
+    <xsl:variable name="compositeDateTime-prefix" as="xs:string" select="'c_dttm_'"/>
+    <xsl:variable name="compositeDayTimeDuration-prefix" as="xs:string" select="'c_datmd_'"/>
+            
     <!-- change this to your ShowAttachmentServlet -->
     <xsl:variable name="show-attachment-action" select="'http://localhost:8080/exist/servlet/db/CommunityDirectory/index.xql?action=getimage'"/>
     
@@ -34,7 +38,7 @@
 
     <!-- build input control -->
     <xsl:template name="input">
-
+        
         <xsl:variable name="repeat-id" select="ancestor::*[local-name(.)='repeat'][1]/@id" />
         <xsl:variable name="pos" select="position()" />
         <xsl:variable name="id" select="@id" />
@@ -80,9 +84,9 @@
             <!-- dayTimeDuration control -->
             <xsl:when test="$type='dayTimeDuration'">
                 <!-- days value -->
-                <xsl:variable name="days">
+                <xsl:variable name="days" as="xs:integer">
                     <xsl:choose>
-                        <xsl:when test="chiba:data/text() = ''">
+                        <xsl:when test="string-length(chiba:data/text()) = 0">
                             <!-- default days -->0
                         </xsl:when>
                         <xsl:otherwise>
@@ -91,9 +95,9 @@
                     </xsl:choose>
                 </xsl:variable>
                 <!-- hours value -->
-                <xsl:variable name="hours">
+                <xsl:variable name="hours" as="xs:integer">
                     <xsl:choose>
-                        <xsl:when test="chiba:data/text() = ''">
+                        <xsl:when test="string-length(chiba:data/text()) = 0">
                             <!-- default hours -->0
                         </xsl:when>
                         <xsl:otherwise>
@@ -102,9 +106,9 @@
                     </xsl:choose>
                 </xsl:variable>
                 <!-- minutes value -->
-                <xsl:variable name="minutes">
+                <xsl:variable name="minutes" as="xs:integer">
                     <xsl:choose>
-                        <xsl:when test="chiba:data/text() = ''">
+                        <xsl:when test="string-length(chiba:data/text()) = 0">
                             <!-- default minutes -->0
                         </xsl:when>
                         <xsl:otherwise>
@@ -113,9 +117,9 @@
                     </xsl:choose>
                 </xsl:variable>
                 <!-- seconds value -->
-                <xsl:variable name="seconds">
+                <xsl:variable name="seconds" as="xs:integer">
                     <xsl:choose>
-                        <xsl:when test="chiba:data/text() = ''">
+                        <xsl:when test="string-length(chiba:data/text()) = 0">
                             <!-- seconds hours -->0
                         </xsl:when>
                         <xsl:otherwise>
@@ -131,7 +135,7 @@
                             <xsl:value-of select="concat($id,'-value')"/>
                         </xsl:attribute>
                         <xsl:attribute name="name">
-                            <xsl:value-of select="concat($dayTimeDuration-prefix,'days_',$id)"/>
+                            <xsl:value-of select="concat($compositeDayTimeDuration-prefix,'days_',$id)"/>
                         </xsl:attribute>
                         <xsl:if test="chiba:data/@chiba:readonly='true'">
                             <xsl:attribute name="disabled">disabled</xsl:attribute>
@@ -159,7 +163,7 @@
                             <xsl:value-of select="concat($id,'-value')"/>
                         </xsl:attribute>
                         <xsl:attribute name="name">
-                            <xsl:value-of select="concat($dayTimeDuration-prefix,'hours_',$id)"/>
+                            <xsl:value-of select="concat($compositeDayTimeDuration-prefix,'hours_',$id)"/>
                         </xsl:attribute>
                         <xsl:if test="chiba:data/@chiba:readonly='true'">
                             <xsl:attribute name="disabled">disabled</xsl:attribute>
@@ -187,7 +191,7 @@
                             <xsl:value-of select="concat($id,'-value')"/>
                         </xsl:attribute>
                         <xsl:attribute name="name">
-                            <xsl:value-of select="concat($dayTimeDuration-prefix,'minutes_',$id)"/>
+                            <xsl:value-of select="concat($compositeDayTimeDuration-prefix,'minutes_',$id)"/>
                         </xsl:attribute>
                         <xsl:if test="chiba:data/@chiba:readonly='true'">
                             <xsl:attribute name="disabled">disabled</xsl:attribute>
@@ -215,7 +219,7 @@
                             <xsl:value-of select="concat($id,'-value')"/>
                         </xsl:attribute>
                         <xsl:attribute name="name">
-                            <xsl:value-of select="concat($dayTimeDuration-prefix,'seconds_',$id)"/>
+                            <xsl:value-of select="concat($compositeDayTimeDuration-prefix,'seconds_',$id)"/>
                         </xsl:attribute>
                         <xsl:if test="chiba:data/@chiba:readonly='true'">
                             <xsl:attribute name="disabled">disabled</xsl:attribute>
@@ -238,12 +242,19 @@
                     </xsl:element>  
                 </fieldset>
             </xsl:when>
-            <!-- date drop down controls -->
+            <!-- Date drop down controls -->
             <xsl:when test="($type='date' or $type='dateTime') and $scripted != 'true'">
+                <xsl:variable name="prefix" as="xs:string">
+	         <xsl:choose>
+                        <xsl:when test="$type='date'"><xsl:value-of select="$compositeDate-prefix"/></xsl:when>
+                        <xsl:otherwise><xsl:value-of select="$compositeDateTime-prefix"/></xsl:otherwise>
+                    </xsl:choose>
+                </xsl:variable>
                 <xsl:variable name="year">
                     <xsl:choose>
                         <xsl:when test="chiba:data/text() = ''">
                             <!-- default year -->
+                            2006
                         </xsl:when>
                         <xsl:otherwise>
                             <xsl:choose>
@@ -253,7 +264,7 @@
                         </xsl:otherwise>
                     </xsl:choose> 
                 </xsl:variable>
-                <xsl:variable name="month">
+                <xsl:variable name="month" as="xs:integer">
                     <xsl:choose>
                         <xsl:when test="chiba:data/text() = ''">
                             <!-- default month -->0
@@ -266,7 +277,7 @@
                         </xsl:otherwise>
                     </xsl:choose>
                 </xsl:variable>
-                <xsl:variable name="day">
+                <xsl:variable name="day" as="xs:integer">
                     <xsl:choose>
                         <xsl:when test="chiba:data/text() = ''">
                             <!-- default day -->0
@@ -287,7 +298,7 @@
                             <xsl:value-of select="concat($id,'-value')"/>
                         </xsl:attribute>
                         <xsl:attribute name="name">
-                            <xsl:value-of select="concat($dateTime-prefix,'year_',$id)"/>
+                            <xsl:value-of select="concat($prefix,'year_',$id)"/>
                         </xsl:attribute>
                         <xsl:attribute name="type">text</xsl:attribute>
                         <xsl:attribute name="value">
@@ -319,7 +330,7 @@
                             <xsl:value-of select="concat($id,'-value')"/>
                         </xsl:attribute>
                         <xsl:attribute name="name">
-                            <xsl:value-of select="concat($dateTime-prefix,'month_',$id)"/>
+                            <xsl:value-of select="concat($prefix,'month_',$id)"/>
                         </xsl:attribute>
                         <xsl:if test="chiba:data/@chiba:readonly='true'">
                             <xsl:attribute name="disabled">disabled</xsl:attribute>
@@ -347,7 +358,7 @@
                             <xsl:value-of select="concat($id,'-value')"/>
                         </xsl:attribute>
                         <xsl:attribute name="name">
-                            <xsl:value-of select="concat($dateTime-prefix,'day_',$id)"/>
+                            <xsl:value-of select="concat($prefix,'day_',$id)"/>
                         </xsl:attribute>
                         <xsl:if test="chiba:data/@chiba:readonly='true'">
                             <xsl:attribute name="disabled">disabled</xsl:attribute>
@@ -369,8 +380,9 @@
                         </xsl:call-template>
                     </xsl:element>
                 </fieldset>
+                <!-- Time control for datetime -->
                 <xsl:if test="$type='dateTime'">
-                    <xsl:variable name="hour">
+                    <xsl:variable name="hour" as="xs:integer">
                         <xsl:choose>
                             <xsl:when test="chiba:data/text() = ''">
                                 <!-- default hour value -->0
@@ -380,7 +392,7 @@
                             </xsl:otherwise>
                         </xsl:choose>
                     </xsl:variable>
-                    <xsl:variable name="minute">
+                    <xsl:variable name="minute" as="xs:integer">
                         <xsl:choose>
                             <xsl:when test="chiba:data/text() = ''">
                                 <!-- default minute value -->0
@@ -390,7 +402,7 @@
                             </xsl:otherwise>
                         </xsl:choose>
                     </xsl:variable>
-                    <xsl:variable name="second">
+                    <xsl:variable name="second" as="xs:integer">
                         <xsl:choose>
                             <xsl:when test="chiba:data/text() = ''">
                                 <!-- default second value -->0
@@ -400,7 +412,7 @@
                             </xsl:otherwise>
                         </xsl:choose>
                     </xsl:variable>
-                    <xsl:variable name="timezone">
+                    <xsl:variable name="timezone" as="xs:integer">
                         <xsl:choose>
                             <xsl:when test="chiba:data/text() = ''">
                                 <!-- default timezone value -->0
@@ -418,7 +430,7 @@
                                 <xsl:value-of select="concat($id,'-value')"/>
                             </xsl:attribute>
                             <xsl:attribute name="name">
-                                <xsl:value-of select="concat($dateTime-prefix,'hour_',$id)"/>
+                                <xsl:value-of select="concat($compositeDateTime-prefix,'hour_',$id)"/>
                             </xsl:attribute>
                             <xsl:if test="chiba:data/@chiba:readonly='true'">
                                 <xsl:attribute name="disabled">disabled</xsl:attribute>
@@ -446,7 +458,7 @@
                                 <xsl:value-of select="concat($id,'-value')"/>
                             </xsl:attribute>
                             <xsl:attribute name="name">
-                                <xsl:value-of select="concat($dateTime-prefix,'minute_',$id)"/>
+                                <xsl:value-of select="concat($compositeDateTime-prefix,'minute_',$id)"/>
                             </xsl:attribute>
                             <xsl:if test="chiba:data/@chiba:readonly='true'">
                                 <xsl:attribute name="disabled">disabled</xsl:attribute>
@@ -474,7 +486,7 @@
                                 <xsl:value-of select="concat($id,'-value')"/>
                             </xsl:attribute>
                             <xsl:attribute name="name">
-                                <xsl:value-of select="concat($dateTime-prefix,'second_',$id)"/>
+                                <xsl:value-of select="concat($compositeDateTime-prefix,'second_',$id)"/>
                             </xsl:attribute>
                             <xsl:if test="chiba:data/@chiba:readonly='true'">
                                 <xsl:attribute name="disabled">disabled</xsl:attribute>
@@ -502,7 +514,7 @@
                                 <xsl:value-of select="concat($id,'-value')"/>
                             </xsl:attribute>
                             <xsl:attribute name="name">
-                                <xsl:value-of select="concat($dateTime-prefix,'timezone_',$id)"/>
+                                <xsl:value-of select="concat($compositeDateTime-prefix,'timezone_',$id)"/>
                             </xsl:attribute>
                             <xsl:if test="chiba:data/@chiba:readonly='true'">
                                 <xsl:attribute name="disabled">disabled</xsl:attribute>
@@ -513,16 +525,16 @@
                                 <xsl:with-param name="parent">
                                     <xsl:for-each select="(-12 to 12)">
                                         <xforms:item id="">
-                                            <xsl:choose>
-                                                <xsl:when test="$timezone != ''">
+                                            <!--<xsl:choose>
+                                                <xsl:when test="$timezone != ''"> -->
                                                     <xsl:if test=". = $timezone">
                                                         <xsl:attribute name="selected">true</xsl:attribute>
                                                     </xsl:if>
-                                                </xsl:when>
+                                                <!--</xsl:when>
                                                 <xsl:otherwise>
                                                     <xsl:if test=". = 0"><xsl:attribute name="selected">true</xsl:attribute></xsl:if>
                                                 </xsl:otherwise>
-                                            </xsl:choose>
+                                            </xsl:choose>-->
                                             <xforms:label><xsl:if test=". > -1">+</xsl:if><xsl:value-of select="."/>:00</xforms:label>
                                             <xforms:value><xsl:if test=". > -1">+</xsl:if><xsl:value-of select="."/>:00</xforms:value>
                                         </xforms:item>
