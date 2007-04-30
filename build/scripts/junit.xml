@@ -21,7 +21,7 @@
     </condition>
 
     <target name="test"
-            depends="check-java-version, test-prepare,test-recovery, test-local, test-jetty, test-concurrent, test-remote, test-wrapup"
+            depends="check-java-version, test-prepare, test-local, test-jetty, test-concurrent, test-remote, test-recovery, test-wrapup"
             description="Run jUnit tests"/>
 
     <!-- Extra jUnit properties -->
@@ -99,14 +99,14 @@
             <test fork="yes" name="org.exist.xupdate.AllXupdateTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.xquery.AllXqueryTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.xquery.OptimizerTest" todir="${junit.reports.dat}"/>
+            <test fork="yes" name="org.exist.indexing.MatchListenerTest" todir="${junit.reports.dat}"/>
+            <test fork="yes" name="org.exist.indexing.CustomIndexTest" todir="${junit.reports.dat}"/>
             
             <!-- Execute all other tests except those that have to be called manually.   -->
             <batchtest fork="yes" todir="${junit.reports.dat}">
                 <fileset dir="${junit.reports}/src">
                     <include name="**/*Test.java"/>
                     <include name="org/exist/*/*Test.java"/>
-                    <!--include name="**/test/*Test.java"/-->
-                    <!--include name="**/validation/*Test.java"/-->
                     <exclude name="**/concurrent/**/*.java"/>
                     <exclude name="**/xmldb/*.java"/>
                     <exclude name="**/xupdate/*.java"/>
@@ -116,6 +116,7 @@
                     <exclude name="**/storage/*.java"/>
                     <exclude name="**/soap/*.java"/>
                     <exclude name="**/numbering/*.java"/>
+                    <exclude name="**/indexing/*.java"/>
                 </fileset>
             </batchtest>
         </junit>
