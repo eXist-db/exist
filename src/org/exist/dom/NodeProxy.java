@@ -439,7 +439,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
             return;
         Match m = p.getMatches();
         while (m != null) {
-            addMatch(m.clone());
+            addMatch(m.newCopy());
             m = m.nextMatch;
         }
     }
