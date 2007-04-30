@@ -307,7 +307,7 @@
 		<copy description="copy XFormsFilter dependencies" file="${temp.build.dir}/lib/javax.servlet-1.4.jar" todir="${lib.dir}"/>
 		
 		<!-- copy Chiba Web's default.xml to chiba.default.xml -->
-		<copy description="copy Chiba Web's default.xml" file="${temp.build.dir}/build/WEB-INF/default.xml" tofile="chiba.default.xml"/>
+		<copy description="copy Chiba Web's default.xml" file="${temp.build.dir}/build/WEB-INF/chiba-config.xml" tofile="chiba.default.xml"/>
 		
 		<!-- copy Chiba Web's xslt's -->
 		<copy description="copy Chiba Web's default XSLT's" todir="${xslt.dir}">
