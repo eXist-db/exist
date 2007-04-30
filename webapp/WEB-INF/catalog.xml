@@ -5,4 +5,5 @@
     <system systemId="mondial.dtd" uri="entities/mondial.dtd"/>
     
     <uri name="http://www.w3.org/XML/1998/namespace" uri="entities/xml.xsd"/>
+    <!--uri name="urn:oasis:names:tc:entity:xmlns:xml:catalog" uri="entities/catalog.xsd" /-->
 </catalog>
