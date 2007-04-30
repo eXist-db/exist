@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Library General Public
  * License along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- * 
+ *
  * $Id$
  */
 package org.exist.dom;
@@ -37,36 +37,36 @@ import org.w3c.dom.Node;
 
 /**
  * Abstract base class for all node set implementations. A node set is a special type of sequence,
- * which contains only nodes. Class NodeSet thus implements the {@link org.exist.xquery.value.Sequence} 
+ * which contains only nodes. Class NodeSet thus implements the {@link org.exist.xquery.value.Sequence}
  * as well as the DOM {@link org.w3c.dom.NodeList} interfaces.
- * 
+ *
  * Please note that a node set may or may not contain duplicate nodes. Some implementations
  * (e.g. {@link org.exist.dom.ExtArrayNodeSet}) remove duplicates when sorting the set.
  */
 public abstract class AbstractNodeSet extends AbstractSequence implements NodeSet {
-	
+
     protected final static Logger LOG = Logger.getLogger(AbstractNodeSet.class);
-	
+
     // indicates the type of an optional value index that may have
     // been defined on the nodes in this set.
     protected int indexType = Type.ANY_TYPE;
-	
+
     protected boolean hasTextIndex = false;
     protected boolean hasMixedContent = false;
-	
+
     private boolean isCached = false;
-	
-    private boolean processInReverseOrder = false; 
-	
+
+    private boolean processInReverseOrder = false;
+
     protected AbstractNodeSet() {
 	isEmpty = true;
     }
-	
+
     /**
      * Return an iterator on the nodes in this list. The iterator returns nodes
      * according to the internal ordering of nodes (i.e. level first), not in document-
      * order.
-     * 
+     *
      */
     public abstract NodeSetIterator iterator();
 
@@ -79,7 +79,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
      * @see org.exist.xquery.value.Sequence#unorderedIterator()
      */
     public abstract SequenceIterator unorderedIterator();
-	
+
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#getItemType()
      */
@@ -90,7 +90,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     /**
      * Check if this node set contains a node matching the document and
      * node-id of the given NodeProxy object.
-     * 
+     *
      * @param proxy
      */
     public abstract boolean contains(NodeProxy proxy);
@@ -98,7 +98,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     /**
      * Add a new proxy object to the node set. Please note: node set
      * implementations may allow duplicates.
-     * 
+     *
      * @param proxy
      */
     public abstract void add(NodeProxy proxy);
@@ -107,7 +107,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
      * Add a proxy object to the node set. The sizeHint parameter
      * gives a hint about the number of items to be expected for the
      * current document.
-     * 
+     *
      * @param proxy
      * @param sizeHint
      */
@@ -128,7 +128,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     /**
      * Add all items from the given sequence to the node set. All items
      * have to be a subtype of node.
-     * 
+     *
      * @param other
      * @throws XPathException
      */
@@ -142,7 +142,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 
     /**
      * Add all nodes from the given node set.
-     * 
+     *
      * @param other
      */
     public abstract void addAll(NodeSet other);
@@ -155,11 +155,11 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     public void setIsCached(boolean cached) {
 	isCached = cached;
     }
-	
+
     public boolean isCached() {
 	return isCached;
     }
-	
+
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Sequence#removeDuplicates()
      */
@@ -167,7 +167,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
         // all instances of NodeSet will automatically remove duplicates
         // upon a call to getLength() or iterate()
     }
-    
+
     public abstract Node item(int pos);
 
     /**
@@ -179,7 +179,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     /**
      * Get a node from this node set matching the document and node id of
      * the given NodeProxy.
-     *  
+     *
      * @param p
      */
     public abstract NodeProxy get(NodeProxy p);
@@ -201,12 +201,12 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     /**
      * Check if any child nodes are found within this node set for a given
      * set of potential parent nodes.
-     * 
+     *
      * If mode is {@link #DESCENDANT}, the returned node set will contain
      * all child nodes found in this node set for each parent node. If mode is
      * {@link #ANCESTOR}, the returned set will contain those parent nodes,
      * for which children have been found.
-     *  
+     *
      * @param al a node set containing potential parent nodes
      * @param mode selection mode
      */
@@ -217,17 +217,17 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     /**
      * Check if any child nodes are found within this node set for a given
      * set of potential ancestor nodes.
-     * 
+     *
      * If mode is {@link #DESCENDANT}, the returned node set will contain
      * all child nodes found in this node set for each parent node. If mode is
      * {@link #ANCESTOR}, the returned set will contain those parent nodes,
      * for which children have been found.
-     *  
+     *
      * @param al a node set containing potential parent nodes
      * @param mode selection mode
-     * @param contextId used to track context nodes when evaluating predicate 
+     * @param contextId used to track context nodes when evaluating predicate
      * expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
-     * will be added to each result of the of the selection. 
+     * will be added to each result of the of the selection.
      */
     public NodeSet selectParentChild(NodeSet al, int mode, int contextId) {
 	return NodeSetHelper.selectParentChild(this, al, mode, contextId);
@@ -236,25 +236,25 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     /**
      * Check if any descendant nodes are found within this node set for a given
      * set of potential ancestor nodes.
-     * 
+     *
      * If mode is {@link #DESCENDANT}, the returned node set will contain
      * all descendant nodes found in this node set for each ancestor. If mode is
      * {@link #ANCESTOR}, the returned set will contain those ancestor nodes,
      * for which descendants have been found.
-     *  
+     *
      * @param al a node set containing potential parent nodes
      * @param mode selection mode
      * @param includeSelf if true, check if the ancestor node itself is contained in
      * the set of descendant nodes (descendant-or-self axis)
-     * @param contextId used to track context nodes when evaluating predicate 
+     * @param contextId used to track context nodes when evaluating predicate
      * expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
-     * will be added to each result of the of the selection. 
-     * 
+     * will be added to each result of the of the selection.
+     *
      */
     public NodeSet selectAncestorDescendant(NodeSet al,	int mode, boolean includeSelf, int contextId) {
 	return NodeSetHelper.selectAncestorDescendant(this, al, mode, includeSelf, contextId);
     }
-	
+
     /**
      * For a given set of potential ancestor nodes, return all ancestors
      * having descendants in this node set.
@@ -271,30 +271,30 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     public NodeSet selectFollowing(NodeSet fl) throws XPathException {
 	return NodeSetHelper.selectFollowing(fl, this);
     }
-    
+
     public NodeSet selectPreceding(NodeSet pl) throws XPathException {
         return NodeSetHelper.selectPreceding(pl, this);
     }
-	
+
     /**
      * Select all nodes from the passed node set, which
      * are preceding or following siblings of the nodes in
      * this set. If mode is {@link #FOLLOWING}, only nodes following
      * the context node are selected. {@link #PRECEDING} selects
      * preceding nodes.
-     * 
+     *
      * @param siblings a node set containing potential siblings
-     * @param contextId used to track context nodes when evaluating predicate 
+     * @param contextId used to track context nodes when evaluating predicate
      * expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
-     * will be added to each result of the of the selection. 
+     * will be added to each result of the of the selection.
      */
     public NodeSet selectPrecedingSiblings(NodeSet siblings, int contextId) {
         return NodeSetHelper.selectPrecedingSiblings(this, siblings, contextId);
     }
-    
+
     public NodeSet selectFollowingSiblings(NodeSet siblings, int contextId) {
         return NodeSetHelper.selectFollowingSiblings(this, siblings, contextId);
-    }    
+    }
 
     public NodeSet directSelectAttribute(QName qname, int contextId) {
         return NodeSetHelper.directSelectAttributes(this, qname, contextId);
@@ -330,38 +330,39 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     public NodeProxy parentWithChild(NodeProxy proxy, boolean directParent,	boolean includeSelf, int level) {
 	return parentWithChild(proxy.getDocument(), proxy.getNodeId(), directParent, includeSelf);
     }
-	
+
     /**
-     * Return a new node set containing the parent nodes of all nodes in the 
+     * Return a new node set containing the parent nodes of all nodes in the
      * current set.
      * @param contextId an <code>int</code> value
      * @return a <code>NodeSet</code> value
      */
     public NodeSet getParents(int contextId) {
-	NodeSet parents = new ExtArrayNodeSet();		 
-	NodeProxy parent = null;
-	for (Iterator i = iterator(); i.hasNext();) {
+        NodeSet parents = new ExtArrayNodeSet();
+        NodeProxy parent = null;
+        for (Iterator i = iterator(); i.hasNext();) {
             NodeProxy current = (NodeProxy) i.next();
-            NodeId parentID = current.getNodeId().getParentId(); 
+            NodeId parentID = current.getNodeId().getParentId();
             //Filter out the temporary nodes wrapper element 
-            if (parentID != NodeId.DOCUMENT_NODE && 
-                    !(parentID.getTreeLevel() == 1 && current.getDocument().getCollection().isTempCollection())) {
-				if (parent == null || parent.getDocument().getDocId() != current.getDocument().getDocId() ||
-		    !parent.getNodeId().equals(parentID)) {
-                      parent = new NodeProxy(current.getDocument(), parentID, Node.ELEMENT_NODE,
-					     StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
-		}
-		if (Expression.NO_CONTEXT_ID != contextId) {
-		    parent.addContextNode(contextId, current);
-		} else {
-		    parent.copyContext(current);
-		}
+            if (parentID != NodeId.DOCUMENT_NODE &&
+                !(parentID.getTreeLevel() == 1 && current.getDocument().getCollection().isTempCollection())) {
+                if (parent == null || parent.getDocument().getDocId() != current.getDocument().getDocId() ||
+                    !parent.getNodeId().equals(parentID)) {
+                    parent = new NodeProxy(current.getDocument(), parentID, Node.ELEMENT_NODE,
+                        StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
+                }
+                if (Expression.NO_CONTEXT_ID != contextId) {
+                    parent.addContextNode(contextId, current);
+                } else {
+                    parent.copyContext(current);
+                }
+                parent.addMatches(current);
                 parents.add(parent);
-	    }
+            }
 
-	}
+        }
 
-	return parents;
+	    return parents;
     }
 
     /**
@@ -380,19 +381,19 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		    current.addContextNode(contextId, current);
 		ancestors.add(current);
 	    }
-	    NodeId parentID = current.getNodeId().getParentId();            
+	    NodeId parentID = current.getNodeId().getParentId();
 	    while (parentID != null) {
-		//Filter out the temporary nodes wrapper element 
-		if (parentID != NodeId.DOCUMENT_NODE && 
+		//Filter out the temporary nodes wrapper element
+		if (parentID != NodeId.DOCUMENT_NODE &&
 		    !(parentID.getTreeLevel() == 1  && current.getDocument().getCollection().isTempCollection())) {
 		    NodeProxy parent = new NodeProxy(current.getDocument(), parentID, Node.ELEMENT_NODE);
 		    if (Expression.NO_CONTEXT_ID != contextId)
 			parent.addContextNode(contextId, current);
 		    else
 			parent.copyContext(current);
-		    ancestors.add(parent); 
+		    ancestors.add(parent);
 		}
-		parentID = parentID.getParentId();    
+		parentID = parentID.getParentId();
 	    }
 	}
         ancestors.mergeDuplicates();
@@ -400,11 +401,11 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     }
 
     /**
-     * Get a hint about how many nodes in this node set belong to the 
+     * Get a hint about how many nodes in this node set belong to the
      * specified document. This is just used for allocating new node sets.
      * The information does not need to be exact. -1 is returned if the
      * size cannot be determined (the default).
-     * 
+     *
      * @param doc
      */
     public int getSizeHint(DocumentImpl doc) {
@@ -414,54 +415,55 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     /**
      * Return a new node set, which represents the intersection of the current
      * node set with the given node set.
-     * 
+     *
      * @param other
      */
     public NodeSet intersection(NodeSet other) {
-	AVLTreeNodeSet r = new AVLTreeNodeSet();
-	NodeProxy l, p;
-	for (Iterator i = iterator(); i.hasNext();) {
-	    l = (NodeProxy) i.next();
-	    if (other.contains(l)) {
-		r.add(l);
-	    }
-	}
-	for (Iterator i = other.iterator(); i.hasNext();) {
-	    l = (NodeProxy) i.next();
-	    if (contains(l)) {
-		if ((p = r.get(l)) != null) {
-		    p.addMatches(l);
-		} else
-		    r.add(l);
-	    }
-	}
-	return r;
+        AVLTreeNodeSet r = new AVLTreeNodeSet();
+        NodeProxy l, p;
+        for (Iterator i = iterator(); i.hasNext();) {
+            l = (NodeProxy) i.next();
+            if ((p = other.get(l)) != null) {
+                l.addMatches(p);
+                r.add(l);
+            }
+        }
+//        for (Iterator i = other.iterator(); i.hasNext();) {
+//            l = (NodeProxy) i.next();
+//            if (contains(l)) {
+//                if ((p = r.get(l)) != null) {
+//                    p.addMatches(l);
+//                } else
+//                    r.add(l);
+//            }
+//        }
+        return r;
     }
 
     public NodeSet deepIntersection(NodeSet other) {
-	//ExtArrayNodeSet r = new ExtArrayNodeSet();
-	AVLTreeNodeSet r = new AVLTreeNodeSet();
-	NodeProxy l, p, q;
-	for (Iterator i = iterator(); i.hasNext();) {
-	    l = (NodeProxy) i.next();
-	    if ((p = other.parentWithChild(l, false, true, NodeProxy.UNKNOWN_NODE_LEVEL)) != null) {
+	    //ExtArrayNodeSet r = new ExtArrayNodeSet();
+        AVLTreeNodeSet r = new AVLTreeNodeSet();
+        NodeProxy l, p, q;
+        for (Iterator i = iterator(); i.hasNext();) {
+            l = (NodeProxy) i.next();
+            if ((p = other.parentWithChild(l, false, true, NodeProxy.UNKNOWN_NODE_LEVEL)) != null) {
                 if (p.getNodeId().equals(l.getNodeId()))
-		    p.addMatches(l);
-		r.add(p);
-	    }
-	}
-	for (Iterator i = other.iterator(); i.hasNext();) {
-	    l = (NodeProxy) i.next();
-	    if ((q = parentWithChild(l, false, true, NodeProxy.UNKNOWN_NODE_LEVEL)) != null) {
-		if ((p = r.get(q)) != null) {
-		    p.addMatches(l);
-		} else
-		    r.add(l);
-	    }
-	}
-	return r;
+                    p.addMatches(l);
+                r.add(p);
+            }
+        }
+        for (Iterator i = other.iterator(); i.hasNext();) {
+            l = (NodeProxy) i.next();
+            if ((q = parentWithChild(l, false, true, NodeProxy.UNKNOWN_NODE_LEVEL)) != null) {
+                if ((p = r.get(q)) != null) {
+                    p.addMatches(l);
+                } else
+                    r.add(l);
+            }
+        }
+        return r;
     }
-	
+
     public NodeSet except(NodeSet other) {
 	AVLTreeNodeSet r = new AVLTreeNodeSet();
 	NodeProxy l;
@@ -491,12 +493,12 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 
     public boolean getProcessInReverseOrder() {
     	return processInReverseOrder;
-    }	
+    }
 
     /**
      * Return a new node set which represents the union of the
      * current node set and the given node set.
-     * 
+     *
      * @param other
      */
     public NodeSet union(NodeSet other) {
@@ -518,74 +520,74 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     /**
      * Returns all context nodes associated with the nodes in
      * this node set.
-     *  
-     * @param contextId used to track context nodes when evaluating predicate 
+     *
+     * @param contextId used to track context nodes when evaluating predicate
      * expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
-     * will be added to each result of the of the selection. 
+     * will be added to each result of the of the selection.
      */
     public NodeSet getContextNodes(int contextId) {
-	NodeProxy current, context;
-	ContextItem contextNode;
-	ExtArrayNodeSet result = new ExtArrayNodeSet();
-	DocumentImpl lastDoc = null;
-	for (Iterator i = iterator(); i.hasNext();) {
-	    current = (NodeProxy) i.next();
-	    contextNode = current.getContext();
-	    while (contextNode != null) {
-		if (contextNode.getContextId() == contextId) {
-		    context = contextNode.getNode();
-		    context.addMatches(current);
-		    //if (!result.contains(context)) {
-		    if (Expression.NO_CONTEXT_ID != contextId)
-			context.addContextNode(contextId, context);
-		    if(lastDoc != null && lastDoc.getDocId() != context.getDocument().getDocId()) {
-			lastDoc = context.getDocument();
-			result.add(context, getSizeHint(lastDoc));
-		    } else
-			result.add(context);
-		    //}
-		}
-		contextNode = contextNode.getNextDirect();
-	    }
-	}
-	return result;
+        NodeProxy current, context;
+        ContextItem contextNode;
+        ExtArrayNodeSet result = new ExtArrayNodeSet();
+        DocumentImpl lastDoc = null;
+        for (Iterator i = iterator(); i.hasNext();) {
+            current = (NodeProxy) i.next();
+            contextNode = current.getContext();
+            while (contextNode != null) {
+                if (contextNode.getContextId() == contextId) {
+                    context = contextNode.getNode();
+                    context.addMatches(current);
+                    //if (!result.contains(context)) {
+                    if (Expression.NO_CONTEXT_ID != contextId)
+                        context.addContextNode(contextId, context);
+                    if (lastDoc != null && lastDoc.getDocId() != context.getDocument().getDocId()) {
+                        lastDoc = context.getDocument();
+                        result.add(context, getSizeHint(lastDoc));
+                    } else
+                        result.add(context);
+                    //}
+                }
+                contextNode = contextNode.getNextDirect();
+            }
+        }
+        return result;
     }
 
     /**
      * Always returns this.
-     * 
+     *
      * @see org.exist.xquery.value.Sequence#toNodeSet()
      */
     public NodeSet toNodeSet() throws XPathException {
 	return this;
     }
-	
+
     /* (non-Javadoc)
      * @see org.exist.dom.NodeSet#getState()
      */
     public int getState() {
 	return 1;
     }
-	
+
     /* (non-Javadoc)
      * @see org.exist.dom.NodeSet#hasChanged(int)
      */
     public boolean hasChanged(int previousState) {
 	return false;
     }
-	
+
     /**
      * If all nodes in this set have an index, returns the common
      * supertype used to build the index, e.g. xs:integer or xs:string.
      * If the nodes have different index types or no node has been indexed,
      * returns {@link Type#ITEM}.
-     * 
+     *
      * @see org.exist.xquery.GeneralComparison
      * @see org.exist.xquery.ValueComparison
      */
     public int getIndexType() {
 	//Is the index type initialized ?
-	if (indexType == Type.ANY_TYPE) {		
+	if (indexType == Type.ANY_TYPE) {
 	    hasTextIndex = true;
 	    hasMixedContent = true;
 	    for (Iterator i = iterator(); i.hasNext();) {
@@ -605,9 +607,9 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 		} else {
 		    //Broaden type
 		    //TODO : use common supertype
-		    if (indexType != nodeIndexType)             
+		    if (indexType != nodeIndexType)
 			indexType = Type.ITEM;
-		}			    
+		}
 		if(!node.hasTextIndex()) {
 		    hasTextIndex = false;
 		}
@@ -618,7 +620,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	}
 	return indexType;
     }
-	
+
     public boolean hasTextIndex() {
 	if(indexType == Type.ANY_TYPE) {
 	    getIndexType();
@@ -633,14 +635,14 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 	}
 	return hasTextIndex;
     }
-	
+
     public boolean hasMixedContent() {
 	if(indexType == Type.ANY_TYPE) {
 	    getIndexType();
 	}
 	return hasMixedContent;
     }
-    
+
     public void clearContext(int contextId) {
 	NodeProxy p;
 	for (Iterator i = iterator(); i.hasNext(); ) {
@@ -662,7 +664,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
         // node sets are always persistent
         return true;
     }
-    
+
     public String toString() {
         StringBuffer result = new StringBuffer();
         result.append("NodeSet(");

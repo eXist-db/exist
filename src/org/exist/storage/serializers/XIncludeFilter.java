@@ -32,10 +32,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.BinaryDocument;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.QName;
-import org.exist.dom.XMLUtil;
+import org.exist.dom.*;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.xacml.AccessContext;
@@ -182,6 +179,10 @@ public class XIncludeFilter implements Receiver {
 	throws SAXException {
 		receiver.documentType(name, publicId, systemId);
 	}
+
+    public void highlightText(CharSequence seq) {
+        // not supported with this receiver
+    }
 
     protected void processXInclude(String href, String xpointer) throws SAXException {
         if(href == null)
@@ -429,5 +430,9 @@ public class XIncludeFilter implements Receiver {
             }
         }
         return parameters;
+    }
+
+    public void setCurrentNode(StoredNode node) {
+        //ignored
     }
 }

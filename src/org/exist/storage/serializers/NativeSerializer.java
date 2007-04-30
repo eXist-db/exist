@@ -200,6 +200,7 @@ public class NativeSerializer extends Serializer {
                 } else
                     break;
             }
+            receiver.setCurrentNode(node);
             receiver.startElement(node.getQName(), attribs);
             while (count < children) {
                 serializeToReceiver(child, iter, doc, false, match, namespaces);
@@ -208,6 +209,7 @@ public class NativeSerializer extends Serializer {
                 } else
                     break;
             }
+            receiver.setCurrentNode(node);
             receiver.endElement(node.getQName());
             if (((ElementImpl) node).declaresNamespacePrefixes()) {
                 String prefix;
@@ -229,6 +231,7 @@ public class NativeSerializer extends Serializer {
                 }
                 receiver.startElement(TEXT_ELEMENT, tattribs);
             }
+            receiver.setCurrentNode(node);
             if ((getHighlightingMode() & TAG_ELEMENT_MATCHES) == TAG_ELEMENT_MATCHES)
                 textToReceiver((TextImpl) node, match);
             else {

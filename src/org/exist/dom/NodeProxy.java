@@ -395,56 +395,53 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
     }
 	
     public boolean hasMatch(Match m) {
-	if (m == null || match == null)
-	    return false;
-	Match next = match;
-	do {
-	    if (next.equals(m))
-		return true;
-	} while ((next = next.getNextMatch()) != null);
-	return false;
+        if (m == null || match == null)
+            return false;
+        Match next = match;
+        do {
+            if (next.equals(m))
+                return true;
+        } while ((next = next.getNextMatch()) != null);
+        return false;
     }
 
     public void addMatch(Match m) {
-	if (match == null) {            
-	    match = m;
-	    match.prevMatch = null;
-	    match.nextMatch = null;
-	    return;
-	}
-	Match next = match;
-	int cmp;
-	while (next != null) {
-	    cmp = next.compareTo(m);
-	    if (cmp == 0 && m.getNodeId().equals(next.getNodeId()))
-		return;
-	    else if (cmp < 0) {
-		if (next.prevMatch != null)
-		    next.prevMatch.nextMatch = m;
-		else
-		    match = m;
-		m.prevMatch = next.prevMatch;
-		next.prevMatch = m;
-		m.nextMatch = next;
-		return;
-	    } else if (next.nextMatch == null) {
-		next.nextMatch = m;
-		m.prevMatch = next;
-		m.nextMatch = null;
-		return;
-	    }
-	    next = next.nextMatch;
-	}
+        if (match == null) {
+            match = m;
+            match.nextMatch = null;
+            return;
+        }
+        Match next = match;
+        int cmp;
+        while (next != null) {
+            cmp = next.compareTo(m);
+            if (cmp == 0 && m.getNodeId().equals(next.getNodeId()))
+                return;
+            else if (cmp < 0) {
+                if (next == match)
+                    match = m;
+                m.nextMatch = next;
+                return;
+            } else if (next.nextMatch == null) {
+                next.nextMatch = m;
+                m.nextMatch = null;
+                return;
+            } else {
+                m.nextMatch = next.nextMatch;
+                next.nextMatch = m;
+            }
+            next = next.nextMatch;
+        }
     }
 
     public void addMatches(NodeProxy p) {
-	if (p == this)
-	    return;
-	Match m = p.getMatches();
-	while (m != null) {
-	    addMatch(new Match(m));
-	    m = m.nextMatch;
-	}
+        if (p == this)
+            return;
+        Match m = p.getMatches();
+        while (m != null) {
+            addMatch(m.clone());
+            m = m.nextMatch;
+        }
     }
 
     /**

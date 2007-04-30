@@ -683,6 +683,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
                                     storedNode.deepCopyContext(ancestor, contextId);
                                 } else
                                     storedNode.copyContext(ancestor);
+                                storedNode.addMatches(ancestor);
                             }
                             prevPosition = ((BFile.PageInputStream)is).position();
                             NodeId next = broker.getBrokerPool().getNodeFactory().createFromStream(previousId, is);

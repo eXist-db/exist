@@ -81,8 +81,10 @@ public final class AccessContext
 	 * The context for evaluating XInclude paths.
 	 */
 	public static final AccessContext XINCLUDE = new AccessContext("XInclude");
-	
-	private final String value;
+
+    public static final AccessContext INITIALIZE = new AccessContext("Initialize " + INTERNAL);
+    
+    private final String value;
 	
 	private AccessContext()
 	{

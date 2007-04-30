@@ -42,6 +42,7 @@ public class AncestorSelector implements NodeSelector {
             this.descendants = descendants;
         else
             this.ancestors = descendants.getAncestors(contextId, includeSelf);
+
     }
 
     public NodeProxy match(DocumentImpl doc, NodeId nodeId) {

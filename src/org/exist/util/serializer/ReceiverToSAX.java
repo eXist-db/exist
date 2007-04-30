@@ -22,6 +22,7 @@
 package org.exist.util.serializer;
 
 import org.exist.dom.QName;
+import org.exist.dom.StoredNode;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
@@ -172,4 +173,12 @@ public class ReceiverToSAX implements Receiver {
 			lexicalHandler.endDTD();
 		}
 	}
+
+    public void highlightText(CharSequence seq) {
+        // not supported with this receiver
+    }
+
+    public void setCurrentNode(StoredNode node) {
+        // just ignore
+    }
 }

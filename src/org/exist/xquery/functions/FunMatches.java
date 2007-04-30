@@ -137,7 +137,7 @@ public class FunMatches extends Function implements Optimizable {
                     new Error(Error.FUNC_PARAM_CARDINALITY, "3", mySignature)); 
             if(!Type.subTypeOf(arg.returnsType(), Type.ATOMIC))
                 arg = new Atomize(context, arg);
-            steps.add(arg);            
+            steps.add(arg);
         }
 
         List steps = BasicExpressionVisitor.findLocationSteps(path);
@@ -158,7 +158,7 @@ public class FunMatches extends Function implements Optimizable {
     public boolean canOptimize(Sequence contextSequence) {
         if (contextQName == null)
             return false;
-        return Optimize.getQNameIndexType(context, contextSequence, contextQName) != Type.ITEM;
+        return Type.subTypeOf(Optimize.getQNameIndexType(context, contextSequence, contextQName), Type.STRING);
     }
 
     public boolean optimizeOnSelf() {
@@ -255,7 +255,10 @@ public class FunMatches extends Function implements Optimizable {
 
         if (contextItem != null)
 			contextSequence = contextItem.toSequence();
-	    
+	    if (preselectResult == null &&
+            !Type.subTypeOf(Optimize.getQNameIndexType(context, contextSequence, contextQName), Type.STRING))
+            contextQName = null;
+        
         Sequence result;
         if (contextStep == null || preselectResult == null) {
             Sequence input = getArgument(0).eval(contextSequence, contextItem);
@@ -325,7 +328,7 @@ public class FunMatches extends Function implements Optimizable {
 		    		context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "Using vlaue index '" + index.toString() + "'", "Regex: " + pattern);
 		    	if (LOG.isTraceEnabled())
 		    		LOG.trace("Using range index for fn:matches expression: " + pattern);
-                result = index.match(docs, nodes, NodeSet.ANCESTOR, pattern, null, DBBroker.MATCH_REGEXP, flags, caseSensitive);
+                result = index.match(docs, nodes, NodeSet.ANCESTOR, pattern, contextQName, DBBroker.MATCH_REGEXP, flags, caseSensitive);
 			} catch (EXistException e) {
 				throw new XPathException(getASTNode(), e.getMessage(), e);
 			}

@@ -45,11 +45,6 @@ import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
 import org.exist.dom.SymbolTable;
 import org.exist.dom.TextImpl;
-import org.exist.indexing.AbstractStreamListener;
-import org.exist.indexing.Index;
-import org.exist.indexing.IndexController;
-import org.exist.indexing.IndexWorker;
-import org.exist.indexing.StreamListener;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
@@ -64,20 +59,20 @@ import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
-import org.exist.util.ByteArray;
-import org.exist.util.ByteConversion;
-import org.exist.util.DatabaseConfigurationException;
-import org.exist.util.LockException;
-import org.exist.util.Occurrences;
-import org.exist.util.ReadOnlyException;
-import org.exist.util.UTF8;
-import org.exist.util.XMLString;
+import org.exist.util.*;
+import org.exist.indexing.*;
+import org.exist.util.serializer.AttrList;
 import org.exist.xquery.Constants;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XQueryContext;
+import org.exist.stax.EmbeddedXMLStreamReader;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
+import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.XMLStreamException;
 
 /**
  *
@@ -96,7 +91,7 @@ public class NGramIndexWorker implements IndexWorker {
 
     private static final byte IDX_QNAME = 0;
     private static final byte IDX_GENERIC = 1;
-    
+
     private int mode = 0;
     private NGramIndex index;
     private char[] buf = new char[1024];
@@ -107,6 +102,8 @@ public class NGramIndexWorker implements IndexWorker {
     private Map ngrams = new TreeMap();
     private VariableByteOutputStream os = new VariableByteOutputStream(7);
 
+    private NGramMatchListener matchListener = null;
+
     public NGramIndexWorker(NGramIndex index) {
         this.index = index;
         Arrays.fill(buf, ' ');
@@ -115,10 +112,10 @@ public class NGramIndexWorker implements IndexWorker {
     public String getIndexId() {
         return NGramIndex.ID;
     }
-    
+
     public String getIndexName() {
         return index.getIndexName();
-    }    
+    }
 
     public Index getIndex() {
         return index;
@@ -127,7 +124,7 @@ public class NGramIndexWorker implements IndexWorker {
     public int getN() {
         return index.getN();
     }
-    
+
     public Object configure(IndexController controller, NodeList configNodes, Map namespaces) throws DatabaseConfigurationException {
         this.controller = controller;
         // We use a map to store the QNames to be indexed
@@ -351,8 +348,9 @@ public class NGramIndexWorker implements IndexWorker {
         }
     }
 
-    public NodeSet search(DocumentSet docs, List qnames, String ngram, XQueryContext context, NodeSet contextSet, int axis) throws TerminatedException {
-        if (qnames == null)
+    public NodeSet search(int contextId, DocumentSet docs, List qnames, String ngram, XQueryContext context, NodeSet contextSet, int axis)
+        throws TerminatedException {
+        if (qnames == null || qnames.isEmpty())
             qnames = getDefinedIndexes(context.getBroker(), docs);
         final NodeSet result = new ExtArrayNodeSet(docs.getLength(), 250);
         for (Iterator iter = docs.getCollectionIterator(); iter.hasNext();) {
@@ -363,7 +361,7 @@ public class NGramIndexWorker implements IndexWorker {
                 final Lock lock = index.db.getLock();
                 try {
                     lock.acquire(Lock.READ_LOCK);
-                    SearchCallback cb = new SearchCallback(docs, contextSet, context, result, axis == NodeSet.ANCESTOR);
+                    SearchCallback cb = new SearchCallback(contextId, ngram, docs, contextSet, context, result, axis == NodeSet.ANCESTOR);
                     int op = ngram.length() < getN() ? IndexQuery.TRUNC_RIGHT : IndexQuery.EQ;
                     final IndexQuery query = new IndexQuery(op, key);
                     index.db.query(query, cb);
@@ -434,9 +432,27 @@ public class NGramIndexWorker implements IndexWorker {
     }
 
     public StreamListener getListener(int mode, DocumentImpl document) {
-        this.currentDoc = document;
-        this.mode = mode;
-        return  new NGramStreamListener();
+        setDocument(document, mode);
+        return new NGramStreamListener();
+    }
+
+    public MatchListener getMatchListener(NodeProxy proxy) {
+        boolean needToFilter = false;
+        Match nextMatch = proxy.getMatches();
+        while (nextMatch != null) {
+            if (nextMatch.getIndexId() == NGramIndex.ID) {
+                needToFilter = true;
+                break;
+            }
+            nextMatch = nextMatch.getNextMatch();
+        }
+        if (!needToFilter)
+            return null;
+        if (matchListener == null)
+            matchListener = new NGramMatchListener(proxy);
+        else
+            matchListener.reset(proxy);
+        return matchListener;
     }
 
     public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean includeSelf) {
@@ -532,10 +548,10 @@ public class NGramIndexWorker implements IndexWorker {
             currentChar = 0;
         }
     }
-    
+
     private Map config;
     private Stack contentStack = null;
-    
+
     public void setDocument(DocumentImpl document, int newMode) {
         currentDoc = document;
         //config = null;
@@ -544,9 +560,12 @@ public class NGramIndexWorker implements IndexWorker {
         if (indexConf != null)
             config = (Map) indexConf.getCustomIndexSpec(NGramIndex.ID);
         mode = newMode;
-    }    
+    }
 
-    private class NGramStreamListener extends AbstractStreamListener {   
+    private class NGramStreamListener extends AbstractStreamListener {
+
+        public NGramStreamListener() {
+        }
 
         public void startElement(Txn transaction, ElementImpl element, NodePath path) {
             if (config != null && config.get(element.getQName()) != null) {
@@ -581,12 +600,174 @@ public class NGramIndexWorker implements IndexWorker {
             }
             super.characters(transaction, text, path);
         }
-        
+
         public IndexWorker getWorker() {
         	return NGramIndexWorker.this;
-        }             
+        }
     }
 
+    private class NGramMatchListener extends AbstractMatchListener {
+
+        private Match match;
+        private Stack offsetStack = null;
+
+        public NGramMatchListener(NodeProxy proxy) {
+            reset(proxy);
+        }
+        
+        protected void reset(NodeProxy proxy) {
+            this.match = proxy.getMatches();
+
+            /* Check if an index is defined on an ancestor of the current node.
+             * If yes, scan the ancestor to get the offset of the first character
+             * in the current node. For example, if the indexed node is &lt;a>abc&lt;b>de&lt;/b></a>
+             * and we query for //a[text:ngram-contains(., 'de')]/b, proxy will be a &lt;b> node, but
+             * the offsets of the matches are relative to the start of &lt;a>.
+             */
+            NodeSet ancestors = null;
+            Match nextMatch = this.match;
+            while (nextMatch != null) {
+                if (proxy.getNodeId().isDescendantOf(nextMatch.getNodeId())) {
+                    if (ancestors == null)
+                        ancestors = new ExtArrayNodeSet();
+                    ancestors.add(new NodeProxy(proxy.getDocument(), nextMatch.getNodeId()));
+                }
+                nextMatch = nextMatch.getNextMatch();
+            }
+            if (ancestors != null && !ancestors.isEmpty()) {
+                for (Iterator i = ancestors.iterator(); i.hasNext(); ) {
+                    NodeProxy p = (NodeProxy) i.next();
+                    int startOffset = 0;
+                    try {
+                        XMLStreamReader reader = proxy.getDocument().getBroker().getXMLStreamReader(p, false);
+                        while (reader.hasNext()) {
+                            int ev = reader.next();
+                            NodeId nodeId = (NodeId) reader.getProperty(EmbeddedXMLStreamReader.PROPERTY_NODE_ID);
+                            if (nodeId.equals(proxy.getNodeId()))
+                                break;
+                            if (ev == XMLStreamReader.CHARACTERS)
+                                startOffset += reader.getText().length();
+                        }
+                    } catch (IOException e) {
+                        LOG.warn("Problem found while serializing XML: " + e.getMessage(), e);
+                    } catch (XMLStreamException e) {
+                        LOG.warn("Problem found while serializing XML: " + e.getMessage(), e);
+                    }
+                    if (offsetStack == null)
+                        offsetStack = new Stack();
+                    offsetStack.push(new NodeOffset(p.getNodeId(), startOffset));
+                }
+            }
+        }
+
+        public void startElement(QName qname, AttrList attribs) throws SAXException {
+            Match nextMatch = match;
+            // check if there are any matches in the current element
+            // if yes, push a NodeOffset object to the stack to track
+            // the node contents
+            while (nextMatch != null) {
+                if (nextMatch.getNodeId().equals(getCurrentNode().getNodeId())) {
+                    if (offsetStack == null)
+                        offsetStack = new Stack();
+                    offsetStack.push(new NodeOffset(nextMatch.getNodeId()));
+                    break;
+                }
+                nextMatch = nextMatch.getNextMatch();
+            }
+            super.startElement(qname, attribs);
+        }
+
+        public void endElement(QName qname) throws SAXException {
+            Match nextMatch = match;
+            // check if we need to pop the stack
+            while (nextMatch != null) {
+                if (nextMatch.getNodeId().equals(getCurrentNode().getNodeId())) {
+                    offsetStack.pop();
+                    break;
+                }
+                nextMatch = nextMatch.getNextMatch();
+            }
+            super.endElement(qname);
+        }
+
+        public void characters(CharSequence seq) throws SAXException {
+            List offsets = null;    // a list of offsets to process
+            if (offsetStack != null) {
+                // walk through the stack to find matches which start in
+                // the current string of text
+                for (int i = 0; i < offsetStack.size(); i++) {
+                    NodeOffset no = (NodeOffset) offsetStack.get(i);
+                    int end = no.offset + seq.length();
+                    // scan all matches
+                    Match next = match;
+                    while (next != null) {
+                        if (next.getNodeId().equals(no.nodeId)) {
+                            int freq = next.getFrequency();
+                            for (int j = 0; j < freq; j++) {
+                                Match.Offset offset = next.getOffset(j);
+                                if (offset.getOffset() < end &&
+                                    offset.getOffset() + offset.getLength() > no.offset) {
+                                    // add it to the list to be processed
+                                    if (offsets == null) {
+                                        offsets = new ArrayList(4);
+                                    }
+                                    // adjust the offset and add it to the list
+                                    int start = offset.getOffset() - no.offset;
+                                    int len = offset.getLength();
+                                    if (start < 0) {
+                                        len = len - Math.abs(start);
+                                        start = 0;
+                                    }
+                                    if (start + len > seq.length())
+                                        len = seq.length() - start;
+                                    offsets.add(new Match.Offset(start, len));
+                                }
+                            }
+                        }
+                        next = next.getNextMatch();
+                    }
+                    // add the length of the current text to the element content length
+                    no.offset = end;
+                }
+            }
+            // now print out the text, marking all matches with a match element
+            if (offsets != null) {
+                FastQSort.sort(offsets, 0, offsets.size() - 1);
+                String s = seq.toString();
+                int pos = 0;
+                for (int i = 0; i < offsets.size(); i++) {
+                    Match.Offset offset = (Match.Offset) offsets.get(i);
+                    if (offset.getOffset() > pos) {
+                        super.characters(s.substring(pos, pos + (offset.getOffset() - pos)));
+                    }
+                    super.startElement(MATCH_ELEMENT, null); 
+                    super.characters(s.substring(offset.getOffset(), offset.getOffset() + offset.getLength()));
+                    super.endElement(MATCH_ELEMENT);
+                    pos = offset.getOffset() + offset.getLength();
+                }
+                if (pos < s.length()) {
+                    super.characters(s.substring(pos));
+                }
+            } else
+                super.characters(seq);
+        }
+
+    }
+
+    private class NodeOffset {
+        NodeId nodeId;
+        int offset = 0;
+
+        public NodeOffset(NodeId nodeId) {
+            this.nodeId = nodeId;
+        }
+
+        public NodeOffset(NodeId nodeId, int offset) {
+            this.nodeId = nodeId;
+            this.offset = offset;
+        }
+    }
+    
     private class QNameTerm implements Comparable {
 
         QName qname;
@@ -645,13 +826,17 @@ public class NGramIndexWorker implements IndexWorker {
 
     private final class SearchCallback implements BTreeCallback {
 
+        private int contextId;
+        private String query;
         private DocumentSet docs;
         private NodeSet contextSet;
         private XQueryContext context;
         private NodeSet resultSet;
         private boolean returnAncestor;
 
-        public SearchCallback(DocumentSet docs, NodeSet contextSet, XQueryContext context, NodeSet result, boolean returnAncestor) {
+        public SearchCallback(int contextId, String query, DocumentSet docs, NodeSet contextSet, XQueryContext context, NodeSet result, boolean returnAncestor) {
+            this.contextId = contextId;
+            this.query = query;
             this.docs = docs;
             this.context = context;
             this.contextSet = contextSet;
@@ -663,7 +848,6 @@ public class NGramIndexWorker implements IndexWorker {
             String ngram;
             try {
                 ngram = new String(key.getData(), 8, key.getLength() - 8, "UTF-8");
-                System.out.println("ngram: " + ngram);
             } catch (UnsupportedEncodingException e) {
                 LOG.error(e.getMessage(), e);
                 return true;
@@ -700,9 +884,9 @@ public class NGramIndexWorker implements IndexWorker {
                             int sizeHint = contextSet.getSizeHint(storedDocument);
                             if (returnAncestor) {
                                 NodeProxy parentNode = contextSet.parentWithChild(storedNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
-                                Match match = new Match(nodeId, ngram, freq);
+                                Match match = new NGramMatch(contextId, nodeId, ngram, freq);
                                 for (int n = 0; n < freq; n++) {
-                                    match.addOffset(is.readInt(), ngram.length());
+                                    match.addOffset(is.readInt(), query.length());
                                 }
                                 if (parentNode != null) {
                                     parentNode.addMatch(match);
@@ -710,7 +894,7 @@ public class NGramIndexWorker implements IndexWorker {
                                 } else
                                     is.skip(freq);
                             } else {
-                                Match match = new Match(nodeId, ngram, freq);
+                                Match match = new NGramMatch(contextId, nodeId, ngram, freq);
                                 for (int n = 0; n < freq; n++) {
                                     match.addOffset(is.readInt(), ngram.length());
                                 }
@@ -719,7 +903,7 @@ public class NGramIndexWorker implements IndexWorker {
                             }
                             // otherwise, we add all text nodes without check
                         } else {
-                            Match match = new Match(nodeId, ngram, freq);
+                            Match match = new NGramMatch(contextId, nodeId, ngram, freq);
                             for (int n = 0; n < freq; n++) {
                                 match.addOffset(is.readInt(), ngram.length());
                             }
@@ -804,4 +988,31 @@ public class NGramIndexWorker implements IndexWorker {
 			return true;
 		}
 	}
+
+    public class NGramMatch extends Match {
+
+        public NGramMatch(int contextId, NodeId nodeId, String matchTerm) {
+            super(contextId, nodeId, matchTerm);
+        }
+
+        public NGramMatch(int contextId, NodeId nodeId, String matchTerm, int frequency) {
+            super(contextId, nodeId, matchTerm, frequency);
+        }
+
+        public NGramMatch(Match match) {
+            super(match);
+        }
+
+        public Match createInstance(int contextId, NodeId nodeId, String matchTerm) {
+            return new NGramMatch(contextId, nodeId, matchTerm);
+        }
+
+        public Match newCopy() {
+            return new NGramMatch(this);
+        }
+
+        public String getIndexId() {
+            return NGramIndex.ID;
+        }
+    }
 }
