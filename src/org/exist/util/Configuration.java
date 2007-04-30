@@ -40,6 +40,7 @@ import javax.xml.parsers.SAXParserFactory;
 import org.apache.log4j.Logger;
 import org.exist.Indexer;
 import org.exist.memtree.SAXAdapter;
+import org.exist.protocolhandler.eXistURLStreamHandlerFactory;
 import org.exist.scheduler.Scheduler;
 import org.exist.security.User;
 import org.exist.security.xacml.XACMLConstants;
@@ -1029,6 +1030,10 @@ public class Configuration implements ErrorHandler {
     }
     
     private void configureValidation(String dbHome, Document doc, NodeList validation) throws DatabaseConfigurationException {
+        
+        // Register custom protocol URL
+        // TODO DWES move to different location?
+        eXistURLStreamHandlerFactory.init();
         
         Element p = (Element) validation.item(0);
         
