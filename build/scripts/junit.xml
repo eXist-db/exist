@@ -99,7 +99,7 @@
             <test fork="yes" name="org.exist.xupdate.AllXupdateTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.xquery.AllXqueryTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.xquery.OptimizerTest" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="org.exist.indexing.MatchListenerTest" todir="${junit.reports.dat}"/>
+            <!--test fork="yes" name="org.exist.indexing.MatchListenerTest" todir="${junit.reports.dat}"/-->
             <test fork="yes" name="org.exist.indexing.CustomIndexTest" todir="${junit.reports.dat}"/>
             
             <!-- Execute all other tests except those that have to be called manually.   -->
