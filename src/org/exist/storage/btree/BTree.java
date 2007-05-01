@@ -584,7 +584,7 @@ public class BTree extends Paged {
         if (requiresRedo(loggable, node.page)) {
             node.insertKey(loggable.key, loggable.idx);
             node.insertPointer(loggable.pointer, loggable.pointerIdx);
-            node.adjustDataLen(loggable.key);
+            node.adjustDataLen(loggable.key, loggable.idx);
             node.ph.setLsn(loggable.getLsn());
         }
     }
@@ -916,10 +916,7 @@ public class BTree extends Paged {
          * @return The new data length
          */
         private int decrementDataLen(Value removedValue) {
-            currentDataLen = currentDataLen - 8 - removedValue.getLength();
-            if(fileHeader.getFixedKeyLen() < 0)
-                currentDataLen -= 2;
-            return currentDataLen;
+            return recalculateDataLen();
         }
         
 		/**
@@ -928,10 +925,20 @@ public class BTree extends Paged {
 		 *  
 		 * @param value
 		 */
-		private void adjustDataLen(Value value) {
+		private void adjustDataLen(Value value, int idx) {
 			if(currentDataLen < 0)
 				recalculateDataLen();
-			currentDataLen += value.getLength() + 8;
+            if (ph.getStatus() == LEAF && idx > 0) {
+                // if this is a leaf page, we use prefix compression to store the keys,
+                // so subtract the size of the prefix
+                int prefix = keys[idx].commonPrefix(keys[idx - 1]);
+                if (prefix < 0 || prefix > Byte.MAX_VALUE)
+                    prefix = 0;
+                currentDataLen += keys[idx].getLength() - prefix;
+                currentDataLen++;   // add one byte for the prefix length
+            } else
+                currentDataLen += keys[idx].getLength();
+            currentDataLen += 8;
 			if(fileHeader.getFixedKeyLen() < 0)
 				currentDataLen += 2;
 		}
@@ -1147,7 +1154,7 @@ public class BTree extends Paged {
                         }
                         insertKey(value, idx);
                         insertPointer(pointer, idx);
-						adjustDataLen(value);
+						adjustDataLen(value, idx);
 						//recalculateDataLen();
 						if (mustSplit()) {
 						    split(transaction);
