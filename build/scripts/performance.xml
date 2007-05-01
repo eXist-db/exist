@@ -35,6 +35,9 @@
         <delete dir="${benchmark.output}/temp" failonerror="false"/>
         <mkdir dir="${benchmark.output}"/>
         <mkdir dir="${benchmark.output}/temp"/>
+        <!--test:benchmark outputFile="${benchmark.output}/update-replace.xml"
+            source="${benchmark.src}/org/exist/performance/trapeze.xml"
+            group="store-replace"/-->
         <test:benchmark outputFile="${benchmark.output}/ft-tests-result.xml"
                 source="${benchmark.src}/org/exist/performance/test.xml"
                 group="ft-tests"/>
@@ -44,6 +47,9 @@
         <test:benchmark outputFile="${benchmark.output}/large-docs-result.xml"
                 source="${benchmark.src}/org/exist/performance/test.xml"
                 group="large-documents"/>
+        <!--test:benchmark outputFile="${benchmark.output}/updates-result.xml"
+                source="${benchmark.src}/org/exist/performance/test.xml"
+                group="updates"/-->
         <!--test:benchmark outputFile="${benchmark.output}/updates-result.xml"
                 source="${benchmark.src}/org/exist/performance/test.xml"
                 group="updates"/-->
