@@ -53,7 +53,7 @@ public class eXistURLStreamHandlerFactory implements URLStreamHandlerFactory {
             initOK=true;
             LOG.info("Succesfully registered eXistURLStreamHandlerFactory.");
         } catch (Error ex){
-            LOG.warn("The application has already set a factory.", ex);
+            LOG.warn("The JVM has already an URLStreamHandlerFactory registered, skipping...");
         }
         
         if(!initOK){
@@ -70,13 +70,10 @@ public class eXistURLStreamHandlerFactory implements URLStreamHandlerFactory {
                 if(currentSystemProperty.indexOf(EXIST_PROTOCOL_HANDLER)==-1){
                     // eXist handler is not setup yet
                     currentSystemProperty=currentSystemProperty+"|"+EXIST_PROTOCOL_HANDLER;
-                    LOG.info("Setting " + JAVA_PROTOCOL_HANDLER_PKGS + " to "
-                        + currentSystemProperty);
+                    LOG.info("Setting " + JAVA_PROTOCOL_HANDLER_PKGS + " to " + currentSystemProperty);
                     System.setProperty( JAVA_PROTOCOL_HANDLER_PKGS, currentSystemProperty );
                 } else {
-                    LOG.info( "System property " + JAVA_PROTOCOL_HANDLER_PKGS 
-                        + " has not been changed because it already has " 
-                        + EXIST_PROTOCOL_HANDLER +" defined.");
+                    LOG.info( "System property " + JAVA_PROTOCOL_HANDLER_PKGS + " has not been updated."); 
                 }
             }
         }
