@@ -55,15 +55,17 @@ public class eXistXMLCatalogResolver extends XMLCatalogResolver {
      *  TODO: check for non-String and NULL values.
      */
     public void setCatalogs(List catalogs){
-//        super();
-        String[] allCatalogs = new String[catalogs.size()];
-        int counter=0;
-        for (Iterator it=catalogs.iterator(); it.hasNext(); ) {
-            String element = (String) it.next();
-            allCatalogs[counter]=element;
-            counter++;
+
+        if(catalogs!=null && catalogs.size()>0){
+            String[] allCatalogs = new String[catalogs.size()];
+            int counter=0;
+            for (Iterator it=catalogs.iterator(); it.hasNext(); ) {
+                String element = (String) it.next();
+                allCatalogs[counter]=element;
+                counter++;
+            }
+            super.setCatalogList(allCatalogs);
         }
-        super.setCatalogList(allCatalogs);
     }
     
 
