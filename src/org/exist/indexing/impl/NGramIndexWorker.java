@@ -617,7 +617,8 @@ public class NGramIndexWorker implements IndexWorker {
         
         protected void reset(NodeProxy proxy) {
             this.match = proxy.getMatches();
-
+            setNextInChain(null);
+            
             /* Check if an index is defined on an ancestor of the current node.
              * If yes, scan the ancestor to get the offset of the first character
              * in the current node. For example, if the indexed node is &lt;a>abc&lt;b>de&lt;/b></a>
