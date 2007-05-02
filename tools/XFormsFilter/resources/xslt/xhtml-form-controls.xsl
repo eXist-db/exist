@@ -128,7 +128,7 @@
                     </xsl:choose>
                 </xsl:variable>
                 <fieldset>
-                <!-- days input -->
+                    <!-- days input -->
                     Days
                     <xsl:element name="select">
                         <xsl:attribute name="id">
@@ -211,7 +211,7 @@
                                 </xsl:for-each>
                             </xsl:with-param>
                         </xsl:call-template>
-                    </xsl:element>  
+                    </xsl:element>
                     <!-- seconds input -->
                     Seconds
                     <xsl:element name="select">
@@ -239,7 +239,7 @@
                                 </xsl:for-each>
                             </xsl:with-param>
                         </xsl:call-template>
-                    </xsl:element>  
+                    </xsl:element>
                 </fieldset>
             </xsl:when>
             <!-- Date drop down controls -->
@@ -414,7 +414,7 @@
                     </xsl:variable>
                     <xsl:variable name="timezone" as="xs:integer">
                         <xsl:choose>
-                            <xsl:when test="chiba:data/text() = ''">
+                            <xsl:when test="chiba:data/text() = '' or empty(timezone-from-dateTime(chiba:data/text()))">
                                 <!-- default timezone value -->0
                             </xsl:when>
                             <xsl:otherwise>
