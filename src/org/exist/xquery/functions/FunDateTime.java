@@ -68,9 +68,13 @@ public class FunDateTime extends BasicFunction {
         Sequence result;
 		if (args[0].isEmpty() || args[1].isEmpty())
 			result = Sequence.EMPTY_SEQUENCE;
+		else if (args[0].hasMany())
+			throw new XPathException("XPTY0004: expected at most one xs:date");
+		else if (args[1].hasMany())
+			throw new XPathException("XPTY0004: expected at most one xs:time");
         else {  
-        	DateValue dv = (DateValue)args[0];
-        	TimeValue tv = (TimeValue)args[1];
+        	DateValue dv = (DateValue)args[0].itemAt(0);
+        	TimeValue tv = (TimeValue)args[1].itemAt(0);
         	if (!dv.getTimezone().isEmpty()) {
         		if (!tv.getTimezone().isEmpty()) {
     				if (!((DayTimeDurationValue)dv.getTimezone().itemAt(0)).compareTo(null, Constants.EQ, ((DayTimeDurationValue)tv.getTimezone().itemAt(0)))) {
