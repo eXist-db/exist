@@ -636,6 +636,23 @@ public class XQueryFunctionsTest extends TestCase {
 			fail(e.getMessage());
 		}
 	}
+	
+    public void testDateTimeConstructor() throws XPathException {
+		ResourceSet result 		= null;
+		String		r			= "";
+		try {	
+			result 	= service.query(
+			"let $date := xs:date('2007-05-02+02:00') " +
+			"return dateTime($date, xs:time('15:12:52.421+02:00'))"
+			);
+			r 		= (String) result.getResource(0).getContent();
+			assertEquals( "2007-05-02T15:12:52.421+02:00", r );
+		} catch (XMLDBException e) {
+			System.out.println("local-name(): " + e);
+			fail(e.getMessage());
+		}
+    }	
+	
     
     public void testCurrentDateTime() throws XPathException {
         ResourceSet result      = null;
