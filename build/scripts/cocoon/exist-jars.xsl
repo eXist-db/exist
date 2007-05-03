@@ -92,7 +92,7 @@
                     <title>StAX</title>
                     <description>StAX interfaces</description>
                     <used-by>exist</used-by>
-                    <lib>optional/stax-api-1.0.1.jar</lib>
+                    <lib>endorsed/stax-api-1.0.1.jar</lib>
 					<homepage>http://stax.codehaus.org/</homepage>
                 </file>
             </xsl:if>
