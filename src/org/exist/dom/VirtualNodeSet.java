@@ -96,9 +96,9 @@ public class VirtualNodeSet extends AbstractNodeSet {
         if (first != null) {
             return true;
 	}
-	if (context.get(p.getDocument(), p.getNodeId().getParentId()) != null) {
-            return true;
-	}
+//	if (context.get(p.getDocument(), p.getNodeId().getParentId()) != null) {
+//            return true;
+//	}
         return false;           
     }
 
