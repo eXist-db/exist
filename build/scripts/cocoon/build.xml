@@ -79,25 +79,30 @@
         <delete file="${cocoon.home}/lib/core/log4j-1.2.13.jar"/>
 
         <!-- Copy eXist jars to Cocoon lib dir -->
+        <copy todir="${cocoon.libs}/endorsed" overwrite="yes">
+            <fileset dir="${exist.home}/lib/core">
+                <include name="stax*.jar"/>
+            </fileset>
+        </copy>
         <copy todir="${cocoon.libs}/optional" overwrite="yes">
             <fileset dir="${exist.home}">
                 <include name="exist.jar"/>
                 <include name="exist-optional.jar"/>
                 <include name="exist-modules.jar"/>
-                <include name="exist-modules.jar"/>
                 <include name="start.jar"/>
+            </fileset>
+            <fileset dir="${exist.home}/lib/endorsed">
+                <include name="resolver*.jar"/>
             </fileset>
             <fileset dir="${exist.home}/lib/core">
                 <include name="xmlrpc*.jar"/>
                 <include name="xmldb.jar"/>
-                <include name="resolver*.jar"/>
                 <include name="jline*.jar"/>
                 <include name="jEdit-syntax*.jar"/>
                 <include name="jgroups-all*.jar"/>
                 <include name="excalibur-cli*.jar"/>
                 <include name="commons-pool*.jar"/>
                 <include name="antlr*.jar"/>
-				<include name="stax*.jar"/>
             </fileset>
             <fileset dir="${exist.home}/lib/optional">
                 <include name="commons-fileupload*.jar"/>
