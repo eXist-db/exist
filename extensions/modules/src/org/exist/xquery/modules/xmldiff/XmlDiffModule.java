@@ -47,7 +47,7 @@ public class XmlDiffModule extends AbstractInternalModule {
          * @see org.exist.xquery.ValidationModule#getDescription()
          */
     public String getDescription() {
-        return "XML validation and grammars functions.";
+        return "Functions for determining differences in XML documents.";
     }
     
         /* (non-Javadoc)
