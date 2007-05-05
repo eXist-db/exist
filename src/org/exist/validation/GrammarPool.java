@@ -32,8 +32,12 @@ import org.apache.xerces.util.XMLGrammarPoolImpl;
  *  Wrapper around the Xerces XMLGrammarPoolImpl, so debugging of
  * actions can be monitored. Javadoc copied from xml.apache.org.
  *
- * @author dizzzz
+ * @author Dannes Wessels (dizzzz@exist-db.org)
+ *
  * @see org.apache.xerces.xni.grammars.XMLGrammarPool
+ * @see org.apache.xerces.util.XMLGrammarPoolImpl
+ * @see org.apache.xerces.xni.grammars.Grammar
+ * @see org.apache.xerces.xni.grammars.XMLGrammarDescription
  */
 public class GrammarPool implements XMLGrammarPool {
     
@@ -58,6 +62,8 @@ public class GrammarPool implements XMLGrammarPool {
      *   Retrieve the initial known set of grammars. this method is called
      * by a validator before the validation starts. the application can provide 
      * an initial set of grammars available to the current validation attempt.
+     *
+     * @see org.apache.xerces.xni.grammars.XMLGrammarPool#retrieveInitialGrammarSet(String)
      * 
      * @param   type  The type of the grammar, from the 
      *          org.apache.xerces.xni.grammars.Grammar interface.
@@ -73,6 +79,8 @@ public class GrammarPool implements XMLGrammarPool {
     
     /**
      *  Return the final set of grammars that the validator ended up with.
+     *
+     * @see org.apache.xerces.xni.grammars.XMLGrammarPool#cacheGrammars(String,Grammar[])
      * 
      * @param type      The type of the grammars being returned
      * @param grammar   an array containing the set of grammars being 
@@ -87,6 +95,8 @@ public class GrammarPool implements XMLGrammarPool {
      *  Allows the XMLGrammarPool to store grammars when its 
      * cacheGrammars(String, Grammar[]) method is called. This is the default 
      * state of the object.
+     *
+     * @see org.apache.xerces.xni.grammars.XMLGrammarPool#unlockPool
      */
     public void unlockPool() {
         logger.debug("Unlock grammarpool.");
@@ -99,6 +109,8 @@ public class GrammarPool implements XMLGrammarPool {
      * cannot do so it must return null; the parser will then call the 
      * EntityResolver. An application must not call its EntityResolver itself 
      * from this method; this may result in infinite recursions.
+     *
+     * @see org.apache.xerces.xni.grammars.XMLGrammarPool#retrieveGrammar(XMLGrammarDescription)
      *
      * @param xgd    The description of the Grammar being requested.
      * @return       the Grammar corresponding to this description or null 
@@ -125,6 +137,8 @@ public class GrammarPool implements XMLGrammarPool {
     /**
      *  Causes the XMLGrammarPool not to store any grammars when the 
      * cacheGrammars(String, Grammar[[]) method is called.
+     *
+     * @see org.apache.xerces.xni.grammars.XMLGrammarPool#lockPool
      */
     public void lockPool() {
         logger.debug("Lock grammarpool.");
@@ -133,6 +147,8 @@ public class GrammarPool implements XMLGrammarPool {
     
     /**
      *  Removes all grammars from the pool.
+     *
+     * @see org.apache.xerces.xni.grammars.XMLGrammarPool#clear
      */
     public void clear() {
         logger.debug("Clear grammarpool.");

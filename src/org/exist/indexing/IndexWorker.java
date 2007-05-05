@@ -99,7 +99,8 @@ public interface IndexWorker {
      *
      * Parameter mode specifies the type of the current operation.
      *
-     * @param mode one of {@link StreamListener#STORE} or {@link StreamListener#REMOVE}
+     * @param mode one of {@link StreamListener#STORE}, {@link StreamListener#REMOVE_NODES} or
+     * {@link StreamListener#REMOVE_ALL_NODES}.
      * @param document the document to be indexed.
      * @return a StreamListener
      */
