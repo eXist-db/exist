@@ -99,6 +99,9 @@ public class BFile extends BTree {
     public final static byte FREE_LIST = 22;
 
     public final static byte MULTI_PAGE = 23;
+    
+    public static final int LENGTH_RECORDS_COUNT = 2; //sizeof short
+    public static final int LENGTH_NEXT_TID = 2; //sizeof short
 
     /*
      * Byte ids for the records written to the log file.
@@ -1557,11 +1560,11 @@ public class BFile extends BTree {
         public int read(byte[] data, int offset) throws IOException {
             offset = super.read(data, offset);
             records = ByteConversion.byteToShort(data, offset);
-            offset += 2;
+            offset += LENGTH_RECORDS_COUNT;
             dataLen = ByteConversion.byteToInt(data, offset);
             offset += 4;
             nextTID = ByteConversion.byteToShort(data, offset);
-            offset += 2;
+            offset += LENGTH_NEXT_TID;
             nextInChain = ByteConversion.byteToLong(data, offset);
             offset += 8;
             lastInChain = ByteConversion.byteToLong(data, offset);
@@ -1591,11 +1594,11 @@ public class BFile extends BTree {
         public int write(byte[] data, int offset) throws IOException {
             offset = super.write(data, offset);
             ByteConversion.shortToByte(records, data, offset);
-            offset += 2;
+            offset += LENGTH_RECORDS_COUNT;
             ByteConversion.intToByte(dataLen, data, offset);
             offset += 4;
             ByteConversion.shortToByte(nextTID, data, offset);
-            offset += 2;
+            offset += LENGTH_NEXT_TID;
             ByteConversion.longToByte(nextInChain, data, offset);
             offset += 8;
             ByteConversion.longToByte(lastInChain, data, offset);
