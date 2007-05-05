@@ -526,7 +526,7 @@ public abstract class Serializer implements XMLReader {
 			receiver = xinclude;
 		} else
 			receiver = xmlout;
-        if (root != null && getHighlightingMode() > 0) {
+        if (root != null && getHighlightingMode() != TAG_NONE) {
             IndexController controller = broker.getIndexController();
             MatchListener listener = controller.getMatchListener(root);
             if (listener != null) {
