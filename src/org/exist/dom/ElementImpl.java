@@ -190,7 +190,7 @@ public class ElementImpl extends NamedNode implements Element {
             final int nodeIdLen = nodeId.size();
             byte[] data =
                     ByteArrayPool.getByteArray(
-                    LENGTH_SIGNATURE_LENGTH + LENGTH_ELEMENT_CHILD_COUNT + NodeId.LENGTH_NODE_ID_UNITS + 
+                    		StoredNode.LENGTH_SIGNATURE_LENGTH + LENGTH_ELEMENT_CHILD_COUNT + NodeId.LENGTH_NODE_ID_UNITS + 
                     + nodeIdLen + LENGTH_ATTRIBUTES_COUNT
                     + Signatures.getLength(idSizeType)
                     + (hasNamespace ? prefixLen + 4 : 0)
@@ -198,7 +198,7 @@ public class ElementImpl extends NamedNode implements Element {
                     );
             int next = 0;
             data[next] = signature;
-            next += LENGTH_SIGNATURE_LENGTH;
+            next += StoredNode.LENGTH_SIGNATURE_LENGTH;
             ByteConversion.intToByte(children, data, next);
             next += LENGTH_ELEMENT_CHILD_COUNT;
             ByteConversion.shortToByte((short) nodeId.units(), data, next);
@@ -236,7 +236,7 @@ public class ElementImpl extends NamedNode implements Element {
         byte idSizeType = (byte) (data[pos] & 0x03);
         boolean isDirty = (data[pos] & 0x8) == 0x8;
         boolean hasNamespace = (data[pos] & 0x10) == 0x10;
-        pos += LENGTH_SIGNATURE_LENGTH;
+        pos += StoredNode.LENGTH_SIGNATURE_LENGTH;
         int children = ByteConversion.byteToInt(data, pos);
         pos += LENGTH_ELEMENT_CHILD_COUNT;
         int dlnLen = ByteConversion.byteToShort(data, pos);
@@ -300,7 +300,7 @@ public class ElementImpl extends NamedNode implements Element {
         int offset = value.start();
         byte idSizeType = (byte) (data[offset] & 0x03);
         boolean hasNamespace = (data[offset] & 0x10) == 0x10;
-        offset += LENGTH_SIGNATURE_LENGTH;
+        offset += StoredNode.LENGTH_SIGNATURE_LENGTH;
         offset += LENGTH_ELEMENT_CHILD_COUNT;
         offset += NodeId.LENGTH_NODE_ID_UNITS;
         offset += nodeId.size();

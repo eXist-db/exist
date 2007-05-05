@@ -271,7 +271,7 @@ public class EmbeddedXMLStreamReader implements XMLStreamReader {
     }
 
     public int getAttributeCount() {
-        int offset = current.start() + 7 + nodeId.size();
+        int offset = current.start() + StoredNode.LENGTH_SIGNATURE_LENGTH + ElementImpl.LENGTH_ELEMENT_CHILD_COUNT + NodeId.LENGTH_NODE_ID_UNITS + nodeId.size();
         return ByteConversion.byteToShort(current.data(), offset);
     }
 
