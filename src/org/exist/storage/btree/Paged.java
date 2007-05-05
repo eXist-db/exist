@@ -92,26 +92,27 @@ import org.exist.xquery.Constants;
 
 public abstract class Paged {
 	
-	public static int OFFSET_VERSION_ID = 0;
 	public static int LENGTH_VERSION_ID = 2;  //sizeof short
-	public static int OFFSET_HEADER_SIZE = OFFSET_VERSION_ID + LENGTH_VERSION_ID; //2
 	public static int LENGTH_HEADER_SIZE = 2;  //sizeof short
-	public static int OFFSET_PAGE_SIZE = OFFSET_HEADER_SIZE + LENGTH_HEADER_SIZE; //4
-	public static int LENGTH_PAGE_SIZE = 4; //sizeof int
-	public static int OFFSET_PAGE_COUNT = OFFSET_PAGE_SIZE + LENGTH_PAGE_SIZE; //8
 	public static int LENGTH_PAGE_COUNT = 8; //sizeof long
-	public static int OFFSET_TOTAL_COUNT = OFFSET_PAGE_COUNT + LENGTH_PAGE_COUNT; //16
+	public static int LENGTH_PAGE_SIZE = 4; //sizeof int
 	public static int LENGTH_TOTAL_COUNT = 8; //sizeof long
-	public static int OFFSET_FIRST_FREE_PAGE = OFFSET_TOTAL_COUNT + LENGTH_TOTAL_COUNT; //24
 	public static int LENGTH_FIRST_FREE_PAGE = 8; //sizeof long
-	public static int OFFSET_LAST_FREE_PAGE = OFFSET_FIRST_FREE_PAGE + LENGTH_FIRST_FREE_PAGE; //32
 	public static int LENGTH_LAST_FREE_PAGE = 8; //sizeof long
-	public static int OFFSET_PAGE_HEADER_SIZE = OFFSET_LAST_FREE_PAGE + LENGTH_LAST_FREE_PAGE; //40
 	public static int LENGTH_PAGE_HEADER_SIZE = 1; //sizeof byte	
-	public static int OFFSET_MAX_KEY_SIZE = OFFSET_PAGE_HEADER_SIZE + LENGTH_PAGE_HEADER_SIZE; //41
 	public static int LENGTH_MAX_KEY_SIZE = 2;  //sizeof short
-	public static int OFFSET_RECORD_COUNT = OFFSET_MAX_KEY_SIZE + LENGTH_MAX_KEY_SIZE; //43
 	public static int LENGTH_RECORD_COUNT = 8; //sizeof long
+
+	public static int OFFSET_VERSION_ID = 0;
+	public static int OFFSET_HEADER_SIZE = OFFSET_VERSION_ID + LENGTH_VERSION_ID; //2
+	public static int OFFSET_PAGE_SIZE = OFFSET_HEADER_SIZE + LENGTH_HEADER_SIZE; //4
+	public static int OFFSET_PAGE_COUNT = OFFSET_PAGE_SIZE + LENGTH_PAGE_SIZE; //8
+	public static int OFFSET_TOTAL_COUNT = OFFSET_PAGE_COUNT + LENGTH_PAGE_COUNT; //16
+	public static int OFFSET_FIRST_FREE_PAGE = OFFSET_TOTAL_COUNT + LENGTH_TOTAL_COUNT; //24
+	public static int OFFSET_LAST_FREE_PAGE = OFFSET_FIRST_FREE_PAGE + LENGTH_FIRST_FREE_PAGE; //32
+	public static int OFFSET_PAGE_HEADER_SIZE = OFFSET_LAST_FREE_PAGE + LENGTH_LAST_FREE_PAGE; //40
+	public static int OFFSET_MAX_KEY_SIZE = OFFSET_PAGE_HEADER_SIZE + LENGTH_PAGE_HEADER_SIZE; //41
+	public static int OFFSET_RECORD_COUNT = OFFSET_MAX_KEY_SIZE + LENGTH_MAX_KEY_SIZE; //43
 	public static int OFFSET_REMAINDER = OFFSET_RECORD_COUNT + LENGTH_RECORD_COUNT; //51
 
 	protected final static Logger LOG = Logger.getLogger(Paged.class);
@@ -1054,6 +1055,11 @@ public abstract class Paged {
 
 	public static abstract class PageHeader {
 		
+		public static int LENGTH_PAGE_STATUS = 1; //sizeof byte	
+		public static int LENGTH_PAGE_DATA_LENGTH = 4; //sizeof int
+		public static int LENGTH_PAGE_NEXT_PAGE = 8; //sizeof long
+		public static int LENGTH_PAGE_LSN = 8; //sizeof long
+			
 		private int dataLen = 0;
 		private boolean dirty = false;
 		private long nextPage = Page.NO_PAGE;
@@ -1128,24 +1134,26 @@ public abstract class Paged {
         }
         
 		public int read(byte[] data, int offset) throws IOException {
-			status = data[offset++];
+			status = data[offset];
+			offset += LENGTH_PAGE_STATUS;
 			dataLen = ByteConversion.byteToInt(data, offset);
-			offset += 4;
+			offset += LENGTH_PAGE_DATA_LENGTH;
 			nextPage = ByteConversion.byteToLong(data, offset);
-			offset += 8;
+			offset += LENGTH_PAGE_NEXT_PAGE;
             lsn = ByteConversion.byteToLong(data, offset);
-            offset += 8;
+            offset += LENGTH_PAGE_LSN;
 			return offset;
 		}
 
 		public int write(byte[] data, int offset) throws IOException {
-			data[offset++] = status;
+			data[offset] = status;
+			offset += LENGTH_PAGE_STATUS;
 			ByteConversion.intToByte(dataLen, data, offset);
-			offset += 4;
+			offset += LENGTH_PAGE_DATA_LENGTH;
 			ByteConversion.longToByte(nextPage, data, offset);
-			offset += 8;
+			offset += LENGTH_PAGE_NEXT_PAGE;
             ByteConversion.longToByte(lsn, data, offset);
-            offset += 8;
+            offset += LENGTH_PAGE_LSN;
 			dirty = false;
 			return offset;
 		}
