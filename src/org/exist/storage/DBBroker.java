@@ -587,13 +587,13 @@ public abstract class DBBroker extends Observable {
 	/**
 	 * Copy a collection to the destination collection and rename it.
 	 * 
-	 * @param collection
-	 *            the resource to move
-	 * @param destination
-	 *            the destination collection
-	 * @param newName
-	 *            the new name the resource should have in the destination
-	 *            collection
+	 * @param transaction The transaction, which registers the acquired write locks. The locks should be released on commit/abort.
+	 * @param collection The origin collection
+	 * @param destination The destination parent collection
+	 * @param newName The new name of the collection
+	 * @throws PermissionDeniedException
+	 * @throws LockException
+	 * @throws IOException
 	 */
 	public abstract void copyCollection(Txn transaction, Collection collection,
 			Collection destination, XmldbURI newName)
