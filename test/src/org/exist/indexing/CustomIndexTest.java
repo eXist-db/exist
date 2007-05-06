@@ -638,6 +638,8 @@ public class CustomIndexTest extends TestCase {
 
     protected void setUp() {
         DBBroker broker = null;
+        TransactionManager transact = null;
+        Txn transaction = null;
         try {
             Configuration config = new Configuration();
             BrokerPool.configure(1, 5, config);
@@ -645,9 +647,9 @@ public class CustomIndexTest extends TestCase {
         	assertNotNull(pool);
             broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
             assertNotNull(broker);
-            TransactionManager transact = pool.getTransactionManager();
+            transact = pool.getTransactionManager();
             assertNotNull(transact);
-            Txn transaction = transact.beginTransaction();
+            transaction = transact.beginTransaction();
             assertNotNull(transaction);
             System.out.println("Transaction started ...");
 
@@ -674,6 +676,7 @@ public class CustomIndexTest extends TestCase {
 
             transact.commit(transaction);
         } catch (Exception e) {
+        	transact.abort(transaction);
             e.printStackTrace();
             fail(e.getMessage());
         } finally {
@@ -685,21 +688,25 @@ public class CustomIndexTest extends TestCase {
     protected void tearDown() {
         BrokerPool pool = null;
         DBBroker broker = null;
+        TransactionManager transact = null;
+        Txn transaction = null;
         try {
             pool = BrokerPool.getInstance();
             assertNotNull(pool);
             broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
             assertNotNull(broker);
-            TransactionManager transact = pool.getTransactionManager();
+            transact = pool.getTransactionManager();
             assertNotNull(transact);
-            Txn transaction = transact.beginTransaction();
+            transaction = transact.beginTransaction();
             assertNotNull(transaction);
             System.out.println("Transaction started ...");
 
             Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             assertNotNull(root);
+            transact.commit(transaction);
             broker.removeCollection(transaction, root);
         } catch (Exception e) {
+        	transact.abort(transaction);
             e.printStackTrace();
             fail(e.getMessage());
         } finally {
