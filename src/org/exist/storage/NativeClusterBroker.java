@@ -53,20 +53,20 @@ public class NativeClusterBroker extends NativeBroker {
         super.saveCollection( transaction, new ClusterCollection( collection ));
     }
 
-    /**
-     * get collection object If the collection does not yet exists, it is
-     * created automatically.
-     *
+	/**
+	 * Returns the database collection identified by the specified path. If the
+	 * collection does not yet exist, it is created - including all ancestors.
+	 * The path should be absolute, e.g. /db/shakespeare.
      * Wraps for cluster the resultant collection in a ClusterCollection
-     *
-     * @param name the collection's name
-     * @return The orCreateCollection value
-     * @throws org.exist.security.PermissionDeniedException
-     *          Description of the Exception
-     */
-    public Collection getOrCreateCollection(Txn transaction, XmldbURI name) throws PermissionDeniedException,
+     * @param transaction The transaction, which registers the acquired write locks. The locks should be released on commit/abort.
+	 * @param uri The collection's URI
+	 * @return The collection or <code>null</code> if no collection matches the path
+	 * @throws PermissionDeniedException
+	 * @throws IOException
+	 */    
+    public Collection getOrCreateCollection(Txn transaction, XmldbURI uri) throws PermissionDeniedException,
     	IOException {
-        Collection c=   super.getOrCreateCollection(transaction, name);
+        Collection c=   super.getOrCreateCollection(transaction, uri);
         return c==null?null:new ClusterCollection(c);
 
     }

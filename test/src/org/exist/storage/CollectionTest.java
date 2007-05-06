@@ -62,11 +62,13 @@ public class CollectionTest extends TestCase {
         BrokerPool.FORCE_CORRUPTION = true;
         BrokerPool pool = startDB();
         DBBroker broker = null;
+        Txn transaction = null;
+        TransactionManager transact = null;
         try {
             broker = pool.get(SecurityManager.SYSTEM_USER);            
-            TransactionManager transact = pool.getTransactionManager();
+            transact = pool.getTransactionManager();
             
-            Txn transaction = transact.beginTransaction();            
+            transaction = transact.beginTransaction();            
             System.out.println("Transaction started ...");
             
             Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI);
@@ -77,7 +79,8 @@ public class CollectionTest extends TestCase {
             
             transact.commit(transaction);
             System.out.println("Transaction commited ...");
-        } catch (Exception e) {            
+        } catch (Exception e) {
+        	transact.abort(transaction);
             fail(e.getMessage());              
         } finally {
             pool.release(broker);

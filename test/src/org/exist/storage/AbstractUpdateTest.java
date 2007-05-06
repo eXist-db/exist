@@ -85,9 +85,10 @@ public abstract class AbstractUpdateTest extends TestCase {
 
     protected IndexInfo init(DBBroker broker, TransactionManager mgr) {
     	IndexInfo info = null;
+    	Txn transaction = null;
     	try {
     		
-        	Txn transaction = mgr.beginTransaction();        
+    		transaction = mgr.beginTransaction();        
         	System.out.println("Transaction started ...");
 	        
 	        Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI);
@@ -103,7 +104,8 @@ public abstract class AbstractUpdateTest extends TestCase {
 	        mgr.commit(transaction);	
 	        System.out.println("Transaction commited ...");
 	        
-	    } catch (Exception e) {            
+	    } catch (Exception e) {
+	    	mgr.abort(transaction);
 	        fail(e.getMessage());
 	    }  
 	    return info;
