@@ -584,7 +584,15 @@ public class NativeBroker extends DBBroker {
     	}
     }
     
-    /** create temporary collection */  
+    /**
+     * Creates a temporary collecion
+     * 
+     * @param transaction : The transaction, which registers the acquired write locks. The locks should be released on commit/abort.
+     * @return The temporary collection
+     * @throws LockException
+     * @throws PermissionDeniedException
+     * @throws IOException
+     */
     private Collection createTempCollection(Txn transaction) throws LockException, PermissionDeniedException,
 								    IOException {
         User u = user;
@@ -645,6 +653,7 @@ public class NativeBroker extends DBBroker {
                     current.setCreationTime(System.currentTimeMillis());
                     if (transaction != null)
                         transaction.acquireLock(current.getLock(), Lock.WRITE_LOCK);
+                    //TODO : acquire lock manually if transaction is null ?
                     saveCollection(transaction, current);
                 }
                 for(int i=1;i<segments.length;i++) {
@@ -669,6 +678,7 @@ public class NativeBroker extends DBBroker {
                         sub.setCreationTime(System.currentTimeMillis());
                         if (transaction != null)
                             transaction.acquireLock(sub.getLock(), Lock.WRITE_LOCK);
+                        //TODO : acquire lock manually if transaction is null ?
                         current.addCollection(this, sub, true);
                         saveCollection(transaction, current);
                         current = sub;
@@ -761,6 +771,9 @@ public class NativeBroker extends DBBroker {
         return collection;           
     }
     
+    /* (non-Javadoc)
+     * @see org.exist.storage.DBBroker#copyCollection(org.exist.storage.txn.Txn, org.exist.collections.Collection, org.exist.collections.Collection, org.exist.xmldb.XmldbURI)
+     */
     public void copyCollection(Txn transaction, Collection collection, Collection destination, XmldbURI newUri)
    	throws PermissionDeniedException, LockException, IOException {
 	if (readOnly)
@@ -1333,7 +1346,7 @@ public class NativeBroker extends DBBroker {
 			} else {
 			    transaction.registerLock(temp.getLock(), Lock.WRITE_LOCK);
 			}
-		    }
+	    }
             
 		//create a temporary document
 		DocumentImpl targetDoc = new DocumentImpl(this, temp, docName);
