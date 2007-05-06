@@ -175,6 +175,8 @@ public class RecoveryTest extends TestCase {
         BrokerPool.FORCE_CORRUPTION = false;
         BrokerPool pool = null;
         DBBroker broker = null;           
+        TransactionManager transact = null;
+        Txn transaction = null;
         
         try {
         	System.out.println("testRead() ...\n");
@@ -226,9 +228,9 @@ public class RecoveryTest extends TestCase {
             domDb.dump(writer);
             System.out.println(writer.toString());
             
-            TransactionManager transact = pool.getTransactionManager();
+            transact = pool.getTransactionManager();
             assertNotNull(transact);
-            Txn transaction = transact.beginTransaction();
+            transaction = transact.beginTransaction();
             assertNotNull(transaction);
             System.out.println("Transaction started ...");
             
@@ -240,6 +242,7 @@ public class RecoveryTest extends TestCase {
             transact.commit(transaction);
             System.out.println("Transaction commited ...");
 	    } catch (Exception e) {            
+	    	transact.abort(transaction);
 	        fail(e.getMessage());
 	        e.printStackTrace();
         } finally {
