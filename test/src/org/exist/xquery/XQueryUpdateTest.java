@@ -529,6 +529,7 @@ public class XQueryUpdateTest extends TestCase {
 			DocumentImpl doc = root.getDocument(broker, XmldbURI.create(docName));
 		    broker.getSerializer().serialize(doc);
 		} catch (IOException e) {
+			mgr.abort(transaction);
 			fail();
 		}
 	}

@@ -78,12 +78,14 @@ public class LexerTest extends TestCase {
 		}
 		User user = pool.getSecurityManager().getUser("admin");
 		DBBroker broker = null;
+		TransactionManager transact = null;
+		Txn transaction = null;
 		try {
 			// parse the xml source
 			broker = pool.get(user);
-            TransactionManager transact = pool.getTransactionManager();
+			transact = pool.getTransactionManager();
             assertNotNull(transact);
-            Txn transaction = transact.beginTransaction();
+            transaction = transact.beginTransaction();
             assertNotNull(transaction);
             Collection collection = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             broker.saveCollection(transaction, collection);
@@ -92,7 +94,13 @@ public class LexerTest extends TestCase {
             //TODO : unlock the collection here ?
             collection.store(transaction, broker, info, xml, false);
             transact.commit(transaction);
-            
+		} catch (Exception e) {
+			transact.abort(transaction);
+            e.printStackTrace();
+            fail(e.getMessage());
+		}
+
+		try {
             // parse the query into the internal syntax tree
 			XQueryContext context = new XQueryContext(broker, AccessContext.TEST);
 			XQueryLexer lexer = new XQueryLexer(context, new StringReader(query));

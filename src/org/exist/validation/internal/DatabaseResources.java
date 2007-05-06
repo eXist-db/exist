@@ -362,6 +362,8 @@ public class DatabaseResources {
         }
 
         DBBroker broker = null;
+        TransactionManager transact = null;
+        Txn transaction = null;
         try {
             MimeType mime = MimeTable.getInstance().getContentTypeFor(documentURI.lastSegment());
             if (mime == null){
@@ -370,10 +372,11 @@ public class DatabaseResources {
             
             broker = brokerPool.get(SecurityManager.SYSTEM_USER);
             
-            TransactionManager transact = brokerPool.getTransactionManager();
-            Txn transaction = transact.beginTransaction();
+            transact = brokerPool.getTransactionManager();
+            transaction = transact.beginTransaction();
             
             Collection collection = broker
+            	//TODO : resolve URI against ".."
                     .getOrCreateCollection(transaction, documentURI.removeLastSegment());
             
             broker.saveCollection(transaction, collection);
@@ -393,6 +396,7 @@ public class DatabaseResources {
             insertIsSuccesfull=true;
             
         } catch (Exception ex){
+        	transact.abort(transaction);
             ex.printStackTrace();
             logger.error(ex);
             
