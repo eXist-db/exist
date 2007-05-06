@@ -621,6 +621,10 @@ public class NativeBroker extends DBBroker {
         }
     }
     
+    /* Gets or create the specified collection.
+     * The transaction registers the acquired write locks. The locks should be released on commit/abort.
+     * @see org.exist.storage.DBBroker#getOrCreateCollection(org.exist.storage.txn.Txn, org.exist.xmldb.XmldbURI)
+     */
     public Collection getOrCreateCollection(Txn transaction, XmldbURI name) throws PermissionDeniedException,
 										   IOException {
     	name = prepend(name.normalizeCollectionPath());

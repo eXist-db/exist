@@ -68,7 +68,8 @@ public class CollectionConfigurationManager {
 	/**
 	 * Add a new collection configuration. The XML document is passed as a string.
 	 * 
-	 * @param broker
+     * @param transaction The transaction that will hold the WRITE locks until they are released by commit()/abort()
+     * @param broker
 	 * @param collection the collection to which the configuration applies.
 	 * @param config the xconf document as a String.
 	 * @throws CollectionConfigurationException
