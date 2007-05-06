@@ -739,6 +739,7 @@ public class RESTServer {
                 transact.abort(transaction);
                 throw new BadRequestException("Bad path: " + path);
             }
+            //TODO : use getOrCreateCollection() right now ?
             Collection collection = broker.getCollection(collUri);
             if (collection == null) {
                 LOG.debug("creating collection " + collUri);
