@@ -107,11 +107,12 @@ public class DLNStorageTest extends TestCase {
 
         BrokerPool pool = BrokerPool.getInstance();
         DBBroker broker = null;
+        TransactionManager transact = null;
+        Txn transaction = null;       
         try {
             broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
-            TransactionManager transact = pool.getTransactionManager();
-
-            Txn transaction = transact.beginTransaction();
+            transact = pool.getTransactionManager();
+            transaction = transact.beginTransaction();
             System.out.println("Transaction started ...");
 
             Collection test = broker.getOrCreateCollection(transaction, TEST_COLLECTION);
@@ -127,6 +128,7 @@ public class DLNStorageTest extends TestCase {
             transact.commit(transaction);
             System.out.println("Transaction commited ...");
         } catch (Exception e) {
+        	transact.abort(transaction);
             fail(e.getMessage());
         } finally {
             pool.release(broker);

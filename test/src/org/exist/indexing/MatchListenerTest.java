@@ -314,6 +314,8 @@ public class MatchListenerTest {
     @BeforeClass
     public static void startDB() {
         DBBroker broker = null;
+        TransactionManager transact = null;
+        Txn transaction = null;
         try {
             Configuration config = new Configuration();
             BrokerPool.configure(1, 5, config);
@@ -321,9 +323,9 @@ public class MatchListenerTest {
         	assertNotNull(pool);
             broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
             assertNotNull(broker);
-            TransactionManager transact = pool.getTransactionManager();
+            transact = pool.getTransactionManager();
             assertNotNull(transact);
-            Txn transaction = transact.beginTransaction();
+            transaction = transact.beginTransaction();
             assertNotNull(transaction);
             System.out.println("Transaction started ...");
 
@@ -333,6 +335,7 @@ public class MatchListenerTest {
 
             transact.commit(transaction);
         } catch (Exception e) {
+        	transact.abort(transaction);
             e.printStackTrace();
             fail(e.getMessage());
         } finally {
@@ -345,21 +348,25 @@ public class MatchListenerTest {
     public static void closeDB() {
         BrokerPool pool = null;
         DBBroker broker = null;
+        TransactionManager transact = null;
+        Txn transaction = null;
         try {
             pool = BrokerPool.getInstance();
             assertNotNull(pool);
             broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
             assertNotNull(broker);
-            TransactionManager transact = pool.getTransactionManager();
+            transact = pool.getTransactionManager();
             assertNotNull(transact);
-            Txn transaction = transact.beginTransaction();
+            transaction = transact.beginTransaction();
             assertNotNull(transaction);
             System.out.println("Transaction started ...");
 
             Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             assertNotNull(root);
             broker.removeCollection(transaction, root);
+            transact.commit(transaction);
         } catch (Exception e) {
+        	transact.abort(transaction);
             e.printStackTrace();
             fail(e.getMessage());
         } finally {
@@ -368,14 +375,16 @@ public class MatchListenerTest {
         BrokerPool.stopAll(false);
     }
 
-    private void configureAndStore(String config) throws Exception {
+    private void configureAndStore(String config) {
         DBBroker broker = null;
+        TransactionManager transact = null;
+        Txn transaction = null;
         try {
             broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
             assertNotNull(broker);
-            TransactionManager transact = pool.getTransactionManager();
+            transact = pool.getTransactionManager();
             assertNotNull(transact);
-            Txn transaction = transact.beginTransaction();
+            transaction = transact.beginTransaction();
             assertNotNull(transaction);
 
             Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
@@ -388,6 +397,10 @@ public class MatchListenerTest {
             root.store(transaction, broker, info, XML, false);
             
             transact.commit(transaction);
+        } catch (Exception e) {
+        	transact.abort(transaction);
+        	e.printStackTrace();
+        	fail(e.getMessage());
         } finally {
             pool.release(broker);
         }
