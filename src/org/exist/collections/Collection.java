@@ -173,6 +173,7 @@ public  class Collection extends Observable
     
     public void setPath(XmldbURI path) {
     	path = path.toCollectionPathURI();
+    	//TODO : see if the URI resolves against DBBroker.TEMP_COLLECTION
         isTempCollection = path.getRawCollectionPath().equals(DBBroker.TEMP_COLLECTION);
         this.path=path;
     }
@@ -284,6 +285,7 @@ public  class Collection extends Observable
             XmldbURI childName;
             for (Iterator i = subcollections.iterator(); i.hasNext(); ) {
                 childName = (XmldbURI) i.next();
+                //TODO : resolve URI !
                 child = broker.getCollection(path.append(childName));
                 if (permissions.validate(user, Permission.READ)) {
                     cl.add(child);
@@ -332,6 +334,7 @@ public  class Collection extends Observable
                 // process the child collections
                 for (int i = 0; i < subColls.size(); i++) {
                     XmldbURI childName = (XmldbURI) subColls.get(i);
+                    //TODO : resolve URI !
                     Collection child = broker.openCollection(path.appendInternal(childName), Lock.NO_LOCK);
                     // a collection may have been removed in the meantime, so check first
                     if (child != null)
@@ -604,6 +607,7 @@ public  class Collection extends Observable
     public XmldbURI getParentURI() {
         if (path.equals(XmldbURI.ROOT_COLLECTION_URI))
             return null;
+        //TODO : resolve URI against ".." !
          return path.removeLastSegment();
     }
     

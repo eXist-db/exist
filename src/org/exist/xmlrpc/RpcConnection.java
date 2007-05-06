@@ -195,13 +195,16 @@ public class RpcConnection extends Thread {
         Txn transaction = transact.beginTransaction();
         try {
             broker = brokerPool.get(user);
-            collection = broker.openCollection(collUri, Lock.READ_LOCK);
-            if (collection == null) {
-                transact.abort(transaction);
-                throw new EXistException("collection " + collUri + " not found!");
+            try {
+	            collection = broker.openCollection(collUri, Lock.READ_LOCK);
+	            if (collection == null) {
+	                transact.abort(transaction);
+	                throw new EXistException("collection " + collUri + " not found!");
+	            }
+            } finally {
+            	if (collection != null)
+            		collection.release(Lock.READ_LOCK);
             }
-            // keep the read lock in the transaction
-            transaction.registerLock(collection.getLock(), Lock.READ_LOCK);             
             CollectionConfigurationManager mgr = brokerPool.getConfigurationManager();
             mgr.addConfiguration(transaction, broker, collection, configuration);
             transact.commit(transaction);
