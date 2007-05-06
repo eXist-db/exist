@@ -243,14 +243,16 @@ public class NodeTest extends XMLTestCase {
     
 	protected void setUp() throws Exception {        
         DBBroker broker = null;
+        TransactionManager transact = null;
+        Txn transaction = null;
         try {
         	pool = startDB();
         	assertNotNull(pool);
             broker = pool.get(SecurityManager.SYSTEM_USER);
             assertNotNull(broker);            
-            TransactionManager transact = pool.getTransactionManager();
+            transact = pool.getTransactionManager();
             assertNotNull(transact);
-            Txn transaction = transact.beginTransaction();
+            transaction = transact.beginTransaction();
             assertNotNull(transaction);            
             System.out.println("NodeTest#setUp ...");
             
@@ -265,7 +267,8 @@ public class NodeTest extends XMLTestCase {
             
             transact.commit(transaction);
             System.out.println("NodeTest#setUp finished.");
-        } catch (Exception e) {            
+        } catch (Exception e) {
+        	transact.abort(transaction);
 	        fail(e.getMessage()); 	        
         } finally {
         	if (pool != null) pool.release(broker);
@@ -289,12 +292,14 @@ public class NodeTest extends XMLTestCase {
 
     protected void tearDown() {
         DBBroker broker = null;
+        TransactionManager transact = null;
+        Txn transaction = null;
         try {
             broker = pool.get(SecurityManager.SYSTEM_USER);
             assertNotNull(broker);            
-            TransactionManager transact = pool.getTransactionManager();
+            transact = pool.getTransactionManager();
             assertNotNull(transact);
-            Txn transaction = transact.beginTransaction();
+            transaction = transact.beginTransaction();
             assertNotNull(transaction);            
             System.out.println("BasicNodeSetTest#tearDown >>>");
             
@@ -304,6 +309,7 @@ public class NodeTest extends XMLTestCase {
             
             transact.commit(transaction);
         } catch (Exception e) {
+        	transact.abort(transaction);
             e.printStackTrace();
         } finally {
             if (pool != null) pool.release(broker);

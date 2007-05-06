@@ -164,7 +164,8 @@ public class RecoveryTest extends TestCase {
             domDb.dump(writer);
             System.out.println(writer.toString());
 	    } catch (Exception e) {            
-	        fail(e.getMessage()); 	        
+	        fail(e.getMessage());
+	        e.printStackTrace();
         } finally {
         	if (pool != null) pool.release(broker);
         }
@@ -239,7 +240,8 @@ public class RecoveryTest extends TestCase {
             transact.commit(transaction);
             System.out.println("Transaction commited ...");
 	    } catch (Exception e) {            
-	        fail(e.getMessage());             
+	        fail(e.getMessage());
+	        e.printStackTrace();
         } finally {
         	if (pool != null) pool.release(broker);
         }
