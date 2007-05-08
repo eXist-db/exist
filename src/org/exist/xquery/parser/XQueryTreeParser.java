@@ -5826,10 +5826,14 @@ public XQueryTreeParser() {
 				
 								if (rightStep instanceof LocationStep) {
 									LocationStep rs= (LocationStep) rightStep;
-									if (rs.getAxis() == Constants.ATTRIBUTE_AXIS)
+									if (rs.getAxis() == Constants.ATTRIBUTE_AXIS) {
 										rs.setAxis(Constants.DESCENDANT_ATTRIBUTE_AXIS);
-									else
-										rs.setAxis(Constants.DESCENDANT_SELF_AXIS);
+									} else if (rs.getAxis() == Constants.CHILD_AXIS && rs.getTest().isWildcardTest()) {
+				rs.setAxis(Constants.DESCENDANT_AXIS);
+				} else {
+							                        rs.setAxis(Constants.DESCENDANT_SELF_AXIS);
+				}
+				
 								} else {
 									rightStep.setPrimaryAxis(Constants.DESCENDANT_SELF_AXIS);
 									if(rightStep instanceof VariableReference) {
