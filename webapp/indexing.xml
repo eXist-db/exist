@@ -320,7 +320,7 @@
             <note>
                 <para>You can store only ONE <filename>.xconf</filename> configuration document per
                     collection in the system collection <filename>/db/system/config</filename>. For
-                    example, the collection <filename>/db/system/config/foo</filename> would contain
+                    example, the collection <filename>/db/system/config/db/foo</filename> would contain
                     one configuration file and/or other subcollections.</para>
             </note>
 
