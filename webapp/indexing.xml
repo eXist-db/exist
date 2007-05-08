@@ -315,8 +315,15 @@
 			create a file <filename>collection.xconf</filename> and store it as 
 			<filename>/db/system/config/db/foo/collection.xconf</filename>. 
 			Note the replication of the <filename>/db/foo</filename> hierarchy inside 
-			<filename>/db/system/config/</filename>. Since subcollections will inherit the configuration 
-			of their parent collections, you are not required to specify a configuration for every collection.
+			<filename>/db/system/config/</filename>. Subcollections which do not have a 
+			<filename>collection.xconf</filename> file of their own will be governed
+            by the configuration policy specified for the closest ancestor collection
+            which does have such a file, so you are not required to specify a
+            configuration for every collection. Note, however, that configuration
+            settings do not cascade. If you choose to deploy a <filename>collection.xconf</filename> file in a
+            subcollection, you must specify in that file <emphasis>all</emphasis> the configuration options
+            you wish to have applied to that subcollection (and any lower-level
+            subcollections without <filename>collection.xconf</filename> files of their own).
 			</para>
 		
 		  <note>
