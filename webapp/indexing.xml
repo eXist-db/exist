@@ -310,26 +310,21 @@
                 by default. That being said, the <filename>conf.xml</filename> file should only
                 define the default global <emphasis>index creation policy</emphasis>.</para>
 
-            <para>To configure indexes for a given collection - for example:
-                <filename>/db/foo</filename> - you must create a new <filename>collection.xconf</filename>
-                configuration file and store it in the system collection (e.g.
-                    <filename>/db/system/config/db/foo</filename>). Note that
-                since subcollections will inherit the configuration policy of their parent
-                collections, you are not required to specify a configuration for every collection.</para>
-
-            <note>
-                <para>You can store only ONE <filename>.xconf</filename> configuration document per
-                    collection in the system collection <filename>/db/system/config</filename>. For
-                    example, the collection <filename>/db/system/config/db/foo</filename> would contain
-                    one configuration file and/or other subcollections.</para>
-            </note>
-
-            <important>
-                <para>To specify a global index configuration that applies to all collections, you
-                    must create a file called <filename>collection.xconf</filename> and store it in
-                    the system collection: <filename>/db/system/config/db/</filename>. (Note that
-                        <filename>collection.xconf</filename> is a reserved filename.)</para>
-            </important>
+			<para>
+			To configure a given collection - e.g. <filename>/db/foo</filename> - 
+			create a file <filename>collection.xconf</filename> and store it as 
+			<filename>/db/system/config/db/foo/collection.xconf</filename>. 
+			Note the replication of the <filename>/db/foo</filename> hierarchy inside 
+			<filename>/db/system/config/</filename>. Since subcollections will inherit the configuration 
+			of their parent collections, you are not required to specify a configuration for every collection.
+			</para>
+		
+		  <note>
+		  	<para>Due to backward compatibility concerns, the file does not have to be called 
+		  	<filename>collection.xconf</filename>, which is now the preferred file name, 
+		  	but it <emphasis>must</emphasis> have the <filename>.xconf</filename> extension.</para> 	  	
+		  	<para>You can only have <emphasis>one</emphasis> <filename>.xconf</filename> file at each level.</para>
+		  </note> 
 
             <section>
                 <title>Configuration Structure and Syntax</title>
