@@ -348,7 +348,8 @@ public class XPathQueryTest extends XMLTestCase {
             
             query =  "// t:title/text() [ . != 'aaaa' ]";
             result = service.queryResource( "namespaces.xml", query );
-            System.out.println("testStarAxis2 : ========" );        printResult(result);
+            System.out.println("testStarAxisConstraints : ========" );
+            printResult(result);
             assertEquals( "XPath: "+query, 1, result.getSize() );
             
             result = service.queryResource("namespaces.xml", "/t:test/*:section[. &= 'comment']");
@@ -364,24 +365,24 @@ public class XPathQueryTest extends XMLTestCase {
             
             query =  "/ * / * [ t:title ]";
             result = service.queryResource( "namespaces.xml", query );
-            System.out.println("testStarAxis2 : ========" );
+            System.out.println("testStarAxisConstraints : ========" );
             printResult(result);
             assertEquals( "XPath: "+query, 1, result.getSize() );
             
             query =  "/ t:test / t:section [ t:title ]";
             result = service.queryResource( "namespaces.xml", query );
-            System.out.println("testStarAxis2 : ========" );
+            System.out.println("testStarAxisConstraints : ========" );
             printResult(result);
             assertEquals( "XPath: "+query, 1, result.getSize() );
             
             query =  "/ t:test / t:section";
             result = service.queryResource( "namespaces.xml", query );
-            System.out.println("testStarAxis2 : ========" );
+            System.out.println("testStarAxisConstraints : ========" );
             printResult(result);
             assertEquals( "XPath: "+query, 1, result.getSize() );
             
         } catch (XMLDBException e) {
-            System.out.println("testStarAxis(): XMLDBException: "+e);
+            System.out.println("testStarAxisConstraints(): XMLDBException: "+e);
             fail(e.getMessage());
         }
     }
