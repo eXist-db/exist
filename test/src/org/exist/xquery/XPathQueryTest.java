@@ -349,7 +349,7 @@ public class XPathQueryTest extends XMLTestCase {
             query =  "// t:title/text() [ . != 'aaaa' ]";
             result = service.queryResource( "namespaces.xml", query );
             System.out.println("testStarAxisConstraints : ========" );
-            printResult(result);
+            //printResult(result);
             assertEquals( "XPath: "+query, 1, result.getSize() );
             
             result = service.queryResource("namespaces.xml", "/t:test/*:section[. &= 'comment']");
@@ -366,19 +366,19 @@ public class XPathQueryTest extends XMLTestCase {
             query =  "/ * / * [ t:title ]";
             result = service.queryResource( "namespaces.xml", query );
             System.out.println("testStarAxisConstraints : ========" );
-            printResult(result);
+            //printResult(result);
             assertEquals( "XPath: "+query, 1, result.getSize() );
             
             query =  "/ t:test / t:section [ t:title ]";
             result = service.queryResource( "namespaces.xml", query );
             System.out.println("testStarAxisConstraints : ========" );
-            printResult(result);
+            //printResult(result);
             assertEquals( "XPath: "+query, 1, result.getSize() );
             
             query =  "/ t:test / t:section";
             result = service.queryResource( "namespaces.xml", query );
             System.out.println("testStarAxisConstraints : ========" );
-            printResult(result);
+            //printResult(result);
             assertEquals( "XPath: "+query, 1, result.getSize() );
             
         } catch (XMLDBException e) {
@@ -1716,15 +1716,18 @@ public class XPathQueryTest extends XMLTestCase {
             //ResourceSet result = service.query("//SPEECH[SPEAKER=$name]");
             result = service2.query( doc, "//item[stock=$name]");
             
-            System.out.println( "testStaticVariables 1: ========" ); 		printResult(result);
+            System.out.println( "testStaticVariables 1: ========" );
+            printResult(result);
             result = service2.query("$name");
             assertEquals( 1, result.getSize() );
             
-            System.out.println("testStaticVariables 2: ========" ); 		printResult(result);
+            System.out.println("testStaticVariables 2: ========" );
+            printResult(result);
             result = service2.query( doc, "//item[stock=43]");
             assertEquals( 1, result.getSize() );
             
-            System.out.println("testStaticVariables 3: ========" ); 		printResult(result);
+            System.out.println("testStaticVariables 3: ========" );
+            printResult(result);
             result = service2.query( doc, "//item");
             assertEquals( 4, result.getSize() );
             
