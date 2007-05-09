@@ -55,7 +55,7 @@ public class OneParamFunctions extends BasicFunction {
                 ),
         new FunctionSignature(
                 new QName("asin", MathModule.NAMESPACE_URI),
-                "eturns the arcsine value of a number in radians.",
+                "Returns the arcsine value of a number in radians.",
                 new SequenceType[] { new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE) },
                 new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE)
                 ),
