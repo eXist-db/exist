@@ -33,7 +33,7 @@ import org.exist.storage.txn.Txn;
  */
 public interface StreamListener {
 
-	public final static int UNKKNOWN = -1;
+	public final static int UNKNOWN = -1;
 	
 	public final static int STORE = 0;
 	

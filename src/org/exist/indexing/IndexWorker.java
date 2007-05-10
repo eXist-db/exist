@@ -21,18 +21,18 @@
  */
 package org.exist.indexing;
 
-import org.w3c.dom.NodeList;
+import java.util.Map;
+
+import org.exist.collections.Collection;
 import org.exist.dom.DocumentImpl;
 import org.exist.dom.DocumentSet;
-import org.exist.dom.StoredNode;
 import org.exist.dom.NodeProxy;
+import org.exist.dom.StoredNode;
+import org.exist.storage.DBBroker;
+import org.exist.storage.NodePath;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.Occurrences;
-import org.exist.collections.Collection;
-import org.exist.storage.IndexSpec;
-import org.exist.storage.NodePath;
-
-import java.util.Map;
+import org.w3c.dom.NodeList;
 
 /**
  * Provide concurrent access to the index structure. Implements the core operations on the index.
@@ -122,9 +122,10 @@ public interface IndexWorker {
      * Remove all indexes for the given collection, its subcollections and
      * all resources..
      *
-     * @param collection
+     * @param collection The collection to remove
+     * @param broker The broker that will perform the operation
      */
-    void removeCollection(Collection collection);
+    void removeCollection(Collection collection, DBBroker broker);
 
     Occurrences[] scanIndex(DocumentSet docs);
 
