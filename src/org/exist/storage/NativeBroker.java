@@ -950,7 +950,7 @@ public class NativeBroker extends DBBroker {
             //Drop all index entries
             notifyDropIndex(collection);
             // Drop custom indexes
-            indexController.removeCollection(collection);
+            indexController.removeCollection(collection, this);
             if (!isRoot) {
                 // remove from parent collection
             	//TODO : resolve URIs ! (uri.resolve(".."))
@@ -1279,7 +1279,7 @@ public class NativeBroker extends DBBroker {
 						collection.getURI());
         
         notifyDropIndex(collection);
-        indexController.removeCollection(collection);
+        indexController.removeCollection(collection, this);
         
         for (Iterator i = collection.iterator(this); i.hasNext();) {
             final DocumentImpl doc = (DocumentImpl) i.next();
@@ -2752,7 +2752,7 @@ public class NativeBroker extends DBBroker {
     }    
 
     /** check available memory */
-    private void checkAvailableMemory() {
+    public void checkAvailableMemory() {
         if (nodesCount > DEFAULT_NODES_BEFORE_MEMORY_CHECK) {
             final double percent = ((double) run.freeMemory() / (double) run.maxMemory()) * 100;
             if (percent < memMinFree) {

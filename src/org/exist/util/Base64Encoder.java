@@ -143,4 +143,8 @@ public final class Base64Encoder {
             out.getChars(0, out.length(), ch, 0);
         return ch;
     }
+    
+    public void reset() {
+    	out.setLength(0);
+    }
 }

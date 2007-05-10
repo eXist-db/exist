@@ -328,7 +328,7 @@ public class NGramIndexWorker implements IndexWorker {
         ngrams.clear();
     }
 
-    public void removeCollection(Collection collection) {
+    public void removeCollection(Collection collection, DBBroker broker) {
         if (LOG.isDebugEnabled())
             LOG.debug("Dropping NGram index for collection " + collection.getURI());
         final Lock lock = index.db.getLock();
@@ -473,14 +473,14 @@ public class NGramIndexWorker implements IndexWorker {
                 }
             }
             if (reindexRequired) {
-                StoredNode top = null;
-                StoredNode next = node;
-                while (next != null) {
-                    if (config.get(next.getQName()) != null)
-                        top = next;
-                    next = (StoredNode) next.getParentNode();
+                StoredNode topMost = null;
+                StoredNode currentNode = node;
+                while (currentNode != null) {
+                    if (config.get(currentNode.getQName()) != null)
+                    	topMost = currentNode;
+                    currentNode = (StoredNode) currentNode.getParentNode();
                 }
-                return top;
+                return topMost;
             }
         }
         return null;

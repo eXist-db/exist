@@ -712,6 +712,12 @@ public abstract class DBBroker extends Observable {
 	 * 
 	 */
 	public abstract void cleanUpTempResources();
+	
+	
+	/** Convenience method that allows to check available memory during broker-related processes.
+	 * This method should eventually trigger flush() events.
+	 */
+	public abstract void checkAvailableMemory();
 
 	/**
 	 * 

@@ -53,7 +53,7 @@ public class IndexController {
 
     protected StoredNode reindexNode = null;
     
-    protected int currentMode = StreamListener.UNKKNOWN;
+    protected int currentMode = StreamListener.UNKNOWN;
     
     public IndexController(DBBroker broker) {
         IndexWorker[] workers = broker.getBrokerPool().getIndexManager().getWorkers();
@@ -291,11 +291,11 @@ public class IndexController {
      *
      * @param collection the collection to remove
      */
-    public void removeCollection(Collection collection) {
+    public void removeCollection(Collection collection, DBBroker broker) {
         IndexWorker indexWorker;
         for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
             indexWorker = (IndexWorker) i.next();
-            indexWorker.removeCollection(collection);
+            indexWorker.removeCollection(collection, broker);
         }
     }
 }
