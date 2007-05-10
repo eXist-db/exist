@@ -1139,19 +1139,20 @@ public class CollectionXConf
 			
 			fulltext.append(System.getProperty("line.separator"));
 			
-			
-			for(int i = 0; i < xpaths.length; i++)
-			{
-				fulltext.append('\t');
-				
-				fulltext.append("<");
-				fulltext.append(xpaths[i].getAction());
-				fulltext.append(" path=\"");
-				fulltext.append(xpaths[i].getXPath());
-				fulltext.append("\"/>");
-				
-				fulltext.append(System.getProperty("line.separator"));
-			}
+            // Patch 1694080 prevents NPE
+            if (xpaths != null ) {
+                for(int i = 0; i < xpaths.length; i++) {
+                    fulltext.append('\t');
+                    
+                    fulltext.append("<");
+                    fulltext.append(xpaths[i].getAction());
+                    fulltext.append(" path=\"");
+                    fulltext.append(xpaths[i].getXPath());
+                    fulltext.append("\"/>");
+                    
+                    fulltext.append(System.getProperty("line.separator"));
+                }
+            }
 			
 			fulltext.append("</fulltext>");
 			
