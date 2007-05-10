@@ -70,9 +70,16 @@ public class SourceFactory {
             File f = new File(contextPath + File.separatorChar + location);
             if(!f.canRead())
             {
-                f = new File(location);
-                if(!f.canRead())
-                    throw new FileNotFoundException("cannot read module source from file at " + f.getAbsolutePath());
+                File f2 = new File(location);
+                if(!f2.canRead()){
+                    throw new FileNotFoundException(
+                        "cannot read module source from file at " + location 
+                        + ". Tried " + f.getAbsolutePath() 
+                        + " and " + f2.getAbsolutePath() );
+                }
+                else {
+                	f = f2;
+                }
             }
             location = f.toURI().toASCIIString();
             source = new FileSource(f, "UTF-8", checkXQEncoding);
