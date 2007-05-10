@@ -108,6 +108,16 @@ public class UserDefinedFunction extends Function {
 			var = new LocalVariable(varName);
 			var.setValue(currentArguments[j]);
 			context.declareVariableBinding(var);
+
+	        int actualCardinality;
+	        if (currentArguments[j].isEmpty()) actualCardinality = Cardinality.EMPTY;
+	        else if (currentArguments[j].hasMany()) actualCardinality = Cardinality.MANY;
+	        else actualCardinality = Cardinality.ONE;
+	
+			if (!Cardinality.checkCardinality(getSignature().getArgumentTypes()[j].getCardinality(), actualCardinality))
+ 				throw new XPathException(getASTNode(), "Invalid cardinality for parameter $" + varName +  
+ 						". Expected " + Cardinality.getDescription(getSignature().getArgumentTypes()[j].getCardinality()) + 
+ 						", got " + currentArguments[j].getItemCount());
 		}
 		Sequence result = body.eval(contextSequence, contextItem);
         
