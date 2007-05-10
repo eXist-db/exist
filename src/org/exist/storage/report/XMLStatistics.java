@@ -81,7 +81,7 @@ public class XMLStatistics {
 		db = (BFile) conf.getProperty(CollectionStore.FILE_KEY_IN_CONFIG);
 		genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "Collections storage ("+ db.getFile().getName() + ")");
 		DOMFile dom = (DOMFile) conf.getProperty(DOMFile.FILE_KEY_IN_CONFIG);
-		genBufferDetails(dom.getIndexBufferStats(), dom.getDataBufferStats(), "Resource storage ("+ db.getFile().getName() + ")");
+		genBufferDetails(dom.getIndexBufferStats(), dom.getDataBufferStats(), "Resource storage ("+ dom.getFile().getName() + ")");
 		db = (BFile) conf.getProperty(NativeElementIndex.FILE_KEY_IN_CONFIG);
 		genBufferDetails(db.getIndexBufferStats(), db.getDataBufferStats(), "Structural index ("+ db.getFile().getName() + ")");
 		db = (BFile) conf.getProperty(NativeValueIndex.FILE_KEY_IN_CONFIG);
