@@ -345,42 +345,57 @@ public class XPathQueryTest extends XMLTestCase {
             XQueryService service =
                     storeXMLStringAndGetQueryService("namespaces.xml", namespaces);
             service.setNamespace("t", "http://www.foo.com");
-            
-            query =  "// t:title/text() [ . != 'aaaa' ]";
-            result = service.queryResource( "namespaces.xml", query );
             System.out.println("testStarAxisConstraints : ========" );
-            //printResult(result);
-            assertEquals( "XPath: "+query, 1, result.getSize() );
-            
-            result = service.queryResource("namespaces.xml", "/t:test/*:section[. &= 'comment']");
-            assertEquals(1, result.getSize());
-            
-            result = service.queryResource("namespaces.xml", "/t:test/t:*[. &= 'comment']");
-            assertEquals(1, result.getSize());
-            result = service.queryResource("namespaces.xml", "/t:test/t:section[. &= 'comment']");
-            assertEquals(1, result.getSize());
-            
-            result = service.queryResource("namespaces.xml", "/t:test/t:section/*[. &= 'comment']");
-            assertEquals("", 1, result.getSize());
-            
-            query =  "/ * / * [ t:title ]";
-            result = service.queryResource( "namespaces.xml", query );
+
+            query = "// t:title/text() [ . != 'aaaa' ]";
+            result = service.queryResource( "namespaces.xml", query);
+            printResult(result);
+            assertEquals("XPath: "+query, 1, result.getSize() );
             System.out.println("testStarAxisConstraints : ========" );
-            //printResult(result);
-            assertEquals( "XPath: "+query, 1, result.getSize() );
-            
-            query =  "/ t:test / t:section [ t:title ]";
-            result = service.queryResource( "namespaces.xml", query );
+
+            query = "/t:test/*:section[. &= 'comment']";
+            result = service.queryResource("namespaces.xml", query);
+            printResult(result);
+            assertEquals("XPath: "+query, 1, result.getSize());
             System.out.println("testStarAxisConstraints : ========" );
-            //printResult(result);
-            assertEquals( "XPath: "+query, 1, result.getSize() );
-            
-            query =  "/ t:test / t:section";
-            result = service.queryResource( "namespaces.xml", query );
+
+            query = "/t:test/t:*[. &= 'comment']";
+            result = service.queryResource("namespaces.xml", query);
+            printResult(result);
+            assertEquals("XPath: "+query, 1, result.getSize());
             System.out.println("testStarAxisConstraints : ========" );
-            //printResult(result);
-            assertEquals( "XPath: "+query, 1, result.getSize() );
-            
+
+            query = "/t:test/t:section[. &= 'comment']";
+            result = service.queryResource("namespaces.xml", query);
+            printResult(result);
+            assertEquals("XPath: "+query, 1, result.getSize());
+            System.out.println("testStarAxisConstraints : ========" );
+
+            query = "/t:test/t:section/*[. &= 'comment']";
+            result = service.queryResource("namespaces.xml", query);
+            printResult(result); 
+            assertEquals("XPath: "+query, 1, result.getSize());
+            System.out.println("testStarAxisConstraints : ========" );
+
+            query = "/ * / * [ t:title ]";
+            result = service.queryResource( "namespaces.xml", query);
+            printResult(result);
+            assertEquals("XPath: "+query, 1, result.getSize() );
+            System.out.println("testStarAxisConstraints : ========" );
+         
+            query = "/ t:test / t:section [ t:title ]";
+            result = service.queryResource( "namespaces.xml", query);
+            printResult(result);
+            System.out.println("g) 1 / " +  result.getSize());
+            assertEquals("XPath: "+query, 1, result.getSize() );
+            System.out.println("testStarAxisConstraints : ========" );
+
+            query = "/ t:test / t:section";
+            result = service.queryResource( "namespaces.xml", query);
+            printResult(result);
+            System.out.println("h) 1 / " +  result.getSize());
+            assertEquals("XPath: "+query, 1, result.getSize() );
+            System.out.println("testStarAxisConstraints : ========" );        
         } catch (XMLDBException e) {
             System.out.println("testStarAxisConstraints(): XMLDBException: "+e);
             fail(e.getMessage());
