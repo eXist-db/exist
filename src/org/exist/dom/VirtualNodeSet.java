@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2007 The eXist team
+ * Copyright (C) 2001-2007 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -77,9 +77,9 @@ public class VirtualNodeSet extends AbstractNodeSet {
      * @param context a <code>NodeSet</code> value
      */
     public VirtualNodeSet(int axis, NodeTest test, int contextId, NodeSet context) {
-	this.axis = axis;
-	this.test = test;
-	this.context = context;
+        this.axis = axis;
+        this.test = test;
+        this.context = context;
         this.contextId = contextId;
     }
 
@@ -90,16 +90,16 @@ public class VirtualNodeSet extends AbstractNodeSet {
      * @return a <code>boolean</code> value
      */
     public boolean contains(NodeProxy p) {
-	NodeProxy first = getFirstParent(p, null, (axis == Constants.SELF_AXIS), 0);
-	// Timo Boehme: getFirstParent returns now only real parents
-	//              therefore test if node is child of context
+        NodeProxy first = getFirstParent(p, null, (axis == Constants.SELF_AXIS), 0);
+        // Timo Boehme: getFirstParent returns now only real parents
+        //              therefore test if node is child of context
         if (first != null) {
             return true;
-	}
-//	if (context.get(p.getDocument(), p.getNodeId().getParentId()) != null) {
-//            return true;
-//	}
-        return false;           
+        }
+        //	if (context.get(p.getDocument(), p.getNodeId().getParentId()) != null) {
+        //            return true;
+        //	}
+        return false; 
     }
 
     /**
@@ -108,14 +108,14 @@ public class VirtualNodeSet extends AbstractNodeSet {
      * @param predicate a <code>boolean</code> value
      */
     public void setInPredicate(boolean predicate) {
-	inPredicate = predicate;
+        inPredicate = predicate;
     }
 
     /* (non-Javadoc)
      * @see org.exist.dom.AbstractNodeSet#getDocumentSet()
      */
     public DocumentSet getDocumentSet() {
-	return context.getDocumentSet();
+        return context.getDocumentSet();
     }
 
     /**
@@ -137,7 +137,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
      * @return a <code>NodeProxy</code> value
      */
     private NodeProxy getFirstParent(NodeProxy node, NodeProxy first,
-				     boolean includeSelf, int recursions) {
+                                     boolean includeSelf, int recursions) {
         return getFirstParent(node, first, includeSelf, true, recursions);
     }
 
@@ -152,110 +152,110 @@ public class VirtualNodeSet extends AbstractNodeSet {
      * @return a <code>NodeProxy</code> value
      */
     private NodeProxy getFirstParent(NodeProxy node, NodeProxy first,
-				     boolean includeSelf, boolean directParent, int recursions) {
+                                     boolean includeSelf, boolean directParent, int recursions) {
         
         NodeId pid = node.getNodeId().getParentId();
         
         /* if the node has no parent, i.e. pid == -1, we still need to 
-	 * complete this method to check if we have found a potential parent
-	 * in one of the iterations before.
+         * complete this method to check if we have found a potential parent
+         * in one of the iterations before.
          */
-	NodeProxy parent;
-	// check if the start-node should be included, e.g. to process an
-	// expression like *[. = 'xxx']
-	if (recursions == 0 && includeSelf && test.matches(node)) {
-	    if (axis == Constants.CHILD_AXIS) {
-		// if we're on the child axis, test if
-		// the node is a direct child of the context node
+        NodeProxy parent;
+        // check if the start-node should be included, e.g. to process an
+        // expression like *[. = 'xxx']
+        if (recursions == 0 && includeSelf && test.matches(node)) {
+            if (axis == Constants.CHILD_AXIS) {
+                // if we're on the child axis, test if
+                // the node is a direct child of the context node
                 parent = context.get(node.getDocument(), pid);
-		if (parent != null) {
-		    node.copyContext(parent);
-		    if (useSelfAsContext && inPredicate) {
-			node.addContextNode(contextId, node);
-		    } else if (inPredicate)
-			node.addContextNode(contextId, parent);
-		    return node;
-		}
-	    } else {
-		// descendant axis: remember the node and continue 
-		first = node;
-	    }
-	}
+                if (parent != null) {
+                    node.copyContext(parent);
+                    if (useSelfAsContext && inPredicate) {
+                        node.addContextNode(contextId, node);
+                    } else if (inPredicate)
+                        node.addContextNode(contextId, parent);
+                    return node;
+                }
+            } else {
+                // descendant axis: remember the node and continue 
+                first = node;
+            }
+        }
         
-	// if this is the first call to this method, remember the first 
-	// parent node and re-evaluate the method. We can't just return 
-	// the first parent as we need a parent that is actually contained 
-	// in the context set. We thus call the method again to complete.
+        // if this is the first call to this method, remember the first 
+        // parent node and re-evaluate the method. We can't just return 
+        // the first parent as we need a parent that is actually contained 
+        // in the context set. We thus call the method again to complete.
         if (first == null) {
             if (pid == NodeId.DOCUMENT_NODE) {
                 // given node was already document element -> no parent
                 return null;
             }
             first = new NodeProxy(node.getDocument(), pid, Node.ELEMENT_NODE, 
-				  StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
+                                  StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
             // if we are on the self axis, check if the first parent can be selected
             if (axis == Constants.DESCENDANT_SELF_AXIS) {
-		    parent = context.get(first.getDocument(), pid);
-		    if (parent != null && test.matches(parent)) {
-			first.copyContext(parent);
-			if (useSelfAsContext && inPredicate) {
-			    first.addContextNode(contextId, first);
-			} else if (inPredicate)
-			    first.addContextNode(contextId, parent);
-			return first;
-		    }
-		}
+                parent = context.get(first.getDocument(), pid);
+                if (parent != null && test.matches(parent)) {
+                    first.copyContext(parent);
+                    if (useSelfAsContext && inPredicate) {
+                        first.addContextNode(contextId, first);
+                    } else if (inPredicate)
+                        first.addContextNode(contextId, parent);
+                    return first;
+                }
+            }
             // Timo Boehme: we need a real parent (child from context)
             return getFirstParent(first, first, false, directParent, recursions + 1);
         }
         
-	// is pid member of the context set?
-	parent = context.get(node.getDocument(), pid);
+        // is pid member of the context set?
+        parent = context.get(node.getDocument(), pid);
 
-	if (parent != null && test.matches(node)) {
-	    if (axis != Constants.CHILD_AXIS) {
-		// if we are on the descendant-axis, we return the first node 
-		// we found while walking bottom-up.
-		// Otherwise, we return the last one (which is node)
-		node = first;
-	    }
-	    node.copyContext(parent);
-	    if (useSelfAsContext && inPredicate) {
-		node.addContextNode(contextId, node);
-	    } else if (inPredicate) {
-		node.addContextNode(contextId, parent);
-	    }
-	    // Timo Boehme: we return the ancestor which is child of context			
-	    return node;
+        if (parent != null && test.matches(node)) {
+            if (axis != Constants.CHILD_AXIS) {
+                // if we are on the descendant-axis, we return the first node 
+                // we found while walking bottom-up.
+                // Otherwise, we return the last one (which is node)
+                node = first;
+            }
+            node.copyContext(parent);
+            if (useSelfAsContext && inPredicate) {
+                node.addContextNode(contextId, node);
+            } else if (inPredicate) {
+                node.addContextNode(contextId, parent);
+            }
+            // Timo Boehme: we return the ancestor which is child of context			
+            return node;
         } else if (pid == NodeId.DOCUMENT_NODE) {
             // no matching node has been found in the context
             return null;
-	} else if (directParent && axis == Constants.CHILD_AXIS && recursions == 1) {
-	    // break here if the expression is like /*/n          
-	    return null;        
-	} else {
-	    // continue for expressions like //*/n or /*//n
-	    parent = new NodeProxy(node.getDocument(), pid, Node.ELEMENT_NODE, 
-				   StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
+        } else if (directParent && axis == Constants.CHILD_AXIS && recursions == 1) {
+            // break here if the expression is like /*/n          
+            return null;        
+        } else {
+            // continue for expressions like //*/n or /*//n
+            parent = new NodeProxy(node.getDocument(), pid, Node.ELEMENT_NODE, 
+                                   StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
             return getFirstParent(parent, first, false, false, recursions + 1);
-	}
+        }
     }
 
     private void addInternal(NodeProxy p) {
-	if (realSet == null)
-	    realSet = new ExtArrayNodeSet(256);
-	knownIsEmptyCardinality = true;
-	if (isEmpty) {
-	    isEmpty = false;
-	    knownHasOneCardinality = true;
-	    hasOne= true;
-	} else if (hasOne) {
-	    hasOne = false;
-	    knownHasManyCardinality = true;
-	    hasMany = true;	
-	}
-	realSet.add(p);
-	realSetIsComplete = false;
+        if (realSet == null)
+            realSet = new ExtArrayNodeSet(256);
+        knownIsEmptyCardinality = true;
+        if (isEmpty) {
+            isEmpty = false;
+            knownHasOneCardinality = true;
+            hasOne= true;
+        } else if (hasOne) {
+            hasOne = false;
+            knownHasManyCardinality = true;
+            hasMany = true;	
+        }
+        realSet.add(p);
+        realSetIsComplete = false;
     }
 
     /**
@@ -268,12 +268,12 @@ public class VirtualNodeSet extends AbstractNodeSet {
      * @return a <code>NodeProxy</code> value
      */
     public NodeProxy parentWithChild(NodeProxy proxy, boolean directParent, boolean includeSelf,
-				     int level) {
-	NodeProxy first = getFirstParent(proxy, null, includeSelf, directParent, 0);
-	if (first != null)
-	    //TODO : should we set an empty cardinality here ?
-	    addInternal(first);
-	return first;
+                                     int level) {
+        NodeProxy first = getFirstParent(proxy, null, includeSelf, directParent, 0);
+        if (first != null)
+            //TODO : should we set an empty cardinality here ?
+            addInternal(first);
+        return first;
     }
 
     /**
@@ -287,10 +287,10 @@ public class VirtualNodeSet extends AbstractNodeSet {
      */
     public NodeProxy parentWithChild(DocumentImpl doc, NodeId nodeId, boolean directParent, boolean includeSelf) {
     	NodeProxy first = getFirstParent(new NodeProxy(doc, nodeId), null, includeSelf, directParent, 0);
-	if (first != null)
-	    //TODO : should we set an empty cardinality here ?
-	    addInternal(first);
-	return first;
+        if (first != null)
+            //TODO : should we set an empty cardinality here ?
+            addInternal(first);
+        return first;
     }
 
     /**
@@ -299,67 +299,67 @@ public class VirtualNodeSet extends AbstractNodeSet {
      * @return a <code>NodeSet</code> value
      */
     private final NodeSet getNodes() {
-	ExtArrayNodeSet result = new ExtArrayNodeSet();
-	for (Iterator i = context.iterator(); i.hasNext();) {
-	    NodeProxy proxy = (NodeProxy) i.next();            
-	    if (proxy.getNodeId() == NodeId.DOCUMENT_NODE) {
-		if(proxy.getDocument().getResourceType() == DocumentImpl.BINARY_FILE) {
-		    // skip binary resources
-		    continue;
-		}
+        ExtArrayNodeSet result = new ExtArrayNodeSet();
+        for (Iterator i = context.iterator(); i.hasNext();) {
+            NodeProxy proxy = (NodeProxy) i.next();            
+            if (proxy.getNodeId() == NodeId.DOCUMENT_NODE) {
+                if(proxy.getDocument().getResourceType() == DocumentImpl.BINARY_FILE) {
+                    // skip binary resources
+                    continue;
+                }
 
-		NodeList cl = proxy.getDocument().getChildNodes();
-		for (int j = 0; j < cl.getLength(); j++) {
-		    StoredNode node = (StoredNode) cl.item(j);
-		    NodeProxy p = new NodeProxy(node);
-		    if (test.matches(p)) {
-			// fixme! check for unwanted 
-			// side effects. /ljo
-			//p.deepCopyContext(proxy);
+                NodeList cl = proxy.getDocument().getChildNodes();
+                for (int j = 0; j < cl.getLength(); j++) {
+                    StoredNode node = (StoredNode) cl.item(j);
+                    NodeProxy p = new NodeProxy(node);
+                    if (test.matches(p)) {
+                        // fixme! check for unwanted 
+                        // side effects. /ljo
+                        //p.deepCopyContext(proxy);
 
-			if (useSelfAsContext && inPredicate) {
-			    p.addContextNode(contextId, p);
-			}
-			result.add(p);
-		    }
-		    if (node.getNodeType() == Node.ELEMENT_NODE &&
-			(axis == Constants.DESCENDANT_AXIS ||
-			 axis == Constants.DESCENDANT_SELF_AXIS ||
-			 axis == Constants.DESCENDANT_ATTRIBUTE_AXIS)) {
-			// note: we create a copy of the docElemProxy here to be used
-			// as context when traversing the tree.
-			NodeProxy contextNode = new NodeProxy(p);
-			contextNode.deepCopyContext(proxy);
-			//TODO : is this StoredNode construction necessary ?
-			Iterator domIter = contextNode.getDocument().getBroker().getNodeIterator(new StoredNode(contextNode));
-			domIter.next();
-			contextNode.setMatches(proxy.getMatches());
-			addChildren(contextNode, result, node, domIter, 0);
-		    }
-		}
-		continue;
-	    } else {
-		if(test.matches(proxy)) {
-		    if (axis == Constants.SELF_AXIS ||
-			axis == Constants.ANCESTOR_SELF_AXIS || 
-			axis == Constants.DESCENDANT_SELF_AXIS) {
-			if(useSelfAsContext && inPredicate) {
-			    proxy.addContextNode(contextId, proxy);
-			}
-			result.add(proxy);
-		    }
-		} 
-		if (axis != Constants.SELF_AXIS) {
-		    //TODO : is this StroredNode construction necessary ?
-		    Iterator domIter = proxy.getDocument().getBroker().getNodeIterator(new StoredNode(proxy));
-		    StoredNode node = (StoredNode) domIter.next();
-		    node.setOwnerDocument(proxy.getDocument());
-		    node.setNodeId(proxy.getNodeId());
-		    addChildren(proxy, result, node, domIter, 0);
-		}
-	    }
-	}
-	return result;
+                        if (useSelfAsContext && inPredicate) {
+                            p.addContextNode(contextId, p);
+                        }
+                        result.add(p);
+                    }
+                    if (node.getNodeType() == Node.ELEMENT_NODE &&
+                        (axis == Constants.DESCENDANT_AXIS ||
+                         axis == Constants.DESCENDANT_SELF_AXIS ||
+                         axis == Constants.DESCENDANT_ATTRIBUTE_AXIS)) {
+                        // note: we create a copy of the docElemProxy here to be used
+                        // as context when traversing the tree.
+                        NodeProxy contextNode = new NodeProxy(p);
+                        contextNode.deepCopyContext(proxy);
+                        //TODO : is this StoredNode construction necessary ?
+                        Iterator domIter = contextNode.getDocument().getBroker().getNodeIterator(new StoredNode(contextNode));
+                        domIter.next();
+                        contextNode.setMatches(proxy.getMatches());
+                        addChildren(contextNode, result, node, domIter, 0);
+                    }
+                }
+                continue;
+            } else {
+                if(test.matches(proxy)) {
+                    if (axis == Constants.SELF_AXIS ||
+                        axis == Constants.ANCESTOR_SELF_AXIS || 
+                        axis == Constants.DESCENDANT_SELF_AXIS) {
+                        if(useSelfAsContext && inPredicate) {
+                            proxy.addContextNode(contextId, proxy);
+                        }
+                        result.add(proxy);
+                    }
+                } 
+                if (axis != Constants.SELF_AXIS) {
+                    //TODO : is this StroredNode construction necessary ?
+                    Iterator domIter = proxy.getDocument().getBroker().getNodeIterator(new StoredNode(proxy));
+                    StoredNode node = (StoredNode) domIter.next();
+                    node.setOwnerDocument(proxy.getDocument());
+                    node.setNodeId(proxy.getNodeId());
+                    addChildren(proxy, result, node, domIter, 0);
+                }
+            }
+        }
+        return result;
     }
 	
     /**
@@ -371,38 +371,38 @@ public class VirtualNodeSet extends AbstractNodeSet {
      * @param recursions an <code>int</code> value
      */
     private final void addChildren(NodeProxy contextNode, NodeSet result,
-				   StoredNode node, Iterator iter,
-				   int recursions) {
-	if (node.hasChildNodes()) {
-	    for (int i = 0; i < node.getChildCount(); i++) {
-		StoredNode child = (StoredNode) iter.next();
-		if(child == null)
-		    LOG.debug("CHILD == NULL; doc = " + 
-			      ((DocumentImpl)node.getOwnerDocument()).getURI());
-		if(node.getOwnerDocument() == null)
-		    LOG.debug("DOC == NULL");
-		child.setOwnerDocument((DocumentImpl)node.getOwnerDocument());
-		NodeProxy p = new NodeProxy(child);
-		p.setMatches(contextNode.getMatches());
-		if (test.matches(child)) {
-		    if (((axis == Constants.CHILD_AXIS
-			  || axis == Constants.ATTRIBUTE_AXIS)
-			 && recursions == 0) ||
-			(axis == Constants.DESCENDANT_AXIS
-			 || axis == Constants.DESCENDANT_SELF_AXIS
-			 || axis == Constants.DESCENDANT_ATTRIBUTE_AXIS)) {
-			p.deepCopyContext(contextNode);
-			if (useSelfAsContext && inPredicate) {
-			    p.addContextNode(contextId, p);
-			} else if (inPredicate) {
-			    p.addContextNode(contextId, contextNode);
-			}
+                                   StoredNode node, Iterator iter,
+                                   int recursions) {
+        if (node.hasChildNodes()) {
+            for (int i = 0; i < node.getChildCount(); i++) {
+                StoredNode child = (StoredNode) iter.next();
+                if(child == null)
+                    LOG.debug("CHILD == NULL; doc = " + 
+                              ((DocumentImpl)node.getOwnerDocument()).getURI());
+                if(node.getOwnerDocument() == null)
+                    LOG.debug("DOC == NULL");
+                child.setOwnerDocument((DocumentImpl)node.getOwnerDocument());
+                NodeProxy p = new NodeProxy(child);
+                p.setMatches(contextNode.getMatches());
+                if (test.matches(child)) {
+                    if (((axis == Constants.CHILD_AXIS
+                          || axis == Constants.ATTRIBUTE_AXIS)
+                         && recursions == 0) ||
+                        (axis == Constants.DESCENDANT_AXIS
+                         || axis == Constants.DESCENDANT_SELF_AXIS
+                         || axis == Constants.DESCENDANT_ATTRIBUTE_AXIS)) {
+                        p.deepCopyContext(contextNode);
+                        if (useSelfAsContext && inPredicate) {
+                            p.addContextNode(contextId, p);
+                        } else if (inPredicate) {
+                            p.addContextNode(contextId, contextNode);
+                        }
                         result.add(p);
-		    }
-		}
-		addChildren(contextNode, result, child, iter, recursions + 1);
-	    }
-	}
+                    }
+                }
+                addChildren(contextNode, result, child, iter, recursions + 1);
+            }
+        }
     }
 
     /**
@@ -410,16 +410,16 @@ public class VirtualNodeSet extends AbstractNodeSet {
      *
      */
     public final void realize() {
-	if (realSet != null && realSetIsComplete)
-	    return;
+        if (realSet != null && realSetIsComplete)
+            return;
         realSet = getNodes();
-	knownIsEmptyCardinality = true;
-	knownHasOneCardinality = true;
-	knownHasManyCardinality = true;
-	isEmpty = realSet.isEmpty();
-	hasOne = realSet.hasOne();
-	hasMany = realSet.hasMany();        
-	realSetIsComplete = true;
+        knownIsEmptyCardinality = true;
+        knownHasOneCardinality = true;
+        knownHasManyCardinality = true;
+        isEmpty = realSet.isEmpty();
+        hasOne = realSet.hasOne();
+        hasMany = realSet.hasMany();        
+        realSetIsComplete = true;
     }
 
     /**
@@ -452,7 +452,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
      *
      */
     public void setSelfIsContext() {
-	useSelfAsContext = true;
+        useSelfAsContext = true;
     }
 
     /**
@@ -461,15 +461,15 @@ public class VirtualNodeSet extends AbstractNodeSet {
      * @param contextId an <code>int</code> value
      */
     public void setContextId(int contextId) {
-	this.contextId = contextId;
+        this.contextId = contextId;
     }
 	
     /* (non-Javadoc)
      * @see org.exist.dom.NodeSet#hasIndex()
      */
     public boolean hasIndex() {
-	// Always return false: there's no index
-	return false;
+        // Always return false: there's no index
+        return false;
     }
 
     /* the following methods are normally never called in this context,
@@ -483,9 +483,9 @@ public class VirtualNodeSet extends AbstractNodeSet {
      * @return a <code>boolean</code> value
      */
     public boolean isEmpty() {		
-	if (knownIsEmptyCardinality)
-	    return isEmpty;
-	return getLength() == 0;
+        if (knownIsEmptyCardinality)
+            return isEmpty;
+        return getLength() == 0;
     }
 
     /**
@@ -494,9 +494,9 @@ public class VirtualNodeSet extends AbstractNodeSet {
      * @return a <code>boolean</code> value
      */
     public boolean hasOne() {
-	if (knownHasOneCardinality)
-	    return hasOne;
-	return getLength() == 1;
+        if (knownHasOneCardinality)
+            return hasOne;
+        return getLength() == 1;
     }
 
     /**
@@ -505,9 +505,9 @@ public class VirtualNodeSet extends AbstractNodeSet {
      * @return a <code>boolean</code> value
      */
     public boolean hasMany() {
-	if (knownHasManyCardinality)
-	    return hasMany;
-	return getLength() > 1;
+        if (knownHasManyCardinality)
+            return hasMany;
+        return getLength() > 1;
     }    
 
     /**
@@ -575,8 +575,8 @@ public class VirtualNodeSet extends AbstractNodeSet {
      * @return an <code>int</code> value
      */
     public int getLength() {
-	realize();
-	return realSet.getLength();
+        realize();
+        return realSet.getLength();
     }
 	
     
@@ -586,9 +586,9 @@ public class VirtualNodeSet extends AbstractNodeSet {
      * @return an <code>int</code> value
      */
     public int getItemCount() {
-	//TODO : evaluate both semantics
-	realize();
-	return realSet.getItemCount();
+        //TODO : evaluate both semantics
+        realize();
+        return realSet.getItemCount();
     }
 
     /**
@@ -598,8 +598,8 @@ public class VirtualNodeSet extends AbstractNodeSet {
      * @return a <code>Node</code> value
      */
     public Node item(int pos) {
-	realize();
-	return realSet.item(pos);
+        realize();
+        return realSet.item(pos);
     }
 
     /**
@@ -609,8 +609,8 @@ public class VirtualNodeSet extends AbstractNodeSet {
      * @return a <code>NodeProxy</code> value
      */
     public NodeProxy get(int pos) {
-	realize();
-	return realSet.get(pos);
+        realize();
+        return realSet.get(pos);
     }
 
     /**
@@ -620,8 +620,8 @@ public class VirtualNodeSet extends AbstractNodeSet {
      * @return an <code>Item</code> value
      */
     public Item itemAt(int pos) {
-	realize();
-	return realSet.itemAt(pos);
+        realize();
+        return realSet.itemAt(pos);
     }
 
     /**
@@ -653,24 +653,24 @@ public class VirtualNodeSet extends AbstractNodeSet {
      * @return a <code>NodeSetIterator</code> value
      */
     public NodeSetIterator iterator() {
-	realize();
-	return realSet.iterator();
+        realize();
+        return realSet.iterator();
     }
 
     /* (non-Javadoc)
      * @see org.exist.dom.NodeSet#iterate()
      */
     public SequenceIterator iterate() throws XPathException {
-	realize();
-	return realSet.iterate();
+        realize();
+        return realSet.iterate();
     }
 
     /* (non-Javadoc)
      * @see org.exist.dom.AbstractNodeSet#unorderedIterator()
      */
     public SequenceIterator unorderedIterator() {
-	realize();
-	return realSet.unorderedIterator();
+        realize();
+        return realSet.unorderedIterator();
     }
 	
     /**
@@ -680,8 +680,8 @@ public class VirtualNodeSet extends AbstractNodeSet {
      * @return a <code>NodeSet</code> value
      */
     public NodeSet intersection(NodeSet other) {
-	realize();
-	return realSet.intersection(other);
+        realize();
+        return realSet.intersection(other);
     }
 
     /**
@@ -691,8 +691,8 @@ public class VirtualNodeSet extends AbstractNodeSet {
      * @return a <code>NodeSet</code> value
      */
     public NodeSet union(NodeSet other) {
-	realize();
-	return realSet.union(other);
+        realize();
+        return realSet.union(other);
     }
 
     /**

@@ -1,22 +1,23 @@
-
-/* eXist Open Source Native XML Database
- * Copyright (C) 2000-04,  Wolfgang M. Meier (wolfgang@exist-db.org)
+/*
+ * eXist Open Source Native XML Database
+ * Copyright (C) 2001-2007 The eXist Project
+ * http://exist-db.org
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Library General Public License
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
+ *  
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Library General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Library General Public
- * License along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- *
- * $Id$
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *  
+ *  $Id$
  */
 package org.exist.dom;
 
@@ -59,7 +60,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     private boolean processInReverseOrder = false;
 
     protected AbstractNodeSet() {
-	isEmpty = true;
+        isEmpty = true;
     }
 
     /**
@@ -84,7 +85,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
      * @see org.exist.xquery.value.Sequence#getItemType()
      */
     public int getItemType() {
-	return Type.NODE;
+        return Type.NODE;
     }
 
     /**
@@ -112,7 +113,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
      * @param sizeHint
      */
     public void add(NodeProxy proxy, int sizeHint) {
-	add(proxy);
+        add(proxy);
     }
 
     /**
@@ -120,9 +121,9 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
      * a subtype of node.
      */
     public void add(Item item) throws XPathException {
-	if (!Type.subTypeOf(item.getType(), Type.NODE))
-	    throw new XPathException("item has wrong type");
-	add((NodeProxy) item);
+        if (!Type.subTypeOf(item.getType(), Type.NODE))
+            throw new XPathException("item has wrong type");
+        add((NodeProxy) item);
     }
 
     /**
@@ -133,11 +134,11 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
      * @throws XPathException
      */
     public void addAll(Sequence other) throws XPathException {
-	if (!Type.subTypeOf(other.getItemType(), Type.NODE))
-	    throw new XPathException("sequence argument is not a node sequence");
-	for (SequenceIterator i = other.iterate(); i.hasNext();) {
-	    add(i.nextItem());
-	}
+        if (!Type.subTypeOf(other.getItemType(), Type.NODE))
+            throw new XPathException("sequence argument is not a node sequence");
+        for (SequenceIterator i = other.iterate(); i.hasNext();) {
+            add(i.nextItem());
+        }
     }
 
     /**
@@ -153,11 +154,11 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     public abstract int getLength();
 
     public void setIsCached(boolean cached) {
-	isCached = cached;
+        isCached = cached;
     }
 
     public boolean isCached() {
-	return isCached;
+        return isCached;
     }
 
     /* (non-Javadoc)
@@ -185,13 +186,13 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     public abstract NodeProxy get(NodeProxy p);
 
     public DocumentSet getDocumentSet() {
-	DocumentSet ds = new DocumentSet();
-	NodeProxy p;
-	for(Iterator i = iterator(); i.hasNext(); ) {
-	    p = (NodeProxy)i.next();
-	    ds.add(p.getDocument());
-	}
-	return ds;
+        DocumentSet ds = new DocumentSet();
+        NodeProxy p;
+        for(Iterator i = iterator(); i.hasNext(); ) {
+            p = (NodeProxy)i.next();
+            ds.add(p.getDocument());
+        }
+        return ds;
     }
 
     public Iterator getCollectionIterator() {
@@ -211,7 +212,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
      * @param mode selection mode
      */
     public NodeSet selectParentChild(NodeSet al, int mode) {
-	return selectParentChild(al, mode, Expression.NO_CONTEXT_ID);
+        return selectParentChild(al, mode, Expression.NO_CONTEXT_ID);
     }
 
     /**
@@ -230,7 +231,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
      * will be added to each result of the of the selection.
      */
     public NodeSet selectParentChild(NodeSet al, int mode, int contextId) {
-	return NodeSetHelper.selectParentChild(this, al, mode, contextId);
+        return NodeSetHelper.selectParentChild(this, al, mode, contextId);
     }
 
     /**
@@ -248,11 +249,11 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
      * the set of descendant nodes (descendant-or-self axis)
      * @param contextId used to track context nodes when evaluating predicate
      * expressions. If contextId != {@link Expression#NO_CONTEXT_ID}, the current context
-     * will be added to each result of the of the selection.
-     *
+     * will be added to each result of the selection. 
+     * 
      */
     public NodeSet selectAncestorDescendant(NodeSet al,	int mode, boolean includeSelf, int contextId) {
-	return NodeSetHelper.selectAncestorDescendant(this, al, mode, includeSelf, contextId);
+        return NodeSetHelper.selectAncestorDescendant(this, al, mode, includeSelf, contextId);
     }
 
     /**
@@ -265,11 +266,11 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
      * @param contextId
      */
     public NodeSet selectAncestors(NodeSet descendants, boolean includeSelf, int contextId) {
-	return NodeSetHelper.selectAncestors(this, descendants, includeSelf, contextId);
+        return NodeSetHelper.selectAncestors(this, descendants, includeSelf, contextId);
     }
 
     public NodeSet selectFollowing(NodeSet fl) throws XPathException {
-	return NodeSetHelper.selectFollowing(fl, this);
+        return NodeSetHelper.selectFollowing(fl, this);
     }
 
     public NodeSet selectPreceding(NodeSet pl) throws XPathException {
@@ -302,18 +303,18 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 
     public NodeProxy parentWithChild(DocumentImpl doc, NodeId nodeId, boolean directParent, boolean includeSelf) {
         NodeProxy temp = get(doc, nodeId);
-	if (includeSelf && temp != null)
-	    return temp;
+        if (includeSelf && temp != null)
+            return temp;
         nodeId = nodeId.getParentId();
         while (nodeId != null) {
             temp = get(doc, nodeId);
-	    if (temp != null)
-		return temp;
-	    else if (directParent)
-		return null;
-	    nodeId = nodeId.getParentId();
-	}
-	return null;
+            if (temp != null)
+                return temp;
+            else if (directParent)
+                return null;
+            nodeId = nodeId.getParentId();
+        }
+        return null;
     }
 
     /**
@@ -328,7 +329,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
      * the node itself is contained in the node set.
      */
     public NodeProxy parentWithChild(NodeProxy proxy, boolean directParent,	boolean includeSelf, int level) {
-	return parentWithChild(proxy.getDocument(), proxy.getNodeId(), directParent, includeSelf);
+        return parentWithChild(proxy.getDocument(), proxy.getNodeId(), directParent, includeSelf);
     }
 
     /**
@@ -349,7 +350,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
                 if (parent == null || parent.getDocument().getDocId() != current.getDocument().getDocId() ||
                     !parent.getNodeId().equals(parentID)) {
                     parent = new NodeProxy(current.getDocument(), parentID, Node.ELEMENT_NODE,
-                        StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
+                                           StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
                 }
                 if (Expression.NO_CONTEXT_ID != contextId) {
                     parent.addContextNode(contextId, current);
@@ -359,7 +360,12 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
                 parent.addMatches(current);
                 parents.add(parent);
             }
-
+            //if (parentID == NodeId.DOCUMENT_NODE &&
+            //  !current.getDocument().getCollection().isTempCollection()) {
+            // fixme! merge with above? Causing recursive failures reported by Adam /ljo
+            //	System.out.println("AbstractNodeSet::getParents() NodeId.DOCUMENT_NODE : type " + current.getNodeId());
+            //parents.add(current);
+            //}
         }
 
 	    return parents;
@@ -373,31 +379,31 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
      * @return a <code>NodeSet</code> value
      */
     public NodeSet getAncestors(int contextId, boolean includeSelf) {
-	ExtArrayNodeSet ancestors = new ExtArrayNodeSet();
-	for (Iterator i = iterator(); i.hasNext();) {
-	    NodeProxy current = (NodeProxy) i.next();
-	    if (includeSelf) {
-		if (Expression.NO_CONTEXT_ID != contextId)
-		    current.addContextNode(contextId, current);
-		ancestors.add(current);
-	    }
-	    NodeId parentID = current.getNodeId().getParentId();
-	    while (parentID != null) {
-		//Filter out the temporary nodes wrapper element
-		if (parentID != NodeId.DOCUMENT_NODE &&
-		    !(parentID.getTreeLevel() == 1  && current.getDocument().getCollection().isTempCollection())) {
-		    NodeProxy parent = new NodeProxy(current.getDocument(), parentID, Node.ELEMENT_NODE);
-		    if (Expression.NO_CONTEXT_ID != contextId)
-			parent.addContextNode(contextId, current);
-		    else
-			parent.copyContext(current);
-		    ancestors.add(parent);
-		}
-		parentID = parentID.getParentId();
-	    }
-	}
+        ExtArrayNodeSet ancestors = new ExtArrayNodeSet();
+        for (Iterator i = iterator(); i.hasNext();) {
+            NodeProxy current = (NodeProxy) i.next();
+            if (includeSelf) {
+                if (Expression.NO_CONTEXT_ID != contextId)
+                    current.addContextNode(contextId, current);
+                ancestors.add(current);
+            }
+            NodeId parentID = current.getNodeId().getParentId();
+            while (parentID != null) {
+                //Filter out the temporary nodes wrapper element
+                if (parentID != NodeId.DOCUMENT_NODE &&
+                    !(parentID.getTreeLevel() == 1  && current.getDocument().getCollection().isTempCollection())) {
+                    NodeProxy parent = new NodeProxy(current.getDocument(), parentID, Node.ELEMENT_NODE);
+                    if (Expression.NO_CONTEXT_ID != contextId)
+                        parent.addContextNode(contextId, current);
+                    else
+                        parent.copyContext(current);
+                    ancestors.add(parent);
+                }
+                parentID = parentID.getParentId();
+            }
+        }
         ancestors.mergeDuplicates();
-	return ancestors;
+        return ancestors;
     }
 
     /**
@@ -409,7 +415,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
      * @param doc
      */
     public int getSizeHint(DocumentImpl doc) {
-	return Constants.NO_SIZE_HINT;
+        return Constants.NO_SIZE_HINT;
     }
 
     /**
@@ -428,15 +434,15 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
                 r.add(l);
             }
         }
-//        for (Iterator i = other.iterator(); i.hasNext();) {
-//            l = (NodeProxy) i.next();
-//            if (contains(l)) {
-//                if ((p = r.get(l)) != null) {
-//                    p.addMatches(l);
-//                } else
-//                    r.add(l);
-//            }
-//        }
+        //        for (Iterator i = other.iterator(); i.hasNext();) {
+        //            l = (NodeProxy) i.next();
+        //            if (contains(l)) {
+        //                if ((p = r.get(l)) != null) {
+        //                    p.addMatches(l);
+        //                } else
+        //                    r.add(l);
+        //            }
+        //        }
         return r;
     }
 
@@ -465,15 +471,15 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     }
 
     public NodeSet except(NodeSet other) {
-	AVLTreeNodeSet r = new AVLTreeNodeSet();
-	NodeProxy l;
-	for (Iterator i = iterator(); i.hasNext();) {
-	    l = (NodeProxy) i.next();
-	    if (!other.contains(l)) {
-		r.add(l);
-	    }
-	}
-	return r;
+        AVLTreeNodeSet r = new AVLTreeNodeSet();
+        NodeProxy l;
+        for (Iterator i = iterator(); i.hasNext();) {
+            l = (NodeProxy) i.next();
+            if (!other.contains(l)) {
+                r.add(l);
+            }
+        }
+        return r;
     }
 
     public NodeSet filterDocuments(NodeSet otherSet) {
@@ -503,18 +509,18 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
      */
     public NodeSet union(NodeSet other) {
         ExtArrayNodeSet result = new ExtArrayNodeSet();
-	result.addAll(other);
-	NodeProxy p, c;
-	for (Iterator i = iterator(); i.hasNext();) {
-	    p = (NodeProxy) i.next();
-	    if (other.contains(p)) {
-		c = other.get(p);
-		if(c != null)
-		    c.addMatches(p);
-	    } else
-		result.add(p);
-	}
-	return result;
+        result.addAll(other);
+        NodeProxy p, c;
+        for (Iterator i = iterator(); i.hasNext();) {
+            p = (NodeProxy) i.next();
+            if (other.contains(p)) {
+                c = other.get(p);
+                if(c != null)
+                    c.addMatches(p);
+            } else
+                result.add(p);
+        }
+        return result;
     }
 
     /**
@@ -559,21 +565,21 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
      * @see org.exist.xquery.value.Sequence#toNodeSet()
      */
     public NodeSet toNodeSet() throws XPathException {
-	return this;
+        return this;
     }
 
     /* (non-Javadoc)
      * @see org.exist.dom.NodeSet#getState()
      */
     public int getState() {
-	return 1;
+        return 1;
     }
 
     /* (non-Javadoc)
      * @see org.exist.dom.NodeSet#hasChanged(int)
      */
     public boolean hasChanged(int previousState) {
-	return false;
+        return false;
     }
 
     /**
@@ -586,74 +592,74 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
      * @see org.exist.xquery.ValueComparison
      */
     public int getIndexType() {
-	//Is the index type initialized ?
-	if (indexType == Type.ANY_TYPE) {
-	    hasTextIndex = true;
-	    hasMixedContent = true;
-	    for (Iterator i = iterator(); i.hasNext();) {
-		NodeProxy node = (NodeProxy) i.next();
-		if (node.getDocument().getCollection().isTempCollection()) {
-		    //Temporary nodes return default values
-		    indexType = Type.ITEM;
-		    hasTextIndex = false;
-		    hasMixedContent = false;
-		    break;
-		}
-		int nodeIndexType = node.getIndexType();
-		//Refine type
-		//TODO : use common subtype
-		if (indexType == Type.ANY_TYPE) {
-		    indexType = nodeIndexType;
-		} else {
-		    //Broaden type
-		    //TODO : use common supertype
-		    if (indexType != nodeIndexType)
-			indexType = Type.ITEM;
-		}
-		if(!node.hasTextIndex()) {
-		    hasTextIndex = false;
-		}
-		if(!node.hasMixedContent()) {
-		    hasMixedContent = false;
-		}
-	    }
-	}
-	return indexType;
+        //Is the index type initialized ?
+        if (indexType == Type.ANY_TYPE) {
+            hasTextIndex = true;
+            hasMixedContent = true;
+            for (Iterator i = iterator(); i.hasNext();) {
+                NodeProxy node = (NodeProxy) i.next();
+                if (node.getDocument().getCollection().isTempCollection()) {
+                    //Temporary nodes return default values
+                    indexType = Type.ITEM;
+                    hasTextIndex = false;
+                    hasMixedContent = false;
+                    break;
+                }
+                int nodeIndexType = node.getIndexType();
+                //Refine type
+                //TODO : use common subtype
+                if (indexType == Type.ANY_TYPE) {
+                    indexType = nodeIndexType;
+                } else {
+                    //Broaden type
+                    //TODO : use common supertype
+                    if (indexType != nodeIndexType)
+                        indexType = Type.ITEM;
+                }
+                if(!node.hasTextIndex()) {
+                    hasTextIndex = false;
+                }
+                if(!node.hasMixedContent()) {
+                    hasMixedContent = false;
+                }
+            }
+        }
+        return indexType;
     }
 
     public boolean hasTextIndex() {
-	if(indexType == Type.ANY_TYPE) {
-	    getIndexType();
-	    //		    int type;
-	    //		    NodeProxy p;
-	    //			for (Iterator i = iterator(); i.hasNext();) {
-	    //			    p = (NodeProxy) i.next();
-	    //			    hasTextIndex = p.hasTextIndex();
-	    //			    if(!hasTextIndex)
-	    //			        break;
-	    //			}
-	}
-	return hasTextIndex;
+        if(indexType == Type.ANY_TYPE) {
+            getIndexType();
+            //		    int type;
+            //		    NodeProxy p;
+            //			for (Iterator i = iterator(); i.hasNext();) {
+            //			    p = (NodeProxy) i.next();
+            //			    hasTextIndex = p.hasTextIndex();
+            //			    if(!hasTextIndex)
+            //			        break;
+            //			}
+        }
+        return hasTextIndex;
     }
 
     public boolean hasMixedContent() {
-	if(indexType == Type.ANY_TYPE) {
-	    getIndexType();
-	}
-	return hasMixedContent;
+        if(indexType == Type.ANY_TYPE) {
+            getIndexType();
+        }
+        return hasMixedContent;
     }
 
     public void clearContext(int contextId) {
-	NodeProxy p;
-	for (Iterator i = iterator(); i.hasNext(); ) {
-	    p = (NodeProxy) i.next();
-	    p.clearContext(contextId);
-	}
+        NodeProxy p;
+        for (Iterator i = iterator(); i.hasNext(); ) {
+            p = (NodeProxy) i.next();
+            p.clearContext(contextId);
+        }
     }
 
     public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
         NodeProxy p = get((DocumentImpl)newNode.getOwnerDocument(), oldNodeId);
-	if (p != null)
+        if (p != null)
             p.nodeMoved(oldNodeId, newNode);
     }
 
@@ -708,7 +714,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
         }
 
         public void remove() {
-	    // not needed
+            // not needed
             throw new IllegalStateException();
         }
     }

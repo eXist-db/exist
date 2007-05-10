@@ -1,6 +1,6 @@
 /*
  * eXist Open Source Native XML Database
- * Copyright (C) 2001-2007 The eXist team
+ * Copyright (C) 2001-2007 The eXist Project
  * http://exist-db.org
  *
  * This program is free software; you can redistribute it and/or
@@ -120,14 +120,14 @@ public class LocationStep extends Step {
         // TODO : log elsewhere ?
         if (preload) {
             context.getProfiler().message(this, Profiler.OPTIMIZATIONS, null,
-                    "Preloaded NodeSets");
+                                          "Preloaded NodeSets");
             return true;
         }
         if (inUpdate)
             return false;
         if ((parentDeps & Dependency.LOCAL_VARS) == Dependency.LOCAL_VARS) {
             context.getProfiler().message(this, Profiler.OPTIMIZATIONS, null,
-                    "Preloaded NodeSets");
+                                          "Preloaded NodeSets");
             return true;
         }
         return false;
@@ -162,7 +162,7 @@ public class LocationStep extends Step {
      * @exception XPathException if an error occurs
      */
     protected Sequence applyPredicate(Sequence outerSequence,
-            Sequence contextSequence) throws XPathException {
+                                      Sequence contextSequence) throws XPathException {
         if (contextSequence == null)
             return Sequence.EMPTY_SEQUENCE;
         if (predicates.size() == 0)
@@ -215,31 +215,32 @@ public class LocationStep extends Step {
      * @exception XPathException if an error occurs
      */
     public Sequence eval(Sequence contextSequence, Item contextItem)
-            throws XPathException {
+        throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES,
-                    "DEPENDENCIES",
-                    Dependency.getDependenciesName(this.getDependencies()));
+                                          "DEPENDENCIES",
+                                          Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
                 context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                        "CONTEXT SEQUENCE", contextSequence);
+                                              "CONTEXT SEQUENCE", contextSequence);
             if (contextItem != null)
                 context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                        "CONTEXT ITEM", contextItem.toSequence());
+                                              "CONTEXT ITEM", contextItem.toSequence());
         }
 
         Sequence result;
 
-        if (contextItem != null)
+        if (contextItem != null) {
             contextSequence = contextItem.toSequence();
-
+        }
         /*
          * if(contextSequence == null) //Commented because this the high level
          * result nodeset is *really* null result = NodeSet.EMPTY_SET; //Try to
          * return cached results else
-         */if (cached != null && cached.isValid(contextSequence)) {
-
+         */
+        if (cached != null && cached.isValid(contextSequence)) {
+	    
             // WARNING : commented since predicates are *also* applied below !
             // -pb
             /*
@@ -247,10 +248,11 @@ public class LocationStep extends Step {
              * cached.getResult()); } else {
              */
             result = cached.getResult();
-            if (context.getProfiler().isEnabled())
-            	LOG.debug("Using cached results");            	
-                context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
-                		"Using cached results", result);
+            if (context.getProfiler().isEnabled()) {
+            	LOG.debug("Using cached results");
+            }          	
+            context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
+                                          "Using cached results", result);
 
             // }
         } else if (needsComputation()) {
@@ -260,31 +262,33 @@ public class LocationStep extends Step {
                 case Constants.DESCENDANT_AXIS:
                 case Constants.DESCENDANT_SELF_AXIS:
                     result = getDescendants(context, contextSequence
-                            .toNodeSet());
+                                            .toNodeSet());
                     break;
                 case Constants.CHILD_AXIS:
-                	//VirtualNodeSets may have modified the axis ; checking the type
-                	//TODO : futher checks ?
-                	if (this.test.getType() == Type.ATTRIBUTE) {
-                		this.axis = Constants.ATTRIBUTE_AXIS;
-                		result = getAttributes(context, contextSequence.toNodeSet());
-                	} else
-                		result = getChildren(context, contextSequence.toNodeSet());
-                	break;
+                    //VirtualNodeSets may have modified the axis ; checking the type
+                    //TODO : futher checks ?
+                    if (this.test.getType() == Type.ATTRIBUTE) {
+                        this.axis = Constants.ATTRIBUTE_AXIS;
+                        result = getAttributes(context, contextSequence.toNodeSet());
+                    } else {
+                        result = getChildren(context, contextSequence.toNodeSet());
+                    }
+                    break;
                 case Constants.ANCESTOR_SELF_AXIS:
                 case Constants.ANCESTOR_AXIS:
                     result = getAncestors(context, contextSequence.toNodeSet());
                     break;
                 case Constants.PARENT_AXIS:
                     result = getParents(context, contextSequence.toNodeSet());
-		    break;
+                    break;
                 case Constants.SELF_AXIS:
                     if (!(contextSequence instanceof VirtualNodeSet)
-                            && Type.subTypeOf(contextSequence.getItemType(),
-                                    Type.ATOMIC))
+                        && Type.subTypeOf(contextSequence.getItemType(),
+                                          Type.ATOMIC)) {
                         result = getSelfAtomic(contextSequence);
-                    else
+                    } else {
                         result = getSelf(context, contextSequence.toNodeSet());
+                    }
                     break;
                 case Constants.ATTRIBUTE_AXIS:
                 case Constants.DESCENDANT_ATTRIBUTE_AXIS:
@@ -302,12 +306,11 @@ public class LocationStep extends Step {
                     break;
                 default:
                     throw new IllegalArgumentException(
-                            "Unsupported axis specified");
+                                                       "Unsupported axis specified");
             }
         } else {
             result = NodeSet.EMPTY_SET;
-	}
-
+        }
         // Caches the result
         if (contextSequence instanceof NodeSet) {
             // TODO : cache *after* removing duplicates ? -pb
@@ -321,7 +324,6 @@ public class LocationStep extends Step {
 
         if (context.getProfiler().isEnabled())
             context.getProfiler().end(this, "", result);
-
         return result;
     }
 
@@ -336,11 +338,11 @@ public class LocationStep extends Step {
                 if (nodeTestType == null)
                     nodeTestType = new Integer(test.getType());
                 if (nodeTestType.intValue() != Type.NODE
-                        && nodeTestType.intValue() != Type.ELEMENT) {
+                    && nodeTestType.intValue() != Type.ELEMENT) {
                     if (context.getProfiler().isEnabled())
                         context.getProfiler().message(this,
-                                Profiler.OPTIMIZATIONS, "OPTIMIZATION",
-                                "avoid useless computations");
+                                                      Profiler.OPTIMIZATIONS, "OPTIMIZATION",
+                                                      "avoid useless computations");
                     return false;
                 }
 
@@ -357,8 +359,9 @@ public class LocationStep extends Step {
      */
     protected Sequence getSelf(XQueryContext context, NodeSet contextSet) {
         if (test.isWildcardTest()) {
-            if (nodeTestType == null)
+            if (nodeTestType == null) {
                 nodeTestType = new Integer(test.getType());
+            }
             if (Type.subTypeOf(nodeTestType.intValue(), Type.NODE)) {
                 if (Expression.NO_CONTEXT_ID != contextId) {
                     if (contextSet instanceof VirtualNodeSet) {
@@ -366,7 +369,7 @@ public class LocationStep extends Step {
                         ((VirtualNodeSet) contextSet).setSelfIsContext();
                         ((VirtualNodeSet) contextSet).setContextId(contextId);
                     } else if (Type.subTypeOf(contextSet.getItemType(),
-					      Type.NODE)) {
+                                              Type.NODE)) {
                         NodeProxy p;
                         for (Iterator i = contextSet.iterator(); i.hasNext();) {
                             p = (NodeProxy) i.next();
@@ -379,7 +382,7 @@ public class LocationStep extends Step {
 
             } else {
                 VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId,
-                        contextSet);
+                                                         contextSet);
                 vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
                 return vset;
             }
@@ -389,10 +392,10 @@ public class LocationStep extends Step {
             ElementIndex index = context.getBroker().getElementIndex();
             if (context.getProfiler().isEnabled())
                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
-                        "OPTIMIZATION",
-                        "Using structural index '" + index.toString() + "'");
+                                              "OPTIMIZATION",
+                                              "Using structural index '" + index.toString() + "'");
             return index.findElementsByTagName(ElementValue.ELEMENT, docs, test
-                    .getName(), selector);
+                                               .getName(), selector);
         }
     }
 
@@ -404,10 +407,10 @@ public class LocationStep extends Step {
      * @exception XPathException if an error occurs
      */
     protected Sequence getSelfAtomic(Sequence contextSequence)
-            throws XPathException {
+        throws XPathException {
         if (!test.isWildcardTest())
             throw new XPathException(getASTNode(), test.toString()
-                    + " cannot be applied to an atomic value.");
+                                     + " cannot be applied to an atomic value.");
         return contextSequence;
     }
 
@@ -421,9 +424,9 @@ public class LocationStep extends Step {
     protected NodeSet getAttributes(XQueryContext context, NodeSet contextSet) {
         if (test.isWildcardTest()) {
             NodeSet result = new VirtualNodeSet(axis, test, contextId,
-                    contextSet);
+                                                contextSet);
             ((VirtualNodeSet) result)
-                    .setInPredicate(Expression.NO_CONTEXT_ID != contextId);
+                .setInPredicate(Expression.NO_CONTEXT_ID != contextId);
             return result;
             // if there's just a single known node in the context, it is faster
             // do directly search for the attribute in the parent node.
@@ -432,47 +435,47 @@ public class LocationStep extends Step {
         if (useDirectAttrSelect && axis == Constants.ATTRIBUTE_AXIS) {
             if (contextSet instanceof VirtualNodeSet)
                 selectDirect = ((VirtualNodeSet) contextSet).preferTreeTraversal()
-                        && contextSet.getLength() < ATTR_DIRECT_SELECT_THRESHOLD;
+                    && contextSet.getLength() < ATTR_DIRECT_SELECT_THRESHOLD;
             else
                 selectDirect = contextSet.getLength() < ATTR_DIRECT_SELECT_THRESHOLD;
         }
         if (selectDirect) {
             if (context.getProfiler().isEnabled())
                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
-                        "OPTIMIZATION", "direct attribute selection");
+                                              "OPTIMIZATION", "direct attribute selection");
             if (contextSet.isEmpty())
             	return NodeSet.EMPTY_SET;
             NodeProxy proxy = contextSet.get(0);
             if (proxy != null
-                    && proxy.getInternalAddress() != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
+                && proxy.getInternalAddress() != StoredNode.UNKNOWN_NODE_IMPL_ADDRESS)
                 return contextSet.directSelectAttribute(test.getName(),
-                        contextId);
+                                                        contextId);
         }
         if (preloadNodeSets()) {
             DocumentSet docs = getDocumentSet(contextSet);
             if (currentSet == null || currentDocs == null
-                    || !(docs.equals(currentDocs))) {
+                || !(docs.equals(currentDocs))) {
                 ElementIndex index = context.getBroker().getElementIndex();
                 if (context.getProfiler().isEnabled())
                     context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
-                            "OPTIMIZATION",
-                            "Using structural index '" + index.toString() + "'");
+                                                  "OPTIMIZATION",
+                                                  "Using structural index '" + index.toString() + "'");
                 // TODO : why a null selector here ? We have one below !
                 currentSet = index.findElementsByTagName(
-                        ElementValue.ATTRIBUTE, docs, test.getName(), null);
+                                                         ElementValue.ATTRIBUTE, docs, test.getName(), null);
                 currentDocs = docs;
                 registerUpdateListener();
             }
             switch (axis) {
                 case Constants.ATTRIBUTE_AXIS:
                     return currentSet.selectParentChild(contextSet,
-                            NodeSet.DESCENDANT, contextId);
+                                                        NodeSet.DESCENDANT, contextId);
                 case Constants.DESCENDANT_ATTRIBUTE_AXIS:
                     return currentSet.selectAncestorDescendant(contextSet,
-                            NodeSet.DESCENDANT, false, contextId);
+                                                               NodeSet.DESCENDANT, false, contextId);
                 default:
                     throw new IllegalArgumentException(
-                            "Unsupported axis specified");
+                                                       "Unsupported axis specified");
             }
         } else {
             NodeSelector selector;
@@ -487,16 +490,16 @@ public class LocationStep extends Step {
                     break;
                 default:
                     throw new IllegalArgumentException(
-                            "Unsupported axis specified");
+                                                       "Unsupported axis specified");
             }
             ElementIndex index = context.getBroker().getElementIndex();
             if (context.getProfiler().isEnabled())
                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
-                        "OPTIMIZATION",
-                        "Using structural index '" + index.toString() + "'");
+                                              "OPTIMIZATION",
+                                              "Using structural index '" + index.toString() + "'");
             if (contextSet instanceof ExtArrayNodeSet) {
                 return index.findDescendantsByTagName(ElementValue.ATTRIBUTE, test.getName(), axis,
-                        docs, (ExtArrayNodeSet) contextSet, contextId);
+                                                      docs, (ExtArrayNodeSet) contextSet, contextId);
             } else {
                 return index.findElementsByTagName(ElementValue.ATTRIBUTE, docs, test.getName(), selector);
             }
@@ -514,42 +517,42 @@ public class LocationStep extends Step {
         if (test.isWildcardTest()) {
             // test is one out of *, text(), node()
             VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId,
-                    contextSet);
+                                                     contextSet);
             vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
             return vset;
         } else if (preloadNodeSets()) {
             DocumentSet docs = getDocumentSet(contextSet);
             // TODO : understand why this one is different from the other ones
             if (currentSet == null || currentDocs == null
-                    || !(docs == currentDocs || docs.equals(currentDocs))) {
+                || !(docs == currentDocs || docs.equals(currentDocs))) {
                 ElementIndex index = context.getBroker().getElementIndex();
                 if (context.getProfiler().isEnabled())
                     context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
-                            "OPTIMIZATION",
-                            "Using structural index '" + index.toString() + "'");
+                                                  "OPTIMIZATION",
+                                                  "Using structural index '" + index.toString() + "'");
                 currentSet = index.findElementsByTagName(ElementValue.ELEMENT,
-                        docs, test.getName(), null);
+                                                         docs, test.getName(), null);
                 currentDocs = docs;
                 registerUpdateListener();
             }
             return currentSet.selectParentChild(contextSet, NodeSet.DESCENDANT,
-                    contextId);
+                                                contextId);
         } else {
             ElementIndex index = context.getBroker().getElementIndex();
             if (context.getProfiler().isEnabled())
                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
-                        "OPTIMIZATION",
-                        "Using structural index '" + index.toString() + "'");
+                                              "OPTIMIZATION",
+                                              "Using structural index '" + index.toString() + "'");
             DocumentSet docs = getDocumentSet(contextSet);
             if (contextSet instanceof ExtArrayNodeSet) {
             	return index.findDescendantsByTagName(ElementValue.ELEMENT, test.getName(), axis,
-            			docs, (ExtArrayNodeSet) contextSet, contextId);
+                                                      docs, (ExtArrayNodeSet) contextSet, contextId);
             } else {
-//            	if (contextSet instanceof VirtualNodeSet)
-//            		((VirtualNodeSet)contextSet).realize();
+                //            	if (contextSet instanceof VirtualNodeSet)
+                //            		((VirtualNodeSet)contextSet).realize();
             	NodeSelector selector = new ChildSelector(contextSet, contextId);
             	return index.findElementsByTagName(ElementValue.ELEMENT, docs, test
-            			.getName(), selector);
+                                                   .getName(), selector);
             }
         }
     }
@@ -565,34 +568,35 @@ public class LocationStep extends Step {
         if (test.isWildcardTest()) {
             // test is one out of *, text(), node()
             VirtualNodeSet vset = new VirtualNodeSet(axis, test, contextId,
-                    contextSet);
+                                                     contextSet);
             vset.setInPredicate(Expression.NO_CONTEXT_ID != contextId);
             return vset;
         } else if (preloadNodeSets()) {
             DocumentSet docs = getDocumentSet(contextSet);
             // TODO : understand why this one is different from the other ones
             if (currentSet == null || currentDocs == null
-                    || !(docs == currentDocs || docs.equals(currentDocs))) {
+                || !(docs == currentDocs || docs.equals(currentDocs))) {
                 ElementIndex index = context.getBroker().getElementIndex();
                 if (context.getProfiler().isEnabled())
                     context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
-                            "OPTIMIZATION",
-                            "Using structural index '" + index.toString() + "'");
+                                                  "OPTIMIZATION",
+                                                  "Using structural index '" + index.toString() + "'");
                 currentSet = index.findElementsByTagName(ElementValue.ELEMENT,
-                        docs, test.getName(), null);
+                                                         docs, test.getName(), null);
                 currentDocs = docs;
                 registerUpdateListener();
             }
             switch (axis) {
                 case Constants.DESCENDANT_SELF_AXIS:
-                    return currentSet.selectAncestorDescendant(contextSet,
-                            NodeSet.DESCENDANT, true, contextId);
+                    NodeSet tempSet = currentSet.selectAncestorDescendant(contextSet,
+                                                                          NodeSet.DESCENDANT, true, contextId);
+                    return tempSet;
                 case Constants.DESCENDANT_AXIS:
                     return currentSet.selectAncestorDescendant(contextSet,
-                            NodeSet.DESCENDANT, false, contextId);
+                                                               NodeSet.DESCENDANT, false, contextId);
                 default:
                     throw new IllegalArgumentException(
-                            "Unsupported axis specified");
+                                                       "Unsupported axis specified");
             }
         } else {
             NodeSelector selector;
@@ -600,25 +604,28 @@ public class LocationStep extends Step {
             switch (axis) {
                 case Constants.DESCENDANT_SELF_AXIS:
                     selector = new DescendantOrSelfSelector(contextSet,
-                            contextId);
+                                                            contextId);
                     break;
                 case Constants.DESCENDANT_AXIS:
                     selector = new DescendantSelector(contextSet, contextId);
                     break;
                 default:
                     throw new IllegalArgumentException(
-                            "Unsupported axis specified");
+                                                       "Unsupported axis specified");
             }
             ElementIndex index = context.getBroker().getElementIndex();
-            if (context.getProfiler().isEnabled())
+            if (context.getProfiler().isEnabled()) {
                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
-                        "OPTIMIZATION",
-                        "Using structural index '" + index.toString() + "'");
+                                              "OPTIMIZATION",
+                                              "Using structural index '" + index.toString() + "'");
+            }
             if (contextSet instanceof ExtArrayNodeSet) {
             	return index.findDescendantsByTagName(ElementValue.ELEMENT, test.getName(), axis,
-            			docs, (ExtArrayNodeSet) contextSet, contextId);
-            } else
+                                                      docs, (ExtArrayNodeSet) contextSet, contextId);
+            } else {
             	return index.findElementsByTagName(ElementValue.ELEMENT, docs, test.getName(), selector);
+            }
+
         }
     }
 
@@ -646,14 +653,14 @@ public class LocationStep extends Step {
         } else {
             DocumentSet docs = getDocumentSet(contextSet);
             if (currentSet == null || currentDocs == null
-                    || !(docs.equals(currentDocs))) {
+                || !(docs.equals(currentDocs))) {
                 ElementIndex index = context.getBroker().getElementIndex();
                 if (context.getProfiler().isEnabled())
                     context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
-                            "OPTIMIZATION",
-                            "Using structural index '" + index.toString() + "'");
+                                                  "OPTIMIZATION",
+                                                  "Using structural index '" + index.toString() + "'");
                 currentSet = index.findElementsByTagName(ElementValue.ELEMENT,
-                        docs, test.getName(), null);
+                                                         docs, test.getName(), null);
                 currentDocs = docs;
                 registerUpdateListener();
             }
@@ -664,7 +671,7 @@ public class LocationStep extends Step {
                     return currentSet.selectFollowingSiblings(contextSet, contextId);
                 default:
                     throw new IllegalArgumentException(
-                            "Unsupported axis specified");
+                                                       "Unsupported axis specified");
             }
         }
     }
@@ -675,23 +682,23 @@ public class LocationStep extends Step {
     	private NodeProxy contextNode;
     	
     	public SiblingVisitor(ExtArrayNodeSet resultSet) {
-    		this.resultSet = resultSet;
+            this.resultSet = resultSet;
     	}
     	
     	public void setContext(NodeProxy contextNode) {
-    		this.contextNode = contextNode;
+            this.contextNode = contextNode;
     	}
     	
     	public boolean visit(StoredNode current) {
-    		if (contextNode.getNodeId().getTreeLevel() == current.getNodeId().getTreeLevel()) {
-    			int cmp = current.getNodeId().compareTo(contextNode.getNodeId());
-    			if (((axis == Constants.FOLLOWING_SIBLING_AXIS && cmp > 0) || 
-    					(axis == Constants.PRECEDING_SIBLING_AXIS && cmp < 0)) &&
-    					test.matches(current)) {
+            if (contextNode.getNodeId().getTreeLevel() == current.getNodeId().getTreeLevel()) {
+                int cmp = current.getNodeId().compareTo(contextNode.getNodeId());
+                if (((axis == Constants.FOLLOWING_SIBLING_AXIS && cmp > 0) || 
+                     (axis == Constants.PRECEDING_SIBLING_AXIS && cmp < 0)) &&
+                    test.matches(current)) {
                     NodeProxy sibling = resultSet.get((DocumentImpl) current.getOwnerDocument(), current.getNodeId());
                     if (sibling == null) {
                         sibling = new NodeProxy((DocumentImpl) current.getOwnerDocument(), current.getNodeId(),
-                                current.getInternalAddress());
+                                                current.getInternalAddress());
                         if (Expression.NO_CONTEXT_ID != contextId) {
                             sibling.addContextNode(contextId, contextNode);
                         } else
@@ -700,9 +707,9 @@ public class LocationStep extends Step {
                         resultSet.setSorted(sibling.getDocument(), true);
                     } else if (Expression.NO_CONTEXT_ID != contextId)
                         sibling.addContextNode(contextId, contextNode);
-    			}
-    		}
-    		return true;
+                }
+            }
+            return true;
     	}
     }
 
@@ -715,21 +722,21 @@ public class LocationStep extends Step {
      * @exception XPathException if an error occurs
      */
     protected NodeSet getPreceding(XQueryContext context, NodeSet contextSet)
-            throws XPathException {
+        throws XPathException {
         if (test.isWildcardTest()) {
             // TODO : throw an exception here ! Don't let this pass through
             return NodeSet.EMPTY_SET;
         } else {
             DocumentSet docs = getDocumentSet(contextSet);
             if (currentSet == null || currentDocs == null
-                    || !(docs.equals(currentDocs))) {
+                || !(docs.equals(currentDocs))) {
                 ElementIndex index = context.getBroker().getElementIndex();
                 if (context.getProfiler().isEnabled())
                     context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
-                            "OPTIMIZATION",
-                            "Using structural index '" + index.toString() + "'");
+                                                  "OPTIMIZATION",
+                                                  "Using structural index '" + index.toString() + "'");
                 currentSet = index.findElementsByTagName(ElementValue.ELEMENT,
-                        docs, test.getName(), null);
+                                                         docs, test.getName(), null);
                 currentDocs = docs;
                 registerUpdateListener();
             }
@@ -746,21 +753,21 @@ public class LocationStep extends Step {
      * @exception XPathException if an error occurs
      */
     protected NodeSet getFollowing(XQueryContext context, NodeSet contextSet)
-            throws XPathException {
+        throws XPathException {
         if (test.isWildcardTest()) {
             // TODO : throw an exception here ! Don't let this pass through
             return NodeSet.EMPTY_SET;
         } else {
             DocumentSet docs = getDocumentSet(contextSet);
             if (currentSet == null || currentDocs == null
-                    || !(docs.equals(currentDocs))) {
+                || !(docs.equals(currentDocs))) {
                 ElementIndex index = context.getBroker().getElementIndex();
                 if (context.getProfiler().isEnabled())
                     context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
-                            "OPTIMIZATION",
-                            "Using structural index '" + index.toString() + "'");
+                                                  "OPTIMIZATION",
+                                                  "Using structural index '" + index.toString() + "'");
                 currentSet = index.findElementsByTagName(ElementValue.ELEMENT,
-                        docs, test.getName(), null);
+                                                         docs, test.getName(), null);
                 currentDocs = docs;
                 registerUpdateListener();
             }
@@ -783,9 +790,9 @@ public class LocationStep extends Step {
                 NodeProxy current = (NodeProxy) i.next();
                 NodeProxy ancestor;
                 if (axis == Constants.ANCESTOR_SELF_AXIS
-                        && test.matches(current)) {
+                    && test.matches(current)) {
                     ancestor = new NodeProxy(current.getDocument(), current.getNodeId(), 
-                            Node.ELEMENT_NODE, current.getInternalAddress());
+                                             Node.ELEMENT_NODE, current.getInternalAddress());
                     NodeProxy t = result.get(ancestor);
                     if (t == null) {
                         if (Expression.NO_CONTEXT_ID != contextId)
@@ -801,7 +808,7 @@ public class LocationStep extends Step {
                     ancestor = new NodeProxy(current.getDocument(), parentID, Node.ELEMENT_NODE);
                     // Filter out the temporary nodes wrapper element
                     if (parentID != NodeId.DOCUMENT_NODE && 
-                            !(parentID.getTreeLevel() == 1  && current.getDocument().getCollection().isTempCollection())) {
+                        !(parentID.getTreeLevel() == 1  && current.getDocument().getCollection().isTempCollection())) {
                         if (test.matches(ancestor)) {
                             NodeProxy t = result.get(ancestor);
                             if (t == null) {
@@ -821,27 +828,27 @@ public class LocationStep extends Step {
         } else if (preloadNodeSets()) {
             DocumentSet docs = getDocumentSet(contextSet);
             if (currentSet == null || currentDocs == null
-                    || !(docs.equals(currentDocs))) {
+                || !(docs.equals(currentDocs))) {
                 ElementIndex index = context.getBroker().getElementIndex();
                 if (context.getProfiler().isEnabled())
                     context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
-                            "OPTIMIZATION",
-                            "Using structural index '" + index.toString() + "'");
+                                                  "OPTIMIZATION",
+                                                  "Using structural index '" + index.toString() + "'");
                 currentSet = index.findElementsByTagName(ElementValue.ELEMENT,
-                        docs, test.getName(), null);
+                                                         docs, test.getName(), null);
                 currentDocs = docs;
                 registerUpdateListener();
             }
             switch (axis) {
                 case Constants.ANCESTOR_SELF_AXIS:
                     return currentSet.selectAncestors(contextSet, true,
-                            contextId);
+                                                      contextId);
                 case Constants.ANCESTOR_AXIS:
                     return currentSet.selectAncestors(contextSet, false,
-                            contextId);
+                                                      contextId);
                 default:
                     throw new IllegalArgumentException(
-                            "Unsupported axis specified");
+                                                       "Unsupported axis specified");
             }
         } else {
             NodeSelector selector;
@@ -852,19 +859,19 @@ public class LocationStep extends Step {
                     break;
                 case Constants.ANCESTOR_AXIS:
                     selector = new AncestorSelector(contextSet, contextId,
-                            false);
+                                                    false);
                     break;
                 default:
                     throw new IllegalArgumentException(
-                            "Unsupported axis specified");
+                                                       "Unsupported axis specified");
             }
             ElementIndex index = context.getBroker().getElementIndex();
             if (context.getProfiler().isEnabled())
                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
-                        "OPTIMIZATION",
-                        "Using structural index '" + index.toString() + "'");
+                                              "OPTIMIZATION",
+                                              "Using structural index '" + index.toString() + "'");
             return index.findElementsByTagName(ElementValue.ELEMENT, docs, test
-                    .getName(), selector);
+                                               .getName(), selector);
         }
     }
 
@@ -883,26 +890,26 @@ public class LocationStep extends Step {
             for (Iterator i = temp.iterator(); i.hasNext(); ) {
                 p = (NodeProxy) i.next();
                 /* ljo's modification, currently breaks the test suite (in-memory vs stored nodes ?) :
-                if (test.matches(p) && !(p.getNodeId().getParentId() == NodeId.DOCUMENT_NODE && test.getType() == Type.ELEMENT)) {
-				*/
+                   if (test.matches(p) && !(p.getNodeId().getParentId() == NodeId.DOCUMENT_NODE && test.getType() == Type.ELEMENT)) {
+                */
                 if (test.matches(p)) {
-		    // For NodeId.DOCUMENT_NODE add only if  
-		    // parent::node() not parent::element().  		
-                   result.add(p);
-		}
+                    // For NodeId.DOCUMENT_NODE add only if  
+                    // parent::node() not parent::element().  		
+                    result.add(p);
+                }
             }
             return result;
         } else if (preloadNodeSets()) {
             DocumentSet docs = getDocumentSet(contextSet);
             if (currentSet == null || currentDocs == null
-                    || !(docs.equals(currentDocs))) {
+                || !(docs.equals(currentDocs))) {
                 ElementIndex index = context.getBroker().getElementIndex();
                 if (context.getProfiler().isEnabled())
                     context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
-                            "OPTIMIZATION",
-                            "Using structural index '" + index.toString() + "'");
+                                                  "OPTIMIZATION",
+                                                  "Using structural index '" + index.toString() + "'");
                 currentSet = index.findElementsByTagName(ElementValue.ELEMENT,
-                        docs, test.getName(), null);
+                                                         docs, test.getName(), null);
                 currentDocs = docs;
                 registerUpdateListener();
             }
@@ -913,10 +920,10 @@ public class LocationStep extends Step {
             ElementIndex index = context.getBroker().getElementIndex();
             if (context.getProfiler().isEnabled())
                 context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
-                        "OPTIMIZATION",
-                        "Using structural index '" + index.toString() + "'");
+                                              "OPTIMIZATION",
+                                              "Using structural index '" + index.toString() + "'");
             return index.findElementsByTagName(ElementValue.ELEMENT, docs, test
-                    .getName(), selector);
+                                               .getName(), selector);
         }
     }
 
@@ -958,38 +965,38 @@ public class LocationStep extends Step {
     protected void registerUpdateListener() {
         if (listener == null) {
             listener = new UpdateListener() {
-                public void documentUpdated(DocumentImpl document, int event) {
-                    if (document == null || event == UpdateListener.ADD || event == UpdateListener.REMOVE) {
-                        // clear all
-                        currentDocs = null;
-                        currentSet = null;
-                        cached = null;
-                    } else {
-                        if (currentDocs != null
-                                && currentDocs.contains(document.getDocId())) {
+                    public void documentUpdated(DocumentImpl document, int event) {
+                        if (document == null || event == UpdateListener.ADD || event == UpdateListener.REMOVE) {
+                            // clear all
                             currentDocs = null;
                             currentSet = null;
-                        }
-                        if (cached != null
-                                && cached.getResult().getDocumentSet()
-                                        .contains(document.getDocId()))
                             cached = null;
+                        } else {
+                            if (currentDocs != null
+                                && currentDocs.contains(document.getDocId())) {
+                                currentDocs = null;
+                                currentSet = null;
+                            }
+                            if (cached != null
+                                && cached.getResult().getDocumentSet()
+                                .contains(document.getDocId()))
+                                cached = null;
+                        }
                     }
-                }
 
-                public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
-                }
+                    public void nodeMoved(NodeId oldNodeId, StoredNode newNode) {
+                    }
 
 
-                public void unsubscribe() {
-                    LocationStep.this.listener = null;
-                }
+                    public void unsubscribe() {
+                        LocationStep.this.listener = null;
+                    }
 
-                public void debug() {
-                	LOG.debug("UpdateListener: Line: " + LocationStep.this.toString() +
-                			"; id: " + LocationStep.this.getExpressionId());
-                }
-            };
+                    public void debug() {
+                        LOG.debug("UpdateListener: Line: " + LocationStep.this.toString() +
+                                  "; id: " + LocationStep.this.getExpressionId());
+                    }
+                };
             context.registerUpdateListener(listener);
         }
     }
