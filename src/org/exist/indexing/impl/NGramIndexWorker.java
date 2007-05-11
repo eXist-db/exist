@@ -431,6 +431,10 @@ public class NGramIndexWorker implements IndexWorker {
 		return (Occurrences[]) cb.map.values().toArray(result);
     }
 
+    public StreamListener getListener() {
+        return new NGramStreamListener();
+    }
+
     public StreamListener getListener(int mode, DocumentImpl document) {
         setDocument(document, mode);
         return new NGramStreamListener();
