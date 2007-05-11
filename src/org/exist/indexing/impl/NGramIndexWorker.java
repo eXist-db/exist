@@ -552,8 +552,16 @@ public class NGramIndexWorker implements IndexWorker {
     private Map config;
     private Stack contentStack = null;
 
+    public void setDocument(DocumentImpl document) {
+    	setDocument(document, StreamListener.UNKNOWN);
+    }
+
+    public void setMode(int newMode) {
+    	setDocument(currentDoc, newMode);
+    }
+    
     public void setDocument(DocumentImpl document, int newMode) {
-        currentDoc = document;
+    	currentDoc = document;
         //config = null;
         contentStack = null;
         IndexSpec indexConf = document.getCollection().getIndexConfiguration(document.getBroker());
