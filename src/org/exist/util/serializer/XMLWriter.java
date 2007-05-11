@@ -315,7 +315,7 @@ public class XMLWriter {
 			writer.write(target);
 			if (data != null && data.length() > 0) {
 				writer.write(' ');
-				writeChars(data, false);
+        writer.write(data.toString());
 			}
 			writer.write("?>");
 		} catch (IOException e) {
@@ -330,7 +330,7 @@ public class XMLWriter {
 			if (tagIsOpen)
 				closeStartTag(false);
 			writer.write("<!--");
-			writeChars(data, false);
+            writer.write(data.toString());
 			writer.write("-->");
 		} catch (IOException e) {
 			throw new TransformerException(e.getMessage(), e);
