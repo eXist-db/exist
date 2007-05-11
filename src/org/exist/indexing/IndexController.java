@@ -278,6 +278,22 @@ public class IndexController {
             listener.endElement(transaction, node, path);
     }
     
+    public void setDocument(DocumentImpl doc) {
+        IndexWorker indexWorker;
+        for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
+            indexWorker = (IndexWorker) i.next();
+            indexWorker.setDocument(doc);
+        }    	
+    }
+
+    public void setMode(int mode) {
+        IndexWorker indexWorker;
+        for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
+            indexWorker = (IndexWorker) i.next();
+            indexWorker.setMode(mode);
+        }    	
+    }
+    
     public void setDocument(DocumentImpl doc, int mode) {
         IndexWorker indexWorker;
         for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
