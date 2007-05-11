@@ -179,8 +179,10 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 
     public void setValidating(boolean validate) {
 	    this.validate = validate;
-        if (!validate)
-            this.indexListener = broker.getIndexController().getStreamListener(document, StreamListener.STORE);
+        if (!validate) {
+        	broker.getIndexController().setDocument(document, StreamListener.STORE);
+            this.indexListener = broker.getIndexController().getStreamListener();
+        }
     }
 
     /**

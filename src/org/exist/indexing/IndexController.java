@@ -53,6 +53,7 @@ public class IndexController {
 
     protected StoredNode reindexNode = null;
     
+    protected DocumentImpl currentDoc = null;
     protected int currentMode = StreamListener.UNKNOWN;
     
     public IndexController(DBBroker broker) {
@@ -93,6 +94,19 @@ public class IndexController {
     
     /**
      * Returns a chain of {@link org.exist.indexing.StreamListener}, one
+     * for each index configured on the current document for the current mode.
+     * Note that the chain is reinitialized when the operating mode changes.
+     * That allows workers to return different {@link org.exist.indexing.StreamListener}
+     * for each mode.  
+     *
+     * @return chain of StreamListeners
+     */
+    public StreamListener getStreamListener() {
+    	return getStreamListener(currentDoc, currentMode);
+    }
+    
+    /**
+     * Returns a chain of {@link org.exist.indexing.StreamListener}, one
      * for each index configured.
      * Note that the chain is reinitialized when the operating mode changes.
      * That allows workers to return different {@link org.exist.indexing.StreamListener}
@@ -102,13 +116,15 @@ public class IndexController {
      * @param mode
      * @return chain of StreamListeners
      */
+
     public StreamListener getStreamListener(DocumentImpl document, int mode) {
+    	currentDoc = document;
         if (currentMode != mode) {
-            currentMode = mode;
+        	currentMode = mode;
         } else if (listener != null) {
             StreamListener next = listener;
             while (next != null) {
-                next.getWorker().setDocument(document, mode);
+                next.getWorker().setDocument(currentDoc, currentMode);
                 next = next.getNextInChain();
             }
             return listener;
@@ -118,8 +134,8 @@ public class IndexController {
         IndexWorker worker;
         for (Iterator i = indexWorkers.values().iterator(); i.hasNext();) {
             worker = (IndexWorker) i.next();
-            worker.setDocument(document, mode);
-            current = worker.getListener(mode, document);
+            worker.setDocument(currentDoc, currentMode);
+            current = worker.getListener();
             if (first == null) {
                 first = current;
             } else {
@@ -236,7 +252,7 @@ public class IndexController {
             return;
         reindexRoot = reindexRoot.getDocument().getBroker().objectWith(new NodeProxy(reindexRoot.getDocument(), reindexRoot.getNodeId()));
         setDocument(reindexRoot.getDocument(), mode);
-        getStreamListener(reindexRoot.getDocument(), mode);
+        getStreamListener();
         IndexUtils.scanNode(transaction, reindexRoot, listener);
         flush();
     }
@@ -279,26 +295,30 @@ public class IndexController {
     }
     
     public void setDocument(DocumentImpl doc) {
+    	currentDoc = doc;
         IndexWorker indexWorker;
         for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
             indexWorker = (IndexWorker) i.next();
-            indexWorker.setDocument(doc);
+            indexWorker.setDocument(currentDoc);
         }    	
     }
 
     public void setMode(int mode) {
+        currentMode = mode;
         IndexWorker indexWorker;
         for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
             indexWorker = (IndexWorker) i.next();
-            indexWorker.setMode(mode);
-        }    	
+            indexWorker.setMode(currentMode);
+        }
     }
     
     public void setDocument(DocumentImpl doc, int mode) {
+    	currentDoc = doc;
+    	currentMode = mode;
         IndexWorker indexWorker;
         for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
             indexWorker = (IndexWorker) i.next();
-            indexWorker.setDocument(doc, mode);
+            indexWorker.setDocument(currentDoc, currentMode);
         }    	
     }
 
