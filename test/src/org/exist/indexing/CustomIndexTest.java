@@ -464,6 +464,7 @@ public class CustomIndexTest extends TestCase {
             TransactionManager transact = pool.getTransactionManager();
             Txn transaction = transact.beginTransaction();
 
+            //Doh ! This reindexes *all* the collections for *every* index
             broker.reindexCollection(XmldbURI.xmldbUriFor("/db"));
 
             checkIndex(broker, docs, "cha", 1);
