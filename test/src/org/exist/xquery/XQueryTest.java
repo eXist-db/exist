@@ -1987,6 +1987,32 @@ public class XQueryTest extends XMLTestCase {
         }
         
     }
+    
+    public void testComments_1715035(){
+        
+        try {
+            String query="<!-- < aa > -->";
+            XPathQueryService service 
+                    = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+            assertEquals(query, result.getResource(0).getContent().toString());
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+
+        try {
+            String query="<?pi \"<\"aa\">\"?>";
+            XPathQueryService service 
+                    = (XPathQueryService) testCollection.getService("XPathQueryService", "1.0");
+            ResourceSet result = service.query(query);
+            assertEquals(query, result.getResource(0).getContent().toString());
+        } catch (XMLDBException ex) {
+            ex.printStackTrace();
+            fail(ex.toString());
+        }
+        
+    }
 
     // ======================================
     
