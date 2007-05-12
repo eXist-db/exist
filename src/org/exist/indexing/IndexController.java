@@ -102,26 +102,7 @@ public class IndexController {
      * @return chain of StreamListeners
      */
     public StreamListener getStreamListener() {
-    	return getStreamListener(currentDoc, currentMode);
-    }
-    
-    /**
-     * Returns a chain of {@link org.exist.indexing.StreamListener}, one
-     * for each index configured.
-     * Note that the chain is reinitialized when the operating mode changes.
-     * That allows workers to return different {@link org.exist.indexing.StreamListener}
-     * for each mode.  
-     *
-     * @param document
-     * @param mode
-     * @return chain of StreamListeners
-     */
-
-    public StreamListener getStreamListener(DocumentImpl document, int mode) {
-    	currentDoc = document;
-        if (currentMode != mode) {
-        	currentMode = mode;
-        } else if (listener != null) {
+        if (listener != null) {
             StreamListener next = listener;
             while (next != null) {
                 next.getWorker().setDocument(currentDoc, currentMode);
@@ -295,7 +276,10 @@ public class IndexController {
     }
     
     public void setDocument(DocumentImpl doc) {
-    	currentDoc = doc;
+        if (currentDoc != doc)
+        	//Reset listener
+        	listener = null;
+        currentDoc = doc;
         IndexWorker indexWorker;
         for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
             indexWorker = (IndexWorker) i.next();
@@ -304,6 +288,9 @@ public class IndexController {
     }
 
     public void setMode(int mode) {
+        if (currentMode != mode)
+        	//Reset listener
+        	listener = null;
         currentMode = mode;
         IndexWorker indexWorker;
         for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
@@ -313,13 +300,8 @@ public class IndexController {
     }
     
     public void setDocument(DocumentImpl doc, int mode) {
-    	currentDoc = doc;
-    	currentMode = mode;
-        IndexWorker indexWorker;
-        for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
-            indexWorker = (IndexWorker) i.next();
-            indexWorker.setDocument(currentDoc, currentMode);
-        }    	
+    	setDocument(doc);
+    	setMode(mode);
     }
 
     /**
