@@ -584,7 +584,7 @@ public class BTree extends Paged {
         if (requiresRedo(loggable, node.page)) {
             node.insertKey(loggable.key, loggable.idx);
             node.insertPointer(loggable.pointer, loggable.pointerIdx);
-            node.adjustDataLen(loggable.key, loggable.idx);
+            node.adjustDataLen(loggable.idx);
             node.ph.setLsn(loggable.getLsn());
         }
     }
@@ -923,27 +923,46 @@ public class BTree extends Paged {
 		 * Add the raw data size required to store the value to the internal
 		 * data size of this node.
 		 *  
-		 * @param value
 		 */
-		private void adjustDataLen(Value value, int idx) {
-			if(currentDataLen < 0)
+		private void adjustDataLen(int idx) {
+            if(currentDataLen < 0) {
 				recalculateDataLen();
+                return;
+            }
             if (ph.getStatus() == LEAF && idx > 0) {
                 // if this is a leaf page, we use prefix compression to store the keys,
                 // so subtract the size of the prefix
-                int prefix = keys[idx].commonPrefix(keys[idx - 1]);
-                if (prefix < 0 || prefix > Byte.MAX_VALUE)
-                    prefix = 0;
+                int prefix;
+                if (idx + 1< nKeys) {
+                    // recalculate the prefix length for the following value
+                    prefix = calculatePrefixLen(idx + 1, idx - 1);
+                    currentDataLen -= keys[idx + 1].getLength() - prefix;
+                    prefix = calculatePrefixLen(idx + 1, idx);
+                    currentDataLen += keys[idx + 1].getLength() - prefix;
+                }
+                // calculate the prefix length for the new value
+                prefix = calculatePrefixLen(idx, idx - 1);
                 currentDataLen += keys[idx].getLength() - prefix;
                 currentDataLen++;   // add one byte for the prefix length
-            } else
+            } else {
                 currentDataLen += keys[idx].getLength();
+                if (ph.getStatus() == LEAF)
+                    currentDataLen++;
+            }
             currentDataLen += 8;
 			if(fileHeader.getFixedKeyLen() < 0)
 				currentDataLen += 2;
-		}
-		
-		private boolean mustSplit() {
+        }
+
+        private int calculatePrefixLen(int idx0, int idx1) {
+            int prefix;
+            prefix = keys[idx0].commonPrefix(keys[idx1]);
+            if (prefix < 0 || prefix > Byte.MAX_VALUE)
+                prefix = 0;
+            return prefix;
+        }
+
+        private boolean mustSplit() {
             if (ph.getValueCount() != nKeys)
                 throw new RuntimeException("Wrong value count");
 			return getDataLen() > fileHeader.getWorkSize();
@@ -1154,7 +1173,7 @@ public class BTree extends Paged {
                         }
                         insertKey(value, idx);
                         insertPointer(pointer, idx);
-						adjustDataLen(value, idx);
+						adjustDataLen(idx);
 						//recalculateDataLen();
 						if (mustSplit()) {
 						    split(transaction);
