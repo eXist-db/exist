@@ -430,14 +430,13 @@ public class NGramIndexWorker implements IndexWorker {
 		Occurrences[] result = new Occurrences[cb.map.size()];
 		return (Occurrences[]) cb.map.values().toArray(result);
     }
+    
+    //This listener is always the same whatever the document and the mode
+    //It should thus be declared static
+    private StreamListener listener = new NGramStreamListener();
 
     public StreamListener getListener() {
-        return new NGramStreamListener();
-    }
-
-    public StreamListener getListener(int mode, DocumentImpl document) {
-        setDocument(document, mode);
-        return new NGramStreamListener();
+        return listener;
     }
 
     public MatchListener getMatchListener(NodeProxy proxy) {

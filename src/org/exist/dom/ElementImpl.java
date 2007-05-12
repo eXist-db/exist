@@ -411,11 +411,10 @@ public class ElementImpl extends NamedNode implements Element {
         //May help getReindexRoot() to make some useful things
         getBroker().getIndexController().setDocument(ownerDocument);
         StoredNode reindexRoot = getBroker().getIndexController().getReindexRoot(this, path);
-        if (reindexRoot == null) {
-        	getBroker().getIndexController().setMode(StreamListener.STORE);
+        getBroker().getIndexController().setMode(StreamListener.STORE);
+        if (reindexRoot == null) {        	
             listener = getBroker().getIndexController().getStreamListener();
         } else {
-        	getBroker().getIndexController().setMode(StreamListener.STORE);
             getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
         }
 
@@ -1044,11 +1043,10 @@ public class ElementImpl extends NamedNode implements Element {
         //May help getReindexRoot() to make some useful things
         getBroker().getIndexController().setDocument(ownerDocument);
         StoredNode reindexRoot = getBroker().getIndexController().getReindexRoot(this, path, true);
+        getBroker().getIndexController().setMode(StreamListener.STORE);
         if (reindexRoot == null) {
-        	getBroker().getIndexController().setMode(StreamListener.STORE);
             listener = getBroker().getIndexController().getStreamListener();
-        } else {
-        	getBroker().getIndexController().setMode(StreamListener.STORE);
+        } else {        	
             getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
         }
         StoredNode following = (StoredNode) refChild;
@@ -1084,11 +1082,10 @@ public class ElementImpl extends NamedNode implements Element {
         //May help getReindexRoot() to make some useful things
         getBroker().getIndexController().setDocument(ownerDocument);
         StoredNode reindexRoot = getBroker().getIndexController().getReindexRoot(this, path, true);
-        if (reindexRoot == null) {
-        	getBroker().getIndexController().setMode(StreamListener.STORE);
+        getBroker().getIndexController().setMode(StreamListener.STORE);
+        if (reindexRoot == null) {        	
             listener = getBroker().getIndexController().getStreamListener();
         } else {
-        	getBroker().getIndexController().setMode(StreamListener.STORE);
             getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.STORE);
         }
         StoredNode previous = (StoredNode) refChild;
@@ -1118,11 +1115,10 @@ public class ElementImpl extends NamedNode implements Element {
         //May help getReindexRoot() to make some useful things
         getBroker().getIndexController().setDocument(ownerDocument);
         StoredNode reindexRoot = getBroker().getIndexController().getReindexRoot(this, path, true);
+    	getBroker().getIndexController().setMode(StreamListener.REMOVE_NODES);
         if (reindexRoot == null) {
-        	getBroker().getIndexController().setMode(StreamListener.REMOVE_NODES);
             listener = getBroker().getIndexController().getStreamListener();
         } else {
-        	getBroker().getIndexController().setMode(StreamListener.REMOVE_NODES);
             getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.REMOVE_NODES);
         }
 
@@ -1188,10 +1184,9 @@ public class ElementImpl extends NamedNode implements Element {
         final NodePath currentPath = getPath();
         final NodePath oldPath = oldNode.getPath(currentPath);
 
-        // check if the change affects any ancestor nodes, which then need to be reindexed later
         //May help getReindexRoot() to make some useful things
-        //Not sure if it is necessary here though...
         getBroker().getIndexController().setDocument(ownerDocument);
+        // check if the change affects any ancestor nodes, which then need to be reindexed later
         StoredNode reindexRoot = getBroker().getIndexController().getReindexRoot(oldNode, oldPath);
         // Remove indexes
         if (reindexRoot == null)
@@ -1231,11 +1226,10 @@ public class ElementImpl extends NamedNode implements Element {
         //May help getReindexRoot() to make some useful things
         getBroker().getIndexController().setDocument(ownerDocument);
         StoredNode reindexRoot = getBroker().getIndexController().getReindexRoot(oldNode, oldPath);
-        if (reindexRoot == null) {
-        	getBroker().getIndexController().setMode(StreamListener.REMOVE_NODES);
+        getBroker().getIndexController().setMode(StreamListener.REMOVE_NODES);
+        if (reindexRoot == null) {        	
             listener = getBroker().getIndexController().getStreamListener();
         } else {
-        	getBroker().getIndexController().setMode(StreamListener.REMOVE_NODES);
             getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.REMOVE_NODES);
         }
         getBroker().removeAllNodes(transaction, oldNode, oldPath, listener);
@@ -1345,11 +1339,10 @@ public class ElementImpl extends NamedNode implements Element {
         //May help getReindexRoot() to make some useful things
         getBroker().getIndexController().setDocument(ownerDocument);
         StoredNode reindexRoot = getBroker().getIndexController().getReindexRoot(oldNode, oldPath);
+    	getBroker().getIndexController().setMode(StreamListener.REMOVE_NODES);
         if (reindexRoot == null) {
-        	getBroker().getIndexController().setMode(StreamListener.REMOVE_NODES);
             listener = getBroker().getIndexController().getStreamListener();
         } else {
-        	getBroker().getIndexController().setMode(StreamListener.REMOVE_NODES);
             getBroker().getIndexController().reindex(transaction, reindexRoot, StreamListener.REMOVE_NODES);
         }
 
