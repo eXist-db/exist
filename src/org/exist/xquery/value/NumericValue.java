@@ -23,6 +23,8 @@ public abstract class NumericValue extends ComputableValue {
 		return (int)((IntegerValue)convertTo(Type.INTEGER)).getValue();
 	}
 	
+	public abstract boolean hasFractionalPart();
+	
 	public abstract boolean isNaN();
 
 	public abstract boolean isInfinite();

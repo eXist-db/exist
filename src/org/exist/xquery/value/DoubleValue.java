@@ -75,6 +75,14 @@ public class DoubleValue extends NumericValue {
 	public double getValue() {
 		return value;
 	}
+	
+	public boolean hasFractionalPart() {
+		if (isNaN())
+			return false;
+		if (isInfinite())
+			return false;
+		return new DecimalValue(new BigDecimal(value)).hasFractionalPart();
+	};	
 
 	public Item itemAt(int pos) {
 		return pos == 0 ? this : null;
