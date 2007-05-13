@@ -23,6 +23,7 @@
 
 package org.exist.xquery.value;
 
+import java.math.BigDecimal;
 import java.text.Collator;
 
 import org.exist.util.FastStringBuffer;
@@ -120,6 +121,14 @@ public class FloatValue extends NumericValue {
 	public boolean isZero() {
 		return Float.compare(value, 0f) == Constants.EQUAL;	
 	}
+
+	public boolean hasFractionalPart() {
+		if (isNaN())
+			return false;
+		if (isInfinite())
+			return false;
+		return new DecimalValue(new BigDecimal(value)).hasFractionalPart();
+	};
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Sequence#convertTo(int)

@@ -387,15 +387,18 @@ public class Predicate extends PathExpr {
                     Sequence innerSeq = inner.eval(contextSequence);                    
 				    for(SequenceIterator j = innerSeq.iterate(); j.hasNext(); ) {				      
 				        NumericValue v = (NumericValue)j.nextItem().convertTo(Type.NUMBER);
-				        //... whereas we don't want a sorted array here
-                        //TODO : rename this method as getInDocumentOrder ? -pb
-				        p = temp.get(v.getInt() - 1);
-				        if (p != null) {
-				        	//Commented out : but this is probably more complicated (see test case in the same commit)
-				        	//p.clearContext(Expression.IGNORE_CONTEXT);
-				        	result.add(p);
+				        //Non integers return... nothing, not even an error !
+				        if (!v.hasFractionalPart()) {
+					        //... whereas we don't want a sorted array here
+	                        //TODO : rename this method as getInDocumentOrder ? -pb
+					        p = temp.get(v.getInt() - 1);
+					        if (p != null) {
+					        	//Commented out : but this is probably more complicated (see test case in the same commit)
+					        	//p.clearContext(Expression.IGNORE_CONTEXT);
+					        	result.add(p);
+					        }
+	                        //TODO : does null make sense here ? Well... sometimes ;-)
 				        }
-                        //TODO : does null make sense here ? Well... sometimes ;-) 
 				    }
 				}
                 break;

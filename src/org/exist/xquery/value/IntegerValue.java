@@ -194,6 +194,10 @@ public class IntegerValue extends NumericValue {
 		return type;
 	}
 
+	public boolean hasFractionalPart() {
+		return false;
+	};
+	
 	public Item itemAt(int pos) {
 		return pos == 0 ? this : null;
 	}

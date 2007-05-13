@@ -142,6 +142,10 @@ public class DecimalValue extends NumericValue {
         }
         //End of copy
 	}
+	
+	public boolean hasFractionalPart() {
+		return (value.scale() != 0);
+	}
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Sequence#convertTo(int)
