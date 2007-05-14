@@ -23,7 +23,7 @@ import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XPathQueryService;
 
-/** Tests for various standart XQuery functions
+/** Tests for various standard XQuery functions
  * @author jens
  */
 public class XQueryFunctionsTest extends TestCase {
