@@ -60,6 +60,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
     protected boolean useSelfAsContext = false;
     protected int contextId = Expression.NO_CONTEXT_ID;
     private static final int MAX_CHILD_COUNT_FOR_OPTIMIZE = 5;
+    private DocumentSet realDocumentSet = null; 
     
     private boolean knownIsEmptyCardinality = false;
     private boolean knownHasOneCardinality = false;
@@ -115,6 +116,10 @@ public class VirtualNodeSet extends AbstractNodeSet {
      * @see org.exist.dom.AbstractNodeSet#getDocumentSet()
      */
     public DocumentSet getDocumentSet() {
+    	//If we know what are our documents, return them...
+    	if (realDocumentSet != null)
+    		return realDocumentSet;
+    	//... otherwise, we default to every *ptotentially* concerned document
         return context.getDocumentSet();
     }
 
@@ -255,6 +260,9 @@ public class VirtualNodeSet extends AbstractNodeSet {
             hasMany = true;	
         }
         realSet.add(p);
+        //Reset the real document set
+        //TODO : use realDocumentSet.add(p.getDocument()) ?
+        realDocumentSet = null;
         realSetIsComplete = false;
     }
 
@@ -359,6 +367,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
                 }
             }
         }
+        realDocumentSet = result.getDocumentSet();
         return result;
     }
 	
