@@ -22,6 +22,8 @@
 package org.exist.xquery;
 
 import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.exist.dom.ContextItem;
 import org.exist.dom.DocumentImpl;
@@ -170,14 +172,19 @@ public class Predicate extends PathExpr {
 	                    recomputedExecutionMode = POSITIONAL;
 		        	}
 	    		} catch (XPathException e) {
-	    			//Keep in boolean mide : How ugly !!! 
+	    			//Keep in boolean mode : How ugly !!! 
 	    			//innerExpressionDot is false for (1,2,3)[. lt 3]
 	    		}		            
             }
 
             if (executionMode == NODE && Type.subTypeOf(contextSequence.getItemType(), Type.ATOMIC)
                     && !(contextSequence instanceof VirtualNodeSet)) {
-                recomputedExecutionMode = BOOLEAN;
+            	//(1,2,2,4)[.]
+	            if (innerExpressionDot && Type.subTypeOf(contextSequence.getItemType(), Type.NUMBER)) { 
+                    recomputedExecutionMode = POSITIONAL;
+	        	} else {
+	        		recomputedExecutionMode = BOOLEAN;
+	        	}
             }
 
             //(1,2,3)[xs:decimal(.)]
@@ -242,11 +249,11 @@ public class Predicate extends PathExpr {
 			//0-based
 			p = 0;
 			for (SequenceIterator i = contextSequence.iterate(); i.hasNext(); p++) {
-	            context.setContextPosition(p); 
+				context.setContextPosition(p); 
 				Item item = i.nextItem();            
 	            Sequence innerSeq = inner.eval(contextSequence, item);
 				if(innerSeq.effectiveBooleanValue())
-					result.add(item);
+					result.add(item);				
 			}
 		}
 		return result;
@@ -476,16 +483,19 @@ public class Predicate extends PathExpr {
 			}
 			return result;
 		} else { 
+			Set set = new TreeSet(); 
             ValueSequence result = new ValueSequence();
-			Sequence innerSeq = inner.eval(contextSequence);			
-			for(SequenceIterator i = innerSeq.iterate(); i.hasNext(); ) {
+			Sequence innerSeq = inner.eval(contextSequence);
+			for(SequenceIterator i = innerSeq.iterate(); i.hasNext();) {
 				NumericValue v = (NumericValue)i.nextItem();
 		        //Non integers return... nothing, not even an error !
 		        if (!v.hasFractionalPart()) {
-					int pos = v.getInt() - 1;
+					int pos = v.getInt();
 	                //Other positions are ignored    
-					if(pos >= 0 && pos < contextSequence.getItemCount())
-						result.add(contextSequence.itemAt(pos));
+					if (pos > 0 && pos <= contextSequence.getItemCount() && !set.contains(v)) {
+						result.add(contextSequence.itemAt(pos - 1));						
+						set.add(v);
+					}
 		        }
 			}
 			return result;
