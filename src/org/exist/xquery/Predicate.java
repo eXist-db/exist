@@ -386,7 +386,7 @@ public class Predicate extends PathExpr {
 				    
                     Sequence innerSeq = inner.eval(contextSequence);                    
 				    for(SequenceIterator j = innerSeq.iterate(); j.hasNext(); ) {				      
-				        NumericValue v = (NumericValue)j.nextItem().convertTo(Type.NUMBER);
+				        NumericValue v = (NumericValue)j.nextItem();
 				        //Non integers return... nothing, not even an error !
 				        if (!v.hasFractionalPart()) {
 					        //... whereas we don't want a sorted array here
@@ -448,25 +448,28 @@ public class Predicate extends PathExpr {
                         //TODO : build a value sequence *one* time ? -pb
                         Sequence innerSeq = inner.eval(contextSequence);                        
                         for(SequenceIterator j = innerSeq.iterate(); j.hasNext(); ) {                    
-                            NumericValue v = (NumericValue)j.nextItem().convertTo(Type.NUMBER);                             
-                            int pos = (reverseAxis ? temp.getItemCount() - v.getInt() : v.getInt() - 1);
-                            //Other positions are ignored
-                            if (pos >= 0 && pos < temp.getItemCount()) {
-                                NodeProxy t = (NodeProxy) temp.itemAt(pos);
-                                // for the current context: filter out those context items
-                                // not selected by the positional predicate
-                                ContextItem ctx = t.getContext();
-                                t.clearContext(Expression.IGNORE_CONTEXT);
-                                while (ctx != null) {
-                                    if (ctx.getContextId() == outerContextId) {
-                                        if (ctx.getNode().getNodeId().equals(p.getNodeId()))
-                                            t.addContextNode(outerContextId, ctx.getNode());
-                                    } else
-                                        t.addContextNode(ctx.getContextId(), ctx.getNode());
-                                    ctx = ctx.getNextDirect();
-                                }
-                                result.add(t);
-                            }                       
+                            NumericValue v = (NumericValue)j.nextItem();                             
+            		        //Non integers return... nothing, not even an error !
+            		        if (!v.hasFractionalPart()) {
+	                            int pos = (reverseAxis ? temp.getItemCount() - v.getInt() : v.getInt() - 1);
+	                            //Other positions are ignored
+	                            if (pos >= 0 && pos < temp.getItemCount()) {
+	                                NodeProxy t = (NodeProxy) temp.itemAt(pos);
+	                                // for the current context: filter out those context items
+	                                // not selected by the positional predicate
+	                                ContextItem ctx = t.getContext();
+	                                t.clearContext(Expression.IGNORE_CONTEXT);
+	                                while (ctx != null) {
+	                                    if (ctx.getContextId() == outerContextId) {
+	                                        if (ctx.getNode().getNodeId().equals(p.getNodeId()))
+	                                            t.addContextNode(outerContextId, ctx.getNode());
+	                                    } else
+	                                        t.addContextNode(ctx.getContextId(), ctx.getNode());
+	                                    ctx = ctx.getNextDirect();
+	                                }
+	                                result.add(t);
+	                            }
+            		        }
                         }
                     }
     			}
@@ -476,11 +479,14 @@ public class Predicate extends PathExpr {
             ValueSequence result = new ValueSequence();
 			Sequence innerSeq = inner.eval(contextSequence);			
 			for(SequenceIterator i = innerSeq.iterate(); i.hasNext(); ) {
-				NumericValue v = (NumericValue)i.nextItem().convertTo(Type.NUMBER);
-				int pos = v.getInt() - 1;
-                //Other positions are ignored    
-				if(pos >= 0 && pos < contextSequence.getItemCount())
-					result.add(contextSequence.itemAt(pos));                            
+				NumericValue v = (NumericValue)i.nextItem();
+		        //Non integers return... nothing, not even an error !
+		        if (!v.hasFractionalPart()) {
+					int pos = v.getInt() - 1;
+	                //Other positions are ignored    
+					if(pos >= 0 && pos < contextSequence.getItemCount())
+						result.add(contextSequence.itemAt(pos));
+		        }
 			}
 			return result;
 		}
