@@ -1,13 +1,30 @@
 package org.exist.xquery;
 
+import org.exist.collections.Collection;
+import org.exist.collections.IndexInfo;
+import org.exist.dom.DocumentImpl;
 import org.exist.security.SecurityManager;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.StringSource;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
+import org.exist.storage.lock.Lock;
+import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
+import org.exist.test.TestConstants;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.value.Sequence;
 import org.exist.util.Configuration;
+import org.exist.util.serializer.SAXSerializer;
+import org.exist.util.serializer.SerializerPool;
+
+import org.xml.sax.InputSource;
+
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.util.Properties;
+import javax.xml.transform.OutputKeys;
 
 import junit.framework.TestCase;
 import junit.textui.TestRunner;
@@ -35,13 +52,21 @@ public class ConstructedNodesRecoveryTest extends TestCase
 		"		text { $category }\n" +
 		"	}";
 
-		private final static String expectedResults [] = { 
-			"Fruit",
-			"Vegetable",
-			"Meat",
-			"Dairy"
-		}; 
+	private final static String expectedResults [] = { 
+		"Fruit",
+		"Vegetable",
+		"Meat",
+		"Dairy"
+	}; 
 		
+	private final static String testDocument = 
+		"<fruit>" +
+			"<apple colour=\"green\"/>" +
+			"<pear colour=\"green\"/>" +
+			"<orange colour=\"orange\"/>" +
+			"<dragonfruit colour=\"pink\"/>" +
+			"<grapefruit colour=\"yellow\"/>" +
+		"</fruit>";
 	
 	public static void main(String[] args)
 	{
@@ -64,6 +89,60 @@ public class ConstructedNodesRecoveryTest extends TestCase
 		constructedNodeQuery(false);
 	}
 	
+	private void storeTestDocument(DBBroker broker, TransactionManager transact, String documentName) throws Exception
+	{
+		//create a transaction
+		Txn transaction = transact.beginTransaction();
+        assertNotNull(transaction);            
+        System.out.println("Transaction started ...");
+		
+		//get the test collection
+        Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
+        assertNotNull(root);
+        broker.saveCollection(transaction, root);
+		
+		//store test document
+        IndexInfo info = root.validateXMLResource(transaction, broker, XmldbURI.create(documentName), testDocument);
+        assertNotNull(info);
+        root.store(transaction, broker, info, new InputSource(new StringReader(testDocument)), false);
+        
+        //commit the transaction
+        transact.commit(transaction);
+        System.out.println("Transaction commited ...");
+	}
+	
+	private void testDocumentIsValid(DBBroker broker, TransactionManager transact, String documentName) throws Exception
+	{
+		//create a transaction
+		Txn transaction = transact.beginTransaction();
+        assertNotNull(transaction);            
+        System.out.println("Transaction started ...");
+		
+		//get the test collection
+        Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
+        assertNotNull(root);
+        broker.saveCollection(transaction, root);
+        
+        //get the test document
+        DocumentImpl doc = root.getDocumentWithLock(broker, XmldbURI.create(documentName), Lock.READ_LOCK);
+        
+        Serializer serializer = broker.getSerializer();
+        serializer.reset();
+        SAXSerializer sax = null;
+        StringWriter writer = new StringWriter();
+        sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+        Properties outputProperties = new Properties();
+        outputProperties.setProperty(OutputKeys.INDENT, "no");
+        outputProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
+        sax.setOutput(writer, outputProperties);
+        serializer.setProperties(outputProperties);
+        serializer.setSAXHandlers(sax, sax);
+        serializer.toSAX(doc);
+        SerializerPool.getInstance().returnObject(sax);
+        
+        assertEquals(testDocument, writer.toString());
+	}
+	
 	/**
 	 * Performs a query against constructed nodes, with the option of forcefully corrupting the database
 	 * 
@@ -83,7 +162,18 @@ public class ConstructedNodesRecoveryTest extends TestCase
 	        
 	        TransactionManager transact = pool.getTransactionManager();
             assertNotNull(transact);
-	        
+            
+            //only store the documents the first time
+            if(forceCorruption)
+            {
+            	//store a first test document
+            	storeTestDocument(broker, transact, "testcr1.xml");
+
+            	//store a second test document
+            	storeTestDocument(broker, transact, "testcr2.xml");
+            }
+            
+            //execute an xquery
 	        XQuery service = broker.getXQueryService();
 	        assertNotNull(service);
 	        
@@ -99,6 +189,12 @@ public class ConstructedNodesRecoveryTest extends TestCase
 			{
 				assertEquals(expectedResults[i], (String)result.itemAt(i).getStringValue());
 			}
+	        
+	        //read the first test document
+	        testDocumentIsValid(broker, transact, "testcr1.xml");
+	        
+	        //read the second test document
+	        testDocumentIsValid(broker, transact, "testcr1.xml");
 	        
 	        transact.getJournal().flushToLog(true);
 	    }
