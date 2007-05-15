@@ -97,6 +97,7 @@ public class Predicate extends PathExpr {
     	newContextInfo.setParent(this);
         super.analyze(newContextInfo);
       
+        //TODO : (0, 1, 2)[if(. eq 1) then 0 else position()]
         if ((newContextInfo.getFlags() & DOT_TEST) == DOT_TEST)
         	innerExpressionDot = true;
         
