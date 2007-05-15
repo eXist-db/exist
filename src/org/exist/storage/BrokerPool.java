@@ -750,11 +750,7 @@ public class BrokerPool {
         //OK : the DB is repaired; let's make a few RW operations
 		
         // remove temporary docs
-		try {
-			broker.cleanUpTempCollection();
-		} catch (IOException e) {
-			LOG.warn("Can not cleanup temp collection", e);
-		}
+		broker.cleanUpTempResources(true);
 
 		//Create a default configuration file for the root collection
 		//TODO : why can't we call this from within CollectionConfigurationManager ?

@@ -700,19 +700,19 @@ public abstract class DBBroker extends Observable {
 	public abstract DocumentImpl storeTempResource(
 			org.exist.memtree.DocumentImpl doc) throws EXistException,
 			PermissionDeniedException, LockException;
-
-	/**
-	 * Clean up any temporary resources.
-	 * 
-	 */
-	public abstract void cleanUpTempCollection() throws IOException;
-
+	
 	/**
 	 * Clean up temporary resources. Called by the sync daemon.
 	 * 
 	 */
 	public abstract void cleanUpTempResources();
-	
+		
+	/**
+	 * Clean up temporary resources. Called by the sync daemon.
+	 * 
+	 * @param forceRemoval Should temporary resources be forcefully removed
+	 */
+	public abstract void cleanUpTempResources(boolean forceRemoval);
 	
 	/** Convenience method that allows to check available memory during broker-related processes.
 	 * This method should eventually trigger flush() events.
