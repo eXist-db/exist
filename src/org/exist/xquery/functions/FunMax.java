@@ -39,6 +39,7 @@ import org.exist.xquery.value.DoubleValue;
 import org.exist.xquery.value.FloatValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NumericValue;
+import org.exist.xquery.value.QNameValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
@@ -110,6 +111,8 @@ public class FunMax extends CollatingFunction {
     		AtomicValue max = null;
     		while (iter.hasNext()) {
                 Item item = iter.nextItem();
+                if (item instanceof QNameValue)
+            		throw new XPathException("FORG0006: Cannot compare " + Type.getTypeName(item.getType()));
                 AtomicValue value = item.atomize();                 
                 //Any value of type xdt:untypedAtomic is cast to xs:double
                 if (value.getType() == Type.UNTYPED_ATOMIC) 
