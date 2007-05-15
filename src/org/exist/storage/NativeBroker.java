@@ -608,25 +608,6 @@ public class NativeBroker extends DBBroker {
             user = u;
             lock.release(Lock.WRITE_LOCK);
         }
-    } 
-    
-    /** remove temporary collection */  
-    public void cleanUpTempCollection() throws IOException {
-        Collection temp = getCollection(XmldbURI.TEMP_COLLECTION_URI);
-        if(temp == null)
-            return;
-        TransactionManager transact = pool.getTransactionManager();
-        Txn txn = transact.beginTransaction();
-        try {
-            removeCollection(txn, temp);
-            transact.commit(txn);
-        } catch (PermissionDeniedException e) {
-            transact.abort(txn);
-            LOG.warn("Failed to remove temporary collection: " + e.getMessage(), e);
-        } catch (TransactionException e) {
-            transact.abort(txn);
-            LOG.warn("Failed to remove temporary collection: " + e.getMessage(), e);
-        }
     }
     
     /* (non-Javadoc)
@@ -1308,7 +1289,11 @@ public class NativeBroker extends DBBroker {
         }
     }    
     
-    /** store into the temporary collection of the database a given in-memory Document */
+    /** store into the temporary collection of the database a given in-memory Document
+     *
+     * @param doc The in-memory document to store
+     * @return The document stored in the temp collection
+     */
     public DocumentImpl storeTempResource(org.exist.memtree.DocumentImpl doc) throws EXistException, PermissionDeniedException, LockException
     {
         //store the currentUser
@@ -1380,37 +1365,56 @@ public class NativeBroker extends DBBroker {
         return null;
     }
     
-    /** remove all documents from temporary collection */   
-    public void cleanUpTempResources() {
+    /** remove all documents from temporary collection */
+    public void cleanUpTempResources()
+    {
+    	cleanUpTempResources(false);
+    }
+    
+    /** remove all documents from temporary collection
+     * 
+     * @param forceRemoval Should temporary resources be forcefully removed 
+     */
+    public void cleanUpTempResources(boolean forceRemoval)
+    {
         Collection temp = getCollection(XmldbURI.TEMP_COLLECTION_URI);
         if(temp == null)
             return;
-        // remove the entire collection if all temp data has timed out
+    
+        /* We can remove the entire collection if all temp
+        data has timed out. It is much faster to remove a collection
+        than a number of documents from a collection
+        */
         boolean removeCollection = true;
-        long now = System.currentTimeMillis();
-        for(Iterator i = temp.iterator(this); i.hasNext(); ) {
-            DocumentImpl next = (DocumentImpl) i.next();
-            long modified = next.getMetadata().getLastModified();
-            if(now - modified < TEMP_FRAGMENT_TIMEOUT) {
-                removeCollection = false;
-                break;
-            }
+        if(!forceRemoval)
+        {
+	        long now = System.currentTimeMillis();
+	        for(Iterator i = temp.iterator(this); i.hasNext();)
+	        {
+	            DocumentImpl next = (DocumentImpl) i.next();
+	            long modified = next.getMetadata().getLastModified();
+	            if(now - modified < TEMP_FRAGMENT_TIMEOUT)
+	            {
+	                removeCollection = false;
+	                break;
+	            }
+	        }
         }
         
-        if (removeCollection) {
-            TransactionManager transact = pool.getTransactionManager();
-            Txn txn = transact.beginTransaction();
-            try {
-                removeCollection(txn, temp);
-                transact.commit(txn);
-            } catch (TransactionException e) {
-                transact.abort(txn);
-                LOG.warn("Transaction aborted: " + e.getMessage(), e);
-            } catch (PermissionDeniedException e) {
-                transact.abort(txn);
-                LOG.warn("Failed to remove temp collection: " + e.getMessage(), e);
-            } catch (IOException e) {
-                transact.abort(txn);
+        //remove the entire temp collection?
+        if(removeCollection)
+        {
+        	TransactionManager transact = pool.getTransactionManager();
+            Txn transaction = transact.beginTransaction();
+        	
+            try
+            {
+                removeCollection(transaction, temp);
+                transact.commit(transaction);
+            }
+            catch(Exception e)
+            {
+            	transact.abort(transaction);
                 LOG.warn("Failed to remove temp collection: " + e.getMessage(), e);
             }
         }
