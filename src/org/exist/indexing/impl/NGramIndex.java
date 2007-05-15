@@ -41,24 +41,12 @@ public class NGramIndex extends AbstractIndex {
 
     private final static Logger LOG = Logger.getLogger(NGramIndex.class);
 
-	//We have a singleton
-	private static Index instance = null;
-
 	protected BFile db;
     private int gramSize = 3;
     private File dataFile = null;
     
     public NGramIndex() {
-    	//TODO : introduce a null check
-    	instance = this;
     }
-    
-    public Index getInstance() {
-        if (instance == null) {
-            instance = new NGramIndex();
-        }
-        return instance;        
-    }          
     
     public String getIndexId() {
     	return ID;

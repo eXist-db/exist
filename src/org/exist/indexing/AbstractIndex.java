@@ -31,8 +31,6 @@ public abstract class AbstractIndex implements Index {
     protected BrokerPool pool;
     private String name = null;
 
-    public abstract Index getInstance();
-	
     public String getIndexName() {
     	return name;
     }
