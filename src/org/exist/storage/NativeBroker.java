@@ -1313,78 +1313,68 @@ public class NativeBroker extends DBBroker {
     {
         //store the currentUser
         User currentUser = user;
-        
-        //elevate user to DBA_USER
-        user = pool.getSecurityManager().getUser(SecurityManager.DBA_USER);
     	
-        //start a transaction
-    	TransactionManager transact = pool.getTransactionManager();
-        Txn transaction = transact.beginTransaction();
-        
-        //create a name for the temporary document
-        XmldbURI docName = XmldbURI.create(MD5.md(Thread.currentThread().getName() + Long.toString(System.currentTimeMillis()),false) + ".xml");
-        
-        //get the temp collection
-        Collection temp = openCollection(XmldbURI.TEMP_COLLECTION_URI, Lock.WRITE_LOCK);
-        
         try
-	    {
-        	//if no temp collection
-		if(temp == null)
-		    {
-			//creates temp collection with lock
-			temp = createTempCollection(transaction);
-			if (temp == null) {
-			    LOG.warn("Failed to create temporary collection");
-			}
-		    }
-		else
-		    {
-			//lock the temp collection
-			if (transaction == null) {
-			    temp.getLock().release(Lock.WRITE_LOCK);
-			} else {
-			    transaction.registerLock(temp.getLock(), Lock.WRITE_LOCK);
-			}
-	    }
-            
-		//create a temporary document
-		DocumentImpl targetDoc = new DocumentImpl(this, temp, docName);
-		targetDoc.setPermissions(0771);
-		long now = System.currentTimeMillis();
-		DocumentMetadata metadata = new DocumentMetadata();
-		metadata.setLastModified(now);
-		metadata.setCreated(now);
-		targetDoc.setMetadata(metadata);
-		targetDoc.setDocId(getNextResourceId(transaction, temp));
-
-		//index the temporary document
-		DOMIndexer indexer = new DOMIndexer(this, transaction, doc, targetDoc);
-		indexer.scan();
-		indexer.store();
-
-		//store the temporary document
-		temp.addDocument(transaction, this, targetDoc);
-		storeXMLResource(transaction, targetDoc);
-		flush();
-		closeDocument();            
+        {
+        	//elevate user to DBA_USER
+            user = pool.getSecurityManager().getUser(SecurityManager.DBA_USER);
+        	
+	        //transaction is null as temporary resources
+	        //do not need to be journalled
+	        Txn transaction = null;
+	        
+	        //create a name for the temporary document
+	        XmldbURI docName = XmldbURI.create(MD5.md(Thread.currentThread().getName() + Long.toString(System.currentTimeMillis()),false) + ".xml");
+	        
+	        //get the temp collection
+	        Collection temp = openCollection(XmldbURI.TEMP_COLLECTION_URI, Lock.WRITE_LOCK);
+	        
+	        if(temp != null)
+	        {
+	        	//unlock the temp collection
+	    		temp.getLock().release(Lock.WRITE_LOCK);
+	        }
+	        else
+	        {
+	        	//create the temp collection with lock
+				temp = createTempCollection(transaction);
+				if(temp == null)
+				{
+					LOG.warn("Failed to create temporary collection");
+				}
+	        }
         
-		//commit the transaction
-		transact.commit(transaction);
-            
-		return targetDoc;
+			//create a temporary document
+			DocumentImpl targetDoc = new DocumentImpl(this, temp, docName);
+			targetDoc.setPermissions(0771);
+			long now = System.currentTimeMillis();
+			DocumentMetadata metadata = new DocumentMetadata();
+			metadata.setLastModified(now);
+			metadata.setCreated(now);
+			targetDoc.setMetadata(metadata);
+			targetDoc.setDocId(getNextResourceId(transaction, temp));
+	
+			//index the temporary document
+			DOMIndexer indexer = new DOMIndexer(this, transaction, doc, targetDoc);
+			indexer.scan();
+			indexer.store();
+	
+			//store the temporary document
+			temp.addDocument(transaction, this, targetDoc);
+			storeXMLResource(transaction, targetDoc);
+			flush();
+			closeDocument();            
+	        
+			return targetDoc;
 	    }
-        catch (Exception e)
+        catch(Exception e)
 	    {
         	LOG.warn("Failed to store temporary fragment: " + e.getMessage(), e);
-         
-		//abort the transaction
-		transact.abort(transaction);
 	    }
         finally
 	    {
-		//restore the user
-		user = currentUser;
+        	//restore the user
+        	user = currentUser;
 	    }
         
         return null;
