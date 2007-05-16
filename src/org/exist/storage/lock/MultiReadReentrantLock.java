@@ -168,8 +168,7 @@ public class MultiReadReentrantLock implements Lock {
         }
         synchronized (thisThread) {
             while (thisThread != writeLockedThread) {
-                //                log.debug( "writeLock wait: outstanding: " +
-                // outstandingWriteLocks + " / " + outstandingReadLocks);
+                LOG.debug( "writeLock wait: outstanding: " + outstandingWriteLocks + " / " + outstandingReadLocks);
                 try {
                     // set this so if there is an error the app will not
                     // completely die!
@@ -296,7 +295,7 @@ public class MultiReadReentrantLock implements Lock {
 
     private boolean checkReadLocks() {
         final int size = outstandingReadLocks.size();
-        return size == 0 || (size == 1 && outstandingReadLocks.get(size - 1) == Thread.currentThread());
+        return size == 0 || outstandingReadLocks.get(size - 1) == Thread.currentThread();
     }
 }
 
