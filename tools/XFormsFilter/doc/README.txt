@@ -37,16 +37,8 @@ http://ant.apache.org/ or your systems software repository.
 XFormsFilter has a dependency on Chiba-core and Chiba-web and as such
 the source code archives need to be present in the XFormsFilter folder.
 
-You should download chiba-core-1.3.0-src.tar.gz from - 
-http://sf.net/projects/chiba
-
-XFormsFilter relies on a version of Chiba-Web that is newer than the
-current release (2.0.0rc1). So you will need to checkout a copy of
-Chiba-Web from CVS. Details on how to do this can be found here - 
-http://sourceforge.net/cvs/?group_id=20274
-You should then rename the checked out folder to chiba-web-2.0.0cvs and
-archive it into a .tar.gz file with the name chiba-web-2.0.0cvs-src.tar.gz
-This process will be simpler once the upcoming Chiba-Web is released!
+You should download chiba-core-1.3.0-src.tar.gz and
+chiba-web-2.0.0-src.tar.gz from - http://sf.net/projects/chiba
 
 By default the XFormsFilter will expect to generate XHTML 1.1 compatible
 output (if you wish to have HTML 4.01 output see the "Configuration Options" section at the
@@ -62,7 +54,7 @@ It is recommended that eXist is shutdown during the installation. You Should als
 make a copy of your eXist Home folder $EXIST_HOME and a backup of your database
 before attempting this, in case anything should go wrong.
 
-From the prerequisites stage, you should have chiba-1.3.0-src.tar.gz and chiba-web-2.0.0cvs-src.tar.gz
+From the prerequisites stage, you should have chiba-1.3.0-src.tar.gz and chiba-web-2.0.0-src.tar.gz
 in your $EXIST_HOME/tools/XFormsFilter folder.
 
 If you wish to build and install using Ant provided with eXist then you
