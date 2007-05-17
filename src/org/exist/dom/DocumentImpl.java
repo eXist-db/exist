@@ -348,7 +348,7 @@ public class DocumentImpl extends NodeImpl implements Document, Comparable {
      */     
     public final synchronized Lock getUpdateLock() {
         if(updateLock == null)
-            updateLock = new MultiReadReentrantLock();
+            updateLock = new MultiReadReentrantLock(this);
         return updateLock;
     }
     
