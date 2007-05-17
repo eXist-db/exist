@@ -723,7 +723,8 @@ public class XQueryContext {
      *@see #setLockDocumentsOnLoad(boolean)
      */
 	public void releaseLockedDocuments() {
-	    if(lockedDocuments != null)
+        System.out.println("RELEASE LOCKED");
+        if(lockedDocuments != null)
 	        lockedDocuments.unlock(false);
 	    lockDocumentsOnLoad = false;
 		lockedDocuments = null;
@@ -739,35 +740,36 @@ public class XQueryContext {
      * @throws XPathException 
      */
 	public DocumentSet releaseUnusedDocuments(Sequence seq) throws XPathException {
-	    if(lockedDocuments == null)
-	        return null;
-	    // determine the set of documents referenced by nodes in the sequence
-        DocumentSet usedDocs = new DocumentSet();
-        for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
-            Item next = i.nextItem();
-            if(Type.subTypeOf(next.getType(), Type.NODE)) {
-                NodeValue node = (NodeValue) next;
-                if(node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-                    DocumentImpl doc = ((NodeProxy)node).getDocument();
-                    if(!usedDocs.contains(doc.getDocId()))
-	                    usedDocs.add(doc, false);
-                }
-            }
-        }
-        DocumentSet remaining = new DocumentSet();
-        for(Iterator i = lockedDocuments.iterator(); i.hasNext(); ) {
-            DocumentImpl next = (DocumentImpl) i.next();
-            if(usedDocs.contains(next.getDocId())) {
-               remaining.add(next); 
-            } else {
-//                LOG.debug("Releasing lock on " + next.getName());
-                next.getUpdateLock().release(Lock.READ_LOCK);
-            }
-        }
-//        LOG.debug("Locks remaining: " + remaining.getLength());
-        lockDocumentsOnLoad = false;
-		lockedDocuments = null;
-        return remaining;
+//	    if(lockedDocuments == null)
+//	        return null;
+//	    // determine the set of documents referenced by nodes in the sequence
+//        DocumentSet usedDocs = new DocumentSet();
+//        for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
+//            Item next = i.nextItem();
+//            if(Type.subTypeOf(next.getType(), Type.NODE)) {
+//                NodeValue node = (NodeValue) next;
+//                if(node.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+//                    DocumentImpl doc = ((NodeProxy)node).getDocument();
+//                    if(!usedDocs.contains(doc.getDocId()))
+//	                    usedDocs.add(doc, false);
+//                }
+//            }
+//        }
+//        DocumentSet remaining = new DocumentSet();
+//        for(Iterator i = lockedDocuments.iterator(); i.hasNext(); ) {
+//            DocumentImpl next = (DocumentImpl) i.next();
+//            if(usedDocs.contains(next.getDocId())) {
+//               remaining.add(next);
+//            } else {
+////                LOG.debug("Releasing lock on " + next.getName());
+//                next.getUpdateLock().release(Lock.READ_LOCK);
+//            }
+//        }
+////        LOG.debug("Locks remaining: " + remaining.getLength());
+//        lockDocumentsOnLoad = false;
+//		lockedDocuments = null;
+//        return remaining;
+        return lockedDocuments;
     }
 	
 	/**

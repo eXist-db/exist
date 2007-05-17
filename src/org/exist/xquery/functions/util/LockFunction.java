@@ -49,7 +49,7 @@ public abstract class LockFunction extends Function {
         Sequence docsArg = getArgument(0).eval(contextSequence, contextItem);
         DocumentSet docs = docsArg.getDocumentSet();
         try {
-            docs.lock(exclusive);
+            docs.lock(exclusive, false);
             return getArgument(1).eval(contextSequence, contextItem);
         } catch (LockException e) {
             throw new XPathException(getASTNode(), "Could not lock document set", e);

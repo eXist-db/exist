@@ -70,22 +70,21 @@ public class RootNode extends Step {
         
         // check if the loaded documents should remain locked
         boolean lockOnLoad = context.lockDocumentsOnLoad();
-        
         NodeSet result = new ExtArrayNodeSet(2);
         try {
             // wait for pending updates
-            ds.lock(false);
+            ds.lock(false, true);
             
 	        DocumentImpl doc;
 	        for (Iterator i = ds.iterator(); i.hasNext();) {
 	            doc = (DocumentImpl) i.next();
 	            if(doc.getResourceType() == DocumentImpl.XML_FILE) {  // skip binary resources
 	            	result.add(new NodeProxy(doc));
-	            	if(lockOnLoad) {
-	            	    context.getLockedDocuments().add(doc);
-	            	}
 	            }
-	        }
+                if(lockOnLoad) {
+                    context.getLockedDocuments().add(doc);
+                }
+            }
 	        cached = result;
 	        cachedDocs = ds;            
         } catch (LockException e) {

@@ -235,7 +235,7 @@ public abstract class Modification {
 		    // acquire a lock on all documents
 	        // we have to avoid that node positions change
 	        // during the modification
-	        lockedDocuments.lock(true);
+	        lockedDocuments.lock(true, false);
 	        
 		    StoredNode ql[] = new StoredNode[nl.getLength()];		    
 			for (int i = 0; i < ql.length; i++) {
