@@ -202,6 +202,11 @@ public class ReentrantReadWriteLock implements Lock {
     	return writeLocks > 0;
     }
 
+    public boolean isLockedForRead(Object owner) {
+        // always returns false for this lock
+        return false;
+    }
+
     public synchronized boolean hasLock() {
     	return holds_ > 0;
     }

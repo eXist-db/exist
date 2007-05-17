@@ -68,5 +68,13 @@ public interface Lock {
      */
     public boolean isLockedForWrite();
 
+    /**
+     * Check if the specified thread does currently hold a read lock.
+     *
+     * @param owner the thread to search for
+     * @return true if the thread holds a read lock
+     */
+    public boolean isLockedForRead(Thread owner);
+
     public boolean hasLock();
 }
