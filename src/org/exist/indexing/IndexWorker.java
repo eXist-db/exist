@@ -95,7 +95,6 @@ public interface IndexWorker {
      *  {@link StreamListener#REMOVE_NODES} or
      * {@link StreamListener#REMOVE_ALL_NODES}.
      *
-     * @param doc the document which is processed
      * @param mode the current operation mode
      */
     void setMode(int mode);
@@ -117,9 +116,6 @@ public interface IndexWorker {
      *
      * Parameter mode specifies the type of the current operation.
      *
-     * @param mode one of {@link StreamListener#STORE}, {@link StreamListener#REMOVE_NODES} or
-     * {@link StreamListener#REMOVE_ALL_NODES}.
-     * @param document the document to be indexed.
      * @return a StreamListener
      */
     StreamListener getListener();
