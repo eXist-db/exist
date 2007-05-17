@@ -255,12 +255,13 @@ public class DocumentSet extends Int2ObjectHashMap implements NodeList {
 	public void lock(boolean exclusive, boolean checkExisting) throws LockException {
 	    DocumentImpl d;
 	    Lock dlock;
-	    for(int idx = 0; idx < tabSize; idx++) {
+        final Thread thread = Thread.currentThread();
+        for(int idx = 0; idx < tabSize; idx++) {
 	        if(values[idx] == null || values[idx] == REMOVED)
 	            continue;
 	        d = (DocumentImpl)values[idx];
             dlock = d.getUpdateLock();
-            if (checkExisting && dlock.isLockedForRead(Thread.currentThread()))
+            if (checkExisting && dlock.isLockedForRead(thread))
                 continue;
             if(exclusive)
                 dlock.acquire(Lock.WRITE_LOCK);
@@ -272,16 +273,17 @@ public class DocumentSet extends Int2ObjectHashMap implements NodeList {
 	public void unlock(boolean exclusive) {
 	    DocumentImpl d;
 	    Lock dlock;
-	    for(int idx = 0; idx < tabSize; idx++) {
+        final Thread thread = Thread.currentThread();
+        for(int idx = 0; idx < tabSize; idx++) {
 	        if(values[idx] == null || values[idx] == REMOVED)
 	            continue;
 	        d = (DocumentImpl)values[idx];
 	        dlock = d.getUpdateLock();
             if(exclusive)
-	            dlock.release(Lock.WRITE_LOCK);
-	        else
-	            dlock.release(Lock.READ_LOCK);
-	    }
+                dlock.release(Lock.WRITE_LOCK);
+            else if (dlock.isLockedForRead(thread))
+                dlock.release(Lock.READ_LOCK);
+        }
 	}
 	
 	public String toString() {
