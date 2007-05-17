@@ -75,9 +75,13 @@ public abstract class DBBroker extends Observable {
 
 	public final static String ROOT_COLLECTION = "/" + ROOT_COLLECTION_NAME;
 
-	public final static String SYSTEM_COLLECTION = ROOT_COLLECTION + "/system";
+	public final static String SYSTEM_COLLECTION_NAME = "system";
+	
+	public final static String SYSTEM_COLLECTION = ROOT_COLLECTION + "/" + SYSTEM_COLLECTION_NAME;
 
-	public final static String TEMP_COLLECTION = SYSTEM_COLLECTION + "/temp";
+	public final static String TEMP_COLLECTION_NAME = "temp";
+	
+	public final static String TEMP_COLLECTION = SYSTEM_COLLECTION + "/" + TEMP_COLLECTION_NAME;
 
     //TODO : move elsewhere
     public static String PROPERTY_XUPDATE_GROWTH_FACTOR = "xupdate.growth-factor";
