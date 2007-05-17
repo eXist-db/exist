@@ -221,12 +221,13 @@ public class IndexController {
     }
 
     /**
-     * Reindex all nodes below the specified root node, using the given mode. mode should be
-     * one of {@link StreamListener#STORE} or {@link StreamListener#REMOVE_NODES}.
+     * Reindex all nodes below the specified root node, using the given mode. Mode should be
+     * one of {@link StreamListener#UNKNOWN}, {@link StreamListener#STORE}, 
+     * {@link StreamListener#REMOVE_NODES} or {@link StreamListener#REMOVE_ALL_NODES}.
      *
      * @param transaction the current transaction
      * @param reindexRoot the root node to reindex
-     * @param mode one of {@link StreamListener#STORE} or {@link StreamListener#REMOVE_NODES}.
+     * @param mode the mode
      */
     public void reindex(Txn transaction, StoredNode reindexRoot, int mode) {
         if (reindexRoot == null)
