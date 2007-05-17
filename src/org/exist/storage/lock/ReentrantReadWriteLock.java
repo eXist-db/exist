@@ -202,7 +202,7 @@ public class ReentrantReadWriteLock implements Lock {
     	return writeLocks > 0;
     }
 
-    public boolean isLockedForRead(Object owner) {
+    public boolean isLockedForRead(Thread owner) {
         // always returns false for this lock
         return false;
     }
