@@ -413,7 +413,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
         }
         Match next = match;
         while (next != null) {
-            if (next.compareTo(m) == 0)
+            if (next.equals(m))
                 return;
             if (next.nextMatch == null) {
                 next.nextMatch = m;
