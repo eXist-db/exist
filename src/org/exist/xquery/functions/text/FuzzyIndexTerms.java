@@ -44,9 +44,9 @@ public class FuzzyIndexTerms extends BasicFunction {
 
 	public final static FunctionSignature signature = new FunctionSignature(
 			new QName("fuzzy-index-terms", TextModule.NAMESPACE_URI, TextModule.PREFIX),
-			"Fuzzy keyword search, which compares strings based on the Levenshtein distance " +
-			"(or edit distance). The function tries to match each of the keywords specified in the " +
-			"keyword string $b against the string value of each item in the sequence $a.",
+			"Compares the specified argument against the contents of the fulltext index. Returns " +
+            "a sequence of strings which are similar to the argument. Similarity is based on Levenshtein " +
+            "distance. This function may not be useful in its current form and is subject to change.",
 			new SequenceType[]{
 					new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)},
 			new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE));
@@ -64,7 +64,7 @@ public class FuzzyIndexTerms extends BasicFunction {
 			return Sequence.EMPTY_SEQUENCE;
 		DocumentSet docs;
 		if(contextSequence instanceof NodeSet)
-			docs = ((NodeSet)contextSequence).getDocumentSet();
+			docs = contextSequence.getDocumentSet();
 		else
 			docs = context.getStaticallyKnownDocuments();
 		String term = args[0].getStringValue();
