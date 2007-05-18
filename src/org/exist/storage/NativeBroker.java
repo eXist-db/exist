@@ -2217,10 +2217,10 @@ public class NativeBroker extends DBBroker {
         checkAvailableMemory();
         final DocumentImpl doc = (DocumentImpl)node.getOwnerDocument();
         final short nodeType = node.getNodeType();
+        final byte data[] = node.serialize();
         new DOMTransaction(this, domDb, Lock.WRITE_LOCK, doc) {
             public Object start() throws ReadOnlyException {
                 long address;
-                final byte data[] = node.serialize();
                 if (nodeType == Node.TEXT_NODE
                     || nodeType == Node.ATTRIBUTE_NODE
                     || nodeType == Node.CDATA_SECTION_NODE
@@ -2233,13 +2233,13 @@ public class NativeBroker extends DBBroker {
                     LOG.warn("address is missing");
                 //TODO : how can we continue here ? -pb
                 node.setInternalAddress(address);
-                ByteArrayPool.releaseByteArray(data);
                 return null;
             }
         }
 	    .run();
         ++nodesCount;
-
+        ByteArrayPool.releaseByteArray(data);
+        
         nodeProcessor.reset(transaction, node, currentPath, fullTextIndex);
         nodeProcessor.doIndex();
     }
