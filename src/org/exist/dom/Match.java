@@ -93,15 +93,16 @@ public abstract class Match implements Comparable {
         this.matchTerm = matchTerm;
 		this.offsets = new int[frequency];
         this.lengths = new int[frequency];
-	}
+    }
 	
 	protected Match(Match match) {
-		this.nodeId = match.nodeId;
+        this.context = match.context;
+        this.nodeId = match.nodeId;
         this.matchTerm = match.matchTerm;
 		this.offsets = match.offsets;
         this.lengths = match.lengths;
         this.currentOffset = match.currentOffset;
-	}
+    }
 	
 	public NodeId getNodeId() {
 		return nodeId;
@@ -186,6 +187,8 @@ public abstract class Match implements Comparable {
             buf.append(offsets[i]).append(':').append(lengths[i]);
             buf.append("]");
         }
+        if (nextMatch != null)
+            buf.append(' ').append(nextMatch.toString());
         return buf.toString();
     }
 }

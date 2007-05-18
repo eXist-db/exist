@@ -68,6 +68,8 @@ public class Cardinality {
                 return "zero or more";
             case ZERO_OR_ONE:
                 return "zero or one";
+            case MANY:
+                return "many";
             default:
                 // impossible
                 throw new IllegalArgumentException("unknown cardinality: " + cardinality);

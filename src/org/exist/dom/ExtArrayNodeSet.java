@@ -929,6 +929,7 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
                array[length - 1].getNodeId().equals(nodeId)) {		 
             */
             if (length > 0 && array[length - 1].getNodeId().equals(p.getNodeId())) {
+                array[length - 1].addMatches(p);
                 return;
                 //} ljo's modification
             }
@@ -1255,8 +1256,10 @@ public class ExtArrayNodeSet extends AbstractNodeSet {
                     if (i != ++j) {
                         array[j] = array[i];
                     }
-                } else if (mergeContext) {
-                    array[j].addContext(array[i]);
+                } else {
+                    if (mergeContext)
+                        array[j].addContext(array[i]);
+                    array[j].addMatches(array[i]);
                 }
             }
             length = ++j;

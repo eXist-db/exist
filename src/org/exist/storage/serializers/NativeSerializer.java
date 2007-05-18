@@ -45,6 +45,7 @@ import org.exist.dom.StoredNode;
 import org.exist.dom.TextImpl;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
+import org.exist.storage.NativeTextEngine;
 import org.exist.util.Configuration;
 import org.exist.util.FastQSort;
 import org.exist.util.XMLString;
@@ -328,7 +329,8 @@ public class NativeSerializer extends Serializer {
             List offsets = null;
             Match next = match;
             while (next != null) {
-                if (next.getNodeId().equals(text.getNodeId())) {
+                if (next.getIndexId() == NativeTextEngine.FT_MATCH_ID &&
+                    next.getNodeId().equals(text.getNodeId())) {
                     if (offsets == null)
                         offsets = new ArrayList();
                     int freq = next.getFrequency();
