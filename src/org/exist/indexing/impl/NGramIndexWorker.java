@@ -138,6 +138,8 @@ public class NGramIndexWorker implements IndexWorker {
                 if (qname == null || qname.length() == 0)
                     throw new DatabaseConfigurationException("Configuration error: element " + node.getNodeName() +
 	                		" must have an attribute " + QNAME_ATTR);
+                if (LOG.isTraceEnabled())
+                    LOG.trace("NGram index defined on " + qname);
                 NGramIndexConfig config = new NGramIndexConfig(namespaces, qname);
                 map.put(config.getQName(), config);
             }
@@ -515,14 +517,14 @@ public class NGramIndexWorker implements IndexWorker {
         for (int i = 0; i < count; i++) {
             char ch[] = new char[ngramSize];
             for (int j = 0; j < ngramSize; j++) {
-                ch[j] = text.charAt(pos++);
+                ch[j] = Character.toLowerCase(text.charAt(pos++));
             }
             n[i] = new String(ch);
         }
         if (remainder > 0) {
             char ch[] = new char[remainder];
             for (int i = 0; i < remainder; i++)
-                ch[i] = text.charAt(pos++);
+                ch[i] = Character.toLowerCase(text.charAt(pos++));
             n[count] = new String(ch);
         }
         return n;
@@ -713,7 +715,7 @@ public class NGramIndexWorker implements IndexWorker {
                     // scan all matches
                     Match next = match;
                     while (next != null) {
-                        if (next.getNodeId().equals(no.nodeId)) {
+                        if (next.getIndexId() == NGramIndex.ID && next.getNodeId().equals(no.nodeId)) {
                             int freq = next.getFrequency();
                             for (int j = 0; j < freq; j++) {
                                 Match.Offset offset = next.getOffset(j);
@@ -752,7 +754,7 @@ public class NGramIndexWorker implements IndexWorker {
                     if (offset.getOffset() > pos) {
                         super.characters(s.substring(pos, pos + (offset.getOffset() - pos)));
                     }
-                    super.startElement(MATCH_ELEMENT, null); 
+                    super.startElement(MATCH_ELEMENT, null);
                     super.characters(s.substring(offset.getOffset(), offset.getOffset() + offset.getLength()));
                     super.endElement(MATCH_ELEMENT);
                     pos = offset.getOffset() + offset.getLength();
@@ -896,30 +898,18 @@ public class NGramIndexWorker implements IndexWorker {
                             int sizeHint = contextSet.getSizeHint(storedDocument);
                             if (returnAncestor) {
                                 NodeProxy parentNode = contextSet.parentWithChild(storedNode, false, true, NodeProxy.UNKNOWN_NODE_LEVEL);
-                                Match match = new NGramMatch(contextId, nodeId, ngram, freq);
-                                for (int n = 0; n < freq; n++) {
-                                    match.addOffset(is.readInt(), query.length());
-                                }
                                 if (parentNode != null) {
-                                    parentNode.addMatch(match);
+                                    readMatches(ngram, is, nodeId, freq, parentNode);
                                     resultSet.add(parentNode, sizeHint);
                                 } else
                                     is.skip(freq);
                             } else {
-                                Match match = new NGramMatch(contextId, nodeId, ngram, freq);
-                                for (int n = 0; n < freq; n++) {
-                                    match.addOffset(is.readInt(), ngram.length());
-                                }
-                                storedNode.addMatch(match);
+                                readMatches(ngram, is, nodeId, freq, storedNode);
                                 resultSet.add(storedNode, sizeHint);
                             }
                             // otherwise, we add all text nodes without check
                         } else {
-                            Match match = new NGramMatch(contextId, nodeId, ngram, freq);
-                            for (int n = 0; n < freq; n++) {
-                                match.addOffset(is.readInt(), ngram.length());
-                            }
-                            storedNode.addMatch(match);
+                            readMatches(ngram, is, nodeId, freq, storedNode);
                             resultSet.add(storedNode, Constants.NO_SIZE_HINT);
                         }
                         context.proceed();
@@ -930,6 +920,14 @@ public class NGramIndexWorker implements IndexWorker {
                 LOG.error(e.getMessage(), e);
                 return true;
             }
+        }
+
+        private void readMatches(String ngram, VariableByteInput is, NodeId nodeId, int freq, NodeProxy parentNode) throws IOException {
+            Match match = new NGramMatch(contextId, nodeId, ngram, freq);
+            for (int n = 0; n < freq; n++) {
+                match.addOffset(is.readInt(), query.length());
+            }
+            parentNode.addMatch(match);
         }
     }
 

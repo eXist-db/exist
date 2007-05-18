@@ -353,7 +353,7 @@ public class Restore extends DefaultHandler {
 					if(dialog != null)
 						dialog.displayMessage("restored " + name);
 				} catch (Exception e) {
-                    if (dialog != null) { 
+                    if (dialog != null) {
                             dialog.displayMessage("Failed to restore resource '" + name + "'\nfrom file '" +
                                     f.getAbsolutePath() + "'.\nReason: " + e.getMessage());
                             showErrorMessage(

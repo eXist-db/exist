@@ -412,23 +412,12 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
             return;
         }
         Match next = match;
-        int cmp;
         while (next != null) {
-            cmp = next.compareTo(m);
-            if (cmp == 0 && m.getNodeId().equals(next.getNodeId()))
+            if (next.compareTo(m) == 0)
                 return;
-            else if (cmp < 0) {
-                if (next == match)
-                    match = m;
-                m.nextMatch = next;
-                return;
-            } else if (next.nextMatch == null) {
+            if (next.nextMatch == null) {
                 next.nextMatch = m;
-                m.nextMatch = null;
-                return;
-            } else {
-                m.nextMatch = next.nextMatch;
-                next.nextMatch = m;
+                break;
             }
             next = next.nextMatch;
         }

@@ -121,7 +121,19 @@ public final class EmptyNodeSet extends AbstractNodeSet {
         return null;
     }
 
-	private final static class EmptyNodeSetIterator implements NodeSetIterator {
+    public NodeSet intersection(NodeSet other) {
+        return other;
+    }
+
+    public NodeSet deepIntersection(NodeSet other) {
+        return other;
+    }
+
+    public NodeSet union(NodeSet other) {
+        return other;
+    }
+
+    private final static class EmptyNodeSetIterator implements NodeSetIterator {
 
 		/* (non-Javadoc)
 		 * @see java.util.Iterator#remove()

@@ -91,7 +91,9 @@ import org.w3c.dom.Node;
  * @author Wolfgang Meier
  */
 public class NativeTextEngine extends TextSearchEngine implements ContentLoadingObserver {
-	
+
+    public static final String FT_MATCH_ID = NativeTextEngine.class.getName();
+
     public static final String FILE_NAME = "words.dbx";
     public static final String  FILE_KEY_IN_CONFIG = "db-connection.words";	
 	
@@ -1693,7 +1695,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         }
 
         public String getIndexId() {
-            return NativeTextEngine.class.getName();
+            return FT_MATCH_ID;
         }
     }
 }
