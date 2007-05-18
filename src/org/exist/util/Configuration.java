@@ -1029,7 +1029,8 @@ public class Configuration implements ErrorHandler {
         }
     }
     
-    private void configureValidation(String dbHome, Document doc, NodeList validation) throws DatabaseConfigurationException {
+    private void configureValidation(String dbHome, Document doc, NodeList validation) 
+                                        throws DatabaseConfigurationException {
         
         // Register custom protocol URL
         // TODO DWES move to different location?
@@ -1041,13 +1042,16 @@ public class Configuration implements ErrorHandler {
         String mode = p.getAttribute("mode");
         if (mode != null) {
             config.put(XMLReaderObjectFactory.PROPERTY_VALIDATION, mode);
-            LOG.debug(XMLReaderObjectFactory.PROPERTY_VALIDATION + ": " + config.get(XMLReaderObjectFactory.PROPERTY_VALIDATION));
+            LOG.debug(XMLReaderObjectFactory.PROPERTY_VALIDATION + ": " 
+                + config.get(XMLReaderObjectFactory.PROPERTY_VALIDATION));
         }
         
         
         // Extract catalogs
-        NodeList entityResolver = p.getElementsByTagName("entity-resolver");
+        LOG.debug("Creating eXist catalog resolver");
+        eXistXMLCatalogResolver resolver = new eXistXMLCatalogResolver();
         
+        NodeList entityResolver = p.getElementsByTagName("entity-resolver");
         if (entityResolver.getLength() > 0) {
             Element r = (Element) entityResolver.item(0);
             NodeList catalogs = r.getElementsByTagName("catalog");
@@ -1088,15 +1092,9 @@ public class Configuration implements ErrorHandler {
             
             // Store all configured URI
             config.put(XMLReaderObjectFactory.CATALOG_URIS, allURIs);
-            
-            // TODO DWES discuss ; this should not be here?
-            
-            // Create resolver
-            LOG.debug("Creating eXist catalog resolver");
-            eXistXMLCatalogResolver resolver = new eXistXMLCatalogResolver();
             resolver.setCatalogs(allURIs);
-            config.put(XMLReaderObjectFactory.CATALOG_RESOLVER, resolver);
         }
+        config.put(XMLReaderObjectFactory.CATALOG_RESOLVER, resolver);
     }
     
     
