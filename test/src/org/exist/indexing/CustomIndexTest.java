@@ -476,7 +476,7 @@ public class CustomIndexTest extends TestCase {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
-            seq = xquery.execute("//section[text:ngram-contains(., '123')]", null, AccessContext.TEST);
+            seq = xquery.execute("//section[text:ngram-contains(para, '123')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
@@ -540,7 +540,7 @@ public class CustomIndexTest extends TestCase {
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
-            seq = xquery.execute("//section[text:ngram-contains(., '123')]", null, AccessContext.TEST);
+            seq = xquery.execute("//section[text:ngram-contains(*, '123')]", null, AccessContext.TEST);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
 
