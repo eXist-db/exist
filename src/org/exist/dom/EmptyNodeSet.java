@@ -122,11 +122,11 @@ public final class EmptyNodeSet extends AbstractNodeSet {
     }
 
     public NodeSet intersection(NodeSet other) {
-        return other;
+        return this;
     }
 
     public NodeSet deepIntersection(NodeSet other) {
-        return other;
+        return this;
     }
 
     public NodeSet union(NodeSet other) {
