@@ -160,9 +160,19 @@ public class NGramSearch extends Function implements Optimizable {
     private NodeSet processMatches(NGramIndexWorker index, DocumentSet docs, List qnames, String[] ngrams, NodeSet nodeSet, int axis) throws TerminatedException {
         NodeSet result = null;
         for (int i = 0; i < ngrams.length; i++) {
-            NodeSet nodes = index.search(getExpressionId(), docs, qnames, ngrams[i], context, nodeSet, axis);
+            long start = System.currentTimeMillis();
+            String ngram = ngrams[i];
+            if (ngram.length() < index.getN() && i > 0) {
+                // if this is the last ngram and its length is too small,
+                // fill it up with characters from the previous ngram. too short
+                // ngrams lead to a considerable performance loss.
+                int fill = index.getN() - ngram.length();
+                ngram = ngrams[i - 1].substring(index.getN() - fill) + ngram;
+            }
+            NodeSet nodes = index.search(getExpressionId(), docs, qnames, ngram, ngrams[i], context, nodeSet, axis);
             if (LOG.isTraceEnabled())
-                LOG.trace("Found " + nodes.getLength() + " for " + ngrams[i]);
+                LOG.trace("Found " + nodes.getLength() + " for " + ngram + " in " +
+                    (System.currentTimeMillis() - start));
             if (result == null)
                 result = nodes;
             else {
