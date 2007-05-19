@@ -51,7 +51,6 @@ public class Predicate extends PathExpr {
 	private final static int NODE = 0;
     private final static int BOOLEAN = 1;
     private final static int POSITIONAL = 2;
-    private final static int POTENTIALLY_POSITIONAL = 3;
     
 	private CachedResult cached = null;
 	
@@ -59,7 +58,7 @@ public class Predicate extends PathExpr {
 	
     private int outerContextId;
     
-    private boolean innerExpressionDot = false; 
+    //private boolean innerExpressionDot = false; 
 
     private Expression parent;
 
@@ -100,32 +99,24 @@ public class Predicate extends PathExpr {
         super.analyze(newContextInfo);
       
         //TODO : (0, 1, 2)[if(. eq 1) then 0 else position()]
-        if ((newContextInfo.getFlags() & DOT_TEST) == DOT_TEST)
-        	innerExpressionDot = true;
+        //if ((newContextInfo.getFlags() & DOT_TEST) == DOT_TEST)
+        	//innerExpressionDot = true;
         
         Expression inner = getExpression(0);        
 
+        final int innerType = inner.returnsType();
         // Case 1: predicate expression returns a node set. 
         // Check the returned node set against the context set 
         // and return all nodes from the context, for which the
-		// predicate expression returns a non-empty sequence.
-        final int innerType = inner.returnsType();
-        if (Type.subTypeOf(innerType, Type.NODE)) {
-            if(!Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM))
-                executionMode = NODE;
-            else
-                executionMode = BOOLEAN;
-            
-        // Case 2: predicate expression returns a number.
-        } else if (Type.subTypeOf(innerType, Type.NUMBER)) {
-        	if (inner.getCardinality() == Cardinality.EXACTLY_ONE
+		// predicate expression returns a non-empty sequence.        
+        if (Type.subTypeOf(innerType, Type.NODE) && !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM)) {
+    		executionMode = NODE;
+        // Case 2: predicate expression returns a unique number and has no dependency with the context item.
+    	} else if (Type.subTypeOf(innerType, Type.NUMBER) && inner.getCardinality() == Cardinality.EXACTLY_ONE
         		&& !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM)) 
-        		executionMode = POSITIONAL;
-        	else
-        		executionMode = POTENTIALLY_POSITIONAL;
-            
-        // Case 3: predicate expression evaluates to a boolean.
-        } else
+    		executionMode = POSITIONAL;
+        // Case 3: all other cases, boolean evaluation (that can be reevaluated later)
+        else
             executionMode = BOOLEAN;
         
 		if(executionMode == BOOLEAN) {
@@ -149,90 +140,38 @@ public class Predicate extends PathExpr {
 		if (inner == null)
 			result = Sequence.EMPTY_SEQUENCE;
         else {
-            int recomputedExecutionMode = executionMode; 
+            int recomputedExecutionMode = executionMode;
             
-            //Try to promote a boolean evaluation to a positionnal one  
-            if (executionMode == BOOLEAN) {
-            	//Atomic sequences will keep evaluating "." in BOOLEAN mode
-            	if (!innerExpressionDot && !Type.subTypeOf(contextSequence.getItemType(), Type.NODE)) {  
-            		try {
-	            		Sequence innerSeq = inner.eval(contextSequence); 
-		                //Only if we have an actual *singleton* of numeric items
-		                if (innerSeq.hasOne() && Type.subTypeOf(innerSeq.getItemType(), Type.NUMBER)) { 
-		                    recomputedExecutionMode = POSITIONAL;
-		            	}
-            		} catch (XPathException e) {
-            			//Keep in boolean mide : How ugly !!! 
-            			//innerExpressionDot is false for (1,2,3)[. lt 3]
-            		}          
-            	}
-            }  
-            
-            //Try to promote a boolean evaluation to a positionnal one  (second case)
-            if (executionMode == BOOLEAN && !innerExpressionDot && !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM)) {
-		        try {
+            //Atomic context sequences :
+            if (Type.subTypeOf(contextSequence.getItemType(), Type.ATOMIC)) {
+            	//We can't have a node set operation : reconsider depending of the inner sequence
+                if (executionMode == NODE && !(contextSequence instanceof VirtualNodeSet)) {
+                	//(1,2,2,4)[.]
+    	            if (Type.subTypeOf(contextSequence.getItemType(), Type.NUMBER)) { 
+                        recomputedExecutionMode = POSITIONAL;
+    	        	} else {
+    	        		recomputedExecutionMode = BOOLEAN;
+    	        	}
+                }
+                //If there is no dependency on the context item, try a positional promotion
+	            if (executionMode == BOOLEAN && !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM)
+	            		//Hack : GeneralComparison lies on its dependencies
+	            		&& !((inner instanceof GeneralComparison) && ((GeneralComparison)inner).invalidNodeEvaluation)) {
+	        		Sequence innerSeq = inner.eval(contextSequence); 
+	                //Only if we have an actual *singleton* of numeric items
+	                if (innerSeq.hasOne() && Type.subTypeOf(innerSeq.getItemType(), Type.NUMBER)) { 
+	                    recomputedExecutionMode = POSITIONAL;
+	            	}
+	            }
+            } else {
+	            //Try to promote a boolean evaluation to a positional one
+	            if (executionMode == BOOLEAN && !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM)) {
 		        	Sequence innerSeq = inner.eval(contextSequence); 
 		            //Only if we have an actual *singleton* of numeric items
 		            if (innerSeq.hasOne() && Type.subTypeOf(innerSeq.getItemType(), Type.NUMBER)) { 
 	                    recomputedExecutionMode = POSITIONAL;
 		        	}
-	    		} catch (XPathException e) {
-	    			//Keep in boolean mode : How ugly !!! 
-	    			//innerExpressionDot is false for (1,2,3)[. lt 3]
-	    		}		            
-            }
-
-            if (executionMode == NODE && Type.subTypeOf(contextSequence.getItemType(), Type.ATOMIC)
-                    && !(contextSequence instanceof VirtualNodeSet)) {
-            	//(1,2,2,4)[.]
-	            if (innerExpressionDot && Type.subTypeOf(contextSequence.getItemType(), Type.NUMBER)) { 
-                    recomputedExecutionMode = POSITIONAL;
-	        	} else {
-	        		recomputedExecutionMode = BOOLEAN;
-	        	}
-            }
-
-            //(1,2,3)[xs:decimal(.)]
-            //TODO : think and find *the* triggering condition that leads to boolean evaluation
-            //ideally determine it at analysis time
-            if (executionMode == POSITIONAL && innerExpressionDot && 
-            		Type.subTypeOf(contextSequence.getItemType(), Type.ATOMIC)) {
-                recomputedExecutionMode = BOOLEAN;
-            }
-            
-            if (executionMode == POTENTIALLY_POSITIONAL) {
-            	if (Type.subTypeOf(inner.returnsType(), Type.NUMBER) && !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM)) {
-            		//Can't do anything else...
-            		//TODO : pass this to selectByPosition() ?
-            		Sequence innerSeq = inner.eval(contextSequence);
-            		if (innerSeq.getItemCount() == 1)
-            			recomputedExecutionMode = POSITIONAL;
-            		else
-            			recomputedExecutionMode = BOOLEAN;
-            	} else {
-            		boolean gotMany = false;
-            		if (Type.subTypeOf(inner.returnsType(), Type.NUMBER)) {
-            			NumericValue nv = null;
-	        			for (SequenceIterator i = contextSequence.iterate(); i.hasNext();) {
-	        				Item item = i.nextItem();            
-	        	            Sequence innerSeq = inner.eval(item.toSequence(), null);
-	        	            if (innerSeq.getItemCount() > 1) {
-	        	            	gotMany = true;
-	        	            	break;
-	        	            }
-	        	            if (nv == null)
-	        	            	nv = (NumericValue)innerSeq.itemAt(0);
-	        	            else if (!nv.equals((NumericValue)innerSeq.itemAt(0))) {
-	        	            	gotMany = true;
-	        	            	break;
-	        	            }	
-	        			}
-            		}
-    				if (!gotMany) 
-    					recomputedExecutionMode = POSITIONAL;
-    				else
-            			recomputedExecutionMode = BOOLEAN;
-            	}
+	            }
             }
 
     		switch(recomputedExecutionMode) {
@@ -289,7 +228,9 @@ public class Predicate extends PathExpr {
 		} else {
 			//0-based
 			p = 0;
-			//TODO : is this block accurate in reverse-order processing ? 
+			//TODO : is this block accurate in reverse-order processing ?
+			//Compute each position in the boolean-like way...
+			//... but grab some context positions ! -<8-P
         	if (Type.subTypeOf(inner.returnsType(), Type.NUMBER) && Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM)) {
         		Sequence positions = new ValueSequence();
         		for (SequenceIterator i = contextSequence.iterate(); i.hasNext(); p++) {					
