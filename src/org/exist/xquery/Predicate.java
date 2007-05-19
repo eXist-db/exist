@@ -218,7 +218,6 @@ public class Predicate extends PathExpr {
 				//0-based
 	            context.setContextPosition(p - 1); 
 				Item item = i.nextItem();            
-	            //Sequence innerSeq = inner.eval(item.toSequence(), null);
 				Sequence innerSeq = inner.eval(contextSequence, item);
 				if(innerSeq.effectiveBooleanValue())
 					result.add(item);
@@ -230,26 +229,22 @@ public class Predicate extends PathExpr {
 			//Compute each position in the boolean-like way...
 			//... but grab some context positions ! -<8-P
         	if (Type.subTypeOf(inner.returnsType(), Type.NUMBER) && Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM)) {
-        		Sequence positions = new ValueSequence();
+        		Set positions = new TreeSet();
         		for (SequenceIterator i = contextSequence.iterate(); i.hasNext(); p++) {					
 					context.setContextPosition(p); 
 					Item item = i.nextItem();            
 		            Sequence innerSeq = inner.eval(contextSequence, item);
-		            //TODO : ideally, we would like to order and avoid duplicates
-		            positions.addAll(innerSeq);		            
+		            //TODO : introduce a check in innerSeq.hasOne() ?
+					NumericValue nv = (NumericValue)innerSeq;
+					if (!nv.hasFractionalPart() && !nv.isZero())
+		            	positions.add(nv);	            
         		}
-        		p = 0;
-        		for (SequenceIterator i = contextSequence.iterate(); i.hasNext(); p++) {
-					Item item = i.nextItem();
-					for (int j = 0 ; j < positions.getItemCount(); j++) {
-						NumericValue nv = (NumericValue)positions.itemAt(j);
-						if (!nv.hasFractionalPart() && nv.getInt() - 1 == p) {
-							result.add(item);
-							//Useless if ordered and if duplicates are removed
-							break;
-						}
-					}
-        		}
+				for (Iterator i = positions.iterator() ; i.hasNext() ;) {
+					int position = ((NumericValue)i.next()).getInt();
+					//TODO : move this test above ?
+					if (position <= contextSequence.getItemCount())
+						result.add(contextSequence.itemAt(position - 1));
+				}
         	} else {
         		for (SequenceIterator i = contextSequence.iterate(); i.hasNext(); p++) {
 					context.setContextPosition(p); 
