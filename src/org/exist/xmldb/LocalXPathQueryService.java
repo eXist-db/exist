@@ -175,7 +175,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 				    context = xquery.newContext(accessCtx);
 				else
 				    context = compiled.getContext();
-				context.setBackwardsCompatibility(xpathCompatible);
+				//context.setBackwardsCompatibility(xpathCompatible);
 				context.setStaticallyKnownDocuments(docs);
 				setupContext(context);
 				
@@ -266,7 +266,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 			entry = (Map.Entry) i.next();
 			context.declareVariable((String) entry.getKey(), entry.getValue());
 		}
-		context.setBackwardsCompatibility(xpathCompatible);
+		//context.setBackwardsCompatibility(xpathCompatible);
 	}
 	
 	/**
@@ -343,7 +343,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
     	try {
     		broker = brokerPool.get(user);
 
-    		context.setBackwardsCompatibility(xpathCompatible);
+    		//context.setBackwardsCompatibility(xpathCompatible);
     		context.setStaticallyKnownDocuments(docs);
     		setupContext(context);
     		checkPragmas(context);

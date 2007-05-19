@@ -198,7 +198,7 @@ public class XQueryContext {
 	 * Set to true to enable XPath 1.0
 	 * backwards compatibility.
 	 */
-	private boolean backwardsCompatible = true;
+	private boolean backwardsCompatible = false;
 
 	/**
 	 * Should whitespace inside node constructors be stripped?
