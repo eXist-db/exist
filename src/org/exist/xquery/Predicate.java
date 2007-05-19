@@ -77,9 +77,9 @@ public class Predicate extends PathExpr {
 		} else {
 			deps = super.getDependencies();
         }
-		if (executionMode == POSITIONAL)
+		//if (executionMode == POSITIONAL)
 			// in a positional predicate, remove the dependency on the context item
-			deps = deps & ~Dependency.CONTEXT_ITEM;
+			//deps = deps & ~Dependency.CONTEXT_ITEM;
 		return deps;
 	}
 
@@ -119,8 +119,7 @@ public class Predicate extends PathExpr {
         // Case 2: predicate expression returns a number.
         } else if (Type.subTypeOf(innerType, Type.NUMBER)) {
         	if (inner.getCardinality() == Cardinality.EXACTLY_ONE
-        		/*|| inner.getCardinality() == Cardinality.ZERO_OR_ONE)*/) 
-        		//Just a hint : inner's cardinality may still be potential
+        		&& !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM)) 
         		executionMode = POSITIONAL;
         	else
         		executionMode = POTENTIALLY_POSITIONAL;
@@ -213,7 +212,6 @@ public class Predicate extends PathExpr {
             	} else {
             		boolean gotMany = false;
             		if (Type.subTypeOf(inner.returnsType(), Type.NUMBER)) {
-            			boolean gotOne = false;
             			NumericValue nv = null;
 	        			for (SequenceIterator i = contextSequence.iterate(); i.hasNext();) {
 	        				Item item = i.nextItem();            
@@ -229,7 +227,6 @@ public class Predicate extends PathExpr {
 	        	            	break;
 	        	            }	
 	        			}
-	        			
             		}
     				if (!gotMany) 
     					recomputedExecutionMode = POSITIONAL;
@@ -292,13 +289,37 @@ public class Predicate extends PathExpr {
 		} else {
 			//0-based
 			p = 0;
-			for (SequenceIterator i = contextSequence.iterate(); i.hasNext(); p++) {
-				context.setContextPosition(p); 
-				Item item = i.nextItem();            
-	            Sequence innerSeq = inner.eval(contextSequence, item);
-				if(innerSeq.effectiveBooleanValue())
-					result.add(item);				
-			}
+			//TODO : is this block accurate in reverse-order processing ? 
+        	if (Type.subTypeOf(inner.returnsType(), Type.NUMBER) && Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM)) {
+        		Sequence positions = new ValueSequence();
+        		for (SequenceIterator i = contextSequence.iterate(); i.hasNext(); p++) {					
+					context.setContextPosition(p); 
+					Item item = i.nextItem();            
+		            Sequence innerSeq = inner.eval(contextSequence, item);
+		            //TODO : ideally, we would like to order and avoid duplicates
+		            positions.addAll(innerSeq);		            
+        		}
+        		p = 0;
+        		for (SequenceIterator i = contextSequence.iterate(); i.hasNext(); p++) {
+					Item item = i.nextItem();
+					for (int j = 0 ; j < positions.getItemCount(); j++) {
+						NumericValue nv = (NumericValue)positions.itemAt(j);
+						if (!nv.hasFractionalPart() && nv.getInt() - 1 == p) {
+							result.add(item);
+							//Useless if ordered and if duplicates are removed
+							break;
+						}
+					}
+        		}
+        	} else {
+        		for (SequenceIterator i = contextSequence.iterate(); i.hasNext(); p++) {
+					context.setContextPosition(p); 
+					Item item = i.nextItem();            
+		            Sequence innerSeq = inner.eval(contextSequence, item);
+					if (innerSeq.effectiveBooleanValue())
+						result.add(item);				
+				}
+        	}
 		}
 		return result;
 	}
