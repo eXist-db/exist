@@ -26,6 +26,7 @@ import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.util.FastQSort;
+import org.exist.xquery.Constants;
 import org.exist.xquery.OrderSpec;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.util.ExpressionDumper;
@@ -215,7 +216,6 @@ public class OrderedValueSequence extends AbstractSequence {
 			for(int i = 0; i < orderSpecs.length; i++) {
 				Sequence seq = orderSpecs[i].getSortExpression().eval(null);
 				values[i] = AtomicValue.EMPTY_VALUE;
-				//TODO : get rid of getLength()
 				if(seq.hasOne()) {
 					values[i] = seq.itemAt(0).atomize();
 				} else if(seq.hasMany())
@@ -238,19 +238,19 @@ public class OrderedValueSequence extends AbstractSequence {
 					b = other.values[i];
 					if(a == AtomicValue.EMPTY_VALUE && b != AtomicValue.EMPTY_VALUE) {
 						if((orderSpecs[i].getModifiers() & OrderSpec.EMPTY_LEAST) != 0)
-							cmp = -1;
+							cmp = Constants.INFERIOR;
 						else
-							cmp = 1;
+							cmp = Constants.SUPERIOR;
 					} else if(b == AtomicValue.EMPTY_VALUE && a != AtomicValue.EMPTY_VALUE) {
 						if((orderSpecs[i].getModifiers() & OrderSpec.EMPTY_LEAST) != 0)
-							cmp = 1;
+							cmp = Constants.SUPERIOR;
 						else
-							cmp = -1;
+							cmp = Constants.INFERIOR;
 					} else
 						cmp = a.compareTo(orderSpecs[i].getCollator(), b);
 					if((orderSpecs[i].getModifiers() & OrderSpec.DESCENDING_ORDER) != 0)
 						cmp = cmp * -1;
-					if(cmp != 0)
+					if(cmp != Constants.EQUAL)
 						break;
 				} catch (XPathException e) {
 				}
