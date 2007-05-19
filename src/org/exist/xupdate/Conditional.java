@@ -79,7 +79,7 @@ public class Conditional extends Modification {
 		else
 		    context = compiled.getContext();
 
-		context.setBackwardsCompatibility(true);
+		//context.setBackwardsCompatibility(true);
 		context.setStaticallyKnownDocuments(docs);
 		declareNamespaces(context);
 		declareVariables(context);
