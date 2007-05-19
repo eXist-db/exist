@@ -273,6 +273,7 @@ public class XPathQueryTest extends XMLTestCase {
             queryAndAssert(service, "(1, 2, 3)[if(1) then 1 else position()]", 1, null);
             queryAndAssert(service, "()/position()", 0, null);
             queryAndAssert(service, "(0, 1, 2)[if(. eq 1) then 2 else 3]", 2, null);
+            queryAndAssert(service, "(0, 1, 2)[remove((1, 'a string'), 2)]", 1, null);            
             
         } catch (XMLDBException e) {
             fail(e.getMessage());
