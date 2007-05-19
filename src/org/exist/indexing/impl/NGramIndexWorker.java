@@ -350,7 +350,7 @@ public class NGramIndexWorker implements IndexWorker {
         }
     }
 
-    public NodeSet search(int contextId, DocumentSet docs, List qnames, String ngram, XQueryContext context, NodeSet contextSet, int axis)
+    public NodeSet search(int contextId, DocumentSet docs, List qnames, String query, String ngram, XQueryContext context, NodeSet contextSet, int axis)
         throws TerminatedException {
         if (qnames == null || qnames.isEmpty())
             qnames = getDefinedIndexes(context.getBroker(), docs);
@@ -359,14 +359,13 @@ public class NGramIndexWorker implements IndexWorker {
             final short collectionId = ((org.exist.collections.Collection) iter.next()).getId();
             for (int i = 0; i < qnames.size(); i++) {
                 QName qname = (QName) qnames.get(i);
-                NGramQNameKey key = new NGramQNameKey(collectionId, qname, context.getBroker().getSymbols(), ngram);
+                NGramQNameKey key = new NGramQNameKey(collectionId, qname, context.getBroker().getSymbols(), query);
                 final Lock lock = index.db.getLock();
                 try {
                     lock.acquire(Lock.READ_LOCK);
-                    SearchCallback cb = new SearchCallback(contextId, ngram, docs, contextSet, context, result, axis == NodeSet.ANCESTOR);
-                    int op = ngram.length() < getN() ? IndexQuery.TRUNC_RIGHT : IndexQuery.EQ;
-                    final IndexQuery query = new IndexQuery(op, key);
-                    index.db.query(query, cb);
+                    SearchCallback cb = new SearchCallback(contextId, query, ngram, docs, contextSet, context, result, axis == NodeSet.ANCESTOR);
+                    int op = query.length() < getN() ? IndexQuery.TRUNC_RIGHT : IndexQuery.EQ;
+                    index.db.query(new IndexQuery(op, key), cb);
                 } catch (LockException e) {
                     LOG.warn("Failed to acquire lock for '" + index.db.getFile().getName() + "'", e);
                 } catch (IOException e) {
@@ -508,6 +507,14 @@ public class NGramIndexWorker implements IndexWorker {
         return ngrams;
     }
 
+    /**
+     * Split the specified string into a sequence of ngrams to be used
+     * for querying the index. For example, if we have a 3-gram index, the
+     * string 'distinct' will be split into the ngrams 'dis', 'tin' and 'ct'.
+     *
+     * @param text the character sequence to split
+     * @return a sequence of ngrams. the last item might be shorter than n.
+     */
     public String[] getDistinctNGrams(CharSequence text) {
         int ngramSize = index.getN();
         int count = text.length() / ngramSize;
@@ -842,15 +849,18 @@ public class NGramIndexWorker implements IndexWorker {
 
         private int contextId;
         private String query;
+        private String ngram;
         private DocumentSet docs;
         private NodeSet contextSet;
         private XQueryContext context;
         private NodeSet resultSet;
         private boolean returnAncestor;
 
-        public SearchCallback(int contextId, String query, DocumentSet docs, NodeSet contextSet, XQueryContext context, NodeSet result, boolean returnAncestor) {
+        public SearchCallback(int contextId, String query, String ngram, DocumentSet docs, NodeSet contextSet,
+                              XQueryContext context, NodeSet result, boolean returnAncestor) {
             this.contextId = contextId;
             this.query = query;
+            this.ngram = ngram;
             this.docs = docs;
             this.context = context;
             this.contextSet = contextSet;
@@ -922,10 +932,14 @@ public class NGramIndexWorker implements IndexWorker {
             }
         }
 
-        private void readMatches(String ngram, VariableByteInput is, NodeId nodeId, int freq, NodeProxy parentNode) throws IOException {
+        private void readMatches(String current, VariableByteInput is, NodeId nodeId, int freq, NodeProxy parentNode) throws IOException {
+            int diff = current.length() - ngram.length();
             Match match = new NGramMatch(contextId, nodeId, ngram, freq);
             for (int n = 0; n < freq; n++) {
-                match.addOffset(is.readInt(), query.length());
+                int offset = is.readInt();
+                if (diff > 0)
+                    offset += diff;
+                match.addOffset(offset, ngram.length());
             }
             parentNode.addMatch(match);
         }
