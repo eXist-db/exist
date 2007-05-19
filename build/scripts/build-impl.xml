@@ -53,7 +53,7 @@
     
     <!-- additional set of ant tasks -->
     <property name="asocat-exist.jar" location="${tools.ant}/lib/asocat-exist.jar"/>
-    <property name="javasvn.jar" location="${tools.ant}/lib/svnkit-1.1.0.jar"/>
+    <property name="javasvn.jar" location="${tools.ant}/lib/svnkit-1.1.1.jar"/>
     <available file="${javasvn.jar}" property="svn-present" />
 
     <!-- setup class path -->
@@ -399,7 +399,7 @@
     <!-- ================================================================== -->
     <!-- Build all                                                          -->
     <!-- ================================================================== -->
-    <target name="all" depends="jar,wrapper,extension-modules,test-compile" description="Build all"/>
+    <target name="all" depends="jar,wrapper,extension-modules,extension-indexes,test-compile" description="Build all"/>
 
     <!-- ================================================================== -->
     <!-- Rebuild all                                                        -->
@@ -511,6 +511,7 @@
         <delete failonerror="no" dir="${dist}"/>
         <ant antfile="build.xml" dir="tools/wrapper" target="clean"/>
         <ant antfile="build.xml" dir="extensions/modules" target="clean"/>
+        <ant antfile="build.xml" dir="extensions/indexes" target="clean"/>
     </target>
 
     <!-- ============================================================================ -->
@@ -529,6 +530,10 @@
         <ant antfile="build.xml" dir="extensions/modules"/>
     </target>
 
+    <target name="extension-indexes" depends="jar">
+        <ant antfile="build.xml" dir="extensions/indexes"/>
+    </target>
+    
     <target name="cleandocs">
         <replaceregexp>
             <regexp pattern="/\*.*Description of the Method.*\*/"/>

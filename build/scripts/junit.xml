@@ -21,7 +21,7 @@
     </condition>
 
     <target name="test"
-            depends="check-java-version, test-prepare, test-local, test-jetty, test-concurrent, test-remote, test-recovery, test-wrapup"
+            depends="check-java-version, test-prepare, test-local, test-indexing, test-jetty, test-concurrent, test-remote, test-recovery, test-wrapup"
             description="Run jUnit tests"/>
 
     <!-- Extra jUnit properties -->
@@ -43,6 +43,7 @@
               file="${junit.reports}/src/org/exist/performance/ant/antlib.xml"/>
         <copy todir="${junit.reports}/classes/org/exist/performance"
             file="${junit.reports}/src/org/exist/performance/log2html.xql"/>
+        <ant antfile="build.xml" dir="extensions/indexes" target="compile-tests"/> 
     </target>
 
     <target name="check-java-version" if="java14-only">
@@ -99,7 +100,6 @@
             <test fork="yes" name="org.exist.xupdate.AllXupdateTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.xquery.AllXqueryTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.xquery.OptimizerTest" todir="${junit.reports.dat}"/>
-            <test fork="yes" name="org.exist.indexing.AllIndexTests" todir="${junit.reports.dat}"/>
             
             <!-- Execute all other tests except those that have to be called manually.   -->
             <batchtest fork="yes" todir="${junit.reports.dat}">
@@ -116,6 +116,7 @@
                     <exclude name="**/soap/*.java"/>
                     <exclude name="**/numbering/*.java"/>
                     <exclude name="**/indexing/*.java"/>
+					<exclude name="org/exist/*.java"/>
                 </fileset>
             </batchtest>
         </junit>
@@ -179,7 +180,12 @@
             <test name="org.exist.storage.AllStorageTests" todir="${junit.reports.dat}"/>
         </junit>
     </target>
-	
+
+    <!-- Test set 5: tests on custom index modules -->
+    <target name="test-indexing">
+        <ant antfile="build.xml" dir="extensions/indexes" target="test"/>
+    </target>
+
     <!-- Helper target for starting server -->
     <target name="start-server">
         <echo message="---------------------------------------"/>
