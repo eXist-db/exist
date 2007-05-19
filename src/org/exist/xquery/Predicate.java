@@ -58,8 +58,6 @@ public class Predicate extends PathExpr {
 	
     private int outerContextId;
     
-    //private boolean innerExpressionDot = false; 
-
     private Expression parent;
 
     public Predicate(XQueryContext context) {
@@ -76,9 +74,6 @@ public class Predicate extends PathExpr {
 		} else {
 			deps = super.getDependencies();
         }
-		//if (executionMode == POSITIONAL)
-			// in a positional predicate, remove the dependency on the context item
-			//deps = deps & ~Dependency.CONTEXT_ITEM;
 		return deps;
 	}
 
@@ -98,10 +93,6 @@ public class Predicate extends PathExpr {
     	newContextInfo.setParent(this);
         super.analyze(newContextInfo);
       
-        //TODO : (0, 1, 2)[if(. eq 1) then 0 else position()]
-        //if ((newContextInfo.getFlags() & DOT_TEST) == DOT_TEST)
-        	//innerExpressionDot = true;
-        
         Expression inner = getExpression(0);        
 
         final int innerType = inner.returnsType();
@@ -142,6 +133,8 @@ public class Predicate extends PathExpr {
         else {
             int recomputedExecutionMode = executionMode;
             
+            Sequence innerSeq = null;
+            
             //Atomic context sequences :
             if (Type.subTypeOf(contextSequence.getItemType(), Type.ATOMIC)) {
             	//We can't have a node set operation : reconsider depending of the inner sequence
@@ -157,7 +150,7 @@ public class Predicate extends PathExpr {
 	            if (executionMode == BOOLEAN && !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM)
 	            		//Hack : GeneralComparison lies on its dependencies
 	            		&& !((inner instanceof GeneralComparison) && ((GeneralComparison)inner).invalidNodeEvaluation)) {
-	        		Sequence innerSeq = inner.eval(contextSequence); 
+	            	innerSeq = inner.eval(contextSequence); 
 	                //Only if we have an actual *singleton* of numeric items
 	                if (innerSeq.hasOne() && Type.subTypeOf(innerSeq.getItemType(), Type.NUMBER)) { 
 	                    recomputedExecutionMode = POSITIONAL;
@@ -166,7 +159,7 @@ public class Predicate extends PathExpr {
             } else {
 	            //Try to promote a boolean evaluation to a positional one
 	            if (executionMode == BOOLEAN && !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM)) {
-		        	Sequence innerSeq = inner.eval(contextSequence); 
+	            	innerSeq = inner.eval(contextSequence); 
 		            //Only if we have an actual *singleton* of numeric items
 		            if (innerSeq.hasOne() && Type.subTypeOf(innerSeq.getItemType(), Type.NUMBER)) { 
 	                    recomputedExecutionMode = POSITIONAL;
@@ -191,7 +184,11 @@ public class Predicate extends PathExpr {
                     if (context.getProfiler().isEnabled())
                         context.getProfiler().message(this, Profiler.OPTIMIZATION_FLAGS, 
                                 "OPTIMIZATION CHOICE", "Positional evaluation");
-                    result = selectByPosition(outerSequence, contextSequence, mode, inner);
+                    //In case it hasn't been evaluated above
+                    if (innerSeq == null) {
+                    	innerSeq = inner.eval(contextSequence);
+                    }
+                    result = selectByPosition(outerSequence, contextSequence, mode, innerSeq);
                     break;
     			default:
                     throw new IllegalArgumentException("Unsupported execution mode: '" + recomputedExecutionMode + "'");			    
@@ -221,14 +218,15 @@ public class Predicate extends PathExpr {
 				//0-based
 	            context.setContextPosition(p - 1); 
 				Item item = i.nextItem();            
-	            Sequence innerSeq = inner.eval(item.toSequence(), null);
+	            //Sequence innerSeq = inner.eval(item.toSequence(), null);
+				Sequence innerSeq = inner.eval(contextSequence, item);
 				if(innerSeq.effectiveBooleanValue())
 					result.add(item);
 			}
 		} else {
 			//0-based
 			p = 0;
-			//TODO : is this block accurate in reverse-order processing ?
+			//TODO : is this block also accurate in reverse-order processing ?
 			//Compute each position in the boolean-like way...
 			//... but grab some context positions ! -<8-P
         	if (Type.subTypeOf(inner.returnsType(), Type.NUMBER) && Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM)) {
@@ -344,7 +342,7 @@ public class Predicate extends PathExpr {
 	 * @return The result of the positional evaluation of the predicate.
 	 * @throws XPathException
 	 */
-	private Sequence selectByPosition(Sequence outerSequence, Sequence contextSequence, int mode, Expression inner) throws XPathException {
+	private Sequence selectByPosition(Sequence outerSequence, Sequence contextSequence, int mode, Sequence innerSeq) throws XPathException {
 		if(outerSequence != null && !outerSequence.isEmpty() && 
 				Type.subTypeOf(contextSequence.getItemType(), Type.NODE)) {
 			Sequence result = new ExtArrayNodeSet(100);
@@ -397,7 +395,6 @@ public class Predicate extends PathExpr {
                     //TODO : understand why we sort here...
 				    temp.sortInDocumentOrder();
 				    
-                    Sequence innerSeq = inner.eval(contextSequence);                    
 				    for(SequenceIterator j = innerSeq.iterate(); j.hasNext(); ) {				      
 				        NumericValue v = (NumericValue)j.nextItem();
 				        //Non integers return... nothing, not even an error !
@@ -458,8 +455,6 @@ public class Predicate extends PathExpr {
                         throw new IllegalArgumentException("Tested unknown axis");
                     }
                     if (!temp.isEmpty()) {
-                        //TODO : build a value sequence *one* time ? -pb
-                        Sequence innerSeq = inner.eval(contextSequence);                        
                         for(SequenceIterator j = innerSeq.iterate(); j.hasNext(); ) {                    
                             NumericValue v = (NumericValue)j.nextItem();                             
             		        //Non integers return... nothing, not even an error !
@@ -491,7 +486,6 @@ public class Predicate extends PathExpr {
 		} else { 
 			Set set = new TreeSet(); 
             ValueSequence result = new ValueSequence();
-			Sequence innerSeq = inner.eval(contextSequence);
 			for(SequenceIterator i = innerSeq.iterate(); i.hasNext();) {
 				NumericValue v = (NumericValue)i.nextItem();
 		        //Non integers return... nothing, not even an error !
