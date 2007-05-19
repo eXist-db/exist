@@ -706,8 +706,14 @@ public class CustomIndexTest extends TestCase {
 
             Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
             assertNotNull(root);
-            transact.commit(transaction);
             broker.removeCollection(transaction, root);
+
+            Collection config = broker.getOrCreateCollection(transaction,
+                XmldbURI.create(CollectionConfigurationManager.CONFIG_COLLECTION + "/db"));
+            assertNotNull(config);
+            broker.removeCollection(transaction, config);
+            
+            transact.commit(transaction);
         } catch (Exception e) {
         	transact.abort(transaction);
             e.printStackTrace();
