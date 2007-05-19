@@ -54,7 +54,6 @@ public class TextModule extends AbstractInternalModule {
         new FunctionDef(MatchRegexp.signatures[2], MatchRegexp.class),
         new FunctionDef(MatchRegexp.signatures[3], MatchRegexp.class),
         new FunctionDef(FilterNested.signature, FilterNested.class),
-        new FunctionDef(NGramSearch.signature, NGramSearch.class)
     };
     
     /**
