@@ -339,7 +339,7 @@
         track-term-freq="yes">
 
         <modules>
-            <module id="ngram-index" class="org.exist.indexing.impl.NGramIndex"
+            <module id="ngram-index" class="org.exist.indexing.ngram.NGramIndex"
                     file="ngram.dbx" n="3"/>
         </modules>
 
@@ -520,7 +520,8 @@
                 uri="http://exist-db.org/xquery/validation" />
             <module class="org.exist.xquery.functions.system.SystemModule"
                 uri="http://exist-db.org/xquery/system" />
-
+			<module class="org.exist.xquery.modules.ngram.NGramModule"
+				uri="http://exist-db.org/xquery/ngram" />
             <!-- Optional Modules -->
             <!--module class="org.exist.xquery.modules.datetime.DateTimeModule"
                     uri="http://exist-db.org/xquery/datetime" />
