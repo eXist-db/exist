@@ -2,12 +2,14 @@ package org.exist.xquery.value;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
-import javax.xml.datatype.*;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.Duration;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 /**
  * Centralizes access to time-related utility functions.  Mostly delegates to the
@@ -56,7 +58,8 @@ public class TimeUtils {
 	}
 	
 	public int getLocalTimezoneOffsetMillis() {
-		return timezoneOverriden ? timezoneOffset : TimeZone.getDefault().getRawOffset();
+		int dstOffset = Calendar.getInstance(TimeZone.getDefault()).get(Calendar.DST_OFFSET);
+		return timezoneOverriden ? timezoneOffset : TimeZone.getDefault().getRawOffset() + dstOffset;
 	}
 	
 	public int getLocalTimezoneOffsetMinutes() {
