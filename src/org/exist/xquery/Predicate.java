@@ -47,13 +47,15 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class Predicate extends PathExpr {
 
-    private final static int NODE = 0;
+	private final static int UNKNOWN = -1;
+	private final static int NODE = 0;
     private final static int BOOLEAN = 1;
     private final static int POSITIONAL = 2;
+    private final static int POTENTIALLY_POSITIONAL = 3;
     
 	private CachedResult cached = null;
 	
-	private int executionMode = BOOLEAN;
+	private int executionMode = UNKNOWN;
 	
     private int outerContextId;
     
@@ -115,10 +117,13 @@ public class Predicate extends PathExpr {
                 executionMode = BOOLEAN;
             
         // Case 2: predicate expression returns a number.
-        } else if (Type.subTypeOf(innerType, Type.NUMBER) && (inner.getCardinality() == Cardinality.EXACTLY_ONE
-        		|| inner.getCardinality() == Cardinality.ZERO_OR_ONE)) {
-            //Just a hint : inner's cardinality may still be potential
-            executionMode = POSITIONAL;
+        } else if (Type.subTypeOf(innerType, Type.NUMBER)) {
+        	if (inner.getCardinality() == Cardinality.EXACTLY_ONE
+        		/*|| inner.getCardinality() == Cardinality.ZERO_OR_ONE)*/) 
+        		//Just a hint : inner's cardinality may still be potential
+        		executionMode = POSITIONAL;
+        	else
+        		executionMode = POTENTIALLY_POSITIONAL;
             
         // Case 3: predicate expression evaluates to a boolean.
         } else
@@ -195,6 +200,44 @@ public class Predicate extends PathExpr {
             		Type.subTypeOf(contextSequence.getItemType(), Type.ATOMIC)) {
                 recomputedExecutionMode = BOOLEAN;
             }
+            
+            if (executionMode == POTENTIALLY_POSITIONAL) {
+            	if (Type.subTypeOf(inner.returnsType(), Type.NUMBER) && !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM)) {
+            		//Can't do anything else...
+            		//TODO : pass this to selectByPosition() ?
+            		Sequence innerSeq = inner.eval(contextSequence);
+            		if (innerSeq.getItemCount() == 1)
+            			recomputedExecutionMode = POSITIONAL;
+            		else
+            			recomputedExecutionMode = BOOLEAN;
+            	} else {
+            		boolean gotMany = false;
+            		if (Type.subTypeOf(inner.returnsType(), Type.NUMBER)) {
+            			boolean gotOne = false;
+            			NumericValue nv = null;
+	        			for (SequenceIterator i = contextSequence.iterate(); i.hasNext();) {
+	        				Item item = i.nextItem();            
+	        	            Sequence innerSeq = inner.eval(item.toSequence(), null);
+	        	            if (innerSeq.getItemCount() > 1) {
+	        	            	gotMany = true;
+	        	            	break;
+	        	            }
+	        	            if (nv == null)
+	        	            	nv = (NumericValue)innerSeq.itemAt(0);
+	        	            else if (!nv.equals((NumericValue)innerSeq.itemAt(0))) {
+	        	            	gotMany = true;
+	        	            	break;
+	        	            }	
+	        			}
+	        			
+            		}
+    				if (!gotMany) 
+    					recomputedExecutionMode = POSITIONAL;
+    				else
+            			recomputedExecutionMode = BOOLEAN;
+            	}
+            }
+
     		switch(recomputedExecutionMode) {
     			case NODE: 
                     if (context.getProfiler().isEnabled())

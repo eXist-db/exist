@@ -266,6 +266,11 @@ public class XPathQueryTest extends XMLTestCase {
             
             queryAndAssert(service, "let $a := ('a', 'b', 'c') return $a[2 to 2]", 1, null);
             queryAndAssert(service, "let $a := ('a', 'b', 'c') return $a[(2 to 2)]", 1, null);
+            queryAndAssert(service, "(1,2,3)[xs:decimal(.)]", 3, null);
+            queryAndAssert(service, "(1,2,3)[. lt 3]", 2, null);
+            queryAndAssert(service, "(0, 1, 2)[if(. eq 1) then 0 else position()]", 2, null);
+            queryAndAssert(service, "(1, 2, 3)[if(1) then 1 else last()]", 1, null);
+            queryAndAssert(service, "(1, 2, 3)[if(1) then 1 else position()]", 1, null);
             queryAndAssert(service, "()/position()", 0, null);
             
         } catch (XMLDBException e) {

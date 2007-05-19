@@ -207,5 +207,10 @@ public class FunGetDateComponent extends BasicFunction {
 		return result;
 		
 	}
+	
+	public int getDependencies() {
+		return Dependency.NO_DEPENDENCY;
+	}
+	
 
 }
