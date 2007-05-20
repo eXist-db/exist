@@ -39,6 +39,7 @@ public abstract class Step extends AbstractExpression {
     protected ArrayList predicates = new ArrayList();
     protected NodeTest test;
 	protected boolean inPredicate = false;
+	protected int actualReturnType = Type.NODE;
 	
 	/**
 	 * Holds the context id for the context of this expression.
@@ -148,9 +149,26 @@ public abstract class Step extends AbstractExpression {
             }
         return result.toString();
     }    
-    
-    public int returnsType() {
-        return Type.NODE;
+
+	//TODO : not sure about this one...
+	/*    
+	public int getDependencies() {
+		if (test == null)
+			return Dependency.CONTEXT_SET;
+		else
+			return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
+	}
+	*/
+	
+	public int returnsType() {
+    	//Polysemy of "." which might be atomic if the context sequence is atomic itself
+    	if (axis == Constants.SELF_AXIS)
+    		//Type.ITEM by default : this may change *after* evaluation
+    		//return actualReturnType;
+    		//Grrrrrrrrrrrrrrrr : I let it as such for now !
+    		return Type.NODE;
+    	else
+    		return Type.NODE;
     }
     
     public int getCardinality() {

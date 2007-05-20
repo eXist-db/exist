@@ -99,6 +99,9 @@ public class RootNode extends Step {
             context.getProfiler().end(this, "", result);
         
         registerUpdateListener();
+        
+        //actualReturnType = result.getItemType();
+        
         return result;        
     }
 

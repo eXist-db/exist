@@ -95,6 +95,8 @@ public class SimpleStep extends Step {
         if (context.getProfiler().isEnabled()) 
             context.getProfiler().end(this, "", result);
         
+        //actualReturnType = result.getItemType();
+        
         return result;
 	}
 	
