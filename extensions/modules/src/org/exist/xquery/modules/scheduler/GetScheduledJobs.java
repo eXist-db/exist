@@ -45,7 +45,7 @@ import org.xml.sax.SAXException;
 /**
  * eXist Scheduler Module Extension GetScheduledJobs
  * 
- * Retreives details of job's that have been Scheduled
+ * Retreives details of Jobs that have been Scheduled
  * 
  * @author Adam Retter <adam.retter@devon.gov.uk>
  * @serial 2006-11-15
@@ -61,7 +61,7 @@ public class GetScheduledJobs extends BasicFunction
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-scheduled-jobs", SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
-			"Get's details of all Scheduled Job's",
+			"Get's details of all Scheduled Jobs",
 			null,
 			new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE));
 	

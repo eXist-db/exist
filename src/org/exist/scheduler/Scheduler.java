@@ -130,7 +130,7 @@ public class Scheduler
 	 * of the task now. Otherwise, the cycle starts with a delay of
 	 * <code>period</code> milliseconds.
 	 * 
-	 * @return	true if thejob was successfully scheduled, false otherwise
+	 * @return	true if the job was successfully scheduled, false otherwise
 	 */
 	public boolean createPeriodicJob(long period, JobDescription job, boolean startNow)
 	{
@@ -145,14 +145,14 @@ public class Scheduler
 	 * <code>period</code> milliseconds.
 	 * @param params	Any parameters to pass to the job
 	 * 
-	 * @return	true if thejob was successfully scheduled, false otherwise
+	 * @return	true if the job was successfully scheduled, false otherwise
 	 */
 	public boolean createPeriodicJob(long period, JobDescription job, boolean startNow, Map params)
 	{
 		//Create the job details
 		JobDetail jobDetail = new JobDetail(job.getName(), job.getGroup(), job.getClass());
 
-		//Setup the jobs's data map
+		//Setup the job's data map
 		JobDataMap jobDataMap = jobDetail.getJobDataMap();
 		setupJobDataMap(job, jobDataMap, params);
 		
@@ -197,7 +197,7 @@ public class Scheduler
 	 * @param cronExpression	The Cron scheduling expression
 	 * @param job 	The job to trigger after each period
 	 * 
-	 * @return	true if thejob was successfully scheduled, false otherwise
+	 * @return	true if the job was successfully scheduled, false otherwise
 	 */
 	public boolean createCronJob(String cronExpression, JobDescription job)
 	{
@@ -209,14 +209,14 @@ public class Scheduler
 	 * @param job 	The job to trigger after each period
 	 * @param params	Any parameters to pass to the job
 	 * 
-	 * @return	true if thejob was successfully scheduled, false otherwise
+	 * @return	true if the job was successfully scheduled, false otherwise
 	 */
 	public boolean createCronJob(String cronExpression, JobDescription job, Map params)
 	{
 		//Create the job details
 		JobDetail jobDetail = new JobDetail(job.getName(), job.getGroup(), job.getClass());
 		
-		//Setup the jobs's data map
+		//Setup the job's data map
 		JobDataMap jobDataMap = jobDetail.getJobDataMap();
 		setupJobDataMap(job, jobDataMap, params);
 		
@@ -298,7 +298,7 @@ public class Scheduler
 	}
 	
 	/**
-	 * Get's the names of the Job groups
+	 * Gets the names of the Job groups
 	 * 
 	 * @return String array of the Job group names
 	 */
@@ -315,7 +315,7 @@ public class Scheduler
 	}
 	
 	/**
-	 * Get's information about currently Scheduled Job's
+	 * Gets information about currently Scheduled Jobs
 	 * 
 	 * @return An array of ScheduledJobInfo
 	 */
@@ -352,7 +352,7 @@ public class Scheduler
 	}
 	
 	/**
-	 * Set's up all the job's that are listed in conf.xml and loaded
+	 * Set's up all the jobs that are listed in conf.xml and loaded
 	 * through org.exist.util.Configuration
 	 */
 	public void setupConfiguredJobs(Configuration config)

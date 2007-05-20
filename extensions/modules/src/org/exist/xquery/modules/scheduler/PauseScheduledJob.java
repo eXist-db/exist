@@ -55,7 +55,7 @@ public class PauseScheduledJob extends BasicFunction
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("pause-scheduled-job", SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
-			"Pause the job named in $a with the Scheduler. Will only pause User Scheduled Job's!",
+			"Pause the job named in $a with the Scheduler. Will only pause User Scheduled Jobs!",
 			new SequenceType[]
 			{
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)

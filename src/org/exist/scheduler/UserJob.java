@@ -33,8 +33,6 @@ package org.exist.scheduler;
  */
 public abstract class UserJob implements JobDescription, org.quartz.Job
 {
-	//TODO: Adam: this is a work in progress
-	
 	public final static String JOB_GROUP = "eXist.User";
 	
 	public final String getGroup()

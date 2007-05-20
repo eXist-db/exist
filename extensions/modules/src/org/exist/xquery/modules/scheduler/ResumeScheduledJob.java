@@ -55,7 +55,7 @@ public class ResumeScheduledJob extends BasicFunction
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("resume-scheduled-job", SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
-			"Resumes the job named in $a with the Scheduler. Will only resume User Scheduled Job's!",
+			"Resumes the job named in $a with the Scheduler. Will only resume User Scheduled Jobs!",
 			new SequenceType[]
 			{
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
