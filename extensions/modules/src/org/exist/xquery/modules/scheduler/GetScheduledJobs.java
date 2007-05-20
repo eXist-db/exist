@@ -110,6 +110,9 @@ public class GetScheduledJobs extends BasicFunction
 				{
 					xmlBuf.append("<scheduler:job name=\"" + scheduledJobs[j].getName() + "\">");
 					xmlBuf.append("<scheduler:trigger name=\"" + scheduledJobs[j].getTriggerName() + "\">");
+					xmlBuf.append("<expression>");
+					xmlBuf.append(scheduledJobs[j].getTriggerExpression());
+					xmlBuf.append("</expression>");
 					xmlBuf.append("<state>");
 					xmlBuf.append(scheduledJobs[j].getTriggerState());
 					xmlBuf.append("</state>");
