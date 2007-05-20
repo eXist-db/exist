@@ -260,6 +260,8 @@ public class LetExpr extends BindingExpression {
             if (context.getProfiler().isEnabled())
                 context.getProfiler().end(this, "", resultSequence);
             
+            actualReturnType = resultSequence.getItemType();
+            
     		return resultSequence;
         } finally {
             context.popDocumentContext();

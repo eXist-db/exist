@@ -157,12 +157,16 @@ public class Predicate extends PathExpr {
 	            	}
 	            }
             } else {
-	            //Try to promote a boolean evaluation to a positional one
 	            if (executionMode == BOOLEAN && !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM)) {
-	            	innerSeq = inner.eval(contextSequence); 
+	            	innerSeq = inner.eval(contextSequence);
+	            	//Try to promote a boolean evaluation to a nodeset one
+	            	//We are now sure of the inner sequence return type 
+	            	 if (Type.subTypeOf(innerSeq.getItemType(), Type.NODE)) {
+		        		recomputedExecutionMode = NODE;
+			        //Try to promote a boolean evaluation to a positional one		        		            	
 		            //Only if we have an actual *singleton* of numeric items
-		            if (innerSeq.hasOne() && Type.subTypeOf(innerSeq.getItemType(), Type.NUMBER)) { 
-	                    recomputedExecutionMode = POSITIONAL;
+	            	 } else if (innerSeq.hasOne() && Type.subTypeOf(innerSeq.getItemType(), Type.NUMBER)) { 
+		            	recomputedExecutionMode = POSITIONAL;
 		        	}
 	            }
             }
@@ -236,6 +240,7 @@ public class Predicate extends PathExpr {
 		            Sequence innerSeq = inner.eval(contextSequence, item);
 		            //TODO : introduce a check in innerSeq.hasOne() ?
 					NumericValue nv = (NumericValue)innerSeq;
+					//Non integers return... nothing, not even an error !
 					if (!nv.hasFractionalPart() && !nv.isZero())
 		            	positions.add(nv);	            
         		}
@@ -393,7 +398,7 @@ public class Predicate extends PathExpr {
 				    for(SequenceIterator j = innerSeq.iterate(); j.hasNext(); ) {				      
 				        NumericValue v = (NumericValue)j.nextItem();
 				        //Non integers return... nothing, not even an error !
-				        if (!v.hasFractionalPart()) {
+				        if (!v.hasFractionalPart() && !v.isZero()) {
 					        //... whereas we don't want a sorted array here
 	                        //TODO : rename this method as getInDocumentOrder ? -pb
 					        p = temp.get(v.getInt() - 1);
@@ -453,7 +458,7 @@ public class Predicate extends PathExpr {
                         for(SequenceIterator j = innerSeq.iterate(); j.hasNext(); ) {                    
                             NumericValue v = (NumericValue)j.nextItem();                             
             		        //Non integers return... nothing, not even an error !
-            		        if (!v.hasFractionalPart()) {
+            		        if (!v.hasFractionalPart() && !v.isZero()) {
 	                            int pos = (reverseAxis ? temp.getItemCount() - v.getInt() : v.getInt() - 1);
 	                            //Other positions are ignored
 	                            if (pos >= 0 && pos < temp.getItemCount()) {
@@ -484,7 +489,7 @@ public class Predicate extends PathExpr {
 			for(SequenceIterator i = innerSeq.iterate(); i.hasNext();) {
 				NumericValue v = (NumericValue)i.nextItem();
 		        //Non integers return... nothing, not even an error !
-		        if (!v.hasFractionalPart()) {
+		        if (!v.hasFractionalPart() && !v.isZero()) {
 					int pos = v.getInt();
 	                //Other positions are ignored    
 					if (pos > 0 && pos <= contextSequence.getItemCount() && !set.contains(v)) {

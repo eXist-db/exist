@@ -92,6 +92,8 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
     protected int rightOpDeps;
     
     private boolean hasUsedIndex = false;
+    
+    private int actualReturnType = Type.ITEM;
 
     private LocationStep contextStep = null;
     private QName contextQName = null;
@@ -204,12 +206,14 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
 	 * @see org.exist.xquery.BinaryOp#returnsType()
 	 */
 	public int returnsType() {
-		if (inPredicate && !invalidNodeEvaluation && (!Dependency.dependsOn(this, Dependency.CONTEXT_ITEM))) {
+		if (inPredicate /* && !invalidNodeEvaluation */ && (!Dependency.dependsOn(this, Dependency.CONTEXT_ITEM))) {
 			/* If one argument is a node set we directly
 			 * return the matching nodes from the context set. This works
 			 * only inside predicates.
-			 */
-			return Type.NODE;
+			 * Since the context sequence can be of Type.ATOMIC, we return actualReturnType (default Type.ITEM)
+			 * ... unless we are *sure* we have another type (after evaluation)
+			 */			
+			return actualReturnType;
 		}
 		// In all other cases, we return boolean
 		return Type.BOOLEAN;
@@ -373,6 +377,8 @@ public class GeneralComparison extends BinaryOp implements Optimizable {
 		
         if (context.getProfiler().isEnabled())
             context.getProfiler().end(this, "", result);
+        
+        actualReturnType = result.getItemType();
 
         return result;
 	}

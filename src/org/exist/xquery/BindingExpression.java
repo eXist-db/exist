@@ -56,7 +56,8 @@ public abstract class BindingExpression extends AbstractExpression {
 	protected Expression inputSequence;
 	protected Expression returnExpr;
 	protected Expression whereExpr;
-	protected OrderSpec orderSpecs[] = null; 
+	protected OrderSpec orderSpecs[] = null;
+	protected int actualReturnType = Type.ITEM;
 
 	/* bv : variables for group by 
 	    group toGroupVarName as groupVarName as groupSpecs... return groupReturnExpr */ 
@@ -159,44 +160,50 @@ public abstract class BindingExpression extends AbstractExpression {
 
 	protected Sequence applyWhereExpression(Sequence contextSequence) throws XPathException {
 		if (contextSequence != null &&
-				Type.subTypeOf(whereExpr.returnsType(), Type.NODE) &&
-				Type.subTypeOf(contextSequence.getItemType(), Type.NODE)) {
-			// if the where expression returns a node set, check the context
-			// node of each node in the set           
-			NodeSet contextSet = contextSequence.toNodeSet();
-			boolean contextIsVirtual = contextSet instanceof VirtualNodeSet;            
-			Sequence seq = whereExpr.eval(contextSequence); 
-			NodeSet nodes = seq.toNodeSet(); 
-			NodeSet result = new ExtArrayNodeSet();
-			DocumentImpl lastDoc = null;
-			int count = 0;
-			for (Iterator i = nodes.iterator(); i.hasNext(); count++) {
-				NodeProxy current = (NodeProxy) i.next();                
-				int sizeHint = Constants.NO_SIZE_HINT;
-				if(lastDoc == null || current.getDocument() != lastDoc) {
-					lastDoc = current.getDocument();
-					sizeHint = nodes.getSizeHint(lastDoc);
-				}
-				ContextItem	context = current.getContext();                
-				if (context == null) {               
-					throw new XPathException("Internal evaluation error: context node is missing for node " +
-							current.getNodeId() + "!");
-				}
-//				LOG.debug(current.debugContext());
-				while (context != null) {
-                    //TODO : Is this the context we want ? Not sure... would have prefered the LetExpr.
-					if (context.getContextId() == whereExpr.getContextId()) {
-						NodeProxy contextNode = context.getNode();                    
-						if(contextIsVirtual || contextSet.contains(contextNode)) {
-                            contextNode.addMatches(current);
-							result.add(contextNode, sizeHint);
-						}
+				Type.subTypeOf(contextSequence.getItemType(), Type.NODE) &&
+				//We might not be sure of the return type at this level
+				Type.subTypeOf(whereExpr.returnsType(), Type.ITEM)) {
+			Sequence seq = whereExpr.eval(contextSequence);
+			//But *now*, we are ;-)
+			if (Type.subTypeOf(whereExpr.returnsType(), Type.NODE)) {
+				NodeSet nodes = seq.toNodeSet(); 
+				// if the where expression returns a node set, check the context
+				// node of each node in the set           
+				NodeSet contextSet = contextSequence.toNodeSet();
+				boolean contextIsVirtual = contextSet instanceof VirtualNodeSet;            
+				NodeSet result = new ExtArrayNodeSet();
+				DocumentImpl lastDoc = null;
+				int count = 0;
+				for (Iterator i = nodes.iterator(); i.hasNext(); count++) {
+					NodeProxy current = (NodeProxy) i.next();                
+					int sizeHint = Constants.NO_SIZE_HINT;
+					if(lastDoc == null || current.getDocument() != lastDoc) {
+						lastDoc = current.getDocument();
+						sizeHint = nodes.getSizeHint(lastDoc);
 					}
-                    context = context.getNextDirect();
+					ContextItem	context = current.getContext();                
+					if (context == null) {               
+						throw new XPathException("Internal evaluation error: context node is missing for node " +
+								current.getNodeId() + "!");
+					}
+	//				LOG.debug(current.debugContext());
+					while (context != null) {
+	                    //TODO : Is this the context we want ? Not sure... would have prefered the LetExpr.
+						if (context.getContextId() == whereExpr.getContextId()) {
+							NodeProxy contextNode = context.getNode();                    
+							if(contextIsVirtual || contextSet.contains(contextNode)) {
+	                            contextNode.addMatches(current);
+								result.add(contextNode, sizeHint);
+							}
+						}
+	                    context = context.getNextDirect();
+					}
 				}
+				return result;
 			}
-			return result;
-		} else if (contextSequence == null) {
+		}
+		
+		if (contextSequence == null) {
 			Sequence innerSeq = whereExpr.eval(null);
 			return innerSeq.effectiveBooleanValue() ? BooleanValue.TRUE : BooleanValue.FALSE;
 		} else {
@@ -246,7 +253,8 @@ public abstract class BindingExpression extends AbstractExpression {
 	 * @see org.exist.xquery.Expression#returnsType()
 	 */
 	public int returnsType() {
-		return Type.ITEM;
+		//Type.ITEM by default : this may change *after* evaluation
+		return actualReturnType;
 	}
 
 	/* (non-Javadoc)
@@ -322,4 +330,8 @@ public abstract class BindingExpression extends AbstractExpression {
         public void debug() {
         }
     }
+    
+	public int getDependencies() {
+		return returnExpr.getDependencies();
+	}
 }

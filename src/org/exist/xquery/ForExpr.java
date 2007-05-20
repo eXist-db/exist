@@ -353,6 +353,8 @@ public class ForExpr extends BindingExpression {
 
         if (context.getProfiler().isEnabled())
             context.getProfiler().end(this, "", resultSequence);
+        
+        actualReturnType = resultSequence.getItemType();
 
 		return resultSequence;
 	}
