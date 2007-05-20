@@ -1,108 +1,45 @@
 <project basedir="." default="jar" name="indexes">
     
-    <property name="src" value="./src"/>
-	<property name="classes" value="./classes"/>
-	<property name="test" value="./test"/>
-    <property name="test.classes" value="${test}/classes"/>
-    <property name="test.src" value="${test}/src"/>
-    <property name="lib" value="./lib"/>
-	<property name="top.dir" value="../.."/>
-    <property name="jar" value="${top.dir}/exist-modules.jar"/>
+    <macrodef name="iterate">
+        <attribute name="target"/>
+        <sequential>
+            <ant antfile="build.xml" dir="ngram" target="@{target}">
+                <property name="module" value="ngram"/>
+            </ant>
+        </sequential>
+    </macrodef>
 
-    <property name="build.compiler" value="modern"/>
-	
-	<path id="classpath.core">
-        <fileset dir="${top.dir}/${lib.core}">
-            <include name="*.jar"/>
-        </fileset>
-        <fileset dir="${top.dir}/${lib.optional}">
-            <include name="*.jar"/>
-        </fileset>
-		<fileset dir="${top.dir}/${lib.endorsed}">
-			<include name="*.jar"/>
-		</fileset>
-		<fileset dir="${top.dir}/${lib.user}">
-			<include name="*.jar"/>
-		</fileset>
-		<fileset dir="${lib}">
-			<include name="**/*.jar"/>
-		</fileset>
-        <fileset dir="${top.dir}/tools/ant/lib">
-            <include name="*.jar"/>
-        </fileset>
-        <pathelement path="${top.dir}/exist.jar"/>
-		<pathelement path="${top.dir}/exist-optional.jar"/>
-    	<pathelement path="${top.dir}/start.jar"/>
-		<pathelement path="${java.class.path}"/>
-    </path>
-
-    <path id="classpath.junit">
-        <pathelement path="${top.dir}/test/classes"/>
-        <pathelement path="${classes}"/>
-    </path>
-
-    <target name="prepare">
-		<mkdir dir="${classes}"/>
-        <mkdir dir="${test.classes}"/>
-    </target>
-	
-	<target name="compile" depends="prepare">
+	<target name="compile">
 		<echo message="---------------------------"/>
         <echo message="Compiling additional index modules"/>
         <echo message="---------------------------"/>
-		<javac debug="${build.debug}" deprecation="${build.deprecation}" 
-			destdir="${classes}" encoding="UTF-8"
-			optimize="${build.optimize}" srcdir="${src}" 
-        	source="1.4">
-			<!-- jmv target="1.4" -->
-            <classpath>
-            	<path refid="classpath.core"/>
-            </classpath>
-        </javac>
+        <iterate target="compile"/>
 	</target>
 
-    <target name="compile-tests" depends="compile">
+    <target name="compile-tests">
 		<echo message="---------------------------"/>
         <echo message="Compiling additional index module tests"/>
         <echo message="---------------------------"/>
-		<javac debug="${build.debug}" deprecation="${build.deprecation}"
-			destdir="${classes}" encoding="UTF-8"
-			optimize="${build.optimize}" srcdir="${test.src}"
-        	source="1.5">
-			<!-- jmv target="1.4" -->
-            <classpath>
-            	<path refid="classpath.core"/>
-                <path refid="classpath.junit"/>
-            </classpath>
-        </javac>
-	</target>
+        <iterate target="compile-tests"/>
+    </target>
 
-    <target name="jar" depends="compile">
-		<echo message="Creating exist-indexes.jar ..."/>
-        <jar basedir="${classes}" compress="true" jarfile="${jar}" update="true">
-        </jar>
-	</target>
+    <target name="jar">
+        <echo message="---------------------------"/>
+        <echo message="Creating jars for additional index modules"/>
+        <echo message="---------------------------"/>
+        <iterate target="jar"/>
+    </target>
 
 	<target name="clean">
         <echo message="Cleaning additional index modules ..."/>
-        <delete dir="${classes}"/>
-	</target>
+        <iterate target="clean"/>
+    </target>
 
-    <target name="test" depends="compile-tests">
+    <target name="test">
         <echo message="------------------------------------------"/>
         <echo message="Running tests on additional index modules"/>
         <echo message="------------------------------------------"/>
-        <junit fork="yes" haltonfailure="false" printsummary="yes" showoutput="${junit.output}">
-            
-            <classpath refid="classpath.core"/>
-            <classpath refid="classpath.junit"/>
-
-            <formatter type="plain"/>
-            <formatter type="xml"/>
-
-            <test name="org.exist.indexing.ngram.AllIndexTests"
-                todir="${top.dir}/${junit.reports.dat}"/>
-        </junit>
+        <iterate target="test"/>
     </target>
     
 </project>

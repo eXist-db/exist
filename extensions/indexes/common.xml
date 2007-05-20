@@ -1,0 +1,82 @@
+<project>
+
+    <property name="top.dir" value="../../.."/>
+    <property name="src" value="src"/>
+    <property name="classes" value="classes"/>
+    <property name="test" value="test"/>
+    <property name="test.classes" value="${test}/classes"/>
+    <property name="test.src" value="${test}/src"/>
+    <property name="junit.reports" value="${top.dir}/test/junit/data"/>
+    
+    <property file="${top.dir}/build.properties"/>
+    
+    <path id="classpath.core">
+        <fileset dir="${top.dir}/lib/core">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${top.dir}/lib/optional">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${top.dir}/lib/endorsed">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${top.dir}/lib/user">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${top.dir}/lib">
+            <include name="**/*.jar"/>
+        </fileset>
+        <fileset dir="${top.dir}/tools/ant/lib">
+            <include name="*.jar"/>
+        </fileset>
+        <pathelement path="${top.dir}/exist.jar"/>
+        <pathelement path="${top.dir}/exist-optional.jar"/>
+        <pathelement path="${top.dir}/start.jar"/>
+        <pathelement path="${java.class.path}"/>
+    </path>
+
+    <path id="classpath.junit">
+        <pathelement path="${top.dir}/test/classes"/>
+        <pathelement path="${classes}"/>
+    </path>
+
+    <target name="prepare">
+        <echo message="Preparing module ${module}"/>
+        <echo message="$basedir = ${basedir}"/>
+        <mkdir dir="${classes}"/>
+        <mkdir dir="${test.classes}"/>
+    </target>
+
+    <target name="compile" depends="prepare">
+        <javac debug="${build.debug}" deprecation="${build.deprecation}" optimize="${build.optimize}"
+            encoding="UTF-8"
+            srcdir="${src}" destdir="${classes}" source="1.4" target="1.4">
+            <classpath>
+                <path refid="classpath.core"/>
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="compile-tests" depends="compile">
+        <javac debug="${build.debug}" deprecation="${build.deprecation}"
+            destdir="${classes}" encoding="UTF-8"
+            optimize="${build.optimize}" srcdir="${test.src}"
+            source="1.5" target="1.5">
+            <classpath>
+                <path refid="classpath.core"/>
+                <path refid="classpath.junit"/>
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="jar" depends="compile">    
+    </target>
+
+    <target name="test" depends="compile-tests">
+    </target>
+
+    <target name="clean">
+        <delete dir="${classes}" failonerror="false"/>
+        <delete dir="${test.classes}" failonerror="false"/>
+    </target>
+</project>
