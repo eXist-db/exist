@@ -110,11 +110,12 @@ public class Predicate extends PathExpr {
         else
             executionMode = BOOLEAN;
         
+        /*
 		if(executionMode == BOOLEAN) {
 			newContextInfo.addFlag(SINGLE_STEP_EXECUTION);
 		    // need to re-analyze:
 		    super.analyze(newContextInfo);
-		}
+		}*/
     }
     
 	public Sequence evalPredicate(Sequence outerSequence, Sequence contextSequence,	int mode)
