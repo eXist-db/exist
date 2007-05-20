@@ -33,6 +33,8 @@
     <property name="build.docs.src" value="${build.docs}/source"/>
     <property name="build.docs.html" value="${build.docs}/html"/>
     <property name="build.examples" value="${build}/examples"/>
+    <property name="build.extensions" value="./extensions"/>
+    <property name="build.extensions.indexes" value="${build.extensions}/indexes"/>
     <property name="tools.ant" value="./tools/ant"/>
     <property name="dist" value="./dist"/>
     <property name="webapp.dir" value="${dist}/webapp"/>
@@ -50,7 +52,11 @@
     <available file="${xmldb.src}" type="dir" property="has.xmldb.src"/>
     <available file="${catalina.home}/bin" property="catalina.present"/>
     <available file="key.store" property="key.store.present"/>
-    
+
+    <!-- check build file for index extensions -->
+    <uptodate property="extensions.uptodate"
+              srcfile="${build.extensions.indexes}/modules.xml" targetfile="${build.extensions.indexes}/build.xml"/>
+
     <!-- additional set of ant tasks -->
     <property name="asocat-exist.jar" location="${tools.ant}/lib/asocat-exist.jar"/>
     <property name="javasvn.jar" location="${tools.ant}/lib/svnkit-1.1.1.jar"/>
@@ -474,7 +480,7 @@
     <!-- ================================================================== -->
     <!-- Cleanup                                                            -->
     <!-- ================================================================== -->
-    <target name="clean" description="Cleanup">
+    <target name="clean" description="Cleanup" depends="prepare-extensions">
         <echo message="-------------------------"/>
         <echo message="Cleaning"/>
         <echo message="-------------------------"/>
@@ -530,7 +536,7 @@
         <ant antfile="build.xml" dir="extensions/modules"/>
     </target>
 
-    <target name="extension-indexes" depends="jar">
+    <target name="extension-indexes" depends="prepare-extensions,jar">
         <ant antfile="build.xml" dir="extensions/indexes"/>
     </target>
     
@@ -566,7 +572,15 @@
         <!-- the jars are some how locked by ant (classpath.core)-->
 
     </target>
-    
+
+    <!-- ====================================================== -->
+    <!-- Generate build files for index extensions -->
+    <!-- ====================================================== -->
+    <target name="prepare-extensions" unless="extensions.uptodate">
+        <xslt basedir="${build.extensions.indexes}" in="${build.extensions.indexes}/modules.xml"
+              out="${build.extensions.indexes}/build.xml" style="${build.extensions.indexes}/generate.xsl"/>
+    </target>
+
     <!-- ============================================================================ -->
     <!-- Download additional files                                                    -->
     <!-- ============================================================================ -->

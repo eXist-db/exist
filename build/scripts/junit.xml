@@ -115,7 +115,6 @@
                     <exclude name="**/storage/*.java"/>
                     <exclude name="**/soap/*.java"/>
                     <exclude name="**/numbering/*.java"/>
-                    <exclude name="**/indexing/*.java"/>
 					<exclude name="org/exist/*.java"/>
                 </fileset>
             </batchtest>
@@ -182,7 +181,7 @@
     </target>
 
     <!-- Test set 5: tests on custom index modules -->
-    <target name="test-indexing">
+    <target name="test-indexing" depends="prepare-extensions">
         <ant antfile="build.xml" dir="extensions/indexes" target="test"/>
     </target>
 
