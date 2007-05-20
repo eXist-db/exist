@@ -23,6 +23,8 @@ package org.exist.scheduler;
 
 import java.util.Date;
 
+import org.quartz.CronTrigger;
+import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
@@ -130,6 +132,25 @@ public class ScheduledJobInfo
 		return trigger.getNextFireTime();
 	}
 
+	/**
+	 * Get the Expression that was used to configure the Triggers firing pattern
+	 * 
+	 * @return The expression that was used to configure the Triggers firing pattern
+	 */
+	public String getTriggerExpression()
+	{
+		if(trigger instanceof CronTrigger)
+		{
+			return ((CronTrigger)trigger).getCronExpression();
+		}
+		else if(trigger instanceof SimpleTrigger)
+		{
+			return String.valueOf(((SimpleTrigger)trigger).getRepeatInterval());
+		}
+		
+		return null;
+	}
+	
 	/**
 	 * Get the State of the Job's Trigger
 	 * 
