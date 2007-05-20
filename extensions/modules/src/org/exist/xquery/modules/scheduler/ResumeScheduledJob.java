@@ -60,7 +60,7 @@ public class ResumeScheduledJob extends BasicFunction
 			{
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
 			},
-			new SequenceType(Type.EMPTY, Cardinality.EMPTY));
+			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));
 	
 	/**
 	 * ResumeScheduledJob Constructor
@@ -95,8 +95,6 @@ public class ResumeScheduledJob extends BasicFunction
 			return(BooleanValue.FALSE);
 		}
 		
-		scheduler.resumeJob(jobName, UserJob.JOB_GROUP);
-		
-		return Sequence.EMPTY_SEQUENCE;
+		return BooleanValue.valueOf(scheduler.resumeJob(jobName, UserJob.JOB_GROUP));
 	}
 }

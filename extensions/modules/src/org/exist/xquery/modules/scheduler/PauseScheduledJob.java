@@ -60,7 +60,7 @@ public class PauseScheduledJob extends BasicFunction
 			{
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
 			},
-			new SequenceType(Type.EMPTY, Cardinality.EMPTY));
+			new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE));
 	
 	/**
 	 * PauseScheduledJob Constructor
@@ -95,8 +95,6 @@ public class PauseScheduledJob extends BasicFunction
 			return(BooleanValue.FALSE);
 		}
 		
-		scheduler.pauseJob(jobName, UserJob.JOB_GROUP);
-		
-		return Sequence.EMPTY_SEQUENCE;
+		return BooleanValue.valueOf(scheduler.pauseJob(jobName, UserJob.JOB_GROUP));
 	}
 }
