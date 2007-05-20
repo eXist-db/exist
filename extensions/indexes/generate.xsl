@@ -32,8 +32,8 @@
             
             <target name="clean">
                 <echo message="Cleaning additional index modules ..."/>
-                <delete file="build.xml" failonerror="false"/>
                 <iterate target="clean"/>
+                <delete file="build.xml" failonerror="false"/>
             </target>
             
             <target name="test">
