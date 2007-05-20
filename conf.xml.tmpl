@@ -429,15 +429,15 @@
         
         - match-tagging-elements:
             the database can highlight matches in the text content of a node by
-            tagging the matching text string with <exist:match> . Clearly, this
+            tagging the matching text string with <exist:match>. Clearly, this
             only works for XPath expressions using the fulltext index. 
             
-            Set the parameter to "yes" to disable this feature.
+            Set the parameter to "yes" to enable this feature.
 
     -->
     <serializer add-exist-id="none" compress-output="no" enable-xinclude="yes"
         enable-xsl="no" indent="yes" match-tagging-attributes="no"
-        match-tagging-elements="yes" />
+        match-tagging-elements="no" />
 
     <!--
         Default settings for the XSLT Transformer. Allow's for a choice of 
@@ -497,7 +497,7 @@
             -  backwardCompatible:
                 Set to "yes" to enable backward compatibility (untyped argument checks for instance) 
     -->
-    <xquery enable-java-binding="no" enable-query-rewriting="no"  backwardCompatible="yes">
+    <xquery enable-java-binding="no" enable-query-rewriting="no"  backwardCompatible="no">
         <builtin-modules>
             <module class="org.exist.xquery.functions.util.UtilModule"
                 uri="http://exist-db.org/xquery/util" />
