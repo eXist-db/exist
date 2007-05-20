@@ -269,14 +269,17 @@ public class Scheduler
 	 * @param jobName	The name of the Job
 	 * @param jobGroup The group that the Job was Scheduled in
 	 */
-	public void pauseJob(String jobName, String jobGroup)
+	public boolean pauseJob(String jobName, String jobGroup)
 	{
 		try
 		{
 			scheduler.pauseJob(jobName, jobGroup);
+			return true;
 		}
 		catch(SchedulerException se)
 		{
+			//TODO: log an error?
+			return false;
 		}
 	}
 	
@@ -286,14 +289,17 @@ public class Scheduler
 	 * @param jobName	The name of the Job
 	 * @param jobGroup The group that the Job was Scheduled in
 	 */
-	public void resumeJob(String jobName, String jobGroup)
+	public boolean resumeJob(String jobName, String jobGroup)
 	{
 		try
 		{
 			scheduler.resumeJob(jobName, jobGroup);
+			return true;
 		}
 		catch(SchedulerException se)
 		{
+			//TODO: log an error?
+			return false;
 		}
 	}
 	
