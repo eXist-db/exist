@@ -7,8 +7,8 @@
 	<classpathentry kind="src" path="test/src"/>
 	<classpathentry kind="src" path="tools/wrapper/src"/>
 	<classpathentry kind="src" path="extensions/modules/src"/>
-	<classpathentry kind="src" path="extensions/indexes/src"/>
-	<classpathentry kind="src" path="extensions/indexes/test/src"/>
+	<classpathentry kind="src" path="extensions/indexes/ngram/src"/>
+	<classpathentry kind="src" path="extensions/indexes/ngram/test/src"/>
 	<classpathentry kind="lib" path="lib/core/jEdit-syntax.jar" sourcepath="/jEdit-syntax"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/cocoon/avalon-framework-impl-4.1.5.jar"/>
