@@ -134,7 +134,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
      * @throws XPathException
      */
     public void addAll(Sequence other) throws XPathException {
-        if (!Type.subTypeOf(other.getItemType(), Type.NODE))
+        if (!other.isEmpty() && !Type.subTypeOf(other.getItemType(), Type.NODE))
             throw new XPathException("sequence argument is not a node sequence");
         for (SequenceIterator i = other.iterate(); i.hasNext();) {
             add(i.nextItem());

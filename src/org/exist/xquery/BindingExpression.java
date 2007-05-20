@@ -25,17 +25,24 @@ package org.exist.xquery;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
-import org.exist.dom.*;
+import org.exist.dom.ContextItem;
+import org.exist.dom.DocumentImpl;
+import org.exist.dom.DocumentSet;
+import org.exist.dom.ExtArrayNodeSet;
+import org.exist.dom.NodeProxy;
+import org.exist.dom.NodeSet;
+import org.exist.dom.StoredNode;
+import org.exist.dom.VirtualNodeSet;
+import org.exist.numbering.NodeId;
+import org.exist.storage.UpdateListener;
 import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.GroupedValueSequenceTable;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
-import org.exist.xquery.value.GroupedValueSequenceTable; 
-import org.exist.storage.UpdateListener;
-import org.exist.numbering.NodeId;
 
 
 /**

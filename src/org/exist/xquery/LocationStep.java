@@ -103,6 +103,8 @@ public class LocationStep extends Step {
      */
     public int getDependencies() {
         int deps = Dependency.CONTEXT_SET;
+        //TODO : normally, we should call this one...
+        //int deps = super.getDependencies(); ???
         for (Iterator i = predicates.iterator(); i.hasNext();) {
             deps |= ((Predicate) i.next()).getDependencies();
         }
@@ -324,6 +326,9 @@ public class LocationStep extends Step {
 
         if (context.getProfiler().isEnabled())
             context.getProfiler().end(this, "", result);
+        
+        //actualReturnType = result.getItemType();
+        
         return result;
     }
 
