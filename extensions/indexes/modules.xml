@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<build>
+    <!--  This file defines which custom index modules should be compiled -->
+    <!--  and built into the created jar files. To add a new type of index, just  -->
+    <!--  copy the directory structure of an existing index and add a new  -->
+    <!--  index element below. -->
+    <indexes>
+        <!-- NGram index. This index has no dependencies on other libraries
+            except eXist and will be added to exist-modules.jar -->
+        <index name="NGram" dir="ngram" antfile="build.xml"/>
+    </indexes>
+</build>

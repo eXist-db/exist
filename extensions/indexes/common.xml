@@ -41,8 +41,8 @@
     </path>
 
     <target name="prepare">
-        <echo message="Preparing module ${module}"/>
-        <echo message="$basedir = ${basedir}"/>
+        <echo message="Building index module: ${module}"/>
+        <echo message="------------------------------------"/>
         <mkdir dir="${classes}"/>
         <mkdir dir="${test.classes}"/>
     </target>
