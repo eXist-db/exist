@@ -128,22 +128,23 @@ public class ScheduleFunctions extends BasicFunction
 				job = jobClass.newInstance();
 				if(!(job instanceof UserJavaJob))
 				{
+					LOG.error("Cannot Schedule job. Class " + resource + " is not an instance of org.exist.scheduler.UserJavaJob");
 					return(BooleanValue.FALSE);
 				}
 			}
 			catch(ClassNotFoundException cnfe)
 			{
-				//TODO: log?
+				LOG.error(cnfe);
 				return(BooleanValue.FALSE);
 			}
 			catch(IllegalAccessException iae)
 			{
-				//TODO: log?
+				LOG.error(iae);
 				return(BooleanValue.FALSE);
 			}
 			catch(InstantiationException ie)
 			{
-				//TODO: log?
+				LOG.error(ie);
 				return(BooleanValue.FALSE);
 			}
 		}

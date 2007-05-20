@@ -31,7 +31,7 @@ import org.quartz.JobExecutionException;
  * Class to represent a SystemTask Job
  * Can be used by SystemTasks to schedule themselves as job's
  * 
- * SystemTaskJob's may only have a Single Instance
+ * SystemTaskJobs may only have a Single Instance
  * running in the scheduler at once, intersecting
  * schedules will be queued.
  * 

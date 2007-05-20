@@ -55,7 +55,7 @@ public class DeleteScheduledJob extends BasicFunction
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("delete-scheduled-job", SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX),
-			"Delete the job named in $a from the Scheduler. Will only delete User Scheduled Job's! Returns true() if the Job was deleted.",
+			"Delete the job named in $a from the Scheduler. Will only delete User Scheduled Jobs! Returns true() if the Job was deleted.",
 			new SequenceType[]
 			{
 				new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)

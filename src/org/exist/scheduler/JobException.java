@@ -55,7 +55,7 @@ public class JobException extends Exception
 	 * Should be called after this exception is caught
 	 * it cleans up the job, with regards to the scheduler
 	 * 
-	 * Job's may be removed, refired immediately or left
+	 * Jobs may be removed, refired immediately or left
 	 * for their next execution
 	 */
 	public void cleanupJob() throws JobExecutionException

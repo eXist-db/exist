@@ -30,7 +30,7 @@ import org.exist.xquery.FunctionDef;
  * eXist Scheduler Module Extension
  * 
  * An extension module for the eXist Native XML Database that allows
- * Job's to be Scheduled with eXist's Scheduler  
+ * Jobs to be Scheduled with eXist's Scheduler  
  * 
  * @author Adam Retter <adam.retter@devon.gov.uk>
  * @serial 2006-11-15
@@ -70,6 +70,6 @@ public class SchedulerModule extends AbstractInternalModule
 
 	public String getDescription()
 	{
-		return "A module for Scheduling Job's";
+		return "A module for Scheduling Jobs";
 	}
 }
