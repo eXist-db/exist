@@ -36,6 +36,9 @@ public abstract class AbstractExpression implements Expression {
 	
 	protected DocumentSet contextDocSet = null;
     
+	/**
+	 * Holds the context id for the context of this expression.
+	 */
     protected int contextId = Expression.NO_CONTEXT_ID;
 	
 	public AbstractExpression(XQueryContext context) {
