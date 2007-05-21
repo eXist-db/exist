@@ -21,11 +21,17 @@
  */
 package org.exist.util.pool;
 
-import org.exist.dom.*;
+import java.util.LinkedList;
+
+import org.exist.dom.AttrImpl;
+import org.exist.dom.CDATASectionImpl;
+import org.exist.dom.CommentImpl;
+import org.exist.dom.ElementImpl;
+import org.exist.dom.NodeImpl;
+import org.exist.dom.ProcessingInstructionImpl;
+import org.exist.dom.TextImpl;
 import org.exist.util.hashtable.Int2ObjectHashMap;
 import org.w3c.dom.Node;
-
-import java.util.LinkedList;
 
 /**
  * A pool of node objects. Storing a resource creates many, short-lived DOM node
@@ -80,6 +86,8 @@ public class NodePool {
                 return new TextImpl();
             case Node.ATTRIBUTE_NODE:
                 return new AttrImpl();
+            case Node.CDATA_SECTION_NODE:
+            	return new CDATASectionImpl();
             case Node.PROCESSING_INSTRUCTION_NODE:
                 return new ProcessingInstructionImpl();
             case Node.COMMENT_NODE:
