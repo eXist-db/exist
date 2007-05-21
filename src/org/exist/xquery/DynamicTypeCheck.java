@@ -121,7 +121,14 @@ public class DynamicTypeCheck extends AbstractExpression {
 								Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
 								item.getStringValue() + ")'");
 					}					
-				} else
+				//URI type promotion: A value of type xs:anyURI (or any type derived 
+				//by restriction from xs:anyURI) can be promoted to the type xs:string. 
+				//The result of this promotion is created by casting the 
+				//original value to the type xs:string.
+				} else if (type == Type.ANY_URI && requiredType == Type.STRING) {
+						item = item.convertTo(Type.STRING);
+						type = Type.STRING;
+				} else {
 					if (!(Type.subTypeOf(type, requiredType))) {
 						throw new XPathException(expression.getASTNode(), "FORG0001: " + 
 								Type.getTypeName(item.getType()) + "(" + item.getStringValue() + 
@@ -131,6 +138,7 @@ public class DynamicTypeCheck extends AbstractExpression {
 						throw new XPathException(expression.getASTNode(), "FOCH0002: Required type is " + 
 							Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
 							item.getStringValue() + ")'");
+				}
 			}
 		}
 		return seq;
