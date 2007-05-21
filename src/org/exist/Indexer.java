@@ -21,26 +21,8 @@
  */
 package org.exist;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Observable;
-import java.util.Stack;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParserFactory;
-
 import org.apache.log4j.Logger;
-import org.exist.dom.AttrImpl;
-import org.exist.dom.CDATASectionImpl;
-import org.exist.dom.CommentImpl;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentTypeImpl;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.NodeObjectPool;
-import org.exist.dom.ProcessingInstructionImpl;
-import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
-import org.exist.dom.TextImpl;
+import org.exist.dom.*;
 import org.exist.indexing.StreamListener;
 import org.exist.storage.DBBroker;
 import org.exist.storage.FulltextIndexSpec;
@@ -56,15 +38,15 @@ import org.exist.xquery.Constants;
 import org.exist.xquery.value.StringValue;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.xml.sax.Attributes;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.Locator;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
-import org.xml.sax.SAXParseException;
+import org.xml.sax.*;
 import org.xml.sax.ext.LexicalHandler;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Observable;
+import java.util.Stack;
 
 /**
  * Parses a given input document via SAX, stores it to
