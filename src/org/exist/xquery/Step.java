@@ -41,11 +41,6 @@ public abstract class Step extends AbstractExpression {
 	protected boolean inPredicate = false;
 	protected int actualReturnType = Type.NODE;
 	
-	/**
-	 * Holds the context id for the context of this expression.
-	 */
-	protected int contextId = Expression.NO_CONTEXT_ID;
-	
     public Step( XQueryContext context, int axis ) {
         super(context);
         this.axis = axis;
