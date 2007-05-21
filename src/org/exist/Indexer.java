@@ -51,6 +51,7 @@ import org.exist.util.Configuration;
 import org.exist.util.ProgressIndicator;
 import org.exist.util.XMLChar;
 import org.exist.util.XMLString;
+import org.exist.util.pool.NodePool;
 import org.exist.xquery.Constants;
 import org.exist.xquery.value.StringValue;
 import org.w3c.dom.Element;
@@ -607,7 +608,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 	    else {
 		p = attrQName.indexOf(':');
 		attrPrefix = (p != Constants.STRING_NOT_FOUND) ? attrQName.substring(0, p) : null;
-		final AttrImpl attr = (AttrImpl)NodeObjectPool.getInstance().borrowNode(AttrImpl.class);
+        final AttrImpl attr = (AttrImpl) NodePool.getInstance().borrowNode(Node.ATTRIBUTE_NODE);
 		attr.setNodeName(document.getSymbols().getQName(Node.ATTRIBUTE_NODE, attrNS, attrLocalName, attrPrefix));
 		attr.setValue(attributes.getValue(i));
 		attr.setOwnerDocument(document);

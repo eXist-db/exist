@@ -28,6 +28,7 @@ import java.util.Stack;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.Namespaces;
+import org.exist.util.pool.NodePool;
 import org.exist.dom.AttrImpl;
 import org.exist.dom.CommentImpl;
 import org.exist.dom.DocumentTypeImpl;
@@ -152,7 +153,7 @@ public class DOMIndexer {
     	ElementImpl last;
     	switch (doc.nodeKind[nodeNr]) {
     	case Node.ELEMENT_NODE :
-            ElementImpl elem = new ElementImpl();
+            ElementImpl elem = (ElementImpl) NodePool.getInstance().borrowNode(Node.ELEMENT_NODE);
             if(stack.empty()) {
                 elem.setNodeId(broker.getBrokerPool().getNodeFactory().createInstance());
                 initElement(nodeNr, elem);
@@ -187,14 +188,15 @@ public class DOMIndexer {
             break;
         case Node.CDATA_SECTION_NODE :
             last = (ElementImpl) stack.peek();
-            org.exist.dom.CDATASectionImpl cdata = new org.exist.dom.CDATASectionImpl();
+            org.exist.dom.CDATASectionImpl cdata =
+                (org.exist.dom.CDATASectionImpl) NodePool.getInstance().borrowNode(Node.CDATA_SECTION_NODE);
             cdata.setData(doc.characters, doc.alpha[nodeNr], doc.alphaLen[nodeNr]);
             cdata.setOwnerDocument(targetDoc);
             last.appendChildInternal(prevNode, cdata);
             setPrevious(cdata);
             broker.storeNode(transaction, cdata, null);
             break;
-    	case Node.COMMENT_NODE :            
+    	case Node.COMMENT_NODE :
             comment.setData(doc.characters, doc.alpha[nodeNr], doc.alphaLen[nodeNr]);
             comment.setOwnerDocument(targetDoc);
             if (stack.empty()) {
@@ -270,7 +272,9 @@ public class DOMIndexer {
         if(-1 < attr) {
             while (attr < doc.nextAttr && doc.attrParent[attr] == nodeNr) {
                 QName qn = (QName)doc.namePool.get(doc.attrName[attr]);
-                AttrImpl attrib = new AttrImpl(qn, doc.attrValue[attr]);
+                AttrImpl attrib = (AttrImpl) NodePool.getInstance().borrowNode(Node.ATTRIBUTE_NODE);
+                attrib.setNodeName(qn);
+                attrib.setNodeValue(doc.attrValue[attr]);
                 attrib.setOwnerDocument(targetDoc);
                 elem.appendChildInternal(prevNode, attrib);
                 setPrevious(attrib);

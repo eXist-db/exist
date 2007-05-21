@@ -26,6 +26,7 @@ import java.io.UnsupportedEncodingException;
 
 import org.exist.storage.Signatures;
 import org.exist.util.ByteConversion;
+import org.exist.util.pool.NodePool;
 import org.exist.numbering.NodeId;
 import org.w3c.dom.Node;
 import org.w3c.dom.ProcessingInstruction;
@@ -188,8 +189,9 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
         //OK : we have the necessary material to build the processing instruction
         ProcessingInstructionImpl pi;
         if(pooled)
-            pi = (ProcessingInstructionImpl)
-				NodeObjectPool.getInstance().borrowNode(ProcessingInstructionImpl.class);
+            pi = (ProcessingInstructionImpl) NodePool.getInstance().borrowNode(Node.PROCESSING_INSTRUCTION_NODE);
+//            pi = (ProcessingInstructionImpl)
+//				NodeObjectPool.getInstance().borrowNode(ProcessingInstructionImpl.class);
         else
             pi = new ProcessingInstructionImpl();
         pi.setTarget(target);
