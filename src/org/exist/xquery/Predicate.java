@@ -109,13 +109,12 @@ public class Predicate extends PathExpr {
         // Case 3: all other cases, boolean evaluation (that can be reevaluated later)
         else
             executionMode = BOOLEAN;
-        
-        /*
+                
 		if(executionMode == BOOLEAN) {
 			newContextInfo.addFlag(SINGLE_STEP_EXECUTION);
 		    // need to re-analyze:
 		    super.analyze(newContextInfo);
-		}*/
+		}
     }
     
 	public Sequence evalPredicate(Sequence outerSequence, Sequence contextSequence,	int mode)
@@ -159,6 +158,11 @@ public class Predicate extends PathExpr {
 	            }
             } else {
 	            if (executionMode == BOOLEAN && !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM)) {
+	            	/*
+	            	 * 
+	            	 * WARNING : this sequence will be evaluated with preloadable nodesets !
+	            	 * 
+	            	 */
 	            	innerSeq = inner.eval(contextSequence);
 	            	//Try to promote a boolean evaluation to a nodeset one
 	            	//We are now sure of the inner sequence return type 
