@@ -904,6 +904,8 @@ public class LocationStep extends Step {
                 }
             }
             return result;
+        //Commented out due to a problem in OptimizerTest : /root//b[parent::c/b = 'two']
+        /*
         } else if (preloadNodeSets()) {
             DocumentSet docs = getDocumentSet(contextSet);
             if (currentSet == null || currentDocs == null
@@ -918,7 +920,7 @@ public class LocationStep extends Step {
                 currentDocs = docs;
                 registerUpdateListener();
             }
-            return contextSet.selectParentChild(currentSet, NodeSet.ANCESTOR);
+            return contextSet.selectParentChild(currentSet, NodeSet.ANCESTOR); */
         } else {
             DocumentSet docs = getDocumentSet(contextSet);
             NodeSelector selector = new ParentSelector(contextSet, contextId);
