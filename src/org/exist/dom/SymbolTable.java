@@ -130,10 +130,16 @@ public class SymbolTable {
      * @param localName
      * @param prefix
      */
-	public synchronized QName getQName(short type, String namespaceURI, String localName, String prefix) {
+	public QName getQName(short type, String namespaceURI, String localName, String prefix) {
         byte itype = type == Node.ATTRIBUTE_NODE ? ElementValue.ATTRIBUTE : ElementValue.ELEMENT;
-	    return namePool.add(itype, namespaceURI, localName, prefix);
-	}
+        QName qn = namePool.get(itype, namespaceURI, localName, prefix);
+        if (qn == null) {
+            synchronized (this) {
+                qn = namePool.add(itype, namespaceURI, localName, prefix);
+            }
+        }
+        return qn;
+    }
 	
     /**
      * Return a unique id for the local node name of the specified element.

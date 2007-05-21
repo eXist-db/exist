@@ -49,7 +49,42 @@ public class QNamePool extends AbstractHashtable {
         values = new QName[tabSize];
     }
 
-	/**
+    /**
+     * Return a QName object for the given local name, namespace and
+     * prefix. Return null if the QName has not yet been added to the pool.
+     *
+     * @param type
+     * @param namespaceURI
+     * @param localName
+     * @param prefix
+     * @return
+     */
+    public QName get(byte type, String namespaceURI, String localName, String prefix) {
+        temp.setLocalName(localName);
+        temp.setNamespaceURI(namespaceURI);
+        temp.setPrefix(prefix);
+        temp.setNameType(type);
+        int idx = temp.hashCode() % tabSize;
+		if (idx < 0)
+			idx *= -1;
+		if (values[idx] == null)
+			return null; // key does not exist
+		else if (values[idx].equals(temp)) {
+			return values[idx];
+		}
+		int rehashVal = rehash(idx);
+		for (int i = 0; i < tabSize; i++) {
+			idx = (idx + rehashVal) % tabSize;
+			if (values[idx] == null) {
+				return null; // key not found
+			} else if (values[idx].equals(temp)) {
+				return values[idx];
+			}
+		}
+		return null;
+    }
+
+    /**
 	 * Add a QName, consisting of namespace, local name and prefix, to the
 	 * pool.
 	 */
