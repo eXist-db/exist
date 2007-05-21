@@ -593,18 +593,21 @@ public class NativeBroker extends DBBroker {
      * @throws PermissionDeniedException
      * @throws IOException
      */
-    private Collection createTempCollection(Txn transaction) throws LockException, PermissionDeniedException,
-								    IOException {
+    private Collection createTempCollection(Txn transaction) throws LockException, PermissionDeniedException, IOException
+    {
         User u = user;
         Lock lock = collectionsDb.getLock();
-        try {           
+        try
+        {           
             lock.acquire(Lock.WRITE_LOCK);
             user = pool.getSecurityManager().getUser(SecurityManager.DBA_USER);
             Collection temp = getOrCreateCollection(transaction, XmldbURI.TEMP_COLLECTION_URI);
             temp.setPermissions(0771);
             saveCollection(transaction, temp);
             return temp;
-        } finally {
+        }
+        finally
+        {
             user = u;
             lock.release(Lock.WRITE_LOCK);
         }
@@ -1289,46 +1292,57 @@ public class NativeBroker extends DBBroker {
         }
     }    
     
-    /** store into the temporary collection of the database a given in-memory Document
+    /** Store into the temporary collection of the database a given in-memory Document
      *
-     * @param doc The in-memory document to store
+     * The in-memory Document is stored without a transaction and is not journalled,
+     * if there is no temporary collection, this will first be created with a transaction
+     *
+     * @param doc The in-memory Document to store
      * @return The document stored in the temp collection
      */
     public DocumentImpl storeTempResource(org.exist.memtree.DocumentImpl doc) throws EXistException, PermissionDeniedException, LockException
     {
         //store the currentUser
         User currentUser = user;
-    	
-        try
-        {
-        	//elevate user to DBA_USER
-            user = pool.getSecurityManager().getUser(SecurityManager.DBA_USER);
-        	
-	        //transaction is null as temporary resources
-	        //do not need to be journalled
-	        Txn transaction = null;
-	        
-	        //create a name for the temporary document
-	        XmldbURI docName = XmldbURI.create(MD5.md(Thread.currentThread().getName() + Long.toString(System.currentTimeMillis()),false) + ".xml");
-	        
-	        //get the temp collection
-	        Collection temp = openCollection(XmldbURI.TEMP_COLLECTION_URI, Lock.WRITE_LOCK);
-	        
-	        if(temp != null)
-	        {
-	        	//unlock the temp collection
-	    		temp.getLock().release(Lock.WRITE_LOCK);
-	        }
-	        else
-	        {
-	        	//create the temp collection with lock
-				temp = createTempCollection(transaction);
-				if(temp == null)
-				{
-					LOG.warn("Failed to create temporary collection");
-				}
-	        }
         
+        //elevate user to DBA_USER
+        user = pool.getSecurityManager().getUser(SecurityManager.DBA_USER);
+    	
+        //start a transaction
+    	TransactionManager transact = pool.getTransactionManager();
+        Txn transaction = transact.beginTransaction();
+        
+        //create a name for the temporary document
+        XmldbURI docName = XmldbURI.create(MD5.md(Thread.currentThread().getName() + Long.toString(System.currentTimeMillis()),false) + ".xml");
+        
+        //get the temp collection
+        Collection temp = openCollection(XmldbURI.TEMP_COLLECTION_URI, Lock.WRITE_LOCK);
+        
+        try
+	    {
+        	//if no temp collection
+        	if(temp == null)
+		    {
+        		//creates temp collection (with write lock)
+        		temp = createTempCollection(transaction);
+        		if(temp == null)
+        		{
+        			LOG.warn("Failed to create temporary collection");
+        		}
+		    }
+        	else
+		    {
+        		//lock the temp collection
+        		if(transaction == null)
+        		{
+        			temp.getLock().release(Lock.WRITE_LOCK);
+        		}
+        		else
+        		{
+        			transaction.registerLock(temp.getLock(), Lock.WRITE_LOCK);
+        		}
+		    }
+            
 			//create a temporary document
 			DocumentImpl targetDoc = new DocumentImpl(this, temp, docName);
 			targetDoc.setPermissions(0771);
@@ -1338,23 +1352,29 @@ public class NativeBroker extends DBBroker {
 			metadata.setCreated(now);
 			targetDoc.setMetadata(metadata);
 			targetDoc.setDocId(getNextResourceId(transaction, temp));
-	
+
 			//index the temporary document
-			DOMIndexer indexer = new DOMIndexer(this, transaction, doc, targetDoc);
+			DOMIndexer indexer = new DOMIndexer(this, null, doc, targetDoc); //NULL transaction, so temporary fragment is not journalled - AR
 			indexer.scan();
 			indexer.store();
-	
+
 			//store the temporary document
-			temp.addDocument(transaction, this, targetDoc);
-			storeXMLResource(transaction, targetDoc);
+			temp.addDocument(null, this, targetDoc); //NULL transaction, so temporary fragment is not journalled - AR
+			storeXMLResource(null, targetDoc); //NULL transaction, so temporary fragment is not journalled - AR
 			flush();
 			closeDocument();            
 	        
+			//commit the transaction
+			transact.commit(transaction);
+	            
 			return targetDoc;
 	    }
-        catch(Exception e)
+        catch (Exception e)
 	    {
         	LOG.warn("Failed to store temporary fragment: " + e.getMessage(), e);
+         
+        	//abort the transaction
+        	transact.abort(transaction);
 	    }
         finally
 	    {
