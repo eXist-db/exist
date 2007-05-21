@@ -274,7 +274,7 @@ public class DOMIndexer {
                 QName qn = (QName)doc.namePool.get(doc.attrName[attr]);
                 AttrImpl attrib = (AttrImpl) NodePool.getInstance().borrowNode(Node.ATTRIBUTE_NODE);
                 attrib.setNodeName(qn);
-                attrib.setNodeValue(doc.attrValue[attr]);
+                attrib.setValue(doc.attrValue[attr]);
                 attrib.setOwnerDocument(targetDoc);
                 elem.appendChildInternal(prevNode, attrib);
                 setPrevious(attrib);
