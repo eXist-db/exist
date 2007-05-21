@@ -49,6 +49,7 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
 import org.exist.util.UTF8;
+import org.exist.util.pool.NodePool;
 import org.exist.xquery.Constants;
 import org.exist.xquery.value.StringValue;
 import org.w3c.dom.Attr;
@@ -265,7 +266,8 @@ public class ElementImpl extends NamedNode implements Element {
         
         ElementImpl node;
         if (pooled)
-            node = (ElementImpl) NodeObjectPool.getInstance().borrowNode(ElementImpl.class);
+            node = (ElementImpl) NodePool.getInstance().borrowNode(Node.ELEMENT_NODE);
+//            node = (ElementImpl) NodeObjectPool.getInstance().borrowNode(ElementImpl.class);
         else
             node = new ElementImpl();
         node.setNodeId(dln);

@@ -31,6 +31,7 @@ import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
 import org.exist.util.UTF8;
 import org.exist.util.XMLString;
+import org.exist.util.pool.NodePool;
 import org.exist.util.serializer.AttrList;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
@@ -157,7 +158,8 @@ public class AttrImpl extends NamedNode implements Attr {
         //OK : we have the necessary material to build the attribute
         AttrImpl attr;
         if(pooled)
-            attr = (AttrImpl)NodeObjectPool.getInstance().borrowNode(AttrImpl.class);
+            attr = (AttrImpl) NodePool.getInstance().borrowNode(Node.ATTRIBUTE_NODE);
+//            attr = (AttrImpl)NodeObjectPool.getInstance().borrowNode(AttrImpl.class);
         else
             attr = new AttrImpl();
         attr.setNodeName(doc.getSymbols().getQName(Node.ATTRIBUTE_NODE, namespace, name, prefix));

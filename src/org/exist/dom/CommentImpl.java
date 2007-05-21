@@ -4,6 +4,7 @@ import java.io.UnsupportedEncodingException;
 
 import org.exist.storage.Signatures;
 import org.exist.util.ByteConversion;
+import org.exist.util.pool.NodePool;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.StringValue;
 import org.exist.numbering.NodeId;
@@ -91,7 +92,8 @@ public class CommentImpl extends CharacterDataImpl implements Comment {
         //OK : we have the necessary material to build the comment
         CommentImpl comment;
         if(pooled)
-            comment = (CommentImpl)NodeObjectPool.getInstance().borrowNode(CommentImpl.class);
+            comment = (CommentImpl) NodePool.getInstance().borrowNode(Node.COMMENT_NODE);
+//            comment = (CommentImpl)NodeObjectPool.getInstance().borrowNode(CommentImpl.class);
         else
             comment = new CommentImpl();
         comment.setNodeId(dln);

@@ -168,8 +168,16 @@ public abstract class Match implements Comparable {
         return ((Match)other).matchTerm.equals(matchTerm) &&
             ((Match)other).nodeId.equals(nodeId);
 	}
-	
-	/**
+
+    public boolean matchEquals(Match other) {
+        if (this == other)
+            return true;
+        return
+            (nodeId == other.nodeId || nodeId.equals(other.nodeId)) &&
+                matchTerm.equals(other.matchTerm);
+    }
+
+    /**
 	 * Used to sort matches. Terms are compared by their string 
 	 * length to have the longest string first.
 	 * 

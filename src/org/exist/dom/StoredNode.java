@@ -29,6 +29,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.NodePath;
 import org.exist.storage.Signatures;
 import org.exist.stax.EmbeddedXMLStreamReader;
+import org.exist.util.pool.NodePool;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -460,8 +461,9 @@ public class StoredNode extends NodeImpl implements Visitable {
 	public void release() {
         ownerDocument = null;
 		clear();
-		NodeObjectPool.getInstance().returnNode(this);
-	}
+//		NodeObjectPool.getInstance().returnNode(this);
+        NodePool.getInstance().returnNode(this);
+    }
     
     public boolean accept(NodeVisitor visitor) {
         final Iterator iterator = getBroker().getNodeIterator(this);

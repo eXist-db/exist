@@ -28,6 +28,7 @@ import org.exist.storage.Signatures;
 import org.exist.util.ByteArrayPool;
 import org.exist.util.ByteConversion;
 import org.exist.util.UTF8;
+import org.exist.util.pool.NodePool;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.w3c.dom.Text;
@@ -84,7 +85,8 @@ public class TextImpl extends CharacterDataImpl implements Text {
                                        boolean pooled) {
         TextImpl text;
         if(pooled)
-            text = (TextImpl)NodeObjectPool.getInstance().borrowNode(TextImpl.class);
+            text = (TextImpl) NodePool.getInstance().borrowNode(Node.TEXT_NODE);
+//            text = (TextImpl)NodeObjectPool.getInstance().borrowNode(TextImpl.class);
         else
             text = new TextImpl();
         int pos = start;
