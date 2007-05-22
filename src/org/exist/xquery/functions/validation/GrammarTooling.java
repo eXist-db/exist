@@ -95,14 +95,14 @@ public class GrammarTooling extends BasicFunction  {
         
         GrammarPool grammarpool = validator.getGrammarPool();
         
-        if (isCalledAs("clear-grammar-cache")){
+        if (isCalledAs("grammar-cache-clear")){
             
             grammarpool.clear();
             // TODO check if this is safe enough
             validator.setGrammarPool(null);
             result = Sequence.EMPTY_SEQUENCE;
             
-        } else if (isCalledAs("show-grammar-cache")){
+        } else if (isCalledAs("grammar-cache-show")){
             
             // TODO ; refactor grammartype url
             Grammar xsds[] = grammarpool.retrieveInitialGrammarSet(TYPE_XSD);          
