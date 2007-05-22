@@ -226,5 +226,10 @@ public final class Base64Decoder {
     public byte[] getByteArray() {
         eof();
         return out.toByteArray();
+    }   
+    
+    public void reset() {
+    	out.reset();
     }
+   
 }
