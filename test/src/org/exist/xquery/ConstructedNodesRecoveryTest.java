@@ -111,6 +111,23 @@ public class ConstructedNodesRecoveryTest extends TestCase
         System.out.println("Transaction commited ...");
 	}
 	
+	private void createTempChildCollection(DBBroker broker, TransactionManager transact, String childCollectionName) throws Exception
+	{
+		//create a transaction
+		Txn transaction = transact.beginTransaction();
+        assertNotNull(transaction);            
+        System.out.println("Transaction started ...");
+		
+		//get the test collection
+        Collection root = broker.getOrCreateCollection(transaction, XmldbURI.TEMP_COLLECTION_URI.append(childCollectionName));
+        assertNotNull(root);
+        broker.saveCollection(transaction, root);
+		        
+        //commit the transaction
+        transact.commit(transaction);
+        System.out.println("Transaction commited ...");
+	}
+	
 	private void testDocumentIsValid(DBBroker broker, TransactionManager transact, String documentName) throws Exception
 	{
 		//create a transaction
@@ -141,6 +158,23 @@ public class ConstructedNodesRecoveryTest extends TestCase
         SerializerPool.getInstance().returnObject(sax);
         
         assertEquals(testDocument, writer.toString());
+        
+        transact.commit(transaction);
+	}
+	
+	private void testTempChildCollectionExists(DBBroker broker, TransactionManager transact, String childCollectionName) throws Exception
+	{
+		//create a transaction
+		Txn transaction = transact.beginTransaction();
+        assertNotNull(transaction);            
+        System.out.println("Transaction started ...");
+		
+		//get the temp child collection
+        Collection tempChildCollection = broker.getOrCreateCollection(transaction, XmldbURI.TEMP_COLLECTION_URI.append(childCollectionName));
+        assertNotNull(tempChildCollection);
+        broker.saveCollection(transaction, tempChildCollection);
+        
+        transact.commit(transaction);
 	}
 	
 	/**
@@ -173,6 +207,10 @@ public class ConstructedNodesRecoveryTest extends TestCase
             	storeTestDocument(broker, transact, "testcr2.xml");
             }
             
+            //create some child collections in TEMP collection
+	        createTempChildCollection(broker, transact, "testchild1");
+	        createTempChildCollection(broker, transact, "testchild2");
+            
             //execute an xquery
 	        XQuery service = broker.getXQueryService();
 	        assertNotNull(service);
@@ -195,6 +233,10 @@ public class ConstructedNodesRecoveryTest extends TestCase
 	        
 	        //read the second test document
 	        testDocumentIsValid(broker, transact, "testcr1.xml");
+	        
+	        //test the child collections exist
+	        testTempChildCollectionExists(broker, transact, "testchild1");
+	        testTempChildCollectionExists(broker, transact, "testchild2");
 	        
 	        transact.getJournal().flushToLog(true);
 	    }
