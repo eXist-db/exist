@@ -68,15 +68,12 @@ public class RangeExpression extends PathExpr {
 		    throw new XPathException(getASTNode(), "Invalid type for 1st argument");
     	if (end.returnsType() != Type.INTEGER)
 		    throw new XPathException(getASTNode(), "Invalid type for 2nd argument");
-    	/*
-    	// call analyze for each argument
+        */
     	inPredicate = (contextInfo.getFlags() & IN_PREDICATE) > 0;
     	contextId = contextInfo.getContextId();
     	contextInfo.setParent(this);
-        for(int i = 0; i < 2; i++) {
-        	getExpression(i).analyze(contextInfo);
-        }
-        */
+    	start.analyze(contextInfo);
+    	end.analyze(contextInfo);
     }
     
    
