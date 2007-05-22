@@ -919,60 +919,285 @@ public class NativeBroker extends DBBroker {
         }
     }    
     
-    public boolean removeCollection(final Txn transaction, Collection collection) throws PermissionDeniedException,
-											 IOException {
-        if (readOnly)
-            throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);        
-        if (!collection.getPermissions().validate(user, Permission.WRITE))
+    
+    /**
+     * Removes the temp collection and all child collections and resources
+     * 
+     * Similar to removeCollection() but makes less use of the Transaction
+     * in an attempt to remove journalling of temporary resources
+     * 
+     * @param transaction the transaction to use
+     * @param collection the collection to remove, initially should be /db/system/temp
+     * 
+     * @return true if the collection was removed, false otherwise
+     */
+     private boolean removeTempCollection(final Txn transaction, Collection collection) throws PermissionDeniedException, IOException
+     {
+        if(readOnly)
+            throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+        
+        if(!collection.getPermissions().validate(user, Permission.WRITE))
             throw new PermissionDeniedException("User '"+ user.getName() + "' not allowed to remove collection '" + collection.getURI() + "'");
+        
         long start = System.currentTimeMillis();
         final CollectionCache collectionsCache = pool.getCollectionsCache();
-        synchronized(collectionsCache) {
+        
+        synchronized(collectionsCache)
+        {
             final XmldbURI uri = collection.getURI();
             final String collName = uri.getRawCollectionPath();
-            final boolean isRoot = collection.getParentURI() == null;
+        
             //Drop all index entries
             notifyDropIndex(collection);
+            
             // Drop custom indexes
             indexController.removeCollection(collection, this);
-            if (!isRoot) {
-                // remove from parent collection
-            	//TODO : resolve URIs ! (uri.resolve(".."))
-                Collection parentCollection = openCollection(collection.getParentURI(), Lock.WRITE_LOCK);
-                // keep the lock for the transaction
-                if (transaction != null)
-                    transaction.registerLock(parentCollection.getLock(), Lock.WRITE_LOCK);
-                if (parentCollection != null) {
-                    try {
-                        LOG.debug("Removing collection '" + collName + "' from its parent...");
-                        //TODO : resolve from collection's base URI
-                        parentCollection.removeCollection(uri.lastSegment());
-                        saveCollection(transaction, parentCollection);
-                    } catch (LockException e) {
-                        LOG.warn("LockException while removing collection '" + collName + "'");
-                    } finally {
-                        if (transaction == null)
-                        	parentCollection.getLock().release(Lock.WRITE_LOCK);
-                    }
+            
+            // remove from parent collection
+        	//TODO : resolve URIs ! (uri.resolve(".."))
+            Collection parentCollection = openCollection(collection.getParentURI(), Lock.WRITE_LOCK);
+
+            // keep the lock for the transaction, only when removing temp from system
+            if(transaction != null  && uri.equals(XmldbURI.TEMP_COLLECTION_URI))
+                transaction.registerLock(parentCollection.getLock(), Lock.WRITE_LOCK);
+            
+            if(parentCollection != null)
+            {
+                try
+                {
+                    LOG.debug("Removing collection '" + collName + "' from its parent...");
+                    //TODO : resolve from collection's base URI
+                    parentCollection.removeCollection(uri.lastSegment());
+                    saveCollection(transaction, parentCollection);
+                }
+                catch(LockException e)
+                {
+                    LOG.warn("LockException while removing collection '" + collName + "'");
+                }
+                finally
+                {
+                	//keep the lock for the transaction, only when removing temp from system
+                    if(transaction == null || (transaction != null && !uri.equals(XmldbURI.TEMP_COLLECTION_URI)))
+                    	parentCollection.getLock().release(Lock.WRITE_LOCK);
                 }
             }
+            
             // remove child collections
-            if (LOG.isDebugEnabled())
+            if(LOG.isDebugEnabled())
                 LOG.debug("Removing children collections from their parent '" + collName + "'...");
-            for (Iterator i = collection.collectionIterator(); i.hasNext();) {
+            
+            for(Iterator i = collection.collectionIterator(); i.hasNext();)
+            {
                 final XmldbURI childName = (XmldbURI) i.next();
                 //TODO : resolve from collection's base URI
                 //TODO : resulve URIs !!! (uri.resolve(childName))
                 Collection childCollection = openCollection(uri.append(childName), Lock.WRITE_LOCK);
-                try {                    
-                    removeCollection(transaction, childCollection);                    
-                } finally {
+            
+                try
+                {                    
+                    removeTempCollection(transaction, childCollection);                    
+                }
+                finally
+                {
                     childCollection.getLock().release(Lock.WRITE_LOCK);
                 }
             }
+
             //Update current state
             Lock lock = collectionsDb.getLock();
-            try {
+            try
+            {
+                lock.acquire(Lock.WRITE_LOCK);
+                // remove the metadata of all documents in the collection
+                Value docKey = new CollectionStore.DocumentKey(collection.getId());
+                IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, docKey);
+                
+                collectionsDb.removeAll(transaction, query);
+                Value key = new CollectionStore.CollectionKey(collName);
+                //... from the disk
+                collectionsDb.remove(transaction, key);
+                //... from the cache
+                collectionsCache.remove(collection);
+                //and free its id for any futher use
+                freeCollectionId(transaction, collection.getId());
+            }
+            catch(LockException e)
+            {
+                LOG.warn("Failed to acquire lock on '" + collectionsDb.getFile().getName() + "'");
+            }
+            catch(ReadOnlyException e)
+            {
+                throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+            }
+            catch(BTreeException e)
+            {
+                LOG.warn("Exception while removing collection: " + e.getMessage(), e);
+            }
+            catch(IOException e)
+            {
+                LOG.warn("Exception while removing collection: " + e.getMessage(), e);
+            }
+            finally
+            {
+                lock.release(Lock.WRITE_LOCK);
+            }
+            
+            //Remove child resources
+            if (LOG.isDebugEnabled())
+                LOG.debug("Removing resources in '" + collName + "'...");
+            
+            for(Iterator i = collection.iterator(this); i.hasNext();)
+            {
+                final DocumentImpl doc = (DocumentImpl) i.next();
+                //Remove doc's metadata
+                // WM: now removed in one step. see above.
+                //removeResourceMetadata(transaction, doc);
+                //Remove document nodes' index entries
+                new DOMTransaction(this, domDb, Lock.WRITE_LOCK)
+                {
+                    public Object start()
+                    {
+                        try
+                        {                          
+                            Value ref = new NodeRef(doc.getDocId());
+                            IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);                           
+                            domDb.remove(null, query, null); //NULL transaction, so temporary fragment is not journalled - AR
+                        }
+                        catch(BTreeException e)
+                        {
+                            LOG.warn("btree error while removing document", e);
+                        }
+                        catch(IOException e)
+                        {
+                            LOG.warn("io error while removing document", e);
+                        }
+                        catch(TerminatedException e)
+                        {
+                            LOG.warn("method terminated", e);
+                        }
+                        return null;
+                    }
+                }.run();  
+
+                //Remove nodes themselves
+                new DOMTransaction(this, domDb, Lock.WRITE_LOCK)
+                {
+                    public Object start()
+                    {
+                        if(doc.getResourceType() == DocumentImpl.BINARY_FILE)
+                        {
+                        	long page = ((BinaryDocument)doc).getPage();
+                        
+                        	if (page > Page.NO_PAGE)
+                        		domDb.removeOverflowValue(null, page); //NULL transaction, so temporary fragment is not journalled - AR
+                        }
+                        else
+                        {
+                            StoredNode node = (StoredNode)doc.getFirstChild();
+                            domDb.removeAll(null, node.getInternalAddress()); //NULL transaction, so temporary fragment is not journalled - AR
+                        }
+                        return null;
+                    }
+                }.run();
+
+                //Make doc's id available again
+                freeResourceId(transaction, doc.getDocId());
+            }
+            
+            if(LOG.isDebugEnabled())
+                LOG.debug("Removing collection '" + collName + "' took " + (System.currentTimeMillis() - start));
+            
+            return true;
+        }
+    }
+    
+    
+    /**
+     * Removes a collection and all child collections and resources
+     * 
+     * @param transaction the transaction to use
+     * @param collection the collection to remove
+     * @return true if the collection was removed, false otherwise
+     */
+    public boolean removeCollection(final Txn transaction, Collection collection) throws PermissionDeniedException, IOException
+    {
+        if(readOnly)
+            throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
+        
+        if(!collection.getPermissions().validate(user, Permission.WRITE))
+            throw new PermissionDeniedException("User '"+ user.getName() + "' not allowed to remove collection '" + collection.getURI() + "'");
+        
+        long start = System.currentTimeMillis();
+        final CollectionCache collectionsCache = pool.getCollectionsCache();
+        
+        synchronized(collectionsCache)
+        {
+            final XmldbURI uri = collection.getURI();
+            final String collName = uri.getRawCollectionPath();
+            final boolean isRoot = collection.getParentURI() == null;
+        
+            //Drop all index entries
+            notifyDropIndex(collection);
+            
+            // Drop custom indexes
+            indexController.removeCollection(collection, this);
+            
+            if(!isRoot)
+            {
+                // remove from parent collection
+            	//TODO : resolve URIs ! (uri.resolve(".."))
+                Collection parentCollection = openCollection(collection.getParentURI(), Lock.WRITE_LOCK);
+
+                // keep the lock for the transaction
+                if(transaction != null)
+                    transaction.registerLock(parentCollection.getLock(), Lock.WRITE_LOCK);
+                
+                if(parentCollection != null)
+                {
+                    try
+                    {
+                        LOG.debug("Removing collection '" + collName + "' from its parent...");
+                        //TODO : resolve from collection's base URI
+                        parentCollection.removeCollection(uri.lastSegment());
+                        saveCollection(transaction, parentCollection);
+                    }
+                    catch(LockException e)
+                    {
+                        LOG.warn("LockException while removing collection '" + collName + "'");
+                    }
+                    finally
+                    {
+                        if(transaction == null)
+                        	parentCollection.getLock().release(Lock.WRITE_LOCK);
+                    }
+                }
+            }
+            
+            // remove child collections
+            if(LOG.isDebugEnabled())
+                LOG.debug("Removing children collections from their parent '" + collName + "'...");
+            
+            for(Iterator i = collection.collectionIterator(); i.hasNext();)
+            {
+                final XmldbURI childName = (XmldbURI) i.next();
+                //TODO : resolve from collection's base URI
+                //TODO : resulve URIs !!! (uri.resolve(childName))
+                Collection childCollection = openCollection(uri.append(childName), Lock.WRITE_LOCK);
+            
+                try
+                {                    
+                    removeCollection(transaction, childCollection);                    
+                }
+                finally
+                {
+                    childCollection.getLock().release(Lock.WRITE_LOCK);
+                }
+            }
+
+            //Update current state
+            Lock lock = collectionsDb.getLock();
+            try
+            {
                 lock.acquire(Lock.WRITE_LOCK);
                 // remove the metadata of all documents in the collection
                 Value docKey = new CollectionStore.DocumentKey(collection.getId());
@@ -980,7 +1205,8 @@ public class NativeBroker extends DBBroker {
                 collectionsDb.removeAll(transaction, query);
                 
                 // if this is not the root collection remove it...
-                if (!isRoot) {
+                if(!isRoot)
+                {
                     Value key = new CollectionStore.CollectionKey(collName);
                     //... from the disk
                     collectionsDb.remove(transaction, key);
@@ -988,69 +1214,101 @@ public class NativeBroker extends DBBroker {
                     collectionsCache.remove(collection);
                     //and free its id for any futher use
                     freeCollectionId(transaction, collection.getId());
-                } else {
+                }
+                else
+                {
                     //Simply save the collection on disk
                     //It will remain cached
                     //and its id well never be made available 
                     saveCollection(transaction, collection);
                 }
-            } catch (LockException e) {
+            }
+            catch(LockException e)
+            {
                 LOG.warn("Failed to acquire lock on '" + collectionsDb.getFile().getName() + "'");
-            } catch (ReadOnlyException e) {
+            }
+            catch(ReadOnlyException e)
+            {
                 throw new PermissionDeniedException(DATABASE_IS_READ_ONLY);
-            } catch (BTreeException e) {
+            }
+            catch(BTreeException e)
+            {
                 LOG.warn("Exception while removing collection: " + e.getMessage(), e);
-            } catch (IOException e) {
+            }
+            catch(IOException e)
+            {
                 LOG.warn("Exception while removing collection: " + e.getMessage(), e);
-            } finally {
+            }
+            finally
+            {
                 lock.release(Lock.WRITE_LOCK);
             }
+            
             //Remove child resources
             if (LOG.isDebugEnabled())
                 LOG.debug("Removing resources in '" + collName + "'...");
-            for (Iterator i = collection.iterator(this); i.hasNext();) {
+            
+            for(Iterator i = collection.iterator(this); i.hasNext();)
+            {
                 final DocumentImpl doc = (DocumentImpl) i.next();
                 //Remove doc's metadata
                 // WM: now removed in one step. see above.
-		//                removeResourceMetadata(transaction, doc);
+                //removeResourceMetadata(transaction, doc);
                 //Remove document nodes' index entries
-                new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
-                    public Object start() {
-                        try {                          
+                new DOMTransaction(this, domDb, Lock.WRITE_LOCK)
+                {
+                    public Object start()
+                    {
+                        try
+                        {                          
                             Value ref = new NodeRef(doc.getDocId());
                             IndexQuery query = new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);                           
                             domDb.remove(transaction, query, null);
-                        } catch (BTreeException e) {
+                        }
+                        catch(BTreeException e)
+                        {
                             LOG.warn("btree error while removing document", e);
-                        } catch (IOException e) {
+                        }
+                        catch(IOException e)
+                        {
                             LOG.warn("io error while removing document", e);
-                        } catch (TerminatedException e) {
+                        }
+                        catch(TerminatedException e)
+                        {
                             LOG.warn("method terminated", e);
                         }
                         return null;
                     }
-                }
-		    .run();  
+                }.run();  
+
                 //Remove nodes themselves
-                new DOMTransaction(this, domDb, Lock.WRITE_LOCK) {
-                    public Object start() {
-                        if(doc.getResourceType() == DocumentImpl.BINARY_FILE) {
-			    long page = ((BinaryDocument)doc).getPage();
-			    if (page > Page.NO_PAGE)
-				domDb.removeOverflowValue(transaction, page);
-                        } else {
+                new DOMTransaction(this, domDb, Lock.WRITE_LOCK)
+                {
+                    public Object start()
+                    {
+                        if(doc.getResourceType() == DocumentImpl.BINARY_FILE)
+                        {
+                        	long page = ((BinaryDocument)doc).getPage();
+                        
+                        	if (page > Page.NO_PAGE)
+                        		domDb.removeOverflowValue(transaction, page);
+                        }
+                        else
+                        {
                             StoredNode node = (StoredNode)doc.getFirstChild();
                             domDb.removeAll(transaction, node.getInternalAddress());
                         }
                         return null;
                     }
-                }
-		    .run();
+                }.run();
+
                 //Make doc's id available again
                 freeResourceId(transaction, doc.getDocId());
             }
-            if (LOG.isDebugEnabled())
+            
+            if(LOG.isDebugEnabled())
                 LOG.debug("Removing collection '" + collName + "' took " + (System.currentTimeMillis() - start));
+            
             return true;
         }
     }
@@ -1429,7 +1687,7 @@ public class NativeBroker extends DBBroker {
         	
             try
             {
-                removeCollection(transaction, temp);
+                removeTempCollection(transaction, temp);
                 transact.commit(transaction);
             }
             catch(Exception e)
