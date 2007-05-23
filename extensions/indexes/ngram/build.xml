@@ -8,16 +8,16 @@
     </target>
 
     <target name="test" depends="compile-tests">
-        <junit fork="yes" haltonfailure="false" printsummary="yes" showoutput="${junit.output}">
+        <junit fork="yes" haltonfailure="false" printsummary="yes" showoutput="${junit.output}" maxmemory="200m">
 
             <classpath refid="classpath.core"/>
             <classpath refid="classpath.junit"/>
-
+    
             <formatter type="plain"/>
             <formatter type="xml"/>
 
             <test name="org.exist.indexing.ngram.AllIndexTests"
-                todir="${junit.reports}"/>
+                todir="${junit.index.reports}"/>
         </junit>
     </target>
 </project>

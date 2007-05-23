@@ -23,6 +23,7 @@
     <property name="lib.endorsed" value="./lib/endorsed"/>
     <property name="lib.cocoon" value="./lib/cocoon"/>
     <property name="lib.user" value="./lib/user"/>
+    <property name="lib.extensions" value="./extensions"/>
 
     <property name="build" value="./build"/>
     <property name="build.src" value="${build}/src"/>
@@ -79,6 +80,9 @@
         <fileset dir="${lib.user}">
             <include name="*.jar"/>
         </fileset>
+        <fileset dir="${lib.extensions}">
+            <include name="**/lib/*.jar"/>
+        </fileset>        
 
         <fileset dir="${tools.ant}/lib">
             <include name="*.jar"/>
