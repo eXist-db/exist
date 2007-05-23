@@ -150,7 +150,7 @@ public class DOMIndexerTest extends TestCase {
             serializer.startDocument();
             for (SequenceIterator i = result.iterate(); i.hasNext(); ) {
                 Item next = i.nextItem();
-                next.toSAX(broker, serializer);
+                next.toSAX(broker, serializer, props);
             }
             serializer.endDocument();
             System.out.println(out.toString());

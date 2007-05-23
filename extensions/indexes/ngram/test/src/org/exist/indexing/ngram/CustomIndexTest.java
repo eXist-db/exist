@@ -610,7 +610,7 @@ public class CustomIndexTest extends TestCase {
             serializer.startDocument();
             for (SequenceIterator i = seq.iterate(); i.hasNext(); ) {
                 Item next = i.nextItem();
-                next.toSAX(broker, serializer);
+                next.toSAX(broker, serializer, props);
             }
             serializer.endDocument();
             //TODO : check content
