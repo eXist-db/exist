@@ -42,6 +42,7 @@ import org.exist.util.serializer.XMLWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.Properties;
 
 /**
  * @author Adam Retter <adam.retter@devon.gov.uk>
@@ -87,7 +88,7 @@ public class POSTFunction extends BasicFunction {
 		sax.setReceiver(xmlWriter);
 		try
 		{
-			node.toSAX(context.getBroker(), sax);
+			node.toSAX(context.getBroker(), sax, new Properties());
 			osw.flush();
 			osw.close();
 		}
