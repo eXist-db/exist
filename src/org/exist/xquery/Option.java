@@ -66,7 +66,11 @@ public class Option {
 	}
 	
 	public String[] tokenizeContents() {
-		if(contents == null)
+		return tokenize(contents);
+	}
+
+    public static String[] tokenize(String contents) {
+        if(contents == null)
 			return new String[0];
 		StringTokenizer tok = new StringTokenizer(contents, " \r\t\n");
 		String[] items = new String[tok.countTokens()];
@@ -74,9 +78,9 @@ public class Option {
 			items[i] = tok.nextToken();
 		}
 		return items;
-	}
-	
-	public static synchronized String[] parseKeyValuePair(String s) {
+    }
+
+    public static synchronized String[] parseKeyValuePair(String s) {
         matcher.reset(s);
 		if(matcher.matches()) {
 			String value = matcher.group(2);

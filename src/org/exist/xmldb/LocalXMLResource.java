@@ -207,7 +207,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
 		} else if (value != null) {
 			try {
 				broker = pool.get(user);
-				value.toSAX(broker, handler);
+				value.toSAX(broker, handler, getProperties());
 			} catch (EXistException e) {
 				throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e
 						.getMessage(), e);

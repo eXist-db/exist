@@ -1866,7 +1866,7 @@ public class RpcConnection extends Thread {
             for(SequenceIterator i = qr.result.iterate(); i.hasNext(); ) {
                 current = i.nextItem();
                 if(Type.subTypeOf(current.getType(), Type.NODE))
-                    ((NodeValue)current).toSAX(broker, handler);
+                    ((NodeValue)current).toSAX(broker, handler, null);
                 else {
                     value = current.toString().toCharArray();
                     handler.characters(value, 0, value.length);

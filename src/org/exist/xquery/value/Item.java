@@ -28,6 +28,8 @@ import org.exist.dom.StoredNode;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import java.util.Properties;
+
 /**
  * This class represents an item in a sequence as defined by the XPath 2.0 specification.
  * Every item is either an {@link org.exist.xquery.value.AtomicValue atomic value} or
@@ -69,7 +71,7 @@ public interface Item {
 	
 	public AtomicValue atomize() throws XPathException;
 	
-	public void toSAX(DBBroker broker, ContentHandler handler) throws SAXException;
+	public void toSAX(DBBroker broker, ContentHandler handler, Properties properties) throws SAXException;
 
 	public void copyTo(DBBroker broker, DocumentBuilderReceiver receiver) throws SAXException;
 	

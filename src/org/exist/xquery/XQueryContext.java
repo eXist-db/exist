@@ -27,13 +27,7 @@ import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.text.Collator;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
-import java.util.TreeMap;
+import java.util.*;
 
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
@@ -1968,8 +1962,34 @@ public class XQueryContext {
 			broker.getBrokerPool().getNotificationService().unsubscribe(updateListener);
 		updateListener = null;
 	}
-	
-	private class ContextUpdateListener implements UpdateListener {
+
+    /**
+     * Check if the XQuery contains pragmas that define serialization settings.
+     * If yes, copy the corresponding settings to the current set of output
+     * properties.
+     *
+     * @param properties the properties object to which serialization parameters will
+     * be added.
+     * @throws XPathException if an error occurs while parsing the option
+     */
+    public void checkOptions(Properties properties)
+    throws XPathException {
+        Option pragma = getOption(Option.SERIALIZE_QNAME);
+        if (pragma == null)
+            return;
+        String[] contents = pragma.tokenizeContents();
+        for (int i = 0; i < contents.length; i++) {
+            String[] pair = Option.parseKeyValuePair(contents[i]);
+            if (pair == null)
+                throw new XPathException("Unknown parameter found in "
+                        + pragma.getQName().getStringValue() + ": '" + contents[i]
+                        + "'");
+            LOG.debug("Setting serialization property from pragma: " + pair[0] + " = " + pair[1]);
+            properties.setProperty(pair[0], pair[1]);
+        }
+    }
+
+    private class ContextUpdateListener implements UpdateListener {
 
 		private List listeners = new ArrayList();
 		

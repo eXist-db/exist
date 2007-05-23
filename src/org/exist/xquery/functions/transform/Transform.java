@@ -31,6 +31,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
@@ -60,13 +61,7 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.serializers.Serializer;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.Constants;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.Variable;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.*;
 import org.exist.xquery.functions.response.ResponseModule;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.JavaObjectValue;
@@ -103,6 +98,23 @@ public class Transform extends BasicFunction {
 				new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)},
 			new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)),
         new FunctionSignature(
+			new QName("transform", TransformModule.NAMESPACE_URI, TransformModule.PREFIX),
+			"Applies an XSL stylesheet to the node tree passed as first argument. The stylesheet " +
+			"is specified in the second argument. This should either be an URI or a node. If it is an " +
+			"URI, it can either point to an external location or to an XSL stored in the db by using the " +
+			"'xmldb:' scheme. Stylesheets are cached unless they were just created from an XML " +
+			"fragment and not from a complete document. " +
+			"Stylesheet parameters " +
+			"may be passed in the third argument using an XML fragment with the following structure: " +
+			"<parameters><param name=\"param-name1\" value=\"param-value1\"/>" +
+			"</parameters>",
+			new SequenceType[] {
+				new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
+				new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
+				new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
+                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
+			new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)),
+        new FunctionSignature(
             new QName("stream-transform", TransformModule.NAMESPACE_URI, TransformModule.PREFIX),
             "Applies an XSL stylesheet to the node tree passed as first argument. The parameters are the same " +
             "as for the transform function. stream-transform can only be used within a servlet context. Instead " +
@@ -112,6 +124,18 @@ public class Transform extends BasicFunction {
                 new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
                 new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
                 new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)},
+            new SequenceType(Type.ITEM, Cardinality.EMPTY)),
+        new FunctionSignature(
+            new QName("stream-transform", TransformModule.NAMESPACE_URI, TransformModule.PREFIX),
+            "Applies an XSL stylesheet to the node tree passed as first argument. The parameters are the same " +
+            "as for the transform function. stream-transform can only be used within a servlet context. Instead " +
+            "of returning the transformed document fragment, it directly streams its output to the servlet's output stream. " +
+            "It should thus be the last statement in the XQuery.",
+            new SequenceType[] {
+                new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
+                new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
+                new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
+                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)},
             new SequenceType(Type.ITEM, Cardinality.EMPTY))
     };
 
@@ -137,8 +161,23 @@ public class Transform extends BasicFunction {
 		Node options = null;
 		if(!args[2].isEmpty())
 			options = ((NodeValue)args[2].itemAt(0)).getNode();
-		
-		TransformerHandler handler = createHandler(stylesheetItem, options);
+
+        // apply serialization options set on the XQuery context
+        Properties serializeOptions = new Properties();
+        if (getArgumentCount() == 4) {
+            String serOpts = args[3].getStringValue();
+            String[] contents = Option.tokenize(serOpts);
+            for (int i = 0; i < contents.length; i++) {
+                String[] pair = Option.parseKeyValuePair(contents[i]);
+                if (pair == null)
+                    throw new XPathException(getASTNode(), "Found invalid serialization option: " + pair);
+                LOG.debug("Setting serialization property: " + pair[0] + " = " + pair[1]);
+                serializeOptions.setProperty(pair[0], pair[1]);
+            }
+        } else
+            context.checkOptions(serializeOptions);
+
+        TransformerHandler handler = createHandler(stylesheetItem, options);
         if (isCalledAs("transform"))
         {
         	//transform:transform()
@@ -152,7 +191,7 @@ public class Transform extends BasicFunction {
     		handler.setResult(result);
     		try {
     			handler.startDocument();
-    			inputNode.toSAX(context.getBroker(), handler);
+    			inputNode.toSAX(context.getBroker(), handler, serializeOptions);
     			handler.endDocument();
     		} catch (SAXException e) {
     			throw new XPathException(getASTNode(), "SAX exception while transforming node: " + e.getMessage(), e);
@@ -187,7 +226,7 @@ public class Transform extends BasicFunction {
                 StreamResult result = new StreamResult(os);
                 handler.setResult(result);
                 handler.startDocument();
-                inputNode.toSAX(context.getBroker(), handler);
+                inputNode.toSAX(context.getBroker(), handler, serializeOptions);
                 handler.endDocument();
                 os.close();
                 //commit the response
@@ -314,7 +353,7 @@ public class Transform extends BasicFunction {
 		TemplatesHandler handler = factory.newTemplatesHandler();
 		try {
 			handler.startDocument();
-			stylesheetRoot.toSAX(context.getBroker(), handler);
+			stylesheetRoot.toSAX(context.getBroker(), handler, null);
 			handler.endDocument();
 			return handler.getTemplates();
 		} catch (SAXException e) {
