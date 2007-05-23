@@ -131,7 +131,7 @@ public class LocalResourceSet implements ResourceSet {
 			for(Iterator i = resources.iterator(); i.hasNext(); ) {
 				current = (Item)i.next();
 				if(Type.subTypeOf(current.getType(), Type.NODE)) {
-					((NodeValue)current).toSAX(broker, handler);
+					((NodeValue)current).toSAX(broker, handler, outputProperties);
 				} else {
 					value = current.toString().toCharArray();
 					handler.characters(value, 0, value.length);

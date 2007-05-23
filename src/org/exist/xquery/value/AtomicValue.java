@@ -22,6 +22,7 @@ package org.exist.xquery.value;
 
 import java.text.Collator;
 import java.util.Iterator;
+import java.util.Properties;
 
 import org.exist.EXistException;
 import org.exist.dom.DocumentSet;
@@ -163,7 +164,7 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Item#toSAX(org.exist.storage.DBBroker, org.xml.sax.ContentHandler)
 	 */
-	public void toSAX(DBBroker broker, ContentHandler handler) throws SAXException {
+	public void toSAX(DBBroker broker, ContentHandler handler, Properties properties) throws SAXException {
 		try {
 			final String s = getStringValue();
 			handler.characters(s.toCharArray(), 0, s.length());

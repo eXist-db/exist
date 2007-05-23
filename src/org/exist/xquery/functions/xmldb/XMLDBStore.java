@@ -165,12 +165,12 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 						StringWriter writer = new StringWriter();
 						SAXSerializer serializer = new SAXSerializer();
 						serializer.setOutput(writer, null);
-						item.toSAX(context.getBroker(), serializer);
+						item.toSAX(context.getBroker(), serializer, null);
 						resource.setContent(writer.toString());
 					} else {
 						ContentHandler handler = ((XMLResource)resource).setContentAsSAX();
 						handler.startDocument();
-						item.toSAX(context.getBroker(), handler);
+						item.toSAX(context.getBroker(), handler, null);
 						handler.endDocument();
 					}
 				} else

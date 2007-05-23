@@ -46,6 +46,7 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 import java.util.Iterator;
+import java.util.Properties;
 
 /**
  * Placeholder class for DOM nodes. 
@@ -696,12 +697,14 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
     /* (non-Javadoc)
      * @see org.exist.xquery.value.Item#toSAX(org.exist.storage.DBBroker, org.xml.sax.ContentHandler)
      */
-    public void toSAX(DBBroker broker, ContentHandler handler) throws SAXException {
-	Serializer serializer = broker.getSerializer();
-	serializer.reset();
-	serializer.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
-	serializer.setSAXHandlers(handler, null);
-	serializer.toSAX(this);
+    public void toSAX(DBBroker broker, ContentHandler handler, Properties properties) throws SAXException {
+        Serializer serializer = broker.getSerializer();
+        serializer.reset();
+        serializer.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
+        if (properties != null)
+            serializer.setProperties(properties);
+        serializer.setSAXHandlers(handler, null);
+        serializer.toSAX(this);
     }
 
     /* (non-Javadoc)

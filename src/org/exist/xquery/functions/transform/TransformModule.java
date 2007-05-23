@@ -36,8 +36,10 @@ public class TransformModule extends AbstractInternalModule {
 	
 	private final static FunctionDef functions[] = {
 		new FunctionDef(Transform.signatures[0], Transform.class),
-        new FunctionDef(Transform.signatures[1], Transform.class)
-	};
+        new FunctionDef(Transform.signatures[1], Transform.class),
+        new FunctionDef(Transform.signatures[2], Transform.class),
+        new FunctionDef(Transform.signatures[3], Transform.class)
+    };
 	
 	public TransformModule() {
 		super(functions);

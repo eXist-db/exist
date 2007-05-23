@@ -51,6 +51,7 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 import java.util.Iterator;
+import java.util.Properties;
 
 public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 
@@ -598,13 +599,15 @@ public class NodeImpl implements Node, NodeValue, QNameable, Comparable {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.Item#toSAX(org.exist.storage.DBBroker, org.xml.sax.ContentHandler)
 	 */
-	public void toSAX(DBBroker broker, ContentHandler handler) throws SAXException {
+	public void toSAX(DBBroker broker, ContentHandler handler, Properties properties) throws SAXException {
 	    DOMStreamer streamer = null;
 		try {
 		    Serializer serializer = broker.getSerializer();
 		    serializer.reset();
 			serializer.setProperty(Serializer.GENERATE_DOC_EVENTS, "false");
-			serializer.setSAXHandlers(handler, null);
+            if (properties != null)
+                serializer.setProperties(properties);
+            serializer.setSAXHandlers(handler, null);
             streamer = SerializerPool.getInstance().borrowDOMStreamer(serializer);
 			streamer.setContentHandler(handler);
 			streamer.serialize(this, false);

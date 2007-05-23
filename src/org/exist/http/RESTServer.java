@@ -82,7 +82,6 @@ import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.Constants;
-import org.exist.xquery.Option;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
@@ -896,7 +895,7 @@ public class RESTServer {
             
             if (compiled == null)
                 compiled = xquery.compile(context, source);
-            checkPragmas(context, outputProperties);
+            context.checkOptions(outputProperties);
             try {
                 long startTime = System.currentTimeMillis();
                 Sequence resultSequence = xquery.execute(compiled, null);
@@ -965,7 +964,7 @@ public class RESTServer {
                 throw new BadRequestException("Failed to read query from " + resource.getURI(), e);
             }
         }
-        checkPragmas(context, outputProperties);
+        context.checkOptions(outputProperties);
         try {
             Sequence result = xquery.execute(compiled, null);
             return printResults(broker, result, -1, 1, 0, outputProperties, false);
@@ -1023,32 +1022,7 @@ public class RESTServer {
         writer.write("</exception>");
         return writer.toString();
     }
-    
-    /**
-     * Check if the XQuery contains pragmas that define serialization settings.
-     * If yes, copy the corresponding settings to the current set of output
-     * properties.
-     *
-     * @param context
-     */
-    protected void checkPragmas(XQueryContext context, Properties properties)
-    throws XPathException {
-        Option pragma = context.getOption(Option.SERIALIZE_QNAME);
-        if (pragma == null)
-            return;
-        String[] contents = pragma.tokenizeContents();
-        for (int i = 0; i < contents.length; i++) {
-            String[] pair = Option.parseKeyValuePair(contents[i]);
-            if (pair == null)
-                throw new XPathException("Unknown parameter found in "
-                        + pragma.getQName().getStringValue() + ": '" + contents[i]
-                        + "'");
-            LOG.debug("Setting serialization property from pragma: " + pair[0]
-                    + " = " + pair[1]);
-            properties.setProperty(pair[0], pair[1]);
-        }
-    }
-    
+
     protected String printCollection(DBBroker broker, Collection collection) {
         SAXSerializer serializer = null;
         StringWriter writer = new StringWriter();

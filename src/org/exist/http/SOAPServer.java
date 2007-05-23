@@ -1506,7 +1506,7 @@ public class SOAPServer
             handler.setResult(result);
             
 			handler.startDocument();
-			srcDoc.toSAX(broker, handler);
+			srcDoc.toSAX(broker, handler, null);
 			handler.endDocument();
 			
 			return os.toByteArray();
