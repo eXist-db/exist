@@ -1038,6 +1038,18 @@ public class RESTServer {
             
             attrs.addAttribute("", "name", "name", "CDATA", collection
                     .getURI().toString());
+            //add an attribute for the creation date as an xs:dateTime 
+            try
+            {
+            	DateTimeValue dtCreated = new DateTimeValue(new Date(collection.getCreationTime()));
+            	attrs.addAttribute("", "created", "created", "CDATA", dtCreated.getStringValue());
+            }
+            catch(XPathException e)
+            {
+            	//fallback to long value
+            	attrs.addAttribute("", "created", "created", "CDATA", String.valueOf(collection.getCreationTime()));
+            }
+
             printPermissions(attrs, collection.getPermissions());
             
             serializer.startElement(Namespaces.EXIST_NS, "collection", "exist:collection", attrs);
