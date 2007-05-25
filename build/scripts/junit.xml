@@ -88,7 +88,7 @@
         <echo message="Running tests on a local database instance"/>
         <echo message="------------------------------------------"/>
 
-        <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}">
+        <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}" maxmemory="${junit.forked.VM.maxmemory}">
             <sysproperty key="exist.home" value="${basedir}" />
             <classpath refid="classpath.core"/>
             <classpath refid="classpath.jetty"/>
@@ -127,7 +127,7 @@
         <echo message="Running tests on a jetty server"/>
         <echo message="------------------------------------------"/>
 
-        <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}">
+        <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}" maxmemory="${junit.forked.VM.maxmemory}">
             <sysproperty key="exist.home" value="${basedir}" />
             <classpath refid="classpath.core"/>
             <classpath refid="classpath.jetty"/>
@@ -209,7 +209,7 @@
         <echo message="--------------------------------"/>
         <echo message="Running tests on remote database"/>
         <echo message="--------------------------------"/>
-        <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}">
+        <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}" maxmemory="${junit.forked.VM.maxmemory}">
             <sysproperty key="exist.home" value="${basedir}" />
             <classpath refid="classpath.core"/>
             <classpath refid="classpath.jetty"/>
@@ -229,7 +229,7 @@
         <echo message="Running additional tests, which may take some time"/>
         <echo message="------------------------------------------"/>
 
-        <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}">
+        <junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}" maxmemory="${junit.forked.VM.maxmemory}">
             <sysproperty key="exist.home" value="${basedir}" />
             <classpath refid="classpath.core"/>
             <classpath refid="classpath.jetty"/>
