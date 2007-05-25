@@ -508,7 +508,7 @@
         <delete dir="${src.webapp}/WEB-INF/data/backup"/>
         <delete dir="${src.webapp}/WEB-INF/data/journal"/>
         <delete>
-            <fileset dir="${src.webapp}/WEB-INF/data" includes="*.dbx,*.log,*.lck" excludes=".DO_NOT_DELETE" />
+            <fileset dir="${src.webapp}/WEB-INF/data" includes="*.dbx,*.log,*.lck,spatial_index.*" excludes=".DO_NOT_DELETE" />
         </delete>
         <delete dir="samples/classes"/>
         <delete failonerror="no" file="examples.jar"/>
