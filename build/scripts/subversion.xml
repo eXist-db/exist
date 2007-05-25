@@ -11,8 +11,8 @@
 
     <target name="svn-download" description="Download SVN library.">
     
-      <get src="http://mirrors.ibiblio.org/pub/mirrors/maven2/com/svnkit/svnkit/1.1.0/svnkit-1.1.0.jar"
-                  dest="${tools.ant}/lib/svnkit-1.1.0.jar" verbose="true" />
+      <get src="http://mirrors.ibiblio.org/pub/mirrors/maven2/org/tmatesoft/svnkit/1.1.2/svnkit-1.1.2.jar"
+                  dest="${tools.ant}/lib/svnkit-1.1.2.jar" verbose="true" />
 
     </target>
 
