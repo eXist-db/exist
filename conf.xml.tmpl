@@ -341,6 +341,10 @@
         <modules>
             <module id="ngram-index" class="org.exist.indexing.ngram.NGramIndex"
                     file="ngram.dbx" n="3"/>
+            <!--
+            <module id="spatial-index" class="org.exist.indexing.spatial.GMLHSQLIndex"
+                 flushAfter="300" />            
+            -->
         </modules>
 
         <!--
@@ -522,6 +526,10 @@
                 uri="http://exist-db.org/xquery/system" />
 			<module class="org.exist.xquery.modules.ngram.NGramModule"
 				uri="http://exist-db.org/xquery/ngram" />
+			<!--
+			<module class="org.exist.xquery.modules.spatial.SpatialModule"
+				uri="http://exist-db.org/xquery/spatial" />
+			-->
             <!-- Optional Modules -->
             <!--module class="org.exist.xquery.modules.datetime.DateTimeModule"
                     uri="http://exist-db.org/xquery/datetime" />
