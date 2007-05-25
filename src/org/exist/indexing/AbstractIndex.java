@@ -22,6 +22,7 @@
 package org.exist.indexing;
 
 import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
 import org.exist.storage.btree.DBException;
 import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Element;
@@ -30,6 +31,8 @@ public abstract class AbstractIndex implements Index {
 
     protected BrokerPool pool;
     private String name = null;
+    //Probably not useful for every kind of index. Anyway...
+    private String dataDir = null;    
 
     public String getIndexName() {
     	return name;
@@ -38,9 +41,14 @@ public abstract class AbstractIndex implements Index {
     public BrokerPool getBrokerPool() {
     	return pool;
     }
+    
+    protected String getDataDir() {
+    	return dataDir;
+    }    
 
     public void configure(BrokerPool pool, String dataDir, Element config) throws DatabaseConfigurationException {
     	this.pool = pool;
+    	this.dataDir = dataDir; 
         if (config.hasAttribute("id"))
             name = config.getAttribute("id");
     }
@@ -48,6 +56,7 @@ public abstract class AbstractIndex implements Index {
 	public abstract void open() throws DatabaseConfigurationException;
 	public abstract void close() throws DBException;
 	public abstract void sync() throws DBException;
-	public abstract IndexWorker getWorker();
+	public abstract IndexWorker getWorker(DBBroker broker);
 	public abstract void remove() throws DBException;
+	public abstract boolean checkIndex(DBBroker broker);
 }

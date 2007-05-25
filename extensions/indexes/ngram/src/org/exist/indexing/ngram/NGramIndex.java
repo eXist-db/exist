@@ -27,6 +27,7 @@ import org.apache.log4j.Logger;
 import org.exist.indexing.AbstractIndex;
 import org.exist.indexing.IndexWorker;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
 import org.exist.storage.btree.DBException;
 import org.exist.storage.index.BFile;
 import org.exist.util.DatabaseConfigurationException;
@@ -87,9 +88,13 @@ public class NGramIndex extends AbstractIndex {
     public void remove() throws DBException {
         db.closeAndRemove();
     }
+    
+    public boolean checkIndex(DBBroker broker) {
+        return true;
+    }    
 
-    public IndexWorker getWorker() {
-    	//TODO : ensure singleton ?
+    public IndexWorker getWorker(DBBroker broker) {
+    	//TODO : ensure singleton ? a pool ?    	
         return new NGramIndexWorker(this);
     }
 

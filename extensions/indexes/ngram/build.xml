@@ -8,7 +8,7 @@
     </target>
 
     <target name="test" depends="compile-tests">
-        <junit fork="yes" haltonfailure="false" printsummary="yes" showoutput="${junit.output}" maxmemory="200m">
+        <junit fork="yes" haltonfailure="false" printsummary="yes" showoutput="${junit.output}" maxmemory="${junit.forked.VM.maxmemory}">
 
             <classpath refid="classpath.core"/>
             <classpath refid="classpath.junit"/>

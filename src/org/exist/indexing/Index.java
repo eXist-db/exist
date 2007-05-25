@@ -21,10 +21,11 @@
  */
 package org.exist.indexing;
 
-import org.w3c.dom.Element;
-import org.exist.util.DatabaseConfigurationException;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
 import org.exist.storage.btree.DBException;
+import org.exist.util.DatabaseConfigurationException;
+import org.w3c.dom.Element;
 
 /**
  * Represents an arbitrary index structure that can be used by eXist. This is the
@@ -92,9 +93,10 @@ public interface Index {
      * have to go through one of these brokers. Each DBBroker retrieves an
      * IndexWorker for every index by calling this method.
      *
+     * @param broker The DBBroker that owns this worker
      * @return a new IndexWorker that can be used for concurrent access to the index.
      */
-    IndexWorker getWorker();
+    IndexWorker getWorker(DBBroker broker);
 
     /**
      * Close the index and remove it completely, including all resources and files
