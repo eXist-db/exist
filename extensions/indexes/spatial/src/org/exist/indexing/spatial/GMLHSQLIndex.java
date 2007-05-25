@@ -157,7 +157,7 @@ public class GMLHSQLIndex extends AbstractIndex {
     				initializeConnection();
     	    	return conn;
     		} else {    
-	    		long timeOut_ = 10000L;
+	    		long timeOut_ = 100000L;
 	    		long waitTime = timeOut_;
 				long start = System.currentTimeMillis();
 				try {
