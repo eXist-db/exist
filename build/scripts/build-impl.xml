@@ -60,7 +60,7 @@
 
     <!-- additional set of ant tasks -->
     <property name="asocat-exist.jar" location="${tools.ant}/lib/asocat-exist.jar"/>
-    <property name="javasvn.jar" location="${tools.ant}/lib/svnkit-1.1.1.jar"/>
+    <property name="javasvn.jar" location="${tools.ant}/lib/svnkit-1.1.2.jar"/>
     <available file="${javasvn.jar}" property="svn-present" />
 
     <!-- setup class path -->
