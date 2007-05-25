@@ -6,6 +6,9 @@
             <ant antfile="build.xml" dir="ngram" target="@{target}">
                 <property name="module" value="ngram"/>
             </ant>
+            <ant antfile="build.xml" dir="spatial" target="@{target}">
+                <property name="module" value="spatial"/>
+            </ant>            
         </sequential>
     </macrodef>
 
