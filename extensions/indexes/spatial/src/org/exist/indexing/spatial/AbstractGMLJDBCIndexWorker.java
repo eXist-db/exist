@@ -84,6 +84,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     Stack srsNamesStack = new Stack();
     NodeId currentNodeId = null;    
     Geometry currentGeometry = null;
+    boolean documentDeleted= false;
     int flushAfter = -1;
     protected GMLStreamListener gmlStreamListener = new GMLStreamListener();
     protected static GeometryCoordinateSequenceTransformer coordinateTransformer = new GeometryCoordinateSequenceTransformer();
@@ -128,6 +129,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
    
     public void setDocument(DocumentImpl document) {  
     	isDocumentGMLAware = false;
+    	documentDeleted= false;
     	if (document != null) {
 	    	IndexSpec idxConf = document.getCollection().getIndexConfiguration(document.getBroker());
 	    	if (idxConf != null) {
@@ -184,22 +186,25 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     public void flush() {
     	if (!isDocumentGMLAware)
     		return;
+    	if (mode == StreamListener.REMOVE_ALL_NODES && documentDeleted)
+    		return;
     	Connection conn = null;
     	try {
     		conn = acquireConnection();
-	        conn.setAutoCommit(false);
+            conn.setAutoCommit(false);
 	        switch (mode) {
 	            case StreamListener.STORE :
 	                saveDocumentNodes(conn);
 	                break;
-	            case StreamListener.REMOVE_ALL_NODES :
-	            	removeDocument(conn);
-	            	break;
 	            case StreamListener.REMOVE_NODES :
 	                dropDocumentNode(conn);
 	                break;
+	            case StreamListener.REMOVE_ALL_NODES:
+            		removeDocument(conn);
+            		documentDeleted = true;
+            		break;
 	        }
-	        conn.commit();	        
+	        conn.commit();	  
         } catch (SQLException e) {
         	LOG.error(e);
         	try {
@@ -208,6 +213,12 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
             	LOG.error(ee);
             }    	
         } finally {
+        	try {
+        		if (conn != null)
+        			conn.setAutoCommit(true);
+            } catch (SQLException e) {
+            	LOG.error(e);
+            }        		
         	releaseConnection(conn);
         }
     }
