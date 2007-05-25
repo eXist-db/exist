@@ -25,7 +25,10 @@
     <!-- import default properties from file -->
     <property file="build.properties"/>
 
-    <!-- Core build scripts -->
+	<!-- set proxy if needed, use properties in build.properties  -->
+	<setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}"/>
+	
+	<!-- Core build scripts -->
     <import file="build/scripts/build-impl.xml" />
     <import file="build/scripts/soap.xml" />
     <import file="build/scripts/jarsigner.xml" />
