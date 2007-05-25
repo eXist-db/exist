@@ -57,7 +57,7 @@ public class IndexController {
     protected int currentMode = StreamListener.UNKNOWN;
     
     public IndexController(DBBroker broker) {
-        IndexWorker[] workers = broker.getBrokerPool().getIndexManager().getWorkers();
+        IndexWorker[] workers = broker.getBrokerPool().getIndexManager().getWorkers(broker);
         for (int i = 0; i < workers.length; i++) {
             indexWorkers.put(workers[i].getIndexId(), workers[i]);
         }

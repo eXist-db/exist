@@ -405,6 +405,10 @@ public class NGramIndexWorker implements IndexWorker {
         }
         return indexes;
     }
+    
+    public boolean checkIndex(DBBroker broker) {
+    	return true;
+    }
 
     public Occurrences[] scanIndex(DocumentSet docs) {
         final IndexScanCallback cb = new IndexScanCallback(docs);

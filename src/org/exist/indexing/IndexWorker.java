@@ -37,7 +37,7 @@ import org.w3c.dom.NodeList;
 /**
  * Provide concurrent access to the index structure. Implements the core operations on the index.
  * The methods in this class are used in a multi-threaded environment. Every thread accessing the
- * database will have exactly one IndexWorker for every index. {@link org.exist.indexing.Index#getWorker()}
+ * database will have exactly one IndexWorker for every index. {@link org.exist.indexing.Index#getWorker(DBBroker)}
  * should thus return a new IndexWorker whenever it is  called. Implementations of IndexWorker have
  * to take care of synchronizing access to shared resources.
  */
@@ -139,8 +139,27 @@ public interface IndexWorker {
      * @param broker The broker that will perform the operation
      */
     void removeCollection(Collection collection, DBBroker broker);
+    
+    /** Checking index could be delegatezd to a worker. Use this method to do so.
+     * @param broker The broker that will perform the operation
+     * @return Whether or not the index if in a suitable state
+     */
+    boolean checkIndex(DBBroker broker);
 
+    /** 
+     * Return <strong>ordered</strong> (whatever the ordering semantics) and <strong>aggregated</strong>
+     * (on a document count basis) index entries for the specified document set. 
+     * @param docs The documents to which the index entries belong
+     * @return Occurrences objects that contain :
+     * <ol>
+     * <li>a <strong>string</strong> representation of the index entry</li>
+     * <li>the number of occurrences for the index entry over all the documents</li>
+     * <li>the list of the documents in which the index entry is</li>
+     * </ol> 
+     */
     Occurrences[] scanIndex(DocumentSet docs);
+    
+    //TODO : a scanIndex() method that would return an unaggregated list of index entries ?
 
     /**
      * When adding or removing nodes to or from the document tree, it might become

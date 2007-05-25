@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
 import org.exist.storage.btree.DBException;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
@@ -108,13 +109,13 @@ public class IndexManager {
      *
      * @return set of IndexWorkers
      */
-    public synchronized IndexWorker[] getWorkers() {
+    public synchronized IndexWorker[] getWorkers(DBBroker broker) {
         final IndexWorker workers[] = new IndexWorker[indexers.size()];
         Index index;
         int j = 0;
         for (Iterator i = indexers.values().iterator(); i.hasNext(); j++) {
             index = (Index) i.next();
-            workers[j] = index.getWorker();
+            workers[j] = index.getWorker(broker);
         }
         return workers;
     }
