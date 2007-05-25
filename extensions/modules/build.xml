@@ -63,12 +63,12 @@
 	
 	<target name="jar" depends="compile">
 		<echo message="Creating exist-modules.jar ..."/>
-        <jar basedir="${classes}" compress="true" jarfile="${top.dir}/exist-modules.jar">
+        <jar basedir="${classes}" compress="true" jarfile="${top.dir}/exist-modules.jar" update="true">
         </jar>
 	</target>
 
 	<target name="clean">
 		<delete dir="${classes}"/>
-		<delete file="${top.dir}/exist-modules.jar"/>
+		<delete file="${top.dir}/exist-modules.jar" failonerror="false"/>
 	</target>
 </project>
