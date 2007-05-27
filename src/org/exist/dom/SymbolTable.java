@@ -125,18 +125,18 @@ public class SymbolTable {
 
     /**
      * Retrieve a shared QName instance from the temporary pool.
-     * 
+     *
+     * TODO: make the namePool thread-local to avoid synchronization.
+     *
      * @param namespaceURI
      * @param localName
      * @param prefix
      */
-	public QName getQName(short type, String namespaceURI, String localName, String prefix) {
+	public synchronized QName getQName(short type, String namespaceURI, String localName, String prefix) {
         byte itype = type == Node.ATTRIBUTE_NODE ? ElementValue.ATTRIBUTE : ElementValue.ELEMENT;
         QName qn = namePool.get(itype, namespaceURI, localName, prefix);
         if (qn == null) {
-            synchronized (this) {
-                qn = namePool.add(itype, namespaceURI, localName, prefix);
-            }
+            qn = namePool.add(itype, namespaceURI, localName, prefix);
         }
         return qn;
     }
