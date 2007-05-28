@@ -10,9 +10,6 @@
 
     <description>eXist Open Source Native XML Database</description>
     
-    <!-- HTTP proxy ; not used by javadoc -->
-    <!--setproxy proxyhost="hostname" proxyport="8080" proxyuser="username" proxypassword="password"  /-->
-	
     <!-- ugly patch to correctly tag the 1.1 version -->
     <condition property="substitution.string" value="project.version = 1.1\1" else="project.version = 1.0\1">
       <and><available file="src/org/exist/numbering/NodeId.java"/></and>
@@ -26,7 +23,9 @@
     <property file="build.properties"/>
 
 	<!-- set proxy if needed, use properties in build.properties  -->
-	<setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}"/>
+	<setproxy nonproxyhosts="${proxy.nonproxyhosts}" proxyhost="${proxy.host}" proxyport="${proxy.port}" 
+	proxypassword="${proxy.password}" proxyuser="${proxy.user}" socksproxyhost="${proxy.socks.host}"
+	socksproxyport="${proxy.socks.port}"/>
 	
 	<!-- Core build scripts -->
     <import file="build/scripts/build-impl.xml" />
