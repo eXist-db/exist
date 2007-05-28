@@ -105,14 +105,38 @@ public class FileLock {
      * due to IO errors. The caller may want to switch to read-only mode.
      */
     public boolean tryLock() throws ReadOnlyException {
-        if (lockFile.exists()) {
+        int attempt = 0;
+        while (lockFile.exists()) {
             try {
                 read();
             } catch (IOException e) {
                 message("Failed to read lock file", null);
+                e.printStackTrace();
             }
-            if (checkHeartbeat())
-                return false;
+            if (checkHeartbeat()) {
+                if (++attempt == 1) {
+                    // sometimes Java does not properly delete files, so we may have an old
+                    // lock file from a previous db run, which has not timed out yet. We thus
+                    // give the db a second chance and wait for HEARTBEAT + 100 milliseconds
+                    // before we check the heartbeat a second time.
+                    synchronized (this) {
+                        try {
+                            message("Waiting a short time for the lock to be released...", null);
+                            wait(HEARTBEAT + 100);
+                        } catch (InterruptedException e) {
+                        }
+                    }
+                    try {
+                        // close the open channel, so it can be read again
+                        if (channel.isOpen())
+                            channel.close();
+                        channel = null;
+                    } catch (IOException e) {
+                    }
+                } else
+                    // we found a valid heartbeat
+                    return false;
+            }
         }
         try {
             if (!lockFile.createNewFile())
@@ -144,9 +168,10 @@ public class FileLock {
             if (channel.isOpen())
                 channel.close();
             channel = null;
-        } catch (IOException e) {
+        } catch (Exception e) {
             message("Failed to close lock file", e);
         }
+        LOG.info("Deleting lock file: " + lockFile.getAbsolutePath());
         lockFile.delete();
     }
     
@@ -168,7 +193,13 @@ public class FileLock {
     public File getFile() {
         return lockFile;
     }
-    
+
+    /**
+     * Check if the lock has an active heartbeat, i.e. if it was updated
+     * during the past {@link #HEARTBEAT} milliseconds.
+     *
+     * @return true if there's an active heartbeat
+     */
     private boolean checkHeartbeat() {
         long now = System.currentTimeMillis();
         if (lastHeartbeat < 0 || now - lastHeartbeat > HEARTBEAT) {
@@ -225,7 +256,8 @@ public class FileLock {
             str.append(": ").append(e.getMessage());
         message = str.toString();
 
-        LOG.warn(message);
+        if (LOG.isInfoEnabled())
+            LOG.info(message);
         System.err.println(message);
         return message;
     }
