@@ -172,6 +172,19 @@ public class XQueryTriggerTest extends XMLTestCase {
         }
     }
 
+    protected void tearDown() {
+        try {
+            Collection root = DatabaseManager.getCollection(URI, "admin", null);
+            CollectionManagementService service = (CollectionManagementService)
+                    root.getService("CollectionManagementService", "1.0");
+            service.removeCollection(TEST_COLLECTION);
+            testCollection = null;
+        } catch (XMLDBException e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+    }
+
     /** create "log" document that will be updated by the trigger,
      * and store the XQuery module implementing the trigger under test */
     public void testStorePreliminaryDocuments() {
