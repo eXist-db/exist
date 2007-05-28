@@ -210,7 +210,6 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     protected void releaseConnection(Connection conn) {   
     	index.releaseConnection(this.broker);
     } 
-
     
     protected boolean checkIndex(DBBroker broker, Connection conn) throws SQLException {
     	PreparedStatement ps = conn.prepareStatement(
