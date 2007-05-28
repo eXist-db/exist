@@ -183,6 +183,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     public void flush() {
     	if (!isDocumentGMLAware)
     		return;
+    	//Is the job already done ?
     	if (mode == StreamListener.REMOVE_ALL_NODES && documentDeleted)
     		return;
     	Connection conn = null;

@@ -31,13 +31,6 @@ import org.w3c.dom.Document;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
 
-/**
- *
- * Each index entry maps a key (collectionId, ngram) to a list of occurrences, which has the
- * following structure:
- *
- * <pre>[docId : int, nameType: byte, occurrenceCount: int, entrySize: long, [id: NodeId, offset: int, ...]* ]</pre>
- */
 public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
 	
 	public final static String ID = GMLHSQLIndexWorker.class.getName();	
@@ -45,10 +38,11 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
 	private static final Logger LOG = Logger.getLogger(GMLHSQLIndexWorker.class);
 	
     public GMLHSQLIndexWorker(GMLHSQLIndex index, DBBroker broker) {
-    	super(index, broker);        
+    	super(index, broker);
+    	//TODO : evaluate one connection per worker
         /*
         try {
-	        getConnection() = DriverManager.getConnection("jdbc:hsqldb:" + index.getDataDir() + "/" + 
+	         conn = DriverManager.getConnection("jdbc:hsqldb:" + index.getDataDir() + "/" + 
 					index.db_file_name_prefix + ";shutdown=true", "sa", "");
         } catch (SQLException e) {
         	LOG.error(e);
@@ -480,8 +474,9 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         		bboxConstraint = "(EPSG4326_MINX = ? AND EPSG4326_MAXX = ?)" +
     				" AND (EPSG4326_MINY = ? AND EPSG4326_MAXY = ?)";
         		break;
+    		//Nothing much we can do with the BBox at this stage
         	case SpatialOperator.DISJOINT:
-        		//Nothing much we can do with the BBox at this stage
+        		//Retrieve the BBox though...
         		extraSelection = ", EPSG4326_MINX, EPSG4326_MAXX, EPSG4326_MINY, EPSG4326_MAXY";
         		break;
        		//BBoxes intersect themselves
@@ -492,11 +487,12 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         		bboxConstraint = "(EPSG4326_MAXX >= ? AND EPSG4326_MINX <= ?)" +
 				" AND (EPSG4326_MAXY >= ? AND EPSG4326_MINY <= ?)";
         		break;
-        	//BBoxe is fully within
+        	//BBox is fully within
         	case SpatialOperator.WITHIN:   
         		bboxConstraint = "(EPSG4326_MINX >= ? AND EPSG4326_MAXX <= ?)" +
 				" AND (EPSG4326_MINY >= ? AND EPSG4326_MAXY <= ?)";
-        		break;        		
+        		break;
+        	//BBox fully contains
         	case SpatialOperator.CONTAINS: 
         		bboxConstraint = "(EPSG4326_MINX <= ? AND EPSG4326_MAXX >= ?)" +
 				" AND (EPSG4326_MINY <= ? AND EPSG4326_MAXY >= ?)";
@@ -534,11 +530,10 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         		//Node is in the context : check if it is accurate
         		//contextSet.contains(p) would have made more sense but there is a problem with
         		//VirtualNodeSet when on the DESCENDANT_OR_SELF axis
-        		if (contextSet == null || contextSet.get(p) != null) {	
-        			
+        		if (contextSet == null || contextSet.get(p) != null) {        			
 		        	boolean geometryMatches = false;
 		        	if (spatialOp == SpatialOperator.DISJOINT) {
-		        		//Obviously disjoint
+		        		//No BBox intersection : obviously disjoint
 		        		if (rs.getDouble("EPSG4326_MAXX") < EPSG4326_geometry.getEnvelopeInternal().getMinX() ||	        			
 			        		rs.getDouble("EPSG4326_MINX") > EPSG4326_geometry.getEnvelopeInternal().getMaxX() ||	        			
 			        		rs.getDouble("EPSG4326_MAXY") < EPSG4326_geometry.getEnvelopeInternal().getMinY() ||	        			
@@ -547,7 +542,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
 					        		disjointPostFiltered++;	
 		        		}
 		        	}
-		        	//Check the geometry
+		        	//Possible match : check the geometry
 		        	if (!geometryMatches) {	
 		        		try {			        	
 			    			base64Decoder.reset();
