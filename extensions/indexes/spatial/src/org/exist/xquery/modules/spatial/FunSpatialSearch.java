@@ -145,13 +145,11 @@ public class FunSpatialSearch extends BasicFunction {
  	            }
 	            if (currentGeometry == null)
 	            	throw new XPathException(geometryNode.getNode().getLocalName() + " is not a GML geometry node");
-	            String srsName = ((Element)geometryNode).getAttribute("srsName");
-		        //provisional workaround
-		        if ("osgb:BNG".equals(srsName))
-	    			srsName = "EPSG:27700";  	    
-		        MathTransform mathTransform = indexWorker.getTransform(srsName, "EPSG:4326");
+	            //Transform the geometry to EPSG:4326
+	            String originSrsName = ((Element)geometryNode).getAttribute("srsName").trim();
+		        MathTransform mathTransform = indexWorker.getTransform(originSrsName, "EPSG:4326");
 	            if (mathTransform == null) {
-	        		throw new XPathException("Unable to get a transformation from '" + srsName + "' to 'EPSG:4326'");        		           	
+	        		throw new XPathException("Unable to get a transformation from '" + originSrsName + "' to 'EPSG:4326'");        		           	
 	            }
 	            indexWorker.getCoordinateTransformer().setMathTransform(mathTransform);
 	            try {
@@ -176,7 +174,8 @@ public class FunSpatialSearch extends BasicFunction {
 	        else if (isCalledAs("contains"))
 	        	spatialOp = SpatialOperator.CONTAINS;		
 	        else if (isCalledAs("overlaps"))
-	        	spatialOp = SpatialOperator.OVERLAPS;		        
+	        	spatialOp = SpatialOperator.OVERLAPS;
+	        //Search the EPSG:4326 in the index
 	        result = indexWorker.search(context.getBroker(),  nodes.toNodeSet(), EPSG4326_geometry, spatialOp);
         }
         return result;

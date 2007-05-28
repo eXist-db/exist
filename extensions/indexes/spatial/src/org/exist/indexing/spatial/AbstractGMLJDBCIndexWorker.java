@@ -359,6 +359,11 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     }
     
     public MathTransform getTransform(String sourceCRS, String targetCRS) {
+        //provisional workaround
+        if ("osgb:BNG".equalsIgnoreCase(sourceCRS.trim()))
+        	sourceCRS = "EPSG:27700";  	    
+        if ("osgb:BNG".equalsIgnoreCase(targetCRS.trim()))
+        	targetCRS = "EPSG:27700";
     	return TransformationsFactory.getTransform(sourceCRS, targetCRS);
 	}    
     

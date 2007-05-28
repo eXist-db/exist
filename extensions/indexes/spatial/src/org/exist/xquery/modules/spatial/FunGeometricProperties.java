@@ -231,10 +231,10 @@ public class FunGeometricProperties extends BasicFunction {
         if (nodes.isEmpty())
             result = Sequence.EMPTY_SEQUENCE;
         else {
-        	String srsName= null;
+        	String targetSrsName= null;
         	Geometry geometry = null;
         	if (getArgumentCount() == 2) 
-    			srsName = args[1].itemAt(0).getStringValue();
+        		targetSrsName = args[1].itemAt(0).getStringValue().trim();
         	AbstractGMLJDBCIndexWorker indexWorker = (AbstractGMLJDBCIndexWorker)
 	        	context.getBroker().getIndexController().getIndexWorkerById(AbstractGMLJDBCIndex.ID);
 	        if (indexWorker == null)
@@ -243,7 +243,7 @@ public class FunGeometricProperties extends BasicFunction {
 			if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 	        	boolean optimizeOnEpsg4326 = false;
 	        	//TODO : try to spot equivalent CRS 
-	        	optimizeOnEpsg4326 = "EPSG:4326".equals(srsName);
+	        	optimizeOnEpsg4326 = "EPSG:4326".equalsIgnoreCase(targetSrsName);
 	        	String propertyName = null;
 				if (isCalledAs("getWKT")) {
 					propertyName = optimizeOnEpsg4326 ? "EPSG4326_WKT" : "WKT";
@@ -295,13 +295,11 @@ public class FunGeometricProperties extends BasicFunction {
 		            	throw new XPathException(geometryNode.getNode().getLocalName() + " is not a GML geometry node");
 				}
 				//Transform the geometry if necessary
-				if (srsName != null && !((Element)geometryNode).getAttribute("srsName").equals(srsName)) {
-			        //provisional workaround
-			        if ("osgb:BNG".equals(srsName))
-		    			srsName = "EPSG:27700";  	    
-			        MathTransform mathTransform = indexWorker.getTransform(srsName, "EPSG:4326");
+				String originSrsName = ((Element)geometryNode).getAttribute("srsName").trim();
+				if (targetSrsName != null && !originSrsName.equalsIgnoreCase(targetSrsName)) {
+			        MathTransform mathTransform = indexWorker.getTransform(originSrsName, targetSrsName);
 		            if (mathTransform == null) {
-		        		throw new XPathException("Unable to get a transformation from '" + srsName + "' to 'EPSG:4326'");        		           	
+		        		throw new XPathException("Unable to get a transformation from '" + originSrsName + "' to '" + targetSrsName +"'");        		           	
 		            }
 		            indexWorker.getCoordinateTransformer().setMathTransform(mathTransform);
 		            try {

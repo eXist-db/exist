@@ -73,14 +73,17 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex {
 					}
 				}
 			);
+		boolean deleted = true;
 		for (int i = 0; i < files.length ; i++) {
-			//TODO : raise an error if false is returned ?
-			files[i].delete();
+			deleted &= files[i].delete();
 		}
+		//TODO : raise an error if deleted == false ?
     }
     
-    protected void removeIndexContent(Connection conn) throws DBException {
+    protected void removeIndexContent() throws DBException {
 		try {
+			//Let's be lazy here : we only delete th index content if we have a connection
+			//deleteDatabase() should be far more efficient ;-)
 			if (conn != null) {
 				Statement stmt = conn.createStatement(); 
 		        int nodeCount = stmt.executeUpdate("DELETE FROM " + GMLHSQLIndex.TABLE_NAME + ";");       
