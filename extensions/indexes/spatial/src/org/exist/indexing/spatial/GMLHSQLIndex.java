@@ -1,5 +1,7 @@
 package org.exist.indexing.spatial;
 
+import java.io.File;
+import java.io.FilenameFilter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -7,106 +9,35 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.apache.log4j.Logger;
-import org.exist.indexing.AbstractIndex;
 import org.exist.indexing.IndexWorker;
-import org.exist.indexing.StreamListener;
-import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.btree.DBException;
-import org.exist.util.DatabaseConfigurationException;
-import org.w3c.dom.Element;
 
 /**
  */
-public class GMLHSQLIndex extends AbstractIndex {
+public class GMLHSQLIndex extends AbstractGMLJDBCIndex {
 	
-	public final static String ID = GMLHSQLIndex.class.getName();
-    
 	private final static Logger LOG = Logger.getLogger(GMLHSQLIndex.class);	
 	
-    private Connection conn = null;
-
-    public interface SpatialOperator { 
-    	public static int UNKNOWN = -1;
-	    public static int EQUALS = 1;
-	    public static int DISJOINT = 2;
-	    public static int INTERSECTS = 3;
-	    public static int TOUCHES = 4;
-	    public static int CROSSES = 5;
-	    public static int WITHIN = 6;
-	    public static int CONTAINS = 7;
-	    public static int OVERLAPS = 8;
-    }	
-    
     public static String db_file_name_prefix = "spatial_index";
     //Keep this upper case ;-)
     public static String TABLE_NAME = "SPATIAL_INDEX_V1";
     
-    //Make a pool for each broker ?
-    private AbstractGMLJDBCIndexWorker worker;
-    private boolean workerHasConnection = false;
+    private DBBroker connectionOwner = null;
     
     public GMLHSQLIndex() {    	
     }  
-    
-    public String getIndexId() {
-    	return ID;
-    }
-    
-    public void configure(BrokerPool pool, String dataDir, Element config) throws DatabaseConfigurationException {        
-    	super.configure(pool, dataDir, config);
-    	try {
-        	checkDatabase();
-        } catch (ClassNotFoundException e) {
-        	throw new DatabaseConfigurationException(e.getMessage()); 
-        } catch (SQLException e) {
-        	throw new DatabaseConfigurationException(e.getMessage()); 
-        }
-    }
-
-    public void open() throws DatabaseConfigurationException {
-        //Nothing particular to do : the connection will be opened on request      
-    }
-
-    public void close() throws DBException {
-		//Provisional workaround to avoid sending flush() events
-    	if (worker != null) {
-			worker.flush();
-			worker.setDocument(null, StreamListener.UNKNOWN);
-    	}
-    	shutdownDatabase();
-    }
-
-    //Seems to never be used
-    public void sync() throws DBException {
-    	//TODO : something useful here
-    	/*
-    	try { 
-    		if (conn != null)
-    			conn.commit();
-        } catch (SQLException e) {
-        	throw new DBException(e.getMessage()); 
-        }
-        */
-    }
-    
-    public void remove() throws DBException {
-		//Provisional workaround to avoid sending flush() events
-		worker.flush();
-		worker.setDocument(null, StreamListener.UNKNOWN); 
-		remove(this.conn);
-        shutdownDatabase();
-    }
     
     public boolean checkIndex(DBBroker broker) {
     	return getWorker(broker).checkIndex(broker);
     } 
     
     public IndexWorker getWorker(DBBroker broker) {
-    	//TODO : see above. We might want a pool here
-    	if (worker == null)
-    		worker = new GMLHSQLIndexWorker(this, null);
-    		//worker = new GMLHSQLIndexWorker(this, broker);
+    	GMLHSQLIndexWorker worker = (GMLHSQLIndexWorker)workers.get(broker);    	
+    	if (worker == null) {
+    		worker = new GMLHSQLIndexWorker(this, broker);
+    		workers.put(broker, worker);
+    	}
     	return worker;
     } 
     
@@ -133,7 +64,22 @@ public class GMLHSQLIndex extends AbstractIndex {
         }
     }
     
-    protected void remove(Connection conn) throws DBException {
+    protected void deleteDatabase() throws DBException {
+    	File directory = new File(getDataDir());
+		File[] files = directory.listFiles( 
+				new FilenameFilter() {
+					public boolean accept(File dir, String name) {
+						return name.startsWith(db_file_name_prefix);
+					}
+				}
+			);
+		for (int i = 0; i < files.length ; i++) {
+			//TODO : raise an error if false is returned ?
+			files[i].delete();
+		}
+    }
+    
+    protected void removeIndexContent(Connection conn) throws DBException {
 		try {
 			if (conn != null) {
 				Statement stmt = conn.createStatement(); 
@@ -151,8 +97,8 @@ public class GMLHSQLIndex extends AbstractIndex {
     //Horrible "locking" mechanism
     protected Connection acquireConnection(DBBroker broker) {
     	synchronized (this) {	
-    		if (!workerHasConnection) {
-    			workerHasConnection = true;
+    		if (connectionOwner == null) {
+    			connectionOwner = broker;
     			if (conn == null)
     				initializeConnection();
     	    	return conn;
@@ -163,8 +109,8 @@ public class GMLHSQLIndex extends AbstractIndex {
 				try {
 					for (;;) {
 						wait(waitTime);  
-			    		if (!workerHasConnection) {			    			
-			    			workerHasConnection = true;			    			
+						if (connectionOwner == null) {			    			
+							connectionOwner = broker;			    			
 			    			if (conn == null)
 			    				//We should never get there since the connection should have been initialized
 			    				///by the first request from a worker
@@ -186,7 +132,7 @@ public class GMLHSQLIndex extends AbstractIndex {
     }
     
     protected synchronized void releaseConnection(DBBroker broker) {   
-    	workerHasConnection = false;    	
+    	connectionOwner = null;
     }  
     
     private void initializeConnection() {
@@ -209,24 +155,36 @@ public class GMLHSQLIndex extends AbstractIndex {
 		        	//Use CACHED table, not MEMORY one
 		        	//TODO : use hsqldb.default_table_type	        	
 		        	stmt.executeUpdate("CREATE TABLE " + TABLE_NAME + "(" +
-		        			"DOCUMENT_URI VARCHAR, " +        		
+		        			/*1*/ "DOCUMENT_URI VARCHAR, " +        		
 		        			//TODO : use binary format ?
-		        			"NODE_ID VARCHAR, " +        			
-		        			"GEOMETRY_TYPE VARCHAR, " +
-		        			"SRS_NAME VARCHAR, " +
-		        			"WKT VARCHAR, " +
+		        			/*2*/ "NODE_ID VARCHAR, " +        			
+		        			/*3*/ "GEOMETRY_TYPE VARCHAR, " +
+		        			/*4*/ "SRS_NAME VARCHAR, " +
+		        			/*5*/ "WKT VARCHAR, " +
 		        			//TODO : use binary format ?
-		        			"BASE64_WKB VARCHAR, " +
-		        			"WSG84_WKT VARCHAR, " +
+		        			/*6*/ "BASE64_WKB VARCHAR, " +
+		        			/*7*/ "MINX DOUBLE, " +
+		        			/*8*/ "MAXX DOUBLE, " +
+		        			/*9*/ "MINY DOUBLE, " +
+		        			/*10*/ "MAXY DOUBLE, " +
+		        			/*11*/ "CENTROID_X DOUBLE, " +
+		        			/*12*/ "CENTROID_Y DOUBLE, " +
+		        			/*13*/ "AREA DOUBLE, " +
+		        			//Boundary ?
+		        			/*14*/ "EPSG4326_WKT VARCHAR, " +
 		        			//TODO : use binary format ?
-		        			"WSG84_BASE64_WKB VARCHAR, " +
-		        			"WSG84_MINX DOUBLE, " +
-		        			"WSG84_MAXX DOUBLE, " +
-		        			"WSG84_MINY DOUBLE, " +
-		        			"WSG84_MAXY DOUBLE, " +
-		        			"WSG84_CENTROID_X DOUBLE, " +
-		        			"WSG84_CENTROID_Y DOUBLE, " +
-		        			"WSG84_AREA DOUBLE, " +
+		        			/*15*/ "EPSG4326_BASE64_WKB VARCHAR, " +
+		        			/*16*/ "EPSG4326_MINX DOUBLE, " +
+		        			/*17*/ "EPSG4326_MAXX DOUBLE, " +
+		        			/*18*/ "EPSG4326_MINY DOUBLE, " +
+		        			/*19*/ "EPSG4326_MAXY DOUBLE, " +
+		        			/*20*/ "EPSG4326_CENTROID_X DOUBLE, " +
+		        			/*21*/ "EPSG4326_CENTROID_Y DOUBLE, " +
+		        			/*22*/ "EPSG4326_AREA DOUBLE, " +
+		        			//Boundary ?
+		        			/*23*/ "IS_CLOSED BOOLEAN, " +
+		        			/*24*/ "IS_SIMPLE BOOLEAN, " +
+		        			/*25*/ "IS_VALID BOOLEAN, " +
 		        			//Enforce uniqueness
 		        			"UNIQUE (" +
 		        				"DOCUMENT_URI, NODE_ID" +
@@ -237,12 +195,12 @@ public class GMLHSQLIndex extends AbstractIndex {
 		        	stmt.executeUpdate("CREATE INDEX NODE_ID ON " + TABLE_NAME + " (NODE_ID);");
 		        	stmt.executeUpdate("CREATE INDEX GEOMETRY_TYPE ON " + TABLE_NAME + " (GEOMETRY_TYPE);");
 		        	stmt.executeUpdate("CREATE INDEX SRS_NAME ON " + TABLE_NAME + " (SRS_NAME);");
-		        	stmt.executeUpdate("CREATE INDEX WSG84_MINX ON " + TABLE_NAME + " (WSG84_MINX);");
-		        	stmt.executeUpdate("CREATE INDEX WSG84_MAXX ON " + TABLE_NAME + " (WSG84_MAXX);");
-		        	stmt.executeUpdate("CREATE INDEX WSG84_MINY ON " + TABLE_NAME + " (WSG84_MINY);");
-		        	stmt.executeUpdate("CREATE INDEX WSG84_MAXY ON " + TABLE_NAME + " (WSG84_MAXY);");        	
-		        	stmt.executeUpdate("CREATE INDEX WSG84_CENTROID_X ON " + TABLE_NAME + " (WSG84_CENTROID_X);");
-		        	stmt.executeUpdate("CREATE INDEX WSG84_CENTROID_Y ON " + TABLE_NAME + " (WSG84_CENTROID_Y);");
+		        	stmt.executeUpdate("CREATE INDEX EPSG4326_MINX ON " + TABLE_NAME + " (EPSG4326_MINX);");
+		        	stmt.executeUpdate("CREATE INDEX EPSG4326_MAXX ON " + TABLE_NAME + " (EPSG4326_MAXX);");
+		        	stmt.executeUpdate("CREATE INDEX EPSG4326_MINY ON " + TABLE_NAME + " (EPSG4326_MINY);");
+		        	stmt.executeUpdate("CREATE INDEX EPSG4326_MAXY ON " + TABLE_NAME + " (EPSG4326_MAXY);");        	
+		        	stmt.executeUpdate("CREATE INDEX EPSG4326_CENTROID_X ON " + TABLE_NAME + " (EPSG4326_CENTROID_X);");
+		        	stmt.executeUpdate("CREATE INDEX EPSG4326_CENTROID_Y ON " + TABLE_NAME + " (EPSG4326_CENTROID_Y);");
 		        	//AREA ?
 		        	stmt.close();        	
 		            if (LOG.isDebugEnabled()) 

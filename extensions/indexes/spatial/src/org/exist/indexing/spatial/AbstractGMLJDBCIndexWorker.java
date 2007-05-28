@@ -17,7 +17,6 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.StoredNode;
 import org.exist.dom.TextImpl;
-import org.exist.indexing.AbstractIndex;
 import org.exist.indexing.AbstractStreamListener;
 import org.exist.indexing.Index;
 import org.exist.indexing.IndexController;
@@ -33,6 +32,7 @@ import org.exist.util.Base64Decoder;
 import org.exist.util.Base64Encoder;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.Occurrences;
+import org.exist.xquery.value.AtomicValue;
 import org.geotools.geometry.jts.GeometryCoordinateSequenceTransformer;
 import org.geotools.gml.GMLFilterDocument;
 import org.geotools.gml.GMLFilterGeometry;
@@ -40,7 +40,6 @@ import org.geotools.gml.GMLHandlerJTS;
 import org.geotools.referencing.CRS;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.OperationNotFoundException;
 import org.w3c.dom.Element;
@@ -65,8 +64,6 @@ import com.vividsolutions.jts.io.WKTWriter;
  */
 public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 	
-	public final static String ID = AbstractGMLJDBCIndexWorker.class.getName();
-	
 	public static String GML_NS = "http://www.opengis.net/gml";
 
     private static final Logger LOG = Logger.getLogger(AbstractGMLJDBCIndexWorker.class);
@@ -75,7 +72,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     private final static String INDEX_ELEMENT = "gml";    
 
     protected IndexController controller;
-    protected AbstractIndex index;
+    protected AbstractGMLJDBCIndex index;
     protected DBBroker broker;
     protected int mode = StreamListener.UNKNOWN;    
     protected DocumentImpl currentDoc = null;  
@@ -96,14 +93,14 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     protected static Base64Encoder base64Encoder = new Base64Encoder();
     protected static Base64Decoder base64Decoder = new Base64Decoder();  
     
-    public AbstractGMLJDBCIndexWorker(GMLHSQLIndex index, DBBroker broker) {
+    public AbstractGMLJDBCIndexWorker(AbstractGMLJDBCIndex index, DBBroker broker) {
         this.index = index;        
     }
-
-    public String getIndexId() {
-        return index.getIndexId();
-    }
     
+    public String getIndexId() {
+        return index.ID;
+    }        
+
     public String getIndexName() {
         return index.getIndexName();
     }        
@@ -121,7 +118,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
                     INDEX_ELEMENT.equals(node.getLocalName())) { 
                 map = new TreeMap();
                 GMLIndexConfig config = new GMLIndexConfig(namespaces, (Element)node);
-                map.put(getIndexId(), config);
+                map.put(AbstractGMLJDBCIndex.ID, config);
             }
         }
         return map;
@@ -133,11 +130,11 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     	if (document != null) {
 	    	IndexSpec idxConf = document.getCollection().getIndexConfiguration(document.getBroker());
 	    	if (idxConf != null) {
-	            Map collectionConfig = (Map) idxConf.getCustomIndexSpec(GMLHSQLIndex.ID);
+	            Map collectionConfig = (Map) idxConf.getCustomIndexSpec(AbstractGMLJDBCIndex.ID);
 	            if (collectionConfig != null) {
 	            	isDocumentGMLAware = true;
-                	if (collectionConfig.get(getIndexId()) != null)
-                		flushAfter = ((GMLIndexConfig)collectionConfig.get(getIndexId())).getFlushAfter();
+                	if (collectionConfig.get(AbstractGMLJDBCIndex.ID) != null)
+                		flushAfter = ((GMLIndexConfig)collectionConfig.get(AbstractGMLJDBCIndex.ID)).getFlushAfter();
 	            }
 	    	}
     	}
@@ -206,7 +203,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 	        }
 	        conn.commit();	  
         } catch (SQLException e) {
-        	LOG.error(e);
+        	LOG.error("Document: " + currentDoc + " NodeID: " + currentNodeId, e);
         	try {
         		conn.rollback();
             } catch (SQLException ee) {
@@ -227,7 +224,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     	boolean isCollectionGMLAware = false;
     	IndexSpec idxConf = collection.getIndexConfiguration(broker);
     	if (idxConf != null) {
-            Map collectionConfig = (Map) idxConf.getCustomIndexSpec(GMLHSQLIndex.ID);
+            Map collectionConfig = (Map) idxConf.getCustomIndexSpec(AbstractGMLJDBCIndex.ID);
             if (collectionConfig != null) {
             	isCollectionGMLAware = (collectionConfig != null);
             }
@@ -276,6 +273,19 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 	    }
     }
     
+    public AtomicValue getGeometricPropertyForNode(DBBroker broker, NodeProxy p, String propertyName) {
+    	Connection conn = null;
+        try {
+        	conn = acquireConnection();
+        	return getGeometricPropertyForNode(broker, p, conn, propertyName);
+	    } catch (SQLException e) {
+	    	LOG.error(e);
+	    	return null;
+	    } finally {
+	    	releaseConnection(conn);
+	    }
+    }
+    
     public Occurrences[] scanIndex(DocumentSet docs) {    	
     	Map occurences = new TreeMap();
     	Connection conn = null;
@@ -297,7 +307,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 		            	//...and reference the document
 		            	oc.addDocument(doc);
 		            } else {
-		            	//No : create a new occurence
+		            	//No : create a new occurence with EPSG4326_WKT as "term"
 		            	oc = new Occurrences((String)entry.getValue());
 		            	//... with a count set to 1
 		            	oc.addOccurrences(1);
@@ -318,11 +328,11 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     	return result;
     }
     
-    public NodeSet isIndexed(DBBroker broker, Geometry wsg84_geometry) {
+    public NodeSet isIndexed(DBBroker broker, Geometry EPSG4326_geometry) {
     	Connection conn = null;
     	try { 
     		conn = acquireConnection();
-    		return isIndexed(broker, wsg84_geometry, conn);
+    		return isIndexed(broker, EPSG4326_geometry, conn);
     	} catch (SQLException e) {
     		LOG.error(e);
     		return null;    		
@@ -331,11 +341,11 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 		}     	
     }
     
-    public NodeSet search(DBBroker broker, NodeSet contextSet, Geometry wsg84_geometry, int spatialOp) {
+    public NodeSet search(DBBroker broker, NodeSet contextSet, Geometry EPSG4326_geometry, int spatialOp) {
     	Connection conn = null;
     	try { 
     		conn = acquireConnection();
-    		return search(broker, contextSet, wsg84_geometry, spatialOp, conn);
+    		return search(broker, contextSet, EPSG4326_geometry, spatialOp, conn);
     	} catch (SQLException e) {
     		LOG.error(e);
     		return null;    		
@@ -348,18 +358,13 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     	return coordinateTransformer;
     }
     
-    public MathTransform getTransformToWGS84(String crs) {
-    	return ToWGS84TransformationsFactory.getTransform(crs);
+    public MathTransform getTransform(String sourceCRS, String targetCRS) {
+    	return TransformationsFactory.getTransform(sourceCRS, targetCRS);
 	}    
     
-    public Connection acquireConnection() {   
-    	//TODO : improve this ! 
-    	return ((GMLHSQLIndex)index).acquireConnection(this.broker);
-    }
+    abstract Connection acquireConnection();
     
-    public void releaseConnection(Connection conn) {   
-    	((GMLHSQLIndex)index).releaseConnection(this.broker);
-    } 
+    abstract void releaseConnection(Connection conn);
     
     protected void saveDocumentNodes(Connection conn) throws SQLException {
         if (geometries.size() == 0)
@@ -418,49 +423,41 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     
     protected abstract Map getGeometriesForDocument(DocumentImpl doc, Connection conn) throws SQLException;
     
+    protected abstract AtomicValue getGeometricPropertyForNode(DBBroker broker, NodeProxy p, Connection conn, String propertyName) throws SQLException;
+    
     protected abstract Geometry getGeometryForNode(DBBroker broker, NodeProxy p, Connection conn) throws SQLException;
     
-    protected abstract NodeSet search(DBBroker broker, NodeSet contextSet, Geometry wsg84_geometry, int spatialOp, Connection conn) throws SQLException;
+    protected abstract NodeSet search(DBBroker broker, NodeSet contextSet, Geometry EPSG4326_geometry, int spatialOp, Connection conn) throws SQLException;
     
-    protected abstract NodeSet isIndexed(DBBroker broker, Geometry wsg84_geometry, Connection conn) throws SQLException;    
+    protected abstract NodeSet isIndexed(DBBroker broker, Geometry EPSG4326_geometry, Connection conn) throws SQLException;    
 
-    private static class ToWGS84TransformationsFactory {
+    private static class TransformationsFactory {
     	
-    	private static CoordinateReferenceSystem targetCRS = null;
-    	private static TreeMap transforms = null;
-   
-    	public static MathTransform getTransform(String crs) {
-    		//Initialize the collection on first pass
-    		if (transforms == null) {
+    	static TreeMap transforms = new TreeMap();
+    	static boolean useLenientMode = false;
+    	
+    	public static MathTransform getTransform(String sourceCRS, String targetCRS) {
+    		MathTransform transform = (MathTransform)transforms.get(sourceCRS + "_" + targetCRS);
+    		if (transform == null) {
 	    		try {
-	    			targetCRS = CRS.decode("EPSG:4326");   
-	    			transforms = new TreeMap();
-		        } catch (FactoryException e) {    		        	
+		    		try {        	
+	    				transform = CRS.findMathTransform(CRS.decode(sourceCRS), CRS.decode(targetCRS), useLenientMode);
+		    		} catch (OperationNotFoundException e) {
+		    			LOG.info(e);
+		    			LOG.info("Switching to lenient mode... beware of precision loss !");
+		    			//Last parameter set to true ; won't bail out if it can't find the Bursa Wolf parameters
+		        		//as it is the case in current gt2-epsg-wkt-2.4-M1.jar
+		    			useLenientMode = true;
+		    			transform = CRS.findMathTransform(CRS.decode(sourceCRS), CRS.decode(targetCRS), useLenientMode);	
+		    		}
+			        transforms.put(sourceCRS + "_" + targetCRS, transform);
+		    		LOG.debug("Instantiated transformation from '" + sourceCRS + "' to '" + targetCRS + "'");
+		        } catch (NoSuchAuthorityCodeException e) {
 		        	LOG.error(e);
-		        	return null;
-		        } 
+		        } catch (FactoryException e) {
+		        	LOG.error(e);
+	    		}
     		}
-        	MathTransform transform = (MathTransform)transforms.get(crs);
-        	if (transform == null) {
-        		try {        	
-	        		CoordinateReferenceSystem sourceCRS = CRS.decode(crs);
-	        		try {
-	        			transform = CRS.findMathTransform(sourceCRS, targetCRS);
-	        		} catch (OperationNotFoundException e) {
-	        			LOG.info(e);
-	        			LOG.info("Switching to lenient mode... beware of precision loss !");
-	        			//Last parameter set to true ; won't bail out if it can't find the Bursa Wolf parameters
-		        		//as it is the case in current gt2-epsg-wkt-2.4-M1.jar 	        			
-		        		transform = CRS.findMathTransform(sourceCRS, targetCRS, true);	        			
-	        		}
-	        		transforms.put(crs, transform);
-	        		LOG.debug("Instantiated transformation from '" + crs + "' to 'EPSG:4326'");
-    	        } catch (NoSuchAuthorityCodeException e) {
-    	        	LOG.error(e);
-    	        } catch (FactoryException e) {
-    	        	LOG.error(e);
-    	        }
-        	}
         	return transform;
     	}
     }       

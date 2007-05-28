@@ -39,7 +39,28 @@ public class SpatialModule extends AbstractInternalModule {
     	new FunctionDef(FunSpatialSearch.signatures[4], FunSpatialSearch.class),
     	new FunctionDef(FunSpatialSearch.signatures[5], FunSpatialSearch.class),
     	new FunctionDef(FunSpatialSearch.signatures[6], FunSpatialSearch.class),
-    	new FunctionDef(FunSpatialSearch.signatures[7], FunSpatialSearch.class)    	
+    	new FunctionDef(FunSpatialSearch.signatures[7], FunSpatialSearch.class),    	
+    	new FunctionDef(FunGeometricProperties.signatures[0], FunGeometricProperties.class),
+    	new FunctionDef(FunGeometricProperties.signatures[1], FunGeometricProperties.class),
+    	new FunctionDef(FunGeometricProperties.signatures[2], FunGeometricProperties.class),
+    	new FunctionDef(FunGeometricProperties.signatures[3], FunGeometricProperties.class),
+    	new FunctionDef(FunGeometricProperties.signatures[4], FunGeometricProperties.class),
+    	new FunctionDef(FunGeometricProperties.signatures[5], FunGeometricProperties.class),
+    	new FunctionDef(FunGeometricProperties.signatures[6], FunGeometricProperties.class),
+    	new FunctionDef(FunGeometricProperties.signatures[7], FunGeometricProperties.class),
+    	new FunctionDef(FunGeometricProperties.signatures[8], FunGeometricProperties.class),
+    	new FunctionDef(FunGeometricProperties.signatures[9], FunGeometricProperties.class),
+    	new FunctionDef(FunGeometricProperties.signatures[10], FunGeometricProperties.class),
+    	new FunctionDef(FunGeometricProperties.signatures[11], FunGeometricProperties.class),
+    	new FunctionDef(FunGeometricProperties.signatures[12], FunGeometricProperties.class),
+    	new FunctionDef(FunGeometricProperties.signatures[13], FunGeometricProperties.class),
+    	new FunctionDef(FunGeometricProperties.signatures[14], FunGeometricProperties.class),
+    	new FunctionDef(FunGeometricProperties.signatures[15], FunGeometricProperties.class),
+    	new FunctionDef(FunGeometricProperties.signatures[16], FunGeometricProperties.class),
+    	new FunctionDef(FunGeometricProperties.signatures[17], FunGeometricProperties.class),
+    	new FunctionDef(FunGeometricProperties.signatures[18], FunGeometricProperties.class),
+    	new FunctionDef(FunGeometricProperties.signatures[19], FunGeometricProperties.class),
+    	new FunctionDef(FunGeometricProperties.signatures[20], FunGeometricProperties.class)
     };
 	
 	public SpatialModule() {

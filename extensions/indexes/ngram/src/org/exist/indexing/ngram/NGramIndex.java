@@ -48,10 +48,6 @@ public class NGramIndex extends AbstractIndex {
     public NGramIndex() {
     }
     
-    public String getIndexId() {
-    	return ID;
-    }
-    
     public void configure(BrokerPool pool, String dataDir, Element config) throws DatabaseConfigurationException {
     	super.configure(pool, dataDir, config);
         String fileName = "ngram.dbx";

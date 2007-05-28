@@ -43,15 +43,16 @@ import org.w3c.dom.NodeList;
  */
 public interface IndexWorker {
 
+	
     /**
-     * Returns an ID which uniquely identifies this index. This will usually be the class name.
-     * @return a unique ID identifying this index.
+     * Returns an ID which uniquely identifies this worker's index.
+     * @return a unique name identifying this worker's index.
      */
-    public String getIndexId();
-
+	public String getIndexId();
+	
     /**
-     * Returns an name which uniquely identifies this index.
-     * @return a unique name identifying this index.
+     * Returns a name which uniquely identifies this worker's index.
+     * @return a unique name identifying this worker's index.
      */
     public String getIndexName();
 

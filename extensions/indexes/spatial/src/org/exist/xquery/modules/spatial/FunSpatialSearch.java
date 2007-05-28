@@ -2,9 +2,9 @@ package org.exist.xquery.modules.spatial;
 
 import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
-import org.exist.indexing.spatial.GMLHSQLIndex;
-import org.exist.indexing.spatial.GMLHSQLIndexWorker;
-import org.exist.indexing.spatial.GMLHSQLIndex.SpatialOperator;
+import org.exist.indexing.spatial.AbstractGMLJDBCIndex;
+import org.exist.indexing.spatial.AbstractGMLJDBCIndexWorker;
+import org.exist.indexing.spatial.AbstractGMLJDBCIndex.SpatialOperator;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -124,16 +124,16 @@ public class FunSpatialSearch extends BasicFunction {
         else if (args[1].isEmpty())
         	result = nodes;
         else {
-	        GMLHSQLIndexWorker indexWorker = (GMLHSQLIndexWorker)
-	        	context.getBroker().getIndexController().getIndexWorkerById(GMLHSQLIndex.ID);
+        	AbstractGMLJDBCIndexWorker indexWorker = (AbstractGMLJDBCIndexWorker)        	
+	        	context.getBroker().getIndexController().getIndexWorkerById(AbstractGMLJDBCIndex.ID);
 	        if (indexWorker == null)
 	        	throw new XPathException("Unable to find a spatial index worker");
-	        Geometry wsg84_geometry = null;
-	        NodeValue geometryNode = (NodeValue) args[1].itemAt(0);          		
+	        Geometry EPSG4326_geometry = null;
+	        NodeValue geometryNode = (NodeValue) args[1].itemAt(0);   
 			if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE)
 				//The node should be indexed
-				wsg84_geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode);		
-	        if (wsg84_geometry == null) {
+				EPSG4326_geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode);		
+	        if (EPSG4326_geometry == null) {
 	        	//builds the geometry
 	        	GMLHandlerJTS geometryHandler = new GeometryHandler(); 
 	            GMLFilterGeometry geometryFilter = new GMLFilterGeometry(geometryHandler); 
@@ -141,19 +141,21 @@ public class FunSpatialSearch extends BasicFunction {
 	            try {
 	            	geometryNode.toSAX(context.getBroker(), (ContentHandler)handler, null);
 	            } catch (SAXException e) {
- 	            	throw new XPathException("Unable to serialize '" + geometryNode + "' as a valid GML geometry", e); 
+	            	throw new XPathException("Unable to serialize '" + geometryNode + "' as a valid GML geometry", e); 
  	            }
+	            if (currentGeometry == null)
+	            	throw new XPathException(geometryNode.getNode().getLocalName() + " is not a GML geometry node");
 	            String srsName = ((Element)geometryNode).getAttribute("srsName");
 		        //provisional workaround
 		        if ("osgb:BNG".equals(srsName))
 	    			srsName = "EPSG:27700";  	    
-		        MathTransform mathTransform = indexWorker.getTransformToWGS84(srsName);
+		        MathTransform mathTransform = indexWorker.getTransform(srsName, "EPSG:4326");
 	            if (mathTransform == null) {
 	        		throw new XPathException("Unable to get a transformation from '" + srsName + "' to 'EPSG:4326'");        		           	
 	            }
 	            indexWorker.getCoordinateTransformer().setMathTransform(mathTransform);
 	            try {
-	            	wsg84_geometry = indexWorker.getCoordinateTransformer().transform(currentGeometry);
+	            	EPSG4326_geometry = indexWorker.getCoordinateTransformer().transform(currentGeometry);
 	            } catch (TransformException e) {
 	            	throw new XPathException(e);
 	            }	        		        
@@ -175,8 +177,7 @@ public class FunSpatialSearch extends BasicFunction {
 	        	spatialOp = SpatialOperator.CONTAINS;		
 	        else if (isCalledAs("overlaps"))
 	        	spatialOp = SpatialOperator.OVERLAPS;		        
-	        result = indexWorker.search(context.getBroker(),  nodes.toNodeSet(), wsg84_geometry, spatialOp);
-	      
+	        result = indexWorker.search(context.getBroker(),  nodes.toNodeSet(), EPSG4326_geometry, spatialOp);
         }
         return result;
     }

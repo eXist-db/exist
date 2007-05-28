@@ -32,8 +32,8 @@ public abstract class AbstractIndex implements Index {
     protected BrokerPool pool;
     private String name = null;
     //Probably not useful for every kind of index. Anyway...
-    private String dataDir = null;    
-
+    private String dataDir = null; 
+    
     public String getIndexName() {
     	return name;
     }
