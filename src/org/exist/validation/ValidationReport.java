@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Project
+ *  Copyright (C) 2001-07 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -13,13 +13,12 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
  *  $Id$
  */
-
 package org.exist.validation;
 
 import java.util.ArrayList;
@@ -32,14 +31,20 @@ import org.xml.sax.SAXParseException;
 
 /**
  * Report containing all validation info (errors, warnings).
- * @author dizzz
+ *
+ * @author Dannes Wessels (dizzzz@exist-db.org)
+ *
  * @see org.xml.sax.ErrorHandler
  */
 public class ValidationReport implements ErrorHandler {
     
     private ArrayList validationReport = new ArrayList();
-    private long duration = -1;
-    private Exception exception = null;
+    
+    private long duration = -1L;
+    private long start = -1L;
+    private long stop = -1L;
+    
+    private Throwable exception = null;
         
     private ValidationReportItem getValidationReportItem(int type, SAXParseException exception){
         
@@ -156,6 +161,21 @@ public class ValidationReport implements ErrorHandler {
         }
         
         return validationReport.toString();
+    }
+
+    void start() {
+        start=System.currentTimeMillis();
+    }
+
+    void stop() {
+        if(getValidationDuration() == -1L){ // not already stopped
+            stop=System.currentTimeMillis();
+            setValidationDuration(stop-start);
+        }
+    }
+
+    void setThrowable(Throwable throwable) {
+        exception=throwable;
     }
 }
 

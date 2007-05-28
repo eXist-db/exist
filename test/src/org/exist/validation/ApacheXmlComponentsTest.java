@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Project
+ *  Copyright (C) 2001-07 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -13,11 +13,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- *  $Id$
+ * $Id$
  */
 
 package org.exist.validation;
@@ -29,10 +29,10 @@ import junit.framework.TestSuite;
 /**
  *  Class for testing XML Parser and XML Transformer configuration.
  *
- * @author dizzzz
+ * @author Dannes Wessels (dizzzz@exist-db.org)
  */
-public class ApacheXmlComponentsTest extends TestCase {  
-        
+public class ApacheXmlComponentsTest extends TestCase {
+    
     public ApacheXmlComponentsTest(String testName) {
         super(testName);
     }
@@ -43,30 +43,28 @@ public class ApacheXmlComponentsTest extends TestCase {
         return suite;
     }
     
-    protected void tearDown() {       
+    protected void tearDown() {
         System.out.println("tearDown");
     }
     
-    protected void setUp() {      
+    protected void setUp() {
         System.out.println("setUp");
     }
     
     
-    public void testParserVersion()
-    {
-    	StringBuffer xmlLibMessage = new StringBuffer();
-    	
-    	boolean validParser = XmlLibraryChecker.hasValidParser(xmlLibMessage);
-    	
-    	assertTrue(xmlLibMessage.toString(), validParser);
+    public void testParserVersion() {
+        StringBuffer xmlLibMessage = new StringBuffer();
+        
+        boolean validParser = XmlLibraryChecker.hasValidParser(xmlLibMessage);
+        
+        assertTrue(xmlLibMessage.toString(), validParser);
     }
     
-    public void testTransformerVersion()
-    {
-    	StringBuffer xmlLibMessage = new StringBuffer();
-    	
-    	boolean validTransformer = XmlLibraryChecker.hasValidTransformer(xmlLibMessage);
-    	
-    	assertTrue(xmlLibMessage.toString(), validTransformer);
+    public void testTransformerVersion() {
+        StringBuffer xmlLibMessage = new StringBuffer();
+        
+        boolean validTransformer = XmlLibraryChecker.hasValidTransformer(xmlLibMessage);
+        
+        assertTrue(xmlLibMessage.toString(), validTransformer);
     }
 }

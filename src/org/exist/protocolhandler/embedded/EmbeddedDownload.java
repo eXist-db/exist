@@ -38,6 +38,7 @@ import org.exist.security.User;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock;
+import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.xmldb.XmldbURI;
 
@@ -113,6 +114,8 @@ public class EmbeddedDownload {
                     Serializer serializer = broker.getSerializer();
                     serializer.reset();
                     
+                    // Preserve doctype
+                    serializer.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "yes");
                     Writer w = new OutputStreamWriter(os,"UTF-8");
                     serializer.serialize(resource,w);
                     w.close();
@@ -122,12 +125,12 @@ public class EmbeddedDownload {
                 }
             }
         } catch (IOException ex) {
-            ex.printStackTrace();
+            //ex.printStackTrace();
             LOG.error(ex);
             throw ex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            //ex.printStackTrace();
             LOG.error(ex);
             throw new ExistIOException(ex.getMessage(), ex);
             

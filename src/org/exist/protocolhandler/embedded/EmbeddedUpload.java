@@ -95,7 +95,7 @@ public class EmbeddedUpload {
             stream(xmldbURL, tmp, user);
             
         } catch(IOException ex){
-            ex.printStackTrace();
+            //ex.printStackTrace();
             LOG.error(ex);
             throw ex;
             
@@ -210,7 +210,7 @@ public class EmbeddedUpload {
             } catch (Exception abex) {
                 LOG.debug(abex);
             }
-            ex.printStackTrace();
+            //ex.printStackTrace();
             LOG.debug(ex);
             throw ex;
             
@@ -221,7 +221,7 @@ public class EmbeddedUpload {
             } catch (Exception abex) {
                 LOG.debug(abex);
             }
-            ex.printStackTrace();
+            //ex.printStackTrace();
             LOG.debug(ex);
             throw new ExistIOException(ex.getMessage(), ex);
             

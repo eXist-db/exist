@@ -1,8 +1,7 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ *  Copyright (C) 2001-07 The eXist Project
+ *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
@@ -14,9 +13,9 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
  *  $Id$
  */
@@ -24,11 +23,13 @@
 package org.exist.xquery.functions.validation;
 
 import org.apache.xerces.xni.grammars.Grammar;
+
 import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.storage.BrokerPool;
+import org.exist.util.Configuration;
+import org.exist.util.XMLReaderObjectFactory;
 import org.exist.validation.GrammarPool;
-import org.exist.validation.Validator;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -46,15 +47,14 @@ import org.exist.xquery.value.ValueSequence;
  *
  * TODO: please use named constants
  *
- * @author dizzzz
+ * @author Dannes Wessels (dizzzz@exist-db.org)
  */
 public class GrammarTooling extends BasicFunction  {
     
     private static final String TYPE_DTD="http://www.w3.org/TR/REC-xml";
     private static final String TYPE_XSD=Namespaces.SCHEMA_NS;
     
-    private final Validator validator;
-    private final BrokerPool brokerPool;
+    private final Configuration config;
     
     // Setup function signature
     public final static FunctionSignature signatures[] = {
@@ -80,8 +80,8 @@ public class GrammarTooling extends BasicFunction  {
     /** Creates a new instance */
     public GrammarTooling(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
-        brokerPool = context.getBroker().getBrokerPool();
-        validator = new Validator( brokerPool );
+        BrokerPool brokerPool = context.getBroker().getBrokerPool();
+        config = brokerPool.getConfiguration();
     }
     
     /* (non-Javadoc)
@@ -89,17 +89,25 @@ public class GrammarTooling extends BasicFunction  {
      */
     public Sequence eval(Sequence[] args, Sequence contextSequence) 
                                                         throws XPathException {
-        
+       
+       GrammarPool grammarpool 
+           = (GrammarPool) config.getProperty(XMLReaderObjectFactory.GRAMMER_POOL);
+       
        // Create response
         Sequence result = new ValueSequence();
-        
-        GrammarPool grammarpool = validator.getGrammarPool();
-        
+           
         if (isCalledAs("grammar-cache-clear")){
+
+            int before = grammarpool.retrieveInitialGrammarSet(TYPE_XSD).length
+                + grammarpool.retrieveInitialGrammarSet(TYPE_DTD).length;
+            LOG.debug("Clearing "+before+" grammars");
             
             grammarpool.clear();
-            // TODO check if this is safe enough
-            validator.setGrammarPool(null);
+            
+            int after = grammarpool.retrieveInitialGrammarSet(TYPE_XSD).length
+                + grammarpool.retrieveInitialGrammarSet(TYPE_DTD).length;
+            LOG.debug("Remained "+after+" grammars");
+
             result = Sequence.EMPTY_SEQUENCE;
             
         } else if (isCalledAs("grammar-cache-show")){

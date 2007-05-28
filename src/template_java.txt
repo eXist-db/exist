@@ -17,22 +17,19 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
- *  $Id$
+ * $Id$
  */
-package org.exist.validation.service;
+package org.exist.x.y.z;
 
-import org.exist.xmldb.XmldbURI;
-import org.xmldb.api.base.Service;
-import org.xmldb.api.base.XMLDBException;
+import org.apache.log4j.Logger;
 
 /**
- *  <ethods that must be available in all ValidationServices
+ *   Description of class.
  *
- * @author Dannes Wessels (dizzzz@exist-db.org)
+ * @author John Doe (JohnDoe@exist-db.org)
  */
-public interface ValidationService extends Service {
+public class MyNewClass {
     
-    boolean validateResource(String documentPath) throws XMLDBException;
-    boolean validateResource(String documentPath, String grammarPath) throws XMLDBException;
-    
+    private final static Logger LOG = Logger.getLogger(MyNewClass.class);
+
 }

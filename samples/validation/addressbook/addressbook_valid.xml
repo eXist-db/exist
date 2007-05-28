@@ -1,4 +1,5 @@
 <?xml version='1.0'?>
+<!-- $Id$ -->
 <addressBook xmlns="http://jmvanel.free.fr/xsd/addressBook">
     <owner>
         <cname>John Punin</cname>

@@ -1,8 +1,7 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ *  Copyright (C) 2001-07 The eXist Project
+ *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
@@ -14,23 +13,26 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
  *  $Id$
  */
 
 package org.exist.xquery.functions.validation;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.net.URL;
 
 import org.exist.dom.QName;
 import org.exist.storage.BrokerPool;
 import org.exist.validation.ValidationReport;
 import org.exist.validation.Validator;
-import org.exist.validation.internal.ResourceInputStream;
+
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -48,7 +50,7 @@ import org.exist.xquery.value.ValueSequence;
  *   xQuery function for validation of XML instance documents
  * using grammars like XSDs and DTDs.
  *
- * @author dizzzz
+ * @author Dannes Wessels (dizzzz@exist-db.org)
  */
 public class Validation extends BasicFunction  {
     
@@ -130,12 +132,22 @@ public class Validation extends BasicFunction  {
         // Get inputstream
         InputStream is;
         try {
-        	is = new ResourceInputStream(brokerPool,XmldbURI.xmldbUriFor(args[0].getStringValue()));
-        } catch(URISyntaxException e) {
-        	throw new XPathException(getASTNode(),"Invalid resource URI",e);
+            String url=args[0].getStringValue();
+            if(url.startsWith("/")){
+                url="xmldb:exist://"+url;
+            }
+            is = new URL(url).openStream();
+        } catch (MalformedURLException ex) {
+            ex.printStackTrace();
+            LOG.error(ex);
+            throw new XPathException(getASTNode(),"Invalid resource URI",ex);
+        } catch (IOException ex) {
+            LOG.error(ex);
+            ex.printStackTrace();
+            throw new XPathException(getASTNode(),"IOexception",ex);
         }
-                                                      
-        
+
+
         ValidationReport vr = null;
         if(args.length==1){
             vr = validator.validate(is);

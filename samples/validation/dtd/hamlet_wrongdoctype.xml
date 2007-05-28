@@ -1,6 +1,6 @@
 <?xml-stylesheet href="shakes.xsl" type="text/xsl"?>
-<!DOCTYPE PLAY PUBLIC "-//PLAY//NO" "play.dtd">
-
+<!DOCTYPE PLAY PUBLIC "-//VALIDATION//WRONG" "hamlet.dtd">
+<!-- $Id$ -->
 <PLAY>
 <TITLE>The Tragedy of Hamlet, Prince of Denmark</TITLE>
 

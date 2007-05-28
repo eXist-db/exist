@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Project
+ *  Copyright (C) 2001-07 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -13,16 +13,14 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
  *  $Id$
  */
-
 package org.exist.validation;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -32,11 +30,18 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Logger;
+
 import org.exist.Namespaces;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.io.ExistIOException;
+import org.exist.util.Configuration;
+import org.exist.util.XMLReaderObjectFactory;
 import org.exist.validation.internal.DatabaseResources;
+import org.exist.validation.resolver.SearchResourceResolver;
+import org.exist.validation.resolver.StoredResourceResolver;
+import org.exist.validation.resolver.eXistXMLCatalogResolver;
+
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
@@ -44,7 +49,7 @@ import org.xml.sax.XMLReader;
 /**
  *  Validate XML documents with their grammars (DTD's and Schemas).
  *
- * @author dizzzz
+ * @author Dannes Wessels (dizzzz@exist-db.org)
  */
 public class Validator {
     
@@ -56,7 +61,9 @@ public class Validator {
     private static GrammarPool grammarPool = null;
     private static DatabaseResources dbResources = null;
     private static SAXParserFactory saxFactory = null;
-    private static BrokerPool brokerPool ;
+    private static BrokerPool brokerPool = null;
+    
+    private Configuration config = null;
     
     // Xerces feature and property names
     final static String FEATURE_SCHEMA
@@ -78,28 +85,23 @@ public class Validator {
             this.brokerPool = pool;
         }
         
-        // Check xerces version        
-    	StringBuffer xmlLibMessage = new StringBuffer();
-        if(!XmlLibraryChecker.hasValidParser(xmlLibMessage))
-        {
-      	  logger.error(xmlLibMessage);
-        }
+        // Get configuration
+        config = brokerPool.getConfiguration();
         
+        // Check xerces version        
+        StringBuffer xmlLibMessage = new StringBuffer();
+        if(!XmlLibraryChecker.hasValidParser(xmlLibMessage)) {
+            logger.error(xmlLibMessage);
+        }
         
         // setup access to grammars ; be sure just one instance!
         if(dbResources==null){
             dbResources = new DatabaseResources(pool);
         }
         
-//        // setup enityResolver ; be sure just one instance!
-//        if(enityResolver==null){
-//            enityResolver = new EntityResolver(dbResources);
-//        }
-        
-        // setup grammar brokerPool ; be sure just one instance!
-        if(grammarPool==null){
-            grammarPool = new GrammarPool();
-        }
+        // setup grammar brokerPool
+       grammarPool 
+           = (GrammarPool) config.getProperty(XMLReaderObjectFactory.GRAMMER_POOL);
         
         // setup sax factory ; be sure just one instance!
         if(saxFactory==null){
@@ -180,12 +182,6 @@ public class Validator {
         
         logger.debug("Start validation.");
         
-        EntityResolver entityResolver = new EntityResolver(dbResources);
-        
-        if(grammarPath != null){
-            entityResolver.setStartGrammarPath(grammarPath);
-        }
-        
         ValidationReport report = new ValidationReport();
         
         try{
@@ -195,38 +191,72 @@ public class Validator {
             sax.setProperty(PROPERTIES_GRAMMARPOOL, grammarPool);
             
             XMLReader xmlReader = sax.getXMLReader();
-            xmlReader.setProperty(PROPERTIES_RESOLVER, entityResolver);
+            
+            // repair path to local resource
+            if(grammarPath!=null && grammarPath.startsWith("/")){
+                grammarPath="xmldb:exist://"+grammarPath;
+            }
+
+            if(grammarPath==null){
+                // Scenario 1 : no params - use system catalog
+                logger.debug("Validation using system catalog.");
+                eXistXMLCatalogResolver resolver = 
+                    (eXistXMLCatalogResolver) config.getProperty(XMLReaderObjectFactory.CATALOG_RESOLVER);
+                xmlReader.setProperty(XMLReaderObjectFactory.PROPERTIES_RESOLVER, resolver);
+                
+            } else if(grammarPath.endsWith(".xml")){
+                // Scenario 2 : path to catalog (xml)
+                logger.debug("Validation using user specified catalog '"+grammarPath+"'.");
+                eXistXMLCatalogResolver resolver = new eXistXMLCatalogResolver();
+                resolver.setCatalogList(new String[]{grammarPath});
+                xmlReader.setProperty(XMLReaderObjectFactory.PROPERTIES_RESOLVER, resolver);
+                
+            } else if(grammarPath.endsWith("/")){
+                // Scenario 3 : path to collection ("/"): search.
+                logger.debug("Validation using searched grammar, start from '"+grammarPath+"'.");
+                SearchResourceResolver resolver = new SearchResourceResolver(grammarPath, brokerPool);
+                xmlReader.setProperty(XMLReaderObjectFactory.PROPERTIES_RESOLVER, resolver);
+                
+            } else {
+                // Scenario 4 : path to grammar (xsd, dtd) specified.
+                logger.debug("Validation using specified grammar '"+grammarPath+"'.");
+                
+                // Just find the document using empty resolver
+                //eXistXMLCatalogResolver resolver = new eXistXMLCatalogResolver();
+                StoredResourceResolver resolver = new StoredResourceResolver(grammarPath);
+                xmlReader.setProperty(XMLReaderObjectFactory.PROPERTIES_RESOLVER, resolver);
+
+            }
+
             xmlReader.setErrorHandler( report );
             
-            
-            logger.debug("Parse begin.");
-            long start = System.currentTimeMillis();
+            logger.debug("Validation started.");
+            report.start();
             xmlReader.parse(source);
-            long stop = System.currentTimeMillis();
             
-            report.setValidationDuration(stop-start);
-            logger.debug("Parse end." +
-                    "Validation performed in " + (stop-start) + " msec.");
+            logger.debug("Validation stopped.");
+            report.stop();
             
             if( ! report.isValid() ){
                 logger.debug( "Parse errors \n" + report.toString() )  ;
             }
             
-        } catch (IOException ex){
-            logger.error(ex);
-            report.setException(ex);
+        } catch(ExistIOException ex){
+            ex.getCause().printStackTrace();
+            logger.error(ex.getCause());
+            report.setThrowable(ex.getCause());
             
-        } catch (ParserConfigurationException ex){
+        } catch (Exception ex){
+            ex.printStackTrace();
             logger.error(ex);
-            report.setException(ex);
+            report.setThrowable(ex);
+
+        } finally {
+            report.stop();
             
-        } catch (SAXNotSupportedException ex){
-            logger.error(ex);
-            report.setException(ex);
-            
-        } catch (SAXException ex){
-            logger.error(ex);
-            report.setException(ex);
+            logger.debug("Validation performed in " 
+                + report.getValidationDuration() + " msec.");
+
         }
         
         return report;
@@ -234,7 +264,9 @@ public class Validator {
     
     /**
      *  Get access to internal DatabaseResources.
-     * @return Internally used DatabaseResources.
+     * 
+     * 
+     * @return Internally usedDatabaseResourcess.
      */
     public DatabaseResources getDatabaseResources(){
         return dbResources;

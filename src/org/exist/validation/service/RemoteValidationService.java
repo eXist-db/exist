@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-04 The eXist Project
+ *  Copyright (C) 2001-07 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -13,25 +13,25 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
  *  $Id$
  */
-
 package org.exist.validation.service;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
+
 import org.apache.xmlrpc.XmlRpcClient;
 import org.apache.xmlrpc.XmlRpcException;
+
 import org.exist.validation.Validator;
 import org.exist.xmldb.RemoteCollection;
-import org.exist.xmldb.XmldbURI;
+
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
@@ -39,7 +39,7 @@ import org.xmldb.api.base.XMLDBException;
 /**
  *  XML validation service for eXist database.
  *
- * @author dizzzz
+ * @author Dannes Wessels (dizzzz@exist-db.org)
  */
 public class RemoteValidationService implements ValidationService {
     
@@ -52,35 +52,42 @@ public class RemoteValidationService implements ValidationService {
     public RemoteValidationService( RemoteCollection parent, XmlRpcClient client ) {
         logger.info("Starting RemoteValidationService");
         this.client = client;
-        this.remoteCollection = parent;        
+        this.remoteCollection = parent;
     }
-       
+    
     /**
      * Validate specified resource.
      */
     public boolean validateResource(String id) throws XMLDBException {
-    	try{
-    		return validateResource(XmldbURI.xmldbUriFor(id));
-    	} catch(URISyntaxException e) {
-    		throw new XMLDBException(ErrorCodes.INVALID_URI,e);
-    	}
+         return validateResource(id, null);
     }
-    /**
-     * Validate specified resource.
-     */
-    public boolean validateResource(XmldbURI id) throws XMLDBException {
-        logger.info("Validating resource '" + id + "'");
-        boolean documentIsValid = false;       
-        id = remoteCollection.getPathURI().resolveCollectionPath(id);
+    
+    public boolean validateResource(String documentPath, String grammarPath) throws XMLDBException {
+        
+        if(documentPath.startsWith("/")){
+            documentPath="xmldb:exist://"+documentPath;
+        }
+        
+        if(grammarPath!=null && grammarPath.startsWith("/")){
+            grammarPath="xmldb:exist://"+grammarPath;
+        }
+        
+        logger.info("Validating resource '" + documentPath + "'");
+        boolean documentIsValid = false;
+//        documentPath = remoteCollection.getPathURI().resolveCollectionPath(documentPath);
         
         Vector params = new Vector();
-        params.addElement( id.toString() );
+        params.addElement( documentPath );
+        
+        if(grammarPath!=null){
+            params.addElement( grammarPath );
+        }
         
         try {
             Boolean result = (Boolean) client.execute("isValid", params);
-            documentIsValid= result.booleanValue();            
+            documentIsValid= result.booleanValue();
         } catch (XmlRpcException xre) {
-            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);            
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, xre.getMessage(), xre);
         } catch (IOException ioe) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, ioe.getMessage(), ioe);
         }

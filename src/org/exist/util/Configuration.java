@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 The eXist Project
+ *  Copyright (C) 2001-07 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -26,7 +26,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -38,6 +37,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Logger;
+
 import org.exist.Indexer;
 import org.exist.memtree.SAXAdapter;
 import org.exist.protocolhandler.eXistURLStreamHandlerFactory;
@@ -53,11 +53,14 @@ import org.exist.storage.NativeBroker;
 import org.exist.storage.NativeValueIndex;
 import org.exist.storage.TextSearchEngine;
 import org.exist.storage.XQueryPool;
+import org.exist.validation.GrammarPool;
 import org.exist.validation.resolver.eXistXMLCatalogResolver;
 import org.exist.xquery.XQueryWatchDog;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -1072,6 +1075,7 @@ public class Configuration implements ErrorHandler {
             }
             LOG.debug("using webappHome="+webappHome.toURI().toString());
             
+            // Get and store all URIs
             List allURIs= new ArrayList();
             for (int i = 0; i < catalogs.getLength(); i++) {
                 String uri = ((Element) catalogs.item(i)).getAttribute("uri");
@@ -1089,12 +1093,20 @@ public class Configuration implements ErrorHandler {
                 }
                 
             }
-            
-            // Store all configured URI
-            config.put(XMLReaderObjectFactory.CATALOG_URIS, allURIs);
             resolver.setCatalogs(allURIs);
+            
+            // Store all configured URIs
+            config.put(XMLReaderObjectFactory.CATALOG_URIS, allURIs);
+            
         }
+        
+        // Store resolver
         config.put(XMLReaderObjectFactory.CATALOG_RESOLVER, resolver);
+        
+        // cache
+        GrammarPool gp = new GrammarPool();
+        config.put(XMLReaderObjectFactory.GRAMMER_POOL, gp);
+        
     }
     
     
