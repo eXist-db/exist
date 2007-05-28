@@ -55,13 +55,6 @@ import com.vividsolutions.jts.io.WKBWriter;
 import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.io.WKTWriter;
 
-/**
- *
- * Each index entry maps a key (collectionId, ngram) to a list of occurrences, which has the
- * following structure:
- *
- * <pre>[docId : int, nameType: byte, occurrenceCount: int, entrySize: long, [id: NodeId, offset: int, ...]* ]</pre>
- */
 public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 	
 	public static String GML_NS = "http://www.opengis.net/gml";
@@ -84,21 +77,20 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     boolean documentDeleted= false;
     int flushAfter = -1;
     protected GMLStreamListener gmlStreamListener = new GMLStreamListener();
-    protected static GeometryCoordinateSequenceTransformer coordinateTransformer = new GeometryCoordinateSequenceTransformer();
-    
-    protected static WKTWriter wktWriter = new WKTWriter();
-    protected static WKTReader wktReader = new WKTReader();
-    protected static WKBWriter wkbWriter = new WKBWriter();
-    protected static WKBReader wkbReader = new WKBReader();
-    protected static Base64Encoder base64Encoder = new Base64Encoder();
-    protected static Base64Decoder base64Decoder = new Base64Decoder();  
+    protected GeometryCoordinateSequenceTransformer coordinateTransformer = new GeometryCoordinateSequenceTransformer();   
+    protected WKTWriter wktWriter = new WKTWriter();
+    protected WKTReader wktReader = new WKTReader();
+    protected WKBWriter wkbWriter = new WKBWriter();
+    protected WKBReader wkbReader = new WKBReader();
+    protected Base64Encoder base64Encoder = new Base64Encoder();
+    protected Base64Decoder base64Decoder = new Base64Decoder();  
     
     public AbstractGMLJDBCIndexWorker(AbstractGMLJDBCIndex index, DBBroker broker) {
         this.index = index;        
     }
     
     public String getIndexId() {
-        return index.ID;
+        return AbstractGMLJDBCIndex.ID;
     }        
 
     public String getIndexName() {
@@ -372,7 +364,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     
     abstract void releaseConnection(Connection conn);
     
-    protected void saveDocumentNodes(Connection conn) throws SQLException {
+    private void saveDocumentNodes(Connection conn) throws SQLException {
         if (geometries.size() == 0)
             return;  
         try {	        
@@ -389,7 +381,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         }
     }
 
-    protected void dropDocumentNode(Connection conn) throws SQLException {    	
+    private void dropDocumentNode(Connection conn) throws SQLException {    	
         if (currentNodeId == null)
             return;        
         try {         
@@ -405,7 +397,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         }
     }
     
-    protected void removeDocument(Connection conn) {
+    private void removeDocument(Connection conn) {
     	try {
 	        if (LOG.isDebugEnabled())
 	            LOG.debug("Dropping GML index for document " + currentDoc.getURI());        
