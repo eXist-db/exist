@@ -42,7 +42,7 @@ public abstract class AbstractIndex implements Index {
     	return pool;
     }
     
-    protected String getDataDir() {
+    public String getDataDir() {
     	return dataDir;
     }    
 
