@@ -110,9 +110,9 @@ public class NGramIndexWorker implements IndexWorker {
     }
 
     public String getIndexId() {
-        return NGramIndex.ID;
+        return index.ID;
     }
-
+    
     public String getIndexName() {
         return index.getIndexName();
     }

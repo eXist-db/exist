@@ -14,12 +14,16 @@ import org.exist.dom.ExtArrayNodeSet;
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.StoredNode;
-import org.exist.indexing.spatial.GMLHSQLIndex.SpatialOperator;
+import org.exist.indexing.spatial.AbstractGMLJDBCIndex.SpatialOperator;
 import org.exist.numbering.DLN;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.value.AtomicValue;
+import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.DoubleValue;
+import org.exist.xquery.value.StringValue;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.w3c.dom.Document;
@@ -52,6 +56,10 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         */
     }
     
+    public String getID() {
+    	return ID;
+    }
+    
     protected boolean saveGeometryNode(Geometry geometry, String srsName, DocumentImpl doc, NodeId nodeId, Connection conn) throws SQLException {
     	PreparedStatement ps = conn.prepareStatement("INSERT INTO " + GMLHSQLIndex.TABLE_NAME + "(" +
         		/*1*/ "DOCUMENT_URI, " +            		
@@ -62,32 +70,34 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         		/*5*/ "WKT, " +
     			//TODO : use binary format ?
         		/*6*/ "BASE64_WKB, " +
-        		/*7*/ "WSG84_WKT, " +
+    			/*7*/ "MINX, " +
+    			/*8*/ "MAXX, " +
+    			/*9*/ "MINY, " +
+    			/*10*/ "MAXY, " +
+    			/*11*/ "CENTROID_X, " +
+    			/*12*/ "CENTROID_Y, " +
+    			/*13*/ "AREA, " +
+    			//Boundary ?        		
+        		/*14*/ "EPSG4326_WKT, " +
     			//TODO : use binary format ?
-        		/*8*/ "WSG84_BASE64_WKB, " +
-        		/*9*/ "WSG84_MINX, " +
-    			/*10*/ "WSG84_MAXX, " +
-    			/*11*/ "WSG84_MINY, " +
-    			/*12*/ "WSG84_MAXY, " +
-    			/*13*/ "WSG84_CENTROID_X, " +
-    			/*14*/ "WSG84_CENTROID_Y, " +
-    			/*15*/ "WSG84_AREA" +	            		
+        		/*15*/ "EPSG4326_BASE64_WKB, " +
+        		/*16*/ "EPSG4326_MINX, " +
+    			/*17*/ "EPSG4326_MAXX, " +
+    			/*18*/ "EPSG4326_MINY, " +
+    			/*19*/ "EPSG4326_MAXY, " +
+    			/*20*/ "EPSG4326_CENTROID_X, " +
+    			/*21*/ "EPSG4326_CENTROID_Y, " +
+    			/*22*/ "EPSG4326_AREA," +
+    			//Boundary ?
+    			/*23*/ "IS_CLOSED, " +
+    			/*24*/ "IS_SIMPLE, " +
+    			/*25*/ "IS_VALID" +    			
         		") VALUES (" +
-        		"?, " +
-        		"?, " +
-        		"?, " +
-        		"?, " +
-        		"?, " +
-        		"?, " +
-        		"?, " +
-        		"?, " +          
-        		"?, " +
-        		"?, " +
-        		"?, " +
-        		"?, " +
-        		"?, " +
-        		"?, " +
-        		"?" 	            		
+        			"?, ?, ?, ?, ?, " +
+        			"?, ?, ?, ?, ?, " +
+        			"?, ?, ?, ?, ?, " +
+        			"?, ?, ?, ?, ?, " +
+        			"?, ?, ?, ?, ?"	            		
         		+ ")"
             );       
     	try {
@@ -99,39 +109,56 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         		LOG.error("Geometry has a null SRS");
         		return false;                    	
             }
-            MathTransform mathTransform = getTransformToWGS84(srsName);
+            MathTransform mathTransform = getTransform(srsName, "EPSG:4326");
             if (mathTransform == null) {
         		LOG.error("Unable to get a transformation from '" + srsName + "' to 'EPSG:4326'");
         		return false;              	
             }
             coordinateTransformer.setMathTransform(mathTransform);        
-            Geometry wsg84_geometry = null;
+            Geometry EPSG4326_geometry = null;
             try {
-            	wsg84_geometry = coordinateTransformer.transform(geometry);
+            	EPSG4326_geometry = coordinateTransformer.transform(geometry);
             } catch (TransformException e) {
         		LOG.error(e);
         		return false;
             }
-            ps.setString(1, doc.getURI().toString());		          
-            ps.setString(2, nodeId.toString());
-            ps.setString(3, geometry.getGeometryType());
-            ps.setString(4, srsName);
-            ps.setString(5, wktWriter.write(geometry));
+            /*DOCUMENT_URI*/ ps.setString(1, doc.getURI().toString());		          
+            /*NODE_ID*/ ps.setString(2, nodeId.toString());
+            /*GEOMETRY_TYPE*/ ps.setString(3, geometry.getGeometryType());
+            /*SRS_NAME*/ ps.setString(4, srsName);
+            /*WKT*/ ps.setString(5, wktWriter.write(geometry));
             base64Encoder.reset();
             base64Encoder.translate(wkbWriter.write(geometry));
-            ps.setString(6, new String(base64Encoder.getCharArray()));
-            ps.setString(7, wktWriter.write(wsg84_geometry));
+            /*BASE64_WKB*/ ps.setString(6, new String(base64Encoder.getCharArray()));
+            /*MINX*/ ps.setDouble(7, geometry.getEnvelopeInternal().getMinX());
+        	/*MAXX*/ ps.setDouble(8, geometry.getEnvelopeInternal().getMaxX());
+        	/*MINY*/ ps.setDouble(9, geometry.getEnvelopeInternal().getMinY());
+        	/*MAXY*/ ps.setDouble(10, geometry.getEnvelopeInternal().getMaxY());
+        	/*CENTROID_X*/ ps.setDouble(11, geometry.getCentroid().getCoordinate().x);   
+        	/*CENTROID_Y*/ ps.setDouble(12, geometry.getCentroid().getCoordinate().y);  
+            //geometry.getRepresentativePoint()
+        	/*AREA*/ ps.setDouble(13, geometry.getArea());
+        	//Boundary ?
+            /*EPSG4326_WKT*/ ps.setString(14, wktWriter.write(EPSG4326_geometry));
             base64Encoder.reset();
-            base64Encoder.translate(wkbWriter.write(wsg84_geometry));
-            ps.setString(8, new String(base64Encoder.getCharArray()));		
-        	ps.setDouble(9, wsg84_geometry.getEnvelopeInternal().getMinX());
-        	ps.setDouble(10, wsg84_geometry.getEnvelopeInternal().getMaxX());
-        	ps.setDouble(11, wsg84_geometry.getEnvelopeInternal().getMinY());
-        	ps.setDouble(12, wsg84_geometry.getEnvelopeInternal().getMaxY());
-        	ps.setDouble(13, wsg84_geometry.getCentroid().getCoordinate().x);   
-        	ps.setDouble(14, wsg84_geometry.getCentroid().getCoordinate().y);  
-            //wsg84_geometry.getRepresentativePoint()
-        	ps.setDouble(15, wsg84_geometry.getArea());
+            base64Encoder.translate(wkbWriter.write(EPSG4326_geometry));
+            /*EPSG4326_BASE64_WKB*/ ps.setString(15, new String(base64Encoder.getCharArray()));		
+        	/*EPSG4326_MINX*/ ps.setDouble(16, EPSG4326_geometry.getEnvelopeInternal().getMinX());
+        	/*EPSG4326_MAXX*/ ps.setDouble(17, EPSG4326_geometry.getEnvelopeInternal().getMaxX());
+        	/*EPSG4326_MINY*/ ps.setDouble(18, EPSG4326_geometry.getEnvelopeInternal().getMinY());
+        	/*EPSG4326_MAXY*/ ps.setDouble(19, EPSG4326_geometry.getEnvelopeInternal().getMaxY());
+        	/*EPSG4326_CENTROID_X*/ ps.setDouble(20, EPSG4326_geometry.getCentroid().getCoordinate().x);   
+        	/*EPSG4326_CENTROID_Y*/ ps.setDouble(21, EPSG4326_geometry.getCentroid().getCoordinate().y);  
+            //EPSG4326_geometry.getRepresentativePoint()
+        	/*EPSG4326_AREA*/ ps.setDouble(22, EPSG4326_geometry.getArea());
+			//Boundary ?
+        	//As discussed earlier, all instances of SFS geometry classes
+        	//are topologically closed by definition.
+        	//For empty Curves, isClosed is defined to have the value false.
+        	/*IS_CLOSED*/ ps.setBoolean(23, !geometry.isEmpty());
+			/*IS_SIMPLE*/ ps.setBoolean(24, geometry.isSimple());
+			//Should always be true (the GML SAX parser makes a too severe check)
+			/*IS_VALID*/ ps.setBoolean(25, geometry.isValid());
         	return (ps.executeUpdate() == 1);
     	} finally {
         	if (ps != null)
@@ -182,6 +209,18 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     	}
     }
     
+    //Since an embedded HSQL has only one connection aailable (unless I'm totally dumb)
+    //acquire and release the connection from the index, which is *the* connection's owner 
+    
+    protected Connection acquireConnection() {   
+    	return index.acquireConnection(this.broker);
+    }
+    
+    protected void releaseConnection(Connection conn) {   
+    	index.releaseConnection(this.broker);
+    } 
+
+    
     protected boolean checkIndex(DBBroker broker, Connection conn) throws SQLException {
     	PreparedStatement ps = conn.prepareStatement(
 	    		"SELECT * FROM " + GMLHSQLIndex.TABLE_NAME + ";"
@@ -198,27 +237,56 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
 	    			return false;
 	        	}		            	
 	        	base64Decoder.reset();
-	        	base64Decoder.translate(rs.getString("WSG84_BASE64_WKB"));
-	        	Geometry wsg84_geometry = wkbReader.read(base64Decoder.getByteArray());		        	
-	            if (!wsg84_geometry.equals(wktReader.read(rs.getString("WSG84_WKT")))) {
-	            	LOG.info("Inconsistent WKT : " + rs.getString("WSG84_WKT"));
+	        	base64Decoder.translate(rs.getString("EPSG4326_BASE64_WKB"));
+	        	Geometry EPSG4326_geometry = wkbReader.read(base64Decoder.getByteArray());		        	
+	            if (!EPSG4326_geometry.equals(wktReader.read(rs.getString("EPSG4326_WKT")))) {
+	            	LOG.info("Inconsistent WKT : " + rs.getString("EPSG4326_WKT"));
 	    			return false;
 	        	}
 	            
 	        	if (!original_geometry.getGeometryType().equals(rs.getString("GEOMETRY_TYPE"))) {
-	        		LOG.info("Inconsistent geometry type: " + rs.getString("GEOMETRY_TYPE"));
+	        		LOG.info("Inconsistent geometry type: " + rs.getDouble("GEOMETRY_TYPE"));
 	    			return false;
 	        	}
 	        	
+	            if (original_geometry.getEnvelopeInternal().getMinX() != rs.getDouble("MINX")) {
+	            	LOG.info("Inconsistent MinX: " + rs.getDouble("MINX"));
+	    			return false;
+	        	}
+	            if (original_geometry.getEnvelopeInternal().getMaxX() != rs.getDouble("MAXX")) {
+	            	LOG.info("Inconsistent MaxX: " + rs.getDouble("MAXX"));
+	    			return false;
+	        	}
+	            if (original_geometry.getEnvelopeInternal().getMinY() != rs.getDouble("MINY")) {
+	            	LOG.info("Inconsistent MinY: " + rs.getDouble("MINY"));
+	    			return false;
+	        	}
+	            if (original_geometry.getEnvelopeInternal().getMaxY() != rs.getDouble("MAXY")) {
+	            	LOG.info("Inconsistent MaxY: " + rs.getDouble("MAXY"));
+	    			return false;
+	        	}
+	            if (original_geometry.getCentroid().getCoordinate().x != rs.getDouble("CENTROID_X")) {
+	            	LOG.info("Inconsistent X for centroid : " + rs.getDouble("CENTROID_X"));
+	    			return false;
+	        	}
+	            if (original_geometry.getCentroid().getCoordinate().y != rs.getDouble("CENTROID_Y")) {
+	            	LOG.info("Inconsistent Y for centroid : " + rs.getDouble("CENTROID_Y"));
+	    			return false;
+	        	}
+	            if (original_geometry.getArea() != rs.getDouble("AREA")) {
+	            	LOG.info("Inconsistent area: " + rs.getDouble("AREA"));
+	    			return false;
+	            }	        	
+	        	
 	        	String srsName = rs.getString("SRS_NAME");
-	            MathTransform mathTransform = getTransformToWGS84(srsName);
+	            MathTransform mathTransform = getTransform(srsName, "EPSG:4326");
 	            if (mathTransform == null) {
 	        		LOG.error("Unable to get a transformation from '" + srsName + "' to 'EPSG:4326'");
 	        		return false;              	
 	            }
 	            getCoordinateTransformer().setMathTransform(mathTransform);
 	            try {
-	            	if (!getCoordinateTransformer().transform(original_geometry).equals(wsg84_geometry)) {
+	            	if (!getCoordinateTransformer().transform(original_geometry).equals(EPSG4326_geometry)) {
 		        		LOG.info("Transformed original geometry inconsistent with stored tranformed one");
 	            		return false;
 	            	}
@@ -227,35 +295,48 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
 	        		return false;
 	            }
 	
-	            if (wsg84_geometry.getEnvelopeInternal().getMinX() != rs.getDouble("WSG84_MINX")) {
-	            	LOG.info("Inconsistent MinX: " + rs.getString("WSG84_MINX"));
+	            if (EPSG4326_geometry.getEnvelopeInternal().getMinX() != rs.getDouble("EPSG4326_MINX")) {
+	            	LOG.info("Inconsistent MinX: " + rs.getDouble("EPSG4326_MINX"));
 	    			return false;
 	        	}
-	            if (wsg84_geometry.getEnvelopeInternal().getMaxX() != rs.getDouble("WSG84_MAXX")) {
-	            	LOG.info("Inconsistent MaxX: " + rs.getString("WSG84_MAXX"));
+	            if (EPSG4326_geometry.getEnvelopeInternal().getMaxX() != rs.getDouble("EPSG4326_MAXX")) {
+	            	LOG.info("Inconsistent MaxX: " + rs.getDouble("EPSG4326_MAXX"));
 	    			return false;
 	        	}
-	            if (wsg84_geometry.getEnvelopeInternal().getMinY() != rs.getDouble("WSG84_MINY")) {
-	            	LOG.info("Inconsistent MinY: " + rs.getString("WSG84_MINY"));
+	            if (EPSG4326_geometry.getEnvelopeInternal().getMinY() != rs.getDouble("EPSG4326_MINY")) {
+	            	LOG.info("Inconsistent MinY: " + rs.getDouble("EPSG4326_MINY"));
 	    			return false;
 	        	}
-	            if (wsg84_geometry.getEnvelopeInternal().getMaxY() != rs.getDouble("WSG84_MAXY")) {
-	            	LOG.info("Inconsistent MaxY: " + rs.getString("WSG84_MAXY"));
+	            if (EPSG4326_geometry.getEnvelopeInternal().getMaxY() != rs.getDouble("EPSG4326_MAXY")) {
+	            	LOG.info("Inconsistent MaxY: " + rs.getDouble("EPSG4326_MAXY"));
 	    			return false;
 	        	}
-	            if (wsg84_geometry.getCentroid().getCoordinate().x != rs.getDouble("WSG84_CENTROID_X")) {
-	            	LOG.info("Inconsistent X for centroid : " + rs.getString("WSG84_CENTROID_X"));
+	            if (EPSG4326_geometry.getCentroid().getCoordinate().x != rs.getDouble("EPSG4326_CENTROID_X")) {
+	            	LOG.info("Inconsistent X for centroid : " + rs.getDouble("EPSG4326_CENTROID_X"));
 	    			return false;
 	        	}
-	            if (wsg84_geometry.getCentroid().getCoordinate().y != rs.getDouble("WSG84_CENTROID_Y")) {
-	            	LOG.info("Inconsistent Y for centroid : " + rs.getString("WSG84_CENTROID_Y"));
+	            if (EPSG4326_geometry.getCentroid().getCoordinate().y != rs.getDouble("EPSG4326_CENTROID_Y")) {
+	            	LOG.info("Inconsistent Y for centroid : " + rs.getDouble("EPSG4326_CENTROID_Y"));
 	    			return false;
 	        	}
-	            if (wsg84_geometry.getArea() != rs.getDouble("WSG84_AREA")) {
-	            	LOG.info("Inconsistent area: " + rs.getString("WSG84_AREA"));
+	            if (EPSG4326_geometry.getArea() != rs.getDouble("EPSG4326_AREA")) {
+	            	LOG.info("Inconsistent area: " + rs.getDouble("EPSG4326_AREA"));
 	    			return false;
 	            }
-	
+	            
+	            if (original_geometry.isEmpty() == rs.getBoolean("IS_CLOSED")) {
+	            	LOG.info("Inconsistent area: " + rs.getBoolean("IS_CLOSED"));
+	    			return false;
+	            }
+	            if (original_geometry.isSimple() != rs.getBoolean("IS_SIMPLE")) {
+	            	LOG.info("Inconsistent area: " + rs.getBoolean("IS_SIMPLE"));
+	    			return false;
+	            }
+	            if (original_geometry.isValid() != rs.getBoolean("IS_VALID")) {
+	            	LOG.info("Inconsistent area: " + rs.getBoolean("IS_VALID"));
+	    			return false;
+	            }
+	            
 	            Document doc = broker.getXMLResource(XmldbURI.create(rs.getString("DOCUMENT_URI")));
 	    		NodeId nodeId = new DLN(rs.getString("NODE_ID")); 
 	    			           
@@ -297,7 +378,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     
     protected Map getGeometriesForDocument(DocumentImpl doc, Connection conn) throws SQLException {       	
         PreparedStatement ps = conn.prepareStatement(
-    		"SELECT WSG84_BASE64_WKB, WSG84_WKT FROM " + GMLHSQLIndex.TABLE_NAME + " WHERE DOCUMENT_URI = ?;"
+    		"SELECT EPSG4326_BASE64_WKB, EPSG4326_WKT FROM " + GMLHSQLIndex.TABLE_NAME + " WHERE DOCUMENT_URI = ?;"
     	); 
         ps.setString(1, doc.getURI().toString());
         //TODO : better a List with a end of process string transformation ?
@@ -308,9 +389,9 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
 	        map = new TreeMap();
 	        while (rs.next()) {
 	        	base64Decoder.reset();
-	        	base64Decoder.translate(rs.getString("WSG84_BASE64_WKB"));
+	        	base64Decoder.translate(rs.getString("EPSG4326_BASE64_WKB"));
 	        	Geometry geometry = wkbReader.read(base64Decoder.getByteArray());
-	        	map.put(geometry, rs.getString("WSG84_WKT"));
+	        	map.put(geometry, rs.getString("EPSG4326_WKT"));
 	        }
 	        return map;
         } catch (ParseException e) {
@@ -326,7 +407,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     
     protected Geometry getGeometryForNode(DBBroker broker, NodeProxy p, Connection conn) throws SQLException {
         PreparedStatement ps = conn.prepareStatement(
-    		"SELECT WSG84_BASE64_WKB" +
+    		"SELECT EPSG4326_BASE64_WKB" +
     		" FROM " + GMLHSQLIndex.TABLE_NAME + 
     		" WHERE DOCUMENT_URI = ? AND NODE_ID = ?;"
     	);
@@ -339,7 +420,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     			//Nothing returned
     			return null;    		
 			base64Decoder.reset();
-        	base64Decoder.translate(rs.getString("WSG84_BASE64_WKB"));
+        	base64Decoder.translate(rs.getString("EPSG4326_BASE64_WKB"));
         	Geometry geometry = wkbReader.read(base64Decoder.getByteArray());        			
         	if (rs.next()) {   	
     			//Should be impossible    		
@@ -357,49 +438,85 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         }
     }    
     
-    protected NodeSet search(DBBroker broker, NodeSet contextSet, Geometry wsg84_geometry, int spatialOp, Connection conn) throws SQLException {
+    protected AtomicValue getGeometricPropertyForNode(DBBroker broker, NodeProxy p, Connection conn, String propertyName) throws SQLException {
+        PreparedStatement ps = conn.prepareStatement(
+    		"SELECT " + propertyName + 
+    		" FROM " + GMLHSQLIndex.TABLE_NAME + 
+    		" WHERE DOCUMENT_URI = ? AND NODE_ID = ?;"
+    	);
+        ps.setString(1, p.getDocument().getURI().toString());
+    	ps.setString(2, p.getNodeId().toString());   
+    	ResultSet rs = null;    	
+    	try {
+    		rs = ps.executeQuery();
+    		if (!rs.next())
+    			//Nothing returned
+    			return null;
+    		AtomicValue result = null;
+    		if (rs.getMetaData().getColumnClassName(1).equals(Boolean.class.getName())) {
+    			result = new BooleanValue(rs.getBoolean(1));
+    		} else if (rs.getMetaData().getColumnClassName(1).equals(Double.class.getName())) {
+    			result = new DoubleValue(rs.getDouble(1));
+    		} else if (rs.getMetaData().getColumnClassName(1).equals(String.class.getName())) {
+    			result = new StringValue(rs.getString(1));
+    		} else 
+    			throw new SQLException("Uniable to make an atomic value from '" + rs.getMetaData().getColumnClassName(1) + "'");		
+        	if (rs.next()) {   	
+    			//Should be impossible    		
+    			throw new SQLException("More than one geometry for node " + p);
+    		}
+        	return result;    
+    	} finally {   
+    		if (rs != null)
+    			rs.close();
+    		if (ps != null)
+    			ps.close();
+        }
+    }    
+
+    protected NodeSet search(DBBroker broker, NodeSet contextSet, Geometry EPSG4326_geometry, int spatialOp, Connection conn) throws SQLException {
     	String extraSelection = null;
     	String bboxConstraint = null;    	
         switch (spatialOp) {
         	//BBoxes are equal
         	case SpatialOperator.EQUALS:
-        		bboxConstraint = "(WSG84_MINX = ? AND WSG84_MAXX = ?)" +
-    				" AND (WSG84_MINY = ? AND WSG84_MAXY = ?)";
+        		bboxConstraint = "(EPSG4326_MINX = ? AND EPSG4326_MAXX = ?)" +
+    				" AND (EPSG4326_MINY = ? AND EPSG4326_MAXY = ?)";
         		break;
         	case SpatialOperator.DISJOINT:
         		//Nothing much we can do with the BBox at this stage
-        		extraSelection = ", WSG84_MINX, WSG84_MAXX, WSG84_MINY, WSG84_MAXY";
+        		extraSelection = ", EPSG4326_MINX, EPSG4326_MAXX, EPSG4326_MINY, EPSG4326_MAXY";
         		break;
        		//BBoxes intersect themselves
         	case SpatialOperator.INTERSECTS:        		
         	case SpatialOperator.TOUCHES:        		   		
         	case SpatialOperator.CROSSES:        		      		
         	case SpatialOperator.OVERLAPS: 
-        		bboxConstraint = "(WSG84_MAXX >= ? AND WSG84_MINX <= ?)" +
-				" AND (WSG84_MAXY >= ? AND WSG84_MINY <= ?)";
+        		bboxConstraint = "(EPSG4326_MAXX >= ? AND EPSG4326_MINX <= ?)" +
+				" AND (EPSG4326_MAXY >= ? AND EPSG4326_MINY <= ?)";
         		break;
         	//BBoxe is fully within
         	case SpatialOperator.WITHIN:   
-        		bboxConstraint = "(WSG84_MINX >= ? AND WSG84_MAXX <= ?)" +
-				" AND (WSG84_MINY >= ? AND WSG84_MAXY <= ?)";
+        		bboxConstraint = "(EPSG4326_MINX >= ? AND EPSG4326_MAXX <= ?)" +
+				" AND (EPSG4326_MINY >= ? AND EPSG4326_MAXY <= ?)";
         		break;        		
         	case SpatialOperator.CONTAINS: 
-        		bboxConstraint = "(WSG84_MINX <= ? AND WSG84_MAXX >= ?)" +
-				" AND (WSG84_MINY <= ? AND WSG84_MAXY >= ?)";
+        		bboxConstraint = "(EPSG4326_MINX <= ? AND EPSG4326_MAXX >= ?)" +
+				" AND (EPSG4326_MINY <= ? AND EPSG4326_MAXY >= ?)";
         		break;             		
         	default:
         		throw new IllegalArgumentException("Unsupported spatial operator:" + spatialOp);
         }
         PreparedStatement ps = conn.prepareStatement(
-    		"SELECT WSG84_BASE64_WKB, DOCUMENT_URI, NODE_ID" + (extraSelection == null ? "" : extraSelection) +
+    		"SELECT EPSG4326_BASE64_WKB, DOCUMENT_URI, NODE_ID" + (extraSelection == null ? "" : extraSelection) +
     		" FROM " + GMLHSQLIndex.TABLE_NAME + 
     		(bboxConstraint == null ? "" : " WHERE " + bboxConstraint) + ";"
     	);
         if (bboxConstraint != null) {
-	        ps.setDouble(1, wsg84_geometry.getEnvelopeInternal().getMinX());
-	    	ps.setDouble(2, wsg84_geometry.getEnvelopeInternal().getMaxX());
-	    	ps.setDouble(3, wsg84_geometry.getEnvelopeInternal().getMinY());
-	    	ps.setDouble(4, wsg84_geometry.getEnvelopeInternal().getMaxY());
+	        ps.setDouble(1, EPSG4326_geometry.getEnvelopeInternal().getMinX());
+	    	ps.setDouble(2, EPSG4326_geometry.getEnvelopeInternal().getMaxX());
+	    	ps.setDouble(3, EPSG4326_geometry.getEnvelopeInternal().getMinY());
+	    	ps.setDouble(4, EPSG4326_geometry.getEnvelopeInternal().getMaxY());
         }
     	ResultSet rs = null;
     	NodeSet result = null;
@@ -425,10 +542,10 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
 		        	boolean geometryMatches = false;
 		        	if (spatialOp == SpatialOperator.DISJOINT) {
 		        		//Obviously disjoint
-		        		if (rs.getDouble("WSG84_MAXX") < wsg84_geometry.getEnvelopeInternal().getMinX() ||	        			
-			        		rs.getDouble("WSG84_MINX") > wsg84_geometry.getEnvelopeInternal().getMaxX() ||	        			
-			        		rs.getDouble("WSG84_MAXY") < wsg84_geometry.getEnvelopeInternal().getMinY() ||	        			
-			        		rs.getDouble("WSG84_MINY") > wsg84_geometry.getEnvelopeInternal().getMaxY()) {
+		        		if (rs.getDouble("EPSG4326_MAXX") < EPSG4326_geometry.getEnvelopeInternal().getMinX() ||	        			
+			        		rs.getDouble("EPSG4326_MINX") > EPSG4326_geometry.getEnvelopeInternal().getMaxX() ||	        			
+			        		rs.getDouble("EPSG4326_MAXY") < EPSG4326_geometry.getEnvelopeInternal().getMinY() ||	        			
+			        		rs.getDouble("EPSG4326_MINY") > EPSG4326_geometry.getEnvelopeInternal().getMaxY()) {
 			        			geometryMatches = true;
 					        		disjointPostFiltered++;	
 		        		}
@@ -437,32 +554,32 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
 		        	if (!geometryMatches) {	
 		        		try {			        	
 			    			base64Decoder.reset();
-				        	base64Decoder.translate(rs.getString("WSG84_BASE64_WKB"));
+				        	base64Decoder.translate(rs.getString("EPSG4326_BASE64_WKB"));
 				        	Geometry geometry = wkbReader.read(base64Decoder.getByteArray());			        	
 				        	switch (spatialOp) {
 				        	case SpatialOperator.EQUALS:	        		        		
-				        		geometryMatches = geometry.equals(wsg84_geometry);
+				        		geometryMatches = geometry.equals(EPSG4326_geometry);
 				        		break;
 				        	case SpatialOperator.DISJOINT:        		
-				        		geometryMatches = geometry.disjoint(wsg84_geometry);
+				        		geometryMatches = geometry.disjoint(EPSG4326_geometry);
 				        		break;	        		
 				        	case SpatialOperator.INTERSECTS:        		
-				        		geometryMatches = geometry.intersects(wsg84_geometry);
+				        		geometryMatches = geometry.intersects(EPSG4326_geometry);
 				        		break;	        		
 				        	case SpatialOperator.TOUCHES:
-					        	geometryMatches = geometry.touches(wsg84_geometry);
+					        	geometryMatches = geometry.touches(EPSG4326_geometry);
 				        		break;	        		
 				        	case SpatialOperator.CROSSES:
-					        	geometryMatches = geometry.crosses(wsg84_geometry);
+					        	geometryMatches = geometry.crosses(EPSG4326_geometry);
 				        		break;	        		
 				        	case SpatialOperator.WITHIN:        		
-				        		geometryMatches = geometry.within(wsg84_geometry);
+				        		geometryMatches = geometry.within(EPSG4326_geometry);
 				        		break;	        		
 				        	case SpatialOperator.CONTAINS:	        		
-				        		geometryMatches = geometry.contains(wsg84_geometry);
+				        		geometryMatches = geometry.contains(EPSG4326_geometry);
 				        		break;	        		
 				        	case SpatialOperator.OVERLAPS:	        		
-				        		geometryMatches = geometry.overlaps(wsg84_geometry);
+				        		geometryMatches = geometry.overlaps(EPSG4326_geometry);
 				        		break;	        		
 				        	}
 		    	        } catch (ParseException e) {
@@ -487,28 +604,28 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     	}
     } 
     
-    protected NodeSet isIndexed(DBBroker broker, Geometry wsg84_geometry, Connection conn) throws SQLException {    	
-    	String bboxConstraint = "(WSG84_MINX = ? AND WSG84_MAXX = ?)" +
-    				" AND (WSG84_MINY = ? AND WSG84_MAXY = ?)"; 
+    protected NodeSet isIndexed(DBBroker broker, Geometry EPSG4326_geometry, Connection conn) throws SQLException {    	
+    	String bboxConstraint = "(EPSG4326_MINX = ? AND EPSG4326_MAXX = ?)" +
+    				" AND (EPSG4326_MINY = ? AND EPSG4326_MAXY = ?)"; 
     	NodeSet result = null;
         PreparedStatement ps = conn.prepareStatement(
-    		"SELECT WSG84_BASE64_WKB, DOCUMENT_URI, NODE_ID" +
+    		"SELECT EPSG4326_BASE64_WKB, DOCUMENT_URI, NODE_ID" +
     		" FROM " + GMLHSQLIndex.TABLE_NAME + 
     		" WHERE " + bboxConstraint + ";"
     	);
-        ps.setDouble(1, wsg84_geometry.getEnvelopeInternal().getMinX());
-    	ps.setDouble(2, wsg84_geometry.getEnvelopeInternal().getMaxX());
-    	ps.setDouble(3, wsg84_geometry.getEnvelopeInternal().getMinY());
-    	ps.setDouble(4, wsg84_geometry.getEnvelopeInternal().getMaxY());      
+        ps.setDouble(1, EPSG4326_geometry.getEnvelopeInternal().getMinX());
+    	ps.setDouble(2, EPSG4326_geometry.getEnvelopeInternal().getMaxX());
+    	ps.setDouble(3, EPSG4326_geometry.getEnvelopeInternal().getMinY());
+    	ps.setDouble(4, EPSG4326_geometry.getEnvelopeInternal().getMaxY());      
     	ResultSet rs = null;
     	result = new ExtArrayNodeSet(); //new ExtArrayNodeSet(docs.getLength(), 250)
     	try {
     		rs = ps.executeQuery();
     		while (rs.next()) {    			
     			base64Decoder.reset();
-	        	base64Decoder.translate(rs.getString("WSG84_BASE64_WKB"));
+	        	base64Decoder.translate(rs.getString("EPSG4326_BASE64_WKB"));
 	        	Geometry geometry = wkbReader.read(base64Decoder.getByteArray());	
-	        	boolean geometryMatches = geometry.equals(wsg84_geometry);	        	
+	        	boolean geometryMatches = geometry.equals(EPSG4326_geometry);	        	
 	        	if (geometryMatches) {	        	
 	        		XmldbURI documentURI = XmldbURI.create(rs.getString("DOCUMENT_URI"));
 	        		try {

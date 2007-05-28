@@ -92,7 +92,7 @@ public class IndexManager {
     public synchronized Index getIndexById(String indexId) {
     	for (Iterator i = iterator(); i.hasNext(); ) {
     		Index indexer = (Index) i.next();
-    		if (indexId.equals(indexer.getIndexId()));
+    		if (indexId.equals(indexer.ID));
     			return indexer;
     	}
     	return null;
