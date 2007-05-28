@@ -1,8 +1,7 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-06 Wolfgang M. Meier
- *  wolfgang@exist-db.org
- *  http://exist.sourceforge.net
+ *  Copyright (C) 2001-07 The eXist Project
+ *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public License
@@ -14,9 +13,9 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
  *  $Id$
  */
@@ -51,6 +50,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 
 import org.apache.log4j.Logger;
+
 import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.backup.Backup;
@@ -70,9 +70,12 @@ import org.exist.dom.QName;
 import org.exist.dom.SortedNodeSet;
 import org.exist.memtree.NodeImpl;
 import org.exist.numbering.NodeId;
+import org.exist.protocolhandler.embedded.EmbeddedInputStream;
+import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.User;
+import org.exist.security.SecurityManager;
 import org.exist.security.XMLSecurityManager;
 import org.exist.security.xacml.AccessContext;
 import org.exist.source.Source;
@@ -97,7 +100,7 @@ import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.validation.ValidationReport;
 import org.exist.validation.Validator;
-import org.exist.validation.internal.ResourceInputStream;
+
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.Option;
@@ -1762,7 +1765,7 @@ public class RpcConnection extends Thread {
     
     public boolean removeUser(User user, String name) throws EXistException,
             PermissionDeniedException {
-        org.exist.security.SecurityManager manager = brokerPool
+        SecurityManager manager = brokerPool
                 .getSecurityManager();
         if (!manager.hasAdminPrivileges(user))
             throw new PermissionDeniedException(
@@ -1909,7 +1912,7 @@ public class RpcConnection extends Thread {
         Txn transaction = transact.beginTransaction();
         try {
             broker = brokerPool.get(user);
-            org.exist.security.SecurityManager manager = brokerPool
+            SecurityManager manager = brokerPool
                     .getSecurityManager();
             collection = broker.openCollection(uri, Lock.WRITE_LOCK);
             if (collection == null) {
@@ -1992,7 +1995,7 @@ public class RpcConnection extends Thread {
         Txn transaction = transact.beginTransaction();
         try {
             broker = brokerPool.get(user);
-            org.exist.security.SecurityManager manager = brokerPool.getSecurityManager();
+            SecurityManager manager = brokerPool.getSecurityManager();
             collection = broker.openCollection(uri, Lock.WRITE_LOCK);
             if (collection == null) {
                 doc = broker.getXMLResource(uri, Lock.WRITE_LOCK);
@@ -2058,7 +2061,7 @@ public class RpcConnection extends Thread {
             PermissionDeniedException {
         if (passwd.length() == 0)
             passwd = null;
-        org.exist.security.SecurityManager manager = brokerPool
+        SecurityManager manager = brokerPool
                 .getSecurityManager();
         User u;
         if (!manager.hasUser(name)) {
@@ -2104,7 +2107,7 @@ public class RpcConnection extends Thread {
     public boolean setUser(User user, String name, Vector groups) throws EXistException,
     PermissionDeniedException {
 
-    	org.exist.security.SecurityManager manager = brokerPool
+    	SecurityManager manager = brokerPool
         	.getSecurityManager();
     	User u;
     	if (!manager.hasUser(name)) {
@@ -2139,7 +2142,7 @@ public class RpcConnection extends Thread {
     public boolean setUser(User user, String name, Vector groups, String rgroup) throws EXistException,
     PermissionDeniedException {
 
-    	org.exist.security.SecurityManager manager = brokerPool
+    	SecurityManager manager = brokerPool
         	.getSecurityManager();
     	User u;
     	if (!manager.hasUser(name)) {
@@ -2185,7 +2188,7 @@ public class RpcConnection extends Thread {
             //TODO : register the lock within the transaction ?
             if (!doc.getPermissions().validate(user, Permission.UPDATE))
                 throw new PermissionDeniedException("User is not allowed to lock resource " + docURI);
-            org.exist.security.SecurityManager manager = brokerPool.getSecurityManager();
+            SecurityManager manager = brokerPool.getSecurityManager();
             if (!(userName.equals(user.getName()) || manager.hasAdminPrivileges(user)))
                 throw new PermissionDeniedException("User " + user.getName() + " is not allowed " +
                         "to lock the resource for user " + userName);
@@ -2243,7 +2246,7 @@ public class RpcConnection extends Thread {
                         + docURI + " not found");
             if (!doc.getPermissions().validate(user, Permission.UPDATE))
                 throw new PermissionDeniedException("User is not allowed to lock resource " + docURI);
-            org.exist.security.SecurityManager manager = brokerPool.getSecurityManager();
+            SecurityManager manager = brokerPool.getSecurityManager();
             User lockOwner = doc.getUserLock();
             if(lockOwner != null && (!lockOwner.equals(user)) && (!manager.hasAdminPrivileges(user)))
                 throw new PermissionDeniedException("Resource is already locked by user " +
@@ -2767,7 +2770,8 @@ public class RpcConnection extends Thread {
             Validator validator = new Validator(pPool);
             
             // Get inputstream
-            InputStream is = new ResourceInputStream(pPool, docUri);
+            // TODO DWES reconsider
+            InputStream is = new EmbeddedInputStream( new XmldbURL(docUri) );
             
             // Perform validation
             ValidationReport veh = validator.validate(is);

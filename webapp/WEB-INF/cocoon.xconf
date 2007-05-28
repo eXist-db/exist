@@ -330,11 +330,11 @@
       |
       |     <parameter name="verbosity" value="2"/>
       +-->
-  <entity-resolver logger="core.resolver">
+  <!--entity-resolver logger="core.resolver">
     <parameter name="catalog-class-name" 
                value="org.exist.validation.resolver.eXistCatalogResolver" />
     <parameter name="verbosity" value="2"/>
-  </entity-resolver>
+  </entity-resolver-->
 
   <!--+
       | XML Parser

@@ -1,20 +1,21 @@
 /*
- * eXist Open Source Native XML Database Copyright (C) 2001-06 Wolfgang M.
- * Meier meier@ifs.tu-darmstadt.de http://exist.sourceforge.net
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2001-07 The eXist Project
+ *  http://exist-db.org
  *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- * for more details.
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
  * $Id$
  */
@@ -42,6 +43,7 @@ import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.lang.reflect.Field;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -73,9 +75,13 @@ import org.apache.avalon.excalibur.cli.CLArgsParser;
 import org.apache.avalon.excalibur.cli.CLOption;
 import org.apache.avalon.excalibur.cli.CLUtil;
 import org.apache.log4j.Logger;
+
 import org.exist.dom.XMLUtil;
 import org.exist.security.Permission;
+import org.exist.security.SecurityManager;
 import org.exist.security.User;
+import org.exist.storage.ElementIndex;
+import org.exist.storage.TextSearchEngine;
 import org.exist.util.CollectionScanner;
 import org.exist.util.ConfigurationHelper;
 import org.exist.util.DirectoryScanner;
@@ -96,12 +102,15 @@ import org.exist.xmldb.XPathQueryServiceImpl;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.exist.xquery.util.URIUtils;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
+
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -138,7 +147,7 @@ public class InteractiveClient {
     protected static String ENCODING = "ISO-8859-1";
     protected static String PASS = null;
     protected static String URI_DEFAULT = "xmldb:exist://localhost:8080/exist/xmlrpc";
-    protected static String USER_DEFAULT = org.exist.security.SecurityManager.DBA_USER;
+    protected static String USER_DEFAULT = SecurityManager.DBA_USER;
     protected static int PARALLEL_THREADS = 5;
     // Set
     protected static Properties defaultProps = new Properties();
@@ -1005,10 +1014,19 @@ public class InteractiveClient {
                     messageln("missing document name.");
                 else {
                     ValidationService validationService = (ValidationService) current.getService("ValidationService", "1.0");
-                    if (validationService.validateResource(args[1]))
+                    
+                    boolean valid=false;
+                    if(args.length==2){
+                        valid=validationService.validateResource(args[1]);
+                    } else {
+                       valid=validationService.validateResource(args[1], args[2]);
+                    }
+                    
+                    if (valid){
                         messageln("document is valid.");
-                    else
+                    } else {
                         messageln("document is not valid.");
+                    }
                 }
                 
             } else {
@@ -2031,7 +2049,7 @@ public class InteractiveClient {
         }
         
         // Fix "uri" property: Excalibur CLI can't parse dashes, so we need to URL encode them:
-        properties.setProperty("uri", java.net.URLDecoder.decode(properties.getProperty("uri"), "UTF-8"));
+        properties.setProperty("uri", URLDecoder.decode(properties.getProperty("uri"), "UTF-8"));
         
         // prompt for password if needed
         if (cOpt.interactive && startGUI) {
@@ -2391,9 +2409,9 @@ public class InteractiveClient {
             if (lastObservable == null || o != lastObservable)
                 System.out.println();
             
-            if (o instanceof org.exist.storage.ElementIndex)
+            if (o instanceof ElementIndex)
                 elementsProgress.set(ind.getValue(), ind.getMax());
-            else if (o instanceof org.exist.storage.TextSearchEngine)
+            else if (o instanceof TextSearchEngine)
                 wordsProgress.set(ind.getValue(), ind.getMax());
             else
                 parseProgress.set(ind.getValue(), ind.getMax());

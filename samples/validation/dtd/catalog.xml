@@ -1,4 +1,5 @@
 <?xml version="1.0"?>
+<!-- $Id$ -->
 <catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
-    <public publicId="-//PLAY//EN" uri="play.dtd"/>
+    <public publicId="-//VALIDATION//EN" uri="hamlet.dtd"/>
 </catalog>

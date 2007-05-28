@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<!-- $Id$ -->
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
+    <uri name="http://jmvanel.free.fr/xsd/addressBook" uri="addressbook.xsd"/>
+</catalog>
