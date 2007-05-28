@@ -101,9 +101,6 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         		+ ")"
             );       
     	try {
-    		//Let's fallback to this during the tests :-)
-    		if ("osgb:BNG".equals(srsName))
-    			srsName = "EPSG:27700";
     		//TODO : use a default SRS from the config file ?
             if (srsName == null) {
         		LOG.error("Geometry has a null SRS");

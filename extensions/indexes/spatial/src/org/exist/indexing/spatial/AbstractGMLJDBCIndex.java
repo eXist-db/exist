@@ -91,9 +91,7 @@ public abstract class AbstractGMLJDBCIndex extends AbstractIndex {
 			//Reset state
 			worker.setDocument(null, StreamListener.UNKNOWN);
     	}
-    	//TODO : we need a broker to perform that operation !
-    	//Use the last worker ? try something else ?
-    	removeIndexContent(conn);
+    	removeIndexContent();
         shutdownDatabase();
         deleteDatabase();
     }
@@ -110,7 +108,9 @@ public abstract class AbstractGMLJDBCIndex extends AbstractIndex {
     
     protected abstract void deleteDatabase() throws DBException;
     
-    protected abstract void removeIndexContent(Connection conn) throws DBException;
+	//TODO : we need a broker to perform that operation !
+	//Use the last worker ? try something else ?
+    protected abstract void removeIndexContent() throws DBException;
     
     protected abstract Connection acquireConnection(DBBroker broker);
     
