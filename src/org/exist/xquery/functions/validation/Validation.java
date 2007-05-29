@@ -54,6 +54,15 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class Validation extends BasicFunction  {
     
+    private static final String simpleFunctionTxt=
+        "Validate document specified by $a. The grammar files "+
+        "are resolved using the global catalog file(s).";
+    
+    private static final String extendedFunctionTxt=
+        "Validate document specified by $a using $b. "+
+        "$b can point to an OASIS catalog file, a grammar (xml schema only) "+
+        "or a collection (path ends with '/')";
+    
     private final Validator validator;
     private final BrokerPool brokerPool;
     
@@ -62,34 +71,54 @@ public class Validation extends BasicFunction  {
         new FunctionSignature(
                     new QName("validate", ValidationModule.NAMESPACE_URI, 
                                           ValidationModule.PREFIX),
-                    "Validate document specified by $a. The grammar files "
-                    +"are searched inside the database.",
+                    simpleFunctionTxt,
                     new SequenceType[]{
-                        new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+                        new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE)
                     },
                     new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
                 ),
+        
+//       new FunctionSignature(
+//                new QName("validate", ValidationModule.NAMESPACE_URI, 
+//                                          ValidationModule.PREFIX),
+//                    "Validate document specified by $a. The grammar files "
+//                    +"are searched inside the database.",
+//                    new SequenceType[]{
+//                        new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
+//                    },
+//                    new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
+//                ),
                             
         new FunctionSignature(
                     new QName("validate", ValidationModule.NAMESPACE_URI, 
                                           ValidationModule.PREFIX),
-                    "Validate document specified by $a using path $b. "
-                    +"$b can point a grammar, a collection containing "
-                    +"grammars (usefull for XSD) or a OASIS catalog file.",
+                    extendedFunctionTxt,
                     new SequenceType[]{
-                        new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-                        new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+                        new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE),
+                        new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE)
                     },
                     new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
                 ),
+        
+//        new FunctionSignature(
+//                    new QName("validate", ValidationModule.NAMESPACE_URI, 
+//                                          ValidationModule.PREFIX),
+//                    "Validate document specified by $a using path $b. "
+//                    +"$b can point a grammar, a collection containing "
+//                    +"grammars (usefull for XSD) or a OASIS catalog file.",
+//                    new SequenceType[]{
+//                        new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE),
+//                        new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+//                    },
+//                    new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
+//                ),
                             
         new FunctionSignature(
                     new QName("validate-report", ValidationModule.NAMESPACE_URI, 
                                                  ValidationModule.PREFIX),
-                    "Validate document specified by $a, return a simple report"
-                    +". The grammar files are searched inside the database.",
+                    simpleFunctionTxt,
                     new SequenceType[]{
-                        new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+                        new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE)
                     },
                     new SequenceType(Type.STRING,  Cardinality.ZERO_OR_MORE)
         ),
@@ -97,28 +126,23 @@ public class Validation extends BasicFunction  {
         new FunctionSignature(
                     new QName("validate-report", ValidationModule.NAMESPACE_URI, 
                                                  ValidationModule.PREFIX),
-                    "Validate document specified by $a using path $b, "
-                    +"return a simple report. "
-                    +"$b can point a grammar, a collection containing "
-                    +"grammars (usefull for XSD) or a OASIS catalog file.",
+                    extendedFunctionTxt,
                     new SequenceType[]{
-                        new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
-                        new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+                        new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE),
+                        new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE)
                     },
                     new SequenceType(Type.STRING,  Cardinality.ZERO_OR_MORE)
         )
     };
     
-    
-    
-    /** Creates a new instance */
+
     public Validation(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
         brokerPool = context.getBroker().getBrokerPool();
         validator = new Validator( brokerPool );
     }
     
-    /* (non-Javadoc)
+    /** 
      * @see BasicFunction#eval(Sequence[], Sequence)
      */
     public Sequence eval(Sequence[] args, Sequence contextSequence) 
@@ -137,6 +161,7 @@ public class Validation extends BasicFunction  {
                 url="xmldb:exist://"+url;
             }
             is = new URL(url).openStream();
+            
         } catch (MalformedURLException ex) {
             ex.printStackTrace();
             LOG.error(ex);
@@ -145,8 +170,7 @@ public class Validation extends BasicFunction  {
             LOG.error(ex);
             ex.printStackTrace();
             throw new XPathException(getASTNode(),"IOexception",ex);
-        }
-
+        } 
 
         ValidationReport vr = null;
         if(args.length==1){
@@ -156,7 +180,6 @@ public class Validation extends BasicFunction  {
             vr = validator.validate(is,args[1].getStringValue());
             
         }
-        
         
         // Create response
         Sequence result = new ValueSequence();
