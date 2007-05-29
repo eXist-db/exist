@@ -22,7 +22,8 @@
  */
 package org.exist.xquery;
 
-import org.exist.dom.DocumentSet;
+import java.util.Iterator;
+
 import org.exist.dom.NodeProxy;
 import org.exist.dom.NodeSet;
 import org.exist.dom.QName;
@@ -37,10 +38,6 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
-import java.util.Iterator;
-
-
-
 
 /**
  * Represents an XQuery "for" expression.
@@ -209,8 +206,7 @@ public class ForExpr extends BindingExpression {
 		// Save the current context document set to the variable as a hint
 		// for path expressions occurring in the "return" clause.
 		if(in instanceof NodeSet) {
-		    DocumentSet contextDocs = ((NodeSet)in).getDocumentSet();
-		    var.setContextDocs(contextDocs);
+		    var.setContextDocs(in.getDocumentSet());
 		} else
 			var.setContextDocs(null);
 
