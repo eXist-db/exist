@@ -249,8 +249,13 @@ public class ReentrantReadWriteLock implements Lock {
 			notify();
 		}
     }
-    
-	/**
+
+    public void release(int mode, int count) {
+        throw new UnsupportedOperationException(getClass().getName() +
+                " does not support releasing multiple locks");
+    }
+
+    /**
 	 * Return the number of unreleased acquires performed
 	 * by the current thread.
 	 * Returns zero if current thread does not hold lock.

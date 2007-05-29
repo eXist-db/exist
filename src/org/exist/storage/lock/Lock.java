@@ -62,6 +62,8 @@ public interface Lock {
      */
     public void release( int mode );
     
+    public void release(int mode, int count);
+
     /**
      * Returns true if there are active or pending
      * write locks.

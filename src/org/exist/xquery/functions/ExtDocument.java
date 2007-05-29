@@ -159,7 +159,7 @@ public class ExtDocument extends Function {
                     doc = (DocumentImpl) i.next();
 					result.add(new NodeProxy(doc)); //, -1, Node.DOCUMENT_NODE));
                     if(lockOnLoad) {
-                        context.getLockedDocuments().add(doc);
+                        context.addLockedDocument(doc);
                     }
 				}
 			}

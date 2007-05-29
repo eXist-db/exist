@@ -140,7 +140,7 @@ public class ExtCollection extends Function {
 		        result.add(new NodeProxy(doc)); // , -1, Node.DOCUMENT_NODE));
                 if(lockOnLoad) {
                     LOG.debug("Locking document: " + doc.getURI());
-                    context.getLockedDocuments().add(doc);
+                    context.addLockedDocument(doc);
                 }
 		    } catch (LockException e) {
                 LOG.info("Could not acquire read lock on document " + doc.getURI());

@@ -173,7 +173,7 @@ public class DocUtils {
                     if(lockOnLoad)
                     {
 						// add the document to the list of locked documents
-						context.getLockedDocuments().add(doc);
+						context.addLockedDocument(doc);
 					}
 					document = new NodeProxy(doc);
 				}

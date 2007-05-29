@@ -58,6 +58,7 @@ import org.exist.source.SourceFactory;
 import org.exist.storage.DBBroker;
 import org.exist.storage.UpdateListener;
 import org.exist.storage.lock.Lock;
+import org.exist.storage.lock.LockedDocumentMap;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -239,7 +240,7 @@ public class XQueryContext {
     /**
      * Documents locked during the query.
      */
-	private DocumentSet lockedDocuments = null;
+	private LockedDocumentMap lockedDocuments = null;
     
     /**
      * The profiler instance used by this context.
@@ -695,21 +696,13 @@ public class XQueryContext {
 	public void setLockDocumentsOnLoad(boolean lock) {
 	    lockDocumentsOnLoad = lock;
 	    if(lock)
-	        lockedDocuments = new DocumentSet();
+	        lockedDocuments = new LockedDocumentMap();
 	}
-	
-	/**
-	 * Returns the set of documents that have been loaded and
-	 * locked during query execution.
-	 * 
-         * @see #setLockDocumentsOnLoad(boolean)
-         * 
-	 * @return set of loaded and locked documents
-	 */
-	public DocumentSet getLockedDocuments() {
-	    return lockedDocuments;
-	}
-	
+
+    public void addLockedDocument(DocumentImpl doc) {
+        if (lockedDocuments != null)
+           lockedDocuments.add(doc);
+    }
     /**
      * Release all locks on documents that have been locked
      * during query execution.
@@ -718,7 +711,7 @@ public class XQueryContext {
      */
 	public void releaseLockedDocuments() {
         if(lockedDocuments != null)
-	        lockedDocuments.unlock(false);
+	        lockedDocuments.unlock();
 	    lockDocumentsOnLoad = false;
 		lockedDocuments = null;
 	}
@@ -732,10 +725,10 @@ public class XQueryContext {
      * @param seq
      * @throws XPathException 
      */
-	public DocumentSet releaseUnusedDocuments(Sequence seq) throws XPathException {
+	public LockedDocumentMap releaseUnusedDocuments(Sequence seq) throws XPathException {
 	    if(lockedDocuments == null)
 	        return null;
-	    // determine the set of documents referenced by nodes in the sequence
+        // determine the set of documents referenced by nodes in the sequence
         DocumentSet usedDocs = new DocumentSet();
         for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
             Item next = i.nextItem();
@@ -748,17 +741,7 @@ public class XQueryContext {
                 }
             }
         }
-        DocumentSet remaining = new DocumentSet();
-        for(Iterator i = lockedDocuments.iterator(); i.hasNext(); ) {
-            DocumentImpl next = (DocumentImpl) i.next();
-            if(usedDocs.contains(next.getDocId())) {
-               remaining.add(next);
-            } else {
-//                LOG.debug("Releasing lock on " + next.getName());
-                next.getUpdateLock().release(Lock.READ_LOCK);
-            }
-        }
-//        LOG.debug("Locks remaining: " + remaining.getLength());
+        LockedDocumentMap remaining = lockedDocuments.unlockSome(usedDocs);
         lockDocumentsOnLoad = false;
 		lockedDocuments = null;
         return remaining;
