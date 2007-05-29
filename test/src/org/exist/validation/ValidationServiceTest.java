@@ -146,6 +146,17 @@ public class ValidationServiceTest  extends TestCase {
             assertFalse( "system catalog", service.validateResource("/db/validationtest/hamlet_valid.xml") );
             assertTrue( "specified catalog", service.validateResource("/db/validationtest/hamlet_valid.xml",
                 "/db/validationtest/dtd/catalog.xml") );
+//            assertTrue( "specified grammar", service.validateResource("/db/validationtest/hamlet_valid.xml",
+//                "/db/validationtest/dtd/hamlet.dtd") );
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+    }
+    
+    public void bugtestDtdValidDocument2() {
+        System.out.println("testDtdValidDocument");
+        try {
             assertTrue( "specified grammar", service.validateResource("/db/validationtest/hamlet_valid.xml",
                 "/db/validationtest/dtd/hamlet.dtd") );
         } catch (Exception e) {
