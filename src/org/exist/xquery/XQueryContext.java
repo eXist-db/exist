@@ -1046,7 +1046,7 @@ public class XQueryContext {
     	return var;
 	}
     
-	private Variable resolveLocalVariable(QName qname) throws XPathException {
+	protected Variable resolveLocalVariable(QName qname) throws XPathException {
         LocalVariable end = contextStack.isEmpty() ? null : (LocalVariable) contextStack.peek();
 		for(LocalVariable var = lastVar; var != null; var = var.before) {
             if (var == end)

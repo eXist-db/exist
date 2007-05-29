@@ -3,6 +3,7 @@ package org.exist.xquery;
 import java.util.Iterator;
 
 import org.exist.dom.DocumentSet;
+import org.exist.dom.QName;
 import org.exist.memtree.MemTreeBuilder;
 import org.exist.storage.DBBroker;
 import org.exist.storage.UpdateListener;
@@ -121,6 +122,14 @@ public class ModuleContext extends XQueryContext {
 
     public void popLocalVariables(LocalVariable var) {
         parentContext.popLocalVariables(var);
+    }
+
+    public LocalVariable declareVariableBinding(LocalVariable var) throws XPathException {
+        return parentContext.declareVariableBinding(var);
+    }
+
+    protected Variable resolveLocalVariable(QName qname) throws XPathException {
+        return parentContext.resolveLocalVariable(qname);
     }
 
     public int getCurrentStackSize() {
