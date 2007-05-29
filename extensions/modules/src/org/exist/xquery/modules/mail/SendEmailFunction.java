@@ -67,8 +67,8 @@ import org.w3c.dom.Node;
  * allows email to be sent from XQuery using either SMTP or Sendmail.  
  * 
  * @author Adam Retter <adam.retter@devon.gov.uk>
- * @serial 2006-03-01
- * @version 1.11
+ * @serial 2007-05-29
+ * @version 1.12
  *
  * @see org.exist.xquery.BasicFunction#BasicFunction(org.exist.xquery.XQueryContext, org.exist.xquery.FunctionSignature)
  */
@@ -84,7 +84,7 @@ public class SendEmailFunction extends BasicFunction
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("send-email", MailModule.NAMESPACE_URI, MailModule.PREFIX),
-			"Sends an email $a through the SMTP Server $b, or if $b is () tries to use the local sendmail program. $a is the email in the following format <mail><from/><to/><cc/><bcc/><subject/><message><text/><xhtml/></message></mail>. $c defines the charset value used in the \"Content-Type\" message header (Defaults to UTF-8)",
+			"Sends an email $a through the SMTP Server $b, or if $b is () tries to use the local sendmail program. $a is the email in the following format <mail><from/><reply-to/><to/><cc/><bcc/><subject/><message><text/><xhtml/></message></mail>. $c defines the charset value used in the \"Content-Type\" message header (Defaults to UTF-8)",
 			new SequenceType[]
 			{
 				new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE),
@@ -359,6 +359,10 @@ public class SendEmailFunction extends BasicFunction
 			//write the message headers
             
 			out.println("From: " + encode64Address(aMail.getFrom()));
+			if(aMail.getReplyTo() != null)
+			{
+				out.println("Reply-To: " + encode64Address(aMail.getReplyTo()));
+			}
 			for(int x = 0; x < aMail.countTo(); x++)
 			{	
 				out.println("To: " + encode64Address(aMail.getTo(x)));
@@ -456,6 +460,7 @@ public class SendEmailFunction extends BasicFunction
 	 * 
 	 * <mail>
 	 * 	<from></from>
+	 * 	<reply-to></reply-to>
 	 * 	<to></to>
 	 * 	<cc></cc>
 	 * 	<bcc></bcc>
@@ -488,6 +493,10 @@ public class SendEmailFunction extends BasicFunction
 					if(child.getLocalName().equals("from"))
 					{
 						theMail.setFrom(child.getFirstChild().getNodeValue()); 
+					}
+					if(child.getLocalName().equals("reply-to"))
+					{
+						theMail.setReplyTo(child.getFirstChild().getNodeValue());
 					}
 					else if(child.getLocalName().equals("to"))
 					{
@@ -786,11 +795,12 @@ public class SendEmailFunction extends BasicFunction
 	 * doesnt do anything fancy just has private
 	 * members and get and set methods
 	 * 
-	 * @version 1.0
+	 * @version 1.1
 	 */
 	private class mail
 	{
 		private String from = "";			//Who is the mail from
+		private String replyTo = null;		//Who should you reply to 
 		private Vector to = new Vector();	//Who is the mail going to
 		private Vector cc = new Vector();	//Carbon Copy to
 		private Vector bcc = new Vector();	//Blind Carbon Copy to
@@ -807,6 +817,17 @@ public class SendEmailFunction extends BasicFunction
 		public String getFrom()
 		{
 			return(this.from);
+		}
+		
+		//reply-to
+		public void setReplyTo(String replyTo)
+		{
+			this.replyTo = replyTo;
+		}
+		
+		public String getReplyTo()
+		{
+			return replyTo;
 		}
 		
 		//To
@@ -905,6 +926,4 @@ public class SendEmailFunction extends BasicFunction
 			return(xhtml);
 		}
 	}
-	
-	
 }
