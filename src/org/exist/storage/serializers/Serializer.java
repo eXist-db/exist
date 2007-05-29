@@ -151,6 +151,10 @@ public abstract class Serializer implements XMLReader {
     protected LexicalHandler lexicalHandler = null;
     protected User user = null;
 
+    // match listener for the fulltext index. to be removed once the index has
+    // been moved to the new architecture
+    private FTMatchListener ftmatch = new FTMatchListener();
+
     public Serializer(DBBroker broker, Configuration config) {
 		this.broker = broker;
 		factory = (SAXTransformerFactory) SAXTransformerFactory.newInstance();
@@ -529,10 +533,15 @@ public abstract class Serializer implements XMLReader {
         if (root != null && getHighlightingMode() != TAG_NONE) {
             IndexController controller = broker.getIndexController();
             MatchListener listener = controller.getMatchListener(root);
+            ftmatch.reset(root);
             if (listener != null) {
                 MatchListener last = (MatchListener) listener.getLastInChain();
-                last.setNextInChain(receiver);
+                last.setNextInChain(ftmatch);
+                ftmatch.setNextInChain(receiver);
                 receiver = listener;
+            } else {
+                ftmatch.setNextInChain(receiver);
+                receiver = ftmatch;
             }
         }
     }

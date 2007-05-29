@@ -65,7 +65,6 @@ public class NativeSerializer extends Serializer {
 
     // private final static AttributesImpl EMPTY_ATTRIBUTES = new AttributesImpl();
     
-    private final static QName MATCH_ELEMENT = new QName("match", Namespaces.EXIST_NS, "exist");
     private final static QName TEXT_ELEMENT = new QName("text", Namespaces.EXIST_NS, "exist");
     private final static QName ATTRIB_ELEMENT = new QName("attribute", Namespaces.EXIST_NS, "exist");
     private final static QName SOURCE_ATTRIB = new QName("source", Namespaces.EXIST_NS, "exist");
@@ -233,11 +232,7 @@ public class NativeSerializer extends Serializer {
                 receiver.startElement(TEXT_ELEMENT, tattribs);
             }
             receiver.setCurrentNode(node);
-            if ((getHighlightingMode() & TAG_ELEMENT_MATCHES) == TAG_ELEMENT_MATCHES)
-                textToReceiver((TextImpl) node, match);
-            else {
-                receiver.characters(((TextImpl) node).getXMLString());
-            }
+            receiver.characters(((TextImpl) node).getXMLString());
             if (first && createContainerElements)
                 receiver.endElement(TEXT_ELEMENT);
             node.release();
@@ -320,70 +315,5 @@ public class NativeSerializer extends Serializer {
             return matcher.replaceAll("||$1||");
         }
         return data;
-    }
-
-    private final void textToReceiver(TextImpl text, Match match) throws SAXException {
-        if (match == null) {
-            receiver.characters(text.getXMLString());
-        } else {
-            List offsets = null;
-            Match next = match;
-            while (next != null) {
-                if (next.getIndexId() == NativeTextEngine.FT_MATCH_ID &&
-                    next.getNodeId().equals(text.getNodeId())) {
-                    if (offsets == null)
-                        offsets = new ArrayList();
-                    int freq = next.getFrequency();
-                    for (int i = 0; i < freq; i++) {
-                        offsets.add(next.getOffset(i));
-                    }
-                }
-                next = next.getNextMatch();
-            }
-            
-            if (offsets != null) {
-                FastQSort.sort(offsets, 0, offsets.size() - 1);
-                
-                XMLString str = text.getXMLString();
-                Match.Offset offset;
-                int pos = 0;
-                for (int i = 0; i < offsets.size(); i++) {
-                    offset = (Match.Offset) offsets.get(i);
-                    if (offset.getOffset() > pos) {
-                        receiver.characters(str.substring(pos, offset.getOffset() - pos));
-                    }
-                    receiver.startElement(MATCH_ELEMENT, null);
-                    receiver.characters(str.substring(offset.getOffset(), offset.getLength()));
-                    receiver.endElement(MATCH_ELEMENT);
-                    pos = offset.getOffset() + offset.getLength();
-                }
-                if (pos < str.length())
-                    receiver.characters(str.substring(pos, str.length() - pos));
-            } else {
-                receiver.characters(text.getXMLString());
-            }
-        }
-    }
-    
-    private final void textToReceiver(String data, Receiver receiver) throws SAXException {
-        int p0 = 0, p1;
-        boolean inTerm = false;
-        while (p0 < data.length()) {
-            p1 = data.indexOf("||", p0);
-            if (p1 < 0) {
-                receiver.characters(data.substring(p0));
-                break;
-            }
-            if (inTerm) {
-                receiver.startElement(MATCH_ELEMENT, null);
-                receiver.characters(data.substring(p0, p1));
-                receiver.endElement(MATCH_ELEMENT);
-                inTerm = false;
-            } else {
-                inTerm = true;
-                receiver.characters(data.substring(p0, p1));
-            }
-            p0 = p1 + 2;
-        }
     }
 }
