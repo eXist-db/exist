@@ -37,7 +37,6 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.lock.FileLock;
 import org.exist.storage.txn.Checkpoint;
 import org.exist.storage.txn.TransactionException;
-import org.exist.util.ConfigurationHelper;
 import org.exist.util.ReadOnlyException;
 import org.exist.util.sanity.SanityCheck;
 
