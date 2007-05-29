@@ -1154,6 +1154,53 @@ public class XQueryTest extends XMLTestCase {
 		}			
 	}
 
+	public void testNamespaceWithTransform()
+	{
+		try
+		{
+			XPathQueryService service = (XPathQueryService)testCollection.getService("XPathQueryService", "1.0");
+		
+			String query = 
+				"xquery version \"1.0\";\n" +
+				"declare namespace transform=\"http://exist-db.org/xquery/transform\";\n" +
+	
+				"declare variable $xml {\n" +
+				"	<node>text</node>\n" +
+				"};\n" +
+	
+				"declare variable $xslt {\n" +
+				"	<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">\n" +
+				"		<xsl:template match=\"node\">\n" +
+	            "			<div><xsl:value-of select=\".\"/></div>\n" +
+	            "		</xsl:template>\n" +
+	            "	</xsl:stylesheet>\n" +
+				"};\n" +
+	
+				"<html xmlns=\"http://www.w3.org/1999/xhtml\">\n" +
+				"	<body>\n" +
+				"		{transform:transform($xml, $xslt, ())}\n" +
+				"	</body>\n" +
+				"</html>";
+			
+			ResourceSet result = service.query(query);
+			
+			//check there is one result
+			assertEquals(1, result.getSize());
+			
+			String content = (String)result.getResource(0).getContent();
+			
+			//check the namespace
+			assertTrue(content.startsWith("<html xmlns=\"http://www.w3.org/1999/xhtml\">"));
+			
+			//check the content
+			assertTrue(content.indexOf("<div>text</div>") > -1);
+		}
+		catch(XMLDBException e)
+		{
+			fail(e.getMessage());
+		}
+	}
+	
 	public void testModule() {
 		Resource doc;
 		ResourceSet result;
