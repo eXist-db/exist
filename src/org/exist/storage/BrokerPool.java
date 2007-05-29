@@ -1359,7 +1359,7 @@ public class BrokerPool {
 			}
 			//...or force the shutdown
 			if(System.currentTimeMillis() - waitStart > maxShutdownWait) {
-				LOG.debug("Not all threads returned. Forcing shutdown ...");
+				LOG.warn("Not all threads returned. Forcing shutdown ...");
 				break;
 			}
 		}
@@ -1417,6 +1417,25 @@ public class BrokerPool {
 		}
 		if (shutdownListener != null)
 			shutdownListener.shutdown(instanceName, instances.size());
+
+        // clear instance variables, just to be sure they will be garbage collected
+        // the test suite restarts the db a few hundred times
+        transactionManager = null;
+        collectionCache = null;
+        collectionCacheMgr = null;
+        xQueryPool = null;
+        xQueryMonitor = null;
+        collectionConfigurationManager = null;
+        notificationService = null;
+        indexManager = null;
+        scheduler = null;
+        systemTasks = null;
+        systemTasksPeriods = null;
+        waitingSystemTasks = null;
+        xmlReaderPool = null;
+        shutdownListener = null;
+        securityManager = null;
+        notificationService = null;
 
         status = OPERATING;
 	}
