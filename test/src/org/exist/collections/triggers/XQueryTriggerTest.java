@@ -34,12 +34,16 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
 import org.xmldb.api.modules.XUpdateQueryService;
-import org.custommonkey.xmlunit.*;
+import org.junit.BeforeClass;
+import org.junit.AfterClass;
+import org.junit.Test;
+
+import static org.custommonkey.xmlunit.XMLAssert.*;
 
 /** class under test : {@link XQueryTrigger}
  * @author Pierrick Brihaye <pierrick.brihaye@free.fr>
  */
-public class XQueryTriggerTest extends XMLTestCase {
+public class XQueryTriggerTest {
 	
 	private final static String URI = "xmldb:exist://" + DBBroker.ROOT_COLLECTION;
 	private final static String TEST_COLLECTION = "testXQueryTrigger";
@@ -143,10 +147,11 @@ public class XQueryTriggerTest extends XMLTestCase {
           ")" +
         "};";
     
-    private Collection testCollection;
+    private static Collection testCollection;
 
     /** just start the DB and create the test collection */
-    protected void setUp() {
+    @BeforeClass
+    public static void startDB() {
         try {
             // initialize driver
             Class cl = Class.forName("org.exist.xmldb.DatabaseImpl");
@@ -159,7 +164,6 @@ public class XQueryTriggerTest extends XMLTestCase {
                     .getService("CollectionManagementService", "1.0");
             testCollection = service.createCollection(TEST_COLLECTION);
             assertNotNull(testCollection);
-            
         } catch (ClassNotFoundException e) {
         	fail(e.getMessage());
         } catch (InstantiationException e) {
@@ -172,7 +176,8 @@ public class XQueryTriggerTest extends XMLTestCase {
         }
     }
 
-    protected void tearDown() {
+    @AfterClass
+    public static void shutdownDB() {
         try {
             Collection root = DatabaseManager.getCollection(URI, "admin", null);
             CollectionManagementService service = (CollectionManagementService)
@@ -187,7 +192,8 @@ public class XQueryTriggerTest extends XMLTestCase {
 
     /** create "log" document that will be updated by the trigger,
      * and store the XQuery module implementing the trigger under test */
-    public void testStorePreliminaryDocuments() {
+    @Test
+    public void storePreliminaryDocuments() {
     	try {
 			XMLResource doc =
 				(XMLResource) testCollection.createResource(LOG_NAME, "XMLResource" );
@@ -206,7 +212,8 @@ public class XQueryTriggerTest extends XMLTestCase {
     }
 
     /** test a trigger fired by storing a Document  */
-    public void testStoreDocument() {
+    @Test
+    public void storeDocument() {
     	
     	ResourceSet result;
     	
@@ -258,7 +265,8 @@ public class XQueryTriggerTest extends XMLTestCase {
     }
 
     /** test a trigger fired by a Document Update */
-    public void testUpdateDocument() {
+    @Test
+    public void updateDocument() {
     	
     	ResourceSet result;
     	
@@ -306,7 +314,8 @@ public class XQueryTriggerTest extends XMLTestCase {
     }
 
     /** test a trigger fired by a Document Delete */
-    public void testDeleteDocument() {
+    @Test
+    public void deleteDocument() {
     	
     	ResourceSet result;
     	
@@ -349,9 +358,4 @@ public class XQueryTriggerTest extends XMLTestCase {
     		fail(e.getMessage());    		
     	}	
     }
-    
-    public static void main(String[] args) {
-		junit.textui.TestRunner.run(XQueryTriggerTest.class);
-	}    
-
 }
