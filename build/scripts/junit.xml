@@ -100,6 +100,7 @@
             <test fork="yes" name="org.exist.xupdate.AllXupdateTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.xquery.AllXqueryTests" todir="${junit.reports.dat}"/>
             <test fork="yes" name="org.exist.xquery.OptimizerTest" todir="${junit.reports.dat}"/>
+            <test fork="yes" name="org.exist.storage.serializers.FTMatchListenerTest" todir="${junit.reports.dat}"/>
             
             <!-- Execute all other tests except those that have to be called manually.   -->
             <batchtest fork="yes" todir="${junit.reports.dat}">
@@ -113,6 +114,7 @@
                     <exclude name="**/xmlrpc/*.java"/>
                     <exclude name="**/http/*.java"/>
                     <exclude name="**/storage/*.java"/>
+                    <exclude name="**/storage/serializers/*.java"/>
                     <exclude name="**/soap/*.java"/>
                     <exclude name="**/numbering/*.java"/>
 					<exclude name="org/exist/*.java"/>
