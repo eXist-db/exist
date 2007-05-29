@@ -57,7 +57,7 @@ public class QNamePool extends AbstractHashtable {
      * @param namespaceURI
      * @param localName
      * @param prefix
-     * @return
+     * @return QName object
      */
     public QName get(byte type, String namespaceURI, String localName, String prefix) {
         temp.setLocalName(localName);

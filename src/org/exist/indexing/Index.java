@@ -43,7 +43,7 @@ public interface Index {
     
     /**
      * Returns an id which uniquely identifies this index. This is usually the class name
-     * @return a unique name identifying this index.
+     * return a unique name identifying this index.
      */
     public String ID = null;
     
