@@ -114,17 +114,24 @@ public class SequenceType {
      * @param item
      */
 	public boolean checkType(Item item) {
-		if(!Type.subTypeOf(item.getType(), primaryType))
+        Node realNode = null;
+        int type = item.getType();
+        if (type == Type.NODE) {
+            realNode = ((NodeValue)item).getNode();
+            type = realNode.getNodeType();
+        }
+        if(!Type.subTypeOf(type, primaryType))
 			return false;
 		if(nodeName != null) {
 			//TODO : how to improve performance ?
-			Node n = ((NodeValue)item).getNode();
+            if (realNode == null)
+                realNode = ((NodeValue)item).getNode();
 			if (nodeName.getNamespaceURI() != null) {
-				if (!nodeName.getNamespaceURI().equals(n.getNamespaceURI()))
+				if (!nodeName.getNamespaceURI().equals(realNode.getNamespaceURI()))
 					return false;
 			}
 			if (nodeName.getLocalName() != null) {
-				return nodeName.getLocalName().equals(n.getLocalName());
+				return nodeName.getLocalName().equals(realNode.getLocalName());
 			}
 		}
 		return true;

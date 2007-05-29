@@ -333,10 +333,13 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
      * @see org.exist.xquery.value.NodeValue#getNode()
      */
     public Node getNode() {
-	if (isDocument())
-	    return doc;
-	else
-	    return doc.getNode(this);
+        if (isDocument())
+            return doc;
+        else {
+            NodeImpl realNode = (NodeImpl) doc.getNode(this);
+            this.nodeType = realNode.getNodeType();
+            return realNode;
+        }
     }
     
     public short getNodeType() {
@@ -597,7 +600,7 @@ public class NodeProxy implements NodeSet, NodeValue, Comparable {
      * @see org.exist.xquery.value.Item#getType()
      */
     public int getType() {
-	switch (nodeType) {
+    switch (nodeType) {
 	case Node.ELEMENT_NODE :
 	    return Type.ELEMENT;
 	case Node.ATTRIBUTE_NODE :
