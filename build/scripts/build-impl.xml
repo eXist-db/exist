@@ -9,7 +9,7 @@
 <project basedir="../.." default="all" name="exist">
 
 	<!-- import common targets -->
-	<import file="../../build.xml"/>
+	<!-- <import file="../../build.xml"/> -->
 
 	<!-- setup properties -->
     <property name="jetty.dir" value="tools/jetty"/>
@@ -174,12 +174,14 @@
         <copy file="${basedir}/descriptor.xml.tmpl" tofile="${basedir}/descriptor.xml" filtering="true"/>
         <copy file="${basedir}/mime-types.xml.tmpl" tofile="${basedir}/mime-types.xml" filtering="true"/>
         <copy file="${basedir}/mime-types.xml" tofile="${src}/org/exist/util/mime-types.xml" />
+            
+        <!-- <ant antfile="build.xml" dir="extensions/indexes" target="prepare"/> -->
     </target>
 
     <!-- =================================================================== -->
     <!-- Compiles the source code                                            -->
     <!-- =================================================================== -->
-    <target depends="prepare" name="compile" description="Compiles the source code">
+    <target name="compile" depends="prepare" description="Compiles the source code">
         
         <echo message="Compiling with Java ${ant.java.version} from ${build.compiler.source} source to ${build.compiler.target} target, debug ${build.debug}, optimize ${build.optimize}, deprecation ${build.deprecation}"/>
         <javac debug="${build.debug}" deprecation="${build.deprecation}"
@@ -196,6 +198,8 @@
                 <path refid="classpath.jetty"/>
             </classpath>
         </javac>
+    
+        <!-- <ant antfile="build.xml" dir="extensions/indexes" target="compile" /> -->
     </target>
 
     <!-- =================================================================== -->
@@ -402,6 +406,8 @@
             <include name="org/exist/source/CocoonSource.java"/>
             <include name="org/exist/*.xsl"/>
         </jar>
+        
+        <ant antfile="build.xml" dir="extensions/indexes" target="jar"/>
 
         <antcall target="sign"/>
     </target>
