@@ -261,8 +261,8 @@ public class DocumentSet extends Int2ObjectHashMap implements NodeList {
 	            continue;
 	        d = (DocumentImpl)values[idx];
             dlock = d.getUpdateLock();
-            if (checkExisting && dlock.isLockedForRead(thread))
-                continue;
+//            if (checkExisting && dlock.isLockedForRead(thread))
+//                continue;
             if(exclusive)
                 dlock.acquire(Lock.WRITE_LOCK);
             else

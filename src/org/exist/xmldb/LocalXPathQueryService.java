@@ -42,6 +42,7 @@ import org.exist.source.Source;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
+import org.exist.storage.lock.LockedDocumentMap;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.Option;
 import org.exist.xquery.XPathException;
@@ -69,7 +70,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	protected String moduleLoadPath = null;
 	protected Properties properties = null;
 	protected boolean lockDocuments = false;
-	protected DocumentSet lockedDocuments = null;
+	protected LockedDocumentMap lockedDocuments = null;
 	
 	protected AccessContext accessCtx;
 	
@@ -308,7 +309,6 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	 */
 	public void beginProtected() {
 	    lockDocuments = true;
-	    lockedDocuments = new DocumentSet();
 	}
 	
 	/**
@@ -319,10 +319,10 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
 	public void endProtected() {
 	    lockDocuments = false;
 	    if(lockedDocuments != null) {
-	        lockedDocuments.unlock(false);
+	        lockedDocuments.unlock();
 	    }
 	    lockedDocuments = null;
-	}
+    }
 	
 	public void removeNamespace(String ns) throws XMLDBException {
 		for (Iterator i = namespaceDecls.values().iterator(); i.hasNext();) {
@@ -353,10 +353,7 @@ public class LocalXPathQueryService implements XPathQueryServiceImpl, XQueryServ
     		    context.setLockDocumentsOnLoad(true);
     		result = xquery.execute(expr, contextSet);
     		if(lockDocuments) {
-    		    DocumentSet locked = context.releaseUnusedDocuments(result);
-    		    if(locked != null) {
-    		        lockedDocuments.addAll(locked);
-    		    }
+    		    lockedDocuments = context.releaseUnusedDocuments(result);
     		}
     	} catch (EXistException e) {
     	    context.releaseLockedDocuments();

@@ -82,7 +82,7 @@ public class RootNode extends Step {
 	            	result.add(new NodeProxy(doc));
 	            }
                 if(lockOnLoad) {
-                    context.getLockedDocuments().add(doc);
+                    context.addLockedDocument(doc);
                 }
             }
 	        cached = result;
