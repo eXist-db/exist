@@ -44,7 +44,7 @@ public class BooleanValue extends AtomicValue {
 	
 	public BooleanValue(boolean bool) {
 		value = bool;
-	}
+    }
 
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.value.AtomicValue#getType()
