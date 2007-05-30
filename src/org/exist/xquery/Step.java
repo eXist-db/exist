@@ -138,9 +138,7 @@ public abstract class Step extends AbstractExpression {
         	result.append( "node()" );
         if ( predicates.size() > 0 )
             for ( Iterator i = predicates.iterator(); i.hasNext();  ) {
-            	result.append( '[' );
-            	result.append(( (Predicate) i.next() ).toString());
-                result.append( ']' );
+            	result.append(i.next().toString());
             }
         return result.toString();
     }    
