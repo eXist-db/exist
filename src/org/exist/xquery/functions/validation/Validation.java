@@ -130,14 +130,22 @@ public class Validation extends BasicFunction  {
         if(args.length != 1 && args.length != 2){
             return Sequence.EMPTY_SEQUENCE;
         }
+
         
         // Get inputstream
         InputStream is=null;
         try {
             if(args[0].getItemType()==Type.ANY_URI || args[0].getItemType()==Type.STRING){
                 // anyURI provided
-                LOG.info("URI");
+                
                 String url=args[0].getStringValue();
+                
+                if(url.endsWith(".dtd")){
+                    throw new XPathException(getASTNode(),
+                        "Unable to validate with a specified DTD. "+
+                        "Please register the DTD in an xml catalog document.");
+                }
+                
                 if(url.startsWith("/")){
                     url="xmldb:exist://"+url;
                 }
