@@ -91,14 +91,14 @@ public class VirtualNodeSet extends AbstractNodeSet {
      * @return a <code>boolean</code> value
      */
     public boolean contains(NodeProxy p) {
-        NodeProxy first = getFirstParent(p, null, (axis == Constants.SELF_AXIS), 0);
+        NodeProxy firstParent = getFirstParent(p, null, (axis == Constants.SELF_AXIS), 0);
         // Timo Boehme: getFirstParent returns now only real parents
-        //              therefore test if node is child of context
-        if (first != null) {
+        // therefore test if node is child of context
+        if (firstParent != null) {
             return true;
         }
         //	if (context.get(p.getDocument(), p.getNodeId().getParentId()) != null) {
-        //            return true;
+        //      return true;
         //	}
         return false; 
     }
@@ -141,9 +141,9 @@ public class VirtualNodeSet extends AbstractNodeSet {
      * @param recursions an <code>int</code> value
      * @return a <code>NodeProxy</code> value
      */
-    private NodeProxy getFirstParent(NodeProxy node, NodeProxy first,
+    private NodeProxy getFirstParent(NodeProxy self, NodeProxy firstParent,
                                      boolean includeSelf, int recursions) {
-        return getFirstParent(node, first, includeSelf, true, recursions);
+        return getFirstParent(self, firstParent, includeSelf, true, recursions);
     }
 
     /**
@@ -156,93 +156,97 @@ public class VirtualNodeSet extends AbstractNodeSet {
      * @param recursions an <code>int</code> value
      * @return a <code>NodeProxy</code> value
      */
-    private NodeProxy getFirstParent(NodeProxy node, NodeProxy first,
-                                     boolean includeSelf, boolean directParent, int recursions) {
+    private NodeProxy getFirstParent(NodeProxy self, NodeProxy candidateFirstParent,
+                                     boolean includeSelf, boolean restrictToDirectParent, int recursions) {
         
-        NodeId pid = node.getNodeId().getParentId();
-        
-        /* if the node has no parent, i.e. pid == -1, we still need to 
+        /* if the node has is a doument node we still need to 
          * complete this method to check if we have found a potential parent
          * in one of the iterations before.
          */
-        NodeProxy parent;
+        NodeId parentOfSelfId = self.getNodeId().getParentId();
+
         // check if the start-node should be included, e.g. to process an
         // expression like *[. = 'xxx']
-        if (recursions == 0 && includeSelf && test.matches(node)) {
+        //TODO : investigate on expression like *[.//* = 'xxx']
+        if (recursions == 0 && includeSelf && test.matches(self)) {
+            // if we're on the child axis, test if
+            // the node is a direct child of the context node
             if (axis == Constants.CHILD_AXIS) {
-                // if we're on the child axis, test if
-                // the node is a direct child of the context node
-                parent = context.get(node.getDocument(), pid);
+            	//WARNING : get() realizes virtual node sets
+            	//TODO : investigate more efficent solutions
+            	NodeProxy parent = context.get(self.getDocument(), parentOfSelfId);
                 if (parent != null) {
-                    node.copyContext(parent);
+                	self.copyContext(parent);
                     if (useSelfAsContext && inPredicate) {
-                        node.addContextNode(contextId, node);
+                    	self.addContextNode(contextId, self);
                     } else if (inPredicate)
-                        node.addContextNode(contextId, parent);
-                    return node;
+                    	self.addContextNode(contextId, parent);
+                    return self;
                 }
             } else {
                 // descendant axis: remember the node and continue 
-                first = node;
+            	candidateFirstParent = self;
             }
         }
         
         // if this is the first call to this method, remember the first 
-        // parent node and re-evaluate the method. We can't just return 
-        // the first parent as we need a parent that is actually contained 
-        // in the context set. We thus call the method again to complete.
-        if (first == null) {
-            if (pid == NodeId.DOCUMENT_NODE) {
-                // given node was already document element -> no parent
+        // parent node and continue to evaluate the method. We can't just return 
+        // the first parent as we need a parent that is *actually* contained 
+        // in the context set. We will thus call the method again to complete.
+        if (candidateFirstParent == null) {
+        	//given node was already document element -> no parent
+            if (parentOfSelfId == NodeId.DOCUMENT_NODE) {                
                 return null;
             }
-            first = new NodeProxy(node.getDocument(), pid, Node.ELEMENT_NODE, 
-                                  StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
+            candidateFirstParent = new NodeProxy(self.getDocument(), parentOfSelfId, Node.ELEMENT_NODE);
             // if we are on the self axis, check if the first parent can be selected
             if (axis == Constants.DESCENDANT_SELF_AXIS) {
-                parent = context.get(first.getDocument(), pid);
+            	//WARNING : get() realizes virtual node sets
+            	//TODO : investigate more efficent solutions
+                NodeProxy parent = context.get(candidateFirstParent.getDocument(), parentOfSelfId);
                 if (parent != null && test.matches(parent)) {
-                    first.copyContext(parent);
+                	candidateFirstParent.copyContext(parent);
                     if (useSelfAsContext && inPredicate) {
-                        first.addContextNode(contextId, first);
+                    	candidateFirstParent.addContextNode(contextId, candidateFirstParent);
                     } else if (inPredicate)
-                        first.addContextNode(contextId, parent);
-                    return first;
+                    	candidateFirstParent.addContextNode(contextId, parent);
+                    return candidateFirstParent;
                 }
             }
-            // Timo Boehme: we need a real parent (child from context)
-            return getFirstParent(first, first, false, directParent, recursions + 1);
+            // We need a real parent : keep the candidate and continue to ierate from this one
+            return getFirstParent(candidateFirstParent, candidateFirstParent, false, restrictToDirectParent, recursions + 1);
         }
         
-        // is pid member of the context set?
-        parent = context.get(node.getDocument(), pid);
+        // is the node's parent in the context set?
+    	//WARNING : get() realizes virtual node sets
+    	//TODO : investigate more efficent solutions
+        NodeProxy parentOfSelf = context.get(self.getDocument(), parentOfSelfId);
 
-        if (parent != null && test.matches(node)) {
+        if (parentOfSelf != null && test.matches(self)) {
             if (axis != Constants.CHILD_AXIS) {
-                // if we are on the descendant-axis, we return the first node 
+                // if we are on the descendant axis, we return the first node 
                 // we found while walking bottom-up.
                 // Otherwise, we return the last one (which is node)
-                node = first;
+            	self = candidateFirstParent;
             }
-            node.copyContext(parent);
+            self.copyContext(parentOfSelf);
             if (useSelfAsContext && inPredicate) {
-                node.addContextNode(contextId, node);
+            	self.addContextNode(contextId, self);
             } else if (inPredicate) {
-                node.addContextNode(contextId, parent);
+            	self.addContextNode(contextId, parentOfSelf);
             }
             // Timo Boehme: we return the ancestor which is child of context			
-            return node;
-        } else if (pid == NodeId.DOCUMENT_NODE) {
+            return self;
+        } else if (parentOfSelfId == NodeId.DOCUMENT_NODE) {
             // no matching node has been found in the context
             return null;
-        } else if (directParent && axis == Constants.CHILD_AXIS && recursions == 1) {
+        } else if (restrictToDirectParent && axis == Constants.CHILD_AXIS && recursions == 1) {
             // break here if the expression is like /*/n          
             return null;        
         } else {
             // continue for expressions like //*/n or /*//n
-            parent = new NodeProxy(node.getDocument(), pid, Node.ELEMENT_NODE, 
-                                   StoredNode.UNKNOWN_NODE_IMPL_ADDRESS);
-            return getFirstParent(parent, first, false, false, recursions + 1);
+        	parentOfSelf = new NodeProxy(self.getDocument(), parentOfSelfId, Node.ELEMENT_NODE);
+            return getFirstParent(parentOfSelf, candidateFirstParent, false, false, recursions + 1);
         }
     }
 
@@ -275,9 +279,9 @@ public class VirtualNodeSet extends AbstractNodeSet {
      * @param level an <code>int</code> value
      * @return a <code>NodeProxy</code> value
      */
-    public NodeProxy parentWithChild(NodeProxy proxy, boolean directParent, boolean includeSelf,
+    public NodeProxy parentWithChild(NodeProxy proxy, boolean restrictToDirectParent, boolean includeSelf,
                                      int level) {
-        NodeProxy first = getFirstParent(proxy, null, includeSelf, directParent, 0);
+        NodeProxy first = getFirstParent(proxy, null, includeSelf, restrictToDirectParent, 0);
         if (first != null)
             //TODO : should we set an empty cardinality here ?
             addInternal(first);
@@ -293,8 +297,8 @@ public class VirtualNodeSet extends AbstractNodeSet {
      * @param includeSelf a <code>boolean</code> value
      * @return a <code>NodeProxy</code> value
      */
-    public NodeProxy parentWithChild(DocumentImpl doc, NodeId nodeId, boolean directParent, boolean includeSelf) {
-    	NodeProxy first = getFirstParent(new NodeProxy(doc, nodeId), null, includeSelf, directParent, 0);
+    public NodeProxy parentWithChild(DocumentImpl doc, NodeId nodeId, boolean restrictToDirectParent, boolean includeSelf) {
+    	NodeProxy first = getFirstParent(new NodeProxy(doc, nodeId), null, includeSelf, restrictToDirectParent, 0);
         if (first != null)
             //TODO : should we set an empty cardinality here ?
             addInternal(first);
