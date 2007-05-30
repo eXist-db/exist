@@ -397,7 +397,6 @@ public abstract class Serializer implements XMLReader {
 		serializeToReceiver(doc, true);
 		releasePrettyPrinter();
 	}
-	
 
 	public String serialize(NodeValue n) throws SAXException {
         try {
@@ -533,15 +532,16 @@ public abstract class Serializer implements XMLReader {
         if (root != null && getHighlightingMode() != TAG_NONE) {
             IndexController controller = broker.getIndexController();
             MatchListener listener = controller.getMatchListener(root);
-            ftmatch.reset(root);
-            if (listener != null) {
-                MatchListener last = (MatchListener) listener.getLastInChain();
-                last.setNextInChain(ftmatch);
-                ftmatch.setNextInChain(receiver);
-                receiver = listener;
-            } else {
+            if (ftmatch.hasMatches(root)) {
+                ftmatch.reset(root);
                 ftmatch.setNextInChain(receiver);
                 receiver = ftmatch;
+                LOG.debug("Applying FTMatchListener");
+            }
+            if (listener != null) {
+                MatchListener last = (MatchListener) listener.getLastInChain();
+                last.setNextInChain(receiver);
+                receiver = listener;
             }
         }
     }
