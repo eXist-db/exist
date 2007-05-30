@@ -1,3 +1,26 @@
+/*
+ *  eXist Open Source Native XML Database
+ *  Copyright (C) 2007 The eXist Project
+ *  http://exist-db.org
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ *  $Id$
+ *  
+ *  @author Pierrick Brihaye <pierrick.brihaye@free.fr>
+ */
 package org.exist.indexing.spatial;
 
 import java.io.File;
@@ -26,8 +49,6 @@ import org.geotools.geometry.jts.GeometryCoordinateSequenceTransformer;
 import org.geotools.gml.GMLFilterDocument;
 import org.geotools.gml.GMLFilterGeometry;
 import org.geotools.gml.GMLHandlerJTS;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.TransformException;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLFilterImpl;
@@ -220,21 +241,8 @@ public class GMLIndexTest extends TestCase {
 	        reader.setProperty("http://xml.org/sax/properties/lexical-handler", adapter);
 	        reader.parse(src);
 	        
-	        String srsName = "osgb:BNG";
-	        //provisional workaround
-	        if ("osgb:BNG".equals(srsName))
-    			srsName = "EPSG:27700";    		
-            MathTransform mathTransform = indexWorker.getTransform(srsName, "EPSG:4326");
-            if (mathTransform == null) {
-        		fail("Unable to get a transformation from '" + srsName + "' to 'EPSG:4326'");        		           	
-            }
-            coordinateTransformer.setMathTransform(mathTransform);        
-            Geometry EPSG4326_geometry = null;
-            try {
-            	EPSG4326_geometry = coordinateTransformer.transform(currentGeometry);
-            } catch (TransformException e) {
-        		fail(e.getMessage());
-            }	        
+	        Geometry EPSG4326_geometry = indexWorker.transformGeometry(currentGeometry, "osgb:BNG", "EPSG:4326");
+            assertNotNull(EPSG4326_geometry);
 
             System.out.println(EPSG4326_geometry);
             
@@ -263,9 +271,6 @@ public class GMLIndexTest extends TestCase {
     }
   
     public void testHighLevelSearch() {
-    	GMLHandlerJTS geometryHandler = new GeometryHandler(); 
-        GMLFilterGeometry geometryFilter = new GMLFilterGeometry(geometryHandler); 
-        GMLFilterDocument handler = new GMLFilterDocument(geometryFilter); 
         BrokerPool pool = null;
         DBBroker broker = null;
         try {
@@ -349,9 +354,6 @@ public class GMLIndexTest extends TestCase {
     }
     
     public void testGeometricProperties() {
-    	GMLHandlerJTS geometryHandler = new GeometryHandler(); 
-        GMLFilterGeometry geometryFilter = new GMLFilterGeometry(geometryHandler); 
-        GMLFilterDocument handler = new GMLFilterDocument(geometryFilter); 
         BrokerPool pool = null;
         DBBroker broker = null;
         try {
@@ -363,14 +365,14 @@ public class GMLIndexTest extends TestCase {
             String query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
         	"at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
         	"declare namespace gml = 'http://www.opengis.net/gml'; " +
-        	"spatial:getWKT(//gml:Polygon[1])";
+        	"spatial:GMLtoWKT(//gml:Polygon[1])";
 	        Sequence seq = xquery.execute(query, null, AccessContext.TEST);
 	        assertNotNull(seq);		
 	        assertTrue(seq.getItemCount() > 0);
 	        query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
 	    	"at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
 	    	"declare namespace gml = 'http://www.opengis.net/gml'; " +
-	    	"spatial:getWKT(//gml:Polygon[1], 'EPSG:4326')";
+	    	"spatial:GMLtoWKT(//gml:Polygon[1], 'EPSG:4326')";
 	        seq = xquery.execute(query, null, AccessContext.TEST);
 	        assertNotNull(seq);		
 	        assertTrue(seq.getItemCount() > 0);
@@ -497,14 +499,14 @@ public class GMLIndexTest extends TestCase {
             query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
         	"at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
         	"declare namespace gml = 'http://www.opengis.net/gml'; " +
-        	"spatial:getWKT(" + IN_MEMORY_GML + ")";
+        	"spatial:GMLtoWKT(" + IN_MEMORY_GML + ")";
 	        seq = xquery.execute(query, null, AccessContext.TEST);
 	        assertNotNull(seq);		
 	        assertTrue(seq.getItemCount() > 0);
 	        query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
 	    	"at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
 	    	"declare namespace gml = 'http://www.opengis.net/gml'; " +
-	    	"spatial:getWKT(" + IN_MEMORY_GML + ", 'EPSG:4326')";
+	    	"spatial:GMLtoWKT(" + IN_MEMORY_GML + ", 'EPSG:4326')";
 	        seq = xquery.execute(query, null, AccessContext.TEST);
 	        assertNotNull(seq);		
 	        assertTrue(seq.getItemCount() > 0);

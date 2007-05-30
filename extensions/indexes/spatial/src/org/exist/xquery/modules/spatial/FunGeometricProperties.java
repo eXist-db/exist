@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2007 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -27,6 +27,7 @@ import org.exist.dom.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.indexing.spatial.AbstractGMLJDBCIndex;
 import org.exist.indexing.spatial.AbstractGMLJDBCIndexWorker;
+import org.exist.indexing.spatial.SpatialIndexException;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -39,15 +40,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
-import org.geotools.gml.GMLFilterDocument;
-import org.geotools.gml.GMLFilterGeometry;
-import org.geotools.gml.GMLHandlerJTS;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.TransformException;
 import org.w3c.dom.Element;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.XMLFilterImpl;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTWriter;
@@ -64,7 +57,7 @@ public class FunGeometricProperties extends BasicFunction {
     public final static FunctionSignature[] signatures = {
     	//Functions that might depend from the SRS
     	new FunctionSignature(
-            new QName("getWKT", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
+            new QName("GMLtoWKT", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the WKT representation of geometry $a",
             new SequenceType[]{
                     new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
@@ -72,7 +65,7 @@ public class FunGeometricProperties extends BasicFunction {
             new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
         ),
     	new FunctionSignature(
-    		new QName("getWKT", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
+    		new QName("GMLtoWKT", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the WKT representation of geometry $a in the CRS specified by $b",
             new SequenceType[]{
 	    		new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
@@ -241,8 +234,6 @@ public class FunGeometricProperties extends BasicFunction {
             new SequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE)
         )
    	};
-    
-    private Geometry currentGeometry;
 
     public FunGeometricProperties(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
@@ -254,124 +245,100 @@ public class FunGeometricProperties extends BasicFunction {
         if (nodes.isEmpty())
             result = Sequence.EMPTY_SEQUENCE;
         else {
-        	String targetSrsName= null;
-        	Geometry geometry = null;
-        	if (getArgumentCount() == 2) 
-        		targetSrsName = args[1].itemAt(0).getStringValue().trim();
-        	AbstractGMLJDBCIndexWorker indexWorker = (AbstractGMLJDBCIndexWorker)
-	        	context.getBroker().getIndexController().getIndexWorkerById(AbstractGMLJDBCIndex.ID);
-	        if (indexWorker == null)
-	        	throw new XPathException("Unable to find a spatial index worker");
-	        NodeValue geometryNode = (NodeValue) nodes.itemAt(0);
-			if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-	        	boolean optimizeOnEpsg4326 = false;
-	        	//TODO : try to spot equivalent CRS 
-	        	optimizeOnEpsg4326 = "EPSG:4326".equalsIgnoreCase(targetSrsName);
-	        	String propertyName = null;
-				if (isCalledAs("getWKT")) {
-					propertyName = optimizeOnEpsg4326 ? "EPSG4326_WKT" : "WKT";
-				} else if (isCalledAs("getMinX")) {
-					propertyName = optimizeOnEpsg4326 ? "EPSG4326_MINX" : "MINX";
-				} else if (isCalledAs("getMaxX")) {					
-					propertyName = optimizeOnEpsg4326 ? "EPSG4326_MAXX" : "MAXX";
-				} else if (isCalledAs("getMinY")) {
-					propertyName = optimizeOnEpsg4326 ? "EPSG4326_MINY" : "MINY";
-				} else if (isCalledAs("getMaxY")) {
-					propertyName = optimizeOnEpsg4326 ? "EPSG4326_MAXY" : "MAXY";
-				} else if (isCalledAs("getCentroidX")) {
-					propertyName = optimizeOnEpsg4326 ? "EPSG4326_CENTROID_X" : "CENTROID_X";
-				} else if (isCalledAs("getCentroidY")) {
-					propertyName = optimizeOnEpsg4326 ? "EPSG4326_CENTROID_Y" : "CENTROID_Y";
-				} else if (isCalledAs("area")) {
-					propertyName = optimizeOnEpsg4326 ? "EPSG4326_AREA" : "AREA";
-				} else if (isCalledAs("getSRS")) {
-					propertyName = "SRS_NAME";
-				} else if (isCalledAs("getGeometryType")) {
-					propertyName = "GEOMETRY_TYPE";
-				} else if (isCalledAs("isClosed")) {
-					propertyName = "IS_CLOSED";
-				} else if (isCalledAs("isSimple")) {
-					propertyName = "IS_SIMPLE";
-				} else if (isCalledAs("isValid")) {
-					propertyName = "IS_VALID";
-				} else
-					throw new XPathException("Unknown spatial property: " + mySignature.getName().getLocalName());
-				if (propertyName != null)
-					//The node should be indexed : get its properties
-					result = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, propertyName);
-				else
-					//Or, at least, its geometry for further processing
-					geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode);
-			}
-			if (result == null) {
-				if (geometry == null) {
-		        	//builds the geometry
-		        	GMLHandlerJTS geometryHandler = new GeometryHandler(); 
-		            GMLFilterGeometry geometryFilter = new GMLFilterGeometry(geometryHandler); 
-		            GMLFilterDocument handler = new GMLFilterDocument(geometryFilter);	        
-		            try {
-		            	geometryNode.toSAX(context.getBroker(), (ContentHandler)handler, null);
-		            } catch (SAXException e) {
-		            	throw new XPathException("Unable to serialize '" + geometryNode + "' as a valid GML geometry", e); 	            
-		            }
-		            if (currentGeometry == null)
-		            	throw new XPathException(geometryNode.getNode().getLocalName() + " is not a GML geometry node");
+        	try {
+	        	String targetSrsName= null;
+	        	Geometry geometry = null;
+	        	if (getArgumentCount() == 2) 
+	        		targetSrsName = args[1].itemAt(0).getStringValue().trim();
+	        	AbstractGMLJDBCIndexWorker indexWorker = (AbstractGMLJDBCIndexWorker)
+		        	context.getBroker().getIndexController().getIndexWorkerById(AbstractGMLJDBCIndex.ID);
+		        if (indexWorker == null)
+		        	throw new XPathException("Unable to find a spatial index worker");
+		        NodeValue geometryNode = (NodeValue) nodes.itemAt(0);
+				if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+		        	boolean optimizeOnEpsg4326 = false;
+		        	//TODO : try to spot equivalent CRS 
+		        	optimizeOnEpsg4326 = "EPSG:4326".equalsIgnoreCase(targetSrsName);
+		        	String propertyName = null;
+					if (isCalledAs("GMLtoWKT")) {
+						propertyName = optimizeOnEpsg4326 ? "EPSG4326_WKT" : "WKT";
+					} else if (isCalledAs("getMinX")) {
+						propertyName = optimizeOnEpsg4326 ? "EPSG4326_MINX" : "MINX";
+					} else if (isCalledAs("getMaxX")) {					
+						propertyName = optimizeOnEpsg4326 ? "EPSG4326_MAXX" : "MAXX";
+					} else if (isCalledAs("getMinY")) {
+						propertyName = optimizeOnEpsg4326 ? "EPSG4326_MINY" : "MINY";
+					} else if (isCalledAs("getMaxY")) {
+						propertyName = optimizeOnEpsg4326 ? "EPSG4326_MAXY" : "MAXY";
+					} else if (isCalledAs("getCentroidX")) {
+						propertyName = optimizeOnEpsg4326 ? "EPSG4326_CENTROID_X" : "CENTROID_X";
+					} else if (isCalledAs("getCentroidY")) {
+						propertyName = optimizeOnEpsg4326 ? "EPSG4326_CENTROID_Y" : "CENTROID_Y";
+					} else if (isCalledAs("area")) {
+						propertyName = optimizeOnEpsg4326 ? "EPSG4326_AREA" : "AREA";
+					} else if (isCalledAs("getSRS")) {
+						propertyName = "SRS_NAME";
+					} else if (isCalledAs("getGeometryType")) {
+						propertyName = "GEOMETRY_TYPE";
+					} else if (isCalledAs("isClosed")) {
+						propertyName = "IS_CLOSED";
+					} else if (isCalledAs("isSimple")) {
+						propertyName = "IS_SIMPLE";
+					} else if (isCalledAs("isValid")) {
+						propertyName = "IS_VALID";
+					} else
+						throw new XPathException("Unknown spatial property: " + mySignature.getName().getLocalName());
+					if (propertyName != null)
+						//The node should be indexed : get its properties
+						result = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, propertyName);
+					else
+						//Or, at least, its geometry for further processing
+						geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode);
 				}
-				//Transform the geometry if necessary
-				String originSrsName = ((Element)geometryNode).getAttribute("srsName").trim();
-				if (targetSrsName != null && !originSrsName.equalsIgnoreCase(targetSrsName)) {
-			        MathTransform mathTransform = indexWorker.getTransform(originSrsName, targetSrsName);
-		            if (mathTransform == null) {
-		        		throw new XPathException("Unable to get a transformation from '" + originSrsName + "' to '" + targetSrsName +"'");        		           	
-		            }
-		            indexWorker.getCoordinateTransformer().setMathTransform(mathTransform);
-		            try {
-		            	geometry = indexWorker.getCoordinateTransformer().transform(currentGeometry);
-		            } catch (TransformException e) {
-		            	throw new XPathException(e);
-		            }
-	            //No need to transform
-				} else
-					geometry = currentGeometry;
-				if (isCalledAs("getWKT")) {
-					WKTWriter wktWriter = new WKTWriter();
-					result = new StringValue(wktWriter.write(geometry));
-				} else if (isCalledAs("getMinX")) {
-					result = new DoubleValue(geometry.getEnvelopeInternal().getMinX());
-				} else if (isCalledAs("getMaxX")) {
-					result = new DoubleValue(geometry.getEnvelopeInternal().getMaxX());
-				} else if (isCalledAs("getMinY")) {
-					result = new DoubleValue(geometry.getEnvelopeInternal().getMinY());
-				} else if (isCalledAs("getMaxY")) {
-					result = new DoubleValue(geometry.getEnvelopeInternal().getMaxY());
-				} else if (isCalledAs("getCentroidX")) {
-					result = new DoubleValue(geometry.getCentroid().getX());
-				} else if (isCalledAs("getCentroidY")) {
-					result = new DoubleValue(geometry.getCentroid().getY());
-				} else if (isCalledAs("getSRS")) {
-					result = new StringValue(((Element)geometryNode).getAttribute("srsName"));
-				} else if (isCalledAs("getGeometryType")) {
-					result = new StringValue(geometry.getGeometryType());
-				} else if (isCalledAs("isClosed")) {
-					result = new BooleanValue(!geometry.isEmpty());
-				} else if (isCalledAs("isSimple")) {
-					result = new BooleanValue(geometry.isSimple());
-				} else if (isCalledAs("isValid")) {
-					result = new BooleanValue(geometry.isValid());
-				} else
-					throw new XPathException("Unknown spatial property: " + mySignature.getName().getLocalName());
-	        }
+				if (result == null) {
+					if (geometry == null) {						
+			        	//builds the geometry
+			        	geometry = indexWorker.streamGeometryForNode(context, geometryNode);
+					}
+		            if (geometry == null)
+		            	throw new XPathException(geometryNode.getNode().getLocalName() + " is not a GML geometry node");
+					//Transform the geometry if necessary
+					String originSrsName = ((Element)geometryNode).getAttribute("srsName").trim();
+					if (targetSrsName != null && !originSrsName.equalsIgnoreCase(targetSrsName))
+				        geometry = indexWorker.transformGeometry(geometry, originSrsName, targetSrsName);		            
+					if (isCalledAs("GMLtoWKT")) {
+						WKTWriter wktWriter = new WKTWriter();
+						result = new StringValue(wktWriter.write(geometry));
+					} else if (isCalledAs("getMinX")) {
+						result = new DoubleValue(geometry.getEnvelopeInternal().getMinX());
+					} else if (isCalledAs("getMaxX")) {
+						result = new DoubleValue(geometry.getEnvelopeInternal().getMaxX());
+					} else if (isCalledAs("getMinY")) {
+						result = new DoubleValue(geometry.getEnvelopeInternal().getMinY());
+					} else if (isCalledAs("getMaxY")) {
+						result = new DoubleValue(geometry.getEnvelopeInternal().getMaxY());
+					} else if (isCalledAs("getCentroidX")) {
+						result = new DoubleValue(geometry.getCentroid().getX());
+					} else if (isCalledAs("getCentroidY")) {
+						result = new DoubleValue(geometry.getCentroid().getY());
+					} else if (isCalledAs("getSRS")) {
+						result = new StringValue(((Element)geometryNode).getAttribute("srsName"));
+					} else if (isCalledAs("getGeometryType")) {
+						result = new StringValue(geometry.getGeometryType());
+					} else if (isCalledAs("isClosed")) {
+						result = new BooleanValue(!geometry.isEmpty());
+					} else if (isCalledAs("isSimple")) {
+						result = new BooleanValue(geometry.isSimple());
+					} else if (isCalledAs("isValid")) {
+						result = new BooleanValue(geometry.isValid());
+					} else
+						throw new XPathException("Unknown spatial property: " + mySignature.getName().getLocalName());
+		        }
+        	} catch (SpatialIndexException e) {
+        		throw new XPathException(e);
+        	}
         }
         return result;
     }
     
-    public int returnsType() {
-        return Type.NODE;
-    }
-    
-    private class GeometryHandler extends XMLFilterImpl implements GMLHandlerJTS {
-        public void geometry(Geometry geometry) {
-        	currentGeometry = geometry;
-        }
-    }     
 }
