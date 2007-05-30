@@ -22,18 +22,16 @@
 
 package org.exist.xquery.functions.validation;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.exist.dom.QName;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.io.ExistIOException;
 import org.exist.validation.ValidationReport;
 import org.exist.validation.Validator;
-
-import org.exist.xmldb.XmldbURI;
+import org.exist.validation.internal.node.NodeInputStream;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -55,11 +53,13 @@ import org.exist.xquery.value.ValueSequence;
 public class Validation extends BasicFunction  {
     
     private static final String simpleFunctionTxt=
-        "Validate document specified by $a. The grammar files "+
-        "are resolved using the global catalog file(s).";
+        "Validate document specified by $a. " +
+        "$a is of type xs:anyURI, or a node (element or returned by fn:doc()). "+
+        "The grammar files are resolved using the global catalog file(s).";
     
     private static final String extendedFunctionTxt=
         "Validate document specified by $a using $b. "+
+        "$a is of type xs:anyURI, or a node (element or returned by fn:doc()). "+
         "$b can point to an OASIS catalog file, a grammar (xml schema only) "+
         "or a collection (path ends with '/')";
     
@@ -73,66 +73,44 @@ public class Validation extends BasicFunction  {
                                           ValidationModule.PREFIX),
                     simpleFunctionTxt,
                     new SequenceType[]{
-                        new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE)
+                        new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
                     },
                     new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
                 ),
         
-//       new FunctionSignature(
-//                new QName("validate", ValidationModule.NAMESPACE_URI, 
-//                                          ValidationModule.PREFIX),
-//                    "Validate document specified by $a. The grammar files "
-//                    +"are searched inside the database.",
-//                    new SequenceType[]{
-//                        new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
-//                    },
-//                    new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
-//                ),
                             
         new FunctionSignature(
                     new QName("validate", ValidationModule.NAMESPACE_URI, 
                                           ValidationModule.PREFIX),
                     extendedFunctionTxt,
                     new SequenceType[]{
-                        new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE),
+                        new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
                         new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE)
                     },
                     new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
                 ),
         
-//        new FunctionSignature(
-//                    new QName("validate", ValidationModule.NAMESPACE_URI, 
-//                                          ValidationModule.PREFIX),
-//                    "Validate document specified by $a using path $b. "
-//                    +"$b can point a grammar, a collection containing "
-//                    +"grammars (usefull for XSD) or a OASIS catalog file.",
-//                    new SequenceType[]{
-//                        new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE),
-//                        new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
-//                    },
-//                    new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
-//                ),
-                            
         new FunctionSignature(
                     new QName("validate-report", ValidationModule.NAMESPACE_URI, 
                                                  ValidationModule.PREFIX),
-                    simpleFunctionTxt,
+                    simpleFunctionTxt+" A simple report is returned.",
                     new SequenceType[]{
-                        new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE)
+                        new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
                     },
                     new SequenceType(Type.STRING,  Cardinality.ZERO_OR_MORE)
         ),
-                            
+        
         new FunctionSignature(
                     new QName("validate-report", ValidationModule.NAMESPACE_URI, 
                                                  ValidationModule.PREFIX),
-                    extendedFunctionTxt,
+                    extendedFunctionTxt+" A simple report is returned.",
                     new SequenceType[]{
-                        new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE),
+                        new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
                         new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE)
                     },
                     new SequenceType(Type.STRING,  Cardinality.ZERO_OR_MORE)
         )
+        
     };
     
 
@@ -154,22 +132,41 @@ public class Validation extends BasicFunction  {
         }
         
         // Get inputstream
-        InputStream is;
+        InputStream is=null;
         try {
-            String url=args[0].getStringValue();
-            if(url.startsWith("/")){
-                url="xmldb:exist://"+url;
+            if(args[0].getItemType()==Type.ANY_URI || args[0].getItemType()==Type.STRING){
+                // anyURI provided
+                LOG.info("URI");
+                String url=args[0].getStringValue();
+                if(url.startsWith("/")){
+                    url="xmldb:exist://"+url;
+                }
+                is = new URL(url).openStream();
+                
+            } else if (args[0].getItemType()==Type.ELEMENT || args[0].getItemType()==Type.DOCUMENT){
+                // Node provided
+                LOG.info("Node");
+                is= new NodeInputStream(context, args[0].iterate()); // new NodeInputStream()
+                
+            } else {
+                LOG.error("Wrong item type "+ Type.getTypeName(args[0].getItemType()));
+                throw new XPathException(getASTNode(),"wrong item type "+ Type.getTypeName(args[0].getItemType()));
             }
-            is = new URL(url).openStream();
             
         } catch (MalformedURLException ex) {
-            ex.printStackTrace();
+            //ex.printStackTrace();
             LOG.error(ex);
             throw new XPathException(getASTNode(),"Invalid resource URI",ex);
-        } catch (IOException ex) {
+            
+        } catch (ExistIOException ex) {
+            LOG.error(ex.getCause());
+            //ex.getCause().printStackTrace();
+            throw new XPathException(getASTNode(),"eXistIOexception",ex.getCause());
+            
+        } catch (Exception ex) {
             LOG.error(ex);
-            ex.printStackTrace();
-            throw new XPathException(getASTNode(),"IOexception",ex);
+            //ex.printStackTrace();
+            throw new XPathException(getASTNode(),"exception",ex);
         } 
 
         ValidationReport vr = null;
@@ -194,6 +191,7 @@ public class Validation extends BasicFunction  {
             }
         } else {
             // ohoh
+            LOG.error("invoked with wrong function name");
             result = Sequence.EMPTY_SEQUENCE;
         }
         
