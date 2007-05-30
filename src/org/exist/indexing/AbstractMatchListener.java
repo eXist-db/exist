@@ -4,6 +4,7 @@ import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.Receiver;
+import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 /**
@@ -40,6 +41,11 @@ public class AbstractMatchListener implements MatchListener {
 
     protected StoredNode getCurrentNode() {
         return currentNode;
+    }
+    
+    public Document getDocument() {
+    	//TODO return currentNode.getDocument() ?
+    	return null;
     }
 
     public void startDocument() throws SAXException {

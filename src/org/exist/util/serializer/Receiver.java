@@ -24,6 +24,7 @@ package org.exist.util.serializer;
 import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
 import org.exist.Namespaces;
+import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 /**
@@ -68,4 +69,6 @@ public interface Receiver {
     public void highlightText(CharSequence seq) throws SAXException;
     
     public void setCurrentNode(StoredNode node);
+    
+    public Document getDocument();
 }
