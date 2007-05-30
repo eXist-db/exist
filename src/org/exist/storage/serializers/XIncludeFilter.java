@@ -54,6 +54,7 @@ import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
+import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 /**
@@ -435,4 +436,9 @@ public class XIncludeFilter implements Receiver {
     public void setCurrentNode(StoredNode node) {
         //ignored
     }
+    
+    public Document getDocument() {
+    	//ignored
+    	return null;
+    }     
 }

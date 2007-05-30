@@ -31,6 +31,7 @@ import javax.xml.transform.TransformerException;
 import org.exist.dom.QName;
 import org.exist.dom.StoredNode;
 import org.exist.util.XMLString;
+import org.w3c.dom.Document;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.Locator;
@@ -497,5 +498,10 @@ public class SAXSerializer implements ContentHandler, LexicalHandler, Receiver {
 
     public void setCurrentNode(StoredNode node) {
         // just ignore.
+    }
+    
+    public Document getDocument() {
+    	//just ignore.
+    	return null;
     }
 }
