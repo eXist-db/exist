@@ -93,7 +93,7 @@ public interface IndexWorker {
     /**
      * Notify this worker to operate using the mode
      * given. Mode will be one of {@link StreamListener#UNKNOWN}, {@link StreamListener#STORE},
-     * {@link StreamListener#REMOVE_NODES} or {@link StreamListener#REMOVE_ALL_NODES}.
+     * {@link StreamListener#REMOVE_SOME_NODES} or {@link StreamListener#REMOVE_ALL_NODES}.
      *
      * @param mode the current operation mode
      */
@@ -102,7 +102,7 @@ public interface IndexWorker {
     /**
      * Notify this worker to operate on the specified document, using the mode
      * given. Mode will be one of {@link StreamListener#UNKNOWN}, {@link StreamListener#STORE}, 
-     * {@link StreamListener#REMOVE_NODES} or {@link StreamListener#REMOVE_ALL_NODES}.
+     * {@link StreamListener#REMOVE_SOME_NODES} or {@link StreamListener#REMOVE_ALL_NODES}.
      *
      * @param doc the document which is processed
      * @param mode the current operation mode

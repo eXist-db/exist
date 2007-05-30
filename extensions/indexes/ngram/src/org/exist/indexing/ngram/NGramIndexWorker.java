@@ -153,7 +153,7 @@ public class NGramIndexWorker implements IndexWorker {
                 saveIndex();
                 break;
             case StreamListener.REMOVE_ALL_NODES :
-            case StreamListener.REMOVE_NODES :
+            case StreamListener.REMOVE_SOME_NODES :
                 dropIndex(mode);
                 break;
         }
