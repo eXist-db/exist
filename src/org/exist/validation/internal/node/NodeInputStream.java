@@ -41,7 +41,7 @@ public class NodeInputStream extends InputStream{
     
     private BlockingInputStream  bis;
     private BlockingOutputStream bos;
-    private NodeDownloadThread rt;
+    private NodeSerializerThread rt;
     
     
     /** Creates a new instance of NodeInputStream */
@@ -51,7 +51,7 @@ public class NodeInputStream extends InputStream{
         bis = new BlockingInputStream();
         bos = bis.getOutputStream();
         
-        rt = new NodeDownloadThread(context, siNode , bos);
+        rt = new NodeSerializerThread(context, siNode , bos);
         
         rt.start();
         

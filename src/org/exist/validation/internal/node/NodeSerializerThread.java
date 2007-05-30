@@ -36,16 +36,18 @@ import org.exist.xquery.value.SequenceIterator;
 /**
  * @author Dannes Wessels (dizzzz@exist-db.org)
  */
-public class NodeDownloadThread extends Thread{
+public class NodeSerializerThread extends Thread{
     
-    private final static Logger logger = Logger.getLogger(NodeDownloadThread.class);
+    private final static Logger logger = Logger.getLogger(NodeSerializerThread.class);
     
     private XQueryContext context;
     private SequenceIterator siNode;
     private BlockingOutputStream bos;
     
-    /** Creates a new instance of NodeDownloadThread */
-    public NodeDownloadThread(XQueryContext context, SequenceIterator siNode, BlockingOutputStream bos) {
+    /**
+     * Creates a new instance of NodeSerializerThread
+     */
+    public NodeSerializerThread(XQueryContext context, SequenceIterator siNode, BlockingOutputStream bos) {
         this.context=context;
         this.siNode=siNode;
         this.bos=bos;
@@ -63,7 +65,7 @@ public class NodeDownloadThread extends Thread{
             outputProperties.setProperty(OutputKeys.INDENT, "no");
             outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
             
-            NodeDownload ed = new NodeDownload(context);
+            NodeSerializer ed = new NodeSerializer(context);
             ed.serialize(siNode, outputProperties, bos);
             
         } catch (IOException ex) {

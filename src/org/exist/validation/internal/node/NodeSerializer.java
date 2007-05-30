@@ -40,12 +40,14 @@ import org.exist.xquery.value.SequenceIterator;
 /**
  * @author Dannes Wessels (dizzzz@exist-db.org)
  */
-public class NodeDownload {
+public class NodeSerializer {
     
     private XQueryContext context;
     
-    /** Creates a new instance of NodeDownload */
-    public NodeDownload(XQueryContext context) {
+    /**
+     * Creates a new instance of NodeSerializer
+     */
+    public NodeSerializer(XQueryContext context) {
         this.context=context;
     }
     
