@@ -15,20 +15,32 @@
         <xs:attribute name="enabled" type="yes_no" default="yes"/>
         <xs:attribute name="context" type="xs:string"/>
     </xs:attributeGroup>
+    <xs:element name="param">
+        <xs:complexType>
+            <xs:attribute name="name" type="xs:string"/>
+            <xs:attribute name="value" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
     <xs:complexType name="service">
         <xs:sequence>
-            <xs:element name="param" minOccurs="0" maxOccurs="unbounded">
-                <xs:complexType>
-                    <xs:attribute name="name" type="xs:string"/>
-                    <xs:attribute name="value" type="xs:string"/>
-                </xs:complexType>
-            </xs:element>
+            <xs:element ref="param" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
         <xs:attributeGroup ref="service"/>
     </xs:complexType>
     <xs:element name="server">
         <xs:complexType>
             <xs:sequence>
+                <xs:element name="listener" minOccurs="1" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element ref="param" minOccurs="0" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                        <xs:attribute name="protocol" type="xs:string"/>
+                        <xs:attribute name="port" type="xs:integer"/>
+                        <xs:attribute name="host" type="xs:string" use="optional"/>
+                        <xs:attribute name="address" type="xs:string" use="optional"/>
+                    </xs:complexType>
+                </xs:element>
                 <xs:element name="webdav" type="service"/>
                 <xs:element name="xmlrpc" type="service"/>
                 <xs:element name="rest" type="service"/>
@@ -56,7 +68,6 @@
                     </xs:complexType>
                 </xs:element>
             </xs:sequence>
-            <xs:attribute name="port" type="xs:integer" default="8088"/>
         </xs:complexType>
     </xs:element>
 </xs:schema>
