@@ -209,11 +209,15 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     	StoredNode topMost = node;
     	StoredNode currentNode = node;
     	for (int i = path.length() ; i > 0; i--) {
-    		currentNode = (StoredNode)node.getParentNode();
-    		if (GML_NS.equals(path.getComponent(i - 1).getNamespaceURI()))
+    		currentNode = (StoredNode)currentNode.getParentNode();
+    		if (GML_NS.equals(currentNode.getNamespaceURI()))
+    			//TODO : retain only geometries
     			topMost = currentNode;
     	}
-    	return topMost;
+    	//PROVISIONAL
+    	if (!srsNamesStack.isEmpty())
+    		srsNamesStack.clear();
+    	return topMost;    	
     }    
 
     public void flush() {
@@ -230,7 +234,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 	            case StreamListener.STORE :
 	                saveDocumentNodes(conn);
 	                break;
-	            case StreamListener.REMOVE_NODES :
+	            case StreamListener.REMOVE_SOME_NODES :
 	                dropDocumentNode(conn);
 	                break;
 	            case StreamListener.REMOVE_ALL_NODES:
@@ -474,10 +478,10 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         try {	        
 	        for (Iterator iterator = geometries.entrySet().iterator(); iterator.hasNext();) {
 	            Map.Entry entry = (Map.Entry) iterator.next();
-	            currentNodeId = (NodeId)entry.getKey();
+	            NodeId nodeId = (NodeId)entry.getKey();
 	            SRSGeometry srsGeometry = (SRSGeometry)entry.getValue();       	
 	            saveGeometryNode(srsGeometry.getGeometry(), srsGeometry.getSRSName(), 
-	            	currentDoc, currentNodeId, conn);
+	            	currentDoc, nodeId, conn);
 	            srsGeometry = null;
 	        }
         } finally {
@@ -490,11 +494,11 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
             return;        
         try {         
 	        boolean removed = removeDocumentNode(currentDoc, currentNodeId, conn);
-	        if (LOG.isDebugEnabled()) {
-	            if (removed)
+	        if (!removed)
+	        	LOG.error("No data dropped for node " + currentNodeId.toString() + " from GML index");
+	        else {
+	        	if (LOG.isDebugEnabled())	            
 	            	LOG.debug("Dropped data for node " + currentNodeId.toString() + " from GML index");
-	            else
-	            	LOG.debug("No data dropped for node " + currentNodeId.toString() + " from GML index");
 	    	}
         } finally {        
         	currentNodeId = null;
@@ -575,6 +579,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 	            	try {
 	            		handler.startElement(deferredElement.getNamespaceURI(), deferredElement.getLocalName(), deferredElement.getQName().getStringValue(), attList);
 		        	} catch (Exception e) {
+		        		e.printStackTrace();
 		        		LOG.error(e);		
 		        	}
 	        	}
@@ -597,7 +602,9 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 	            		handler.startElement(deferredElement.getNamespaceURI(), deferredElement.getLocalName(), deferredElement.getQName().getStringValue(), attList);
 		        	} catch (Exception e) {
 		        		e.printStackTrace();
+		        		LOG.error(e);
 		        	}
+		        	deferredElement = null;
 	        	}
 	        	try {
 	        		handler.endElement(element.getNamespaceURI(), element.getLocalName(), element.getQName().getStringValue());
@@ -623,8 +630,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 	        	} catch (Exception e) {
 	        		LOG.error("Unable to collect geometry for node: " + currentNodeId + ". Indexing will be skipped", e);        		
 	    		} finally {  
-	    			streamedGeometry = null;  
-	        		deferredElement = null;	
+	    			streamedGeometry = null;	        			
 	    		}
         	}
         	//Forward the event to the next listener 
@@ -633,14 +639,15 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 
         public void characters(Txn transaction, TextImpl text, NodePath path) {
         	if (isDocumentGMLAware) {
-	        	if (deferredElement != null  && mode  == StreamListener.STORE) {        		
+	        	if (deferredElement != null  /* && mode == StreamListener.STORE*/) {        		
 	        		AttributesImpl attList = collectAttributes(deferredElement);  
 	            	try {
 	            		handler.startElement(deferredElement.getNamespaceURI(), deferredElement.getLocalName(), deferredElement.getQName().getStringValue(), attList);	
 		        	} catch (Exception e) {
-		        		LOG.error(e);	        		
+		        		e.printStackTrace();
+		        		LOG.error(e);
 		        	}
-		        	deferredElement  = null;
+		        	deferredElement = null;
 	        	}
 	        	try {
 	        		handler.characters(text.getData().toCharArray(), 0, text.getLength());
@@ -663,7 +670,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         		AttrImpl attrib = (AttrImpl)attrs.item(i);
         		
             	//Store the srs if relevant
-        		if (GML_NS.equals(element.getNamespaceURI())) {
+        		if (GML_NS.equals(element.getNamespaceURI()) && attrib.getName().equals("srsName")) {
         			whatToPush = attrib.getValue(); 		
         		} 
         		
@@ -699,6 +706,10 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     	private Geometry geometry;
     	
     	public SRSGeometry(String SRSName, Geometry geometry) {
+    		if (SRSName == null)
+    			throw new IllegalArgumentException("null SRS");
+    		if (geometry == null)
+    			throw new IllegalArgumentException("null geometry");
     		this.SRSName = SRSName;
     		this.geometry = geometry;
     	} 

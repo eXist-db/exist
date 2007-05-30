@@ -45,7 +45,7 @@ public interface StreamListener {
     /**
      * Mode for removing some nodes of a document
      */
-    public final static int REMOVE_NODES = 2;
+    public final static int REMOVE_SOME_NODES = 2;
 
     /**
      * Set the next stream listener in the chain. Events should always be forwarded

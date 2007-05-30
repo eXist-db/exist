@@ -223,7 +223,7 @@ public class IndexController {
     /**
      * Reindex all nodes below the specified root node, using the given mode. Mode should be
      * one of {@link StreamListener#UNKNOWN}, {@link StreamListener#STORE}, 
-     * {@link StreamListener#REMOVE_NODES} or {@link StreamListener#REMOVE_ALL_NODES}.
+     * {@link StreamListener#REMOVE_SOME_NODES} or {@link StreamListener#REMOVE_ALL_NODES}.
      *
      * @param transaction the current transaction
      * @param reindexRoot the root node to reindex
