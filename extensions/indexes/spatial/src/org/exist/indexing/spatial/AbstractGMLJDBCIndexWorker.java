@@ -408,7 +408,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     	return streamedGeometry;
     }
     
-    public Element getGML(Geometry geometry, Receiver receiver) throws SpatialIndexException {       
+    public Element getGML(Geometry geometry, String srsName, Receiver receiver) throws SpatialIndexException {       
 	    //YES !!!
 	     String gmlString = null;
 		try {

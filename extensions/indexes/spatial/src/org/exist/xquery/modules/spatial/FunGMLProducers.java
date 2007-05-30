@@ -50,7 +50,15 @@ import com.vividsolutions.jts.operation.buffer.BufferOp;
 public class FunGMLProducers extends BasicFunction {
 
     public final static FunctionSignature[] signatures = {
-    	//Functions that might depend from the SRS
+    	new FunctionSignature(
+            new QName("transform", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
+            "Returns the GML representation of geometry $a with the SRS $b",
+            new SequenceType[]{
+            	new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
+            	new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+            },
+            new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+        ),
     	new FunctionSignature(
             new QName("WKTtoGML", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the GML representation of WKT $a with the SRS $b",
@@ -72,17 +80,6 @@ public class FunGMLProducers extends BasicFunction {
         ),
        	new FunctionSignature(
             new QName("buffer", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-            "Returns the GML representation of a buffer around geometry $a having width $b in its CRS in the CRS specified by $c. " +
-            "Curves will be represented by 8 segments per circle quadrant.",
-            new SequenceType[]{
-            	new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
-            	new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE),
-            	new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
-            },
-            new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
-        ),
-       	new FunctionSignature(
-            new QName("buffer", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the GML representation of a buffer around geometry $a having width $b in its CRS. " +
             "Curves will be represented by $c segments per circle quadrant.",
             new SequenceType[]{
@@ -94,19 +91,6 @@ public class FunGMLProducers extends BasicFunction {
         ),
        	new FunctionSignature(
             new QName("buffer", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-            "Returns the GML representation of a buffer around geometry $a having width $b in its CRS in the CRS specified by $c. " +
-            "Curves will be represented by $c segments per circle quadrant.",
-            new SequenceType[]{
-            	new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
-            	new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE),
-            	new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE),
-            	new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
-            },
-            new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
-        ) 
-    	,
-       	new FunctionSignature(
-            new QName("buffer", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the GML representation of a buffer around geometry $a having width $b in its CRS. " +
             "Curves will be represented by $c segments per circle quadrant.",
             new SequenceType[]{
@@ -114,20 +98,6 @@ public class FunGMLProducers extends BasicFunction {
             	new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE),
             	new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE),
             	new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE)
-            },
-            new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
-        ),
-       	new FunctionSignature(
-            new QName("buffer", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-            "Returns the GML representation of a buffer around geometry $a having width $b in its CRS in the CRS specified by $c. " +
-            "Curves will be represented by $c segments per circle quadrant." +
-            "$d specifies the way line string ends are buffered : 1, as semi-circle, 2, as perpendicular straight lines, 3 as half-squares.",
-            new SequenceType[]{
-            	new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
-            	new SequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE),
-            	new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE),
-            	new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE),
-            	new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
             },
             new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
         ),
@@ -140,107 +110,49 @@ public class FunGMLProducers extends BasicFunction {
             new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
         ), 
     	new FunctionSignature(
-            new QName("convexHull", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-            "Returns the GML representation of the convex hull of geometry $a in the CRS specified by $b.",
-            new SequenceType[]{
-            	new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
-            	new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
-            },
-            new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
-        ),
-    	new FunctionSignature(
-                new QName("boundary", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-                "Returns the GML representation of the boundary of geometry $a.",
-                new SequenceType[]{
-                	new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
-                },
-                new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
-            ), 
-    	new FunctionSignature(
             new QName("boundary", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-            "Returns the GML representation of the boundary of geometry $a in the CRS specified by $b.",
+            "Returns the GML representation of the boundary of geometry $a.",
             new SequenceType[]{
-            	new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
-            	new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+            	new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
             },
             new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
-        ),
-    	new FunctionSignature(
-                new QName("intersection", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-                "Returns the GML representation of the intersection of geometry $a and geometry $b.",
-                new SequenceType[]{
-                	new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
-                	new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
-                },
-                new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
-            ), 
+        ), 
     	new FunctionSignature(
             new QName("intersection", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-            "Returns the GML representation of the intersection of geometry $a and geometry $b in the CRS specified by $b.",
+            "Returns the GML representation of the intersection of geometry $a and geometry $b.",
             new SequenceType[]{
             	new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
-            	new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
-            	new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+            	new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
             },
             new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
-        ),
-    	new FunctionSignature(
-                new QName("union", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-                "Returns the GML representation of the union of geometry $a and geometry $b.",
-                new SequenceType[]{
-                	new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
-                	new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
-                },
-                new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
-            ), 
+        ), 
     	new FunctionSignature(
             new QName("union", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-            "Returns the GML representation of the union of geometry $a and geometry $b in the CRS specified by $b.",
+            "Returns the GML representation of the union of geometry $a and geometry $b.",
             new SequenceType[]{
             	new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
-            	new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
-            	new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+            	new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
             },
             new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
         ), 
-    	new FunctionSignature(
-                new QName("difference", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-                "Returns the GML representation of the difference of geometry $a and geometry $b.",
-                new SequenceType[]{
-                	new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
-                	new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
-                },
-                new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
-            ), 
     	new FunctionSignature(
             new QName("difference", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-            "Returns the GML representation of the difference of geometry $a and geometry $b in the CRS specified by $b.",
+            "Returns the GML representation of the difference of geometry $a and geometry $b.",
             new SequenceType[]{
             	new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
-            	new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
-            	new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
-            },
-            new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
-        ),     
-    	new FunctionSignature(
-                new QName("symetricDifference", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-                "Returns the GML representation of the symetric difference of geometry $a and geometry $b.",
-                new SequenceType[]{
-                	new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
-                	new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
-                },
-                new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
-            ), 
-    	new FunctionSignature(
-            new QName("symetricDifference", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-            "Returns the GML representation of the symetric difference of geometry $a and geometry $b in the CRS specified by $b.",
-            new SequenceType[]{
-            	new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
-            	new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
-            	new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+            	new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
             },
             new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
         ), 
+    	new FunctionSignature(
+            new QName("symetricDifference", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
+            "Returns the GML representation of the symetric difference of geometry $a and geometry $b.",
+            new SequenceType[]{
+            	new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE),
+            	new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+            },
+            new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+        ) 
    	};
     
     public FunGMLProducers(XQueryContext context, FunctionSignature signature) {
@@ -250,22 +162,42 @@ public class FunGMLProducers extends BasicFunction {
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
     	Sequence result = null; 
     	try {
-        	String originSrsName = null;       
-        	String targetSrsName = null;
         	AbstractGMLJDBCIndexWorker indexWorker = (AbstractGMLJDBCIndexWorker)
 	        	context.getBroker().getIndexController().getIndexWorkerById(AbstractGMLJDBCIndex.ID);
 	        if (indexWorker == null)
 	        	throw new XPathException("Unable to find a spatial index worker");
 	        Geometry geometry = null;
-	        if (isCalledAs("WKTtoGML")) {
+	        String srsName = null;
+	        if (isCalledAs("transform")) {
+	        	if (args[0].isEmpty())
+	                result = Sequence.EMPTY_SEQUENCE;
+	        	else {
+		        	NodeValue geometryNode = (NodeValue) args[0].itemAt(0);
+		        	String sourceSRS = null;
+		        	//Try to get the geometry from the index
+		        	if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+		        		geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode);
+		        		sourceSRS = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
+		        	//Otherwise, build it
+		        	} else { 		        		
+		        		geometry = indexWorker.streamGeometryForNode(context, geometryNode);
+		            	//Argl ! No SRS !
+		            	//sourceSRS = ((Element)geometryNode).getAttribute("srsName").trim();
+		            	//Erroneous workaround
+		        		sourceSRS = "osgb:BNG";
+		        	}
+		        	srsName = args[1].itemAt(0).getStringValue().trim();
+		        	geometry = indexWorker.transformGeometry(geometry, sourceSRS, srsName);
+	        	}	        	
+	        } else if (isCalledAs("WKTtoGML")) {
 	        	if (args[0].isEmpty())
 	                result = Sequence.EMPTY_SEQUENCE;
 	        	else {
 		        	String wkt = args[0].itemAt(0).getStringValue();
-		        	targetSrsName = args[1].itemAt(0).getStringValue().trim();
 			        WKTReader wktReader = new WKTReader();
 			        try {
 			        	geometry = wktReader.read(wkt);
+			        	srsName = args[1].itemAt(0).getStringValue().trim();
 			        } catch (ParseException e) {
 			        	throw new XPathException(e);	
 			        }
@@ -276,11 +208,17 @@ public class FunGMLProducers extends BasicFunction {
 	        	else {
 		        	NodeValue geometryNode = (NodeValue) args[0].itemAt(0);	        		        	
 		        	//Try to get the geometry from the index
-		        	if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE)
+		        	if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {		        		
 		        		geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode);
+		        		srsName = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
 		        	//Otherwise, build it
-		        	else 		        		
-		        		geometry = indexWorker.streamGeometryForNode(context, geometryNode);	
+		        	} else { 		        		
+		        		geometry = indexWorker.streamGeometryForNode(context, geometryNode);
+		            	//Argl ! No SRS !
+		            	//srsName = ((Element)geometryNode).getAttribute("srsName").trim();
+		            	//Erroneous workaround
+		            	srsName = "osgb:BNG";
+		        	}
 		        	double distance = ((DoubleValue)args[1].itemAt(0)).getDouble();
 		        	int quadrantSegments = 8;	
 		        	int endCapStyle = BufferOp.CAP_ROUND;
@@ -299,10 +237,6 @@ public class FunGMLProducers extends BasicFunction {
 		        	}
 	
 		        	geometry = geometry.buffer(distance, quadrantSegments, endCapStyle);	
-		        		
-		        	//Get the SRS which is the last argument iff it is a string
-		        	if (Type.subTypeOf(args[getArgumentCount() - 1].itemAt(0).getType(), Type.STRING))
-		        		targetSrsName = args[getArgumentCount() - 1].itemAt(0).getStringValue().trim();
 	        	}
 	        } else if (isCalledAs("convexHull")) {
 	        	if (args[0].isEmpty())
@@ -310,13 +244,17 @@ public class FunGMLProducers extends BasicFunction {
 	        	else {
 		        	NodeValue geometryNode = (NodeValue) args[0].itemAt(0);	        		        	
 		        	//Try to get the geometry from the index
-		        	if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE)
+		        	if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 		        		geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode);
+		        		srsName = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
 		        	//Otherwise, build it
-		        	else 		        		
-		        		geometry = indexWorker.streamGeometryForNode(context, geometryNode);		        	
-		        	if (getArgumentCount() > 1)
-		        		targetSrsName = args[1].itemAt(0).getStringValue().trim();
+		        	} else { 		        		
+		        		geometry = indexWorker.streamGeometryForNode(context, geometryNode);
+		            	//Argl ! No SRS !
+		            	//srsName = ((Element)geometryNode).getAttribute("srsName").trim();
+		            	//Erroneous workaround
+		            	srsName = "osgb:BNG";
+		        	}
 		        	geometry = geometry.convexHull();
 	        	}
 	        } else if (isCalledAs("boundary")) {
@@ -325,13 +263,17 @@ public class FunGMLProducers extends BasicFunction {
 	        	else {
 		        	NodeValue geometryNode = (NodeValue) args[0].itemAt(0);	        		        	
 		        	//Try to get the geometry from the index
-		        	if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE)
+		        	if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 		        		geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode);
+		        		srsName = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
 		        	//Otherwise, build it
-		        	else 		        		
-		        		geometry = indexWorker.streamGeometryForNode(context, geometryNode);		        	
-		        	if (getArgumentCount() > 1)
-		        		targetSrsName = args[1].itemAt(0).getStringValue().trim();
+		        	} else { 		        		
+		        		geometry = indexWorker.streamGeometryForNode(context, geometryNode);
+		            	//Argl ! No SRS !
+		            	//srsName = ((Element)geometryNode).getAttribute("srsName").trim();
+		            	//Erroneous workaround
+		            	srsName = "osgb:BNG";
+		        	}		        		
 		        	geometry = geometry.getBoundary();
 	        	}
 	        } else {
@@ -355,7 +297,7 @@ public class FunGMLProducers extends BasicFunction {
 		        	}
 		        	if (geometryNode2.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 		        		geometry2 = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode2);
-		        		srsName2 = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode1, "SRS_NAME").getStringValue();
+		        		srsName2 = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode2, "SRS_NAME").getStringValue();
 		        	}
 		        	//Otherwise build them
 		            if (geometry1 == null) {
@@ -363,17 +305,15 @@ public class FunGMLProducers extends BasicFunction {
 		            	//Argl ! No SRS !
 		            	//srsName1 = ((Element)geometryNode1).getAttribute("srsName").trim();
 		            	//Erroneous workaround
-		            	srsName1 = "EPSG:4326";
+		            	srsName1 = "osgb:BNG";
 		            }
 		        	if (geometry2 == null) {
 		            	geometry2 = indexWorker.streamGeometryForNode(context, geometryNode2);
 		        		//Argl ! No SRS !
 		            	//srsName2 = ((Element)geometryNode2).getAttribute("srsName").trim();
 		            	//Erroneous workaround
-		            	srsName2 = "EPSG:4326";		            	
+		            	srsName2 = "osgb:BNG";		            	
 		        	}
-		        	if (getArgumentCount() > 2)
-		        		targetSrsName = args[2].itemAt(0).getStringValue().trim();
 					
 					//Transform the second geometry if necessary
 					if (!srsName1.equalsIgnoreCase(srsName2)) {
@@ -390,18 +330,10 @@ public class FunGMLProducers extends BasicFunction {
 					} else if (isCalledAs("symetricDifference")) {
 						geometry = geometry1.symDifference(geometry2);
 					}
-					
-					//Keep the first SRS for future use
-					originSrsName = srsName1;					
 	        	}
 	        }
 	        
 	        if (result == null) {	        
-		        //Transform the geometry if necessary	
-				if (targetSrsName != null && originSrsName != null && !originSrsName.equalsIgnoreCase(targetSrsName)) {
-					geometry = indexWorker.transformGeometry(geometry, originSrsName, targetSrsName) ;
-				}
-		        
 		        String gmlPrefix = context.getPrefixForURI(AbstractGMLJDBCIndexWorker.GML_NS);
 		        if (gmlPrefix == null) 
 		        	throw new XPathException("'" + AbstractGMLJDBCIndexWorker.GML_NS + "' namespace is not defined");	
@@ -410,7 +342,7 @@ public class FunGMLProducers extends BasicFunction {
 				try {
 					MemTreeBuilder builder = context.getDocumentBuilder();
 			        DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
-					result = (NodeValue)indexWorker.getGML(geometry, receiver);
+					result = (NodeValue)indexWorker.getGML(geometry, srsName, receiver);
 				} finally {
 		            context.popDocumentContext();
 		        }
