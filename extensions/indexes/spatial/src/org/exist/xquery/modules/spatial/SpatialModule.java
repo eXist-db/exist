@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2007 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -61,7 +61,26 @@ public class SpatialModule extends AbstractInternalModule {
     	new FunctionDef(FunGeometricProperties.signatures[17], FunGeometricProperties.class),
     	new FunctionDef(FunGeometricProperties.signatures[18], FunGeometricProperties.class),
     	new FunctionDef(FunGeometricProperties.signatures[19], FunGeometricProperties.class),
-    	new FunctionDef(FunGeometricProperties.signatures[20], FunGeometricProperties.class)
+    	new FunctionDef(FunGeometricProperties.signatures[20], FunGeometricProperties.class),
+    	new FunctionDef(FunGMLProducers.signatures[0], FunGMLProducers.class),
+    	new FunctionDef(FunGMLProducers.signatures[1], FunGMLProducers.class),
+    	new FunctionDef(FunGMLProducers.signatures[2], FunGMLProducers.class),
+    	new FunctionDef(FunGMLProducers.signatures[3], FunGMLProducers.class),
+    	new FunctionDef(FunGMLProducers.signatures[4], FunGMLProducers.class),
+    	new FunctionDef(FunGMLProducers.signatures[5], FunGMLProducers.class),
+    	new FunctionDef(FunGMLProducers.signatures[6], FunGMLProducers.class),
+    	new FunctionDef(FunGMLProducers.signatures[7], FunGMLProducers.class),
+    	new FunctionDef(FunGMLProducers.signatures[8], FunGMLProducers.class),
+    	new FunctionDef(FunGMLProducers.signatures[9], FunGMLProducers.class),
+    	new FunctionDef(FunGMLProducers.signatures[10], FunGMLProducers.class),
+    	new FunctionDef(FunGMLProducers.signatures[11], FunGMLProducers.class),
+    	new FunctionDef(FunGMLProducers.signatures[12], FunGMLProducers.class),
+    	new FunctionDef(FunGMLProducers.signatures[13], FunGMLProducers.class),
+    	new FunctionDef(FunGMLProducers.signatures[14], FunGMLProducers.class),
+    	new FunctionDef(FunGMLProducers.signatures[15], FunGMLProducers.class),
+    	new FunctionDef(FunGMLProducers.signatures[16], FunGMLProducers.class),
+    	new FunctionDef(FunGMLProducers.signatures[17], FunGMLProducers.class),
+    	new FunctionDef(FunGMLProducers.signatures[18], FunGMLProducers.class)       	
     };
 	
 	public SpatialModule() {

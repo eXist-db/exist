@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2007 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -232,181 +232,46 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     
     protected void releaseConnection(Connection conn) {   
     	index.releaseConnection(this.broker);
-    } 
-    
-    protected boolean checkIndex(DBBroker broker, Connection conn) throws SQLException {
-    	PreparedStatement ps = conn.prepareStatement(
-	    		"SELECT * FROM " + GMLHSQLIndex.TABLE_NAME + ";"
-	    	);
-    	ResultSet rs = null;
-    	try {
-    		rs = ps.executeQuery();
-	        while (rs.next()) {	        	
-	        	base64Decoder.reset();
-	        	base64Decoder.translate(rs.getString("BASE64_WKB"));
-	        	Geometry original_geometry = wkbReader.read(base64Decoder.getByteArray());		        	
-	            if (! original_geometry.equals(wktReader.read(rs.getString("WKT")))) {
-	            	LOG.info("Inconsistent WKT : " + rs.getString("WKT"));
-	    			return false;
-	        	}		            	
-	        	base64Decoder.reset();
-	        	base64Decoder.translate(rs.getString("EPSG4326_BASE64_WKB"));
-	        	Geometry EPSG4326_geometry = wkbReader.read(base64Decoder.getByteArray());		        	
-	            if (!EPSG4326_geometry.equals(wktReader.read(rs.getString("EPSG4326_WKT")))) {
-	            	LOG.info("Inconsistent WKT : " + rs.getString("EPSG4326_WKT"));
-	    			return false;
-	        	}
-	            
-	        	if (!original_geometry.getGeometryType().equals(rs.getString("GEOMETRY_TYPE"))) {
-	        		LOG.info("Inconsistent geometry type: " + rs.getDouble("GEOMETRY_TYPE"));
-	    			return false;
-	        	}
-	        	
-	            if (original_geometry.getEnvelopeInternal().getMinX() != rs.getDouble("MINX")) {
-	            	LOG.info("Inconsistent MinX: " + rs.getDouble("MINX"));
-	    			return false;
-	        	}
-	            if (original_geometry.getEnvelopeInternal().getMaxX() != rs.getDouble("MAXX")) {
-	            	LOG.info("Inconsistent MaxX: " + rs.getDouble("MAXX"));
-	    			return false;
-	        	}
-	            if (original_geometry.getEnvelopeInternal().getMinY() != rs.getDouble("MINY")) {
-	            	LOG.info("Inconsistent MinY: " + rs.getDouble("MINY"));
-	    			return false;
-	        	}
-	            if (original_geometry.getEnvelopeInternal().getMaxY() != rs.getDouble("MAXY")) {
-	            	LOG.info("Inconsistent MaxY: " + rs.getDouble("MAXY"));
-	    			return false;
-	        	}
-	            if (original_geometry.getCentroid().getCoordinate().x != rs.getDouble("CENTROID_X")) {
-	            	LOG.info("Inconsistent X for centroid : " + rs.getDouble("CENTROID_X"));
-	    			return false;
-	        	}
-	            if (original_geometry.getCentroid().getCoordinate().y != rs.getDouble("CENTROID_Y")) {
-	            	LOG.info("Inconsistent Y for centroid : " + rs.getDouble("CENTROID_Y"));
-	    			return false;
-	        	}
-	            if (original_geometry.getArea() != rs.getDouble("AREA")) {
-	            	LOG.info("Inconsistent area: " + rs.getDouble("AREA"));
-	    			return false;
-	            }	        	
-	        	
-	        	String srsName = rs.getString("SRS_NAME");
-	            MathTransform mathTransform = getTransform(srsName, "EPSG:4326");
-	            if (mathTransform == null) {
-	        		LOG.error("Unable to get a transformation from '" + srsName + "' to 'EPSG:4326'");
-	        		return false;              	
-	            }
-	            getCoordinateTransformer().setMathTransform(mathTransform);
-	            try {
-	            	if (!getCoordinateTransformer().transform(original_geometry).equals(EPSG4326_geometry)) {
-		        		LOG.info("Transformed original geometry inconsistent with stored tranformed one");
-	            		return false;
-	            	}
-	            } catch (TransformException e) {
-	        		LOG.error(e);
-	        		return false;
-	            }
-	
-	            if (EPSG4326_geometry.getEnvelopeInternal().getMinX() != rs.getDouble("EPSG4326_MINX")) {
-	            	LOG.info("Inconsistent MinX: " + rs.getDouble("EPSG4326_MINX"));
-	    			return false;
-	        	}
-	            if (EPSG4326_geometry.getEnvelopeInternal().getMaxX() != rs.getDouble("EPSG4326_MAXX")) {
-	            	LOG.info("Inconsistent MaxX: " + rs.getDouble("EPSG4326_MAXX"));
-	    			return false;
-	        	}
-	            if (EPSG4326_geometry.getEnvelopeInternal().getMinY() != rs.getDouble("EPSG4326_MINY")) {
-	            	LOG.info("Inconsistent MinY: " + rs.getDouble("EPSG4326_MINY"));
-	    			return false;
-	        	}
-	            if (EPSG4326_geometry.getEnvelopeInternal().getMaxY() != rs.getDouble("EPSG4326_MAXY")) {
-	            	LOG.info("Inconsistent MaxY: " + rs.getDouble("EPSG4326_MAXY"));
-	    			return false;
-	        	}
-	            if (EPSG4326_geometry.getCentroid().getCoordinate().x != rs.getDouble("EPSG4326_CENTROID_X")) {
-	            	LOG.info("Inconsistent X for centroid : " + rs.getDouble("EPSG4326_CENTROID_X"));
-	    			return false;
-	        	}
-	            if (EPSG4326_geometry.getCentroid().getCoordinate().y != rs.getDouble("EPSG4326_CENTROID_Y")) {
-	            	LOG.info("Inconsistent Y for centroid : " + rs.getDouble("EPSG4326_CENTROID_Y"));
-	    			return false;
-	        	}
-	            if (EPSG4326_geometry.getArea() != rs.getDouble("EPSG4326_AREA")) {
-	            	LOG.info("Inconsistent area: " + rs.getDouble("EPSG4326_AREA"));
-	    			return false;
-	            }
-	            
-	            if (original_geometry.isEmpty() == rs.getBoolean("IS_CLOSED")) {
-	            	LOG.info("Inconsistent area: " + rs.getBoolean("IS_CLOSED"));
-	    			return false;
-	            }
-	            if (original_geometry.isSimple() != rs.getBoolean("IS_SIMPLE")) {
-	            	LOG.info("Inconsistent area: " + rs.getBoolean("IS_SIMPLE"));
-	    			return false;
-	            }
-	            if (original_geometry.isValid() != rs.getBoolean("IS_VALID")) {
-	            	LOG.info("Inconsistent area: " + rs.getBoolean("IS_VALID"));
-	    			return false;
-	            }
-	            
-	            Document doc = broker.getXMLResource(XmldbURI.create(rs.getString("DOCUMENT_URI")));
-	    		NodeId nodeId = new DLN(rs.getString("NODE_ID")); 
-	    			           
-	        	StoredNode node = broker.objectWith(new NodeProxy((DocumentImpl)doc, nodeId));
-	        	if (!GMLHSQLIndexWorker.GML_NS.equals(node.getNamespaceURI())) {
-	        		LOG.info("GML indexed node (" + node.getNodeId()+ ") is in the '" + 
-	        				node.getNamespaceURI() + "' namespace. '" + 
-	        				GMLHSQLIndexWorker.GML_NS + "' was expected !");
-	        		return false;
-	        	}
-	        	if (!original_geometry.getGeometryType().equals(node.getLocalName())) {
-	        		if ("Box".equals(node.getLocalName()) && "Polygon".equals(original_geometry.getGeometryType())) {
-	        			LOG.debug("GML indexed node (" + node.getNodeId() + ") is a gml:Box indexed as a polygon");
-	        		} else {
-	        			LOG.info("GML indexed node (" + node.getNodeId() + ") has '" + 
-	        					node.getLocalName() + "' as its local name. '" + 
-	        					original_geometry.getGeometryType() + "' was expected !");
-	        			return false;
-	        		}
-	        	}
-	        	
-	    		LOG.info(node);	        		
-	        }
-	        return true;
-	        
-        } catch (ParseException e) {
-        	LOG.error(e);
-        	return false;
-        } catch (PermissionDeniedException e) {
-        	LOG.error(e);
-        	return false;
-		} finally {   
-			if (rs != null)
-				rs.close();
-			if (ps != null)
-				ps.close();	
-	    }
     }
     
-    protected Map getGeometriesForDocument(DocumentImpl doc, Connection conn) throws SQLException {       	
+    protected NodeSet isIndexed(DBBroker broker, Geometry EPSG4326_geometry, Connection conn) throws SQLException {    	
+    	String bboxConstraint = "(EPSG4326_MINX = ? AND EPSG4326_MAXX = ?)" +
+    				" AND (EPSG4326_MINY = ? AND EPSG4326_MAXY = ?)"; 
+    	NodeSet result = null;
         PreparedStatement ps = conn.prepareStatement(
-    		"SELECT EPSG4326_BASE64_WKB, EPSG4326_WKT FROM " + GMLHSQLIndex.TABLE_NAME + " WHERE DOCUMENT_URI = ?;"
-    	); 
-        ps.setString(1, doc.getURI().toString());
-        //TODO : better a List with a end of process string transformation ?
-    	Map map = null;
-        ResultSet rs = null;
-        try {	 
-	        rs = ps.executeQuery();
-	        map = new TreeMap();
-	        while (rs.next()) {
-	        	base64Decoder.reset();
+    		"SELECT EPSG4326_BASE64_WKB, DOCUMENT_URI, NODE_ID" +
+    		" FROM " + GMLHSQLIndex.TABLE_NAME + 
+    		" WHERE " + bboxConstraint + ";"
+    	);
+        ps.setDouble(1, EPSG4326_geometry.getEnvelopeInternal().getMinX());
+    	ps.setDouble(2, EPSG4326_geometry.getEnvelopeInternal().getMaxX());
+    	ps.setDouble(3, EPSG4326_geometry.getEnvelopeInternal().getMinY());
+    	ps.setDouble(4, EPSG4326_geometry.getEnvelopeInternal().getMaxY());      
+    	ResultSet rs = null;
+    	result = new ExtArrayNodeSet(); //new ExtArrayNodeSet(docs.getLength(), 250)
+    	try {
+    		rs = ps.executeQuery();
+    		while (rs.next()) {    			
+    			base64Decoder.reset();
 	        	base64Decoder.translate(rs.getString("EPSG4326_BASE64_WKB"));
-	        	Geometry geometry = wkbReader.read(base64Decoder.getByteArray());
-	        	map.put(geometry, rs.getString("EPSG4326_WKT"));
-	        }
-	        return map;
+	        	Geometry geometry = wkbReader.read(base64Decoder.getByteArray());	
+	        	boolean geometryMatches = geometry.equals(EPSG4326_geometry);	        	
+	        	if (geometryMatches) {	        	
+	        		XmldbURI documentURI = XmldbURI.create(rs.getString("DOCUMENT_URI"));
+	        		try {
+	        			Document doc = broker.getXMLResource(documentURI);
+		        		NodeId nodeId = new DLN(rs.getString("NODE_ID")); 
+		        		NodeProxy p = new NodeProxy((DocumentImpl)doc, nodeId);
+		        		result.add(p);
+	        		} catch (PermissionDeniedException e) {
+	        			LOG.debug(e);
+	        		}
+	        	}
+    		}
+    		if (LOG.isDebugEnabled()) {
+    			LOG.debug(rs.getRow() + " eligible geometries, " + result.getItemCount() + "selected");
+    		}
+    		return result;
         } catch (ParseException e) {
         	LOG.error(e);
         	return null;
@@ -415,76 +280,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     			rs.close();
     		if (ps != null)
     			ps.close();
-    	}
-    } 
-    
-    protected Geometry getGeometryForNode(DBBroker broker, NodeProxy p, Connection conn) throws SQLException {
-        PreparedStatement ps = conn.prepareStatement(
-    		"SELECT EPSG4326_BASE64_WKB" +
-    		" FROM " + GMLHSQLIndex.TABLE_NAME + 
-    		" WHERE DOCUMENT_URI = ? AND NODE_ID = ?;"
-    	);
-        ps.setString(1, p.getDocument().getURI().toString());
-    	ps.setString(2, p.getNodeId().toString());   
-    	ResultSet rs = null;    	
-    	try {
-    		rs = ps.executeQuery();
-    		if (!rs.next())
-    			//Nothing returned
-    			return null;    		
-			base64Decoder.reset();
-        	base64Decoder.translate(rs.getString("EPSG4326_BASE64_WKB"));
-        	Geometry geometry = wkbReader.read(base64Decoder.getByteArray());        			
-        	if (rs.next()) {   	
-    			//Should be impossible    		
-    			throw new SQLException("More than one geometry for node " + p);
-    		}
-        	return geometry;    
-        } catch (ParseException e) {
-        	LOG.error(e); 
-        	return null;
-    	} finally {   
-    		if (rs != null)
-    			rs.close();
-    		if (ps != null)
-    			ps.close();
-        }
-    }    
-    
-    protected AtomicValue getGeometricPropertyForNode(DBBroker broker, NodeProxy p, Connection conn, String propertyName) throws SQLException {
-        PreparedStatement ps = conn.prepareStatement(
-    		"SELECT " + propertyName + 
-    		" FROM " + GMLHSQLIndex.TABLE_NAME + 
-    		" WHERE DOCUMENT_URI = ? AND NODE_ID = ?;"
-    	);
-        ps.setString(1, p.getDocument().getURI().toString());
-    	ps.setString(2, p.getNodeId().toString());   
-    	ResultSet rs = null;    	
-    	try {
-    		rs = ps.executeQuery();
-    		if (!rs.next())
-    			//Nothing returned
-    			return null;
-    		AtomicValue result = null;
-    		if (rs.getMetaData().getColumnClassName(1).equals(Boolean.class.getName())) {
-    			result = new BooleanValue(rs.getBoolean(1));
-    		} else if (rs.getMetaData().getColumnClassName(1).equals(Double.class.getName())) {
-    			result = new DoubleValue(rs.getDouble(1));
-    		} else if (rs.getMetaData().getColumnClassName(1).equals(String.class.getName())) {
-    			result = new StringValue(rs.getString(1));
-    		} else 
-    			throw new SQLException("Uniable to make an atomic value from '" + rs.getMetaData().getColumnClassName(1) + "'");		
-        	if (rs.next()) {   	
-    			//Should be impossible    		
-    			throw new SQLException("More than one geometry for node " + p);
-    		}
-        	return result;    
-    	} finally {   
-    		if (rs != null)
-    			rs.close();
-    		if (ps != null)
-    			ps.close();
-        }
+    	}    	
     }    
 
     protected NodeSet search(DBBroker broker, NodeSet contextSet, Geometry EPSG4326_geometry, int spatialOp, Connection conn) throws SQLException {
@@ -616,46 +412,170 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     		if (ps != null)
     			ps.close();	    		
     	}
-    } 
+    }
     
-    protected NodeSet isIndexed(DBBroker broker, Geometry EPSG4326_geometry, Connection conn) throws SQLException {    	
-    	String bboxConstraint = "(EPSG4326_MINX = ? AND EPSG4326_MAXX = ?)" +
-    				" AND (EPSG4326_MINY = ? AND EPSG4326_MAXY = ?)"; 
-    	NodeSet result = null;
-        PreparedStatement ps = conn.prepareStatement(
-    		"SELECT EPSG4326_BASE64_WKB, DOCUMENT_URI, NODE_ID" +
-    		" FROM " + GMLHSQLIndex.TABLE_NAME + 
-    		" WHERE " + bboxConstraint + ";"
-    	);
-        ps.setDouble(1, EPSG4326_geometry.getEnvelopeInternal().getMinX());
-    	ps.setDouble(2, EPSG4326_geometry.getEnvelopeInternal().getMaxX());
-    	ps.setDouble(3, EPSG4326_geometry.getEnvelopeInternal().getMinY());
-    	ps.setDouble(4, EPSG4326_geometry.getEnvelopeInternal().getMaxY());      
+    protected boolean checkIndex(DBBroker broker, Connection conn) throws SQLException, SpatialIndexException {
+    	PreparedStatement ps = conn.prepareStatement(
+	    		"SELECT * FROM " + GMLHSQLIndex.TABLE_NAME + ";"
+	    	);
     	ResultSet rs = null;
-    	result = new ExtArrayNodeSet(); //new ExtArrayNodeSet(docs.getLength(), 250)
     	try {
     		rs = ps.executeQuery();
-    		while (rs.next()) {    			
-    			base64Decoder.reset();
+	        while (rs.next()) {	        	
+	        	base64Decoder.reset();
+	        	base64Decoder.translate(rs.getString("BASE64_WKB"));
+	        	Geometry original_geometry = wkbReader.read(base64Decoder.getByteArray());		        	
+	            if (! original_geometry.equals(wktReader.read(rs.getString("WKT")))) {
+	            	LOG.info("Inconsistent WKT : " + rs.getString("WKT"));
+	    			return false;
+	        	}		            	
+	        	base64Decoder.reset();
 	        	base64Decoder.translate(rs.getString("EPSG4326_BASE64_WKB"));
-	        	Geometry geometry = wkbReader.read(base64Decoder.getByteArray());	
-	        	boolean geometryMatches = geometry.equals(EPSG4326_geometry);	        	
-	        	if (geometryMatches) {	        	
-	        		XmldbURI documentURI = XmldbURI.create(rs.getString("DOCUMENT_URI"));
-	        		try {
-	        			Document doc = broker.getXMLResource(documentURI);
-		        		NodeId nodeId = new DLN(rs.getString("NODE_ID")); 
-		        		NodeProxy p = new NodeProxy((DocumentImpl)doc, nodeId);
-		        		result.add(p);
-	        		} catch (PermissionDeniedException e) {
-	        			LOG.debug(e);
+	        	Geometry EPSG4326_geometry = wkbReader.read(base64Decoder.getByteArray());		        	
+	            if (!EPSG4326_geometry.equals(wktReader.read(rs.getString("EPSG4326_WKT")))) {
+	            	LOG.info("Inconsistent WKT : " + rs.getString("EPSG4326_WKT"));
+	    			return false;
+	        	}
+	            
+	        	if (!original_geometry.getGeometryType().equals(rs.getString("GEOMETRY_TYPE"))) {
+	        		LOG.info("Inconsistent geometry type: " + rs.getDouble("GEOMETRY_TYPE"));
+	    			return false;
+	        	}
+	        	
+	            if (original_geometry.getEnvelopeInternal().getMinX() != rs.getDouble("MINX")) {
+	            	LOG.info("Inconsistent MinX: " + rs.getDouble("MINX"));
+	    			return false;
+	        	}
+	            if (original_geometry.getEnvelopeInternal().getMaxX() != rs.getDouble("MAXX")) {
+	            	LOG.info("Inconsistent MaxX: " + rs.getDouble("MAXX"));
+	    			return false;
+	        	}
+	            if (original_geometry.getEnvelopeInternal().getMinY() != rs.getDouble("MINY")) {
+	            	LOG.info("Inconsistent MinY: " + rs.getDouble("MINY"));
+	    			return false;
+	        	}
+	            if (original_geometry.getEnvelopeInternal().getMaxY() != rs.getDouble("MAXY")) {
+	            	LOG.info("Inconsistent MaxY: " + rs.getDouble("MAXY"));
+	    			return false;
+	        	}
+	            if (original_geometry.getCentroid().getCoordinate().x != rs.getDouble("CENTROID_X")) {
+	            	LOG.info("Inconsistent X for centroid : " + rs.getDouble("CENTROID_X"));
+	    			return false;
+	        	}
+	            if (original_geometry.getCentroid().getCoordinate().y != rs.getDouble("CENTROID_Y")) {
+	            	LOG.info("Inconsistent Y for centroid : " + rs.getDouble("CENTROID_Y"));
+	    			return false;
+	        	}
+	            if (original_geometry.getArea() != rs.getDouble("AREA")) {
+	            	LOG.info("Inconsistent area: " + rs.getDouble("AREA"));
+	    			return false;
+	            }	        	
+	        	
+	        	String srsName = rs.getString("SRS_NAME");
+            	if (!transformGeometry(original_geometry, srsName, "EPSG:4326").equals(EPSG4326_geometry)) {
+	        		LOG.info("Transformed original geometry inconsistent with stored tranformed one");
+            		return false;
+            	}
+	
+	            if (EPSG4326_geometry.getEnvelopeInternal().getMinX() != rs.getDouble("EPSG4326_MINX")) {
+	            	LOG.info("Inconsistent MinX: " + rs.getDouble("EPSG4326_MINX"));
+	    			return false;
+	        	}
+	            if (EPSG4326_geometry.getEnvelopeInternal().getMaxX() != rs.getDouble("EPSG4326_MAXX")) {
+	            	LOG.info("Inconsistent MaxX: " + rs.getDouble("EPSG4326_MAXX"));
+	    			return false;
+	        	}
+	            if (EPSG4326_geometry.getEnvelopeInternal().getMinY() != rs.getDouble("EPSG4326_MINY")) {
+	            	LOG.info("Inconsistent MinY: " + rs.getDouble("EPSG4326_MINY"));
+	    			return false;
+	        	}
+	            if (EPSG4326_geometry.getEnvelopeInternal().getMaxY() != rs.getDouble("EPSG4326_MAXY")) {
+	            	LOG.info("Inconsistent MaxY: " + rs.getDouble("EPSG4326_MAXY"));
+	    			return false;
+	        	}
+	            if (EPSG4326_geometry.getCentroid().getCoordinate().x != rs.getDouble("EPSG4326_CENTROID_X")) {
+	            	LOG.info("Inconsistent X for centroid : " + rs.getDouble("EPSG4326_CENTROID_X"));
+	    			return false;
+	        	}
+	            if (EPSG4326_geometry.getCentroid().getCoordinate().y != rs.getDouble("EPSG4326_CENTROID_Y")) {
+	            	LOG.info("Inconsistent Y for centroid : " + rs.getDouble("EPSG4326_CENTROID_Y"));
+	    			return false;
+	        	}
+	            if (EPSG4326_geometry.getArea() != rs.getDouble("EPSG4326_AREA")) {
+	            	LOG.info("Inconsistent area: " + rs.getDouble("EPSG4326_AREA"));
+	    			return false;
+	            }
+	            
+	            if (original_geometry.isEmpty() == rs.getBoolean("IS_CLOSED")) {
+	            	LOG.info("Inconsistent area: " + rs.getBoolean("IS_CLOSED"));
+	    			return false;
+	            }
+	            if (original_geometry.isSimple() != rs.getBoolean("IS_SIMPLE")) {
+	            	LOG.info("Inconsistent area: " + rs.getBoolean("IS_SIMPLE"));
+	    			return false;
+	            }
+	            if (original_geometry.isValid() != rs.getBoolean("IS_VALID")) {
+	            	LOG.info("Inconsistent area: " + rs.getBoolean("IS_VALID"));
+	    			return false;
+	            }
+	            
+	            Document doc = broker.getXMLResource(XmldbURI.create(rs.getString("DOCUMENT_URI")));
+	    		NodeId nodeId = new DLN(rs.getString("NODE_ID")); 
+	    			           
+	        	StoredNode node = broker.objectWith(new NodeProxy((DocumentImpl)doc, nodeId));
+	        	if (!GMLHSQLIndexWorker.GML_NS.equals(node.getNamespaceURI())) {
+	        		LOG.info("GML indexed node (" + node.getNodeId()+ ") is in the '" + 
+	        				node.getNamespaceURI() + "' namespace. '" + 
+	        				GMLHSQLIndexWorker.GML_NS + "' was expected !");
+	        		return false;
+	        	}
+	        	if (!original_geometry.getGeometryType().equals(node.getLocalName())) {
+	        		if ("Box".equals(node.getLocalName()) && "Polygon".equals(original_geometry.getGeometryType())) {
+	        			LOG.debug("GML indexed node (" + node.getNodeId() + ") is a gml:Box indexed as a polygon");
+	        		} else {
+	        			LOG.info("GML indexed node (" + node.getNodeId() + ") has '" + 
+	        					node.getLocalName() + "' as its local name. '" + 
+	        					original_geometry.getGeometryType() + "' was expected !");
+	        			return false;
 	        		}
 	        	}
-    		}
-    		if (LOG.isDebugEnabled()) {
-    			LOG.debug(rs.getRow() + " eligible geometries, " + result.getItemCount() + "selected");
-    		}
-    		return result;
+	        	
+	    		LOG.info(node);	        		
+	        }
+	        return true;
+	        
+        } catch (ParseException e) {
+        	LOG.error(e);
+        	return false;
+        } catch (PermissionDeniedException e) {
+        	LOG.error(e);
+        	return false;
+		} finally {   
+			if (rs != null)
+				rs.close();
+			if (ps != null)
+				ps.close();	
+	    }
+    }
+    
+    protected Map getGeometriesForDocument(DocumentImpl doc, Connection conn) throws SQLException {       	
+        PreparedStatement ps = conn.prepareStatement(
+    		"SELECT EPSG4326_BASE64_WKB, EPSG4326_WKT FROM " + GMLHSQLIndex.TABLE_NAME + " WHERE DOCUMENT_URI = ?;"
+    	); 
+        ps.setString(1, doc.getURI().toString());
+        //TODO : better a List with a end of process string transformation ?
+    	Map map = null;
+        ResultSet rs = null;
+        try {	 
+	        rs = ps.executeQuery();
+	        map = new TreeMap();
+	        while (rs.next()) {
+	        	base64Decoder.reset();
+	        	base64Decoder.translate(rs.getString("EPSG4326_BASE64_WKB"));
+	        	Geometry geometry = wkbReader.read(base64Decoder.getByteArray());
+	        	map.put(geometry, rs.getString("EPSG4326_WKT"));
+	        }
+	        return map;
         } catch (ParseException e) {
         	LOG.error(e);
         	return null;
@@ -664,7 +584,75 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     			rs.close();
     		if (ps != null)
     			ps.close();
-    	}    	
-    }
- 
+    	}
+    } 
+    
+    protected AtomicValue getGeometricPropertyForNode(DBBroker broker, NodeProxy p, Connection conn, String propertyName) throws SQLException {
+        PreparedStatement ps = conn.prepareStatement(
+    		"SELECT " + propertyName + 
+    		" FROM " + GMLHSQLIndex.TABLE_NAME + 
+    		" WHERE DOCUMENT_URI = ? AND NODE_ID = ?;"
+    	);
+        ps.setString(1, p.getDocument().getURI().toString());
+    	ps.setString(2, p.getNodeId().toString());   
+    	ResultSet rs = null;    	
+    	try {
+    		rs = ps.executeQuery();
+    		if (!rs.next())
+    			//Nothing returned
+    			return null;
+    		AtomicValue result = null;
+    		if (rs.getMetaData().getColumnClassName(1).equals(Boolean.class.getName())) {
+    			result = new BooleanValue(rs.getBoolean(1));
+    		} else if (rs.getMetaData().getColumnClassName(1).equals(Double.class.getName())) {
+    			result = new DoubleValue(rs.getDouble(1));
+    		} else if (rs.getMetaData().getColumnClassName(1).equals(String.class.getName())) {
+    			result = new StringValue(rs.getString(1));
+    		} else 
+    			throw new SQLException("Uniable to make an atomic value from '" + rs.getMetaData().getColumnClassName(1) + "'");		
+        	if (rs.next()) {   	
+    			//Should be impossible    		
+    			throw new SQLException("More than one geometry for node " + p);
+    		}
+        	return result;    
+    	} finally {   
+    		if (rs != null)
+    			rs.close();
+    		if (ps != null)
+    			ps.close();
+        }
+    }      
+    
+    protected Geometry getGeometryForNode(DBBroker broker, NodeProxy p, Connection conn) throws SQLException {
+        PreparedStatement ps = conn.prepareStatement(
+    		"SELECT EPSG4326_BASE64_WKB" +
+    		" FROM " + GMLHSQLIndex.TABLE_NAME + 
+    		" WHERE DOCUMENT_URI = ? AND NODE_ID = ?;"
+    	);
+        ps.setString(1, p.getDocument().getURI().toString());
+    	ps.setString(2, p.getNodeId().toString());   
+    	ResultSet rs = null;    	
+    	try {
+    		rs = ps.executeQuery();
+    		if (!rs.next())
+    			//Nothing returned
+    			return null;    		
+			base64Decoder.reset();
+        	base64Decoder.translate(rs.getString("EPSG4326_BASE64_WKB"));
+        	Geometry geometry = wkbReader.read(base64Decoder.getByteArray());        			
+        	if (rs.next()) {   	
+    			//Should be impossible    		
+    			throw new SQLException("More than one geometry for node " + p);
+    		}
+        	return geometry;    
+        } catch (ParseException e) {
+        	LOG.error(e); 
+        	return null;
+    	} finally {   
+    		if (rs != null)
+    			rs.close();
+    		if (ps != null)
+    			ps.close();
+        }
+    } 
 }

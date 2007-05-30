@@ -1,6 +1,6 @@
 /*
  *  eXist Open Source Native XML Database
- *  Copyright (C) 2001-07 The eXist Project
+ *  Copyright (C) 2007 The eXist Project
  *  http://exist-db.org
  *
  *  This program is free software; you can redistribute it and/or
@@ -23,12 +23,19 @@
  */
 package org.exist.indexing.spatial;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Stack;
 import java.util.TreeMap;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.TransformerException;
 
 import org.apache.log4j.Logger;
 import org.exist.collections.Collection;
@@ -55,20 +62,30 @@ import org.exist.util.Base64Decoder;
 import org.exist.util.Base64Encoder;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.Occurrences;
+import org.exist.util.serializer.Receiver;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
+import org.exist.xquery.value.NodeValue;
 import org.geotools.geometry.jts.GeometryCoordinateSequenceTransformer;
 import org.geotools.gml.GMLFilterDocument;
 import org.geotools.gml.GMLFilterGeometry;
 import org.geotools.gml.GMLHandlerJTS;
+import org.geotools.gml.producer.GeometryTransformer;
 import org.geotools.referencing.CRS;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.OperationNotFoundException;
+import org.opengis.referencing.operation.TransformException;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.XMLFilterImpl;
 
@@ -96,11 +113,15 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     protected Map geometries = new TreeMap();
     Stack srsNamesStack = new Stack();
     NodeId currentNodeId = null;    
-    Geometry currentGeometry = null;
+    Geometry streamedGeometry = null;
     boolean documentDeleted= false;
     int flushAfter = -1;
+    protected GMLHandlerJTS geometryHandler = new GeometryHandler(); 
+    protected GMLFilterGeometry geometryFilter = new GMLFilterGeometry(geometryHandler); 
+    protected GMLFilterDocument handler = new GMLFilterDocument(geometryFilter);      
     protected GMLStreamListener gmlStreamListener = new GMLStreamListener();
-    protected GeometryCoordinateSequenceTransformer coordinateTransformer = new GeometryCoordinateSequenceTransformer();   
+    protected GeometryCoordinateSequenceTransformer coordinateTransformer = new GeometryCoordinateSequenceTransformer();
+    protected GeometryTransformer gmltransformer = new GeometryTransformer();		
     protected WKTWriter wktWriter = new WKTWriter();
     protected WKTReader wktReader = new WKTReader();
     protected WKBWriter wkbWriter = new WKBWriter();
@@ -271,35 +292,12 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 	    } catch (SQLException e) {
 	    	LOG.error(e);
 	    	return false;
+	    } catch (SpatialIndexException e) {
+	    	LOG.error(e);
+	    	return false;	    	
 	    } finally {
 	    	releaseConnection(conn);
 	    }	    
-    }
-    
-    public Geometry getGeometryForNode(DBBroker broker, NodeProxy p) {
-    	Connection conn = null;
-        try {
-        	conn = acquireConnection();
-        	return getGeometryForNode(broker, p, conn);
-	    } catch (SQLException e) {
-	    	LOG.error(e);
-	    	return null;
-	    } finally {
-	    	releaseConnection(conn);
-	    }
-    }
-    
-    public AtomicValue getGeometricPropertyForNode(DBBroker broker, NodeProxy p, String propertyName) {
-    	Connection conn = null;
-        try {
-        	conn = acquireConnection();
-        	return getGeometricPropertyForNode(broker, p, conn, propertyName);
-	    } catch (SQLException e) {
-	    	LOG.error(e);
-	    	return null;
-	    } finally {
-	    	releaseConnection(conn);
-	    }
     }
     
     public Occurrences[] scanIndex(DocumentSet docs) {    	
@@ -344,36 +342,119 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     	return result;
     }
     
-    public NodeSet isIndexed(DBBroker broker, Geometry EPSG4326_geometry) {
+    public NodeSet isIndexed(DBBroker broker, Geometry EPSG4326_geometry) 
+    	throws SpatialIndexException {
     	Connection conn = null;
     	try { 
     		conn = acquireConnection();
     		return isIndexed(broker, EPSG4326_geometry, conn);
     	} catch (SQLException e) {
-    		LOG.error(e);
-    		return null;    		
+    		throw new SpatialIndexException(e); 			
 		} finally {
 			releaseConnection(conn);
 		}     	
     }
     
-    public NodeSet search(DBBroker broker, NodeSet contextSet, Geometry EPSG4326_geometry, int spatialOp) {
+    public NodeSet search(DBBroker broker, NodeSet contextSet, Geometry EPSG4326_geometry, int spatialOp)
+    	throws SpatialIndexException {
     	Connection conn = null;
     	try { 
     		conn = acquireConnection();
     		return search(broker, contextSet, EPSG4326_geometry, spatialOp, conn);
     	} catch (SQLException e) {
-    		LOG.error(e);
-    		return null;    		
+    		throw new SpatialIndexException(e); 		
 		} finally {
 			releaseConnection(conn);
 		}    	
     }
     
-    public GeometryCoordinateSequenceTransformer getCoordinateTransformer() {
-    	return coordinateTransformer;
+    public Geometry getGeometryForNode(DBBroker broker, NodeProxy p) throws  SpatialIndexException {
+    	Connection conn = null;
+        try {
+        	conn = acquireConnection();
+        	return getGeometryForNode(broker, p, conn);
+	    } catch (SQLException e) {
+	    	throw new SpatialIndexException(e);
+	    } finally {
+	    	releaseConnection(conn);
+	    }
     }
     
+    public AtomicValue getGeometricPropertyForNode(DBBroker broker, NodeProxy p, String propertyName) 
+    	throws  SpatialIndexException {
+    	Connection conn = null;
+        try {
+        	conn = acquireConnection();
+        	return getGeometricPropertyForNode(broker, p, conn, propertyName);
+	    } catch (SQLException e) {
+	    	throw new SpatialIndexException(e);
+	    } finally {
+	    	releaseConnection(conn);
+	    }
+    }    
+    
+    public Geometry streamGeometryForNode(XQueryContext context, NodeValue node) throws SpatialIndexException {
+    	try {
+    		context.pushDocumentContext();
+			try {
+				//TODO : get rid of the context dependency
+	    		node.toSAX(context.getBroker(), handler, null);
+			} finally {
+	            context.popDocumentContext();
+	        }
+    	} catch (SAXException e) {
+    		throw new SpatialIndexException(e);
+    	}
+    	return streamedGeometry;
+    }
+    
+    public Element getGML(Geometry geometry, Receiver receiver) throws SpatialIndexException {       
+	    //YES !!!
+	     String gmlString = null;
+		try {
+			//TODO : find a way to pass
+			//1) the SRS
+			//2) gmlPrefix
+			//3) other stuff...
+			gmlString = gmltransformer.transform(geometry);
+		} catch (TransformerException e) {
+			throw new SpatialIndexException(e);
+		} 
+		
+		try {
+	 		//Copied from org.exist.xquery.functions.request.getData
+			SAXParserFactory factory = SAXParserFactory.newInstance();
+			factory.setNamespaceAware(true);
+			InputSource src = new InputSource(new StringReader(gmlString));
+			SAXParser parser = factory.newSAXParser();
+			XMLReader reader = parser.getXMLReader();
+			reader.setContentHandler((ContentHandler)receiver);
+			reader.parse(src);
+			Document doc = receiver.getDocument();
+			return doc.getDocumentElement(); 
+		} catch (ParserConfigurationException e) {				
+			throw new SpatialIndexException(e);
+		} catch (SAXException e) {
+			throw new SpatialIndexException(e);
+		} catch (IOException e) {
+			throw new SpatialIndexException(e);	
+		}
+    }
+    
+    public Geometry transformGeometry(Geometry geometry, String sourceCRS, String targetCRS) throws SpatialIndexException {
+    	MathTransform mathTransform = getTransform(sourceCRS, targetCRS);
+        if (mathTransform == null) {
+    		throw new SpatialIndexException("Unable to get a transformation from '" + sourceCRS + "' to '" + targetCRS +"'");        		           	
+        }
+        coordinateTransformer.setMathTransform(mathTransform);
+        try {
+        	return coordinateTransformer.transform(geometry);
+        } catch (TransformException e) {
+        	throw new SpatialIndexException(e);
+        }	     	
+    	
+    }
+
     public MathTransform getTransform(String sourceCRS, String targetCRS) {
         //provisional workaround
         if ("osgb:BNG".equalsIgnoreCase(sourceCRS.trim()))
@@ -440,7 +521,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     
     protected abstract int removeCollection(Collection collection, Connection conn) throws SQLException;
     
-    protected abstract boolean checkIndex(DBBroker broker, Connection conn) throws SQLException;
+    protected abstract boolean checkIndex(DBBroker broker, Connection conn) throws SQLException, SpatialIndexException;
     
     protected abstract Map getGeometriesForDocument(DocumentImpl doc, Connection conn) throws SQLException;
     
@@ -457,7 +538,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     	static TreeMap transforms = new TreeMap();
     	static boolean useLenientMode = false;
     	
-    	public static MathTransform getTransform(String sourceCRS, String targetCRS) {
+    	private static MathTransform getTransform(String sourceCRS, String targetCRS) {
     		MathTransform transform = (MathTransform)transforms.get(sourceCRS + "_" + targetCRS);
     		if (transform == null) {
 	    		try {
@@ -484,12 +565,8 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     }       
     
     private class GMLStreamListener extends AbstractStreamListener {
-        
-        GMLHandlerJTS geometryHandler = new GeometryHandler(); 
-        GMLFilterGeometry geometryFilter = new GMLFilterGeometry(geometryHandler); 
-        GMLFilterDocument handler = new GMLFilterDocument(geometryFilter);        
-        
-        ElementImpl deferredElement;
+
+    	ElementImpl deferredElement;
         
         public void startElement(Txn transaction, ElementImpl element, NodePath path) { 
         	if (isDocumentGMLAware) {
@@ -528,9 +605,9 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 	        		if (GML_NS.equals(element.getNamespaceURI())) {
 	        			currentSrsName = (String)srsNamesStack.pop();	
 	        		}         		
-	        		if (currentGeometry != null) {   
+	        		if (streamedGeometry != null) {   
 	        			currentNodeId = element.getNodeId();
-		    			geometries.put(currentNodeId, new SRSGeometry(currentSrsName, currentGeometry));		        		
+		    			geometries.put(currentNodeId, new SRSGeometry(currentSrsName, streamedGeometry));		        		
 			        	if (flushAfter != -1 && geometries.size() >= flushAfter) {
 			        		//Mmmh... doesn't flush since it is currently dependant from the
 			        		//number of nodes in the DOM file ; would need refactorings
@@ -546,7 +623,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 	        	} catch (Exception e) {
 	        		LOG.error("Unable to collect geometry for node: " + currentNodeId + ". Indexing will be skipped", e);        		
 	    		} finally {  
-	        		currentGeometry = null;  
+	    			streamedGeometry = null;  
 	        		deferredElement = null;	
 	    		}
         	}
@@ -610,7 +687,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
   
     private class GeometryHandler extends XMLFilterImpl implements GMLHandlerJTS {
         public void geometry(Geometry geometry) {
-        	currentGeometry = geometry;      		
+        	streamedGeometry = geometry;      		
 			if (geometry == null)
 				LOG.error("Collected null geometry for node: " + currentNodeId + ". Indexing will be skipped");
         }
