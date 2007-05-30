@@ -3,7 +3,31 @@
     webserver with just three services enabled by default:
     webdav, xmlrpc, rest.
 -->
-<server port="8088" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schema/server.xsd">
+<server xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schema/server.xsd">
+    
+    <!-- default http listener -->
+    <listener protocol="http" port="8088"/>
+    
+    <!-- https listener 
+    
+    To use the default SSL provider you may also need to add the the jars below, 
+    which is a merge of the jsse, jnet and jcert jars from the JSSE package
+    
+    $EXIST_HOME/lib/user/jnet.jar     (not required for JDK 1.4.1)
+    $EXIST_HOME/lib/user/jcert.jar
+    $EXIST_HOME/lib/user/jsse.jar
+    
+    A demo keystore may be built by running $EXIST_HOME/build.sh jetty-keygen
+    this creates the file $EXIST_HOME/tools/jetty/etc/demokeystore
+    To create a custom keystore see $EXIST_HOME/build/scripts/jarsigner.xml
+    -->
+    <!--
+    <listener protocol="https" port="8488">
+        <param name="keystore" value="tools/jetty/etc/demokeystore"/>
+    </listener>
+    -->
+    
+    
     <!-- 
         Enable the WebDAV, XML-RPC and REST services.
         The context attribute specifies to which context path

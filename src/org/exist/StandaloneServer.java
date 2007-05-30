@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -33,6 +34,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -52,16 +54,20 @@ import org.exist.util.Configuration;
 import org.exist.util.ConfigurationHelper;
 import org.exist.xmldb.ShutdownListener;
 import org.mortbay.http.HttpContext;
+import org.mortbay.http.HttpListener;
 import org.mortbay.http.HttpServer;
 import org.mortbay.http.SocketListener;
+import org.mortbay.http.SslListener;
 import org.mortbay.http.handler.ForwardHandler;
 import org.mortbay.http.handler.NotFoundHandler;
 import org.mortbay.jetty.servlet.ServletHandler;
 import org.mortbay.jetty.servlet.ServletHolder;
 import org.mortbay.util.MultiException;
+import org.mortbay.util.ThreadedServer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -103,9 +109,10 @@ public class StandaloneServer {
             THREADS_OPT, "set max. number of parallel threads allowed by the db." )
     };
     
+    private final static String DEFAULT_HTTP_LISTENER_PORT = "8088";
+    
     private static Properties DEFAULT_PROPERTIES = new Properties();
     static {
-        DEFAULT_PROPERTIES.setProperty("port", "8088");
     	DEFAULT_PROPERTIES.setProperty("webdav.enabled", "yes");
     	DEFAULT_PROPERTIES.setProperty("rest.enabled", "yes");
     	DEFAULT_PROPERTIES.setProperty("xmlrpc.enabled", "yes");
@@ -118,6 +125,7 @@ public class StandaloneServer {
     private HttpServer httpServer;
     
     private Map forwarding = new HashMap();
+    private Map listeners = new HashMap();
     
     public StandaloneServer() {
     }
@@ -125,8 +133,15 @@ public class StandaloneServer {
     public void run(String[] args) throws Exception {
         printNotice();
         
+        //set default properties
         Properties props = new Properties(DEFAULT_PROPERTIES);
         
+        //set default listener
+        Properties defaultListener = new Properties();
+        defaultListener.setProperty("port", DEFAULT_HTTP_LISTENER_PORT);
+        listeners.put("http", defaultListener);
+        
+        //read the configuration file
         List servlets = configure(props);
         
         CLArgsParser optParser = new CLArgsParser( args, OPTIONS );
@@ -148,7 +163,9 @@ public class StandaloneServer {
                     XmlRpc.setDebug(true);
                     break;
                 case HTTP_PORT_OPT :
-                    props.setProperty("port", option.getArgument());
+                    Properties httpListener = (Properties)listeners.get("http");
+                    httpListener.put("port", option.getArgument());
+                	listeners.put("http", httpListener);
                     break;
                 case THREADS_OPT :
                     try {
@@ -160,14 +177,6 @@ public class StandaloneServer {
                     break;
             }
         }
-        
-        int httpPort = 8088;
-        try {
-            httpPort = Integer.parseInt(props.getProperty("port"));
-        } catch( NumberFormatException e ) {
-            System.err.println("port needs to be number");
-            return;
-        }
 
         System.out.println( "Loading configuration ...");
         Configuration config = new Configuration("conf.xml");
@@ -175,29 +184,27 @@ public class StandaloneServer {
         BrokerPool.getInstance().registerShutdownListener(new ShutdownListenerImpl());
         initXMLDB();
             
-        startHTTPServer(httpPort, servlets, props);
-        String host = props.getProperty("host");
-        if (host==null) {
-           host = "localhost";
-        }
+        startHttpServer(servlets, props);
         
         System.out.println("\nServer launched ...");
         System.out.println("Installed services:");
         System.out.println("-----------------------------------------------");
-        for (int i = 0 ; i < servlets.size() ; i++) {
+        Set listenerProtocols = listeners.keySet();
+        for(int i = 0 ; i < servlets.size() ; i++)
+        {
         	String name  = (String) servlets.get(i);
-           if (props.getProperty(name+".enabled").equalsIgnoreCase("yes")) {
-              System.out.println(name+":\t"+host+":" + httpPort+props.getProperty(name+".context"));
-           }
+        	if(props.getProperty(name + ".enabled").equalsIgnoreCase("yes"))
+        	{
+        		for(Iterator itProtocol = listenerProtocols.iterator(); itProtocol.hasNext();)
+        		{
+        			String listenerProtocol = (String)itProtocol.next();
+        			Properties listenerProperties = (Properties)listeners.get(listenerProtocol);
+        			String host = listenerProperties.getProperty("host", "localhost"); 
+        			String port = listenerProperties.getProperty("port");
+            		System.out.println(name + ":\t" + host + ":" + port + props.getProperty(name+".context"));
+        		}
+        	}
         }
-        /*
-        if (props.getProperty("rest.enabled").equalsIgnoreCase("yes"))
-        	System.out.println("REST servlet:\t"+host+":" + httpPort);
-        if (props.getProperty("webdav.enabled").equalsIgnoreCase("yes"))
-        	System.out.println("WebDAV:\t\t"+host+":" + httpPort + "/webdav");
-        if (props.getProperty("xmlrpc.enabled").equalsIgnoreCase("yes"))
-        	System.out.println("XMLRPC:\t\t"+host+":" + httpPort + "/xmlrpc");
-         */
     }
     
     public boolean isStarted() {
@@ -225,25 +232,55 @@ public class StandaloneServer {
      * @throws IllegalArgumentException
      * @throws MultiException
      */
-    private void startHTTPServer(int httpPort, List servlets, Properties props) 
-    throws UnknownHostException, IllegalArgumentException, MultiException {
+    private void startHttpServer(List servlets, Properties props) throws Exception
+    {
         httpServer = new HttpServer();
-        SocketListener listener = new SocketListener();
-        String host = props.getProperty("host");
-        String address = props.getProperty("address");
-        if (host!=null) {
-           listener.setHost(host);
-        } else {
-           listener.setHost(null);
+        
+        //setup listeners
+        Set listenerProtocols = listeners.keySet();
+        for(Iterator itProtocol = listenerProtocols.iterator(); itProtocol.hasNext();)
+        {
+        	String listenerProtocol = (String)itProtocol.next();
+        	Properties listenerProps = (Properties)listeners.get(listenerProtocol);
+        	HttpListener listener = null;
+        	
+        	/** currently support http and https listeners */
+        	if(listenerProtocol.equals("http"))
+        	{
+        		listener = new SocketListener();
+        	}
+        	else if(listenerProtocol.equals("https"))
+        	{
+        		listener = new SslListener();
+        		
+        		Properties params = (Properties)listenerProps.get("params");
+
+        		//set the keystore if specified
+        		if(params.containsKey("keystore"))
+        		{
+        			String keystore = params.getProperty("keystore");
+        			((SslListener)listener).setKeystore(keystore);
+        		}
+        	}
+        	
+        	if(listener != null)
+        	{
+	        	//configure lisetener
+	        	listener.setHost(listenerProps.getProperty("host"));
+	        	String port = (String)listenerProps.get("port");
+	            listener.setPort(Integer.parseInt(port));
+	            String address = (String)listenerProps.get("address");
+	            if(address != null)
+	            {
+	            	InetAddress iaddress = InetAddress.getByName(address);
+	            	((ThreadedServer)listener).setInetAddress(iaddress);
+	            }
+	            ((ThreadedServer)listener).setMinThreads(5);
+	            ((ThreadedServer)listener).setMaxThreads(50);
+	            
+	            httpServer.addListener(listener);
+        	}
         }
-        if (address!=null) {
-           java.net.InetAddress iaddress = java.net.InetAddress.getByName(address);
-           listener.setInetAddress(iaddress);
-        }
-        listener.setPort(httpPort);
-        listener.setMinThreads(5);
-        listener.setMaxThreads(50);
-        httpServer.addListener(listener);
         
         HttpContext context = new HttpContext();
         context.setContextPath("/");
@@ -380,15 +417,8 @@ public class StandaloneServer {
             LOG.warn("Configuration should have a root element <server>");
             return new ArrayList();
         }
-        String port = root.getAttribute("port");
-        if (port != null && port.length() > 0)
-            properties.setProperty("port", port);
-        String host= root.getAttribute("host");
-        if (host!= null && host.length() > 0)
-            properties.setProperty("host",host);
-        String address = root.getAttribute("address ");
-        if (address != null && address .length() > 0)
-            properties.setProperty("address ",address );
+        
+        //configureListeners(root);
 
         List configurations = new ArrayList();
         NodeList cl = root.getChildNodes();
@@ -399,22 +429,58 @@ public class StandaloneServer {
                 String name = elem.getLocalName();
                 if ("forwarding".equals(name)) {
                     configureForwards(elem);
-                } else if ("servlet".equals(name)) {
+                } 
+                else if ("listener".equals(name))
+                {
+                	configureListener(elem);
+                }
+                else if ("servlet".equals(name)) {
                     String className = elem.getAttribute("class");
                     configurations.add(className);
                     parseDefaultAttrs(properties, elem, className);
-                    parseParams(properties, elem, className);
+                    properties.putAll(parseParams(elem, className));
                 } else {
                     configurations.add(name);
                     parseDefaultAttrs(properties, elem, name);
-                    parseParams(properties, elem, name);
+                    properties.putAll(parseParams(elem, name));
                 }
             }
         }
         return configurations;
     }
 
-    private void parseParams(Properties properties, Element root, String prefix) {
+    private void configureListener(Element listener)
+    {
+		NamedNodeMap listenerAttrs = listener.getAttributes();
+		Node listenerProtocol = listenerAttrs.getNamedItem("protocol");
+		Node listenerPort = listenerAttrs.getNamedItem("port");
+		Node listenerHost = listenerAttrs.getNamedItem("host");
+		Node listenerAddress = listenerAttrs.getNamedItem("address");
+		
+		if(listenerProtocol != null && listenerPort != null)
+		{
+			Properties listenerProps = new Properties();
+			listenerProps.put("port", listenerPort.getNodeValue());
+			if(listenerHost != null)
+				listenerProps.put("host", listenerHost.getNodeValue());
+			if(listenerAddress != null)
+				listenerProps.put("address", listenerAddress.getNodeValue());
+			
+			listenerProps.put("params", parseParams(listener, null));
+			
+			listeners.put(listenerProtocol.getNodeValue().toLowerCase(), listenerProps);
+		}
+    }
+    
+    private Properties parseParams(Element root, String prefix)
+    {
+    	Properties paramProperties = new Properties();
+    	
+    	if(prefix != null)
+    		prefix += ".param.";
+    	else
+    		prefix = "";
+    	
         NodeList cl = root.getChildNodes();
         for (int i = 0; i < cl.getLength(); i++) {
             Node node = cl.item(i);
@@ -423,9 +489,11 @@ public class StandaloneServer {
                 String name = elem.getAttribute("name");
                 String value = elem.getAttribute("value");
                 if (name != null && name.length() > 0)
-                    properties.setProperty(prefix + ".param." + name, value);
+                    paramProperties.setProperty(prefix + name, value);
             }
         }
+        
+        return paramProperties;
     }
 
     private void configureForwards(Element root) {
