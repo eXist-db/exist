@@ -150,7 +150,7 @@ public class XQuery {
                 Optimizer optimizer = new Optimizer(context);
                 expr.accept(optimizer);
                 if (optimizer.hasOptimized()) {
-                    context.reset();
+                    context.reset(true);
                     expr.analyze(new AnalyzeContextInfo());
                 }
             }
