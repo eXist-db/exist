@@ -3,8 +3,6 @@
     <import file="../common.xml"/>
     
     <property name="resources.dir" value="./test/resources"/>
-        
-    <setproxy proxyhost="proxy-bretagne.culture.fr" proxyport="8000"/>
     
     <target name="jar" depends="compile">
         <jar destfile="${top.dir}/exist-modules.jar" basedir="${classes}"
