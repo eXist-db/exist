@@ -2,10 +2,6 @@
 
     <import file="../common.xml"/>
 
-	<target name="prepare">
-		<!-- nothing to do -->
-	</target>
-	
 	<target name="jar" depends="compile">
         <jar destfile="${top.dir}/exist-modules.jar" basedir="${classes}"
              keepcompression="true" update="true"/>
