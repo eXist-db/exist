@@ -92,10 +92,10 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 /**
- * @author Adam Retter (adam.retter@devon.gov.uk)
- * @author Jose Maria Fernandez (contributor)
+ * @author Adam Retter <adam.retter@devon.gov.uk>
+ * @author Jose Maria Fernandez
  * 
- * @serial 20061128T11:49:00
+ * @serial 20070531T12:18:00
  * 
  * The SOAPServer allows Web Services to be written in XQuery; it translates a 
  * SOAP Request to an XQuery function call and then translates the result of the
@@ -106,9 +106,8 @@ import org.xml.sax.XMLReader;
  * generate WSDL and human readable descriptions of the web service and individual
  * functions.
  * 
- * XSLT's are provided for document-oriented Web Service's and are located
- * in $EXIST_HOME/tools/SOAPServer
- * 
+ * XSLT's are provided for both document literal and RPC style Web Service's and are
+ * located in $EXIST_HOME/tools/SOAPServer
  */
 public class SOAPServer
 {
@@ -244,9 +243,10 @@ public class SOAPServer
         
         //add the function call to the xquery
         String functionName = xqwsSOAPFunction.getLocalName();
-	if(functionName==null) {
-		functionName=xqwsSOAPFunction.getNodeName();
-	}
+        if(functionName == null)
+        {
+        	functionName = xqwsSOAPFunction.getNodeName();
+        }
         query.append(xqwsDescription.getNamespace().getLocalName() + ":" + functionName + "(");
         
         //add the arguments for the function call if any
@@ -276,7 +276,7 @@ public class SOAPServer
         query.append(")");
         
         //compile the query
-        return compileXQuery(broker, new StringSource(query.toString()), new XmldbURI[] { xqwsDescription.getCollectionURI() }, xqwsDescription.getCollectionURI(), request, response);
+        return compileXQuery(broker, new StringSource(query.toString()), new XmldbURI[]{xqwsDescription.getCollectionURI()}, xqwsDescription.getCollectionURI(), request, response);
     }
     
 
@@ -289,67 +289,85 @@ public class SOAPServer
      * @param postfix	The postfix for the value (casting syntax)
      * @param isAtomic	Whether the value of this type should be atomic or not (or even both)
      */
-	private void processParameterValue(StringBuffer param,Node nParamSeqItem,String prefix,String postfix,int isAtomic)
-		throws XPathException
+	private void processParameterValue(StringBuffer param,Node nParamSeqItem,String prefix,String postfix,int isAtomic) throws XPathException
 	{
-		boolean justOnce=false;
-		StringBuffer whiteContent=new StringBuffer();
+		boolean justOnce = false;
+		StringBuffer whiteContent = new StringBuffer();
 		
-		try {
-			Transformer tr=TransformerFactory.newInstance().newTransformer();
+		try
+		{
+			Transformer tr = TransformerFactory.newInstance().newTransformer();
 			tr.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION,"yes");
 
-			Node n=nParamSeqItem.getFirstChild();
-			StringWriter sw=new StringWriter();
-			StreamResult result=new StreamResult(sw);
-			StringBuffer psw=sw.getBuffer();
-			while(n!=null) {
-				switch(n.getNodeType()) {
+			Node n = nParamSeqItem.getFirstChild();
+			StringWriter sw = new StringWriter();
+			StreamResult result = new StreamResult(sw);
+			StringBuffer psw = sw.getBuffer();
+			while(n != null)
+			{
+				switch(n.getNodeType())
+				{
 					case Node.ELEMENT_NODE:
-						if(isAtomic>0) {
-							throw new Exception("Content of "+nParamSeqItem.getNodeName()+" must be an atomic value");
+						if(isAtomic>0)
+						{
+							throw new Exception("Content of " + nParamSeqItem.getNodeName() + " must be an atomic value");
 						}
-						isAtomic=-1;
-						if(justOnce) {
-							throw new Exception(nParamSeqItem.getNodeName()+" must have ONLY ONE element child");
+						isAtomic = -1;
+						if(justOnce)
+						{
+							throw new Exception(nParamSeqItem.getNodeName() + " must have ONLY ONE element child");
 						}
-						DOMSource source=new DOMSource(n);
+						DOMSource source = new DOMSource(n);
 						tr.transform(source,result);
 						// Only once!
-						justOnce=true;
+						justOnce = true;
 						break;
 					case Node.TEXT_NODE:
 					case Node.CDATA_SECTION_NODE:
-						String nodeValue=n.getNodeValue();
-						boolean isNotWhite=!nodeValue.matches("[ \n\r\t]+");
-						if(isAtomic>=0) {
-							if(isNotWhite || isAtomic>0) {
-								if(isAtomic==0) {
-									isAtomic=1;
+						String nodeValue = n.getNodeValue();
+						boolean isNotWhite =! nodeValue.matches("[ \n\r\t]+");
+						if(isAtomic >= 0)
+						{
+							if(isNotWhite || isAtomic>0)
+							{
+								if(isAtomic == 0)
+								{
+									isAtomic = 1;
 								}
 								psw.append(nodeValue);
-							} else if(isAtomic==0) {
+							}
+							else if(isAtomic == 0)
+							{
 								whiteContent.append(nodeValue);
 							}
-						} else if(isNotWhite) {
-							throw new Exception(nParamSeqItem.getNodeName()+" has mixed content, but it must have only one element child");
+						}
+						else if(isNotWhite)
+						{
+							throw new Exception(nParamSeqItem.getNodeName() + " has mixed content, but it must have only one element child");
 						}
 						break;
 				}
-				n=n.getNextSibling();
+				n = n.getNextSibling();
 			}
-			if(isAtomic>=0) {
+			if(isAtomic >= 0)
+			{
 				param.append(prefix);
 			}
-			if(isAtomic==0) {
+			if(isAtomic == 0)
+			{
 				param.append(whiteContent);
-			} else {
+			}
+			else
+			{
 				param.append(psw);
 			}
-			if(isAtomic>=0) {
-		    		param.append(postfix);
+			if(isAtomic >= 0)
+			{
+		    	param.append(postfix);
 			}
-		} catch(Exception e) {
+		}
+		catch(Exception e)
+		{
 			throw new XPathException(e.getMessage());
 		}
 	}
@@ -370,40 +388,44 @@ public class SOAPServer
     	
     	//determine the type of the parameter
     	int type = Type.getType(paramType);
-	int isAtomic=(Type.subTypeOf(type,Type.ATOMIC))?1:((Type.subTypeOf(type,Type.NODE))?-1:0);
+    	int isAtomic = (Type.subTypeOf(type,Type.ATOMIC)) ? 1 : ((Type.subTypeOf(type,Type.NODE)) ? -1 : 0);
     	
-	if(isAtomic>=0) {
-		if(isAtomic>0 && type!=Type.STRING) {
-			String typeName=Type.getTypeName(type);
-			if(typeName!=null) {
-				prefix=typeName+"(\"";
-				postfix = "\")";
-			}
-		} else {
+    	if(isAtomic >= 0)
+    	{
+    		if(isAtomic >0 && type != Type.STRING)
+    		{
+    			String typeName = Type.getTypeName(type);
+    			if(typeName != null)
+    			{
+    				prefix = typeName + "(\"";
+    				postfix = "\")";
+    			}
+    		}
+    		else
+    		{
     			prefix = "\"";
     			postfix = prefix;
-		}
-	}
+    		}
+    	}
     
-	StringBuffer param = new StringBuffer();
+    	StringBuffer param = new StringBuffer();
+    
     	//determine the cardinality of the parameter
     	if(paramCardinality >= Cardinality.MANY)
     	{
     		//sequence
-    		
     		param.append("(");
     		
     		NodeList nlParamSequenceItems = nSOAPParam.getChildNodes();
-    		for(int i=0; i < nlParamSequenceItems.getLength(); i++)
+    		for(int i = 0; i < nlParamSequenceItems.getLength(); i++)
     		{
     			Node nParamSeqItem = nlParamSequenceItems.item(i);
     			if(nParamSeqItem.getNodeType() == Node.ELEMENT_NODE)
     			{
-				processParameterValue(param,nParamSeqItem,prefix,postfix,isAtomic);
+    				processParameterValue(param, nParamSeqItem, prefix, postfix, isAtomic);
 				
 	        		param.append(",");	//seperator for next item in sequence
-    	        	
-			}
+    			}
     		}
     		
     		//remove last superflurous seperator
@@ -416,10 +438,10 @@ public class SOAPServer
     	}
     	else
     	{
-		processParameterValue(param,nSOAPParam,prefix,postfix,isAtomic);
+    		processParameterValue(param, nSOAPParam, prefix, postfix, isAtomic);
     	}
 	
-	return param;
+    	return param;
     }
     
     /**
@@ -486,8 +508,16 @@ public class SOAPServer
 			byte[] result = null;
 	        if(request.getParameter("WSDL") != null || request.getParameter("wsdl") != null)
 	        {
-	        	//WSDL
+	        	//WSDL document literal
 	        	result = description.getWSDL();
+
+	        	//set output content type for wsdl
+	            response.setContentType(MimeType.XML_TYPE.getName());
+	        }
+	        else if(request.getParameter("WSDLRPC") != null || request.getParameter("wsdlrpc") != null)
+	        {
+	        	//WSDL RPC
+	        	result = description.getWSDL(false);
 
 	        	//set output content type for wsdl
 	            response.setContentType(MimeType.XML_TYPE.getName());
@@ -553,7 +583,7 @@ public class SOAPServer
 	    {
 			offset += bytes;
 	    }
-		
+
 		// 2) Create an XML Document from the SOAP Request
 	    Document soapRequest = null;
 		try
@@ -572,7 +602,6 @@ public class SOAPServer
 		
 		// 4) Extract the function call from the SOAP Request
 		NodeList nlBody = soapRequest.getDocumentElement().getElementsByTagNameNS(Namespaces.SOAP_ENVELOPE, "Body");
-		//NodeList nlBody = soapRequest.getElementsByTagName("SOAP-ENV:Body");
 		Node nSOAPBody = nlBody.item(0);
 		NodeList nlBodyChildren = nSOAPBody.getChildNodes();
 		Node nSOAPFunction = null;
@@ -607,6 +636,10 @@ public class SOAPServer
 			return;
 		}
 		
+		// 4.5) Detemine encoding style
+		String encodingStyle = ((org.w3c.dom.Element)nSOAPFunction).getAttributeNS(Namespaces.SOAP_ENVELOPE, "encodingStyle");
+		boolean isRpcEncoded = (encodingStyle != null && encodingStyle.equals("http://schemas.xmlsoap.org/soap/encoding/"));
+		
 		// 5) Execute the XQWS function indicated by the SOAP request  
 		try
 		{
@@ -621,11 +654,12 @@ public class SOAPServer
 			Sequence xqwsResult = xqueryService.execute(xqCallXQWS, null);
 			
 			// 6) Create a SOAP Response describing the Result
-		String funcName=nSOAPFunction.getLocalName();
-		if(funcName==null) {
-			funcName=nSOAPFunction.getNodeName();
-		}
-        	byte[] result = description.getSOAPResponse(funcName, xqwsResult, request);
+			String funcName = nSOAPFunction.getLocalName();
+			if(funcName == null)
+			{
+				funcName = nSOAPFunction.getNodeName();
+			}
+        	byte[] result = description.getSOAPResponse(funcName, xqwsResult, request,isRpcEncoded);
 
         	// 7) Send the SOAP Response to the http servlet response
         	response.setContentType(MimeType.XML_TYPE.getName());
@@ -732,9 +766,7 @@ public class SOAPServer
     
     //TODO: SHARE THIS FUNCTION WITH RESTServer (copied at the moment)
     private void writeResponse(HttpServletResponse response, String data, String contentType, String encoding) throws IOException
-    {
-//        response.setCharacterEncoding(encoding);
-        
+    {        
         // possible format contentType: text/xml; charset=UTF-8
         if ( contentType != null && !response.isCommitted() ) {
             
@@ -775,8 +807,8 @@ public class SOAPServer
     	
     	//cache for XQWS WSDL
     	private long lastModifiedWSDL = 0;
-    	private byte[] descriptionWSDL = null;
-    	
+    	private byte[][] descriptionWSDL = {null, null};
+	
     	//cache for XQWS Human Readable description
     	private long lastModifiedHuman = 0;
     	private byte[] descriptionHuman = null;
@@ -881,27 +913,48 @@ public class SOAPServer
     	 */
     	public byte[] getWSDL() throws PermissionDeniedException, TransformerConfigurationException, SAXException 
     	{
+    		return getWSDL(true);
+    	}
+	
+    	/**
+    	 * Returns the WSDL for the XQWS Description
+    	 * Caches the result, however the cache is regenerated if
+    	 * the StyleSheet used for the transformation changes
+    	 * 
+    	 * @return byte array containing the WSDL
+    	 */
+    	public byte[] getWSDL(boolean isDocumentLiteral) throws PermissionDeniedException, TransformerConfigurationException, SAXException 
+    	{
     		DocumentImpl docStyleSheet = null;
-    		try {
+    		int wsdlIndex = isDocumentLiteral ? 0 : 1;
+    		try
+    		{
 	    		//get the WSDL StyleSheet
     			docStyleSheet = broker.getXMLResource(XmldbURI.create(XSLT_WEBSERVICE_WSDL), Lock.READ_LOCK);
 	    		
 	    		//has the stylesheet changed, or is this the first call for this version
-	    		if(docStyleSheet.getMetadata().getLastModified() != lastModifiedWSDL || descriptionWSDL == null)
+	    		if(docStyleSheet.getMetadata().getLastModified() != lastModifiedWSDL || descriptionWSDL[wsdlIndex] == null)
 	    		{
 	    			//TODO: validate the WSDL
 	    			
+	    			Properties params = new Properties();
+	    			params.put("isDocumentLiteral", isDocumentLiteral ? "true" : "false");
+				
 	    			//yes, so re-run the transformation
-	    			descriptionWSDL = Transform(docXQWSDescription, docStyleSheet, null);
+	    			descriptionWSDL[wsdlIndex] = Transform(docXQWSDescription, docStyleSheet, params);
 	    			lastModifiedWSDL = docStyleSheet.getMetadata().getLastModified();
 	    		}
 	    		
 				//return the result of the transformation
-				return descriptionWSDL;
-    		} finally {
-    			if (docStyleSheet != null)
+				return descriptionWSDL[wsdlIndex];
+    		}
+    		finally
+    		{
+    			if(docStyleSheet != null)
+    			{
 	        		//close the Stylesheet Document and release the read lock
-	    			docStyleSheet.getUpdateLock().release(Lock.READ_LOCK);    			
+	    			docStyleSheet.getUpdateLock().release(Lock.READ_LOCK);
+    			}
     		}
     	}
     	
@@ -915,7 +968,8 @@ public class SOAPServer
     	public byte[] getHumanDescription() throws PermissionDeniedException, TransformerConfigurationException, SAXException 
     	{
     		DocumentImpl docStyleSheet = null;
-    		try {
+    		try
+    		{
 	    		//get the Human Description StyleSheet
 	    		docStyleSheet = broker.getXMLResource(XmldbURI.create(XSLT_WEBSERVICE_HUMAN_DESCRIPTION), Lock.READ_LOCK);
 	    		
@@ -929,10 +983,14 @@ public class SOAPServer
 				
 				//return the result of the transformation
 				return descriptionHuman;
-    		} finally {
-    			if (docStyleSheet != null)
+    		} 
+    		finally
+    		{
+    			if(docStyleSheet != null)
+    			{
 		    		//close the Stylesheet Document and release the read lock
-	    			docStyleSheet.getUpdateLock().release(Lock.READ_LOCK);    			
+	    			docStyleSheet.getUpdateLock().release(Lock.READ_LOCK);
+    			}
     		}
     	}
     	    	
@@ -948,7 +1006,8 @@ public class SOAPServer
     	public byte[] getFunctionDescription(String functionName) throws PermissionDeniedException, TransformerConfigurationException, SAXException 
     	{
     		DocumentImpl docStyleSheet = null;
-    		try {
+    		try
+    		{
 	    		//get the Function Description StyleSheet
     			docStyleSheet = broker.getXMLResource(XmldbURI.create(XSLT_WEBSERVICE_FUNCTION_DESCRIPTION), Lock.READ_LOCK);
 	    		
@@ -973,10 +1032,14 @@ public class SOAPServer
 	    		
 				//return the result of the transformation from the cache
 				return (byte[])descriptionFunction.get(functionName);
-    		} finally {
-    			if (docStyleSheet != null)    		
+    		}
+    		finally
+    		{
+    			if(docStyleSheet != null)
+    			{
 		    		//close the Stylesheet Document and release the read lock
 	    			docStyleSheet.getUpdateLock().release(Lock.READ_LOCK);
+    			}
     		}
    		}
 
@@ -1144,7 +1207,7 @@ public class SOAPServer
     	 * 
     	 * @return byte array containing the SOAP Response
     	 */
-    	public byte[] getSOAPResponse(String functionName, Sequence functionResult, HttpServletRequest request) throws XPathException, PermissionDeniedException, TransformerConfigurationException, SAXException
+    	public byte[] getSOAPResponse(String functionName, Sequence functionResult, HttpServletRequest request,boolean isRpcEncoded) throws XPathException, PermissionDeniedException, TransformerConfigurationException, SAXException
     	{
     		//get the Result StyleSheet for the SOAP Response
     		DocumentImpl docStyleSheet = broker.getXMLResource(XmldbURI.create(XSLT_WEBSERVICE_SOAP_RESPONSE), Lock.READ_LOCK);
@@ -1153,7 +1216,9 @@ public class SOAPServer
     		org.exist.memtree.DocumentImpl docResult = describeWebService(modXQWS, xqwsFileURI, request, XQWSPath, functionName, functionResult);
     		
     		//return the SOAP Response
-    		return Transform(docResult, docStyleSheet, null);
+	    	Properties params = new Properties();
+	    	params.put("isDocumentLiteral", isRpcEncoded ? "false" : "true");
+    		return Transform(docResult, docStyleSheet, params);
     	}
     	
     	/**
@@ -1166,7 +1231,10 @@ public class SOAPServer
     		// 1) Get the XQWS
     		BinaryDocument docXQWS = getXQWS(broker, XQWSPath);
 		
-		if(docXQWS==null)  throw new NotFoundException("Resource "+request.getRequestURL().toString()+" not found");
+    		if(docXQWS == null)
+    		{
+    			throw new NotFoundException("Resource " + request.getRequestURL().toString() + " not found");
+    		}
 		
     		xqwsFileURI = docXQWS.getFileURI();
     		xqwsCollectionURI = docXQWS.getCollection().getURI();
@@ -1197,14 +1265,18 @@ public class SOAPServer
         private BinaryDocument getXQWS(DBBroker broker, String path) throws PermissionDeniedException
         {
         	BinaryDocument docXQWS = null;
-            try {
+            try
+            {
             	XmldbURI pathUri = XmldbURI.create(path);        
             	docXQWS = (BinaryDocument) broker.getXMLResource(pathUri, Lock.READ_LOCK);
             	return docXQWS;
-            } finally {
+            }
+            finally
+            {
                 //close the XQWS Document and release the read lock
-        	    if(docXQWS!=null) {
-        	            docXQWS.getUpdateLock().release(Lock.READ_LOCK);
+        	    if(docXQWS != null)
+        	    {
+        	    	docXQWS.getUpdateLock().release(Lock.READ_LOCK);
                 }            	
             }
         }
@@ -1283,7 +1355,7 @@ public class SOAPServer
             query += "()";
             
             //compile the query
-            return compileXQuery(broker, new StringSource(query), new XmldbURI[] { xqwsCollectionUri}, xqwsCollectionUri, null, null);
+            return compileXQuery(broker, new StringSource(query), new XmldbURI[]{xqwsCollectionUri}, xqwsCollectionUri, null, null);
         }
         
         /**
@@ -1311,7 +1383,7 @@ public class SOAPServer
     	private org.exist.memtree.DocumentImpl describeWebService(Module modXQWS, XmldbURI xqwsFileUri, HttpServletRequest request, String path, String functionName, Sequence functionResult) throws XPathException,SAXException
     	{
     		FunctionSignature[] xqwsFunctions = modXQWS.listFunctions();
-            MemTreeBuilder builderWebserviceDoc = new MemTreeBuilder();
+            MemTreeBuilder builderWebserviceDoc = new MemTreeBuilder(broker.getXQueryService().newContext(AccessContext.REST));
     		builderWebserviceDoc.startDocument();
     		builderWebserviceDoc.startElement(new QName("webservice", null, null), null);
     		builderWebserviceDoc.startElement(new QName("name", null, null), null);
@@ -1428,13 +1500,13 @@ public class SOAPServer
         		builderFunction.startElement(new QName("result", null, null), null);
         		
         		//determine result cardinality
-			DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builderFunction);
+        		DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builderFunction);
         		if(iReturnCardinality >= Cardinality.MANY)
         		{
         			//sequence of values
         			builderFunction.startElement(new QName("sequence", null, null), null);
         			
-        			for(int i=0; i < functionResult.getItemCount(); i++)
+        			for(int i = 0; i < functionResult.getItemCount(); i++)
         			{
             			builderFunction.startElement(new QName("value", null, null), null);
             			functionResult.itemAt(i).copyTo(broker, receiver);
