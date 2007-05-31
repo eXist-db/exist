@@ -746,12 +746,16 @@ public class XQueryContext {
 		lockedDocuments = null;
         return remaining;
     }
-	
-	/**
+
+    public void reset() {
+        reset(false);
+    }
+
+    /**
 	 * Prepare this XQueryContext to be reused. This should be
      * called when adding an XQuery to the cache.
 	 */
-	public void reset() {
+	public void reset(boolean keepGlobals) {
         builder = new MemTreeBuilder(this);
 		builder.startDocument();
 		staticDocumentPaths = null;
@@ -759,7 +763,9 @@ public class XQueryContext {
 		lastVar = null;
 		fragmentStack = new Stack();
 		callStack.clear();
-        globalVariables.clear();
+
+        if (!keepGlobals)
+            globalVariables.clear();
         
         //remove the context-vars, subsequent execution of the query
 		//may generate different values for the vars based on the
