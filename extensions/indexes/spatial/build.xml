@@ -3,8 +3,37 @@
     <import file="../common.xml"/>
     
     <property name="resources.dir" value="./test/resources"/>
+    <property name="lib.dir" value="./lib"/>
     
-    <target name="jar" depends="compile">
+	<target name="prepare">
+		<mkdir dir="${lib.dir}"/>
+		<!-- geoapi-nogenerics-2.1-M3.jar -->
+		<get src="http://lists.refractions.net/m2/org/geotools/gt2-api/2.4-M1/gt2-api-2.4-M1.jar" 
+			dest="${lib.dir}/gt2-api-2.4-M1.jar" verbose="true" usetimestamp="true" />
+		<!--
+		Doesn't work and... 2.4-M1 isn't available any more !
+		<get src="http://lists.refractions.net/m2/org/geotools/gt2-epsg-extension/2.4-M2/gt2-epsg-extension-2.4-M2.jar" 
+			dest="${lib.dir}/gt2-epsg-extension-2.4-M2.jar" verbose="true" usetimestamp="true" />
+		-->
+	    <get src="http://lists.refractions.net/m2/org/geotools/gt2-epsg-wkt/2.4-M1/gt2-epsg-wkt-2.4-M1.jar" 
+			dest="${lib.dir}/gt2-epsg-wkt-2.4-M1.jar" verbose="true" usetimestamp="true" />
+		<get src="http://lists.refractions.net/m2/org/geotools/gt2-api/2.4-M1/gt2-api-2.4-M1.jar" 
+			dest="${lib.dir}/gt2-api-2.4-M1.jar" verbose="true" usetimestamp="true" />
+		<get src="http://lists.refractions.net/m2/org/geotools/gt2-main/2.4-M1/gt2-main-2.4-M1.jar"
+			dest="${lib.dir}/gt2-main-2.4-M1.jar" verbose="true" usetimestamp="true" />
+		<get src="http://lists.refractions.net/m2/org/geotools/gt2-metadata/2.4-M1/gt2-metadata-2.4-M1.jar" 
+			dest="${lib.dir}/gt2-metadata-2.4-M1.jar" verbose="true" usetimestamp="true" />
+		<get src="http://lists.refractions.net/m2/org/geotools/gt2-referencing/2.4-M1/gt2-referencing-2.4-M1.jar" 
+			dest="${lib.dir}/gt2-referencing-2.4-M1.jar" verbose="true" usetimestamp="true" />
+		<get src="http://lists.refractions.net/m2/org/geotools/gt2-xml/2.4-M1/gt2-xml-2.4-M1.jar" 
+			dest="${lib.dir}/gt2-xml-2.4-M1.jar" verbose="true" usetimestamp="true" />
+		<!-- hsqldb-1.8.0.7.jar -->
+		<!-- jsr108-0.01.jar -->
+		<!-- jts-1.8.jar -->
+		<!-- vecmath-1.3.1.jar -->
+	</target>
+
+	<target name="jar" depends="compile">
         <jar destfile="${top.dir}/exist-modules.jar" basedir="${classes}"
              keepcompression="true" update="true"/>
     </target>
