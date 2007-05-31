@@ -992,6 +992,36 @@ public class XPathQueryTest extends XMLTestCase {
             query = "(1,2,3)[position() = last()]";
             result = queryResource(service, "numbers.xml", query, 1);
             assertEquals("3", result.getResource(0).getContent().toString());
+            
+            query = "declare function local:f ($n) { " +
+				"$n " +
+				"}; " +
+				" " +
+				"declare function local:g( $n ) { " +
+				"('OK','Fine','Wrong') [local:f($n) + 1 ] " +
+				"} ; " +
+				" " +
+				"declare function local:h( $n ) { " +
+				"('OK','Fine','Wrong') [local:f($n) ] " +
+				"} ; " +
+				" " +
+				"declare function local:j( $n ) { " +
+				"let $m := local:f($n) " +
+				"return " +
+				"('OK','Fine','Wrong') [$m + 1 ] " +
+				"} ; " +
+				" " +
+				"declare function local:k ( $n ) { " +
+				"('OK','Fine','Wrong') [ $n + 1 ] " +
+				"} ; " +
+				" " +
+				"local:f(1),local:g(1), local:h(1), local:j(1), local:k(1) ";
+            result = queryResource(service, "numbers.xml", query, 5);
+            assertEquals("1", result.getResource(0).getContent().toString());
+            assertEquals("Fine", result.getResource(1).getContent().toString());
+            assertEquals("OK", result.getResource(2).getContent().toString());
+            assertEquals("Fine", result.getResource(3).getContent().toString());
+            assertEquals("Fine", result.getResource(4).getContent().toString());
 
             //The collection doesn't exist : let's see how the query behaves with empty sequences               
             query = "let $checkDate := xs:date(adjust-date-to-timezone(current-date(), ()))" +
