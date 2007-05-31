@@ -63,6 +63,7 @@ import org.exist.util.Base64Encoder;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.Occurrences;
 import org.exist.util.serializer.Receiver;
+import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.NodeValue;
@@ -389,6 +390,8 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         	return getGeometricPropertyForNode(broker, p, conn, propertyName);
 	    } catch (SQLException e) {
 	    	throw new SpatialIndexException(e);
+	    } catch (XPathException e) {
+	    	throw new SpatialIndexException(e);	    	
 	    } finally {
 	    	releaseConnection(conn);
 	    }
@@ -526,7 +529,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     
     protected abstract Map getGeometriesForDocument(DocumentImpl doc, Connection conn) throws SQLException;
     
-    protected abstract AtomicValue getGeometricPropertyForNode(DBBroker broker, NodeProxy p, Connection conn, String propertyName) throws SQLException;
+    protected abstract AtomicValue getGeometricPropertyForNode(DBBroker broker, NodeProxy p, Connection conn, String propertyName) throws SQLException, XPathException;
     
     protected abstract Geometry getGeometryForNode(DBBroker broker, NodeProxy p, Connection conn) throws SQLException;
     

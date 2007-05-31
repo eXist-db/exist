@@ -62,6 +62,8 @@ public class SpatialModule extends AbstractInternalModule {
     	new FunctionDef(FunGeometricProperties.signatures[18], FunGeometricProperties.class),
     	new FunctionDef(FunGeometricProperties.signatures[18], FunGeometricProperties.class),
     	new FunctionDef(FunGeometricProperties.signatures[19], FunGeometricProperties.class),
+    	new FunctionDef(FunGeometricProperties.signatures[20], FunGeometricProperties.class),
+    	new FunctionDef(FunGeometricProperties.signatures[21], FunGeometricProperties.class),    	
     	new FunctionDef(FunGMLProducers.signatures[0], FunGMLProducers.class),
     	new FunctionDef(FunGMLProducers.signatures[1], FunGMLProducers.class),
     	new FunctionDef(FunGMLProducers.signatures[2], FunGMLProducers.class),
@@ -72,7 +74,8 @@ public class SpatialModule extends AbstractInternalModule {
     	new FunctionDef(FunGMLProducers.signatures[7], FunGMLProducers.class),
     	new FunctionDef(FunGMLProducers.signatures[8], FunGMLProducers.class),
     	new FunctionDef(FunGMLProducers.signatures[9], FunGMLProducers.class),
-    	new FunctionDef(FunGMLProducers.signatures[10], FunGMLProducers.class)
+    	new FunctionDef(FunGMLProducers.signatures[10], FunGMLProducers.class),
+    	new FunctionDef(FunGMLProducers.signatures[11], FunGMLProducers.class)    	
     };
 	
 	public SpatialModule() {
