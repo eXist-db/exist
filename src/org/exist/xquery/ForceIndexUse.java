@@ -44,8 +44,8 @@ public class ForceIndexUse extends Pragma {
         		bailout = !expression.hasUsedIndex();
         	}
         	public void visitBuiltinFunction(Function expression) {
-                if (expression instanceof FunMatches)
-                	bailout = !((FunMatches)expression).hasUsedIndex();        	
+                if (expression instanceof IndexUseReporter)
+                	bailout = !((IndexUseReporter)expression).hasUsedIndex();
             }
     	});
     	

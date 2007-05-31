@@ -47,6 +47,7 @@ import org.exist.xquery.DynamicCardinalityCheck;
 import org.exist.xquery.Expression;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.IndexUseReporter;
 import org.exist.xquery.LocationStep;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.Optimizable;
@@ -70,7 +71,7 @@ import org.exist.xquery.value.Type;
  * 
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
-public class FunMatches extends Function implements Optimizable {
+public class FunMatches extends Function implements Optimizable, IndexUseReporter {
 
 	public final static FunctionSignature signatures[] = {
 		new FunctionSignature(
