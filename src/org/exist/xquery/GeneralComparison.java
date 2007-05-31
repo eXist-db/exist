@@ -26,7 +26,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.exist.EXistException;
-import org.exist.xmldb.XmldbURI;
 import org.exist.collections.Collection;
 import org.exist.dom.ContextItem;
 import org.exist.dom.DocumentSet;
@@ -38,6 +37,7 @@ import org.exist.dom.VirtualNodeSet;
 import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
 import org.exist.storage.Indexable;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.BooleanValue;
@@ -51,7 +51,7 @@ import org.exist.xquery.value.Type;
  * 
  * @author wolf
  */
-public class GeneralComparison extends BinaryOp implements Optimizable {
+public class GeneralComparison extends BinaryOp implements Optimizable, IndexUseReporter {
 
 	/**
 	 * The type of operator used for the comparison, i.e. =, !=, &lt;, &gt; ...
