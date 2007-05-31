@@ -113,14 +113,14 @@ public class Validation extends BasicFunction  {
         
     };
     
-
+    
     public Validation(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
         brokerPool = context.getBroker().getBrokerPool();
         validator = new Validator( brokerPool );
     }
     
-    /** 
+    /**
      * @see BasicFunction#eval(Sequence[], Sequence)
      */
     public Sequence eval(Sequence[] args, Sequence contextSequence) 
@@ -130,7 +130,7 @@ public class Validation extends BasicFunction  {
         if(args.length != 1 && args.length != 2){
             return Sequence.EMPTY_SEQUENCE;
         }
-
+        
         
         // Get inputstream
         InputStream is=null;
@@ -139,12 +139,6 @@ public class Validation extends BasicFunction  {
                 // anyURI provided
                 
                 String url=args[0].getStringValue();
-                
-                if(url.endsWith(".dtd")){
-                    throw new XPathException(getASTNode(),
-                        "Unable to validate with a specified DTD. "+
-                        "Please register the DTD in an xml catalog document.");
-                }
                 
                 if(url.startsWith("/")){
                     url="xmldb:exist://"+url;
@@ -175,15 +169,26 @@ public class Validation extends BasicFunction  {
             LOG.error(ex);
             //ex.printStackTrace();
             throw new XPathException(getASTNode(),"exception",ex);
-        } 
-
+        }
+        
         ValidationReport vr = null;
         if(args.length==1){
             vr = validator.validate(is);
             
         } else {
-            vr = validator.validate(is,args[1].getStringValue());
+            String url=args[1].getStringValue();
+            if(url.endsWith(".dtd")){
+                String txt =  "Unable to validate with a specified DTD ("+url+"). "+
+                    "Please register the DTD in an xml catalog document.";
+                LOG.error(txt);
+                throw new XPathException(getASTNode(), txt);
+            }
             
+            if(url.startsWith("/")){
+                url="xmldb:exist://"+url;
+            }
+            
+            vr = validator.validate(is,url);
         }
         
         // Create response
