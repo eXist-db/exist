@@ -943,7 +943,9 @@ public class GMLIndexTest extends TestCase {
             String query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
         	"at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
         	"declare namespace gml = 'http://www.opengis.net/gml'; " +
-        	"spatial:getArea(//gml:Polygon[1])";
+        	"(# exist:force-index-use #) { " +
+        	"spatial:getArea(//gml:Polygon[1]) " +
+        	"}";
             Sequence seq = xquery.execute(query, null, AccessContext.TEST);
             assertNotNull(seq);		
             assertTrue(seq.getItemCount() == 1);
@@ -960,7 +962,9 @@ public class GMLIndexTest extends TestCase {
             query = "import module namespace spatial='http://exist-db.org/xquery/spatial' " +
         		"at 'java:org.exist.examples.indexing.spatial.module.SpatialModule'; " +
         		"declare namespace gml = 'http://www.opengis.net/gml'; " +
-        		"spatial:getArea(//gml:Polygon[1])";
+        		"(# exist:force-index-use #) { " +
+        		"spatial:getArea(//gml:Polygon[1])" +
+            	"}";
             seq = xquery.execute(query, null, AccessContext.TEST);
             assertNotNull(seq);		
             assertTrue(seq.getItemCount() == 1);

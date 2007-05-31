@@ -33,6 +33,7 @@ import org.exist.memtree.MemTreeBuilder;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.IndexUseReporter;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.DoubleValue;
@@ -47,7 +48,9 @@ import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 import com.vividsolutions.jts.operation.buffer.BufferOp;
 
-public class FunGMLProducers extends BasicFunction {
+public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
+	
+	boolean hasUsedIndex = false;
 
     public final static FunctionSignature[] signatures = {
     	new FunctionSignature(
@@ -178,6 +181,7 @@ public class FunGMLProducers extends BasicFunction {
 		        	if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 		        		geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode);
 		        		sourceSRS = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
+		        		hasUsedIndex = true;
 		        	//Otherwise, build it
 		        	} else { 		        		
 		        		geometry = indexWorker.streamGeometryForNode(context, geometryNode);
@@ -211,6 +215,7 @@ public class FunGMLProducers extends BasicFunction {
 		        	if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {		        		
 		        		geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode);
 		        		srsName = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
+		        		hasUsedIndex = true;
 		        	//Otherwise, build it
 		        	} else { 		        		
 		        		geometry = indexWorker.streamGeometryForNode(context, geometryNode);
@@ -247,6 +252,7 @@ public class FunGMLProducers extends BasicFunction {
 		        	if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 		        		geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode);
 		        		srsName = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
+		        		hasUsedIndex = true;
 		        	//Otherwise, build it
 		        	} else { 		        		
 		        		geometry = indexWorker.streamGeometryForNode(context, geometryNode);
@@ -266,6 +272,7 @@ public class FunGMLProducers extends BasicFunction {
 		        	if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 		        		geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode);
 		        		srsName = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
+		        		hasUsedIndex = true;
 		        	//Otherwise, build it
 		        	} else { 		        		
 		        		geometry = indexWorker.streamGeometryForNode(context, geometryNode);
@@ -294,10 +301,12 @@ public class FunGMLProducers extends BasicFunction {
 		        	if (geometryNode1.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 		        		geometry1 = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode1);
 		        		srsName1 = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode1, "SRS_NAME").getStringValue();
+		        		hasUsedIndex = true;
 		        	}
 		        	if (geometryNode2.getImplementationType() == NodeValue.PERSISTENT_NODE) {
 		        		geometry2 = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode2);
 		        		srsName2 = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode2, "SRS_NAME").getStringValue();
+		        		hasUsedIndex = true;
 		        	}
 		        	//Otherwise build them
 		            if (geometry1 == null) {
@@ -319,7 +328,6 @@ public class FunGMLProducers extends BasicFunction {
 					if (!srsName1.equalsIgnoreCase(srsName2)) {
 				        geometry2 = indexWorker.transformGeometry(geometry2, srsName1, srsName2);      	
 					}
-					
 					
 					if (isCalledAs("intersection")) {
 						geometry = geometry1.intersection(geometry2);
@@ -352,5 +360,9 @@ public class FunGMLProducers extends BasicFunction {
     	}        
         return result;
     }
+    
+    public boolean hasUsedIndex() {
+        return hasUsedIndex;
+    }    
     
 }
