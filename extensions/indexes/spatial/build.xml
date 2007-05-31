@@ -23,7 +23,8 @@
 			dest="${lib.dir}/gt2-referencing-2.4-M1.jar" verbose="true" usetimestamp="true" />
 		<get src="http://lists.refractions.net/m2/org/geotools/gt2-xml/2.4-M1/gt2-xml-2.4-M1.jar" 
 			dest="${lib.dir}/gt2-xml-2.4-M1.jar" verbose="true" usetimestamp="true" />
-		<!-- geoapi-nogenerics-2.1-M3.jar -->
+		<get src="http://lists.refractions.net/m2/org/opengis/geoapi-nogenerics/2.1-M3/geoapi-nogenerics-2.1-M3.jar" 
+			dest="${lib.dir}/geoapi-nogenerics-2.1-M3.jar" verbose="true" usetimestamp="true" />
 		<!-- hsqldb-1.8.0.7.jar -->
 		<get src="http://maven.geotools.fr/repository/javax/units/jsr108/0.01/jsr108-0.01.jar"
 			dest="${lib.dir}/jsr108-0.01.jar" verbose="true" usetimestamp="true" />
