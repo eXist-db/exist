@@ -105,6 +105,14 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
             new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
         ),
     	new FunctionSignature(
+            new QName("getBbox", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
+            "Returns the GML representation of the bounding box of geometry $a.",
+            new SequenceType[]{
+            	new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+            },
+            new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+        ),         
+    	new FunctionSignature(
             new QName("convexHull", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the GML representation of the convex hull of geometry $a.",
             new SequenceType[]{
@@ -243,6 +251,26 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 	
 		        	geometry = geometry.buffer(distance, quadrantSegments, endCapStyle);	
 	        	}
+	        } else if (isCalledAs("getBbox")) {
+	        	if (args[0].isEmpty())
+	                result = Sequence.EMPTY_SEQUENCE;
+	        	else {
+		        	NodeValue geometryNode = (NodeValue) args[0].itemAt(0);	        		        	
+		        	//Try to get the geometry from the index
+		        	if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+		        		geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode);
+		        		srsName = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
+		        		hasUsedIndex = true;
+		        	//Otherwise, build it
+		        	} else { 		        		
+		        		geometry = indexWorker.streamGeometryForNode(context, geometryNode);
+		            	//Argl ! No SRS !
+		            	//srsName = ((Element)geometryNode).getAttribute("srsName").trim();
+		            	//Erroneous workaround
+		            	srsName = "osgb:BNG";
+		        	}
+		        	geometry = geometry.getEnvelope();
+	        	}	        	
 	        } else if (isCalledAs("convexHull")) {
 	        	if (args[0].isEmpty())
 	                result = Sequence.EMPTY_SEQUENCE;

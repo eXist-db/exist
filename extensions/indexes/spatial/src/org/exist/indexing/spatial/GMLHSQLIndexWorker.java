@@ -43,7 +43,9 @@ import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.XPathException;
 import org.exist.xquery.value.AtomicValue;
+import org.exist.xquery.value.Base64Binary;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.DoubleValue;
 import org.exist.xquery.value.StringValue;
@@ -587,7 +589,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     	}
     } 
     
-    protected AtomicValue getGeometricPropertyForNode(DBBroker broker, NodeProxy p, Connection conn, String propertyName) throws SQLException {
+    protected AtomicValue getGeometricPropertyForNode(DBBroker broker, NodeProxy p, Connection conn, String propertyName) throws SQLException, XPathException {
         PreparedStatement ps = conn.prepareStatement(
     		"SELECT " + propertyName + 
     		" FROM " + GMLHSQLIndex.TABLE_NAME + 
@@ -607,9 +609,12 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     		} else if (rs.getMetaData().getColumnClassName(1).equals(Double.class.getName())) {
     			result = new DoubleValue(rs.getDouble(1));
     		} else if (rs.getMetaData().getColumnClassName(1).equals(String.class.getName())) {
-    			result = new StringValue(rs.getString(1));
+    			if ("WKB".equals(propertyName) || "EPSG4326_WKB".equals(propertyName))
+    				result = new Base64Binary(rs.getString(1));
+    			else    				
+    				result = new StringValue(rs.getString(1));
     		} else 
-    			throw new SQLException("Uniable to make an atomic value from '" + rs.getMetaData().getColumnClassName(1) + "'");		
+    			throw new SQLException("Unable to make an atomic value from '" + rs.getMetaData().getColumnClassName(1) + "'");		
         	if (rs.next()) {   	
     			//Should be impossible    		
     			throw new SQLException("More than one geometry for node " + p);

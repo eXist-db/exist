@@ -35,6 +35,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.IndexUseReporter;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.Base64Binary;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.DoubleValue;
 import org.exist.xquery.value.NodeValue;
@@ -45,11 +46,15 @@ import org.exist.xquery.value.Type;
 import org.w3c.dom.Element;
 
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.WKBWriter;
 import com.vividsolutions.jts.io.WKTWriter;
 
 public class FunGeometricProperties extends BasicFunction implements IndexUseReporter {
 	
 	boolean hasUsedIndex = false;
+	
+	protected WKTWriter wktWriter = new WKTWriter();
+	protected WKBWriter wkbWriter = new WKBWriter();
 	
     public final static FunctionSignature[] signatures = {
     	new FunctionSignature(
@@ -60,6 +65,14 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
             },
             new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE)
         ),
+    	new FunctionSignature(
+    		new QName("getWKB", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
+    		"Returns the WKB representation of geometry $a",
+            new SequenceType[]{
+	    		new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+            },
+            new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE)
+        ),        
     	new FunctionSignature(
     		new QName("getMinX", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
     		"Returns the minimal X of geometry $a",
@@ -117,8 +130,16 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
             new SequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE)
         ),
     	new FunctionSignature(
+    		new QName("getEPSG4326WKB", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
+    		"Returns the WKB representation of geometry $a in the EPSG:4326 SRS",
+            new SequenceType[]{
+	    		new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+            },
+            new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE)
+        ),         
+    	new FunctionSignature(
     		new QName("getEPSG4326MinX", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-    		"Returns the minimal X of geometry $a",
+    		"Returns the minimal X of geometry $a in the EPSG:4326 SRS",
             new SequenceType[]{
 	    		new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
             },
@@ -126,7 +147,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
         ),
     	new FunctionSignature(
     		new QName("getEPSG4326MaxX", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-    		"Returns the maximal X of geometry $a",
+    		"Returns the maximal X of geometry $a in the EPSG:4326 SRS",
             new SequenceType[]{
 	    		new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
             },
@@ -134,7 +155,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
         ),
     	new FunctionSignature(
     		new QName("getEPSG4326MinY", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-    		"Returns the minimal Y of geometry $a",
+    		"Returns the minimal Y of geometry $a in the EPSG:4326 SRS",
             new SequenceType[]{
 	    		new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
             },
@@ -142,7 +163,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
         ),
     	new FunctionSignature(
     		new QName("getEPSG4326MaxY", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-    		"Returns the maximal Y of geometry $a",
+    		"Returns the maximal Y of geometry $a in the EPSG:4326 SRS",
             new SequenceType[]{
 	    		new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
             },
@@ -150,7 +171,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
         ),
     	new FunctionSignature(
     		new QName("getEPSG4326CentroidX", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-    		"Returns the X of centroid of geometry $a",
+    		"Returns the X of centroid of geometry $a in the EPSG:4326 SRS",
             new SequenceType[]{
 	    		new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
             },
@@ -158,7 +179,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
         ),
     	new FunctionSignature(
     		new QName("getEPSG4326CentroidY", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-    		"Returns the Y of centroid of geometry $a",
+    		"Returns the Y of centroid of geometry $a in the EPSG:4326 SRS",
             new SequenceType[]{
 	    		new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
             },
@@ -166,7 +187,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
         ),
     	new FunctionSignature(
     		new QName("getEPSG4326Area", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-    		"Returns the area of geometry $a",
+    		"Returns the area of geometry $a in the EPSG:4326 SRS",
             new SequenceType[]{
 	    		new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
             },
@@ -236,6 +257,8 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
 		        	String propertyName = null;
 					if (isCalledAs("GMLtoWKT")) {
 						propertyName = "WKT";
+					} else if (isCalledAs("getWKB")) {
+						propertyName = "BASE64_WKB";						
 					} else if (isCalledAs("getMinX")) {
 						propertyName = "MINX";						
 					} else if (isCalledAs("getMaxX")) {					
@@ -250,6 +273,8 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
 						propertyName = "CENTROID_Y";
 					} else if (isCalledAs("getArea")) {
 						propertyName = "AREA";
+					} else if (isCalledAs("getEPSG4326WKB")) {
+						propertyName = "EPSG4326_BASE64_WKB";							
 					} else if (isCalledAs("getEPSG4326MinX")) {
 						propertyName = "EPSG4326_MINX";						
 					} else if (isCalledAs("getEPSG4326MaxX")) {					
@@ -299,7 +324,9 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
 					//Transform the geometry to EPSG:4326 if relevant
 					if (mySignature.getName().getLocalName().indexOf("EPSG4326") != Constants.STRING_NOT_FOUND) {
 						geometry = indexWorker.transformGeometry(geometry, sourceCRS, "EPSG:4326");
-						if (isCalledAs("getEPSG4326MinX")) {
+						if (isCalledAs("getEPSG4326WKB")) {
+							result = new Base64Binary(wkbWriter.write(geometry));
+						} else if (isCalledAs("getEPSG4326MinX")) {
 							result = new DoubleValue(geometry.getEnvelopeInternal().getMinX());
 						} else if (isCalledAs("getEPSG4326MaxX")) {
 							result = new DoubleValue(geometry.getEnvelopeInternal().getMaxX());
@@ -315,8 +342,10 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
 							result = new DoubleValue(geometry.getArea());
 						}
 					} else if (isCalledAs("GMLtoWKT")) {
-						WKTWriter wktWriter = new WKTWriter();
+						
 						result = new StringValue(wktWriter.write(geometry));
+					} else if (isCalledAs("getWKB")) {
+			            result = new Base64Binary(wkbWriter.write(geometry));
 					} else if (isCalledAs("getMinX")) {
 						result = new DoubleValue(geometry.getEnvelopeInternal().getMinX());
 					} else if (isCalledAs("getMaxX")) {
