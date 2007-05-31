@@ -256,12 +256,25 @@ public class Predicate extends PathExpr {
 						result.add(contextSequence.itemAt(position - 1));
 				}
         	} else {
+	            Set positions = new TreeSet();
         		for (SequenceIterator i = contextSequence.iterate(); i.hasNext(); p++) {
 					context.setContextPosition(p); 
 					Item item = i.nextItem();            
 		            Sequence innerSeq = inner.eval(contextSequence, item);
-					if (innerSeq.effectiveBooleanValue())
+		            if (innerSeq.hasOne() && Type.subTypeOf(innerSeq.getItemType(), Type.NUMBER)) {
+			            //TODO : introduce a check in innerSeq.hasOne() ?
+						NumericValue nv = (NumericValue)innerSeq;
+						//Non integers return... nothing, not even an error !
+						if (!nv.hasFractionalPart() && !nv.isZero())
+			            	positions.add(nv);
+		            } else if (innerSeq.effectiveBooleanValue())
 						result.add(item);				
+				}
+				for (Iterator i = positions.iterator() ; i.hasNext() ;) {
+					int position = ((NumericValue)i.next()).getInt();
+					//TODO : move this test above ?
+					if (position <= contextSequence.getItemCount())
+						result.add(contextSequence.itemAt(position - 1));
 				}
         	}
 		}
