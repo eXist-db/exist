@@ -214,9 +214,6 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     			//TODO : retain only geometries
     			topMost = currentNode;
     	}
-    	//PROVISIONAL
-    	if (!srsNamesStack.isEmpty())
-    		srsNamesStack.clear();
     	return topMost;    	
     }    
 
@@ -606,13 +603,13 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 		        	}
 		        	deferredElement = null;
 	        	}
-	        	try {
+        		String currentSrsName = null;
+        		if (GML_NS.equals(element.getNamespaceURI()))
+        			currentSrsName = (String)srsNamesStack.pop();        		
+        		try {
 	        		handler.endElement(element.getNamespaceURI(), element.getLocalName(), element.getQName().getStringValue());
-	        		String currentSrsName = null;
-	        		if (GML_NS.equals(element.getNamespaceURI())) {
-	        			currentSrsName = (String)srsNamesStack.pop();	
-	        		}         		
-	        		if (streamedGeometry != null) {   
+	        		//Some invalid/(yet) incomplete geometries don't have a SRS
+	        		if (streamedGeometry != null && currentSrsName != null) {   
 	        			currentNodeId = element.getNodeId();
 		    			geometries.put(currentNodeId, new SRSGeometry(currentSrsName, streamedGeometry));		        		
 			        	if (flushAfter != -1 && geometries.size() >= flushAfter) {
@@ -707,9 +704,9 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     	
     	public SRSGeometry(String SRSName, Geometry geometry) {
     		if (SRSName == null)
-    			throw new IllegalArgumentException("null SRS");
+    			throw new IllegalArgumentException("Got null SRS");
     		if (geometry == null)
-    			throw new IllegalArgumentException("null geometry");
+    			throw new IllegalArgumentException("Got null geometry");
     		this.SRSName = SRSName;
     		this.geometry = geometry;
     	} 

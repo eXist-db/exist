@@ -32,6 +32,7 @@ import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.IndexUseReporter;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
@@ -46,8 +47,10 @@ import org.w3c.dom.Element;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTWriter;
 
-public class FunGeometricProperties extends BasicFunction {
-
+public class FunGeometricProperties extends BasicFunction implements IndexUseReporter {
+	
+	boolean hasUsedIndex = false;
+	
     public final static FunctionSignature[] signatures = {
     	new FunctionSignature(
             new QName("GMLtoWKT", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
@@ -276,6 +279,7 @@ public class FunGeometricProperties extends BasicFunction {
 					if (propertyName != null) {
 						//The node should be indexed : get its properties
 						result = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, propertyName);
+						hasUsedIndex = true;
 					} else {
 						//Or, at least, its geometry for further processing
 						geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode);
@@ -346,5 +350,9 @@ public class FunGeometricProperties extends BasicFunction {
         }
         return result;
     }
+    
+    public boolean hasUsedIndex() {
+        return hasUsedIndex;
+    }    
     
 }

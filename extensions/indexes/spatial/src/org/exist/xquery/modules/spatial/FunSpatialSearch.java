@@ -32,19 +32,13 @@ import org.exist.indexing.spatial.AbstractGMLJDBCIndex.SpatialOperator;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.IndexUseReporter;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-import org.geotools.gml.GMLFilterDocument;
-import org.geotools.gml.GMLFilterGeometry;
-import org.geotools.gml.GMLHandlerJTS;
-import org.w3c.dom.Element;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.XMLFilterImpl;
 
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -55,84 +49,85 @@ import com.vividsolutions.jts.geom.Geometry;
  * Time: 15:18:59
  * To change this template use File | Settings | File Templates.
  */
-public class FunSpatialSearch extends BasicFunction {
+public class FunSpatialSearch extends BasicFunction implements IndexUseReporter {
+	
+	boolean hasUsedIndex = false;
 
     public final static FunctionSignature[] signatures = {
-            new FunctionSignature(
-                new QName("equals", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-                "Returns the nodes in $a that contain a geometry which is equal to geometry $b",
-                new SequenceType[]{
-                        new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-                        new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
-                },
-                new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
-            ),
-            new FunctionSignature(
-                new QName("disjoint", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-                "Returns the nodes in $a that contain a geometry which is disjoint with geometry $b",
-                new SequenceType[]{
-                        new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-                        new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
-                },
-                new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
-            ),
-            new FunctionSignature(
-                new QName("intersects", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-                "Returns the nodes in $a that contain a geometry which instersects with geometry $b",
-                new SequenceType[]{
-                        new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-                        new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
-                },
-                new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
-            ),
-            new FunctionSignature(
-                new QName("touches", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-                "Returns the nodes in $a that contain a geometry which touches geometry $b",
-                new SequenceType[]{
-                        new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-                        new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
-                },
-                new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
-            ),
-            new FunctionSignature(
-                new QName("crosses", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-                "Returns the nodes in $a that contain a geometry which crosses geometry $b",
-                new SequenceType[]{
-                        new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-                        new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
-                },
-                new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
-            ),
-            new FunctionSignature(
-                new QName("within", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-                "Returns the nodes in $a that contain a geometry which is within geometry $b",
-                new SequenceType[]{
-                        new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-                        new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
-                },
-                new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
-            ),
-            new FunctionSignature(
-                new QName("contains", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-                "Returns the nodes in $a that contain a geometry which contains geometry $b",
-                new SequenceType[]{
-                        new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-                        new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
-                },
-                new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
-            ),
-            new FunctionSignature(
-                new QName("overlaps", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
-                "Returns the nodes in $a that contain a geometry which overlaps geometry $b",
-                new SequenceType[]{
-                        new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
-                        new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
-                },
-                new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
-            )                
-    	};
-    
-    private Geometry currentGeometry;
+        new FunctionSignature(
+            new QName("equals", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
+            "Returns the nodes in $a that contain a geometry which is equal to geometry $b",
+            new SequenceType[]{
+                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
+                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+            },
+            new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
+        ),
+        new FunctionSignature(
+            new QName("disjoint", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
+            "Returns the nodes in $a that contain a geometry which is disjoint with geometry $b",
+            new SequenceType[]{
+                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
+                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+            },
+            new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
+        ),
+        new FunctionSignature(
+            new QName("intersects", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
+            "Returns the nodes in $a that contain a geometry which instersects with geometry $b",
+            new SequenceType[]{
+                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
+                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+            },
+            new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
+        ),
+        new FunctionSignature(
+            new QName("touches", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
+            "Returns the nodes in $a that contain a geometry which touches geometry $b",
+            new SequenceType[]{
+                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
+                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+            },
+            new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
+        ),
+        new FunctionSignature(
+            new QName("crosses", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
+            "Returns the nodes in $a that contain a geometry which crosses geometry $b",
+            new SequenceType[]{
+                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
+                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+            },
+            new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
+        ),
+        new FunctionSignature(
+            new QName("within", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
+            "Returns the nodes in $a that contain a geometry which is within geometry $b",
+            new SequenceType[]{
+                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
+                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+            },
+            new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
+        ),
+        new FunctionSignature(
+            new QName("contains", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
+            "Returns the nodes in $a that contain a geometry which contains geometry $b",
+            new SequenceType[]{
+                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
+                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+            },
+            new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
+        ),
+        new FunctionSignature(
+            new QName("overlaps", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
+            "Returns the nodes in $a that contain a geometry which overlaps geometry $b",
+            new SequenceType[]{
+                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
+                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_ONE)
+            },
+            new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE)
+        )                
+	};    
+   
 
     public FunSpatialSearch(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
@@ -144,7 +139,7 @@ public class FunSpatialSearch extends BasicFunction {
         if (nodes.isEmpty())
             result = Sequence.EMPTY_SEQUENCE;
         else if (args[1].isEmpty())
-        	//TODO : to be discusses. We could also return an empty sequence here        	
+        	//TODO : to be discussed. We could also return an empty sequence here        	
         	result = nodes;
         else {
         	try {
@@ -157,22 +152,14 @@ public class FunSpatialSearch extends BasicFunction {
 				if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE)
 					//The node should be indexed
 					EPSG4326_geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode);		
-		        if (EPSG4326_geometry == null) {
-		        	//builds the geometry
-		        	GMLHandlerJTS geometryHandler = new GeometryHandler(); 
-		            GMLFilterGeometry geometryFilter = new GMLFilterGeometry(geometryHandler); 
-		            GMLFilterDocument handler = new GMLFilterDocument(geometryFilter);	        
-		            try {
-		            	geometryNode.toSAX(context.getBroker(), (ContentHandler)handler, null);
-		            } catch (SAXException e) {
-		            	throw new XPathException("Unable to serialize '" + geometryNode + "' as a valid GML geometry", e); 
-	 	            }
-		            if (currentGeometry == null)
-		            	throw new XPathException(geometryNode.getNode().getLocalName() + " is not a GML geometry node");
-		            
-		            //Transform the geometry to EPSG:4326
-		            String originSrsName = ((Element)geometryNode).getAttribute("srsName").trim();
-		            EPSG4326_geometry = indexWorker.transformGeometry(currentGeometry, originSrsName, "EPSG:4326");	        		        
+		        if (EPSG4326_geometry == null) {		        	
+		        	Geometry geometry = indexWorker.streamGeometryForNode(context, geometryNode);
+	            	//Argl ! No SRS !
+	            	//sourceCRS = ((Element)geometryNode).getAttribute("srsName").trim();
+	            	//Erroneous workaround
+		        	String sourceCRS = "osgb:BNG";
+		            //Transform the geometry to EPSG:4326		            
+		            EPSG4326_geometry = indexWorker.transformGeometry(geometry, sourceCRS, "EPSG:4326");	        		        
 		        }
 		        int spatialOp = SpatialOperator.UNKNOWN;
 		        if (isCalledAs("equals"))
@@ -193,6 +180,7 @@ public class FunSpatialSearch extends BasicFunction {
 		        	spatialOp = SpatialOperator.OVERLAPS;
 		        //Search the EPSG:4326 in the index
 		        result = indexWorker.search(context.getBroker(),  nodes.toNodeSet(), EPSG4326_geometry, spatialOp);
+		        hasUsedIndex = true;
         	} catch (SpatialIndexException e) {
         		throw new XPathException(e);
         	}
@@ -200,9 +188,7 @@ public class FunSpatialSearch extends BasicFunction {
         return result;
     }
     
-    private class GeometryHandler extends XMLFilterImpl implements GMLHandlerJTS {
-        public void geometry(Geometry geometry) {
-        	currentGeometry = geometry;
-        }
+    public boolean hasUsedIndex() {
+        return hasUsedIndex;
     }     
 }
