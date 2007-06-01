@@ -331,15 +331,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
         // TODO Auto-generated method stub      
     }
 
-    public void startElement(ElementImpl impl, NodePath currentPath, boolean index) {
-        // TODO Auto-generated method stub      
-    }
-
-    public void endElement(int xpathType, ElementImpl node, String content) {
-        // TODO Auto-generated method stub  
-    }
-
-    public void removeElement(ElementImpl node, NodePath currentPath, String content) {
+    public void removeNode(StoredNode node, NodePath currentPath, String content) {
         // TODO Auto-generated method stub      
     }    
 

@@ -32,17 +32,7 @@ import java.util.TreeMap;
 import org.apache.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.dom.AttrImpl;
-import org.exist.dom.ByDocumentIterator;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.DocumentSet;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.ExtArrayNodeSet;
-import org.exist.dom.NodeProxy;
-import org.exist.dom.NodeSet;
-import org.exist.dom.QName;
-import org.exist.dom.SymbolTable;
-import org.exist.dom.TextImpl;
+import org.exist.dom.*;
 import org.exist.numbering.DLN;
 import org.exist.numbering.NodeId;
 import org.exist.security.Permission;
@@ -164,15 +154,7 @@ public class NativeElementIndex extends ElementIndex implements ContentLoadingOb
         // TODO Auto-generated method stub      
     }
 
-    public void startElement(ElementImpl node, NodePath currentPath, boolean index) {
-        // TODO Auto-generated method stub      
-    }
-
-    public void endElement(int xpathType, ElementImpl node, String content) {
-        // TODO Auto-generated method stub      
-    }
-
-    public void removeElement(ElementImpl node, NodePath currentPath, String content) {
+    public void removeNode(StoredNode node, NodePath currentPath, String content) {
         // TODO Auto-generated method stub      
     }    
     
