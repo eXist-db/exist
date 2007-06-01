@@ -182,6 +182,8 @@ public class MatchRegexp extends Function implements Optimizable {
     }
 
     public NodeSet preSelect(Sequence contextSequence, boolean useContext) throws XPathException {
+        // the expression can be called multiple times, so we need to clear the previous preselectResult
+        preselectResult = null;
         // get the search terms
         Expression termsExpr = getArgument(1);
         Expression flagsExpr = (getArgumentCount() == 3) ? getArgument(2) : null;

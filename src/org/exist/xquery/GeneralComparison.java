@@ -240,6 +240,9 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
     }
     
     public NodeSet preSelect(Sequence contextSequence, boolean useContext) throws XPathException {
+        // the expression can be called multiple times, so we need to clear the previous preselectResult
+        preselectResult = null;
+        
         int indexType = Optimize.getQNameIndexType(context, contextSequence, contextQName);
         if (LOG.isTraceEnabled())
             LOG.trace("Using QName index on type " + Type.getTypeName(indexType));
@@ -294,8 +297,10 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                 }
                 if (preselectResult == null)
                     preselectResult = temp;
-                else
+                else {
+                    LOG.debug("Union: " + preselectResult.getLength() + " -> " + temp.getLength());
                     preselectResult = preselectResult.union(temp);
+                }
             }
         }
         return preselectResult;
@@ -359,7 +364,6 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                     contextStep.setPreloadedData(contextSequence.getDocumentSet(), preselectResult);
 		
 		            result = getLeft().eval(contextSequence).toNodeSet();
-		 
 		        }
 		    }
 	        

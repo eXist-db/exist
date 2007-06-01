@@ -171,6 +171,9 @@ public class FunMatches extends Function implements Optimizable, IndexUseReporte
     }
 
     public NodeSet preSelect(Sequence contextSequence, boolean useContext) throws XPathException {
+        // the expression can be called multiple times, so we need to clear the previous preselectResult
+        preselectResult = null;
+        
         int indexType = Optimize.getQNameIndexType(context, contextSequence, contextQName);
         if (LOG.isTraceEnabled())
             LOG.trace("Using QName index on type " + Type.getTypeName(indexType));

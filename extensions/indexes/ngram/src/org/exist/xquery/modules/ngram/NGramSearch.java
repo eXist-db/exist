@@ -99,6 +99,9 @@ public class NGramSearch extends Function implements Optimizable {
     }
 
     public NodeSet preSelect(Sequence contextSequence, boolean useContext) throws XPathException {
+        // the expression can be called multiple times, so we need to clear the previous preselectResult
+        preselectResult = null;
+
         NGramIndexWorker index = (NGramIndexWorker) context.getBroker().getIndexController().getIndexWorkerById(NGramIndex.ID);
         DocumentSet docs = contextSequence.getDocumentSet();
         String key = getArgument(1).eval(contextSequence).getStringValue();

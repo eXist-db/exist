@@ -143,6 +143,9 @@ public class ExtRegexp extends Function implements Optimizable {
     }
     
     public NodeSet preSelect(Sequence contextSequence, boolean useContext) throws XPathException {
+        // the expression can be called multiple times, so we need to clear the previous preselectResult
+        preselectResult = null;
+        
         // get the search terms
         List terms = getSearchTerms(contextSequence);
 

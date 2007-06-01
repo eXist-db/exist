@@ -76,6 +76,9 @@ public class ExtNear extends ExtFulltext {
 	}
 
     public NodeSet preSelect(Sequence contextSequence, boolean useContext) throws XPathException {
+        // the expression can be called multiple times, so we need to clear the previous preselectResult
+        preselectResult = null;
+        
         if (maxDistance != null) {
 			max_distance = ((IntegerValue) maxDistance.eval(contextSequence).convertTo(Type.INTEGER)).getInt();
 		}
