@@ -574,38 +574,40 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         
         public void startElement(Txn transaction, ElementImpl element, NodePath path) { 
         	if (isDocumentGMLAware) {
-	    		if (deferredElement != null) {    			
-	    			AttributesImpl attList = collectAttributes(deferredElement);    			
-	            	try {
-	            		handler.startElement(deferredElement.getNamespaceURI(), deferredElement.getLocalName(), deferredElement.getQName().getStringValue(), attList);
-		        	} catch (Exception e) {
-		        		e.printStackTrace();
-		        		LOG.error(e);		
-		        	}
-	        	}
+        		//Release the deferred element
+        		processDeferredElement();
+        		//Retain this element
 	    		deferredElement = element;  
         	}
 	        //Forward the event to the next listener 
         	super.startElement(transaction, element, path);
         }
-
+        
         public void attribute(Txn transaction, AttrImpl attrib, NodePath path) { 
         	//Forward the event to the next listener 
         	super.attribute(transaction, attrib, path);          
-        }
+        }        
+
+        public void characters(Txn transaction, TextImpl text, NodePath path) {
+        	if (isDocumentGMLAware) {
+        		//Release the deferred element
+        		processDeferredElement();
+	        	deferredElement = null;
+	        	try {
+	        		handler.characters(text.getData().toCharArray(), 0, text.getLength());
+	        	} catch (Exception e) {
+	        		LOG.error(e);
+	        	}    
+        	}
+        	//Forward the event to the next listener 
+        	super.characters(transaction, text, path);
+        }        
 
         public void endElement(Txn transaction, ElementImpl element, NodePath path) {
-        	if (isDocumentGMLAware) {        		
-	        	if (deferredElement != null) {        		
-	        		AttributesImpl attList = collectAttributes(deferredElement); 
-	            	try {
-	            		handler.startElement(deferredElement.getNamespaceURI(), deferredElement.getLocalName(), deferredElement.getQName().getStringValue(), attList);
-		        	} catch (Exception e) {
-		        		e.printStackTrace();
-		        		LOG.error(e);
-		        	}
-		        	deferredElement = null;
-	        	}
+        	if (isDocumentGMLAware) {   
+        		//Release the deferred element
+	        	processDeferredElement();
+	        	deferredElement = null;
         		String currentSrsName = null;
         		if (GML_NS.equals(element.getNamespaceURI()))
         			currentSrsName = (String)srsNamesStack.pop();        		
@@ -636,27 +638,18 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         	//Forward the event to the next listener 
             super.endElement(transaction, element, path);
         }
-
-        public void characters(Txn transaction, TextImpl text, NodePath path) {
-        	if (isDocumentGMLAware) {
-	        	if (deferredElement != null  /* && mode == StreamListener.STORE*/) {        		
-	        		AttributesImpl attList = collectAttributes(deferredElement);  
-	            	try {
-	            		handler.startElement(deferredElement.getNamespaceURI(), deferredElement.getLocalName(), deferredElement.getQName().getStringValue(), attList);	
-		        	} catch (Exception e) {
-		        		e.printStackTrace();
-		        		LOG.error(e);
-		        	}
-		        	deferredElement = null;
-	        	}
-	        	try {
-	        		handler.characters(text.getData().toCharArray(), 0, text.getLength());
-	        	} catch (Exception e) {
-	        		LOG.error(e);
-	        	}    
-        	}
-        	//Forward the event to the next listener 
-        	super.characters(transaction, text, path);
+        
+        private void processDeferredElement() {
+        	if (deferredElement == null)
+        		return;    
+    		//We need to collect the retained element's attributes in order to feed the SAX handler
+    		AttributesImpl attList = collectAttributes(deferredElement); 
+        	try {
+        		handler.startElement(deferredElement.getNamespaceURI(), deferredElement.getLocalName(), deferredElement.getQName().getStringValue(), attList);
+        	} catch (Exception e) {
+        		e.printStackTrace();
+        		LOG.error(e);
+        	}        	       	
         }
         
         private AttributesImpl collectAttributes(ElementImpl element) {        	
@@ -669,7 +662,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         	for (int i = 0; i < attrs.getLength() ; i++) {
         		AttrImpl attrib = (AttrImpl)attrs.item(i);
         		
-            	//Store the srs if relevant
+            	//Store the srs
         		if (GML_NS.equals(element.getNamespaceURI()) && attrib.getName().equals("srsName")) {
         			whatToPush = attrib.getValue(); 		
         		} 
