@@ -29,6 +29,8 @@ import java.util.Properties;
 
 import javax.xml.transform.OutputKeys;
 
+import org.apache.log4j.Logger;
+
 import org.exist.storage.io.ExistIOException;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.SAXSerializer;
@@ -42,32 +44,12 @@ import org.exist.xquery.value.SequenceIterator;
  */
 public class NodeSerializer {
     
-    private XQueryContext context;
-    
-    /**
-     * Creates a new instance of NodeSerializer
-     */
-    public NodeSerializer(XQueryContext context) {
-        this.context=context;
-    }
-    
-//    public Properties parseSerializationOptions(SequenceIterator siSerializeParams) throws XPathException
-//    {
-//    	//parse serialization options
-//        Properties outputProperties = new Properties();
-//        outputProperties.setProperty(OutputKeys.INDENT, "yes");
-//        outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-//        while(siSerializeParams.hasNext())
-//        {
-//            String opt[] = Option.parseKeyValuePair(siSerializeParams.nextItem().getStringValue());
-//            outputProperties.setProperty(opt[0], opt[1]);
-//        }
-//
-//        return outputProperties;
-//    }
-    
-    public void serialize(SequenceIterator siNode, Properties outputProperties, OutputStream os) throws IOException {
-        // serialize the node set
+    private final static Logger LOG = Logger.getLogger(NodeSerializer.class);
+      
+    public static void serialize(XQueryContext context, SequenceIterator siNode, 
+        Properties outputProperties, OutputStream os) throws IOException {
+        
+        LOG.debug("Serializing started.");
         SAXSerializer sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
         try {
             String encoding = outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
@@ -89,9 +71,12 @@ public class NodeSerializer {
             writer.close();
             
         } catch(Exception e) {
-            throw new ExistIOException("A problem ocurred while serializing the node set: " + e.getMessage(), e);
+            String txt = "A problem ocurred while serializing the node set";
+            LOG.debug(txt+".", e);
+            throw new ExistIOException(txt+": " + e.getMessage(), e);
         
         } finally {
+            LOG.debug("Serializing done.");
             SerializerPool.getInstance().returnObject(sax);
         }
     }

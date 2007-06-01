@@ -46,13 +46,15 @@ public class ValidationReport implements ErrorHandler {
     
     private Throwable exception = null;
         
-    private ValidationReportItem getValidationReportItem(int type, SAXParseException exception){
+    private ValidationReportItem createValidationReportItem(int type, SAXParseException exception){
         
         ValidationReportItem vri = new ValidationReportItem();
         vri.type=type;
         vri.lineNumber=exception.getLineNumber();
         vri.columnNumber=exception.getColumnNumber();
         vri.message=exception.getMessage();
+        vri.publicId=exception.getPublicId();
+        vri.systemId=exception.getSystemId();
         return vri;
     }
     
@@ -65,7 +67,7 @@ public class ValidationReport implements ErrorHandler {
      */
     public void error(SAXParseException exception) throws SAXException {
         
-        validationReport.add( getValidationReportItem(ValidationReportItem.ERROR, exception) );
+        validationReport.add( createValidationReportItem(ValidationReportItem.ERROR, exception) );
         
     }
     
@@ -78,7 +80,7 @@ public class ValidationReport implements ErrorHandler {
      *                      exception.
      */
     public void fatalError(SAXParseException exception) throws SAXException {
-        validationReport.add( getValidationReportItem(ValidationReportItem.FATAL, exception) );
+        validationReport.add( createValidationReportItem(ValidationReportItem.FATAL, exception) );
     }
     
     /**
@@ -90,7 +92,7 @@ public class ValidationReport implements ErrorHandler {
      *                      exception.
      */
     public void warning(SAXParseException exception) throws SAXException {
-        validationReport.add( getValidationReportItem(ValidationReportItem.WARNING, exception) );
+        validationReport.add( createValidationReportItem(ValidationReportItem.WARNING, exception) );
     }
     
     
@@ -188,6 +190,9 @@ class ValidationReportItem {
     public int type = -1;
     public int lineNumber = -1;
     public int columnNumber = -1;
+    public String publicId = null;
+    public String systemId = null; 
+        
     public String message ="";
     
     
