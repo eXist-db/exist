@@ -284,18 +284,10 @@ public class NativeBroker extends DBBroker {
   
     // ============ dispatch the various events to indexing classes ==========
 
-    private void notifyStartElement(ElementImpl elem, NodePath currentPath, boolean index) {
-        // WM: don't use an iterator here. The method may be called a few million times for a single document. 
+    private void notifyRemoveNode(StoredNode node, NodePath currentPath, String content) {
         for (int i = 0; i < contentLoadingObservers.size(); i++) {
             ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
-            observer.startElement(elem, currentPath, index);
-        }
-    }
-    
-    private void notifyRemoveElement(ElementImpl elem, NodePath currentPath, String content) {
-        for (int i = 0; i < contentLoadingObservers.size(); i++) {
-            ContentLoadingObserver observer = (ContentLoadingObserver) contentLoadingObservers.get(i);
-            observer.removeElement(elem, currentPath, content);
+            observer.removeNode(node, currentPath, content);
         }
     }
 
@@ -2651,6 +2643,8 @@ public class NativeBroker extends DBBroker {
             }
         }
 	    .run();
+	    
+	    notifyRemoveNode(node, currentPath, content);
         
         NodeProxy p = new NodeProxy(node);
 

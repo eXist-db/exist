@@ -22,10 +22,7 @@
 package org.exist.storage;
 
 import org.exist.collections.Collection;
-import org.exist.dom.AttrImpl;
-import org.exist.dom.DocumentImpl;
-import org.exist.dom.ElementImpl;
-import org.exist.dom.TextImpl;
+import org.exist.dom.*;
 import org.exist.storage.btree.DBException;
 import org.exist.util.ReadOnlyException;
 
@@ -48,18 +45,10 @@ public interface ContentLoadingObserver {
 	/** store and index given text node */ 
 	public void storeText(TextImpl node, NodePath currentPath, int indexingHint);
 			
-	/** corresponds to SAX function of the same name */
-	public void startElement(ElementImpl impl, NodePath currentPath, boolean index);
-
-	/** store and index given element (called storeElement before) */
-	public void endElement(int xpathType, ElementImpl node,	String content);
-
-	/** Mark given Element for removal;
-	 * added entries are written to the list of pending entries.
-     * {@link #flush()} is called later to flush all pending entries.
-	 * <br>
-	 * Notes: changed name from storeElement() */
-	public void removeElement( ElementImpl node, NodePath currentPath, String content );
+	/**
+	 * The given node is being removed from the database. 
+	 */
+	public void removeNode(StoredNode node, NodePath currentPath, String content );
 
 	/** set the current document; generally called before calling an operation */
 	public void setDocument(DocumentImpl document);
@@ -96,9 +85,5 @@ public interface ContentLoadingObserver {
 	public void closeAndRemove();
 	
 	public void printStatistics();
-	
-	public String getFileName();
-	
-	public String getConfigKeyForFile();
 	
 }
