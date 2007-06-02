@@ -14,25 +14,16 @@
         <fileset dir="${top.dir}/${lib.core}">
             <include name="*.jar"/>
         </fileset>
-        <fileset dir="${top.dir}/${lib.optional}">
+        <fileset dir="${top.dir}/${tools.ant}/lib">
             <include name="*.jar"/>
         </fileset>
-		<fileset dir="${top.dir}/${lib.endorsed}">
-			<include name="*.jar"/>
-		</fileset>
-		<fileset dir="${top.dir}/${lib.user}">
-			<include name="*.jar"/>
-		</fileset>
 		<fileset dir="./lib">
 			<include name="*.jar"/>
 		</fileset>
-		<pathelement path="${top.dir}/tools/ant/lib/xmlunit-1.1.jar"/>
         <pathelement path="${top.dir}/exist.jar"/>
-		<pathelement path="${top.dir}/exist-optional.jar"/>
-    	<pathelement path="${top.dir}/start.jar"/>
-		<pathelement path="${java.class.path}"/>
+        <pathelement path="${java.class.path}"/>
     </path>
-	
+
 	<target name="prepare">
 		<mkdir dir="${classes}"/>
 	</target>
