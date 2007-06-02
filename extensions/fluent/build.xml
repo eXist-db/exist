@@ -1,0 +1,83 @@
+<project basedir="." default="jar" name="fluent">
+
+    <property name="src" value="./src"/>
+    <property name="classes" value="./classes"/>
+	<property name="top.dir" value="../.."/>
+	
+    <property name="build.compiler" value="modern"/>
+	
+    <condition property="java14-only">
+        <equals arg1="${ant.java.version}" arg2="1.4"/>
+    </condition>
+
+    <path id="classpath.core">
+        <fileset dir="${top.dir}/${lib.core}">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${top.dir}/${lib.optional}">
+            <include name="*.jar"/>
+        </fileset>
+		<fileset dir="${top.dir}/${lib.endorsed}">
+			<include name="*.jar"/>
+		</fileset>
+		<fileset dir="${top.dir}/${lib.user}">
+			<include name="*.jar"/>
+		</fileset>
+		<fileset dir="./lib">
+			<include name="*.jar"/>
+		</fileset>
+		<pathelement path="${top.dir}/tools/ant/lib/xmlunit-1.1.jar"/>
+        <pathelement path="${top.dir}/exist.jar"/>
+		<pathelement path="${top.dir}/exist-optional.jar"/>
+    	<pathelement path="${top.dir}/start.jar"/>
+		<pathelement path="${java.class.path}"/>
+    </path>
+	
+	<target name="prepare">
+		<mkdir dir="${classes}"/>
+	</target>
+	
+	<target name="compile" depends="prepare" unless="java14-only">
+		<echo message="---------------------------"/>
+        <echo message="Compiling fluent extension"/>
+        <echo message="---------------------------"/>
+		<javac debug="${build.debug}" deprecation="${build.deprecation}" 
+			destdir="${classes}" encoding="UTF-8"
+			optimize="${build.optimize}" srcdir="${src}" 
+        	source="1.5"
+			target="1.5">
+            <classpath>
+            	<path refid="classpath.core"/>
+            </classpath>
+        </javac>
+	</target>
+	
+	<target name="jar" depends="compile">
+		<echo message="Creating exist-fluent.jar ..."/>
+        <jar basedir="${classes}" compress="true" jarfile="${top.dir}/exist-fluent.jar" update="true">
+        	<exclude name="org/exist/fluent/*$*Test*"/>
+        </jar>
+	</target>
+	
+	<target name="test" depends="compile">
+		<echo message="Running fluent extension tests"/>
+		<junit haltonfailure="false" printsummary="yes" showoutput="${junit.output}" maxmemory="${junit.forked.VM.maxmemory}">
+            <sysproperty key="exist.home" value="${basedir}" />
+            <classpath refid="classpath.core"/>
+            <classpath refid="classpath.junit"/>
+            
+            <formatter type="plain"/>
+            <formatter type="xml"/>
+            <batchtest fork="yes" todir="${junit.reports.dat}">
+                <fileset dir="${classes}">
+                	<include name="*Test*.class"/>
+                </fileset>
+            </batchtest>
+        </junit>
+	</target>
+
+	<target name="clean">
+		<delete dir="${classes}"/>
+		<delete file="${top.dir}/exist-fluent.jar" failonerror="false"/>
+	</target>
+</project>

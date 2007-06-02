@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="samples"/>
+	<classpathentry kind="src" path="extensions/fluent/src"/>
 	<classpathentry kind="src" path="tools/ircbot/src"/>
 	<classpathentry kind="src" path="tools/requestlog/src"/>
 	<classpathentry kind="src" path="src"/>
@@ -91,5 +92,8 @@
 	<classpathentry kind="lib" path="lib/endorsed/resolver-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/optional/commons-discovery-0.4.jar"/>
 	<classpathentry kind="lib" path="lib/core/stax-api-1.0.1.jar"/>
+	<classpathentry kind="lib" path="extensions/fluent/lib/cglib-nodep-2.1_3.jar"/>
+	<classpathentry kind="lib" path="extensions/fluent/lib/jmock-1.0.1.jar"/>
+	<classpathentry kind="lib" path="extensions/fluent/lib/jmock-cglib-1.0.1.jar"/>
 	<classpathentry kind="output" path="test/classes"/>
 </classpath>
