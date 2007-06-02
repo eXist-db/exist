@@ -447,7 +447,7 @@ public class Database {
 	 */
 	@Deprecated
 	public static abstract class DatabaseTest extends MockObjectTestCase {
-		private static final File testConfigFile = new File("test/conf.xml");
+		private static final File testConfigFile = new File("conf.xml");
 		protected Database db;
 		@Override protected void setUp() {
 			Database.ensureStarted(testConfigFile);
