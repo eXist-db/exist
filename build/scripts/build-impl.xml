@@ -415,7 +415,7 @@
     <!-- ================================================================== -->
     <!-- Build all                                                          -->
     <!-- ================================================================== -->
-    <target name="all" depends="jar,wrapper,extension-modules,extension-indexes,test-compile" description="Build all"/>
+    <target name="all" depends="jar,wrapper,extension-modules,extension-indexes,extension-fluent,test-compile" description="Build all"/>
 
     <!-- ================================================================== -->
     <!-- Rebuild all                                                        -->
@@ -551,7 +551,11 @@
         <ant antfile="build.xml" dir="extensions/indexes"/>
     </target>
     
-    <target name="cleandocs">
+	<target name="extension-fluent" depends="jar">
+		<ant antfile="build.xml" dir="extensions/fluent"/>
+	</target>
+
+	<target name="cleandocs">
         <replaceregexp>
             <regexp pattern="/\*.*Description of the Method.*\*/"/>
             <substitution expression=""/>
