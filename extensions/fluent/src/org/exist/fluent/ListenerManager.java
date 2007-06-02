@@ -31,7 +31,7 @@ public class ListenerManager {
 		boolean hasTrigger = rootConfigFolder.documents().query().exists(
 				"//trigger[" +
 				"	@event='store update remove create-collection rename-collection delete-collection' and" +
-				"	@class='com.ideanest.reef.db.ListenerManager$TriggerDispatcher']");
+				"	@class='org.exist.fluent.ListenerManager$TriggerDispatcher']");
 		if (!hasTrigger) {
 			org.exist.fluent.Node triggers = rootConfigFolder.documents().query().optional("//triggers").node();
 			if (!triggers.extant()) {
@@ -46,7 +46,7 @@ public class ListenerManager {
 			}
 			triggers.append().elem("trigger")
 				.attr("event", "store update remove create-collection rename-collection delete-collection")
-				.attr("class", "com.ideanest.reef.db.ListenerManager$TriggerDispatcher")
+				.attr("class", "org.exist.fluent.ListenerManager$TriggerDispatcher")
 			.end("trigger").commit();
 		}
 	}
