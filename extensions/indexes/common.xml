@@ -39,7 +39,9 @@
     </path>
 
     <path id="classpath.junit">
-        <pathelement path="${top.dir}/test/classes"/>
+    	<pathelement path="${top.dir}/test/classes"/>
+    	<pathelement path="../ngram/classes"/>
+    	<pathelement path="../spatial/classes"/>
         <pathelement path="${classes}"/>
     </path>
 
