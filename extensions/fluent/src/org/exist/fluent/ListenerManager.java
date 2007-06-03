@@ -357,7 +357,7 @@ public class ListenerManager {
 	 * @deprecated Test class that should not be javadoc'ed.
 	 */
 	@Deprecated
-	public static class Test extends Database.DatabaseTest {
+	public static class Test extends DatabaseTest {
 		private interface BothListener extends Document.Listener, Folder.Listener {/*nothing to add*/}
 		
 		private Mock documentListener, folderListener, bothListener;

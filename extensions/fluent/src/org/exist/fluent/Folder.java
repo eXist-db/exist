@@ -1004,7 +1004,7 @@ public class Folder extends Resource implements Cloneable {
 	 * @deprecated Test class that should not be javadoc'ed.
 	 */
 	@Deprecated
-	public static class Test extends Database.DatabaseTest {
+	public static class Test extends DatabaseTest {
 		public void testCreateTop() {
 			db.createFolder("/top");
 			try {

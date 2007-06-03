@@ -1,7 +1,6 @@
 package org.exist.fluent;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
 import junit.framework.TestCase;
@@ -17,11 +16,9 @@ import org.exist.storage.*;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.util.*;
-import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.ValueSequence;
-import org.jmock.cglib.MockObjectTestCase;
 
 /**
  * <p>The global entry point to an embedded instance of the <a href='http://exist-db.org'>eXist </a>database.
@@ -159,7 +156,7 @@ public class Database {
 	private final NamespaceMap namespaceBindings;
 	String defaultExportEncoding = "UTF-8";
 	
-	private Database(User user) {
+	Database(User user) {
 		this.user = user;
 		this.namespaceBindings = new NamespaceMap();
 	}
@@ -439,34 +436,6 @@ public class Database {
 		@SuppressWarnings("unchecked")
 		public void testIterator() {
 			assertSame(EMPTY_ITERATOR, EMPTY_ITERABLE.iterator());
-		}
-	}
-	
-	/**
-	 * @deprecated Test class that should not be javadoc'ed.
-	 */
-	@Deprecated
-	public static abstract class DatabaseTest extends MockObjectTestCase {
-		private static final File testConfigFile = new File("conf.xml");
-		protected Database db;
-		@Override protected void setUp() {
-			Database.ensureStarted(testConfigFile);
-			db = new Database(SecurityManager.SYSTEM_USER);
-			DBBroker broker = null;
-			Transaction tx = requireTransaction();
-			try {
-				broker = db.acquireBroker();
-				broker.removeCollection(tx.tx, broker.getCollection(XmldbURI.ROOT_COLLECTION_URI));
-				tx.commit();
-				ListenerManager.configureTriggerDispatcher(db);	// config file gets erased by command above
-			} catch (PermissionDeniedException e) {
-				throw new RuntimeException(e);
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			} finally {
-				tx.abortIfIncomplete();
-				db.releaseBroker(broker);
-			}
 		}
 	}
 	

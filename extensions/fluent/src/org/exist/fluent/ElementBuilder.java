@@ -314,7 +314,7 @@ public class ElementBuilder<K> {
 	 * @deprecated Test class that should not be javadoc'ed.
 	 */
 	@Deprecated
-	public static class Test extends Database.DatabaseTest {
+	public static class Test extends DatabaseTest {
 		public void testEmpty() {
 			ElementBuilder<Object> builder = new ElementBuilder<Object>(db.namespaceBindings(), false, new CompletedCallback<Object>() {
 				public Object completed(Node[] node) {fail("completed called"); return null;}

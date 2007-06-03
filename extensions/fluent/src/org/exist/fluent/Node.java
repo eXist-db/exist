@@ -265,7 +265,7 @@ public class Node extends Item {
 	 * @deprecated Test class that should not be javadoc'ed.
 	 */
 	@Deprecated
-	public static class Test extends Database.DatabaseTest {
+	public static class Test extends DatabaseTest {
 		public void testAppend1() {
 			XMLDocument doc = db.createFolder("/test").documents().build(Name.create("foo")).elem("top").end("top").commit();
 			Node node = doc.root().append().elem("child").end("child").commit();
