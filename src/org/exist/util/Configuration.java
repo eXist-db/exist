@@ -1066,12 +1066,12 @@ public class Configuration implements ErrorHandler {
             // be used at this phase. Trick is to check wether dbHOME is
             // pointing to a WEB-INF directory, meaning inside war file)
             File webappHome=null;
-            if(dbHome==null){  /// DWES Why? makes jUnit happy
-                webappHome=new File(".");
+            if(dbHome==null){  /// DWES Why? let's make jUnit happy
+                webappHome=new File("webapp").getAbsoluteFile();
             } else if(dbHome.endsWith("WEB-INF")){
-                webappHome = new File(dbHome).getParentFile();
+                webappHome = new File(dbHome).getParentFile().getAbsoluteFile();
             } else {
-                webappHome = new File(dbHome, "webapp");
+                webappHome = new File(dbHome, "webapp").getAbsoluteFile();
             }
             LOG.debug("using webappHome="+webappHome.toURI().toString());
             
