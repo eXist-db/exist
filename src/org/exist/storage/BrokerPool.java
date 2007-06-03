@@ -1322,6 +1322,10 @@ public class BrokerPool {
 	 * @param killed <code>true</code> when the JVM is (cleanly) exiting
 	 */
 	public synchronized void shutdown(boolean killed) {
+        if (status == SHUTDOWN)
+            // we are already shut down
+            return;
+        
         status = SHUTDOWN;
         
 		notificationService.debug();
