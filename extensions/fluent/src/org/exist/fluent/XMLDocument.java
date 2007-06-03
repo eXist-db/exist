@@ -131,7 +131,7 @@ public class XMLDocument extends Document {
 	 * @deprecated Test class that should not be javadoc'ed.
 	 */
 	@Deprecated
-	public static class Test extends Database.DatabaseTest {
+	public static class Test extends DatabaseTest {
 		public void testQuery1() {
 			Folder c1 = db.createFolder("/c1");
 			XMLDocument doc = c1.documents().build(Name.create("original")).elem("test").end("test").commit();

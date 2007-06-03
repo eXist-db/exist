@@ -233,7 +233,7 @@ public class Item extends Resource {
 	 * @deprecated Test class that should not be javadoc'ed.
 	 */
 	@Deprecated
-	public static class Test extends Database.DatabaseTest {
+	public static class Test extends DatabaseTest {
 		public void testConvertToSequence() {
 			XMLDocument doc = db.createFolder("/top").documents().build(Name.create("test"))
 				.elem("a")

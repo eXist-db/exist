@@ -445,7 +445,7 @@ public class QueryService implements Cloneable {
 	/**
 	 * @deprecated for testing only
 	 */
-	@Deprecated public static class Test extends Database.DatabaseTest {
+	@Deprecated public static class Test extends DatabaseTest {
 		public void testAnalyze1() {
 			QueryAnalysis qa = db.getFolder("/").query().analyze("zero-or-one(//blah)");
 			assertEquals(QueryAnalysis.Cardinality.ZERO_OR_ONE, qa.cardinality());
