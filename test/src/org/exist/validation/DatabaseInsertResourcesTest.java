@@ -89,6 +89,7 @@ public class DatabaseInsertResourcesTest extends TestCase {
     
     
     
+    
     /**
      * Test for inserting hamlet.xml, while validating using default registered
      * DTD set in system catalog.
