@@ -25,11 +25,17 @@ package org.exist.xquery.functions.validation;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Iterator;
+import java.util.List;
 
 import org.exist.dom.QName;
+import org.exist.memtree.DocumentImpl;
+import org.exist.memtree.MemTreeBuilder;
+import org.exist.memtree.NodeImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.io.ExistIOException;
 import org.exist.validation.ValidationReport;
+import org.exist.validation.ValidationReportItem;
 import org.exist.validation.Validator;
 import org.exist.validation.internal.node.NodeInputStream;
 import org.exist.xquery.BasicFunction;
@@ -40,9 +46,9 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
+import org.xml.sax.helpers.AttributesImpl;
 
 /**
  *   xQuery function for validation of XML instance documents
@@ -69,48 +75,48 @@ public class Validation extends BasicFunction  {
     // Setup function signature
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
-                    new QName("validate", ValidationModule.NAMESPACE_URI, 
-                                          ValidationModule.PREFIX),
-                    simpleFunctionTxt,
-                    new SequenceType[]{
-                        new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
-                    },
-                    new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
-                ),
+            new QName("validate", ValidationModule.NAMESPACE_URI,
+            ValidationModule.PREFIX),
+            simpleFunctionTxt,
+            new SequenceType[]{
+            new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
+        },
+            new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
+            ),
         
-                            
-        new FunctionSignature(
-                    new QName("validate", ValidationModule.NAMESPACE_URI, 
-                                          ValidationModule.PREFIX),
-                    extendedFunctionTxt,
-                    new SequenceType[]{
-                        new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
-                        new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE)
-                    },
-                    new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
-                ),
         
         new FunctionSignature(
-                    new QName("validate-report", ValidationModule.NAMESPACE_URI, 
-                                                 ValidationModule.PREFIX),
-                    simpleFunctionTxt+" A simple report is returned.",
-                    new SequenceType[]{
-                        new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
-                    },
-                    new SequenceType(Type.STRING,  Cardinality.ZERO_OR_MORE)
-        ),
+            new QName("validate", ValidationModule.NAMESPACE_URI,
+            ValidationModule.PREFIX),
+            extendedFunctionTxt,
+            new SequenceType[]{
+            new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
+            new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE)
+        },
+            new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
+            ),
         
         new FunctionSignature(
-                    new QName("validate-report", ValidationModule.NAMESPACE_URI, 
-                                                 ValidationModule.PREFIX),
-                    extendedFunctionTxt+" A simple report is returned.",
-                    new SequenceType[]{
-                        new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
-                        new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE)
-                    },
-                    new SequenceType(Type.STRING,  Cardinality.ZERO_OR_MORE)
-        )
+            new QName("validate-report", ValidationModule.NAMESPACE_URI,
+            ValidationModule.PREFIX),
+            simpleFunctionTxt+" A simple report is returned.",
+            new SequenceType[]{
+            new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE)
+        },
+            new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
+            ),
         
+        new FunctionSignature(
+            new QName("validate-report", ValidationModule.NAMESPACE_URI,
+            ValidationModule.PREFIX),
+            extendedFunctionTxt+" A simple report is returned.",
+            new SequenceType[]{
+            new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE),
+            new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE)
+        },
+            new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
+            )
+            
     };
     
     
@@ -123,8 +129,8 @@ public class Validation extends BasicFunction  {
     /**
      * @see BasicFunction#eval(Sequence[], Sequence)
      */
-    public Sequence eval(Sequence[] args, Sequence contextSequence) 
-                                                         throws XPathException {
+    public Sequence eval(Sequence[] args, Sequence contextSequence)
+    throws XPathException {
         
         // Check input parameters
         if(args.length != 1 && args.length != 2){
@@ -192,22 +198,60 @@ public class Validation extends BasicFunction  {
         }
         
         // Create response
-        Sequence result = new ValueSequence();
+        
         
         if(isCalledAs("validate")){
+            Sequence result = new ValueSequence();
             result.add( new BooleanValue( vr.isValid() ) );
+            return result;
             
         } else if (isCalledAs("validate-report")) {
-            String report[] = vr.getValidationReportArray();
-            for(int i=0; i<report.length ; i++){
-                result.add( new StringValue(report[i]) );
-            }
-        } else {
-            // ohoh
-            LOG.error("invoked with wrong function name");
-            result = Sequence.EMPTY_SEQUENCE;
+            MemTreeBuilder builder = context.getDocumentBuilder();
+            NodeImpl result = writeReport(vr, builder);
+            return result;
+            
         }
         
-        return result;
+        LOG.error("invoked with wrong function name");
+        return null;
+    }
+    
+    private NodeImpl writeReport(ValidationReport report, MemTreeBuilder builder) {
+
+        int nodeNr = builder.startElement("", "report", "report",null);
+        
+        builder.startElement("", "status", "status", null);
+        if(report.isValid()){
+            builder.characters("valid");
+        } else {
+            builder.characters("invalid");
+        }
+        
+        builder.endElement();
+        
+        builder.startElement("", "time", "time", null);
+        builder.characters(""+report.getValidationDuration());
+        builder.endElement();
+        
+    	AttributesImpl attribs = new AttributesImpl();
+
+        List cr = report.getReport();
+        for (Iterator iter = cr.iterator(); iter.hasNext(); ) {
+            ValidationReportItem vri = (ValidationReportItem) iter.next();
+            
+            String level=vri.getTypeText();
+            
+            attribs.addAttribute("", "level", "level", "CDATA", level);
+            attribs.addAttribute("", "line", "line", "CDATA", Integer.toString(vri.getLineNumber()));
+            attribs.addAttribute("", "column", "column", "CDATA", Integer.toString(vri.getColumnNumber()));
+            builder.startElement("", "message", "message", attribs);
+            builder.characters(vri.getMessage());
+            builder.endElement();
+            attribs.clear();
+        }
+        
+        builder.endElement();
+        return ((DocumentImpl)builder.getDocument()).getNode(nodeNr);
+        
     }
 }

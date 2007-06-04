@@ -49,12 +49,12 @@ public class ValidationReport implements ErrorHandler {
     private ValidationReportItem createValidationReportItem(int type, SAXParseException exception){
         
         ValidationReportItem vri = new ValidationReportItem();
-        vri.type=type;
-        vri.lineNumber=exception.getLineNumber();
-        vri.columnNumber=exception.getColumnNumber();
-        vri.message=exception.getMessage();
-        vri.publicId=exception.getPublicId();
-        vri.systemId=exception.getSystemId();
+        vri.setType(type);
+        vri.setLineNumber(exception.getLineNumber());
+        vri.setColumnNumber(exception.getColumnNumber());
+        vri.setMessage(exception.getMessage());
+        vri.setPublicId(exception.getPublicId());
+        vri.setSystemId(exception.getSystemId());
         return vri;
     }
     
@@ -107,6 +107,10 @@ public class ValidationReport implements ErrorHandler {
      */
     public boolean isValid(){
         return( (validationReport.size()==0) && (exception==null) );
+    }
+    
+    public List getReport(){
+        return validationReport;
     }
     
     public List getValidationReport(){
@@ -178,36 +182,5 @@ public class ValidationReport implements ErrorHandler {
 
     void setThrowable(Throwable throwable) {
         exception=throwable;
-    }
-}
-
-class ValidationReportItem {
-    
-    public static final int WARNING = 1;
-    public static final int ERROR = 2;
-    public static final int FATAL = 4;
-    
-    public int type = -1;
-    public int lineNumber = -1;
-    public int columnNumber = -1;
-    public String publicId = null;
-    public String systemId = null; 
-        
-    public String message ="";
-    
-    
-    public String toString(){
-        
-        String reportType="UNKNOWN";
-        
-        switch (type) {
-            case WARNING:  reportType="Warning"; break;
-            case ERROR:    reportType="Error"; break;
-            case FATAL:    reportType="Fatal"; break;
-            default:       reportType="Unknown Error type"; break;
-        }
-        
-        return (reportType
-                + " (" + lineNumber +","+ columnNumber + ") : " + message);
     }
 }
