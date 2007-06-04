@@ -63,6 +63,8 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 
     private final static Logger LOG =
 	Logger.getLogger(Indexer.class);
+    
+    public static final String CONFIGURATION_ELEMENT_NAME = "indexer";
 
     protected DBBroker broker = null;
     protected Txn transaction;

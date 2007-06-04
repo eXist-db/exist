@@ -47,6 +47,7 @@ import com.sun.xacml.finder.impl.CurrentEnvModule;
 public final class XACMLConstants
 {
 	/* *********** Configuration property names ******************* */
+	public static final String CONFIGURATION_ELEMENT_NAME = "xacml";
 	public static final String ENABLE_XACML_ATTRIBUTE = "enable";
 	public static final String ENABLE_XACML_PROPERTY = "xacml.enable";
 	public static final String LOAD_DEFAULT_POLICIES_ATTRIBUTE = "load-defaults";

@@ -75,7 +75,10 @@ public class Configuration implements ErrorHandler {
     protected DocumentBuilder builder = null;
     protected HashMap config = new HashMap(); //Configuration
     
+    //TODO : extract this
     public static final class SystemTaskConfig {
+    	
+    	public static final String CONFIGURATION_ELEMENT_NAME = "system-task";
         protected String className;
         protected long period = -1;
         protected String cronExpr = null;
@@ -210,7 +213,7 @@ public class Configuration implements ErrorHandler {
             Document doc = adapter.getDocument();
             
             //indexer settings
-            NodeList indexer = doc.getElementsByTagName("indexer");
+            NodeList indexer = doc.getElementsByTagName(Indexer.CONFIGURATION_ELEMENT_NAME);
             if (indexer.getLength() > 0) {
                 configureIndexer(existHomeDirname, doc, indexer);
             }
@@ -252,7 +255,7 @@ public class Configuration implements ErrorHandler {
             }
             
             //XACML settings
-            NodeList xacml = doc.getElementsByTagName("xacml");
+            NodeList xacml = doc.getElementsByTagName(XACMLConstants.CONFIGURATION_ELEMENT_NAME);
             if (xacml.getLength() > 0) {
                 configureXACML((Element)xacml.item(0));
             }
@@ -665,19 +668,19 @@ public class Configuration implements ErrorHandler {
             }
         }
         
-        NodeList poolConf = con.getElementsByTagName("pool");
+        NodeList poolConf = con.getElementsByTagName(BrokerPool.CONFIGURATION_ELEMENT_NAME);
         if (poolConf.getLength() > 0) {
             configurePool(poolConf);
         }
-        NodeList queryPoolConf = con.getElementsByTagName("query-pool");
+        NodeList queryPoolConf = con.getElementsByTagName(XQueryPool.CONFIGURATION_ELEMENT_NAME);
         if (queryPoolConf.getLength() > 0) {
             configureXQueryPool(queryPoolConf);
         }
-        NodeList watchConf = con.getElementsByTagName("watchdog");
+        NodeList watchConf = con.getElementsByTagName(XQueryWatchDog.CONFIGURATION_ELEMENT_NAME);
         if (watchConf.getLength() > 0) {
             configureWatchdog(watchConf);
         }
-        NodeList sysTasks = con.getElementsByTagName("system-task");
+        NodeList sysTasks = con.getElementsByTagName(SystemTaskConfig.CONFIGURATION_ELEMENT_NAME);
         if (sysTasks.getLength() > 0) {
             configureSystemTasks(sysTasks);
         }
