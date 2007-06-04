@@ -126,7 +126,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     //TODO : reconsider this. Case sensitivity have nothing to do with atomic values -pb
     protected boolean caseSensitive = true;
     
-    public static String PROPERTY_INDEX_CASE_SENSITIVE = "indexer.case-sensitive";
+    public final static String PROPERTY_INDEX_CASE_SENSITIVE = "indexer.case-sensitive";
     
     public NativeValueIndex(DBBroker broker, byte id, String dataDir, Configuration config) throws DBException {
         this.broker = broker;

@@ -42,6 +42,8 @@ public class TransformerFactoryAllocator
     
     private final static Logger LOG = Logger.getLogger(TransformerFactoryAllocator.class);
     
+    public final static String PROPERTY_TRANSFORMER_CLASS = "transformer.class";
+    
     //private constructor
     private TransformerFactoryAllocator() {
     }
@@ -66,7 +68,7 @@ public class TransformerFactoryAllocator
         
         //get the transformer class name from conf.xml
         String transformerFactoryClassName =
-                (String)broker.getConfiguration().getProperty("transformer.class");
+                (String)broker.getConfiguration().getProperty(PROPERTY_TRANSFORMER_CLASS);
         
 //        LOG.debug("transformerFactoryClassName=" + transformerFactoryClassName);
 //        LOG.debug("javax.xml.transform.TransformerFactory="

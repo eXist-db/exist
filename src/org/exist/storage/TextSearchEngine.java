@@ -73,6 +73,7 @@ public abstract class TextSearchEngine extends Observable {
 	public final static String PROPERTY_STEM = "indexer.stem";
 	public final static String PROPERTY_STORE_TERM_FREQUENCY = "indexer.store-term-freq";
 	public final static String PROPERTY_TOKENIZER = "indexer.tokenizer";
+	public final static String PROPERTY_STOPWORD_FILE = "stopwords";
 	
 	/**
 	 * Construct a new instance and configure it.
@@ -121,7 +122,7 @@ public abstract class TextSearchEngine extends Observable {
 		if (stem)
 			stemmer = new PorterStemmer();
 		tokenizer.setStemming(stem);
-		if ((stopword = (String) config.getProperty("stopwords")) != null) {
+		if ((stopword = (String) config.getProperty(PROPERTY_STOPWORD_FILE)) != null) {
 			try {
 				FileReader in = new FileReader(stopword);
 				StreamTokenizer tok = new StreamTokenizer(in);
