@@ -433,28 +433,32 @@ public class Configuration implements ErrorHandler {
         
         String xinclude = serializer.getAttribute("enable-xinclude");
         if (xinclude != null) {
-            config.put("serialization.enable-xinclude", xinclude);
-            LOG.debug("serialization.enable-xinclude: " + config.get("serialization.enable-xinclude"));
+            config.put(Serializer.PROPERTY_ENABLE_XINCLUDE, xinclude);
+            LOG.debug(Serializer.PROPERTY_ENABLE_XINCLUDE + ": " + config.get(Serializer.PROPERTY_ENABLE_XINCLUDE));
         }
         
         String xsl = serializer.getAttribute("enable-xsl");
         if (xsl != null) {
-            config.put("serialization.enable-xsl", xsl);
-            LOG.debug("serialization.enable-xsl: " + config.get("serialization.enable-xsl"));
+            config.put(Serializer.PROPERTY_ENABLE_XSL, xsl);
+            LOG.debug(Serializer.PROPERTY_ENABLE_XSL + ": " + config.get(Serializer.PROPERTY_ENABLE_XSL));
         }
         
         String indent = serializer.getAttribute("indent");
         if (indent != null) {
-            config.put("serialization.indent", indent);
-            LOG.debug("serialization.indent: " + config.get("serialization.indent"));
+            config.put(Serializer.PROPERTY_INDENT, indent);
+            LOG.debug(Serializer.PROPERTY_INDENT + ": " + config.get(Serializer.PROPERTY_INDENT));
         }
+        
         String compress = serializer.getAttribute("compress-output");
-        if (compress != null)
-            config.put("serialization.compress-output", compress);
+        if (compress != null) {
+            config.put(Serializer.PROPERTY_COMPRESS_OUTPUT, compress);
+	        LOG.debug(Serializer.PROPERTY_COMPRESS_OUTPUT + ": " + config.get(Serializer.PROPERTY_COMPRESS_OUTPUT));
+	    }
+        
         String internalId = serializer.getAttribute("add-exist-id");
         if (internalId != null) {
-            config.put("serialization.add-exist-id", internalId);
-            LOG.debug("serialization.add-exist-id: " + config.get("serialization.add-exist-id"));
+            config.put(Serializer.PROPERTY_ADD_EXIST_ID, internalId);
+            LOG.debug(Serializer.PROPERTY_ADD_EXIST_ID + ": " + config.get(Serializer.PROPERTY_ADD_EXIST_ID));
         }
         
         String tagElementMatches = serializer.getAttribute("match-tagging-elements");
