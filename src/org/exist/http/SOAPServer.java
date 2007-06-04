@@ -640,6 +640,24 @@ public class SOAPServer
 		String encodingStyle = ((org.w3c.dom.Element)nSOAPFunction).getAttributeNS(Namespaces.SOAP_ENVELOPE, "encodingStyle");
 		boolean isRpcEncoded = (encodingStyle != null && encodingStyle.equals("http://schemas.xmlsoap.org/soap/encoding/"));
 		
+		// As this detection is a "quirk" which is not always available, let's use a better one...
+		if(!isRpcEncoded)
+		{
+			NodeList nlSOAPFunction=nSOAPFunction.getChildNodes();
+			for(int i = 0; i < nlSOAPFunction.getLength(); i++)
+			{
+				Node functionChild = nlSOAPFunction.item(i);
+				if(functionChild.getNodeType() == Node.ELEMENT_NODE)
+				{
+					if(((org.w3c.dom.Element)functionChild).hasAttributeNS(Namespaces.SCHEMA_INSTANCE_NS, "type"))
+					{
+						isRpcEncoded = true;
+						break;
+					}
+				}
+			}
+		}
+		
 		// 5) Execute the XQWS function indicated by the SOAP request  
 		try
 		{
