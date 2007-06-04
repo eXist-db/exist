@@ -91,12 +91,12 @@ public abstract class TextSearchEngine extends Observable {
 			stem = stemming.booleanValue();
 		if((termFrequencies = (Boolean) config.getProperty(PROPERTY_STORE_TERM_FREQUENCY)) != null)
 			termFreq = termFrequencies.booleanValue();
-		String track = (String) config.getProperty("serialization.match-tagging-elements");
+		String track = (String) config.getProperty(Serializer.PROPERTY_TAG_MATCHING_ELEMENTS);
 		if (track != null)
 			trackMatches = track.equalsIgnoreCase("yes")
 			? Serializer.TAG_ELEMENT_MATCHES
 					: Serializer.TAG_NONE;
-		track = (String) config.getProperty("serialization.match-tagging-attributes");
+		track = (String) config.getProperty(Serializer.PROPERTY_TAG_MATCHING_ATTRIBUTES);
 		if (track != null && track.equalsIgnoreCase("yes"))
 			trackMatches = trackMatches | Serializer.TAG_ATTRIBUTE_MATCHES;
 		

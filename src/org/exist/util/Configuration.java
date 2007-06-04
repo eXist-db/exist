@@ -37,7 +37,6 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Logger;
-
 import org.exist.Indexer;
 import org.exist.memtree.SAXAdapter;
 import org.exist.protocolhandler.eXistURLStreamHandlerFactory;
@@ -53,14 +52,13 @@ import org.exist.storage.NativeBroker;
 import org.exist.storage.NativeValueIndex;
 import org.exist.storage.TextSearchEngine;
 import org.exist.storage.XQueryPool;
+import org.exist.storage.serializers.Serializer;
 import org.exist.validation.GrammarPool;
 import org.exist.validation.resolver.eXistXMLCatalogResolver;
 import org.exist.xquery.XQueryWatchDog;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -461,14 +459,14 @@ public class Configuration implements ErrorHandler {
         
         String tagElementMatches = serializer.getAttribute("match-tagging-elements");
         if (tagElementMatches != null) {
-            config.put("serialization.match-tagging-elements", tagElementMatches);
-            LOG.debug("serialization.match-tagging-elements: " + config.get("serialization.match-tagging-elements"));
+            config.put(Serializer.PROPERTY_TAG_MATCHING_ELEMENTS, tagElementMatches);
+            LOG.debug(Serializer.PROPERTY_TAG_MATCHING_ELEMENTS + ": " + config.get(Serializer.PROPERTY_TAG_MATCHING_ELEMENTS));
         }
         
         String tagAttributeMatches = serializer.getAttribute("match-tagging-attributes");
         if (tagAttributeMatches != null) {
-            config.put("serialization.match-tagging-attributes", tagAttributeMatches);
-            LOG.debug("serialization.match-tagging-attributes: " + config.get("serialization.match-tagging-attributes"));
+            config.put(Serializer.PROPERTY_TAG_MATCHING_ATTRIBUTES, tagAttributeMatches);
+            LOG.debug(Serializer.PROPERTY_TAG_MATCHING_ATTRIBUTES + ": " + config.get(Serializer.PROPERTY_TAG_MATCHING_ATTRIBUTES));
         }
     }
     

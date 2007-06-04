@@ -109,6 +109,9 @@ import org.xml.sax.ext.LexicalHandler;
 public abstract class Serializer implements XMLReader {
 
 	protected final static Logger LOG = Logger.getLogger(Serializer.class);
+	
+	public static final String PROPERTY_TAG_MATCHING_ELEMENTS = "serialization.match-tagging-elements";
+	public static final String PROPERTY_TAG_MATCHING_ATTRIBUTES = "serialization.match-tagging-attributes";
 
 	// constants to configure the highlighting of matches in text and attributes
 	public final static int TAG_NONE = 0x0;
@@ -182,11 +185,11 @@ public abstract class Serializer implements XMLReader {
 
         boolean tagElements = true, tagAttributes = false;
 		if ((option =
-			(String) config.getProperty("serialization.match-tagging-elements"))
+			(String) config.getProperty(PROPERTY_TAG_MATCHING_ELEMENTS))
 			!= null)
 			tagElements = option.equals("yes");
 		if ((option =
-			(String) config.getProperty("serialization.match-tagging-attributes"))
+			(String) config.getProperty(PROPERTY_TAG_MATCHING_ATTRIBUTES))
 			!= null)
 			tagAttributes = option.equals("yes");
 		if (tagElements && tagAttributes)
