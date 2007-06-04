@@ -91,6 +91,10 @@ import antlr.collections.AST;
  */
 public class XQueryContext {
 	
+	public static final String PROPERTY_BUILT_IN_MODULES = "xquery.modules";
+	public static final String PROPERTY_XQUERY_BACKWARD_COMPATIBLE = "xquery.backwardCompatible";
+	public static final String PROPERTY_ENABLE_QUERY_REWRITING = "xquery.enable-query-rewriting";
+	
 	private static final String JAVA_URI_START = "java:";
     //private static final String XMLDB_URI_START = "xmldb:exist://";
     
@@ -1909,15 +1913,15 @@ public class XQueryContext {
 			declareNamespace("local", XQUERY_LOCAL_NS);
 			//*not* as standard NS
 			declareNamespace("exist", Namespaces.EXIST_NS);
-			//TODO : include err namespace ?
+			//TODO : include "err" namespace ?
 		} catch (XPathException e) {
 			//TODO : ignored because it should never happen
 		}
 
-        String param = (String) getBroker().getConfiguration().getProperty("xquery.enable-query-rewriting");
+        String param = (String) getBroker().getConfiguration().getProperty(PROPERTY_ENABLE_QUERY_REWRITING);
         enableOptimizer = param != null && param.equals("yes");
         
-        param = (String) getBroker().getConfiguration().getProperty("xquery.backwardCompatible");
+        param = (String) getBroker().getConfiguration().getProperty(PROPERTY_XQUERY_BACKWARD_COMPATIBLE);
         backwardsCompatible = param == null ? true : param.equals("yes");
         
         // load built-in modules
@@ -1928,10 +1932,10 @@ public class XQueryContext {
 			Function.BUILTIN_FUNCTION_NS,
 			"org.exist.xquery.functions.ModuleImpl");
 		
-		String modules[][] = (String[][]) config.getProperty("xquery.modules");
+		String modules[][] = (String[][]) config.getProperty(PROPERTY_BUILT_IN_MODULES);
 		if ( modules != null ) {
 			for (int i = 0; i < modules.length; i++) {
-//				LOG.debug("Loading module " + modules[i][0]);
+				//LOG.debug("Loading module " + modules[i][0]);
 				loadBuiltInModule(modules[i][0], modules[i][1]);
 			}
 		}

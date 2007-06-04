@@ -55,6 +55,8 @@ import org.exist.storage.XQueryPool;
 import org.exist.storage.serializers.Serializer;
 import org.exist.validation.GrammarPool;
 import org.exist.validation.resolver.eXistXMLCatalogResolver;
+import org.exist.xquery.FunctionFactory;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XQueryWatchDog;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -338,23 +340,23 @@ public class Configuration implements ErrorHandler {
         //java binding
         String javabinding = xquery.getAttribute("enable-java-binding");
         if(javabinding != null) {
-            config.put("xquery.enable-java-binding", javabinding);
-            LOG.debug("xquery.enable-java-binding: " + config.get("xquery.enable-java-binding"));
+            config.put(FunctionFactory.PROPERTY_ENABLE_JAVA_BINDING, javabinding);
+            LOG.debug(FunctionFactory.PROPERTY_ENABLE_JAVA_BINDING + ": " + config.get(FunctionFactory.PROPERTY_ENABLE_JAVA_BINDING));
         }
         
         String optimize = xquery.getAttribute("enable-query-rewriting");
         if (optimize != null && optimize.length() > 0) {
-            config.put("xquery.enable-query-rewriting", optimize);
-            LOG.debug("xquery.enable-query-rewriting: " + config.get("xquery.enable-query-rewriting"));
+            config.put(XQueryContext.PROPERTY_ENABLE_QUERY_REWRITING, optimize);
+            LOG.debug(XQueryContext.PROPERTY_ENABLE_QUERY_REWRITING + ": " + config.get(XQueryContext.PROPERTY_ENABLE_QUERY_REWRITING));
         }
         
         String backwardCompatible = xquery.getAttribute("backwardCompatible");
         if (backwardCompatible != null && backwardCompatible.length() > 0) {
-            config.put("xquery.backwardCompatible", backwardCompatible);
-            LOG.debug("xquery.backwardCompatible: " + config.get("xquery.backwardCompatible"));
+            config.put(XQueryContext.PROPERTY_XQUERY_BACKWARD_COMPATIBLE, backwardCompatible);
+            LOG.debug(XQueryContext.PROPERTY_XQUERY_BACKWARD_COMPATIBLE + ": " + config.get(XQueryContext.PROPERTY_XQUERY_BACKWARD_COMPATIBLE));
         }
         
-        //builin-modules
+        //built-in-modules
         NodeList builtins = xquery.getElementsByTagName("builtin-modules");
         if (builtins.getLength() > 0) {
             Element elem = (Element) builtins.item(0);
@@ -372,7 +374,7 @@ public class Configuration implements ErrorHandler {
                 moduleList[i][1] = clazz;
                 LOG.debug("Configured module '" + uri + "' implemented in '" + clazz + "'");
             }
-            config.put("xquery.modules", moduleList);
+            config.put(XQueryContext.PROPERTY_BUILT_IN_MODULES, moduleList);
         }
     }
     

@@ -75,7 +75,7 @@ public class JavaFunctionsTest extends TestCase {
 		//if it is not enabled then we expect an exception when trying to
 		//perform Java binding.
 		Configuration config = new Configuration();
-		String javabinding = (String)config.getProperty("xquery.enable-java-binding");
+		String javabinding = (String)config.getProperty(FunctionFactory.PROPERTY_ENABLE_JAVA_BINDING);
 		if(javabinding != null)
 		{
 			if(javabinding.equals("yes"))
