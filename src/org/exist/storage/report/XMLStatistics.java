@@ -52,7 +52,7 @@ public class XMLStatistics {
 				PREFIX + ":database-instance", atts);
 			atts.clear();
 			addValue("configuration", instance.getConfiguration().getConfigFilePath());
-			addValue("data-directory", (String)instance.getConfiguration().getProperty("db-connection.data-dir"));
+			addValue("data-directory", (String)instance.getConfiguration().getProperty(BrokerPool.PROPERTY_DATA_DIR));
 
             // values added for cache used % calc - Gary Larsen
             addValue("cache-size", String.valueOf(instance.getConfiguration().getInteger("db-connection.cache-size")));

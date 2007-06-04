@@ -76,7 +76,7 @@ public class DatabaseAdminServlet extends HttpServlet {
                     "</td></tr>" );
                 output.println( "<tr><td>Configuration:</td><td>" + conf.getConfigFilePath() + "</td></tr>" );
                 output.println( "<tr><td>Data directory:</td><td>" +
-                    (String) conf.getProperty( "db-connection.data-dir" ) +
+                    (String) conf.getProperty(BrokerPool.PROPERTY_DATA_DIR) +
                     "</td></tr>" );
                 output.println( "<tr><td>Active instances:</td><td>" +
                     pool.active() + "</td></tr>" );

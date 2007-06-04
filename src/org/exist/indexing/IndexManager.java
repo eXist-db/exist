@@ -61,7 +61,7 @@ public class IndexManager {
         this.pool = pool;
         Configuration.IndexModuleConfig modConf[] = (Configuration.IndexModuleConfig[])
                 config.getProperty("indexer.modules");
-        String dataDir = (String) config.getProperty("db-connection.data-dir");
+        String dataDir = (String) config.getProperty(BrokerPool.PROPERTY_DATA_DIR);
 
         if (modConf != null) {
             for (int i = 0; i < modConf.length; i++) {

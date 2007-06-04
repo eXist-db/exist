@@ -534,8 +534,8 @@ public class Configuration implements ErrorHandler {
                 throw new DatabaseConfigurationException(
                     "cannot read data directory: "
                     + df.getAbsolutePath());
-            config.put("db-connection.data-dir", df.getAbsolutePath());
-            LOG.info("data directory = " + df.getAbsolutePath());
+            config.put(BrokerPool.PROPERTY_DATA_DIR, df.getAbsolutePath());
+            LOG.debug(BrokerPool.PROPERTY_DATA_DIR + ": " + config.get(BrokerPool.PROPERTY_DATA_DIR));
         }
         
         String cacheMem = con.getAttribute("cacheSize");

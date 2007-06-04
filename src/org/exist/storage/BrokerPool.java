@@ -76,6 +76,7 @@ public class BrokerPool {
 	private final static Logger LOG = Logger.getLogger(BrokerPool.class);
 	
 	public static final String CONFIGURATION_ELEMENT_NAME = "pool";
+	public static final String PROPERTY_DATA_DIR = "db-connection.data-dir";
 	
 	private final static TreeMap instances = new TreeMap();
 	
@@ -593,7 +594,7 @@ public class BrokerPool {
 	
 	//TODO : create a canReadJournalDir() method in the *relevant* class. The two directories may be different.
     protected boolean canReadDataDir(Configuration conf) throws EXistException {
-        String dataDir = (String) conf.getProperty("db-connection.data-dir");
+        String dataDir = (String) conf.getProperty(PROPERTY_DATA_DIR);
         if (dataDir == null) 
         	dataDir = "data"; //TODO : DEFAULT_DATA_DIR
 
@@ -611,7 +612,7 @@ public class BrokerPool {
         
     	//Save it for further use.
         //TODO : "data-dir" has sense for *native* brokers
-    	conf.setProperty("db-connection.data-dir", dataDir);
+    	conf.setProperty(PROPERTY_DATA_DIR, dataDir);
     	if (!dir.canWrite()) {            
             LOG.info("Cannot write to data directory: " + dir.getAbsolutePath() + ". Switching to read-only mode.");
             return false;
@@ -673,8 +674,8 @@ public class BrokerPool {
         notificationService = new NotificationService();
 
         //REFACTOR : construct then... configure
-        //TODO : journal directory *may* be different from "db-connection.data-dir"
-        transactionManager = new TransactionManager(this, new File((String) conf.getProperty("db-connection.data-dir")), isTransactional());		
+        //TODO : journal directory *may* be different from BrokerPool.PROPERTY_DATA_DIR
+        transactionManager = new TransactionManager(this, new File((String) conf.getProperty(BrokerPool.PROPERTY_DATA_DIR)), isTransactional());		
         try {
             transactionManager.initialize();
         } catch (ReadOnlyException e) {

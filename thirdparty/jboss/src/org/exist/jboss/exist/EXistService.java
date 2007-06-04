@@ -116,7 +116,7 @@ public class EXistService extends ServiceMBeanSupport implements EXistServiceMBe
                 Configuration conf = pool.getConfiguration();
                 output += "<table  width=\"80%\"><tr> <th colspan=\"2\" align=\"left\" bgcolor=\"#0086b2\"><b>Status</b></th></tr>";
                 output += "<tr><td>Configuration:</td><td>" + conf.getPath() + "</td></tr>";
-                output += "<tr><td>Data directory:</td><td>" + (String) conf.getProperty("db-connection.data-dir") + "</td></tr>";
+                output += "<tr><td>Data directory:</td><td>" + (String) conf.getProperty(BrokerPool.PROPERTY_DATA_DIR) + "</td></tr>";
                 output += "<tr><td>Active instances:</td><td>" + pool.active() + "</td></tr>";
                 output += "<tr><td>Available instances:</td><td>" + pool.available() + "</td></tr>";
                 output += "</table>";

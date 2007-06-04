@@ -61,7 +61,7 @@ public class DataBackup implements SystemTask {
         dest = properties.getProperty("output-dir", "backup");
         File f = new File(dest);
         if (!f.isAbsolute()) {
-            dest = (String)config.getProperty("db-connection.data-dir") +
+            dest = (String)config.getProperty(BrokerPool.PROPERTY_DATA_DIR) +
                 File.separatorChar + dest;
             f = new File(dest);
         }

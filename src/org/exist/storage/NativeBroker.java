@@ -205,7 +205,7 @@ public class NativeBroker extends DBBroker {
 		    prepend = PREPEND_DB_AS_NEEDED;
 		}
 
-        dataDir = (String) config.getProperty("db-connection.data-dir");
+        dataDir = (String) config.getProperty(BrokerPool.PROPERTY_DATA_DIR);
 		if (dataDir == null)
             dataDir = DEFAULT_DATA_DIR;
 

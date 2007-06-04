@@ -11,6 +11,7 @@ import java.util.Locale;
 
 import org.apache.cocoon.ProcessingException;
 import org.apache.cocoon.generation.AbstractGenerator;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.report.XMLStatistics;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
@@ -91,7 +92,7 @@ public class StatusGenerator extends AbstractGenerator {
 				PREFIX + ":database-instance", atts);
 			atts.clear();
 			addValue("configuration", instance.getConfiguration().getPath());
-			addValue("data-directory", (String)instance.getConfiguration().getProperty("db-connection.data-dir"));
+			addValue("data-directory", (String)instance.getConfiguration().getProperty(BrokerPool.PROPERTY_DATA_DIR));
 			this.contentHandler.startElement(NAMESPACE, "pool", PREFIX + ":pool", atts);
 			addValue("max", String.valueOf(instance.getMax()));
 			addValue("active", String.valueOf(instance.active()));
