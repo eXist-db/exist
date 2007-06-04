@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<book xmlns:ci="http://apache.org/cocoon/include/1.0">
+    <bookinfo>
+        <graphic fileref="logo.jpg"/>
+        <productname>Open Source Native XML Database</productname>
+        <title>Developer's Guide</title>
+        <author>
+            <firstname>Pierrick</firstname>
+            <surname>Brihaye</surname>
+            <affiliation>
+            	<jobtitle>Software engineer</jobtitle>
+            	<orgname>Service régional de l'inventaire de Bretagne</orgname>
+                <address format="linespecific">
+                    <email>pierrick dot brihaye at culture dot gouv dot fr</email>
+                </address>
+                <address format="linespecific">
+                    <email>pierrick dot brihaye at region dash bretagne dot fr</email>
+                </address>
+            </affiliation>
+        </author>
+    </bookinfo>
+    <ci:include src="sidebar.xml"/>
+    <chapter id="ch01">
+        <title>Developer's Guide to Modularized Indexes</title>
+        <section>
+            <title>The new modularized indexes</title>
+        </section>
+    </chapter>
+</book>

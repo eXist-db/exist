@@ -113,6 +113,13 @@
               <td>a few notes on how to use the various tools; SVN, eclipse,
               Ant, PMD, JDepend, ...</td>
             </tr>
+            
+            <tr>
+              <td class="doclink"><ulink url="devguide_indexes.xml">Developer's
+              Guide to Modularized Indexes</ulink>:</td>
+
+              <td>describes, through a use case, how modularized indexes work.</td>
+            </tr>            
 
             <tr>
               <td class="doclink"><ulink url="client.xml">Java Admin
