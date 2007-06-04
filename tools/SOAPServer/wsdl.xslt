@@ -12,7 +12,6 @@
     
 -->
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:set="http://exslt.org/sets" version="2.0">
-    <xsl:output method="xml" version="1.0" encoding="UTF-8" indent="yes" media-type="text/xml" omit-xml-declaration="no"/>
     <xsl:param name="isDocumentLiteral">true</xsl:param>
     <xsl:variable name="bindingStyle" as="xs:string">
         <xsl:choose>
@@ -26,6 +25,7 @@
             <xsl:otherwise>encoded</xsl:otherwise>
         </xsl:choose>
     </xsl:variable>
+    <xsl:output method="xml" version="1.0" encoding="UTF-8" indent="yes" media-type="text/xml" omit-xml-declaration="no"/>
     <xsl:template match="/webservice">
         <xsl:variable name="webserviceName" select="name" as="xs:string"/>
         <xsl:variable name="webserviceURL" select="URL" as="xs:string"/>
@@ -162,7 +162,14 @@
                             <part name="parameters" element="{concat('tns:',$funName,'Response')}"/>
                         </xsl:when>
                         <xsl:otherwise>
+                            <xsl:for-each select="return">
+                                <xsl:call-template name="partGenerator">
+                                    <xsl:with-param name="partname" select="concat($funName,'Result')"/>
+                                </xsl:call-template>
+                            </xsl:for-each>
+                            <!--
                             <part name="{concat($funName,'Response')}" type="{concat('tns:',$funName,'ResponseType')}"/>
+                            -->
                         </xsl:otherwise>
                     </xsl:choose>
                 </message>
@@ -187,12 +194,14 @@
                         <soap:operation soapAction="{$webserviceURL}#{$funName}" />
                         <input>
                             <soap:body use="{$bindingEncoding}">
-                                <!--
                                 <xsl:if test="$isDocumentLiteral != 'true'">
-                                    <xsl:attribute name="encodingStyle">http://schemas.xmlsoap.org/soap/encoding/</xsl:attribute>
-                                    <xsl:attribute name="namespace" select="$webserviceURL" />
+                                    <!--
+                                        <xsl:if test="$isDocumentLiteral != 'true'">
+                                            <xsl:attribute name="encodingStyle">http://schemas.xmlsoap.org/soap/encoding/</xsl:attribute>
+                                        </xsl:if>
+                                    -->
+                                    <xsl:attribute name="namespace"><xsl:value-of select="$webserviceURL"/></xsl:attribute>
                                 </xsl:if>
-                                -->
                             </soap:body>
                         </input>
                         <output>
@@ -200,9 +209,9 @@
                                 <!--
                                 <xsl:if test="$isDocumentLiteral != 'true'">
                                     <xsl:attribute name="encodingStyle">http://schemas.xmlsoap.org/soap/encoding/</xsl:attribute>
-                                    <xsl:attribute name="namespace" select="$webserviceURL" />
                                 </xsl:if>
                                 -->
+                                <xsl:attribute name="namespace"><xsl:value-of select="$webserviceURL"/></xsl:attribute>
                             </soap:body>
                         </output>
                     </operation>

@@ -6,17 +6,7 @@
         <SOAP-ENV:Envelope>
             <SOAP-ENV:Header/>
             <SOAP-ENV:Body>
-				<xsl:choose>
-					<xsl:when test="$isDocumentLiteral = 'true'">
-						<xsl:apply-templates select="webservice"/>
-					</xsl:when>
-					<xsl:otherwise>
-						<xsl:variable name="functionName" select="/webservice/functions/function[1]/name"/>
-						<xsl:element name="{$functionName}">
-							<xsl:apply-templates select="webservice"/>
-						</xsl:element>
-					</xsl:otherwise>
-				</xsl:choose>
+                <xsl:apply-templates select="webservice"/>
             </SOAP-ENV:Body>
         </SOAP-ENV:Envelope>
     </xsl:template>
@@ -24,7 +14,17 @@
         <xsl:variable name="functionName" select="functions/function[1]/name"/>
         <xsl:variable name="namespaceURL" select="URL"/>
         <xsl:variable name="type" select="functions/function[1]/return/type"/>
-        <xsl:element name="{concat($functionName, 'Response')}" namespace="{$namespaceURL}">
+        <xsl:variable name="responseName">
+            <xsl:choose>
+                <xsl:when test="$isDocumentLiteral = 'true'">
+                    <xsl:value-of select="concat($functionName, 'Response')" />
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="$functionName" />
+                </xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        <xsl:element name="{$responseName}" namespace="{$namespaceURL}">
             <xsl:element name="{concat($functionName, 'Result')}" namespace="{$namespaceURL}">
                 <xsl:choose>
                     <xsl:when test="functions/function[1]/return/cardinality &lt;= 4">
