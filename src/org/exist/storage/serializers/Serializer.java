@@ -110,6 +110,11 @@ public abstract class Serializer implements XMLReader {
 
 	protected final static Logger LOG = Logger.getLogger(Serializer.class);
 	
+	public static final String PROPERTY_ENABLE_XINCLUDE = "serialization.enable-xinclude";
+	public static final String PROPERTY_ENABLE_XSL = "serialization.enable-xsl";
+	public static final String PROPERTY_INDENT = "serialization.indent";
+	public static final String PROPERTY_COMPRESS_OUTPUT = "serialization.compress-output";
+	public static final String PROPERTY_ADD_EXIST_ID = "serialization.add-exist-id";
 	public static final String PROPERTY_TAG_MATCHING_ELEMENTS = "serialization.match-tagging-elements";
 	public static final String PROPERTY_TAG_MATCHING_ATTRIBUTES = "serialization.match-tagging-attributes";
 
@@ -163,23 +168,27 @@ public abstract class Serializer implements XMLReader {
 		factory = (SAXTransformerFactory) SAXTransformerFactory.newInstance();
 		xinclude = new XIncludeFilter(this);
 		receiver = xinclude;
-		String option = (String) config.getProperty("serialization.enable-xsl");
+		
+		String option = (String) config.getProperty(PROPERTY_ENABLE_XSL);
 		if (option != null)
 			defaultProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, option);
 		else
 			defaultProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "no");
-		option = (String) config.getProperty("serialization.enable-xinclude");
+		
+		option = (String) config.getProperty(PROPERTY_ENABLE_XINCLUDE);
 		if (option != null) {
 			defaultProperties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, option);
 		}
-		option = (String) config.getProperty("serialization.indent");
+		
+		option = (String) config.getProperty(PROPERTY_INDENT);
 		if (option != null)
 			defaultProperties.setProperty(OutputKeys.INDENT, option);
-		option = (String) config.getProperty("serialization.compress-output");
+		
+		option = (String) config.getProperty(PROPERTY_COMPRESS_OUTPUT);
 		if (option != null)
 			defaultProperties.setProperty(EXistOutputKeys.COMPRESS_OUTPUT, option);
 
-        option = (String) config.getProperty("serialization.add-exist-id");
+        option = (String) config.getProperty(PROPERTY_ADD_EXIST_ID);
         if (option != null)
             defaultProperties.setProperty(EXistOutputKeys.ADD_EXIST_ID, option);
 
