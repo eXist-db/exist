@@ -496,6 +496,33 @@ public class XQueryUpdateTest extends TestCase {
             pool.release(broker);
         }
     }
+    
+    public void bugtestInsertAttribDoc_1730726() {
+        DBBroker broker = null;
+        try {
+            System.out.println(this.getName()+" ...\n");
+            broker = pool.get(SecurityManager.SYSTEM_USER);
+
+            String query =
+                "declare namespace xmldb = \"http://exist-db.org/xquery/xmldb\"; "+
+                "let $uri := xmldb:store(\"/db\", \"insertAttribDoc.xml\", <C/>) "+
+                "let $node := doc($uri)/element() "+
+                "let $attrib := <Value f=\"ATTRIB VALUE\"/>/@* "+
+                "return update insert $attrib into $node";
+            
+            XQuery xquery = broker.getXQueryService();
+            Sequence result = xquery.execute(query, null, AccessContext.TEST);
+
+            System.out.println(this.getName()+"(): PASSED\n");
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        } finally {
+            pool.release(broker);
+        }
+    }
+    
+
 
     protected void setUp() throws Exception {
         this.pool = startDB();
