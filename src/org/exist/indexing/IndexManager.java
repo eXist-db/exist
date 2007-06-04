@@ -45,7 +45,13 @@ public class IndexManager {
 
     /**
      * Constructs a new IndexManager and registers the indexes specified in
-     * the global configuration object.
+     * the global configuration object, i.e. in the :
+     * <pre>
+     * &lt;modules&gt;
+     *   &lt;module id="foo" class="bar"/&gt;
+     * &lt;/modules&gt;
+     * </pre>
+     * section of the configuration file.
      *
      * @param pool the BrokerPool representing the current database instance
      * @param config the configuration object
@@ -84,28 +90,53 @@ public class IndexManager {
             }
         }
     }
+    
+    /**
+     * Returns the {@link org.exist.storage.BrokerPool} on with this IndexManager operates.
+     * 
+     * @return the broker pool
+     */
+    public BrokerPool getBrokerPool() {
+    	return pool;
+    }
 
+    /**
+     * Returns an iterator over the registered indexes.
+     * 
+     * @return the iterator
+     */
     public Iterator iterator() {
         return indexers.values().iterator();
     }
 
+    /** 
+     * Returns the index registered with the provided ID.
+     * 
+     * @param indexId the ID
+     * @return the index
+     */
     public synchronized Index getIndexById(String indexId) {
     	for (Iterator i = iterator(); i.hasNext(); ) {
     		Index indexer = (Index) i.next();
-    		if (indexId.equals(indexer.ID));
+    		if (indexId.equals(indexer.getIndexId()));
     			return indexer;
     	}
     	return null;
     }
 
+    /** 
+     * Returns the index registered with the provided human-readable name.
+     * @param indexName the name
+     * @return the index
+     */    
     public synchronized Index getIndexByName(String indexName) {
         return (Index)indexers.get(indexName);
     }
     
     /**
      * Returns a set of IndexWorkers, one for each registered index. The
-     * returned IndexWorkers are used by the DBBroker instances to do the
-     * actual work.
+     * returned IndexWorkers are used by the DBBroker instances to perform the
+     * actual indexing work.
      *
      * @return set of IndexWorkers
      */
@@ -121,7 +152,7 @@ public class IndexManager {
     }
 
     /**
-     * Shutdown all registered indexes by calling {@link org.exist.indexing.Index#close()}
+     * Shutdowns all registered indexes by calling {@link org.exist.indexing.Index#close()}
      * on them.
      *
      * @throws DBException
@@ -134,6 +165,12 @@ public class IndexManager {
         }
     }
 
+    /** 
+     * Physically destroy the registered indexes by calling {@link org.exist.indexing.Index#remove()}
+     * on them.
+     * 
+     * @throws DBException
+     */
     public void removeIndexes() throws DBException {
         Index index;
         for (Iterator i = iterator(); i.hasNext();) {
@@ -142,6 +179,12 @@ public class IndexManager {
         }
     }
 
+    /** Reopens the registered index in case they have been closed by a previous operation 
+     * such as {@link org.exist.indexing.Index#close()} by calling {@link org.exist.indexing.Index#open()}
+     * on them.
+     * 
+     * @throws DatabaseConfigurationException
+     */
     public void reopenIndexes() throws DatabaseConfigurationException {
         Index index;
         for (Iterator i = iterator(); i.hasNext();) {

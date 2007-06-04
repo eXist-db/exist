@@ -34,42 +34,49 @@ import org.w3c.dom.Element;
  * database instance during startup/shutdown. They don't need to be synchronized.
  */
 public interface Index {
+   
+    /**
+     * Returns an id which uniquely identifies this index.  This is usually the class name. 
+     * @return a unique name identifying this index.
+     */
+    String getIndexId();	
 
     /**
-     * Returns a name which uniquely identifies this index. This is configured by the user
+     * Returns a human-readable name which uniquely identifies this index. This is configured by the user
      * @return a unique name identifying this index.
      */
     String getIndexName();
     
     /**
-     * Returns an id which uniquely identifies this index. This is usually the class name
-     * return a unique name identifying this index.
-     */
-    public String ID = null;
-    
+     * Returns the {@link org.exist.storage.BrokerPool} on with this Index operates.
+     * 
+     * @return the broker pool
+     */    
     BrokerPool getBrokerPool();    
     
 	/**
      * Configure the index and all resources associated with it. This method
-     * is called while the database instance is initializing..
+     * is called while the database instance is initializing and receives the
+     * <pre>&lt;module id="foo" class="bar"/&gt;</pre>
+     * section of the configuration file.
      *
      * @param pool the BrokerPool representing the current database instance.
-     * @param dataDir the main data directory where eXist stores its files.
+     * @param dataDir the main data directory where eXist stores its files (if relevant).
      * @param config the module element which configures this index, as found in conf.xml
      * @throws DatabaseConfigurationException
      */
     void configure(BrokerPool pool, String dataDir, Element config) throws DatabaseConfigurationException;
 
     /**
-     * Open the index for writing and reading. Will be called during initialization, but also
-     * if the database had to be restarted.
+     * Opens the index for writing and reading. Will be called during initialization, but also
+     * if the database has to be restarted.
      *
      * @throws DatabaseConfigurationException
      */
     void open() throws DatabaseConfigurationException;
     
     /**
-     * Close the index and all associated resources.
+     * Closes the index and all associated resources.
      *
      * @throws DBException
      */
@@ -85,7 +92,14 @@ public interface Index {
     void sync() throws DBException;
 
     /**
-     * Create a new IndexWorker, which is used to access the index in a multi-threaded
+     * Closes the index and removes it completely, including all resources and files
+     * associated to it. This method is called during database repair before the
+     * db contents are reindexed.
+     */
+    void remove() throws DBException;
+    
+    /**
+     * Returns a new IndexWorker, which is used to access the index in a multi-threaded
      * environment.
      *
      * Every database instance has a number of
@@ -97,11 +111,13 @@ public interface Index {
      * @return a new IndexWorker that can be used for concurrent access to the index.
      */
     IndexWorker getWorker(DBBroker broker);
-
+    
     /**
-     * Close the index and remove it completely, including all resources and files
-     * associated to it. This method is called during database repair before the
-     * db contents are reindexed.
+     * Convenience method that allows to check index consistency.
+     * 
+     * @param broker the broker that will perform the operation.
+     * @return whether or not the index is in a consistent state. 
+     * The definition of "consistency" is left to the user.
      */
-    void remove() throws DBException;
+    boolean checkIndex(DBBroker broker);    
 }
