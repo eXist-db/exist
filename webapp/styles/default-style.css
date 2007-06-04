@@ -405,6 +405,13 @@ select.choose {
     background-color: #fef3c1;
 }
 
+          .authors {
+            margin-top: 5px;
+            margin-bottom: 35px;
+            padding-left: 10px;
+            padding-right: 10px;                     
+          }
+
 .note, .example, .important {
     margin-top: 10px;
     margin-bottom: 10px;

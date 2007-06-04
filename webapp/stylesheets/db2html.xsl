@@ -86,33 +86,44 @@
     </xsl:template>
 
     <xsl:template match="author">
-        <div class="authors">
-            <small>
-                <xsl:value-of select="firstname"/>
-                <xsl:value-of select="surname"/>
-            </small>
+        <div class="authors">           
+            <xsl:value-of select="firstname"/>
+            <xsl:text> </xsl:text>
+            <xsl:value-of select="surname"/>
             <br/>
-            <xsl:if test=".//email">
-                <a href="mailto:{.//email}">
+        	<xsl:for-each select=".//jobtitle">
+        		<xsl:apply-templates/>
+        		<br/>
+        	</xsl:for-each>
+        	<xsl:for-each select=".//orgname">
+        		<xsl:apply-templates/>
+        		<br/>
+        	</xsl:for-each>                     
+            <xsl:for-each select=".//email">
+                <a href="mailto:{.}">
                     <small>
                         <em>
-                            <xsl:value-of select=".//email"/>
+                            <xsl:value-of select="."/>
                         </em>
                     </small>
                 </a>
-            </xsl:if>
+                <br/>
+            </xsl:for-each>
         </div>
     </xsl:template>
 
     <xsl:template match="chapter">
         <div class="chapter">
-            <xsl:apply-templates select="title"/>
+            <xsl:apply-templates select="title"/>            
             <xsl:call-template name="toc"/>
             <xsl:apply-templates select="*[not(name()='title')]"/>
         </div>
     </xsl:template>
 
-    <xsl:template match="chapter/title">
+    <xsl:template match="chapter/title">    
+        <xsl:for-each select="//author">
+        	<xsl:apply-templates select="."/>
+        </xsl:for-each>
         <h1 class="chaptertitle">
             <a>
                 <xsl:attribute name="name">
