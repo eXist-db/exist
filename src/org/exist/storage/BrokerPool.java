@@ -75,6 +75,8 @@ public class BrokerPool {
 
 	private final static Logger LOG = Logger.getLogger(BrokerPool.class);
 	
+	public static final String CONFIGURATION_ELEMENT_NAME = "pool";
+	
 	private final static TreeMap instances = new TreeMap();
 	
 	/**

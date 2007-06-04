@@ -39,6 +39,8 @@ public class XQueryWatchDog {
      */
     private static final Logger LOG = Logger.getLogger(XQueryWatchDog.class);
     
+    public static final String CONFIGURATION_ELEMENT_NAME = "watchdog";
+    
     public static String PROPERTY_QUERY_TIMEOUT = "db-connection.watchdog.query-timeout";
     public static String PROPERTY_OUTPUT_SIZE_LIMIT = "db-connection.watchdog.output-size-limit";
 
