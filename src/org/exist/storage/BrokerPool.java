@@ -75,22 +75,23 @@ public class BrokerPool {
 
 	private final static Logger LOG = Logger.getLogger(BrokerPool.class);
 	
-	public static final String CONFIGURATION_ELEMENT_NAME = "pool";
-	public static final String PROPERTY_DATA_DIR = "db-connection.data-dir";
-	
 	private final static TreeMap instances = new TreeMap();
 	
 	/**
 	 * The name of a default database instance for those who are too lazy to provide parameters ;-). 
 	 */	
 	public final static String DEFAULT_INSTANCE_NAME = "exist";		
-	
+
+	public static final String CONFIGURATION_ELEMENT_NAME = "pool";
+
 	//Various configuration property keys (set by the configuration manager)
+	public static final String PROPERTY_DATA_DIR = "db-connection.data-dir";
 	public final static String PROPERTY_MIN_CONNECTIONS = "db-connection.pool.min";
 	public final static String PROPERTY_MAX_CONNECTIONS = "db-connection.pool.max";
 	public final static String PROPERTY_SYNC_PERIOD = "db-connection.pool.sync-period";
 	public final static String PROPERTY_SHUTDOWN_DELAY = "wait-before-shutdown";
 	public final static String PROPERTY_COLLECTION_CACHE_SIZE = "db-connection.collection-cache-size";
+	public final static String PROPERTY_SECURITY_CLASS = "db-connection.security.class";
 	
 	//TODO : inline the class ? or... make it configurable ?
     // WM: inline. I don't think users need to be able to overwrite this.
@@ -637,7 +638,7 @@ public class BrokerPool {
     protected SecurityManager newSecurityManager() 
     {
        try {
-          Class smClass = (Class)conf.getProperty("db-connection.security.class");
+          Class smClass = (Class)conf.getProperty(PROPERTY_SECURITY_CLASS);
           return (SecurityManager)smClass.newInstance();
        } catch (Throwable ex) {
           LOG.warn("Exception while instantiating security manager class.", ex);

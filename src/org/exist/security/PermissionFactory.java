@@ -39,7 +39,7 @@ public class PermissionFactory
 	{
 		try
 		{
-			//Class permissionClass = (Class)broker.getConfiguration().getProperty("db-connection.security.class");
+			//Class permissionClass = (Class)broker.getConfiguration().getProperty(BrokerPool.PROPERTY_SECURITY_CLASS);
 	        return (Permission)new UnixStylePermission();
 		}
 		catch(Throwable ex)
@@ -53,7 +53,7 @@ public class PermissionFactory
 	{
 		try
 		{
-			//Class permissionClass = (Class)broker.getConfiguration().getProperty("db-connection.security.class");
+			//Class permissionClass = (Class)broker.getConfiguration().getProperty(BrokerPool.PROPERTY_SECURITY_CLASS);
 	        return (Permission)new UnixStylePermission(perm);
 		}
 		catch(Throwable ex)
@@ -67,7 +67,7 @@ public class PermissionFactory
 	{
 		try
 		{
-			//Class permissionClass = (Class)broker.getConfiguration().getProperty("db-connection.security.class");
+			//Class permissionClass = (Class)broker.getConfiguration().getProperty(BrokerPool.PROPERTY_SECURITY_CLASS);
 	        return (Permission)new UnixStylePermission(user, group, permissions);
 		}
 		catch(Throwable ex)

@@ -642,6 +642,7 @@ public class Configuration implements ErrorHandler {
             Element security = (Element)securityConf.item(0);
             securityManagerClassName = security.getAttribute("class");
             String encoding = security.getAttribute("password-encoding");
+            //Unused
             config.put("db-connection.security.password-encoding",encoding);
             if (encoding!=null) {
                 LOG.info("db-connection.security.password-encoding: " + config.get("db-connection.security.password-encoding"));
@@ -650,6 +651,7 @@ public class Configuration implements ErrorHandler {
                 LOG.info("No password encoding set, defaulting.");
             }
             String realm = security.getAttribute("password-realm");
+            //Unused
             config.put("db-connection.security.password-realm",realm);
             if (realm!=null) {
                 LOG.info("db-connection.security.password-realm: " + config.get("db-connection.security.password-realm"));
@@ -660,8 +662,8 @@ public class Configuration implements ErrorHandler {
         }
         
         try {
-            config.put("db-connection.security.class",Class.forName(securityManagerClassName));
-            LOG.debug("db-connection.security.class: " + config.get("db-connection.security.class"));
+            config.put(BrokerPool.PROPERTY_SECURITY_CLASS, Class.forName(securityManagerClassName));
+            LOG.debug(BrokerPool.PROPERTY_SECURITY_CLASS + ": " + config.get(BrokerPool.PROPERTY_SECURITY_CLASS));
         } catch (Throwable ex) {
             if (ex instanceof ClassNotFoundException) {
                 throw new DatabaseConfigurationException("Cannot find security manager class "+securityManagerClassName);
