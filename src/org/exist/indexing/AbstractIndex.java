@@ -28,11 +28,22 @@ import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Element;
 
 public abstract class AbstractIndex implements Index {
-
+	
+    /**
+     * Holds an id which uniquely identifies this index. This is usually the class name. 
+     */
+    protected static String ID = null;
+    
+    protected String name = null;
+    
     protected BrokerPool pool;
-    private String name = null;
+    
     //Probably not useful for every kind of index. Anyway...
     private String dataDir = null; 
+    
+    public String getIndexId() {
+    	return ID;
+    }
     
     public String getIndexName() {
     	return name;
@@ -54,9 +65,15 @@ public abstract class AbstractIndex implements Index {
     }
     
 	public abstract void open() throws DatabaseConfigurationException;
+	
 	public abstract void close() throws DBException;
-	public abstract void sync() throws DBException;
-	public abstract IndexWorker getWorker(DBBroker broker);
+	
+	public abstract void sync() throws DBException;	
+	
 	public abstract void remove() throws DBException;
+	
+	public abstract IndexWorker getWorker(DBBroker broker);
+	
 	public abstract boolean checkIndex(DBBroker broker);
+	
 }

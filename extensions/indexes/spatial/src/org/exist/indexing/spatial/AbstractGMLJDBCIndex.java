@@ -42,6 +42,12 @@ import org.w3c.dom.Element;
  */
 public abstract class AbstractGMLJDBCIndex extends AbstractIndex {
 	
+	
+	/**
+	 * Holds the index ID. Notice that we delegate this task to the abstract JDBC class,
+	 * not to the concrete HSQL (or whatever) one. This allows spatial functions to use
+	 * the available JDBC index, whatever its underlying engine is.
+	 */
 	public final static String ID = AbstractGMLJDBCIndex.class.getName();
 	
 	private final static Logger LOG = Logger.getLogger(AbstractGMLJDBCIndex.class);	
@@ -50,6 +56,10 @@ public abstract class AbstractGMLJDBCIndex extends AbstractIndex {
     
     protected HashMap workers = new HashMap();
 
+    /**
+     * The spatial operators to test spatial relationshipds beween geometries.
+     * See http://www.vividsolutions.com/jts/bin/JTS%20Technical%20Specs.pdf (chapter 11).   
+     */
     public interface SpatialOperator { 
     	public static int UNKNOWN = -1;
 	    public static int EQUALS = 1;
@@ -125,17 +135,52 @@ public abstract class AbstractGMLJDBCIndex extends AbstractIndex {
     
     public abstract IndexWorker getWorker(DBBroker broker);
     
+    /**
+     * Checks if the JDBC database that contains the indexed spatial data is available an reachable.
+     * Creates it if necessary.
+     * 
+     * @throws ClassNotFoundException if the JDBC driver can not be found
+     * @throws SQLException if the database is not reachable
+     */
     protected abstract void checkDatabase() throws ClassNotFoundException, SQLException;
     
+    /**
+     * Shuts down the JDBC database that contains the indexed spatial data.
+     * 
+     * @throws DBException
+     */
     protected abstract void shutdownDatabase() throws DBException;
     
+    /**
+     * Deletes the JDBC database that contains the indexed spatial data.
+     * 
+     * @throws DBException
+     */
     protected abstract void deleteDatabase() throws DBException;
     
-	//TODO : we need a broker to perform that operation !
-	//Use the last worker ? try something else ?
+    /**
+     * Deletes the spatial data contained in the JDBC database.
+     * 
+     * @throws DBException
+     */
     protected abstract void removeIndexContent() throws DBException;
     
+    /**
+     * Convenience method that can be used by the IndexWorker to acquire a connection 
+     * to the JDBC database that contains the indexed spatial data.
+     * 
+     * @param broker the broker that will use th connection
+     * @return the connection
+     */
     protected abstract Connection acquireConnection(DBBroker broker);
     
+    /**
+     * Convenience method that can be used by the IndexWorker to release a connection 
+     * to the JDBC database that contains the indexed spatial data. This connection should have been
+     * previously acquired by {@link org.exist.indexing.spatial.AbstractGMLJDBCIndex#acquireConnection(DBBroker)} 
+     * 
+     * @param broker the broker that will use th connection
+     * 
+     */    
     protected abstract void releaseConnection(DBBroker broker);
 }
