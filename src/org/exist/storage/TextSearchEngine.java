@@ -69,10 +69,10 @@ public abstract class TextSearchEngine extends Observable {
 	protected PorterStemmer stemmer = null;
 	protected int trackMatches = Serializer.TAG_ELEMENT_MATCHES;
 	
-	public static String PROPERTY_INDEX_NUMBERS = "indexer.indexNumbers";
-	public static String PROPERTY_STEM = "indexer.stem";
-	public static String PROPERTY_STORE_TERM_FREQUENCY = "indexer.store-term-freq";
-	public static String PROPERTY_TOKENIZER = "indexer.tokenizer";
+	public final static String PROPERTY_INDEX_NUMBERS = "indexer.indexNumbers";
+	public final static String PROPERTY_STEM = "indexer.stem";
+	public final static String PROPERTY_STORE_TERM_FREQUENCY = "indexer.store-term-freq";
+	public final static String PROPERTY_TOKENIZER = "indexer.tokenizer";
 	
 	/**
 	 * Construct a new instance and configure it.
