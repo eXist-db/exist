@@ -26,7 +26,7 @@ public class DatabaseStatus {
 		
 		// paths
 		//confPath = conf.getPath();
-		dataDir = (String)conf.getProperty("db-connection.data-dir");
+		dataDir = (String)conf.getProperty(BrokerPool.PROPERTY_DATA_DIR);
 		
 		// broker statistics
 		runningBrokers = pool.active();

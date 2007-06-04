@@ -81,7 +81,7 @@ public class BackupSystemTask implements SystemTask {
         String dir = properties.getProperty("dir", "backup");
         directory = new File(dir);
         if (!directory.isAbsolute()) {
-            dir = (String)config.getProperty("db-connection.data-dir") +
+            dir = (String)config.getProperty(BrokerPool.PROPERTY_DATA_DIR) +
                 File.separatorChar + dir;
             directory = new File(dir);
         }

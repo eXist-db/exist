@@ -84,13 +84,13 @@ public abstract class DBBroker extends Observable {
 	public final static String TEMP_COLLECTION = SYSTEM_COLLECTION + "/" + TEMP_COLLECTION_NAME;
 
     //TODO : move elsewhere
-    public static String PROPERTY_XUPDATE_GROWTH_FACTOR = "xupdate.growth-factor";
+    public final static String PROPERTY_XUPDATE_GROWTH_FACTOR = "xupdate.growth-factor";
 
     //TODO : move elsewhere
-    public static String PROPERTY_XUPDATE_FRAGMENTATION_FACTOR = "xupdate.fragmentation";
+    public final static String PROPERTY_XUPDATE_FRAGMENTATION_FACTOR = "xupdate.fragmentation";
 
     //TODO : move elsewhere
-    public static String PROPERTY_XUPDATE_CONSISTENCY_CHECKS = "xupdate.consistency-checks";
+    public final static String PROPERTY_XUPDATE_CONSISTENCY_CHECKS = "xupdate.consistency-checks";
 
     protected final static Logger LOG = Logger.getLogger(DBBroker.class);
 
