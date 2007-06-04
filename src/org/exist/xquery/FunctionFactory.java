@@ -34,6 +34,8 @@ import org.exist.xquery.value.Type;
 
 public class FunctionFactory {
 
+	public static final String PROPERTY_ENABLE_JAVA_BINDING = "xquery.enable-java-binding";
+	
 	/**
 	 * Create a function call. 
 	 * 
@@ -184,7 +186,7 @@ public class FunctionFactory {
 		} else if(uri.startsWith("java:")) {
 			
 			//Only allow java binding if specified in config file <xquery enable-java-binding="yes">
-			String javabinding = (String)context.broker.getConfiguration().getProperty("xquery.enable-java-binding");
+			String javabinding = (String)context.broker.getConfiguration().getProperty(PROPERTY_ENABLE_JAVA_BINDING);
 			if(javabinding != null)
 			{
 				if(javabinding.equals("yes"))

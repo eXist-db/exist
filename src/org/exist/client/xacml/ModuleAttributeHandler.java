@@ -103,7 +103,7 @@ public class ModuleAttributeHandler implements AttributeHandler
 	//index = 0 for namespaces, 1 for the class name
 	private void addInternal(Set values, int index)
 	{
-		/*String modules[][] = (String[][])config.getProperty("xquery.modules");
+		/*String modules[][] = (String[][])config.getProperty(XQueryContext.PROPERTY_BULT_IN_MODULES);
 		if(modules == null)
 			return;
 		for(int i = 0; i < modules.length; i++)
