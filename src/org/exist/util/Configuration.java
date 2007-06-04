@@ -995,8 +995,8 @@ public class Configuration implements ErrorHandler {
         
         String suppressWSmixed = p.getAttribute("preserve-whitespace-mixed-content");
         if (suppressWSmixed != null) {
-            config.put("indexer.preserve-whitespace-mixed-content", Boolean.valueOf(suppressWSmixed.equals("yes")));
-            LOG.debug("indexer.preserve-whitespace-mixed-content: " + config.get("indexer.preserve-whitespace-mixed-content"));
+            config.put(Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT, Boolean.valueOf(suppressWSmixed.equals("yes")));
+            LOG.debug(Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT + ": " + config.get(Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT));
         }
         
         // index settings
@@ -1004,7 +1004,7 @@ public class Configuration implements ErrorHandler {
         if (cl.getLength() > 0) {
             Element elem = (Element) cl.item(0);
             IndexSpec spec = new IndexSpec(null, elem);
-            config.put("indexer.config", spec);
+            config.put(Indexer.PROPERTY_INDEXER_CONFIG, spec);
         }
         
         // stopwords

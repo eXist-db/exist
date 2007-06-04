@@ -61,10 +61,12 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 
     private static final String ATTR_ID_TYPE = "ID";
 
-    private final static Logger LOG =
-	Logger.getLogger(Indexer.class);
+    private final static Logger LOG = Logger.getLogger(Indexer.class);
     
     public static final String CONFIGURATION_ELEMENT_NAME = "indexer";
+    public static final String PROPERTY_INDEXER_CONFIG = "indexer.config";
+    public static final String PROPERTY_PRESERVE_WS_MIXED_CONTENT = 
+    	"indexer.preserve-whitespace-mixed-content";
 
     protected DBBroker broker = null;
     protected Txn transaction;
@@ -157,7 +159,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 	}
 		
 	Boolean temp;
-	if ((temp = (Boolean) config.getProperty("indexer.preserve-whitespace-mixed-content"))
+	if ((temp = (Boolean) config.getProperty(PROPERTY_PRESERVE_WS_MIXED_CONTENT))
 	    != null)
 	    suppressWSmixed = temp.booleanValue();
     }
