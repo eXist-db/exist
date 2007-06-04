@@ -58,6 +58,7 @@ import org.exist.validation.resolver.eXistXMLCatalogResolver;
 import org.exist.xquery.FunctionFactory;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XQueryWatchDog;
+import org.exist.xslt.TransformerFactoryAllocator;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -422,8 +423,9 @@ public class Configuration implements ErrorHandler {
         
         String className = transformer.getAttribute("class");
         if (className != null) {
-            config.put("transformer.class", className);
-            LOG.debug("transformer.class: " + config.get("transformer.class"));
+            config.put(TransformerFactoryAllocator.PROPERTY_TRANSFORMER_CLASS, className);
+            LOG.debug(TransformerFactoryAllocator.PROPERTY_TRANSFORMER_CLASS + ": " + 
+            		config.get(TransformerFactoryAllocator.PROPERTY_TRANSFORMER_CLASS));
         }
     }
     
@@ -564,22 +566,43 @@ public class Configuration implements ErrorHandler {
             }
         }
         
+        String pageSize = con.getAttribute("pageSize");
+        if (pageSize != null) {
+            try {
+                config.put(NativeBroker.PROPERTY_PAGE_SIZE, new Integer(pageSize));
+                LOG.debug(NativeBroker.PROPERTY_PAGE_SIZE + ": " + config.get(NativeBroker.PROPERTY_PAGE_SIZE));
+            } catch (NumberFormatException nfe) {
+                LOG.warn(nfe);
+            }
+        }
+        
+        String freeMem = con.getAttribute("free_mem_min");
+        if (freeMem != null) {
+            try {
+                config.put(NativeBroker.PROPERTY_MIN_FREE_MEMORY, new Integer(freeMem));
+                LOG.debug(NativeBroker.PROPERTY_MIN_FREE_MEMORY + ": " + config.get(NativeBroker.PROPERTY_MIN_FREE_MEMORY));
+            } catch (NumberFormatException nfe) {
+                LOG.warn(nfe);
+            }
+        }
+        
+        //Not clear : rather looks like a buffers count
+        String collCacheSize = con.getAttribute("collectionCacheSize");
+        if (collCacheSize != null) {
+            try {
+                config.put(BrokerPool.PROPERTY_COLLECTION_CACHE_SIZE, new Integer(collCacheSize));
+                LOG.debug(BrokerPool.PROPERTY_COLLECTION_CACHE_SIZE + ": " + config.get(BrokerPool.PROPERTY_COLLECTION_CACHE_SIZE));
+            } catch (NumberFormatException nfe) {
+                LOG.warn(nfe);
+            }
+        }
+        
         //Unused !
         String buffers = con.getAttribute("buffers");
         if (buffers != null) {
             try {
                 config.put("db-connection.buffers", new Integer(buffers));
                 LOG.debug("db-connection.buffers: " + config.get("db-connection.buffers"));
-            } catch (NumberFormatException nfe) {
-                LOG.warn(nfe);
-            }
-        }
-        
-        String pageSize = con.getAttribute("pageSize");
-        if (pageSize != null) {
-            try {
-                config.put(NativeBroker.PROPERTY_PAGE_SIZE, new Integer(pageSize));
-                LOG.debug(NativeBroker.PROPERTY_PAGE_SIZE + ": " + config.get(NativeBroker.PROPERTY_PAGE_SIZE));
             } catch (NumberFormatException nfe) {
                 LOG.warn(nfe);
             }
@@ -616,28 +639,7 @@ public class Configuration implements ErrorHandler {
                 LOG.warn(nfe);
             }
         }
-        
-        String freeMem = con.getAttribute("free_mem_min");
-        if (freeMem != null) {
-            try {
-                config.put(NativeBroker.PROPERTY_MIN_FREE_MEMORY, new Integer(freeMem));
-                LOG.debug(NativeBroker.PROPERTY_MIN_FREE_MEMORY + ": " + config.get(NativeBroker.PROPERTY_MIN_FREE_MEMORY));
-            } catch (NumberFormatException nfe) {
-                LOG.warn(nfe);
-            }
-        }
-        
-        //Not clear : rather looks like a buffers count
-        String collCacheSize = con.getAttribute("collectionCacheSize");
-        if (collCacheSize != null) {
-            try {
-                config.put(BrokerPool.PROPERTY_COLLECTION_CACHE_SIZE, new Integer(collCacheSize));
-                LOG.debug(BrokerPool.PROPERTY_COLLECTION_CACHE_SIZE + ": " + config.get(BrokerPool.PROPERTY_COLLECTION_CACHE_SIZE));
-            } catch (NumberFormatException nfe) {
-                LOG.warn(nfe);
-            }
-        }
-        
+
         NodeList securityConf = con.getElementsByTagName("security");
         String securityManagerClassName = "org.exist.security.XMLSecurityManager";
         if (securityConf.getLength()>0) {
@@ -1017,8 +1019,8 @@ public class Configuration implements ErrorHandler {
             String stopwordFile = ((Element) stopwords.item(0)).getAttribute("file");
             File sf = ConfigurationHelper.lookup(stopwordFile, dbHome);
             if (sf.canRead()) {
-                config.put("stopwords", stopwordFile);
-                LOG.debug("stopwords: " + config.get("stopwords"));
+                config.put(TextSearchEngine.PROPERTY_STOPWORD_FILE, stopwordFile);
+                LOG.debug(TextSearchEngine.PROPERTY_STOPWORD_FILE + ": " + config.get(TextSearchEngine.PROPERTY_STOPWORD_FILE));
             }
         }
         

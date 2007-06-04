@@ -65,6 +65,7 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
     
     public static final String CONFIGURATION_ELEMENT_NAME = "indexer";
     public static final String PROPERTY_INDEXER_CONFIG = "indexer.config";
+    public final static String PROPERTY_SUPPRESS_WHITESPACE = "indexer.suppress-whitespace";
     public static final String PROPERTY_PRESERVE_WS_MIXED_CONTENT = 
     	"indexer.preserve-whitespace-mixed-content";
 
@@ -117,8 +118,6 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
     // reusable fields
     private TextImpl text = new TextImpl();
     private Stack usedElements = new Stack();
-	
-    public static String PROPERTY_SUPPRESS_WHITESPACE = "indexer.suppress-whitespace";
 	
     /**
      *  Create a new parser using the given database broker and
