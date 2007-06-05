@@ -128,6 +128,10 @@ public class IndexController {
         return listener;
     }
 
+    /**
+     * @param proxy
+     * @return
+     */
     public MatchListener getMatchListener(NodeProxy proxy) {
         MatchListener first = null;
         MatchListener current, previous = null;
@@ -148,7 +152,7 @@ public class IndexController {
     }
 
     /**
-     * Configures all index modules registered with the db instance.
+     * Configures all index workers registered with the db instance.
      * 
      * @param configNodes lists the top-level child nodes below the &lt;index&gt; element in collection.xconf
      * @param namespaces the active prefix/namespace map
@@ -169,7 +173,7 @@ public class IndexController {
     }
 
     /**
-     * Flushes all index modules.
+     * Flushes all index workers.
      */
     public void flush() {
         IndexWorker indexWorker;
@@ -178,6 +182,48 @@ public class IndexController {
             indexWorker.flush();
         }
     }
+    
+    /**
+     * Sets the documentfor the next operation.
+     * @param doc
+     */    
+    public void setDocument(DocumentImpl doc) {
+        if (currentDoc != doc)
+        	//Reset listener
+        	listener = null;
+        currentDoc = doc;
+        IndexWorker indexWorker;
+        for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
+            indexWorker = (IndexWorker) i.next();
+            indexWorker.setDocument(currentDoc);
+        }    	
+    }
+
+    /**
+     * Sets the the mode for the next operation.
+     * @param mode
+     */
+    public void setMode(int mode) {
+        if (currentMode != mode)
+        	//Reset listener
+        	listener = null;
+        currentMode = mode;
+        IndexWorker indexWorker;
+        for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
+            indexWorker = (IndexWorker) i.next();
+            indexWorker.setMode(currentMode);
+        }
+    }
+    
+    /**
+     * Sets the document and the mode for the next operation.
+     * @param doc
+     * @param mode
+     */
+    public void setDocument(DocumentImpl doc, int mode) {
+    	setDocument(doc);
+    	setMode(mode);
+    }    
 
     /**
      * When adding or removing nodes to or from the document tree, it might become
@@ -276,39 +322,11 @@ public class IndexController {
             listener.endElement(transaction, node, path);
     }
     
-    public void setDocument(DocumentImpl doc) {
-        if (currentDoc != doc)
-        	//Reset listener
-        	listener = null;
-        currentDoc = doc;
-        IndexWorker indexWorker;
-        for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
-            indexWorker = (IndexWorker) i.next();
-            indexWorker.setDocument(currentDoc);
-        }    	
-    }
-
-    public void setMode(int mode) {
-        if (currentMode != mode)
-        	//Reset listener
-        	listener = null;
-        currentMode = mode;
-        IndexWorker indexWorker;
-        for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
-            indexWorker = (IndexWorker) i.next();
-            indexWorker.setMode(currentMode);
-        }
-    }
-    
-    public void setDocument(DocumentImpl doc, int mode) {
-    	setDocument(doc);
-    	setMode(mode);
-    }
-
     /**
      * Remove all indexes defined on the specified collection.
      *
      * @param collection the collection to remove
+     * @param broker the broker that will perform the operation
      */
     public void removeCollection(Collection collection, DBBroker broker) {
         IndexWorker indexWorker;
