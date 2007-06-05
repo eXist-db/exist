@@ -38,6 +38,7 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Logger;
 import org.exist.Indexer;
+import org.exist.indexing.IndexManager;
 import org.exist.memtree.SAXAdapter;
 import org.exist.protocolhandler.eXistURLStreamHandlerFactory;
 import org.exist.scheduler.Scheduler;
@@ -1039,7 +1040,7 @@ public class Configuration implements ErrorHandler {
                     throw new DatabaseConfigurationException("Required attribute id is missing for module");
                 modConfig[i] = new IndexModuleConfig(id, className, elem);
             }
-            config.put("indexer.modules", modConfig);
+            config.put(IndexManager.PROPERTY_INDEXER_MODULES, modConfig);
         }
     }
     
