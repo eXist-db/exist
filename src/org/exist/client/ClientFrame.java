@@ -1054,7 +1054,7 @@ public class ClientFrame extends JFrame
                         client.current.getService("IndexQueryService", "1.0"); //$NON-NLS-1$ //$NON-NLS-2$
                         for(int i = 0; i < collections.length; i++) {
                             ResourceDescriptor next = collections[i];
-                            setStatus(Messages.getString("ClientFrame.142") + next + Messages.getString("ClientFrame.143")); //$NON-NLS-1$ //$NON-NLS-2$
+                            setStatus(Messages.getString("ClientFrame.142") + next.getName() + Messages.getString("ClientFrame.143")); //$NON-NLS-1$ //$NON-NLS-2$
                             service.reindexCollection(next.getName());
                         }
                         setStatus(Messages.getString("ClientFrame.144")); //$NON-NLS-1$
