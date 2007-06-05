@@ -618,9 +618,9 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         }
     }      
     
-    protected Geometry getGeometryForNode(DBBroker broker, NodeProxy p, Connection conn) throws SQLException {
+    protected Geometry getGeometryForNode(DBBroker broker, NodeProxy p, boolean getEPSG4326, Connection conn) throws SQLException {
         PreparedStatement ps = conn.prepareStatement(
-    		"SELECT EPSG4326_WKB" +
+        	"SELECT " + (getEPSG4326 ? "EPSG4326_WKB" : "WKB") +
     		" FROM " + GMLHSQLIndex.TABLE_NAME + 
     		" WHERE DOCUMENT_URI = ? AND NODE_ID = ?;"
     	);
@@ -634,12 +634,12 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     		if (!rs.next())
     			//Nothing returned
     			return null;    		
-        	Geometry EPSG4326_geometry = wkbReader.read(rs.getBytes("EPSG4326_WKB"));        			
+        	Geometry geometry = wkbReader.read(rs.getBytes(1));        			
         	if (rs.next()) {   	
     			//Should be impossible    		
     			throw new SQLException("More than one geometry for node " + p);
     		}
-        	return EPSG4326_geometry;    
+        	return geometry;    
         } catch (ParseException e) {
         	LOG.error(e); 
         	return null;
