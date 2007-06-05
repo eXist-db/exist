@@ -233,9 +233,15 @@ public class Validation extends BasicFunction  {
         builder.characters(""+report.getValidationDuration());
         builder.endElement();
         
+        if(report.getThrowable()!=null){
+            builder.startElement("", "exception", "exception", null);
+            builder.characters(""+report.getThrowable().getMessage());
+            builder.endElement();
+        }
+        
     	AttributesImpl attribs = new AttributesImpl();
 
-        List cr = report.getReport();
+        List cr = report.getValidationReportItemList();
         for (Iterator iter = cr.iterator(); iter.hasNext(); ) {
             ValidationReportItem vri = (ValidationReportItem) iter.next();
             
