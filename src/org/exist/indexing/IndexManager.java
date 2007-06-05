@@ -38,6 +38,8 @@ import org.exist.util.DatabaseConfigurationException;
 public class IndexManager {
 
     private final static Logger LOG = Logger.getLogger(IndexManager.class);
+    
+    public final static String PROPERTY_INDEXER_MODULES = "indexer.modules";
 
     private BrokerPool pool;
 
@@ -48,7 +50,7 @@ public class IndexManager {
      * the global configuration object, i.e. in the :
      * <pre>
      * &lt;modules&gt;
-     *   &lt;module id="foo" class="bar"/&gt;
+     *   &lt;module id="foo" class="bar" foo1="bar1" ... /&gt;
      * &lt;/modules&gt;
      * </pre>
      * section of the configuration file.
@@ -60,7 +62,7 @@ public class IndexManager {
     public IndexManager(BrokerPool pool, Configuration config) throws DatabaseConfigurationException {
         this.pool = pool;
         Configuration.IndexModuleConfig modConf[] = (Configuration.IndexModuleConfig[])
-                config.getProperty("indexer.modules");
+                config.getProperty(PROPERTY_INDEXER_MODULES);
         String dataDir = (String) config.getProperty(BrokerPool.PROPERTY_DATA_DIR);
 
         if (modConf != null) {
