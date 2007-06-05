@@ -107,7 +107,7 @@ public class IndexManager {
      * 
      * @return the iterator
      */
-    public Iterator iterator() {
+    protected Iterator iterator() {
         return indexers.values().iterator();
     }
 
@@ -142,7 +142,7 @@ public class IndexManager {
      *
      * @return set of IndexWorkers
      */
-    public synchronized IndexWorker[] getWorkers(DBBroker broker) {
+    protected synchronized IndexWorker[] getWorkers(DBBroker broker) {
         final IndexWorker workers[] = new IndexWorker[indexers.size()];
         Index index;
         int j = 0;
