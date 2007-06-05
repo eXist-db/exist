@@ -370,11 +370,11 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 		}    	
     }
     
-    public Geometry getGeometryForNode(DBBroker broker, NodeProxy p) throws  SpatialIndexException {
+    public Geometry getGeometryForNode(DBBroker broker, NodeProxy p, boolean getEPSG4326) throws  SpatialIndexException {
     	Connection conn = null;
         try {
         	conn = acquireConnection();
-        	return getGeometryForNode(broker, p, conn);
+        	return getGeometryForNode(broker, p, getEPSG4326, conn);
 	    } catch (SQLException e) {
 	    	throw new SpatialIndexException(e);
 	    } finally {
@@ -531,7 +531,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     
     protected abstract AtomicValue getGeometricPropertyForNode(DBBroker broker, NodeProxy p, Connection conn, String propertyName) throws SQLException, XPathException;
     
-    protected abstract Geometry getGeometryForNode(DBBroker broker, NodeProxy p, Connection conn) throws SQLException;
+    protected abstract Geometry getGeometryForNode(DBBroker broker, NodeProxy p, boolean getEPSG4326, Connection conn) throws SQLException;
     
     protected abstract NodeSet search(DBBroker broker, NodeSet contextSet, Geometry EPSG4326_geometry, int spatialOp, Connection conn) throws SQLException;
     

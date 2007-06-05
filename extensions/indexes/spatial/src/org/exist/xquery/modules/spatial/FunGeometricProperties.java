@@ -307,7 +307,8 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
 						hasUsedIndex = true;
 					} else {
 						//Or, at least, its geometry for further processing
-						geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode);
+						//TODO : think ; the signature may require getEPSG4326
+						geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, false);
 						sourceCRS = indexWorker.getGeometricPropertyForNode(context.getBroker(), (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
 					}
 				}

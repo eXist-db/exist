@@ -42,13 +42,6 @@ import org.exist.xquery.value.Type;
 
 import com.vividsolutions.jts.geom.Geometry;
 
-/**
- * Created by IntelliJ IDEA.
- * User: wolf
- * Date: 28-Feb-2007
- * Time: 15:18:59
- * To change this template use File | Settings | File Templates.
- */
 public class FunSpatialSearch extends BasicFunction implements IndexUseReporter {
 	
 	boolean hasUsedIndex = false;
@@ -151,7 +144,7 @@ public class FunSpatialSearch extends BasicFunction implements IndexUseReporter 
 		        NodeValue geometryNode = (NodeValue) args[1].itemAt(0);   
 				if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE)
 					//The node should be indexed
-					EPSG4326_geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode);		
+					EPSG4326_geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, true);		
 		        if (EPSG4326_geometry == null) {		        	
 		        	Geometry geometry = indexWorker.streamGeometryForNode(context, geometryNode);
 	            	//Argl ! No SRS !
