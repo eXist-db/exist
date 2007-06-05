@@ -187,8 +187,7 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex {
 		        			/*4*/ "GEOMETRY_TYPE VARCHAR, " +
 		        			/*5*/ "SRS_NAME VARCHAR, " +
 		        			/*6*/ "WKT VARCHAR, " +
-		        			//TODO : use binary format ?
-		        			/*7*/ "BASE64_WKB VARCHAR, " +
+		        			/*7*/ "WKB BINARY, " +
 		        			/*8*/ "MINX DOUBLE, " +
 		        			/*9*/ "MAXX DOUBLE, " +
 		        			/*10*/ "MINY DOUBLE, " +
@@ -198,8 +197,7 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex {
 		        			/*14*/ "AREA DOUBLE, " +
 		        			//Boundary ?
 		        			/*15*/ "EPSG4326_WKT VARCHAR, " +
-		        			//TODO : use binary format ?
-		        			/*16*/ "EPSG4326_BASE64_WKB VARCHAR, " +
+		        			/*16*/ "EPSG4326_WKB BINARY, " +
 		        			/*17*/ "EPSG4326_MINX DOUBLE, " +
 		        			/*18*/ "EPSG4326_MAXX DOUBLE, " +
 		        			/*19*/ "EPSG4326_MINY DOUBLE, " +
@@ -221,6 +219,8 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex {
 		        	stmt.executeUpdate("CREATE INDEX NODE_ID ON " + TABLE_NAME + " (NODE_ID);");
 		        	stmt.executeUpdate("CREATE INDEX GEOMETRY_TYPE ON " + TABLE_NAME + " (GEOMETRY_TYPE);");
 		        	stmt.executeUpdate("CREATE INDEX SRS_NAME ON " + TABLE_NAME + " (SRS_NAME);");
+		        	stmt.executeUpdate("CREATE INDEX WKB ON " + TABLE_NAME + " (WKB);");
+		        	stmt.executeUpdate("CREATE INDEX EPSG4326_WKB ON " + TABLE_NAME + " (EPSG4326_WKB);");
 		        	stmt.executeUpdate("CREATE INDEX EPSG4326_MINX ON " + TABLE_NAME + " (EPSG4326_MINX);");
 		        	stmt.executeUpdate("CREATE INDEX EPSG4326_MAXX ON " + TABLE_NAME + " (EPSG4326_MAXX);");
 		        	stmt.executeUpdate("CREATE INDEX EPSG4326_MINY ON " + TABLE_NAME + " (EPSG4326_MINY);");

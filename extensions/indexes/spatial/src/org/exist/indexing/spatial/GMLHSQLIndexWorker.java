@@ -87,8 +87,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         		/*4*/ "GEOMETRY_TYPE, " +
         		/*5*/ "SRS_NAME, " +
         		/*6*/ "WKT, " +
-    			//TODO : use binary format ?
-        		/*7*/ "BASE64_WKB, " +
+        		/*7*/ "WKB, " +
     			/*8*/ "MINX, " +
     			/*9*/ "MAXX, " +
     			/*10*/ "MINY, " +
@@ -98,8 +97,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     			/*14*/ "AREA, " +
     			//Boundary ?        		
         		/*15*/ "EPSG4326_WKT, " +
-    			//TODO : use binary format ?
-        		/*16*/ "EPSG4326_BASE64_WKB, " +
+        		/*16*/ "EPSG4326_WKB, " +
         		/*17*/ "EPSG4326_MINX, " +
     			/*18*/ "EPSG4326_MAXX, " +
     			/*19*/ "EPSG4326_MINY, " +
@@ -147,9 +145,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
             /*GEOMETRY_TYPE*/ ps.setString(4, geometry.getGeometryType());
             /*SRS_NAME*/ ps.setString(5, srsName);
             /*WKT*/ ps.setString(6, wktWriter.write(geometry));
-            base64Encoder.reset();
-            base64Encoder.translate(wkbWriter.write(geometry));
-            /*BASE64_WKB*/ ps.setString(7, new String(base64Encoder.getCharArray()));
+            /*WKB*/ ps.setBytes(7, wkbWriter.write(geometry));
             /*MINX*/ ps.setDouble(8, geometry.getEnvelopeInternal().getMinX());
         	/*MAXX*/ ps.setDouble(9, geometry.getEnvelopeInternal().getMaxX());
         	/*MINY*/ ps.setDouble(10, geometry.getEnvelopeInternal().getMinY());
@@ -160,9 +156,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         	/*AREA*/ ps.setDouble(14, geometry.getArea());
         	//Boundary ?
             /*EPSG4326_WKT*/ ps.setString(15, wktWriter.write(EPSG4326_geometry));
-            base64Encoder.reset();
-            base64Encoder.translate(wkbWriter.write(EPSG4326_geometry));
-            /*EPSG4326_BASE64_WKB*/ ps.setString(16, new String(base64Encoder.getCharArray()));		
+            /*EPSG4326_WKB*/ ps.setBytes(16, wkbWriter.write(EPSG4326_geometry));		
         	/*EPSG4326_MINX*/ ps.setDouble(17, EPSG4326_geometry.getEnvelopeInternal().getMinX());
         	/*EPSG4326_MAXX*/ ps.setDouble(18, EPSG4326_geometry.getEnvelopeInternal().getMaxX());
         	/*EPSG4326_MINY*/ ps.setDouble(19, EPSG4326_geometry.getEnvelopeInternal().getMinY());
@@ -247,7 +241,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     				" AND (EPSG4326_MINY = ? AND EPSG4326_MAXY = ?)"; 
     	NodeSet result = null;
         PreparedStatement ps = conn.prepareStatement(
-    		"SELECT EPSG4326_BASE64_WKB, DOCUMENT_URI, NODE_ID_UNITS, NODE_ID" +
+    		"SELECT EPSG4326_WKB, DOCUMENT_URI, NODE_ID_UNITS, NODE_ID" +
     		" FROM " + GMLHSQLIndex.TABLE_NAME + 
     		" WHERE " + bboxConstraint + ";"
     	);
@@ -260,9 +254,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     	try {
     		rs = ps.executeQuery();
     		while (rs.next()) {    			
-    			base64Decoder.reset();
-	        	base64Decoder.translate(rs.getString("EPSG4326_BASE64_WKB"));
-	        	Geometry geometry = wkbReader.read(base64Decoder.getByteArray());	
+	        	Geometry geometry = wkbReader.read(rs.getBytes("EPSG4326_WKB"));	
 	        	boolean geometryMatches = geometry.equals(EPSG4326_geometry);	        	
 	        	if (geometryMatches) {	        	
 	        		XmldbURI documentURI = XmldbURI.create(rs.getString("DOCUMENT_URI"));
@@ -327,7 +319,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         		throw new IllegalArgumentException("Unsupported spatial operator:" + spatialOp);
         }
         PreparedStatement ps = conn.prepareStatement(
-    		"SELECT EPSG4326_BASE64_WKB, DOCUMENT_URI, NODE_ID_UNITS, NODE_ID" + (extraSelection == null ? "" : extraSelection) +
+    		"SELECT EPSG4326_WKB, DOCUMENT_URI, NODE_ID_UNITS, NODE_ID" + (extraSelection == null ? "" : extraSelection) +
     		" FROM " + GMLHSQLIndex.TABLE_NAME + 
     		(bboxConstraint == null ? "" : " WHERE " + bboxConstraint) + ";"
     	);
@@ -371,9 +363,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
 		        	//Possible match : check the geometry
 		        	if (!geometryMatches) {	
 		        		try {			        	
-			    			base64Decoder.reset();
-				        	base64Decoder.translate(rs.getString("EPSG4326_BASE64_WKB"));
-				        	Geometry geometry = wkbReader.read(base64Decoder.getByteArray());			        	
+				        	Geometry geometry = wkbReader.read(rs.getBytes("EPSG4326_WKB"));			        	
 				        	switch (spatialOp) {
 				        	case SpatialOperator.EQUALS:	        		        		
 				        		geometryMatches = geometry.equals(EPSG4326_geometry);
@@ -430,16 +420,12 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     	try {
     		rs = ps.executeQuery();
 	        while (rs.next()) {	        	
-	        	base64Decoder.reset();
-	        	base64Decoder.translate(rs.getString("BASE64_WKB"));
-	        	Geometry original_geometry = wkbReader.read(base64Decoder.getByteArray());		        	
-	            if (! original_geometry.equals(wktReader.read(rs.getString("WKT")))) {
+	        	Geometry original_geometry = wkbReader.read(rs.getBytes("WKB"));		        	
+	            if (!original_geometry.equals(wktReader.read(rs.getString("WKT")))) {
 	            	LOG.info("Inconsistent WKT : " + rs.getString("WKT"));
 	    			return false;
 	        	}		            	
-	        	base64Decoder.reset();
-	        	base64Decoder.translate(rs.getString("EPSG4326_BASE64_WKB"));
-	        	Geometry EPSG4326_geometry = wkbReader.read(base64Decoder.getByteArray());		        	
+	        	Geometry EPSG4326_geometry = wkbReader.read(rs.getBytes("EPSG4326_WKB"));		        	
 	            if (!EPSG4326_geometry.equals(wktReader.read(rs.getString("EPSG4326_WKT")))) {
 	            	LOG.info("Inconsistent WKT : " + rs.getString("EPSG4326_WKT"));
 	    			return false;
@@ -567,7 +553,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     
     protected Map getGeometriesForDocument(DocumentImpl doc, Connection conn) throws SQLException {       	
         PreparedStatement ps = conn.prepareStatement(
-    		"SELECT EPSG4326_BASE64_WKB, EPSG4326_WKT FROM " + GMLHSQLIndex.TABLE_NAME + " WHERE DOCUMENT_URI = ?;"
+    		"SELECT EPSG4326_WKB, EPSG4326_WKT FROM " + GMLHSQLIndex.TABLE_NAME + " WHERE DOCUMENT_URI = ?;"
     	); 
         ps.setString(1, doc.getURI().toString());
         //TODO : better a List with a end of process string transformation ?
@@ -577,10 +563,8 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
 	        rs = ps.executeQuery();
 	        map = new TreeMap();
 	        while (rs.next()) {
-	        	base64Decoder.reset();
-	        	base64Decoder.translate(rs.getString("EPSG4326_BASE64_WKB"));
-	        	Geometry geometry = wkbReader.read(base64Decoder.getByteArray());
-	        	map.put(geometry, rs.getString("EPSG4326_WKT"));
+	        	Geometry EPSG4326_geometry = wkbReader.read(rs.getBytes("EPSG4326_WKB"));
+	        	map.put(EPSG4326_geometry, rs.getString("EPSG4326_WKT"));
 	        }
 	        return map;
         } catch (ParseException e) {
@@ -616,10 +600,9 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     		} else if (rs.getMetaData().getColumnClassName(1).equals(Double.class.getName())) {
     			result = new DoubleValue(rs.getDouble(1));
     		} else if (rs.getMetaData().getColumnClassName(1).equals(String.class.getName())) {
-    			if ("WKB".equals(propertyName) || "EPSG4326_WKB".equals(propertyName))
-    				result = new Base64Binary(rs.getString(1));
-    			else    				
-    				result = new StringValue(rs.getString(1));
+    			result = new StringValue(rs.getString(1));
+    		} else if (rs.getMetaData().getColumnType(1) == java.sql.Types.BINARY) {
+    			result = new Base64Binary(rs.getBytes(1));
     		} else 
     			throw new SQLException("Unable to make an atomic value from '" + rs.getMetaData().getColumnClassName(1) + "'");		
         	if (rs.next()) {   	
@@ -637,7 +620,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     
     protected Geometry getGeometryForNode(DBBroker broker, NodeProxy p, Connection conn) throws SQLException {
         PreparedStatement ps = conn.prepareStatement(
-    		"SELECT EPSG4326_BASE64_WKB" +
+    		"SELECT EPSG4326_WKB" +
     		" FROM " + GMLHSQLIndex.TABLE_NAME + 
     		" WHERE DOCUMENT_URI = ? AND NODE_ID = ?;"
     	);
@@ -651,14 +634,12 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     		if (!rs.next())
     			//Nothing returned
     			return null;    		
-			base64Decoder.reset();
-        	base64Decoder.translate(rs.getString("EPSG4326_BASE64_WKB"));
-        	Geometry geometry = wkbReader.read(base64Decoder.getByteArray());        			
+        	Geometry EPSG4326_geometry = wkbReader.read(rs.getBytes("EPSG4326_WKB"));        			
         	if (rs.next()) {   	
     			//Should be impossible    		
     			throw new SQLException("More than one geometry for node " + p);
     		}
-        	return geometry;    
+        	return EPSG4326_geometry;    
         } catch (ParseException e) {
         	LOG.error(e); 
         	return null;
