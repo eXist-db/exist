@@ -44,7 +44,7 @@ public class ValidationReport implements ErrorHandler {
     private long start = -1L;
     private long stop = -1L;
     
-    private Throwable exception = null;
+    private Throwable throwed = null;
         
     private ValidationReportItem createValidationReportItem(int type, SAXParseException exception){
         
@@ -97,7 +97,7 @@ public class ValidationReport implements ErrorHandler {
     
     
     public void setException(Exception ex){
-        this.exception=ex;
+        this.throwed=ex;
     }
     
     /**
@@ -106,14 +106,14 @@ public class ValidationReport implements ErrorHandler {
      * @return FALSE if no errors and warnings occurred.
      */
     public boolean isValid(){
-        return( (validationReport.size()==0) && (exception==null) );
+        return( (validationReport.size()==0) && (throwed==null) );
     }
     
-    public List getReport(){
+    public List getValidationReportItemList(){
         return validationReport;
     }
     
-    public List getValidationReport(){
+    public List getTextValidationReport(){
         
         List textReport = new ArrayList();
         
@@ -123,21 +123,21 @@ public class ValidationReport implements ErrorHandler {
             textReport.add("Document is not valid.");
         }
         
+        if(throwed!=null){
+            textReport.add( "Exception: " + throwed.getMessage() );
+        }
+        
         for (Iterator iter = validationReport.iterator(); iter.hasNext(); ) {     
             textReport.add( iter.next().toString() );
         }
-        
-        if(exception!=null){
-            textReport.add( "Exception: " + exception.getMessage() );
-        }
-        
+
         textReport.add("Validated in "+duration+" millisec.");
         return textReport;
     }
     
     public String[] getValidationReportArray(){
         
-        List validationReport = getValidationReport();
+        List validationReport = getTextValidationReport();
         String report[] = new String[ validationReport.size() ];
         
         int counter=0;
@@ -160,7 +160,7 @@ public class ValidationReport implements ErrorHandler {
         
         StringBuffer validationReport = new  StringBuffer();
         
-        Iterator reportIterator = getValidationReport().iterator();
+        Iterator reportIterator = getTextValidationReport().iterator();
         while(reportIterator.hasNext()){
             validationReport.append(reportIterator.next().toString());
             validationReport.append("\n");
@@ -169,18 +169,22 @@ public class ValidationReport implements ErrorHandler {
         return validationReport.toString();
     }
 
-    void start() {
+    public void start() {
         start=System.currentTimeMillis();
     }
 
-    void stop() {
+    public void stop() {
         if(getValidationDuration() == -1L){ // not already stopped
             stop=System.currentTimeMillis();
             setValidationDuration(stop-start);
         }
     }
 
-    void setThrowable(Throwable throwable) {
-        exception=throwable;
+    public void setThrowable(Throwable throwable) {
+        throwed=throwable;
+    }
+    
+    public Throwable getThrowable() {
+        return throwed;
     }
 }

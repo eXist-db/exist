@@ -36,7 +36,6 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.io.ExistIOException;
 import org.exist.util.Configuration;
 import org.exist.util.XMLReaderObjectFactory;
-import org.exist.validation.internal.DatabaseResources;
 import org.exist.validation.resolver.SearchResourceResolver;
 import org.exist.validation.resolver.StoredResourceResolver;
 import org.exist.validation.resolver.eXistXMLCatalogResolver;
@@ -58,11 +57,10 @@ public class Validator {
     // TODO check whether this private static trick is wise to do.
     // These are made static to prevent expensive double initialization
     // of classes.
-    private static GrammarPool grammarPool = null;
-    private static DatabaseResources dbResources = null;
     private static SAXParserFactory saxFactory = null;
-    private static BrokerPool brokerPool = null;
-    
+
+    private BrokerPool brokerPool = null;
+    private GrammarPool grammarPool = null;
     private Configuration config = null;
     
     // Xerces feature and property names
@@ -92,11 +90,6 @@ public class Validator {
         StringBuffer xmlLibMessage = new StringBuffer();
         if(!XmlLibraryChecker.hasValidParser(xmlLibMessage)) {
             logger.error(xmlLibMessage);
-        }
-        
-        // setup access to grammars ; be sure just one instance!
-        if(dbResources==null){
-            dbResources = new DatabaseResources(pool);
         }
         
         // setup grammar brokerPool
@@ -242,12 +235,10 @@ public class Validator {
             }
             
         } catch(ExistIOException ex){
-            ex.getCause().printStackTrace();
             logger.error(ex.getCause());
             report.setThrowable(ex.getCause());
             
         } catch (Exception ex){
-            ex.printStackTrace();
             logger.error(ex);
             report.setThrowable(ex);
 
@@ -261,34 +252,5 @@ public class Validator {
         
         return report;
     }
-    
-    /**
-     *  Get access to internal DatabaseResources.
-     * 
-     * 
-     * @return Internally usedDatabaseResourcess.
-     */
-    public DatabaseResources getDatabaseResources(){
-        return dbResources;
-    }
-    
-//    /**
-//     *  Get access to internal XMLEntityResolver.
-//     * @return Internally used XMLEntityResolver.
-//     */
-//    public XMLEntityResolver getXMLEntityResolver(){
-//        return entityResolver;
-//    }
-    
-    /**
-     *  Get access to internal GrammarPool.
-     * @return Internally used GrammarPool.
-     */
-    public GrammarPool getGrammarPool(){
-        return grammarPool;
-    }
-    
-    public void setGrammarPool(GrammarPool gp){
-        grammarPool = gp;
-    }
+
 }

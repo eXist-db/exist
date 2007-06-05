@@ -53,8 +53,6 @@ public class LocalValidationService implements ValidationService {
     private User user;
     private LocalCollection localCollection;
     private Validator validator;
-    private DatabaseResources grammaraccess;
-    
     
     public LocalValidationService(User user, BrokerPool pool, LocalCollection collection) {
         logger.info("Starting LocalValidationService");
@@ -62,7 +60,6 @@ public class LocalValidationService implements ValidationService {
         this.brokerPool = pool;
         this.localCollection = collection;
         validator = new Validator(pool);
-        grammaraccess = validator.getDatabaseResources();
     }
     
     /**
