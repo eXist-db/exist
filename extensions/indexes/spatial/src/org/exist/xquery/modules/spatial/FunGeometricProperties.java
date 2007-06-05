@@ -258,7 +258,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
 					if (isCalledAs("GMLtoWKT")) {
 						propertyName = "WKT";
 					} else if (isCalledAs("getWKB")) {
-						propertyName = "BASE64_WKB";						
+						propertyName = "WKB";						
 					} else if (isCalledAs("getMinX")) {
 						propertyName = "MINX";						
 					} else if (isCalledAs("getMaxX")) {					
@@ -274,7 +274,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
 					} else if (isCalledAs("getArea")) {
 						propertyName = "AREA";
 					} else if (isCalledAs("getEPSG4326WKB")) {
-						propertyName = "EPSG4326_BASE64_WKB";							
+						propertyName = "EPSG4326_WKB";							
 					} else if (isCalledAs("getEPSG4326MinX")) {
 						propertyName = "EPSG4326_MINX";						
 					} else if (isCalledAs("getEPSG4326MaxX")) {					
