@@ -182,35 +182,35 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex {
 		        	//TODO : use hsqldb.default_table_type	        	
 		        	stmt.executeUpdate("CREATE TABLE " + TABLE_NAME + "(" +
 		        			/*1*/ "DOCUMENT_URI VARCHAR, " +        		
+		        			/*2*/ "NODE_ID_UNITS INTEGER, " + 
+		        			/*3*/ "NODE_ID BINARY, " +        			
+		        			/*4*/ "GEOMETRY_TYPE VARCHAR, " +
+		        			/*5*/ "SRS_NAME VARCHAR, " +
+		        			/*6*/ "WKT VARCHAR, " +
 		        			//TODO : use binary format ?
-		        			/*2*/ "NODE_ID VARCHAR, " +        			
-		        			/*3*/ "GEOMETRY_TYPE VARCHAR, " +
-		        			/*4*/ "SRS_NAME VARCHAR, " +
-		        			/*5*/ "WKT VARCHAR, " +
-		        			//TODO : use binary format ?
-		        			/*6*/ "BASE64_WKB VARCHAR, " +
-		        			/*7*/ "MINX DOUBLE, " +
-		        			/*8*/ "MAXX DOUBLE, " +
-		        			/*9*/ "MINY DOUBLE, " +
-		        			/*10*/ "MAXY DOUBLE, " +
-		        			/*11*/ "CENTROID_X DOUBLE, " +
-		        			/*12*/ "CENTROID_Y DOUBLE, " +
-		        			/*13*/ "AREA DOUBLE, " +
+		        			/*7*/ "BASE64_WKB VARCHAR, " +
+		        			/*8*/ "MINX DOUBLE, " +
+		        			/*9*/ "MAXX DOUBLE, " +
+		        			/*10*/ "MINY DOUBLE, " +
+		        			/*11*/ "MAXY DOUBLE, " +
+		        			/*12*/ "CENTROID_X DOUBLE, " +
+		        			/*13*/ "CENTROID_Y DOUBLE, " +
+		        			/*14*/ "AREA DOUBLE, " +
 		        			//Boundary ?
-		        			/*14*/ "EPSG4326_WKT VARCHAR, " +
+		        			/*15*/ "EPSG4326_WKT VARCHAR, " +
 		        			//TODO : use binary format ?
-		        			/*15*/ "EPSG4326_BASE64_WKB VARCHAR, " +
-		        			/*16*/ "EPSG4326_MINX DOUBLE, " +
-		        			/*17*/ "EPSG4326_MAXX DOUBLE, " +
-		        			/*18*/ "EPSG4326_MINY DOUBLE, " +
-		        			/*19*/ "EPSG4326_MAXY DOUBLE, " +
-		        			/*20*/ "EPSG4326_CENTROID_X DOUBLE, " +
-		        			/*21*/ "EPSG4326_CENTROID_Y DOUBLE, " +
-		        			/*22*/ "EPSG4326_AREA DOUBLE, " +
+		        			/*16*/ "EPSG4326_BASE64_WKB VARCHAR, " +
+		        			/*17*/ "EPSG4326_MINX DOUBLE, " +
+		        			/*18*/ "EPSG4326_MAXX DOUBLE, " +
+		        			/*19*/ "EPSG4326_MINY DOUBLE, " +
+		        			/*20*/ "EPSG4326_MAXY DOUBLE, " +
+		        			/*21*/ "EPSG4326_CENTROID_X DOUBLE, " +
+		        			/*22*/ "EPSG4326_CENTROID_Y DOUBLE, " +
+		        			/*23*/ "EPSG4326_AREA DOUBLE, " +
 		        			//Boundary ?
-		        			/*23*/ "IS_CLOSED BOOLEAN, " +
-		        			/*24*/ "IS_SIMPLE BOOLEAN, " +
-		        			/*25*/ "IS_VALID BOOLEAN, " +
+		        			/*24*/ "IS_CLOSED BOOLEAN, " +
+		        			/*25*/ "IS_SIMPLE BOOLEAN, " +
+		        			/*26*/ "IS_VALID BOOLEAN, " +
 		        			//Enforce uniqueness
 		        			"UNIQUE (" +
 		        				"DOCUMENT_URI, NODE_ID" +

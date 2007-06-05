@@ -82,41 +82,42 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     protected boolean saveGeometryNode(Geometry geometry, String srsName, DocumentImpl doc, NodeId nodeId, Connection conn) throws SQLException {
     	PreparedStatement ps = conn.prepareStatement("INSERT INTO " + GMLHSQLIndex.TABLE_NAME + "(" +
         		/*1*/ "DOCUMENT_URI, " +            		
+        		/*2*/ "NODE_ID_UNITS, " + 
+        		/*3*/ "NODE_ID, " +        			
+        		/*4*/ "GEOMETRY_TYPE, " +
+        		/*5*/ "SRS_NAME, " +
+        		/*6*/ "WKT, " +
     			//TODO : use binary format ?
-        		/*2*/ "NODE_ID, " +        			
-        		/*3*/ "GEOMETRY_TYPE, " +
-        		/*4*/ "SRS_NAME, " +
-        		/*5*/ "WKT, " +
-    			//TODO : use binary format ?
-        		/*6*/ "BASE64_WKB, " +
-    			/*7*/ "MINX, " +
-    			/*8*/ "MAXX, " +
-    			/*9*/ "MINY, " +
-    			/*10*/ "MAXY, " +
-    			/*11*/ "CENTROID_X, " +
-    			/*12*/ "CENTROID_Y, " +
-    			/*13*/ "AREA, " +
+        		/*7*/ "BASE64_WKB, " +
+    			/*8*/ "MINX, " +
+    			/*9*/ "MAXX, " +
+    			/*10*/ "MINY, " +
+    			/*11*/ "MAXY, " +
+    			/*12*/ "CENTROID_X, " +
+    			/*13*/ "CENTROID_Y, " +
+    			/*14*/ "AREA, " +
     			//Boundary ?        		
-        		/*14*/ "EPSG4326_WKT, " +
+        		/*15*/ "EPSG4326_WKT, " +
     			//TODO : use binary format ?
-        		/*15*/ "EPSG4326_BASE64_WKB, " +
-        		/*16*/ "EPSG4326_MINX, " +
-    			/*17*/ "EPSG4326_MAXX, " +
-    			/*18*/ "EPSG4326_MINY, " +
-    			/*19*/ "EPSG4326_MAXY, " +
-    			/*20*/ "EPSG4326_CENTROID_X, " +
-    			/*21*/ "EPSG4326_CENTROID_Y, " +
-    			/*22*/ "EPSG4326_AREA," +
+        		/*16*/ "EPSG4326_BASE64_WKB, " +
+        		/*17*/ "EPSG4326_MINX, " +
+    			/*18*/ "EPSG4326_MAXX, " +
+    			/*19*/ "EPSG4326_MINY, " +
+    			/*20*/ "EPSG4326_MAXY, " +
+    			/*21*/ "EPSG4326_CENTROID_X, " +
+    			/*22*/ "EPSG4326_CENTROID_Y, " +
+    			/*23*/ "EPSG4326_AREA," +
     			//Boundary ?
-    			/*23*/ "IS_CLOSED, " +
-    			/*24*/ "IS_SIMPLE, " +
-    			/*25*/ "IS_VALID" +    			
+    			/*24*/ "IS_CLOSED, " +
+    			/*25*/ "IS_SIMPLE, " +
+    			/*26*/ "IS_VALID" +    			
         		") VALUES (" +
         			"?, ?, ?, ?, ?, " +
         			"?, ?, ?, ?, ?, " +
         			"?, ?, ?, ?, ?, " +
         			"?, ?, ?, ?, ?, " +
-        			"?, ?, ?, ?, ?"	            		
+        			"?, ?, ?, ?, ?, " +
+        			"?"
         		+ ")"
             );       
     	try {
@@ -138,43 +139,46 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         		LOG.error(e);
         		return false;
             }
-            /*DOCUMENT_URI*/ ps.setString(1, doc.getURI().toString());		          
-            /*NODE_ID*/ ps.setString(2, nodeId.toString());
-            /*GEOMETRY_TYPE*/ ps.setString(3, geometry.getGeometryType());
-            /*SRS_NAME*/ ps.setString(4, srsName);
-            /*WKT*/ ps.setString(5, wktWriter.write(geometry));
+            /*DOCUMENT_URI*/ ps.setString(1, doc.getURI().toString());	
+            /*NODE_ID_UNITS*/ ps.setInt(2, nodeId.units());
+            byte[] bytes = new byte[nodeId.size()];
+            nodeId.serialize(bytes, 0);
+            /*NODE_ID*/ ps.setBytes(3, bytes);
+            /*GEOMETRY_TYPE*/ ps.setString(4, geometry.getGeometryType());
+            /*SRS_NAME*/ ps.setString(5, srsName);
+            /*WKT*/ ps.setString(6, wktWriter.write(geometry));
             base64Encoder.reset();
             base64Encoder.translate(wkbWriter.write(geometry));
-            /*BASE64_WKB*/ ps.setString(6, new String(base64Encoder.getCharArray()));
-            /*MINX*/ ps.setDouble(7, geometry.getEnvelopeInternal().getMinX());
-        	/*MAXX*/ ps.setDouble(8, geometry.getEnvelopeInternal().getMaxX());
-        	/*MINY*/ ps.setDouble(9, geometry.getEnvelopeInternal().getMinY());
-        	/*MAXY*/ ps.setDouble(10, geometry.getEnvelopeInternal().getMaxY());
-        	/*CENTROID_X*/ ps.setDouble(11, geometry.getCentroid().getCoordinate().x);   
-        	/*CENTROID_Y*/ ps.setDouble(12, geometry.getCentroid().getCoordinate().y);  
+            /*BASE64_WKB*/ ps.setString(7, new String(base64Encoder.getCharArray()));
+            /*MINX*/ ps.setDouble(8, geometry.getEnvelopeInternal().getMinX());
+        	/*MAXX*/ ps.setDouble(9, geometry.getEnvelopeInternal().getMaxX());
+        	/*MINY*/ ps.setDouble(10, geometry.getEnvelopeInternal().getMinY());
+        	/*MAXY*/ ps.setDouble(11, geometry.getEnvelopeInternal().getMaxY());
+        	/*CENTROID_X*/ ps.setDouble(12, geometry.getCentroid().getCoordinate().x);   
+        	/*CENTROID_Y*/ ps.setDouble(13, geometry.getCentroid().getCoordinate().y);  
             //geometry.getRepresentativePoint()
-        	/*AREA*/ ps.setDouble(13, geometry.getArea());
+        	/*AREA*/ ps.setDouble(14, geometry.getArea());
         	//Boundary ?
-            /*EPSG4326_WKT*/ ps.setString(14, wktWriter.write(EPSG4326_geometry));
+            /*EPSG4326_WKT*/ ps.setString(15, wktWriter.write(EPSG4326_geometry));
             base64Encoder.reset();
             base64Encoder.translate(wkbWriter.write(EPSG4326_geometry));
-            /*EPSG4326_BASE64_WKB*/ ps.setString(15, new String(base64Encoder.getCharArray()));		
-        	/*EPSG4326_MINX*/ ps.setDouble(16, EPSG4326_geometry.getEnvelopeInternal().getMinX());
-        	/*EPSG4326_MAXX*/ ps.setDouble(17, EPSG4326_geometry.getEnvelopeInternal().getMaxX());
-        	/*EPSG4326_MINY*/ ps.setDouble(18, EPSG4326_geometry.getEnvelopeInternal().getMinY());
-        	/*EPSG4326_MAXY*/ ps.setDouble(19, EPSG4326_geometry.getEnvelopeInternal().getMaxY());
-        	/*EPSG4326_CENTROID_X*/ ps.setDouble(20, EPSG4326_geometry.getCentroid().getCoordinate().x);   
-        	/*EPSG4326_CENTROID_Y*/ ps.setDouble(21, EPSG4326_geometry.getCentroid().getCoordinate().y);  
+            /*EPSG4326_BASE64_WKB*/ ps.setString(16, new String(base64Encoder.getCharArray()));		
+        	/*EPSG4326_MINX*/ ps.setDouble(17, EPSG4326_geometry.getEnvelopeInternal().getMinX());
+        	/*EPSG4326_MAXX*/ ps.setDouble(18, EPSG4326_geometry.getEnvelopeInternal().getMaxX());
+        	/*EPSG4326_MINY*/ ps.setDouble(19, EPSG4326_geometry.getEnvelopeInternal().getMinY());
+        	/*EPSG4326_MAXY*/ ps.setDouble(20, EPSG4326_geometry.getEnvelopeInternal().getMaxY());
+        	/*EPSG4326_CENTROID_X*/ ps.setDouble(21, EPSG4326_geometry.getCentroid().getCoordinate().x);   
+        	/*EPSG4326_CENTROID_Y*/ ps.setDouble(22, EPSG4326_geometry.getCentroid().getCoordinate().y);  
             //EPSG4326_geometry.getRepresentativePoint()
-        	/*EPSG4326_AREA*/ ps.setDouble(22, EPSG4326_geometry.getArea());
+        	/*EPSG4326_AREA*/ ps.setDouble(23, EPSG4326_geometry.getArea());
 			//Boundary ?
         	//As discussed earlier, all instances of SFS geometry classes
         	//are topologically closed by definition.
         	//For empty Curves, isClosed is defined to have the value false.
-        	/*IS_CLOSED*/ ps.setBoolean(23, !geometry.isEmpty());
-			/*IS_SIMPLE*/ ps.setBoolean(24, geometry.isSimple());
+        	/*IS_CLOSED*/ ps.setBoolean(24, !geometry.isEmpty());
+			/*IS_SIMPLE*/ ps.setBoolean(25, geometry.isSimple());
 			//Should always be true (the GML SAX parser makes a too severe check)
-			/*IS_VALID*/ ps.setBoolean(25, geometry.isValid());
+			/*IS_VALID*/ ps.setBoolean(26, geometry.isValid());
         	return (ps.executeUpdate() == 1);
     	} finally {
         	if (ps != null)
@@ -184,12 +188,14 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     	}    	
     }
    
-    protected boolean removeDocumentNode(DocumentImpl doc, NodeId nodeID, Connection conn) throws SQLException {   
+    protected boolean removeDocumentNode(DocumentImpl doc, NodeId nodeId, Connection conn) throws SQLException {
         PreparedStatement ps = conn.prepareStatement(
         		"DELETE FROM " + GMLHSQLIndex.TABLE_NAME + " WHERE DOCUMENT_URI = ? AND NODE_ID = ?;"
         	); 
-        ps.setString(1, doc.getURI().toString());	   
-        ps.setString(2, nodeID.toString());
+        ps.setString(1, doc.getURI().toString());
+        byte[] bytes = new byte[nodeId.size()];
+        nodeId.serialize(bytes, 0);        
+        ps.setBytes(2, bytes);
         try {	 
 	        return (ps.executeUpdate() == 1);
     	} finally {
@@ -241,7 +247,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     				" AND (EPSG4326_MINY = ? AND EPSG4326_MAXY = ?)"; 
     	NodeSet result = null;
         PreparedStatement ps = conn.prepareStatement(
-    		"SELECT EPSG4326_BASE64_WKB, DOCUMENT_URI, NODE_ID" +
+    		"SELECT EPSG4326_BASE64_WKB, DOCUMENT_URI, NODE_ID_UNITS, NODE_ID" +
     		" FROM " + GMLHSQLIndex.TABLE_NAME + 
     		" WHERE " + bboxConstraint + ";"
     	);
@@ -261,8 +267,8 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
 	        	if (geometryMatches) {	        	
 	        		XmldbURI documentURI = XmldbURI.create(rs.getString("DOCUMENT_URI"));
 	        		try {
-	        			Document doc = broker.getXMLResource(documentURI);
-		        		NodeId nodeId = new DLN(rs.getString("NODE_ID")); 
+	        			Document doc = broker.getXMLResource(documentURI);	        			
+		        		NodeId nodeId = new DLN(rs.getInt("NODE_ID_UNITS"), rs.getBytes("NODE_ID"), 0); 
 		        		NodeProxy p = new NodeProxy((DocumentImpl)doc, nodeId);
 		        		result.add(p);
 	        		} catch (PermissionDeniedException e) {
@@ -321,7 +327,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         		throw new IllegalArgumentException("Unsupported spatial operator:" + spatialOp);
         }
         PreparedStatement ps = conn.prepareStatement(
-    		"SELECT EPSG4326_BASE64_WKB, DOCUMENT_URI, NODE_ID" + (extraSelection == null ? "" : extraSelection) +
+    		"SELECT EPSG4326_BASE64_WKB, DOCUMENT_URI, NODE_ID_UNITS, NODE_ID" + (extraSelection == null ? "" : extraSelection) +
     		" FROM " + GMLHSQLIndex.TABLE_NAME + 
     		(bboxConstraint == null ? "" : " WHERE " + bboxConstraint) + ";"
     	);
@@ -341,8 +347,8 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     			NodeProxy p = null;	    		
         		XmldbURI documentURI = XmldbURI.create(rs.getString("DOCUMENT_URI"));
         		try {
-        			Document doc = broker.getXMLResource(documentURI);
-	        		NodeId nodeId = new DLN(rs.getString("NODE_ID")); 
+        			Document doc = broker.getXMLResource(documentURI);        			
+        			NodeId nodeId = new DLN(rs.getInt("NODE_ID_UNITS"), rs.getBytes("NODE_ID"), 0); 
 	        		p = new NodeProxy((DocumentImpl)doc, nodeId);		        		
         		} catch (PermissionDeniedException e) {
         			LOG.debug(e);
@@ -522,8 +528,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
 	            }
 	            
 	            Document doc = broker.getXMLResource(XmldbURI.create(rs.getString("DOCUMENT_URI")));
-	    		NodeId nodeId = new DLN(rs.getString("NODE_ID")); 
-	    			           
+	            NodeId nodeId = new DLN(rs.getInt("NODE_ID_UNITS"), rs.getBytes("NODE_ID"), 0); 	    		
 	        	StoredNode node = broker.objectWith(new NodeProxy((DocumentImpl)doc, nodeId));
 	        	if (!GMLHSQLIndexWorker.GML_NS.equals(node.getNamespaceURI())) {
 	        		LOG.info("GML indexed node (" + node.getNodeId()+ ") is in the '" + 
@@ -596,7 +601,9 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     		" WHERE DOCUMENT_URI = ? AND NODE_ID = ?;"
     	);
         ps.setString(1, p.getDocument().getURI().toString());
-    	ps.setString(2, p.getNodeId().toString());   
+        byte[] bytes = new byte[p.getNodeId().size()];
+        p.getNodeId().serialize(bytes, 0);
+    	ps.setBytes(2, bytes);    	
     	ResultSet rs = null;    	
     	try {
     		rs = ps.executeQuery();
@@ -635,7 +642,9 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     		" WHERE DOCUMENT_URI = ? AND NODE_ID = ?;"
     	);
         ps.setString(1, p.getDocument().getURI().toString());
-    	ps.setString(2, p.getNodeId().toString());   
+        byte[] bytes = new byte[p.getNodeId().size()];
+        p.getNodeId().serialize(bytes, 0);
+    	ps.setBytes(2, bytes);   
     	ResultSet rs = null;    	
     	try {
     		rs = ps.executeQuery();
