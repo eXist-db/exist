@@ -24,6 +24,109 @@
         <title>Developer's Guide to Modularized Indexes</title>
         <section>
             <title>The new modularized indexes</title>
+            <para>Since spring 2007, eXist provides a new mechanism to index XML data. This mechanism is modular
+            and should ease index development as well as the development of related (possibly not so) custom functions. 
+            As a proof of concept, eXist currently ships with 2 index types :
+            <itemizedlist>
+				<varlistentry>
+                	<term>NGram index</term>
+                    <listitem>
+                        <para>An NGram index will store the N-grams contained in the data's characters, i.e. if the index is configured to
+                        index 3-grams, <markup><![CDATA[<data>abcde</data>]]></markup> will generate these index entries :
+                        	<itemizedlist>
+                        		<listitem>abc</listitem>
+                        		<listitem>bcd</listitem>
+                        		<listitem>cde</listitem>
+                        		<listitem>de&#x2423;</listitem>
+                        		<listitem>e&#x2423;&#x2423;</listitem>
+                        	</itemizedlist>
+                        </para>
+                    </listitem>
+                </varlistentry>  
+				<varlistentry>
+                	<term>Spatial index</term>
+                    <listitem>
+                        <para>A spatial index will store some of the geometric characteristics of 
+                        <ulink url="http://www.opengeospatial.org/standards/gml">Geography Markup Language</ulink> 
+                        geometries (currently only tested with GML version 2.1.2). 
+                        </para>
+                        <para><programlisting><markup><![CDATA[
+<gml:Polygon xmlns:gml = 'http://www.opengis.net/gml' srsName='osgb:BNG'>
+	<gml:outerBoundaryIs>
+		<gml:LinearRing>
+			<gml:coordinates>
+				278515.400,187060.450 278515.150,187057.950 278516.350,187057.150
+				278546.700,187054.000 278580.550,187050.900 278609.500,187048.100
+				278609.750,187051.250 278574.750,187054.650 278544.950,187057.450
+				278515.400,187060.450 
+			</gml:coordinates>
+		</gml:LinearRing>
+	</gml:outerBoundaryIs>
+</gml:Polygon>
+]]></markup></programlisting></para>
+						<para>will generate index entries among which most important are :
+                        	<itemizedlist>
+                        		<!-- TODO : change to <literal> -->
+                        		<listitem>the <ulink url="http://en.wikipedia.org/wiki/Spatial_referencing_systems">spatial referencing system</ulink> 
+                        		(<envar>osgb:BNG</envar> for this polygon)</listitem>
+                        		<listitem>the polygon itself, stored in a specific binary form</listitem>
+                        		<listitem>the coordinates of its <ulink url="http://en.wikipedia.org/wiki/Minimum_bounding_rectangle">bounding box</ulink></listitem>                        		
+                        	</itemizedlist>
+                        	The spatial index will we discussed in details further below.
+                        </para>
+                    </listitem>
+                </varlistentry>
+            </itemizedlist>
+            </para>
+            <para>So, the new architecture introduces a new package, <classname>org.exist.indexing</classname> 
+            which contains a class that we will immediately study, <classname>IndexManager</classname>.
+            </para>
+            <para>As its name suggests, this is the class which is responsible for index management. It is created by 
+            <classname>org.exist.storage.BrokerPool</classname> which allocates <classname>org.exist.storage.DBBroker</classname>s
+            to each process accessing to each DB instance.
+            Each time a DB instance is created (most of installations generally have only one, most often called <envar>exist</envar>), the 
+            <methodname>initialize()</methodname> method contructs an <classname>IndexManager</classname>. 
+            </para>            
+            <synopsis format="linespecific">public IndexManager(BrokerPool pool, Configuration config)</synopsis>
+            <para>This constructors keeps track of the <classname>BrokerPool</classname> that has instantiated it
+            and receives the database's configuration object, usually defined in an XML file called <filename>conf.xml</filename>.
+            What is expected there is this (new) part of the configuration file :
+            </para>
+            <para><programlisting><markup><![CDATA[
+<modules>
+    <module id="ngram-index" class="org.exist.indexing.ngram.NGramIndex" file="ngram.dbx" n="3"/>            
+    <module id="spatial-index" class="org.exist.indexing.spatial.GMLHSQLIndex" flushAfter="300" /> 
+</modules>
+			]]></markup></programlisting></para>
+			<para>... which defines 2 indexes, backed-up by their specific classes (<sgmltag>class</sgmltag> 
+			attribute ; these classes must implement <classname>org.exist.indexing.Index</classname> as we will
+			see below), assigns them a human-readable (writable even) identifier and passes them custom parameters.
+			Then, it configures, opens and keeps track of each of them. We will see below what means this registration process.
+            </para>
+            <para><classname>org.exist.indexing.IndexManager</classname> also provides these public methods :</para>
+            <synopsis format="linespecific">public BrokerPool getBrokerPool()</synopsis>
+            <para>... which returns the <classname>org.exist.storage.BrokerPool</classname> for which this <classname>IndexManager</classname> was created.</para>
+            <synopsis format="linespecific">public synchronized Index getIndexById(String indexId)</synopsis>
+            <para>A method that returns an <classname>Index</classname> given its class identifier (see below). Very useful
+            to the developer since it allows custom functions to access <classname>Index</classname>es whatever their human-defined
+            name is. This is probably the only method in this class that will be really needed by a developer.</para>
+            <synopsis format="linespecific">public synchronized Index getIndexByName(String indexName)</synopsis>
+            <para>The counterpart of the previous method. For the human-readable name.</para>
+			<synopsis format="linespecific">public void shutdown()</synopsis>
+			<para>This method is called when eXist shuts down. <methodname>close()</methodname> will be called
+			for every registered <classname>Index</classname>. That allows them to free the resources they own.</para>
+			<synopsis format="linespecific">public void removeIndexes()</synopsis>
+			<para>This method is called when <methodname>repair()</methodname> is called from <classname>org.exist.storage.NativeBroker</classname>. 
+			We remind that <methodname>repair()</methodname> reconstructs every indexes (including the structural one)
+			from what is contained in the persistent DOM (usually <filename>dom.dbx</filename>).
+			<methodname>remove()</methodname> will be called for every registered <classname>Index</classname>.
+			That allows each index to destroy its persistent storage if it wants to do so (but it is probably suitable if the DB is corrupted).</para>			
+			<synopsis format="linespecific">public void reopenIndexes()</synopsis>  
+			<para>This method is called when <methodname>repair()</methodname> is called from <classname>org.exist.storage.NativeBroker</classname>. 
+			We remind that <methodname>repair()</methodname> reconstructs every indexes (including the structural one)
+			from what is contained in the persistent DOM (usually <filename>dom.dbx</filename>).
+			<methodname>open()</methodname> will be called for every registered <classname>Index</classname>.
+			That allows each index to (re)allocate the resource it needs for its persistent storage.</para>			          
         </section>
     </chapter>
 </book>
