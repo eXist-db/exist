@@ -51,6 +51,7 @@ import org.quartz.impl.StdSchedulerFactory;
  */
 public class Scheduler
 {
+	public static final String CONFIGURATION_ELEMENT_NAME = "scheduler";
 	public static final String PROPERTY_SCHEDULER_JOBS = "scheduler.jobs";
 	
 	//the scheduler

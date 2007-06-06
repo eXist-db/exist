@@ -83,7 +83,6 @@ public class BrokerPool {
 	public final static String DEFAULT_INSTANCE_NAME = "exist";		
 
 	public static final String CONFIGURATION_ELEMENT_NAME = "pool";
-
 	//Various configuration property keys (set by the configuration manager)
 	public static final String PROPERTY_DATA_DIR = "db-connection.data-dir";
 	public final static String PROPERTY_MIN_CONNECTIONS = "db-connection.pool.min";

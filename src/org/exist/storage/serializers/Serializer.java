@@ -110,6 +110,7 @@ public abstract class Serializer implements XMLReader {
 
 	protected final static Logger LOG = Logger.getLogger(Serializer.class);
 	
+	public static final String CONFIGURATION_ELEMENT_NAME = "serializer";
 	public static final String PROPERTY_ENABLE_XINCLUDE = "serialization.enable-xinclude";
 	public static final String PROPERTY_ENABLE_XSL = "serialization.enable-xsl";
 	public static final String PROPERTY_INDENT = "serialization.indent";

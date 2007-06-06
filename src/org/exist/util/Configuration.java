@@ -223,7 +223,7 @@ public class Configuration implements ErrorHandler {
             }
             
             //scheduler settings
-            NodeList schedulers = doc.getElementsByTagName("scheduler");
+            NodeList schedulers = doc.getElementsByTagName(Scheduler.CONFIGURATION_ELEMENT_NAME);
             if(schedulers.getLength() > 0) {
                 configureScheduler((Element) schedulers.item(0));
             }
@@ -235,25 +235,25 @@ public class Configuration implements ErrorHandler {
             }
             
             //transformer settings
-            NodeList transformers = doc.getElementsByTagName("transformer");
+            NodeList transformers = doc.getElementsByTagName(TransformerFactoryAllocator.CONFIGURATION_ELEMENT_NAME);
             if(transformers.getLength() > 0) {
                 configureTransformer((Element) transformers.item(0));
             }
             
             //serializer settings
-            NodeList serializers = doc.getElementsByTagName("serializer");
+            NodeList serializers = doc.getElementsByTagName(Serializer.CONFIGURATION_ELEMENT_NAME);
             if (serializers.getLength() > 0) {
                 configureSerializer((Element) serializers.item(0));
             }
             
             //XUpdate settings
-            NodeList xupdates = doc.getElementsByTagName("xupdate");
+            NodeList xupdates = doc.getElementsByTagName(DBBroker.CONFIGURATION_ELEMENT_NAME);
             if (xupdates.getLength() > 0) {
                 configureXUpdate((Element) xupdates.item(0));
             }
             
             //XQuery settings
-            NodeList xquery = doc.getElementsByTagName("xquery");
+            NodeList xquery = doc.getElementsByTagName(XQueryContext.CONFIGURATION_ELEMENT_NAME);
             if (xquery.getLength() > 0) {
                 configureXQuery((Element) xquery.item(0));
             }
@@ -265,13 +265,13 @@ public class Configuration implements ErrorHandler {
             }
             
             //Cluster configuration
-            NodeList clusters = doc.getElementsByTagName("cluster");
+            NodeList clusters = doc.getElementsByTagName(ClusterComunication.CONFIGURATION_ELEMENT_NAME);
             if(clusters.getLength() > 0) {
                 configureCluster((Element)clusters.item(0));
             }
             
             //Validation
-            NodeList validations = doc.getElementsByTagName("validation");
+            NodeList validations = doc.getElementsByTagName(XMLReaderObjectFactory.CONFIGURATION_ELEMENT_NAME);
             if (validations.getLength() > 0) {
                 configureValidation(existHomeDirname, doc, (Element) validations.item(0));
             }
