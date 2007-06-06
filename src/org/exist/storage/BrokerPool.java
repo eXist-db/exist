@@ -91,6 +91,7 @@ public class BrokerPool {
 	public final static String PROPERTY_SHUTDOWN_DELAY = "wait-before-shutdown";
 	public final static String PROPERTY_COLLECTION_CACHE_SIZE = "db-connection.collection-cache-size";
 	public final static String PROPERTY_SECURITY_CLASS = "db-connection.security.class";
+	public final static String PROPERTY_RECOVERY_ENABLED = "db-connection.recovery.enabled";
 	
 	//TODO : inline the class ? or... make it configurable ?
     // WM: inline. I don't think users need to be able to overwrite this.
@@ -535,7 +536,7 @@ public class BrokerPool {
 		//TODO : sanity check : the shutdown period should be reasonible
 		LOG.info("database instance '" + instanceName + "' will wait  " + nf.format(this.maxShutdownWait) + " ms during shutdown");
 
-		aBoolean = (Boolean) conf.getProperty("db-connection.recovery.enabled");
+		aBoolean = (Boolean) conf.getProperty(PROPERTY_RECOVERY_ENABLED);
 		if (aBoolean != null) {
 			this.transactionsEnabled = aBoolean.booleanValue();
         }
