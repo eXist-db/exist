@@ -25,6 +25,10 @@ import org.exist.xquery.Constants;
  *         Revision $Revision$
  */
 public class JournalManager {
+	
+	public static final String PROPERTY_JOURNAL_DIR = "cluster.journalDir";
+	public static final String PROPERTY_CLUSTER_JOURNAL_MAXSTORE = "cluster.journal.maxStore";
+	public static final String PROPERTY_CLUSTER_JOURNAL_SHIFT = "cluster.journal.shift";
 
     private static final String JOURNAL_INDEX_FILE = "jei.jbx";
     private static final String JOURNAL_STORAGE_FILE_EXTENSION = ".jbx";
@@ -48,7 +52,7 @@ public class JournalManager {
     TreeSet queue = new TreeSet(new EventComparator());
 
     public JournalManager(Configuration conf) {
-        String dirName = (String) conf.getProperty("cluster.journalDir"); //retrieve journal folder
+        String dirName = (String) conf.getProperty(PROPERTY_JOURNAL_DIR); //retrieve journal folder
         if (dirName == null) { //disable journal if non folder found
             journalDisabled = true;
             return;

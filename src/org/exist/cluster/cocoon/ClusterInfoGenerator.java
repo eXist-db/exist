@@ -6,6 +6,7 @@ import java.io.IOException;
 import org.apache.cocoon.generation.AbstractGenerator;
 import org.exist.cluster.ClusterComunication;
 import org.exist.cluster.ClusterException;
+import org.exist.cluster.journal.JournalManager;
 import org.exist.storage.report.XMLStatistics;
 import org.exist.util.Configuration;
 import org.jgroups.Address;
@@ -137,7 +138,7 @@ public class ClusterInfoGenerator extends AbstractGenerator {
 
             inner = new AttributesImpl();
             inner.addAttribute("", "name", "name", "CDATA", "protocol");
-            String protocol = (String) conf.getProperty("cluster.protocol");
+            String protocol = (String) conf.getProperty(ClusterComunication.PROPERTY_CLUSTER_PROTOCOL);
             if(protocol==null)
                 protocol = ClusterComunication.DEFAULT_PROTOCOL_STACK;
             StringBuffer prot = new StringBuffer();
@@ -158,25 +159,25 @@ public class ClusterInfoGenerator extends AbstractGenerator {
 
             inner = new AttributesImpl();
             inner.addAttribute("", "name", "name", "CDATA", "journal-dir");
-            inner.addAttribute("", "value", "value", "CDATA", ""+conf.getProperty("cluster.journalDir"));
+            inner.addAttribute("", "value", "value", "CDATA", ""+conf.getProperty(JournalManager.PROPERTY_JOURNAL_DIR));
             this.contentHandler.startElement(NAMESPACE, "data", PREFIX + ":data", inner);
             this.contentHandler.endElement(NAMESPACE, "data", PREFIX + ":data");
 
             inner = new AttributesImpl();
             inner.addAttribute("", "name", "name", "CDATA", "exclude-dir");
-            inner.addAttribute("", "value", "value", "CDATA", ""+conf.getProperty("cluster.exclude"));
+            inner.addAttribute("", "value", "value", "CDATA", ""+conf.getProperty(ClusterComunication.PROPERTY_CLUSTER_EXCLUDE));
             this.contentHandler.startElement(NAMESPACE, "data", PREFIX + ":data", inner);
             this.contentHandler.endElement(NAMESPACE, "data", PREFIX + ":data");
 
             inner = new AttributesImpl();
             inner.addAttribute("", "name", "name", "CDATA", "max-item");
-            inner.addAttribute("", "value", "value", "CDATA", ""+conf.getProperty("cluster.journal.maxStore"));
+            inner.addAttribute("", "value", "value", "CDATA", ""+conf.getProperty(JournalManager.PROPERTY_CLUSTER_JOURNAL_MAXSTORE));
             this.contentHandler.startElement(NAMESPACE, "data", PREFIX + ":data", inner);
             this.contentHandler.endElement(NAMESPACE, "data", PREFIX + ":data");
 
             inner = new AttributesImpl();
             inner.addAttribute("", "name", "name", "CDATA", "coordinator-shift");
-            inner.addAttribute("", "value", "value", "CDATA", ""+conf.getProperty("cluster.journal.shift"));
+            inner.addAttribute("", "value", "value", "CDATA", ""+conf.getProperty(JournalManager.PROPERTY_CLUSTER_JOURNAL_SHIFT));
             this.contentHandler.startElement(NAMESPACE, "data", PREFIX + ":data", inner);
             this.contentHandler.endElement(NAMESPACE, "data", PREFIX + ":data");
 
