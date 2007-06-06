@@ -203,7 +203,14 @@ public abstract class TextSearchEngine extends Observable {
 		String start,
 		String end) throws PermissionDeniedException;
 
-	public abstract String[] getIndexTerms(DocumentSet docs, TermMatcher matcher);
+    public abstract Occurrences[] scanIndexTerms(
+		DocumentSet docs,
+		NodeSet contextSet,
+        QName[] qnames,
+        String start,
+		String end) throws PermissionDeniedException;
+    
+    public abstract String[] getIndexTerms(DocumentSet docs, TermMatcher matcher);
 	
 	/**
 	 * Remove index entries for an entire collection.
