@@ -31,6 +31,7 @@ import org.jgroups.util.RspList;
  */
 public class ClusterComunication implements MembershipListener {
 
+	public static final String CONFIGURATION_ELEMENT_NAME = "cluster";
 	public static final String PROPERTY_CLUSTER_PROTOCOL = "cluster.protocol";
 	public static final String PROPERTY_CLUSTER_USER = "cluster.user";
 	public static final String PROPERTY_CLUSTER_PWD = "cluster.pwd";
