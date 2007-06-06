@@ -23,18 +23,24 @@
 package org.exist.xquery.functions.validation;
 
 import org.apache.xerces.xni.grammars.Grammar;
+import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 
 import org.exist.Namespaces;
 import org.exist.dom.QName;
+import org.exist.memtree.DocumentImpl;
+import org.exist.memtree.MemTreeBuilder;
+import org.exist.memtree.NodeImpl;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
 import org.exist.util.XMLReaderObjectFactory;
 import org.exist.validation.GrammarPool;
+import org.exist.validation.ValidationReport;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
@@ -59,20 +65,20 @@ public class GrammarTooling extends BasicFunction  {
     // Setup function signature
     public final static FunctionSignature signatures[] = {
         new FunctionSignature(
-                new QName("grammar-cache-clear", ValidationModule.NAMESPACE_URI, 
-                                                 ValidationModule.PREFIX),
-                "Remove all cached grammers.",
-                null,
-                new SequenceType(Type.BOOLEAN, Cardinality.EMPTY)
-        ),
-                
+            new QName("clear-grammar-cache", ValidationModule.NAMESPACE_URI,
+            ValidationModule.PREFIX),
+            "Remove all cached grammers.",
+            null,
+            new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE)
+            ),
+        
         new FunctionSignature(
-                new QName("grammar-cache-show", ValidationModule.NAMESPACE_URI, 
-                                                ValidationModule.PREFIX),
-                "Show all cached grammars.",
-                null,
-                new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE)
-        )
+            new QName("show-grammar-cache", ValidationModule.NAMESPACE_URI,
+            ValidationModule.PREFIX),
+            "Show all cached grammars.",
+            null,
+            new SequenceType(Type.NODE, Cardinality.EXACTLY_ONE)
+            )
     };
     
     
@@ -84,53 +90,127 @@ public class GrammarTooling extends BasicFunction  {
         config = brokerPool.getConfiguration();
     }
     
-    /* (non-Javadoc)
+    /** 
      * @see org.exist.xquery.BasicFunction#eval(Sequence[], Sequence)
      */
-    public Sequence eval(Sequence[] args, Sequence contextSequence) 
-                                                        throws XPathException {
-       
-       GrammarPool grammarpool 
-           = (GrammarPool) config.getProperty(XMLReaderObjectFactory.GRAMMER_POOL);
-       
-       // Create response
-        Sequence result = new ValueSequence();
-           
-        if (isCalledAs("grammar-cache-clear")){
-
-            int before = grammarpool.retrieveInitialGrammarSet(TYPE_XSD).length
-                + grammarpool.retrieveInitialGrammarSet(TYPE_DTD).length;
+    public Sequence eval(Sequence[] args, Sequence contextSequence)
+    throws XPathException {
+        
+        GrammarPool grammarpool
+            = (GrammarPool) config.getProperty(XMLReaderObjectFactory.GRAMMER_POOL);
+        
+        if (isCalledAs("clear-grammar-cache")){
+            
+            Sequence result = new ValueSequence();
+            
+            int before = countTotalNumberOfGrammar(grammarpool);
             LOG.debug("Clearing "+before+" grammars");
             
-            grammarpool.clear();
+            clearGrammarPool(grammarpool);
             
-            int after = grammarpool.retrieveInitialGrammarSet(TYPE_XSD).length
-                + grammarpool.retrieveInitialGrammarSet(TYPE_DTD).length;
+            int after = countTotalNumberOfGrammar(grammarpool);
             LOG.debug("Remained "+after+" grammars");
-
-            result = Sequence.EMPTY_SEQUENCE;
             
-        } else if (isCalledAs("grammar-cache-show")){
+            int delta=before-after;
             
-            // TODO ; refactor grammartype url
-            Grammar xsds[] = grammarpool.retrieveInitialGrammarSet(TYPE_XSD);          
-            for(int i=0; i<xsds.length; i++){
-                result.add(new StringValue(xsds[i].getGrammarDescription()
-                                                            .getNamespace()) );
-            }
+            result.add(new IntegerValue(delta));
             
-            // TODO ; refactor grammartype url
-            Grammar dtds[] = grammarpool.retrieveInitialGrammarSet(TYPE_DTD);
-            for(int i=0; i<dtds.length; i++){
-                result.add(new StringValue(dtds[i].getGrammarDescription()
-                                                             .getPublicId()) );
-            }
+            return result;
+            
+            
+        } else if (isCalledAs("show-grammar-cache")){
+            MemTreeBuilder builder = context.getDocumentBuilder();
+            NodeImpl result = writeReport(grammarpool, builder);
+            return result;
+            
+            
             
         } else {
             // oh oh
-            result = Sequence.EMPTY_SEQUENCE;
+            LOG.error("function not found error");
+            throw new XPathException("function not found");
+        }
+
+    }
+    
+    private int countTotalNumberOfGrammar( GrammarPool grammarpool){
+        
+        return (grammarpool.retrieveInitialGrammarSet(TYPE_XSD).length
+            + grammarpool.retrieveInitialGrammarSet(TYPE_DTD).length);
+        
+    }
+    
+    
+    private void clearGrammarPool(GrammarPool grammarpool){
+        grammarpool.clear();
+    }
+    
+    private NodeImpl writeReport(GrammarPool grammarpool, MemTreeBuilder builder) {
+        
+        int nodeNr = builder.startElement("", "report", "report",null);
+        
+        Grammar xsds[] = grammarpool.retrieveInitialGrammarSet(TYPE_XSD);
+        for(int i=0; i<xsds.length; i++){
+            writeGrammar(xsds[i], builder);
         }
         
-        return result;
+        Grammar dtds[] = grammarpool.retrieveInitialGrammarSet(TYPE_DTD);
+        for(int i=0; i<dtds.length; i++){
+            writeGrammar(dtds[i], builder);
+        }
+
+        builder.endElement();
+        
+        return ((DocumentImpl)builder.getDocument()).getNode(nodeNr);
+    }
+    
+    private void writeGrammar(Grammar grammar,  MemTreeBuilder builder){
+        
+            XMLGrammarDescription xgd = grammar.getGrammarDescription();
+            
+            builder.startElement("", "grammar", "grammar", null);
+            
+            String grammarType=xgd.getGrammarType();
+            if(grammarType!=null){
+                builder.startElement("", "Type", "Type", null);
+                builder.characters(grammarType);
+                builder.endElement();
+            }
+            
+            String namespace=xgd.getNamespace();
+            if(namespace!=null){
+                builder.startElement("", "Namespace", "Namespace", null);
+                builder.characters(namespace);
+                builder.endElement();
+            }
+            
+            String publicId=xgd.getPublicId();
+            if(publicId!=null){
+                builder.startElement("", "PublicId", "PublicId", null);
+                builder.characters(publicId);
+                builder.endElement();
+            }
+            String baseSystemId=xgd.getBaseSystemId();
+            if(baseSystemId!=null){
+                builder.startElement("", "BaseSystemId", "BaseSystemId", null);
+                builder.characters(baseSystemId);
+                builder.endElement();
+            }
+
+            String literalSystemId=xgd.getLiteralSystemId();
+            if(literalSystemId!=null){
+                builder.startElement("", "LiteralSystemId", "LiteralSystemId", null);
+                builder.characters(literalSystemId);
+                builder.endElement();
+            }
+            
+            String expandedSystemId=xgd.getExpandedSystemId();
+            if(expandedSystemId!=null){
+                builder.startElement("", "ExpandedSystemId", "ExpandedSystemId", null);
+                builder.characters(expandedSystemId);
+                builder.endElement();
+            }
+
+            builder.endElement();
     }
 }
