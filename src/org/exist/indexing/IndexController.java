@@ -250,7 +250,7 @@ public class IndexController {
      * That allows workers to return different {@link org.exist.indexing.StreamListener}
      * for each mode.  
      *
-     * @return chain of StreamListeners
+     * @return the first listener in the chain of StreamListeners
      */
     public StreamListener getStreamListener() {
         if (listener != null) {
@@ -318,8 +318,10 @@ public class IndexController {
     }
     
     /**
-     * @param proxy
-     * @return the MatchListener
+     * Returns the match listener for this node.
+     * 
+     * @param proxy a proxy to the node.
+     * @return the MatchListener 
      */
     public MatchListener getMatchListener(NodeProxy proxy) {
         MatchListener first = null;
