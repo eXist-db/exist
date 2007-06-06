@@ -55,6 +55,7 @@ import org.exist.storage.NativeBroker;
 import org.exist.storage.NativeValueIndex;
 import org.exist.storage.TextSearchEngine;
 import org.exist.storage.XQueryPool;
+import org.exist.storage.journal.Journal;
 import org.exist.storage.serializers.Serializer;
 import org.exist.validation.GrammarPool;
 import org.exist.validation.resolver.eXistXMLCatalogResolver;
@@ -702,16 +703,16 @@ public class Configuration implements ErrorHandler {
         if (option != null) {
             value = option.equals("yes");
         }
-        setProperty("db-connection.recovery.enabled", new Boolean(value));
-        LOG.debug("db-connection.recovery.enabled: " + config.get("db-connection.recovery.enabled"));
+        setProperty(BrokerPool.PROPERTY_RECOVERY_ENABLED, new Boolean(value));
+        LOG.debug(BrokerPool.PROPERTY_RECOVERY_ENABLED + ": " + config.get(BrokerPool.PROPERTY_RECOVERY_ENABLED));
         
         option = recovery.getAttribute("sync-on-commit");
         value = true;
         if (option != null) {
             value = option.equals("yes");
         }
-        setProperty("db-connection.recovery.sync-on-commit", new Boolean(value));
-        LOG.debug("db-connection.recovery.sync-on-commit: " + config.get("db-connection.recovery.sync-on-commit"));
+        setProperty(Journal.PROPERTY_RECOVERY_SYNC_ON_COMMIT, new Boolean(value));
+        LOG.debug(Journal.PROPERTY_RECOVERY_SYNC_ON_COMMIT + ": " + config.get(Journal.PROPERTY_RECOVERY_SYNC_ON_COMMIT));
         
         option = recovery.getAttribute("group-commit");
         value = false;
@@ -723,8 +724,8 @@ public class Configuration implements ErrorHandler {
         
         option = recovery.getAttribute("journal-dir");
         if (option != null) {
-            setProperty("db-connection.recovery.journal-dir", option);
-            LOG.debug("db-connection.recovery.journal-dir: " + config.get("db-connection.recovery.journal-dir"));
+            setProperty(Journal.PROPERTY_RECOVERY_JOURNAL_DIR, option);
+            LOG.debug(Journal.PROPERTY_RECOVERY_JOURNAL_DIR + ": " + config.get(Journal.PROPERTY_RECOVERY_JOURNAL_DIR));
         }
         
         option = recovery.getAttribute("size");
@@ -733,8 +734,8 @@ public class Configuration implements ErrorHandler {
                 option = option.substring(0, option.length() - 1);
             try {
                 Integer size = new Integer(option);
-                setProperty("db-connection.recovery.size-limit", size);
-                LOG.debug("db-connection.recovery.size-limit: " + config.get("db-connection.recovery.size-limit") + "m");
+                setProperty(Journal.PROPERTY_RECOVERY_SIZE_LIMIT, size);
+                LOG.debug(Journal.PROPERTY_RECOVERY_SIZE_LIMIT + ": " + config.get(Journal.PROPERTY_RECOVERY_SIZE_LIMIT) + "m");
             } catch (NumberFormatException e) {
                 throw new DatabaseConfigurationException("size attribute in recovery section needs to be a number");
             }

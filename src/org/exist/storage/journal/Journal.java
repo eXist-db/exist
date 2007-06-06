@@ -70,6 +70,10 @@ public class Journal {
      * Logger for this class
      */
     private static final Logger LOG = Logger.getLogger(Journal.class);
+    
+    public final static String PROPERTY_RECOVERY_SIZE_LIMIT = "db-connection.recovery.size-limit";
+    public final static String PROPERTY_RECOVERY_JOURNAL_DIR = "db-connection.recovery.journal-dir";
+    public final static String PROPERTY_RECOVERY_SYNC_ON_COMMIT = "db-connection.recovery.sync-on-commit";
 
     public final static String LOG_FILE_SUFFIX = "log";
     public final static String BAK_FILE_SUFFIX = ".bak";
@@ -144,14 +148,14 @@ public class Journal {
         syncThread = new FileSyncThread(latch);
         syncThread.start();
         
-        Boolean syncOpt = (Boolean) pool.getConfiguration().getProperty("db-connection.recovery.sync-on-commit");
+        Boolean syncOpt = (Boolean) pool.getConfiguration().getProperty(PROPERTY_RECOVERY_SYNC_ON_COMMIT);
         if (syncOpt != null) {
         	syncOnCommit = syncOpt.booleanValue();
         	if (LOG.isDebugEnabled())
         		LOG.debug("SyncOnCommit = " + syncOnCommit);
         }
                         
-        String logDir = (String) pool.getConfiguration().getProperty("db-connection.recovery.journal-dir");
+        String logDir = (String) pool.getConfiguration().getProperty(PROPERTY_RECOVERY_JOURNAL_DIR);
         if (logDir != null) {
             File f = new File(logDir);
             if (!f.isAbsolute())
@@ -173,7 +177,7 @@ public class Journal {
         if (LOG.isDebugEnabled())
             LOG.debug("Using directory for the journal: " + dir.getAbsolutePath());
         
-        Integer sizeOpt = (Integer) pool.getConfiguration().getProperty("db-connection.recovery.size-limit");
+        Integer sizeOpt = (Integer) pool.getConfiguration().getProperty(PROPERTY_RECOVERY_SIZE_LIMIT);
         if (sizeOpt != null)
         	journalSizeLimit = sizeOpt.intValue() * 1024 * 1024;
     }
