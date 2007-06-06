@@ -131,7 +131,8 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     protected Base64Decoder base64Decoder = new Base64Decoder();  
     
     public AbstractGMLJDBCIndexWorker(AbstractGMLJDBCIndex index, DBBroker broker) {
-        this.index = index;        
+        this.index = index;
+        this.broker = broker;
     }
     
     public String getIndexId() {
