@@ -62,6 +62,27 @@ public class IndexController {
             indexWorkers.put(workers[i].getIndexId(), workers[i]);
         }
     }
+    
+    /**
+     * Configures all index workers registered with the db instance.
+     * 
+     * @param configNodes lists the top-level child nodes below the &lt;index&gt; element in collection.xconf
+     * @param namespaces the active prefix/namespace map
+     * @return an arbitrary configuration object to be kept for this index in the collection configuration
+     * @throws DatabaseConfigurationException if a configuration error occurs
+     */
+    public Map configure(NodeList configNodes, Map namespaces) throws DatabaseConfigurationException {
+        Map map = new HashMap();
+        IndexWorker indexWorker;
+        Object conf;
+        for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
+            indexWorker = (IndexWorker) i.next();
+            conf = indexWorker.configure(this, configNodes, namespaces);
+            if (conf != null)
+                map.put(indexWorker.getIndexId(), conf);
+        }
+        return map;
+    }    
 
     /**
      * Returns an {@link org.exist.indexing.IndexWorker} instance corresponding
@@ -93,99 +114,9 @@ public class IndexController {
     }
     
     /**
-     * Returns a chain of {@link org.exist.indexing.StreamListener}, one
-     * for each index configured on the current document for the current mode.
-     * Note that the chain is reinitialized when the operating mode changes.
-     * That allows workers to return different {@link org.exist.indexing.StreamListener}
-     * for each mode.  
-     *
-     * @return chain of StreamListeners
-     */
-    public StreamListener getStreamListener() {
-        if (listener != null) {
-            StreamListener next = listener;
-            while (next != null) {
-                next.getWorker().setDocument(currentDoc, currentMode);
-                next = next.getNextInChain();
-            }
-            return listener;
-        }
-        StreamListener first = null;
-        StreamListener current, previous = null;
-        IndexWorker worker;
-        for (Iterator i = indexWorkers.values().iterator(); i.hasNext();) {
-            worker = (IndexWorker) i.next();
-            worker.setDocument(currentDoc, currentMode);
-            current = worker.getListener();
-            if (first == null) {
-                first = current;
-            } else {
-                previous.setNextInChain(current);
-            }
-            previous = current;
-        }
-        listener = first;
-        return listener;
-    }
-
-    /**
-     * @param proxy
-     * @return
-     */
-    public MatchListener getMatchListener(NodeProxy proxy) {
-        MatchListener first = null;
-        MatchListener current, previous = null;
-        IndexWorker worker;
-        for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
-            worker = (IndexWorker) i.next();
-            current = worker.getMatchListener(proxy);
-            if (current != null) {
-                if (first == null) {
-                    first = current;
-                } else {
-                    previous.setNextInChain(current);
-                }
-                previous = current;
-            }
-        }
-        return first;
-    }
-
-    /**
-     * Configures all index workers registered with the db instance.
+     * Sets the document for the next operation.
      * 
-     * @param configNodes lists the top-level child nodes below the &lt;index&gt; element in collection.xconf
-     * @param namespaces the active prefix/namespace map
-     * @return an arbitrary configuration object to be kept for this index in the collection configuration
-     * @throws DatabaseConfigurationException if a configuration error occurs
-     */
-    public Map configure(NodeList configNodes, Map namespaces) throws DatabaseConfigurationException {
-        Map map = new HashMap();
-        IndexWorker indexWorker;
-        Object conf;
-        for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
-            indexWorker = (IndexWorker) i.next();
-            conf = indexWorker.configure(this, configNodes, namespaces);
-            if (conf != null)
-                map.put(indexWorker.getIndexId(), conf);
-        }
-        return map;
-    }
-
-    /**
-     * Flushes all index workers.
-     */
-    public void flush() {
-        IndexWorker indexWorker;
-        for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
-            indexWorker = (IndexWorker) i.next();
-            indexWorker.flush();
-        }
-    }
-    
-    /**
-     * Sets the documentfor the next operation.
-     * @param doc
+     * @param doc the document
      */    
     public void setDocument(DocumentImpl doc) {
         if (currentDoc != doc)
@@ -201,7 +132,9 @@ public class IndexController {
 
     /**
      * Sets the the mode for the next operation.
-     * @param mode
+     * 
+     * @param mode the mode, one of {@link StreamListener#UNKNOWN}, {@link StreamListener#STORE}, 
+     * {@link StreamListener#REMOVE_SOME_NODES} or {@link StreamListener#REMOVE_ALL_NODES}.
      */
     public void setMode(int mode) {
         if (currentMode != mode)
@@ -217,14 +150,59 @@ public class IndexController {
     
     /**
      * Sets the document and the mode for the next operation.
-     * @param doc
-     * @param mode
+     * 
+     * @param doc the document
+     * @param mode the mode, one of {@link StreamListener#UNKNOWN}, {@link StreamListener#STORE}, 
+     * {@link StreamListener#REMOVE_SOME_NODES} or {@link StreamListener#REMOVE_ALL_NODES}.
      */
     public void setDocument(DocumentImpl doc, int mode) {
     	setDocument(doc);
     	setMode(mode);
+    }
+    
+    /**
+     * Flushes all index workers.
+     */
+    public void flush() {
+        IndexWorker indexWorker;
+        for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
+            indexWorker = (IndexWorker) i.next();
+            indexWorker.flush();
+        }
+    }  
+    
+    /**
+     * Remove all indexes defined on the specified collection.
+     *
+     * @param collection the collection to remove
+     * @param broker the broker that will perform the operation
+     */
+    public void removeCollection(Collection collection, DBBroker broker) {
+        IndexWorker indexWorker;
+        for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
+            indexWorker = (IndexWorker) i.next();
+            indexWorker.removeCollection(collection, broker);
+        }
     }    
 
+    /**
+     * Reindex all nodes below the specified root node, using the given mode.
+     *
+     * @param transaction the current transaction
+     * @param reindexRoot the node from which reindexing should occur
+     * @param mode the mode, one of {@link StreamListener#UNKNOWN}, {@link StreamListener#STORE}, 
+     * {@link StreamListener#REMOVE_SOME_NODES} or {@link StreamListener#REMOVE_ALL_NODES}.
+     */
+    public void reindex(Txn transaction, StoredNode reindexRoot, int mode) {
+        if (reindexRoot == null)
+            return;
+        reindexRoot = reindexRoot.getDocument().getBroker().objectWith(new NodeProxy(reindexRoot.getDocument(), reindexRoot.getNodeId()));
+        setDocument(reindexRoot.getDocument(), mode);
+        getStreamListener();
+        IndexUtils.scanNode(transaction, reindexRoot, listener);
+        flush();
+    }
+    
     /**
      * When adding or removing nodes to or from the document tree, it might become
      * necessary to reindex some parts of the tree, in particular if indexes are defined
@@ -265,26 +243,44 @@ public class IndexController {
             top = node;
         return top;
     }
-
+    
     /**
-     * Reindex all nodes below the specified root node, using the given mode. Mode should be
-     * one of {@link StreamListener#UNKNOWN}, {@link StreamListener#STORE}, 
-     * {@link StreamListener#REMOVE_SOME_NODES} or {@link StreamListener#REMOVE_ALL_NODES}.
+     * Returns a chain of {@link org.exist.indexing.StreamListener}, one
+     * for each index configured on the current document for the current mode.
+     * Note that the chain is reinitialized when the operating mode changes.
+     * That allows workers to return different {@link org.exist.indexing.StreamListener}
+     * for each mode.  
      *
-     * @param transaction the current transaction
-     * @param reindexRoot the root node to reindex
-     * @param mode the mode
+     * @return chain of StreamListeners
      */
-    public void reindex(Txn transaction, StoredNode reindexRoot, int mode) {
-        if (reindexRoot == null)
-            return;
-        reindexRoot = reindexRoot.getDocument().getBroker().objectWith(new NodeProxy(reindexRoot.getDocument(), reindexRoot.getNodeId()));
-        setDocument(reindexRoot.getDocument(), mode);
-        getStreamListener();
-        IndexUtils.scanNode(transaction, reindexRoot, listener);
-        flush();
+    public StreamListener getStreamListener() {
+        if (listener != null) {
+            StreamListener next = listener;
+            while (next != null) {
+                next.getWorker().setDocument(currentDoc, currentMode);
+                next = next.getNextInChain();
+            }
+            return listener;
+        }
+        StreamListener first = null;
+        StreamListener current, previous = null;
+        IndexWorker worker;
+        for (Iterator i = indexWorkers.values().iterator(); i.hasNext();) {
+            worker = (IndexWorker) i.next();
+            worker.setDocument(currentDoc, currentMode);
+            current = worker.getListener();
+            if (first == null) {
+                first = current;
+            } else {
+                previous.setNextInChain(current);
+            }
+            previous = current;
+        }
+        listener = first;
+        return listener;
     }
-
+    
+    
     /**
      * Helper method: index a single node which has been added during an XUpdate or XQuery update expression.
      *
@@ -323,16 +319,26 @@ public class IndexController {
     }
     
     /**
-     * Remove all indexes defined on the specified collection.
-     *
-     * @param collection the collection to remove
-     * @param broker the broker that will perform the operation
+     * @param proxy
+     * @return the MatchListener
      */
-    public void removeCollection(Collection collection, DBBroker broker) {
-        IndexWorker indexWorker;
+    public MatchListener getMatchListener(NodeProxy proxy) {
+        MatchListener first = null;
+        MatchListener current, previous = null;
+        IndexWorker worker;
         for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
-            indexWorker = (IndexWorker) i.next();
-            indexWorker.removeCollection(collection, broker);
+            worker = (IndexWorker) i.next();
+            current = worker.getMatchListener(proxy);
+            if (current != null) {
+                if (first == null) {
+                    first = current;
+                } else {
+                    previous.setNextInChain(current);
+                }
+                previous = current;
+            }
         }
-    }
+        return first;
+    }    
+
 }

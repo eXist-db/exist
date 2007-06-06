@@ -42,7 +42,6 @@ import org.w3c.dom.NodeList;
  * to take care of synchronizing access to shared resources.
  */
 public interface IndexWorker {
-
 	
     /**
      * Returns an ID which uniquely identifies this worker's index.
