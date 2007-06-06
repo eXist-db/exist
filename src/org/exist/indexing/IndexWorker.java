@@ -140,7 +140,8 @@ public interface IndexWorker {
      */
     void removeCollection(Collection collection, DBBroker broker);
     
-    /** Checking index could be delegatezd to a worker. Use this method to do so.
+    /** 
+     * Checking index could be delegated to a worker. Use this method to do so.
      * @param broker The broker that will perform the operation
      * @return Whether or not the index if in a suitable state
      */

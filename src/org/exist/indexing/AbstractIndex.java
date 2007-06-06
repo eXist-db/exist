@@ -34,12 +34,18 @@ public abstract class AbstractIndex implements Index {
      */
     protected static String ID = "Give me an ID !";
     
-    protected String name = null;
     
-    protected BrokerPool pool;
-    
+    protected BrokerPool pool;    
     //Probably not useful for every kind of index. Anyway...
     private String dataDir = null; 
+    protected String name = null;    
+    
+    public void configure(BrokerPool pool, String dataDir, Element config) throws DatabaseConfigurationException {
+    	this.pool = pool;
+    	this.dataDir = dataDir; 
+        if (config.hasAttribute("id"))
+            name = config.getAttribute("id");
+    }
     
     public String getIndexId() {
     	return ID;
@@ -53,18 +59,12 @@ public abstract class AbstractIndex implements Index {
     	return pool;
     }
     
+    //TODO : declare in interface ?
     public String getDataDir() {
     	return dataDir;
-    }    
-
-    public void configure(BrokerPool pool, String dataDir, Element config) throws DatabaseConfigurationException {
-    	this.pool = pool;
-    	this.dataDir = dataDir; 
-        if (config.hasAttribute("id"))
-            name = config.getAttribute("id");
-    }
+    } 	
     
-	public abstract void open() throws DatabaseConfigurationException;
+    public abstract void open() throws DatabaseConfigurationException;
 	
 	public abstract void close() throws DBException;
 	
