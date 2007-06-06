@@ -78,7 +78,7 @@ public class ValidationFunctions_Node_Test extends TestCase {
         logger.info("Clearing grammar cache");
         ResourceSet result = null;
         try {
-            result = service.query("validation:grammar-cache-clear()");
+            result = service.query("validation:clear-grammar-cache()");
             
         } catch (Exception e) {
             logger.error(e);
