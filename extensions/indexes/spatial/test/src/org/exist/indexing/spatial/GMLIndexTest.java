@@ -122,35 +122,37 @@ public class GMLIndexTest extends TestCase {
 	        assertNotNull(pool);
 	        broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
 	        assertNotNull(broker);
-	        GMLHSQLIndexWorker indexWorker = (GMLHSQLIndexWorker)broker.getIndexController().getIndexWorkerById(AbstractGMLJDBCIndex.ID);
+	        GMLHSQLIndexWorker indexWorker = (GMLHSQLIndexWorker)broker.getIndexController().getWorkerByIndexId(AbstractGMLJDBCIndex.ID);
 	        //Unplugged
-	    	if (indexWorker == null)
-	       	
-	        try {
-	        	Connection conn = null;
-	        	try {
-	        		conn = indexWorker.acquireConnection();	        	
-		        	for (int i = 0; i < FILES.length; i++) {
-		        		XMLResource doc =
-			                (XMLResource) testCollection.getResource(FILES[i]);        		
-				        PreparedStatement ps = conn.prepareStatement(
-				        		"SELECT * FROM " + GMLHSQLIndex.TABLE_NAME + " WHERE DOCUMENT_URI = ?;"      		
-				        	); 		       
-				        ps.setString(1, testCollection.getName() + "/" + doc.getDocumentId());
-				        ResultSet rs = ps.executeQuery(); 
-				        while (rs.next()) {}
-				        int count = rs.getRow();
-				        System.out.println(count + " geometries in the index");
-				        ps.close();
-				        assertTrue(count > 0);
-		        	}	       	  
-	        	} finally {
-	        		indexWorker.releaseConnection(conn);
-	        	}
-	        } catch (SQLException e) {
-	        	e.printStackTrace();
-	        	fail(e.getMessage());	            	
-	        }
+	    	if (indexWorker == null) {
+	    		System.out.println("No spatial index found");
+	    	} else {
+		        try {
+		        	Connection conn = null;
+		        	try {
+		        		conn = indexWorker.acquireConnection();	        	
+			        	for (int i = 0; i < FILES.length; i++) {
+			        		XMLResource doc =
+				                (XMLResource) testCollection.getResource(FILES[i]);        		
+					        PreparedStatement ps = conn.prepareStatement(
+					        		"SELECT * FROM " + GMLHSQLIndex.TABLE_NAME + " WHERE DOCUMENT_URI = ?;"      		
+					        	); 		       
+					        ps.setString(1, testCollection.getName() + "/" + doc.getDocumentId());
+					        ResultSet rs = ps.executeQuery(); 
+					        while (rs.next()) {}
+					        int count = rs.getRow();
+					        System.out.println(count + " geometries in the index");
+					        ps.close();
+					        assertTrue(count > 0);
+			        	}	       	  
+		        	} finally {
+		        		indexWorker.releaseConnection(conn);
+		        	}
+		        } catch (SQLException e) {
+		        	e.printStackTrace();
+		        	fail(e.getMessage());	            	
+		        }
+	    	}
         } catch (XMLDBException e) {
             e.printStackTrace();
             fail(e.getMessage());	        
@@ -172,8 +174,9 @@ public class GMLIndexTest extends TestCase {
 	        AbstractGMLJDBCIndex index = (AbstractGMLJDBCIndex)pool.getIndexManager().getIndexById(AbstractGMLJDBCIndex.ID);
 	        //Unplugged
 	    	if (index == null)
-	        	return;	        
-	        assertTrue(index.checkIndex(broker)); 
+	    		System.out.println("No spatial index found");
+	    	else
+	    		assertTrue(index.checkIndex(broker)); 
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());
@@ -224,42 +227,44 @@ public class GMLIndexTest extends TestCase {
         	assertNotNull(pool);
 	    	broker = pool.get(org.exist.security.SecurityManager.SYSTEM_USER);
 	    	assertNotNull(broker);
-	    	AbstractGMLJDBCIndexWorker indexWorker = (AbstractGMLJDBCIndexWorker)broker.getIndexController().getIndexWorkerById(AbstractGMLJDBCIndex.ID);
+	    	AbstractGMLJDBCIndexWorker indexWorker = (AbstractGMLJDBCIndexWorker)broker.getIndexController().getWorkerByIndexId(AbstractGMLJDBCIndex.ID);
 	        //Unplugged
 	    	if (indexWorker == null)
-	        	return;
+	    		System.out.println("No spatial index found");
+	    	else {
 	        
-	    	SAXParserFactory factory = SAXParserFactory.newInstance();
-	        factory.setNamespaceAware(true);
-	        InputSource src = new InputSource(new StringReader(IN_MEMORY_GML));
-	        SAXParser parser = factory.newSAXParser();
-	        XMLReader reader = parser.getXMLReader();
-	        SAXAdapter adapter = new SAXAdapter();
-	        reader.setContentHandler(handler);
-	        reader.setProperty("http://xml.org/sax/properties/lexical-handler", adapter);
-	        reader.parse(src);
-	        
-	        Geometry EPSG4326_geometry = indexWorker.transformGeometry(currentGeometry, "osgb:BNG", "EPSG:4326");
-            assertNotNull(EPSG4326_geometry);
-
-            System.out.println(EPSG4326_geometry);
-            
-	        NodeSet ns = indexWorker.search(broker, null, EPSG4326_geometry, SpatialOperator.EQUALS);
-	        assertTrue(ns.getLength() > 0);    
-	        ns = indexWorker.search(broker, null, EPSG4326_geometry, SpatialOperator.DISJOINT);
-	        assertTrue(ns.getLength() > 0); 
-	        ns = indexWorker.search(broker, null, EPSG4326_geometry, SpatialOperator.INTERSECTS);
-	        assertTrue(ns.getLength() > 0); 
-	        ns = indexWorker.search(broker, null, EPSG4326_geometry, SpatialOperator.TOUCHES);
-	        //assertTrue(ns.getLength() > 0);  
-	        ns = indexWorker.search(broker, null, EPSG4326_geometry, SpatialOperator.CROSSES);
-	        //assertTrue(ns.getLength() > 0);	  
-	        ns = indexWorker.search(broker, null, EPSG4326_geometry, SpatialOperator.WITHIN);
-	        assertTrue(ns.getLength() > 0);		
-	        ns = indexWorker.search(broker, null, EPSG4326_geometry, SpatialOperator.CONTAINS);
-	        assertTrue(ns.getLength() > 0);			        
-	        //ns = ((GMLIndexWorker)index.getWorker()).search(broker, EPSG4326_geometry, SpatialOperator.OVERLAPS);
-	        //assertTrue(ns.getLength() > 0);			        
+		    	SAXParserFactory factory = SAXParserFactory.newInstance();
+		        factory.setNamespaceAware(true);
+		        InputSource src = new InputSource(new StringReader(IN_MEMORY_GML));
+		        SAXParser parser = factory.newSAXParser();
+		        XMLReader reader = parser.getXMLReader();
+		        SAXAdapter adapter = new SAXAdapter();
+		        reader.setContentHandler(handler);
+		        reader.setProperty("http://xml.org/sax/properties/lexical-handler", adapter);
+		        reader.parse(src);
+		        
+		        Geometry EPSG4326_geometry = indexWorker.transformGeometry(currentGeometry, "osgb:BNG", "EPSG:4326");
+	            assertNotNull(EPSG4326_geometry);
+	
+	            System.out.println(EPSG4326_geometry);
+	            
+		        NodeSet ns = indexWorker.search(broker, null, EPSG4326_geometry, SpatialOperator.EQUALS);
+		        assertTrue(ns.getLength() > 0);    
+		        ns = indexWorker.search(broker, null, EPSG4326_geometry, SpatialOperator.DISJOINT);
+		        assertTrue(ns.getLength() > 0); 
+		        ns = indexWorker.search(broker, null, EPSG4326_geometry, SpatialOperator.INTERSECTS);
+		        assertTrue(ns.getLength() > 0); 
+		        ns = indexWorker.search(broker, null, EPSG4326_geometry, SpatialOperator.TOUCHES);
+		        //assertTrue(ns.getLength() > 0);  
+		        ns = indexWorker.search(broker, null, EPSG4326_geometry, SpatialOperator.CROSSES);
+		        //assertTrue(ns.getLength() > 0);	  
+		        ns = indexWorker.search(broker, null, EPSG4326_geometry, SpatialOperator.WITHIN);
+		        assertTrue(ns.getLength() > 0);		
+		        ns = indexWorker.search(broker, null, EPSG4326_geometry, SpatialOperator.CONTAINS);
+		        assertTrue(ns.getLength() > 0);			        
+		        //ns = ((GMLIndexWorker)index.getWorker()).search(broker, EPSG4326_geometry, SpatialOperator.OVERLAPS);
+		        //assertTrue(ns.getLength() > 0);	
+	    	}
     	} catch (Exception e) {
     		e.printStackTrace();
     		fail(e.getMessage()); 

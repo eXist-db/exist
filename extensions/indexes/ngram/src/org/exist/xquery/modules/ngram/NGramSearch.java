@@ -102,7 +102,7 @@ public class NGramSearch extends Function implements Optimizable {
         // the expression can be called multiple times, so we need to clear the previous preselectResult
         preselectResult = null;
 
-        NGramIndexWorker index = (NGramIndexWorker) context.getBroker().getIndexController().getIndexWorkerById(NGramIndex.ID);
+        NGramIndexWorker index = (NGramIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(NGramIndex.ID);
         DocumentSet docs = contextSequence.getDocumentSet();
         String key = getArgument(1).eval(contextSequence).getStringValue();
         String[] ngrams = index.getDistinctNGrams(key);
@@ -126,7 +126,7 @@ public class NGramSearch extends Function implements Optimizable {
                 NodeSet inNodes = input.toNodeSet();
                 DocumentSet docs = inNodes.getDocumentSet();
                 NGramIndexWorker index = (NGramIndexWorker)
-                  context.getBroker().getIndexController().getIndexWorkerById(NGramIndex.ID);
+                  context.getBroker().getIndexController().getWorkerByIndexId(NGramIndex.ID);
                 //Alternate design
                 //NGramIndexWorker index = (NGramIndexWorker)context.getBroker().getBrokerPool().getIndexManager().getIndexById(NGramIndex.ID).getWorker();
 

@@ -75,10 +75,6 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         */
     }
     
-    public String getID() {
-    	return ID;
-    }
-    
     protected boolean saveGeometryNode(Geometry geometry, String srsName, DocumentImpl doc, NodeId nodeId, Connection conn) throws SQLException {
     	PreparedStatement ps = conn.prepareStatement("INSERT INTO " + GMLHSQLIndex.TABLE_NAME + "(" +
         		/*1*/ "DOCUMENT_URI, " +            		

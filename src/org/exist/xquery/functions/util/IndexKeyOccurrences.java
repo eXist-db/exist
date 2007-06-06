@@ -89,7 +89,7 @@ public class IndexKeyOccurrences extends BasicFunction {
 	        DocumentSet docs = nodes.getDocumentSet();
 	        
 	        if (this.getArgumentCount() == 3){
-	        	IndexWorker indexWorker = context.getBroker().getIndexController().getIndexWorkerByName(args[2].itemAt(0).getStringValue());
+	        	IndexWorker indexWorker = context.getBroker().getIndexController().getWorkerByIndexName(args[2].itemAt(0).getStringValue());
 	        	//Alternate design
 	        	//IndexWorker indexWorker = context.getBroker().getBrokerPool().getIndexManager().getIndexByName(args[2].itemAt(0).getStringValue()).getWorker();
 	        	if (indexWorker == null)

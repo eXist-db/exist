@@ -32,7 +32,7 @@ public abstract class AbstractIndex implements Index {
     /**
      * Holds an id which uniquely identifies this index. This is usually the class name. 
      */
-    protected static String ID = null;
+    protected static String ID = "Give me an ID !";
     
     protected String name = null;
     

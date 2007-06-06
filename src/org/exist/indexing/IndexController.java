@@ -49,14 +49,13 @@ public class IndexController {
 
     protected Map indexWorkers = new HashMap();
 
-    protected StreamListener listener = null;
-
-    protected StoredNode reindexNode = null;
-    
+    protected DBBroker broker;
+    protected StreamListener listener = null;    
     protected DocumentImpl currentDoc = null;
     protected int currentMode = StreamListener.UNKNOWN;
     
     public IndexController(DBBroker broker) {
+    	this.broker = broker;
         IndexWorker[] workers = broker.getBrokerPool().getIndexManager().getWorkers(broker);
         for (int i = 0; i < workers.length; i++) {
             indexWorkers.put(workers[i].getIndexId(), workers[i]);
@@ -92,7 +91,7 @@ public class IndexController {
      * @param indexId
      * @return instance of index worker
      */
-    public IndexWorker getIndexWorkerById(String indexId) {
+    public IndexWorker getWorkerByIndexId(String indexId) {
         return (IndexWorker) indexWorkers.get(indexId);
     }
 
@@ -104,7 +103,7 @@ public class IndexController {
      * @param indexName
      * @return instance of index worker
      */    
-    public IndexWorker getIndexWorkerByName(String indexName) {
+    public IndexWorker getWorkerByIndexName(String indexName) {
         for (Iterator i = indexWorkers.values().iterator(); i.hasNext(); ) {
         	IndexWorker worker = (IndexWorker) i.next();
         	if (indexName.equals(worker.getIndexName()))

@@ -249,7 +249,7 @@ public class FunGeometricProperties extends BasicFunction implements IndexUseRep
 	        	Geometry geometry = null;
 	        	String sourceCRS = null;
 	        	AbstractGMLJDBCIndexWorker indexWorker = (AbstractGMLJDBCIndexWorker)
-		        	context.getBroker().getIndexController().getIndexWorkerById(AbstractGMLJDBCIndex.ID);
+		        	context.getBroker().getIndexController().getWorkerByIndexId(AbstractGMLJDBCIndex.ID);
 		        if (indexWorker == null)
 		        	throw new XPathException("Unable to find a spatial index worker");
 		        NodeValue geometryNode = (NodeValue) nodes.itemAt(0);

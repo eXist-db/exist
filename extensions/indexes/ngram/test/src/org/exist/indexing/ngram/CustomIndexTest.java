@@ -626,7 +626,7 @@ public class CustomIndexTest extends TestCase {
 
     //TODO : could be replaced by an XQuery call to index-keys(). See above
     private void checkIndex(DBBroker broker, DocumentSet docs, String term, int count) {
-        NGramIndexWorker index = (NGramIndexWorker) broker.getIndexController().getIndexWorkerById(NGramIndex.ID);
+        NGramIndexWorker index = (NGramIndexWorker) broker.getIndexController().getWorkerByIndexId(NGramIndex.ID);
         Occurrences[] occurrences = index.scanIndex(docs);
         int found = 0;
         for (int i = 0; i < occurrences.length; i++) {
