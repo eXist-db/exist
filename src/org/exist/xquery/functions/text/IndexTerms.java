@@ -32,13 +32,8 @@ import org.exist.xquery.FunctionCall;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionReference;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
+
 import java.util.HashMap;
 import java.util.Collections;
 import java.util.Vector;
@@ -48,7 +43,8 @@ import java.util.Vector;
  */
 public class IndexTerms extends BasicFunction {
 
-    public final static FunctionSignature signature = new FunctionSignature(
+    public final static FunctionSignature signatures[] = new FunctionSignature[] {
+        new FunctionSignature(
             new QName("index-terms", TextModule.NAMESPACE_URI, TextModule.PREFIX),
             "This function can be used to collect some information on the distribution " +
             "of index terms within a set of nodes. The set of nodes is specified in the first " +
@@ -70,9 +66,24 @@ public class IndexTerms extends BasicFunction {
                     new SequenceType(Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE),
                     new SequenceType(Type.INT, Cardinality.EXACTLY_ONE)
             },
-            new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE));
+            new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)),
+        new FunctionSignature(
+            new QName("index-terms", TextModule.NAMESPACE_URI, TextModule.PREFIX),
+            "This version of the index-terms function is to be used with indexes that were " +
+            "defined on a specific element or attribute QName. The second argument " +
+            "lists the QNames or elements or attributes for which occurrences should be" +
+            "returned. Otherwise, the function behaves like the 4-argument version.",
+            new SequenceType[]{
+                    new SequenceType(Type.NODE, Cardinality.ZERO_OR_MORE),
+                    new SequenceType(Type.QNAME, Cardinality.ONE_OR_MORE),
+                    new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE),
+                    new SequenceType(Type.FUNCTION_REFERENCE, Cardinality.EXACTLY_ONE),
+                    new SequenceType(Type.INT, Cardinality.EXACTLY_ONE)
+            },
+            new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE))
+    };
     
-    public IndexTerms(XQueryContext context) {
+    public IndexTerms(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }
     
@@ -80,37 +91,52 @@ public class IndexTerms extends BasicFunction {
      * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
      */
     public Sequence eval(Sequence[] args, Sequence contextSequence)
-            throws XPathException {
-        if(args[0].isEmpty())
+        throws XPathException {
+        int arg = 0;
+        if (args[arg].isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
-        NodeSet nodes = args[0].toNodeSet();
+        }
+        NodeSet nodes = args[arg++].toNodeSet();
         DocumentSet docs = nodes.getDocumentSet();
+        QName[] qnames = null;
+        if (args.length == 5) {
+            qnames = new QName[args[arg].getItemCount()];
+            int q = 0;
+            for (SequenceIterator i = args[arg].iterate(); i.hasNext(); q++) {
+                QNameValue qnv = (QNameValue) i.nextItem();
+                qnames[q] = qnv.getQName();
+            }
+            ++arg;
+        }
         String start = null;
-        if (!args[1].isEmpty())
-            start = args[1].getStringValue();
-        FunctionReference ref = (FunctionReference) args[2].itemAt(0);
-        int max = ((IntegerValue) args[3].itemAt(0)).getInt();
+        if (!args[arg].isEmpty())
+            start = args[arg].getStringValue();
+        FunctionReference ref = (FunctionReference) args[++arg].itemAt(0);
+        int max = ((IntegerValue) args[++arg].itemAt(0)).getInt();
         FunctionCall call = ref.getFunctionCall();
         Sequence result = new ValueSequence();
         try {
-            Occurrences occur[] = 
-                context.getBroker().getTextEngine().scanIndexTerms(docs, nodes, start, null);
+            Occurrences occur[];
+            if (qnames == null)
+                occur = context.getBroker().getTextEngine().scanIndexTerms(docs, nodes, start, null);
+            else
+                occur = context.getBroker().getTextEngine().scanIndexTerms(docs, nodes, qnames, start, null);
             int len = (occur.length > max ? max : occur.length);
             Sequence params[] = new Sequence[2];
             ValueSequence data = new ValueSequence();
 
-	    Vector list = new Vector(len);
-	    for (int j = 0; j < len; j++) {
-		if (!list.contains(new Integer(occur[j].getOccurrences()))) {
-		    list.add(new Integer(occur[j].getOccurrences()));
-		}
-	    }
-	    Collections.sort(list);
-	    Collections.reverse(list);
-	    HashMap map = new HashMap(list.size() * 2);
-	    for (int j = 0; j < list.size(); j++) {
-		map.put((Integer) list.get(j), new Integer(j + 1));
-	    }
+            Vector list = new Vector(len);
+            for (int j = 0; j < len; j++) {
+                if (!list.contains(new Integer(occur[j].getOccurrences()))) {
+                    list.add(new Integer(occur[j].getOccurrences()));
+                }
+            }
+            Collections.sort(list);
+            Collections.reverse(list);
+            HashMap map = new HashMap(list.size() * 2);
+            for (int j = 0; j < list.size(); j++) {
+                map.put(list.get(j), new Integer(j + 1));
+            }
 
             for (int j = 0; j < len; j++) {
                 params[0] = new StringValue(occur[j].getTerm().toString());
@@ -120,15 +146,15 @@ public class IndexTerms extends BasicFunction {
                 data.add(new IntegerValue(((Integer) map.get(new Integer(occur[j].getOccurrences()))).intValue(), Type.UNSIGNED_INT));
 
                 params[1] = data;
-                
+
                 result.addAll(call.evalFunction(contextSequence, null, params));
                 data.clear();
             }
-            if (LOG.isDebugEnabled()) 
-            	LOG.debug("Returning: " + result.getItemCount());
+            if (LOG.isDebugEnabled())
+                LOG.debug("Returning: " + result.getItemCount());
             return result;
         } catch (PermissionDeniedException e) {
-        	throw new XPathException(getASTNode(), e.getMessage(), e);
+            throw new XPathException(getASTNode(), e.getMessage(), e);
         }
     }
 
