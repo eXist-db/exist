@@ -85,10 +85,11 @@
             <classname>org.exist.storage.BrokerPool</classname> which allocates <classname>org.exist.storage.DBBroker</classname>s
             to each process accessing to each DB instance.
             Each time a DB instance is created (most of installations generally have only one, most often called <envar>exist</envar>), the 
-            <methodname>initialize()</methodname> method contructs an <classname>IndexManager</classname>. 
+            <methodname>initialize()</methodname> method contructs an <classname>IndexManager</classname> that will be available through the 
+            <methodname>getIndexManager()</methodname> method of <classname>org.exist.storage.BrokerPool</classname>. 
             </para>            
             <synopsis format="linespecific">public IndexManager(BrokerPool pool, Configuration config)</synopsis>
-            <para>This constructors keeps track of the <classname>BrokerPool</classname> that has instantiated it
+            <para>This constructor keeps track of the <classname>BrokerPool</classname> that has instantiated it
             and receives the database's configuration object, usually defined in an XML file called <filename>conf.xml</filename>.
             What is expected there is this (new) part of the configuration file :
             </para>
@@ -101,8 +102,8 @@
 			<para>... which defines 2 indexes, backed-up by their specific classes (<sgmltag>class</sgmltag> 
 			attribute ; these classes must implement <classname>org.exist.indexing.Index</classname> as we will
 			see below), assigns them a human-readable (writable even) identifier and passes them custom parameters.
-			Then, it configures, opens and keeps track of each of them. We will see below what means this registration process.
-            </para>
+			Then, it configures (by calling their <methodname>configure()</methodname> method), opens 
+			(by calling their <methodname>open()</methodname> method) and keeps track of each of them.</para>
             <para><classname>org.exist.indexing.IndexManager</classname> also provides these public methods :</para>
             <synopsis format="linespecific">public BrokerPool getBrokerPool()</synopsis>
             <para>... which returns the <classname>org.exist.storage.BrokerPool</classname> for which this <classname>IndexManager</classname> was created.</para>
@@ -111,7 +112,7 @@
             to the developer since it allows custom functions to access <classname>Index</classname>es whatever their human-defined
             name is. This is probably the only method in this class that will be really needed by a developer.</para>
             <synopsis format="linespecific">public synchronized Index getIndexByName(String indexName)</synopsis>
-            <para>The counterpart of the previous method. For the human-readable name.</para>
+            <para>The counterpart of the previous method. For the human-readable name if the <classname>Index</classname> as defined in the configuration.</para>
 			<synopsis format="linespecific">public void shutdown()</synopsis>
 			<para>This method is called when eXist shuts down. <methodname>close()</methodname> will be called
 			for every registered <classname>Index</classname>. That allows them to free the resources they own.</para>
@@ -126,7 +127,117 @@
 			We remind that <methodname>repair()</methodname> reconstructs every indexes (including the structural one)
 			from what is contained in the persistent DOM (usually <filename>dom.dbx</filename>).
 			<methodname>open()</methodname> will be called for every registered <classname>Index</classname>.
-			That allows each index to (re)allocate the resource it needs for its persistent storage.</para>			          
+			That allows each index to (re)allocate the resource it needs for its persistent storage.</para>	
+
+			<para>Another important class is <classname>org.exist.indexing.IndexController</classname> which, as its
+			name suggests, controls the way data to be indexed are dispatched to the registered indexes, using 
+			<classname>org.exist.indexing.IndexWorker</classname>s that will be described below. Each <classname>org.exist.storage.DBBroker</classname>
+			constructs such an <classname>IndexController</classname> when it is itself constructed, using this constructor :</para>		          
+			<synopsis format="linespecific">public IndexController(DBBroker broker)</synopsis>
+			<para>... that simply registers the <classname>IndexWorker</classname>s, one for each registered <classname>org.exist.indexing.Index</classname>
+		 	for this <classname>DBBroker</classname>. This <classname>IndexController</classname> will be available through the 
+            <methodname>getIndexController()</methodname> method of <classname>org.exist.storage.DBBroker</classname>.</para>
+			<para> Here are the other public methods :</para>
+			<synopsis format="linespecific">public Map configure(NodeList configNodes, Map namespaces)</synopsis>
+			<para>This method receives the database's configuration object, usually defined in an XML file called <filename>conf.xml</filename>.
+            Both configuration nodes and namespace (remember that some configuration settings including e.g. pathes need namespaces to be defined)
+            will be passed to the <methodname>configure()</methodname> method of each <classname>IndexWorker</classname> there. The result is 
+            <classname>java.util.Map</classname> that will be available from <methodname>collection.getIndexConfiguration(broker).getCustomIndexSpec(INDEX_CLASS_IDENTIFIER)</methodname>.
+            </para>
+			<synopsis format="linespecific">public IndexWorker getWorkerByIndexId(String indexId)</synopsis>			
+			<para>A method that returns an <classname>IndexWorker</classname> given the class identifier of its associated <classname>Index</classname> identifier. Very useful
+            to the developer since it allows custom functions to access <classname>IndexWorker</classname>s whatever the human-defined
+            name of their <classname>Index</classname> is. This is probably the only method in this class that will be really needed by a developer.</para>			
+			<synopsis format="linespecific">public IndexWorker getWorkerByIndexName(String indexName)</synopsis>
+			<para>The counterpart of the previous method. For the human-readable name of the <classname>Index</classname> as defined in the configuration.</para>
+			<synopsis format="linespecific">public void setDocument(DocumentImpl doc)</synopsis>
+			<para>This method sets the <classname>DocumentImpl</classname> on which the <classname>IndexWorker</classname>s will have to work.
+			Calls <methodname>setDocument(doc)</methodname> on each registered <classname>IndexWorker</classname>.</para>
+			<synopsis format="linespecific">public void setMode(int mode)</synopsis>
+			<para>This method sets the operating mode in which the <classname>IndexWorker</classname>s will have to work. 
+			See below for further details on operating modes.
+			Calls <methodname>setMode(mode)</methodname> on each registered <classname>IndexWorker</classname>.</para>
+			<synopsis format="linespecific">public void setDocument(DocumentImpl doc, int mode)</synopsis>
+			<para>A convenience method that sets both the <classname>DocumentImpl</classname> and the operating mode.
+			Calls <methodname>setDocument(doc, mode)</methodname> on each registered <classname>IndexWorker</classname>.</para>
+			<synopsis format="linespecific">public void flush()</synopsis>
+			<para>Called in various places when pending operations have to be completed. Calls <methodname>flush()</methodname>
+			on each registered <classname>IndexWorker</classname>.</para>
+			<synopsis format="linespecific">public void removeCollection(Collection collection, DBBroker broker)</synopsis>			
+			<para>Called when a collection is to be removed. That allows to delete index entries for this collection in a single operation.
+			Calls <methodname>removeCollection()</methodname> on each registered <classname>IndexWorker</classname>.</para>
+			<synopsis format="linespecific">public void reindex(Txn transaction, StoredNode reindexRoot, int mode)</synopsis>
+			<para>Called when a document is to be reindexed. Only the <parameter>reindexRoot</parameter> node and its descendants 
+			will have their index entries updated in accordance with the <parameter>mode</parameter> parameter.</para>
+			<synopsis format="linespecific">public StoredNode getReindexRoot(StoredNode node, NodePath path)</synopsis>
+			<para>Determines the node whose descendant (including itself) should be reindexed. 
+			Calls <methodname>getReindexRoot()</methodname> on each registered <classname>IndexWorker</classname>. 
+			The top-most node will be the actual node form which the <classname>DBBroker</classname> will start reindexing.</para>
+			<synopsis format="linespecific">public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean includeSelf)</synopsis>
+			<para>Same as above, with more parameters.</para>
+			<synopsis format="linespecific">public StreamListener getStreamListener()</synopsis>
+			<para>Returns the first <classname>org.exist.indexing.StreamListener</classname> in the
+			<classname>StreamListener</classname>s pipeline. There is at most one <classname>StreamListener</classname>
+			per <classname>IndexWorker</classname>. <classname>IndexWorker</classname>s that are not interested
+			by the data (depending of e.g. the document and/or the operating mode) may return <parameter>null</parameter> through
+			their <methodname>getListener()</methodname> method and thus not participate in the indexing process. In other terms,
+			they will not listen to the indexed nodes.</para>
+			<synopsis format="linespecific">public void indexNode(Txn transaction, StoredNode node, NodePath path, StreamListener listener)</synopsis>
+			<para>Index any kind of indexable node (currently elements, attributes and text nodes ; comments and especially
+			processing instructions might be considered in the future).</para>
+			<synopsis format="linespecific">public void indexEndElement(Txn transaction, ElementImpl node, NodePath path, StreamListener listener)</synopsis>
+			<para>Signals end of indexing for an element node.</para>
+			<synopsis format="linespecific">public MatchListener getMatchListener(NodeProxy proxy)</synopsis>	
+			<para>Returns a <classname>org.exist.indexing.MatchListener</classname>	for the given node.</para>
+			<para>Looks complicated ? Well, the 2 classes aim to be essentially used by eXist itself. The average programmer
+			will probably need to use just one or two of the above methods.</para>
+			
+			<para>Let's get now in to the interfaces and classes that will need to be extended by the index programmer. The
+			first of them is the interface <classname>org.exist.indexing.Index</classname> which will maintain the index itself.</para>
+			<para>As described above, a new instance of the interface will be created by <classname>org.exist.indexing.IndexManager</classname> 
+			calling the <methodname>newInstance()</methodname> method. No need for a constructor then.</para>	
+			<para>Here are the public methods that have to be implemented in the concrete implementations : </para>
+			<synopsis format="linespecific">String getIndexId()</synopsis>
+			<para>Returns the class identifier of the index</para>
+			<synopsis format="linespecific">String getIndexName()</synopsis>
+			<para>Returns the human-defined name of the index</para>
+			<synopsis format="linespecific">BrokerPool getBrokerPool()</synopsis>
+			<para>Returns the <classname>org.exist.storage.BrokerPool</classname> that has created the index.</para>
+			<synopsis format="linespecific">void configure(BrokerPool pool, String dataDir, Element config)</synopsis>
+			<para>Pass a data directory (normally <filename>${EXIST_HOME}/webapp/WEB-INF/data</filename>) and the
+			configuration element in which it is declared to the <classname>Index</classname>.</para>
+			<synopsis format="linespecific">void open()</synopsis>
+			<para>Method that is executed when the <classname>Index</classname> is opened, whatever it means. Consider
+			this method as an initialization one and allocate the necessary resources here.</para>
+			<synopsis format="linespecific">void close()</synopsis>
+			<para>Method that is executed when the <classname>Index</classname> is closed, whatever it means. Consider
+			this method as a finalization one and free the necessary resources here.</para>			
+			<synopsis format="linespecific">void sync()</synopsis>			
+			<para>Unused.</para>
+			<synopsis format="linespecific">void remove()</synopsis>
+			<para>Method that is executed when eXist requires the index content to be deleted, e.g. before repairing a corrupted database.</para>			
+			<synopsis format="linespecific">IndexWorker getWorker(DBBroker broker)</synopsis>
+			<para>Returns the <classname>org.exist.indexing.IndexWorker</classname> that operates on this
+			<classname>Index</classname> on behalf of <parameter>broker</parameter>.</para>
+			<synopsis format="linespecific">boolean checkIndex(DBBroker broker)</synopsis>
+			<para>To be called for applications that want to implement a consistency check on the <classname>Index</classname>.</para>
+			<para>There is also an abstract class that implements <classname>org.exist.indexing.Index</classname>, 
+			<classname>org.exist.indexing.AbstractIndex</classname>. Most of its methods are abstract and still have to be implemented in
+			the concrete classes. These few members and methods are concrete and public :</para>
+			
+			<synopsis format="linespecific">protected static String ID = "Give me an ID !";</synopsis>
+			<para>This is where the class identifier of the <classname>Index</classname> id defined. Override
+			this member with, say, <methodname>MyClass.class.getName()</methodname> to provide a reasonably
+			unique identifier within your system.</para>
+			<synopsis format="linespecific">public String getDataDir()</synopsis>
+			<para>Returns the directory in which this <classname>Index</classname> operates. Usually defined
+			by <methodname>configure()</methodname> which itself receives eXist's settings. Note that there might
+			be some <classname>Index</classname> for which the concept of data directory isn't accurate.</para>
+			<synopsis format="linespecific">public void configure(BrokerPool pool, String dataDir, Element config)</synopsis>
+			<para>Its minimal implementation retains the <classname>org.exist.storage.BrokerPool</classname>, the data directory and the human-defined name, if defined in the configuration.
+			Sub-classes may call <methodname>super.configure()</methodname> to retain this default behaviour.</para>
+
+			
         </section>
     </chapter>
 </book>
