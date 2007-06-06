@@ -647,9 +647,10 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		return cb.getMatches();
 	}    
 
-	public Occurrences[] scanIndexTerms(DocumentSet docs, NodeSet contextSet, String start, String end) 
+	public Occurrences[] scanIndexTerms(DocumentSet docs, NodeSet contextSet,
+                                        String start, String end)
             throws PermissionDeniedException {
-        final IndexScanCallback cb = new IndexScanCallback(docs, contextSet);
+        final IndexScanCallback cb = new IndexScanCallback(docs, contextSet, false);
         final Lock lock = dbTokens.getLock();
 		for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {            
             final short collectionId = ((Collection) i.next()).getId();          
@@ -683,7 +684,50 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		Occurrences[] result = new Occurrences[cb.map.size()];		
 		return (Occurrences[]) cb.map.values().toArray(result);
 	}
-    
+
+    public Occurrences[] scanIndexTerms(DocumentSet docs, NodeSet contextSet, QName[] qnames,
+                                        String start, String end)
+            throws PermissionDeniedException {
+        final Lock lock = dbTokens.getLock();
+        final IndexScanCallback cb = new IndexScanCallback(docs, contextSet, true);
+        for (int q = 0; q < qnames.length; q++) {
+            for (Iterator i = docs.getCollectionIterator(); i.hasNext();) {
+                final short collectionId = ((Collection) i.next()).getId();
+                final IndexQuery query;
+                if (start == null) {
+                    Value startRef = new QNameWordRef(collectionId);
+                    query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startRef);
+                } else if (end == null) {
+                    Value startRef = new QNameWordRef(collectionId, qnames[q],
+                        start.toLowerCase(), broker.getSymbols());
+                    query = new IndexQuery(IndexQuery.TRUNC_RIGHT, startRef);
+                } else {
+                    Value startRef = new QNameWordRef(collectionId, qnames[q], start.toLowerCase(),
+                        broker.getSymbols());
+                    Value endRef = new QNameWordRef(collectionId, qnames[q], end.toLowerCase(),
+                        broker.getSymbols());
+                    query = new IndexQuery(IndexQuery.BW, startRef, endRef);
+                }
+                try {
+                    lock.acquire(Lock.READ_LOCK);
+                    dbTokens.query(query, cb);
+                } catch (LockException e) {
+                    LOG.warn("Failed to acquire lock for '" + dbTokens.getFile().getName() + "'", e);
+                } catch (IOException e) {
+                    LOG.error(e.getMessage(), e);
+                } catch (BTreeException e) {
+                    LOG.error(e.getMessage(), e);
+                } catch (TerminatedException e) {
+                    LOG.warn(e.getMessage(), e);
+                } finally {
+                    lock.release(Lock.READ_LOCK);
+                }
+            }
+        }
+        Occurrences[] result = new Occurrences[cb.map.size()];
+        return (Occurrences[]) cb.map.values().toArray(result);
+    }
+
     /**
      * @param freq
      * @param is
@@ -1399,32 +1443,32 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
 		private DocumentSet docs;
 		private NodeSet contextSet;
 		private Map map = new TreeMap();
-		
-		IndexScanCallback(DocumentSet docs, NodeSet contextSet) {
+        private XMLString word = new XMLString(64);
+		private boolean byQName;
+
+        IndexScanCallback(DocumentSet docs, NodeSet contextSet, boolean byQName) {
 			this.docs = docs;
 			this.contextSet = contextSet;
-		}
+            this.byQName = byQName;
+        }
 		
 		/* (non-Javadoc)
 		 * @see org.dbxml.core.filer.BTreeCallback#indexInfo(org.dbxml.core.data.Value, long)
 		 */
-		public boolean indexInfo(Value key, long pointer) throws TerminatedException {            
-            String term;
-            try {
-            	//QNameWordRef or WordRef ?
-            	int len = QNameWordRef.LENGTH_IDX_TYPE + Collection.LENGTH_COLLECTION_ID;
-                term = new String(key.getData(), len, key.getLength() - len, "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                LOG.error(e.getMessage(), e);
-                return true;
-            }            
+		public boolean indexInfo(Value key, long pointer) throws TerminatedException {
+            word.reuse();
+            if (byQName)
+                QNameWordRef.decode(key, word);
+            else
+                WordRef.decode(key, word);
+            final String term = word.toString();
             VariableByteInput is;
             try {
                 is = dbTokens.getAsStream(pointer);
             } catch (IOException e) {
                 LOG.error(e.getMessage(), e);
                 return true;
-            }           
+            }
 			try {
 				while (is.available() > 0) {
                     boolean docAdded = false;                    
@@ -1450,6 +1494,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                             NodeProxy parentNode = contextSet.parentWithChild(storedDocument, nodeId, false, true);
                             switch (storedSection) {
                                 case TEXT_SECTION :
+                                case QNAME_SECTION :
                                     //TODO : also test on Node.TEXT_NODE like below ? -pb                                    
                                     include = (parentNode != null);
                                     break;
@@ -1470,7 +1515,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                                     docAdded = true;
                                 }
                                 oc.addOccurrences(freq);
-                            }                            
+                            }
 						}
 					}
 				}
@@ -1480,7 +1525,7 @@ public class NativeTextEngine extends TextSearchEngine implements ContentLoading
                 LOG.error(e.getMessage() + " in '" + dbTokens.getFile().getName() + "'", e);   
                 //TODO : return early -pb
 			}
-			return true;
+            return true;
 		}
 	}
 
