@@ -38,6 +38,8 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Logger;
 import org.exist.Indexer;
+import org.exist.cluster.ClusterComunication;
+import org.exist.cluster.journal.JournalManager;
 import org.exist.indexing.IndexManager;
 import org.exist.memtree.SAXAdapter;
 import org.exist.protocolhandler.eXistURLStreamHandlerFactory;
@@ -289,23 +291,23 @@ public class Configuration implements ErrorHandler {
     private void configureCluster(Element cluster) {
         String protocol = cluster.getAttribute("protocol");
         if(protocol != null) {
-            config.put("cluster.protocol", protocol);
-            LOG.debug("cluster.protocol: " + config.get("cluster.protocol"));
+            config.put(ClusterComunication.PROPERTY_CLUSTER_PROTOCOL, protocol);
+            LOG.debug(ClusterComunication.PROPERTY_CLUSTER_PROTOCOL + ": " + config.get(ClusterComunication.PROPERTY_CLUSTER_PROTOCOL));
         }
         String user = cluster.getAttribute("dbaUser");
         if(user != null) {
-            config.put("cluster.user", user);
-            LOG.debug("cluster.user: " + config.get("cluster.user"));
+            config.put(ClusterComunication.PROPERTY_CLUSTER_USER, user);
+            LOG.debug(ClusterComunication.PROPERTY_CLUSTER_USER + ": " + config.get(ClusterComunication.PROPERTY_CLUSTER_USER));
         }
         String pwd = cluster.getAttribute("dbaPassword");
         if(pwd != null) {
-            config.put("cluster.pwd", pwd);
-            LOG.debug("cluster.pwd: " + config.get("cluster.pwd"));
+            config.put(ClusterComunication.PROPERTY_CLUSTER_PWD, pwd);
+            LOG.debug(ClusterComunication.PROPERTY_CLUSTER_PWD + ": " + config.get(ClusterComunication.PROPERTY_CLUSTER_PWD));
         }
         String dir = cluster.getAttribute("journalDir");
         if(dir != null) {
-            config.put("cluster.journalDir", dir);
-            LOG.debug("cluster.journalDir: " + config.get("cluster.journalDir"));
+            config.put(JournalManager.PROPERTY_JOURNAL_DIR, dir);
+            LOG.debug(JournalManager.PROPERTY_JOURNAL_DIR + ": " + config.get(JournalManager.PROPERTY_JOURNAL_DIR));
         }
         String excludedColl = cluster.getAttribute("exclude");
         ArrayList list = new ArrayList();
@@ -318,23 +320,23 @@ public class Configuration implements ErrorHandler {
         }
         if(!list.contains(NativeBroker.TEMP_COLLECTION))
             list.add(NativeBroker.TEMP_COLLECTION);
-        config.put("cluster.exclude", list);
-        LOG.debug("cluster.exlude: " + config.get("cluster.exclude"));
+        config.put(ClusterComunication.PROPERTY_CLUSTER_EXCLUDE, list);
+        LOG.debug(ClusterComunication.PROPERTY_CLUSTER_EXCLUDE + ": " + config.get(ClusterComunication.PROPERTY_CLUSTER_EXCLUDE));
         
         /*Cluster parameters for test*/
         String maxStore = cluster.getAttribute("journalMaxItem");
         if(maxStore == null || maxStore.trim().length()==0) {
             maxStore = "65000";
         }
-        config.put("cluster.journal.maxStore", Integer.valueOf(maxStore));
-        LOG.debug("cluster.journal.maxStore: " + config.get("cluster.journal.maxStore"));
+        config.put(JournalManager.PROPERTY_CLUSTER_JOURNAL_MAXSTORE, Integer.valueOf(maxStore));
+        LOG.debug(JournalManager.PROPERTY_CLUSTER_JOURNAL_MAXSTORE + ": " + config.get(JournalManager.PROPERTY_CLUSTER_JOURNAL_MAXSTORE));
         
         String shift = cluster.getAttribute("journalIndexShift");
         if(shift == null || shift.trim().length()==0 ) {
             shift = "100";
         }
-        config.put("cluster.journal.shift", Integer.valueOf(shift));
-        LOG.debug("cluster.journal.shift: " + config.get("cluster.journal.shift"));
+        config.put(JournalManager.PROPERTY_CLUSTER_JOURNAL_SHIFT, Integer.valueOf(shift));
+        LOG.debug(JournalManager.PROPERTY_CLUSTER_JOURNAL_SHIFT + ": " + config.get(JournalManager.PROPERTY_CLUSTER_JOURNAL_SHIFT));
     }
     
     private void configureXQuery(Element xquery) throws DatabaseConfigurationException {

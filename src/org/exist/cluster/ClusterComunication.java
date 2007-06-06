@@ -10,7 +10,6 @@ import org.exist.cluster.cocoon.ConsoleInfo;
 import org.exist.cluster.journal.JournalIdGenerator;
 import org.exist.cluster.journal.JournalManager;
 import org.exist.util.Configuration;
-import org.exist.util.SingleInstanceConfiguration;
 import org.jgroups.Address;
 import org.jgroups.JChannel;
 import org.jgroups.MembershipListener;
@@ -31,7 +30,13 @@ import org.jgroups.util.RspList;
  *         Revision $Revision$
  */
 public class ClusterComunication implements MembershipListener {
-    private static Logger log = Logger.getLogger(ClusterComunication.class);
+
+	public static final String PROPERTY_CLUSTER_PROTOCOL = "cluster.protocol";
+	public static final String PROPERTY_CLUSTER_USER = "cluster.user";
+	public static final String PROPERTY_CLUSTER_PWD = "cluster.pwd";
+	public static final String PROPERTY_CLUSTER_EXCLUDE = "cluster.exclude";
+	
+	private static Logger log = Logger.getLogger(ClusterComunication.class);
 
     private static JChannel channel;
     private static RpcDispatcher disp;
@@ -101,10 +106,10 @@ public class ClusterComunication implements MembershipListener {
         System.out.println(banner);
 
         try {
-            String protocol = (String) conf.getProperty("cluster.protocol");
-            dbaUser = (String) conf.getProperty("cluster.user");
-            dbaPwd = (String) conf.getProperty("cluster.pwd");
-            excludedCollection = (ArrayList) conf.getProperty("cluster.exclude");
+            String protocol = (String) conf.getProperty(PROPERTY_CLUSTER_PROTOCOL);
+            dbaUser = (String) conf.getProperty(PROPERTY_CLUSTER_USER);
+            dbaPwd = (String) conf.getProperty(PROPERTY_CLUSTER_PWD);
+            excludedCollection = (ArrayList) conf.getProperty(PROPERTY_CLUSTER_EXCLUDE);
 
             if (protocol == null)
                 protocol = DEFAULT_PROTOCOL_STACK;
@@ -120,9 +125,9 @@ public class ClusterComunication implements MembershipListener {
 
             c.journalManager = new JournalManager(conf);
 
-            c.journalIdGenerator = new JournalIdGenerator(c.journalManager, ((Integer)conf.getProperty("cluster.journal.maxStore")).intValue());
+            c.journalIdGenerator = new JournalIdGenerator(c.journalManager, ((Integer)conf.getProperty(JournalManager.PROPERTY_CLUSTER_JOURNAL_MAXSTORE)).intValue());
 
-            c.shift = ((Integer)conf.getProperty("cluster.journal.shift")).intValue();
+            c.shift = ((Integer)conf.getProperty(JournalManager.PROPERTY_CLUSTER_JOURNAL_SHIFT)).intValue();
 
             instance = c;
 
