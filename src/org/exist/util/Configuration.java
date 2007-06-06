@@ -217,39 +217,39 @@ public class Configuration implements ErrorHandler {
             Document doc = adapter.getDocument();
             
             //indexer settings
-            NodeList indexer = doc.getElementsByTagName(Indexer.CONFIGURATION_ELEMENT_NAME);
-            if (indexer.getLength() > 0) {
-                configureIndexer(existHomeDirname, doc, indexer);
+            NodeList indexers = doc.getElementsByTagName(Indexer.CONFIGURATION_ELEMENT_NAME);
+            if (indexers.getLength() > 0) {
+                configureIndexer(existHomeDirname, doc, (Element) indexers.item(0));
             }
             
             //scheduler settings
             NodeList schedulers = doc.getElementsByTagName("scheduler");
             if(schedulers.getLength() > 0) {
-                configureScheduler(schedulers);
+                configureScheduler((Element) schedulers.item(0));
             }
             
             //db connection settings
             NodeList dbcon = doc.getElementsByTagName("db-connection");
             if (dbcon.getLength() > 0) {
-                configureBackend(existHomeDirname, dbcon);
+                configureBackend(existHomeDirname, (Element) dbcon.item(0));
             }
             
             //transformer settings
             NodeList transformers = doc.getElementsByTagName("transformer");
             if(transformers.getLength() > 0) {
-                configureTransformer(transformers);
+                configureTransformer((Element) transformers.item(0));
             }
             
             //serializer settings
             NodeList serializers = doc.getElementsByTagName("serializer");
             if (serializers.getLength() > 0) {
-                configureSerializer(serializers);
+                configureSerializer((Element) serializers.item(0));
             }
             
             //XUpdate settings
             NodeList xupdates = doc.getElementsByTagName("xupdate");
             if (xupdates.getLength() > 0) {
-                configureXUpdate(xupdates);
+                configureXUpdate((Element) xupdates.item(0));
             }
             
             //XQuery settings
@@ -271,9 +271,9 @@ public class Configuration implements ErrorHandler {
             }
             
             //Validation
-            NodeList validation = doc.getElementsByTagName("validation");
-            if (validation.getLength() > 0) {
-                configureValidation(existHomeDirname, doc, validation);
+            NodeList validations = doc.getElementsByTagName("validation");
+            if (validations.getLength() > 0) {
+                configureValidation(existHomeDirname, doc, (Element) validations.item(0));
             }
             
         } catch (SAXException e) {
@@ -396,9 +396,7 @@ public class Configuration implements ErrorHandler {
      * @param xupdates
      * @throws NumberFormatException
      */
-    private void configureXUpdate(NodeList xupdates) throws NumberFormatException {
-        Element xupdate = (Element) xupdates.item(0);
-        
+    private void configureXUpdate(Element xupdate) throws NumberFormatException {
         String growth = xupdate.getAttribute("growth-factor");
         if (growth != null) {
             config.put(DBBroker.PROPERTY_XUPDATE_GROWTH_FACTOR, new Integer(growth));
@@ -421,9 +419,7 @@ public class Configuration implements ErrorHandler {
         }
     }
     
-    private void configureTransformer(NodeList transformers) {
-        Element transformer = (Element)transformers.item(0);
-        
+    private void configureTransformer(Element transformer) {
         String className = transformer.getAttribute("class");
         if (className != null) {
             config.put(TransformerFactoryAllocator.PROPERTY_TRANSFORMER_CLASS, className);
@@ -435,9 +431,7 @@ public class Configuration implements ErrorHandler {
     /**
      * @param serializers
      */
-    private void configureSerializer(NodeList serializers) {
-        Element serializer = (Element) serializers.item(0);
-        
+    private void configureSerializer(Element serializer) {
         String xinclude = serializer.getAttribute("enable-xinclude");
         if (xinclude != null) {
             config.put(Serializer.PROPERTY_ENABLE_XINCLUDE, xinclude);
@@ -484,8 +478,7 @@ public class Configuration implements ErrorHandler {
     /**
      * Reads the scheduler configuration
      */
-    private void configureScheduler(NodeList Schedulers) {
-        Element scheduler = (Element)Schedulers.item(0);
+    private void configureScheduler(Element scheduler) {
         NodeList nlJobs = scheduler.getElementsByTagName("job");
         
         if(nlJobs == null)
@@ -524,9 +517,7 @@ public class Configuration implements ErrorHandler {
      * @param dbcon
      * @throws DatabaseConfigurationException
      */
-    private void configureBackend(String dbHome, NodeList dbcon) throws DatabaseConfigurationException {
-        Element con = (Element) dbcon.item(0);
-        
+    private void configureBackend(String dbHome, Element con) throws DatabaseConfigurationException {
         String mysql = con.getAttribute("database");
         if (mysql != null) {
             config.put("database", mysql);
@@ -681,29 +672,31 @@ public class Configuration implements ErrorHandler {
         
         NodeList poolConf = con.getElementsByTagName(BrokerPool.CONFIGURATION_ELEMENT_NAME);
         if (poolConf.getLength() > 0) {
-            configurePool(poolConf);
+            configurePool((Element) poolConf.item(0));
         }
         NodeList queryPoolConf = con.getElementsByTagName(XQueryPool.CONFIGURATION_ELEMENT_NAME);
         if (queryPoolConf.getLength() > 0) {
-            configureXQueryPool(queryPoolConf);
+            configureXQueryPool((Element) queryPoolConf.item(0));
         }
         NodeList watchConf = con.getElementsByTagName(XQueryWatchDog.CONFIGURATION_ELEMENT_NAME);
         if (watchConf.getLength() > 0) {
-            configureWatchdog(watchConf);
+            configureWatchdog((Element) watchConf.item(0));
         }
         NodeList sysTasks = con.getElementsByTagName(SystemTaskConfig.CONFIGURATION_ELEMENT_NAME);
         if (sysTasks.getLength() > 0) {
             configureSystemTasks(sysTasks);
         }
-        NodeList recovery = con.getElementsByTagName("recovery");
-        if (recovery.getLength() > 0) {
-            configureRecovery(recovery);
+        NodeList recoveries = con.getElementsByTagName("recovery");
+        if (recoveries.getLength() > 0) {
+            configureRecovery((Element)recoveries.item(0));
         }
-        configurePermissions(con.getElementsByTagName("default-permissions"));
+        NodeList defaultPermissions = con.getElementsByTagName("default-permissions"); 
+        if (defaultPermissions.getLength() > 0) {
+            configurePermissions((Element)defaultPermissions.item(0));
+        }
     }
     
-    private void configureRecovery(NodeList nodes) throws DatabaseConfigurationException {
-        Element recovery = (Element) nodes.item(0);
+    private void configureRecovery(Element recovery) throws DatabaseConfigurationException {
         String option = recovery.getAttribute("enabled");
         boolean value = true;
         if (option != null) {
@@ -748,30 +741,27 @@ public class Configuration implements ErrorHandler {
         }
     }
     
-    private void configurePermissions(NodeList nodes) throws DatabaseConfigurationException {
-        if (nodes.getLength() > 0) {
-            Element node = (Element) nodes.item(0);
-            String option = node.getAttribute("collection");
-            if (option != null && option.length() > 0) {
-                try {
-                    Integer perms = new Integer(Integer.parseInt(option, 8));
-                    setProperty("indexer.permissions.collection", perms);
-                    LOG.debug("indexer.permissions.collection: " + config.get("indexer.permissions.collection"));
-                } catch (NumberFormatException e) {
-                    throw new DatabaseConfigurationException("collection attribute in default-permissions section needs " +
-                        "to be an octal number");
-                }
+    private void configurePermissions(Element defautPermission) throws DatabaseConfigurationException {
+        String option = defautPermission.getAttribute("collection");
+        if (option != null && option.length() > 0) {
+            try {
+                Integer perms = new Integer(Integer.parseInt(option, 8));
+                setProperty("indexer.permissions.collection", perms);
+                LOG.debug("indexer.permissions.collection: " + config.get("indexer.permissions.collection"));
+            } catch (NumberFormatException e) {
+                throw new DatabaseConfigurationException("collection attribute in default-permissions section needs " +
+                    "to be an octal number");
             }
-            option = node.getAttribute("resource");
-            if (option != null && option.length() > 0) {
-                try {
-                    Integer perms = new Integer(Integer.parseInt(option, 8));
-                    setProperty("indexer.permissions.resource", perms);
-                    LOG.debug("indexer.permissions.resource: " + config.get("indexer.permissions.resource"));
-                } catch (NumberFormatException e) {
-                    throw new DatabaseConfigurationException("resource attribute in default-permissions section needs " +
-                        "to be an octal number");
-                }
+        }
+        option = defautPermission.getAttribute("resource");
+        if (option != null && option.length() > 0) {
+            try {
+                Integer perms = new Integer(Integer.parseInt(option, 8));
+                setProperty("indexer.permissions.resource", perms);
+                LOG.debug("indexer.permissions.resource: " + config.get("indexer.permissions.resource"));
+            } catch (NumberFormatException e) {
+                throw new DatabaseConfigurationException("resource attribute in default-permissions section needs " +
+                    "to be an octal number");
             }
         }
     }
@@ -820,9 +810,7 @@ public class Configuration implements ErrorHandler {
     /**
      * @param watchConf
      */
-    private void configureWatchdog(NodeList watchConf) {
-        Element watchDog = (Element) watchConf.item(0);
-        
+    private void configureWatchdog(Element watchDog) {
         String timeout = watchDog.getAttribute("query-timeout");
         if (timeout != null) {
             try {
@@ -847,9 +835,7 @@ public class Configuration implements ErrorHandler {
     /**
      * @param queryPoolConf
      */
-    private void configureXQueryPool(NodeList queryPoolConf) {
-        Element queryPool = (Element) queryPoolConf.item(0);
-        
+    private void configureXQueryPool(Element queryPool) {
         String maxStackSize = queryPool.getAttribute("max-stack-size");
         if (maxStackSize != null) {
             try {
@@ -894,9 +880,7 @@ public class Configuration implements ErrorHandler {
     /**
      * @param poolConf
      */
-    private void configurePool(NodeList poolConf) {
-        Element pool = (Element) poolConf.item(0);
-        
+    private void configurePool(Element pool) {
         String min = pool.getAttribute("min");
         if (min != null) {
             try {
@@ -946,47 +930,44 @@ public class Configuration implements ErrorHandler {
      * @throws MalformedURLException
      * @throws IOException
      */
-    private void configureIndexer(String dbHome, Document doc, NodeList indexer) throws DatabaseConfigurationException, MalformedURLException {
-        
-        Element p = (Element) indexer.item(0);
-        
-        String parseNum = p.getAttribute("parseNumbers");
+    private void configureIndexer(String dbHome, Document doc, Element indexer) throws DatabaseConfigurationException, MalformedURLException {
+        String parseNum = indexer.getAttribute("parseNumbers");
         if (parseNum != null) {
             config.put(TextSearchEngine.PROPERTY_INDEX_NUMBERS, Boolean.valueOf(parseNum.equals("yes")));
             LOG.debug(TextSearchEngine.PROPERTY_INDEX_NUMBERS + ": " + config.get(TextSearchEngine.PROPERTY_INDEX_NUMBERS));
         }
         
-        String stemming = p.getAttribute("stemming");
+        String stemming = indexer.getAttribute("stemming");
         if (stemming != null) {
             config.put(TextSearchEngine.PROPERTY_STEM, Boolean.valueOf(stemming.equals("yes")));
             LOG.debug(TextSearchEngine.PROPERTY_STEM + ": " + config.get(TextSearchEngine.PROPERTY_STEM));
         }
         
-        String termFreq = p.getAttribute("track-term-freq");
+        String termFreq = indexer.getAttribute("track-term-freq");
         if (termFreq != null) {
             config.put(TextSearchEngine.PROPERTY_STORE_TERM_FREQUENCY, Boolean.valueOf(termFreq.equals("yes")));
             LOG.debug(TextSearchEngine.PROPERTY_STORE_TERM_FREQUENCY + ": " + config.get(TextSearchEngine.PROPERTY_STORE_TERM_FREQUENCY));
         }
         
-        String caseSensitive = p.getAttribute("caseSensitive");
+        String caseSensitive = indexer.getAttribute("caseSensitive");
         if (caseSensitive != null) {
             config.put(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE, Boolean.valueOf(caseSensitive.equals("yes")));
             LOG.debug(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE + ": " + config.get(NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE));
         }
         
-        String suppressWS = p.getAttribute("suppress-whitespace");
+        String suppressWS = indexer.getAttribute("suppress-whitespace");
         if (suppressWS != null) {
             config.put(Indexer.PROPERTY_SUPPRESS_WHITESPACE, suppressWS);
             LOG.debug(Indexer.PROPERTY_SUPPRESS_WHITESPACE + ": " + config.get(Indexer.PROPERTY_SUPPRESS_WHITESPACE));
         }
         
-        String tokenizer = p.getAttribute("tokenizer");
+        String tokenizer = indexer.getAttribute("tokenizer");
         if (tokenizer != null) {
             config.put(TextSearchEngine.PROPERTY_TOKENIZER, tokenizer);
             LOG.debug(TextSearchEngine.PROPERTY_TOKENIZER + ": " + config.get(TextSearchEngine.PROPERTY_TOKENIZER));
         }
         int depth = 3;
-        String indexDepth = p.getAttribute("index-depth");
+        String indexDepth = indexer.getAttribute("index-depth");
         if (indexDepth != null) {
             try {
                 depth = Integer.parseInt(indexDepth);
@@ -1002,7 +983,7 @@ public class Configuration implements ErrorHandler {
             }
         }
         
-        String suppressWSmixed = p.getAttribute("preserve-whitespace-mixed-content");
+        String suppressWSmixed = indexer.getAttribute("preserve-whitespace-mixed-content");
         if (suppressWSmixed != null) {
             config.put(Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT, Boolean.valueOf(suppressWSmixed.equals("yes")));
             LOG.debug(Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT + ": " + config.get(Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT));
@@ -1017,7 +998,7 @@ public class Configuration implements ErrorHandler {
         }
         
         // stopwords
-        NodeList stopwords = p.getElementsByTagName("stopwords");
+        NodeList stopwords = indexer.getElementsByTagName("stopwords");
         if (stopwords.getLength() > 0) {
             String stopwordFile = ((Element) stopwords.item(0)).getAttribute("file");
             File sf = ConfigurationHelper.lookup(stopwordFile, dbHome);
@@ -1028,7 +1009,7 @@ public class Configuration implements ErrorHandler {
         }
         
         // index modules
-        NodeList modules = p.getElementsByTagName("modules");
+        NodeList modules = indexer.getElementsByTagName("modules");
         if (modules.getLength() > 0) {
             modules = ((Element) modules.item(0)).getElementsByTagName("module");
             IndexModuleConfig modConfig[] = new IndexModuleConfig[modules.getLength()];
@@ -1046,17 +1027,15 @@ public class Configuration implements ErrorHandler {
         }
     }
     
-    private void configureValidation(String dbHome, Document doc, NodeList validation) 
+    private void configureValidation(String dbHome, Document doc, Element validation) 
                                         throws DatabaseConfigurationException {
         
         // Register custom protocol URL
         // TODO DWES move to different location?
         eXistURLStreamHandlerFactory.init();
         
-        Element p = (Element) validation.item(0);
-        
         // Determine validation mode
-        String mode = p.getAttribute("mode");
+        String mode = validation.getAttribute("mode");
         if (mode != null) {
             config.put(XMLReaderObjectFactory.PROPERTY_VALIDATION, mode);
             LOG.debug(XMLReaderObjectFactory.PROPERTY_VALIDATION + ": " 
@@ -1068,7 +1047,7 @@ public class Configuration implements ErrorHandler {
         LOG.debug("Creating eXist catalog resolver");
         eXistXMLCatalogResolver resolver = new eXistXMLCatalogResolver();
         
-        NodeList entityResolver = p.getElementsByTagName("entity-resolver");
+        NodeList entityResolver = validation.getElementsByTagName("entity-resolver");
         if (entityResolver.getLength() > 0) {
             Element r = (Element) entityResolver.item(0);
             NodeList catalogs = r.getElementsByTagName("catalog");
