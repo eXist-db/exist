@@ -25,9 +25,11 @@ import org.exist.EXistException;
 import org.exist.util.Configuration;
 
 public class BrokerFactory {
+	
+	public static final String PROPERTY_DATABASE = "database";
 
 	public static DBBroker getInstance(BrokerPool pool, Configuration conf) throws EXistException {
-		String dbName = (String) conf.getProperty("database");
+		String dbName = (String) conf.getProperty(PROPERTY_DATABASE);
 		if (dbName == null)
 			throw new RuntimeException("no database defined");
 		if (dbName.equalsIgnoreCase("NATIVE"))

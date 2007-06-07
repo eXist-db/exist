@@ -47,6 +47,7 @@ import org.exist.scheduler.Scheduler;
 import org.exist.security.User;
 import org.exist.security.XMLSecurityManager;
 import org.exist.security.xacml.XACMLConstants;
+import org.exist.storage.BrokerFactory;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.CollectionCacheManager;
 import org.exist.storage.DBBroker;
@@ -58,6 +59,7 @@ import org.exist.storage.TextSearchEngine;
 import org.exist.storage.XQueryPool;
 import org.exist.storage.journal.Journal;
 import org.exist.storage.serializers.Serializer;
+import org.exist.storage.txn.TransactionManager;
 import org.exist.validation.GrammarPool;
 import org.exist.validation.resolver.eXistXMLCatalogResolver;
 import org.exist.xquery.FunctionFactory;
@@ -520,10 +522,10 @@ public class Configuration implements ErrorHandler {
      * @throws DatabaseConfigurationException
      */
     private void configureBackend(String dbHome, Element con) throws DatabaseConfigurationException {
-        String mysql = con.getAttribute("database");
+        String mysql = con.getAttribute(BrokerFactory.PROPERTY_DATABASE);
         if (mysql != null) {
-            config.put("database", mysql);
-            LOG.debug("database: " + config.get("database"));
+            config.put(BrokerFactory.PROPERTY_DATABASE, mysql);
+            LOG.debug(BrokerFactory.PROPERTY_DATABASE + ": " + config.get(BrokerFactory.PROPERTY_DATABASE));
         }
         
         // directory for database files
@@ -720,8 +722,8 @@ public class Configuration implements ErrorHandler {
         if (option != null) {
             value = option.equals("yes");
         }
-        setProperty("db-connection.recovery.group-commit", new Boolean(value));
-        LOG.debug("db-connection.recovery.group-commit: " + config.get("db-connection.recovery.group-commit"));
+        setProperty(TransactionManager.PROPERTY_RECOVERY_GROUP_COMMIT, new Boolean(value));
+        LOG.debug(TransactionManager.PROPERTY_RECOVERY_GROUP_COMMIT + ": " + config.get(TransactionManager.PROPERTY_RECOVERY_GROUP_COMMIT));
         
         option = recovery.getAttribute("journal-dir");
         if (option != null) {
@@ -748,8 +750,8 @@ public class Configuration implements ErrorHandler {
         if (option != null && option.length() > 0) {
             try {
                 Integer perms = new Integer(Integer.parseInt(option, 8));
-                setProperty("indexer.permissions.collection", perms);
-                LOG.debug("indexer.permissions.collection: " + config.get("indexer.permissions.collection"));
+                setProperty(XMLSecurityManager.PROPERTY_PERMISSIONS_COLLECTIONS, perms);
+                LOG.debug(XMLSecurityManager.PROPERTY_PERMISSIONS_COLLECTIONS + ": " + config.get(XMLSecurityManager.PROPERTY_PERMISSIONS_COLLECTIONS));
             } catch (NumberFormatException e) {
                 throw new DatabaseConfigurationException("collection attribute in default-permissions section needs " +
                     "to be an octal number");
@@ -913,7 +915,7 @@ public class Configuration implements ErrorHandler {
             }
         }
         
-        String maxShutdownWait = pool.getAttribute(BrokerPool.PROPERTY_SHUTDOWN_DELAY);
+        String maxShutdownWait = pool.getAttribute("wait-before-shutdown");
         if (maxShutdownWait != null) {
             try {
                 config.put(BrokerPool.PROPERTY_SHUTDOWN_DELAY, new Long(maxShutdownWait));
