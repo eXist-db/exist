@@ -45,6 +45,9 @@ import org.exist.xmldb.XmldbURI;
  *
  */
 public class TransactionManager {
+	
+	public final static String PROPERTY_RECOVERY_GROUP_COMMIT = "db-connection.recovery.group-commit";
+	
     /**
      * Logger for this class
      */
@@ -68,7 +71,7 @@ public class TransactionManager {
         enabled = transactionsEnabled;
         if (enabled)
             journal = new Journal(pool, dataDir);
-        Boolean groupOpt = (Boolean) pool.getConfiguration().getProperty("db-connection.recovery.group-commit");
+        Boolean groupOpt = (Boolean) pool.getConfiguration().getProperty(PROPERTY_RECOVERY_GROUP_COMMIT);
         if (groupOpt != null) {
             groupCommit = groupOpt.booleanValue();
             if (LOG.isDebugEnabled())

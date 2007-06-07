@@ -63,6 +63,7 @@ import org.xml.sax.SAXException;
 public class XMLSecurityManager implements SecurityManager {
 	
 	public static final String PROPERTY_PERMISSIONS_RESOURCES = "indexer.permissions.resource";
+	public static final String PROPERTY_PERMISSIONS_COLLECTIONS = "indexer.permissions.collection";
 
 	public final static String DBA_GROUP = "dba";
 	public final static String DBA_USER = "admin";
@@ -192,7 +193,7 @@ public class XMLSecurityManager implements SecurityManager {
        }
        // read default collection and resource permissions
        Integer defOpt = (Integer)
-       broker.getConfiguration().getProperty("indexer.permissions.collection");
+       broker.getConfiguration().getProperty(PROPERTY_PERMISSIONS_COLLECTIONS);
        if (defOpt != null)
           defCollectionPermissions = defOpt.intValue();
        defOpt = (Integer)
