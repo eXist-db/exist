@@ -92,6 +92,8 @@ import antlr.collections.AST;
 public class XQueryContext {
 	
 	public static final String CONFIGURATION_ELEMENT_NAME = "xquery";
+	public static final String CONFIGURATION_MODULES_ELEMENT_NAME = "builtin-modules";
+	public static final String CONFIGURATION_MODULE_ELEMENT_NAME = "module";
 	public static final String PROPERTY_BUILT_IN_MODULES = "xquery.modules";
 	public static final String PROPERTY_XQUERY_BACKWARD_COMPATIBLE = "xquery.backwardCompatible";
 	public static final String PROPERTY_ENABLE_QUERY_REWRITING = "xquery.enable-query-rewriting";

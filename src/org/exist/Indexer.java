@@ -23,6 +23,7 @@ package org.exist;
 
 import org.apache.log4j.Logger;
 import org.exist.dom.*;
+import org.exist.indexing.IndexManager;
 import org.exist.indexing.StreamListener;
 import org.exist.storage.DBBroker;
 import org.exist.storage.FulltextIndexSpec;
@@ -63,7 +64,9 @@ public class Indexer extends Observable implements ContentHandler, LexicalHandle
 
     private final static Logger LOG = Logger.getLogger(Indexer.class);
     
-    public static final String CONFIGURATION_ELEMENT_NAME = "indexer";
+    public static final String CONFIGURATION_ELEMENT_NAME = "indexer";    
+    public static final String CONFIGURATION_INDEX_ELEMENT_NAME = "index";
+    public static final String CONFIGURATION_STOPWORDS_ELEMENT_NAME = "stopwords";
     public static final String PROPERTY_INDEXER_CONFIG = "indexer.config";
     public final static String PROPERTY_SUPPRESS_WHITESPACE = "indexer.suppress-whitespace";
     public static final String PROPERTY_PRESERVE_WS_MIXED_CONTENT = 
