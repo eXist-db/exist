@@ -39,7 +39,7 @@ public abstract class Step extends AbstractExpression {
     protected ArrayList predicates = new ArrayList();
     protected NodeTest test;
 	protected boolean inPredicate = false;
-	protected int actualReturnType = Type.NODE;
+	protected int staticReturnType = Type.ITEM;
 	
     public Step( XQueryContext context, int axis ) {
         super(context);
@@ -94,6 +94,10 @@ public abstract class Step extends AbstractExpression {
 	            ((Predicate) i.next()).analyze(newContext);
 	        }
     	}
+        // if we are on the self axis, remember the static return type given in the context
+        if (this.axis == Constants.SELF_AXIS)
+            staticReturnType = contextInfo.getStaticType();
+
     }
     
     public abstract Sequence eval( Sequence contextSequence, Item contextItem ) throws XPathException;
@@ -155,12 +159,11 @@ public abstract class Step extends AbstractExpression {
 	
 	public int returnsType() {
     	//Polysemy of "." which might be atomic if the context sequence is atomic itself
-    	if (axis == Constants.SELF_AXIS)
+    	if (axis == Constants.SELF_AXIS) {
     		//Type.ITEM by default : this may change *after* evaluation
-    		//return actualReturnType;
-    		//Grrrrrrrrrrrrrrrr : I let it as such for now !
-    		return Type.NODE;
-    	else
+            LOG.debug("My static type: " + Type.getTypeName(staticReturnType));
+            return staticReturnType;
+        } else
     		return Type.NODE;
     }
     

@@ -50,10 +50,10 @@ public class Optimize extends Pragma {
     private Expression innerExpr;
     private LocationStep contextStep = null;
 
-    public Optimize(XQueryContext context, QName pragmaName, String contents) throws XPathException {
+    public Optimize(XQueryContext context, QName pragmaName, String contents, boolean explicit) throws XPathException {
         super(pragmaName, contents);
         this.context = context;
-        this.enabled = context.optimizationsEnabled();
+        this.enabled = explicit || context.optimizationsEnabled();
         if (contents != null && contents.length() > 0) {
             String param[] = Option.parseKeyValuePair(contents);
             if (param == null)
@@ -106,7 +106,10 @@ public class Optimize extends Pragma {
                     ElementIndex index = context.getBroker().getElementIndex();
                     QName ancestorQN = contextStep.getTest().getName();
                     if (optimizables[current].optimizeOnSelf()) {
-                        ancestors = selection;
+                        selector = new SelfSelector(selection, -1);
+                        ancestors = index.findElementsByTagName(ancestorQN.getNameType(), selection.getDocumentSet(),
+                                ancestorQN, selector);
+//                        ancestors = selection;
                     } else
                         ancestors = index.findElementsByTagName(ancestorQN.getNameType(), selection.getDocumentSet(),
                                 ancestorQN, selector);

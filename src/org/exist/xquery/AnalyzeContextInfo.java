@@ -67,6 +67,7 @@ public class AnalyzeContextInfo {
 		this.flags = other.flags;
 		this.contextId = other.contextId;
         this.contextStep = other.contextStep;
+        this.staticType = other.staticType;
     }
 	
 	/**
