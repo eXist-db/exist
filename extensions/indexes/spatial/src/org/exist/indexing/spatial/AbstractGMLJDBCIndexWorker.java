@@ -186,12 +186,30 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     
     public void setMode(int newMode) {  
 	    mode = newMode; 
-    }    
+    }
     
     public void setDocument(DocumentImpl doc, int mode) {
     	setDocument(doc);
     	setMode(mode);
     }
+    
+    /**
+     * Returns the document for the next operation.
+     * 
+     * @return the document
+     */
+    public DocumentImpl getDocument() {
+    	return currentDoc;
+    }
+    
+    /**
+     * Returns the mode for the next operation.
+     * 
+     * @return the document
+     */
+    public int getMode() {
+    	return mode;
+    }    
     
     public StreamListener getListener() {      
         //We won't listen to anything here

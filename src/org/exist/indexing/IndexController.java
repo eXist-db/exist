@@ -148,6 +148,24 @@ public class IndexController {
     }
     
     /**
+     * Returns the document for the next operation.
+     * 
+     * @return the document
+     */
+    public DocumentImpl getDocument() {
+    	return currentDoc;
+    }
+    
+    /**
+     * Returns the mode for the next operation.
+     * 
+     * @return the document
+     */
+    public int getMode() {
+    	return currentMode;
+    }    
+    
+    /**
      * Sets the document and the mode for the next operation.
      * 
      * @param doc the document
@@ -277,8 +295,7 @@ public class IndexController {
         }
         listener = first;
         return listener;
-    }
-    
+    }    
     
     /**
      * Helper method: index a single node which has been added during an XUpdate or XQuery update expression.
@@ -303,7 +320,20 @@ public class IndexController {
             }
         }
     }
-
+    
+    /**
+     * Helper method: index a single element node which has been added during an XUpdate or XQuery update expression.
+     *
+     * @param transaction the current transaction
+     * @param node the node to index
+     * @param path the node's NodePath
+     * @param listener the StreamListener which receives the index events
+     */
+    public void startElement(Txn transaction, ElementImpl node, NodePath path, StreamListener listener) {
+        if (listener != null)
+           listener.startElement(transaction, node, path);
+    } 
+    
     /**
      * Helper method: dispatch a single endElement event to the specified listener.
      *
@@ -312,11 +342,37 @@ public class IndexController {
      * @param path the node's NodePath
      * @param listener the StreamListener which receives index events
      */
-    public void indexEndElement(Txn transaction, ElementImpl node, NodePath path, StreamListener listener) {
+    public void endElement(Txn transaction, ElementImpl node, NodePath path, StreamListener listener) {
         if (listener != null)
             listener.endElement(transaction, node, path);
+    }    
+    
+    /**
+     * Helper method: index a single attribute node which has been added during an XUpdate or XQuery update expression.
+     *
+     * @param transaction the current transaction
+     * @param node the node to index
+     * @param path the node's NodePath
+     * @param listener the StreamListener which receives the index events
+     */     
+    public void attribute(Txn transaction, AttrImpl node, NodePath path, StreamListener listener) {
+        if (listener != null)
+        	listener.attribute(transaction, node, path);
     }
     
+    /**
+     * Helper method: index a single text node which has been added during an XUpdate or XQuery update expression.
+     *
+     * @param transaction the current transaction
+     * @param node the node to index
+     * @param path the node's NodePath
+     * @param listener the StreamListener which receives the index events
+     */    
+    public void characters(Txn transaction, TextImpl node, NodePath path, StreamListener listener) {
+        if (listener != null)
+            listener.characters(transaction, node, path);       
+    }
+   
     /**
      * Returns the match listener for this node.
      * 

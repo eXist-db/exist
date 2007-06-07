@@ -1,10 +1,6 @@
 package org.exist.indexing;
 
-import org.xml.sax.SAXException;
-import org.exist.dom.QName;
-import org.exist.dom.StoredNode;
 import org.exist.util.serializer.Receiver;
-import org.exist.util.serializer.AttrList;
 
 /**
  * Highlight matches in query results. Indexes can implement
