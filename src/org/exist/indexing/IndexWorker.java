@@ -76,28 +76,12 @@ public interface IndexWorker {
     Object configure(IndexController controller, NodeList configNodes, Map namespaces) throws DatabaseConfigurationException;
 
     /**
-     * Flush the index. This method will be called when indexing a document. The implementation should
-     * immediately process all data it has buffered (if there is any), release as many memory resources
-     * as it can and prepare for being reused for a different job.
-     */
-    void flush();
-
-    /**
      * Notify this worker to operate on the specified document.
      *
      * @param doc the document which is processed
      */
     void setDocument(DocumentImpl doc);
 
-    /**
-     * Notify this worker to operate using the mode
-     * given. Mode will be one of {@link StreamListener#UNKNOWN}, {@link StreamListener#STORE},
-     * {@link StreamListener#REMOVE_SOME_NODES} or {@link StreamListener#REMOVE_ALL_NODES}.
-     *
-     * @param mode the current operation mode
-     */
-    void setMode(int mode);
- 
     /**
      * Notify this worker to operate on the specified document, using the mode
      * given. Mode will be one of {@link StreamListener#UNKNOWN}, {@link StreamListener#STORE}, 
@@ -107,6 +91,43 @@ public interface IndexWorker {
      * @param mode the current operation mode
      */
     void setDocument(DocumentImpl doc, int mode);
+    
+    /**
+     * Notify this worker to operate using the mode
+     * given. Mode will be one of {@link StreamListener#UNKNOWN}, {@link StreamListener#STORE},
+     * {@link StreamListener#REMOVE_SOME_NODES} or {@link StreamListener#REMOVE_ALL_NODES}.
+     *
+     * @param mode the current operation mode
+     */
+    void setMode(int mode);
+    
+    /**
+     * Returns the document for the next operation.
+     * 
+     * @return the document
+     */
+    DocumentImpl getDocument();
+    
+    /**
+     * Returns the mode for the next operation.
+     * 
+     * @return the document
+     */
+    int getMode();
+    
+    /**
+     * When adding or removing nodes to or from the document tree, it might become
+     * necessary to reindex some parts of the tree, in particular if indexes are defined
+     * on mixed content nodes. This method will call
+     * {@link IndexWorker#getReindexRoot(org.exist.dom.StoredNode, org.exist.storage.NodePath, boolean)}
+     * on each configured index. It will then return the top-most root.
+     *
+     * @param node the node to be modified.
+     * @param path path the NodePath of the node
+     * @param includeSelf if set to true, the current node itself will be included in the check
+     * @return the top-most root node to be reindexed
+     */
+    StoredNode getReindexRoot(StoredNode node, NodePath path, boolean includeSelf);    
 
     /**
      * Return a stream listener to index the current document in the current mode.
@@ -130,6 +151,13 @@ public interface IndexWorker {
      * serialization events
      */
     MatchListener getMatchListener(NodeProxy proxy);
+    
+    /**
+     * Flush the index. This method will be called when indexing a document. The implementation should
+     * immediately process all data it has buffered (if there is any), release as many memory resources
+     * as it can and prepare for being reused for a different job.
+     */
+    void flush();
     
     /**
      * Remove all indexes for the given collection, its subcollections and
@@ -162,17 +190,4 @@ public interface IndexWorker {
     
     //TODO : a scanIndex() method that would return an unaggregated list of index entries ?
 
-    /**
-     * When adding or removing nodes to or from the document tree, it might become
-     * necessary to reindex some parts of the tree, in particular if indexes are defined
-     * on mixed content nodes. This method will call
-     * {@link IndexWorker#getReindexRoot(org.exist.dom.StoredNode, org.exist.storage.NodePath, boolean)}
-     * on each configured index. It will then return the top-most root.
-     *
-     * @param node the node to be modified.
-     * @param path path the NodePath of the node
-     * @param includeSelf if set to true, the current node itself will be included in the check
-     * @return the top-most root node to be reindexed
-     */
-    StoredNode getReindexRoot(StoredNode node, NodePath path, boolean includeSelf);
 }

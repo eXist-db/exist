@@ -504,19 +504,18 @@ public class ElementImpl extends NamedNode implements Element {
                 lastPath.addComponent(elem.getQName());
                 // insert the node
                 getBroker().insertNodeAfter(transaction, last.getNode(), elem);
-
-                // index now?
+                
                 getBroker().indexNode(transaction, elem, lastPath);
                 getBroker().getIndexController().indexNode(transaction, elem, lastPath, listener);
+                //getBroker().getIndexController().startElement(transaction, elem, lastPath, listener);
 
-                elem.setChildCount(0);
-
-                // process child nodes
+                elem.setChildCount(0);                
                 last.setNode(elem);
+                //process child nodes
                 elem.appendChildren(transaction, newNodeId.newChild(), last, lastPath, ch, listener);
 
                 getBroker().endElement(elem, lastPath, null);
-                getBroker().getIndexController().indexEndElement(transaction, elem, lastPath, listener);
+                getBroker().getIndexController().endElement(transaction, elem, lastPath, listener);
                 lastPath.removeLastComponent();
                 return elem;
             case Node.TEXT_NODE :
@@ -526,6 +525,7 @@ public class ElementImpl extends NamedNode implements Element {
                 getBroker().insertNodeAfter(transaction, last.getNode(), text);
                 getBroker().indexNode(transaction, text, lastPath);
                 getBroker().getIndexController().indexNode(transaction, text, lastPath, listener);
+                //getBroker().getIndexController().characters(transaction, text, lastPath, listener);
                 last.setNode(text);
                 return text;
             case Node.CDATA_SECTION_NODE :
@@ -553,9 +553,10 @@ public class ElementImpl extends NamedNode implements Element {
                 } else
                     attrName.setNameType(ElementValue.ATTRIBUTE);
                 getBroker().insertNodeAfter(transaction, last.getNode(), attrib);
-                // index now?
+                
                 getBroker().indexNode(transaction, attrib, lastPath);
                 getBroker().getIndexController().indexNode(transaction, attrib, lastPath, listener);
+                //getBroker().getIndexController().attribute(transaction, attrib, lastPath, listener);
 
                 last.setNode(attrib);
                 return attrib;

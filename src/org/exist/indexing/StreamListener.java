@@ -33,8 +33,14 @@ import org.exist.storage.txn.Txn;
  */
 public interface StreamListener {
 
+    /**
+     * Undefined mode
+     */	
 	public final static int UNKNOWN = -1;
 	
+    /**
+     * Mode for storing nodes of a document
+     */	
 	public final static int STORE = 0;
 	
     /**
@@ -46,6 +52,13 @@ public interface StreamListener {
      * Mode for removing some nodes of a document
      */
     public final static int REMOVE_SOME_NODES = 2;
+    
+    /**
+     * Retunrs the IndexWorker that owns this listener.
+     * 
+     * @return the IndexWorker
+     */
+    IndexWorker getWorker();     
 
     /**
      * Set the next stream listener in the chain. Events should always be forwarded
@@ -82,15 +95,6 @@ public interface StreamListener {
     void attribute(Txn transaction, AttrImpl attrib, NodePath path);
 
     /**
-     * Processed the closing tag of an element.
-     *
-     * @param transaction the current transaction
-     * @param element the element which has been stored to the db
-     * @param path the current node path
-     */
-    void endElement(Txn transaction, ElementImpl element, NodePath path);
-
-    /**
      * A text node has been stored.
      * @param transaction the current transaction
      * @param text the text node which has been stored to the db.
@@ -98,5 +102,13 @@ public interface StreamListener {
      */
     void characters(Txn transaction, TextImpl text, NodePath path);
     
-    public IndexWorker getWorker(); 
+    /**
+     * Processed the closing tag of an element.
+     *
+     * @param transaction the current transaction
+     * @param element the element which has been stored to the db
+     * @param path the current node path
+     */
+    void endElement(Txn transaction, ElementImpl element, NodePath path);    
+    
 }

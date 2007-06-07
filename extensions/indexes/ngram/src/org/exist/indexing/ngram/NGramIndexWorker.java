@@ -576,6 +576,14 @@ public class NGramIndexWorker implements IndexWorker {
     	setDocument(currentDoc, newMode);
     }
     
+    public DocumentImpl getDocument() {
+    	return currentDoc;
+    }
+    
+    public int getMode() {
+    	return mode;
+    }    
+    
     public void setDocument(DocumentImpl document, int newMode) {
     	currentDoc = document;
         //config = null;
