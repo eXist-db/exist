@@ -1660,7 +1660,7 @@ public class XQueryContext {
             if (TimerPragma.TIMER_PRAGMA.equalsSimple(qname)) {
                 return new TimerPragma(qname, contents);
             } else if (Optimize.OPTIMIZE_PRAGMA.equalsSimple(qname)) {
-                return new Optimize(this, qname, contents);
+                return new Optimize(this, qname, contents, true);
             }
             if (BatchTransactionPragma.BATCH_TRANSACTION_PRAGMA.equalsSimple(qname)) {
                 return new BatchTransactionPragma(qname, contents);

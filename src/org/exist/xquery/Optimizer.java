@@ -100,7 +100,7 @@ public class Optimizer extends DefaultExpressionVisitor {
             try {
                 // Create the pragma
                 ExtensionExpression extension = new ExtensionExpression(context);
-                extension.addPragma(new Optimize(context, Optimize.OPTIMIZE_PRAGMA, null));
+                extension.addPragma(new Optimize(context, Optimize.OPTIMIZE_PRAGMA, null, false));
                 extension.setExpression(locationStep);
                 // Replace the old expression with the pragma
                 path.replaceExpression(locationStep, extension);

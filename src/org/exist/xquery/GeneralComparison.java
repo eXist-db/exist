@@ -206,15 +206,9 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 	 * @see org.exist.xquery.BinaryOp#returnsType()
 	 */
 	public int returnsType() {
-		if (inPredicate /* && !invalidNodeEvaluation */ && (!Dependency.dependsOn(this, Dependency.CONTEXT_ITEM))) {
-			/* If one argument is a node set we directly
-			 * return the matching nodes from the context set. This works
-			 * only inside predicates.
-			 * Since the context sequence can be of Type.ATOMIC, we return actualReturnType (default Type.ITEM)
-			 * ... unless we are *sure* we have another type (after evaluation)
-			 */			
-			return actualReturnType;
-		}
+        if (inPredicate && (!Dependency.dependsOn(this, Dependency.CONTEXT_ITEM))) {
+            return getLeft().returnsType();
+        }
 		// In all other cases, we return boolean
 		return Type.BOOLEAN;
 	}

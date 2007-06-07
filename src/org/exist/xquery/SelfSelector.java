@@ -52,6 +52,7 @@ public class SelfSelector implements NodeSelector {
             } else {
             	p.addContextNode(contextId, p);
             }
+            p.addMatches(contextNode);
             return p;
         } else {
         	return null;
