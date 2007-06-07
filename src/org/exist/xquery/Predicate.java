@@ -82,15 +82,7 @@ public class Predicate extends PathExpr {
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         parent = contextInfo.getParent();
-        AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
-    	newContextInfo.addFlag(IN_PREDICATE); // set flag to signal subexpression that we are in a predicate
-    	newContextInfo.removeFlag(IN_WHERE_CLAUSE);	// remove where clause flag
-    	newContextInfo.removeFlag(DOT_TEST);
-        outerContextId = newContextInfo.getContextId();
-        newContextInfo.setContextId(getExpressionId());
-        
-        newContextInfo.setStaticType(contextInfo.getStaticType());
-    	newContextInfo.setParent(this);
+        AnalyzeContextInfo newContextInfo = createContext(contextInfo);
         super.analyze(newContextInfo);
       
         Expression inner = getExpression(0);        
@@ -111,13 +103,27 @@ public class Predicate extends PathExpr {
             executionMode = BOOLEAN;
                 
 		if(executionMode == BOOLEAN) {
-			newContextInfo.addFlag(SINGLE_STEP_EXECUTION);
 		    // need to re-analyze:
-		    super.analyze(newContextInfo);
+            newContextInfo = createContext(contextInfo);
+            newContextInfo.addFlag(SINGLE_STEP_EXECUTION);
+            super.analyze(newContextInfo);
 		}
     }
-    
-	public Sequence evalPredicate(Sequence outerSequence, Sequence contextSequence,	int mode)
+
+    private AnalyzeContextInfo createContext(AnalyzeContextInfo contextInfo) {
+        AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
+        newContextInfo.addFlag(IN_PREDICATE); // set flag to signal subexpression that we are in a predicate
+        newContextInfo.removeFlag(IN_WHERE_CLAUSE);	// remove where clause flag
+        newContextInfo.removeFlag(DOT_TEST);
+        outerContextId = newContextInfo.getContextId();
+        newContextInfo.setContextId(getExpressionId());
+
+        newContextInfo.setStaticType(contextInfo.getStaticType());
+        newContextInfo.setParent(this);
+        return newContextInfo;
+    }
+
+    public Sequence evalPredicate(Sequence outerSequence, Sequence contextSequence,	int mode)
 		    throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);
@@ -159,18 +165,18 @@ public class Predicate extends PathExpr {
             } else {
 	            if (executionMode == BOOLEAN && !Dependency.dependsOn(inner, Dependency.CONTEXT_ITEM)) {
 	            	/*
-	            	 * 
+	            	 *
 	            	 * WARNING : this sequence will be evaluated with preloadable nodesets !
-	            	 * 
+	            	 *
 	            	 */
 	            	innerSeq = inner.eval(contextSequence);
 	            	//Try to promote a boolean evaluation to a nodeset one
-	            	//We are now sure of the inner sequence return type 
+	            	//We are now sure of the inner sequence return type
 	            	 if (Type.subTypeOf(innerSeq.getItemType(), Type.NODE)) {
 		        		recomputedExecutionMode = NODE;
-			        //Try to promote a boolean evaluation to a positional one		        		            	
+			        //Try to promote a boolean evaluation to a positional one
 		            //Only if we have an actual *singleton* of numeric items
-	            	 } else if (innerSeq.hasOne() && Type.subTypeOf(innerSeq.getItemType(), Type.NUMBER)) { 
+	            	 } else if (innerSeq.hasOne() && Type.subTypeOf(innerSeq.getItemType(), Type.NUMBER)) {
 		            	recomputedExecutionMode = POSITIONAL;
 		        	}
 	            }
