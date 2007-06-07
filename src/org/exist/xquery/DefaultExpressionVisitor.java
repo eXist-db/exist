@@ -48,6 +48,13 @@ public class DefaultExpressionVisitor extends BasicExpressionVisitor {
         functionStack.pop();
     }
 
+    public void visitBuiltinFunction(Function function) {
+        for (int i = 0; i < function.getArgumentCount(); i++) {
+            Expression arg = function.getArgument(i);
+            arg.accept(this);
+        }
+    }
+
     public void visitForExpression(ForExpr forExpr) {
         forExpr.getInputSequence().accept(this);
         Expression where = forExpr.getWhereExpression();
