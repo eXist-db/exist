@@ -24,6 +24,9 @@
         <title>Developer's Guide to Modularized Indexes</title>
         <section>
             <title>The new modularized indexes</title>
+            
+            <section>
+			<title>Brief overview</title>
             <para>Since spring 2007, eXist provides a new mechanism to index XML data. This mechanism is modular
             and should ease index development as well as the development of related (possibly not so) custom functions. 
             As a proof of concept, eXist currently ships with 2 index types :
@@ -69,7 +72,7 @@
                         		<!-- TODO : change to <literal> -->
                         		<listitem>the <ulink url="http://en.wikipedia.org/wiki/Spatial_referencing_systems">spatial referencing system</ulink> 
                         		(<envar>osgb:BNG</envar> for this polygon)</listitem>
-                        		<listitem>the polygon itself, stored in a specific binary form</listitem>
+                        		<listitem>the polygon itself, stored in a binary form (<ulink url="http://en.wikipedia.org/wiki/Well-known_text">Well-known binary</ulink>)</listitem>
                         		<listitem>the coordinates of its <ulink url="http://en.wikipedia.org/wiki/Minimum_bounding_rectangle">bounding box</ulink></listitem>                        		
                         	</itemizedlist>
                         	The spatial index will we discussed in details further below.
@@ -81,6 +84,10 @@
             <para>So, the new architecture introduces a new package, <classname>org.exist.indexing</classname> 
             which contains a class that we will immediately study, <classname>IndexManager</classname>.
             </para>
+            </section>
+            
+            <section>
+			<title><classname>org.exist.indexing.IndexManager</classname></title>
             <para>As its name suggests, this is the class which is responsible for index management. It is created by 
             <classname>org.exist.storage.BrokerPool</classname> which allocates <classname>org.exist.storage.DBBroker</classname>s
             to each process accessing to each DB instance.
@@ -89,7 +96,7 @@
             <methodname>getIndexManager()</methodname> method of <classname>org.exist.storage.BrokerPool</classname>. 
             </para>            
             <synopsis format="linespecific">public IndexManager(BrokerPool pool, Configuration config)</synopsis>
-            <para>This constructor keeps track of the <classname>BrokerPool</classname> that has instantiated it
+            <para>This constructor keeps track of the <classname>BrokerPool</classname> that has created the instance
             and receives the database's configuration object, usually defined in an XML file called <filename>conf.xml</filename>.
             What is expected there is this (new) part of the configuration file :
             </para>
@@ -100,10 +107,11 @@
 </modules>
 			]]></markup></programlisting></para>
 			<para>... which defines 2 indexes, backed-up by their specific classes (<sgmltag>class</sgmltag> 
-			attribute ; these classes must implement <classname>org.exist.indexing.Index</classname> as we will
-			see below), assigns them a human-readable (writable even) identifier and passes them custom parameters.
-			Then, it configures (by calling their <methodname>configure()</methodname> method), opens 
-			(by calling their <methodname>open()</methodname> method) and keeps track of each of them.</para>
+			attribute ; these classes implement <classname>org.exist.indexing.Index</classname> as we will
+			see below), eventually assigns them a human-readable (writable even) identifier and passes them custom 
+			parameters which are implementation-dependant. Then, it configures (by calling their 
+			<methodname>configure()</methodname> method), opens (by calling their <methodname>open()</methodname> 
+			method) and keeps track of each of them.</para>
             <para><classname>org.exist.indexing.IndexManager</classname> also provides these public methods :</para>
             <synopsis format="linespecific">public BrokerPool getBrokerPool()</synopsis>
             <para>... which returns the <classname>org.exist.storage.BrokerPool</classname> for which this <classname>IndexManager</classname> was created.</para>
@@ -112,23 +120,27 @@
             to the developer since it allows custom functions to access <classname>Index</classname>es whatever their human-defined
             name is. This is probably the only method in this class that will be really needed by a developer.</para>
             <synopsis format="linespecific">public synchronized Index getIndexByName(String indexName)</synopsis>
-            <para>The counterpart of the previous method. For the human-readable name if the <classname>Index</classname> as defined in the configuration.</para>
+            <para>The counterpart of the previous method. Pass the human-readable name of the <classname>Index</classname> as defined in the configuration.</para>
 			<synopsis format="linespecific">public void shutdown()</synopsis>
 			<para>This method is called when eXist shuts down. <methodname>close()</methodname> will be called
 			for every registered <classname>Index</classname>. That allows them to free the resources they own.</para>
 			<synopsis format="linespecific">public void removeIndexes()</synopsis>
 			<para>This method is called when <methodname>repair()</methodname> is called from <classname>org.exist.storage.NativeBroker</classname>. 
-			We remind that <methodname>repair()</methodname> reconstructs every indexes (including the structural one)
+			We remind that <methodname>repair()</methodname> reconstructs every index (including the structural one)
 			from what is contained in the persistent DOM (usually <filename>dom.dbx</filename>).
 			<methodname>remove()</methodname> will be called for every registered <classname>Index</classname>.
-			That allows each index to destroy its persistent storage if it wants to do so (but it is probably suitable if the DB is corrupted).</para>			
+			That allows each index to destroy its persistent storage if it wants to do so (but it is probably 
+			suitable given that <methodname>repair()</methodname> is called when the DB and/or its indexes are corrupted).</para>			
 			<synopsis format="linespecific">public void reopenIndexes()</synopsis>  
 			<para>This method is called when <methodname>repair()</methodname> is called from <classname>org.exist.storage.NativeBroker</classname>. 
-			We remind that <methodname>repair()</methodname> reconstructs every indexes (including the structural one)
+			We remind that <methodname>repair()</methodname> reconstructs every index (including the structural one)
 			from what is contained in the persistent DOM (usually <filename>dom.dbx</filename>).
 			<methodname>open()</methodname> will be called for every registered <classname>Index</classname>.
-			That allows each index to (re)allocate the resource it needs for its persistent storage.</para>	
+			That allows each index to (re)allocate the resources it needs for its persistent storage.</para>	
+			</section>
 
+			<section>
+			<title><classname>org.exist.indexing.IndexController</classname></title>
 			<para>Another important class is <classname>org.exist.indexing.IndexController</classname> which, as its
 			name suggests, controls the way data to be indexed are dispatched to the registered indexes, using 
 			<classname>org.exist.indexing.IndexWorker</classname>s that will be described below. Each <classname>org.exist.storage.DBBroker</classname>
@@ -140,8 +152,8 @@
 			<para> Here are the other public methods :</para>
 			<synopsis format="linespecific">public Map configure(NodeList configNodes, Map namespaces)</synopsis>
 			<para>This method receives the database's configuration object, usually defined in an XML file called <filename>conf.xml</filename>.
-            Both configuration nodes and namespace (remember that some configuration settings including e.g. pathes need namespaces to be defined)
-            will be passed to the <methodname>configure()</methodname> method of each <classname>IndexWorker</classname> there. The result is 
+            Both configuration nodes and namespaces (remember that some configuration settings including e.g. pathes need namespaces to be defined)
+            will be passed to the <methodname>configure()</methodname> method of each <classname>IndexWorker</classname> there. The returned object is a 
             <classname>java.util.Map</classname> that will be available from <methodname>collection.getIndexConfiguration(broker).getCustomIndexSpec(INDEX_CLASS_IDENTIFIER)</methodname>.
             </para>
 			<synopsis format="linespecific">public IndexWorker getWorkerByIndexId(String indexId)</synopsis>			
@@ -151,56 +163,76 @@
 			<synopsis format="linespecific">public IndexWorker getWorkerByIndexName(String indexName)</synopsis>
 			<para>The counterpart of the previous method. For the human-readable name of the <classname>Index</classname> as defined in the configuration.</para>
 			<synopsis format="linespecific">public void setDocument(DocumentImpl doc)</synopsis>
-			<para>This method sets the <classname>DocumentImpl</classname> on which the <classname>IndexWorker</classname>s will have to work.
+			<para>This method sets the <classname>org.exist.dom.DocumentImpl</classname> on which the <classname>IndexWorker</classname>s will have to work.
 			Calls <methodname>setDocument(doc)</methodname> on each registered <classname>IndexWorker</classname>.</para>
 			<synopsis format="linespecific">public void setMode(int mode)</synopsis>
 			<para>This method sets the operating mode in which the <classname>IndexWorker</classname>s will have to work. 
 			See below for further details on operating modes.
 			Calls <methodname>setMode(mode)</methodname> on each registered <classname>IndexWorker</classname>.</para>
 			<synopsis format="linespecific">public void setDocument(DocumentImpl doc, int mode)</synopsis>
-			<para>A convenience method that sets both the <classname>DocumentImpl</classname> and the operating mode.
-			Calls <methodname>setDocument(doc, mode)</methodname> on each registered <classname>IndexWorker</classname>.</para>
+			<para>A convenience method that sets both the <classname>org.exist.dom.DocumentImpl</classname> and the operating mode.
+			Calls <methodname>setDocument(doc, mode)</methodname> on each registered <classname>IndexWorker</classname>.</para>			
+			<synopsis format="linespecific">public DocumentImpl getDocument()</synopsis>
+			<para>Returns the <classname>org.exist.dom.DocumentImpl</classname> on which the <classname>IndexWorker</classname>s will have to work.</para>
+			<synopsis format="linespecific">public int getMode()</synopsis>
+			<para>Returns the operating mode in which the <classname>IndexWorker</classname>s will have to work.</para> 
+			
 			<synopsis format="linespecific">public void flush()</synopsis>
-			<para>Called in various places when pending operations have to be completed. Calls <methodname>flush()</methodname>
+			<para>Called in various places when pending operations, obviously data insertion, update or removal, have to be completed. Calls <methodname>flush()</methodname>
 			on each registered <classname>IndexWorker</classname>.</para>
 			<synopsis format="linespecific">public void removeCollection(Collection collection, DBBroker broker)</synopsis>			
 			<para>Called when a collection is to be removed. That allows to delete index entries for this collection in a single operation.
 			Calls <methodname>removeCollection()</methodname> on each registered <classname>IndexWorker</classname>.</para>
 			<synopsis format="linespecific">public void reindex(Txn transaction, StoredNode reindexRoot, int mode)</synopsis>
 			<para>Called when a document is to be reindexed. Only the <parameter>reindexRoot</parameter> node and its descendants 
-			will have their index entries updated in accordance with the <parameter>mode</parameter> parameter.</para>
+			will have their index entries updated or removed depending of the <parameter>mode</parameter> parameter.</para>
 			<synopsis format="linespecific">public StoredNode getReindexRoot(StoredNode node, NodePath path)</synopsis>
-			<para>Determines the node whose descendant (including itself) should be reindexed. 
+			<para>Determines the node which should be reindexed together with its descendants. 
 			Calls <methodname>getReindexRoot()</methodname> on each registered <classname>IndexWorker</classname>. 
-			The top-most node will be the actual node form which the <classname>DBBroker</classname> will start reindexing.</para>
+			The top-most node will be the actual node from which the <classname>DBBroker</classname> will start reindexing.</para>
 			<synopsis format="linespecific">public StoredNode getReindexRoot(StoredNode node, NodePath path, boolean includeSelf)</synopsis>
 			<para>Same as above, with more parameters.</para>
 			<synopsis format="linespecific">public StreamListener getStreamListener()</synopsis>
 			<para>Returns the first <classname>org.exist.indexing.StreamListener</classname> in the
 			<classname>StreamListener</classname>s pipeline. There is at most one <classname>StreamListener</classname>
-			per <classname>IndexWorker</classname>. <classname>IndexWorker</classname>s that are not interested
+			per <classname>IndexWorker</classname>  that will intercept the (re)indexed nodes stream. <classname>IndexWorker</classname>s that are not interested
 			by the data (depending of e.g. the document and/or the operating mode) may return <parameter>null</parameter> through
-			their <methodname>getListener()</methodname> method and thus not participate in the indexing process. In other terms,
+			their <methodname>getListener()</methodname> method and thus not participate in the (re)indexing process. In other terms,
 			they will not listen to the indexed nodes.</para>
 			<synopsis format="linespecific">public void indexNode(Txn transaction, StoredNode node, NodePath path, StreamListener listener)</synopsis>
 			<para>Index any kind of indexable node (currently elements, attributes and text nodes ; comments and especially
-			processing instructions might be considered in the future).</para>
-			<synopsis format="linespecific">public void indexEndElement(Txn transaction, ElementImpl node, NodePath path, StreamListener listener)</synopsis>
-			<para>Signals end of indexing for an element node.</para>
+			processing instructions might be considered in the future).</para>			
+			<synopsis format="linespecific">public void startElement(Txn transaction, ElementImpl node, NodePath path, StreamListener listener)</synopsis>
+			<para>More specific than <methodname>indexNode()</methodname>. For an element. Will call <methodname>startElement()</methodname>
+			on <parameter>listener</parameter> if it is not <parameter>null</parameter>. The analogy with 
+			<ulink url="http://www.xml.com/pub/a/2003/09/17/stax.html">STAX events</ulink> is obvious.
+			Guess how eXist handle the events stream internally ? ;-)</para>
+			<synopsis format="linespecific">public void attribute(Txn transaction, AttrImpl node, NodePath path, StreamListener listener)</synopsis>
+			<para>More specific than <methodname>indexNode()</methodname>. For an attribute. Will call <methodname>attribute()</methodname>
+			on <parameter>listener</parameter> if it is not <parameter>null</parameter>.</para>
+			<synopsis format="linespecific">public void characters(Txn transaction, TextImpl node, NodePath path, StreamListener listener)</synopsis>
+			<para>More specific than <methodname>indexNode()</methodname>. For a text node. Will call <methodname>characters()</methodname>
+			on <parameter>listener</parameter> if it is not <parameter>null</parameter>.</para>						
+			<synopsis format="linespecific">public void endElement(Txn transaction, ElementImpl node, NodePath path, StreamListener listener)</synopsis>
+			<para>Signals end of indexing for an element node. Will call <methodname>endElement()</methodname>
+			on <parameter>listener</parameter> if it is not <parameter>null</parameter></para>
 			<synopsis format="linespecific">public MatchListener getMatchListener(NodeProxy proxy)</synopsis>	
 			<para>Returns a <classname>org.exist.indexing.MatchListener</classname>	for the given node.</para>
 			<para>Looks complicated ? Well, the 2 classes aim to be essentially used by eXist itself. The average programmer
 			will probably need to use just one or two of the above methods.</para>
+			</section>
 			
+			<section>
+			<title><classname>org.exist.indexing.Index</classname> and <classname>org.exist.indexing.AbstractIndex</classname></title>
 			<para>Let's get now in to the interfaces and classes that will need to be extended by the index programmer. The
 			first of them is the interface <classname>org.exist.indexing.Index</classname> which will maintain the index itself.</para>
-			<para>As described above, a new instance of the interface will be created by <classname>org.exist.indexing.IndexManager</classname> 
-			calling the <methodname>newInstance()</methodname> method. No need for a constructor then.</para>	
-			<para>Here are the public methods that have to be implemented in the concrete implementations : </para>
+			<para>As described above, a new instance of the interface will be created by the constructor of <classname>org.exist.indexing.IndexManager</classname> 
+			which calls the <methodname>newInstance()</methodname> method. No need for a constructor then.</para>	
+			<para>Here are the methods that have to be implemented in the implementations : </para>
 			<synopsis format="linespecific">String getIndexId()</synopsis>
-			<para>Returns the class identifier of the index</para>
+			<para>Returns the class identifier of the index.</para>
 			<synopsis format="linespecific">String getIndexName()</synopsis>
-			<para>Returns the human-defined name of the index</para>
+			<para>Returns the human-defined name of the index, if one was defined in the configuration file.</para>
 			<synopsis format="linespecific">BrokerPool getBrokerPool()</synopsis>
 			<para>Returns the <classname>org.exist.storage.BrokerPool</classname> that has created the index.</para>
 			<synopsis format="linespecific">void configure(BrokerPool pool, String dataDir, Element config)</synopsis>
@@ -215,29 +247,136 @@
 			<synopsis format="linespecific">void sync()</synopsis>			
 			<para>Unused.</para>
 			<synopsis format="linespecific">void remove()</synopsis>
-			<para>Method that is executed when eXist requires the index content to be deleted, e.g. before repairing a corrupted database.</para>			
+			<para>Method that is executed when eXist requires the index content to be entitrely deleted, e.g. before repairing a corrupted database.</para>			
 			<synopsis format="linespecific">IndexWorker getWorker(DBBroker broker)</synopsis>
 			<para>Returns the <classname>org.exist.indexing.IndexWorker</classname> that operates on this
 			<classname>Index</classname> on behalf of <parameter>broker</parameter>.</para>
 			<synopsis format="linespecific">boolean checkIndex(DBBroker broker)</synopsis>
-			<para>To be called for applications that want to implement a consistency check on the <classname>Index</classname>.</para>
+			<para>To be called by applications that want to implement a consistency check on the <classname>Index</classname>.</para>
 			<para>There is also an abstract class that implements <classname>org.exist.indexing.Index</classname>, 
-			<classname>org.exist.indexing.AbstractIndex</classname>. Most of its methods are abstract and still have to be implemented in
-			the concrete classes. These few members and methods are concrete and public :</para>
-			
-			<synopsis format="linespecific">protected static String ID = "Give me an ID !";</synopsis>
-			<para>This is where the class identifier of the <classname>Index</classname> id defined. Override
-			this member with, say, <methodname>MyClass.class.getName()</methodname> to provide a reasonably
-			unique identifier within your system.</para>
+			<classname>org.exist.indexing.AbstractIndex</classname> that can be used a a basis for most <classname>Index</classname> implementations. 
+			Most of its methods are abstract and still have to be implemented in the concrete classes. 
+			These few methods are concrete however :</para>		
 			<synopsis format="linespecific">public String getDataDir()</synopsis>
 			<para>Returns the directory in which this <classname>Index</classname> operates. Usually defined
-			by <methodname>configure()</methodname> which itself receives eXist's settings. Note that there might
-			be some <classname>Index</classname> for which the concept of data directory isn't accurate.</para>
+			by <methodname>configure()</methodname> which itself receives eXist's configuration settings. Note that there might
+			be some <classname>Index</classname>es for which the concept of data directory isn't accurate.</para>
 			<synopsis format="linespecific">public void configure(BrokerPool pool, String dataDir, Element config)</synopsis>
 			<para>Its minimal implementation retains the <classname>org.exist.storage.BrokerPool</classname>, the data directory and the human-defined name, if defined in the configuration.
 			Sub-classes may call <methodname>super.configure()</methodname> to retain this default behaviour.</para>
-
+			<para>This member is protected :</para>
+			<synopsis format="linespecific">protected static String ID = "Give me an ID !"</synopsis>
+			<para>This is where the class identifier of the <classname>Index</classname> is defined. Override
+			this member with, say, <methodname>MyClass.class.getName()</methodname> to provide a reasonably
+			unique identifier within your system.</para>
+			</section>
 			
+			<section>
+			<title><classname>org.exist.indexing.IndexWorker</classname></title>
+			<para>The next important interface that will need to be implemented is <classname>org.exist.indexing.IndexWorker</classname>
+			which is responsible for managing the data in the index. Remember that each <classname>org.exist.storage.DBBroker</classname>
+			will have such an <classname>IndexWorker</classname> at its disposal and that eXist's <classname>org.exist.index.IndexController</classname> 
+			will know what method of <classname>IndexWorker</classname> to call and when to call it... if <methodname>getWorker()</methodname>
+			in the <classname>org.exsit.indexing.Index</classname> implementation does correctly its job, of course.</para>
+			<para>Here are the methods that have to be implemented in the implementations : </para>
+			<synopsis format="linespecific">public String getIndexId()</synopsis>
+			<para>Returns the class identifier of the index.</para>
+			<synopsis format="linespecific">public String getIndexName()</synopsis>
+			<para>Returns the human-defined name of the index, if one was defined in the configuration file.</para>
+			<synopsis format="linespecific">Object configure(IndexController controller, NodeList configNodes, Map namespaces)</synopsis>
+			<para>This method receives the database's configuration object, usually defined in an XML file called <filename>conf.xml</filename>.
+            Both configuration nodes and namespaces (remember that some configuration settings including e.g. pathes need namespaces to be defined)
+            will be passed by the <methodname>configure()</methodname> method of the <classname>IndexWorker</classname>'s 
+            <classname>IndexController</classname>. The <classname>IndexWorker</classname> can use this method to retain
+            custom configuration options in a custom object that will be available in the <classname>java.util.Map</classname> 
+            returned by <methodname>collection.getIndexConfiguration(broker).getCustomIndexSpec(INDEX_CLASS_IDENTIFIER)</methodname>.
+            </para>	
+			<synopsis format="linespecific">void setDocument(DocumentImpl doc)</synopsis>
+			<para>This method sets the <classname>org.exist.dom.DocumentImpl</classname> on which this <classname>IndexWorker</classname> will have to work.</para>
+			<synopsis format="linespecific">void setMode(int mode)</synopsis>
+			<para>This method sets the operating mode in which this <classname>IndexWorker</classname> will have to work. 
+			See below for further details on operating modes.</para>
+			<synopsis format="linespecific">void setDocument(DocumentImpl doc, int mode)</synopsis>
+			<para>A convenience method that sets both the <classname>org.exist.dom.DocumentImpl</classname> and the operating mode.</para>
+			<synopsis format="linespecific">DocumentImpl getDocument()</synopsis>
+			<para>Returns the <classname>org.exist.dom.DocumentImpl</classname> on which this <classname>IndexWorker</classname> will have to work.</para>
+			<synopsis format="linespecific">int getMode()</synopsis>
+			<para>Returns the operating mode in which this <classname>IndexWorker</classname> will have to work.</para> 
+			<synopsis format="linespecific">void flush()</synopsis>
+			<para>Called periodically by the <classname>IndexController</classname> or by any other process. That is 
+			where data insertion, update or removal should actually take place.</para>
+			<synopsis format="linespecific">void removeCollection(Collection collection, DBBroker broker)</synopsis>
+			<para>Called when a collection is to be removed. That allows to delete index entries for this collection 
+			in a single operation without a need for a <classname>org.exist.indexing.StreamListener</classname> or a call to 
+			<methodname>setMode()</methodname> nor <methodname>setDocument()</methodname>.</para>
+			<synopsis format="linespecific">StoredNode getReindexRoot(StoredNode node, NodePath path, boolean includeSelf)</synopsis>
+			<para>Determines the node which should be reindexed together with its descendants. This will give a hint to 
+			the <classname>IndexController</classname> to determine from which node reindexing should start.</para>
+			<synopsis format="linespecific">StreamListener getListener()</synopsis>
+			<para>Returns a <classname>org.exist.indexing.StreamListener</classname> that will intercept the (re)indexed nodes stream.
+			<classname>IndexWorker</classname>s that are not interested by the data (depending of e.g. the document and/or the operating mode) may return <parameter>null</parameter> here.</para>			
+			<synopsis format="linespecific">MatchListener getMatchListener(NodeProxy proxy)</synopsis>
+			<para>Returns a <classname>org.exist.indexing.MatchListener</classname>	for the given node.</para>
+			<synopsis format="linespecific">boolean checkIndex(DBBroker broker)</synopsis>
+			<para>To be called by applications that want to implement a consistency check on the index.</para>
+			<synopsis format="linespecific">Occurrences[] scanIndex(DocumentSet docs)</synopsis>
+			<para>Returns an array of <classname>org.exist.dom.DocumentImpl.Occurrences</classname> that is an
+			<strong>ordered</strong> list of the index entries. associated with the number of occurences for the 
+			entries and a list of the documents containing them. For some indexes, the
+			concept of ordered occurrences might not be meaningful though...</para>
+			</section>
+			
+			<section>
+			<title><classname>org.exist.indexing.StreamListener</classname> and <classname>org.exist.indexing.AbstractStreamListener</classname></title>
+			<para>The interface <classname>org.exist.indexing.StreamListener</classname> has these public members :</para>
+			<synopsis format="linespecific">public final static int UNKNOWN = -1;</synopsis>
+			<synopsis format="linespecific">public final static int STORE = 0;</synopsis>
+			<synopsis format="linespecific">public final static int REMOVE_ALL_NODES = 1;</synopsis>
+			<synopsis format="linespecific">public final static int REMOVE_SOME_NODES = 2;</synopsis>
+			<para>Obviously, they are used by the <methodname>setMode()</methodname> method in <classname>org.exist.indexing.IndexController</classname>
+			which is istself called by the different <classname>org.exist.storage.DBBroker</classname>s when they have to (re)index
+			a node and/or its descendants. As their name suggests, there is a mode for storing nodes and two modes
+			for removing them from the indexes. The difference between <classname>org.exist.indexing.StreamListener.REMOVE_ALL_NODES</classname> and
+			<classname>org.exist.indexing.StreamListener.REMOVE_SOME_NODES</classname> is that the former removes all the nodes from a document
+			whereas the latter removes only some nodes from a document, usually the descendants of the node returned by
+			<methodname>getReindexRoot()</methodname>. We thus have the opportunity to trigger a process that will directly
+			remove all the nodes from a given document without having to listen to each of them. Such a technique is described below.</para>
+			<para>Here are the methods that the implementations must implement :</para>
+			<synopsis format="linespecific">IndexWorker getWorker()</synopsis>	
+			<para>Returns the <classname>org.exist.indexing.IndexWorker</classname> that owns this <classname>StreamListener</classname>.</para>																	
+			<synopsis format="linespecific">void setNextInChain(StreamListener listener);</synopsis>
+			<para>Should not be used. Used to specify which is the next <classname>StreamListener</classname> in the
+			<classname>org.exist.indexing.IndexController</classname>'s <classname>StreamListener</classname>s pipeline.</para>
+			<synopsis format="linespecific">StreamListener getNextInChain();</synopsis>
+			<para>Returns the next <classname>StreamListener</classname> in the
+			<classname>org.exist.indexing.IndexController</classname>'s <classname>StreamListener</classname>s pipeline. Very important
+			because it is the responsability of the <classname>StreamListener</classname> to forward the event stream to
+			the next <classname>StreamListener</classname> in the pipeline.</para>
+			<synopsis format="linespecific">void startElement(Txn transaction, ElementImpl element, NodePath path)</synopsis>																		
+			<para>Signals the start of an element to the listener.</para>
+			<synopsis format="linespecific">void attribute(Txn transaction, AttrImpl attrib, NodePath path)</synopsis>
+			<para>Passes an attribute to the listener.</para>																					
+			<synopsis format="linespecific">void characters(Txn transaction, TextImpl text, NodePath path)</synopsis>																		
+			<para>Passes some character data to the listener.</para>	
+			<synopsis format="linespecific">void endElement(Txn transaction, ElementImpl element, NodePath path)</synopsis>																		
+			<para>Signals the end of an element to the listener. Allow to free any temporary resource created since
+			the matching <methodname>startElement()</methodname> has been called.</para>
+			<para>Beside the <classname>org.exist.indexing.StreamListener</classname> interface, each custom
+			listener should extend <classname>org.exist.indexing.AbstractStreamListener</classname>.</para>
+			<para>This abstract class provides concrete implementations for <methodname>setNextInChain()</methodname>
+			and <methodname>getNextInChain()</methodname> that should normally never be overriden.</para>
+			<para>It also provides dummy <methodname>startElement()</methodname>, <methodname>attribute()</methodname>,
+			<methodname>characters()</methodname>, <methodname>endElement()</methodname> methods that do nothing but
+			forwarding the node to the next <classname>StreamListener</classname> in the
+			<classname>org.exist.indexing.IndexController</classname>'s <classname>StreamListener</classname>s 
+			pipeline.</para> 
+			<synopsis format="linespecific">public abstract IndexWorker getWorker()</synopsis>
+			<para>remains abstract though, since we still can not know what <classname>org.exist.indexing.IndexWorker</classname>
+			will own the <classname>Listener</classname>.</para>  
+			</section>
         </section>
+        <section>
+			<title>A use case : developing an indexing architecture for GML geometries</title>
+		</section>
     </chapter>
 </book>
