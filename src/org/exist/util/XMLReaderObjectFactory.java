@@ -48,6 +48,8 @@ public class XMLReaderObjectFactory extends BasePoolableObjectFactory {
     private final static int VALIDATION_AUTO = 1;
     private final static int VALIDATION_DISABLED = 2;
     
+    public static final String CONFIGURATION_ENTITY_RESOLVER_ELEMENT_NAME = "entity-resolver";
+    public static final String CONFIGURATION_CATALOG_ELEMENT_NAME = "catalog";
     public static final String CONFIGURATION_ELEMENT_NAME = "validation";
     public final static String PROPERTY_VALIDATION = "validation.mode";
     public final static String CATALOG_RESOLVER = "validation.resolver";

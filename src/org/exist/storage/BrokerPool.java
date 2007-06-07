@@ -94,6 +94,7 @@ public class BrokerPool {
 	public final static String PROPERTY_COLLECTION_CACHE_SIZE = "db-connection.collection-cache-size";
 	public final static String PROPERTY_SECURITY_CLASS = "db-connection.security.class";
 	public final static String PROPERTY_RECOVERY_ENABLED = "db-connection.recovery.enabled";
+	public final static String PROPERTY_SYSTEM_TASK_CONFIG = "db-connection.system-task-config";
 	
 	//TODO : inline the class ? or... make it configurable ?
     // WM: inline. I don't think users need to be able to overwrite this.
@@ -545,7 +546,7 @@ public class BrokerPool {
 		LOG.info("database instance '" + instanceName + "' is enabled for transactions : " + this.transactionsEnabled);
 		
 		//How ugly : needs refactoring...
-		Configuration.SystemTaskConfig systemTasksConfigs[] = (Configuration.SystemTaskConfig[]) conf.getProperty("db-connection.system-task-config");
+		Configuration.SystemTaskConfig systemTasksConfigs[] = (Configuration.SystemTaskConfig[]) conf.getProperty(BrokerPool.PROPERTY_SYSTEM_TASK_CONFIG);
 		if (systemTasksConfigs != null) {
 	        for (int i = 0; i < systemTasksConfigs.length; i++) {
 	        	try {

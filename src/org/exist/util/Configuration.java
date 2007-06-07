@@ -45,6 +45,7 @@ import org.exist.memtree.SAXAdapter;
 import org.exist.protocolhandler.eXistURLStreamHandlerFactory;
 import org.exist.scheduler.Scheduler;
 import org.exist.security.User;
+import org.exist.security.XMLSecurityManager;
 import org.exist.security.xacml.XACMLConstants;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.CollectionCacheManager;
@@ -758,8 +759,8 @@ public class Configuration implements ErrorHandler {
         if (option != null && option.length() > 0) {
             try {
                 Integer perms = new Integer(Integer.parseInt(option, 8));
-                setProperty("indexer.permissions.resource", perms);
-                LOG.debug("indexer.permissions.resource: " + config.get("indexer.permissions.resource"));
+                setProperty(XMLSecurityManager.PROPERTY_PERMISSIONS_RESOURCES, perms);
+                LOG.debug(XMLSecurityManager.PROPERTY_PERMISSIONS_RESOURCES + ": " + config.get(XMLSecurityManager.PROPERTY_PERMISSIONS_RESOURCES));
             } catch (NumberFormatException e) {
                 throw new DatabaseConfigurationException("resource attribute in default-permissions section needs " +
                     "to be an octal number");
@@ -804,8 +805,8 @@ public class Configuration implements ErrorHandler {
             }
             taskList[i] = sysTask;
         }
-        config.put("db-connection.system-task-config", taskList);
-        LOG.debug("db-connection.system-task-config: " + config.get("db-connection.system-task-config"));
+        config.put(BrokerPool.PROPERTY_SYSTEM_TASK_CONFIG, taskList);
+        LOG.debug(BrokerPool.PROPERTY_SYSTEM_TASK_CONFIG+ ": " + config.get(BrokerPool.PROPERTY_SYSTEM_TASK_CONFIG));
     }
     
     /**
@@ -1049,10 +1050,10 @@ public class Configuration implements ErrorHandler {
         LOG.debug("Creating eXist catalog resolver");
         eXistXMLCatalogResolver resolver = new eXistXMLCatalogResolver();
         
-        NodeList entityResolver = validation.getElementsByTagName("entity-resolver");
+        NodeList entityResolver = validation.getElementsByTagName(XMLReaderObjectFactory.CONFIGURATION_ENTITY_RESOLVER_ELEMENT_NAME);
         if (entityResolver.getLength() > 0) {
             Element r = (Element) entityResolver.item(0);
-            NodeList catalogs = r.getElementsByTagName("catalog");
+            NodeList catalogs = r.getElementsByTagName(XMLReaderObjectFactory.CONFIGURATION_CATALOG_ELEMENT_NAME);
             
             LOG.debug("Found "+catalogs.getLength()+" catalog uri entries.");
             LOG.debug("Using dbHome="+dbHome);

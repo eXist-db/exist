@@ -61,6 +61,8 @@ import org.xml.sax.SAXException;
  * users.xml only during database startup and shutdown.
  */
 public class XMLSecurityManager implements SecurityManager {
+	
+	public static final String PROPERTY_PERMISSIONS_RESOURCES = "indexer.permissions.resource";
 
 	public final static String DBA_GROUP = "dba";
 	public final static String DBA_USER = "admin";
@@ -194,7 +196,7 @@ public class XMLSecurityManager implements SecurityManager {
        if (defOpt != null)
           defCollectionPermissions = defOpt.intValue();
        defOpt = (Integer)
-       broker.getConfiguration().getProperty("indexer.permissions.resource");
+       broker.getConfiguration().getProperty(PROPERTY_PERMISSIONS_RESOURCES);
        if (defOpt != null)
           defResourcePermissions = defOpt.intValue();
        
