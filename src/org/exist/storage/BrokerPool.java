@@ -81,8 +81,10 @@ public class BrokerPool {
 	 * The name of a default database instance for those who are too lazy to provide parameters ;-). 
 	 */	
 	public final static String DEFAULT_INSTANCE_NAME = "exist";		
-
-	public static final String CONFIGURATION_ELEMENT_NAME = "pool";
+	public static final String CONFIGURATION_CONNECTION_ELEMENT_NAME = "db-connection";
+	public static final String CONFIGURATION_POOL_ELEMENT_NAME = "pool";
+	public static final String CONFIGURATION_SECURITY_ELEMENT_NAME = "security";
+	public static final String CONFIGURATION_RECOVERY_ELEMENT_NAME = "recovery";
 	//Various configuration property keys (set by the configuration manager)
 	public static final String PROPERTY_DATA_DIR = "db-connection.data-dir";
 	public final static String PROPERTY_MIN_CONNECTIONS = "db-connection.pool.min";

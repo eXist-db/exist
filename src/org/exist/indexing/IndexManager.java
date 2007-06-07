@@ -39,6 +39,8 @@ public class IndexManager {
 
     private final static Logger LOG = Logger.getLogger(IndexManager.class);
     
+    public static final String CONFIGURATION_ELEMENT_NAME = "modules";
+    public static final String CONFIGURATION_MODULE_ELEMENT_NAME = "module";
     public final static String PROPERTY_INDEXER_MODULES = "indexer.modules";
 
     private BrokerPool pool;

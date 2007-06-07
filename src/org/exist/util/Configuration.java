@@ -230,7 +230,7 @@ public class Configuration implements ErrorHandler {
             }
             
             //db connection settings
-            NodeList dbcon = doc.getElementsByTagName("db-connection");
+            NodeList dbcon = doc.getElementsByTagName(BrokerPool.CONFIGURATION_CONNECTION_ELEMENT_NAME);
             if (dbcon.getLength() > 0) {
                 configureBackend(existHomeDirname, (Element) dbcon.item(0));
             }
@@ -362,10 +362,10 @@ public class Configuration implements ErrorHandler {
         }
         
         //built-in-modules
-        NodeList builtins = xquery.getElementsByTagName("builtin-modules");
+        NodeList builtins = xquery.getElementsByTagName(XQueryContext.CONFIGURATION_MODULES_ELEMENT_NAME);
         if (builtins.getLength() > 0) {
             Element elem = (Element) builtins.item(0);
-            NodeList modules = elem.getElementsByTagName("module");
+            NodeList modules = elem.getElementsByTagName(XQueryContext.CONFIGURATION_MODULE_ELEMENT_NAME);
             String moduleList[][] = new String[modules.getLength()][2];
             for (int i = 0; i < modules.getLength(); i++) {
                 elem = (Element) modules.item(i);
@@ -480,7 +480,7 @@ public class Configuration implements ErrorHandler {
      * Reads the scheduler configuration
      */
     private void configureScheduler(Element scheduler) {
-        NodeList nlJobs = scheduler.getElementsByTagName("job");
+        NodeList nlJobs = scheduler.getElementsByTagName(Scheduler.CONFIGURATION_JOB_ELEMENT_NAME);
         
         if(nlJobs == null)
             return;
@@ -635,7 +635,7 @@ public class Configuration implements ErrorHandler {
             }
         }
 
-        NodeList securityConf = con.getElementsByTagName("security");
+        NodeList securityConf = con.getElementsByTagName(BrokerPool.CONFIGURATION_SECURITY_ELEMENT_NAME);
         String securityManagerClassName = "org.exist.security.XMLSecurityManager";
         if (securityConf.getLength()>0) {
             Element security = (Element)securityConf.item(0);
@@ -671,7 +671,7 @@ public class Configuration implements ErrorHandler {
             }
         }
         
-        NodeList poolConf = con.getElementsByTagName(BrokerPool.CONFIGURATION_ELEMENT_NAME);
+        NodeList poolConf = con.getElementsByTagName(BrokerPool.CONFIGURATION_POOL_ELEMENT_NAME);
         if (poolConf.getLength() > 0) {
             configurePool((Element) poolConf.item(0));
         }
@@ -687,7 +687,7 @@ public class Configuration implements ErrorHandler {
         if (sysTasks.getLength() > 0) {
             configureSystemTasks(sysTasks);
         }
-        NodeList recoveries = con.getElementsByTagName("recovery");
+        NodeList recoveries = con.getElementsByTagName(BrokerPool.CONFIGURATION_RECOVERY_ELEMENT_NAME);
         if (recoveries.getLength() > 0) {
             configureRecovery((Element)recoveries.item(0));
         }
@@ -991,15 +991,16 @@ public class Configuration implements ErrorHandler {
         }
         
         // index settings
-        NodeList cl = doc.getElementsByTagName("index");
+        NodeList cl = doc.getElementsByTagName(Indexer.CONFIGURATION_INDEX_ELEMENT_NAME);
         if (cl.getLength() > 0) {
             Element elem = (Element) cl.item(0);
             IndexSpec spec = new IndexSpec(null, elem);
             config.put(Indexer.PROPERTY_INDEXER_CONFIG, spec);
+            //LOG.debug(Indexer.PROPERTY_INDEXER_CONFIG + ": " + config.get(Indexer.PROPERTY_INDEXER_CONFIG));
         }
         
         // stopwords
-        NodeList stopwords = indexer.getElementsByTagName("stopwords");
+        NodeList stopwords = indexer.getElementsByTagName(Indexer.CONFIGURATION_STOPWORDS_ELEMENT_NAME);
         if (stopwords.getLength() > 0) {
             String stopwordFile = ((Element) stopwords.item(0)).getAttribute("file");
             File sf = ConfigurationHelper.lookup(stopwordFile, dbHome);
@@ -1010,9 +1011,9 @@ public class Configuration implements ErrorHandler {
         }
         
         // index modules
-        NodeList modules = indexer.getElementsByTagName("modules");
+        NodeList modules = indexer.getElementsByTagName(IndexManager.CONFIGURATION_ELEMENT_NAME);
         if (modules.getLength() > 0) {
-            modules = ((Element) modules.item(0)).getElementsByTagName("module");
+            modules = ((Element) modules.item(0)).getElementsByTagName(IndexManager.CONFIGURATION_MODULE_ELEMENT_NAME);
             IndexModuleConfig modConfig[] = new IndexModuleConfig[modules.getLength()];
             for (int i = 0; i < modules.getLength(); i++) {
                 Element elem = (Element) modules.item(i);
