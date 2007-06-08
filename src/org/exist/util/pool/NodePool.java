@@ -40,7 +40,7 @@ import org.w3c.dom.Node;
  */
 public class NodePool {
 
-    public final static int MAX_OBJECTS = 50;
+    public final static int MAX_OBJECTS = 20;
 
     public static NodePool getInstance() {
         return (NodePool) pools.get();
@@ -78,7 +78,12 @@ public class NodePool {
             pool.returnNode(node);
     }
 
-    public NodeImpl makeObject(short key) {
+    public int getSize(short key) {
+        Pool pool = (Pool) poolMap.get(key);
+        return pool.stack.size();
+    }
+    
+    private NodeImpl makeObject(short key) {
         switch (key) {
             case Node.ELEMENT_NODE:
                 return new ElementImpl();
@@ -99,13 +104,8 @@ public class NodePool {
     private class Pool {
 
         private LinkedList stack = new LinkedList();
-        private int activeCount = 0;
 
         public NodeImpl borrowNode(short key) {
-            if (activeCount == maxActive) {
-                return makeObject(key);
-            }
-            activeCount++;
             if (stack.isEmpty()) {
                 return makeObject(key);
             }
@@ -113,8 +113,9 @@ public class NodePool {
         }
 
         public void returnNode(NodeImpl node) {
-            stack.addLast(node);
-            activeCount--;
+            // Only cache up to maxActive nodes
+            if (stack.size() < maxActive)
+                stack.addLast(node);
         }
     }
 }
