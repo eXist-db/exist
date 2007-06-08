@@ -48,13 +48,16 @@ public abstract class AbstractGMLJDBCIndex extends AbstractIndex {
 	 * not to the concrete HSQL (or whatever) one. This allows spatial functions to use
 	 * the available JDBC index, whatever its underlying engine is.
 	 */
-	public final static String ID = AbstractGMLJDBCIndex.class.getName();
-	
-	private final static Logger LOG = Logger.getLogger(AbstractGMLJDBCIndex.class);	
-	
-    protected Connection conn = null;
-    
+	public final static String ID = AbstractGMLJDBCIndex.class.getName();	
+	private final static Logger LOG = Logger.getLogger(AbstractGMLJDBCIndex.class);
+    /**
+     * An IndexWorker "pool"
+     */
     protected HashMap workers = new HashMap();
+    /**
+     * The connection to the DB that will be needed for global operations 
+     */
+    protected Connection conn = null;
 
     /**
      * The spatial operators to test spatial relationshipds beween geometries.
