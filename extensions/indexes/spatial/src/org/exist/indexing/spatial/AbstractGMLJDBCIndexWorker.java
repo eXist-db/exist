@@ -111,8 +111,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     protected int mode = StreamListener.UNKNOWN;    
     protected DocumentImpl currentDoc = null;  
     private boolean isDocumentGMLAware = false;
-    protected Map geometries = new TreeMap();
-    Stack srsNamesStack = new Stack();
+    protected Map geometries = new TreeMap();    
     NodeId currentNodeId = null;    
     Geometry streamedGeometry = null;
     boolean documentDeleted= false;
@@ -499,9 +498,13 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 	            Map.Entry entry = (Map.Entry) iterator.next();
 	            NodeId nodeId = (NodeId)entry.getKey();
 	            SRSGeometry srsGeometry = (SRSGeometry)entry.getValue();       	
-	            saveGeometryNode(srsGeometry.getGeometry(), srsGeometry.getSRSName(), 
-	            	currentDoc, nodeId, conn);
-	            srsGeometry = null;
+	            try {
+	            	saveGeometryNode(srsGeometry.getGeometry(), srsGeometry.getSRSName(), 
+	            			currentDoc, nodeId, conn);
+	            } finally {
+	            	//Help the garbage collector
+	            	srsGeometry = null;
+	            }
 	        }
         } finally {
         	geometries.clear();
@@ -556,39 +559,9 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     
     protected abstract NodeSet isIndexed(DBBroker broker, Geometry EPSG4326_geometry, Connection conn) throws SQLException;    
 
-    private static class TransformationsFactory {
-    	
-    	static TreeMap transforms = new TreeMap();
-    	static boolean useLenientMode = false;
-    	
-    	private static MathTransform getTransform(String sourceCRS, String targetCRS) {
-    		MathTransform transform = (MathTransform)transforms.get(sourceCRS + "_" + targetCRS);
-    		if (transform == null) {
-	    		try {
-		    		try {        	
-	    				transform = CRS.findMathTransform(CRS.decode(sourceCRS), CRS.decode(targetCRS), useLenientMode);
-		    		} catch (OperationNotFoundException e) {
-		    			LOG.info(e);
-		    			LOG.info("Switching to lenient mode... beware of precision loss !");
-		    			//Last parameter set to true ; won't bail out if it can't find the Bursa Wolf parameters
-		        		//as it is the case in current gt2-epsg-wkt-2.4-M1.jar
-		    			useLenientMode = true;
-		    			transform = CRS.findMathTransform(CRS.decode(sourceCRS), CRS.decode(targetCRS), useLenientMode);	
-		    		}
-			        transforms.put(sourceCRS + "_" + targetCRS, transform);
-		    		LOG.debug("Instantiated transformation from '" + sourceCRS + "' to '" + targetCRS + "'");
-		        } catch (NoSuchAuthorityCodeException e) {
-		        	LOG.error(e);
-		        } catch (FactoryException e) {
-		        	LOG.error(e);
-	    		}
-    		}
-        	return transform;
-    	}
-    }       
-    
     private class GMLStreamListener extends AbstractStreamListener {
 
+    	Stack srsNamesStack = new Stack();
     	ElementImpl deferredElement;
         
         public void startElement(Txn transaction, ElementImpl element, NodePath path) { 
@@ -734,5 +707,36 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     		return geometry;
     	}    	
     }
+    
+    private static class TransformationsFactory {
+    	
+    	static TreeMap transforms = new TreeMap();
+    	static boolean useLenientMode = false;
+    	
+    	private static MathTransform getTransform(String sourceCRS, String targetCRS) {
+    		MathTransform transform = (MathTransform)transforms.get(sourceCRS + "_" + targetCRS);
+    		if (transform == null) {
+	    		try {
+		    		try {        	
+	    				transform = CRS.findMathTransform(CRS.decode(sourceCRS), CRS.decode(targetCRS), useLenientMode);
+		    		} catch (OperationNotFoundException e) {
+		    			LOG.info(e);
+		    			LOG.info("Switching to lenient mode... beware of precision loss !");
+		    			//Last parameter set to true ; won't bail out if it can't find the Bursa Wolf parameters
+		        		//as it is the case in current gt2-epsg-wkt-2.4-M1.jar
+		    			useLenientMode = true;
+		    			transform = CRS.findMathTransform(CRS.decode(sourceCRS), CRS.decode(targetCRS), useLenientMode);	
+		    		}
+			        transforms.put(sourceCRS + "_" + targetCRS, transform);
+		    		LOG.debug("Instantiated transformation from '" + sourceCRS + "' to '" + targetCRS + "'");
+		        } catch (NoSuchAuthorityCodeException e) {
+		        	LOG.error(e);
+		        } catch (FactoryException e) {
+		        	LOG.error(e);
+	    		}
+    		}
+        	return transform;
+    	}
+    }       
     
 }
