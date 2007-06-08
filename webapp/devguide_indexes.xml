@@ -774,7 +774,7 @@ protected synchronized void releaseConnection(DBBroker broker) {
 			new one since we only have one), checks that we have a SQL table for the spatial data. If not, i.e. if
 			the spatial index doesn't exist yet, a table is created with the following structure :</para>
     
-			<table cellpadding="5" cellspacing="5" >
+			<table cellpadding="5" cellspacing="5">
                 <tr>
                     <th style="background-color: #C5DAFF" align="left">Field name</th>
                     <th style="background-color: #C5DAFF" align="center">Field type</th>
@@ -797,7 +797,7 @@ protected synchronized void releaseConnection(DBBroker broker) {
                     <td>NODE_ID</td>
                     <td align="center">BINARY</td>
                     <td>The node ID, as a byte array</td>
-                    <td>See above. Only some bits are considered du to obvious data alignment requirements</td>
+                    <td>See above. Only <strong>some</strong> bits might be considered due to obvious data alignment requirements</td>
                 </tr>   
                 <tr>
                     <td>GEOMETRY_TYPE</td>
@@ -953,10 +953,12 @@ protected synchronized void releaseConnection(DBBroker broker) {
             	<listitem>EPSG4326_CENTROID_Y</listitem> 
             </itemizedlist>
             <para>EPSG4326 fields are particularly important because every geometry will be internally stored in 
-            <strong>both</strong> its original and epsg:4326 SRS. Having this kind of common world-wide applicable SRS allows to make 
-            operations on geometries that are defined in different SRSes.</para>
-        			
+            <strong>both</strong> its original and epsg:4326 SRS. Having this kind of common world-wide applicable SRS 
+            for all geometries in the index allows to make operations on them even if they are originally defined in different SRSes.</para>
+			</section>	
 
+			<section>			
+			<title>Writing the concrete implementation of <classname>org.exist.indexing.IndexWorker</classname></title>
 			<!--			
 			<para>       			  		
 			
@@ -965,8 +967,8 @@ protected synchronized void releaseConnection(DBBroker broker) {
 			
 			]]></programlisting>
 			-->
-																	
-			</section>				
+			
+			</section>																	
 		</section>
 					
 			
