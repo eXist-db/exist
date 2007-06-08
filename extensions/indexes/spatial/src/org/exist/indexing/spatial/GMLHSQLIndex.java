@@ -49,11 +49,7 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex {
     private DBBroker connectionOwner = null;
     
     public GMLHSQLIndex() {    	
-    }  
-    
-    public boolean checkIndex(DBBroker broker) {
-    	return getWorker(broker).checkIndex(broker);
-    } 
+    }
     
     public IndexWorker getWorker(DBBroker broker) {
     	GMLHSQLIndexWorker worker = (GMLHSQLIndexWorker)workers.get(broker);    	
@@ -62,8 +58,8 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex {
     		workers.put(broker, worker);
     	}
     	return worker;
-    } 
-    
+    }     
+  
     protected void checkDatabase() throws ClassNotFoundException, SQLException {
     	//Test to see if we have a HSQL driver in the classpath
     	Class.forName("org.hsqldb.jdbcDriver");		
@@ -105,7 +101,7 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex {
     
     protected void removeIndexContent() throws DBException {
 		try {
-			//Let's be lazy here : we only delete th index content if we have a connection
+			//Let's be lazy here : we only delete the index content if we have a connection
 			//deleteDatabase() should be far more efficient ;-)
 			if (conn != null) {
 				Statement stmt = conn.createStatement(); 
@@ -113,8 +109,7 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex {
 		        stmt.close();
 		        if (LOG.isDebugEnabled()) 
 		            LOG.debug("GML index: " + getDataDir() + "/" + db_file_name_prefix + ". " + nodeCount + " nodes removed");
-			}
-	        //TODO : should we remove the db files as well ?
+			}	     
 	    } catch (SQLException e) {
 	    	throw new DBException(e.getMessage()); 
 	    } 
@@ -177,9 +172,7 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex {
 		                LOG.debug("Opened GML index: " + getDataDir() + "/" + db_file_name_prefix); 
 		        //Create the data structure if it doesn't exist
 	        	} else if (rs.getRow() == 0) {
-		        	Statement stmt = conn.createStatement();        	
-		        	//Use CACHED table, not MEMORY one
-		        	//TODO : use hsqldb.default_table_type	        	
+		        	Statement stmt = conn.createStatement();
 		        	stmt.executeUpdate("CREATE TABLE " + TABLE_NAME + "(" +
 		        			/*1*/ "DOCUMENT_URI VARCHAR, " +        		
 		        			/*2*/ "NODE_ID_UNITS INTEGER, " + 
@@ -242,6 +235,6 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex {
     		LOG.error(e);
     		this.conn = null;
     	}
-    }
+    }    
      
 }
