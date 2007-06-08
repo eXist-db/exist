@@ -340,10 +340,10 @@
 
         <modules>
             <module id="ngram-index" class="org.exist.indexing.ngram.NGramIndex"
-                    file="ngram.dbx" n="3"/>
+	            file="ngram.dbx" n="3"/>
             <!--
             <module id="spatial-index" class="org.exist.indexing.spatial.GMLHSQLIndex"
-                 flushAfter="300" />            
+				connectionTimeout="10000" flushAfter="300" />            
             -->
         </modules>
 

@@ -33,8 +33,11 @@ import java.sql.Statement;
 
 import org.apache.log4j.Logger;
 import org.exist.indexing.IndexWorker;
+import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.btree.DBException;
+import org.exist.util.DatabaseConfigurationException;
+import org.w3c.dom.Element;
 
 /**
  */
@@ -44,11 +47,23 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex {
 	
     public static String db_file_name_prefix = "spatial_index";
     //Keep this upper case ;-)
-    public static String TABLE_NAME = "SPATIAL_INDEX_V1";
-    
+    public static String TABLE_NAME = "SPATIAL_INDEX_V1";    
     private DBBroker connectionOwner = null;
+    private long connectionTimeout = 100000L;
     
     public GMLHSQLIndex() {    	
+    }
+    
+    public void configure(BrokerPool pool, String dataDir, Element config) throws DatabaseConfigurationException {
+    	super.configure(pool, dataDir, config);
+    	String param = ((Element)config).getAttribute("connectionTimeout");
+        if (param != null) {
+        	try {
+        		connectionTimeout = Long.parseLong(param);
+        	} catch (NumberFormatException e) {
+        		LOG.error("Invalid value for 'connectionTimeout'", e);
+        	}
+        }	    	
     }
     
     public IndexWorker getWorker(DBBroker broker) {
@@ -124,7 +139,7 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex {
     				initializeConnection();
     	    	return conn;
     		} else {    
-	    		long timeOut_ = 100000L;
+	    		long timeOut_ = connectionTimeout;
 	    		long waitTime = timeOut_;
 				long start = System.currentTimeMillis();
 				try {

@@ -103,7 +103,7 @@
             <para><programlisting><markup><![CDATA[
 <modules>
     <module id="ngram-index" class="org.exist.indexing.ngram.NGramIndex" file="ngram.dbx" n="3"/>            
-    <module id="spatial-index" class="org.exist.indexing.spatial.GMLHSQLIndex" flushAfter="300" /> 
+    <module id="spatial-index" class="org.exist.indexing.spatial.GMLHSQLIndex" connectionTimeout="100000" flushAfter="300" />                     
 </modules>
 			]]></markup></programlisting></para>
 			<para>... which defines 2 indexes, backed-up by their specific classes (<sgmltag>class</sgmltag> 
@@ -539,7 +539,8 @@ protected abstract void removeIndexContent() throws DBException;
 protected abstract Connection acquireConnection(DBBroker broker);   
 protected abstract void releaseConnection(DBBroker broker);			
 			]]></programlisting>
-			<para>Let's see now how a HSQL-dependant implementation would be going :</para>
+			<para>Let's see now how a HSQL-dependant implementation would be going by describing
+			the concrete class :</para>
 			<programlisting format="linespecific"><![CDATA[				
 package org.exist.indexing.spatial;
 
@@ -549,6 +550,7 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex {
 	public static String db_file_name_prefix = "spatial_index";    
 	public static String TABLE_NAME = "SPATIAL_INDEX_V1";    
 	private DBBroker connectionOwner = null;
+	private long connectionTimeout = 100000L;
 	    
 	public GMLHSQLIndex() {    	
 	} 
@@ -567,7 +569,23 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex {
 			operates within its own thread), a single connection will have to be controlled by the <classname>Index</classname>
 			which is controlled by the <classname>org.exist.storage.BrokerPool</classname>. See below how we will 
 			handle concurrency, given such perequisites.</para>
+			<para>The last member is the timeout when a <classname>Connection</classname> to the DB is requested.</para>
 			<para>As we can see, we have an empty constructor again.</para>
+			<para>The next method calls its ancestor's <methodname>configure()</methodname> method and just retains 
+			the content of the <sgmltag>connectionTimeout</sgmltag> attribute as defined in the configuration file.</para>
+			<programlisting format="linespecific"><![CDATA[				
+public void configure(BrokerPool pool, String dataDir, Element config) throws DatabaseConfigurationException {
+	super.configure(pool, dataDir, config);
+	String param = ((Element)config).getAttribute("connectionTimeout");
+	if (param != null) {
+		try {
+			connectionTimeout = Long.parseLong(param);
+		} catch (NumberFormatException e) {
+			LOG.error("Invalid value for 'connectionTimeout'", e);
+		}
+	}	    	
+}
+			]]></programlisting>	
 			<para>The next method is also quite straightforward :</para>			
 			<programlisting format="linespecific"><![CDATA[				
 public IndexWorker getWorker(DBBroker broker) {
@@ -579,7 +597,8 @@ public IndexWorker getWorker(DBBroker broker) {
 	return worker;
 }			
 			]]></programlisting>	
-			<para>It picks an <classname>IndeWorker</classname> for the given <parameter>broker</parameter> from the "pool".
+			<para>It picks an <classname>IndexWorker</classname> (more precisely a <classname>org.exist.indexing.spatial.GMLHSQLIndexWorker</classname> 
+			that will be described below) for the given <parameter>broker</parameter> from the "pool".
 			If needed, namely the first time the method is called with with parameter, it creates one. Notice that 
 			this <classname>IndexWorker</classname> is DB-dependant. It will be described below.</para>
 			<para>Then comme a few general-purpose methods :</para>
@@ -632,7 +651,8 @@ protected void removeIndexContent() throws DBException {
 		}		
 	} catch (SQLException e) {
 		throw new DBException(e.getMessage()); 
-	}		
+	}
+}		
 			]]></programlisting>	
 			<para><methodname>checkDatabase()</methodname> just checks that we have a suitable driver in the CLASSPATH.
 			We don't want to open the database right now. It costs too much.</para>
@@ -662,25 +682,25 @@ protected Connection acquireConnection(DBBroker broker) {
 				initializeConnection();
 	    	return conn;
 		} else {    
-    		long timeOut_ = 100000L;
-    		long waitTime = timeOut_;
+			long waitTime = connectionTimeout;
+			long waitTime = timeOut_;
 			long start = System.currentTimeMillis();
 			try {
 				for (;;) {
 					wait(waitTime);  
 					if (connectionOwner == null) {			    			
 						connectionOwner = broker;			    			
-		    			if (conn == null)
+						if (conn == null)
 		    				//We should never get there since the connection should have been initialized
 		    				///by the first request from a worker
-		    				initializeConnection();			    			
-		    	    	return conn; 			
-		    		} else {
+							initializeConnection();			    			
+						return conn; 			
+					} else {
 						waitTime = timeOut_ - (System.currentTimeMillis() - start);
 						if (waitTime <= 0) {
 							LOG.error("Time out while trying to get connection");
 						}
-		    		}
+					}
 				}
 			} catch (InterruptedException ex) {
 				notify();
@@ -898,8 +918,7 @@ protected synchronized void releaseConnection(DBBroker broker) {
                     <td align="center">DOUBLE</td>
                     <td>The area of the geometry</td>
                     <td>In the epsg:4326 SRS (measure unknown, to be clarified)</td>
-                </tr>      
-                
+                </tr>                      
 				<tr>
                     <td>IS_CLOSED</td>
                     <td align="center">BOOLEAN</td>
