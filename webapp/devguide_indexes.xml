@@ -72,7 +72,7 @@
                         		<!-- TODO : change to <literal> -->
                         		<listitem>the <ulink url="http://en.wikipedia.org/wiki/Spatial_referencing_systems">spatial referencing system</ulink> 
                         		(<envar>osgb:BNG</envar> for this polygon)</listitem>
-                        		<listitem>the polygon itself, stored in a binary form (<ulink url="http://en.wikipedia.org/wiki/Well-known_text">Well-known binary</ulink>)</listitem>
+                        		<listitem>the polygon itself, stored in a binary form (<ulink url="http://en.wikipedia.org/wiki/Well-known_text">Well-Known Binary</ulink>)</listitem>
                         		<listitem>the coordinates of its <ulink url="http://en.wikipedia.org/wiki/Minimum_bounding_rectangle">bounding box</ulink></listitem>                        		
                         	</itemizedlist>
                         	The spatial index will we discussed in details further below.
@@ -107,7 +107,7 @@
 </modules>
 			]]></markup></programlisting></para>
 			<para>... which defines 2 indexes, backed-up by their specific classes (<sgmltag>class</sgmltag> 
-			attribute ; these classes implement <classname>org.exist.indexing.Index</classname> as we will
+			attribute ; these classes implement the <classname>org.exist.indexing.Index</classname> interface as we will
 			see below), eventually assigns them a human-readable (writable even) identifier and passes them custom 
 			parameters which are implementation-dependant. Then, it configures (by calling their 
 			<methodname>configure()</methodname> method), opens (by calling their <methodname>open()</methodname> 
@@ -146,8 +146,12 @@
 			<classname>org.exist.indexing.IndexWorker</classname>s that will be described below. Each <classname>org.exist.storage.DBBroker</classname>
 			constructs such an <classname>IndexController</classname> when it is itself constructed, using this constructor :</para>		          
 			<synopsis format="linespecific">public IndexController(DBBroker broker)</synopsis>
-			<para>... that simply registers the <classname>IndexWorker</classname>s, one for each registered <classname>org.exist.indexing.Index</classname>
-		 	for this <classname>DBBroker</classname>. This <classname>IndexController</classname> will be available through the 
+			<para>... that registers the <parameter>broker</parameter>'s <classname>IndexWorker</classname>s, 
+			one for each registered <classname>Index</classname>. These <classname>IndexWorker</classname>s,
+			that will be described below, are returned by the <methodname>getWorker()</methodname> method in 
+			<classname>org.exist.indexing.Index</classname>, which is usually a good place to create such an 
+			<classname>IndexWorker</classname>, at least the first time it is called.</para>
+		 	<para>This <classname>IndexController</classname> will be available through the 
             <methodname>getIndexController()</methodname> method of <classname>org.exist.storage.DBBroker</classname>.</para>
 			<para> Here are the other public methods :</para>
 			<synopsis format="linespecific">public Map configure(NodeList configNodes, Map namespaces)</synopsis>
@@ -224,10 +228,10 @@
 			
 			<section>
 			<title><classname>org.exist.indexing.Index</classname> and <classname>org.exist.indexing.AbstractIndex</classname></title>
-			<para>Let's get now in to the interfaces and classes that will need to be extended by the index programmer. The
+			<para>Let's get now into the interfaces and classes that will need to be extended by the index programmer. The
 			first of them is the interface <classname>org.exist.indexing.Index</classname> which will maintain the index itself.</para>
 			<para>As described above, a new instance of the interface will be created by the constructor of <classname>org.exist.indexing.IndexManager</classname> 
-			which calls the <methodname>newInstance()</methodname> method. No need for a constructor then.</para>	
+			which calls the interface's <methodname>newInstance()</methodname> method. No need for a constructor then.</para>	
 			<para>Here are the methods that have to be implemented in the implementations : </para>
 			<synopsis format="linespecific">String getIndexId()</synopsis>
 			<para>Returns the class identifier of the index.</para>
@@ -236,21 +240,22 @@
 			<synopsis format="linespecific">BrokerPool getBrokerPool()</synopsis>
 			<para>Returns the <classname>org.exist.storage.BrokerPool</classname> that has created the index.</para>
 			<synopsis format="linespecific">void configure(BrokerPool pool, String dataDir, Element config)</synopsis>
-			<para>Pass a data directory (normally <filename>${EXIST_HOME}/webapp/WEB-INF/data</filename>) and the
-			configuration element in which it is declared to the <classname>Index</classname>.</para>
+			<para>Notifies the <classname>Index</classname> a data directory (normally <filename>${EXIST_HOME}/webapp/WEB-INF/data</filename>) and the
+			configuration element in which it is declared.</para>
 			<synopsis format="linespecific">void open()</synopsis>
 			<para>Method that is executed when the <classname>Index</classname> is opened, whatever it means. Consider
 			this method as an initialization one and allocate the necessary resources here.</para>
 			<synopsis format="linespecific">void close()</synopsis>
 			<para>Method that is executed when the <classname>Index</classname> is closed, whatever it means. Consider
-			this method as a finalization one and free the necessary resources here.</para>			
+			this method as a finalization one and free the allocated resources here.</para>			
 			<synopsis format="linespecific">void sync()</synopsis>			
 			<para>Unused.</para>
 			<synopsis format="linespecific">void remove()</synopsis>
 			<para>Method that is executed when eXist requires the index content to be entitrely deleted, e.g. before repairing a corrupted database.</para>			
 			<synopsis format="linespecific">IndexWorker getWorker(DBBroker broker)</synopsis>
-			<para>Returns the <classname>org.exist.indexing.IndexWorker</classname> that operates on this
-			<classname>Index</classname> on behalf of <parameter>broker</parameter>.</para>
+			<para>Returns the <classname>IndexWorker</classname> that operates on this
+			<classname>Index</classname> on behalf of <parameter>broker</parameter>. One may want to create a new <classname>IndexWorker</classname>
+			here or pick one form a pool.</para>
 			<synopsis format="linespecific">boolean checkIndex(DBBroker broker)</synopsis>
 			<para>To be called by applications that want to implement a consistency check on the <classname>Index</classname>.</para>
 			<para>There is also an abstract class that implements <classname>org.exist.indexing.Index</classname>, 
@@ -262,7 +267,9 @@
 			by <methodname>configure()</methodname> which itself receives eXist's configuration settings. Note that there might
 			be some <classname>Index</classname>es for which the concept of data directory isn't accurate.</para>
 			<synopsis format="linespecific">public void configure(BrokerPool pool, String dataDir, Element config)</synopsis>
-			<para>Its minimal implementation retains the <classname>org.exist.storage.BrokerPool</classname>, the data directory and the human-defined name, if defined in the configuration.
+			<para>Its minimal implementation retains the <classname>org.exist.storage.BrokerPool</classname>, 
+			the data directory and the human-defined name, if defined in the configuration file (in an attribute
+			called <sgmltag>id</sgmltag>).
 			Sub-classes may call <methodname>super.configure()</methodname> to retain this default behaviour.</para>
 			<para>This member is protected :</para>
 			<synopsis format="linespecific">protected static String ID = "Give me an ID !"</synopsis>
@@ -275,10 +282,10 @@
 			<title><classname>org.exist.indexing.IndexWorker</classname></title>
 			<para>The next important interface that will need to be implemented is <classname>org.exist.indexing.IndexWorker</classname>
 			which is responsible for managing the data in the index. Remember that each <classname>org.exist.storage.DBBroker</classname>
-			will have such an <classname>IndexWorker</classname> at its disposal and that eXist's <classname>org.exist.index.IndexController</classname> 
-			will know what method of <classname>IndexWorker</classname> to call and when to call it... if <methodname>getWorker()</methodname>
-			in the <classname>org.exsit.indexing.Index</classname> implementation does correctly its job, of course.</para>
-			<para>Here are the methods that have to be implemented in the implementations : </para>
+			will have such an <classname>IndexWorker</classname> at its disposal and that their 
+			<classname>IndexController</classname> will know what method of <classname>IndexWorker</classname> to call and when to call it... if <methodname>getWorker()</methodname>
+			in the concrete implementation of <classname>Index</classname> does correctly its job, of course.</para>
+			<para>Here are the methods that have to be implemented in the concrete implementations : </para>
 			<synopsis format="linespecific">public String getIndexId()</synopsis>
 			<para>Returns the class identifier of the index.</para>
 			<synopsis format="linespecific">public String getIndexName()</synopsis>
@@ -290,6 +297,8 @@
             <classname>IndexController</classname>. The <classname>IndexWorker</classname> can use this method to retain
             custom configuration options in a custom object that will be available in the <classname>java.util.Map</classname> 
             returned by <methodname>collection.getIndexConfiguration(broker).getCustomIndexSpec(INDEX_CLASS_IDENTIFIER)</methodname>.
+            The return type is free but will probably generally be an implementation of <classname>java.util.Collection</classname> in order
+            to retain several parameters.
             </para>	
 			<synopsis format="linespecific">void setDocument(DocumentImpl doc)</synopsis>
 			<para>This method sets the <classname>org.exist.dom.DocumentImpl</classname> on which this <classname>IndexWorker</classname> will have to work.</para>
@@ -307,13 +316,13 @@
 			where data insertion, update or removal should actually take place.</para>
 			<synopsis format="linespecific">void removeCollection(Collection collection, DBBroker broker)</synopsis>
 			<para>Called when a collection is to be removed. That allows to delete index entries for this collection 
-			in a single operation without a need for a <classname>org.exist.indexing.StreamListener</classname> or a call to 
+			in a single operation without a need for a <classname>StreamListener</classname> (see below) or a call to 
 			<methodname>setMode()</methodname> nor <methodname>setDocument()</methodname>.</para>
 			<synopsis format="linespecific">StoredNode getReindexRoot(StoredNode node, NodePath path, boolean includeSelf)</synopsis>
 			<para>Determines the node which should be reindexed together with its descendants. This will give a hint to 
 			the <classname>IndexController</classname> to determine from which node reindexing should start.</para>
 			<synopsis format="linespecific">StreamListener getListener()</synopsis>
-			<para>Returns a <classname>org.exist.indexing.StreamListener</classname> that will intercept the (re)indexed nodes stream.
+			<para>Returns a <classname>StreamListener</classname> that will intercept the (re)indexed nodes stream.
 			<classname>IndexWorker</classname>s that are not interested by the data (depending of e.g. the document and/or the operating mode) may return <parameter>null</parameter> here.</para>			
 			<synopsis format="linespecific">MatchListener getMatchListener(NodeProxy proxy)</synopsis>
 			<para>Returns a <classname>org.exist.indexing.MatchListener</classname>	for the given node.</para>
@@ -321,9 +330,9 @@
 			<para>To be called by applications that want to implement a consistency check on the index.</para>
 			<synopsis format="linespecific">Occurrences[] scanIndex(DocumentSet docs)</synopsis>
 			<para>Returns an array of <classname>org.exist.dom.DocumentImpl.Occurrences</classname> that is an
-			<strong>ordered</strong> list of the index entries. associated with the number of occurences for the 
+			<strong>ordered</strong> list of the index entries, in a textual form, associated with the number of occurences for the 
 			entries and a list of the documents containing them. For some indexes, the
-			concept of ordered occurrences might not be meaningful though...</para>
+			concept of ordered or textual occurrences might not be meaningful though...</para>
 			</section>
 			
 			<section>
@@ -335,21 +344,21 @@
 			<synopsis format="linespecific">public final static int REMOVE_SOME_NODES = 2;</synopsis>
 			<para>Obviously, they are used by the <methodname>setMode()</methodname> method in <classname>org.exist.indexing.IndexController</classname>
 			which is istself called by the different <classname>org.exist.storage.DBBroker</classname>s when they have to (re)index
-			a node and/or its descendants. As their name suggests, there is a mode for storing nodes and two modes
-			for removing them from the indexes. The difference between <classname>org.exist.indexing.StreamListener.REMOVE_ALL_NODES</classname> and
-			<classname>org.exist.indexing.StreamListener.REMOVE_SOME_NODES</classname> is that the former removes all the nodes from a document
+			a node and its descendants. As their name suggests, there is a mode for storing nodes and two modes
+			for removing them from the indexes. The difference between <classname>REMOVE_ALL_NODES</classname> and
+			<classname>REMOVE_SOME_NODES</classname> is that the former removes all the nodes from a document
 			whereas the latter removes only some nodes from a document, usually the descendants of the node returned by
 			<methodname>getReindexRoot()</methodname>. We thus have the opportunity to trigger a process that will directly
 			remove all the nodes from a given document without having to listen to each of them. Such a technique is described below.</para>
 			<para>Here are the methods that the implementations must implement :</para>
 			<synopsis format="linespecific">IndexWorker getWorker()</synopsis>	
-			<para>Returns the <classname>org.exist.indexing.IndexWorker</classname> that owns this <classname>StreamListener</classname>.</para>																	
+			<para>Returns the <classname>IndexWorker</classname> that owns this <classname>StreamListener</classname>.</para>																	
 			<synopsis format="linespecific">void setNextInChain(StreamListener listener);</synopsis>
 			<para>Should not be used. Used to specify which is the next <classname>StreamListener</classname> in the
-			<classname>org.exist.indexing.IndexController</classname>'s <classname>StreamListener</classname>s pipeline.</para>
+			<classname>IndexController</classname>'s <classname>StreamListener</classname>s pipeline.</para>
 			<synopsis format="linespecific">StreamListener getNextInChain();</synopsis>
 			<para>Returns the next <classname>StreamListener</classname> in the
-			<classname>org.exist.indexing.IndexController</classname>'s <classname>StreamListener</classname>s pipeline. Very important
+			<classname>IndexController</classname>'s <classname>StreamListener</classname>s pipeline. Very important
 			because it is the responsability of the <classname>StreamListener</classname> to forward the event stream to
 			the next <classname>StreamListener</classname> in the pipeline.</para>
 			<synopsis format="linespecific">void startElement(Txn transaction, ElementImpl element, NodePath path)</synopsis>																		
@@ -361,22 +370,586 @@
 			<synopsis format="linespecific">void endElement(Txn transaction, ElementImpl element, NodePath path)</synopsis>																		
 			<para>Signals the end of an element to the listener. Allow to free any temporary resource created since
 			the matching <methodname>startElement()</methodname> has been called.</para>
-			<para>Beside the <classname>org.exist.indexing.StreamListener</classname> interface, each custom
+			<para>Beside the <classname>StreamListener</classname> interface, each custom
 			listener should extend <classname>org.exist.indexing.AbstractStreamListener</classname>.</para>
 			<para>This abstract class provides concrete implementations for <methodname>setNextInChain()</methodname>
 			and <methodname>getNextInChain()</methodname> that should normally never be overriden.</para>
 			<para>It also provides dummy <methodname>startElement()</methodname>, <methodname>attribute()</methodname>,
 			<methodname>characters()</methodname>, <methodname>endElement()</methodname> methods that do nothing but
 			forwarding the node to the next <classname>StreamListener</classname> in the
-			<classname>org.exist.indexing.IndexController</classname>'s <classname>StreamListener</classname>s 
+			<classname>IndexController</classname>'s <classname>StreamListener</classname>s 
 			pipeline.</para> 
 			<synopsis format="linespecific">public abstract IndexWorker getWorker()</synopsis>
-			<para>remains abstract though, since we still can not know what <classname>org.exist.indexing.IndexWorker</classname>
-			will own the <classname>Listener</classname>.</para>  
+			<para>remains abstract though, since we still can not know what <classname>IndexWorker</classname>
+			will own the <classname>Listener</classname> until we haven't a concrete implementation.</para>  
 			</section>
         </section>
+        
         <section>
 			<title>A use case : developing an indexing architecture for GML geometries</title>
+			
+			<section>
+			<title>Introduction</title>			
+			<para>To demonstrate how modular eXist <classname>Index</classname>es are, we have decided to show how
+			a spatial <classname>Index</classname> could be implemented. What makes its design interesting is that this
+			kind of <classname>Index</classname> doesn't store character data from the document, nor does it use a
+			<classname>org.exist.storage.index.BFile</classname> to store the index entries. Instead, we will store
+			WKB index entries in a JDBC database, namely a <ulink url="http://hsqldb.org/">HSQLDB</ulink> to keep the distribution as light as possible and reduce the
+			number of external dependencies, but it wouldn't be too difficult to use another one like 
+			<ulink url="http://postgis.refractions.net/">PostGIS</ulink> given that the implementation
+			has itself been designed in a quite modular way.
+			</para>
+			<para>In eXist's SVN repository, the modularized <classname>Index</classname>es code is in 
+			<filename>extensions/indexes</filename> and the file system's architecture is designed to follow
+			eXist's core architecture, i.e. <classname>org.exist.indexing.*</classname> for the <classname>Index</classname>es
+			and <classname>org.exist.xquery.*</classname> for their associated <classname>Module</classname>s. There is also a dedicated location for required external
+			libraries and for the test cases. The build system should normally be able to build the all the files
+			automatically and even launch the tests provided that the DB's configuration file declares the
+			<classname>Index</classname>es (see above) and their associated <classname>Module</classname>s (see below).</para>
+			<para>The described spatial <classname>Index</classname> heavily relies on the excellent open source 
+			librairies provided by the <ulink url="http://geotools.codehaus.org/">Geotools</ulink> project. We
+			have experienced a few problems that will be mentioned further, but since feedback has been provided,
+			the situation will unquestionably improve in the future, making current workarounds useless.</para>
+			<para>The <classname>Index</classname> has been tested with only one file which is available from the
+			<ulink url="">Ordnance Survey of Great-Britain</ulink>, a topography layer of Port-Talbot, which
+			is available as <ulink url="http://www.ordnancesurvey.co.uk/oswebsite/products/osmastermap/layers/topography/sample.html">sample data</ulink>.
+			Shall we mention that obtaining <strong>valid</strong> and sizeable GML data is still extremely difficult ?
+			</para>
+			</section>
+			
+			<section>
+			<title>Writing the concrete implementation of <classname>org.exist.indexing.AbstractIndex</classname></title>
+			<para>Well, in fact we will start by writing an abstract implementation first. As said above, we have
+			planned a modular JDBC spatial <classname>Index</classname>, which will be abstract, and that will be extended by a concrete HSQLB <classname>Index</classname>.</para>
+			<para>Let's start with this :</para>
+			<programlisting format="linespecific"><![CDATA[
+package org.exist.indexing.spatial;			
+			
+public abstract class AbstractGMLJDBCIndex extends AbstractIndex {
+
+	public final static String ID = AbstractGMLJDBCIndex.class.getName();	
+	private final static Logger LOG = Logger.getLogger(AbstractGMLJDBCIndex.class);
+	protected HashMap workers = new HashMap();
+	protected Connection conn = null;
+    
+}
+			]]></programlisting>
+			<para> ... where we define an abstract class that extends <classname>org.exist.indexing.AbstractIndex</classname> and thus
+			implements <classname>org.exist.indexing.Index</classname>. We also
+			define a few members like <parameter>ID</parameter> that will be returned by the unoverriden <methodname>getIndexId()</methodname> from
+			<classname>org.exist.indexing.AbstractIndex</classname>, a <classname>Logger</classname>, 
+			a <classname>java.util.HashMap</classname> that will be a "pool" of	<classname>IndexWorker</classname>s
+			(one for each <classname>org.exist.storage.DBBroker</classname>) and a <classname>java.sql.Connection</classname>
+			that will handle the database operations at the index level.
+			</para>
+			<para>Let' now introduce this general purpose interface :</para>
+			<programlisting format="linespecific"><![CDATA[
+public interface SpatialOperator { 
+	public static int UNKNOWN = -1;
+	public static int EQUALS = 1;
+	public static int DISJOINT = 2;
+	public static int INTERSECTS = 3;
+	public static int TOUCHES = 4;
+	public static int CROSSES = 5;
+	public static int WITHIN = 6;
+	public static int CONTAINS = 7;
+	public static int OVERLAPS = 8;
+}			
+			]]></programlisting>
+			<para>... that defines the spatial operators that will be used by spatial queries (what would be
+			worth a spatial index that doesn't support spatial queries ?). For more information about the
+			semantics, see the <ulink url="http://www.vividsolutions.com/jts/bin/JTS%20Technical%20Specs.pdf">JTS documentation</ulink> 
+			(chapter 11). We will use this wonderful library everytime a spatial computation is required. So does
+			the Geotools project by the way.</para>
+			<para>Let's see now a few concrete methods that should be usable by any JDBC database :</para>
+			<programlisting format="linespecific"><![CDATA[			 
+public AbstractGMLJDBCIndex() {    	
+}  
+    
+public void configure(BrokerPool pool, String dataDir, Element config) throws DatabaseConfigurationException {        
+	super.configure(pool, dataDir, config);
+	try {
+		checkDatabase();
+	} catch (ClassNotFoundException e) {
+		throw new DatabaseConfigurationException(e.getMessage()); 
+	} catch (SQLException e) {
+		throw new DatabaseConfigurationException(e.getMessage()); 
+	}
+}
+
+public void open() throws DatabaseConfigurationException {     
+}
+
+public void close() throws DBException {
+	Iterator i = workers.values().iterator();
+	while (i.hasNext()) {
+		AbstractGMLJDBCIndexWorker worker = (AbstractGMLJDBCIndexWorker)i.next();		
+		worker.flush();		
+		worker.setDocument(null, StreamListener.UNKNOWN);
+	}
+	shutdownDatabase();
+}
+
+public void sync() throws DBException {
+}
+    
+public void remove() throws DBException {
+	Iterator i = workers.values().iterator();
+	while (i.hasNext()) {
+		AbstractGMLJDBCIndexWorker worker = (AbstractGMLJDBCIndexWorker)i.next();		
+		worker.flush();		
+		worker.setDocument(null, StreamListener.UNKNOWN);
+	}
+	removeIndexContent();
+	shutdownDatabase();
+	deleteDatabase();	
+}			
+
+public boolean checkIndex(DBBroker broker) {
+	return getWorker(broker).checkIndex(broker);
+} 
+			]]></programlisting>
+			<para>First, an empty constructor, not even necessary since the <classname>Index</classname> is created through
+			the <methodname>newInstance()</methodname> method or its interface (see above).</para>
+			<para>Then, a configuration method that calls its ancestor, whose behaviour fullfills our needs.
+			This method calls a <methodname>checkDatabase()</methodname> method whose semantics will be dependant of the
+			underlying DB. The basic idea is to prevent eXist to continue its initialization if there is a problem with the DB.</para>		 
+			<para>Then we will do nothing during <methodname>open()</methodname>. No need to open a database, which is costly,
+			if we dont need it.</para>
+			<para>The <methodname>close()</methodname> will flush any pending operation currently queued by the <classname>IndexWorker</classname>s
+			and resets their state in order to prevent them to start any further operation, which should never be possible if eXist is their only user.
+			Then it will call a <methodname>shutdownDatabase()</methodname> method whose semantics will be dependant
+			 of the	underlying DB. They can be fairly simple for DBs that shut down automatically when the virtual
+			 machine shuts down.</para>
+			 <para>The <methodname>sync()</methodname> is never called by eXist. It's here to make the interface happy.</para>
+			 <para>The <methodname>remove()</methodname> method is similar to <methodname>close()</methodname>. It then
+			 calls two database-dependant methods that are pretty redundant. <methodname>deleteDatabase()</methodname> will
+			 probably not be able to do what its name suggests if eXist doesn't own the admin rights. Conversely,
+			 <methodname>removeIndexContent()</methodname> wiould probably have nothing to do if eXist owns the admin rights
+			 since physically destroying the DB would probably be more efficient than deleteing table contents.</para>
+			 <para><methodname>checkIndex()</methodname> will delegate the task to the <parameter>broker</parameter>'s
+			 <classname>IndexWorker</classname>.</para>
+			 <para>The remaining methods are DB-dependant and thus abstract :</para>
+			<programlisting format="linespecific"><![CDATA[				
+public abstract IndexWorker getWorker(DBBroker broker);
+protected abstract void checkDatabase() throws ClassNotFoundException, SQLException;
+protected abstract void shutdownDatabase() throws DBException;
+protected abstract void deleteDatabase() throws DBException;
+protected abstract void removeIndexContent() throws DBException;
+protected abstract Connection acquireConnection(DBBroker broker);   
+protected abstract void releaseConnection(DBBroker broker);			
+			]]></programlisting>
+			<para>Let's see now how a HSQL-dependant implementation would be going :</para>
+			<programlisting format="linespecific"><![CDATA[				
+package org.exist.indexing.spatial;
+
+public class GMLHSQLIndex extends AbstractGMLJDBCIndex {
+	
+	private final static Logger LOG = Logger.getLogger(GMLHSQLIndex.class);	
+	public static String db_file_name_prefix = "spatial_index";    
+	public static String TABLE_NAME = "SPATIAL_INDEX_V1";    
+	private DBBroker connectionOwner = null;
+	    
+	public GMLHSQLIndex() {    	
+	} 
+	
+}			]]></programlisting>
+			<para>Of course, we extend <classname>org.exist.indexing.spatial.AbstractGMLJDBCIndex</classname>, then
+			a few members are defined : a <classname>Logger</classname>, a file prefix (which will be required by the files 
+			required by HSQLDB storage, namely <filename>spatial_index.lck</filename>, <filename>spatial_index.log</filename>,
+			<filename>spatial_index.script</filename> and <filename>spatial_index.properties</filename>), then a table name in which
+			the spatial index data will be stored, then a variable that will hold the <classname>org.exist.storage.DBBroker</classname>
+			that currently holds a connection to the DB (we could have used an <classname>IndexWorker</classname> here,
+			given their 1:1 relationship). The problem is that we run HSQLB in embedded mode and that only one connection is available at a given time.</para>
+			<para>A more elaborated	DBMS, or HSQLDB running in server mode would permit the allocation of one connection per 
+			<classname>IndexWorker</classname>, but we have chosen to keep things simple for now. Indeed, if 
+			<classname>IndexWorker</classname>s are thread-safe (because each <classname>org.exist.storage.DBBroker</classname> 
+			operates within its own thread), a single connection will have to be controlled by the <classname>Index</classname>
+			which is controlled by the <classname>org.exist.storage.BrokerPool</classname>. See below how we will 
+			handle concurrency, given such perequisites.</para>
+			<para>As we can see, we have an empty constructor again.</para>
+			<para>The next method is also quite straightforward :</para>			
+			<programlisting format="linespecific"><![CDATA[				
+public IndexWorker getWorker(DBBroker broker) {
+	GMLHSQLIndexWorker worker = (GMLHSQLIndexWorker)workers.get(broker);    	
+	if (worker == null) {
+		worker = new GMLHSQLIndexWorker(this, broker);
+		workers.put(broker, worker);
+	}
+	return worker;
+}			
+			]]></programlisting>	
+			<para>It picks an <classname>IndeWorker</classname> for the given <parameter>broker</parameter> from the "pool".
+			If needed, namely the first time the method is called with with parameter, it creates one. Notice that 
+			this <classname>IndexWorker</classname> is DB-dependant. It will be described below.</para>
+			<para>Then comme a few general-purpose methods :</para>
+			<programlisting format="linespecific"><![CDATA[				
+protected void checkDatabase() throws ClassNotFoundException, SQLException {	
+	Class.forName("org.hsqldb.jdbcDriver");		
+}
+    
+protected void shutdownDatabase() throws DBException {
+	try {
+		if (conn != null) {
+			Statement stmt = conn.createStatement();				
+			stmt.executeQuery("SHUTDOWN");
+			stmt.close();
+			conn.close();				
+			if (LOG.isDebugEnabled()) 
+		    LOG.debug("GML index: " + getDataDir() + "/" + db_file_name_prefix + " closed");
+		}
+	} catch (SQLException e) {
+		throw new DBException(e.getMessage()); 
+	} finally {
+		conn = null;
+	}
+}
+    
+protected void deleteDatabase() throws DBException {
+	File directory = new File(getDataDir());
+	File[] files = directory.listFiles( 
+		new FilenameFilter() {
+			public boolean accept(File dir, String name) {
+				return name.startsWith(db_file_name_prefix);
+			}
+		}
+	);
+	boolean deleted = true;
+	for (int i = 0; i < files.length ; i++) {
+		deleted &= files[i].delete();
+	}
+}
+    
+protected void removeIndexContent() throws DBException {
+	try {
+		//Let's be lazy here : we only delete th index content if we have a connection
+		if (conn != null) {
+			Statement stmt = conn.createStatement(); 
+		    int nodeCount = stmt.executeUpdate("DELETE FROM " + GMLHSQLIndex.TABLE_NAME + ";");       
+		    stmt.close();
+		    if (LOG.isDebugEnabled()) 
+		        LOG.debug("GML index: " + getDataDir() + "/" + db_file_name_prefix + ". " + nodeCount + " nodes removed");
+		}		
+	} catch (SQLException e) {
+		throw new DBException(e.getMessage()); 
+	}		
+			]]></programlisting>	
+			<para><methodname>checkDatabase()</methodname> just checks that we have a suitable driver in the CLASSPATH.
+			We don't want to open the database right now. It costs too much.</para>
+			<para><methodname>shutdownDatabase()</methodname> is just one of the many ways to shutdown a HSQLDB.</para>
+			<para><methodname>deleteDatabase()</methodname> is just a file system management problem ; remember that
+			the database should be closed at that moment : no file locking issues.</para>
+			<para><methodname>removeIndexContent()</methodname> deletes the table that contains spatial data. Less
+			efficient than deleteing the whole databse though ;-), as explained above.</para>
+			<para>The 2 next methods are totally JDBC-specific and, given the way they are implemented, are
+			totally embedded HSQLDB-specific. The <emphasis>current</emphasis> code is directly adapted from <classname>org.exist.storage.lock.ReentrantReadWriteLock</classname>
+			to show that connection management should be severely controlled given the concurrency context induced by
+			using many <classname>org.exist.storage.DBBroker</classname>. Despite the fact <classname>DBBroker</classname>s are 
+			thread-safe, access to <strong>shared</strong> storage must be concurrential, in particular when <methodname>flush()</methodname> is called.
+			</para>
+			<para><classname>org.exist.storage.index.BFile</classname> users would call <methodname>getLock()</methodname> to
+			acquire and release locks on the index files. Our solution is thus very similar.</para>
+			<para>However, since most JDBC databases are fortunately able to work in a concurrential context. It 
+			would then be better to never call these <classname>Index</classname>-level
+			methods from the <classname>IndexWorker</classname>s and let each <classname>IndexWorker</classname>
+			handle its connection to the underlying DB.</para>
+			<programlisting format="linespecific"><![CDATA[				
+protected Connection acquireConnection(DBBroker broker) {
+	synchronized (this) {	
+		if (connectionOwner == null) {
+			connectionOwner = broker;
+			if (conn == null)
+				initializeConnection();
+	    	return conn;
+		} else {    
+    		long timeOut_ = 100000L;
+    		long waitTime = timeOut_;
+			long start = System.currentTimeMillis();
+			try {
+				for (;;) {
+					wait(waitTime);  
+					if (connectionOwner == null) {			    			
+						connectionOwner = broker;			    			
+		    			if (conn == null)
+		    				//We should never get there since the connection should have been initialized
+		    				///by the first request from a worker
+		    				initializeConnection();			    			
+		    	    	return conn; 			
+		    		} else {
+						waitTime = timeOut_ - (System.currentTimeMillis() - start);
+						if (waitTime <= 0) {
+							LOG.error("Time out while trying to get connection");
+						}
+		    		}
+				}
+			} catch (InterruptedException ex) {
+				notify();
+				throw new RuntimeException("interrupted while waiting for lock");
+			}
+		}
+	}
+}
+
+protected synchronized void releaseConnection(DBBroker broker) {   
+	connectionOwner = null;
+}  			
+			]]></programlisting>
+			<para><methodname>acquireConnection()</methodname> acquires an <strong>exclusive</strong> JDBC <classname>Connection</classname> to
+			the storage engine for an <classname>IndexWorker</classname> (or a <classname>org.exist.storage.DBBroker</classname>, which 
+			roughly means the same thing). This is where a <classname>Connection</classname> is created if necessary (see below)
+			and that's why eXist will have to pay the first connection's performance cost only when needed.</para>
+			<para><methodname>releaseConnection()</methodname> marks the connection as being unused. It will thus
+			become available when requested again.</para>
+			<para>The last method concentrates the index-level DB-dependant code in just one place (<methodname>removeIndexContent()</methodname>
+			is relatively DB-independant).</para>
+			<programlisting format="linespecific"><![CDATA[				
+ private void initializeConnection() {
+	try {
+		System.setProperty("hsqldb.cache_scale", "11");
+		System.setProperty("hsqldb.cache_size_scale", "12");
+		System.setProperty("hsqldb.default_table_type", "cached");
+		//Get a connection to the DB... and keep it
+		this.conn = DriverManager.getConnection("jdbc:hsqldb:" + getDataDir() + "/" + db_file_name_prefix /* + ";shutdown=true" */, "sa", "");
+		ResultSet rs = null;
+		try {
+			rs = this.conn.getMetaData().getTables(null, null, TABLE_NAME, new String[] { "TABLE" });
+			rs.last(); 
+			if (rs.getRow() == 1) {
+				if (LOG.isDebugEnabled()) 
+				    LOG.debug("Opened GML index: " + getDataDir() + "/" + db_file_name_prefix); 
+			//Create the data structure if it doesn't exist
+			} else if (rs.getRow() == 0) {
+				Statement stmt = conn.createStatement();
+				stmt.executeUpdate("CREATE TABLE " + TABLE_NAME + "(" +
+					/*1*/ "DOCUMENT_URI VARCHAR, " +        		
+					/*2*/ "NODE_ID_UNITS INTEGER, " + 
+					/*3*/ "NODE_ID BINARY, " +        			
+					...	        	
+					/*26*/ "IS_VALID BOOLEAN, " +
+					//Enforce uniqueness
+					"UNIQUE (" +
+						"DOCUMENT_URI, NODE_ID" +
+					")" +
+					")"
+				);
+				stmt.executeUpdate("CREATE INDEX DOCUMENT_URI ON " + TABLE_NAME + " (DOCUMENT_URI);");
+				...
+				stmt.close();        	
+				if (LOG.isDebugEnabled()) 
+				    LOG.debug("Created GML index: " + getDataDir() + "/" + db_file_name_prefix);  
+			} else {
+				throw new SQLException("2 tables with the same name ?"); 
+			}
+		} finally {
+			if (rs != null)
+				rs.close();    				
+		}        
+	} catch (SQLException e) {
+		LOG.error(e);
+		this.conn = null;
+	}
+} 			
+			]]></programlisting>
+			<para>This method opens a <classname>Connection</classname> and, if it is a new one (<strong>the</strong>
+			new one since we only have one), checks that we have a SQL table for the spatial data. If not, i.e. if
+			the spatial index doesn't exist yet, a table is created with the following structure :</para>
+    
+			<table cellpadding="5" cellspacing="5" >
+                <tr>
+                    <th style="background-color: #C5DAFF" align="left">Field name</th>
+                    <th style="background-color: #C5DAFF" align="center">Field type</th>
+                    <th style="background-color: #C5DAFF" align="left">Description</th>
+                    <th style="background-color: #C5DAFF" align="left">Comments</th>
+                </tr>
+                <tr>
+                    <td>DOCUMENT_URI</td>
+                    <td align="center">VARCHAR</td>
+                    <td>The document's URI</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>NODE_ID_UNITS</td>
+                    <td align="center">INTEGER</td>
+                    <td>The number of useful <strong>bits</strong> in NODE_ID</td>
+                    <td>See below</td>
+                </tr>    
+                <tr>
+                    <td>NODE_ID</td>
+                    <td align="center">BINARY</td>
+                    <td>The node ID, as a byte array</td>
+                    <td>See above. Only some bits are considered du to obvious data alignment requirements</td>
+                </tr>   
+                <tr>
+                    <td>GEOMETRY_TYPE</td>
+                    <td align="center">VARCHAR</td>
+                    <td>The geometry type</td>
+                    <td>As returned by the JTS</td>
+                </tr>   
+                <tr>
+                    <td>SRS_NAME</td>
+                    <td align="center">VARCHAR</td>
+                    <td>The SRS of the geometry</td>
+                    <td><sgmltag>srsName</sgmltag> attribute in the GML element</td>
+                </tr>   
+                <tr>
+                    <td>WKT</td>
+                    <td align="center">VARCHAR</td>
+                    <td>The <ulink url="http://de.wikipedia.org/wiki/Well_Known_Text">Well-Known Text</ulink> representation of the geometry</td>
+                    <td></td>
+                </tr>                 
+                <tr>
+                    <td>WKB</td>
+                    <td align="center">BINARY</td>
+                    <td>The WKB representation of the geometry</td>
+                    <td></td>
+                </tr>  
+                <tr>
+                    <td>MINX</td>
+                    <td align="center">DOUBLE</td>
+                    <td>The minimal X of the geometry</td>
+                    <td></td>
+                </tr>  
+                <tr>
+                    <td>MAXX</td>
+                    <td align="center">DOUBLE</td>
+                    <td>The maximal X of the geometry</td>
+                    <td></td>
+                </tr>  
+                <tr>
+                    <td>MINY</td>
+                    <td align="center">DOUBLE</td>
+                    <td>The minimal Y of the geometry</td>
+                    <td></td>
+                </tr>  
+				<tr>
+                    <td>MAXY</td>
+                    <td align="center">DOUBLE</td>
+                    <td>The maximal Y of the geometry</td>
+                    <td></td>
+                </tr>   
+                <tr>
+                    <td>CENTROID_X</td>
+                    <td align="center">DOUBLE</td>
+                    <td>The X of the geometry's centroid</td>
+                    <td></td>
+                </tr>  
+				<tr>
+                    <td>CENTROID_Y</td>
+                    <td align="center">DOUBLE</td>
+                    <td>The Y of the geometry's centroid</td>
+                    <td></td>
+                </tr>     
+				<tr>
+                    <td>AREA</td>
+                    <td align="center">DOUBLE</td>
+                    <td>The area of the geometry</td>
+                    <td>Expressed in the measure defined in its SRS</td>
+                </tr> 
+                <tr>
+                    <td>EPSG4326_WKT</td>
+                    <td align="center">VARCHAR</td>
+                    <td>The WKT representation of the geometry</td>
+                    <td>In the <ulink url="http://en.wikipedia.org/wiki/EPSG:4326">epsg:4326</ulink> SRS</td>
+                </tr>                 
+                <tr>
+                    <td>EPSG4326_WKB</td>
+                    <td align="center">BINARY</td>
+                    <td>The WKB representation of the geometry</td>
+                    <td>In the epsg:4326 SRS</td>
+                </tr>  
+                <tr>
+                    <td>EPSG4326_MINX</td>
+                    <td align="center">DOUBLE</td>
+                    <td>The minimal X of the geometry</td>
+                    <td>In the epsg:4326 SRS</td>
+                </tr>  
+                <tr>
+                    <td>EPSG4326_MAXX</td>
+                    <td align="center">DOUBLE</td>
+                    <td>The maximal X of the geometry</td>
+                    <td>In the epsg:4326 SRS</td>
+                </tr>  
+                <tr>
+                    <td>EPSG4326_MINY</td>
+                    <td align="center">DOUBLE</td>
+                    <td>The minimal Y of the geometry</td>
+                    <td>In the epsg:4326 SRS</td>
+                </tr>  
+				<tr>
+                    <td>EPSG4326_MAXY</td>
+                    <td align="center">DOUBLE</td>
+                    <td>The maximal Y of the geometry</td>
+                    <td>In the epsg:4326 SRS</td>
+                </tr>   
+                <tr>
+                    <td>EPSG4326_CENTROID_X</td>
+                    <td align="center">DOUBLE</td>
+                    <td>The X of the geometry's centroid</td>
+                    <td>In the epsg:4326 SRS</td>
+                </tr>  
+				<tr>
+                    <td>EPSG4326_CENTROID_Y</td>
+                    <td align="center">DOUBLE</td>
+                    <td>The Y of the geometry's centroid</td>
+                    <td>In the epsg:4326 SRS</td>
+                </tr>     
+				<tr>
+                    <td>EPSG4326_AREA</td>
+                    <td align="center">DOUBLE</td>
+                    <td>The area of the geometry</td>
+                    <td>In the epsg:4326 SRS (measure unknown, to be clarified)</td>
+                </tr>      
+                
+				<tr>
+                    <td>IS_CLOSED</td>
+                    <td align="center">BOOLEAN</td>
+                    <td>Whether or not this geometry is "closed"</td>
+                    <td>See the <ulink url="http://www.vividsolutions.com/jts/bin/JTS%20Technical%20Specs.pdf">JTS documentation</ulink> (chapter 13)</td>
+                </tr>  
+				<tr>
+                    <td>IS_SIMPLE</td>
+                    <td align="center">BOOLEAN</td>
+                    <td>Whether or not this geometry is "simple"</td>
+                    <td>See the <ulink url="http://www.vividsolutions.com/jts/bin/JTS%20Technical%20Specs.pdf">JTS documentation</ulink> (chapter 13)</td>                    
+                </tr>
+				<tr>
+                    <td>IS_VALID</td>
+                    <td align="center">BOOLEAN</td>
+                    <td>Whether or not this geometry is "valid"</td>
+                    <td>See the <ulink url="http://www.vividsolutions.com/jts/bin/JTS%20Technical%20Specs.pdf">JTS documentation</ulink> (chapter 13). Should always be TRUE</td>                    
+                </tr>                                                                 
+            </table>
+            <para>Also, indexes are created on these fields to help queries :</para>
+            <itemizedlist>  
+            	<listitem>DOCUMENT_URI</listitem>  	
+            	<listitem>NODE_ID</listitem>  	
+            	<listitem>GEOMETRY_TYPE</listitem>  	
+            	<listitem>WKB</listitem>  	
+            	<listitem>EPSG4326_WKB</listitem>  	
+            	<listitem>EPSG4326_MINX</listitem>  	
+            	<listitem>EPSG4326_MAXX</listitem>  	
+            	<listitem>EPSG4326_MINY</listitem>  	
+            	<listitem>EPSG4326_MAXY</listitem>  	
+            	<listitem>EPSG4326_CENTROID_X</listitem>  	
+            	<listitem>EPSG4326_CENTROID_Y</listitem> 
+            </itemizedlist>
+            <para>EPSG4326 fields are particularly important because every geometry will be internally stored in 
+            <strong>both</strong> its original and epsg:4326 SRS. Having this kind of common world-wide applicable SRS allows to make 
+            operations on geometries that are defined in different SRSes.</para>
+        			
+
+			<!--			
+			<para>       			  		
+			
+			</para>			
+			<programlisting format="linespecific"><![CDATA[				
+			
+			]]></programlisting>
+			-->
+																	
+			</section>				
 		</section>
+					
+			
     </chapter>
 </book>
