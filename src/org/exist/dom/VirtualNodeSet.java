@@ -274,7 +274,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
      * The method <code>parentWithChild</code>
      *
      * @param proxy a <code>NodeProxy</code> value
-     * @param directParent a <code>boolean</code> value
+     * @param restrictToDirectParent a <code>boolean</code> value
      * @param includeSelf a <code>boolean</code> value
      * @param level an <code>int</code> value
      * @return a <code>NodeProxy</code> value
@@ -293,7 +293,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
      *
      * @param doc a <code>DocumentImpl</code> value
      * @param nodeId a <code>NodeId</code> value
-     * @param directParent a <code>boolean</code> value
+     * @param restrictToDirectParent a <code>boolean</code> value
      * @param includeSelf a <code>boolean</code> value
      * @return a <code>NodeProxy</code> value
      */
