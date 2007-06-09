@@ -378,7 +378,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 				try {
 					MemTreeBuilder builder = context.getDocumentBuilder();
 			        DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(builder);
-					result = (NodeValue)indexWorker.getGML(geometry, srsName, receiver);
+					result = (NodeValue)indexWorker.streamGeometry(geometry, srsName, receiver);
 				} finally {
 		            context.popDocumentContext();
 		        }

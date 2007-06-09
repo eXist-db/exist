@@ -151,7 +151,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         Map map = null;      
         for(int i = 0; i < configNodes.getLength(); i++) {
         	Node node = configNodes.item(i);
-            if(node.getNodeType() == Node.ELEMENT_NODE &&
+            if (node.getNodeType() == Node.ELEMENT_NODE &&
                     INDEX_ELEMENT.equals(node.getLocalName())) { 
                 map = new TreeMap();
                 GMLIndexConfig config = new GMLIndexConfig(namespaces, (Element)node);
@@ -238,6 +238,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 
     public void flush() {
     	if (!isDocumentGMLAware)
+    		//Not concerned
     		return;
     	//Is the job already done ?
     	if (mode == StreamListener.REMOVE_ALL_NODES && documentDeleted)
@@ -275,6 +276,51 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
             }        		
         	releaseConnection(conn);
         }
+    }
+
+    private void saveDocumentNodes(Connection conn) throws SQLException {
+        if (geometries.size() == 0)
+            return;  
+        try {	        
+	        for (Iterator iterator = geometries.entrySet().iterator(); iterator.hasNext();) {
+	            Map.Entry entry = (Map.Entry) iterator.next();
+	            NodeId nodeId = (NodeId)entry.getKey();
+	            SRSGeometry srsGeometry = (SRSGeometry)entry.getValue();       	
+	            try {
+	            	saveGeometryNode(srsGeometry.getGeometry(), srsGeometry.getSRSName(), 
+	            			currentDoc, nodeId, conn);
+	            } finally {
+	            	//Help the garbage collector
+	            	srsGeometry = null;
+	            }
+	        }
+        } finally {
+        	geometries.clear();
+        }
+    }
+
+    private void dropDocumentNode(Connection conn) throws SQLException {    	
+        if (currentNodeId == null)
+            return;        
+        try {         
+	        boolean removed = removeDocumentNode(currentDoc, currentNodeId, conn);
+	        if (!removed)
+	        	LOG.error("No data dropped for node " + currentNodeId.toString() + " from GML index");
+	        else {
+	        	if (LOG.isDebugEnabled())	            
+	            	LOG.debug("Dropped data for node " + currentNodeId.toString() + " from GML index");
+	    	}
+        } finally {        
+        	currentNodeId = null;
+        }
+    }
+    
+    private void removeDocument(Connection conn) throws SQLException {
+	        if (LOG.isDebugEnabled())
+	            LOG.debug("Dropping GML index for document " + currentDoc.getURI());        
+	        int nodeCount = removeDocument(currentDoc, conn);
+	        if (LOG.isDebugEnabled())
+	            LOG.debug("Dropped " + nodeCount + " nodes from GML index");
     }
 
     public void removeCollection(Collection collection, DBBroker broker) {
@@ -362,19 +408,6 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     	return result;
     }
     
-    public NodeSet isIndexed(DBBroker broker, Geometry EPSG4326_geometry) 
-    	throws SpatialIndexException {
-    	Connection conn = null;
-    	try { 
-    		conn = acquireConnection();
-    		return isIndexed(broker, EPSG4326_geometry, conn);
-    	} catch (SQLException e) {
-    		throw new SpatialIndexException(e); 			
-		} finally {
-			releaseConnection(conn);
-		}     	
-    }
-    
     public NodeSet search(DBBroker broker, NodeSet contextSet, Geometry EPSG4326_geometry, int spatialOp)
     	throws SpatialIndexException {
     	Connection conn = null;
@@ -430,7 +463,7 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     	return streamedGeometry;
     }
     
-    public Element getGML(Geometry geometry, String srsName, Receiver receiver) throws SpatialIndexException {       
+    public Element streamGeometry(Geometry geometry, String srsName, Receiver receiver) throws SpatialIndexException {       
 	    //YES !!!
 	     String gmlString = null;
 		try {
@@ -486,59 +519,6 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     	return TransformationsFactory.getTransform(sourceCRS, targetCRS);
 	}    
     
-    abstract Connection acquireConnection();
-    
-    abstract void releaseConnection(Connection conn);
-    
-    private void saveDocumentNodes(Connection conn) throws SQLException {
-        if (geometries.size() == 0)
-            return;  
-        try {	        
-	        for (Iterator iterator = geometries.entrySet().iterator(); iterator.hasNext();) {
-	            Map.Entry entry = (Map.Entry) iterator.next();
-	            NodeId nodeId = (NodeId)entry.getKey();
-	            SRSGeometry srsGeometry = (SRSGeometry)entry.getValue();       	
-	            try {
-	            	saveGeometryNode(srsGeometry.getGeometry(), srsGeometry.getSRSName(), 
-	            			currentDoc, nodeId, conn);
-	            } finally {
-	            	//Help the garbage collector
-	            	srsGeometry = null;
-	            }
-	        }
-        } finally {
-        	geometries.clear();
-        }
-    }
-
-    private void dropDocumentNode(Connection conn) throws SQLException {    	
-        if (currentNodeId == null)
-            return;        
-        try {         
-	        boolean removed = removeDocumentNode(currentDoc, currentNodeId, conn);
-	        if (!removed)
-	        	LOG.error("No data dropped for node " + currentNodeId.toString() + " from GML index");
-	        else {
-	        	if (LOG.isDebugEnabled())	            
-	            	LOG.debug("Dropped data for node " + currentNodeId.toString() + " from GML index");
-	    	}
-        } finally {        
-        	currentNodeId = null;
-        }
-    }
-    
-    private void removeDocument(Connection conn) {
-    	try {
-	        if (LOG.isDebugEnabled())
-	            LOG.debug("Dropping GML index for document " + currentDoc.getURI());        
-	        int nodeCount = removeDocument(currentDoc, conn);
-	        if (LOG.isDebugEnabled())
-	            LOG.debug("Dropped " + nodeCount + " nodes from GML index");
-    	} catch (SQLException e) {
-    		LOG.error(e);
-    	}
-    }
-    
     protected abstract boolean saveGeometryNode(Geometry geometry, String srsName, DocumentImpl doc, NodeId nodeId, Connection conn) throws SQLException;
     
     protected abstract boolean removeDocumentNode(DocumentImpl doc, NodeId nodeID, Connection conn) throws SQLException;
@@ -557,8 +537,10 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     
     protected abstract NodeSet search(DBBroker broker, NodeSet contextSet, Geometry EPSG4326_geometry, int spatialOp, Connection conn) throws SQLException;
     
-    protected abstract NodeSet isIndexed(DBBroker broker, Geometry EPSG4326_geometry, Connection conn) throws SQLException;    
-
+    protected abstract Connection acquireConnection();
+    
+    protected abstract void releaseConnection(Connection conn);
+    
     private class GMLStreamListener extends AbstractStreamListener {
 
     	Stack srsNamesStack = new Stack();
