@@ -228,11 +228,11 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     //Since an embedded HSQL has only one connection available (unless I'm totally dumb)
     //acquire and release the connection from the index, which is *the* connection's owner 
     
-    protected Connection acquireConnection() {   
+    protected Connection acquireConnection() throws SQLException {   
     	return index.acquireConnection(this.broker);
     }
     
-    protected void releaseConnection(Connection conn) {   
+    protected void releaseConnection(Connection conn) throws SQLException {   
     	index.releaseConnection(this.broker);
     }
     
@@ -370,7 +370,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
     	}
     }
     
-    protected boolean checkIndex(DBBroker broker, Connection conn) throws SQLException, SpatialIndexException {
+    protected boolean checkIndex(DBBroker broker, Connection conn) throws SQLException {
     	PreparedStatement ps = conn.prepareStatement(
 	    		"SELECT * FROM " + GMLHSQLIndex.TABLE_NAME + ";"
 	    	);
@@ -424,11 +424,18 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
 	            }	        	
 	        	
 	        	String srsName = rs.getString("SRS_NAME");
-            	if (!transformGeometry(original_geometry, srsName, "EPSG:4326").equals(EPSG4326_geometry)) {
-	        		LOG.info("Transformed original geometry inconsistent with stored tranformed one");
-            		return false;
-            	}
-	
+	        	try {
+	            	if (!transformGeometry(original_geometry, srsName, "EPSG:4326").equals(EPSG4326_geometry)) {
+		        		LOG.info("Transformed original geometry inconsistent with stored tranformed one");
+	            		return false;
+	            	}
+	        	} catch (SpatialIndexException e) {
+	            	//Transforms the exception into an SQLException.
+	            	SQLException ee = new SQLException(e.getMessage());
+	            	ee.initCause(e);
+	            	throw ee;
+	        	}
+
 	            if (EPSG4326_geometry.getEnvelopeInternal().getMinX() != rs.getDouble("EPSG4326_MINX")) {
 	            	LOG.info("Inconsistent MinX: " + rs.getDouble("EPSG4326_MINX"));
 	    			return false;

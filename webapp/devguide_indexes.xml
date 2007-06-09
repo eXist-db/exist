@@ -537,8 +537,8 @@ protected abstract void checkDatabase() throws ClassNotFoundException, SQLExcept
 protected abstract void shutdownDatabase() throws DBException;
 protected abstract void deleteDatabase() throws DBException;
 protected abstract void removeIndexContent() throws DBException;
-protected abstract Connection acquireConnection(DBBroker broker);   
-protected abstract void releaseConnection(DBBroker broker);			
+protected abstract Connection acquireConnection(DBBroker broker) throws SQLException;   
+protected abstract void releaseConnection(DBBroker broker) throws SQLException;			
 			]]></programlisting>
 			<para>Let's see now how a HSQL-dependant implementation would be going by describing
 			the concrete class :</para>
@@ -675,7 +675,7 @@ protected void removeIndexContent() throws DBException {
 			methods from the <classname>IndexWorker</classname>s and let each <classname>IndexWorker</classname>
 			handle its connection to the underlying DB.</para>
 			<programlisting format="linespecific"><![CDATA[				
-protected Connection acquireConnection(DBBroker broker) {
+protected Connection acquireConnection(DBBroker broker) throws SQLException {
 	synchronized (this) {	
 		if (connectionOwner == null) {
 			connectionOwner = broker;
@@ -693,7 +693,7 @@ protected Connection acquireConnection(DBBroker broker) {
 						connectionOwner = broker;			    			
 						if (conn == null)
 		    				//We should never get there since the connection should have been initialized
-		    				///by the first request from a worker
+		    				//by the first request from a worker
 							initializeConnection();			    			
 						return conn; 			
 					} else {
@@ -711,7 +711,7 @@ protected Connection acquireConnection(DBBroker broker) {
 	}
 }
 
-protected synchronized void releaseConnection(DBBroker broker) {   
+protected synchronized void releaseConnection(DBBroker broker) throws SQLException {   
 	connectionOwner = null;
 }  			
 			]]></programlisting>
@@ -720,55 +720,49 @@ protected synchronized void releaseConnection(DBBroker broker) {
 			roughly means the same thing). This is where a <classname>Connection</classname> is created if necessary (see below)
 			and that's why eXist will have to pay the first connection's performance cost only when needed.</para>
 			<para><methodname>releaseConnection()</methodname> marks the connection as being unused. It will thus
-			become available when requested again.</para>
+			become available when requested again. No exception can be thrown here but we must follow the interface.</para>
 			<para>The last method concentrates the index-level DB-dependant code in just one place (<methodname>removeIndexContent()</methodname>
 			is relatively DB-independant).</para>
 			<programlisting format="linespecific"><![CDATA[				
- private void initializeConnection() {
-	try {
-		System.setProperty("hsqldb.cache_scale", "11");
-		System.setProperty("hsqldb.cache_size_scale", "12");
-		System.setProperty("hsqldb.default_table_type", "cached");
-		//Get a connection to the DB... and keep it
-		this.conn = DriverManager.getConnection("jdbc:hsqldb:" + getDataDir() + "/" + db_file_name_prefix /* + ";shutdown=true" */, "sa", "");
-		ResultSet rs = null;
-		try {
-			rs = this.conn.getMetaData().getTables(null, null, TABLE_NAME, new String[] { "TABLE" });
-			rs.last(); 
-			if (rs.getRow() == 1) {
-				if (LOG.isDebugEnabled()) 
-				    LOG.debug("Opened GML index: " + getDataDir() + "/" + db_file_name_prefix); 
-			//Create the data structure if it doesn't exist
-			} else if (rs.getRow() == 0) {
-				Statement stmt = conn.createStatement();
-				stmt.executeUpdate("CREATE TABLE " + TABLE_NAME + "(" +
-						/*1*/ "DOCUMENT_URI VARCHAR, " +        		
-						/*2*/ "NODE_ID_UNITS INTEGER, " + 
-						/*3*/ "NODE_ID BINARY, " +        			
-						...	        	
-						/*26*/ "IS_VALID BOOLEAN, " +
-						//Enforce uniqueness
-						"UNIQUE (" +
-							"DOCUMENT_URI, NODE_ID_UNITS, NODE_ID" +
-						")" +
-					")"
-				);
-				stmt.executeUpdate("CREATE INDEX DOCUMENT_URI ON " + TABLE_NAME + " (DOCUMENT_URI);");
-				...
-				stmt.close();        	
-				if (LOG.isDebugEnabled()) 
-				    LOG.debug("Created GML index: " + getDataDir() + "/" + db_file_name_prefix);  
-			} else {
-				throw new SQLException("2 tables with the same name ?"); 
-			}
-		} finally {
-			if (rs != null)
-				rs.close();    				
-		}        
-	} catch (SQLException e) {
-		LOG.error(e);
-		this.conn = null;
-	}
+ private void initializeConnection() throws SQLException {
+	System.setProperty("hsqldb.cache_scale", "11");
+	System.setProperty("hsqldb.cache_size_scale", "12");
+	System.setProperty("hsqldb.default_table_type", "cached");
+	//Get a connection to the DB... and keep it
+	this.conn = DriverManager.getConnection("jdbc:hsqldb:" + getDataDir() + "/" + db_file_name_prefix /* + ";shutdown=true" */, "sa", "");
+	try {	
+		ResultSet rs = this.conn.getMetaData().getTables(null, null, TABLE_NAME, new String[] { "TABLE" });
+		rs.last(); 
+		if (rs.getRow() == 1) {
+			if (LOG.isDebugEnabled()) 
+			    LOG.debug("Opened GML index: " + getDataDir() + "/" + db_file_name_prefix); 
+		//Create the data structure if it doesn't exist
+		} else if (rs.getRow() == 0) {
+			Statement stmt = conn.createStatement();
+			stmt.executeUpdate("CREATE TABLE " + TABLE_NAME + "(" +
+					/*1*/ "DOCUMENT_URI VARCHAR, " +        		
+					/*2*/ "NODE_ID_UNITS INTEGER, " + 
+					/*3*/ "NODE_ID BINARY, " +        			
+					...	        	
+					/*26*/ "IS_VALID BOOLEAN, " +
+					//Enforce uniqueness
+					"UNIQUE (" +
+						"DOCUMENT_URI, NODE_ID_UNITS, NODE_ID" +
+					")" +
+				")"
+			);
+			stmt.executeUpdate("CREATE INDEX DOCUMENT_URI ON " + TABLE_NAME + " (DOCUMENT_URI);");
+			...
+			stmt.close();        	
+			if (LOG.isDebugEnabled()) 
+			    LOG.debug("Created GML index: " + getDataDir() + "/" + db_file_name_prefix);  
+		} else {
+			throw new SQLException("2 tables with the same name ?"); 
+		}
+	} finally {
+		if (rs != null)
+			rs.close();    				
+	}        
 } 			
 			]]></programlisting>
 			<para>This method opens a <classname>Connection</classname> and, if it is a new one (<strong>the</strong>

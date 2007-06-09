@@ -175,7 +175,7 @@ public abstract class AbstractGMLJDBCIndex extends AbstractIndex {
      * @param broker the broker that will use th connection
      * @return the connection
      */
-    protected abstract Connection acquireConnection(DBBroker broker);
+    protected abstract Connection acquireConnection(DBBroker broker) throws SQLException;
     
     /**
      * Convenience method that can be used by the IndexWorker to release a connection 
@@ -185,5 +185,5 @@ public abstract class AbstractGMLJDBCIndex extends AbstractIndex {
      * @param broker the broker that will use th connection
      * 
      */    
-    protected abstract void releaseConnection(DBBroker broker);
+    protected abstract void releaseConnection(DBBroker broker) throws SQLException;
 }

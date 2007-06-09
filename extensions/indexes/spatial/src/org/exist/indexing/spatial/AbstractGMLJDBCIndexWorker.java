@@ -269,12 +269,13 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
             }    	
         } finally {
         	try {
-        		if (conn != null)
+        		if (conn != null) {
         			conn.setAutoCommit(true);
+        			releaseConnection(conn);
+        		}
             } catch (SQLException e) {
             	LOG.error(e);
             }        		
-        	releaseConnection(conn);
         }
     }
 
@@ -346,7 +347,12 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
         } catch (SQLException e) {
         	LOG.error(e);
         } finally {
-        	releaseConnection(conn);
+        	try {
+        		if (conn != null)
+        			releaseConnection(conn);
+            } catch (SQLException e) {
+            	LOG.error(e);
+            }        		
         }
     }
     
@@ -362,7 +368,13 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 	    	LOG.error(e);
 	    	return false;	    	
 	    } finally {
-	    	releaseConnection(conn);
+        	try {
+        		if (conn != null)
+        			releaseConnection(conn);
+            } catch (SQLException e) {
+            	LOG.error(e);
+            	return false;
+            }        		
 	    }	    
     }
     
@@ -401,7 +413,13 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     		LOG.error(e);
     		return null;
     	} finally {
-    		releaseConnection(conn);
+        	try {
+        		if (conn != null)
+        			releaseConnection(conn);
+            } catch (SQLException e) {
+            	LOG.error(e);
+            	return null;
+            }            
     	}
     	Occurrences[] result = new Occurrences[occurences.size()];
     	occurences.values().toArray(result);
@@ -417,7 +435,13 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     	} catch (SQLException e) {
     		throw new SpatialIndexException(e); 		
 		} finally {
-			releaseConnection(conn);
+        	try {
+        		if (conn != null)
+        			releaseConnection(conn);
+            } catch (SQLException e) {
+            	LOG.error(e);
+            	return null;
+            }            
 		}    	
     }
     
@@ -429,7 +453,13 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 	    } catch (SQLException e) {
 	    	throw new SpatialIndexException(e);
 	    } finally {
-	    	releaseConnection(conn);
+        	try {
+        		if (conn != null)
+        			releaseConnection(conn);
+            } catch (SQLException e) {
+            	LOG.error(e);
+            	return null;
+            }            
 	    }
     }
     
@@ -444,7 +474,13 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
 	    } catch (XPathException e) {
 	    	throw new SpatialIndexException(e);	    	
 	    } finally {
-	    	releaseConnection(conn);
+        	try {
+        		if (conn != null)
+        			releaseConnection(conn);
+            } catch (SQLException e) {
+            	LOG.error(e);
+            	return null;
+            }            
 	    }
     }    
     
@@ -537,9 +573,9 @@ public abstract class AbstractGMLJDBCIndexWorker implements IndexWorker {
     
     protected abstract NodeSet search(DBBroker broker, NodeSet contextSet, Geometry EPSG4326_geometry, int spatialOp, Connection conn) throws SQLException;
     
-    protected abstract Connection acquireConnection();
+    protected abstract Connection acquireConnection() throws SQLException;
     
-    protected abstract void releaseConnection(Connection conn);
+    protected abstract void releaseConnection(Connection conn) throws SQLException;
     
     private class GMLStreamListener extends AbstractStreamListener {
 
