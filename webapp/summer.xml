@@ -50,7 +50,7 @@
 	    		<orderedlist>
                 	<listitem>Student: Cherif YAYA</listitem>
      	       		<listitem>Mentor: Adam Retter</listitem>
-     	       		<listitem><ulink url="soc-xqj.xml">Statement of Works</ulink></listitem>
+     	       		<listitem><ulink url="soc-xqj.xml">Statement of Work</ulink></listitem>
                 </orderedlist>
 	    	</para>
 	    </section>
@@ -59,7 +59,8 @@
 	    	<para>
 	    		<orderedlist>
 		           	<listitem>Student: Akhil Kumar Meshram</listitem>
-	    	   		<listitem>Mentor: Pierrick Brihayne</listitem>
+	    	   		<listitem>Mentor: Pierrick Brihaye</listitem>
+     	       		<listitem><ulink url="soc-ft.xml">Statement of Work</ulink></listitem>	    	   		
     	   		</orderedlist>
        		</para>
 	    </section>
