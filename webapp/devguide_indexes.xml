@@ -947,9 +947,16 @@ protected synchronized void releaseConnection(DBBroker broker) throws SQLExcepti
             	<listitem>EPSG4326_CENTROID_X</listitem>  	
             	<listitem>EPSG4326_CENTROID_Y</listitem> 
             </itemizedlist>
-            <para>EPSG4326 fields are particularly important because every geometry will be internally stored in 
-            <strong>both</strong> its original and epsg:4326 SRS. Having this kind of common world-wide applicable SRS 
-            for all geometries in the index allows to make operations on them even if they are originally defined in different SRSes.</para>
+            <para>Every geometry will be internally stored in <strong>both</strong> its original SRS and in the epsg:4326 SRS. 
+            Having this kind of common, world-wide applicable, SRS for <strong>all</strong> geometries in the index allows to make operations on them even if they are originally defined in different SRSes.</para>
+            <important>
+                <para>By default, eXist's build will download the lightweight <filename>gt2-epsg-wkt-XXX.jar</filename> library
+                which lacks some parameters, the <ulink url="http://udig.refractions.net/docs/api-geotools/org/geotools/referencing/datum/BursaWolfParameters.html">
+                Bursa-Wolf</ulink> ones. A better accuracy for geographic transformations might be obtained by using
+                a heavier library like <ulink url="http://lists.refractions.net/m2/org/geotools/gt2-epsg-hsql/"><filename>gt2-epsg-hsql-XXX.jar</filename></ulink>
+                which is documented <ulink url="http://javadoc.geotools.fr/snapshot/org/geotools/referencing/factory/epsg/FactoryOnHSQL.html">here</ulink>.</para>
+            </important>
+
 			</section>	
 
 			<section>			
